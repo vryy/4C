@@ -195,7 +195,7 @@ bool CONTACT::Coupling3d::EvaluateCoupling()
   
   // within polygon clipping we may have performed a second rough check
   // if the two elements are really "near" (NOTE: this has only been done
-  // if problems occured within polygon clipping, i.e. the projected master 
+  // if problems occured within polygon clipping, i.e. the projected master
   // element being non-convex. In the standard case, bool clip is simply true)
   // --> this way, robustness of coupling is further increased!
   if (!clip) return false;
@@ -3736,10 +3736,15 @@ bool CONTACT::Coupling3d::IntegrateCells()
     // *******************************************************************
     int nrow = SlaveElement().NumNode();
     int ncol = MasterElement().NumNode();
+    int nintrow = SlaveIntElement().NumNode();
     RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
     RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
+
+    // Evaluation of D and M-entries according to Petrov-Galerkin approach
+    RCP<Epetra_SerialDenseMatrix> dsegPG = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),nrow*Dim()));
+    RCP<Epetra_SerialDenseMatrix> msegPG = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),ncol*Dim()));
+
 #ifdef CONTACTPETROVGALERKIN
-    int nintrow = SlaveIntElement().NumNode();
     RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nintrow));
 #else
     RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
@@ -3753,7 +3758,7 @@ bool CONTACT::Coupling3d::IntegrateCells()
         CONTACT::IntElement& sintref = static_cast<CONTACT::IntElement&>(SlaveIntElement());
         CONTACT::IntElement& mintref = static_cast<CONTACT::IntElement&>(MasterIntElement());
         integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),
-                 sintref,mintref,Cells()[i],Auxn(),dseg,mseg,gseg);
+                 sintref,mintref,Cells()[i],Auxn(),dseg,mseg,dsegPG,msegPG,gseg);
       }
       else
         integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),
@@ -3782,6 +3787,15 @@ bool CONTACT::Coupling3d::IntegrateCells()
     }
     else
       integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+
+    // assemble the mortar matrices gained in the case of Petrov-Galerkin
+    // approach in the case of frictional contact
+#ifdef CONTACTPETROVGALERKINFRIC
+#ifdef CONTACTONEMORTARLOOP
+    integrator.AssembleDPG(Comm(),SlaveIntElement(),SlaveElement(),*dsegPG);
+#endif
+    integrator.AssembleMPG(Comm(),SlaveIntElement(),MasterElement(),*msegPG);
+#endif
   }
   return true;
 }

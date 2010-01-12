@@ -569,6 +569,19 @@ void CONTACT::Interface::Initialize()
     (node->GetDerivD()).clear();
     (node->GetDerivM()).clear();
 
+    // reset nodal Mortar maps (Petrov-Galerkin approach)
+    for (int j=0;j<(int)((node->GetDPG()).size());++j)
+      (node->GetDPG())[j].clear();
+    for (int j=0;j<(int)((node->GetMPG()).size());++j)
+      (node->GetMPG())[j].clear();
+
+    (node->GetDPG()).resize(0);
+    (node->GetMPG()).resize(0);
+
+    // reset derivative map of Mortar matrices
+    (node->GetDerivDPG()).clear();
+    (node->GetDerivMPG()).clear();
+
     // reset derivative map of lagrange multipliers
     for (int j=0; j<(int)((node->GetDerivZ()).size()); ++j)
       (node->GetDerivZ())[j].clear();
@@ -720,7 +733,7 @@ void CONTACT::Interface::Evaluate()
 
   // get out of here if not participating in interface
   if (!lComm()) return;
-  
+
   //**********************************************************************
   // contact search algorithm
   //**********************************************************************
@@ -755,7 +768,7 @@ void CONTACT::Interface::Evaluate()
     // build averaged normal at each slave node
     cnode->BuildAveragedNormal();
   }
-  
+
 #ifdef CONTACTFDVERTEX3D
   // define test variable for FDVertex
   vector<vector<double> > testv(0,vector<double>(6));
@@ -1703,6 +1716,20 @@ bool CONTACT::Interface::IntegrateKappaPenalty(CONTACT::CElement& sele)
     integrator.AssembleG(Comm(),sele,*gseg);
   }
 
+  // Check if PETROVGALERKIN-approach is switched on for tri6/hex20
+  // in the frictional case
+#ifdef CONTACTPETROVGALERKIN
+#ifndef CONTACTPETROVGALERKINFRIC
+
+  INPAR::CONTACT::ContactType ctype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(IParams(),"CONTACT");
+
+  if ((ctype==INPAR::CONTACT::contact_frictional or ctype==INPAR::CONTACT::contact_meshtying) and
+  	 (sele.Shape()==DRT::Element::tri6 or sele.Shape()==DRT::Element::quad8) )
+       dserror("Frictional contact needs flag: PETROVGALERKINFRIC for tri6/hex20");
+#endif
+#endif
+
   return true;
 }
 
@@ -1774,16 +1801,21 @@ void CONTACT::Interface::EvaluateRelMov()
 
     if(activeinfuture==true)
     {
+#ifdef CONTACTPETROVGALERKINFRIC
+      vector<map<int,double> > dmap = cnode->GetDPG();
+      vector<map<int,double> > dmapold = cnode->GetDOldPG();
+#else
       vector<map<int,double> > dmap = cnode->GetD();
       vector<map<int,double> > dmapold = cnode->GetDOld();
+#endif
+
+      set <int> snodes = cnode->GetSNodes();
 
       // check if there are entries in the old D map
       if(dmapold.size()< 1)
       	dserror("Error in Interface::EvaluateRelMov(): No old D-Map!");
 
       map<int,double>::iterator colcurr;
-      set <int> snodes = cnode->GetSNodes();
-
       set<int>::iterator scurr;
 
       // loop over all slave nodes with an entry adjacent to this node
@@ -1806,8 +1838,16 @@ void CONTACT::Interface::EvaluateRelMov()
         }
       } //  loop over adjacent slave nodes
 
+#ifdef CONTACTPETROVGALERKINFRIC
+      vector<map<int,double> > mmap = cnode->GetMPG();
+      vector<map<int,double> > mmapold = cnode->GetMOldPG();
+#else
       vector<map<int,double> > mmap = cnode->GetM();
       vector<map<int,double> > mmapold = cnode->GetMOld();
+#endif
+
+    	set <int> mnodescurrent = cnode->GetMNodes();
+    	set <int> mnodesold = cnode->GetMNodesOld();
 
       // check if there are entries in the old M map
       if(mmapold.size()< 1)
@@ -1815,9 +1855,6 @@ void CONTACT::Interface::EvaluateRelMov()
 
       set <int> mnodes;
     	set<int>::iterator mcurr;
-
-    	set <int> mnodescurrent = cnode->GetMNodes();
-    	set <int> mnodesold = cnode->GetMNodesOld();
 
     	for (mcurr=mnodescurrent.begin(); mcurr != mnodescurrent.end(); mcurr++)
     	  mnodes.insert(*mcurr);
@@ -1895,7 +1932,11 @@ void CONTACT::Interface::EvaluateRelMov()
 
       /*** 03 ***********************************************************/
       // we need the Lin(D-matrix) entries of this node
+#ifdef CONTACTPETROVGALERKINFRIC
+      map<int,map<int,double> >& ddmap = cnode->GetDerivDPG();
+#else
       map<int,map<int,double> >& ddmap = cnode->GetDerivD();
+#endif
       map<int,map<int,double> >::iterator dscurr;
 
       // loop over all slave nodes in the DerivM-map of the stick slave node
@@ -1908,7 +1949,11 @@ void CONTACT::Interface::EvaluateRelMov()
         double* dxi = csnode->xspatial();
 
         // compute entry of the current stick node / slave node pair
+#ifdef CONTACTPETROVGALERKINFRIC
+        map<int,double>& thisdmmap = cnode->GetDerivDPG(gid);
+#else
         map<int,double>& thisdmmap = cnode->GetDerivD(gid);
+#endif
 
         // loop over all entries of the current derivative map
         for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -1926,7 +1971,12 @@ void CONTACT::Interface::EvaluateRelMov()
 
       /*** 04 ***********************************************************/
       // we need the Lin(M-matrix) entries of this node
+#ifdef CONTACTPETROVGALERKINFRIC
+      map<int,map<int,double> >& dmmap = cnode->GetDerivMPG();
+#else
       map<int,map<int,double> >& dmmap = cnode->GetDerivM();
+#endif
+
       map<int,map<int,double> >::iterator dmcurr;
 
       // loop over all master nodes in the DerivM-map of the stick slave node
@@ -1939,7 +1989,11 @@ void CONTACT::Interface::EvaluateRelMov()
         double* mxi = cmnode->xspatial();
 
         // compute entry of the current stick node / master node pair
+#ifdef CONTACTPETROVGALERKINFRIC
+        map<int,double>& thisdmmap = cnode->GetDerivMPG(gid);
+#else
         map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+#endif
 
         // loop over all entries of the current derivative map
         for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -1999,10 +2053,6 @@ void CONTACT::Interface::AssembleRelMov(Epetra_Vector& jumpglobal)
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::EvaluateTangentNorm(double& cnormtan)
 {
-  // get out of here if not participating in interface
-  if (!lComm())
-    return;
-
   cnormtan=0;
 
   // loop over all slave row nodes on the current interface
@@ -2085,6 +2135,12 @@ void CONTACT::Interface::EvaluateTangentNorm(double& cnormtan)
       //cout << "FACTOR-Magnitude" << (frcoeff*forcen)/(sqrt(forcetxi*forcetxi+forceteta*forceteta))<< endl;
     }
   } // loop over slave nodes
+
+  // get cnorm from all procs
+  double sumcnormtanallprocs=0.0;
+  Comm().SumAll(&cnormtan,&sumcnormtanallprocs,1);
+  cnormtan=sumcnormtanallprocs;
+
   return;
 }
 

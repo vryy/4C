@@ -574,6 +574,7 @@ void CONTACT::AbstractStrategy::StoreDMToNodes(AbstractStrategy::QuantityType ty
         {
           // store D and M entries
           cnode->StoreDMOld();
+          cnode->StoreDMOldPG();
           break;
         }
         case AbstractStrategy::pentrac:
@@ -1154,9 +1155,9 @@ void CONTACT::AbstractStrategy::PrintActiveSet()
       if(cnode->Active())
       {
         if(cnode->Slip())
-          cout << "SLIP " << gid << " Normal " << nz << " Tangential " << zt << endl;
+          cout << "SLIP " << gid << " Normal " << nz << " Tangential " << zt << " MoveX " << cnode->xspatial()[0] - cnode->X()[0] << " MoveY " << cnode->xspatial()[1] - cnode->X()[1] << endl;
         else
-         cout << "STICK " << gid << " Normal " << nz << " Tangential " << zt << endl;
+         cout << "STICK " << gid << " Normal " << nz << " Tangential " << zt << " MoveX " << cnode->xspatial()[0] - cnode->X()[0] << " MoveY " << cnode->xspatial()[1] - cnode->X()[1] << endl;
       }
     }
   }

@@ -102,9 +102,14 @@ activeold_(old.activeold_),
 slip_(old.slip_),
 drows_(old.drows_),
 mrows_(old.mrows_),
+drowsPG_(old.drowsPG_),
+mrowsPG_(old.mrowsPG_),
 drowsold_(old.drowsold_),
 mrowsold_(old.mrowsold_),
+drowsoldPG_(old.drowsoldPG_),
+mrowsoldPG_(old.mrowsoldPG_),
 mmodrows_(old.mmodrows_),
+snodes_(old.snodes_),
 mnodes_(old.mnodes_),
 mnodesold_(old.mnodesold_),
 grow_(old.grow_)
@@ -321,6 +326,32 @@ void CONTACT::CNode::AddDValue(int& row, int& col, double& val)
 }
 
 /*----------------------------------------------------------------------*
+ |  Add a value to the 'D' map (Petrov-Galerkin approach) gitterle 12/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CNode::AddDValuePG(int& row, int& col, double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddDValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddDValue: function called for boundary node %i", Id());
+
+  // check if this has been called before
+  if ((int)drowsPG_.size()==0)
+    drowsPG_.resize(NumDof());
+
+  // check row index input
+  if ((int)drowsPG_.size()<=row)
+    dserror("ERROR: AddDValue: tried to access invalid row index!");
+
+  // add the pair (col,val) to the given row
+  map<int,double>& dmap = drowsPG_[row];
+  dmap[col] += val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Add a value to the 'M' map                                popp 01/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CNode::AddMValue(int& row, int& col, double& val)
@@ -341,6 +372,32 @@ void CONTACT::CNode::AddMValue(int& row, int& col, double& val)
 
   // add the pair (col,val) to the given row
   map<int,double>& mmap = mrows_[row];
+  mmap[col] += val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'M' map (Petrov-Galerkin approach) gitterle 12/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CNode::AddMValuePG(int& row, int& col, double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddDValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddDValue: function called for boundary node %i", Id());
+
+  // check if this has been called before
+  if ((int)mrowsPG_.size()==0)
+    mrowsPG_.resize(NumDof());
+
+  // check row index input
+  if ((int)mrowsPG_.size()<=row)
+    dserror("ERROR: AddMValue: tried to access invalid row index!");
+
+  // add the pair (col,val) to the given row
+  map<int,double>& mmap = mrowsPG_[row];
   mmap[col] += val;
 
   return;
@@ -502,7 +559,33 @@ void CONTACT::CNode::StoreDMOld()
   // also vectors containing the according master nodes
   mnodesold_.clear();
   mnodesold_ = mnodes_;
-  
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Store entries of D and M to old ones (PG-approach)     gitterle 12/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CNode::StoreDMOldPG()
+{
+  // copy drows_ to drowsold_
+
+  // reset old nodal Mortar maps
+  for (int j=0;j<(int)(GetDOldPG().size());++j)
+  (GetDOldPG())[j].clear();
+  for (int j=0;j<(int)((GetMOldPG()).size());++j)
+  (GetMOldPG())[j].clear();
+
+  // clear and zero nodal vectors
+  drowsoldPG_.clear();
+  mrowsoldPG_.clear();
+  drowsoldPG_.resize(0);
+	mrowsoldPG_.resize(0);
+
+	// write drows_ to drowsold_
+	drowsoldPG_ = drowsPG_;
+  mrowsoldPG_ = mrowsPG_;
+
   return;
 }
 

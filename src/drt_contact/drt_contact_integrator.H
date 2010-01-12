@@ -78,24 +78,24 @@ public:
   Note also that this constructor relies heavily on the
   DRT::UTILS::IntegrationPoints structs to get Gauss points
   and corresponding weights.
-  
+
   Note: This version of the constructor creates an Integrator instance with undefined type of shape functions.
-  As a result, no calls to functions relying on the evaluation of shape functions is allowed. 
-  To be able to evaluate them, the Integrator have to be created with the alternative constructor (see below). 
+  As a result, no calls to functions relying on the evaluation of shape functions is allowed.
+  To be able to evaluate them, the Integrator have to be created with the alternative constructor (see below).
 
   */
   explicit Integrator(DRT::Element::DiscretizationType eletype);
 
   /*!
   \brief Constructor  with shape function specification
-  
+
   Constructs an instance of this class using a specific type of shape functions.<br>
   Note that this is \b not a collective call as overlaps are
   integrated in parallel by individual processes.<br>
   Note also that this constructor relies heavily on the
   DRT::UTILS::IntegrationPoints structs to get Gauss points
   and corresponding weights.
-  
+
   */
   explicit Integrator(const Interface::ShapeFcnType shapefcn,
                       DRT::Element::DiscretizationType eletype);
@@ -255,6 +255,8 @@ public:
      RCP<CONTACT::Intcell> cell, double* auxn,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
+     RCP<Epetra_SerialDenseMatrix> dsegPG,
+     RCP<Epetra_SerialDenseMatrix> msegPG,
      RCP<Epetra_SerialDenseVector> gseg);
 
   /*!
@@ -284,7 +286,7 @@ public:
   void IntegrateKappaPenalty(CONTACT::CElement& sele,
                              double* sxia, double* sxib,
                              RCP<Epetra_SerialDenseVector> gseg);
-    
+
   /*!
   \brief Compute penalty scaling factor kappa on slave integration element
   (special version for the 3D quadratic case)
@@ -294,7 +296,7 @@ public:
                              CONTACT::IntElement& sintele,
                              double* sxia, double* sxib,
                              RCP<Epetra_SerialDenseVector> gseg);
-    
+
   /*!
   \brief Assemble D contribution of current overlap into slave nodes
 
@@ -329,23 +331,41 @@ public:
                  CONTACT::CElement& sele,
                  Epetra_SerialDenseVector& g_seg);
 
+  /*!
+  \brief Assemble D contribution of current overlap into slave nodes
+
+  */
+  bool AssembleDPG(const Epetra_Comm& comm,
+                 CONTACT::CElement& sele,
+                 CONTACT::CElement& mele,
+                 Epetra_SerialDenseMatrix& D_seg);
+
+  /*!
+  \brief Assemble M contribution of current overlap into slave nodes
+
+  */
+  bool AssembleMPG(const Epetra_Comm& comm,
+                 CONTACT::CElement& sele,
+                 CONTACT::CElement& mele,
+                 Epetra_SerialDenseMatrix& M_seg);
+
   //@}
 
 private:
-  
+
   /*!
   \brief Initialize Gauss rule (points, weights) for this Integrator
 
   */
   void InitializeGP(DRT::Element::DiscretizationType eletype);
-  
+
 protected:
 
     // don't want = operator and cctor
     Integrator operator = (const Integrator& old);
     Integrator(const Integrator& old);
 
-    const Interface::ShapeFcnType shapefcn_;    // employed type of shape function set    
+    const Interface::ShapeFcnType shapefcn_;    // employed type of shape function set
     int                           dim_;         // dimension of problem (2D or 3D)
     int                           ngp_;         // number of Gauss points
     Epetra_SerialDenseMatrix      coords_;      // Gauss point coordinates

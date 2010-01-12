@@ -128,7 +128,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   // first time step
   INPAR::CONTACT::ContactType ctype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
-  
+
   INPAR::CONTACT::SolvingStrategy strattype =
       Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(contactmanager_->GetStrategy().Params(),"STRATEGY");
 
@@ -404,7 +404,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
 
   contactmanager_->GetStrategy().InitEvalInterface();
   contactmanager_->GetStrategy().InitEvalMortar();
-  
+
   // friction
   // here the relative movement of the contact bodies is evaluated
   // therefore the current configuration and the according mortar
@@ -2406,7 +2406,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
 
         // for second, third,... Uzawa step: out-of-balance force
         if (uzawaiter>1) contactmanager_->GetStrategy().InitializeUzawa(stiff_,fresm_);
-        
+
         // LOOP3: nonlinear iteration (Newton)
         if (equil=="full newton") FullNewton();
         else if (equil=="line search newton") FullNewtonLineSearch();

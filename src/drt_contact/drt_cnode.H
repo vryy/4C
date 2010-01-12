@@ -313,6 +313,19 @@ public:
   void AddDValue(int& row, int& col, double& val);
 
   /*!
+  \brief Add a value to the 'D' map of this node (Petrov-Galerkin approach)
+
+  The 'D' map is later assembled to the D matrix.
+  Note that drows_ here is a vector.
+
+  \param row : local dof row id to add to (rowwise)
+  \param val : value to be added
+  \param col : global dof column id of the value added
+
+  */
+  void AddDValuePG(int& row, int& col, double& val);
+
+  /*!
   \brief Add a value to the 'M' map of this node
 
   The 'M' map is later assembled to the M matrix.
@@ -324,6 +337,19 @@ public:
 
   */
   void AddMValue(int& row, int& col, double& val);
+
+  /*!
+  \brief Add a value to the 'M' map of this node (Petrov-Galerkin approach)
+
+  The 'M' map is later assembled to the M matrix.
+  Note that mrows_ here is a vector.
+
+  \param row : local dof row id to add to (rowwise)
+  \param val : value to be added
+  \param col : global dof column id of the value added
+
+  */
+  void AddMValuePG(int& row, int& col, double& val);
 
   /*!
   \brief Add a value to the 'Mmod' map of this node
@@ -398,6 +424,16 @@ public:
   void StoreDMOld();
   
   /*!
+  \brief Write nodal entries of D and M to Dold and Mold (PG approach)
+
+  At the end of a time step the nodal entries (vector) of the Mortar
+  Matrices D and M are stored to the old ones.
+
+  */
+  void StoreDMOldPG();
+
+
+  /*!
   \brief Write nodal entries of Penalty tractions to old ones
 
   At the end of a time step the nodal entries (vector) of the Penalty
@@ -430,6 +466,26 @@ public:
   \brief Return the 'Mmod' map (vector) of this node
   */
   virtual inline vector<map<int,double> >& GetMmod() { return mmodrows_; }
+
+  /*!
+  \brief Return the 'D' map (vector) of this node (Petrov-Galerkin-approach)
+  */
+  virtual inline vector<map<int,double> >& GetDPG() { return drowsPG_; }
+
+  /*!
+  \brief Return the 'M' map (vector) of this node (Petrov-Galerkin-approach)
+  */
+  virtual inline vector<map<int,double> >& GetMPG() { return mrowsPG_; }
+
+  /*!
+  \brief Return the old 'D' map (vector) of this node (last converged state) (Petrov-Galerkin-approach)
+  */
+  virtual inline vector<map<int,double> >& GetDOldPG() { return drowsoldPG_; }
+
+  /*!
+  \brief Return the old 'M' map (vector) of this node (last converged state) (Petrov-Galerkin-approach)
+  */
+  virtual inline vector<map<int,double> >& GetMOldPG() { return mrowsoldPG_; }
 
   /*!
   \brief Return the map with according master nodes
@@ -491,7 +547,7 @@ public:
   
   Note: In earlier versions this was just a simple map accounting for the
   diagonality of D when using dual shape functions. Due to the extension to
-  support arbitrary types of shape functions, this is not possible anymore.  
+  support arbitrary types of shape functions, this is not possible anymore.
 
   */
   virtual inline map<int,map<int,double> >& GetDerivD() { return derivd_; }
@@ -541,6 +597,66 @@ public:
   }
 
   /*!
+  \brief Return the 'DerivD' map of this node (Petrov-Galerkin-approach)
+
+  D-matrix entries with respect to the slave/master displacements.
+  It is a "map of maps", with the outer map containing all master
+  node indices k adjacent to this node i and the inner map containing
+  all directional derivatives l existing for D_ik.
+
+  Note: In earlier versions this was just a simple map accounting for the
+  diagonality of D when using dual shape functions. Due to the extension to
+  support arbitrary types of shape functions, this is not possible anymore.
+
+  */
+  virtual inline map<int,map<int,double> >& GetDerivDPG() { return derivdPG_; }
+
+  /*!
+  \brief Return the 'DerivM' map of maps of this node (Petrov-Galerkin-approach)
+
+  This map contains the directional derivatives of the node's
+  M-matrix entries with respect to the slave/master displacements.
+  It is a "map of maps", with the outer map containing all master
+  node indices k adjacent to this node i and the inner map containing
+  all directional derivatives l existing for M_ik.
+
+  */
+  virtual inline map<int,map<int,double> >& GetDerivMPG() { return derivmPG_; }
+
+  /*!
+  \brief Return one specific 'DerivD' map of this node (Petrov-Galerkin-approach)
+
+  This method returns the map of directional derivatives of one
+  specific D-matrix D_ik entry of this node i.
+
+  */
+  virtual inline map<int,double>& GetDerivDPG(int& k)
+  {
+    typedef map<int,map<int,double> >::const_iterator CI;
+    CI p =derivdPG_.find(k);
+    if (p==derivdPG_.end())
+     dserror("ERROR: GetDerivDPG: No map entry existing for given index");
+    return derivdPG_[k];
+  }
+
+  /*!
+  \brief Return one specific 'DerivM' map of this node (Petrov-Galerkin-approach)
+
+  This method returns the map of directional derivatives of one
+  specific M-matrix M_ik entry of this node i.
+
+  */
+  virtual inline map<int,double>& GetDerivMPG(int& k)
+  {
+    typedef map<int,map<int,double> >::const_iterator CI;
+    CI p =derivmPG_.find(k);
+    if (p==derivmPG_.end())
+     dserror("ERROR: GetDerivM: No map entry existing for given index");
+    return derivmPG_[k];
+  }
+
+
+  /*!
   \brief Return the 'DerivG' map of this node
 
   This map contains the directional derivatives of the node's
@@ -564,10 +680,10 @@ public:
   
   This map contains the directional derivatives of the node's
   lagrange multiplier entries with respect to the slave/master displacements.
-  
-  Note: This is only calculated when performing a penalty strategy 
-  
-   */ 
+
+  Note: This is only calculated when performing a penalty strategy
+
+   */
   virtual inline vector<map<int,double> >& GetDerivZ() { return derivz_; }
     
   //@}
@@ -640,27 +756,33 @@ protected:
   bool            activeold_;      // true if cnode was in contact (last converged state n)
   bool            slip_;           // true if cnode slips (contact force reaches friction bound)
 
-  vector<map<int,double> >      drows_;      // nodal rows of D matrix
-  vector<map<int,double> >      mrows_;      // nodal rows of M matrix
-  vector<map<int,double> >      drowsold_;   // nodal rows of old D matrix
-  vector<map<int,double> >      mrowsold_;   // nodal rows of old M matrix
-  vector<map<int,double> >      mmodrows_;   // nodal rows of Mmod matrix
-  set<int>                      snodes_;     // nodal set of according slave nodes
-  set<int>                      mnodes_;     // nodal set of according master nodes
-  set<int>                      mnodesold_;  // nodal set of old according masternodes
-  double                        grow_;       // nodal entry of g vector
+  vector<map<int,double> >      drows_;          // nodal rows of D matrix
+  vector<map<int,double> >      mrows_;          // nodal rows of M matrix
+  vector<map<int,double> >      drowsPG_;      // nodal rows of D matrix with petrov galerkin approach
+  vector<map<int,double> >      mrowsPG_;      // nodal rows of M matrix with petrov galerkin approach
+  vector<map<int,double> >      drowsold_;       // nodal rows of old D matrix
+  vector<map<int,double> >      mrowsold_;       // nodal rows of old M matrix
+  vector<map<int,double> >      drowsoldPG_;   // nodal rows of old D matrix with petrov galerkin approach
+  vector<map<int,double> >      mrowsoldPG_;   // nodal rows of old M matrix with petrov galerkin approach
+  vector<map<int,double> >      mmodrows_;       // nodal rows of Mmod matrix
+  set<int>                      snodes_;         // nodal set of according slave nodes
+  set<int>                      mnodes_;         // nodal set of according master nodes
+  set<int>                      mnodesold_;      // nodal set of old according masternodes
+  double                        grow_;           // nodal entry of g vector
 
   vector<map<int,double> >      derivn_;     // directional derivative of nodal normal
   vector<map<int,double> >      derivtxi_;   // directional derivative of nodal tangent t_xi
   vector<map<int,double> >      derivteta_;  // directional derivative of nodal tangent t_eta
   map<int,map<int,double> >     derivd_;     // directional derivative of nodal D-matrix value
   map<int,map<int,double> >     derivm_;     // directional derivative of nodal M-matrix values
+  map<int,map<int,double> >     derivdPG_; // directional derivative of nodal D-matrix value
+  map<int,map<int,double> >     derivmPG_; // directional derivative of nodal M-matrix values
   map<int,double>               derivg_;     // directional derivative of nodal weighted gap value
   vector<map<int,double> >      derivjump_;  // directional derivative of nodal weighted jump vector
-  
-  // Penalty-related quantities 
+
+  // Penalty-related quantities
   double                        traction_[3];     // traction vector of current time step
-  double                        tractionold_[3];  // traction vector of previous time step 
+  double                        tractionold_[3];  // traction vector of previous time step
   double                        kappa_;           // gap-scaling factor
   vector<map<int,double> >      derivz_;          // direction derivative of nodal z-matrix value
 
