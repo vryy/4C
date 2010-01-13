@@ -234,6 +234,12 @@ STR::TimInt::TimInt
       Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(contactman_->GetStrategy().Params(),"STRATEGY");
       if (soltype != INPAR::CONTACT::solution_lagmult)
         dserror("ERROR: Contact in new STI only implemented for dual Lagrange strategy");
+      
+      // no meshtying in new STI so far
+      INPAR::CONTACT::ContactType ctype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactman_->GetStrategy().Params(),"CONTACT");
+      if (ctype == INPAR::CONTACT::contact_meshtying)
+        dserror("ERROR: Meshtying not yet implemented in new STI");
     }
   }
 

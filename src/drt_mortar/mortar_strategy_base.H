@@ -130,22 +130,17 @@ class StrategyBase
     // such as CONTACT::ContactLagrangeStrategy or CONTACT::MeshtyingPenaltyStrategy.
     // As the base class MORTAR::StrategyBase is always called from the control routine
     // (time integrator), these functions need to be defined purely virtual here.
-    
-    // Access methods
-    
-    
-    
-   
-        
-    // Evaluation methods
-    
+
     virtual double ConstraintNorm() = 0;
-    virtual void ContactForces(RCP<Epetra_Vector> fresm) = 0;
     virtual void DoReadRestart(IO::DiscretizationReader& reader, RCP<Epetra_Vector> dis) = 0;
     virtual void Evaluate(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) = 0;
     virtual void EvaluateMeshtying(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) = 0;
+    virtual void InitEvalInterface() = 0;
+    virtual void InitEvalMortar() = 0;
+    virtual void Initialize() = 0;
     virtual void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
     virtual double InitialPenalty() = 0;
+    virtual void InterfaceForces(RCP<Epetra_Vector> fresm) = 0;
     virtual RCP<Epetra_Vector> LagrMultOld() = 0;  
     virtual void MeshInitialization() = 0;
     virtual void MortarCoupling(const RCP<Epetra_Vector> dis) = 0;
@@ -153,6 +148,7 @@ class StrategyBase
     virtual void PrintActiveSet() = 0;
     virtual void Recover(RCP<Epetra_Vector> disi) = 0;
     virtual void ResetPenalty() = 0;
+    virtual void SaveReferenceState(RCP<Epetra_Vector> dis) = 0;
     virtual void SetState(const string& statename, const RCP<Epetra_Vector> vec) = 0;
     virtual void StoreDirichletStatus(RCP<LINALG::MapExtractor> dbcmaps) = 0;
     virtual void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) = 0;

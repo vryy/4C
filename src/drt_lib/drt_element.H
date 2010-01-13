@@ -134,6 +134,7 @@ public:
     element_structuralsurface,
     element_structuralline,
     element_mortar,
+    element_meshtying,
     element_contact,
     element_so_shw6,
     element_beam2,

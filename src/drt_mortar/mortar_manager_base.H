@@ -43,6 +43,7 @@ Maintainer: Alexander Popp
 #include "mortar_strategy_base.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_sparsematrix.H"
+#include "../drt_io/io.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -109,14 +110,22 @@ public:
   */
   MORTAR::StrategyBase& GetStrategy() { return *strategy_;}
 
+  //@}
+  
+  //! @name Purely virtual functions
+      
+  // All these functions are defined in one or more specific derived classes,
+  // such as CONTACT::CManager or CONTACT::MtManager. As the base class
+  // MORTAR::ManagerBase is always called from the control routine (time
+  // integrator), these functions need to be defined purely virtual here.
+
+  virtual void ReadRestart(IO::DiscretizationReader& reader, RCP<Epetra_Vector> dis) = 0;
+  virtual void WriteRestart(IO::DiscretizationWriter& output) = 0;
+  
+  //@}
 
 protected:
 
-  // don't want = operator and cctor
-  ManagerBase operator = (const ManagerBase& old);
-  ManagerBase(const ManagerBase& old);
-
-  
   RCP<Epetra_Comm>               comm_;     // communicator
   RCP<MORTAR::StrategyBase>      strategy_; // strategy object
 

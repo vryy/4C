@@ -29,6 +29,7 @@ Maintainer: Michael Gee
 #include "strudyn_direct.H"
 #include "../drt_contact/contactstrugenalpha.H"
 #include "../drt_contact/beam3contactstrugenalpha.H"
+#include "../drt_contactnew/strugenalpha_cmt.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -283,12 +284,14 @@ void dyn_nlnstructural_drt()
           break;
       }
 
-      // detect if contact is present
-      // note that beam contact will be treated seperately, thus contact = false in this case
-      // but instead beamcontact = true
+      // detect if contact or meshtying are present
+      // note that beam contact will be treated seperately,
+      // thus contact = meshtying = false in this case but beamcontact = true
       bool contact = false;
       bool beamcontact = false;
-      switch (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(scontact,"CONTACT"))
+      bool meshtying = false;
+      INPAR::CONTACT::ContactType ctype = Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(scontact,"CONTACT");
+      switch (ctype)
       {
         case INPAR::CONTACT::contact_none:
           contact = false;
@@ -300,10 +303,9 @@ void dyn_nlnstructural_drt()
           contact = true;
           break;
         case INPAR::CONTACT::contact_meshtying:
-          contact = true;
+          meshtying = true;
           break;
         case INPAR::CONTACT::contact_beams:
-          contact = false;
           beamcontact = true;
           break;
         default:
@@ -332,12 +334,14 @@ void dyn_nlnstructural_drt()
       // create the time integrator
       bool inv_analysis = genalphaparams.get("inv_analysis",false);
       RCP<StruGenAlpha> tintegrator;
-      if (!contact && !beamcontact && !inv_analysis && !thermalbath)
+      if (!contact && !meshtying && !beamcontact && !inv_analysis && !thermalbath)
         tintegrator = rcp(new StruGenAlpha(genalphaparams,*actdis,solver,output));
       else
       {
         if (contact)
           tintegrator = rcp(new CONTACT::ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
+        if (meshtying)
+          tintegrator = rcp (new CONTACT::CmtStruGenAlpha(genalphaparams,*actdis,solver,output,ctype));
         if (beamcontact)
           tintegrator = rcp(new CONTACT::Beam3ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
         if (inv_analysis)

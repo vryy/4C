@@ -150,6 +150,8 @@ extern "C"
 #include "../drt_contact/drt_celement.H"
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_mortar/mortar_element.H"
+#include "../drt_contactnew/meshtying_node.H"
+#include "../drt_contactnew/meshtying_element.H"
 #include "../drt_art_net/artery.H"
 #include "drt_dserror.H"
 #include "standardtypes_cpp.H"
@@ -988,6 +990,23 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
                                                      DRT::Element::element_contact,
                                                      0,DRT::Element::dis_none,
                                                      0,NULL,false);
+      ele->Unpack(data);
+      return ele;
+    }
+    case ParObject_MtNode:
+    {
+      double x[3];
+      vector<int> dofs(0);
+      CONTACT::MtNode* node = new CONTACT::MtNode(0,x,0,0,dofs,false);
+      node->Unpack(data);
+      return node;
+    }
+    case ParObject_MtElement:
+    {
+      CONTACT::MtElement* ele = new CONTACT::MtElement(0,
+                                                       DRT::Element::element_meshtying,
+                                                       0,DRT::Element::dis_none,
+                                                       0,NULL,false);
       ele->Unpack(data);
       return ele;
     }
