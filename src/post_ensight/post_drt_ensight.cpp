@@ -261,9 +261,9 @@ int main(
       StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
 
-      PostField* field = problem.get_discretization(0);
-      ThermoEnsightWriter writer(field, problem.outname(), problem.heatfluxtype(), problem.tempgradtype());
-      writer.WriteFiles();
+      // PostField* field = problem.get_discretization(0);
+      // ThermoEnsightWriter writer(field, problem.outname(), problem.heatfluxtype(), problem.tempgradtype());
+      // writer.WriteFiles();
       break;
     }
     case prb_none:
