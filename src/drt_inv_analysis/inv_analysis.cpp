@@ -943,7 +943,7 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
         actmat2->SetK2(abs(p_cur(j+1)));
         actmat2->SetK3(abs(p_cur(j+2)));
         actmat2->SetK4(abs(p_cur(j+3)));
-        j = j+5;
+        j = j+4;
         break;
       }
       case INPAR::MAT::mes_coupanisoneohooketwo:
