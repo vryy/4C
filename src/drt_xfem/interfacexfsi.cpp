@@ -51,14 +51,8 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   if (xfemdis->Comm().MyPID() == 0)
     std::cout << "Constructing InterfaceHandle" << std::endl;
 
-  if (cutterdis->Name() == "boundary"){
-	  FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcolnp"), cutterposnp_);
-	  FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcoln") , cutterposn_ );
-  }
-  else if (cutterdis->Name() == "FluidFluidboundary"){
-	  FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("fidispcolnp"), cutterposnp_);
-	  FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("fidispcoln") , cutterposn_ );
-  }
+  FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcolnp"), cutterposnp_);
+  FillCurrentCutterPositionMap(cutterdis, *cutterdis->GetState("idispcoln") , cutterposn_ );
 
   currentXAABBs_ = GEO::getCurrentXAABBs(*cutterdis, cutterposnp_);
 

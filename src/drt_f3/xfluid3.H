@@ -59,6 +59,14 @@ namespace DRT
           std::vector<double> velnm; ///< unknowns at n-1
           std::vector<double> accn;  ///< time derivative of unknowns at n
         };
+        
+        struct FluidFluidCouplingMatrices
+        {
+          RCP<Epetra_SerialDenseMatrix> Guis_uncond;
+          RCP<Epetra_SerialDenseMatrix> Gsui_uncond;
+          RCP<Epetra_SerialDenseVector> rhsui_uncond;
+        }fluidfluidmatrices_;
+        
 
         //! @name Constructors and destructors and related methods
 
@@ -201,7 +209,8 @@ namespace DRT
           get_density,
           reset,
           set_output_mode,
-          integrate_shape
+          integrate_shape,
+          fluidfluidCoupling
         };
 
         //! stabilization actions recognized by fluid3 (genalpha implementation)

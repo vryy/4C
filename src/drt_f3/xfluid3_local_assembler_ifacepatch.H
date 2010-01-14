@@ -34,6 +34,12 @@ template<> struct FieldNumPatch<XFEM::PHYSICS::Dispx> {static const std::size_t 
 template<> struct FieldNumPatch<XFEM::PHYSICS::Dispy> {static const std::size_t pos = 1;};
 template<> struct FieldNumPatch<XFEM::PHYSICS::Dispz> {static const std::size_t pos = 2;};
 
+template<XFEM::PHYSICS::Field field>
+struct IfaceFieldNum {static const std::size_t pos = IerrorCheckValue;};
+template<> struct IfaceFieldNum<XFEM::PHYSICS::Velxiface> {static const std::size_t pos = 0;};
+template<> struct IfaceFieldNum<XFEM::PHYSICS::Velyiface> {static const std::size_t pos = 1;};
+template<> struct IfaceFieldNum<XFEM::PHYSICS::Velziface> {static const std::size_t pos = 2;};
+
 //! for the viscous stress, replace shear stress components with symmetric part
 template <XFEM::PHYSICS::Field FIELD>
 struct SymmetryManglePatch {static const XFEM::PHYSICS::Field name = FIELD;};
@@ -95,10 +101,44 @@ public:
           Matrix_ds<testfield,trialfield>(emat, testshape, fac, trialshape);
         }
       }
-      else
+      else if (testfield == XFEM::PHYSICS::Velxiface or
+               testfield == XFEM::PHYSICS::Velyiface or
+               testfield == XFEM::PHYSICS::Velziface )
       {
-        Matrix_sd<testfield,trialfield>(emat, testshape, fac, trialshape);
+          if (trialfield == XFEM::PHYSICS::Sigmaxx or
+              trialfield == XFEM::PHYSICS::Sigmaxy or
+              trialfield == XFEM::PHYSICS::Sigmaxz or
+              trialfield == XFEM::PHYSICS::Sigmayx or
+              trialfield == XFEM::PHYSICS::Sigmayy or
+              trialfield == XFEM::PHYSICS::Sigmayz or
+              trialfield == XFEM::PHYSICS::Sigmazx or
+              trialfield == XFEM::PHYSICS::Sigmazy or
+              trialfield == XFEM::PHYSICS::Sigmazz )
+            {
+              Matrix_Guis_uncond<testfield,trialfield>(emat, testshape, fac, trialshape);              
+            }
       }
+      else if (testfield == XFEM::PHYSICS::Sigmaxx or
+               testfield == XFEM::PHYSICS::Sigmaxy or
+               testfield == XFEM::PHYSICS::Sigmaxz or
+               testfield == XFEM::PHYSICS::Sigmayx or
+               testfield == XFEM::PHYSICS::Sigmayy or
+               testfield == XFEM::PHYSICS::Sigmayz or
+               testfield == XFEM::PHYSICS::Sigmazx or
+               testfield == XFEM::PHYSICS::Sigmazy or
+               testfield == XFEM::PHYSICS::Sigmazz )
+      {
+          if (trialfield == XFEM::PHYSICS::Velxiface or
+              trialfield == XFEM::PHYSICS::Velyiface or
+              trialfield == XFEM::PHYSICS::Velziface )
+            {
+              Matrix_Gsui_uncond<testfield,trialfield>(emat, testshape, fac, trialshape);
+            }
+          else
+            {
+              Matrix_sd<testfield,trialfield>(emat, testshape, fac, trialshape);
+            }
+      } 
     }
 
     //! assemble one expression for the element stiffness matrix for a given test and trial field
@@ -140,6 +180,36 @@ public:
         }
     }
 
+    template <XFEM::PHYSICS::Field testfield,
+              XFEM::PHYSICS::Field trialfield,
+              class V1,
+              class V2>
+    void Matrix_Guis_uncond(
+            Epetra_SerialDenseMatrix& emat,
+            const V1&           testshape,
+            const double&       fac,
+            const V2&           trialshape
+            ) const
+    {
+      
+      const int numdof = 3;
+      const std::vector<int>& trialdof(dofman_.LocalDofPosPerField<SymmetryMangle<trialfield>::name>());
+
+      const std::size_t numparamtest = emat.M()/numdof;
+      const std::size_t numparamtrial = trialdof.size();
+      
+      for (std::size_t ui=0; ui<numparamtrial; ++ui)
+      {
+        const std::size_t trialpos = trialdof[ui];
+        const double multiply = fac * trialshape(ui);
+        for (std::size_t vi=0; vi<numparamtest; ++vi)
+        {
+          const std::size_t testpos = numdof*vi + IfaceFieldNum<testfield>::pos;
+          emat(testpos, trialpos) += testshape(vi)*multiply;
+        }
+      }  
+    }
+    
     //! assemble one expression for the element stiffness matrix for a given test and trial field
     template <XFEM::PHYSICS::Field testfield,
               XFEM::PHYSICS::Field trialfield,
@@ -174,6 +244,36 @@ public:
         }
     }
 
+    template <XFEM::PHYSICS::Field testfield,
+                  XFEM::PHYSICS::Field trialfield,
+                  class V1,
+                  class V2>
+    void Matrix_Gsui_uncond(
+            Epetra_SerialDenseMatrix& emat,
+            const V1&           testshape,
+            const double&       fac,
+            const V2&           trialshape
+            ) const
+    {
+
+      const int numdof = 3;
+
+      const std::vector<int>& testdof (dofman_.LocalDofPosPerField<SymmetryMangle<testfield>::name>());
+
+      const std::size_t numparamtest  = testdof.size();
+      const std::size_t numparamtrial = emat.N()/numdof;
+      for (std::size_t ui=0; ui<numparamtrial; ++ui)
+      {
+        const std::size_t trialpos = numdof*ui + IfaceFieldNum<trialfield>::pos;
+        const double multiply = fac * trialshape(ui);
+        for (std::size_t vi=0; vi<numparamtest; ++vi)
+        {
+          const std::size_t testpos = testdof[vi];
+          emat(testpos, trialpos) += testshape(vi)*multiply;
+        }
+      }
+    }
+    
     //! assemble one expression for the element stiffness matrix for a given test and trial field
     template <XFEM::PHYSICS::Field testfield,
               XFEM::PHYSICS::Field trialfield,
@@ -213,16 +313,56 @@ public:
             const double&       fac
             ) const
     {
+      if (testfield == XFEM::PHYSICS::Dispx or
+          testfield == XFEM::PHYSICS::Dispy or
+          testfield == XFEM::PHYSICS::Dispz)
+      {
+        Vector_rhsd<testfield>(evec, testshape, fac);      
+      }
+      else if (testfield == XFEM::PHYSICS::Velxiface or
+               testfield == XFEM::PHYSICS::Velyiface or
+               testfield == XFEM::PHYSICS::Velziface)
+      {
+        Vector_rhsui<testfield>(evec, testshape, fac); 
+      }
+    }
+    
+    template <XFEM::PHYSICS::Field testfield,
+                  class V1>
+    void Vector_rhsui(
+        Epetra_SerialDenseVector& evec,
+        const V1&           testshape,
+        const double&       fac
+        ) const
+    {                  
         const int numdof = 3;
 
         const std::size_t numparamtest = evec.Length()/numdof;
         for (std::size_t vi=0; vi<numparamtest; ++vi)
         {
-            const std::size_t testpos = numdof*vi + FieldNumPatch<testfield>::pos;
+            const std::size_t testpos = numdof*vi + IfaceFieldNum<testfield>::pos;
             evec(testpos) += fac*testshape(vi);
         }
 
     }
+    
+    template <XFEM::PHYSICS::Field testfield,
+                      class V1>
+    void Vector_rhsd(
+        Epetra_SerialDenseVector& evec,
+        const V1&           testshape,
+        const double&       fac
+        ) const
+    {                  
+      const int numdof = 3;
+      
+      const std::size_t numparamtest = evec.Length()/numdof;
+      for (std::size_t vi=0; vi<numparamtest; ++vi)
+      {
+          const std::size_t testpos = numdof*vi + FieldNumPatch<testfield>::pos;
+          evec(testpos) += fac*testshape(vi);
+      }
+        }
 
 private:
     // don't want = operator and cctor

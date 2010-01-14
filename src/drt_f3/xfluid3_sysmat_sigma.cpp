@@ -1244,7 +1244,9 @@ void SysmatBoundarySigma(
     const double&                     theta,         ///< factor for one step theta scheme
     LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
     const bool                        ifaceForceContribution,
-    const bool                        monolithic_FSI
+    const bool                        monolithic_FSI,
+    DRT::ELEMENTS::XFluid3::FluidFluidCouplingMatrices fluidfluidmatrices,
+    ParameterList&                    params
 )
 {
     if (ASSTYPE != XFEM::xfem_assembly) dserror("works only with xfem assembly");
@@ -1252,6 +1254,8 @@ void SysmatBoundarySigma(
     const size_t nsd = 3;
     const size_t numnodefix_boundary = 9;
 
+    const bool fluidfluidCoupling = params.get<bool>("fluidfluidCoupling");
+    
 #if 0
     // get node coordinates of the current element
     // number of nodes for element
@@ -1592,6 +1596,53 @@ void SysmatBoundarySigma(
               patchassembler.template Vector<Dispy>(rhsd, shp_iface, timefacfac*disctau_times_ns(1));
               patchassembler.template Vector<Dispz>(rhsd, shp_iface, timefacfac*disctau_times_ns(2));
             }
+            
+           if (fluidfluidCoupling)
+           {
+                /*                  \
+             - |  vi^i , Dtau * n^f |
+                \                  */
+              
+             if (fluidfluidmatrices.Guis_uncond == null) 
+               dserror("Guis_uncond should not be Null!");
+              
+             patchassembler.template Matrix<Velxiface,Sigmaxx>(*(fluidfluidmatrices.Guis_uncond), shp_iface, -timefacfac*normalvec_solid(0), shp_tau);
+             patchassembler.template Matrix<Velxiface,Sigmaxy>(*(fluidfluidmatrices.Guis_uncond), shp_iface, -timefacfac*normalvec_solid(1), shp_tau);
+             patchassembler.template Matrix<Velxiface,Sigmaxz>(*(fluidfluidmatrices.Guis_uncond), shp_iface, -timefacfac*normalvec_solid(2), shp_tau);
+             patchassembler.template Matrix<Velyiface,Sigmayx>(*(fluidfluidmatrices.Guis_uncond), shp_iface, -timefacfac*normalvec_solid(0), shp_tau);
+             patchassembler.template Matrix<Velyiface,Sigmayy>(*(fluidfluidmatrices.Guis_uncond), shp_iface, -timefacfac*normalvec_solid(1), shp_tau);
+             patchassembler.template Matrix<Velyiface,Sigmayz>(*(fluidfluidmatrices.Guis_uncond), shp_iface, -timefacfac*normalvec_solid(2), shp_tau);
+             patchassembler.template Matrix<Velziface,Sigmazx>(*(fluidfluidmatrices.Guis_uncond), shp_iface, -timefacfac*normalvec_solid(0), shp_tau);
+             patchassembler.template Matrix<Velziface,Sigmazy>(*(fluidfluidmatrices.Guis_uncond), shp_iface, -timefacfac*normalvec_solid(1), shp_tau);
+             patchassembler.template Matrix<Velziface,Sigmazz>(*(fluidfluidmatrices.Guis_uncond), shp_iface, -timefacfac*normalvec_solid(2), shp_tau);
+                         
+               /*                      \
+            - |  (virt tau) * n^f , Du |
+               \                      */
+              
+             if (fluidfluidmatrices.Gsui_uncond == null) 
+               dserror("Gsui_uncond should not be Null!");
+              
+             patchassembler.template Matrix<Sigmaxx,Velxiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, -timefacfac*normalvec_solid(0), shp_iface);
+             patchassembler.template Matrix<Sigmaxy,Velxiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, -timefacfac*normalvec_solid(1), shp_iface);
+             patchassembler.template Matrix<Sigmaxz,Velxiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, -timefacfac*normalvec_solid(2), shp_iface);
+             patchassembler.template Matrix<Sigmayx,Velyiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, -timefacfac*normalvec_solid(0), shp_iface);
+             patchassembler.template Matrix<Sigmayy,Velyiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, -timefacfac*normalvec_solid(1), shp_iface);
+             patchassembler.template Matrix<Sigmayz,Velyiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, -timefacfac*normalvec_solid(2), shp_iface);
+             patchassembler.template Matrix<Sigmazx,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, -timefacfac*normalvec_solid(0), shp_iface);
+             patchassembler.template Matrix<Sigmazy,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, -timefacfac*normalvec_solid(1), shp_iface);
+             patchassembler.template Matrix<Sigmazz,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, -timefacfac*normalvec_solid(2), shp_iface);
+             
+             LINALG::Matrix<nsd,1> disctau_times_ns;
+             disctau_times_ns.Multiply(tau,normalvec_solid);
+              
+             if (fluidfluidmatrices.rhsui_uncond == null) 
+               dserror("rhsui_uncond should not be Null!");
+              
+             patchassembler.template Vector<Velxiface>(*(fluidfluidmatrices.rhsui_uncond), shp_iface, timefacfac*disctau_times_ns(0));
+             patchassembler.template Vector<Velyiface>(*(fluidfluidmatrices.rhsui_uncond), shp_iface, timefacfac*disctau_times_ns(1));
+             patchassembler.template Vector<Velziface>(*(fluidfluidmatrices.rhsui_uncond), shp_iface, timefacfac*disctau_times_ns(2));
+           }  
 
             // here the interface force is integrated
             // this is done using test shape functions of the boundary mesh
@@ -1608,7 +1659,7 @@ void SysmatBoundarySigma(
         // here we need to assemble into the global force vector of the boundary discretization
         // note that we assemble into a overlapping vector, hence we add only, if we are a xfem row element
         // this way, we can later add all contributions together when exporting to interface row elements
-        if (ifaceForceContribution)
+        if (ifaceForceContribution and not fluidfluidCoupling)
         {
           const Epetra_Map* dofcolmap = ih->cutterdis()->DofColMap();
           std::vector<int> gdofs(3);
@@ -1653,7 +1704,8 @@ void SysmatSigma(
         const bool                        cstab,         ///< flag for stabilisation
         const bool                        ifaceForceContribution,
         const bool                        monolithic_FSI,
-        double&                           L2
+        double&                           L2,
+        DRT::ELEMENTS::XFluid3::FluidFluidCouplingMatrices fluidfluidmatrices
         )
 {
     // initialize arrays
@@ -1688,7 +1740,7 @@ void SysmatSigma(
     {
       SysmatBoundarySigma<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelnp, etau, iforcecol, Gds, rhsd,
-          timealgo, dt, theta, assembler, ifaceForceContribution, monolithic_FSI);
+          timealgo, dt, theta, assembler, ifaceForceContribution, monolithic_FSI, fluidfluidmatrices, params);
     }
 }
 
@@ -1717,7 +1769,8 @@ void XFLUID::callSysmatSigma(
         const bool                        cstab  ,
         const bool                        ifaceForceContribution,
         const bool                        monolithic_FSI,
-        double&                           L2
+        double&                           L2,
+        DRT::ELEMENTS::XFluid3::FluidFluidCouplingMatrices fluidfluidmatrices
         )
 {
     if (assembly_type == XFEM::standard_assembly)
@@ -1727,27 +1780,27 @@ void XFLUID::callSysmatSigma(
             case DRT::Element::hex8:
                 SysmatSigma<DRT::Element::hex8,XFEM::standard_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             case DRT::Element::hex20:
                 SysmatSigma<DRT::Element::hex20,XFEM::standard_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             case DRT::Element::hex27:
                 SysmatSigma<DRT::Element::hex27,XFEM::standard_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             case DRT::Element::tet4:
                 SysmatSigma<DRT::Element::tet4,XFEM::standard_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             case DRT::Element::tet10:
                 SysmatSigma<DRT::Element::tet10,XFEM::standard_assembly>(
-                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
+                    params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             default:
                 dserror("standard_assembly Sysmat not templated yet");
@@ -1760,27 +1813,27 @@ void XFLUID::callSysmatSigma(
             case DRT::Element::hex8:
                 SysmatSigma<DRT::Element::hex8,XFEM::xfem_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             case DRT::Element::hex20:
                 SysmatSigma<DRT::Element::hex20,XFEM::xfem_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             case DRT::Element::hex27:
                 SysmatSigma<DRT::Element::hex27,XFEM::xfem_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             case DRT::Element::tet4:
                 SysmatSigma<DRT::Element::tet4,XFEM::xfem_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             case DRT::Element::tet10:
                 SysmatSigma<DRT::Element::tet10,XFEM::xfem_assembly>(
                         params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
+                        material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             default:
                 dserror("xfem_assembly Sysmat not templated yet");

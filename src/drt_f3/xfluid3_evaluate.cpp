@@ -60,6 +60,8 @@ DRT::ELEMENTS::XFluid3::ActionType DRT::ELEMENTS::XFluid3::convertStringToAction
     act = XFluid3::set_output_mode;
   else if (action == "integrate_shape")
     act = XFluid3::integrate_shape;
+  else if (action == "fluidfluidCoupling")
+    act = XFluid3::fluidfluidCoupling;
   else
     dserror("Unknown type of action for XFluid3");
   return act;
@@ -275,7 +277,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
                 this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1, *Gds_uncond, *rhsd_uncond,
-                mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
+                mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2,fluidfluidmatrices_);
       }
       else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       {
@@ -311,7 +313,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
                 this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond, *Gds_uncond, *rhsd_uncond,
-                mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
+                mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices_);
 
         // condensation
         CondenseElementStressAndStoreOldIterationStep(
@@ -393,6 +395,83 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           }
           else
 #endif
+	   break;
+	}
+    case fluidfluidCoupling:
+    {
+      // do no calculation, if not needed
+      if (lm.empty())
+        break;
+
+      const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
+
+      double L2 = params.get<double>("L2");
+
+      // time integration factors
+      const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
+      const double            dt       = params.get<double>("dt");
+      const double            theta    = params.get<double>("theta");
+
+      // extract local values from the global vectors
+      const bool instationary = (timealgo != timeint_stationary);
+
+      DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,instationary);
+            
+      const bool newton = params.get<bool>("include reactive terms for linearisation");
+      const bool pstab  = true;
+      const bool supg   = true;
+      const bool cstab  = true;
+
+      const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
+      const bool monolithic_FSI = params.get<bool>("monolithic_FSI");         
+            
+      RCP<Epetra_SerialDenseMatrix> Gds_uncond;
+      RCP<Epetra_SerialDenseVector> rhsd_uncond;
+                      
+      if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
+      { 
+        if (ih_->ElementIntersected(Id()))
+        {
+          std::set<int> begids = ih_->GetIntersectingBoundaryElementsGID(this->Id());
+          const size_t numifacepatchdof = begids.size()*3*4;
+          fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
+          fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), numifacepatchdof));
+          fluidfluidmatrices_.rhsui_uncond = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
+        }
+            
+        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
+            *eleDofManager_, NumNode(), NodeIds());
+
+        // calculate element coefficient matrix and rhs
+        XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
+            this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1, *Gds_uncond, *rhsd_uncond,
+            mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices_);
+        
+        if (ih_->ElementIntersected(Id()))
+        {
+           params.set("Guis_uncond",fluidfluidmatrices_.Guis_uncond);
+           params.set("Gsui_uncond",fluidfluidmatrices_.Gsui_uncond);
+           params.set("rhsui_uncond",fluidfluidmatrices_.rhsui_uncond);
+        }
+      }
+      
+      else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
+      {
+        // sanity checks
+        SanityChecks(eleDofManager_, eleDofManager_uncondensed_);
+
+        // stress update
+        UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
+
+        // create uncondensed element matrix and vector
+        const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
+        Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
+        Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
+
+        // Condensation TODO!!!
+       }
+
+      params.set<double>("L2",L2);
       break;
     }
     case calc_fluid_projection_systemmat_and_residual:

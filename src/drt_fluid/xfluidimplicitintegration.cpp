@@ -253,6 +253,43 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     discret_->Comm().Barrier();
   }
 
+  //create Fluid Fluid Boundary discretization
+  vector<string> conditions_to_copy;
+  conditions_to_copy.push_back("FluidFluidCoupling");
+  conditions_to_copy.push_back("XFEMCoupling");
+  FluidFluidboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(discret_, "FluidFluidCoupling", "FluidFluidboundary", "BELE3", conditions_to_copy);
+
+  // create node and element distribution with elements and nodes ghosted on all processors
+  const Epetra_Map ffnoderowmap = *FluidFluidboundarydis_->NodeRowMap();
+  const Epetra_Map ffelemrowmap = *FluidFluidboundarydis_->ElementRowMap();
+
+  // put all boundary nodes and elements onto all processors
+  // Create an allreduced Epetra_Map from the given Epetra_Map and give it to all processors
+  const Epetra_Map ffnodecolmap = *LINALG::AllreduceEMap(ffnoderowmap);
+  const Epetra_Map ffelemcolmap = *LINALG::AllreduceEMap(ffelemrowmap);
+
+  // redistribute nodes and elements to column (ghost) map
+  FluidFluidboundarydis_->ExportColumnNodes(ffnodecolmap);
+  FluidFluidboundarydis_->ExportColumnElements(ffelemcolmap);
+
+  const int error = FluidFluidboundarydis_->FillComplete();
+  if (error) dserror("FluidFluidboundarydis_->FillComplete() returned error=%d",error);
+  
+  interface_.Setup(*FluidFluidboundarydis_);
+  SetSurfaceSplitter(&interface_);
+  
+  // mesh output needed for post processing in paraview
+  FluidFluidboundaryoutput_ = rcp(new IO::DiscretizationWriter(FluidFluidboundarydis_));
+  
+  // create fluid-fluid interface DOF vectors
+  fidispnp_    = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
+  fivelnp_     = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
+  fitrueresnp_ = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
+  fidispn_   = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
+  fiveln_    = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
+  fivelnm_   = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
+  fiaccnp_   = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
+  fiaccn_    = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
 
@@ -602,34 +639,38 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   // within this routine, no parallel re-distribution is allowed to take place
   // before and after this function, it's ok to do that
 
-  preparefluidfluidboundaryDis();
 
   vector<string> conditions_to_copy;
   conditions_to_copy.push_back("MovingFluid");
   conditions_to_copy.push_back("XFEMCoupling");
   Teuchos::RCP<DRT::Discretization> MovingFluiddis = DRT::UTILS::CreateDiscretizationFromCondition(discret_, "MovingFluid", "MovingFluid", "VELE3", conditions_to_copy);
 
-  for (int iele=0; iele< MovingFluiddis->NumMyColElements(); iele++){
-	  DRT::Element* MovingFluidele = MovingFluiddis->lColElement(iele);
-	  fluidfluidstate_.MovingFluideleids_.insert(MovingFluidele->Id());
+  for (int iele=0; iele< MovingFluiddis->NumMyColElements(); iele++)
+  {
+    DRT::Element* MovingFluidele = MovingFluiddis->lColElement(iele);
+    fluidfluidstate_.MovingFluideleids_.insert(MovingFluidele->Id());
   }
 
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
 
-  if (gmshdebugout) {
-	 const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("Fluid_Fluid_Coupling", 1, 0, false);
-	 std::ofstream gmshfilecontent(filename.c_str());
-	 IO::GMSH::disToStream("FluidFluid", 0.0, FluidFluidboundarydis_,gmshfilecontent);
-	 IO::GMSH::disToStream("Fluid", 0.0, discret_, gmshfilecontent);
-	 IO::GMSH::disToStream("MovingFluid", 0.0, MovingFluiddis, gmshfilecontent);
-	 gmshfilecontent.close();
+  if (gmshdebugout) 
+  {
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("Fluid_Fluid_Coupling", 1, 0, false);
+    std::ofstream gmshfilecontent(filename.c_str());
+    IO::GMSH::disToStream("FluidFluid", 0.0, FluidFluidboundarydis_,gmshfilecontent);
+    IO::GMSH::disToStream("Fluid", 0.0, discret_, gmshfilecontent);
+    IO::GMSH::disToStream("MovingFluid", 0.0, MovingFluiddis, gmshfilecontent);
+    gmshfilecontent.close();
   }
 
    // compute Intersection
-   if (!fluidfluidstate_.MovingFluideleids_.empty()){
-	  ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, FluidFluidboundarydis_, fluidfluidstate_.MovingFluideleids_));
-    }
+   if (!fluidfluidstate_.MovingFluideleids_.empty())
+   {      
+     ComputeFluidFluidInterfaceAccelerationsAndVelocities();     
+     preparefluidfluidboundaryDis();
+     ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, FluidFluidboundarydis_, fluidfluidstate_.MovingFluideleids_));
+   }
    else
 	  ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret, fluidfluidstate_.MovingFluideleids_));
 
@@ -683,12 +724,21 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
     dofswitch.mapVectorToNewDofDistribution(state_.veln_);
     dofswitch.mapVectorToNewDofDistribution(state_.velnm_);
 
-    // if dofs appear, extrapolate fromthe interface to the newlz created dofs
+    // if dofs appear, extrapolate from the interface to the newlz created dofs
     if (Step() > 1)
     {
-      dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("ivelcoln") , state_.veln_ );
-      dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("ivelcolnm"), state_.velnm_);
-      dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("iacccoln") , state_.accn_ );
+      if (!fluidfluidstate_.MovingFluideleids_.empty())
+      {
+        dofswitch.extrapolateOldTimeStepValues(FluidFluidboundarydis_, *ih_np_->cutterposn(), FluidFluidboundarydis_->GetState("fivelcoln") , state_.veln_ );
+        dofswitch.extrapolateOldTimeStepValues(FluidFluidboundarydis_, *ih_np_->cutterposn(), FluidFluidboundarydis_->GetState("fivelcolnm"), state_.velnm_);
+        dofswitch.extrapolateOldTimeStepValues(FluidFluidboundarydis_, *ih_np_->cutterposn(), FluidFluidboundarydis_->GetState("fiacccoln") , state_.accn_ );
+      }
+      else
+      {
+        dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("ivelcoln") , state_.veln_ );
+        dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("ivelcolnm"), state_.velnm_);
+        dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("iacccoln") , state_.accn_ );
+      }
     }
   }
 
@@ -1134,6 +1184,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       // reset interface force and let the elements fill it
       iforcecolnp->PutScalar(0.0);
       eleparams.set("interface force",iforcecolnp);
+      
+      if (!fluidfluidstate_.MovingFluideleids_.empty())
+        eleparams.set("fluidfluidCoupling",true);
 
       double L2 = 0.0;
       eleparams.set("L2",L2);
@@ -1166,7 +1219,13 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
         sysmat_->Zero();
         // call standard loop over elements
-        discret_->Evaluate(eleparams,sysmat_,residual_);
+        if (!fluidfluidstate_.MovingFluideleids_.empty())
+        {
+          FluidFluidCouplingEvaluate(eleparams,sysmat_,residual_,discret_,FluidFluidboundarydis_,ih_np_);
+        }
+        else 
+          discret_->Evaluate(eleparams,sysmat_,residual_);
+        
         discret_->ClearState();
         //eleparams.unused(cout);
 
@@ -1815,6 +1874,8 @@ void FLD::XFluidImplicitTimeInt::Output()
 
   OutputToGmsh(step_, time_);
 
+  FluidFluidboundaryOutput();
+  
   return;
 } // FluidImplicitTimeInt::Output
 
@@ -3400,38 +3461,6 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
 void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
 		)
 {
-	//create Fluid Fluid Boundary discretization
-	vector<string> conditions_to_copy;
-	conditions_to_copy.push_back("FluidFluidCoupling");
-	conditions_to_copy.push_back("XFEMCoupling");
-	FluidFluidboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(discret_, "FluidFluidCoupling", "FluidFluidboundary", "BELE3", conditions_to_copy);
-
-	// create node and element distribution with elements and nodes ghosted on all processors
-	const Epetra_Map ffnoderowmap = *FluidFluidboundarydis_->NodeRowMap();
-    const Epetra_Map ffelemrowmap = *FluidFluidboundarydis_->ElementRowMap();
-
-    // put all boundary nodes and elements onto all processors
-    // Create an allreduced Epetra_Map from the given Epetra_Map and give it to all processors
-    const Epetra_Map ffnodecolmap = *LINALG::AllreduceEMap(ffnoderowmap);
-    const Epetra_Map ffelemcolmap = *LINALG::AllreduceEMap(ffelemrowmap);
-
-    // redistribute nodes and elements to column (ghost) map
-    FluidFluidboundarydis_->ExportColumnNodes(ffnodecolmap);
-    FluidFluidboundarydis_->ExportColumnElements(ffelemcolmap);
-
-    const int error = FluidFluidboundarydis_->FillComplete();
-    if (error) dserror("FluidFluidboundarydis_->FillComplete() returned error=%d",error);
-
-    // create fluid-fluid interface DOF vectors
-    fidispnp_    = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
-    fivelnp_     = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
-    fitrueresnp_ = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
-    fidispn_   = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
-    fiveln_    = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
-    fivelnm_   = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
-    fiaccnp_   = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
-    fiaccn_    = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
-
     Teuchos::RCP<Epetra_Vector> fidispcolnp = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
     Teuchos::RCP<Epetra_Vector> fidispcoln  = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
     Teuchos::RCP<Epetra_Vector> fivelcolnp  = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
@@ -3448,11 +3477,484 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
      LINALG::Export(*fiaccn_  ,*fiacccoln);
 
      // put vectors into boundary discretization
-     FluidFluidboundarydis_->SetState("fidispcolnp",fidispcolnp);
-     FluidFluidboundarydis_->SetState("fidispcoln" ,fidispcoln);
-     FluidFluidboundarydis_->SetState("fivelcolnp" ,fivelcolnp);
-     FluidFluidboundarydis_->SetState("fivelcoln"  ,fivelcoln);
-     FluidFluidboundarydis_->SetState("fivelcolnm" ,fivelcolnm);
-     FluidFluidboundarydis_->SetState("fiacccoln"  ,fiacccoln);
+     FluidFluidboundarydis_->SetState("idispcolnp",fidispcolnp);
+     FluidFluidboundarydis_->SetState("idispcoln" ,fidispcoln);
+     FluidFluidboundarydis_->SetState("ivelcolnp" ,fivelcolnp);
+     FluidFluidboundarydis_->SetState("ivelcoln"  ,fivelcoln);
+     FluidFluidboundarydis_->SetState("ivelcolnm" ,fivelcolnm);
+     FluidFluidboundarydis_->SetState("iacccoln"  ,fiacccoln);
+}
+
+ void FLD::XFluidImplicitTimeInt::FluidFluidCouplingEvaluate(
+     Teuchos::ParameterList&              params,
+     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+     Teuchos::RCP<Epetra_Vector>          systemvector,
+     Teuchos::RCP<DRT::Discretization>    fluiddiscret,
+     Teuchos::RCP<DRT::Discretization>    boundarydiscret,
+     Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih
+     )
+{
+  params.set("action","fluidfluidCoupling");
+  
+  boundarydiscret->FillComplete(true,false, false);
+  fluiddiscret->FillComplete(true,false, false);
+  
+  if (!fluiddiscret->Filled()) dserror("fluiddis->FillComplete() was not called");
+  if (!fluiddiscret->HaveDofs()) dserror("fluiddis->AssignDegreesOfFreedom() was not called");
+
+  if (!boundarydiscret->Filled()) dserror("fluiddis->FillComplete() was not called");
+  if (!boundarydiscret->HaveDofs()) dserror("fluiddis->AssignDegreesOfFreedom() was not called");
+  
+  const Epetra_Map& fluiddofrowmap = *fluiddiscret->DofRowMap();
+
+  GuisUncond_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
+  GsuiUncond_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
+  RHSui_ = LINALG::CreateVector(fluiddofrowmap,true);
+  
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::XFluidImplicitTimeInt::FluidFluidCouplingEvaluate");
+    
+  if (!fluiddiscret->Filled()) dserror("FillComplete() was not called");
+  if (!fluiddiscret->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  
+  // see what we have for input
+  bool assemblemat1 = sysmat_!=Teuchos::null;
+  bool assemblevec1 = residual_!=Teuchos::null;
+    
+  // define element matrices and vectors
+  Epetra_SerialDenseMatrix elematrix1;
+  Epetra_SerialDenseVector elevector1;
+  Epetra_SerialDenseMatrix elematrix2 = Teuchos::null;
+  Epetra_SerialDenseVector elevector2 = Teuchos::null;
+  Epetra_SerialDenseVector elevector3 = Teuchos::null;
+  RCP<Epetra_SerialDenseMatrix> elematrixGuis = rcp(new Epetra_SerialDenseMatrix());
+  RCP<Epetra_SerialDenseMatrix> elematrixGsui = rcp(new Epetra_SerialDenseMatrix());
+  RCP<Epetra_SerialDenseVector> elevectorRHSui = rcp(new Epetra_SerialDenseVector());
+    
+  vector<int> fluidlm;
+  vector<int> fluidlmowner;
+    
+  vector<int> ifaceboundarylm;
+  vector<int> ifaceboundarylmowner;
+    
+  // loop over column elements
+  const int numcolele = fluiddiscret->NumMyColElements();
+  
+  // Map für Dof-GIDs
+  std::map<int,int>  fluidboundarymap;
+  std::map<int,int>  fluidDofsOwnermap;
+  
+  // loop over boundarydiscret elements
+  for (int iele=0; iele< boundarydiscret->NumMyRowElements(); ++iele)
+  {
+    DRT::Element* boundarydisele = boundarydiscret->lRowElement(iele);     
+    // loop all nodes of this element
+    for (int inode = 0; inode < boundarydisele->NumNode(); ++inode)
+    {
+      // get Dof of this node
+      const DRT::Node*  beleNode = boundarydisele->Nodes()[inode];
+      vector <int> boundarydisDof = boundarydiscret->Dof(boundarydiscret->gNode(beleNode->Id()));
+      vector <int> fluiddisDof = fluiddiscret->Dof(fluiddiscret->gNode(beleNode->Id()));                   
+      // Find the Owner of the Nodes (Nodes von beiden dis sind identisch)
+      int fluidNodeOwner =  fluiddiscret->gNode(beleNode->Id())->Owner();
+      // make map (cutterdisDof.size()=3 and fluiddisDof.size()=4 !!)
+      for (size_t i=0; i<3; ++i)
+      {         
+        fluidboundarymap.insert(make_pair(boundarydisDof[i], fluiddisDof[i]));  
+        fluidDofsOwnermap.insert(make_pair(fluiddisDof[i], fluidNodeOwner));              
+      }
+    }
+  } 
+    
+  for (int i=0; i<numcolele; ++i)
+  {
+    DRT::Element* actele = fluiddiscret->lColElement(i);
+    const bool intersected = ih->ElementIntersected(actele->Id());
+    
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate LocationVector");
+      // get element location vector, dirichlet flags and ownerships
+      fluidlm.clear();
+      fluidlmowner.clear();
+      actele->LocationVector(*fluiddiscret,fluidlm,fluidlmowner);
+    }
+    
+    TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate Resize");
+    // get dimension of element matrices and vectors
+    // Reshape element matrices and vectors and init to zero
+    const int eledim = (int)fluidlm.size();
+    if (assemblemat1)
+    {
+      if (elematrix1.M()!=eledim or elematrix1.N()!=eledim)
+        elematrix1.Shape(eledim,eledim);
+      else
+        memset(elematrix1.A(),0,eledim*eledim*sizeof(double));
+    }
+    if (assemblevec1)
+    {
+      if (elevector1.Length()!=eledim)
+        elevector1.Size(eledim);
+      else
+        memset(elevector1.Values(),0,eledim*sizeof(double));
+    }
+ 
+    if (intersected) 
+    {
+      ifaceboundarylm.clear();
+      ifaceboundarylmowner.clear();
+      const std::set<int> begids = ih->GetIntersectingBoundaryElementsGID(actele->Id());
+      // loop over all intersected elements
+      for (std::set<int>::const_iterator begid = begids.begin(); begid != begids.end(); ++begid)
+      {
+        DRT::Element* bele = boundarydiscret->gElement(*begid);
+        std::vector<int> ifacelm;
+        std::vector<int> ifacelmowner;
+        bele->LocationVector(*boundarydiscret, ifacelm, ifacelmowner);
+        std::vector<int> ifacefluidlm;
+        std::vector<int> ifacefluidlmowner;
+        for (size_t i=0; i<ifacelm.size(); i++)
+        {
+          std::map<int,int>::const_iterator mapit = fluidboundarymap.find(ifacelm.at(i));
+          std::map<int,int>::const_iterator ownermapit = fluidDofsOwnermap.find(mapit->second);        
+          ifacefluidlm.push_back(mapit->second);
+          ifacefluidlmowner.push_back(ownermapit->second);      
+        }                  
+        ifaceboundarylm.insert( ifaceboundarylm.end(), ifacefluidlm.begin(), ifacefluidlm.end());
+        ifaceboundarylmowner.insert( ifaceboundarylmowner.end(), ifacefluidlmowner.begin(), ifacefluidlmowner.end());
+      }
+    }
+
+    // get dimension of element matrices and vectors
+    // Reshape element matrices and vectors and init to zero
+    const std::size_t fluideledim = fluidlm.size();
+    const std::size_t ifaceboundarydim = ifaceboundarylm.size();
+       
+    if (intersected)
+    {
+      AdaptElementMatrix(ifaceboundarydim, fluideledim, *elematrixGuis);
+      AdaptElementMatrix(fluideledim, ifaceboundarydim, *elematrixGsui);
+      if (elevectorRHSui->Length()!=(int)ifaceboundarydim)
+        elevectorRHSui->Size(ifaceboundarydim);
+      else
+        memset(elevectorRHSui->Values(),0,ifaceboundarydim*sizeof(double));
+    }
+        
+    AdaptElementMatrix(fluideledim,  fluideledim,   elematrix1);
+        
+    if (elevector1.Length()!=(int)fluideledim)
+          elevector1.Size(fluideledim);
+    else
+      memset(elevector1.Values(),0,fluideledim*sizeof(double));
+
+    {          
+      TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate elements");
+          
+      // call the element evaluate method
+      int err = actele->Evaluate(params,*fluiddiscret,fluidlm,elematrix1,elematrix2,
+                                 elevector1,elevector2,elevector3);
+        
+      if (intersected)
+      {
+        elematrixGuis = params.get<RCP<Epetra_SerialDenseMatrix> >("Guis_uncond");  
+        elematrixGsui = params.get<RCP<Epetra_SerialDenseMatrix> >("Gsui_uncond");
+        elevectorRHSui = params.get<RCP<Epetra_SerialDenseVector> >("rhsui_uncond");
+      }
+        
+      if (err) dserror("Proc %d: Element %d returned err=%d",fluiddiscret->Comm().MyPID(),actele->Id(),err);
+    }
+  
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate assemble");
+    
+      systemmatrix->Assemble(-1,elematrix1,fluidlm,fluidlmowner);
+      LINALG::Assemble(*systemvector,elevector1,fluidlm,fluidlmowner);
+          
+      if (intersected) 
+      {        
+        GuisUncond_->Assemble(-1, *elematrixGuis, ifaceboundarylm, ifaceboundarylmowner, fluidlm);
+        GsuiUncond_->Assemble(-1, *elematrixGsui, fluidlm, fluidlmowner, ifaceboundarylm);
+        LINALG::Assemble(*RHSui_,*elevectorRHSui,ifaceboundarylm,ifaceboundarylmowner);
+      }
+    }
+  } //end loop over Fluid elements
+  
+  // finalize the system matrix
+  discret_->ClearState();
+  sysmat_->Complete();
+  GuisUncond_->Complete(fluiddofrowmap, fluiddofrowmap);
+  GsuiUncond_->Complete(fluiddofrowmap, fluiddofrowmap);
+}
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/ 
+void FLD::XFluidImplicitTimeInt::ComputeFluidFluidInterfaceAccelerationsAndVelocities()
+{
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  const double dt = fsidyn.get<double>("TIMESTEP");
+
+  // use only one of these switches
+  //#define USE_FSI_VEL_AND_COMPUTE_ONLY_ACCNP
+  #define COMPUTE_VEL_AND_ACCNP_VIA_BETA_NEWMARK
+  //#define COMPUTE_VEL_AND_ACCNP_VIA_ONE_STEP_THETA
+
+  #ifdef USE_FSI_VEL_AND_COMPUTE_ONLY_ACCNP
+    double theta = 0.66;
+    if (Step() == 1)
+      theta = 1.0;
+    iaccnp_->Update(-(1.0-theta)/(theta),*iaccn_,0.0);
+    iaccnp_->Update(1.0/(theta*dt),*ivelnp_,-1.0/(theta*dt),*iveln_,1.0);
+  #endif
+  #ifdef COMPUTE_VEL_AND_ACCNP_VIA_BETA_NEWMARK
+    double beta;
+    double gamma;
+    if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
+    {
+      if (Step() == 1)
+      {
+        gamma = 1.0;
+        beta = gamma/2.0;
+      }
+      else
+      {
+        gamma = 0.66;
+        beta = gamma/2.0;
+      }
+    }
+    else
+    {
+      gamma = 1.0;
+      beta = gamma/2.0;
+    }
+
+    // compute acceleration at timestep n+1
+    fiaccnp_->Update(-(1.0-(2.0*beta))/(2.0*beta),*fiaccn_,0.0);
+    fiaccnp_->Update(-1.0/(beta*dt),*fiveln_,1.0);
+    fiaccnp_->Update(1.0/(beta*dt*dt),*fidispnp_,-1.0/(beta*dt*dt),*fidispn_,1.0);
+
+    // compute velocity at timestep n+1
+    fivelnp_->Update(1.0,*fiveln_,0.0);
+    fivelnp_->Update(gamma*dt,*fiaccnp_,(1-gamma)*dt,*fiaccn_,1.0);
+   // fivelnp_->Print(cout);
+  #endif
+  #ifdef COMPUTE_VEL_AND_ACCNP_VIA_ONE_STEP_THETA
+
+    double theta_vel = 0.5;
+    double theta_acc = 0.66;
+    if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
+    {
+      if (Step() == 1)
+      {
+        theta_vel = 1.0;
+        theta_acc = 1.0;
+      }
+      else
+      {
+        theta_vel = 0.66;
+        theta_acc = 0.66;
+      }
+    }
+    else
+    {
+      theta_vel = 1.0;
+      theta_acc = 1.0;
+    }
+
+    // compute velocity at timestep n+1
+    fivelnp_->Update(-(1.0-theta_vel)/theta_vel,*fiveln_,0.0);
+    fivelnp_->Update(1.0/(theta_vel*dt),*fidispnp_,-1.0/(theta_vel*dt),*fidispn_,1.0);
+
+    // compute acceleration at timestep n+1
+    fiaccnp_->Update(-(1.0-theta_acc)/theta_acc,*fiaccn_,0.0);
+    fiaccnp_->Update(1.0/(theta_acc*dt),*fivelnp_,-1.0/(theta_acc*dt),*fiveln_,1.0);
+  #endif
+}
+/*-----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*/
+void FLD::XFluidImplicitTimeInt::FluidFluidboundaryOutput()
+{
+  // the fluid-fluid-boundary output
+   FluidFluidboundaryoutput_->NewStep(Step(),Time());
+   FluidFluidboundaryoutput_->WriteVector("fidispnp", fidispnp_);
+   FluidFluidboundaryoutput_->WriteVector("fidispn", fidispn_);
+   FluidFluidboundaryoutput_->WriteVector("fivelnp", fivelnp_);
+   FluidFluidboundaryoutput_->WriteVector("fiveln", fiveln_);
+   FluidFluidboundaryoutput_->WriteVector("fivelnm", fivelnm_);
+   FluidFluidboundaryoutput_->WriteVector("fiaccnp", fiaccnp_);
+   FluidFluidboundaryoutput_->WriteVector("fiaccn", fiaccn_);
+   FluidFluidboundaryoutput_->WriteVector("fitrueresnp", fitrueresnp_);
+  
+   // create interface DOF vectors using the fluid parallel distribution
+   Teuchos::RCP<Epetra_Vector> fivelnpcol   = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
+   Teuchos::RCP<Epetra_Vector> fivelncol    = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
+   Teuchos::RCP<Epetra_Vector> fiaccnpcol   = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
+   Teuchos::RCP<Epetra_Vector> fiaccncol    = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
+   Teuchos::RCP<Epetra_Vector> fidispnpcol  = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
+   Teuchos::RCP<Epetra_Vector> fitruerescol = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
+     
+   // map to fluid parallel distribution
+   LINALG::Export(*fivelnp_    ,*fivelnpcol);
+   LINALG::Export(*fiveln_     ,*fivelncol);
+   LINALG::Export(*fiaccnp_    ,*fiaccnpcol);
+   LINALG::Export(*fiaccn_     ,*fiaccncol);
+   LINALG::Export(*fidispnp_   ,*fidispnpcol);
+   LINALG::Export(*fitrueresnp_,*fitruerescol);
+
+   // print redundant arrays on proc 0 (Gmsh)
+   if (FluidFluidboundarydis_->Comm().MyPID() == 0)
+   {
+     PrintFluidFluidBoundaryVectorField(fidispnpcol, fivelnpcol  , "sol_fluidfluidiface_velnp", "fluidfluidboundary velocity n+1");
+     PrintFluidFluidBoundaryVectorField(fidispnpcol, fivelncol   , "sol_fluidfluidiface_veln" , "fluidfluidboundary velocity n");
+     PrintFluidFluidBoundaryVectorField(fidispnpcol, fiaccnpcol  , "sol_fluidfluidiface_accnp", "fluidfluidboundary acceleration n+1");
+     PrintFluidFluidBoundaryVectorField(fidispnpcol, fiaccncol   , "sol_fluidfluidiface_accn" , "fluidfluidboundary acceleration n");
+     PrintFluidFluidBoundaryVectorField(fidispnpcol, fidispnpcol , "sol_fluidfluidiface_disp" , "fluidfluidboundary displacement n+1");
+     PrintFluidFluidBoundaryVectorField(fidispnpcol, fitruerescol, "sol_fluidfluidiface_force", "fluidfluidboundary force");
+   }
+  
+   if (FluidFluidboundarydis_->Comm().MyPID() == 0 && fitruerescol->MyLength() >= 3)
+   {
+     std::ofstream f;
+     const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                 + ".outfluidfluidforce.txt";
+     if (Step() <= 1)
+       f.open(fname.c_str(),std::fstream::trunc);
+     else
+       f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+       f << Time() << " " << (*fitruerescol)[0] << "  " << "\n";
+
+       f.close();
+   }
+
+  if (FluidFluidboundarydis_->Comm().MyPID() == 0 && fidispnpcol->MyLength() >= 3)
+     {
+       std::ofstream f;
+       const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                               + ".outfluidfluiddispnp.txt";
+       if (Step() <= 1)
+         f.open(fname.c_str(),std::fstream::trunc);
+       else
+         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+       f << Time() << " " << (*fidispnpcol)[0] << "  " << "\n";
+
+       f.close();
+     }
+
+  if (FluidFluidboundarydis_->Comm().MyPID() == 0 && fivelnpcol->MyLength() >= 3)
+     {
+       std::ofstream f;
+       const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                               + ".outfluidfluidvelnp.txt";
+       if (Step() <= 1)
+         f.open(fname.c_str(),std::fstream::trunc);
+       else
+         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+       f << Time() << " " << (*fivelnpcol)[0] << "  " << "\n";
+
+       f.close();
+     }
+
+  if (FluidFluidboundarydis_->Comm().MyPID() == 0 && fivelncol->MyLength() >= 3)
+     {
+       std::ofstream f;
+       const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                               + ".outfluidfluidveln.txt";
+       if (Step() <= 1)
+         f.open(fname.c_str(),std::fstream::trunc);
+       else
+         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+       f << Time() << " " << (*fivelncol)[0] << "  " << "\n";
+
+       f.close();
+     }
+
+     if (FluidFluidboundarydis_->Comm().MyPID() == 0 && fiaccnpcol->MyLength() >= 3)
+     {
+       std::ofstream f;
+       const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                               + ".outfluidfluidaccnp.txt";
+       if (Step() <= 1)
+         f.open(fname.c_str(),std::fstream::trunc);
+       else
+         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+       f << Time() << " " << (*fiaccnpcol)[0] << "  " << "\n";
+
+       f.close();
+     }
+
+     if (FluidFluidboundarydis_->Comm().MyPID() == 0 && fiaccncol->MyLength() >= 3)
+     {
+       std::ofstream f;
+       const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                               + ".outfluidfluidaccn.txt";
+       if (Step() <= 1)
+         f.open(fname.c_str(),std::fstream::trunc);
+       else
+         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+       f << Time() << " " << (*fiaccncol)[0] << "  " << "\n";
+
+       f.close();
+     }
+}
+/*----------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------*/
+void FLD::XFluidImplicitTimeInt::PrintFluidFluidBoundaryVectorField(
+    const Teuchos::RCP<Epetra_Vector>   displacementfield,
+    const Teuchos::RCP<Epetra_Vector>   vectorfield,
+    const std::string filestr,
+    const std::string name_in_gmsh
+    ) const
+{
+  const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
+  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
+  const bool screen_out = true;
+  if (gmshdebugout)
+  {
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, Step(), 5, screen_out, FluidFluidboundarydis_->Comm().MyPID());
+    std::ofstream gmshfilecontent(filename.c_str());
+
+    {
+      gmshfilecontent << "View \" " << name_in_gmsh << " \" {\n";
+      for (int i=0; i<FluidFluidboundarydis_->NumMyColElements(); ++i)
+      {
+        const DRT::Element* bele = FluidFluidboundarydis_->lColElement(i);
+        vector<int> lm;
+        vector<int> lmowner;
+        bele->LocationVector(*FluidFluidboundarydis_, lm, lmowner);
+
+        // extract local values from the global vector
+        vector<double> myvelnp(lm.size());
+        DRT::UTILS::ExtractMyValues(*vectorfield, myvelnp, lm);
+
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*displacementfield, mydisp, lm);
+
+        const int nsd = 3;
+        const int numnode = bele->NumNode();
+        LINALG::SerialDenseMatrix elementvalues(nsd,numnode);
+        LINALG::SerialDenseMatrix elementpositions(nsd,numnode);
+        int counter = 0;
+        for (int iparam=0; iparam<numnode; ++iparam)
+        {
+          const DRT::Node* node = bele->Nodes()[iparam];
+          const double* pos = node->X();
+          for (int isd = 0; isd < nsd; ++isd)
+          {
+            elementvalues(isd,iparam) = myvelnp[counter];
+            elementpositions(isd,iparam) = pos[isd] + mydisp[counter];
+            counter++;
+          }
+        }
+
+        IO::GMSH::cellWithVectorFieldToStream(
+            bele->Shape(), elementvalues, elementpositions, gmshfilecontent);
+      }
+      gmshfilecontent << "};\n";
+    }
+    gmshfilecontent.close();
+    if (screen_out) std::cout << " done" << endl;
+  }
 }
 #endif /* CCADISCRET       */

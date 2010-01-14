@@ -375,6 +375,25 @@ protected:
       );
 
   void preparefluidfluidboundaryDis();
+  
+  void FluidFluidCouplingEvaluate(
+      Teuchos::ParameterList&                   params,
+      Teuchos::RCP<LINALG::SparseOperator>      systemmatrix,
+      Teuchos::RCP<Epetra_Vector>               systemvector,
+      Teuchos::RCP<DRT::Discretization>         fluiddiscret,
+      Teuchos::RCP<DRT::Discretization>         cutterdiscret,
+      Teuchos::RCP<XFEM::InterfaceHandleXFSI>   ih);
+  
+  void ComputeFluidFluidInterfaceAccelerationsAndVelocities();
+  
+  void FluidFluidboundaryOutput();
+  
+  void PrintFluidFluidBoundaryVectorField(
+      const Teuchos::RCP<Epetra_Vector>   displacementfield,
+      const Teuchos::RCP<Epetra_Vector>   vectorfield,
+      const std::string filestr,
+      const std::string name_in_gmsh
+      ) const;
 
   //! @name general algorithm parameters
   //! fluid discretization
@@ -384,6 +403,11 @@ protected:
 
   //! Fluid-Fluid-Boundray discretization
   Teuchos::RCP<DRT::Discretization>			   FluidFluidboundarydis_;
+  
+  /// the interface map setup for fsi interface, free surface, interior translation
+  FLD::UTILS::MapExtractor               interface_;
+  
+  Teuchos::RCP<IO::DiscretizationWriter> FluidFluidboundaryoutput_;
 
   //! @name state vectors using the solid boundary parallel distribution (row vectors)
   Teuchos::RCP<Epetra_Vector>            fidispnp_;   ///< fluid interface displacement  n+1
@@ -473,6 +497,10 @@ protected:
   Teuchos::RCP<LINALG::SparseMatrix> Mdu_;
   Teuchos::RCP<LINALG::SparseMatrix> Cdd_;
   Teuchos::RCP<Epetra_Vector>        RHSd_;
+  
+  Teuchos::RCP<LINALG::SparseMatrix> GuisUncond_;
+  Teuchos::RCP<LINALG::SparseMatrix> GsuiUncond_;
+  Teuchos::RCP<Epetra_Vector>        RHSui_;
 
   Teuchos::RCP<Epetra_Vector> oldinc_;
 

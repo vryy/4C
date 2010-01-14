@@ -54,6 +54,9 @@ std::string XFEM::PHYSICS::physVarToString(const XFEM::PHYSICS::Field var)
   case Sigmazx:          text = "Sigmazx"; break;
   case Sigmazy:          text = "Sigmazy"; break;
   case Sigmazz:          text = "Tauzz"; break;
+  case Velxiface:        text = "velxiface"; break;
+  case Velyiface:        text = "velyiface"; break;
+  case Velziface:        text = "velziface"; break;
   default:
     std::cout << var << std::endl;
     dserror("no string defined for Field");
