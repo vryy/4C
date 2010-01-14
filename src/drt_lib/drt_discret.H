@@ -371,6 +371,49 @@ public:
   virtual int NumDof(unsigned nds, const Element* element) const
   { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); return dofsets_[nds]->NumDof(element); }
 
+  
+  virtual bool NodePointerBelongsToDiscretization(const Node* node) const
+  {
+    map<int,RCP<DRT::Node> >::const_iterator entry = node_.find(node->Id());
+    if (entry == node_.end())
+    {
+      cout << "node Gid not in node_ map!" << endl;
+      return false;
+    }
+    else
+    {
+      RCP<DRT::Node> disnode = entry->second;
+      if (node != disnode.getRawPtr())
+      {
+        cout << "node with Gid " << node->Id() << " does not belong to this discretization!";
+        return false;
+      }
+      else
+        return true;
+    }
+  }
+  
+  virtual bool ElementPointerBelongsToDiscretization(const Element* element) const
+  {
+    map<int,RCP<DRT::Element> >::const_iterator entry = element_.find(element->Id());
+    if (entry == element_.end())
+    {
+      cout << "element Gid not in node_ map!" << endl;
+      return false;
+    }
+    else
+    {
+      RCP<DRT::Element> diselement = entry->second;
+      if (element != diselement.getRawPtr())
+      {
+        cout << "element with Gid " << element->Id() << " does not belong to this discretization!";
+        return false;
+      }
+      else
+        return true;
+    }
+  }
+  
   /*!
   \brief Get the gid of a dof for given node.
 
@@ -408,7 +451,18 @@ public:
   \param node (in)      : the node
   */
   virtual vector<int> Dof(unsigned nds, const Node* node) const
-  { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); return dofsets_[nds]->Dof(node); }
+  {
+    dsassert(nds<dofsets_.size(),"undefined dof set");
+    dsassert(havedof_,"no dofs assigned");
+#ifdef DEBUG
+    if (not NodePointerBelongsToDiscretization(node))
+    {
+      cout << "node with Gid " << node->Id() << " does not belong to this discretization!";
+      dserror("basic assumption violation!");
+    }
+#endif
+    return dofsets_[nds]->Dof(node);
+  }
 
   /*!
   \brief Get the gid of all dofs of a element.
@@ -421,7 +475,18 @@ public:
   \param element (in)      : the element
   */
   virtual vector<int> Dof(unsigned nds, const Element* element) const
-  { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); return dofsets_[nds]->Dof(element); }
+  { 
+    dsassert(nds<dofsets_.size(),"undefined dof set");
+    dsassert(havedof_,"no dofs assigned"); 
+#ifdef DEBUG
+    if (not ElementPointerBelongsToDiscretization(element))
+    {
+      cout << "element with Gid " << element->Id() << " does not belong to this discretization!";
+      dserror("basic assumption violation!");
+    }
+#endif
+    return dofsets_[nds]->Dof(element); 
+  }
 
   /*!
   \brief Get the gid of all dofs of a node.
@@ -1814,7 +1879,7 @@ protected:
   RCP<Epetra_Map>                       nodecolmap_;        // distribution of nodes including ghost nodes
   vector<DRT::Node*>                    noderowptr_;        // vector of pointers to row nodes for faster access
   vector<DRT::Node*>                    nodecolptr_;        // vector of pointers to column nodes for faster access
-  map<int,RCP<DRT::Node> >              node_;              // map of nodes
+  map<int,RCP<DRT::Node> >              node_;              // map from nodal Gid to node pointers
 
   vector<map<string,RCP<const Epetra_Vector> > > state_;    // map of references to solution states
   map<int,RCP<ElementRegister> >        elementregister_;   // register for types of elements in this discretization
