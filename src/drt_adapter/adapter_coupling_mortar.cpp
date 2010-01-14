@@ -166,8 +166,11 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
     interface->AddMortarElement(mrtrele);
   }
 
-  //finalize the contact interface construction
+  // finalize the contact interface construction
   interface->FillComplete();
+  
+  // create binary search tree
+  interface->CreateSearchTree();
 
   // all the following stuff has to be done once in setup
   // in order to get initial D_ and M_

@@ -42,6 +42,7 @@ Maintainer: Alexander Popp
 #include "Epetra_SerialComm.h"
 #endif
 #include "meshtying_interface.H"
+#include "../drt_inpar/inpar_mortar.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -49,7 +50,7 @@ Maintainer: Alexander Popp
 CONTACT::MtInterface::MtInterface(const int id, const Epetra_Comm& comm,
                                   const int dim,
                                   const Teuchos::ParameterList& icontact) :
-MORTAR::MortarInterface::MortarInterface(id,comm,dim,icontact)
+MORTAR::MortarInterface(id,comm,dim,icontact)
 {
   // empty constructor
 
@@ -73,7 +74,8 @@ void CONTACT::MtInterface::Print(ostream& os) const
 {
   if (Comm().MyPID()==0)
     os << "Meshyting ";
-  os << Discret();
+  MORTAR::MortarInterface::Print(os);
+
   return;
 }
 

@@ -275,6 +275,9 @@ discret_(discret)
 
     //-------------------- finalize the meshtying interface construction
     interface->FillComplete();
+    
+    //---------------------------------------- create binary search tree
+    interface->CreateSearchTree();
 
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
   if(Comm().MyPID()==0) cout << "done!" << endl;

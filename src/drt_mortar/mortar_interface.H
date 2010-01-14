@@ -444,6 +444,14 @@ public:
 
   */
   virtual void FillComplete();
+  
+  /*!
+  \brief Create binary search tree
+
+  The methods creates a binary tree object for efficient search.
+
+  */
+  virtual void CreateSearchTree();
 
   /*!
   \brief Update interface master and slave sets

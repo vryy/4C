@@ -307,7 +307,15 @@ void MORTAR::MortarInterface::FillComplete()
   // need row and column maps of slave and master nodes / elements / dofs
   // separately so we can easily adress them
   UpdateMasterSlaveSets();
+  
+  return;
+}
 
+/*----------------------------------------------------------------------*
+ |  create search tree (public)                               popp 01/10|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::CreateSearchTree()
+{
   // get out of here if not participating in interface
   if (!lComm()) return;
 
@@ -325,10 +333,8 @@ void MORTAR::MortarInterface::FillComplete()
   if (SearchAlg()==INPAR::MORTAR::search_binarytree)
   {
     // create binary tree object for search and setup tree
-	  binarytree_ = rcp(new MORTAR::BinaryTree(Discret(),selecolmap_,melefullmap_,Dim(),SearchParam()));
+    binarytree_ = rcp(new MORTAR::BinaryTree(Discret(),selecolmap_,melefullmap_,Dim(),SearchParam()));
   }
-	  
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -591,7 +597,53 @@ void MORTAR::MortarInterface::SetState(const string& statename, const RCP<Epetra
       element->Area()=element->ComputeArea();
     }
   }
+  
+  if (statename=="olddisplacement")
+  {
+    // set displacements in interface discretization
+    idiscret_->SetState(statename, vec);
 
+    // Get vec to full overlap
+    // RCP<const Epetra_Vector> global = idiscret_->GetState(statename);
+
+    // alternative method to get vec to full overlap
+    Epetra_Vector global(*idiscret_->DofColMap(),false);
+    LINALG::Export(*vec,global);
+
+    // loop over all nodes to set current displacement
+    // (use fully overlapping column map)
+    for (int i=0;i<idiscret_->NumMyColNodes();++i)
+    {
+      MORTAR::MortarNode* node = static_cast<MORTAR::MortarNode*>(idiscret_->lColNode(i));
+      const int numdof = node->NumDof();
+      vector<double> myolddisp(numdof);
+      vector<int> lm(numdof);
+
+      for (int j=0;j<numdof;++j)
+        lm[j]=node->Dofs()[j];
+
+      DRT::UTILS::ExtractMyValues(global,myolddisp,lm);
+
+      // add mydisp[2]=0 for 2D problems
+      if (myolddisp.size()<3)
+        myolddisp.resize(3);
+
+      // set current configuration and displacement
+      for (int j=0;j<3;++j)
+      {
+        node->uold()[j]=myolddisp[j];
+      }
+    }
+
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int i=0;i<idiscret_->NumMyColElements();++i)
+    {
+      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
+      element->Area()=element->ComputeArea();
+    }
+  }
+  
   return;
 }
 
