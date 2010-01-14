@@ -283,8 +283,10 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
         // an escape routine to prevent infinit loop
         itrs++;
         if(itrs>=30)
+        {
           dserror("Inflow boundary condition for Newton-Raphson exceeded the maximum allowed iterations");
           exit(1);
+        }
       }
     }
     else if(BC == "velocity")
@@ -388,7 +390,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
         {
           dserror("Inflow boundary condition for Newton-Raphson exceeded the maximum allowed iterations");
           exit(1);
-          }
+        }
       }
     }
     else if(BC == "velocity")
@@ -655,7 +657,9 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       // Read in the wind kessel parameters
       // ---------------------------------------------------------------
       // define a terminal resistance
-      double R, Pout, dFdA;
+      double R    = 0.0;
+      double Pout = 0.0;
+      double dFdA = 0.0;
       // read in the reflection value
       if ((*curve)[1]>=0)
       {
@@ -730,7 +734,9 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       // Read in the wind kessel parameters
       // ---------------------------------------------------------------
       // define the 2 element windkessel parameters
-      double Pout, R, C;
+      double Pout = 0.0;
+      double R    = 0.0;
+      double C    = 0.0;
 
       // Read in the periferal pressure of the wind kessel model
       if ((*curve)[0]>=0)
@@ -780,7 +786,11 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       // ---------------------------------------------------------------
 
       // define the 3 element windkessel parameters
-      double Pout, R1, C, R2, Poutnm;
+      double Pout   = 0.0;
+      double R1     = 0.0;
+      double C      = 0.0;
+      double R2     = 0.0;
+      double Poutnm = 0.0;
 
       // Read in the periferal pressure of the windkessel model
       if ((*curve)[0]>=0)
@@ -850,7 +860,11 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       // ---------------------------------------------------------------
 
       // define inportant valriable
-      double Pc, Qout, F, F_A, dFdA;
+      double Pc   = 0.0;
+      double Qout = 0.0;
+      double F    = 0.0;
+      double F_A  = 0.0;
+      double dFdA = 0.0;
 
       // find Pc at time step n
       Pc   = P - Q*R1;
@@ -895,7 +909,11 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       // ---------------------------------------------------------------
 
       // define the 4 element windkessel parameters
-      double Pout, R1, C, R2, L;
+      double Pout = 0.0;
+      double R1   = 0.0;
+      double C    = 0.0;
+      double R2   = 0.0;
+      double L    = 0.0;
 
       // Read in the periferal pressure of the wind kessel model
       if ((*curve)[0]>=0)

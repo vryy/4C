@@ -724,8 +724,8 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
   double Ao1 = 0.0;
   double Ao2 = 0.0;
   // Define blood material variables
-  double visc;
-  double dens;
+  double visc = 0.0;
+  double dens = 0.0;
   // Define artery's material variables
   double t1  = 0.0;
   double t2  = 0.0;
