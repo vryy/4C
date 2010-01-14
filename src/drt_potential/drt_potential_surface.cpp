@@ -103,6 +103,7 @@ POTENTIAL::SurfacePotential::SurfacePotential(
   // set up tree
   const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*potentialdis_);
   DRT::UTILS::CollectElementsByConditionLabel(*potentialdis_, elementsByLabel_,"Potential" );
+  InvertElementsPerLabel(elementsByLabel_,labelByElement_);
 
   treetype_ = treetype;
   searchTree_->initializeTree(rootBox, elementsByLabel_, treetype_);
@@ -351,6 +352,10 @@ void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotentialApprox1(
 
   // compute internal force and stiffness matrix  
   computeFandK_Approx1(element, gaussrule, potentialElementIds, lm, K_surf, F_int, cond, label, curvefac);
+  
+  //K_surf.Print(cout);
+  //F_int.Print(cout);
+
     
   return;
 }
@@ -548,6 +553,7 @@ void POTENTIAL::SurfacePotential::computeFandK(
       {
          const DRT::Element* element_pot = potentialdis_->gElement(*eleIter);
          const int numnode_pot = element_pot->NumNode();
+         const double beta_pot = GetAtomicDensity(element_pot->Id(), "Potential", labelByElement_);
          
          // obtain current potential dofs
          vector<int> lmpot;
@@ -611,7 +617,7 @@ void POTENTIAL::SurfacePotential::computeFandK(
              // computation of internal forces (possibly with non-local values)
              for (int inode = 0; inode < numnode; inode++)
                for(int dim = 0; dim < 3; dim++)
-                 F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta*potderiv1(dim)*fac_pot);
+                 F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta_pot*potderiv1(dim)*fac_pot);
 
              // computation of stiffness matrix (possibly with non-local values)
              for (int inode = 0;inode < numnode; ++inode)
@@ -621,13 +627,13 @@ void POTENTIAL::SurfacePotential::computeFandK(
                  for (int jnode = 0; jnode < numnode; ++jnode)
                    for(int dim_pot = 0; dim_pot < 3; dim_pot++)
                      K_surf(inode*numdof+dim, jnode*numdof+dim_pot) +=
-                       funct(inode)*beta*fac*(beta*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot);
+                       funct(inode)*beta*fac*(beta_pot*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot);
 
                  // k,ij
                  for (int jnode = 0;jnode < numnode_pot; ++jnode)
                    for(int dim_pot = 0; dim_pot < 3; dim_pot++)
                      K_surf(inode*numdof+dim, GetLocalIndex(lm,lmpot[jnode*numdof+dim_pot]) ) +=
-                        funct(inode)*beta*fac*(beta*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot);
+                        funct(inode)*beta*fac*(beta_pot*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot);
 
                 }
              }// valid contribution
@@ -683,13 +689,15 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1(
   {
     // compute func, deriv, x_gp and factor
     // zusätzlich Berechnung von FInvers und X_gp 
-	const int numnode = actEle->NumNode();
-    Epetra_SerialDenseVector   funct(numnode);   
-    Epetra_SerialDenseMatrix   deriv(2,numnode);
-    Epetra_SerialDenseMatrix 	FInvers(3,3);
+    const int numnode = actEle->NumNode();
+    Epetra_SerialDenseVector    funct(numnode);   
+    Epetra_SerialDenseMatrix    deriv(2,numnode);
+    Epetra_SerialDenseMatrix 	  FInvers(3,3);
     LINALG::Matrix<3,1>         x_gp(true);
-    LINALG::Matrix<3,1>         X_gp(true);    
-    const double fac = ComputeFactorApprox(actEle, funct, deriv, FInvers, intpoints, gp, x_gp, X_gp, curvefac);    
+    LINALG::Matrix<3,1>         X_gp(true);   
+    
+    const double fac = ComputeFactorApprox(actEle, funct, deriv, FInvers, intpoints, gp, x_gp, X_gp, curvefac);  
+
     // compute normal n_gp to act ele in x_gp
     LINALG::Matrix<3,1> n_gp = ComputeNormalInGP(actEle, x_gp);
     //Normale auf das aktive Element in gp_X berechnen
@@ -708,6 +716,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1(
       {
          const DRT::Element* element_pot = potentialdis_->gElement(*eleIter);
 
+         const double beta_pot = GetAtomicDensity(element_pot->Id(), "Potential", labelByElement_);
          // obtain current potential dofs         
          vector<int> lmpot;
          vector<int> lmowner;
@@ -809,7 +818,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1(
              // computation of internal forces (possibly with non-local values)
              for (int inode = 0; inode < numnode; inode++)
                for(int dim = 0; dim < 3; dim++)             
-                 F_int[inode*numdof+dim] += funct(inode)*beta*fac*Teta*(beta*potderiv1(dim)*fac_pot*Teta_pot);             	              	 
+                 F_int[inode*numdof+dim] += funct(inode)*beta*fac*Teta*(beta_pot*potderiv1(dim)*fac_pot*Teta_pot);             	              	 
              	             
              // computation of stiffness matrix (possibly with non-local values)
              for (int inode = 0;inode < numnode; ++inode)
@@ -819,13 +828,13 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1(
                  for (int jnode = 0; jnode < numnode; ++jnode)
                    {for(int dim_pot = 0; dim_pot < 3; dim_pot++)
                      K_surf(inode*numdof+dim, jnode*numdof+dim_pot) +=
-                       funct(inode)*beta*fac*Teta*(beta*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot*Teta_pot);}
+                       funct(inode)*beta*fac*Teta*(beta_pot*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot*Teta_pot);}
 
                  // k,ij
                  for (int jnode = 0;jnode < numnode_pot; ++jnode)
                    for(int dim_pot = 0; dim_pot < 3; dim_pot++)
                      {K_surf(inode*numdof+dim, GetLocalIndex(lm,lmpot[jnode*numdof+dim_pot]) ) +=
-                        funct(inode)*beta*fac*Teta*(beta*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot*Teta_pot);}
+                        funct(inode)*beta*fac*Teta*(beta_pot*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot*Teta_pot);}
 
                 }             
              //K_surf.Print(cout);
@@ -904,7 +913,8 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2(
       {      
         GEO::NearestObject potObject = labelIter->second;       
         const LINALG::Matrix<3,1> xp = potObject.getPhysCoord();
-        const DRT::Element* element_pot = potentialdis_->gElement(GetElementId(potentialdis_, potObject));      
+        const DRT::Element* element_pot = potentialdis_->gElement(GetElementId(potentialdis_, potObject)); 
+        const double beta_pot = GetAtomicDensity(element_pot->Id(), "Potential", labelByElement_);
   
         // obtain current potential dofs
         vector<int> lmpot;
@@ -968,7 +978,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2(
           // computation of internal forces (possibly with non-local values)
           for (int inode = 0; inode < numnode; inode++)
             for(int dim = 0; dim < 3; dim++)                
-              F_int[inode*numdof+dim] += funct(inode)*beta*fac*Teta*(beta*Fs(dim)*(1/detF));                                
+              F_int[inode*numdof+dim] += funct(inode)*beta*fac*Teta*(beta_pot*Fs(dim)*(1/detF));                                
           
           DRT::UTILS::GaussRule2D rule_pot = DRT::UTILS::intrule2D_undefined;
           GetGaussRule2D(element_pot->Shape(), rule_pot);
@@ -995,13 +1005,13 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2(
                 for (int jnode = 0; jnode < numnode; ++jnode)
                   for(int dim_pot = 0; dim_pot < 3; dim_pot++)
                     K_surf(inode*numdof+dim, jnode*numdof+dim_pot) +=
-                      funct(inode)*beta*fac*Teta*(beta*(1/detF)*Fsderiv(dim,dim_pot)*funct(jnode));
+                      funct(inode)*beta*fac*Teta*(beta_pot*(1/detF)*Fsderiv(dim,dim_pot)*funct(jnode));
   
                 // k,ij
                 for (int jnode = 0;jnode < numnode_pot; ++jnode)
                   for(int dim_pot = 0; dim_pot < 3; dim_pot++)
                     K_surf(inode*numdof+dim, GetLocalIndex(lm,lmpot[jnode*numdof+dim_pot]) ) +=
-                      funct(inode)*beta*fac*Teta*(beta*(1/detF)*(-1)*Fsderiv(dim,dim_pot)*funct_pot(jnode));  
+                      funct(inode)*beta*fac*Teta*(beta_pot*(1/detF)*(-1)*Fsderiv(dim,dim_pot)*funct_pot(jnode));  
               }
           }                
           //K_surf.Print(cout);
@@ -1070,6 +1080,7 @@ void POTENTIAL::SurfacePotential::computeFandK(
          vector<int> lmpot;
          vector<int> lmowner;
          element_pot->LocationVector(*potentialdis_,lmpot,lmowner);
+         const double beta_pot = GetAtomicDensity(element_pot->Id(), "Potential", labelByElement_);
 
          // obtain Gaussrule and integration points
          DRT::UTILS::GaussRule1D rule_pot = DRT::UTILS::intrule1D_undefined;
@@ -1111,7 +1122,7 @@ void POTENTIAL::SurfacePotential::computeFandK(
            // computation of internal forces (possibly with non-local values)
            for (int inode = 0; inode < numnode; inode++)
              for(int dim = 0; dim < 3; dim++)
-               F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta*potderiv1(dim)*fac_pot);
+               F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta_pot*potderiv1(dim)*fac_pot);
 
            // computation of stiffness matrix (possibly with non-local values)
            for (int inode = 0;inode < numnode; ++inode)
@@ -1121,13 +1132,13 @@ void POTENTIAL::SurfacePotential::computeFandK(
                for (int jnode = 0; jnode < numnode; ++jnode)
                  for(int dim_pot = 0; dim_pot < 3; dim_pot++)
                    K_surf(inode*numdof+dim, jnode*numdof+dim_pot) +=
-                     funct(inode)*beta*fac*(beta*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot);
+                     funct(inode)*beta*fac*(beta_pot*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot);
 
                // k,ij
                for (int jnode = 0;jnode < numnode_pot; ++jnode)
                  for(int dim_pot = 0; dim_pot < 3; dim_pot++)
                    K_surf(inode*numdof+dim, GetLocalIndex(lm,lmpot[jnode*numdof+dim_pot]) ) +=
-                      funct(inode)*beta*fac*(beta*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot);
+                      funct(inode)*beta*fac*(beta_pot*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot);
 
               }
          } // loop over all gauss points of the potential element
@@ -1230,9 +1241,9 @@ std::vector< LINALG::Matrix<3,1> > POTENTIAL::SurfacePotential::ComputeGP(
 *--------------------------------------------------------------------*/
 double POTENTIAL::SurfacePotential::ComputeFactorApprox(
     const DRT::Element*                     element,
-    Epetra_SerialDenseVector&              funct,
-    Epetra_SerialDenseMatrix&              deriv,
-    Epetra_SerialDenseMatrix&        		FInvers,
+    Epetra_SerialDenseVector&               funct,
+    Epetra_SerialDenseMatrix&               deriv,
+    Epetra_SerialDenseMatrix&               FInvers,
     const DRT::UTILS::IntegrationPoints2D&  intpoints,
     const int                               gp,    
     LINALG::Matrix<3,1>&                    x_gp,
@@ -1251,7 +1262,8 @@ double POTENTIAL::SurfacePotential::ComputeFactorApprox(
   //werte der ersten Ableitung der shape functions in gp wird in Matrix deriv gespeichert
   DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,element->Shape());
 
-  Epetra_SerialDenseMatrix dXYZdrs(3,2); //2 Reihen 3 Spalten
+  Epetra_SerialDenseMatrix dXYZdrs(2,3); //2 Reihen 3 Spalten
+  //TODO check rows and columns
 
   Epetra_SerialDenseMatrix X(numnode,3);
   //Die räumlichen Knotenkoordinaten des aktiven Elements werden gespeichert
@@ -1350,8 +1362,8 @@ double POTENTIAL::SurfacePotential::ComputeFactorApprox(
  *----------------------------------------------------------------------*/
 double POTENTIAL::SurfacePotential::ComputeFactor(
     const DRT::Element*                     element,
-    Epetra_SerialDenseVector&              funct,
-    Epetra_SerialDenseMatrix&              deriv,
+    Epetra_SerialDenseVector&               funct,
+    Epetra_SerialDenseMatrix&               deriv,
     const DRT::UTILS::IntegrationPoints1D&  intpoints,
     const int                               gp,
     LINALG::Matrix<3,1>&                    x_gp,

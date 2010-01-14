@@ -25,7 +25,8 @@ POTENTIAL::PotentialElementContainer::PotentialElementContainer():
   ParObject(),
   gid_(-1),
   distype_(DRT::Element::dis_none),
-  body_label_(-1)
+  body_label_(-1),
+  beta_(-1.0)
 {
   xyz_e_.Shape(1,1);
   XYZ_e_.Shape(1,1);
@@ -43,13 +44,15 @@ POTENTIAL::PotentialElementContainer::PotentialElementContainer(
     const int                                 gid,
     const DRT::Element::DiscretizationType    distype,
     const int                                 body_label,
+    const double							  beta,
     const Epetra_SerialDenseMatrix&           xyz_e,
     const Epetra_SerialDenseMatrix&           XYZ_e,
-    const std::vector<int>&      	            lm):
+    const std::vector<int>&      	          lm):
       ParObject(),
   gid_(gid),
   distype_(distype),
   body_label_(body_label),
+  beta_(beta),
   xyz_e_(xyz_e),
   XYZ_e_(XYZ_e),
   lm_(lm)
@@ -77,6 +80,7 @@ POTENTIAL::PotentialElementContainer::PotentialElementContainer(
   gid_(old.gid_),
   distype_(old.distype_),
   body_label_(old.body_label_),
+  beta_(old.beta_),
   xyz_e_(old.xyz_e_),
   XYZ_e_(old.XYZ_e_),
   lm_(old.lm_)
@@ -97,6 +101,8 @@ void POTENTIAL::PotentialElementContainer::Pack(vector<char>& data) const
   AddtoPack(data, distype_);
   // body_label_
   AddtoPack(data, body_label_);
+  // beta
+  AddtoPack(data, beta_);
   // xyz_e_
   AddtoPack(data, xyz_e_);
   // XYZ_e_
@@ -125,8 +131,8 @@ void POTENTIAL::PotentialElementContainer::Unpack(
  |                                                          u.may 12/09 |
  *----------------------------------------------------------------------*/
 void POTENTIAL::PotentialElementContainer::Unpack(
-	const vector<char>& 		data, 
-	int& 			              position)
+	const vector<char>& 			data, 
+	int& 			              	position)
 {
   // gid
   ExtractfromPack(position,data, gid_);
@@ -134,6 +140,8 @@ void POTENTIAL::PotentialElementContainer::Unpack(
   ExtractfromPack(position,data, distype_);
   // body_label_
   ExtractfromPack(position,data, body_label_);
+  // beta_
+  ExtractfromPack(position,data, beta_);
   // xyz_e_
   ExtractfromPack(position,data, xyz_e_);
   // XYZ_e_
@@ -155,6 +163,7 @@ void POTENTIAL::PotentialElementContainer::Print()
   cout << "PEC: global Id = "             << gid_         << endl;
   cout << "PEC: discretization type = "   << distype_     << endl;
   cout << "PEC: label = "                 << body_label_  << endl;
+  cout << "PEC: beta = "                  << beta_  	  << endl;
   cout << "PEC: number of nodes = "       << xyz_e_.M()   << endl;
   cout << endl; 
   cout << "PEC: spatial configuration";

@@ -1,7 +1,7 @@
 /*!-------------------------------------------------------------------
 \file drt_potential_volume.cpp
 
-\brief  Class controlling volume stresses due to potential forces
+\brief  Class controlling volume stresses due to intermolecular interaction forces
         between interfaces of mesoscopic structures
 
 <pre>
@@ -41,6 +41,7 @@ POTENTIAL::VolumePotential::VolumePotential(
 #endif
   DRT::UTILS::CollectElementsByConditionLabel(*discretRCP_, elementsByLabel_,"Potential" );
   searchTree_->initializeTree(rootBox, elementsByLabel_, treetype_);
+  InvertElementsPerLabel(elementsByLabel_,labelByElement_);
   
   const Epetra_Map* dofcolmap = discretRCP_->DofColMap();
   disp_col_ = LINALG::CreateVector(*dofcolmap, true);
@@ -56,10 +57,10 @@ POTENTIAL::VolumePotential::VolumePotential(
 | Call discretization to evaluate additional contributions due to    |
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
-void POTENTIAL::VolumePotential::EvaluatePotential( ParameterList& p,
-                                                    RefCountPtr<Epetra_Vector> disp,
-                                                    RefCountPtr<Epetra_Vector> fint,
-                                                    RefCountPtr<LINALG::SparseMatrix> stiff)
+void POTENTIAL::VolumePotential::EvaluatePotential( ParameterList& 						p,
+                                                    RefCountPtr<Epetra_Vector> 			disp,
+                                                    RefCountPtr<Epetra_Vector> 			fint,
+                                                    RefCountPtr<LINALG::SparseMatrix> 	stiff)
 {
   // action for elements
   p.set("action","calc_potential_stiff");
@@ -346,30 +347,7 @@ void POTENTIAL::VolumePotential::TreeSearch(
    
    // local ids and nonlocal pecs
    TreeSearchElement(eleXAABB, label, false);
-   
-  /* if(!(localEleIds_.empty() && nonlocalPecs_.empty()))
-   {
-     cout <<  "eleId = " << element->Id() << endl; flush(cout);
-     for(std::map<int, std::set<int> >::const_iterator labelIter = localEleIds_.begin(); labelIter != localEleIds_.end(); labelIter++)
-       for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
-       { 
-            cout << "label = " << labelIter->first << "   eleId = " << *eleIter << endl;
-            flush(cout);
-       }
-     
-     for(std::map<int, std::vector<POTENTIAL::PotentialElementContainer> >::iterator labelIter = nonlocalPecs_.begin(); 
-         labelIter != nonlocalPecs_.end(); labelIter++)
-           for(std::vector<POTENTIAL::PotentialElementContainer>::iterator pecIter = (labelIter->second).begin(); 
-           pecIter != (labelIter->second).end(); pecIter++)
-           {
-             cout << "label = " << labelIter->first << "   eleId = " << (*pecIter).Id() << endl;
-             flush(cout);
-     
-           }
-     cout << endl;
-     flush(cout);
-     
-   }*/
+ 
    return;
 } 
 
@@ -418,11 +396,11 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
     return;
   
 #ifdef PARALLEL
-
+  
   std::set<int> pecIds;
   for(std::map<int, std::set<int> >::const_iterator labelIter = localEleIds_.begin(); labelIter != localEleIds_.end(); labelIter++)
-      for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
-          pecIds.insert(*eleIter);
+    for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
+      pecIds.insert(*eleIter);
   
   // parallel search
   const int myrank = comm.MyPID();
@@ -509,11 +487,13 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
         vector<int> lmowner;
         vector<int> lm;
         element->LocationVector(*discretRCP_,lm,lmowner);
-
+        const double beta = GetAtomicDensity(element->Id(), "Potential", labelByElement_);
+        
         RCP<PotentialElementContainer> pec = rcp( new PotentialElementContainer(
             element->Id(),
             element->Shape(),
             labelIter->first,
+            beta,
             SpatialConfiguration(currentpositions_,element,prob_dim_),
             ReferenceConfiguration(element, prob_dim_),
             lm));
@@ -650,6 +630,7 @@ void POTENTIAL::VolumePotential::ComputeFandK(
          {
            // compute func, deriv, x_gp and factor
            const int                  numnode_pot = element_pot->NumNode();
+           const double beta_pot =    GetAtomicDensity(element_pot->Id(), "Potential", labelByElement_);
            Epetra_SerialDenseVector   funct_pot(numnode_pot);
            Epetra_SerialDenseMatrix   deriv_pot(3,numnode_pot);
            LINALG::Matrix<3,1>        x_pot_gp(true);
@@ -668,7 +649,7 @@ void POTENTIAL::VolumePotential::ComputeFandK(
            // computation of internal forces (possibly with non-local values)
            for (int inode = 0; inode < numnode; inode++)
              for(int dim = 0; dim < 3; dim++)
-			     F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta*potderiv1(dim)*fac_pot);
+			     F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta_pot*potderiv1(dim)*fac_pot);
 	
 	         // computation of stiffness matrix (possibly with non-local values)
 	         for (int inode = 0;inode < numnode; ++inode)
@@ -678,13 +659,13 @@ void POTENTIAL::VolumePotential::ComputeFandK(
 	             for (int jnode = 0; jnode < numnode; ++jnode)
 	               for(int dim_pot = 0; dim_pot < 3; dim_pot++)
 	                 K_stiff(inode*numdof+dim, jnode*numdof+dim_pot) +=
-	                   funct(inode)*beta*fac*(beta*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot);
+	                   funct(inode)*beta*fac*(beta_pot*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot);
 	
 	             // k,ij
 	             for (int jnode = 0;jnode < numnode_pot; ++jnode)
 	               for(int dim_pot = 0; dim_pot < 3; dim_pot++)
 	                 K_stiff(inode*numdof+dim, GetLocalIndex(lm,lmpot[jnode*numdof+dim_pot]) ) +=
-	                    funct(inode)*beta*fac*(beta*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot);
+	                    funct(inode)*beta*fac*(beta_pot*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot);
 	
 	            }
 	         } // loop over all gauss points of the potential element
@@ -699,6 +680,9 @@ void POTENTIAL::VolumePotential::ComputeFandK(
       for(std::vector<POTENTIAL::PotentialElementContainer>::iterator pecIter = (labelIter->second).begin(); 
       pecIter != (labelIter->second).end(); pecIter++)
       { 
+        
+        // get atom density
+        const double beta_pot = (*pecIter).Beta();
         // obtain current potential dofs
         vector<int> lmpot = (*pecIter).GetLm();
 
@@ -732,7 +716,7 @@ void POTENTIAL::VolumePotential::ComputeFandK(
           // computation of internal forces (possibly with non-local values)
           for (int inode = 0; inode < numnode; inode++)
             for(int dim = 0; dim < 3; dim++)
-              F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta*potderiv1(dim)*fac_pot);
+              F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta_pot*potderiv1(dim)*fac_pot);
 
           //F_int.Print(cout);
           // computation of stiffness matrix (possibly with non-local values)
@@ -743,13 +727,13 @@ void POTENTIAL::VolumePotential::ComputeFandK(
               for (int jnode = 0; jnode < numnode; ++jnode)
                 for(int dim_pot = 0; dim_pot < 3; dim_pot++)
                   K_stiff(inode*numdof+dim, jnode*numdof+dim_pot) +=
-                    funct(inode)*beta*fac*(beta*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot);
+                    funct(inode)*beta*fac*(beta_pot*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot);
 
               // k,ij
               for (int jnode = 0;jnode < numnode_pot; ++jnode)
                 for(int dim_pot = 0; dim_pot < 3; dim_pot++)
                   K_stiff(inode*numdof+dim, GetLocalIndex(lm,lmpot[jnode*numdof+dim_pot]) ) +=
-                    funct(inode)*beta*fac*(beta*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot);
+                    funct(inode)*beta*fac*(beta_pot*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot);
 
             }
         } // loop over all gauss points of the potential element
@@ -829,6 +813,7 @@ void POTENTIAL::VolumePotential::ComputeFandK(
         {
           // compute func, deriv, x_gp and factor
           const int                  numnode_pot = element_pot->NumNode();
+          const double beta_pot =    GetAtomicDensity(element_pot->Id(), "Potential", labelByElement_);;
           Epetra_SerialDenseVector   funct_pot(numnode_pot);
           Epetra_SerialDenseMatrix   deriv_pot(2,numnode_pot);
           LINALG::Matrix<2,1>        x_pot_gp(true);
@@ -846,7 +831,7 @@ void POTENTIAL::VolumePotential::ComputeFandK(
           // computation of internal forces (possibly with non-local values)
           for (int inode = 0; inode < numnode; inode++)
             for(int dim = 0; dim < 2; dim++)
-              F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta*potderiv1(dim)*fac_pot);
+              F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta_pot*potderiv1(dim)*fac_pot);
 
           // computation of stiffness matrix (possibly with non-local values)
           for (int inode = 0;inode < numnode; ++inode)
@@ -856,13 +841,13 @@ void POTENTIAL::VolumePotential::ComputeFandK(
               for (int jnode = 0; jnode < numnode; ++jnode)
                 for(int dim_pot = 0; dim_pot < 2; dim_pot++)
                   K_stiff(inode*numdof+dim, jnode*numdof+dim_pot) +=
-                    funct(inode)*beta*fac*(beta*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot);
+                    funct(inode)*beta*fac*(beta_pot*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot);
 
               // k,ij
               for (int jnode = 0;jnode < numnode_pot; ++jnode)
                 for(int dim_pot = 0; dim_pot < 2; dim_pot++)
                   K_stiff(inode*numdof+dim, GetLocalIndex(lm,lmpot[jnode*numdof+dim_pot]) ) +=
-                    funct(inode)*beta*fac*(beta*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot);
+                    funct(inode)*beta*fac*(beta_pot*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot);
             }
         } // loop over all gauss points of the potential element
       } // loop over all potential elements
@@ -873,6 +858,8 @@ void POTENTIAL::VolumePotential::ComputeFandK(
     for(std::map<int, std::vector<PotentialElementContainer> >::iterator labelIter = nonlocalPecs_.begin(); labelIter != nonlocalPecs_.end(); labelIter++)
       for(std::vector<PotentialElementContainer>::iterator pecIter = (labelIter->second).begin(); pecIter != (labelIter->second).end(); pecIter++)
       {
+       
+        const double beta_pot = (*pecIter).Beta();
         // obtain current potential dofs
         vector<int> lmpot = (*pecIter).GetLm();
 
@@ -904,7 +891,7 @@ void POTENTIAL::VolumePotential::ComputeFandK(
           // computation of internal forces (possibly with non-local values)
           for (int inode = 0; inode < numnode; inode++)
             for(int dim = 0; dim < 2; dim++)
-              F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta*potderiv1(dim)*fac_pot);
+              F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta_pot*potderiv1(dim)*fac_pot);
 
           // computation of stiffness matrix (possibly with non-local values)
           for (int inode = 0;inode < numnode; ++inode)
@@ -914,13 +901,13 @@ void POTENTIAL::VolumePotential::ComputeFandK(
               for (int jnode = 0; jnode < numnode; ++jnode)
                 for(int dim_pot = 0; dim_pot < 2; dim_pot++)
                   K_stiff(inode*numdof+dim, jnode*numdof+dim_pot) +=
-                    funct(inode)*beta*fac*(beta*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot);
+                    funct(inode)*beta*fac*(beta_pot*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot);
 
               // k,ij
               for (int jnode = 0;jnode < numnode_pot; ++jnode)
                 for(int dim_pot = 0; dim_pot < 2; dim_pot++)
                   K_stiff(inode*numdof+dim, GetLocalIndex(lm,lmpot[jnode*numdof+dim_pot]) ) +=
-                    funct(inode)*beta*fac*(beta*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot);
+                    funct(inode)*beta*fac*(beta_pot*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot);
 
             }
         } // loop over all gauss points of the potential element
@@ -1162,8 +1149,6 @@ void POTENTIAL::VolumePotential::GetGaussRule2D(
   }
   return;
 }
-
-
 
 
 #endif

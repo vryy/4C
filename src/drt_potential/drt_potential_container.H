@@ -49,6 +49,7 @@ public:
       const int                               gid,
       const DRT::Element::DiscretizationType  distype,
       const int                               body_label,
+      const double                            beta,
       const Epetra_SerialDenseMatrix&         xyz_e,
       const Epetra_SerialDenseMatrix&         XYZ_e,
       const std::vector<int>&      	          lm);
@@ -95,6 +96,9 @@ public:
   //! returns body label of an element
   int Body_label(){return body_label_;}
   
+  //! returns atom density of an element
+  double Beta(){return beta_;}
+  
   //! returns number of dofs of an element
   int NumDofs() {return (int) lm_.size();}
   
@@ -121,6 +125,9 @@ private:
 
   //! label of an element
   int                                         body_label_;
+  
+  //! atom density
+  double                                      beta_;
 
   //! nodal values in spatial configuration of an element
   Epetra_SerialDenseMatrix                    xyz_e_;

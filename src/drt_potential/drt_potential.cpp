@@ -1072,5 +1072,54 @@ double POTENTIAL::Potential::GetTimeCurveFactor(
   return curvefac;
 }
 
+
+
+/*----------------------------------------------------------------------*
+ |  invert elements by label                                 u.may 04/09|
+ *----------------------------------------------------------------------*/
+void POTENTIAL::Potential::InvertElementsPerLabel(
+		std::map<int,std::set<int> >&	elementsByLabel,
+		std::map<int,int >&				labelByElements)
+{
+  labelByElements.clear();
+  for(std::map<int,std::set<int> >::const_iterator conditer = elementsByLabel.begin();
+      conditer != elementsByLabel.end();
+      ++conditer)
+  {
+    const int potentiallabel = conditer->first;
+    for(std::set<int>::const_iterator eleiditer = conditer->second.begin(); eleiditer!=conditer->second.end(); ++eleiditer)
+    {
+      const int eleid = *eleiditer;
+      if (labelByElements.count(eleid) == 1)
+        dserror("Assumption violation: there should be exactly ONE potential condition per element id!");
+      labelByElements[eleid] = potentiallabel;
+    }
+  }
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  get the atomic density for potential elements            u.may 01/10|
+ *----------------------------------------------------------------------*/
+double POTENTIAL::Potential::GetAtomicDensity(
+    const int                       elementId,
+    const string&                   conditionName,
+    const std::map<int,int >&       labelByElements)
+{
+  vector<DRT::Condition*> potentialcond;
+  discretRCP_->GetCondition(conditionName, potentialcond);
+    
+  double beta = -1.0;
+  const int label = labelByElements.find(elementId)->second;
+  for(vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++condIter)
+    if((*condIter)->GetInt("label") == label)
+      beta = (*condIter)->GetDouble("beta");
+
+  if(fabs(beta + 1.0) < 1e-7)
+    dserror("no condition found for this element gid");
+  return beta;
+}
+        
 #endif
 

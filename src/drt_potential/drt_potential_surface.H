@@ -359,8 +359,11 @@ private:
   //! current position of boundary elements
   std::map<int,LINALG::Matrix<3,1> >          currentpositions_;
 
-  //! for each potential condition label there is a set of boundary elements
+  //! for each potential condition label there is a set of elements
   std::map<int,std::set<int> >                elementsByLabel_;
+  
+  //! for each element there is a potential condition 
+  std::map<int,int >                          labelByElement_;
 
   //! map extrator potential boundary
   LINALG::MapExtractor                        potboundary_;

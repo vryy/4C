@@ -1,7 +1,8 @@
 /*!----------------------------------------------------------------------
 \file drt_potential_volume.H
 
-\brief  Class controlling volume stresses due to potential forces
+\brief  Class controlling volume stresses due to 
+        intermolecular interaction forces
         between mesoscopic structures
 
 <pre>
@@ -28,7 +29,9 @@ Maintainer: Ursula Mayer
 namespace POTENTIAL
 {
 /*!
-\brief  Class controlling volume stresses due to potential forces
+\brief  Class controlling volume stresses due to 
+        intermolecular interaction forces
+        between mesoscopic structures
 
 */
 class VolumePotential : public Potential
@@ -40,6 +43,8 @@ public:
     \brief Standard Constructor
 
     \param discret (in): Discretization
+    \param discret (in): Discretization
+    \param discret (in): treetype
    */
   VolumePotential(
       Teuchos::RCP<DRT::Discretization>     discretRCP,
@@ -59,18 +64,22 @@ public:
     due to interfacial energy
 
     \param p (in): parameter list
+    \param disp (in): displacement
     \param fint (out): internal forces
     \param stiff (out): stiffness matrix
    */
-  void EvaluatePotential( ParameterList& p,
-      RefCountPtr<Epetra_Vector> disp,
-      RefCountPtr<Epetra_Vector> fint,
-      RefCountPtr<LINALG::SparseMatrix> stiff);
+  void EvaluatePotential( 
+		  ParameterList& p,
+		  RefCountPtr<Epetra_Vector> 			disp,
+		  RefCountPtr<Epetra_Vector> 			fint,
+		  RefCountPtr<LINALG::SparseMatrix> 	stiff
+		  );
   
   
   /*!
-    \brief Routine to calculate additional internal forces and
-    stiffnesses due to interfacial phenomena for surface elements
+    \brief calculates internal forces and
+    stiffnesses due to interfacial phenomena for volume elements
+    in 3D
 
     \param element    (in)  : element
     \param gaussrule  (in)  : gaussrule of element
@@ -89,8 +98,9 @@ public:
   
   
   /*!
-    \brief Routine to calculate additional internal forces and
+    \brief calculates internal forces and
     stiffnesses due to interfacial phenomena for surface elements
+    in 2D
 
     \param element    (in)  : element
     \param gaussrule  (in)  : gaussrule of element
@@ -104,7 +114,8 @@ public:
       ParameterList&                    params,
       vector<int>&                      lm,
       Epetra_SerialDenseMatrix&         K_stiff,
-      Epetra_SerialDenseVector&         fint);
+      Epetra_SerialDenseVector&         fint
+      );
 
 
   
@@ -140,7 +151,8 @@ private:
   void TreeSearch(
       const DRT::Element*      element,
       const double             radius,
-      const int                label);
+      const int                label
+      );
   
   
   /*!
@@ -170,8 +182,7 @@ private:
       Epetra_SerialDenseMatrix&                                       K_stiff,
       Epetra_SerialDenseVector&                                       F_int,
       RefCountPtr<DRT::Condition>                                     cond,
-      const double                                                    curvefac
-  );
+      const double                                                    curvefac);
 
 
   /*!
@@ -255,8 +266,11 @@ private:
   //! search tree type
   GEO::TreeType                                           treetype_;
   
-  //! for each potential condition label there is a set of boundary elements
+  //! for each potential condition label there is a set of elements
   std::map<int,std::set<int> >                            elementsByLabel_;
+  
+  //! for each element there is a potential condition 
+  std::map<int,int >                                      labelByElement_;
   
   //! column vector of displacements 
   Teuchos::RCP<const Epetra_Vector>                       disp_col_;
@@ -265,7 +279,7 @@ private:
   std::map<int,LINALG::Matrix<3,1> >                      currentpositions_;
 
   //! list of current XAABBs 
-  std::map<int,LINALG::Matrix<3,2> > 					            elemXAABBList_;
+  std::map<int,LINALG::Matrix<3,2> >                      elemXAABBList_;
   
   //! local potential element ids
   std::map<int,std::set<int> >                            localEleIds_;

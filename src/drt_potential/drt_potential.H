@@ -393,8 +393,23 @@ protected:
    
   //! get time curve factor
   double GetTimeCurveFactor(
-    ParameterList&                        params
-	  );
+    ParameterList&                        		params
+	);
+  
+  
+  //! invert elements by label
+  void InvertElementsPerLabel(
+	std::map<int,std::set<int> >&	elementsByLabel,
+	std::map<int,int >&				labelByElements
+  	);
+  
+  
+  //! get atomic density
+  double GetAtomicDensity(
+      const int                       elementId,
+      const string&                   conditionName,
+      const std::map<int,int >&       labelByElements
+      );
 
 
   //! name@ Protected Attributes
