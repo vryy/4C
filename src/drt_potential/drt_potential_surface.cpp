@@ -717,6 +717,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1(
          const DRT::Element* element_pot = potentialdis_->gElement(*eleIter);
 
          const double beta_pot = GetAtomicDensity(element_pot->Id(), "Potential", labelByElement_);
+         
          // obtain current potential dofs         
          vector<int> lmpot;
          vector<int> lmowner;
