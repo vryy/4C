@@ -562,8 +562,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
                                                Epetra_SerialDenseVector& elevector2,
                                                Epetra_SerialDenseVector& elevector3)
 {
-  const DiscretizationType distype = Shape();
-
   // start with "none"
   DRT::ELEMENTS::StructuralSurface::ActionType act = StructuralSurface::none;
 
