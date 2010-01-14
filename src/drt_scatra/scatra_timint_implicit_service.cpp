@@ -1273,7 +1273,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
   } // if ((!nonlinear_) && (lastfluxoutputstep_ != step_))
 
-  double normfluxsum(0.0);
+  vector<double> normfluxsum(numscal_);
 
   for (unsigned int i=0; i < condnames.size(); i++)
   {
@@ -1286,8 +1286,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     if (myrank_ == 0)
     {
       cout<<"Normal fluxes at boundary '"<<condnames[i]<<"':\n"
-      <<"+----+-------------------------+------------------+--------------------------+"<<endl;
-      printf("| ID | Integral of normal flux | Area of boundary | Mean normal flux density |\n");
+      <<"+----+-----+-------------------------+------------------+--------------------------+"<<endl;
+      printf("| ID | DOF | Integral of normal flux | Area of boundary | Mean normal flux density |\n");
     }
 
     // first, add to all conditions of interest a ConditionID
@@ -1329,26 +1329,25 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       discret_->EvaluateCondition(params,integratedshapefunc,condnames[i],condid);
       discret_->ClearState();
 
-      double normfluxintegral(0.0);
+      vector<double> normfluxintegral(numscal_);
 
       // insert values into final flux vector for visualization
       int numrownodes = discret_->NumMyRowNodes();
       for (int lnodid = 0; lnodid < numrownodes; ++lnodid )
       {
         DRT::Node* actnode = discret_->lRowNode(lnodid);
-        for (int idof = 0; idof < discret_->NumDof(actnode); ++idof)
+        for (int idof = 0; idof < numscal_; ++idof)
         {
           int dofgid = discret_->Dof(actnode,idof);
           int doflid = dofrowmap->LID(dofgid);
 
           if ((*integratedshapefunc)[doflid] != 0.0)
           {
-            // this is the value of the normal flux
+            // this is the value of the normal flux density
             double normflux = ((*trueresidual_)[doflid])/(*integratedshapefunc)[doflid];
-            if (idof == 0) // integral value only for first scalar!
-            {
-              normfluxintegral += (*trueresidual_)[doflid];
-            }
+            // compute integral value for every degree of freedom
+            normfluxintegral[idof] += (*trueresidual_)[doflid];
+
             // for visualization, we plot the normal flux with
             // outward pointing normal vector
             for (int idim = 0; idim < 3; idim++)
@@ -1365,23 +1364,26 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       double boundaryint = params.get<double>("boundaryint");
 
       // care for the parallel case
-      double parnormfluxintegral = 0.0;
-      discret_->Comm().SumAll(&normfluxintegral,&parnormfluxintegral,1);
+      vector<double> parnormfluxintegral(numscal_);
+      discret_->Comm().SumAll(&normfluxintegral[0],&parnormfluxintegral[0],numscal_);
       double parboundaryint = 0.0;
       discret_->Comm().SumAll(&boundaryint,&parboundaryint,1);
 
-      // print out results
-      if (myrank_ == 0)
+      for (int idof = 0; idof < numscal_; ++idof)
       {
-        printf("| %2d |       %10.3E        |    %10.3E    |        %10.3E        |\n",
-            condid,parnormfluxintegral,parboundaryint,parnormfluxintegral/parboundaryint);
+        // print out results
+        if (myrank_ == 0)
+        {
+          printf("| %2d | %2d  |       %10.3E        |    %10.3E    |        %10.3E        |\n",
+              condid,idof,parnormfluxintegral[idof],parboundaryint,parnormfluxintegral[idof]/parboundaryint);
+        }
+        normfluxsum[idof]+=parnormfluxintegral[idof];
       }
-      normfluxsum+=parnormfluxintegral;
 
       // statistics section for normfluxintegral
       if (step_>=samstart_ && step_<=samstop_)
       {
-        (*sumnormfluxintegral_)[condid] += parnormfluxintegral;
+        (*sumnormfluxintegral_)[condid] += parnormfluxintegral[0]; // only first scalar!
         int samstep = step_-samstart_+1;
 
         // dump every dumperiod steps
@@ -1408,13 +1410,22 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
         if (Step() <= 1)
         {
           f.open(fname.c_str(),std::fstream::trunc);
-          f << "#| ID | Step | Time | Integral of normal flux | Area of boundary | Mean normal flux density |\n";
+          f << "#| ID | Step | Time | Area of boundary |";
+          for(int idof = 0; idof < numscal_; ++idof)
+          {
+            f<<" Integral of normal flux "<<idof<<" | Mean normal flux density "<<idof<<" |";
+          }
+          f<<"\n";
         }
         else
           f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
-        f << condid << " " << Step() << " " << Time() << " " << parnormfluxintegral << " " << parboundaryint
-        << " " << parnormfluxintegral/parboundaryint << "\n";
+        f << condid << " " << Step() << " " << Time() << " "<< parboundaryint<< " ";
+        for (int idof = 0; idof < numscal_; ++idof)
+        {
+          f << parnormfluxintegral[idof] << " "<< parnormfluxintegral[idof]/parboundaryint<< " ";
+        }
+        f << "\n";
         f.flush();
         f.close();
       }
@@ -1422,13 +1433,18 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     } // loop over condid
 
     if (myrank_==0)
-      cout<<"+----+-------------------------+------------------+--------------------------+"<<endl;
+      cout<<"+----+-----+-------------------------+------------------+--------------------------+"<<endl;
   }
 
   // print out the accumulated normal flux over all indicated boundaries
   if (myrank_ == 0)
-    printf("Sum of all normal flux boundary integrals: %10.3E\n\n",normfluxsum);
-
+  {
+    for (int idof = 0; idof < numscal_; ++idof)
+    {
+      printf("Sum of all normal flux boundary integrals for scalar %d: %10.3E\n",idof,normfluxsum[idof]);
+    }
+    cout<<endl;
+  }
   // clean up
   discret_->ClearState();
 
