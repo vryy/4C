@@ -42,69 +42,171 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
                                            ParameterList & params)
 {
 
-  // define BC name string (e.g: BC   = "inflow")
+  // define BC name string (e.g: BC   = "flow")
   string BC;
   // define BC type string (e.g: Type = "forced")
   string Type;
-
-  // -------------------------------------------------------------------
-  // Read in Condition type and name
-  // -------------------------------------------------------------------
-  Type = *(condition->Get<string>("type"));
-  BC   = *(condition->Get<string>("boundarycond"));
-  double time = params.get<double>("total time");
-
   // Define the reflection cooficient
-  double Rf;
+  double Rf = 0.0;
+  // Define bc variable
+  double BCin = 0.0;
 
   // -------------------------------------------------------------------
-  // Read in the bc curve information
+  // Read in the 3D parameters exported to the reduced D problem
   // -------------------------------------------------------------------
-  const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
-  double curvefac = 1.0;
-  const  vector<double>* vals   = condition->Get<vector<double> >("val");
+  RCP<ParameterList> CoupledTo3DParams;
 
   // -------------------------------------------------------------------
-  // Check whether the BC is absorbing or forced
+  // Read in global time
   // -------------------------------------------------------------------
-  if(Type == "absorbing")  // => without Reflection
+    double time = params.get<double>("total time");
+
+  // -------------------------------------------------------------------
+  // Check whether the condition is prescribed from the input file
+  // or from a 3D fluid simulation
+  // -------------------------------------------------------------------
+  if (params.get<string>("Condition Name") == "ArtPrescribedCond")
   {
-    Rf = 0.0;
-  }
-  else if(Type == "forced")// => with Reflection
-  {
-    // If forced curve exists => Rf = curve
-    if ((*curve)[1]>=0)
+    // -----------------------------------------------------------------
+    // Read in Condition type and name
+    // -----------------------------------------------------------------
+    Type = *(condition->Get<string>("type"));
+    BC   = *(condition->Get<string>("boundarycond"));
+
+
+    
+    // -----------------------------------------------------------------
+    // Read in the bc curve information
+    // -----------------------------------------------------------------
+    const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
+    double curvefac = 1.0;
+    const  vector<double>* vals   = condition->Get<vector<double> >("val");
+    
+    // -----------------------------------------------------------------
+    // Check whether the BC is absorbing or forced
+    // -----------------------------------------------------------------
+    if(Type == "absorbing")  // => without Reflection
     {
+      Rf = 0.0;
+    }
+    else if(Type == "forced")// => with Reflection
+    {
+      // If forced curve exists => Rf = curve
+      if ((*curve)[1]>=0)
+      {
       curvefac = DRT::Problem::Instance()->Curve((*curve)[1]).f(time);
       Rf = (*vals)[1]*curvefac;
+      }
+      // else the BC is totally forced
+      else
+      {
+        Rf = 1.0;
+      }
+      if (Rf <0.0 || Rf > 1.0)
+      {
+        dserror("forced reflection (Rf = %f) should always belong to the range :[0  1.0]",Rf);
+        exit(1);
+      }
     }
-    // else the BC is totally forced
     else
+    {
+      dserror("%s is not defined as a 1D artery's inlet BC type",Type.c_str());
+      exit(1);
+    }
+
+    // -----------------------------------------------------------------
+    // Read in the value of the applied BC
+    // -----------------------------------------------------------------
+    if((*curve)[0]>=0)
+    {
+      curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+      BCin = (*vals)[0]*curvefac;
+    }
+    else
+    {
+      dserror("no inlet boundary condition defined!");
+      exit(1);
+    }
+    
+  }
+  else if (params.get<string>("Condition Name") == "Art_redD_3D_CouplingCond")
+  {
+    // -------------------------------------------------------------------
+    // Read in the 3D parameters exported to the reduced D problem
+    // -------------------------------------------------------------------
+    CoupledTo3DParams =
+      params.get<RCP<ParameterList > >("coupling with 3D fluid params");
+    // -----------------------------------------------------------------
+    // If the parameter list is empty, then something is wrong!
+    // -----------------------------------------------------------------
+    if (CoupledTo3DParams.get()==NULL)
+    {
+      dserror("Cannot prescribe a boundary condition from 3D to reduced D, if the parameters passed don't exist");
+      exit(1);
+    }
+
+    // -----------------------------------------------------------------
+    // Read in Condition type
+    // -----------------------------------------------------------------
+    Type = *(condition->Get<string>("CouplingType"));
+
+    // -----------------------------------------------------------------
+    // Read in coupling variable rescribed by the 3D simulation
+    //
+    //     In this case a map called map3D has the following form:
+    //     +-----------------------------------------------------------+
+    //     |           map< string               ,  double        >    |
+    //     |     +------------------------------------------------+    |
+    //     |     |  ID  | coupling variable name | variable value |    |
+    //     |     +------------------------------------------------+    |
+    //     |     |  1   |   flow1                |     0.12116    |    |
+    //     |     +------+------------------------+----------------+    |
+    //     |     |  2   |   pressure2            |    10.23400    |    |
+    //     |     +------+------------------------+----------------+    |
+    //     |     .  .   .   ....                 .     .......    .    |
+    //     |     +------+------------------------+----------------+    |
+    //     |     |  N   |   variableN            |    value(N)    |    |
+    //     |     +------+------------------------+----------------+    |
+    //     +-----------------------------------------------------------+
+    // -----------------------------------------------------------------
+
+    int ID = condition->GetInt("ConditionID");
+    RCP<map<string,double> > map3D;
+    map3D   = CoupledTo3DParams->get<RCP<map<string,double > > >("3D map of values");
+
+    // find the applied boundary variable
+    std::stringstream stringID;
+    stringID<< "_"<<ID;
+    for (map<string,double>::iterator itr = map3D->begin(); itr!=map3D->end(); itr++)
+    {
+      string VariableWithId = itr->first;
+      size_t found;
+      found= VariableWithId.rfind(stringID.str());
+      if (found!=string::npos)
+      {
+        BC   = string(VariableWithId,0,found);
+        BCin = itr->second;
+        break;
+      }
+    }
+
+    if (Type == "forced")
     {
       Rf = 1.0;
     }
-    if (Rf <0.0 || Rf > 1.0)
-    dserror("forced reflection (Rf = %f) should always belong to the range :[0  1.0]",Rf);
+    else if (Type == "absorbing")
+    {
+      Rf = 0.0;
+    }
+    else
+    {
+      dserror("%s, is an unimplimented type of coupling",Type.c_str());
+      exit(1);
+    }
   }
   else
   {
-    dserror("%s is not defined as a 1D artery's inlet BC type",Type.c_str());
-    exit(1);
-  }
-
-  // -------------------------------------------------------------------
-  // Read in the value of the applied BC
-  // -------------------------------------------------------------------
-  double BCin;
-  if((*curve)[0]>=0)
-  {
-    curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
-    BCin = (*vals)[0]*curvefac;
-  }
-  else
-  {
-    dserror("no inlet boundary condition defined!");
+    dserror("No such condition Name");
     exit(1);
   }
 
@@ -132,7 +234,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
     // backward characteristic wave, 
     const double Wb    = (Rf*Wbnp + (1.0-Rf)*Wbo);
 
-    if(BC=="inflow")
+    if(BC=="flow")
     {
 
       /*
@@ -182,6 +284,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
         itrs++;
         if(itrs>=30)
           dserror("Inflow boundary condition for Newton-Raphson exceeded the maximum allowed iterations");
+          exit(1);
       }
     }
     else if(BC == "velocity")
@@ -216,7 +319,10 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
       Wfnp = BCin;
     }
     else
+    {   
       dserror("%s is not defined!",BC.c_str());
+      exit(1);          
+    }
   }//If BC is prescribed at the inlet
   else if(IO == 1) // If BC is prescribed at the outlet
   {
@@ -226,22 +332,25 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
     // forward characteristic wave, 
     const double Wf    = (Rf*Wfnp + (1.0-Rf)*Wfo);
 
-    if(BC=="inflow")
+    if(BC=="flow")
     {
       /*
        Prescribed Volumetric flow rate:
-                                                                              
-               /2.rho.Ao\2  /Wf - Wb\4  /Wf + Wb\                                
-       Q    =  |--------| . |-------| . |-------|                            
-               \ beta   /   \   8   /   \   2   /                            
-                                                                       
-               /2.rho.Ao\2  /Wf - Wb\4  /Wf + Wb\                       
-       f    =  |--------| . |-------| . |-------|  - Q = 0               
-               \ beta   /   \   8   /   \   2   /                        
-                                                                          
-        df      /2.rho.Ao\2  /Wf - Wb\3  /3*Wf + 5*Wb\                 
-       ---- = - |--------| . |-------| . |-----------|                 
-       dWb      \ beta   /   \   8   /   \     16    /              
+
+                             2           4                                       
+                   /2.rho.Ao\   /Wf - Wb\   /Wf + Wb\          
+      #    Q   =   |--------| . |-------| . |-------|          
+                   \ beta   /   \   8   /   \   2   /          
+                                                              
+                             2           4                    
+                   /2.rho.Ao\   /Wf - Wb\   /Wf + Wb\         
+       #   f   =   |--------| . |-------| . |-------|  - Q = 0
+                   \ beta   /   \   8   /   \   2   /         
+                                                              
+                             2           3                    
+           df      /2.rho.Ao\   /Wf - Wb\   /3*Wf + 5*Wb\     
+       #  ---- = - |--------| . |-------| . |-----------|     
+          dWb      \ beta   /   \   8   /   \     16    /     
              
        The nonlinear equation: f could be solve using Newton-Raphson
        method as following:
@@ -276,7 +385,10 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
         // a small routine to prevent infinit loop
         itrs++;
         if(itrs>=30)
+        {
           dserror("Inflow boundary condition for Newton-Raphson exceeded the maximum allowed iterations");
+          exit(1);
+          }
       }
     }
     else if(BC == "velocity")
@@ -312,7 +424,93 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
     }
   }//If BC is prescribed at the outlet
   else
+  {
     dserror("IO flag must be either 1 (for outlets) or 0 (for inlets)\n");
+    exit(1);
+  }
+
+  // -------------------------------------------------------------------
+  // return the computed 3D values
+  // -------------------------------------------------------------------
+  if (params.get<string>("Condition Name") == "Art_redD_3D_CouplingCond")
+  {
+    // -----------------------------------------------------------------
+    // If the parameter list is empty, then something is wrong!
+    // -----------------------------------------------------------------
+    if (CoupledTo3DParams.get()==NULL)
+    {
+      dserror("Cannot prescribe a boundary condition from 3D to reduced D, if the parameters passed don't exist");
+      exit(1);
+    }
+    
+    // -----------------------------------------------------------------
+    // Compute the variable solved by the 1D simulation to be passed to
+    // the 3D simulation
+    //
+    //     In this case a map called map1D has the following form:
+    //     +-----------------------------------------------------------+
+    //     |              map< string            ,  double        > >  |
+    //     |     +------------------------------------------------+    |
+    //     |     |  ID  | coupling variable name | variable value |    |
+    //     |     +------------------------------------------------+    |
+    //     |     |  1   |   flow1                |     xxxxxxx    |    |
+    //     |     +------+------------------------+----------------+    |
+    //     |     |  2   |   pressure2            |     xxxxxxx    |    |
+    //     |     +------+------------------------+----------------+    |
+    //     |     .  .   .   ....                 .     .......    .    |
+    //     |     +------+------------------------+----------------+    |
+    //     |     |  N   |   variable(N)          | trash value(N) |    |
+    //     |     +------+------------------------+----------------+    |
+    //     +-----------------------------------------------------------+
+    // -----------------------------------------------------------------
+
+    int ID = condition->GetInt("ConditionID");
+    RCP<map<string,double> >  map1D;
+    map1D   = CoupledTo3DParams->get<RCP<map<string,double> > >("reducedD map of values");
+
+    string returnedBC = *(condition->Get<string>("ReturnedVariable"));
+
+    double BC3d = 0.0;
+    if (returnedBC  == "flow")
+    {
+      double c = (Wfnp - Wbnp)/8.0;
+      double A = pow(c,4)*4.0*pow(dens*Ao/beta,2);
+      BC3d     = (Wfnp + Wbnp)/2.0*A;
+    }
+    else if (returnedBC == "pressure")
+    {
+      double c = (Wfnp - Wbnp)/8.0;
+      double A = pow(c,4)*4.0*pow(dens*Ao/beta,2);
+      BC3d     = beta*(sqrt(A)-sqrt(Ao))/Ao + pext;
+    }
+    else
+    {
+      string str = (*condition->Get<string>("ReturnedVariable"));
+      dserror("%s, is an unimplimented type of coupling",str.c_str());
+      exit(1);
+    }
+    std::stringstream returnedBCwithId;
+    returnedBCwithId << returnedBC <<"_" << ID;
+
+    // -----------------------------------------------------------------
+    // Check whether the coupling wrapper has already initialized this
+    // map else wise we will have problems with parallelization, that's
+    // because of the preassumption that the map is filled and sorted
+    // Thus we can use parallel addition
+    // -----------------------------------------------------------------
+
+    map<string,double>::iterator itrMap1D;
+    itrMap1D = map1D->find(returnedBCwithId.str());
+    if (itrMap1D == map1D->end())
+    {
+      dserror("The 3D map for (1D - 3D coupling) has no variable (%s) for ID [%d]",returnedBC.c_str(),ID );
+      exit(1);
+    }
+    
+    // update the 1D map
+    (*map1D)[returnedBCwithId.str()] = BC3d;
+    
+  }
 
   // -------------------------------------------------------------------
   // finally return the updated value if the characteristic speeds
@@ -415,11 +613,11 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
                                        const DRT::Condition *condition,
                                        ParameterList & params)
 {
-  // define BC windkessel inigration type string (e.g: BC   = "inflow")
+
+  // define BC windkessel inigration type string (e.g: BC   = "flow")
   string int_type = *(condition->Get<string>("intigrationType"));
   // define windkessel BC type string (e.g: Type = "forced")
   string wk_type  = *(condition->Get<string>("windkesselType"));
-
 
   // -------------------------------------------------------------------
   // Read in the bc curve information
@@ -452,6 +650,7 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
     if(wk_type == "R")  // a resister with a peripheral Pressure (Pout)
     {
       dserror("So far, only the 3 element windkessel model is implimented\n");
+      exit(1);
       // ---------------------------------------------------------------
       // Read in the wind kessel parameters
       // ---------------------------------------------------------------
@@ -471,6 +670,7 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       if (R<0.0)
       {
         dserror("terminal resistance must be greater or equal to zero\n");
+        exit(1);
       }
 
       if ((*curve)[0]>=0)
@@ -511,7 +711,10 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
 
         count++;
         if (count > 40)
+        {
           dserror("1 windkessel elemenet (resistive) boundary condition didn't converge!");
+          exit(1);
+        }
       }
 
       // finally find evaluate Wb
@@ -521,6 +724,7 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
     else if (wk_type == "RC") // an RC circuit with a peripheral Pressure (Pout)
     {
       dserror("So far, only the 3 element windkessel model is implimented\n");
+      exit(1);
 
       // ---------------------------------------------------------------
       // Read in the wind kessel parameters
@@ -562,6 +766,7 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       if (R <= 0.0 || C <= 0.0)
       {
         dserror("terminal resistance and capacitance must be always greater than zero\n");
+        exit(1);
       }
 
       // Calculate W2
@@ -575,20 +780,20 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       // ---------------------------------------------------------------
 
       // define the 3 element windkessel parameters
-      double Pout, C, R2;
+      double Pout, R1, C, R2, Poutnm;
 
-      // Read in the periferal pressure of the wind kessel model
+      // Read in the periferal pressure of the windkessel model
       if ((*curve)[0]>=0)
       {
         curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
         Pout = (*vals)[0]*curvefac;
+        curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time-dt);
       }
       else
       {
         Pout = (*vals)[2];
       }
       // Read in Pout at time step n-1
-      double Poutnm;
       if ((*curve)[0]>=0)
       {
         double t;
@@ -604,7 +809,6 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
         Poutnm = (*vals)[2];
       }
       // read in the source resistance value
-      double R1;
       if ((*curve)[1]>=0)
       {
         curvefac = DRT::Problem::Instance()->Curve((*curve)[1]).f(time);
@@ -638,6 +842,7 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       if (R1 < 0.0 || C <= 0.0 || R2 <= 0.0)
       {
         dserror("terminal resistances and capacitance must always be greater than zero\n");
+        exit(1);
       }
 
       // ---------------------------------------------------------------
@@ -670,7 +875,10 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
         i++;
         F_A = pow(F*sqrt(Ao)/beta+1.0,2)-1.0;
         if(i>40)
+        {
           dserror("3 element windkessel Newton Raphson is not converging\n");
+          exit(1);
+        }
       }
 
       // finally find evaluate Wb
@@ -681,6 +889,7 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
     {
 
       dserror("So far, only the 3 element windkessel model is implimented\n");
+      exit(1);
       // ---------------------------------------------------------------
       // Read in the wind kessel parameters
       // ---------------------------------------------------------------
@@ -742,6 +951,7 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       if (R1 <= 0.0 || C <= 0.0 || R2 <=0.0 || L <=0.0)
       {
         dserror("terminal resistance and capacitance must be always greater than zero\n");
+        exit(1);
       }
       // Calculate W2
 
@@ -749,10 +959,12 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
     else if (wk_type == "none")
     {
       dserror("So far, only the 3 element windkessel model is implimented\n");
+      exit(1);
     }
     else
     {
       dserror("\"%s\" is not supported type of windkessel model\n",wk_type.c_str());
+      exit(1);
     }
 
     // -----------------------------------------------------------------
@@ -762,7 +974,10 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
 
   }
   else
+  {
     dserror("so far windkessel BC supports only ExplicitWindkessel");
+    exit(1);
+  }
 
 } //void ART::UTILS::SolveExplWindkesselBC
 

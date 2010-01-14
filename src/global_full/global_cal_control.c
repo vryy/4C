@@ -78,6 +78,7 @@ extern struct _FIELD      *sm_field;
 #include "../drt_combust/combust_dyn.H"
 #include "../drt_thermo/thr_dyn.H"
 #include "../drt_tsi/tsi_dyn.H"
+#include "../drt_art_net/art_net_dyn_drt.H"
 #endif
 
 /*----------------------------------------------------------------------*
@@ -385,7 +386,7 @@ case prb_art_net:
   dyn_art_net_drt();
 #endif
   break;
-#endif
+#endif /* D_ARTNET */
 
 default:
   dserror("solution of unknown problemtyp requested");

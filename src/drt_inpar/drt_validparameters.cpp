@@ -284,6 +284,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NUMFLUIDDIS",1,"Number of meshes in fluid field",&discret);
   IntParameter("NUMSTRUCDIS",1,"Number of meshes in structural field",&discret);
   IntParameter("NUMALEDIS",1,"Number of meshes in ale field",&discret);
+  IntParameter("NUMARTNETDIS",1,"Number of meshes in arterial network field",&discret);
   IntParameter("NUMTHERMDIS",1,"Number of meshes in thermal field",&discret);
 
   /*----------------------------------------------------------------------*/

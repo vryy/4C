@@ -32,14 +32,18 @@ Maintainer: Mahmoud Ismail
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_io/io.H"
+#include "artnetexplicitintegration.H"
 
 using namespace std;
 using namespace Teuchos;
 
 /* headers and prototypes of functions also accessible from c */
 extern "C"
-void dyn_art_net_drt();
-
+{
+  void dyn_art_net_drt();
+}
+Teuchos::RCP<ART::ArtNetExplicitTimeInt>  dyn_art_net_drt(bool CoupledTo3D);
+//void dyn_art_net_drt();
 
 #endif /* endif __cplusplus*/
 

@@ -45,10 +45,10 @@ Maintainer: Mahmoud Ismail
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdis,
-                                                LINALG::Solver&       solver,
-                                                ParameterList&        params,
-                                                IO::DiscretizationWriter& output)
+ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actdis,
+                                                  LINALG::Solver  &         solver,
+                                                  ParameterList&            params,
+                                                  IO::DiscretizationWriter& output)
   :
   // call constructor for "nontrivial" objects
   discret_(actdis),
@@ -60,6 +60,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1))
 {
+
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
@@ -107,6 +108,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
   // -------------------------------------------------------------------
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
 
+
   // -------------------------------------------------------------------
   // get a vector layout from the discretization for a vector which only
   // contains the volumetric flow rate dofs and for one vector which only
@@ -131,6 +133,8 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
   qan_           = LINALG::CreateVector(*dofrowmap,true);
   qanm_          = LINALG::CreateVector(*dofrowmap,true);
 
+  qan_3D_        = LINALG::CreateVector(*dofrowmap,true);
+
   // Vectors associated to boundary conditions
   // -----------------------------------------
   Wfnp_          = LINALG::CreateVector(*noderowmap,true);
@@ -148,6 +152,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
   // Vectors used for solution process
   // ---------------------------------
 
+
   // right hand side vector and right hand side corrector
   rhs_     = LINALG::CreateVector(*dofrowmap,true);
   // create the junction boundary conditions
@@ -159,7 +164,6 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
 
   artjun_ = rcp(new UTILS::ArtJunctionWrapper(discret_, output_, junparams, dta_) );
 
-
   // create the gnuplot export conditions
   artgnu_ = rcp(new ART::UTILS::ArtWriteGnuplotWrapper(discret_,junparams));
 
@@ -170,6 +174,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
   ParameterList eleparams;
   discret_->ClearState();
   discret_->SetState("qanp",qanp_);
+
   // loop all elements on this proc (including ghosted ones)
   int localNode;
   for (int nele=0;nele<discret_->NumMyColElements();++nele)
@@ -199,7 +204,6 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
   }
 
 
-
 #if 0
   cout<<"|**************************************************************************|"<<endl;
   cout<<"|******************** The Initialize Vector qanp is ***********************|"<<endl;
@@ -208,7 +212,25 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
   cout<<"|**************************************************************************|"<<endl;
   cout<<*Wfnp_<<endl;
 #endif
+
 } // ArtNetExplicitTimeInt::ArtNetExplicitTimeInt
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | Start the time integration.                                          |
+ |                                                          ismail 12/09|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void ART::ArtNetExplicitTimeInt::Integrate()
+{
+  RCP<ParameterList> param;
+  Integrate(false, param);
+} // ArtNetExplicitTimeInt::Integrate
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -221,13 +243,18 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization> actdi
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::ArtNetExplicitTimeInt::Integrate()
+void ART::ArtNetExplicitTimeInt::Integrate(bool CoupledTo3D,
+                                           RCP<ParameterList> CouplingParams)
 {
+  if (CoupledTo3D && CouplingParams.get() == NULL)
+  {
+    dserror("Coupling parameter list is not allowed to be empty, If a 3-D/reduced-D coupling is defined\n");
+  }
 
-  TimeLoop();
+  TimeLoop(CoupledTo3D,CouplingParams);
 
   // print the results of time measurements
-  TimeMonitor::summarize();
+    TimeMonitor::summarize();
 
   return;
 } // ArtNetExplicitTimeInt::Integrate
@@ -243,8 +270,10 @@ void ART::ArtNetExplicitTimeInt::Integrate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::ArtNetExplicitTimeInt::TimeLoop()
+void ART::ArtNetExplicitTimeInt::TimeLoop(bool CoupledTo3D,
+                                          RCP<ParameterList> CouplingTo3DParams)
 {
+
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
   
@@ -260,8 +289,7 @@ void ART::ArtNetExplicitTimeInt::TimeLoop()
               time_,maxtime_,dta_,step_,stepmax_);
     }
 
-      Solve();
-
+    Solve(CouplingTo3DParams);
 
     // -------------------------------------------------------------------
     //                         update solution
@@ -283,6 +311,10 @@ void ART::ArtNetExplicitTimeInt::TimeLoop()
     // -------------------------------------------------------------------
     //                    stop criterium for timeloop
     // -------------------------------------------------------------------
+    if (CoupledTo3D)
+    {
+      break;
+    }
   }
 
 } // ArtNetExplicitTimeInt::TimeLoop
@@ -319,13 +351,11 @@ void ART::ArtNetExplicitTimeInt::PrepareTimeStep()
 /*
 Some detials!!
 */
-void ART::ArtNetExplicitTimeInt::Solve()
+void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<ParameterList> CouplingTo3DParams)
 {
   // time measurement: Artery
   TEUCHOS_FUNC_TIME_MONITOR("   + solving artery");
 
-  if (myrank_ == 0)
-    cout << "solution of artery   ";
 
   // -------------------------------------------------------------------
   // call elements to calculate system matrix
@@ -333,6 +363,7 @@ void ART::ArtNetExplicitTimeInt::Solve()
 
   // get cpu time
   //  const double tcpuele = ds_cputime();
+
   {
     // time measurement: element
     TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
@@ -397,8 +428,8 @@ void ART::ArtNetExplicitTimeInt::Solve()
   bcval_->PutScalar(0.0);
   dbctog_->PutScalar(0.0);
   // Solve terminal BCs
-  {
 
+  {
     // create the parameters for the discretization
     ParameterList eleparams;
 
@@ -417,12 +448,16 @@ void ART::ArtNetExplicitTimeInt::Solve()
     eleparams.set("Wbnp",Wbnp_);
     eleparams.set<RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
 
+    // Add the parameters to solve terminal BCs coupled to 3D fluid boundary
+    eleparams.set("coupling with 3D fluid params",CouplingTo3DParams);
+    
     // solve junction boundary conditions
     artjun_->Solve(eleparams);
 
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
   }
+
 
   // -------------------------------------------------------------------
   // Apply the BCs to the system matrix and rhs
@@ -431,8 +466,12 @@ void ART::ArtNetExplicitTimeInt::Solve()
     // time measurement: application of dbc
     TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
 
+#if 0
+    cout<<"Boundary values are: "<<endl<<*bcval_<<endl;
+    cout<<"Boundary toggels are: "<<endl<<*dbctog_<<endl;
+#endif
+
     LINALG::ApplyDirichlettoSystem(sysmat_,qanp_,rhs_,bcval_,dbctog_);
-    
   }
 
   //-------solve for total new velocities and pressures
@@ -442,19 +481,21 @@ void ART::ArtNetExplicitTimeInt::Solve()
     // time measurement: solver
     TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
 
+#if 0  // Exporting some values for debugging purposes
+
+
+    RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+    if (A_debug != Teuchos::null)
+    {
+      // print to screen
+      (A_debug->EpetraMatrix())->Print(cout);
+    }
+
+#endif 
     // call solver
     solver_.Solve(sysmat_->EpetraOperator(),qanp_,rhs_,true,true);
-    // Add dirichlet values to qanp_
-    //    qanp_->Update(1.0,*bcval_,1.0);
   }
 
-#if 0
-  if (time_<0.41 && time_>0.39)
-  {
-    cout<<"RESSSSSSSSSS"<<endl<<*qanp_<<endl;
-    throw;
-  }
-#endif
 
   // end time measurement for solver
   dtsolve_ = ds_cputime() - tcpusolve;
@@ -549,11 +590,13 @@ void ART::ArtNetExplicitTimeInt::Output()
   if (step_%upres_ == 0)
   {
     // step number and time
+    //    cout<<"My output is:"<<output_<<endl;
     output_.NewStep(step_,time_);
 
     // "volumetric flow rate/cross-sectional area" vector
     output_.WriteVector("qanp",qanp_);
     output_.WriteVector("displacement",qanp_);
+
     // write domain decomposition for visualization (only once!)
     if (step_==upres_) output_.WriteElementData();
 
@@ -563,10 +606,11 @@ void ART::ArtNetExplicitTimeInt::Output()
       // Note: this method acts only if there is an impedance BC
       // impedancebc_->WriteRestart(output_);
     }
-
+    //#endif
     // ------------------------------------------------------------------
     // Export gnuplot format arteries
     // ------------------------------------------------------------------
+
     ParameterList params;
     // other parameters that might be needed by the elements
     params.set("total time",time_);
@@ -596,6 +640,7 @@ void ART::ArtNetExplicitTimeInt::Output()
     // ------------------------------------------------------------------
     // Export gnuplot format arteries
     // ------------------------------------------------------------------
+    //#endif
     ParameterList params;
     // other parameters that might be needed by the elements
     params.set("total time",time_);
@@ -607,7 +652,6 @@ void ART::ArtNetExplicitTimeInt::Output()
     // call the gnuplot writer
     artgnu_->Write(params);
     discret_->ClearState();
-
   }
 
   return;

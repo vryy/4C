@@ -257,13 +257,21 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
   sysmat.Clear();
 
   // Define Geometric variables
-  double Ao1,Ao2;
+  double Ao1 = 0.0;
+  double Ao2 = 0.0;
   // Define blood material variables
-  double visc, dens, Kr;
+  double visc= 0.0;
+  double dens= 0.0;
+  double Kr  = 0.0;
   // Define artery's material variables
-  double t1, t2, E1, E2, nue;
+  double t1 = 0.0;
+  double t2 = 0.0;
+  double E1 = 0.0;
+  double E2 = 0.0;
+  double nue= 0.0;
   // Define artery's external forces
-  double pext1, pext2;
+  double pext1 = 0.0;
+  double pext2 = 0.0;
   // check here, if we really have an artery !!
   if( material->MaterialType() == INPAR::MAT::m_cnst_art)
   {
@@ -713,13 +721,20 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
 {
 
   // Define Geometric variables
-  double Ao1,Ao2;
+  double Ao1 = 0.0;
+  double Ao2 = 0.0;
   // Define blood material variables
-  double visc, dens;
+  double visc;
+  double dens;
   // Define artery's material variables
-  double t1, t2, E1, E2, nue;
+  double t1  = 0.0;
+  double t2  = 0.0;
+  double E1  = 0.0;
+  double E2  = 0.0;
+  double nue = 0.0;
   // Define artery's external forces
-  double pext1, pext2;
+  double pext1 = 0.0;
+  double pext2 = 0.0;
   // check here, if we really have an artery !!
   if( material->MaterialType() == INPAR::MAT::m_cnst_art)
   {
@@ -911,16 +926,23 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
       // Update the characteristic wave speed
       RCP<std::map<const int, RCP<ART::UTILS::JunctionNodeParams> > > junc_nodal_vals =
         params.get<RCP<std::map<const int, RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters");
+
+      int local_id =  discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+      if (local_id< 0 )
+      {
+        dserror("node (%d) doesn't exist on proc(%d)",ele->Nodes()[i],discretization.Comm().MyPID());
+        exit(1);
+      }
       if(TermIO == -1.0)
-        (*junc_nodal_vals)[ele->Nodes()[i]->Id()]->W_     = (*Wbnp)[ele->Nodes()[i]->Id()];        
+        (*junc_nodal_vals)[local_id]->W_     = (*Wbnp)[local_id];        
       else if (TermIO == 1.0)
-        (*junc_nodal_vals)[ele->Nodes()[i]->Id()]->W_     = (*Wfnp)[ele->Nodes()[i]->Id()];
-      (*junc_nodal_vals)[ele->Nodes()[i]->Id()]->A_     = earean(i);
-      (*junc_nodal_vals)[ele->Nodes()[i]->Id()]->Q_     = eqn(i);
-      (*junc_nodal_vals)[ele->Nodes()[i]->Id()]->Ao_    = area0_(i);
-      (*junc_nodal_vals)[ele->Nodes()[i]->Id()]->rho_   = dens;
-      (*junc_nodal_vals)[ele->Nodes()[i]->Id()]->Pext_  = pext_(i);
-      (*junc_nodal_vals)[ele->Nodes()[i]->Id()]->beta_  = sqrt(PI)*young_(i)*th_(i)/(1.0-pow(nue,2));
+        (*junc_nodal_vals)[local_id]->W_     = (*Wfnp)[local_id];
+      (*junc_nodal_vals)[local_id]->A_     = earean(i);
+      (*junc_nodal_vals)[local_id]->Q_     = eqn(i);
+      (*junc_nodal_vals)[local_id]->Ao_    = area0_(i);
+      (*junc_nodal_vals)[local_id]->rho_   = dens;
+      (*junc_nodal_vals)[local_id]->Pext_  = pext_(i);
+      (*junc_nodal_vals)[local_id]->beta_  = sqrt(PI)*young_(i)*th_(i)/(1.0-pow(nue,2));
     }
 
     BCnodes = true;
@@ -952,13 +974,20 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
 
   // check here, if we really have an artery !!
   // Define Geometric variables
-  double Ao1,Ao2;
+  double Ao1 = 0.0;
+  double Ao2 = 0.0;
   // Define blood material variables
-  double visc, dens;
+  double visc=0.0;
+  double dens=0.0;
   // Define artery's material variables
-  double t1, t2, E1, E2, nue;
+  double t1 = 0.0;
+  double t2 = 0.0;
+  double E1 = 0.0;
+  double E2 = 0.0;
+  double nue= 0.0;
   // Define artery's external forces
-  double pext1, pext2;
+  double pext1 =0.0;
+  double pext2 =0.0;
   // check here, if we really have an artery !!
   if( material->MaterialType() == INPAR::MAT::m_cnst_art)
   {
@@ -1071,10 +1100,21 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       Cparams.set<double>("artery beta",beta);
       Cparams.set<double>("artery area",area0_(i));
       Cparams.set<double>("blood density",dens);
+      int local_id =  discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+      if (local_id< 0 )
+      {
+        dserror("node (%d) doesn't exist on proc(%d)",ele->Nodes()[i],discretization.Comm().MyPID());
+        exit(1);
+      }
+                            
       if (TermIO == -1)
-         Cparams.set<double>("backward characteristic wave speed",(*Wbnp)[ele->Nodes()[i]->Id()]);
+      {
+         Cparams.set<double>("backward characteristic wave speed",(*Wbnp)[local_id]);
+      }
       else
-         Cparams.set<double>("forward characteristic wave speed",(*Wfnp)[ele->Nodes()[i]->Id()]);
+      {
+         Cparams.set<double>("forward characteristic wave speed",(*Wfnp)[local_id]);
+      }
       Cparams.set<double>("external pressure",pext_(i));
 
       // -----------------------------------------------------------------------------
@@ -1083,8 +1123,23 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       if(ele->Nodes()[i]->GetCondition("ArtPrescribedCond"))
       {
         const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("ArtPrescribedCond");
+        Cparams.set<string>("Condition Name","ArtPrescribedCond");
         ART::UTILS::SolvePrescribedTerminalBC(rcp(&discretization,false), condition, Cparams);
       }
+
+      // -----------------------------------------------------------------------------
+      // Solve any possible 3-D/reduced-D coupled boundary condition
+      // -----------------------------------------------------------------------------
+      if(ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
+      {
+        RCP<ParameterList> CoupledTo3DParams = params.get<RCP<ParameterList> >("coupling with 3D fluid params");
+        const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
+        Cparams.set<RCP<ParameterList > >("coupling with 3D fluid params",CoupledTo3DParams);
+        Cparams.set<string>("Condition Name","Art_redD_3D_CouplingCond");
+
+        ART::UTILS::SolvePrescribedTerminalBC(rcp(&discretization,false), condition, Cparams);
+      }
+
       // -----------------------------------------------------------------------------
       // Solve any possible reflection boundary condition
       // -----------------------------------------------------------------------------
@@ -1093,6 +1148,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
         const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("ArtRfCond");
         ART::UTILS::SolveReflectiveTerminal(rcp(&discretization,false), condition, Cparams);
       }
+
       // -----------------------------------------------------------------------------
       // Solve any possible windkessel boundary condition
       // -----------------------------------------------------------------------------
@@ -1105,6 +1161,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
         Cparams.set<double>("terminal cross-sectional area",an_(i));
         ART::UTILS::SolveExplWindkesselBC(rcp(&discretization,false), condition, Cparams);
       }
+
       // -----------------------------------------------------------------------------
       // break the for loopIf the boundary condition is a junction, since it will be solved later
       // -----------------------------------------------------------------------------
@@ -1112,6 +1169,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       {
         Wf = Cparams.get<double>("forward characteristic wave speed");
         Wb = Cparams.get<double>("backward characteristic wave speed");
+
         // -----------------------------------------------------------------------------
         // Modify the global forward and backward characteristics speeds vector
         // -----------------------------------------------------------------------------
@@ -1128,16 +1186,35 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
           {
             double val2 = Wb;
             Wbnp->ReplaceGlobalValues(1,&val2,&gid);
-            Wf = (*Wfnp)[ele->Nodes()[i]->Id()];
+            int local_id =  discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+            Wf = (*Wfnp)[local_id];
           }
         }
         
         // calculating A at node i
-        (*bcval )[lm[2*i]  ] = pow(2.0*dens*area0_(i)/beta,2)*pow((Wf - Wb)/8.0,4);
-        (*dbctog)[lm[2*i]  ] = 1;
+        int    gid; 
+        double val; 
+        double cross_area;
+
+        cross_area = pow(2.0*dens*area0_(i)/beta,2)*pow((Wf - Wb)/8.0,4);
+        cout<<"CROSS_SECTIONAL AREA IS: "<<cross_area<<endl;
+        
+        gid = lm[2*i];
+        val = cross_area;
+        bcval->ReplaceGlobalValues(1,&val,&gid);
+
+        gid = lm[2*i];
+        val = 1;
+        dbctog->ReplaceGlobalValues(1,&val,&gid);
+
         // calculating Q at node i
-        (*bcval )[lm[2*i+1]] = ((*bcval )[lm[2*i]])*(Wf + Wb)/2.0;
-        (*dbctog)[lm[2*i+1]] = 1;
+        gid = lm[2*i+1];
+        val = (cross_area)*(Wf + Wb)/2.0;
+        bcval->ReplaceGlobalValues(1,&val,&gid);
+
+        gid = lm[2*i+1];
+        val = 1;
+        dbctog->ReplaceGlobalValues(1,&val,&gid);
       }
     } // End of node i has a condition
   } //End of for loop
@@ -1158,14 +1235,24 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       // -------------------------------------------------------------------------------
       // Update the Dirichlet BC vector
       // -------------------------------------------------------------------------------
-      const int Id = ele->Nodes()[i]->Id();
+      int local_id =  discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+      int    gid;
+      double val;
       // set A at node i
-      (*bcval )[lm[2*i  ]] = (*junc_nodal_vals)[Id]->A_;
-      (*dbctog)[lm[2*i  ]] = 1;
-      // set Q at node i
-      (*bcval )[lm[2*i+1]] = (*junc_nodal_vals)[Id]->Q_;
-      (*dbctog)[lm[2*i+1]] = 1;
+      gid = lm[2*i  ];
+      val = (*junc_nodal_vals)[local_id]->A_;
+      bcval->ReplaceGlobalValues(1,&val,&gid);
 
+      val = 1;
+      dbctog->ReplaceGlobalValues(1,&val,&gid);
+
+      // set Q at node i
+      gid = lm[2*i+1];
+      val = (*junc_nodal_vals)[local_id]->Q_;
+      bcval->ReplaceGlobalValues(1,&val,&gid);
+
+      val = 1;
+      dbctog->ReplaceGlobalValues(1,&val,&gid);
     }
   }
 }

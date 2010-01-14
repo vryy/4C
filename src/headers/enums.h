@@ -67,7 +67,7 @@ typedef enum _FIELDTYP
                        pressure,    /* pure pressure field */
                        boundary,    /* boundary field */
                        scatra,      /* scalar transport field */
-                       atrery,      /* artery field*/
+                       artery,      /* artery field*/
                        thermo,       /* thermal field */
                        fluidfluidboundary  /*fluidfluidboundary field*/
 } FIELDTYP;

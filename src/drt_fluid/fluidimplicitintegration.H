@@ -29,6 +29,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_fluid/dyn_smag.H"
 
 #include "fluidimpedancecondition.H"
+#include "fluid_coupling_red_models.H"
 #include "fluid_utils_mapextractor.H"
 
 #ifdef PARALLEL
@@ -79,6 +80,12 @@ Maintainer: Peter Gamnitzer
 #include <cstdlib>
 #include <iostream>
 #include <Teuchos_TimeMonitor.hpp>
+
+#ifdef D_COUPLED_ARTNET
+#include "../drt_art_net/art_net_dyn_drt.H"
+#include "../drt_art_net/artnetexplicitintegration.H"
+#include "fluid_coupling_red_models.H"
+#endif // D_COUPLED_ARTNET
 
 using namespace std;
 using namespace Teuchos;
@@ -586,6 +593,12 @@ protected:
   /// bio related special (outflow) boudaries
   RCP<UTILS::FluidImpedanceWrapper> impedancebc_;
 
+  /// bio related, 3D to redued-D coupling
+  RCP<UTILS::Fluid_couplingWrapper> coupled3D_redDbc_;
+
+  /// 1D arterial network time integration
+  RCP<ART::ArtNetExplicitTimeInt>   ART_exp_timeInt_;
+
   /// @name special relaxation state
 
   bool inrelaxation_;
@@ -593,6 +606,13 @@ protected:
   Teuchos::RCP<LINALG::SparseMatrix> dirichletlines_;
 
   Teuchos::RCP<LINALG::SparseMatrix> meshmatrix_;
+
+  //@}
+
+  /// @name coupled 1D artery time intigration
+#ifdef D_COUPLED_ARTNET
+  Teuchos::RCP<ART::ArtNetExplicitTimeInt> ART_exp_timeInt_;
+#endif // D_COUPLED_ARTNET
 
   //@}
 

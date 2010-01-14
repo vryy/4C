@@ -32,7 +32,6 @@ Maintainer: Mahmoud Ismail
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 #include "../drt_inpar/drt_validparameters.H"
-#include "artnetexplicitintegration.H"
 
 /*----------------------------------------------------------------------*
   |                                                       ismail 01/09   |
@@ -50,12 +49,19 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 void dyn_art_net_drt()
 {
+  dyn_art_net_drt(false);
+}
+
+Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
+{
 
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
   RefCountPtr<DRT::Discretization> actdis = null;
+
   actdis = DRT::Problem::Instance()->Dis(genprob.numartf,0);
+
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
@@ -64,8 +70,8 @@ void dyn_art_net_drt()
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  IO::DiscretizationWriter output(actdis);
-  output.WriteMesh(0,0.0);
+  RCP<IO::DiscretizationWriter>  output = rcp( new IO::DiscretizationWriter(actdis),false);
+  output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -81,10 +87,11 @@ void dyn_art_net_drt()
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  LINALG::Solver solver(DRT::Problem::Instance()->ArteryNetworkSolverParams(),
-                        actdis->Comm(),
-                        DRT::Problem::Instance()->ErrorFile()->Handle());
-  actdis->ComputeNullSpaceIfNecessary(solver.Params());
+  RCP<LINALG::Solver> solver = rcp( new LINALG::Solver(DRT::Problem::Instance()->ArteryNetworkSolverParams(),
+                                                   actdis->Comm(),
+                                                   DRT::Problem::Instance()->ErrorFile()->Handle()),
+                                    false);
+  actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
@@ -112,33 +119,42 @@ void dyn_art_net_drt()
   //                       arteries.
   //  int init = Teuchos::getIntegralValue<int> (artdyn,"INITIALFIELD");
 
- //------------------------------------------------------------------
- // create all vectors and variables associated with the time
- // integration (call the constructor);
- // the only parameter from the list required here is the number of
- // velocity degrees of freedom
- //------------------------------------------------------------------
- ART::ArtNetExplicitTimeInt artnetexplicit(actdis,
-                                         solver,
-                                         arterytimeparams,
-                                         output);
+  //------------------------------------------------------------------
+  // create all vectors and variables associated with the time
+  // integration (call the constructor);
+  // the only parameter from the list required here is the number of
+  // velocity degrees of freedom
+  //------------------------------------------------------------------
+  Teuchos::RCP<ART::ArtNetExplicitTimeInt> artnetexplicit 
+    = 
+    Teuchos::rcp(new ART::ArtNetExplicitTimeInt(actdis,*solver,arterytimeparams,*output));
+  // initial field from restart or calculated by given function
 
- // initial field from restart or calculated by given function
- if (probtype.get<int>("RESTART"))
- {
-   // read the restart information, set vectors and variables
-   artnetexplicit.ReadRestart(probtype.get<int>("RESTART"));
- }
- else
- {
-   // artnetexplicit.SetInitialData(init,startfuncno);
- }
+  if (probtype.get<int>("RESTART"))
+  {
+    // read the restart information, set vectors and variables
+    artnetexplicit->ReadRestart(probtype.get<int>("RESTART"));
+  }
+  else
+  {
+    // artnetexplicit.SetInitialData(init,startfuncno);
+  }
+  
+  arterytimeparams.set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
- arterytimeparams.set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
+  if (!CoupledTo3D)
+  {
+    // call time-integration (or stationary) scheme
+    RCP<ParameterList> param_temp;
+    artnetexplicit->Integrate(CoupledTo3D,param_temp);
 
- // call time-integration (or stationary) scheme
- artnetexplicit.Integrate();
-
+    return artnetexplicit;
+    //    return  Teuchos::null;
+  }
+  else
+  {
+    return artnetexplicit;
+  }
 
 } // end of dyn_art_net_drt()
 

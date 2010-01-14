@@ -37,6 +37,8 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_condition_utils.H"
 #include "fluid_utils.H"
 #include "fluidimpedancecondition.H"
+#include "fluid_coupling_red_models.H"
+//coupled3D_redDbc_
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -483,7 +485,24 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   }
 #endif // D_ALE_BFLOW
   // construct impedance bc wrapper
-  impedancebc_ = rcp(new UTILS::FluidImpedanceWrapper(discret_, output_, dta_) );
+  impedancebc_     = rcp(new UTILS::FluidImpedanceWrapper(discret_, output_, dta_) );
+
+
+  //#ifdef D_COUPLED_ARTNET
+  // -------------------------------------------------------------------
+  // Initialize the reduced models
+  // -------------------------------------------------------------------
+
+  ART_exp_timeInt_ = dyn_art_net_drt(true);
+  IO::DiscretizationWriter output_redD(ART_exp_timeInt_->Discretization());
+  coupled3D_redDbc_= rcp(new UTILS::Fluid_couplingWrapper(discret_,
+                                                          ART_exp_timeInt_->Discretization(),
+                                                          ART_exp_timeInt_,
+                                                          output_redD,
+                                                          dta_,
+                                                          ART_exp_timeInt_->Dt()) );
+
+  //#endif //D_COUPLED_ARTNET
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
@@ -869,6 +888,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
       // update impedance boundary condition
       impedancebc_->UpdateResidual(residual_);
+
+      // update the 3D-to-reduced_D coupling data
+      coupled3D_redDbc_->UpdateResidual(residual_);
 
       // Filter velocity for dynamic Smagorinsky model --- this provides
       // the necessary dynamic constant
@@ -2046,6 +2068,9 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   // update impedance boundary condition
   impedancebc_->UpdateResidual(residual_);
 
+  // update the 3D-to-reduced_D coupling condition
+  coupled3D_redDbc_->UpdateResidual(residual_);
+
   if (dynamic_smagorinsky_)
   {
     // time measurement
@@ -2226,6 +2251,8 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // update impedance boundary condition
   impedancebc_->UpdateResidual(residual_);
 
+  // update the 3D-to-reduce_D coupling condition
+  coupled3D_redDbc_->UpdateResidual(residual_);
   // create the parameters for the discretization
   ParameterList eleparams;
 
@@ -2402,6 +2429,15 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   impedancebc_->FlowRateCalculation(time_,dta_);
   impedancebc_->OutflowBoundary(time_,dta_,theta_);
 
+  // -------------------------------------------------------------------
+  // treat the 3D-to-reduced_D couplign condition
+  // note: these methods return without action, if the problem does not
+  //       have any coupling boundary conditions
+  // -------------------------------------------------------------------
+
+  coupled3D_redDbc_->FlowRateCalculation(time_,dta_);
+  coupled3D_redDbc_->ApplyBoundaryConditions(time_, dta_, theta_);
+
   return;
 }// FluidImplicitTimeInt::TimeUpdate
 
@@ -2457,6 +2493,7 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::Output()
 {
+  //  ART_exp_timeInt_->Output();
   // output of solution
   if (step_%upres_ == 0)
   {
@@ -2559,6 +2596,7 @@ void FLD::FluidImplicitTimeInt::Output()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::ReadRestart(int step)
 {
+  //  ART_exp_timeInt_->ReadRestart(step);
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
@@ -2578,6 +2616,7 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
   // also read impedance bc information if required
   // Note: this method acts only if there is an impedance BC
   impedancebc_->ReadRestart(reader);
+
 }
 
 

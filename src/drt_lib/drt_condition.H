@@ -164,7 +164,9 @@ public:
     StructAleCoupling,
     StructFluidSurfCoupling,
     StructFluidVolCoupling,
-    ArtInOutletCond
+    ArtInOutletCond,
+    ArtRedTo3DCouplingCond,
+    Art3DToRedCouplingCond
   };
 
   /*!

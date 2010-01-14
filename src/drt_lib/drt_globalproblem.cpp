@@ -250,6 +250,9 @@ void DRT::Problem::InputControl()
     genprob.numsf=0;
     genprob.numff=1;
     genprob.numaf=2;
+#ifdef D_ARTNET
+    genprob.numartf = 3;
+#endif
     break;
   }
   case prb_fsi_xfem:
@@ -737,17 +740,29 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     }
 
 
+#ifdef D_ARTNET
+    // create empty discretizations
+    arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
+#endif
+
     AddDis(genprob.numsf, structdis);
     AddDis(genprob.numff, fluiddis);
     AddDis(genprob.numaf, aledis);
+#ifdef D_ARTNET
+    AddDis(genprob.numartf, arterydis);
+#endif
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+#ifdef D_ARTNET
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+#endif
 
     nodereader.Read();
+
     break;
   }
   case prb_fsi_xfem:

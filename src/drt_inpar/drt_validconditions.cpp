@@ -1622,9 +1622,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Point));
 
-  art_in_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("boundarycond", "inflow",
-    Teuchos::tuple<std::string>("inflow","pressure","velocity","area","characteristicWave"),
-    Teuchos::tuple<std::string>("inflow","pressure","velocity","area","characteristicWave"),
+  art_in_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("boundarycond", "flow",
+    Teuchos::tuple<std::string>("flow","pressure","velocity","area","characteristicWave"),
+    Teuchos::tuple<std::string>("flow","pressure","velocity","area","characteristicWave"),
     true)));
   art_in_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("type", "forced",
     Teuchos::tuple<std::string>("forced","absorbing"),
@@ -1703,6 +1703,53 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     true)));
 
   condlist.push_back(art_in_outlet_bc);
+
+  /*--------------------------------------------------------------------*/
+  // 3-D/reduced-D coupling boundary condition
+  Teuchos::RCP<ConditionDefinition> art_red_to_3d_bc =
+    Teuchos::rcp(new ConditionDefinition("DESIGN NODE REDUCED D To 3D ARTERY COUPLING CONDITIONS",
+                                         "Art_redD_3D_CouplingCond",
+                                         "Artery reduced D 3D coupling condition",
+                                         DRT::Condition::ArtRedTo3DCouplingCond,
+                                         true,
+                                         DRT::Condition::Point));
+
+  art_red_to_3d_bc->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+
+  art_red_to_3d_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("CouplingType", "forced",
+                                                                           Teuchos::tuple<std::string>("forced","absorbing"),
+                                                                           Teuchos::tuple<std::string>("forced","absorbing"),
+                                                                           true)));
+
+  art_red_to_3d_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("ReturnedVariable", "pressure",
+                                                                           Teuchos::tuple<std::string>("pressure","flow"),
+                                                                           Teuchos::tuple<std::string>("pressure","flow"),
+                                                                           true)));
+  AddNamedReal(art_red_to_3d_bc,"Tolerance");
+  AddNamedInt (art_red_to_3d_bc,"MaximumIterations");
+ 
+  condlist.push_back(art_red_to_3d_bc);
+
+  /*--------------------------------------------------------------------*/
+  // 3-D/reduced-D coupling boundary condition
+  Teuchos::RCP<ConditionDefinition> art_3d_to_red_bc =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF 3D To REDUCED D ARTERY COUPLING CONDITIONS",
+                                         "Art_3D_redD_CouplingCond",
+                                         "Artery 3D reduced D coupling condition",
+                                         DRT::Condition::Art3DToRedCouplingCond,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  art_3d_to_red_bc->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+
+  art_3d_to_red_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("ReturnedVariable", "flow",
+                                                                           Teuchos::tuple<std::string>("pressure","flow"),
+                                                                           Teuchos::tuple<std::string>("pressure","flow"),
+                                                                           true)));
+  AddNamedReal(art_3d_to_red_bc,"Tolerance");
+  AddNamedInt (art_3d_to_red_bc,"MaximumIterations");
+ 
+  condlist.push_back(art_3d_to_red_bc);
 
   return vc;
 

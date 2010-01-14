@@ -70,16 +70,16 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( RCP<DRT::Discretizat
   // if gnuplot export conditions exist then create the classes
   // which will export the files
   // -------------------------------------------------------------------
-  if(numofcond>0)
+  if(numofcond>0 && discret_->Comm().MyPID()==0)
   {
     // Start by creating a map of classes that will export the wanted arteries
-    int Artery_Number;
     for(unsigned int i=0; i<myConditions.size(); i++)
     {
       // ---------------------------------------------------------------
       // Read in the artery number and the nodes assosiated with the
       // condition 
       // ---------------------------------------------------------------
+      int Artery_Number;
       Artery_Number = myConditions[i]->GetInt("ArteryNumber");
       const vector<int> * nodes = myConditions[i]->Nodes();
 
@@ -89,13 +89,12 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( RCP<DRT::Discretizat
       // ---------------------------------------------------------------
       
       // step (1) find both inlet and outlet nodes
-      DRT::Node* nd;
-      DRT::Node* ndi; // ith node
-      DRT::Node* ndl; // last node
-      //      cout<<"finding nodes"<<endl;
+      DRT::Node* ndi = NULL; // ith node
+      DRT::Node* ndl = NULL; // last node
+
       for(unsigned int n=0; n<nodes->size();n++)
       {
-        nd = actdis->gNode((*nodes)[n]);
+        DRT::Node* nd = actdis->gNode((*nodes)[n]);
         if (nd->GetCondition("ArtInOutCond"))
         {
           string TerminalType = *(nd->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
@@ -105,49 +104,38 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( RCP<DRT::Discretizat
             ndl = nd;
         }
       }
-      //      cout<<"nodes found"<<endl;
+
       if(ndl == NULL)
         dserror("artery %d has no outlet node!",Artery_Number);
       if(ndi == NULL)
         dserror("artery %d has no inlet node!",Artery_Number);
 
-      //    cout<<"Before defs"<<endl;
+
       // loop over all nodes
       vector<int> * sorted_nodes = new vector<int>;
       DRT::Element ** Elements = ndi->Elements();
-      //    cout<<"ndi Elements extracted"<<endl;
+
       DRT::Element * Elem_i;
       if (ndi->NumElement()!=1)
         dserror("artery %d must have one element connected to the inlet node!",Artery_Number);
-      //    cout<<"H1"<<endl;
+
       Elem_i = & Elements[0][0];
-      //    cout<<"H2"<<endl;
 
       sorted_nodes->push_back(ndi->Id());
-      //    cout<<"After defs"<<endl;
+
       for(unsigned int n=0; n<nodes->size()-2;n++)
       {
-        //      cout<<"LOOPING: "<<n<<endl;
-        //      cout<<*ndi<<endl;
-        //      cout<<"pushed back"<<endl;
         // find the next node!
-        nd = Elem_i->Nodes()[0];
-        //      cout<<"this is funny"<<endl;
-        //      cout<<"nd * "<<nd;
-        //      cout<<"nd "<<*nd<<endl;
         if (Elem_i->Nodes()[0]->Id() != ndi->Id())
         ndi = Elem_i->Nodes()[0];
         else
         ndi = Elem_i->Nodes()[1];
         if (ndi->NumElement()!=2)
           dserror("artery %d must have two elements connected to any internal node!",Artery_Number);
-        //      cout<<"node found"<<endl;
+
         // find the next element
         Elements = ndi->Elements();
-        //      cout<<"Elements * "<<Elements<<endl;
-        //      cout<<Elements[0][0]<<endl;
-        //      cout<<Elements[1][0]<<endl;
-        //      cout<<*Elem_i<<endl;
+
         if (Elements[0][0].Id()!= Elem_i->Id())
         Elem_i = Elements[0];
         else
@@ -179,6 +167,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( RCP<DRT::Discretizat
       {
         cout<<(*sorted_nodes)[n]<<"\t";
       }
+      cout<<endl;
       cout<<"----------------------------------------------------------"<<endl;
     }
   }
@@ -293,7 +282,16 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
   {  
 
     // get the elements connected to the node
-    DRT::Node * nd = discret->lColNode((*nodes)[i]);
+    if  (! discret->HaveGlobalNode((*nodes)[i]))
+    {
+      int proc =  discret->Comm().MyPID();
+      dserror("Global Node (%d) doesn't exist on processor (%d)\n",(*nodes)[i],proc);
+      exit(1);
+    }
+    
+    cout<<"(*nodes)[i] is: "<<(*nodes)[i]<<endl;
+    //    DRT::Node * nd = discret->lColNode((*nodes)[i]);
+    DRT::Node * nd = discret->gNode((*nodes)[i]);
     DRT::Element** ele = nd->Elements();
 
     // get element location vector, dirichlet flags and ownerships
@@ -312,7 +310,8 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
     LINALG::Matrix<3,2> xyze;
     for (int inode= 0; inode<2; inode++)
     {
-      const double* x = discret->lColNode((*nodes)[i+inode])->X();
+      //      const double* x = discret->lColNode((*nodes)[i+inode])->X();
+      const double* x = discret->gNode((*nodes)[i+inode])->X();
       xyze(0,inode) = x[0];
       xyze(1,inode) = x[1];
       xyze(2,inode) = x[2];

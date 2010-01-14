@@ -31,7 +31,6 @@ CCADISCRET           # use new baci discretization subsystem DRT
 # D_TORSION2         # 2D torsion spring element
 # D_ARTNET           # 1D Arterial network elements
 
-
 #   problem types
 #  ===============
 # D_TSI              # thermal structure interaction problem

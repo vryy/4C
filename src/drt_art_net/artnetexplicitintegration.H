@@ -98,9 +98,9 @@ public:
 
   */
   ArtNetExplicitTimeInt(RCP<DRT::Discretization>  dis,
-                       LINALG::Solver&           solver,
-                       ParameterList&            params,
-                       IO::DiscretizationWriter& output);
+                       LINALG::Solver&            solver,
+                       ParameterList&             params,
+                       IO::DiscretizationWriter&  output);
 
 
   /*!
@@ -116,10 +116,16 @@ public:
   void Integrate();
 
   /*!
+  \brief start time loop for startingalgo, normal problems and restarts
+
+  */
+  void Integrate(bool CoupledTo3D, RCP<ParameterList> CouplingParams);
+
+  /*!
   \brief Do time integration (time loop)
 
   */
-  void TimeLoop();
+  void TimeLoop(bool CoupledTo3D, RCP<ParameterList> CouplingParams);
 
 
 
@@ -131,7 +137,7 @@ public:
   \brief solve linearised artery and bifurcation
 
   */
-  void Solve();
+  void Solve(Teuchos::RCP<ParameterList> CouplingTo3DParams);
 
   /*!
     \brief build linear system matrix and rhs
@@ -276,6 +282,10 @@ protected:
   RCP<Epetra_Vector>    qanp_;
   RCP<Epetra_Vector>    qan_;
   RCP<Epetra_Vector>    qanm_;
+  //@}
+
+  //! @name Volumetric Flow rate and Cross-Sectional area at time n before solving Fluid 3D
+  RCP<Epetra_Vector>    qan_3D_;
   //@}
 
   //! @name Volumetric Flow rate at time n+1, n and n-1

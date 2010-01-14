@@ -20,9 +20,35 @@ DYNAMICTYP   ExpTaylorGalerkin
 NUMSTEP      10000
 TIMESTEP     1.0e-4
 RESTARTEVRY  100
-UPRES        100      
-------------------------------------FLUID DYNAMIC/STABILIZATION
------------------------------------------------------ALE DYNAMIC
+UPRES        100
+---------------------------------------------------------------FLUID DYNAMIC
+DYNAMICTYP                      Nlin_Time_Int
+INITIALFIELD                    zero_field
+RESSTEP                         -1
+STARTFUNCNO                     2
+TIMEINTEGR                      BDF2
+STARTINGALGO                    One_Step_Theta
+NONLINITER                      Newton
+ITEMAX                          12
+CONVCHECK                       L_2_norm
+CONVTOL                         1.0E-6
+STEADYCHECK                     L_2_norm
+STEADYSTEP                      -1
+STEADYTOL                       1.0E-6
+UPOUT                           1
+UPPSS                           1
+UPRES                           1
+RESTARTEVRY                     1
+NUMSTEP                         3270
+NUMSTASTEPS                     0
+MAXTIME                         10.0
+TIMESTEP                        0.001
+THETA                           0.66
+START_THETA                     0.67
+LIFTDRAG                        no
+ADAPTCONV                       no
+ADAPTCONV_BETTER                0.01
+----------------------------------------------------ALE DYNAMIC
 TIMESTEP     0.1
 NUMSTEP      41 
 MAXTIME      4.0
@@ -215,7 +241,7 @@ DPOINT 0
 -------------------------DESIGN NODE 1D ARTERY PRESCRIBED CONDITIONS
 DPOINT 1
 //  DOBJECT - BC BCTYPE BCVAL RFVAL BCCURVE RFCURVE
- E 1 - inflow forced 1.0 1.0 1 2
+ E 1 - flow forced 1.0 1.0 1 2
 -------------------------DESIGN NODE 1D ARTERY REFLECTIVE CONDITIONS
 DPOINT 1
 // DOBJECT - RFVAL RFCURVE

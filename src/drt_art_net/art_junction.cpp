@@ -108,7 +108,6 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RefCountPtr<DRT::Discretizati
       //----------------------------------------------------------------------
       
       vector<int> IOart(numofcond);
-      
       for(int i =0; i<numofcond; i++)
       {
         // get the node number connected to the condition
@@ -118,8 +117,9 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RefCountPtr<DRT::Discretizati
         if(nodes->size()!=1)
           dserror("Artery Connection BC should have only one node connected to it!");
 
+        int local_id =  discret_->NodeRowMap()->LID((*nodes)[0]);
         // Get the actual node connected to the condition
-        DRT::Node * nd = discret_->lColNode((*nodes)[0]);        
+        DRT::Node * nd = discret_->lColNode(local_id);        
 
         // find whether the nodes is at the inlet or at the outlet of the element
         string terminalType = *(nd->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
@@ -130,18 +130,18 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RefCountPtr<DRT::Discretizati
         else
           dserror("Something is severely wrong! In/Out terminal condition should be either \"outlet\" or \"inlet\"");
       }
-
       //----------------------------------------------------------------------
       // (3) Group all of the conditions that belong to the same junction
       //----------------------------------------------------------------------
       
       DRT::Condition * cond_i;
       
-      //fist, sort the condition list according to there IDs
+      //first, sort the condition list according to there IDs
       //In this case the bubble sort algorithm is used
       int IO_i;
       for(int i=myConditions.size(); i>1; i--)
       {
+
         for(int j = 1; j< i; j++)
         {
           // if Id(j-1) > Id(j) then swap the two values
@@ -154,7 +154,6 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RefCountPtr<DRT::Discretizati
             myConditions[j-1] = cond_i;
             IOart[j-1]        = IO_i;
           }
-          cond_i = myConditions[i];
         }
       }
       
@@ -164,7 +163,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RefCountPtr<DRT::Discretizati
       
       vector<vector<int> > SortedIOarts;
       vector<int> grouped_IO;
-      
+
       for(unsigned int i=0; i<myConditions.size();)
       {
         do
@@ -190,7 +189,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RefCountPtr<DRT::Discretizati
       int condid;
       RCP<map<const int, RCP<JunctionNodeParams> > >  nodalParams;
       nodalParams = params.get<RCP<map<const int, RCP<JunctionNodeParams> > > >("Junctions Parameters");
-      
+
       for(unsigned int i=0; i<SortedConds.size(); i++)
       {
         // -------------------------------------------------------------------
@@ -218,7 +217,9 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RefCountPtr<DRT::Discretizati
         {
           const vector<int> * nodes = SortedConds[i][j]->Nodes();
           RCP<JunctionNodeParams> nodeparams = rcp(new JunctionNodeParams);
-          inserted = nodalParams->insert( make_pair( (*nodes)[0], nodeparams) ).second;
+
+          int local_id =  discret_->NodeRowMap()->LID((*nodes)[0]);
+          inserted = nodalParams->insert( make_pair( local_id, nodeparams) ).second;
           if(!inserted)
             dserror("Node %d has more than one condition", (*nodes)[0]+1);
         }
@@ -227,6 +228,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RefCountPtr<DRT::Discretizati
       
     }// end if there is a connection
   }
+
 }
 
 
@@ -259,6 +261,7 @@ int ART::UTILS::ArtJunctionWrapper::Solve(ParameterList & params)
   //----------------------------------------------------------------------
   // Exit if the function accessed by a non-master processor
   //----------------------------------------------------------------------
+
   if (discret_->Comm().MyPID()!=0)
     return 0;
 
@@ -268,7 +271,6 @@ int ART::UTILS::ArtJunctionWrapper::Solve(ParameterList & params)
   {
     mapiter->second->ArtJunctionBc::Solve(params);
   }
-
   return 0;
 }
 
@@ -457,13 +459,14 @@ int ART::UTILS::ArtJunctionBc::Solve(ParameterList & params)
   // loop over all the nodes and read in the required parameters
   for(unsigned int i = 0; i< nodes_.size(); i++)
   {
-    A[i]    = (*nodalMap)[nodes_[i]]->A_;
-    Q[i]    = (*nodalMap)[nodes_[i]]->Q_;
-    W[i]    = (*nodalMap)[nodes_[i]]->W_;
-    Ao[i]   = (*nodalMap)[nodes_[i]]->Ao_;
-    rho[i]  = (*nodalMap)[nodes_[i]]->rho_;
-    beta[i] = (*nodalMap)[nodes_[i]]->beta_;
-    Pext[i] = (*nodalMap)[nodes_[i]]->Pext_;
+    int local_id =  discret_->NodeRowMap()->LID(nodes_[i]);
+    A[i]    = (*nodalMap)[local_id]->A_;
+    Q[i]    = (*nodalMap)[local_id]->Q_;
+    W[i]    = (*nodalMap)[local_id]->W_;
+    Ao[i]   = (*nodalMap)[local_id]->Ao_;
+    rho[i]  = (*nodalMap)[local_id]->rho_;
+    beta[i] = (*nodalMap)[local_id]->beta_;
+    Pext[i] = (*nodalMap)[local_id]->Pext_;
     //Intializing x vector; x = [U1 U2 ... Un A1 A2 ... An]^T
     x[i]               = Q[i]/A[i];
     x[i+nodes_.size()] = A[i];
@@ -558,8 +561,9 @@ int ART::UTILS::ArtJunctionBc::Solve(ParameterList & params)
   //----------------------------------------------------------------------
   for(unsigned int i = 0; i< nodes_.size(); i++)
   {
-    (*nodalMap)[nodes_[i]]->A_ = A[i];
-    (*nodalMap)[nodes_[i]]->Q_ = Q[i];
+    int local_id =  discret_->NodeRowMap()->LID(nodes_[i]);
+    (*nodalMap)[local_id]->A_ = A[i];
+    (*nodalMap)[local_id]->Q_ = Q[i];
   }
 
   return 0;
