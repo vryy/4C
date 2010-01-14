@@ -83,6 +83,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   // get values and switches from the condition
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
   const vector<double>* val   = condition.Get<vector<double> >("val"  );
+  const vector<int>*    spa_func  = condition.Get<vector<int> > ("funct");
 
   /*
   **    TIME CURVE BUSINESS
@@ -158,7 +159,10 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
     // get shape functions and derivatives in the plane of the element
     DRT::UTILS::shape_function_2D(funct,e0,e1,Shape());
     DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
-
+    //Stuff to get spatial Neumann
+    const int numdim = 3;
+    LINALG::SerialDenseMatrix gp_coord(1,numdim);
+     
     switch(ltype)
     {
     case neum_live:
@@ -169,10 +173,47 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
       metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
       const double detA = sqrt( metrictensor(0,0)*metrictensor(1,1)
                                 -metrictensor(0,1)*metrictensor(1,0));
-      const double fac = intpoints.qwgt[gp] * detA * curvefac;
-      for (int node=0; node < numnode; ++node)
-        for(int dim=0 ; dim<3; ++dim)
-          elevec1[node*numdf+dim]+= funct[node] * (*onoff)[dim] * (*val)[dim] * fac;
+      
+      double functfac = 1.0;
+      int functnum = -1;
+      double val_curvefac_functfac;
+
+      for(int dof=0;dof<numdim;dof++)
+      {
+        if ((*onoff)[dof]) // is this dof activated?
+        {
+          
+          //factor given by spatial function
+          if (spa_func) 
+            functnum = (*spa_func)[dof];
+                   
+          if (functnum>0)
+          {
+            //Calculate reference position of GP 
+            gp_coord.Multiply('T','N',1.0,funct,x,0.0);;
+            // write coordinates in another datatype
+            double gp_coord2[numdim];
+            for(int i=0;i<numdim;i++)
+            {
+              gp_coord2[i]=gp_coord(0,i);
+            }
+            const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
+    
+            //evaluate function at current gauss point
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,0.0,NULL);
+          }
+          else
+            functfac = 1.0;
+                   
+          val_curvefac_functfac = functfac*curvefac;
+          const double fac = intpoints.qwgt[gp] * detA * (*val)[dof] * val_curvefac_functfac;
+          for (int node=0; node < numnode; ++node)
+          {
+            elevec1[node*numdf+dof]+= funct[node] * fac;
+          }
+        }
+        
+      }
     }
     break;
     case neum_orthopressure:
@@ -182,14 +223,41 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
         if ((*onoff)[checkdof] != 0) dserror("orthopressure on 1st dof only!");
       double ortho_value = (*val)[0];
       if (!ortho_value) dserror("no orthopressure value given!");
-
       vector<double> normal(3);
       SurfaceIntegration(normal, xc,deriv);
+      //Calculate spatial position of GP 
+      double functfac = 1.0;
+      int functnum = -1;
+      double val_curvefac_functfac; 
+      
+      // factor given by spatial function
+      if (spa_func) functnum = (*spa_func)[0];
+      {
+        if (functnum>0)
+        {
+          gp_coord.Multiply('T','N',1.0,funct,xc,0.0);
+          // write coordinates in another datatype
+          double gp_coord2[numdim];
+          for(int i=0;i<numdim;i++)
+          {
+            gp_coord2[i]=gp_coord(0,i);
+          }
+          const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
 
-      const double fac = intpoints.qwgt[gp] * curvefac * ortho_value;
+          // evaluate function at current gauss point
+          functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,coordgpref,0.0,NULL);
+        }
+        else
+          functfac = 1.0;
+      }
+
+       val_curvefac_functfac = curvefac*functfac;    
+           
+      
+      const double fac = intpoints.qwgt[gp] * val_curvefac_functfac* ortho_value;
       for (int node=0; node < numnode; ++node)
         for(int dim=0 ; dim<3; dim++)
-		elevec1[node*numdf+dim] += funct[node] * normal[dim] * fac;
+          elevec1[node*numdf+dim] += funct[node] * normal[dim] * fac;
 
       if (loadlin)
       {
