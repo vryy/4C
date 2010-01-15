@@ -134,7 +134,7 @@ void LOMA::Algorithm::InitialCalculations()
   FluidField().SetTimeLomaFields(ScaTraField().Phinp(),
                                  ScaTraField().ThermPressNp(),
                                  null,
-                                 ScaTraField().NumScal());
+                                 ScaTraField().Discretization());
 
   // write initial fields
   //Output();
@@ -239,7 +239,7 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
                                    ScaTraField().ThermPressAf(),
                                    ScaTraField().ThermPressAm(),
                                    ScaTraField().ThermPressDtAm(),
-                                   ScaTraField().NumScal());
+                                   ScaTraField().Discretization());
 
     // solve low-Mach-number flow equations
     if (Comm().MyPID()==0) cout<<"\n************************\n      FLOW SOLVER\n************************\n";
@@ -329,7 +329,7 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
                                    ScaTraField().ThermPressNp(),
                                    ScaTraField().ThermPressN(),
                                    ScaTraField().ThermPressDtNp(),
-                                   ScaTraField().NumScal());
+                                   ScaTraField().Discretization());
 
     // solve low-Mach-number flow equations
     if (Comm().MyPID()==0) cout<<"\n************************\n      FLOW SOLVER\n************************\n";
@@ -382,7 +382,7 @@ void LOMA::Algorithm::Output()
   FluidField().SetTimeLomaFields(ScaTraField().Phinp(),
                                  ScaTraField().ThermPressNp(),
                                  ScaTraField().TrueResidual(),
-                                 ScaTraField().NumScal());
+                                 ScaTraField().Discretization());
 
   // Note: The order is important here! Herein, control file entries are
   // written, defining the order in which the filters handle the

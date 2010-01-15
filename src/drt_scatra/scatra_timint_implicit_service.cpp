@@ -564,8 +564,8 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
     (extraparams_->get<INPAR::ELCH::NatConv>("Natural Convection")!= INPAR::ELCH::natural_convection_no))
   {
     // allocate denselch_ with *noderowmap instead of *dofrowmap and initialize it
-    const Epetra_Map* noderowmap = discret_->NodeRowMap();
-    elchdensnp_ = LINALG::CreateVector(*noderowmap,true);
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    elchdensnp_ = LINALG::CreateVector(*dofrowmap,true);
     elchdensnp_->PutScalar(1.0);
 
     // Calculate the initial mean concentration value
@@ -629,30 +629,57 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
 /*----------------------------------------------------------------------*
  | compute density from ion concentrations                    gjb 07/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ComputeDensity(double density)
+void SCATRA::ScaTraTimIntImpl::ComputeDensity(double density0)
 {
-  double densification(0.0);
-  for(int gnodeid=0; gnodeid<elchdensnp_->MyLength(); gnodeid++)
+  double newdensity(0.0);
+  int err(0);
+
+  // loop over all local nodes
+  for(int lnodeid=0; lnodeid<discret_->NumMyRowNodes(); lnodeid++)
   {
-    densification= 0.0;
+    // get the processor's local node
+    DRT::Node* lnode = discret_->lRowNode(lnodeid);
+
+    // get the degrees of freedom associated with this node
+    vector<int> nodedofs;
+    nodedofs = discret_->Dof(lnode);
+
+    newdensity= 1.0;
+    // loop over all ionic species
     for(int k=0; k<numscal_; k++)
     {
-        /*
+      /*
         //                  k=numscal_-1
-        //                  ----
-        //                  \
-        //   rho * ( 1 +    /       rho * alfa_k * (c_k - c_0)
-        //                  ----
-        //                  k=0
-        */
+        //          /       ----                         \
+        //         |        \                            |
+        // rho_0 * | 1 +    /       alfa_k * (c_k - c_0) |
+        //         |        ----                         |
+        //          \       k=0                          /
+        //
+        // For use of molar mass M_k:  alfa_k = M_k/rho_0  !!
+       */
 
-        densification += densific_[k]*((*phinp_)[gnodeid*(numscal_+1)+k]-c0_[k]);
+      // global and processor's local DOF ID
+      const int globaldofid = nodedofs[k];
+      const int localdofid = phinp_->Map().LID(globaldofid);
+      if (localdofid < 0)
+        dserror("localdofid not found in map for given globaldofid");
+
+      // compute contribution to density due to ionic species k
+      newdensity += densific_[k]*((*phinp_)[localdofid]-c0_[k]);
     }
-    densification += 1;
-    densification *= density;
-    elchdensnp_->ReplaceMyValues(1,&densification,&gnodeid);
-  }
+    newdensity *= density0;
 
+    // insert the current density value for this node
+    // (has to be at position of el potential!)
+    const int globaldofid = nodedofs[numscal_];
+    const int localdofid = phinp_->Map().LID(globaldofid);
+    if (localdofid < 0)
+      dserror("localdofid not found in map for given globaldofid");
+    err = elchdensnp_->ReplaceMyValue(localdofid,0,newdensity);
+    if (err != 0) dserror("error while inserting a value into elchdensnp_");
+
+  } // loop over all local nodes
   return;
 }
 

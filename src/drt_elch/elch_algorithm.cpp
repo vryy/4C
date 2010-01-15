@@ -180,8 +180,6 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
   // density time derivative is not used for OST and BDF2 (pass zero vector)
   // thermodynamic pressure values are set to 1.0 and its derivative to 0.0
 
-  int numscal = 1;
-
   switch((FluidField().TimIntScheme()))
   {
   case timeint_stationary:
@@ -193,7 +191,7 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
         1.0,
         1.0,
         0.0,
-        numscal);
+        ScaTraField().Discretization());
     break;
   }
   case timeint_one_step_theta:
@@ -206,7 +204,7 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
         1.0,
         1.0,
         0.0,
-        numscal);
+        ScaTraField().Discretization());
     break;
   }
   default: dserror("Selected time integration scheme is not available");
@@ -401,8 +399,11 @@ void ELCH::Algorithm::OuterIterationConvection()
     // pass actual density field to fluid discretisation
     // Density derivative is not used for OST, BDF2 and convective formulation
     ScaTraField().ComputeDensity(density0_);
-    int numscal = 1;
-    FluidField().SetTimeLomaFields(ScaTraField().DensElchNp(),0.0,Teuchos::null,numscal);
+    FluidField().SetTimeLomaFields(
+        ScaTraField().DensElchNp(),
+        0.0,
+        Teuchos::null,
+        ScaTraField().Discretization());
 
     // convergence check based on incremental values
     stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);

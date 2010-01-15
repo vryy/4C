@@ -138,15 +138,15 @@ namespace ADAPTER
                                    const double             thermpressaf,
                                    const double             thermpressam,
                                    const double             thermpressdtam,
-                                   const int                numscal){ dserror("not implemented!");
-                                        return; };
+                                   Teuchos::RCP<DRT::Discretization> scatradis)
+    { dserror("not implemented!");return; };
 
     /// set fields for low-Mach-number flow at end of time step
     virtual void SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,
                                    const double             thermpressnp,
                                    RCP<const Epetra_Vector> scatraresidual,
-                                   const int                numscal){ dserror("not implemented!");
-                                        return; };
+                                   Teuchos::RCP<DRT::Discretization> scatradis)
+    { dserror("not implemented!");return; };
 
     /*--------------------------------------------------------------------------------------------*
      * group member functions which are implemented and used

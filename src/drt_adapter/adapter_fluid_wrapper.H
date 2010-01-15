@@ -55,14 +55,14 @@ namespace ADAPTER
                                    const double             thermpressaf,
                                    const double             thermpressam,
                                    const double             thermpressdtam,
-                                   const int                numscal)
+                                   Teuchos::RCP<DRT::Discretization> scatradis)
     { return fluid_->SetIterLomaFields(scalaraf, scalaram, scalardtam, thermpressaf,
-                                       thermpressam, thermpressdtam, numscal); }
+                                       thermpressam, thermpressdtam, scatradis); }
     virtual void SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,
                                    const double             thermpressnp,
                                    RCP<const Epetra_Vector> scatraresidual,
-                                   const int                numscal)
-    { return fluid_->SetTimeLomaFields(scalarnp, thermpressnp, scatraresidual, numscal); }
+                                   Teuchos::RCP<DRT::Discretization> scatradis)
+    { return fluid_->SetTimeLomaFields(scalarnp, thermpressnp, scatraresidual, scatradis); }
     virtual void PrepareTimeStep()
     { return fluid_->PrepareTimeStep(); }
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel)

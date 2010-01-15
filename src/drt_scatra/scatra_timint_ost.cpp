@@ -45,12 +45,9 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   if (prbtype_ == "elch" &&
       (extraparams_->get<INPAR::ELCH::NatConv>("Natural Convection")!= INPAR::ELCH::natural_convection_no))
   {
-    const Epetra_Map* noderowmap = discret_->NodeRowMap();
-
     // density at time n
-    elchdensn_ = LINALG::CreateVector(*noderowmap,true);
+    elchdensn_ = LINALG::CreateVector(*dofrowmap,true);
     elchdensn_->PutScalar(1.0);
-
   }
 
   // fine-scale vector at time n+1

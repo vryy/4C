@@ -170,10 +170,13 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     // we need a block sparse matrix here
     if (prbtype_ != "elch")
       dserror("Block-Preconditioning is only for ELCH problems");
-    // initial guess for non-zeros per row: 27 neighboring nodes for hex8 times (numscal_+1) dofs
+    // initial guess for non-zeros per row: 27 neighboring nodes for hex8
+    // this is enough! A higher guess would require too much memory!
+    // A more precise guess for every submatrix would read:
+    // A_00: 27*1,  A_01: 27*1,  A_10: 27*numscal_ due to electroneutrality, A_11: empty matrix
     // usage of a split strategy that makes use of the ELCH-specific sparsity pattern
     Teuchos::RCP<LINALG::BlockSparseMatrix<SCATRA::SplitStrategy> > blocksysmat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>(splitter_,splitter_,27*(numscal_+1),false,true));
+      Teuchos::rcp(new LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>(splitter_,splitter_,27,false,true));
     blocksysmat->SetNumScal(numscal_);
 
     sysmat_ = blocksysmat;
@@ -1213,6 +1216,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
     convel_->PutScalar(0); // just to be sure!
   else if ((cdvel_ == INPAR::SCATRA::velocity_function))  // function
   {
+    int err(0);
     const int numdim = 3; // the velocity field is always 3D
     const int velfuncno = params_->get<int>("VELFUNCNO");
     // loop all nodes on the processor
@@ -1223,7 +1227,8 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
       for(int index=0;index<numdim;++index)
       {
         double value=DRT::Problem::Instance()->Funct(velfuncno-1).Evaluate(index,lnode->X(),0.0,NULL);
-        convel_->ReplaceMyValue (lnodeid, index, value);
+        err = convel_->ReplaceMyValue (lnodeid, index, value);
+        if (err!=0) dserror("error while inserting a value into convel_");
       }
     }
   }
@@ -1262,6 +1267,8 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
   if (not fluiddis->NodeRowMap()->SameAs(*(discret_->NodeRowMap())))
     dserror("Fluid and Scatra noderowmaps are NOT identical. Emergency!");
 #endif
+
+  int err(0);
 
   // boolean indicating whether acceleration vector exists
   // -> if yes, subgrid-scale velocity may need to be computed on element level
@@ -1309,7 +1316,8 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
       }
 
       // insert velocity value into node-based vector
-      convel_->ReplaceMyValue(lnodeid, index, velocity);
+      err = convel_->ReplaceMyValue(lnodeid, index, velocity);
+      if (err!=0) dserror("error while inserting a value into convel_");
 
       if (sgvelswitch)
       {
@@ -1324,6 +1332,7 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
 
         // insert acceleration value into node-based vector
         accpre_->ReplaceMyValue(lnodeid, index, acceleration);
+        if (err!=0) dserror("error while inserting a value into accpre_");
       }
     }
 
@@ -1339,14 +1348,16 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
       // get value of corresponding pressure component
       double pressure = (*fluidvel)[flid];
       // insert pressure value into node-based vector
-      accpre_->ReplaceMyValue(lnodeid, numdim, pressure);
+      err = accpre_->ReplaceMyValue(lnodeid, numdim, pressure);
+      if (err!=0) dserror("error while inserting a value into accpre_");
     }
 
     // for security reasons in 1D or 2D problems:
     // set zeros for all unused velocity components
     for (int index=numdim; index < 3; ++index)
     {
-      convel_->ReplaceMyValue(lnodeid, index, 0.0);
+      err = convel_->ReplaceMyValue(lnodeid, index, 0.0);
+      if (err!=0) dserror("error while inserting a value into convel_");
     }
   }
 
@@ -1372,6 +1383,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(
 
     if (dispnp == Teuchos::null) dserror("Got null pointer for displacements");
 
+    int err(0);
     // get dofrowmap of fluid discretization
     const Epetra_Map* fluiddofrowmap = fluiddis->DofRowMap();
 
@@ -1399,14 +1411,16 @@ void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(
         // get value of corresponding velocity component
         double disp = (*dispnp)[flid];
         // insert velocity value into node-based vector
-        dispnp_->ReplaceMyValue(lnodeid, index, disp);
+        err = dispnp_->ReplaceMyValue(lnodeid, index, disp);
+        if (err!= 0) dserror("error while inserting a value into dispnp_");
       }
 
       // for security reasons in 1D or 2D problems:
       // set zeros for all unused velocity components
       for (int index=numdim; index < 3; ++index)
       {
-        dispnp_->ReplaceMyValue(lnodeid, index, 0.0);
+        err = dispnp_->ReplaceMyValue(lnodeid, index, 0.0);
+        if (err!= 0) dserror("error while inserting a value into dispnp_");
       }
 
     } // for lnodid

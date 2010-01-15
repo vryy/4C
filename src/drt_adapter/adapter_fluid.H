@@ -148,13 +148,13 @@ namespace ADAPTER {
                                    const double             thermpressaf,
                                    const double             thermpressam,
                                    const double             thermpressdtam,
-                                   const int                numscal) = 0;
+                                   Teuchos::RCP<DRT::Discretization> scatradis) = 0;
 
     /// set fields for low-Mach-number flow at end of time step
     virtual void SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,
                                    const double             thermpressnp,
                                    RCP<const Epetra_Vector> scatraresidual,
-                                   const int                numscal) = 0;
+                                   Teuchos::RCP<DRT::Discretization> scatradis) = 0;
 
     //@}
 

@@ -311,7 +311,7 @@ public:
                          const double             thermpressaf,
                          const double             thermpressam,
                          const double             thermpressdtam,
-                         const int                numscal);
+                         Teuchos::RCP<DRT::Discretization> scatradis);
 
   /*!
   \brief set fields for low-Mach-number flow at end of time step
@@ -320,7 +320,7 @@ public:
   void SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,
                          const double             thermpressnp,
                          RCP<const Epetra_Vector> scatraresidual,
-                         const int                numscal);
+                         Teuchos::RCP<DRT::Discretization> scatradis);
 
   /// introduce surface split extractor object
   /*!

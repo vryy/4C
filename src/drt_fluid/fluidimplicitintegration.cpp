@@ -3172,14 +3172,12 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
    const double             thermpressaf,
    const double             thermpressam,
    const double             thermpressdtam,
-   const int                numscal)
+   Teuchos::RCP<DRT::Discretization> scatradis)
 {
-  // set number of degrees of freedom based on number of spatial dimensions
-  int numdof = numdim_ + 1;
-
-  // initialize vectors
-  vector<int>    Indices(numdof);
-  vector<double> Values(numdof);
+  // initializations
+  int err(0);
+  double value(0.0);
+  vector<int> nodedofs;
 
   //--------------------------------------------------------------------------
   // Filling the scanp-vector and scaam-vector at time n+alpha_F/n+1 and
@@ -3195,36 +3193,46 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
   // loop all nodes on the processor
   for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
   {
-    const int scalarloc = lnodeid*numscal + numscal - 1;
+    // get the processor's local scatra node
+    DRT::Node* lscatranode = scatradis->lRowNode(lnodeid);
 
-    Indices[numdim_] = lnodeid*numdof + numdim_;
+    // find out the global dof id of the last(!) dof at the scatra node
+    const int numscatradof = scatradis->NumDof(lscatranode);
+    const int globalscatradofid = scatradis->Dof(lscatranode,numscatradof-1);
+    const int localscatradofid = scalaraf->Map().LID(globalscatradofid);
+    if (localscatradofid < 0)
+      dserror("localdofid not found in map for given globaldofid");
 
-    Values[numdim_] = (*scalaraf)[scalarloc];
-    scaaf_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
+    // get the processor's local fluid node
+    DRT::Node* lnode = discret_->lRowNode(lnodeid);
+    // get the global ids of degrees of freedom associated with this node
+    nodedofs = discret_->Dof(lnode);
+    // get global and processor's local pressure dof id (using the map!)
+    const int numdof = discret_->NumDof(lnode);
+    const int globaldofid = discret_->Dof(lnode,numdof-1);
+    const int localdofid = scaam_->Map().LID(globaldofid);
+    if (localscatradofid < 0)
+      dserror("localdofid not found in map for given globaldofid");
 
-    Values[numdim_] = (*scalaram)[scalarloc];
-    scaam_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
-  }
+    // now copy the values
+    value = (*scalaraf)[localscatradofid];
+    err = scaaf_->ReplaceMyValue(localdofid,0,value);
+    if (err != 0) dserror("error while inserting value into scaaf_");
 
-  if (scalardtam != Teuchos::null)
-  {
-    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    value = (*scalaram)[localscatradofid];
+    err = scaam_->ReplaceMyValue(localdofid,0,value);
+    if (err != 0) dserror("error while inserting value into scaam_");
+
+    if (scalardtam != Teuchos::null)
     {
-      const int scalarloc = lnodeid*numscal + numscal - 1;
-      Indices[numdim_] = lnodeid*numdof + numdim_;
-
-      Values[numdim_] = (*scalardtam)[scalarloc];
-      accam_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
+      value = (*scalardtam)[localscatradofid];
     }
-  }
-  else
-  {
-    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    else
     {
-      Indices[numdim_] = lnodeid*numdof + numdim_;
-      Values[numdim_] = 0;
-      accam_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
+      value = 0; // for safety reasons: set zeros in accam_
     }
+    err = accam_->ReplaceMyValue(localdofid,0,value);
+    if (err != 0) dserror("error while inserting value into accam_");
   }
 
   //--------------------------------------------------------------------------
@@ -3247,14 +3255,12 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
    RCP<const Epetra_Vector> scalarnp,
    const double             thermpressnp,
    RCP<const Epetra_Vector> scatraresidual,
-   const int                numscal)
+   Teuchos::RCP<DRT::Discretization> scatradis)
 {
-  // set number of degrees of freedom based on number of spatial dimensions
-  int numdof = numdim_ + 1;
-
-  // initialize vectors
-  vector<int>    Indices(numdof);
-  vector<double> Values(numdof);
+  // initializations
+  int err(0);
+  double value(0.0);
+  vector<int> nodedofs;
 
   //--------------------------------------------------------------------------
   // Filling the scaaf-vector with scalar at time n+1 at pressure dofs
@@ -3262,12 +3268,39 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
   // loop all nodes on the processor
   for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
   {
-    const int scalarloc = lnodeid*numscal + numscal - 1;
+    // get the processor's local scatra node
+    DRT::Node* lscatranode = scatradis->lRowNode(lnodeid);
 
-    Indices[numdim_] = lnodeid*numdof + numdim_;
+    // find out the global dof id of the last(!) dof at the scatra node
+    const int numscatradof = scatradis->NumDof(lscatranode);
+    const int globalscatradofid = scatradis->Dof(lscatranode,numscatradof-1);
+    const int localscatradofid = scalarnp->Map().LID(globalscatradofid);
+    if (localscatradofid < 0)
+      dserror("localdofid not found in map for given globaldofid");
 
-    Values[numdim_] = (*scalarnp)[scalarloc];
-    scaaf_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
+    // get the processor's local fluid node
+    DRT::Node* lnode = discret_->lRowNode(lnodeid);
+    // get the global ids of degrees of freedom associated with this node
+    nodedofs = discret_->Dof(lnode);
+    // get global and processor's local pressure dof id (using the map!)
+    const int globaldofid = nodedofs[numdim_];
+    const int localdofid = scaam_->Map().LID(globaldofid);
+    if (localdofid < 0)
+      dserror("localdofid not found in map for given globaldofid");
+
+    value = (*scalarnp)[localscatradofid];
+    err = scaaf_->ReplaceMyValue(localdofid,0,value);
+    if (err != 0) dserror("error while inserting value into scaaf_");
+
+    //--------------------------------------------------------------------------
+    // Filling the trueresidual vector with scatraresidual at pre-dofs
+    //--------------------------------------------------------------------------
+    if (scatraresidual != Teuchos::null)
+    {
+      value = (*scatraresidual)[localscatradofid];
+      trueresidual_->ReplaceMyValue(localdofid,0,value);
+    }
+
   }
 
   //--------------------------------------------------------------------------
@@ -3275,21 +3308,6 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
   //--------------------------------------------------------------------------
   thermpressaf_ = thermpressnp;
 
-  //--------------------------------------------------------------------------
-  // Filling the trueresidual vector with scatraresidual at pre-dofs
-  //--------------------------------------------------------------------------
-  if (scatraresidual != Teuchos::null)
-  {
-    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-    {
-      const int scalarloc = lnodeid*numscal + numscal - 1;
-
-      Indices[numdim_] = lnodeid*numdof + numdim_;
-
-      Values[numdim_] = (*scatraresidual)[scalarloc];
-      trueresidual_->ReplaceMyValues(1,&Values[numdim_],&Indices[numdim_]);
-    }
-  }
 
   return;
 

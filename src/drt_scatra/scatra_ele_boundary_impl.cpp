@@ -215,6 +215,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     // access parameters of the condition
     const std::string* kinetics = cond->Get<std::string>("kinetic model");
     const int    speciesid = cond->GetInt("species");
+    if (speciesid < 1) dserror("species number is not >= 1");
     double       pot0 = cond->GetDouble("pot");
     const int    curvenum = cond->GetInt("curve");
     const double alphaa = cond->GetDouble("alpha_a");
