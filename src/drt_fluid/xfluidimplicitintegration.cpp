@@ -1187,6 +1187,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       
       if (!fluidfluidstate_.MovingFluideleids_.empty())
         eleparams.set("fluidfluidCoupling",true);
+      else
+        eleparams.set("fluidfluidCoupling",false);
 
       double L2 = 0.0;
       eleparams.set("L2",L2);
