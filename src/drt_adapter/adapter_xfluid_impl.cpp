@@ -1119,7 +1119,7 @@ void ADAPTER::XFluidImpl::SetInitialFlowField(int whichinitialfield,int startfun
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,RCP<const Epetra_Vector> scalaram,RCP<const Epetra_Vector> scalardtam,const double thermpressaf,const double thermpressam,const double thermpressdtam,const int numscal)
+void ADAPTER::XFluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,RCP<const Epetra_Vector> scalaram,RCP<const Epetra_Vector> scalardtam,const double thermpressaf,const double thermpressam,const double thermpressdtam,Teuchos::RCP<DRT::Discretization> scatradis)
 {
    dserror("not implemented!");
    return;
@@ -1127,7 +1127,7 @@ void ADAPTER::XFluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,RC
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,const double thermpressnp,RCP<const Epetra_Vector> scatraresidual,const int numscal)
+void ADAPTER::XFluidImpl::SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,const double thermpressnp,RCP<const Epetra_Vector> scatraresidual,Teuchos::RCP<DRT::Discretization> scatradis)
 {
    dserror("not implemented!");
    return;
