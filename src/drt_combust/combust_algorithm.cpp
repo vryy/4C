@@ -49,6 +49,7 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   fgiter_(0),
   fgitermax_(combustdyn.get<int>("ITEMAX")),
   convtol_(combustdyn.get<double>("CONVTOL")),
+  phireinitn_(Teuchos::null),
 //  fgvelnormL2_(?),
 //  fggfuncnormL2_(?),
 /* hier müssen noch mehr Parameter eingelesen werden, nämlich genau die, die für die FGI-Schleife
@@ -99,6 +100,7 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   velnpip_ = rcp(new Epetra_Vector(*fluiddis->DofRowMap()),true);
   velnpi_ = rcp(new Epetra_Vector(*fluiddis->DofRowMap()),true);
 
+  // TODO these should be DofRowMaps!
   phinpip_ = rcp(new Epetra_Vector(*gfuncdis->NodeRowMap()),true);
   phinpi_ = rcp(new Epetra_Vector(*gfuncdis->NodeRowMap()),true);
 
@@ -124,7 +126,7 @@ void COMBUST::Algorithm::TimeLoop()
   // time loop
   while (NotFinished())
   {
-    // prepare next time step
+    // prepare next time step; update field vectors
     PrepareTimeStep();
 
     // Fluid-G-function-Interaction loop
@@ -139,12 +141,13 @@ void COMBUST::Algorithm::TimeLoop()
       // solve linear G-function equation
       DoGfuncField();
 
-      // update field vectors
+      // update interface geometry
       UpdateFGIteration();
 
     } // Fluid-G-function-Interaction loop
 
-    if (ScaTraField().Step() % reinitinterval_ == 0)
+    if ((ScaTraField().Step() % reinitinterval_ == 0) or
+        (ScaTraField().Step()>1 and ScaTraField().Step() % reinitinterval_ == 1))
     {
 #ifndef PARALLEL
       // compute current volume of minus domain
@@ -278,20 +281,27 @@ void COMBUST::Algorithm::SolveStationaryProblem()
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::ReinitializeGfunc()
 {
-  // turn on/off screen output for writing process of Gmsh postprocessing file
-  const bool screen_out = true;
-  // create Gmsh postprocessing file
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("field_scalar_before_reinitialization", Step(), 701, screen_out, ScaTraField().Discretization()->Comm().MyPID());
-  std::ofstream gmshfilecontent(filename.c_str());
-  {
-    // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "Phinp \" {" << endl;
-    // draw scalar field 'Phinp' for every element
-    IO::GMSH::ScalarFieldToGmsh(ScaTraField().Discretization(),ScaTraField().Phinp(),gmshfilecontent);
-    gmshfilecontent << "};" << endl;
-  }
-  gmshfilecontent.close();
-  if (screen_out) std::cout << " done" << endl;
+//  // turn on/off screen output for writing process of Gmsh postprocessing file
+//  const bool screen_out = true;
+//  // create Gmsh postprocessing file
+//  const std::string filename1 = IO::GMSH::GetNewFileNameAndDeleteOldFiles("field_scalar_reinitialization_before", Step(), 701, screen_out, ScaTraField().Discretization()->Comm().MyPID());
+//  std::ofstream gmshfilecontent1(filename1.c_str());
+//  {
+//    // add 'View' to Gmsh postprocessing file
+//    gmshfilecontent1 << "View \" " << "Phinp \" {" << endl;
+//    // draw scalar field 'Phinp' for every element
+//    IO::GMSH::ScalarFieldToGmsh(ScaTraField().Discretization(),ScaTraField().Phinp(),gmshfilecontent1);
+//    gmshfilecontent1 << "};" << endl;
+//  }
+//  {
+//    // add 'View' to Gmsh postprocessing file
+//    gmshfilecontent1 << "View \" " << "Convective Velocity \" {" << endl;
+//    // draw vector field 'Convective Velocity' for every element
+//    IO::GMSH::VectorFieldNodeBasedToGmsh(ScaTraField().Discretization(),ScaTraField().ConVel(),gmshfilecontent1);
+//    gmshfilecontent1 << "};" << endl;
+//  }
+//  gmshfilecontent1.close();
+//  if (screen_out) std::cout << " done" << endl;
 
   // get my flame front (boundary integration cells)
   // TODO we generate a copy of the flame front here, which is not neccessary in the serial case
@@ -302,17 +312,59 @@ void COMBUST::Algorithm::ReinitializeGfunc()
   flamefront_->ExportFlameFront(myflamefront);
 #endif
 
-  // reinitilize G-function (level set) field
-  COMBUST::Reinitializer reinitializer(
-      combustdyn_,
-      ScaTraField(),
-      myflamefront);
+  if (ScaTraField().Step() % reinitinterval_ == 0)
+  {
+    cout << "reinitializing phin_" << endl;
+    phireinitn_ = LINALG::CreateVector(*ScaTraField().Discretization()->DofRowMap(),true);
+    // copy phi vector of ScaTra time integration scheme
+    *phireinitn_ = *ScaTraField().Phinp();
+    // reinitialize G-function (level set) field
+    COMBUST::Reinitializer reinitializer(
+        combustdyn_,
+        ScaTraField(),
+        myflamefront,
+        phireinitn_);
+  }
 
-  // update flame front according to reinitialized G-function field
-  flamefront_->ProcessFlameFront(combustdyn_,ScaTraField().Phinp());
+  if (ScaTraField().Step()>1 and ScaTraField().Step() % reinitinterval_ == 1)
+  {
+    cout << "reinitializing phinp_" << endl;
+    // reinitialize G-function (level set) field
+    COMBUST::Reinitializer reinitializer(
+        combustdyn_,
+        ScaTraField(),
+        myflamefront,
+        ScaTraField().Phinp());
 
-  // update interfacehandle (get integration cells) according to updated flame front
-  interfacehandle_->UpdateInterfaceHandle();
+    // update flame front according to reinitialized G-function field
+    flamefront_->ProcessFlameFront(combustdyn_,ScaTraField().Phinp());
+
+    // update interfacehandle (get integration cells) according to updated flame front
+    interfacehandle_->UpdateInterfaceHandle();
+
+    // export interface information to the fluid time integration
+    FluidField().ImportInterface(interfacehandle_);
+  }
+
+//  // create Gmsh postprocessing file
+//  const std::string filename2 = IO::GMSH::GetNewFileNameAndDeleteOldFiles("field_scalar_reinitialization_after", Step(), 701, screen_out, ScaTraField().Discretization()->Comm().MyPID());
+//  std::ofstream gmshfilecontent2(filename2.c_str());
+//  {
+//    // add 'View' to Gmsh postprocessing file
+//    gmshfilecontent2 << "View \" " << "Phinp \" {" << endl;
+//    // draw scalar field 'Phinp' for every element
+//    IO::GMSH::ScalarFieldToGmsh(ScaTraField().Discretization(),ScaTraField().Phinp(),gmshfilecontent2);
+//    gmshfilecontent2 << "};" << endl;
+//  }
+//  {
+//    // add 'View' to Gmsh postprocessing file
+//    gmshfilecontent2 << "View \" " << "Convective Velocity \" {" << endl;
+//    // draw vector field 'Convective Velocity' for every element
+//    IO::GMSH::VectorFieldNodeBasedToGmsh(ScaTraField().Discretization(),ScaTraField().ConVel(),gmshfilecontent2);
+//    gmshfilecontent2 << "};" << endl;
+//  }
+//  gmshfilecontent2.close();
+//  if (screen_out) std::cout << " done" << endl;
 
   return;
 }
@@ -745,10 +797,8 @@ void COMBUST::Algorithm::DoGfuncField()
   {
     // for two-phase flow, the fluid velocity field is continuous; it can be directly transferred to
     // the scalar transport field
-
     ScaTraField().SetVelocityField(
       FluidField().ExtractInterfaceVeln(),
-//      OverwriteFluidVel(),
       Teuchos::null,
       FluidField().DofSet(),
       FluidField().Discretization()
@@ -758,7 +808,7 @@ void COMBUST::Algorithm::DoGfuncField()
   case INPAR::COMBUST::combusttype_premixedcombustion:
   {
     // for combustion, the velocity field is discontinuous; the relative flame velocity is added
-//    const Teuchos::RCP<Epetra_Vector> convel = FluidField().ExtractInterfaceVeln();
+    const Teuchos::RCP<Epetra_Vector> convel = FluidField().ExtractInterfaceVeln();
 
     //std::cout << "convective velocity is transferred to ScaTra" << std::endl;
     //cout << "length of convection velocity vector: " << (*convel).MyLength() << endl;
@@ -784,8 +834,9 @@ void COMBUST::Algorithm::DoGfuncField()
 #endif
 
     ScaTraField().SetVelocityField(
-      OverwriteFluidVel(),
-      //ComputeFlameVel(convel,FluidField().DofSet()),
+      //OverwriteFluidVel(),
+      //FluidField().ExtractInterfaceVeln(),
+      ComputeFlameVel(convel,FluidField().DofSet()),
       Teuchos::null,
       FluidField().DofSet(),
       FluidField().Discretization()
@@ -825,6 +876,16 @@ void COMBUST::Algorithm::UpdateFGIteration()
 void COMBUST::Algorithm::UpdateTimeStep()
 {
   FluidField().Update();
+
+  //
+  if (ScaTraField().Step()>1 and (ScaTraField().Step() % reinitinterval_ == 1))
+  {
+    // reset phin vector in ScaTra time integration scheme to reinitialized vector 'phireinitn_'
+    ScaTraField().SetPhin(phireinitn_);
+    // pointer not needed any more
+    phireinitn_ = Teuchos::null;
+  }
+
   ScaTraField().Update();
   return;
 }

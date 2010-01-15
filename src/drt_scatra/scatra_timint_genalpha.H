@@ -124,6 +124,10 @@ protected:
   /// update time-dependent electrode state variables at the end of an time step
   void ElectrodeKineticsTimeUpdate(const bool init = false);
 
+  /// routine to reset phi vector due to reinitialization
+  void SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn) { dserror("only implemented for OST");
+                                                         return; };
+
 
 private:
 

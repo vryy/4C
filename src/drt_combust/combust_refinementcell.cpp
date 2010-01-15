@@ -112,16 +112,15 @@ void COMBUST::RefinementCell::IdentifyIntersectionStatus()
 //  for (std::size_t i=0; i<gfuncvalues_.size(); i++ )
 //	  std::cout << gfuncvalues_[i] << std::endl;
 
-//  // tolerance for small G-function values
-//  for (std::size_t i=0; i<gfuncvalues_.size(); i++ )
-//  {
-//    if (fabs(gfuncvalues_[i])<1.0E-8)
-//    {
-//      std::cout << " G-Function value reset to 0: " << gfuncvalues_[i] << std::endl;
-//      gfuncvalues_[i] = 0.0;
-//      cout << "Id of this cell: " << this->Ele()->Id() << endl;
-//    }
-//  }
+  // tolerance for small G-function values
+  for (std::size_t i=0; i<gfuncvalues_.size(); i++ )
+  {
+    if (fabs(gfuncvalues_[i])<1.0E-6)
+    {
+      std::cout << " G-Function value " << gfuncvalues_[i] << " reset to 0.0 for cell in element " << this->Ele()->Id() << std::endl;
+      gfuncvalues_[i] = 0.0;
+    }
+  }
 
   // idea: Since the interface is defined by the zero iso-surface of the G-function, we look for
   // sign changes among the G-function values at the vertices of the refinement cell.

@@ -133,6 +133,9 @@ protected:
   /// update time-dependent electrode state variables at the end of an time step
   void ElectrodeKineticsTimeUpdate(const bool init = false);
 
+  /// routine to reset phi vector due to reinitialization for OST scheme
+  void SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn);
+
 private:
 
   /// time factor for one-step-theta/BDF2 time integration

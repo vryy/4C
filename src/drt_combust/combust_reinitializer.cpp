@@ -25,8 +25,9 @@ Maintainer: Florian Henke
 COMBUST::Reinitializer::Reinitializer(
     const Teuchos::ParameterList& combustdyn,
     SCATRA::ScaTraTimIntImpl& scatra,
-    const std::map<int,GEO::BoundaryIntCells>& boundaryintcells
-    ) :
+    const std::map<int,GEO::BoundaryIntCells>& boundaryintcells,
+    Teuchos::RCP<Epetra_Vector> phivector
+  ) :
     combustdyn_(combustdyn),
     scatra_(scatra),
     flamefront_(boundaryintcells),
@@ -45,7 +46,7 @@ COMBUST::Reinitializer::Reinitializer(
 #ifdef PARALLEL
       //dserror("direct computation of signed distance function not available in parallel");
 #endif
-      SignedDistanceFunction();
+      SignedDistanceFunction(phivector);
       break;
 //    case INPAR::COMBUST::sussman:
 //      // SCATRA parameters have to be set before in ScaTraFluidCouplingAlgorithm!
@@ -71,13 +72,15 @@ COMBUST::Reinitializer::~Reinitializer()
 /*------------------------------------------------------------------------------------------------*
  | private: build signed distance function                                            henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
-void COMBUST::Reinitializer::SignedDistanceFunction()
+void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> phivector)
 {
   // get communicator (for output)
   const Epetra_Comm& comm = scatra_.Discretization()->Comm();
   if (comm.MyPID()==0)
+  {
+    std::cout << "\n /!\\ warning === third component or normal vector set to 0 to keep 2D-character!" << std::endl;
     std::cout << "\n--- reinitializing G-function with signed distance function ..." << std::flush;
-
+  }
   // get a pointer to the G-function discretization
   Teuchos::RCP<DRT::Discretization> gfuncdis = scatra_.Discretization();
 
@@ -93,7 +96,7 @@ void COMBUST::Reinitializer::SignedDistanceFunction()
   {
     // get the processor local node
     const DRT::Node* lnode = gfuncdis->lRowNode(lnodeid);
-//cout << "proc " << comm.MyPID() << " reinitialization for node: " << lnode->Id() << endl;
+    //cout << "proc " << comm.MyPID() << " reinitialization for node: " << lnode->Id() << endl;
 
     // the set of degrees of freedom associated with the node
     const vector<int> nodedofset = gfuncdis->Dof(lnode); // this should not be a vector, but a scalar
@@ -107,8 +110,9 @@ void COMBUST::Reinitializer::SignedDistanceFunction()
     const int dofgid = nodedofset[0];
     int doflid = dofrowmap->LID(dofgid);
 
-    if (fabs((*scatra_.Phinp())[doflid]) < 0.15);
-    {
+//    // reinitialize only within a band around the zero level set
+//    if (fabs((*scatra_.Phinp())[doflid]) < 0.15);
+//    {
 
     //-----------------------------------------------------------
     // compute smallest distance to the flame front for this node
@@ -177,6 +181,8 @@ void COMBUST::Reinitializer::SignedDistanceFunction()
       }
     }
 
+    //cout << "minimal distance to facing patch is " << mindist << endl;
+
     //-------------------------------------------
     // determine smallest distance to flame front
     //-------------------------------------------
@@ -204,9 +210,10 @@ void COMBUST::Reinitializer::SignedDistanceFunction()
     // reinitialize G-function field
     //------------------------------
     // assign new values of signed distance function to the G-function field
-    scatra_.Phinp()->ReplaceMyValues(1,&mindist,&doflid);
+    phivector->ReplaceMyValues(1,&mindist,&doflid);
+    //scatra_.Phinp()->ReplaceMyValues(1,&mindist,&doflid);
   }
-  }
+//  } // end condition for band around zero level set
   if (comm.MyPID()==0)
     std::cout << " done" << std::endl;;
 
@@ -258,27 +265,31 @@ void COMBUST::Reinitializer::FindFacingPatchProjCellSpace(
   //----------------------------------------------------
   // check if projection lies within boundary cell space
   //----------------------------------------------------
+  // remark: - tolerance has to be of same order as the tolerance that coordinates of projected nodes
+  //           differ from an exact position on edges of patches (e.g. 1.0E-7 ~ 1.0E-8 -> 1.0E-6)
+  //         - if this is not the case, the level set function can become tilted, since valid
+  //           patches are ignored
   switch(patch.Shape())
   {
   case DRT::Element::tri3:
   {
     // criteria for tri3 patch
-    if ((eta(0) > -1.0E-12) and (eta(0) < 1.0+1.0E-12) and
-        (eta(1) > -1.0E-12) and (eta(1) < 1.0+1.0E-12) and
-        (1.0-eta(0)-eta(1) > -1.0E-12) and (1.0-eta(0)-eta(1) < 1.0+1.0E-12) and
+    if ((eta(0) > -1.0E-6) and (eta(0) < 1.0+1.0E-6) and
+        (eta(1) > -1.0E-6) and (eta(1) < 1.0+1.0E-6) and
+        (1.0-eta(0)-eta(1) > -1.0E-6) and (1.0-eta(0)-eta(1) < 1.0+1.0E-6) and
         converged)
     {
       facenode = true;
       patchdist = alpha;
-      //cout << "facing patch found (tri3 patch)! distance: " << alpha << endl;
+//      cout << "facing patch found (tri3 patch)! coordinates eta(0): " << eta(0) << " eta(1) " << eta(1) << endl;
     }
     break;
   }
   case DRT::Element::quad4:
   {
     // criteria for quad4 patch
-    if ((eta(0) > -1.0-1.0E-12) and (eta(0) < 1.0+1.0E-12) and
-        (eta(1) > -1.0-1.0E-12) and (eta(1) < 1.0+1.0E-12) and
+    if ((eta(0) > -1.0-1.0E-6) and (eta(0) < 1.0+1.0E-6) and
+        (eta(1) > -1.0-1.0E-6) and (eta(1) < 1.0+1.0E-6) and
         converged)
     {
       facenode = true;
@@ -393,7 +404,8 @@ void COMBUST::Reinitializer::ComputeNormalVectorToFlameFront(
   // remark: normal vector points into unburnt domain (G<0)
   normal(0) = (edge1(1)*edge2(2) - edge1(2)*edge2(1));
   normal(1) = (edge1(2)*edge2(0) - edge1(0)*edge2(2));
-  normal(2) = (edge1(0)*edge2(1) - edge1(1)*edge2(0));
+  // TODO remove restriction to 2D
+  normal(2) = 0.0; // (edge1(0)*edge2(1) - edge1(1)*edge2(0));
 
 //  const Epetra_Comm& comm = scatra_.Discretization()->Comm();
 //  cout << "proc " << comm.MyPID() << " normal " <<  normal << endl;
@@ -405,11 +417,11 @@ void COMBUST::Reinitializer::ComputeNormalVectorToFlameFront(
   normal.Scale(1.0/norm);
 
 #ifdef DEBUG
-//  if (!((normal(2) > 0.0-1.0E-12) and (normal(2) < 0.0+1.0E-12)))
-//  {
-//    cout << "z-component of normal: " << normal(2) << endl;
-//    dserror ("pseudo-3D problem not symmetric anymore!");
-//  }
+  if (!((normal(2) > 0.0-1.0E-8) and (normal(2) < 0.0+1.0E-8)))
+  {
+    cout << "z-component of normal: " << normal(2) << endl;
+    dserror ("pseudo-3D problem not symmetric anymore!");
+  }
 #endif
 
   return;

@@ -117,6 +117,9 @@ namespace COMBUST
     double fggfuncnormL2_;
     //
     double convtol_;
+
+    // phi vector reinitialized after time step n
+    Teuchos::RCP<Epetra_Vector>  phireinitn_;
     // velocity vector of last iteration step
     Teuchos::RCP<Epetra_Vector> velnpi_;
     // velocity vector of new iteration step

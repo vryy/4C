@@ -229,6 +229,9 @@ public:
   /// routine to return scalar field convective velocity at time step n+1
   Teuchos::RCP<Epetra_MultiVector> ConVel() { return convel_; }
 
+  /// routine to reset phi vector due to reinitialization for OST scheme
+  virtual void SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn) = 0;
+
   /// output of all electrode information to screen and/or file (default: 2x true)
   void OutputElectrodeInfo(bool printtoscreen = true, bool printtofile = true);
 

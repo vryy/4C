@@ -575,20 +575,27 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
           coordinates[dim] = vertexcoord[lines[iline][0]][dim] - gfuncval1 / (gfuncval2 - gfuncval1)
           * (vertexcoord[lines[iline][1]][dim] - vertexcoord[lines[iline][0]][dim]);
 
-          // shift intersection point to vertex if it is very close
-          if(fabs(vertexcoord[lines[iline][0]][dim]-coordinates[dim]) < 1.0E-8)
-          {
-            coordinates[dim] = vertexcoord[lines[iline][0]][dim];
-            cout << "coordinates shifted to vertex 1" << endl;
-          }
-          if(fabs(vertexcoord[lines[iline][1]][dim]-coordinates[dim]) < 1.0E-8)
-          {
-            coordinates[dim] = vertexcoord[lines[iline][1]][dim];
-            cout << "coordinates shifted to vertex 2" << endl;
-          }
+//          // shift intersection point to vertex if it is very close
+//          if((fabs(vertexcoord[lines[iline][0]][dim]-coordinates[dim]) < 1.0E-4) or
+//             (fabs(vertexcoord[lines[iline][1]][dim]-coordinates[dim]) < 1.0E-4))
+//          {
+//            if(fabs(vertexcoord[lines[iline][0]][dim]-coordinates[dim]) < 1.0E-4)
+//            {
+//              cout << "coordinates shifted to vertex 1: " << coordinates[dim] << endl;
+//              coordinates[dim] = vertexcoord[lines[iline][0]][dim];
+//            }
+//            else if(fabs(vertexcoord[lines[iline][1]][dim]-coordinates[dim]) < 1.0E-4)
+//            {
+//              cout << "coordinates shifted to vertex 2: " << coordinates[dim] << endl;
+//              coordinates[dim] = vertexcoord[lines[iline][1]][dim];
+//            }
+//            else
+//            {
+//              dserror("impossible");
+//            }
+//          }
         }
       }
-
       //--------------------------------------------------------------------
       // transformation to global coordinates via shape functions (x = Nxi)
       //--------------------------------------------------------------------
@@ -654,24 +661,21 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   //   else
   //    refinement cell is also an integration cell
 
-//  std::cout << "CaptureFlameFront " << std::endl;
-
   std::vector<const COMBUST::RefinementCell* > RefinementCells;
   cell->SearchRefinementCells(RefinementCells);
-//  std::cout << "Number of refinement cells " << RefinementCells.size() << std::endl;
 
   // vectors holding lists if domain integration cells and boundary integration surfaces, respectively
   GEO::DomainIntCells listDomainIntCellsperEle;
   GEO::BoundaryIntCells listBoundaryIntCellsperEle;
 
-  //-------------------------------------------
+  //--------------------------------------------
   // loop over all refinement cells of root cell
-  //-------------------------------------------
+  //--------------------------------------------
   for (std::size_t icell = 0; icell < RefinementCells.size(); icell++)
   {
-    //---------------------
+    //--------------------
     // cell is intersected
-    //---------------------
+    //--------------------
     if (RefinementCells[icell]->Intersected())
     {
 //   std::cout << "Cell is intersected " << std::endl;
@@ -1254,7 +1258,7 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
       std::vector<std::vector<int> > surfacepointlist = DRT::UTILS::getEleNodeNumberingSurfaces(DRT::Element::hex8);
       for(int k=0; k<4; k++)//loop over nodes
       {
-        if (gfuncvalues[surfacepointlist[i][k]]==0)
+        if (gfuncvalues[surfacepointlist[i][k]]==0.0)
           zeropoints.push_back(surfacepointlist[i][k]);
       }
       if (zeropoints.size()!=1)
@@ -1641,7 +1645,7 @@ void COMBUST::FlameFront::CreateIntegrationCells(
   const int dim = 3;
   tetgenio in;
   tetgenio out;
-  char switches[] = "pQ";    //- p     tetrahedralizes a PLC
+  char switches[] = "pQYY";    //- p     tetrahedralizes a PLC
                                //-Q      no terminal output except errors
                                // YY     do not generate additional points on surfaces -> fewer cells
   tetgenio::facet *f;

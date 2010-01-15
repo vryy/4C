@@ -76,6 +76,10 @@ public:
   /// routine to return time derivative of scalar field phi at time step n+alpha_M
   Teuchos::RCP<Epetra_Vector> Phidtam(){return null;}
 
+  /// routine to reset phi vector due to reinitialization
+  void SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn) { dserror("only implemented for OST");
+                                                         return; };
+
   /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
   double ThermPressAf(){return 1.0;}
 

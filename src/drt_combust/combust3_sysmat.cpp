@@ -1239,10 +1239,8 @@ void SysmatTwoPhase(
             double pres = 0.0;
             for (size_t iparam = 0; iparam != numparampres; ++iparam)
               pres += shppres.d0(iparam)*eprenp(iparam);
-            // get bodyforce in gausspoint
-//            LINALG::Matrix<3,1> bodyforce;
-//            bodyforce = 0.0;
-//            cout << bodyforce << endl;
+
+            //            cout << bodyforce << endl;
             ///////////////LINALG::SerialDenseVector bodyforce_(enr_edeadng_(i,j)*enr_funct_(j));
 
             // compute stabilization parameters (3 taus)
@@ -1271,6 +1269,9 @@ void SysmatTwoPhase(
             LINALG::Matrix<nsd,1> rhsint;
             LINALG::Matrix<nsd,1> bodyforce;
             bodyforce.Clear();
+            bodyforce(0,0) = 0.0;
+            bodyforce(1,0) = -0.01;
+            bodyforce(2,0) = 0.0;
 //            std::cout << "BodyForce" << std::endl;
 //            bodyforce(1) = -9.8;
 // --------------- DAS GEHT AUCH, WENN MAN EINE VOLUMENLAST IM DAT-FILE VORGIBT!!!!!!!!!!!!!! -------

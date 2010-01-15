@@ -42,7 +42,8 @@ namespace COMBUST
     explicit Reinitializer(
         const Teuchos::ParameterList& combustdyn,
         SCATRA::ScaTraTimIntImpl& scatra,
-        const std::map<int,GEO::BoundaryIntCells>& boundaryintcells
+        const std::map<int,GEO::BoundaryIntCells>& boundaryintcells,
+        Teuchos::RCP<Epetra_Vector> phivector
     );
 
     /// destructor
@@ -62,7 +63,7 @@ namespace COMBUST
       G=0 as a scalar value to every node in the G-function discretization.
      */
     /// build signed distance function
-    void SignedDistanceFunction();
+    void SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> phivector);
 
     /// compute normal vector of flame front patch
     void ComputeNormalVectorToFlameFront(
@@ -226,6 +227,7 @@ namespace COMBUST
       {
         converged = true;
         //cout << "convergence criterion " << conv << endl;
+        //cout << "solution vector: component 1: " << eta(0) << " component 2: " << eta(1) << " alpha: " << alpha << endl;
       }
 
       return converged;
