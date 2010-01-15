@@ -536,25 +536,25 @@ void CONTACT::PenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& ktef
 {
   // remove old stiffness terms
   // (FIXME: redundant code to EvaluateContact(), expect for minus sign)
-  
+
   kteff->UnComplete();
-  
+
   kteff->Add(*lindmatrix_, false, -(1.0-alphaf_), 1.0);
   kteff->Add(*linmmatrix_, false, -(1.0-alphaf_), 1.0);
-    
+
   RCP<LINALG::SparseMatrix> dtilde = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
   RCP<LINALG::SparseMatrix> mtilde = rcp(new LINALG::SparseMatrix(*gmdofrowmap_));
   dtilde = LINALG::Multiply(*dmatrix_, false, *linzmatrix_, false);
   mtilde = LINALG::Multiply(*mmatrix_, true, *linzmatrix_, false);
   kteff->Add(*dtilde, false, -(1.0-alphaf_), 1.0);
   kteff->Add(*mtilde, false, (1.0-alphaf_), 1.0);
-  
+
   // we leave kteff Filled()==false here, as Evaluate() will be called below
   // and kteff will be UnCompleted there again, anyway!
-  
+
   // remove old force terms
   // (FIXME: redundant code to EvaluateContact(), expect for minus sign)
-  
+
   RCP<Epetra_Vector> fcmdold = rcp(new Epetra_Vector(dold_->RowMap()));
   dold_->Multiply(false, *zold_, *fcmdold);
   RCP<Epetra_Vector> fcmdoldtemp = rcp(new Epetra_Vector(*problemrowmap_));
@@ -566,23 +566,23 @@ void CONTACT::PenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& ktef
   RCP<Epetra_Vector> fcmmoldtemp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fcmmold, *fcmmoldtemp);
   feff->Update(-alphaf_, *fcmmoldtemp, 1.0);
-    
+
   RCP<Epetra_Vector> fcmd = rcp(new Epetra_Vector(*gsdofrowmap_));
   dmatrix_->Multiply(false, *z_, *fcmd);
   RCP<Epetra_Vector> fcmdtemp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fcmd, *fcmdtemp);
   feff->Update(1-alphaf_, *fcmdtemp, 1.0);
-  
+
   RCP<Epetra_Vector> fcmm = LINALG::CreateVector(*gmdofrowmap_, true);
   mmatrix_->Multiply(true, *z_, *fcmm);
   RCP<Epetra_Vector> fcmmtemp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fcmm, *fcmmtemp);
   feff->Update(-(1-alphaf_), *fcmmtemp, 1.0);
-  
+
   // reset some matrices
   lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
   linmmatrix_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-  
+
   // reset nodal derivZ values
   for (int i=0; i<(int)interface_.size(); ++i)
   {
@@ -594,13 +594,13 @@ void CONTACT::PenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& ktef
       (node->GetDerivZ()).resize(0);
     }
   }
-  
+
   // now redo Initialize()
   Initialize();
-  
+
   // and finally redo Evaluate()
   Evaluate(kteff,feff);
-    
+
   return;
 }
 
@@ -678,24 +678,25 @@ void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
           if (ippcurr != ppcurr) dserror("Something wrong with penalty parameter");
           interface_[i]->IParams().set<double>("PENALTYPARAM",10*ippcurr);
         }
-      }
-    }
 
-    if (soltype==INPAR::CONTACT::solution_auglag and ctype!=INPAR::CONTACT::contact_normal)
-    {
-      if ((uzawaiter >= 2) && (cnormtan > 0.25 * ConstraintNorm()))
-      {
-        updatepenaltytan = true;
-
-        // update penalty parameter in strategy
-        Params().set<double>("PENALTYPARAMTAN",10*ppcurrtan);
-
-        // update penalty parameter in all interfaces
-        for (int i=0; i<(int)interface_.size(); ++i)
+        // in the case of frictional contact, the tangential penalty
+        // parameter is also dated up when this is done for the normal
+        // one
+        if (ctype!=INPAR::CONTACT::contact_normal)
         {
-          double ippcurrtan = interface_[i]->IParams().get<double>("PENALTYPARAMTAN");
-          if (ippcurrtan != ppcurrtan) dserror("Something wrong with penalty parameter");
-          interface_[i]->IParams().set<double>("PENALTYPARAMTAN",10*ippcurrtan);
+
+        	updatepenaltytan = true;
+
+          // update penalty parameter in strategy
+          Params().set<double>("PENALTYPARAMTAN",10*ppcurrtan);
+
+          // update penalty parameter in all interfaces
+          for (int i=0; i<(int)interface_.size(); ++i)
+          {
+            double ippcurrtan = interface_[i]->IParams().get<double>("PENALTYPARAMTAN");
+            if (ippcurrtan != ppcurrtan) dserror("Something wrong with penalty parameter");
+            interface_[i]->IParams().set<double>("PENALTYPARAMTAN",10*ippcurrtan);
+          }
         }
       }
     }
