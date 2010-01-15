@@ -348,7 +348,7 @@ case prb_thermo:
 
 case prb_tsi:
 #ifndef CCADISCRET
-  dserror("thermo-structure-interaction is not available in CCARAT");
+  tsi_dyn();
 #else
   tsi_dyn_drt();
 #endif
