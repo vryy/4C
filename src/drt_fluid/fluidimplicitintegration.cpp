@@ -38,7 +38,6 @@ Maintainer: Peter Gamnitzer
 #include "fluid_utils.H"
 #include "fluidimpedancecondition.H"
 #include "fluid_coupling_red_models.H"
-//coupled3D_redDbc_
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -488,7 +487,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   impedancebc_     = rcp(new UTILS::FluidImpedanceWrapper(discret_, output_, dta_) );
 
 
-  //#ifdef D_COUPLED_ARTNET
+#ifdef D_ARTNET
   // -------------------------------------------------------------------
   // Initialize the reduced models
   // -------------------------------------------------------------------
@@ -502,7 +501,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
                                                           dta_,
                                                           ART_exp_timeInt_->Dt()) );
 
-  //#endif //D_COUPLED_ARTNET
+#endif //D_ARTNET
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
@@ -889,8 +888,10 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       // update impedance boundary condition
       impedancebc_->UpdateResidual(residual_);
 
+#ifdef D_ARTNET
       // update the 3D-to-reduced_D coupling data
       coupled3D_redDbc_->UpdateResidual(residual_);
+#endif //D_ARTNET
 
       // Filter velocity for dynamic Smagorinsky model --- this provides
       // the necessary dynamic constant
@@ -2069,7 +2070,9 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   impedancebc_->UpdateResidual(residual_);
 
   // update the 3D-to-reduced_D coupling condition
+#ifdef D_ARTNET
   coupled3D_redDbc_->UpdateResidual(residual_);
+#endif //D_ARTNET
 
   if (dynamic_smagorinsky_)
   {
@@ -2252,7 +2255,10 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   impedancebc_->UpdateResidual(residual_);
 
   // update the 3D-to-reduce_D coupling condition
+#ifdef D_ARTNET
   coupled3D_redDbc_->UpdateResidual(residual_);
+#endif // D_ARTNET
+
   // create the parameters for the discretization
   ParameterList eleparams;
 
@@ -2435,8 +2441,10 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   //       have any coupling boundary conditions
   // -------------------------------------------------------------------
 
+#ifdef D_ARTNET
   coupled3D_redDbc_->FlowRateCalculation(time_,dta_);
   coupled3D_redDbc_->ApplyBoundaryConditions(time_, dta_, theta_);
+#endif //D_ARTNET
 
   return;
 }// FluidImplicitTimeInt::TimeUpdate
