@@ -265,6 +265,7 @@ void ADAPTER::StructureTimInt::ReadRestart(int step)
 /* find iteratively solution */
 void ADAPTER::StructureTimInt::Solve()
 {
+  structure_->Predict();
   structure_->Solve();
 }
 
