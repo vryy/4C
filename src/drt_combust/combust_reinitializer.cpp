@@ -200,7 +200,11 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
     //cout << "vertexdist " << std::setw(18) << std::setprecision(12) << std::scientific << vertexdist << endl;
     if (fabs(vertexdist) < fabs(mindist)) // case 2
     {
-      mindist = vertexdist;
+      // if the sign has been changed by mistake in ComputeDistanceToPatch(), this has to be corrected here
+      if ((*phivector)[doflid] * vertexdist < 0.0 )
+        mindist = -vertexdist;
+      else
+        mindist = vertexdist;
       //cout << "node " << lnode->Id() << " does not face a patch (blind angle) or this patch is not local; distance: " << mindist << endl;
     }
     if (mindist == 5555.5) // case 3
@@ -354,10 +358,10 @@ void COMBUST::Reinitializer::ComputeDistanceToPatch(
     {
       // determine sign of distance vector from node to flame front
       double tmp = normal(0)*dist(0) + normal(1)*dist(1) + normal(2)*dist(2);
-      // tmp < 0 if node in unburnt domain (G<0) and vice versa
-      if (tmp <= 0.0)
+      // tmp < 0 if node in burnt domain (G>0) and vice versa
+      if (tmp <= 0.0) // 'normal' and 'dist' point in different directions
         vertexdist = normdist;
-      else
+      else // 'normal' and 'dist' point in the same direction
         vertexdist = -normdist;
       //cout << "distance to vertex is overwritten by: " << vertexdist << endl;
     }

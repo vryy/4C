@@ -49,6 +49,8 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   fgiter_(0),
   fgitermax_(combustdyn.get<int>("ITEMAX")),
   convtol_(combustdyn.get<double>("CONVTOL")),
+  stepbeforereinit_(false),
+  stepreinit_(false),
   phireinitn_(Teuchos::null),
 //  fgvelnormL2_(?),
 //  fggfuncnormL2_(?),
@@ -146,8 +148,7 @@ void COMBUST::Algorithm::TimeLoop()
 
     } // Fluid-G-function-Interaction loop
 
-    if ((ScaTraField().Step() % reinitinterval_ == 0) or
-        (ScaTraField().Step()>1 and ScaTraField().Step() % reinitinterval_ == 1))
+    if (stepbeforereinit_ or stepreinit_)
     {
 #ifndef PARALLEL
       // compute current volume of minus domain
@@ -312,9 +313,9 @@ void COMBUST::Algorithm::ReinitializeGfunc()
   flamefront_->ExportFlameFront(myflamefront);
 #endif
 
-  if (ScaTraField().Step() % reinitinterval_ == 0)
+  // reinitializie what will later be 'phin'
+  if (stepbeforereinit_)
   {
-    cout << "reinitializing phin_" << endl;
     phireinitn_ = LINALG::CreateVector(*ScaTraField().Discretization()->DofRowMap(),true);
     // copy phi vector of ScaTra time integration scheme
     *phireinitn_ = *ScaTraField().Phinp();
@@ -326,9 +327,9 @@ void COMBUST::Algorithm::ReinitializeGfunc()
         phireinitn_);
   }
 
-  if (ScaTraField().Step()>1 and ScaTraField().Step() % reinitinterval_ == 1)
+  // reinitialize what will later be 'phinp'
+  if (stepreinit_)
   {
-    cout << "reinitializing phinp_" << endl;
     // reinitialize G-function (level set) field
     COMBUST::Reinitializer reinitializer(
         combustdyn_,
@@ -341,9 +342,6 @@ void COMBUST::Algorithm::ReinitializeGfunc()
 
     // update interfacehandle (get integration cells) according to updated flame front
     interfacehandle_->UpdateInterfaceHandle();
-
-    // export interface information to the fluid time integration
-    FluidField().ImportInterface(interfacehandle_);
   }
 
 //  // create Gmsh postprocessing file
@@ -720,6 +718,11 @@ void COMBUST::Algorithm::PrepareTimeStep()
   // fgnormfluid = large value
   fggfuncnormL2_ = 1.0;
 
+  stepbeforereinit_ = false;
+  if (ScaTraField().Step() % reinitinterval_ == 0) stepbeforereinit_ = true;
+  stepreinit_ = false;
+  if (ScaTraField().Step()>1 and ScaTraField().Step() % reinitinterval_ == 1) stepreinit_ = true;
+
   if (Comm().MyPID()==0)
   {
     //cout<<"---------------------------------------  time step  ------------------------------------------\n";
@@ -878,7 +881,7 @@ void COMBUST::Algorithm::UpdateTimeStep()
   FluidField().Update();
 
   //
-  if (ScaTraField().Step()>1 and (ScaTraField().Step() % reinitinterval_ == 1))
+  if (stepreinit_)
   {
     // reset phin vector in ScaTra time integration scheme to reinitialized vector 'phireinitn_'
     ScaTraField().SetPhin(phireinitn_);

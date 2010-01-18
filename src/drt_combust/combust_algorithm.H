@@ -118,6 +118,12 @@ namespace COMBUST
     //
     double convtol_;
 
+    // boolean indicating time step before reinitialization
+    bool stepbeforereinit_;
+    // boolean indicating time step of reinitialization
+    bool stepreinit_;
+
+
     // phi vector reinitialized after time step n
     Teuchos::RCP<Epetra_Vector>  phireinitn_;
     // velocity vector of last iteration step
