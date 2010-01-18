@@ -346,6 +346,7 @@ case prb_thermo:
 #endif
   break;
 
+#if defined(CCADISCRET) || defined(D_TSI)
 case prb_tsi:
 #ifndef CCADISCRET
   tsi_dyn();
@@ -353,6 +354,7 @@ case prb_tsi:
   tsi_dyn_drt();
 #endif
   break;
+#endif
 
 case prb_loma:
 #ifndef CCADISCRET
