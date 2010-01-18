@@ -166,7 +166,9 @@ namespace ELEMENTS
                 const enum Fluid3::StabilisationAction           cstab,
                 const enum Fluid3::StabilisationAction           cross,
                 const enum Fluid3::StabilisationAction           reynolds,
-                const double                                     Cs);
+                const double                                     Cs,
+                const enum INPAR::FLUID::PhysicalType            physicaltype,
+                const LINALG::Matrix<iel,1>&                     escaaf);
 
   private:
 
@@ -216,6 +218,7 @@ namespace ELEMENTS
     LINALG::Matrix<3,1> res_old_;
     LINALG::Matrix<iel,1> conv_resM_;
     LINALG::Matrix<6,3> xder2_;
+    double deltadens_;              /// delta density for Boussinesq Approximation
     RCP<FLD::RotationallySymmetricPeriodicBC<distype> > rotsymmpbc_; /// rotsymm periodic bc's
   };
 
