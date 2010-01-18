@@ -230,6 +230,8 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
   if(newtonstr=="Newton")          newton       = true;
   if(convformstr =="conservative") conservative = true;
   INPAR::FLUID::PhysicalType physicaltype = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
+  if ((physicaltype != INPAR::FLUID::boussinesq) and (physicaltype != INPAR::FLUID::incompressible))
+    dserror("physical type not supported in stationary FLUID3 implementation.");
 
   // --------------------------------------------------
   // set parameters for stabilisation
