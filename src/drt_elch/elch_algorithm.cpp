@@ -361,7 +361,7 @@ void ELCH::Algorithm::OuterIterationConvection()
   {
     cout<<"\n";
     cout<<"**************************************************************\n";
-    cout<<"      OUTER ONE-STEP-THETA/BDF2 ITERATION LOOP\n";
+    cout<<"      OUTER ITERATION LOOP ("<<ScaTraField().MethodTitle()<<")\n";
     printf("      Time Step %3d/%3d \n",Step(), ScaTraField().NStep());
     cout<<"**************************************************************\n";
   }
