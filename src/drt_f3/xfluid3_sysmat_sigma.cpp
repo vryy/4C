@@ -1551,6 +1551,36 @@ void SysmatBoundarySigma(
             assembler.template Vector<Sigmazx>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_gpvelnp(2));
             assembler.template Vector<Sigmazy>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_gpvelnp(2));
             assembler.template Vector<Sigmazz>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_gpvelnp(2));
+            
+            if (fluidfluidCoupling)
+            {
+              /*                      \
+             |  (virt tau) * n^f , Dui |
+              \                      */
+                        
+              if (fluidfluidmatrices.Gsui_uncond == null) 
+                  dserror("Gsui_uncond should not be Null!");
+                        
+              patchassembler.template Matrix<Sigmaxx,Velxiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, timefacfac*normalvec_fluid(0), shp_iface);
+              patchassembler.template Matrix<Sigmaxy,Velxiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, timefacfac*normalvec_fluid(1), shp_iface);
+              patchassembler.template Matrix<Sigmaxz,Velxiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, timefacfac*normalvec_fluid(2), shp_iface);
+              patchassembler.template Matrix<Sigmayx,Velyiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, timefacfac*normalvec_fluid(0), shp_iface);
+              patchassembler.template Matrix<Sigmayy,Velyiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, timefacfac*normalvec_fluid(1), shp_iface);
+              patchassembler.template Matrix<Sigmayz,Velyiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, timefacfac*normalvec_fluid(2), shp_iface);
+              patchassembler.template Matrix<Sigmazx,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, timefacfac*normalvec_fluid(0), shp_iface);
+              patchassembler.template Matrix<Sigmazy,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, timefacfac*normalvec_fluid(1), shp_iface);
+              patchassembler.template Matrix<Sigmazz,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, timefacfac*normalvec_fluid(2), shp_iface);
+              
+              assembler.template Vector<Sigmaxx>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_gpvelnp(0));
+              assembler.template Vector<Sigmaxy>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_gpvelnp(0));
+              assembler.template Vector<Sigmaxz>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_gpvelnp(0));
+              assembler.template Vector<Sigmayx>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_gpvelnp(1));
+              assembler.template Vector<Sigmayy>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_gpvelnp(1));
+              assembler.template Vector<Sigmayz>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_gpvelnp(1));
+              assembler.template Vector<Sigmazx>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_gpvelnp(2));
+              assembler.template Vector<Sigmazy>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_gpvelnp(2));
+              assembler.template Vector<Sigmazz>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_gpvelnp(2));
+            }
 
                /*               \
             - |  v , Dtau * n^f  |
@@ -1573,7 +1603,7 @@ void SysmatBoundarySigma(
             assembler.template Vector<Vely>(shp, timefacfac*disctau_times_nf(1));
             assembler.template Vector<Velz>(shp, timefacfac*disctau_times_nf(2));
 
-
+#if 0
             if (monolithic_FSI)
             {
                   /*                 \
@@ -1596,53 +1626,37 @@ void SysmatBoundarySigma(
               patchassembler.template Vector<Dispy>(rhsd, shp_iface, timefacfac*disctau_times_ns(1));
               patchassembler.template Vector<Dispz>(rhsd, shp_iface, timefacfac*disctau_times_ns(2));
             }
+#endif
             
            if (fluidfluidCoupling)
            {
                 /*                  \
-             - |  vi^i , Dtau * n^f |
+               |  v^i , Dtau * n^f |
                 \                  */
               
              if (fluidfluidmatrices.Guis_uncond == null) 
                dserror("Guis_uncond should not be Null!");
               
-             patchassembler.template Matrix<Velxiface,Sigmaxx>(*(fluidfluidmatrices.Guis_uncond), shp_iface, -timefacfac*normalvec_solid(0), shp_tau);
-             patchassembler.template Matrix<Velxiface,Sigmaxy>(*(fluidfluidmatrices.Guis_uncond), shp_iface, -timefacfac*normalvec_solid(1), shp_tau);
-             patchassembler.template Matrix<Velxiface,Sigmaxz>(*(fluidfluidmatrices.Guis_uncond), shp_iface, -timefacfac*normalvec_solid(2), shp_tau);
-             patchassembler.template Matrix<Velyiface,Sigmayx>(*(fluidfluidmatrices.Guis_uncond), shp_iface, -timefacfac*normalvec_solid(0), shp_tau);
-             patchassembler.template Matrix<Velyiface,Sigmayy>(*(fluidfluidmatrices.Guis_uncond), shp_iface, -timefacfac*normalvec_solid(1), shp_tau);
-             patchassembler.template Matrix<Velyiface,Sigmayz>(*(fluidfluidmatrices.Guis_uncond), shp_iface, -timefacfac*normalvec_solid(2), shp_tau);
-             patchassembler.template Matrix<Velziface,Sigmazx>(*(fluidfluidmatrices.Guis_uncond), shp_iface, -timefacfac*normalvec_solid(0), shp_tau);
-             patchassembler.template Matrix<Velziface,Sigmazy>(*(fluidfluidmatrices.Guis_uncond), shp_iface, -timefacfac*normalvec_solid(1), shp_tau);
-             patchassembler.template Matrix<Velziface,Sigmazz>(*(fluidfluidmatrices.Guis_uncond), shp_iface, -timefacfac*normalvec_solid(2), shp_tau);
+             patchassembler.template Matrix<Velxiface,Sigmaxx>(*(fluidfluidmatrices.Guis_uncond), shp_iface, timefacfac*normalvec_fluid(0), shp_tau);
+             patchassembler.template Matrix<Velxiface,Sigmaxy>(*(fluidfluidmatrices.Guis_uncond), shp_iface, timefacfac*normalvec_fluid(1), shp_tau);
+             patchassembler.template Matrix<Velxiface,Sigmaxz>(*(fluidfluidmatrices.Guis_uncond), shp_iface, timefacfac*normalvec_fluid(2), shp_tau);
+             patchassembler.template Matrix<Velyiface,Sigmayx>(*(fluidfluidmatrices.Guis_uncond), shp_iface, timefacfac*normalvec_fluid(0), shp_tau);
+             patchassembler.template Matrix<Velyiface,Sigmayy>(*(fluidfluidmatrices.Guis_uncond), shp_iface, timefacfac*normalvec_fluid(1), shp_tau);
+             patchassembler.template Matrix<Velyiface,Sigmayz>(*(fluidfluidmatrices.Guis_uncond), shp_iface, timefacfac*normalvec_fluid(2), shp_tau);
+             patchassembler.template Matrix<Velziface,Sigmazx>(*(fluidfluidmatrices.Guis_uncond), shp_iface, timefacfac*normalvec_fluid(0), shp_tau);
+             patchassembler.template Matrix<Velziface,Sigmazy>(*(fluidfluidmatrices.Guis_uncond), shp_iface, timefacfac*normalvec_fluid(1), shp_tau);
+             patchassembler.template Matrix<Velziface,Sigmazz>(*(fluidfluidmatrices.Guis_uncond), shp_iface, timefacfac*normalvec_fluid(2), shp_tau);
                          
-               /*                      \
-            - |  (virt tau) * n^f , Du |
-               \                      */
               
-             if (fluidfluidmatrices.Gsui_uncond == null) 
-               dserror("Gsui_uncond should not be Null!");
+             if (fluidfluidmatrices.rhuis_uncond == null) 
+               dserror("rhuis_uncond should not be Null!");
               
-             patchassembler.template Matrix<Sigmaxx,Velxiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, -timefacfac*normalvec_solid(0), shp_iface);
-             patchassembler.template Matrix<Sigmaxy,Velxiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, -timefacfac*normalvec_solid(1), shp_iface);
-             patchassembler.template Matrix<Sigmaxz,Velxiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, -timefacfac*normalvec_solid(2), shp_iface);
-             patchassembler.template Matrix<Sigmayx,Velyiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, -timefacfac*normalvec_solid(0), shp_iface);
-             patchassembler.template Matrix<Sigmayy,Velyiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, -timefacfac*normalvec_solid(1), shp_iface);
-             patchassembler.template Matrix<Sigmayz,Velyiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, -timefacfac*normalvec_solid(2), shp_iface);
-             patchassembler.template Matrix<Sigmazx,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, -timefacfac*normalvec_solid(0), shp_iface);
-             patchassembler.template Matrix<Sigmazy,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, -timefacfac*normalvec_solid(1), shp_iface);
-             patchassembler.template Matrix<Sigmazz,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, -timefacfac*normalvec_solid(2), shp_iface);
-             
-             LINALG::Matrix<nsd,1> disctau_times_ns;
-             disctau_times_ns.Multiply(tau,normalvec_solid);
-              
-             if (fluidfluidmatrices.rhsui_uncond == null) 
-               dserror("rhsui_uncond should not be Null!");
-              
-             patchassembler.template Vector<Velxiface>(*(fluidfluidmatrices.rhsui_uncond), shp_iface, timefacfac*disctau_times_ns(0));
-             patchassembler.template Vector<Velyiface>(*(fluidfluidmatrices.rhsui_uncond), shp_iface, timefacfac*disctau_times_ns(1));
-             patchassembler.template Vector<Velziface>(*(fluidfluidmatrices.rhsui_uncond), shp_iface, timefacfac*disctau_times_ns(2));
-           }  
+             LINALG::Matrix<nsd,1> disctau_times_nf;
+             disctau_times_nf.Multiply(tau,normalvec_fluid);
+             patchassembler.template Vector<Velxiface>(*(fluidfluidmatrices.rhuis_uncond), shp_iface, -timefacfac*disctau_times_nf(0));
+             patchassembler.template Vector<Velyiface>(*(fluidfluidmatrices.rhuis_uncond), shp_iface, -timefacfac*disctau_times_nf(1));
+             patchassembler.template Vector<Velziface>(*(fluidfluidmatrices.rhuis_uncond), shp_iface, -timefacfac*disctau_times_nf(2));
+            }  
 
             // here the interface force is integrated
             // this is done using test shape functions of the boundary mesh
@@ -1741,6 +1755,12 @@ void SysmatSigma(
       SysmatBoundarySigma<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelnp, etau, iforcecol, Gds, rhsd,
           timealgo, dt, theta, assembler, ifaceForceContribution, monolithic_FSI, fluidfluidmatrices, params);
+    /*  for (int i=0; i<fluidfluidmatrices.Guis_uncond->M(); i++){
+        for (int j=0; j<fluidfluidmatrices.Guis_uncond->N(); j++){
+          (fluidfluidmatrices.Gsui_uncond)->operator ()(j,i)= (fluidfluidmatrices.Guis_uncond)->operator ()(i,j);
+        }
+      }*/
+          
     }
 }
 

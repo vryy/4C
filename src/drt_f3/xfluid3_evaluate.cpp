@@ -433,7 +433,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           const size_t numifacepatchdof = begids.size()*3*4;
           fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
           fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), numifacepatchdof));
-          fluidfluidmatrices_.rhsui_uncond = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
+          fluidfluidmatrices_.rhuis_uncond = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
         }
             
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
@@ -448,7 +448,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         {
            params.set("Guis_uncond",fluidfluidmatrices_.Guis_uncond);
            params.set("Gsui_uncond",fluidfluidmatrices_.Gsui_uncond);
-           params.set("rhsui_uncond",fluidfluidmatrices_.rhsui_uncond);
+           params.set("rhuis_uncond",fluidfluidmatrices_.rhuis_uncond);
         }
       }
       

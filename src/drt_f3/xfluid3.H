@@ -64,7 +64,7 @@ namespace DRT
         {
           RCP<Epetra_SerialDenseMatrix> Guis_uncond;
           RCP<Epetra_SerialDenseMatrix> Gsui_uncond;
-          RCP<Epetra_SerialDenseVector> rhsui_uncond;
+          RCP<Epetra_SerialDenseVector> rhuis_uncond;
         }fluidfluidmatrices_;
         
 

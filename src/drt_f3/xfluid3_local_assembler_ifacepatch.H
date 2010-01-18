@@ -323,13 +323,13 @@ public:
                testfield == XFEM::PHYSICS::Velyiface or
                testfield == XFEM::PHYSICS::Velziface)
       {
-        Vector_rhsui<testfield>(evec, testshape, fac); 
+        Vector_rhuis<testfield>(evec, testshape, fac); 
       }
     }
     
     template <XFEM::PHYSICS::Field testfield,
                   class V1>
-    void Vector_rhsui(
+    void Vector_rhuis(
         Epetra_SerialDenseVector& evec,
         const V1&           testshape,
         const double&       fac

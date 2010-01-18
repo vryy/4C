@@ -1873,6 +1873,8 @@ void FLD::XFluidImplicitTimeInt::Output()
 
   OutputToGmsh(step_, time_);
 
+  string vel = "/home/shahmiri/work_tmp/velocity2";
+  LINALG::PrintVectorInMatlabFormat(vel,*(state_.velnp_),true);
   FluidFluidboundaryOutput();
   
   return;
@@ -3655,7 +3657,7 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
       {
         elematrixGuis = params.get<RCP<Epetra_SerialDenseMatrix> >("Guis_uncond");  
         elematrixGsui = params.get<RCP<Epetra_SerialDenseMatrix> >("Gsui_uncond");
-        elevectorRHSui = params.get<RCP<Epetra_SerialDenseVector> >("rhsui_uncond");
+        elevectorRHSui = params.get<RCP<Epetra_SerialDenseVector> >("rhuis_uncond");
       }
         
       if (err) dserror("Proc %d: Element %d returned err=%d",fluiddiscret->Comm().MyPID(),actele->Id(),err);
@@ -3678,9 +3680,17 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
   
   // finalize the system matrix
   discret_->ClearState();
-  sysmat_->Complete();
   GuisUncond_->Complete(fluiddofrowmap, fluiddofrowmap);
   GsuiUncond_->Complete(fluiddofrowmap, fluiddofrowmap);
+  sysmat_->Add(*GuisUncond_,false,1.0,1.0);
+  sysmat_->Add(*GsuiUncond_,false,1.0,1.0);
+  sysmat_->Complete();
+  
+  residual_->Update(1.0,*RHSui_,1.0);
+
+  //string sysmat = "/home/shahmiri/work_tmp/sysmat";
+  //Teuchos::RCP<LINALG::SparseMatrix> sysmatmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+  //LINALG::PrintMatrixInMatlabFormat(sysmat,*sysmatmatrix->EpetraMatrix(),true);
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/ 
