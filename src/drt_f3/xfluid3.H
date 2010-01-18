@@ -202,7 +202,6 @@ namespace DRT
           none,
           calc_fluid_systemmat_and_residual,
           calc_linear_fluid,
-          calc_fluid_stationary_systemmat_and_residual,
           calc_fluid_projection_systemmat_and_residual,
           calc_fluid_beltrami_error,
           store_xfem_info,

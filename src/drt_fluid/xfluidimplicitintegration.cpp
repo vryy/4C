@@ -1153,10 +1153,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       ParameterList eleparams;
 
       // action for elements
-      if (timealgo_==timeint_stationary)
-        eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
-      else
-        eleparams.set("action","calc_fluid_systemmat_and_residual");
+      eleparams.set("action","calc_fluid_systemmat_and_residual");
 
       // set general element parameters
       //eleparams.set("total time",time_);
