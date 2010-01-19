@@ -1747,4 +1747,38 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
 }
 
 
+/*----------------------------------------------------------------------*
+ | check for zero/negative concentration values               gjb 01/10 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues()
+{
+  if (prbtype_ == "elch") // action only for ELCH application
+  {
+    vector<int> numfound(numscal_,0);
+
+    for (int i = 0; i < discret_->NumMyRowNodes(); i++)
+    {
+      DRT::Node* lnode = discret_->lRowNode(i);
+      vector<int> dofs;
+      dofs = discret_->Dof(lnode);
+
+      for (int k = 0; k < numscal_; k++)
+      {
+        const int lid = discret_->DofRowMap()->LID(dofs[k]);
+        if (((*phinp_)[lid]) < EPS15 )
+          numfound[k]++;
+      }
+    }
+
+    // print warning to screen
+    for (int k = 0; k < numscal_; k++)
+    {
+      if (numfound[k] > 0)
+        cout<<"WARNING: "<<numfound[k]<<
+        " nodes with zero/neg. concentration values for species "<<k<<endl;
+    }
+  }
+  return;
+}
+
 #endif /* CCADISCRET       */

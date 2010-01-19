@@ -137,7 +137,10 @@ namespace INPAR
     /// type of scalar transport problem
     enum ScaTraType
     {
-      scatratype_standard,
+      scatratype_condif,
+      scatratype_loma,
+      scatratype_secondarycurrent,
+      scatratype_elch_enc,
       scatratype_levelset
     };
 

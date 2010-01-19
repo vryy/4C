@@ -335,6 +335,9 @@ public:
   /// apply galvanostatic control (update electrode potential) (ELCH)
   bool ApplyGalvanostaticControl();
 
+  /// check for negative values of concentrations (ELCH)
+  void CheckConcentrationValues();
+
 protected:
 
   /// don't want = operator and cctor

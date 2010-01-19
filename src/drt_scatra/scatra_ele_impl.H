@@ -177,7 +177,8 @@ public:
         const bool                            reinitswitch,
         const double                          Cs, ///< Smagorinsky constant
         const double                          tpn, ///< turbulent Prandtl number
-        const double                          frt ///< factor F/RT needed for ELCH calculations
+        const double                          frt, ///< factor F/RT needed for ELCH calculations
+        const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
     );
 
     //! calculate mass matrix and rhs for determining initial time derivative
@@ -454,8 +455,6 @@ public:
     const bool iselch_;
     //! flag for using ALE formulation
     bool isale_;
-    //! flag for type of scalar transport problem (standard or level set function)
-    INPAR::SCATRA::ScaTraType scatratype_;
     //! flag for inclusion of reactive terms
     bool reaction_;
     //! (sign) factor for diffusive and reactive stabilization terms

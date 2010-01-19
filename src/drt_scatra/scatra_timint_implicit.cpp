@@ -684,6 +684,9 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   {
     itnum++;
 
+    // check for negative/zero concentration values (in case of ELCH only)
+    CheckConcentrationValues();
+
     // -------------------------------------------------------------------
     // call elements to calculate system matrix and rhs and assemble
     // -------------------------------------------------------------------
@@ -1069,7 +1072,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
   // other parameters that might be needed by the elements
   eleparams.set("time-step length",dta_);
-  eleparams.set("problem type",prbtype_);
   eleparams.set("incremental solver",incremental_);
   eleparams.set("form of convective term",convform_);
   eleparams.set("fs subgrid diffusivity",fssgd_);

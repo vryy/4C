@@ -451,9 +451,9 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     // set thermodynamic pressure and its time derivative as well as
     // flag for turbulence model if required
-    string scaltypestr=params.get<string>("problem type");
+    string prbtype=params.get<string>("problem type");
     thermpress_ = 0.0;
-    if (scaltypestr =="loma")
+    if (prbtype =="loma")
       thermpress_ = params.get<double>("thermodynamic pressure");
 
     // we dont know the parent element's lm vector; so we have to build it here

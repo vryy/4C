@@ -1937,13 +1937,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("BLOCKPRECOND","NO",
       "Switch to block-preconditioned family of solvers, needs additional SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER block!",&scatradyn);
 
-  setStringToIntegralParameter<INPAR::SCATRA::ScaTraType>("SCATRATYPE","Standard",
+  setStringToIntegralParameter<INPAR::SCATRA::ScaTraType>("SCATRATYPE","ConvectionDiffusion",
                                "Type of scalar transport problem",
                                tuple<std::string>(
-                                 "Standard",
+                                 "ConvectionDiffusion",
+                                 "LowMachNumberFlow",
+                                 "SecondaryCurrentDis",
+                                 "Elch_ENC",
                                  "LevelSet"),
                                tuple<INPAR::SCATRA::ScaTraType>(
-                                 INPAR::SCATRA::scatratype_standard,
+                                 INPAR::SCATRA::scatratype_condif,
+                                 INPAR::SCATRA::scatratype_loma,
+                                 INPAR::SCATRA::scatratype_secondarycurrent,
+                                 INPAR::SCATRA::scatratype_elch_enc,
                                  INPAR::SCATRA::scatratype_levelset),
                                &scatradyn);
 

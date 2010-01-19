@@ -175,7 +175,6 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     numscal_(numscal),
     iselch_((numdofpernode_ - numscal_) == 1),
     isale_(false),
-    scatratype_(INPAR::SCATRA::scatratype_standard),
     diffreastafac_(0.0),
     evelnp_(true),   // initialize to zero
     eaccnp_(true),
@@ -261,6 +260,9 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   }
   else edispnp_.Clear();
 
+  // the type of scalar transport problem has to be provided for all actions!
+  const INPAR::SCATRA::ScaTraType scatratype = params.get<INPAR::SCATRA::ScaTraType>("scatratype");
+
   // check for the action parameter
   const string action = params.get<string>("action","none");
   if (action=="calc_condif_systemmat_and_residual")
@@ -297,9 +299,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
     // set thermodynamic pressure and its time derivative as well as
     // flag for turbulence model if required
-    string scaltypestr=params.get<string>("problem type");
     bool turbmodel = false;
-    if (scaltypestr =="loma")
+    if (scatratype == INPAR::SCATRA::scatratype_loma)
     {
       thermpressnp_ = params.get<double>("thermodynamic pressure");
       thermpressdt_ = params.get<double>("time derivative of thermodynamic pressure");
@@ -316,8 +317,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     conservative_ = false;
     if (convform ==INPAR::SCATRA::convform_conservative) conservative_ = true;
 
-    // get type of scalar transport problem (standard or level set function)
-    scatratype_ = params.get<INPAR::SCATRA::ScaTraType>("scatratype",INPAR::SCATRA::scatratype_standard);
     bool reinitswitch = params.get<bool>("reinitswitch",false);
 
     // set parameters for stabilization
@@ -432,7 +431,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       }
     } // for i
 
-    if (scaltypestr =="loma" and is_genalpha_)
+    if ((scatratype == INPAR::SCATRA::scatratype_loma) and is_genalpha_)
     {
       // extract additional local values from global vector
       RefCountPtr<const Epetra_Vector> phiam = discretization.GetState("phiam");
@@ -530,7 +529,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         reinitswitch,
         Cs,
         tpn,
-        frt);
+        frt,
+        scatratype);
   }
   // calculate time derivative for time value t_0
   else if (action =="calc_initial_time_deriv")
@@ -566,16 +566,13 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     } // for i
 
     // set time derivative of thermodynamic pressure if required
-    string scaltypestr=params.get<string>("problem type");
-    if (scaltypestr =="loma")
+    if (scatratype ==INPAR::SCATRA::scatratype_loma)
     {
       thermpressnp_ = params.get<double>("thermodynamic pressure");
       thermpressam_ = thermpressnp_;
       thermpressdt_ = params.get<double>("time derivative of thermodynamic pressure");
     }
 
-    // get type of scalar transport problem (standard or level set function)
-    scatratype_ = params.get<INPAR::SCATRA::ScaTraType>("scatratype",INPAR::SCATRA::scatratype_standard);
     bool reinitswitch = params.get<bool>("reinitswitch",false);
 
     // get stabilization parameter sublist
@@ -586,7 +583,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
 
     double frt(0.0);
-    if(scaltypestr =="elch")
+    if(scatratype ==INPAR::SCATRA::scatratype_elch_enc)
     {
       for (int i=0;i<iel;++i)
       {
@@ -672,8 +669,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // set number of scalars and frt for ELCH
     int numscal = numdofpernode_;
     double frt(0.0);
-    string scaltypestr=params.get<string>("problem type");
-    if (scaltypestr =="elch")
+
+    if (scatratype ==INPAR::SCATRA::scatratype_elch_enc)
     {
       numscal -= 1; // ELCH case: last dof is for el. potential
       // get parameter F/RT
@@ -727,8 +724,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     {
       const double time = params.get<double>("total time");
 
-      // get type of scalar transport problem (standard or level set function)
-      scatratype_ = params.get<INPAR::SCATRA::ScaTraType>("scatratype",INPAR::SCATRA::scatratype_standard);
       bool reinitswitch = params.get<bool>("reinitswitch",false);
 
       // calculate domain and bodyforce integral
@@ -871,7 +866,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     const bool                            reinitswitch,
     const double                          Cs, ///< Smagorinsky constant
     const double                          tpn, ///< turbulent Prandtl number
-    const double                          frt ///< factor F/RT needed for ELCH calculations
+    const double                          frt, ///< factor F/RT needed for ELCH calculations
+    const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
 )
 {
   // get node coordinates
@@ -1045,7 +1041,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     }
 
   }
-  else if ((scatratype_ == INPAR::SCATRA::scatratype_levelset) and reinitswitch == true)
+  else if ((scatratype == INPAR::SCATRA::scatratype_levelset) and reinitswitch == true)
   {
 //REINHARD
     dserror("Due to Volkers commit on 14.9.09 things have to be rearranged!");
@@ -3575,8 +3571,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     conint_[k] = funct_.Dot(ephinp_[k]);
 
     // when concentration becomes zero, the coupling terms in the system matrix get lost!
-    if (conint_[k] < 1e-18)
-      printf("WARNING: species concentration %d at GP is zero or negative: %g\n",k,conint_[k]);
+    //if (conint_[k] < 1e-18)
+    //  printf("WARNING: species concentration %d at GP is zero or negative: %g\n",k,conint_[k]);
   }
 
   // get gradient of el. potential at integration point
@@ -4455,7 +4451,7 @@ double DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
   // evaluate shape functions (and not needed derivatives) at element center
   EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
 
-  // compute the conductivity (1/(\Omega m))
+  // compute the conductivity (1/(\Omega m) = 1 Siemens / m)
   double sigma(0.0);
   for(int k=0; k < numscal_; k++)
   {
