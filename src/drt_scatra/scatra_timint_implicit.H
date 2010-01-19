@@ -474,7 +474,7 @@ protected:
   bool isale_;
 
   /// flag for type of scalar transport problem
-  const INPAR::SCATRA::ScaTraType scatratype_;
+  INPAR::SCATRA::ScaTraType scatratype_;
 
   /// flag controlling level set reinitialization strategy
   INPAR::SCATRA::ReinitializationAction reinitaction_;

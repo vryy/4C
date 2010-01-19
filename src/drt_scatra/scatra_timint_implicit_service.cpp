@@ -144,6 +144,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
 
   // action for elements
   condparams.set("action","calc_elch_electrode_kinetics");
+  condparams.set("scatratype",scatratype_);
   condparams.set("frt",frt_); // factor F/RT
   condparams.set("total time",time_);
   condparams.set("iselch",(prbtype_=="elch")); // a boolean
@@ -373,6 +374,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure()
   // (if no temperature equation, zero values are returned)
   ParameterList eleparams;
   eleparams.set("action","get_material_parameters");
+  eleparams.set("scatratype",scatratype_);
   eleparams.set("isale",isale_);
   discret_->Evaluate(eleparams,null,null,null,null,null);
   thermpressn_ = eleparams.get("thermodynamic pressure", 98100.0);
@@ -480,6 +482,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialMass()
   // set action for elements
   ParameterList eleparams;
   eleparams.set("action","calc_mean_scalars");
+  eleparams.set("scatratype",scatratype_);
   // inverted scalar values are required here
   eleparams.set("inverting",true);
 
@@ -521,6 +524,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons()
   // set action for elements
   ParameterList eleparams;
   eleparams.set("action","calc_mean_scalars");
+  eleparams.set("scatratype",scatratype_);
   // inverted scalar values are required here
   eleparams.set("inverting",true);
 
@@ -576,6 +580,7 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
     // set action for elements
     ParameterList eleparams;
     eleparams.set("action","calc_mean_scalars");
+    eleparams.set("scatratype",scatratype_);
     eleparams.set("inverting",false);
 
     //provide displacement field in case of ALE
@@ -810,6 +815,7 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
   ParameterList eleparams;
   eleparams.set("action","calc_mean_scalars");
   eleparams.set("inverting",false);
+  eleparams.set("scatratype",scatratype_);
 
   //provide displacement field in case of ALE
   eleparams.set("isale",isale_);
@@ -1172,6 +1178,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   ParameterList params;
   params.set("action","calc_condif_flux");
   params.set("problem type",prbtype_);
+  params.set("scatratype",scatratype_);
   params.set("frt",frt_);
   params.set("fluxtype",fluxtype);
 
@@ -1184,9 +1191,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   params.set("isale",isale_);
   if (isale_)
     AddMultiVectorToParameterList(params,"dispnp",dispnp_);
-
-  // set type of scalar transport problem
-  params.set("scatratype",scatratype_);
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -1261,6 +1265,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     // other parameters that might be needed by the elements
     eleparams.set("time-step length",dta_);
     eleparams.set("problem type",prbtype_);
+    eleparams.set("scatratype",scatratype_);
     eleparams.set("incremental solver",true); // say yes and you get the residual!!
     eleparams.set("form of convective term",convform_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
@@ -1276,9 +1281,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     eleparams.set("isale",isale_);
     if (isale_)
       AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-    // set type of scalar transport problem
-    eleparams.set("scatratype",scatratype_);
 
     // parameters for stabilization
     eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
@@ -1563,6 +1565,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 
     // parameters for the elements
     p.set("action","calc_elch_kwok_error");
+    p.set("scatratype",scatratype_);
     p.set("total time",time_);
     p.set("frt",frt_);
 
@@ -1612,6 +1615,7 @@ double SCATRA::ScaTraTimIntImpl::ComputeConductivity()
   // create the parameters for the elements
   ParameterList p;
   p.set("action","calc_elch_conductivity");
+  p.set("scatratype",scatratype_);
   p.set("frt",frt_);
 
   //provide displacement field in case of ALE

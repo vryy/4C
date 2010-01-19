@@ -96,6 +96,15 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   gstatnumite_(0),
   gstatincrement_(0.0)
 {
+  // what kind of equations do we actually want to solve?
+  // (For the moment, we can directly conclude from the problem type)
+  if (prbtype_ == "elch")         scatratype_ = INPAR::SCATRA::scatratype_elch_enc;
+  else if (prbtype_ == "combust") scatratype_ = INPAR::SCATRA::scatratype_levelset;
+  else if (prbtype_ == "loma")    scatratype_ = INPAR::SCATRA::scatratype_loma;
+  else if (prbtype_ == "scatra")  scatratype_ = INPAR::SCATRA::scatratype_condif;
+  else
+    dserror("Problemtype %s not supported", prbtype_.c_str());
+
   // -------------------------------------------------------------------
   // determine whether linear incremental or nonlinear solver
   // -------------------------------------------------------------------

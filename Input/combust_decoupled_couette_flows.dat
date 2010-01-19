@@ -107,7 +107,7 @@ CSTAB                 cstab_qs
 CROSS-STRESS          no_cross
 REYNOLDS-STRESS       no_reynolds
 -----------------------------SCALAR TRANSPORT DYNAMIC
-SCATRATYPE                      Standard
+SCATRATYPE                      LevelSet
 SOLVERTYPE                      nonlinear
 INITFUNCNO                      2
 INITIALFIELD                    field_by_function

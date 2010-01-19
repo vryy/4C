@@ -262,6 +262,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
   // the type of scalar transport problem has to be provided for all actions!
   const INPAR::SCATRA::ScaTraType scatratype = params.get<INPAR::SCATRA::ScaTraType>("scatratype");
+  if (scatratype == INPAR::SCATRA::scatratype_undefined)
+    dserror("Set parameter SCATRATYPE in your input file!");
 
   // check for the action parameter
   const string action = params.get<string>("action","none");
