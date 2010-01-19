@@ -748,6 +748,9 @@ void DRT::INPUT::ElementDefinition::SetupSolidt10Lines()
     .AddIntVector("TET10",10)
     .AddNamedInt("MAT")
     .AddNamedString("KINEM")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 }
 
@@ -762,6 +765,9 @@ void DRT::INPUT::ElementDefinition::SetupSolidt4Lines()
     .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
     .AddNamedString("KINEM")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 }
 

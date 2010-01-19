@@ -17,6 +17,8 @@ writen by : Alexander Volf
 
 #include "so_tet10.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_mat/holzapfelcardiovascular.H"
+#include "../drt_mat/humphreycardiovascular.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -29,6 +31,14 @@ bool DRT::ELEMENTS::So_tet10::ReadElement(const std::string& eletype,
   int material = 0;
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
+  
+  if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
+    MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(Material().get());
+    holzcard->Setup(NUMGPT_SOTET10, linedef);
+  } else if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
+    MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(Material().get());
+    humcard->Setup(NUMGPT_SOTET10, linedef);
+  }
 
   std::string buffer;
   linedef->ExtractString("KINEM",buffer);

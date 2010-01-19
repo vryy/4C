@@ -1191,6 +1191,22 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_holzapfelcardiovascular: /*------- Anisotropic Fiber Material for arteries */
+    {
+      MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
+      holzcard->Evaluate(glstrain,gp,cmat,stress);
+      *density = holzcard->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_humphreycardiovascular: /*------- Anisotropic Material for arteries cf Humphrey */
+    {
+      MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
+      humcard->Evaluate(glstrain,gp,cmat,stress);
+      *density = humcard->Density();
+      return;
+      break;
+    }
     default:
       dserror("Unknown material to tet4 element");
     break;
@@ -1286,6 +1302,22 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
       hyper->Evaluate(*glstrain,*cmat,*stress);
       *density = hyper->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_holzapfelcardiovascular: /*------- Anisotropic Fiber Material for arteries */
+    {
+      MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
+      holzcard->Evaluate(glstrain,gp,cmat,stress);
+      *density = holzcard->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_humphreycardiovascular: /*------- Anisotropic Material for arteries cf Humphrey */
+    {
+      MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
+      humcard->Evaluate(glstrain,gp,cmat,stress);
+      *density = humcard->Density();
       return;
       break;
     }
