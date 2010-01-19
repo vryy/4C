@@ -311,7 +311,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> 
   {
     
     flowrates_    = rcp(new vector<double>);
-
+    flowrates_->push_back(0.0);
    
     // ---------------------------------------------------------------------
     // determine area of actual outlet and get material data
