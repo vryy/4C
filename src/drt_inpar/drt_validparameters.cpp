@@ -644,11 +644,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 //        INPAR::STR::sdc_currsym,
 //        INPAR::STR::sdc_parasym),
 //      &sdyn);
-//  
+//
 //  DoubleParameter("SDC_FACTOR",1.0,
 //      "Scaled director conditioning factor",
 //      &sdyn);
-  
+
   DoubleParameter("TOLCONSTR",1.0E-08,
                   "tolerance in the constr error norm for the newton iteration",
                   &sdyn);
@@ -2239,6 +2239,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &combustcontrolgfunc);
   IntParameter("REINITFUNCNO",-1,"function number for reinitialization of level set (G-function) field",&combustcontrolgfunc);
   IntParameter("REINITINTERVAL",1,"reinitialization interval",&combustcontrolgfunc);
+  BoolParameter("REINITBAND","No","reinitialization only within a band around the interface, or entire domain?",&combustcontrolgfunc);
+  DoubleParameter("REINITBANDWIDTH",1.0,"G-function value defining band width for reinitialization",&combustcontrolgfunc);
   setStringToIntegralParameter<int>("REFINEMENT","No","Turn refinement strategy for level set function on/off",
                                      yesnotuple,yesnovalue,&combustcontrolgfunc);
   IntParameter("REFINEMENTLEVEL",-1,"number of refinement level for refinement strategy",&combustcontrolgfunc);
@@ -2476,12 +2478,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      yesnotuple,yesnovalue,&fsidyn);
   setStringToIntegralParameter<int>("SYMMETRICPRECOND","No","Symmetric block GS preconditioner in monolithic FSI or ordinary GS",
                                      yesnotuple,yesnovalue,&fsidyn);
-  
+
   setStringToIntegralParameter<INPAR::FSI::SlideALEProj>("SLIDEALEPROJ","Curr",
                                  "Projection method to use for sliding FSI.",
                                  tuple<std::string>("Curr","Ref"),
                                  tuple<INPAR::FSI::SlideALEProj>(
-                                     INPAR::FSI::ALEprojection_curr, 
+                                     INPAR::FSI::ALEprojection_curr,
                                      INPAR::FSI::ALEprojection_ref),
                                  &fsidyn);
 

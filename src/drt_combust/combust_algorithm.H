@@ -138,12 +138,14 @@ namespace COMBUST
 
     /// switch for type of combustion problem
     INPAR::COMBUST::CombustionType combusttype_;
-
     /// options for reinitialization of G-function;
     INPAR::COMBUST::ReInitialActionGfunc reinitializationaction_;
-
-    /// interval for reinitialization (every "reinitinterval_" time steps)
+    /// interval for reinitialization (every 'reinitinterval_' time steps)
     int reinitinterval_;
+    /// switch for reinitialization only within a band around the interface
+    const bool reinitband_;
+    /// band width for reinitialization (maximum G-function value)
+    const double reinitbandwidth_;
 
     /// combustion input parameter list
     const Teuchos::ParameterList& combustdyn_;

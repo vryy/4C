@@ -29,9 +29,11 @@ COMBUST::Reinitializer::Reinitializer(
     Teuchos::RCP<Epetra_Vector> phivector
   ) :
     combustdyn_(combustdyn),
+    reinitaction_(Teuchos::getIntegralValue<INPAR::COMBUST::ReInitialActionGfunc>(combustdyn_.sublist("COMBUSTION GFUNCTION"),"REINITIALIZATION")),
+    reinitband_(Teuchos::getIntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINITBAND")),
+    reinitbandwidth_(combustdyn.sublist("COMBUSTION GFUNCTION").get<double>("REINITBAND")),
     scatra_(scatra),
-    flamefront_(boundaryintcells),
-    reinitaction_(Teuchos::getIntegralValue<INPAR::COMBUST::ReInitialActionGfunc>(combustdyn_.sublist("COMBUSTION GFUNCTION"),"REINITIALIZATION"))
+    flamefront_(boundaryintcells)
 {
   switch (reinitaction_)
   {
@@ -78,8 +80,8 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
   const Epetra_Comm& comm = scatra_.Discretization()->Comm();
   if (comm.MyPID()==0)
   {
-    std::cout << "\n /!\\ warning === third component or normal vector set to 0 to keep 2D-character!" << std::endl;
     std::cout << "\n--- reinitializing G-function with signed distance function ..." << std::flush;
+    std::cout << "\n /!\\ warning === third component or normal vector set to 0 to keep 2D-character!" << std::endl;
   }
   // get a pointer to the G-function discretization
   Teuchos::RCP<DRT::Discretization> gfuncdis = scatra_.Discretization();
@@ -91,15 +93,22 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
   // normal vector of a flame front patch
   static LINALG::Matrix<3,1> normal(true);
 
+  //------------------------------------
   // loop all row nodes on the processor
+  //------------------------------------
   for(int lnodeid=0; lnodeid < gfuncdis->NumMyRowNodes(); ++lnodeid)
   {
     // get the processor local node
     const DRT::Node* lnode = gfuncdis->lRowNode(lnodeid);
     //cout << "proc " << comm.MyPID() << " reinitialization for node: " << lnode->Id() << endl;
 
+    // get physical coordinates of this node
+    nodecoord(0) = lnode->X()[0];
+    nodecoord(1) = lnode->X()[1];
+    nodecoord(2) = lnode->X()[2];
+
     // the set of degrees of freedom associated with the node
-    const vector<int> nodedofset = gfuncdis->Dof(lnode); // this should not be a vector, but a scalar
+    const vector<int> nodedofset = gfuncdis->Dof(lnode); // this should not be a vector, but a scalar!
 
 #ifdef DEBUG
     int numdofs = nodedofset.size(); // this should be 1 (scalar field!)
@@ -110,114 +119,113 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
     const int dofgid = nodedofset[0];
     int doflid = dofrowmap->LID(dofgid);
 
-//    // reinitialize only within a band around the zero level set
-//    if (fabs((*scatra_.Phinp())[doflid]) < 0.15);
-//    {
-
-    //-----------------------------------------------------------
-    // compute smallest distance to the flame front for this node
-    //-----------------------------------------------------------
-    // smallest distance to the vertex of a flame front patch
-    double vertexdist = 7777.7; // default value
-    // smallest distance to flame front
-    double mindist = 5555.5; // default value
-
-    // get physical coordinates of this node
-    nodecoord(0) = lnode->X()[0];
-    nodecoord(1) = lnode->X()[1];
-    nodecoord(2) = lnode->X()[2];
-
-    // loop groups (vectors) of flamefront patches of all elements
-    for(std::map<int,GEO::BoundaryIntCells>::const_iterator elepatches = flamefront_.begin(); elepatches != flamefront_.end(); ++elepatches)
+    //--------------------------------
+    // conditions for reinitialization
+    //--------------------------------
+    if (!reinitband_ or // reinitialize entire level set field
+        (reinitband_ and fabs((*phivector)[doflid]) <= reinitbandwidth_)); // reinitialize only within a band around the zero level set
     {
-      // number of flamefront patches for this element
-      const std::vector<GEO::BoundaryIntCell> patches = elepatches->second;
-      const int numpatch = patches.size();
 
-      // loop flame front patches of this element
-      for(int ipatch=0; ipatch<numpatch; ++ipatch)
+      //-----------------------------------------------------------
+      // compute smallest distance to the flame front for this node
+      //-----------------------------------------------------------
+      // smallest distance to the vertex of a flame front patch
+      double vertexdist = 7777.7; // default value
+      // smallest distance to flame front
+      double mindist = 5555.5; // default value
+
+      // loop groups (vectors) of flamefront patches of all elements
+      for(std::map<int,GEO::BoundaryIntCells>::const_iterator elepatches = flamefront_.begin(); elepatches != flamefront_.end(); ++elepatches)
       {
-        // get a single patch from group of flamefront patches
-        const GEO::BoundaryIntCell patch = patches[ipatch];
-
-        // only triangles and quadrangles are allowed as flame front patches (boundary cells)
-        if (!(patch.Shape() == DRT::Element::tri3 or
-              patch.Shape() == DRT::Element::quad4))
-        {
-          dserror("invalid type of boundary integration cell for reinitialization");
-        }
-
-        // get coordinates of vertices defining flame front patch
-        const LINALG::SerialDenseMatrix& patchcoord = patch.CellNodalPosXYZ();
-
-        // compute normal vector to flame front patch
-        ComputeNormalVectorToFlameFront(patch,patchcoord,normal);
+        // number of flamefront patches for this element
+        const std::vector<GEO::BoundaryIntCell> patches = elepatches->second;
+        const int numpatch = patches.size();
 
         //-----------------------------------------
-        // find flame front patches facing the node
+        // loop flame front patches of this element
         //-----------------------------------------
-        // boolean indicating if facing patch was found
-        bool facenode = false;
-        // distance to the facing patch
-        double patchdist = 7777.7; // default value
-        // check if this patch faces the node
-        FindFacingPatchProjCellSpace(nodecoord,patch,patchcoord,normal,facenode,patchdist);
-
-        // a facing patch was found
-        if (facenode == true)
+        for(int ipatch=0; ipatch<numpatch; ++ipatch)
         {
-          // overwrite smallest distance if computed patch distance is smaller
-          if (fabs(patchdist) < fabs(mindist))
+          // get a single patch from group of flamefront patches
+          const GEO::BoundaryIntCell patch = patches[ipatch];
+
+          // only triangles and quadrangles are allowed as flame front patches (boundary cells)
+          if (!(patch.Shape() == DRT::Element::tri3 or
+                patch.Shape() == DRT::Element::quad4))
           {
-            //cout << "distance to flame front patch: " << mindist << " is overwritten by: " << patchdist << endl;
-            mindist = patchdist;
+            dserror("invalid type of boundary integration cell for reinitialization");
           }
+
+          // get coordinates of vertices defining flame front patch
+          const LINALG::SerialDenseMatrix& patchcoord = patch.CellNodalPosXYZ();
+
+          // compute normal vector to flame front patch
+          ComputeNormalVectorToFlameFront(patch,patchcoord,normal);
+
+          //-----------------------------------------
+          // find flame front patches facing the node
+          //-----------------------------------------
+          // boolean indicating if facing patch was found
+          bool facenode = false;
+          // distance to the facing patch
+          double patchdist = 7777.7; // default value
+          // check if this patch faces the node
+          FindFacingPatchProjCellSpace(nodecoord,patch,patchcoord,normal,facenode,patchdist);
+
+          // a facing patch was found
+          if (facenode == true)
+          {
+            // overwrite smallest distance if computed patch distance is smaller
+            if (fabs(patchdist) < fabs(mindist))
+            {
+              //cout << "distance to flame front patch: " << mindist << " is overwritten by: " << patchdist << endl;
+              mindist = patchdist;
+            }
+          }
+
+          //----------------------------------------------------------------
+          // compute smallest distance to vertices of this flame front patch
+          //----------------------------------------------------------------
+          ComputeDistanceToPatch(nodecoord,patch,patchcoord,normal,vertexdist);
         }
-
-        //----------------------------------------------------------------
-        // compute smallest distance to vertices of this flame front patch
-        //----------------------------------------------------------------
-        ComputeDistanceToPatch(nodecoord,patch,patchcoord,normal,vertexdist);
       }
-    }
 
-    //cout << "minimal distance to facing patch is " << mindist << endl;
+      //-------------------------------------------
+      // determine smallest distance to flame front
+      //-------------------------------------------
+      // remark: variables have the following meaning here:
+      //         - "mindist" is either "patchdist" or still the default value (5555.5)
+      //         - "vertexdist" is the distance to the clostest vertex of any flame front patch
+      //
+      // case 1: a local flame front patch was found for this node -> mindist = patchdist
+      // case 2: a flame front patch was found for this node, but it is not local (curved interface);
+      //         a local patch was not found, because this node is located in the blind angle of all
+      //         local patches -> mindist = vertexdist
+      // case 3: something went wrong:  "mindist" still has default value (5555.5)
 
-    //-------------------------------------------
-    // determine smallest distance to flame front
-    //-------------------------------------------
-    // remark: variables have the following meaning here:
-    //         - "mindist" is either "patchdist" or still the default value (5555.5)
-    //         - "vertexdist" is the distance to the clostest vertex of any flame front patch
-    //
-    // case 1: a local flame front patch was found for this node -> mindist = patchdist
-    // case 2: a flame front patch was found for this node, but it is not local (curved interface);
-    //         a local patch was not found, because this node is located in the blind angle of all
-    //         local patches -> mindist = vertexdist
-    // case 3: something went wrong:  "mindist" still has default value (5555.5)
+      //cout << "minimal distance to facing patch is " << mindist << endl;
+      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << endl;
+      //cout << "vertexdist " << std::setw(18) << std::setprecision(12) << std::scientific << vertexdist << endl;
+      if (fabs(vertexdist) < fabs(mindist)) // case 2
+      {
+        // if the sign has been changed by mistake in ComputeDistanceToPatch(), this has to be corrected here
+        if ((*phivector)[doflid] * vertexdist < 0.0 )
+          mindist = -vertexdist;
+        else
+          mindist = vertexdist;
+        //cout << "node " << lnode->Id() << " does not face a patch (blind angle) or this patch is not local; distance: " << mindist << endl;
+      }
+      if (mindist == 5555.5) // case 3
+        dserror ("G-fuction value of node %d was not reinitialized!", lnode->Id());
 
-    //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << endl;
-    //cout << "vertexdist " << std::setw(18) << std::setprecision(12) << std::scientific << vertexdist << endl;
-    if (fabs(vertexdist) < fabs(mindist)) // case 2
-    {
-      // if the sign has been changed by mistake in ComputeDistanceToPatch(), this has to be corrected here
-      if ((*phivector)[doflid] * vertexdist < 0.0 )
-        mindist = -vertexdist;
-      else
-        mindist = vertexdist;
-      //cout << "node " << lnode->Id() << " does not face a patch (blind angle) or this patch is not local; distance: " << mindist << endl;
-    }
-    if (mindist == 5555.5) // case 3
-      dserror ("G-fuction value of node %d was not reinitialized!", lnode->Id());
+      //------------------------------
+      // reinitialize G-function field
+      //------------------------------
+      // assign new values of signed distance function to the G-function field
+      phivector->ReplaceMyValues(1,&mindist,&doflid);
+    } // end condition for band around zero level set
+  } // end loop nodes
 
-    //------------------------------
-    // reinitialize G-function field
-    //------------------------------
-    // assign new values of signed distance function to the G-function field
-    phivector->ReplaceMyValues(1,&mindist,&doflid);
-    //scatra_.Phinp()->ReplaceMyValues(1,&mindist,&doflid);
-  }
-//  } // end condition for band around zero level set
   if (comm.MyPID()==0)
     std::cout << " done" << std::endl;;
 

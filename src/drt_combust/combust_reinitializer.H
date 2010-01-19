@@ -235,15 +235,18 @@ namespace COMBUST
 
     /// parameter list with combustion input parameters
     const Teuchos::ParameterList& combustdyn_;
+    /// option for reinitialization of G-function;
+    const INPAR::COMBUST::ReInitialActionGfunc reinitaction_;
+    /// switch for reinitialization only within a band around the interface
+    const bool reinitband_;
+    /// band width for reinitialization (maximum G-function value)
+    const double reinitbandwidth_;
 
     /// access to the scalar transport field time integration scheme
     SCATRA::ScaTraTimIntImpl& scatra_;
 
     /// boundary integration cells (flame front patches)
     const std::map<int,GEO::BoundaryIntCells>& flamefront_;
-
-    /// option for reinitialization of G-function;
-    const INPAR::COMBUST::ReInitialActionGfunc reinitaction_;
 
   }; // class Reinitializer
 } // namespace COMBUST
