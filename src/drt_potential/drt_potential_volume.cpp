@@ -18,6 +18,7 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_exporter.H"
 #include <cstdlib>
 
 
@@ -108,13 +109,6 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
   const bool assemblevec1 = systemvector1!=Teuchos::null;
   const bool assemblevec2 = systemvector2!=Teuchos::null;
   const bool assemblevec3 = systemvector3!=Teuchos::null;
-  
-  
-#ifdef PARALLEL
-    Epetra_MpiComm comm(MPI_COMM_WORLD);
-#else
-    Epetra_SerialComm comm;
-#endif
     
    // get conditions 
    vector<DRT::Condition*> potentialcond;
@@ -128,7 +122,7 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
    }
    
    int num_max_ele = 0;
-   comm.MaxAll(&num_local_ele,&num_max_ele,1 );
+   discret_.Comm().MaxAll(&num_local_ele,&num_max_ele,1 );
    int num_dummy_ele = num_max_ele - num_local_ele;
    
   //----------------------------------------------------------------------
@@ -378,24 +372,19 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
     const int                                   		        label,
     const bool                                              dummy)
 {
-  // create a communicator
-#ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
-#else
-  Epetra_SerialComm comm;
-#endif
-  
   // local search
   localEleIds_.clear();
   if(label != -1) // dummy
     searchTree_->queryPotentialElements(elemXAABBList_, eleXAABB, localEleIds_, label);
   
-  const int numprocs = comm.NumProc();
+  const int numprocs = discret_.Comm().NumProc();
   // if only one processor is running no parallel search has to be performed
   if(numprocs==1)
     return;
   
 #ifdef PARALLEL
+  
+  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(discret_.Comm()));
   
   std::set<int> pecIds;
   for(std::map<int, std::set<int> >::const_iterator labelIter = localEleIds_.begin(); labelIter != localEleIds_.end(); labelIter++)
@@ -403,7 +392,7 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
       pecIds.insert(*eleIter);
   
   // parallel search
-  const int myrank = comm.MyPID();
+  const int myrank = discret_.Comm().MyPID();
   int forward = 0;
   int backward = 0;
   int tag_send = myrank+1;
@@ -454,8 +443,8 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
     // send XAABB 
     int err = MPI_Sendrecv( &eleXAABB_send[0], 6, MPI_DOUBLE, forward,   tag_send, 
                             &eleXAABB_recv[0], 6, MPI_DOUBLE, backward,  tag_recv, 
-                            MPI_COMM_WORLD, &status);
-
+                            comm->Comm(), &status);
+    
     if (err != 0)
       dserror("mpi sendrecv error %d", err);
     eleXAABB_send = eleXAABB_recv;
@@ -463,7 +452,7 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
 
     MPI_Sendrecv( &label_send, 1, MPI_INT, forward,   tag_send, 
                   &label_recv, 1, MPI_INT, backward,  tag_recv, 
-                  MPI_COMM_WORLD, &status);
+                  comm->Comm(), &status);
     label_send = label_recv;
   
 
@@ -505,7 +494,7 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
     // send number of elements
     MPI_Sendrecv( &numEle_send, 1, MPI_INT, forward,  tag_send, 
                   &numEle_recv, 1, MPI_INT, backward, tag_recv, 
-                  MPI_COMM_WORLD, &status);
+                  comm->Comm(), &status);
     numEle_send = numEle_recv;
     
     // let the next proc now about the data size he will receive
@@ -513,7 +502,7 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
     int data_size_recv = 0;
     MPI_Sendrecv(&data_size_send, 1, MPI_INT, forward,  tag_send, 
                  &data_size_recv, 1, MPI_INT, backward, tag_recv, 
-                 MPI_COMM_WORLD, &status);
+                 comm->Comm(), &status);
     
     data_recv.clear();
     data_recv.resize(data_size_recv);
@@ -521,7 +510,7 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
     // 2. Send data to the next processor and receive incoming data from previous processor
     MPI_Sendrecv(&data_send[0], data_size_send, MPI_CHAR, forward, tag_send, 
                  &data_recv[0], data_size_recv, MPI_CHAR, backward,tag_recv, 
-                 MPI_COMM_WORLD, &status);
+                 comm->Comm(), &status);
     
     data_send = data_recv;
   } // loop over numprocs
@@ -943,7 +932,7 @@ double POTENTIAL::VolumePotential::ComputeFactor(
   Epetra_SerialDenseMatrix Jacobi(3,3);
   Epetra_SerialDenseMatrix X(numnode,3);
   ReferenceConfiguration(element,X,3);		
-  LINALG::SerialDenseMatrix x(numnode,3);
+  Epetra_SerialDenseMatrix x(numnode,3);
   SpatialConfiguration(currentpositions_,element,x,3);	
   Jacobi.Multiply('N','N',1.0,deriv,X,0.0);
 
@@ -1149,6 +1138,37 @@ void POTENTIAL::VolumePotential::GetGaussRule2D(
   }
   return;
 }
+
+
+
+///////////////////////// test potential //////////////////////////////////////
+
+/*-------------------------------------------------------------------*
+| (public)                                                 umay 01/10|
+|                                                                    |
+| Call discretization to evaluate additional contributions due to    |
+| potential forces                                                   |
+*--------------------------------------------------------------------*/
+void POTENTIAL::VolumePotential::TestEvaluatePotential(
+  ParameterList&                      p,
+  RefCountPtr<Epetra_Vector>          disp,
+  RefCountPtr<Epetra_Vector>          fint,
+  RefCountPtr<LINALG::SparseMatrix>   stiff,
+  const double time)
+{
+  // action for elements
+  p.set("action","calc_potential_stiff");
+
+  discret_.ClearState();
+  discret_.SetState("displacement",disp);
+  
+  // compute test results 
+  computeTestVanDerWaalsSpheres(elementsByLabel_, disp, fint, time);
+  return;
+}
+
+
+///////////////////////// test potential //////////////////////////////////////
 
 
 #endif

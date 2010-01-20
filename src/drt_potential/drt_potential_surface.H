@@ -201,6 +201,18 @@ private:
         const double                     curvefac);
   
   
+  void computeFandK_Approx1_new(
+     const DRT::Element*              actEle,
+     const DRT::UTILS::GaussRule2D&   gaussrule,
+     std::map<int,std::set<int> >&    potElements,
+     vector<int>&                     lm,
+     Epetra_SerialDenseMatrix&        K_surf,
+     Epetra_SerialDenseVector&        F_int,
+     RefCountPtr<DRT::Condition>      cond,
+     const int                        label,
+     const double                     curvefac);
+  
+  
   void computeFandK_Approx2(
       const DRT::Element*                                         actEle,
       const DRT::UTILS::GaussRule2D&                              gaussrule,  
@@ -256,17 +268,29 @@ private:
         const double                            curve_fac        
     );    
     
-
-  //! compute integration factors for line elements
-  double ComputeFactor(
-      const DRT::Element*                     element,
-      Epetra_SerialDenseVector&              funct,
-      Epetra_SerialDenseMatrix&              deriv,
-      const DRT::UTILS::IntegrationPoints1D&  intpoints,
-      const int                               gp,
-      LINALG::Matrix<3,1>&                    x_gp,
-      const double                            curve_fac
-      );
+    
+    double ComputeFactorApprox_new(
+        const DRT::Element*                     element,
+        Epetra_SerialDenseVector&               funct,
+        Epetra_SerialDenseMatrix&               deriv,
+        const DRT::UTILS::IntegrationPoints2D&  intpoints,
+        const int                               gp,    
+        LINALG::Matrix<3,1>&                    x_gp,
+        LINALG::Matrix<3,1>&                    n_xsi,
+        const double                            curve_fac
+        );
+    
+    
+    //! compute integration factors for line elements
+    double ComputeFactor(
+        const DRT::Element*                     element,
+        Epetra_SerialDenseVector&              funct,
+        Epetra_SerialDenseMatrix&              deriv,
+        const DRT::UTILS::IntegrationPoints1D&  intpoints,
+        const int                               gp,
+        LINALG::Matrix<3,1>&                    x_gp,
+        const double                            curve_fac
+        );
 
   
   

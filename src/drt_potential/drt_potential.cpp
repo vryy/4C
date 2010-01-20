@@ -17,6 +17,8 @@ Maintainer: Ursula Mayer
 #include "drt_potential.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_geometry/element_volume.H"
+#include "../drt_geometry/intersection_service_templates.H"
 
 
 /*----------------------------------------------------------------------*
@@ -1120,6 +1122,258 @@ double POTENTIAL::Potential::GetAtomicDensity(
     dserror("no condition found for this element gid");
   return beta;
 }
+
+
+
+//////////////////////////////// Test methods ////////////////////////////////
+
+/*----------------------------------------------------------------------*
+ |  test Van Der Waals spheres                               u.may 01/10|
+ *----------------------------------------------------------------------*/
+void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
+  const std::map<int,std::set<int> >&     elementsByLabel,
+  const RefCountPtr<Epetra_Vector>        disp,
+  const RefCountPtr<Epetra_Vector>        fint,
+  const double                            time)
+{    
+  // resulting potential force for each sphere
+  std::vector< LINALG::Matrix<3,1> > fpot(2, LINALG::Matrix<3,1>(true));
+  // center of gravity 
+  std::vector< LINALG::Matrix<3,1> > cog(2, LINALG::Matrix<3,1>(true));  
+
+  // compute local values for the center of gravity and potential force
+  vector<DRT::Condition*> potentialcond;
+  discretRCP_->GetCondition("potential", potentialcond);
+  
+  std::vector<double> vol_sphere_local(2,0.0);
+  for(vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++condIter)
+  {
+    const int label = (*condIter)->GetInt("label"); 
+    if(label == 0 || label == 1)
+      vol_sphere_local[label] = computeLocalForceAndCOG(fpot[label], cog[label], fint, disp, elementsByLabel.find(label)->second);
+    else
+      dserror("set label to zero and 1");
+  }
+  
+  // compute global values for the center of gravity and potential force
+  std::vector< LINALG::Matrix<3,1> > fpot_global(2, LINALG::Matrix<3,1>(true));
+  std::vector< LINALG::Matrix<3,1> > cog_global(2, LINALG::Matrix<3,1>(true));
+  computeGlobalForceAndCOG(vol_sphere_local[0], fpot[0], cog[0], fpot_global[0], cog_global[0]);
+  computeGlobalForceAndCOG(vol_sphere_local[1], fpot[1], cog[1], fpot_global[1], cog_global[1]);
+
+  if(discretRCP_->Comm().MyPID() == 0)
+  {   
+    // compute distance vector between two spheres
+    LINALG::Matrix<3,1> distance_vector (true);
+    for(int dim=0; dim<3; dim++)
+      distance_vector(dim) = cog_global[2](dim) - cog_global[1](dim);
+    
+    // compute distance and force
+    double distance = distance_vector.Norm2();
+    double force1 = fpot_global[0].Norm2();
+    double force2 = fpot_global[1].Norm2();
+  
+    // write output
+    cout<<endl<<endl<<"distance = "<< distance << endl;  
+    cout<<"force sphere 1 = "<< force1 <<endl;
+    fpot_global[0].Print(cout);
+    cout<<"force sphere 2 = "<< force2 <<endl;
+    fpot_global[1].Print(cout);
+    //write output and test with paraview
+    WriteTestOutput(distance, force1, force2, time);
+  }
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  test center of gravity and the                                      |
+ |  resulting potential force relative to the center of                 |
+ |  gravity                                                  u.may 01/10|
+ *----------------------------------------------------------------------*/
+double POTENTIAL::Potential::computeLocalForceAndCOG(  
+  LINALG::Matrix<3,1>&        fpot_sphere,
+  LINALG::Matrix<3,1>&        cog_sphere,
+  const RCP<Epetra_Vector>    fint,
+  const RCP<Epetra_Vector>    disp,
+  const std::set<int>&        elementIds)
+{
+  cog_sphere.Clear();
+  double vol_sphere_local = 0.0;
+  // iterate over set of elementids
+  for(std::set<int>::iterator eleIter = elementIds.begin() ; eleIter != elementIds.end(); ++eleIter)
+  {
+    // check if dis proc owns this element
+    if(!(discret_.HaveGlobalElement(*eleIter)))
+      continue;
+    
+    const DRT::Element* element = discret_.gElement(*eleIter);
+    LINALG::SerialDenseMatrix xyze(3 , element->NumNode());      
+    // get xyz of element
+    getPhysicalEleCoords(disp, element, xyze); 
+   
+    // element volume
+    const double vol_element = GEO::ElementVolumeT<DRT::Element::hex8>(xyze);
+
+    // center of gravity im element coordinates
+    LINALG::Matrix<3,1> xsi_cog(true);  
+    // center of gravity im physical coordinates
+    LINALG::Matrix<3,1> x_cog(true);
+    GEO::elementToCurrentCoordinatesT<DRT::Element::hex8>(xyze, xsi_cog, x_cog);
+        
+    // compute x_cog * vol_element
+    x_cog.Scale(vol_element);
+    
+    //compute local sphere volume and center of gravity of local sphere
+    vol_sphere_local += vol_element;
+    cog_sphere += x_cog;
+  }
+
+  // total force in center of gravity of local sphere part
+  // run over all rownodes and get dofs
+  // extract vector and sum it up
+  fpot_sphere.Clear();
+  for(int inode = 0; inode < discretRCP_->NumMyColNodes(); inode++)
+  {
+    DRT::Node* node = discretRCP_->lColNode(inode);
+    // check if node is owned by this proc
+    if(!(discretRCP_->HaveGlobalNode(node->Id())))
+        continue;
+    // get dofs
+    vector<int> dofId;
+    dofId.reserve(3);
+    discretRCP_->Dof(node, dofId);
+
+    // sum force vector
+    for(int dim = 0; dim < 3; dim ++)
+      fpot_sphere(dim) += (*fint)[dofId[dim]];
+  }
+  return vol_sphere_local;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  test compute global values                               u.may 01/10|
+ *----------------------------------------------------------------------*/
+void POTENTIAL::Potential::computeGlobalForceAndCOG(
+  double                vol_sphere_local, 
+  LINALG::Matrix<3,1>&  fpot_sphere_local,
+  LINALG::Matrix<3,1>&  cog_sphere_local,
+  LINALG::Matrix<3,1>&  fpot_sphere_global,
+  LINALG::Matrix<3,1>&  cog_sphere_global)
+{
+  // compute global volume
+  double vol_sphere_global = 0.0;
+  (discretRCP_->Comm()).MaxAll(&vol_sphere_local,&vol_sphere_global, 1);
+
+  if(discretRCP_->Comm().MyPID() == 0)
+    cout<< "volume = " << vol_sphere_global <<endl;
+
+  // compute global center of gravity for one sphere
+  (discretRCP_->Comm()).MaxAll(&(cog_sphere_local(0)),&(cog_sphere_global(0)), 1);
+  (discretRCP_->Comm()).MaxAll(&cog_sphere_local(1),&cog_sphere_global(1), 1);
+  (discretRCP_->Comm()).MaxAll(&cog_sphere_local(2),&cog_sphere_global(2), 1);
+  cog_sphere_global.Scale(1.0/vol_sphere_global);
+
+  // compute global force for one sphere
+  (discretRCP_->Comm()).MaxAll(&fpot_sphere_local(0),&fpot_sphere_global(0), 1);
+  (discretRCP_->Comm()).MaxAll(&fpot_sphere_local(1),&fpot_sphere_global(1), 1);
+  (discretRCP_->Comm()).MaxAll(&fpot_sphere_local(2),&fpot_sphere_global(2), 1);
+  
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  test get physical coordinates for an element             u.may 01/10|
+ *----------------------------------------------------------------------*/
+void POTENTIAL::Potential::getPhysicalEleCoords(
+    Teuchos::RCP<Epetra_Vector>     idisp_solid,
+    const DRT::Element*             element,
+    LINALG::SerialDenseMatrix&      xyze)
+{
+  const DRT::Node*const* node = element->Nodes();
+
+  for (int i=0; i< element->NumNode(); i++)
+  {
+    vector<int> lm;
+    lm.reserve(3);
+    discretRCP_->Dof(node[i], lm);
+    vector<double> mydisp(3);
+    
+    // update nodal positions and compute element coordinates
+    DRT::UTILS::ExtractMyValues(*idisp_solid,mydisp,lm);
+    xyze(0,i) = node[i]->X()[0] + mydisp[0];
+    xyze(1,i) = node[i]->X()[1] + mydisp[1];
+    xyze(2,i) = node[i]->X()[2] + mydisp[2];    
+  }
+  return;  
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  test get physical coordinates for an element             u.may 01/10|
+ *----------------------------------------------------------------------*/
+void POTENTIAL::Potential::WriteTestOutput(
+  const double    distance,
+  const double    force1,
+  const double    force2,
+  const double    time)
+{
+  //TODO correct path
+  if(discret_.Comm().MyPID()==0)
+  {
+    ofstream file("VanDerWaalsSpheres_Output.txt",ios_base::app);
+  
+    if(file.good()) 
+    file<< time << "\t\t\t" << force1 << "\t\t\t" << distance << endl;   
+  }
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  test to be called in STR::TimIntImpl::                   u.may 01/10|
+ *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/* TEST evaluate _certain_ potential forces and stiffness
+ * evaluation happens internal-force like */
+/*
+
+void STR::TimIntImpl::TestForceStiffPotential
+(
+  const double time,
+  const Teuchos::RCP<Epetra_Vector> dis
+)
+{
+  // potential force loads (but on internal force vector side)
+  if (potman_ != Teuchos::null)
+  {     
+    ParameterList p; // create the parameters for manager
+    p.set("pot_man", potman_);
+    p.set("total time", time);    
+    
+    Teuchos::RefCountPtr<LINALG::SparseMatrix> stiff_test=Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_,81,true,false, LINALG::SparseMatrix::FE_MATRIX));
+    Teuchos::RefCountPtr<Epetra_Vector> fint_test=LINALG::CreateVector(*dofrowmap_, true);
+    fint_test->PutScalar(0.0);        
+    stiff_test->Zero();   
+    
+    potman_->TestEvaluatePotential(p, dis, fint_test, stiff_test, time);
+  }
+  // wooop
+  return;
+} 
+*/
+
+
+//////////////////////////////// Test methods ////////////////////////////////
+
+
+
         
 #endif
 

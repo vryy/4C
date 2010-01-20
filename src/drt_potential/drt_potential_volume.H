@@ -116,6 +116,16 @@ public:
       Epetra_SerialDenseMatrix&         K_stiff,
       Epetra_SerialDenseVector&         fint
       );
+  
+  
+  // TEST Van Der Waals potential
+  void TestEvaluatePotential(
+    ParameterList&                      p,
+    RefCountPtr<Epetra_Vector>          disp,
+    RefCountPtr<Epetra_Vector>          fint,
+    RefCountPtr<LINALG::SparseMatrix>   stiff,
+    const double time
+    );
 
 
   
@@ -260,6 +270,7 @@ private:
       const DRT::Element::DiscretizationType& distype,
       DRT::UTILS::GaussRule2D&                rule_pot
       );
+ 
 
 
   //! name@ Private Attributes
@@ -286,8 +297,7 @@ private:
   
   //! nonlocal potential element containers
   std::map<int,std::vector<PotentialElementContainer> >   nonlocalPecs_;
-                      
-
+             
 
 }; //class
 

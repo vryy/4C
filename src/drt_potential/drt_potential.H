@@ -399,9 +399,39 @@ protected:
   
   //! invert elements by label
   void InvertElementsPerLabel(
-	std::map<int,std::set<int> >&	elementsByLabel,
-	std::map<int,int >&				labelByElements
-  	);
+      std::map<int,std::set<int> >&	elementsByLabel,
+      std::map<int,int >&				labelByElements
+  	  );
+  
+  
+  ///////////////////////  Test methods ///////////////////////
+  
+  void computeTestVanDerWaalsSpheres(
+    const std::map<int,std::set<int> >&     elementsByLabel,
+    const RefCountPtr<Epetra_Vector>        disp,
+    const RefCountPtr<Epetra_Vector>        fint,
+    const double                            time
+    );
+  
+  
+  // compute local forces and center of gravity
+  double computeLocalForceAndCOG(  
+    LINALG::Matrix<3,1>&        fpot_sphere,
+    LINALG::Matrix<3,1>&        cog_sphere,
+    const RCP<Epetra_Vector>    fint,
+    const RCP<Epetra_Vector>    disp,
+    const std::set<int>&        elementIds
+    );
+  
+  
+  // compute global forces and center of gravity
+  void computeGlobalForceAndCOG(
+    double                vol_sphere_local, 
+    LINALG::Matrix<3,1>&  fpot_sphere_local,
+    LINALG::Matrix<3,1>&  cog_sphere_local,
+    LINALG::Matrix<3,1>&  fpot_sphere_global,
+    LINALG::Matrix<3,1>&  cog_sphere_global
+    );
   
   
   //! get atomic density
@@ -410,6 +440,26 @@ protected:
       const string&                   conditionName,
       const std::map<int,int >&       labelByElements
       );
+  
+  
+  //! get physical eleCoords
+  void getPhysicalEleCoords(
+      Teuchos::RCP<Epetra_Vector>     idisp_solid,
+      const DRT::Element*             element,
+      LINALG::SerialDenseMatrix&      xyze
+      );
+  
+  
+  //! write output
+  void WriteTestOutput(
+    const double    distance,
+    const double    force1,
+    const double    force2,
+    const double    time
+    );
+  
+  
+  ///////////////////////  Test methods ///////////////////////
 
 
   //! name@ Protected Attributes
