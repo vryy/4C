@@ -92,8 +92,11 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       nv = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
       if (DRT::Problem::Instance(0)->ProblemType() == "elch")
       {
-        nv -= 1;
-        np = 1;
+        if (nv > 1) // only when we have more than 1 dof per node!
+        {
+          nv -= 1;
+          np = 1;
+        }
       }
     break;
     case DRT::Element::element_ale2:
@@ -514,8 +517,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
    * However, in opposition to the SHELL8 element it is not
    * sufficient to just call a director saved in the element.
    * Rather to calculate proper increments for the rotational
-   * degrees of freedom due to a rigid body rotation of the 
-   * complete structure, the triad at each node is required in 
+   * degrees of freedom due to a rigid body rotation of the
+   * complete structure, the triad at each node is required in
    * order to transform non-additive increments into additive ones.
    * However, the beam3 element currently does not save the nodal
    * triads as a class variable, but only the triads at each Gauss
@@ -523,19 +526,19 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
    * but commented out. In this dummy version the rotational degrees of
    * freedom are treated identically to the additive translational
    * degrees of freedom. Activating and using this part of the code
-   * quickly reveals the problems of such a naive implemnetation. 
+   * quickly reveals the problems of such a naive implemnetation.
    * Usually the equation solver simply does not work with this
    * dummy code, i.e. the iterative solution process does not converge.
-   * If Algebraic Multigrid methods should be really used for beam3 
+   * If Algebraic Multigrid methods should be really used for beam3
    * elements, one first has to develop efficient special methods for
    * these elements. Currently trying to use Algebraic multigrid methods
    * for beam3 elements just amounts to an error as no properly working
    * implementation has been available so far*/
-  
+
   else if (ele->Type() == DRT::Element::element_beam3)
   {
     dserror("No Algebraic Multigrid support by beam3 element");
-    /*   
+    /*
     //looping through all nodes
     for (int i=0; i<NumMyRowNodes(); ++i)
     {
@@ -613,8 +616,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     } // for (int i=0; i<NumMyRowNodes(); ++i)
     */
   } // else if (ele->Type() == DRT::Element::element_beam3)
-  
-  
+
+
   /* the rigid body modes for fluids are:
         xtrans   ytrans  ztrans   pressure
         mode[0]  mode[1] mode[2]  mode[3]
