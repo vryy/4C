@@ -407,6 +407,104 @@ double MORTAR::MortarElement::ComputeUnitNormalAtXi(double* xi, double* n)
 }
 
 /*----------------------------------------------------------------------*
+ |  Compute unit normal derivative at loc. coord. xi          popp 03/09|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi, vector<map<int,double> >& derivn)
+{
+  // resize derivn
+  if ((int)derivn.size()!=3) derivn.resize(3);
+
+  // initialize variables
+  int nnodes = NumNode();
+  DRT::Node** mynodes = Nodes();
+  if (!mynodes) dserror("ERROR: DerivUnitNormalAtXi: Null pointer!");
+  LINALG::SerialDenseVector val(nnodes);
+  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
+  vector<double> gxi(3);
+  vector<double> geta(3);
+
+  // get shape function values and derivatives at xi
+  EvaluateShape(xi, val, deriv, nnodes);
+
+  // get local element basis vectors
+  Metrics(xi, gxi, geta);
+
+  // n is cross product of gxi and geta
+  double n[3] = {0.0, 0.0, 0.0};
+  n[0] = gxi[1]*geta[2]-gxi[2]*geta[1];
+  n[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
+  n[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
+
+  // build unit normal
+  double length = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
+  if (length==0.0) dserror("ERROR: Normal of length zero!");
+  for (int i=0;i<3;++i) n[i] /= length;
+
+  // non-unit normal derivative
+  vector<map<int,double> > derivnnu(3);
+  typedef map<int,double>::const_iterator CI;
+
+  // now the derivative
+  for (int n=0;n<nnodes;++n)
+  {
+    MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[n]);
+    if (!mymrtrnode) dserror("ERROR: DerivUnitNormalAtXi: Null pointer!");
+    int ndof = mymrtrnode->NumDof();
+
+    // derivative weighting matrix for current node
+    LINALG::Matrix<3,3> F;
+    F(0,0) = 0.0;
+    F(1,1) = 0.0;
+    F(2,2) = 0.0;
+    F(0,1) = geta[2] * deriv(n,0) - gxi[2]  * deriv(n,1);
+    F(0,2) = gxi[1]  * deriv(n,1) - geta[1] * deriv(n,0);
+    F(1,0) = gxi[2]  * deriv(n,1) - geta[2] * deriv(n,0);
+    F(1,2) = geta[0] * deriv(n,0) - gxi[0]  * deriv(n,1);
+    F(2,0) = geta[1] * deriv(n,0) - gxi[1]  * deriv(n,1);
+    F(2,1) = gxi[0]  * deriv(n,1) - geta[0] * deriv(n,0);
+
+    //create directional derivatives
+    for (int j=0;j<3;++j)
+      for (int k=0;k<ndof;++k)
+        (derivnnu[j])[mymrtrnode->Dofs()[k]] += F(j,k);
+  }
+
+  double ll = length*length;
+  double sxsx = n[0]*n[0]*ll;
+  double sxsy = n[0]*n[1]*ll;
+  double sxsz = n[0]*n[2]*ll;
+  double sysy = n[1]*n[1]*ll;
+  double sysz = n[1]*n[2]*ll;
+  double szsz = n[2]*n[2]*ll;
+
+  for (CI p=derivnnu[0].begin();p!=derivnnu[0].end();++p)
+  {
+    derivn[0][p->first] += 1/length*(p->second);
+    derivn[0][p->first] -= 1/(length*length*length)*sxsx*(p->second);
+    derivn[1][p->first] -= 1/(length*length*length)*sxsy*(p->second);
+    derivn[2][p->first] -= 1/(length*length*length)*sxsz*(p->second);
+  }
+
+  for (CI p=derivnnu[1].begin();p!=derivnnu[1].end();++p)
+  {
+    derivn[1][p->first] += 1/length*(p->second);
+    derivn[1][p->first] -= 1/(length*length*length)*sysy*(p->second);
+    derivn[0][p->first] -= 1/(length*length*length)*sxsy*(p->second);
+    derivn[2][p->first] -= 1/(length*length*length)*sysz*(p->second);
+  }
+
+  for (CI p=derivnnu[2].begin();p!=derivnnu[2].end();++p)
+  {
+    derivn[2][p->first] += 1/length*(p->second);
+    derivn[2][p->first] -= 1/(length*length*length)*szsz*(p->second);
+    derivn[0][p->first] -= 1/(length*length*length)*sxsz*(p->second);
+    derivn[1][p->first] -= 1/(length*length*length)*sysz*(p->second);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Get nodal coordinates of the element                      popp 01/08|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord,
@@ -530,6 +628,83 @@ double MORTAR::MortarElement::Jacobian(double* xi)
 }
 
 /*----------------------------------------------------------------------*
+ |  Evaluate directional deriv. of Jacobian det.              popp 05/08|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarElement::DerivJacobian(double* xi, map<int,double>& derivjac)
+{
+  // get element nodes
+  int nnodes = NumNode();
+  DRT::Node** mynodes = Nodes();
+  if (!mynodes) dserror("ERROR: DerivJacobian: Null pointer!");
+
+  // the Jacobian itself
+  double jac = 0.0;
+  vector<double> gxi(3);
+  vector<double> geta(3);
+
+  // evaluate shape functions
+  LINALG::SerialDenseVector val(nnodes);
+  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
+  EvaluateShape(xi, val, deriv, nnodes);
+
+  // metrics routine gives local basis vectors
+  Metrics(xi,gxi,geta);
+
+  // cross product of gxi and geta
+  double cross[3] = {0.0, 0.0, 0.0};
+  cross[0] = gxi[1]*geta[2]-gxi[2]*geta[1];
+  cross[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
+  cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
+
+  DRT::Element::DiscretizationType dt = Shape();
+
+  // 2D linear case (2noded line element)
+  if (dt==line2) jac = Area()/2;
+
+  // 3D linear case (3noded triangular element)
+  else if (dt==tri3) jac = Area()*2;
+
+  // 2D quadratic case (3noded line element)
+  // 3D bilinear case (4noded quadrilateral element)
+  // 3D quadratic case (6noded triangular element)
+  // 3D serendipity case (8noded quadrilateral element)
+  // 3D biquadratic case (9noded quadrilateral element)
+  else if (dt==line3 || dt==quad4 || dt==tri6 || dt==quad8 || dt==quad9)
+    jac = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+
+  else
+    dserror("ERROR: Jac. derivative not implemented for this type of CoElement");
+
+  // *********************************************************************
+  // compute Jacobian derivative
+  // *********************************************************************
+  // (loop over all nodes and over all nodal dofs to capture all
+  // potential dependencies of the Jacobian. Note that here we only
+  // need to compute the DIRECT derivative of Lin(J), as the current
+  // GP coordinate does not change! The derivative DJacDXi is done in
+  // a special function (see above)!
+  // *********************************************************************
+  for (int i=0;i<nnodes;++i)
+  {
+    MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[i]);
+    if (!mymrtrnode) dserror("ERROR: DerivJacobian: Null pointer!");
+
+    derivjac[mymrtrnode->Dofs()[0]] += 1/jac*(cross[2]*geta[1]-cross[1]*geta[2])*deriv(i,0);
+    derivjac[mymrtrnode->Dofs()[0]] += 1/jac*(cross[1]*gxi[2]-cross[2]*gxi[1])*deriv(i,1);
+    derivjac[mymrtrnode->Dofs()[1]] += 1/jac*(cross[0]*geta[2]-cross[2]*geta[0])*deriv(i,0);
+    derivjac[mymrtrnode->Dofs()[1]] += 1/jac*(cross[2]*gxi[0]-cross[0]*gxi[2])*deriv(i,1);
+
+    if (mymrtrnode->NumDof()==3)
+    {
+      derivjac[mymrtrnode->Dofs()[2]] += 1/jac*(cross[1]*geta[0]-cross[0]*geta[1])*deriv(i,0);
+      derivjac[mymrtrnode->Dofs()[2]] += 1/jac*(cross[0]*gxi[1]-cross[1]*gxi[0])*deriv(i,1);
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Compute length / area of the element                      popp 12/07|
  *----------------------------------------------------------------------*/
 double MORTAR::MortarElement::ComputeArea()
@@ -585,7 +760,7 @@ double MORTAR::MortarElement::ComputeArea()
   else if (dt==line3 || dt==quad4 || dt==tri6 || dt==quad8 || dt==quad9)
   {
     // Gauss quadrature with correct NumGP and Dim
-    MORTAR::Integrator integrator(dt);
+    MORTAR::MortarIntegrator integrator(dt);
     double detg = 0.0;
 
     // loop over all Gauss points, build Jacobian and compute area

@@ -65,7 +65,7 @@ class MtLagrangeStrategy : public MtAbstractStrategy
 
     */
     explicit MtLagrangeStrategy(DRT::Discretization& discret,RCP<Epetra_Map> problemrowmap,
-                                Teuchos::ParameterList params, vector<RCP<CONTACT::MtInterface> > interface,
+                                Teuchos::ParameterList params, vector<RCP<MORTAR::MortarInterface> > interface,
                                 int dim, RCP<Epetra_Comm> comm, double alphaf);
 
     /*!

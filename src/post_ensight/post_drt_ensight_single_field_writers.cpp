@@ -24,10 +24,14 @@
 void StructureEnsightWriter::WriteAllResults(PostField* field)
 {
   EnsightWriter::WriteResult("displacement", "displacement", dofbased, field->problem()->num_dim());
-  EnsightWriter::WriteResult("norcontactstress", "norcontactstress", dofbased, field->problem()->num_dim());
-  EnsightWriter::WriteResult("tancontactstress", "tancontactstress", dofbased, field->problem()->num_dim());
   //EnsightWriter::WriteResult("velocity", "velocity", dofbased, field->problem()->num_dim());
   //EnsightWriter::WriteResult("acceleration", "acceleration", dofbased, field->problem()->num_dim());
+  
+  // contact and meshtying results
+  EnsightWriter::WriteResult("norcontactstress", "norcontactstress", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("tancontactstress", "tancontactstress", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("interfacetraction", "interfacetraction", dofbased, field->problem()->num_dim());
+  
   EnsightWriter::WriteElementResults(field); //To comment
   if (stresstype_!="none")
   {

@@ -41,7 +41,7 @@ Maintainer: Alexander Popp
 #include "mortar_binarytree.H"
 #include "mortar_node.H"
 #include "mortar_element.H"
-#include "../drt_contact/contactdefines.H"
+#include "mortar_defines.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
 
@@ -1269,13 +1269,13 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(RCP<BinaryTreeNode> streenode,
     }
 	}
 
-#ifdef CONTACTGMSHCTN // for plotting contacting treenodes
+#ifdef MORTARGMSHCTN // for plotting contacting treenodes
   if (streenode->Type()==1 && mtreenode->Type()==3 && nintercepts==kdop_/2)
 	{
 		couplingmap_[0].push_back(streenode);
 		couplingmap_[1].push_back(mtreenode);
 	}
-#endif // #ifdef CONTACTGMSHCTN
+#endif // #ifdef MORTARGMSHCTN
 		
 	return;
 }
@@ -1375,13 +1375,13 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(RCP<BinaryTreeNode> streenode,
      }
 	}
 
-#ifdef CONTACTGMSHCTN // for plotting contacting treenodes
+#ifdef MORTARGMSHCTN // for plotting contacting treenodes
   if (streenode->Type()==1 && mtreenode->Type()==3 && nintercepts==kdop_/2)
   {
     couplingmap_[0].push_back(streenode);
     couplingmap_[1].push_back(mtreenode);
   }
-#endif // #ifdef CONTACTGMSHCTN
+#endif // #ifdef MORTARGMSHCTN
 
 	return;
 }

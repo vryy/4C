@@ -379,6 +379,13 @@ public:
          Returns the length of the non-unit interpolated normal at xi.
   */
   virtual double ComputeUnitNormalAtXi(double* xi, double* n);
+  
+  /*!
+  \brief Compute element unit normal derivative at local coordinate xi
+         This function is a real stand-alone function to be called
+         for a CoElement in order to compute a unit normal derivative at any point.
+  */
+  virtual void DerivUnitNormalAtXi(double* xi, vector<map<int,double> >& derivn);
 
   /*!
   \brief Get nodal reference / spatial coords of current element
@@ -397,6 +404,11 @@ public:
   \brief Evaluate Jacobian determinant for parameter space integration
   */
   virtual double Jacobian(double* xi);
+  
+  /*!
+  \brief Compute Jacobian determinant derivative
+  */
+  virtual void DerivJacobian(double* xi, map<int,double>& derivjac);
 
   /*!
   \brief Compute length/area of the element
@@ -412,6 +424,15 @@ public:
                               LINALG::SerialDenseMatrix& deriv);
 
   /*!
+  \brief A repository for 1D/2D shape function linearizations
+
+  \param derivdual (in): derivative maps to be filled
+                         (= derivatives of the dual coefficient matrix Ae)
+  */
+  void ShapeFunctionLinearizations(MortarElement::ShapeType shape,
+                                   vector<vector<map<int,double> > >& derivdual);
+    
+  /*!
   \brief Evaluate shape functions and derivatives
   */
   virtual bool EvaluateShape(const double* xi, LINALG::SerialDenseVector& val,
@@ -422,6 +443,20 @@ public:
   */
   virtual bool EvaluateShapeDual(const double* xi, LINALG::SerialDenseVector& val,
                                  LINALG::SerialDenseMatrix& deriv, const int& valdim);
+  
+  /*!
+  \brief Evaluate 2nd derivative of shape functions
+  */
+  virtual bool Evaluate2ndDerivShape(const double* xi, LINALG::SerialDenseMatrix& val,
+                                     const int& valdim);
+
+  /*!
+  \brief Compute directional derivative of dual shape functions
+
+  \param derivdual (in): derivative maps to be filled
+                         (= derivatives of the dual coefficient matrix Ae)
+  */
+  virtual bool DerivShapeDual(vector<vector<map<int,double> > >& derivdual);
 
   /*!
   \brief Interpolate global coordinates for given local element coordinates

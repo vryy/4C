@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file mortar_integrator.H
+\file contact_integrator.H
 
 <pre>
 -------------------------------------------------------------------------
@@ -36,22 +36,18 @@ Maintainer: Alexander Popp
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifndef MORTAR_INTEGRATOR_H
-#define MORTAR_INTEGRATOR_H
+#ifndef CONTACT_INTEGRATOR_H
+#define CONTACT_INTEGRATOR_H
 
-#include "Epetra_Comm.h"
-#include "mortar_element.H"
-#include "mortar_interface.H"
-#include "mortar_coupling3d.H"
-#include "mortar_interface.H"
+#include "../drt_mortar/mortar_integrator.H"
 
 using namespace std;
 
 /*!
-\brief MORTAR: namespace of the BACI mortar coupling algorithms
+\brief CONTACT: namespace of the BACI contact and meshtying algorithms
 
 */
-namespace MORTAR
+namespace CONTACT
 {
 
 // forward declarations
@@ -60,12 +56,15 @@ namespace MORTAR
 \brief A class to perform Gaussian integration and assembly of Mortar
        matrices on the overlap of two MortarElements (1 Slave, 1 Master)
        in 1D (which is equivalent to a 2D coupling problem) and in 2D
-       (which is equivalent to a 3D coupling problem)
+       (which is equivalent to a 3D coupling problem).
+       
+       This is a derived class from MORTAR::MortarIntegrator which does
+       the contact-specific stuff for 3d mortar coupling.
 
 \author popp (popp@lnm.mw.tum.de)
 */
 
-class MortarIntegrator
+class CoIntegrator : public MORTAR::MortarIntegrator
 {
 public:
 
@@ -79,12 +78,12 @@ public:
   DRT::UTILS::IntegrationPoints structs to get Gauss points
   and corresponding weights.
   
-  Note: This version of the constructor creates a MortarIntegrator instance with undefined type of shape functions.
+  Note: This version of the constructor creates a CoIntegrator instance with undefined type of shape functions.
   As a result, no calls to functions relying on the evaluation of shape functions is allowed. 
-  To be able to evaluate them, the MortarIntegrator have to be created with the alternative constructor (see below). 
+  To be able to evaluate them, the CoIntegrator have to be created with the alternative constructor (see below). 
 
   */
-  explicit MortarIntegrator(DRT::Element::DiscretizationType eletype);
+  explicit CoIntegrator(DRT::Element::DiscretizationType eletype);
 
   /*!
   \brief Constructor  with shape function specification
@@ -97,52 +96,16 @@ public:
   and corresponding weights.
   
   */
-  explicit MortarIntegrator(const MortarInterface::ShapeFcnType shapefcn,
-                      DRT::Element::DiscretizationType eletype);
+  explicit CoIntegrator(const MORTAR::MortarInterface::ShapeFcnType shapefcn,
+                        DRT::Element::DiscretizationType eletype);
 
   /*!
   \brief Destructor
 
   */
-  virtual ~MortarIntegrator() {}
+  virtual ~CoIntegrator() {}
 
-  /*!
-  \brief Initialize Gauss rule (points, weights) for this MortarIntegrator
-
-  */
-  void InitializeGP(DRT::Element::DiscretizationType eletype);
-    
-  //! @name Access methods
-
-  /*!
-  \brief Get problem dimension
-
-  Note that only 2D and 3D are possible here as this refers to the global
-  problem dimension. On integration level this corresponds to 1D integration
-  (dim_==2) and 2D integration (dim_==3) on the interface!
-
-  */
-  virtual const int& Dim() {return dim_;};
-
-  /*!
-  \brief Return number of Gauss points for this instance
-
-  */
-  int nGP() {return ngp_;}
-
-  /*!
-  \brief Return coordinates of a specific GP in 1D/2D CElement
-
-  */
-  double Coordinate(int& gp, int dir) {return coords_(gp,dir);}
-
-  /*!
-  \brief Return weight of a specific GP in 1D/2D CElement
-
-  */
-  double Weight(int& gp) {return weights_[gp];}
-
-  //@}
+  //! @name 2D and 3D integration methods
 
   //! @name 2D and 3D integration methods
 
@@ -155,7 +118,7 @@ public:
   Mortar equation from the M-matrix entries.
 
   */
-  virtual void IntegrateDerivSlave2D3D(
+  void IntegrateDerivSlave2D3D(
       MORTAR::MortarElement& sele, double* sxia, double* sxib,
       RCP<Epetra_SerialDenseMatrix> dseg);
 
@@ -164,7 +127,7 @@ public:
          master overlap (i.e. M, g, LinM, Ling and possibly D, LinD)
 
   */
-  virtual void IntegrateDerivSegment2D(
+  void IntegrateDerivSegment2D(
       MORTAR::MortarElement& sele, double& sxia, double& sxib,
       MORTAR::MortarElement& mele, double& mxia, double& mxib,
       RCP<Epetra_SerialDenseMatrix> dseg,
@@ -172,26 +135,11 @@ public:
       RCP<Epetra_SerialDenseVector> gseg);
 
   /*!
-  \brief Integrate modification Mmod on a 1D slave / master overlap
-
-  This modification is based on a paper by Puso/Wohlmuth, 2005.<br>
-  It is necessary in the case of linear slave side elements
-  and dual shape functions for the Lagrange multipliers, when
-  the interface is curved (but only for mesh tying)!
-
-  */
-  RCP<Epetra_SerialDenseMatrix> IntegrateMmod2D(
-       MORTAR::MortarElement& sele,
-       double& sxia, double& sxib,
-       MORTAR::MortarElement& mele,
-       double& mxia, double& mxib);
-
-  /*!
   \brief Build all integrals and linearizations on a 2D slave /
          master integration cell (i.e. M, g, LinM, Ling and possibly D, LinD)
 
   */
-  virtual void IntegrateDerivCell3D(
+  void IntegrateDerivCell3D(
       MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
       RCP<MORTAR::Intcell> cell,
       RCP<Epetra_SerialDenseMatrix> dseg,
@@ -204,101 +152,89 @@ public:
          for the auxiliary plane coupling case
 
   */
-  virtual void IntegrateDerivCell3DAuxPlane(
+  void IntegrateDerivCell3DAuxPlane(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      RCP<MORTAR::Intcell> cell, double* auxn,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg);
-   
+
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
          master integration cell (i.e. M, g, LinM, Ling) for
          the auxiliary plane coupling case with quadratic interpolation
 
   */
-  virtual void IntegrateDerivCell3DAuxPlaneQuad(
+  void IntegrateDerivCell3DAuxPlaneQuad(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
      RCP<MORTAR::Intcell> cell, double* auxn,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg);
-
-  /*!
-  \brief Compute penalty scaling factor kappa on slave element
-
-  */
-  void IntegrateKappaPenalty(MORTAR::MortarElement& sele,
-                             double* sxia, double* sxib,
-                             RCP<Epetra_SerialDenseVector> gseg);
     
+  //@}
+
+  //! @name 2D and 3D linearization methods
+
   /*!
-  \brief Compute penalty scaling factor kappa on slave integration element
-  (special version for the 3D quadratic case)
+  \brief Compute directional derivative of segment end coordinates
+         Xi on a 1D slave / master overlap
 
   */
-  void IntegrateKappaPenalty(MORTAR::MortarElement& sele,
-                             MORTAR::IntElement& sintele,
-                             double* sxia, double* sxib,
-                             RCP<Epetra_SerialDenseVector> gseg);
+  void DerivXiAB2D(MORTAR::MortarElement& sele, double& sxia, double& sxib,
+                   MORTAR::MortarElement& mele, double& mxia, double& mxib,
+                   vector<map<int,double> >& derivxi,
+                   bool& startslave, bool& endslave);
+
+  /*!
+  \brief Compute directional derivative of master Gauss point
+         coordinates XiGP on a 1D slave / master overlap
+
+  */
+  void DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+                   double& sxigp, double& mxigp, const map<int,double>& derivsxi,
+                   map<int,double>& derivmxi);
+  
+  /*!
+  \brief Compute directional derivative of master Gauss point
+         coordinates XiGP on a 2D slave / master integration cell
+
+  */
+  void DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+                   double* sxigp, double* mxigp, const vector<map<int,double> >& derivsxi,
+                   vector<map<int,double> >& derivmxi, double& alpha);
+
+  /*!
+  \brief Compute directional derivative of slave / master Gauss point
+         coordinates XiGP on a 2D slave / master integration cell
+         (This is the AuxPlane version, thus master and slave are projected)
+
+  */
+  void DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele, double* xigp, double* auxn,
+                   vector<map<int,double> >& derivxi, double& alpha,
+                   const vector<map<int,double> >& derivauxn,
+                   const vector<map<int,double> >& derivgp);
   
   //@}
-  
-  //! @name 2D and 3D assembly methods
-  
-  /*!
-  \brief Assemble D contribution of current overlap into slave nodes
-
-  */
-  bool AssembleD(const Epetra_Comm& comm,
-                 MORTAR::MortarElement& sele,
-                 Epetra_SerialDenseMatrix& D_seg);
-
-  /*!
-  \brief Assemble M contribution of current overlap into slave nodes
-
-  */
-  bool AssembleM(const Epetra_Comm& comm,
-                 MORTAR::MortarElement& sele,
-                 MORTAR::MortarElement& mele,
-                 Epetra_SerialDenseMatrix& M_seg);
-
-  /*!
-  \brief Assemble Mmod contribution of current overlap into slave nodes
-
-  */
-  bool AssembleMmod(const Epetra_Comm& comm,
-                    MORTAR::MortarElement& sele,
-                    MORTAR::MortarElement& mele,
-                    Epetra_SerialDenseMatrix& Mmod_seg);
-
-  /*!
-  \brief Assemble g~ contribution of current overlap into slave nodes
-
-  */
-  bool AssembleG(const Epetra_Comm& comm,
-                 MORTAR::MortarElement& sele,
-                 Epetra_SerialDenseVector& g_seg);
-
-  //@}
-  
+   
 protected:
 
     // don't want = operator and cctor
-    MortarIntegrator operator = (const MortarIntegrator& old);
-    MortarIntegrator(const MortarIntegrator& old);
+    CoIntegrator operator = (const CoIntegrator& old);
+    CoIntegrator(const CoIntegrator& old);
 
-    const MortarInterface::ShapeFcnType shapefcn_;    // employed type of shape function set
-    
-    int                           dim_;         // dimension of problem (2D or 3D)
-    int                           ngp_;         // number of Gauss points
-    Epetra_SerialDenseMatrix      coords_;      // Gauss point coordinates
-    vector<double>                weights_;     // Gauss point weights
+    DRT::Node**                       mynodes_;   // slave element nodes
+    LINALG::SerialDenseMatrix         scoord_;    // slave element nodal coordinates
+    LINALG::SerialDenseMatrix         mcoord_;    // master element nodal coordinates
+    bool                              duallin_;   // flag indicating linearization of dual shape fct.
+    vector<vector<map<int,double> > > dualmap_;   // storage for dual shape fct. derivatives
+    LINALG::SerialDenseMatrix         ssecderiv_; // storage for 2nd derivatives of standard shape fct.
+    vector<map<int,double> >          ximaps_;    // storage for 2d segment endpoints derivatives
 
-}; // class MortarIntegrator
-}  // namespace MORTAR
+}; // class CoIntegrator
+}  // namespace CONTACT
 
 
-#endif  // #ifndef MORTAR_INTEGRATOR_H
+#endif  // #ifndef CONTACT_INTEGRATOR_H
 #endif  // #ifdef CCADISCRET

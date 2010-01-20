@@ -60,7 +60,7 @@ namespace MORTAR
 \author popp (popp@lnm.mw.tum.de)
 */
 
-class Projector
+class MortarProjector
 {
 public:
 
@@ -74,13 +74,13 @@ public:
   \param dim (in): Global problem dimension
 
   */
-  explicit Projector(int dim);
+  explicit MortarProjector(int dim);
 
   /*!
   \brief Destructor
 
   */
-  virtual ~Projector() {}
+  virtual ~MortarProjector() {}
 
   //! @name Access methods
 
@@ -336,12 +336,12 @@ public:
 protected:
 
   // don't want = operator and cctor
-  Projector operator = (const Projector& old);
-  Projector(const Projector& old);
+  MortarProjector operator = (const MortarProjector& old);
+  MortarProjector(const MortarProjector& old);
 
   int       dim_;          // dimension of problem (2D or 3D)
 
-}; // class Projector
+}; // class MortarProjector
 }  // namespace MORTAR
 
 

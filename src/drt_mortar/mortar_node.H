@@ -327,6 +327,12 @@ public:
   virtual bool CheckMeshDistortion(double& relocation, double& limit);
 
   //@}
+  
+  //! @name Empty functions (contact node)
+  
+  virtual void AddgValue(double& val) {}
+  
+  //@}
 
 protected:
 

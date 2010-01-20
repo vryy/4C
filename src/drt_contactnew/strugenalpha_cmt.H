@@ -150,7 +150,7 @@ public:
   method, we employ a different nonlinear solution method, namely FullNewton();
 
   */
-  //void SemiSmoothNewton();
+  void SemiSmoothNewton();
     
   /*!
   \brief Line search version of full Newton iteration
@@ -162,7 +162,7 @@ public:
   \brief Line search version of semi-smooth Newton iteration
 
   */
-  //void SemiSmoothNewtonLineSearch();
+  void SemiSmoothNewtonLineSearch();
   
   /*!
   \brief do pseudo transient continuation nonlinear iteration

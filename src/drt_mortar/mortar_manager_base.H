@@ -72,7 +72,7 @@ public:
 
   One needs a derived class for a concrete implementation of the Manager
   class into a given FE code environment (see e.g. contact_manager.H and
-  drt_contact_manager.cpp for the BACI mortar contact implementation or
+  contact_manager.cpp for the BACI mortar contact implementation or
   meshtying_manager.H and meshtying_manager.coo for the BACI mortar
   meshtying implementation).
   
@@ -119,6 +119,7 @@ public:
   // MORTAR::ManagerBase is always called from the control routine (time
   // integrator), these functions need to be defined purely virtual here.
 
+  virtual void PostprocessTractions(IO::DiscretizationWriter& output) = 0;
   virtual void ReadRestart(IO::DiscretizationReader& reader, RCP<Epetra_Vector> dis) = 0;
   virtual void WriteRestart(IO::DiscretizationWriter& output) = 0;
   

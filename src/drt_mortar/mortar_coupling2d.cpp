@@ -50,31 +50,14 @@ Maintainer: Alexander Popp
  *----------------------------------------------------------------------*/
 MORTAR::Coupling2d::Coupling2d(DRT::Discretization& idiscret, int dim,
                                MORTAR::MortarElement& sele,
-                               MORTAR::MortarElement& mele,
-                               bool nonlinear) :
+                               MORTAR::MortarElement& mele) :
 shapefcn_(MortarInterface::Undefined),
-nonlinear_(nonlinear),
 idiscret_(idiscret),
 dim_(dim),
 sele_(sele),
 mele_(mele)
 {
-  // *********************************************************************
-  // the two-dimensional case
-  // *********************************************************************
-  // prepare overlap integration
-  vector<bool> hasproj(4);
-  vector<double> xiproj(4);
-  bool overlap = false;
-
-  // project the element pair
-  Project(hasproj,xiproj);
-
-  // check for element overlap
-  overlap = DetectOverlap(hasproj,xiproj);
-
-  // integrate the element overlap
-  if (overlap) IntegrateOverlap(xiproj);
+  // empty constructor
 
   return;
 }
@@ -85,18 +68,23 @@ mele_(mele)
 MORTAR::Coupling2d::Coupling2d(const MortarInterface::ShapeFcnType shapefcn,
                                DRT::Discretization& idiscret, int dim,
                                MORTAR::MortarElement& sele,
-                               MORTAR::MortarElement& mele,
-                               bool nonlinear) :
+                               MORTAR::MortarElement& mele) :
 shapefcn_(shapefcn),
-nonlinear_(nonlinear),
 idiscret_(idiscret),
 dim_(dim),
 sele_(sele),
 mele_(mele)
 {
-  // *********************************************************************
-  // the two-dimensional case
-  // *********************************************************************
+  // empty constructor
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate coupling  (public)                               popp 06/09|
+ *----------------------------------------------------------------------*/
+bool MORTAR::Coupling2d::EvaluateCoupling()
+{
   // prepare overlap integration
   vector<bool> hasproj(4);
   vector<double> xiproj(4);
@@ -110,8 +98,8 @@ mele_(mele)
 
   // integrate the element overlap
   if (overlap) IntegrateOverlap(xiproj);
-  
-  return;
+    
+  return true;
 }
 
 /*----------------------------------------------------------------------*
@@ -135,7 +123,7 @@ bool MORTAR::Coupling2d::Project(vector<bool>& hasproj,
     dserror("ERROR: IntegrateOverlap: Null pointer for mymnodes!");
 
   // create a projector instance of problem dimension Dim()
-  MORTAR::Projector projector(Dim());
+  MORTAR::MortarProjector projector(Dim());
 
   // project slave nodes onto master element
   for (int i=0;i<sele_.NumNode();++i)
@@ -547,8 +535,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(vector<double>& xiproj)
   /**********************************************************************/
   /* INTEGRATION                                                        */
   /* Depending on overlap and the xiproj entries integrate the Mortar   */
-  /* matrix M and the weighted gap function g~ on the overlap of the    */
-  /* current slave / master element pair                                */
+  /* matrices D and M on the overlap of the current sl / ma pair.       */
   /**********************************************************************/
 
   //local working copies of input variables
@@ -558,7 +545,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(vector<double>& xiproj)
   double mxib = xiproj[3];
 
   // create an integrator instance with correct NumGP and Dim
-  MORTAR::Integrator integrator(shapefcn_,sele_.Shape(),nonlinear_);
+  MORTAR::MortarIntegrator integrator(shapefcn_,sele_.Shape());
 
   // do the overlap integration (integrate and linearize both M and gap)
   int nrow = sele_.NumNode();
@@ -573,9 +560,6 @@ bool MORTAR::Coupling2d::IntegrateOverlap(vector<double>& xiproj)
   integrator.AssembleD(Comm(),sele_,*dseg);
 #endif // #ifdef MORTARONELOOP
   integrator.AssembleM(Comm(),sele_,mele_,*mseg);
-  
-  // also do assembly of weighted gap vector
-  if (nonlinear_) integrator.AssembleG(Comm(),sele_,*gseg);
 
   /*----------------------------------------------------------------------
   // check for the modification of the M matrix for curved interfaces

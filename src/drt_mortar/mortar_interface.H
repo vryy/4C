@@ -490,7 +490,7 @@ public:
   \param nonlinear (in): nonlinear mortar coupling flag
 
   */
-  virtual void Evaluate(bool nonlinear = false);
+  virtual void Evaluate();
 
   /*!
   \brief Brute force search algorithm for potentially coupling
@@ -523,8 +523,7 @@ public:
   \param nonlinear (in): evaluate linearizations or not
 
   */
-  virtual bool IntegrateSlave(MORTAR::MortarElement& sele,
-                              bool nonlinear = false);
+  virtual bool IntegrateSlave(MORTAR::MortarElement& sele);
 
   /*!
   \brief Integrate Mortar matrix M and gap g on slave/master overlap
@@ -533,8 +532,7 @@ public:
   
   */
   virtual bool IntegrateCoupling(MORTAR::MortarElement& sele,
-                                 MORTAR::MortarElement& mele,
-                                 bool nonlinear = false);
+                                 MORTAR::MortarElement& mele);
 
   /*!
   \brief Split MortarElements into IntElements for 3D quadratic coupling

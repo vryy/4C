@@ -48,7 +48,7 @@ Maintainer: Alexander Popp
  *----------------------------------------------------------------------*/
 CONTACT::MtLagrangeStrategy::MtLagrangeStrategy(DRT::Discretization& discret, RCP<Epetra_Map> problemrowmap,
                                                 Teuchos::ParameterList params,
-                                                vector<RCP<CONTACT::MtInterface> > interface,
+                                                vector<RCP<MORTAR::MortarInterface> > interface,
                                                 int dim, RCP<Epetra_Comm> comm, double alphaf) :
 MtAbstractStrategy(discret, problemrowmap, params, interface, dim, comm, alphaf)
 {
@@ -137,7 +137,7 @@ void CONTACT::MtLagrangeStrategy::MeshInitialization()
       int gid = interface_[i]->MasterRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MtNode* mtnode = static_cast<MtNode*>(node);
+      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
       
       // prepare assembly   
       Epetra_SerialDenseVector val(Dim());
@@ -177,13 +177,13 @@ void CONTACT::MtLagrangeStrategy::MeshInitialization()
   // ONLY, and there is still the underlying problem discretization
   // dealing with the classical finite element evaluation. Thus, it is
   // very important that we apply the nodal relocation to BOTH the
-  // MtNodes in the meshtying interface discretization AND to the DRT:Nodes
-  // in the underlying problem discretization.
+  // MortarNodes in the meshtying interface discretization AND to the
+  // DRT:Nodes in the underlying problem discretization.
   // Finally, we have to ask ourselves whether the node column distribution
   // of the slave nodes in the interface discretization is IDENTICAL
   // to the distribution in the underlying problem discretization. The
   // answer is yes here, so it is possible to do BOTH modifications
-  // (MtNode and DRT::Node) within one loop!
+  // (MortarNode and DRT::Node) within one loop!
   //**************************************************************
   
   // loop over all interfaces
@@ -201,7 +201,7 @@ void CONTACT::MtLagrangeStrategy::MeshInitialization()
       // be careful to modify BOTH mtnode in interface discret ...
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MtNode* mtnode = static_cast<MtNode*>(node);
+      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
       
       // ... AND standard node in underlying problem discret
       DRT::Node* pnode = ProblemDiscret().gNode(gid);
@@ -470,7 +470,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
       int gid = interface_[i]->MasterRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MtNode* mtnode = static_cast<MtNode*>(node);
+      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
       
       // prepare assembly   
       Epetra_SerialDenseVector val(Dim());
@@ -501,7 +501,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MtNode* mtnode = static_cast<MtNode*>(node);
+      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
       
       // prepare assembly   
       Epetra_SerialDenseVector val(Dim());

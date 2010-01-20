@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file meshtying_manager.H
+\file contact_manager.H
 
 <pre>
 -------------------------------------------------------------------------
@@ -36,9 +36,10 @@ Maintainer: Alexander Popp
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifndef MESHTYING_MANAGER_H
-#define MESHTYING_MANAGER_H
+#ifndef CONTACT_MANAGER_H
+#define CONTACT_MANAGER_H
 
+#include "contact_interface.H"
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_io/io.H"
 
@@ -51,40 +52,40 @@ namespace CONTACT
 // forward declarations
 
 /*!
-\brief BACI implementation of main class to control all meshtying
+\brief BACI implementation of main class to control all contact
 
 \author popp (popp@lnm.mw.tum.de)
 */
-class MtManager : public MORTAR::ManagerBase
+class CoManager : public MORTAR::ManagerBase
 {
 public:
 
   /*!
   \brief Standard Constructor
 
-  The constructor takes a discretization that is expected to have at least
-  two meshtying boundary conditions. It extracts all meshtying boundary conditions
-  and constructs one or multiple meshtying interfaces from them and stores them.
+  The constructor takes a discretization  that is expected to have at least
+  two contact boundary conditions. It extracts all contact boundary conditions
+  and constructs one or multiple contact interfaces from them and stores them.
 
-  It calls MORTAR::MortarInterface::FillComplete() on all meshtying interfaces which
-  makes the nodes and elements of a meshtying interfaces redundant on all
+  It calls CONTACT::CoInterface::FillComplete() on all contact interfaces which
+  makes the nodes and elements of a contact interfaces redundant on all
   processors that either own a node or an element on the interfaces in the
   input discretization.
   
   In addition, it creates the necessary solver strategy object which handles
-  the whole meshtying evaluation.
+  the whole contact evaluation.
 
-  \param discret (in): A discretization containing meshtying boundary conditions
+  \param discret (in): A discretization containing contact boundary conditions
   \param alphaf (in): Generalized-alpha parameter (set to 0.0 by default)
 
   */
-  explicit MtManager(DRT::Discretization& discret, double alphaf = 0.0);
+  explicit CoManager(DRT::Discretization& discret, double alphaf = 0.0);
 
   /*!
   \brief Destructor
 
   */
-  virtual ~MtManager() {};
+  virtual ~CoManager() {};
 
   //! @name Access methods
 
@@ -99,21 +100,22 @@ public:
   //! @name Evaluation methods
 
   /*!
-  \brief Read and check input parameters
+  \brief Read and check contact input parameters
 
-  All specified meshtying-related input parameters are read from the
+  All specified contact-related input parameters are read from the
   DRT::Problem::Instance() and stored into a local variable of
   type Teuchos::ParameterList. Invalid parameter combinations are
   sorted out and throw a dserror.
 
   */
-  bool ReadAndCheckInput(Teuchos::ParameterList& mtparams);
+  bool ReadAndCheckInput(Teuchos::ParameterList& cparams);
 
   /*!
-  \brief Write restart information for meshtying
+  \brief Write restart information for contact
 
-  The additionally necessary restart information in the meshtying
-  case are the current Lagrange multiplier values.
+  The additionally necessary restart information in the contact
+  case are the current Lagrange multiplier values and the current
+  active set status of each slave node.
 
   \param output (in): IO::Discretization writer for restart
   
@@ -124,9 +126,10 @@ public:
   \brief Read restart information for contact
 
   This method has the inverse functionality of WriteRestart, as
-  it reads the restart Lagrange mulitplier vectors. Moreover, 
-  all mortar coupling quantities (e.g. D and M) have to be
-  re-computed upon restart..
+  it reads the activetoggle / lmold vectors and stores the restart
+  status into each slave node. Moreover, all global maps concerning
+  the active set and the old mortar matrices D,M are rebuilt based
+  on the restart information.
 
   \param reader (in): IO::Discretization reader for restart
   \param dis (in)   : global dof displacement vector
@@ -149,13 +152,13 @@ public:
 protected:
 
   // don't want = operator and cctor
-  MtManager operator = (const MtManager& old);
-  MtManager(const MtManager& old);
+  CoManager operator = (const CoManager& old);
+  CoManager(const CoManager& old);
 
   DRT::Discretization&  discret_; // the underlying problem discretization
 
-}; // class MtManager
+}; // class CoManager
 } // namespace CONTACT
 
-#endif  // #ifndef MESHTYING_MANAGER_H
+#endif  // #ifndef CONTACT_MANAGER_H
 #endif  // #ifdef CCADISCRET

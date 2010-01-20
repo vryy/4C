@@ -48,7 +48,7 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 01/08|
  *----------------------------------------------------------------------*/
-MORTAR::Projector::Projector(int dim) :
+MORTAR::MortarProjector::MortarProjector(int dim) :
 dim_(dim)
 {
   if (Dim()!=2 && Dim()!=3)
@@ -58,7 +58,7 @@ dim_(dim)
 /*----------------------------------------------------------------------*
  |  Project a node along its nodal normal (public)            popp 01/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Projector::ProjectNodalNormal(MORTAR::MortarNode& node,
+bool MORTAR::MortarProjector::ProjectNodalNormal(MORTAR::MortarNode& node,
                                             MORTAR::MortarElement& ele,
                                             double* xi)
 {
@@ -113,7 +113,7 @@ bool MORTAR::Projector::ProjectNodalNormal(MORTAR::MortarNode& node,
 /*----------------------------------------------------------------------*
  |  Project a node along element's normal field (public)      popp 01/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Projector::ProjectElementNormal(MORTAR::MortarNode& node,
+bool MORTAR::MortarProjector::ProjectElementNormal(MORTAR::MortarNode& node,
                                               MORTAR::MortarElement& ele,
                                               double* xi)
 {
@@ -168,7 +168,7 @@ bool MORTAR::Projector::ProjectElementNormal(MORTAR::MortarNode& node,
 /*----------------------------------------------------------------------*
  |  Project a node along element's normal field (3D)          popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Projector::ProjectElementNormal3D(MORTAR::MortarNode& node,
+bool MORTAR::MortarProjector::ProjectElementNormal3D(MORTAR::MortarNode& node,
                                                 MORTAR::MortarElement& ele,
                                                 double* xi, double& par)
 {
@@ -233,7 +233,7 @@ bool MORTAR::Projector::ProjectElementNormal3D(MORTAR::MortarNode& node,
 /*----------------------------------------------------------------------*
  |  Project a Gauss point along its normal (public)           popp 01/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Projector::ProjectGaussPoint(MORTAR::MortarElement& gpele,
+bool MORTAR::MortarProjector::ProjectGaussPoint(MORTAR::MortarElement& gpele,
                                            const double* gpeta,
                                            MORTAR::MortarElement& ele,
                                            double* xi)
@@ -315,7 +315,7 @@ bool MORTAR::Projector::ProjectGaussPoint(MORTAR::MortarElement& gpele,
 /*----------------------------------------------------------------------*
  |  Project a Gauss point along its normal (3D)               popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Projector::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
+bool MORTAR::MortarProjector::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
                                              const double* gpeta,
                                              MORTAR::MortarElement& ele,
                                              double* xi, double& par)
@@ -411,7 +411,7 @@ bool MORTAR::Projector::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
 /*----------------------------------------------------------------------*
  |  Project a Gauss point along AuxPlane normal (3D)          popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Projector::ProjectGaussPointAuxn3D(const double* globgp,
+bool MORTAR::MortarProjector::ProjectGaussPointAuxn3D(const double* globgp,
                                                  const double* auxn,
                                                  MORTAR::MortarElement& ele,
                                                  double* xi, double& par)
@@ -477,7 +477,7 @@ bool MORTAR::Projector::ProjectGaussPointAuxn3D(const double* globgp,
 /*----------------------------------------------------------------------*
  |  Evaluate F for nodal normal case (public)                 popp 01/08|
  *----------------------------------------------------------------------*/
-double MORTAR::Projector::EvaluateFNodalNormal(MORTAR::MortarNode& node,
+double MORTAR::MortarProjector::EvaluateFNodalNormal(MORTAR::MortarNode& node,
                                                 MORTAR::MortarElement& ele,
                                                 const double* eta)
 {
@@ -508,7 +508,7 @@ double MORTAR::Projector::EvaluateFNodalNormal(MORTAR::MortarNode& node,
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for nodal normal case (public)             popp 01/08|
  *----------------------------------------------------------------------*/
-double MORTAR::Projector::EvaluateGradFNodalNormal(MORTAR::MortarNode& node,
+double MORTAR::MortarProjector::EvaluateGradFNodalNormal(MORTAR::MortarNode& node,
                                                     MORTAR::MortarElement& ele,
                                                     const double* eta)
 {
@@ -536,7 +536,7 @@ double MORTAR::Projector::EvaluateGradFNodalNormal(MORTAR::MortarNode& node,
 /*----------------------------------------------------------------------*
  |  Evaluate F for element normal case (public)               popp 01/08|
  *----------------------------------------------------------------------*/
-double MORTAR::Projector::EvaluateFElementNormal(MORTAR::MortarNode& node,
+double MORTAR::MortarProjector::EvaluateFElementNormal(MORTAR::MortarNode& node,
                                                   MORTAR::MortarElement& ele,
                                                   const double* eta)
 {
@@ -594,7 +594,7 @@ double MORTAR::Projector::EvaluateFElementNormal(MORTAR::MortarNode& node,
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for element normal case (public)           popp 01/08|
  *----------------------------------------------------------------------*/
-double MORTAR::Projector::EvaluateGradFElementNormal(MORTAR::MortarNode& node,
+double MORTAR::MortarProjector::EvaluateGradFElementNormal(MORTAR::MortarNode& node,
                                                       MORTAR::MortarElement& ele,
                                                       const double* eta)
 {
@@ -667,7 +667,7 @@ double MORTAR::Projector::EvaluateGradFElementNormal(MORTAR::MortarNode& node,
 /*----------------------------------------------------------------------*
  |  Evaluate F for element normal case (3D)                   popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Projector::EvaluateFElementNormal3D(
+bool MORTAR::MortarProjector::EvaluateFElementNormal3D(
                               double* f,
                               MORTAR::MortarNode& node,
                               MORTAR::MortarElement& ele,
@@ -722,7 +722,7 @@ bool MORTAR::Projector::EvaluateFElementNormal3D(
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for element normal case (3D)               popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Projector::EvaluateGradFElementNormal3D(
+bool MORTAR::MortarProjector::EvaluateGradFElementNormal3D(
                               LINALG::Matrix<3,3>& fgrad,
                               MORTAR::MortarNode& node,
                               MORTAR::MortarElement& ele,
@@ -796,7 +796,7 @@ bool MORTAR::Projector::EvaluateGradFElementNormal3D(
 /*----------------------------------------------------------------------*
  |  Evaluate F for Gauss point case (public)                  popp 01/08|
  *----------------------------------------------------------------------*/
-double MORTAR::Projector::EvaluateFGaussPoint(const double* gpx,
+double MORTAR::MortarProjector::EvaluateFGaussPoint(const double* gpx,
                                                const double* gpn,
                                                MORTAR::MortarElement& ele,
                                                const double* eta)
@@ -830,7 +830,7 @@ double MORTAR::Projector::EvaluateFGaussPoint(const double* gpx,
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for Gauss point case (public)              popp 01/08|
  *----------------------------------------------------------------------*/
-double MORTAR::Projector::EvaluateGradFGaussPoint(const double* gpn,
+double MORTAR::MortarProjector::EvaluateGradFGaussPoint(const double* gpn,
                                                       MORTAR::MortarElement& ele,
                                                       const double* eta)
 {
@@ -857,7 +857,7 @@ double MORTAR::Projector::EvaluateGradFGaussPoint(const double* gpn,
 /*----------------------------------------------------------------------*
  |  Evaluate F for Gauss point case (3D)                      popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Projector::EvaluateFGaussPoint3D(
+bool MORTAR::MortarProjector::EvaluateFGaussPoint3D(
                               double* f,
                               const double* gpx,
                               const double* gpn,
@@ -887,7 +887,7 @@ bool MORTAR::Projector::EvaluateFGaussPoint3D(
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for Gauss point case (3D)                  popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Projector::EvaluateGradFGaussPoint3D(
+bool MORTAR::MortarProjector::EvaluateGradFGaussPoint3D(
                               LINALG::Matrix<3,3>& fgrad,
                               const double* gpx,
                               const double* gpn,
@@ -923,7 +923,7 @@ bool MORTAR::Projector::EvaluateGradFGaussPoint3D(
 /*----------------------------------------------------------------------*
  |  Evaluate F for AuxPlane Gauss point case (3D)             popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Projector::EvaluateFGaussPointAuxn3D(
+bool MORTAR::MortarProjector::EvaluateFGaussPointAuxn3D(
                               double* f,
                               const double* globgp,
                               const double* auxn,
@@ -953,7 +953,7 @@ bool MORTAR::Projector::EvaluateFGaussPointAuxn3D(
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for AuxPlane Gauss point case (3D)         popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Projector::EvaluateGradFGaussPointAuxn3D(
+bool MORTAR::MortarProjector::EvaluateGradFGaussPointAuxn3D(
                               LINALG::Matrix<3,3>& fgrad,
                               const double* globgp,
                               const double* auxn,

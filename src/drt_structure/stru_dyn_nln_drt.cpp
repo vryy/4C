@@ -288,16 +288,16 @@ void dyn_nlnstructural_drt()
       // note that beam contact will be treated seperately,
       // thus contact = meshtying = false in this case but beamcontact = true
       bool contact = false;
+      bool newcontact = false;
       bool beamcontact = false;
       bool meshtying = false;
       INPAR::CONTACT::ContactType ctype = Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(scontact,"CONTACT");
       switch (ctype)
       {
         case INPAR::CONTACT::contact_none:
-          contact = false;
           break;
         case INPAR::CONTACT::contact_normal:
-          contact = true;
+          newcontact = true;
           break;
         case INPAR::CONTACT::contact_frictional:
           contact = true;
@@ -334,12 +334,14 @@ void dyn_nlnstructural_drt()
       // create the time integrator
       bool inv_analysis = genalphaparams.get("inv_analysis",false);
       RCP<StruGenAlpha> tintegrator;
-      if (!contact && !meshtying && !beamcontact && !inv_analysis && !thermalbath)
+      if (!contact && !newcontact && !meshtying && !beamcontact && !inv_analysis && !thermalbath)
         tintegrator = rcp(new StruGenAlpha(genalphaparams,*actdis,solver,output));
       else
       {
         if (contact)
           tintegrator = rcp(new CONTACT::ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
+        if (newcontact)
+          tintegrator = rcp(new CONTACT::CmtStruGenAlpha(genalphaparams,*actdis,solver,output,ctype));
         if (meshtying)
           tintegrator = rcp (new CONTACT::CmtStruGenAlpha(genalphaparams,*actdis,solver,output,ctype));
         if (beamcontact)

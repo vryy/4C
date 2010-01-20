@@ -50,7 +50,6 @@ using namespace std;
 #define MORTARONELOOP            /* flag for computing D and M in one loop */
 //#define MORTARBOUNDMOD         /* flag for modification of boundary nodes */
 //#define MORTARPETROVGALERKIN   /* flag for PetrovGalerkin approach for LM */
-//#define MORTARCONTACT          /* stuff that is contact-specific (this has to go away soon) */
 
 /************************************************************************/
 /* Mortar algorithm parameters                                          */
@@ -67,6 +66,14 @@ using namespace std;
 // MORTAR PROJECTION AND INTEGRATION (3D)
 #define MORTARCLIPTOL 1.0e-12  /* tolerance for polygon clipping */
 #define MORTARINTLIM 1.0e-12   /* min(area-%) cell/slave for integration */
+
+/************************************************************************/
+/* Mortar debugging options                                             */
+/************************************************************************/
+
+// GMSH DEBUGGING OPTIONS
+//#define MORTARGMSHTN         /* gmsh output of all treenodes */
+//#define MORTARGMSHCTN        /* gmsh output of coupling treenodes */
 
 /************************************************************************/
 /* Mortar utility functions                                             */

@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file meshtying_element.H
+\file contact_element.H
 
 <pre>
 -------------------------------------------------------------------------
@@ -36,10 +36,12 @@ Maintainer: Alexander Popp
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifndef MESHTYING_ELEMENT_H
-#define MESHTYING_ELEMENT_H
+#ifndef CONTACT_ELEMENT_H
+#define CONTACT_ELEMENT_H
+
 
 #include "../drt_mortar/mortar_element.H"
+#include "contact_node.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -56,12 +58,12 @@ namespace CONTACT
 // forward declarations
 
 /*!
-\brief A meshyting element
+\brief A contact element
 
 
 \author popp (popp@lnm.mw.tum.de)
 */
-class MtElement : public MORTAR::MortarElement
+class CoElement : public MORTAR::MortarElement
 {
 public:
 
@@ -78,11 +80,11 @@ public:
   \param nodeids (in): ids of nodes adjacent to this element
   \param isslave (in): flag indicating whether element is slave or master side
   */
-  explicit MtElement(int id, ElementType etype, int owner,
-                     const DRT::Element::DiscretizationType& shape,
-                     const int numnode,
-                     const int* nodeids,
-                     const bool isslave);
+  explicit CoElement(int id, ElementType etype, int owner,
+                    const DRT::Element::DiscretizationType& shape,
+                    const int numnode,
+                    const int* nodeids,
+                    const bool isslave);
 
   /*!
   \brief Copy Constructor
@@ -90,19 +92,20 @@ public:
   Makes a deep copy of this class
 
   */
-  MtElement(const CONTACT::MtElement& old);
+  CoElement(const CONTACT::CoElement& old);
 
   /*!
   \brief Destructor
 
   */
-  virtual ~MtElement() { return; }
+  virtual ~CoElement() { return; }
 
   /*!
   \brief Deep copy the derived class and return pointer to it
 
   */
-  virtual CONTACT::MtElement* Clone() const;
+  virtual CONTACT::CoElement* Clone() const;
+
 
   /*!
   \brief Return unique ParObject id
@@ -111,7 +114,7 @@ public:
   top of drt_parobject.H
 
   */
-  virtual int UniqueParObjectId() const { return ParObject_MtElement; }
+  virtual int UniqueParObjectId() const { return ParObject_CoElement; }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -132,7 +135,7 @@ public:
   /*!
   \brief Allocate and return a ElementRegister class
 
-  Assuming the meshtying elements do not need initialization, we return a
+  Assuming the contact elements do not need initialization, we return a
   dummy base class here.
 
   */
@@ -144,13 +147,25 @@ public:
   //! @name Query methods
 
   /*!
+  \brief Get number of degrees of freedom of a certain node
+
+  This CoElement is picky: It cooperates only with CNodes, not with
+  standard Node objects!
+
+  */
+  int NumDofPerNode(const DRT::Node& node) const
+  {
+    const CONTACT::CoNode* cnode = dynamic_cast<const CONTACT::CoNode*>(&node);
+    if (!cnode) dserror("Node is not a CoNode");
+    return cnode->NumDof();
+  }
+
+  /*!
   \brief Print this element
 
   */
   virtual void Print(ostream& os) const;
-
-  //@}
-
+  
   //! @name Evaluation methods
 
   /*!
@@ -214,7 +229,32 @@ public:
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL)
   { return 0; }
-  
+
+  /*!
+  \brief Build element normal derivative at node passed in
+  */
+  virtual void DerivNormalAtNode(int nid, int& i, Epetra_SerialDenseMatrix& elens,
+                                 vector<map<int,double> >& derivn);
+
+  /*!
+  \brief Compute element normal derivative at local coordinate xi
+         Caution: This function cannot be called stand-alone! It is
+         integrated into the whole nodal normal calculation process.
+  */
+  virtual void DerivNormalAtXi(double* xi, int& i, Epetra_SerialDenseMatrix& elens,
+                               vector<map<int,double> >& derivn);
+
+  /*!
+  \brief Evaluate derivative J,xi of Jacobian determinant
+  */
+  virtual void DJacDXi(double* djacdxi, double* xi,
+                       const LINALG::SerialDenseMatrix& secderiv);
+
+  /*!
+  \brief Compute length/area derivative of the element
+  */
+  virtual void DerivArea(map<int,double>& derivarea);
+
   //@}
 
 
@@ -222,11 +262,12 @@ private:
 
   // no new variables as compared to base class
 
-}; // class MtElement
+}; // class CoElement
 } // namespace CONTACT
 
-// << operator
-ostream& operator << (ostream& os, const CONTACT::MtElement& ele);
 
-#endif  // #ifndef MESHTYING_ELEMENT_H
+// << operator
+ostream& operator << (ostream& os, const CONTACT::CoElement& ele);
+
+#endif  // #ifndef CONTACT_ELEMENT_H
 #endif  // #ifdef CCADISCRET

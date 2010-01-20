@@ -240,11 +240,6 @@ OBJS_DRT_MORTAR_LIB = \
                 src/drt_mortar/mortar_strategy_base.o
 OBJS_DRT_MORTAR =  
 #----------------------------------------------------- drt version contact
-OBJS_DRT_CONTACT = \
-                src/drt_contact/contactstrugenalpha.o \
-                src/drt_contact/contactstrugenalpha_lsnewton.o \
-                src/drt_contact/beam3contactstrugenalpha.o
-#----------------------------------------------------- drt version contact
 OBJS_DRT_CONTACT_LIB = \
                 src/drt_contact/drt_contact_manager_base.o \
                 src/drt_contact/drt_contact_manager.o \
@@ -268,15 +263,27 @@ OBJS_DRT_CONTACT_LIB = \
                 src/drt_contact/drt_contact_abstract_strategy.o \
                 src/drt_contact/drt_contact_penalty_strategy.o \
                 src/drt_contact/drt_contact_lagrange_strategy.o
+OBJS_DRT_CONTACT = \
+                src/drt_contact/contactstrugenalpha.o \
+                src/drt_contact/contactstrugenalpha_lsnewton.o \
+                src/drt_contact/beam3contactstrugenalpha.o
 #------------------------------------------drt version contact + meshtying
 OBJS_DRT_CONTACTNEW_LIB = \
+                src/drt_contactnew/contact_abstract_strategy.o \
+                src/drt_contactnew/contact_coupling2d.o \
+                src/drt_contactnew/contact_coupling3d.o \
+                src/drt_contactnew/contact_element.o \
+                src/drt_contactnew/contact_integrator.o \
+                src/drt_contactnew/contact_interface.o \
+                src/drt_contactnew/contact_lagrange_strategy.o \
+                src/drt_contactnew/contact_manager.o \
+                src/drt_contactnew/contact_node.o \
+                src/drt_contactnew/contact_penalty_strategy.o \
                 src/drt_contactnew/meshtying_abstract_strategy.o \
-                src/drt_contactnew/meshtying_element.o \
-                src/drt_contactnew/meshtying_interface.o \
                 src/drt_contactnew/meshtying_lagrange_strategy.o \
                 src/drt_contactnew/meshtying_manager.o \
-                src/drt_contactnew/meshtying_node.o \
-                src/drt_contactnew/meshtying_penalty_strategy.o
+                src/drt_contactnew/meshtying_penalty_strategy.o \
+                src/drt_contactnew/selfcontact_binarytree.o
 OBJS_DRT_CONTACTNEW = \
                 src/drt_contactnew/strugenalpha_cmt.o
 #----------------------------------------------------- drt version statmech

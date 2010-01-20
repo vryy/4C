@@ -39,8 +39,6 @@ Maintainer: Alexander Popp
 
 #include "meshtying_penalty_strategy.H"
 #include "meshtying_defines.H"
-//#include "drt_cnode.H"
-//#include "drt_celement.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_lib/linalg_utils.H"
@@ -51,7 +49,7 @@ Maintainer: Alexander Popp
  *----------------------------------------------------------------------*/
 CONTACT::MtPenaltyStrategy::MtPenaltyStrategy(DRT::Discretization& discret, RCP<Epetra_Map> problemrowmap,
                                               Teuchos::ParameterList params,
-                                              vector<RCP<CONTACT::MtInterface> > interface,
+                                              vector<RCP<MORTAR::MortarInterface> > interface,
                                               int dim, RCP<Epetra_Comm> comm, double alphaf) :
 MtAbstractStrategy(discret, problemrowmap, params, interface, dim, comm, alphaf)
 {
@@ -184,7 +182,7 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>& 
       int gid = interface_[i]->MasterRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MtNode* mtnode = static_cast<MtNode*>(node);
+      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
       
       // prepare assembly   
       Epetra_SerialDenseVector val(Dim());
@@ -215,7 +213,7 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>& 
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MtNode* mtnode = static_cast<MtNode*>(node);
+      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
       
       // prepare assembly   
       Epetra_SerialDenseVector val(Dim());

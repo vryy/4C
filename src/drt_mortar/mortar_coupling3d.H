@@ -90,8 +90,7 @@ public:
   */
   explicit Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
                       bool auxplane,
-                      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-                      bool nonlinear = false);
+                      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
   /*!
   \brief Constructor with shape function specification
@@ -104,8 +103,7 @@ public:
   explicit Coupling3d(const MortarInterface::ShapeFcnType shapefcn, 
                       DRT::Discretization& idiscret, int dim, bool quad,
                       bool auxplane,
-                      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-                      bool nonlinear = false);
+                      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
   /*!
   \brief Destructor
@@ -401,70 +399,22 @@ public:
   /*!
   \brief Linearization of clip vertex coordinates (3D)
 
-  This method computes and returns full linearizations of all
-  clip polygon vertices. We distinguish three possible cases here,
-  namely the vertex being a slave node, a projected master node in
-  slave element parameter space or a line-clipping intersection in
-  slave element paramater space. NOT implemented for AuxPlane case!
-
   */
   virtual bool VertexLinearization(vector<vector<map<int,double> > >& linvertex,
-                                   map<int,double>& projpar, bool printderiv=false);
+                                map<int,double>& projpar, bool printderiv=false)
+  {
+    return true;
+  }
 
   /*!
   \brief Linearization of clip vertex coordinates (3D)
-
-  Sub-method of VertexLinearization for slave linearization.
-  ONLY necessary for for AuxPlane case!
-
-  */
-  virtual bool SlaveVertexLinearization(vector<map<int,double> >& currlin,
-                                        int sid);
-
-  /*!
-  \brief Linearization of clip vertex coordinates (3D)
-
-  Sub-method of VertexLinearization for master linearization.
-  Two versions for (a) slave parameter space (b) AuxPlane case.
-
-  */
-  virtual bool MasterVertexLinearization(Vertex& currv,
-                                         vector<map<int,double> >& currlin,
-                                         int mid, double alpha);
-  virtual bool MasterVertexLinearization(vector<map<int,double> >& currlin,
-                                         int mid);
-
-  /*!
-  \brief Linearization of clip vertex coordinates (3D)
-
-  Sub-method of VertexLinearization for lineclip linearization.
-  Two versions for (a) slave parameter space (b) AuxPlane case.
-  For the AuxPlane case version, we just combine the correct
-  slave and master vertex linearizations here, which were already
-  computed earlier in VertexLinearization3D!
-
-  */
-  virtual bool LineclipVertexLinearization(Vertex& currv,
-                                           vector<map<int,double> >& currlin,
-                                           Vertex* sv1, Vertex* sv2, Vertex* mv1, Vertex* mv2,
-                                           map<int,double>& projpar);
-  virtual bool LineclipVertexLinearization(Vertex& currv,
-                                           vector<map<int,double> >& currlin,
-                                           Vertex* sv1, Vertex* sv2, Vertex* mv1, Vertex* mv2,
-                                           vector<vector<map<int,double> > >& linsnodes,
-                                           vector<vector<map<int,double> > >& linmnodes);
-
-  /*!
-  \brief Linearization of clip vertex coordinates (3D)
-
-  This method computes and returns the full linearization of
-  the clip polygon center, which itself is obtained from the
-  clip polygon vertices by centroid formulas. NOT implemented
-  for AuxPlane case!
 
   */
   virtual bool CenterLinearization(const vector<vector<map<int,double> > >& linvertex,
-                                   vector<map<int,double> >& lincenter);
+                                                  vector<map<int,double> >& lincenter)
+  {
+    return true;
+  }
   
   //@}
 
@@ -475,7 +425,6 @@ protected:
     Coupling3d(const Coupling3d& old);
 
     const MortarInterface::ShapeFcnType shapefcn_;  // employed type of shape function set
-    bool                                nonlinear_; // nonlinear version (incl. linearizations)
 
     DRT::Discretization&       idiscret_;    // discretization of the contact interface
     int                        dim_;         // problem dimension (here: 3D)
@@ -534,8 +483,7 @@ public:
   explicit Coupling3dQuad(DRT::Discretization& idiscret,
                           int dim, bool quad, bool auxplane,
                           MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-                          MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
-                          bool nonlinear = false);
+                          MORTAR::IntElement& sintele, MORTAR::IntElement& mintele);
 
   /*!
   \brief Constructor with shape function specification
@@ -549,8 +497,7 @@ public:
                           DRT::Discretization& idiscret,
                           int dim, bool quad, bool auxplane,
                           MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-                          MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
-                          bool nonlinear = false);
+                          MORTAR::IntElement& sintele, MORTAR::IntElement& mintele);
   
   /*!
   \brief Destructor

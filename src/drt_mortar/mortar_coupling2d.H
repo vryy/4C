@@ -80,8 +80,7 @@ public:
 
   */
   explicit Coupling2d(DRT::Discretization& idiscret, int dim,
-                      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-                      bool nonlinear = false);
+                      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
   
   /*!
   \brief Constructor with shape function specification
@@ -92,8 +91,7 @@ public:
   
   */  
   explicit Coupling2d(const MortarInterface::ShapeFcnType shapefcn, DRT::Discretization& idiscret, int dim,
-                      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-                      bool nonlinear = false);
+                      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
   /*!
   \brief Destructor
@@ -137,6 +135,12 @@ public:
 
   //! @name Evlauation methods
 
+  /*!
+  \brief Evaluate coupling (3D)
+
+  */
+  virtual bool EvaluateCoupling();
+  
   /*!
   \brief Projection of slave / master pair (2D)
 
@@ -187,7 +191,6 @@ protected:
     Coupling2d(const Coupling2d& old);
     
     const MortarInterface::ShapeFcnType shapefcn_;  // employed type of shape function set
-    bool                                nonlinear_; // nonlinear version (incl. linearizations)
 
     DRT::Discretization&       idiscret_;    // discretization of the contact interface
     int                        dim_;         // problem dimension (here: 2D)

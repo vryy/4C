@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file meshtying_penalty_strategy.H
+\file contact_penalty_strategy.H
 
 <pre>
 -------------------------------------------------------------------------
@@ -37,10 +37,10 @@ Maintainer: Alexander Popp
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#ifndef MESHTYING_PENALTY_STRATEGY_H
-#define MESHTYING_PENALTY_STRATEGY_H
+#ifndef CONTACT_PENALTY_STRATEGY_H
+#define CONTACT_PENALTY_STRATEGY_H
 
-#include "meshtying_abstract_strategy.H"
+#include "contact_abstract_strategy.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -49,16 +49,18 @@ namespace CONTACT
 {
 
 /*!
- \brief Meshtying solving strategy with regularization of Lagrangian multipliers,
+ \brief Contact solving strategy with regularization of Lagrangian multipliers,
  also known as Penalty Method or regularization. An Augmented Lagrangian version
  based on the Uzawa algorithm is included, too.
  
- This is a specialization of the abstract meshyting algorithm as defined in MtAbstractStrategy.
- For a more general documentation of the involved functions refer to MtAbstractStrategy.
+ This is a specialization of the abstract contact algorithm as defined in CoAbstractStrategy.
+ For a more general documentation of the involved functions refer to CoAbstract Strategy.
+
+ Refer also to the Semesterarbeit of Bernd Budich, 2009
 
  \author popp (popp@lnm.mw.tum.de)
  */
-class MtPenaltyStrategy : public MtAbstractStrategy
+class CoPenaltyStrategy : public CoAbstractStrategy
 {
   public:
 
@@ -66,15 +68,15 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   \brief Standard Constructor
 
   */
-  explicit MtPenaltyStrategy(DRT::Discretization& discret,RCP<Epetra_Map> problemrowmap,
-                             Teuchos::ParameterList params, vector<RCP<MORTAR::MortarInterface> > interface,
-                             int dim, RCP<Epetra_Comm> comm, double alphaf);
+  explicit CoPenaltyStrategy(RCP<Epetra_Map> problemrowmap, Teuchos::ParameterList params,
+                             vector<RCP<CONTACT::CoInterface> > interface, int dim,
+                             RCP<Epetra_Comm> comm, double alphaf);
 
   /*!
   \brief Destructor
 
   */
-  virtual ~MtPenaltyStrategy() {};
+  virtual ~CoPenaltyStrategy() {};
   
   //! @name Access methods
   
@@ -85,7 +87,7 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   double ConstraintNorm() { return constrnorm_;}
   
   /*!
-  \brief Return initial penalty parameter
+  \brief Return initial penalty parameter for non-penetration
   
   */
   double InitialPenalty() { return initialpenalty_;}
@@ -95,50 +97,43 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   //! @name Evaluation methods
   
   /*!
-  \brief Do mortar coupling in reference configuration
+  \brief Save nodal kappa-coefficients
    
-  Only do this ONCE for meshtying upon initialization!
-  
+  Before starting with the time integration, we have to calculate a nodal scaling factor,
+  which will compensate the different integration area for computing the nodal weighted
+  gap. Omitting this scaling, nodes on edges or boundaries would have a smaller weighted
+  gap, even in case of a uniform physical gap. Hence, this scaling is of crucial importance
+  for a penalty strategy since the weighted gap determines the lagrangian multipliers.
+   
   */
-  void MortarCoupling(const RCP<Epetra_Vector> dis);
+  void SaveReferenceState(const RCP<Epetra_Vector> dis);
+  
+  /*!
+  \brief Initialize general contact variables for next Newton step
+       
+  For a penalty strategy this involves the derivative matrix for the regularized lagrange multipliers.
+   
+  */
+  void Initialize();
 
   /*!
-  \brief Mesh intialization for rotational invariance
-  
-  Only do this ONCE for meshtying upon initialization!
-  (not yet implemented for penalty strategy)
-  
-  */
-  void MeshInitialization();
-      
-  /*!
-  \brief Evaluate meshtying
-  
-  This is the main routine of our meshtying algorithms on a global level.
-  It contains the setup of the global linear system including meshtying.
-     
+  \brief Evaluate contact
+   
   For a penalty strategy this includes the evaluation of regularized forces
-  and results in a simple addition of extra stiffness contributions to kteff
-  and extra meshtying forces to feff. 
+  in normal and tangential direction and results in a simple addition of extra
+  stiffness contributions to kteff and extra contact forces to feff. 
   
-  \param kteff (in/out): effective stiffness matrix (without -> with contact)
-  \param feff (in/out): effective residual / force vector (without -> with contact)
-  \param dis (in): current displacement state
-    
   */
-  void EvaluateMeshtying(RCP<LINALG::SparseOperator>& kteff,
-                         RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis);
+  void EvaluateContact(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff);
 
   /*!
-  \brief Initialize Uzawa step
+  \brief Evaluate frictional contact
+   
+  This includes the evaluation of of the frictional contact forces.  
   
-  LM is updated to z = zuzawa - pp * gap. This mehtod is called at the
-  beginning of the second, third, ... Uzawa iterarion in order to
-  create an out-of-balance force again.
-     
   */
-  void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff);
-  
+  void EvaluateFriction(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff);
+
   /*!
   \brief Reset penalty parameter to intial value
   
@@ -152,6 +147,20 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   
   */
   void ResetPenalty();
+  
+  /*!
+  \brief Initialize Uzawa step
+  
+ 
+  This method is called at the beginning of the second, third, ... Uzawa
+  iterarion in order to create an of an out-of-balance force again. First,
+  the contact force and stiffness terms are removed from feff and kteff.
+  Then the LM and derivatives are updated (AugmentedLagrange) and the new
+  contact forces and stiffness terms are created by calling Initialize()
+  and finally Evaluate().
+     
+  */
+  void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff);
     
   /*!
   \brief Compute L2-norm of active constraints
@@ -176,29 +185,26 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   void UpdateAugmentedLagrange();
   
   //@}
-  
-  //! @name Empty functions (Lagrange meshtying)
+
+  //! @name Empty functions (Lagrange contact)
           
-  // All these functions only have functionality in Lagrange meshtying simulations,
-  // thus they are defined empty here in the case of Penalty meshtying.
+  // All these functions only have functionality in Lagrange contact simulations,
+  // thus they are defined empty here in the case of Penalty contact.
   
   void Recover(RCP<Epetra_Vector> disi) {}
+  void UpdateActiveSet() {}
+  void UpdateActiveSetSemiSmooth() {}
   
   //@}
   
 protected:
     
-  double                     constrnorm_;         // L2-norm of normal contact constraints
-  double                     initialpenalty_;     // initial penalty parameter
-  
-  RCP<LINALG::SparseMatrix>  mtm_;                // mortar matrix product: M(^T)*M
-  RCP<LINALG::SparseMatrix>  mtd_;                // mortar matrix product: M(^T)*D
-  RCP<LINALG::SparseMatrix>  dm_;                 // mortar matrix product: D*M
-  RCP<LINALG::SparseMatrix>  dd_;                 // mortar matrix product: D*D
-  
+  RCP<LINALG::SparseMatrix> linzmatrix_;         // global matrix LinZ with derivatives of LM
+  double                    constrnorm_;         // L2-norm of normal contact constraints
+  double                    initialpenalty_;     // initial penalty parameter
 
-}; // class MtPenaltyStrategy
+}; // class CoPenaltyStrategy
 }  // namespace CONTACT
 
-#endif  // #ifndef MESHTYING_PENALTY_STRATEGY_H
+#endif  // #ifndef CONTACT_PENALTY_STRATEGY_H
 #endif  // #ifdef CCADISCRET

@@ -49,7 +49,6 @@ Maintainer: Alexander Popp
 #include "mortar_dofset.H"
 #include "mortar_binarytree.H"
 #include "mortar_defines.H"
-#include "../drt_contact/contactdefines.H"
 #include "../drt_lib/linalg_utils.H"
 
 
@@ -320,14 +319,14 @@ void MORTAR::MortarInterface::CreateSearchTree()
   if (!lComm()) return;
 
   // warning
-#ifdef CONTACTGMSHCTN
+#ifdef MORTARGMSHCTN
   if (Dim()==3 && Comm().MyPID()==0)
   {
     cout << "\n******************************************************************\n";
     cout << "GMSH output of all contact tree nodes in 3D needs a lot of memory!\n";
     cout << "******************************************************************\n";
   }
-#endif //CONTACTGMSHCTN
+#endif //MORTARGMSHCTN
 
   // binary tree search
   if (SearchAlg()==INPAR::MORTAR::search_binarytree)
@@ -650,7 +649,7 @@ void MORTAR::MortarInterface::SetState(const string& statename, const RCP<Epetra
 /*----------------------------------------------------------------------*
  |  evaluate mortar coupling (public)                         popp 11/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::Evaluate(bool nonlinear)
+void MORTAR::MortarInterface::Evaluate()
 {
   // interface needs to be complete
   if (!Filled() && Comm().MyPID()==0)
@@ -701,10 +700,10 @@ void MORTAR::MortarInterface::Evaluate(bool nonlinear)
     // two separate Mortar loops for D and M. If MORTARONELOOP
     // is applied, we combine the construction of D with the construction
     // of M and linearization of D with the linearization of M in
-    // Integrator::IntegrateDerivSegment2D()!
+    // MortarIntegrator::IntegrateDerivSegment2D()!
     //********************************************************************
 #ifndef MORTARONELOOP
-    IntegrateSlave(*selement,nonlinear);
+    IntegrateSlave(*selement);
 #endif // #ifndef MORTARONELOOP
 
     // loop over the candidate master elements of sele_
@@ -721,7 +720,7 @@ void MORTAR::MortarInterface::Evaluate(bool nonlinear)
       // 2) integrate Mortar matrix M and weighted gap g
       // 3) compute directional derivative of M and g and store into nodes
       //********************************************************************
-      IntegrateCoupling(*selement,*melement,nonlinear);
+      IntegrateCoupling(*selement,*melement);
     }
   }
 
@@ -1078,12 +1077,12 @@ bool MORTAR::MortarInterface::EvaluateSearchBinarytree()
   // update tree in a bottom up way
   //binarytree_->UpdateTreeBottomUp();
 
-#ifdef CONTACTGMSHCTN
+#ifdef MORTARGMSHCTN
   for (int i=0;i<(int)(binarytree_->CouplingMap().size());i++)
     binarytree_->CouplingMap()[i].clear();
   binarytree_->CouplingMap().clear();
   binarytree_->CouplingMap().resize(2);
-#endif //CONTACTGMSHCTN
+#endif //MORTARGMSHCTN
 
   // search with a separate algorithm
   //binarytree_->SearchSeparate();
@@ -1097,11 +1096,10 @@ bool MORTAR::MortarInterface::EvaluateSearchBinarytree()
 /*----------------------------------------------------------------------*
  |  Integrate Mortar matrix D on slave element (public)       popp 01/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarInterface::IntegrateSlave(MORTAR::MortarElement& sele,
-                                             bool nonlinear)
+bool MORTAR::MortarInterface::IntegrateSlave(MORTAR::MortarElement& sele)
 {
   // create an integrator instance with correct NumGP and Dim
-  MORTAR::Integrator integrator(shapefcn_,sele.Shape(),nonlinear);
+  MORTAR::MortarIntegrator integrator(shapefcn_,sele.Shape());
 
   // create correct integration limits
   double sxia[2] = {0.0, 0.0};
@@ -1133,8 +1131,7 @@ bool MORTAR::MortarInterface::IntegrateSlave(MORTAR::MortarElement& sele,
  |  Integrate matrix M and gap g on slave/master overlap      popp 11/08|
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
-                                           MORTAR::MortarElement& mele,
-                                           bool nonlinear)
+                                                MORTAR::MortarElement& mele)
 {
   // *********************************************************************
   // do interface coupling within a new class
@@ -1142,7 +1139,13 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
   // linearization of the Mortar matrix M)
   // ************************************************************** 2D ***
   if (Dim()==2)
-    MORTAR::Coupling2d coup(shapefcn_,Discret(),Dim(),sele,mele,nonlinear);
+  {
+    // create instance of coupling class
+    MORTAR::Coupling2d coup(shapefcn_,Discret(),Dim(),sele,mele);
+    
+    // do coupling
+    coup.EvaluateCoupling();
+  }
   // ************************************************************** 3D ***
   else if (Dim()==3)
   {
@@ -1167,7 +1170,7 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
         {
           // create instance of coupling class
           MORTAR::Coupling3dQuad coup(shapefcn_,Discret(),Dim(),true,auxplane,
-                        sele,mele,*sauxelements[i],*mauxelements[j],nonlinear);
+                        sele,mele,*sauxelements[i],*mauxelements[j]);
           // do coupling
           coup.EvaluateCoupling();
         }
@@ -1179,7 +1182,7 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
     {
       // create instance of coupling class
       MORTAR::Coupling3d coup(shapefcn_,Discret(),Dim(),false,auxplane,
-                              sele,mele,nonlinear);
+                              sele,mele);
       // do coupling
       coup.EvaluateCoupling();
     }

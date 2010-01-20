@@ -51,7 +51,7 @@ using namespace Teuchos;
  *----------------------------------------------------------------------*/
 CONTACT::MtAbstractStrategy::MtAbstractStrategy(DRT::Discretization& discret, RCP<Epetra_Map> problemrowmap,
                                                 Teuchos::ParameterList params,
-                                                vector<RCP<CONTACT::MtInterface> > interface,
+                                                vector<RCP<MORTAR::MortarInterface> > interface,
                                                 int dim, RCP<Epetra_Comm> comm, double alphaf) :
 MORTAR::StrategyBase(problemrowmap,params,dim,comm,alphaf),
 probdiscret_(discret),
@@ -101,7 +101,7 @@ ostream& operator << (ostream& os, const CONTACT::MtAbstractStrategy& strategy)
 void CONTACT::MtAbstractStrategy::SetState(const string& statename,
                                            const RCP<Epetra_Vector> vec)
 {
-  if (statename=="displacement")
+  if (statename=="displacement" || statename=="olddisplacement")
   {
     // set state on interfaces
     for (int i=0; i<(int)interface_.size(); ++i)
@@ -128,9 +128,8 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
     // initialize / reset interfaces
     interface_[i]->Initialize();
     
-    // evaluate interfaces with 'nonlinear'==false
-    // (this is meshyting, thus linear mortar coupling is sufficient)
-    interface_[i]->Evaluate(false);
+    // evaluate interfaces
+    interface_[i]->Evaluate();
   }
   
   //********************************************************************
@@ -168,7 +167,7 @@ void CONTACT::MtAbstractStrategy::Evaluate(RCP<LINALG::SparseOperator>& kteff,
 }
 
 /*----------------------------------------------------------------------*
- |  Store Lagrange mulitpliers into MtNode                    popp 06/08|
+ |  Store Lagrange mulitpliers into MortarNode                    popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type)
 {
@@ -176,7 +175,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // currently this only works safely for 1 interface
-    if (i>0) dserror("ERROR: StoreNodalQuantities: Double active node check needed for n interfaces!");
+    //if (i>0) dserror("ERROR: StoreNodalQuantities: Double active node check needed for n interfaces!");
 
     // get global quantity to be stored in nodes
     RCP<Epetra_Vector> vectorglobal = null;
@@ -219,7 +218,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MtNode* mtnode = static_cast<MtNode*>(node);
+      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
       // be aware of problem dimension
       int dim = Dim();
@@ -273,7 +272,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
 }
 
 /*----------------------------------------------------------------------*
- |  Store dirichlet B.C. status into MtNode                    popp 06/09|
+ |  Store dirichlet B.C. status into MortarNode               popp 06/09|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::StoreDirichletStatus(RCP<LINALG::MapExtractor> dbcmaps)
 {
@@ -281,7 +280,7 @@ void CONTACT::MtAbstractStrategy::StoreDirichletStatus(RCP<LINALG::MapExtractor>
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // currently this only works safely for 1 interface
-    if (i>0) dserror("ERROR: StoreDirichletStatus: Double active node check needed for n interfaces!");
+    //if (i>0) dserror("ERROR: StoreDirichletStatus: Double active node check needed for n interfaces!");
 
     // loop over all slave row nodes on the current interface
     for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
@@ -289,7 +288,7 @@ void CONTACT::MtAbstractStrategy::StoreDirichletStatus(RCP<LINALG::MapExtractor>
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MtNode* mtnode = static_cast<MtNode*>(node);
+      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
       // check if this node's dofs are in dbcmap
       for (int k=0;k<mtnode->NumDof();++k)
@@ -313,12 +312,17 @@ void CONTACT::MtAbstractStrategy::StoreDirichletStatus(RCP<LINALG::MapExtractor>
 /*----------------------------------------------------------------------*
  | Update meshtying at end of time step                       popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::Update(int istep)
+void CONTACT::MtAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
 {
   // store Lagrange multipliers
   // (we need this for interpolation of the next generalized mid-point)
   zold_->Update(1.0,*z_,0.0);
   StoreNodalQuantities(MORTAR::StrategyBase::lmold);
+  
+  // old displacements in nodes
+  // (this is needed for calculating the auxiliary positions in
+  // binarytree contact search)
+  SetState("olddisplacement",dis);
 
   return;
 }
@@ -420,7 +424,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm)
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MtNode* mtnode = static_cast<MtNode*>(node);
+      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
       vector<double> nodeforce(3);
       vector<double> position(3);
@@ -462,7 +466,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm)
       int gid = interface_[i]->MasterRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MtNode* mtnode = static_cast<MtNode*>(node);
+      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
       vector<double> nodeforce(3);
       vector<double> position(3);
@@ -518,7 +522,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm)
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MtNode* mtnode = static_cast<MtNode*>(node);
+      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
       vector<double> lm(3);
       vector<double> nodegaps(3);
@@ -621,7 +625,7 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet()
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // currently this only works safely for 1 interface
-    if (i>0) dserror("ERROR: PrintActiveSet: Double active node check needed for n interfaces!");
+    //if (i>0) dserror("ERROR: PrintActiveSet: Double active node check needed for n interfaces!");
 
     // loop over all slave nodes on the current interface
     for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
@@ -629,7 +633,7 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet()
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MtNode* mtnode = static_cast<MtNode*>(node);
+      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
       // compute Lagrange multiplier
       double lm[3] = {0.0, 0.0, 0.0};

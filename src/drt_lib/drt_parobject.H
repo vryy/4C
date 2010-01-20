@@ -192,8 +192,8 @@ using namespace std;
 #define ParObject_Pec                   (int)178
 #define ParObject_MortarNode            (int)179
 #define ParObject_MortarElement         (int)180
-#define ParObject_MtNode                (int)181
-#define ParObject_MtElement             (int)182
+#define ParObject_CoNode                (int)181
+#define ParObject_CoElement             (int)182
 #define ParObject_Vele3                 (int)183
 #define ParObject_Vele3Register         (int)184
 #define ParObject_Vele3Surface          (int)185

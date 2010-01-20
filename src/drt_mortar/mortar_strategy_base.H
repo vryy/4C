@@ -131,8 +131,12 @@ class StrategyBase
     // As the base class MORTAR::StrategyBase is always called from the control routine
     // (time integrator), these functions need to be defined purely virtual here.
 
+    virtual bool ActiveSetConverged() = 0;
     virtual double ConstraintNorm() = 0;
+    virtual RCP<Epetra_Vector> ContactNorStress() = 0;
+    virtual RCP<Epetra_Vector> ContactTanStress() = 0;
     virtual void DoReadRestart(IO::DiscretizationReader& reader, RCP<Epetra_Vector> dis) = 0;
+    virtual void DoWriteRestart(RCP<Epetra_Vector>& activetoggle) = 0;
     virtual void Evaluate(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) = 0;
     virtual void EvaluateMeshtying(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) = 0;
     virtual void InitEvalInterface() = 0;
@@ -144,6 +148,7 @@ class StrategyBase
     virtual RCP<Epetra_Vector> LagrMultOld() = 0;  
     virtual void MeshInitialization() = 0;
     virtual void MortarCoupling(const RCP<Epetra_Vector> dis) = 0;
+    virtual void OutputStresses() = 0;
     virtual void Print(ostream& os) const = 0;
     virtual void PrintActiveSet() = 0;
     virtual void Recover(RCP<Epetra_Vector> disi) = 0;
@@ -152,7 +157,9 @@ class StrategyBase
     virtual void SetState(const string& statename, const RCP<Epetra_Vector> vec) = 0;
     virtual void StoreDirichletStatus(RCP<LINALG::MapExtractor> dbcmaps) = 0;
     virtual void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) = 0;
-    virtual void Update(int istep) = 0;
+    virtual void Update(int istep, RCP<Epetra_Vector> dis) = 0;
+    virtual void UpdateActiveSet() = 0;
+    virtual void UpdateActiveSetSemiSmooth() = 0;
     virtual void UpdateAugmentedLagrange() = 0;
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
     

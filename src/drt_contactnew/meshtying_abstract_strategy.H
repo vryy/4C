@@ -40,8 +40,9 @@ Maintainer: Alexander Popp
 #define MESHTYING_ABSTRACT_STRATEGY_H
 
 #include "../drt_mortar/mortar_strategy_base.H"
+#include "../drt_mortar/mortar_interface.H"
 #include "../drt_inpar/inpar_contact.H"
-#include "meshtying_interface.H"
+
 
 using namespace std;
 using namespace Teuchos;
@@ -75,7 +76,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
 
     */
     explicit MtAbstractStrategy(DRT::Discretization& discret, RCP<Epetra_Map> problemrowmap,
-                                Teuchos::ParameterList params, vector<RCP<CONTACT::MtInterface> > interface,
+                                Teuchos::ParameterList params, vector<RCP<MORTAR::MortarInterface> > interface,
                                 int dim, RCP<Epetra_Comm> comm, double alphaf);
 
     /*!
@@ -193,7 +194,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     //! @name Quantity control methods
     
     /*!
-    \brief Get some nodal quantity globally and store into MtNodes
+    \brief Get some nodal quantity globally and store into MortarNodes
 
     The enum input parameter defines, which quantity is be updated.
     Currently the possibilities "lmold", "lmcurrent", "lmupdate" and
@@ -205,16 +206,16 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     problems. Finally, "lmuzawa" addresses the LM update within an
     augmented Lagrangian scheme.
 
-    \param type (in): enum defining which quantity to store into MtNodes
+    \param type (in): enum defining which quantity to store into MortarNodes
 
     */
     void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type);
     
     /*!
-    \brief Get dirichlet B.C. status and store into MtNodes
+    \brief Get dirichlet B.C. status and store into MortarNodes
 
     This is called once at the beginning of the simulation
-    to set the D.B.C. status in each MtNode.
+    to set the D.B.C. status in each MortarNodes.
 
     \param dbcmaps (in): MapExtractor carrying global dbc map
 
@@ -225,9 +226,10 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     \brief Update meshtying at end of time step
 
     \param iter (in): step index for gmsh file creation
+    \param dis (in):  current displacements (-> old displacements)
 
     */
-    void Update(int istep);
+    void Update(int istep, RCP<Epetra_Vector> dis);
       
     /*!
     \brief Perform a write restart
@@ -296,17 +298,23 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     // are defined as empty here in the case of meshtying. They can be called from the
     // control routine (time integrator), whenever you like.
     
+    RCP<Epetra_Vector> ContactNorStress() {return Teuchos::null;}
+    RCP<Epetra_Vector> ContactTanStress() {return Teuchos::null;}
+    void DoWriteRestart(RCP<Epetra_Vector>& activetoggle) {}
     void InitEvalInterface() {}
     void InitEvalMortar() {}
     void Initialize() {}
+    void OutputStresses() {}
     void SaveReferenceState(RCP<Epetra_Vector> dis) {}
+    void UpdateActiveSet() {}
+    void UpdateActiveSetSemiSmooth() {}
     
     //@}
         
   protected:
 
-    DRT::Discretization&  probdiscret_;             // the underlying problem discretization
-    vector<RCP<CONTACT::MtInterface> > interface_;  // contact interfaces
+    DRT::Discretization&  probdiscret_;               // the underlying problem discretization
+    vector<RCP<MORTAR::MortarInterface> > interface_; // contact interfaces
     
     RCP<Epetra_Map> gsnoderowmap_;         // global slave node row map (of all interfaces)
     RCP<Epetra_Map> gsdofrowmap_;          // global slave dof row map (of all interfaces)
