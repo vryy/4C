@@ -794,6 +794,13 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
       (*flowrates_)[pos] = parflowrate;
       flowratespos_++;
     }
+    // set the begining of the flowrate vector as the end
+    // this is due to the periodicity reason
+    if (time >= period_ && flowratespos_ % cyclesteps_ == 0)
+    {
+      (*flowrates_)[0] = parflowrate;
+      flowratespos_++;
+    }
   }
   if (myrank_ == 0)
   {
