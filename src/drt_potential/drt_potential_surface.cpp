@@ -1006,13 +1006,13 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2(
                 for (int jnode = 0; jnode < numnode; ++jnode)
                   for(int dim_pot = 0; dim_pot < 3; dim_pot++)
                     K_surf(inode*numdof+dim, jnode*numdof+dim_pot) +=
-                      funct(inode)*beta*fac*Teta*(beta_pot*(1/detF)*Fsderiv(dim,dim_pot)*funct(jnode));
+                      funct(inode)*beta*fac*Teta*(beta_pot*(1.0/detF)*Fsderiv(dim,dim_pot)*funct(jnode));
   
                 // k,ij
                 for (int jnode = 0;jnode < numnode_pot; ++jnode)
                   for(int dim_pot = 0; dim_pot < 3; dim_pot++)
                     K_surf(inode*numdof+dim, GetLocalIndex(lm,lmpot[jnode*numdof+dim_pot]) ) +=
-                      funct(inode)*beta*fac*Teta*(beta_pot*(1/detF)*(-1)*Fsderiv(dim,dim_pot)*funct_pot(jnode));  
+                      funct(inode)*beta*fac*Teta*(beta_pot*(1.0/detF)*(-1)*Fsderiv(dim,dim_pot)*funct_pot(jnode));  
               }
           }                
           //K_surf.Print(cout);
@@ -1340,7 +1340,7 @@ double POTENTIAL::SurfacePotential::ComputeFactorApprox(
 
   FInvers.Multiply('N','N',-1.0,dudrs,dxyzdrsInvers,0.0);
   for(int i=0;i<3;i++) 
-    FInvers(i,i)+=1;
+    FInvers(i,i)+=1.0;
 
   x_gp = 0.0;
   // compute gauss point in physical coordinates
@@ -1501,7 +1501,6 @@ double POTENTIAL::SurfacePotential::ComputeNormalAndDetFinXp(
 	//Berechnet np in physikalischen Koordinaten?	
 	GEO::computeNormalToSurfaceElement(element->Shape(), xyze, elecoord_xp, np);
 	
-	
 	//Berechnung der Determinante
 	const double e0 = elecoord_xp(0);
 	const double e1 = elecoord_xp(1);
@@ -1524,11 +1523,10 @@ double POTENTIAL::SurfacePotential::ComputeNormalAndDetFinXp(
 	//Berechnung der Pseudoinversen von dXYZdrs 
 	Epetra_SerialDenseMatrix W (2,1);  
 	Epetra_SerialDenseMatrix V (2,2);
-	Epetra_SerialDenseMatrix dXYZdrsInvers(2,3);	   
+	Epetra_SerialDenseMatrix dXYZdrsInvers(2,3);	
+	
 	//sigular value decomposition 
-	
 	GEO::svdcmpSerialDense(dXYZdrs,W,V);
-	
 	
 	//V*WInvers ausrechnen und in V Speichern  
 	for(int i=0;i<2;i++)
@@ -1546,14 +1544,22 @@ double POTENTIAL::SurfacePotential::ComputeNormalAndDetFinXp(
 	 
 	 //Berchnung des Deformationsgradienten
 	 Epetra_SerialDenseMatrix F (3,3);
-
 	 F.Multiply('N','N',1.0,dxyzdrs,dXYZdrsInvers,0.0);
 	 
+	 F.Print(cout);
 	 
-	 double detF =  F(0,0)*(F(1,1)*F(2,2)-F(1,2)*F(2,1)) 
-	 			   -F(1,0)*(F(0,1)*F(2,2)-F(0,2)*F(2,1))
-	 			   +F(2,0)*(F(0,1)*F(1,2)-F(0,2)*F(1,1));
-	
+	 const double detF =  
+	   F(0,0)*(F(1,1)*F(2,2)-F(1,2)*F(2,1)) 
+	  -F(1,0)*(F(0,1)*F(2,2)-F(0,2)*F(2,1))
+	  +F(2,0)*(F(0,1)*F(1,2)-F(0,2)*F(1,1));
+	 
+	 /*
+	 const double detF_2 = 
+	      F(0,0)*(F(1,1)*F(2,2)-F(1,2)*F(2,1)) 
+	     -F(0,1)*(F(1,0)*F(2,2)-F(2,0)*F(1,2))
+	     +F(0,2)*(F(1,0)*F(2,1)-F(2,0)*F(1,1));
+	 */
+	 
 	return detF;
 }
 	
