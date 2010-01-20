@@ -179,8 +179,15 @@ void ElchEnsightWriter::WriteAllResults(PostField* field)
   int numdofpernode = field->discretization()->NumDof(field->discretization()->lRowNode(0));
 
   // write results for each transported scalar
-  if (numdofpernode < 3)
-    dserror("Problemtype ELCH has at least 3 DOF per node, but got: %d",numdofpernode);
+  if (numdofpernode == 1)
+  {
+    // do the single ion concentration
+      string name = "c_1";
+      EnsightWriter::WriteResult("phinp", name, dofbased, 1, 0);
+      // write flux vectors (always 3D)
+      EnsightWriter::WriteResult("flux_phi_1", "flux_c_1", nodebased, 3);
+    // there is no electric potential in this special case
+  }
   else
   {
     // do the ion concentrations first
@@ -202,9 +209,6 @@ void ElchEnsightWriter::WriteAllResults(PostField* field)
 
   // write displacement field (always 3D)
   EnsightWriter::WriteResult("dispnp", "ale-displacement", nodebased, 3);
-
-  // write density distribution
-  EnsightWriter::WriteResult("elchdensnp", "density", nodebased, 1);
 
   // write element results (e.g. element owner)
   WriteElementResults(field);

@@ -73,7 +73,9 @@ public:
   ) = 0;
 
   /// Internal implementation class for scalar transport elements
-  static ScaTraImplInterface* Impl(DRT::Element* ele);
+  static ScaTraImplInterface* Impl(
+      const DRT::Element* ele,
+      const enum INPAR::SCATRA::ScaTraType scatratype);
 
 };
 

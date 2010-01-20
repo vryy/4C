@@ -97,13 +97,16 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   gstatincrement_(0.0)
 {
   // what kind of equations do we actually want to solve?
-  // (For the moment, we can directly conclude from the problem type)
-  if (prbtype_ == "elch")            scatratype_ = INPAR::SCATRA::scatratype_elch_enc;
-  else if (prbtype_ == "combustion") scatratype_ = INPAR::SCATRA::scatratype_levelset;
-  else if (prbtype_ == "loma")       scatratype_ = INPAR::SCATRA::scatratype_loma;
-  else if (prbtype_ == "scatra")     scatratype_ = INPAR::SCATRA::scatratype_condif;
-  else
-    dserror("Problemtype %s not supported", prbtype_.c_str());
+  // (For the moment, we directly conclude from the problem type when there is no user input)
+  if (scatratype_ == INPAR::SCATRA::scatratype_undefined)
+  {
+    if (prbtype_ == "elch")            scatratype_ = INPAR::SCATRA::scatratype_elch_enc;
+    else if (prbtype_ == "combustion") scatratype_ = INPAR::SCATRA::scatratype_levelset;
+    else if (prbtype_ == "loma")       scatratype_ = INPAR::SCATRA::scatratype_loma;
+    else if (prbtype_ == "scatra")     scatratype_ = INPAR::SCATRA::scatratype_condif;
+    else
+      dserror("Problemtype %s not supported", prbtype_.c_str());
+  }
 
   // -------------------------------------------------------------------
   // determine whether linear incremental or nonlinear solver
@@ -155,14 +158,14 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // create empty system matrix (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
   numscal_ = discret_->NumDof(discret_->lRowNode(0));
-  if (prbtype_ == "elch")
+  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
     // number of concentrations transported is numdof-1
     numscal_ -= 1;
     // set up the concentration-el.potential splitter
     FLD::UTILS::SetupFluidSplit(*discret_,numscal_,splitter_);
   }
-  else if (prbtype_ == "loma" and numscal_ > 1)
+  else if (scatratype_ == INPAR::SCATRA::scatratype_loma and numscal_ > 1)
   {
     // set up a species-temperature splitter (if more than one scalar)
     FLD::UTILS::SetupFluidSplit(*discret_,numscal_-1,splitter_);
@@ -177,7 +180,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   if (Teuchos::getIntegralValue<int>(*params_,"BLOCKPRECOND"))
   {
     // we need a block sparse matrix here
-    if (prbtype_ != "elch")
+    if (scatratype_ != INPAR::SCATRA::scatratype_elch_enc)
       dserror("Block-Preconditioning is only for ELCH problems");
     // initial guess for non-zeros per row: 27 neighboring nodes for hex8
     // this is enough! A higher guess would require too much memory!
@@ -360,7 +363,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   SetupElchNatConv();
 
   // screen output (has to come after SetInitialField)
-  if (prbtype_ == "elch")
+  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
     frt_ = 96485.3399/(8.314472 * extraparams_->get<double>("TEMPERATURE"));
 
@@ -603,6 +606,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
   // depending on time-integration scheme
   ParameterList p;
   SetTimeForNeumannEvaluation(p);
+  p.set("scatratype",scatratype_);
 
   discret_->ClearState();
   // evaluate Neumann conditions at actual time t_{n+1} or t_{n+alpha_F}
@@ -812,7 +816,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
   double conresnorm(0.0);
   double potresnorm(0.0);
 
-  if (prbtype_ == "elch")
+  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
     Teuchos::RCP<Epetra_Vector> onlycon = splitter_.ExtractOtherVector(residual_);
     onlycon->Norm2(&conresnorm);
@@ -1079,6 +1083,9 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // action for elements
   eleparams.set("action","calc_condif_systemmat_and_residual");
 
+  // set type of scalar transport problem
+  eleparams.set("scatratype",scatratype_);
+
   // other parameters that might be needed by the elements
   eleparams.set("time-step length",dta_);
   eleparams.set("incremental solver",incremental_);
@@ -1097,9 +1104,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // provide displacement field in case of ALE
   eleparams.set("isale",isale_);
   if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-  // set type of scalar transport problem
-  eleparams.set("scatratype",scatratype_);
 
   // set switch for reinitialization
   eleparams.set("reinitswitch",reinitswitch_);
@@ -2752,6 +2756,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
 
           // set parameters for elements
           mode_params.set("action","integrate_shape_functions");
+          mode_params.set("scatratype",scatratype_);
           mode_params.set("dofids",dofids);
 
           mode_params.set("isale",isale_);

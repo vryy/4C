@@ -3229,7 +3229,7 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
     }
     else
     {
-      value = 0; // for safety reasons: set zeros in accam_
+      value = 0.0; // for safety reasons: set zeros in accam_
     }
     err = accam_->ReplaceMyValue(localdofid,0,value);
     if (err != 0) dserror("error while inserting value into accam_");

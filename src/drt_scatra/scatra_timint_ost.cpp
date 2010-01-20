@@ -205,6 +205,7 @@ void SCATRA::TimIntOneStepTheta::ComputeThermPressure()
   // set action for elements
   eleparams.set("action","calc_domain_and_bodyforce");
   eleparams.set("total time",time_);
+  eleparams.set("scatratype",scatratype_);
 
   // variables for integrals of domain and bodyforce
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
@@ -393,6 +394,7 @@ void SCATRA::TimIntOneStepTheta::PrepareFirstTimeStep()
   neumann_loads_->PutScalar(0.0);
   ParameterList p;
   p.set("total time",time_);
+  p.set("scatratype",scatratype_);
   discret_->ClearState();
   discret_->EvaluateNeumann(p,*neumann_loads_);
   discret_->ClearState();

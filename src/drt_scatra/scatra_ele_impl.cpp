@@ -44,13 +44,15 @@ Maintainer: Georg Bauer
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(DRT::Element* ele)
+DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(
+    const DRT::Element* ele,
+    const enum INPAR::SCATRA::ScaTraType scatratype)
 {
   // we assume here, that numdofpernode is equal for every node within
   // the discretization and does not change during the computations
   const int numdofpernode = ele->NumDofPerNode(*(ele->Nodes()[0]));
   int numscal = numdofpernode;
-  if (DRT::Problem::Instance()->ProblemType() == "elch")
+  if (scatratype == INPAR::SCATRA::scatratype_elch_enc)
     numscal -= 1;
 
   switch (ele->Shape())
@@ -1661,6 +1663,28 @@ else if (material->MaterialType() == INPAR::MAT::m_scatra)
   densnp_[0]      = 1.0;
   densam_[0]      = 1.0;
   densgradfac_[0] = 0.0;
+}
+else if (material->MaterialType() == INPAR::MAT::m_ion)
+{
+  const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(material.get());
+
+  dsassert(numdofpernode_==1,"more than 1 dof per node for single ion material");
+
+  // set reaction coeff. and temperature rhs for reactive equation system to zero
+  reacoeff_[0]   = 0.0;
+  reatemprhs_[0] = 0.0;
+  // set specific heat capacity at constant pressure to 1.0
+  shcacp_ = 1.0;
+  // set density at various time steps and density gradient factor to 1.0/0.0
+  densn_[0]       = 1.0;
+  densnp_[0]      = 1.0;
+  densam_[0]      = 1.0;
+  densgradfac_[0] = 0.0;
+
+  // get constant diffusivity
+  diffus_[0] = actsinglemat->Diffusivity();
+  valence_[0] = 0.0; // remains unused -> we only do convection-diffusion in this case!
+  diffusvalence_[0] = 0.0; // remains unused
 }
 else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
 {
@@ -4104,6 +4128,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
     const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(material.get());
 
     // get constant diffusivity
+    diffus = actmat->Diffusivity();
+
+    // set density to 1.0
+    dens = 1.0;
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_ion)
+  {
+    const MAT::Ion* actmat = static_cast<const MAT::Ion*>(material.get());
+
+    // get constant diffusivity (we only do convection-diffusion in this case!)
     diffus = actmat->Diffusivity();
 
     // set density to 1.0

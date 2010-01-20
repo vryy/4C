@@ -37,13 +37,18 @@ int DRT::ELEMENTS::Transport::Evaluate(
     Epetra_SerialDenseVector& elevec2,
     Epetra_SerialDenseVector& elevec3)
 {
+  // the type of scalar transport problem has to be provided for all actions!
+  const INPAR::SCATRA::ScaTraType scatratype = params.get<INPAR::SCATRA::ScaTraType>("scatratype");
+  if (scatratype == INPAR::SCATRA::scatratype_undefined)
+    dserror("Element parameter SCATRATYPE has not been set!");
 
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Transport element)
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return DRT::ELEMENTS::ScaTraImplInterface::Impl(this)->Evaluate(
+
+  return DRT::ELEMENTS::ScaTraImplInterface::Impl(this,scatratype)->Evaluate(
       this,
       params,
       discretization,

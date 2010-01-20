@@ -129,6 +129,7 @@ extern "C"
 #include "../drt_mat/contchainnetw.H"
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/scatra_mat.H"
+#include "../drt_mat/ion.H"
 #include "../drt_mat/mixfrac.H"
 #include "../drt_mat/sutherland.H"
 #include "../drt_mat/arrhenius_spec.H"
@@ -878,6 +879,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       MAT::ScatraMat* scatra_mat = new MAT::ScatraMat();
       scatra_mat->Unpack(data);
       return scatra_mat;
+    }
+    case ParObject_Ion:
+    {
+      MAT::Ion* ion = new MAT::Ion();
+      ion->Unpack(data);
+      return ion;
     }
     case ParObject_MixFrac:
     {

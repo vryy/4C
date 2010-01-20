@@ -23,10 +23,8 @@ Maintainer: Georg Bauer
 #include "scatra_ele_impl_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "scatra_element.H"
+#include "../drt_inpar/inpar_scatra.H"
 
-
-// forward declarations
-//struct _MATERIAL;
 
 
 namespace DRT
@@ -79,7 +77,9 @@ public:
                               ) = 0;
 
   /// Internal implementation class for scalar transport elements
-  static ScaTraBoundaryImplInterface* Impl(DRT::Element* ele);
+  static ScaTraBoundaryImplInterface* Impl(
+      const DRT::Element* ele,
+      const enum INPAR::SCATRA::ScaTraType scatratype);
 
 };
 

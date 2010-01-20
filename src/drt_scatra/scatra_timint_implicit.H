@@ -280,10 +280,10 @@ public:
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
   /// routine to return thermo. press. at time step n+1 for low-Mach-number flow
-  double ThermPressNp() { return thermpressnp_; }
+  double ThermPressNp() const { return thermpressnp_; }
 
   /// routine to return thermo. press. at time step n for low-Mach-number flow
-  double ThermPressN() { return thermpressn_; }
+  double ThermPressN() const { return thermpressn_; }
 
   /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
   virtual double ThermPressAf() = 0;
@@ -292,7 +292,7 @@ public:
   virtual double ThermPressAm() = 0;
 
   /// routine to return time der. of thermo. press. at time step n+1 for low-Mach-number flow
-  double ThermPressDtNp() { return thermpressdtnp_; }
+  double ThermPressDtNp() const { return thermpressdtnp_; }
 
   /// routine to return thermo. press. at time step n+alpha_M for low-Mach-number flow
   virtual double ThermPressDtAm() = 0;
@@ -337,6 +337,9 @@ public:
 
   /// check for negative values of concentrations (ELCH)
   void CheckConcentrationValues();
+
+  /// check for negative values of concentrations (ELCH)
+  INPAR::SCATRA::ScaTraType ScaTraType() const {return scatratype_;};
 
 protected:
 

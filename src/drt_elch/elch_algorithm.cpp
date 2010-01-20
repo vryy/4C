@@ -470,17 +470,24 @@ bool ELCH::Algorithm::ConvergenceCheck( int itnum,
   // tempincnp_ = 1.0 * phinp_ - 1.0 * phin_
 
   conpotincnp_->Update(1.0,*ScaTraField().Phinp(),-1.0);
+  if (ScaTraField().ScaTraType() == INPAR::SCATRA::scatratype_elch_enc)
+  {
   Teuchos::RCP<Epetra_Vector> onlycon = conpotsplitter.ExtractOtherVector(conpotincnp_);
   onlycon->Norm2(&conincnorm_L2);
   conpotsplitter.ExtractOtherVector(ScaTraField().Phinp(),onlycon);
   onlycon->Norm2(&connorm_L2);
 
   // Calculate potential increment and potential L2 - Norm
-
   Teuchos::RCP<Epetra_Vector> onlypot = conpotsplitter.ExtractCondVector(conpotincnp_);
   onlypot->Norm2(&potincnorm_L2);
   conpotsplitter.ExtractCondVector(ScaTraField().Phinp(),onlypot);
   onlypot->Norm2(&potnorm_L2);
+  }
+  else // only one scalar present (convection-diffusion)
+  {
+    conpotincnp_->Norm2(&conincnorm_L2);
+    ScaTraField().Phinp()->Norm2(&connorm_L2);
+  }
 
   // care for the case that there is (almost) zero temperature or velocity
   // (usually not required for temperature)

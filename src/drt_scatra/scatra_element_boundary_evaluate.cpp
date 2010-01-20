@@ -29,13 +29,18 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
     Epetra_SerialDenseVector& elevec2,
     Epetra_SerialDenseVector& elevec3)
 {
+  // the type of scalar transport problem has to be provided for all actions!
+  const INPAR::SCATRA::ScaTraType scatratype = params.get<INPAR::SCATRA::ScaTraType>("scatratype");
+  if (scatratype == INPAR::SCATRA::scatratype_undefined)
+    dserror("Element parameter SCATRATYPE has not been set!");
+
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Transport
   // boundary element)
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return DRT::ELEMENTS::ScaTraBoundaryImplInterface::Impl(this)->Evaluate(
+  return DRT::ELEMENTS::ScaTraBoundaryImplInterface::Impl(this,scatratype)->Evaluate(
       this,
       params,
       discretization,
@@ -60,13 +65,18 @@ int DRT::ELEMENTS::TransportBoundary::EvaluateNeumann(
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {
+  // the type of scalar transport problem has to be provided for all actions!
+  const INPAR::SCATRA::ScaTraType scatratype = params.get<INPAR::SCATRA::ScaTraType>("scatratype");
+  if (scatratype == INPAR::SCATRA::scatratype_undefined)
+    dserror("Element parameter SCATRATYPE has not been set!");
+
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Transport
   // boundary element)
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return DRT::ELEMENTS::ScaTraBoundaryImplInterface::Impl(this)->EvaluateNeumann(
+  return DRT::ELEMENTS::ScaTraBoundaryImplInterface::Impl(this,scatratype)->EvaluateNeumann(
       this,
       params,
       discretization,

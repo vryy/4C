@@ -66,6 +66,9 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
     // action for elements
     eleparams.set("action","calc_initial_time_deriv");
 
+    // set type of scalar transport problem
+    eleparams.set("scatratype",scatratype_);
+
     // other parameters that are needed by the elements
     eleparams.set("problem type",prbtype_);
     eleparams.set("incremental solver",incremental_);
@@ -82,9 +85,6 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
     // (export to column map necessary for parallel evaluation)
     AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
     AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
-
-    // set type of scalar transport problem
-    eleparams.set("scatratype",scatratype_);
 
     // set switch for reinitialization
     eleparams.set("reinitswitch",reinitswitch_);
@@ -184,6 +184,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
 
   // action for elements
   condparams.set("action","calc_Neumann_inflow");
+  condparams.set("scatratype",scatratype_);
   condparams.set("problem type",prbtype_);
   condparams.set("incremental solver",incremental_);
 
@@ -414,8 +415,9 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
   if (isale_)
     AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
-  // set action for elements
+  // set parameters for element evaluation
   eleparams.set("action","calc_domain_and_bodyforce");
+  eleparams.set("scatratype",scatratype_);
   eleparams.set("total time",0.0);
 
   // variables for integrals of domain and bodyforce
@@ -567,12 +569,13 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
       //(Teuchos::getIntegralValue<INPAR::ELCH::NatConv>(*extraparams_,"Natural Convection")!= INPAR::ELCH::natural_convection_no))
     (extraparams_->get<INPAR::ELCH::NatConv>("Natural Convection")!= INPAR::ELCH::natural_convection_no))
   {
-    // allocate denselch_ with *noderowmap instead of *dofrowmap and initialize it
+    // allocate denselch_ with *dofrowmap and initialize it
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
     elchdensnp_ = LINALG::CreateVector(*dofrowmap,true);
     elchdensnp_->PutScalar(1.0);
 
     // Calculate the initial mean concentration value
+    if (numscal_ < 1) dserror("Error since numscal = %d. Not allowed since < 1",numscal_);
     c0_.resize(numscal_);
 
     discret_->ClearState();
@@ -625,6 +628,13 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
           dserror("material type is not allowed");
       }
     }
+    if (mat->MaterialType() == INPAR::MAT::m_ion) // for a single species calculation
+    {
+      const MAT::Ion* actmat = static_cast<const MAT::Ion*>(mat.get());
+      densific_[0] = actmat->Densification();
+      if (densific_[0] < 0.0) dserror("received negative densification value");
+      if (numscal_ > 1) dserror("Single species calculation but numscal = %d > 1",numscal_);
+    }
   }
 
   return;
@@ -648,6 +658,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity(double density0)
     // get the degrees of freedom associated with this node
     vector<int> nodedofs;
     nodedofs = discret_->Dof(lnode);
+    int numdof = nodedofs.size();
 
     newdensity= 1.0;
     // loop over all ionic species
@@ -676,8 +687,8 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity(double density0)
     newdensity *= density0;
 
     // insert the current density value for this node
-    // (has to be at position of el potential!)
-    const int globaldofid = nodedofs[numscal_];
+    // (has to be at position of el potential/ the position of the last dof!
+    const int globaldofid = nodedofs[numdof-1];
     const int localdofid = phinp_->Map().LID(globaldofid);
     if (localdofid < 0)
       dserror("localdofid not found in map for given globaldofid");
@@ -978,6 +989,7 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
   // set action for elements
   ParameterList eleparams;
   eleparams.set("action","calc_elch_electrode_kinetics");
+  eleparams.set("scatratype",scatratype_);
   eleparams.set("calc_status",true); // just want to have a status ouput!
   eleparams.set("iselch",(prbtype_=="elch")); // a boolean
   eleparams.set("problem type",prbtype_);
@@ -1344,6 +1356,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       // calculate integral of shape functions over indicated boundary and it's area
       params.set("boundaryint",0.0);
       params.set("action","integrate_shape_functions");
+      params.set("scatratype",scatratype_);
 
       //provide displacement field in case of ALE
       params.set("isale",isale_);
@@ -1498,6 +1511,7 @@ RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
   // set action for elements
   ParameterList eleparams;
   eleparams.set("action","calc_normal_vectors");
+  eleparams.set("scatratype",scatratype_);
   eleparams.set<RCP<Epetra_MultiVector> >("normal vectors",normal);
 
   //provide displacement field in case of ALE

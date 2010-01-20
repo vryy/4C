@@ -38,13 +38,15 @@ Maintainer: Georg Bauer
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraBoundaryImplInterface* DRT::ELEMENTS::ScaTraBoundaryImplInterface::Impl(DRT::Element* ele)
+DRT::ELEMENTS::ScaTraBoundaryImplInterface* DRT::ELEMENTS::ScaTraBoundaryImplInterface::Impl(
+    const DRT::Element* ele,
+    const enum INPAR::SCATRA::ScaTraType scatratype)
 {
   // we assume here, that numdofpernode is equal for every node within
   // the discretization and does not change during the computations
   const int numdofpernode = ele->NumDofPerNode(*(ele->Nodes()[0]));
   int numscal = numdofpernode;
-  if (DRT::Problem::Instance()->ProblemType() == "elch")
+  if (scatratype == INPAR::SCATRA::scatratype_elch_enc)
     numscal -= 1;
 
   switch (ele->Shape())
@@ -151,6 +153,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   // get the material (of the parent element)
   DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
   RefCountPtr<MAT::Material> mat = parentele->Material();
+  // the type of scalar transport problem has to be provided for all actions!
+  const INPAR::SCATRA::ScaTraType scatratype = params.get<INPAR::SCATRA::ScaTraType>("scatratype");
+  if (scatratype == INPAR::SCATRA::scatratype_undefined)
+    dserror("Element parameter SCATRATYPE has not been set!");
 
   // get additional state vector for ALE case: grid displacement
   isale_ = params.get<bool>("isale");
@@ -388,7 +394,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     int j=numscal_-1;
 
     // compute elementwise flux
-    DRT::ELEMENTS::ScaTraImplInterface::Impl(parentele)->CalculateFluxSerialDense(
+    DRT::ELEMENTS::ScaTraImplInterface::Impl(parentele,scatratype)->CalculateFluxSerialDense(
         eflux,
         peleptr,
         myphinp,

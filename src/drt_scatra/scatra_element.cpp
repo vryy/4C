@@ -73,7 +73,8 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
      mat->MaterialType() == INPAR::MAT::m_mixfrac or
      mat->MaterialType() == INPAR::MAT::m_sutherland or
      mat->MaterialType() == INPAR::MAT::m_arrhenius_pv or
-     mat->MaterialType() == INPAR::MAT::m_ferech_pv)
+     mat->MaterialType() == INPAR::MAT::m_ferech_pv or
+     mat->MaterialType() == INPAR::MAT::m_ion)
   {
     numdofpernode_=1; // we only have a single scalar
   }
@@ -81,17 +82,18 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
   {
     const MAT::MatList* actmat = static_cast<const MAT::MatList*>(mat.get());
     numdofpernode_=actmat->NumMat();
+
+    // for problem type ELCH we have one additional degree of freedom per node
+    // for the electric potential
+    if (DRT::Problem::Instance()->ProblemType()=="elch")
+    {
+      numdofpernode_ += 1;
+      dsassert(numdofpernode_>2,"numdofpernode_ is not > 2 for ELCH problem");
+    }
+
   }
   else
     dserror("Transport element got unsupported material type %d", mat->MaterialType());
-
-  // for problem type ELCH we have one additional degree of freedom per node
-  // for the electric potential
-  if (DRT::Problem::Instance()->ProblemType()=="elch")
-  {
-    numdofpernode_ += 1;
-    dsassert(numdofpernode_>2,"numdofpernode_ is not > 2 for ELCH problem");
-  }
 
   return;
 }
