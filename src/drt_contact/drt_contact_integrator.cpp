@@ -4218,7 +4218,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
         double fac = 0.0;
 
         // get the correct map as a reference
-        map<int,double>& dmmap_jk = mycnode->GetDerivMPG()[mgid];
+        map<int,double>& dmmap_jk = mycnode->GetData().GetDerivMPG()[mgid];
 
         // (1) Lin(Phi) - dual shape functions
         // this vanishes here since there are no deformation-dependent dual functions
@@ -4257,7 +4257,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlaneQuad(
           double fac = 0.0;
 
           // get the correct map as a reference
-          map<int,double>& ddmap_jk = mycnode->GetDerivDPG()[sgid];
+          map<int,double>& ddmap_jk = mycnode->GetData().GetDerivDPG()[sgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
