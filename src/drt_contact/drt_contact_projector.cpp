@@ -259,9 +259,9 @@ bool CONTACT::Projector::ProjectGaussPoint(CONTACT::CElement& gpele,
     {
       CNode* mycnode = static_cast<CNode*> (mynodes[i]);
 
-      gpn[0]+=val[i]*mycnode->n()[0];
-      gpn[1]+=val[i]*mycnode->n()[1];
-      gpn[2]+=val[i]*mycnode->n()[2];
+      gpn[0]+=val[i]*mycnode->GetData().n()[0];
+      gpn[1]+=val[i]*mycnode->GetData().n()[1];
+      gpn[2]+=val[i]*mycnode->GetData().n()[2];
 
       coord(0,i) = mycnode->xspatial()[0];
       coord(1,i) = mycnode->xspatial()[1];
@@ -340,9 +340,9 @@ bool CONTACT::Projector::ProjectGaussPoint3D(CONTACT::CElement& gpele,
     {
       CNode* mycnode = static_cast<CNode*> (mynodes[i]);
 
-      gpn[0]+=val[i]*mycnode->n()[0];
-      gpn[1]+=val[i]*mycnode->n()[1];
-      gpn[2]+=val[i]*mycnode->n()[2];
+      gpn[0]+=val[i]*mycnode->GetData().n()[0];
+      gpn[1]+=val[i]*mycnode->GetData().n()[1];
+      gpn[2]+=val[i]*mycnode->GetData().n()[2];
 
       coord(0,i) = mycnode->xspatial()[0];
       coord(1,i) = mycnode->xspatial()[1];
@@ -500,7 +500,7 @@ double CONTACT::Projector::EvaluateFNodalNormal(CONTACT::CNode& node,
   nx[2]-=node.xspatial()[2];
 
   //calculate F
-  fval = nx[0]*node.n()[1]-nx[1]*node.n()[0];
+  fval = nx[0]*node.GetData().n()[1]-nx[1]*node.GetData().n()[0];
 
   return fval;
 }
@@ -527,7 +527,7 @@ double CONTACT::Projector::EvaluateGradFNodalNormal(CONTACT::CNode& node,
   ele.LocalToGlobal(eta,nxeta,1);
 
   // calculate GradF
-  fgrad =  nxeta[0]*node.n()[1]-nxeta[1]*node.n()[0];
+  fgrad =  nxeta[0]*node.GetData().n()[1]-nxeta[1]*node.GetData().n()[0];
 
   return fgrad;
 
@@ -567,9 +567,9 @@ double CONTACT::Projector::EvaluateFElementNormal(CONTACT::CNode& node,
   for (int i=0;i<nnodes;++i)
   {
     CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-    nn[0]+=val[i]*mycnode->n()[0];
-    nn[1]+=val[i]*mycnode->n()[1];
-    nn[2]+=val[i]*mycnode->n()[2];
+    nn[0]+=val[i]*mycnode->GetData().n()[0];
+    nn[1]+=val[i]*mycnode->GetData().n()[1];
+    nn[2]+=val[i]*mycnode->GetData().n()[2];
 
     coord(0,i) = mycnode->xspatial()[0];
     coord(1,i) = mycnode->xspatial()[1];
@@ -631,13 +631,13 @@ double CONTACT::Projector::EvaluateGradFElementNormal(CONTACT::CNode& node,
   {
     CNode* mycnode = static_cast<CNode*> (mynodes[i]);
 
-    nn[0]+=val[i]*mycnode->n()[0];
-    nn[1]+=val[i]*mycnode->n()[1];
-    nn[2]+=val[i]*mycnode->n()[2];
+    nn[0]+=val[i]*mycnode->GetData().n()[0];
+    nn[1]+=val[i]*mycnode->GetData().n()[1];
+    nn[2]+=val[i]*mycnode->GetData().n()[2];
 
-    nneta[0]+=deriv(i,0)*mycnode->n()[0];
-    nneta[1]+=deriv(i,0)*mycnode->n()[1];
-    nneta[2]+=deriv(i,0)*mycnode->n()[2];
+    nneta[0]+=deriv(i,0)*mycnode->GetData().n()[0];
+    nneta[1]+=deriv(i,0)*mycnode->GetData().n()[1];
+    nneta[2]+=deriv(i,0)*mycnode->GetData().n()[2];
 
     coord(0,i) = mycnode->xspatial()[0];
     coord(1,i) = mycnode->xspatial()[1];
@@ -699,9 +699,9 @@ bool CONTACT::Projector::EvaluateFElementNormal3D(
   for (int i=0;i<nnodes;++i)
   {
     CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-    nn[0]+=val[i]*mycnode->n()[0];
-    nn[1]+=val[i]*mycnode->n()[1];
-    nn[2]+=val[i]*mycnode->n()[2];
+    nn[0]+=val[i]*mycnode->GetData().n()[0];
+    nn[1]+=val[i]*mycnode->GetData().n()[1];
+    nn[2]+=val[i]*mycnode->GetData().n()[2];
 
     coord(0,i) = mycnode->xspatial()[0];
     coord(1,i) = mycnode->xspatial()[1];
@@ -757,17 +757,17 @@ bool CONTACT::Projector::EvaluateGradFElementNormal3D(
   for (int i=0;i<nnodes;++i)
   {
     CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-    nn[0]+=val[i]*mycnode->n()[0];
-    nn[1]+=val[i]*mycnode->n()[1];
-    nn[2]+=val[i]*mycnode->n()[2];
+    nn[0]+=val[i]*mycnode->GetData().n()[0];
+    nn[1]+=val[i]*mycnode->GetData().n()[1];
+    nn[2]+=val[i]*mycnode->GetData().n()[2];
 
-    nneta1[0]+=deriv(i,0)*mycnode->n()[0];
-    nneta1[1]+=deriv(i,0)*mycnode->n()[1];
-    nneta1[2]+=deriv(i,0)*mycnode->n()[2];
+    nneta1[0]+=deriv(i,0)*mycnode->GetData().n()[0];
+    nneta1[1]+=deriv(i,0)*mycnode->GetData().n()[1];
+    nneta1[2]+=deriv(i,0)*mycnode->GetData().n()[2];
 
-    nneta2[0]+=deriv(i,1)*mycnode->n()[0];
-    nneta2[1]+=deriv(i,1)*mycnode->n()[1];
-    nneta2[2]+=deriv(i,1)*mycnode->n()[2];
+    nneta2[0]+=deriv(i,1)*mycnode->GetData().n()[0];
+    nneta2[1]+=deriv(i,1)*mycnode->GetData().n()[1];
+    nneta2[2]+=deriv(i,1)*mycnode->GetData().n()[2];
 
     coord(0,i) = mycnode->xspatial()[0];
     coord(1,i) = mycnode->xspatial()[1];

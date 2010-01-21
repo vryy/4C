@@ -309,6 +309,18 @@ void CONTACT::Interface::FillComplete()
   // separately so we can easily adress them
   UpdateMasterSlaveSets();
 
+  // Initialize data containers of nodes
+  // loop over all slave row nodes on the current interface
+  for (int i=0; i<oldnodecolmap_->NumMyElements(); ++i)
+  {
+    int gid = oldnodecolmap_->GID(i);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+
+    cnode->InitializeCnodeDataContainer();
+  }
+
   // get out of here if not participating in interface
   if (!lComm()) return;
 
@@ -531,77 +543,90 @@ void CONTACT::Interface::Initialize()
   {
     CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
 
+    // reset feasible projection status
+    node->HasProj() = false;
+  }
+
+  // loop over all nodes to reset normals, closestnode and Mortar maps
+  // (overlapping column map)
+
+  for (int i=0;i<OldColNodes()->NumMyElements();++i)
+  {
+    int gid = OldColNodes()->GID(i);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+
+
     //reset nodal normal and tangents and jumps
     for (int j=0;j<3;++j)
     {
-      node->n()[j]=0.0;
-      node->txi()[j]=0.0;
-      node->teta()[j]=0.0;
-      //node->jump()[j]=0.0;
+      cnode->GetData().n()[j]=0.0;
+      cnode->GetData().txi()[j]=0.0;
+      cnode->GetData().teta()[j]=0.0;
+      //node->GetData().jump()[j]=0.0;
     }
 
     // reset derivative maps of normal vector
-    for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-      (node->GetDerivN())[j].clear();
-    (node->GetDerivN()).resize(0);
+    for (int j=0;j<(int)((cnode->GetData().GetDerivN()).size());++j)
+      (cnode->GetData().GetDerivN())[j].clear();
+    (cnode->GetData().GetDerivN()).resize(0);
 
     // reset derivative maps of tangent vectors
-    for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-      (node->GetDerivTxi())[j].clear();
-    (node->GetDerivTxi()).resize(0);
-    for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
-      (node->GetDerivTeta())[j].clear();
-    (node->GetDerivTeta()).resize(0);
-
-    // reset nodal Mortar maps
-    for (int j=0;j<(int)((node->GetD()).size());++j)
-      (node->GetD())[j].clear();
-    for (int j=0;j<(int)((node->GetM()).size());++j)
-      (node->GetM())[j].clear();
-    for (int j=0;j<(int)((node->GetMmod()).size());++j)
-      (node->GetMmod())[j].clear();
-
-    (node->GetD()).resize(0);
-    (node->GetM()).resize(0);
-    (node->GetMmod()).resize(0);
-
-    // reset derivative map of Mortar matrices
-    (node->GetDerivD()).clear();
-    (node->GetDerivM()).clear();
-
-    // reset nodal Mortar maps (Petrov-Galerkin approach)
-    for (int j=0;j<(int)((node->GetDPG()).size());++j)
-      (node->GetDPG())[j].clear();
-    for (int j=0;j<(int)((node->GetMPG()).size());++j)
-      (node->GetMPG())[j].clear();
-
-    (node->GetDPG()).resize(0);
-    (node->GetMPG()).resize(0);
-
-    // reset derivative map of Mortar matrices
-    (node->GetDerivDPG()).clear();
-    (node->GetDerivMPG()).clear();
-
-    // reset derivative map of lagrange multipliers
-    for (int j=0; j<(int)((node->GetDerivZ()).size()); ++j)
-      (node->GetDerivZ())[j].clear();
-    (node->GetDerivZ()).resize(0);
-
-    // reset derivative map of jump
-    for (int j=0; j<(int)((node->GetDerivJump()).size()); ++j)
-      (node->GetDerivJump())[j].clear();
-    (node->GetDerivJump()).resize(0);
+    for (int j=0;j<(int)((cnode->GetData().GetDerivTxi()).size());++j)
+      (cnode->GetData().GetDerivTxi())[j].clear();
+    (cnode->GetData().GetDerivTxi()).resize(0);
+    for (int j=0;j<(int)((cnode->GetData().GetDerivTeta()).size());++j)
+      (cnode->GetData().GetDerivTeta())[j].clear();
+    (cnode->GetData().GetDerivTeta()).resize(0);
 
     // reset nodal weighted gap and derivative
-    node->Getg() = 1.0e12;
-    (node->GetDerivG()).clear();
+    cnode->GetData().Getg() = 1.0e12;
+
+    // reset nodal Mortar maps
+    for (int j=0;j<(int)((cnode->GetData().GetD()).size());++j)
+      (cnode->GetData().GetD())[j].clear();
+    for (int j=0;j<(int)((cnode->GetData().GetM()).size());++j)
+      (cnode->GetData().GetM())[j].clear();
+    for (int j=0;j<(int)((cnode->GetData().GetMmod()).size());++j)
+      (cnode->GetData().GetMmod())[j].clear();
+
+    (cnode->GetData().GetD()).resize(0);
+    (cnode->GetData().GetM()).resize(0);
+    (cnode->GetData().GetMmod()).resize(0);
+
+    // reset nodal Mortar maps (Petrov-Galerkin approach)
+    for (int j=0;j<(int)((cnode->GetData().GetDPG()).size());++j)
+      (cnode->GetData().GetDPG())[j].clear();
+    for (int j=0;j<(int)((cnode->GetData().GetMPG()).size());++j)
+      (cnode->GetData().GetMPG())[j].clear();
+
+    (cnode->GetData().GetDPG()).resize(0);
+    (cnode->GetData().GetMPG()).resize(0);
+
+    // reset derivative map of Mortar matrices
+    (cnode->GetData().GetDerivD()).clear();
+    (cnode->GetData().GetDerivM()).clear();
+
+    // reset derivative map of Mortar matrices
+    (cnode->GetData().GetDerivDPG()).clear();
+    (cnode->GetData().GetDerivMPG()).clear();
 
     // reset SNodes and Mnodes
-    node->GetSNodes().clear();
-    node->GetMNodes().clear();
+    cnode->GetData().GetSNodes().clear();
+    cnode->GetData().GetMNodes().clear();
 
-    // reset feasible projection status
-    node->HasProj() = false;
+    (cnode->GetData().GetDerivG()).clear();
+
+    // reset derivative map of jump
+    for (int j=0; j<(int)((cnode->GetData().GetDerivJump()).size()); ++j)
+      (cnode->GetData().GetDerivJump())[j].clear();
+    (cnode->GetData().GetDerivJump()).resize(0);
+
+    // reset derivative map of lagrange multipliers
+    for (int j=0; j<(int)((cnode->GetData().GetDerivZ()).size()); ++j)
+      (cnode->GetData().GetDerivZ())[j].clear();
+    (cnode->GetData().GetDerivZ()).resize(0);
   }
 
   // loop over all elements to reset contact candidates / search lists
@@ -1061,9 +1086,9 @@ void CONTACT::Interface::EvaluateContactSearchBruteForce(const double& eps)
       double auxpos [3] = {0.0, 0.0, 0.0};
       double scalar=0.0;
       for (int k=0; k<dim_;k++)
-        scalar+=(cnode->X()[k]+cnode->uold()[k]-cnode->xspatial()[k])*cnode->n()[k];
+        scalar+=(cnode->X()[k]+cnode->uold()[k]-cnode->xspatial()[k])*cnode->GetData().n()[k];
       for (int k=0;k<dim_;k++)
-        auxpos[k]= cnode->xspatial()[k]+scalar*cnode->n()[k];
+        auxpos[k]= cnode->xspatial()[k]+scalar*cnode->GetData().n()[k];
 
       for(int j=0;j<kdop/2;j++)
       {
@@ -1755,13 +1780,13 @@ void CONTACT::Interface::EvaluateRelMov()
     CNode* cnode = static_cast<CNode*>(node);
 
     // get some informatiom form the node
-    double gap = cnode->Getg();
+    double gap = cnode->GetData().Getg();
     int dim = cnode->NumDof();
 
     // compute normal part of Lagrange multiplier
     double nz = 0.0;
     for (int k=0;k<3;++k)
-      nz += cnode->n()[k] * cnode->lm()[k];
+      nz += cnode->GetData().n()[k] * cnode->GetData().lm()[k];
 
     vector <double> jump(dim);
     for(int dim=0;dim<Dim();dim++)
@@ -1769,9 +1794,9 @@ void CONTACT::Interface::EvaluateRelMov()
 
     double lmuzawan = 0.0;
     for (int k=0;k<dim;++k)
-      lmuzawan += cnode->lmuzawa()[k]*cnode->n()[k];
+      lmuzawan += cnode->GetData().lmuzawa()[k]*cnode->GetData().n()[k];
 
-    double kappa = cnode->Kappa();
+    double kappa = cnode->GetData().Kappa();
 
     // evaluate jump (relative displacement) of this node
     // only when the node is going to be active, otherwise,
@@ -1802,14 +1827,14 @@ void CONTACT::Interface::EvaluateRelMov()
     if(activeinfuture==true)
     {
 #ifdef CONTACTPETROVGALERKINFRIC
-      vector<map<int,double> > dmap = cnode->GetDPG();
-      vector<map<int,double> > dmapold = cnode->GetDOldPG();
+      vector<map<int,double> > dmap = cnode->GetData().GetDPG();
+      vector<map<int,double> > dmapold = cnode->GetData().GetDOldPG();
 #else
-      vector<map<int,double> > dmap = cnode->GetD();
-      vector<map<int,double> > dmapold = cnode->GetDOld();
+      vector<map<int,double> > dmap = cnode->GetData().GetD();
+      vector<map<int,double> > dmapold = cnode->GetData().GetDOld();
 #endif
 
-      set <int> snodes = cnode->GetSNodes();
+      set <int> snodes = cnode->GetData().GetSNodes();
 
       // check if there are entries in the old D map
       if(dmapold.size()< 1)
@@ -1839,15 +1864,15 @@ void CONTACT::Interface::EvaluateRelMov()
       } //  loop over adjacent slave nodes
 
 #ifdef CONTACTPETROVGALERKINFRIC
-      vector<map<int,double> > mmap = cnode->GetMPG();
-      vector<map<int,double> > mmapold = cnode->GetMOldPG();
+      vector<map<int,double> > mmap = cnode->GetData().GetMPG();
+      vector<map<int,double> > mmapold = cnode->GetData().GetMOldPG();
 #else
-      vector<map<int,double> > mmap = cnode->GetM();
-      vector<map<int,double> > mmapold = cnode->GetMOld();
+      vector<map<int,double> > mmap = cnode->GetData().GetM();
+      vector<map<int,double> > mmapold = cnode->GetData().GetMOld();
 #endif
 
-    	set <int> mnodescurrent = cnode->GetMNodes();
-    	set <int> mnodesold = cnode->GetMNodesOld();
+    	set <int> mnodescurrent = cnode->GetData().GetMNodes();
+    	set <int> mnodesold = cnode->GetData().GetMNodesOld();
 
       // check if there are entries in the old M map
       if(mmapold.size()< 1)
@@ -1884,7 +1909,7 @@ void CONTACT::Interface::EvaluateRelMov()
 
       // write it to nodes
       for(int dim=0;dim<Dim();dim++)
-        cnode->jump()[dim] = jump[dim];
+        cnode->GetData().jump()[dim] = jump[dim];
 
 
       // linearization of jump vector
@@ -1933,9 +1958,9 @@ void CONTACT::Interface::EvaluateRelMov()
       /*** 03 ***********************************************************/
       // we need the Lin(D-matrix) entries of this node
 #ifdef CONTACTPETROVGALERKINFRIC
-      map<int,map<int,double> >& ddmap = cnode->GetDerivDPG();
+      map<int,map<int,double> >& ddmap = cnode->GetData().GetDerivDPG();
 #else
-      map<int,map<int,double> >& ddmap = cnode->GetDerivD();
+      map<int,map<int,double> >& ddmap = cnode->GetData().GetDerivD();
 #endif
       map<int,map<int,double> >::iterator dscurr;
 
@@ -1950,9 +1975,9 @@ void CONTACT::Interface::EvaluateRelMov()
 
         // compute entry of the current stick node / slave node pair
 #ifdef CONTACTPETROVGALERKINFRIC
-        map<int,double>& thisdmmap = cnode->GetDerivDPG(gid);
+        map<int,double>& thisdmmap = cnode->GetData().GetDerivDPG(gid);
 #else
-        map<int,double>& thisdmmap = cnode->GetDerivD(gid);
+        map<int,double>& thisdmmap = cnode->GetData().GetDerivD(gid);
 #endif
 
         // loop over all entries of the current derivative map
@@ -1972,9 +1997,9 @@ void CONTACT::Interface::EvaluateRelMov()
       /*** 04 ***********************************************************/
       // we need the Lin(M-matrix) entries of this node
 #ifdef CONTACTPETROVGALERKINFRIC
-      map<int,map<int,double> >& dmmap = cnode->GetDerivMPG();
+      map<int,map<int,double> >& dmmap = cnode->GetData().GetDerivMPG();
 #else
-      map<int,map<int,double> >& dmmap = cnode->GetDerivM();
+      map<int,map<int,double> >& dmmap = cnode->GetData().GetDerivM();
 #endif
 
       map<int,map<int,double> >::iterator dmcurr;
@@ -1990,9 +2015,9 @@ void CONTACT::Interface::EvaluateRelMov()
 
         // compute entry of the current stick node / master node pair
 #ifdef CONTACTPETROVGALERKINFRIC
-        map<int,double>& thisdmmap = cnode->GetDerivMPG(gid);
+        map<int,double>& thisdmmap = cnode->GetData().GetDerivMPG(gid);
 #else
-        map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+        map<int,double>& thisdmmap = cnode->GetData().GetDerivM(gid);
 #endif
 
         // loop over all entries of the current derivative map
@@ -2028,7 +2053,7 @@ void CONTACT::Interface::AssembleRelMov(Epetra_Vector& jumpglobal)
     CNode* cnode = static_cast<CNode*>(node);
 
     int dim = cnode->NumDof();
-    double* jump = cnode->jump();
+    double* jump = cnode->GetData().jump();
 
     Epetra_SerialDenseVector jumpnode(dim);
     vector<int> jumpdof(dim);
@@ -2064,7 +2089,7 @@ void CONTACT::Interface::EvaluateTangentNorm(double& cnormtan)
     CNode* cnode = static_cast<CNode*>(node);
 
     // get some information form node
-    double* n = cnode->n();
+    double* n = cnode->GetData().n();
     int dim = cnode->NumDof();
 
     // tangential plane
@@ -2096,24 +2121,24 @@ void CONTACT::Interface::EvaluateTangentNorm(double& cnormtan)
     // jump vector
     Epetra_SerialDenseMatrix jumpvec(dim,1);
     for (int i=0;i<dim;i++)
-      jumpvec(i,0) = cnode->jump()[i];
+      jumpvec(i,0) = cnode->GetData().jump()[i];
 
     // jump vector
     Epetra_SerialDenseMatrix forcevec(dim,1);
     for (int i=0;i<dim;i++)
-      forcevec(i,0) = cnode->lm()[i];
+      forcevec(i,0) = cnode->GetData().lm()[i];
 
     // evaluate jump in tangential direction
     Epetra_SerialDenseMatrix jumptan(dim,1);
     jumptan.Multiply('N','N',1,tanplane,jumpvec,0.0);
 
     // norm of tangential jumps for stick nodes
-    if (cnode->Active()== true and cnode->Slip()==false)
+    if (cnode->Active()== true and cnode->GetData().Slip()==false)
     {
      	for( int j=0;j<cnode->NumDof();++j)
         cnormtan+=jumptan(j,0)*jumptan(j,0);
     }
-    else if (cnode->Active()== true and cnode->Slip()==true)
+    else if (cnode->Active()== true and cnode->GetData().Slip()==true)
     {
       double jumptxi = 0;
       double jumpteta = 0;
@@ -2123,12 +2148,12 @@ void CONTACT::Interface::EvaluateTangentNorm(double& cnormtan)
 
       for (int i=0;i<dim;i++)
       {
-      	jumptxi+=cnode->txi()[i]*cnode->jump()[i];
-      	jumpteta+=cnode->teta()[i]*cnode->jump()[i];
+      	jumptxi+=cnode->GetData().txi()[i]*cnode->GetData().jump()[i];
+      	jumpteta+=cnode->GetData().teta()[i]*cnode->GetData().jump()[i];
 
-      	forcen+=cnode->n()[i]*cnode->lm()[i];
-      	forcetxi+=cnode->txi()[i]*cnode->lm()[i];
-      	forceteta+=cnode->teta()[i]*cnode->lm()[i];
+      	forcen+=cnode->GetData().n()[i]*cnode->GetData().lm()[i];
+      	forcetxi+=cnode->GetData().txi()[i]*cnode->GetData().lm()[i];
+      	forceteta+=cnode->GetData().teta()[i]*cnode->GetData().lm()[i];
       }
 
       //cout << "FACTOR-Direction " << (jumptxi/jumpteta)/(forcetxi/forceteta) << endl;
@@ -2166,27 +2191,27 @@ void CONTACT::Interface::AssembleRegNormalForces(bool& localisincontact,
     CNode* cnode = static_cast<CNode*>(node);
 
     int dim = cnode->NumDof();
-    double gap = cnode->Getg();
+    double gap = cnode->GetData().Getg();
 
     // modified gap for zero initial gap
     // (if gap is below zero, it is explicitly set to zero)
-    //double modgap = cnode->Getg();
+    //double modgap = cnode->GetData().Getg();
     //if (abs(modgap) < 1.0e-10) modgap=0.0;
 
-    double kappa = cnode->Kappa();
+    double kappa = cnode->GetData().Kappa();
 
     double lmuzawan = 0.0;
     for (int k=0;k<dim;++k)
-      lmuzawan += cnode->lmuzawa()[k]*cnode->n()[k];
+      lmuzawan += cnode->GetData().lmuzawa()[k]*cnode->GetData().n()[k];
 
 #ifdef CONTACTFDPENALTYKC1
     // set lagrangian multipliers explicitely to constant
     // and corresponding derivatives to zero
 
     for( int j=0;j<dim;++j)
-      cnode->lm()[j] = i*j;
+      cnode->GetData().lm()[j] = i*j;
 
-    cnode->GetDerivZ().clear();
+    cnode->GetData().GetDerivZ().clear();
 
     continue;
 #endif
@@ -2244,20 +2269,20 @@ void CONTACT::Interface::AssembleRegNormalForces(bool& localisincontact,
 
       localisincontact = true;
 
-      double* normal = cnode->n();
+      double* normal = cnode->GetData().n();
 
       // compute lagrange multipliers and store into node
       for( int j=0;j<dim;++j)
-        cnode->lm()[j] = (lmuzawan - kappa * pp * gap) * normal[j];
+        cnode->GetData().lm()[j] = (lmuzawan - kappa * pp * gap) * normal[j];
 
       // compute derivatives of lagrange multipliers and store into node
 
       // contribution of derivative of weighted gap
-      map<int,double>& derivg = cnode->GetDerivG();
+      map<int,double>& derivg = cnode->GetData().GetDerivG();
       map<int,double>::iterator gcurr;
 
       // contribution of derivative of normal
-      vector<map<int,double> >& derivn = cnode->GetDerivN();
+      vector<map<int,double> >& derivn = cnode->GetData().GetDerivN();
       map<int,double>::iterator ncurr;
 
       for( int j=0;j<dim;++j)
@@ -2275,10 +2300,10 @@ void CONTACT::Interface::AssembleRegNormalForces(bool& localisincontact,
     else
     {
       // clear lagrange multipliers
-      for( int j=0;j<dim;++j) cnode->lm()[j] = 0;
+      for( int j=0;j<dim;++j) cnode->GetData().lm()[j] = 0;
 
       // clear derivz
-      cnode->GetDerivZ().clear();
+      cnode->GetData().GetDerivZ().clear();
 
     } // Macauley-Bracket
   } // loop over slave nodes
@@ -2312,20 +2337,20 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
     CNode* cnode = static_cast<CNode*>(node);
 
     // get some informatiom form the node
-    double gap = cnode->Getg();
+    double gap = cnode->GetData().Getg();
     int dim = cnode->NumDof();
-    double kappa = cnode->Kappa();
-    double* n = cnode->n();
+    double kappa = cnode->GetData().Kappa();
+    double* n = cnode->GetData().n();
 
     // Lagrange multiplier from Uzawa algorithm
     Epetra_SerialDenseMatrix lmuzawa(dim,1);
     for (int k=0;k<dim;++k)
-      lmuzawa(k,0) = cnode->lmuzawa()[k];
+      lmuzawa(k,0) = cnode->GetData().lmuzawa()[k];
 
     // Lagrange multiplier in normal direction
     double lmuzawan = 0.0;
     for (int k=0;k<dim;++k)
-      lmuzawan += cnode->lmuzawa()[k]*cnode->n()[k];
+      lmuzawan += cnode->GetData().lmuzawa()[k]*cnode->GetData().n()[k];
 
     // tangential plane
     Epetra_SerialDenseMatrix tanplane(dim,dim);
@@ -2361,7 +2386,7 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
     Epetra_SerialDenseMatrix jumpvec(dim,1);
 
     for (int i=0;i<dim;i++)
-      jumpvec(i,0) = cnode->jump()[i];
+      jumpvec(i,0) = cnode->GetData().jump()[i];
 
     // evaluate kappa.pptan.jumptan
     Epetra_SerialDenseMatrix temptrac(dim,1);
@@ -2370,7 +2395,7 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
     // fill vector tractionold
     vector<double> tractionold(dim);
     for (int i=0;i<dim;i++)
-    	tractionold[i] = cnode->tractionold()[i];
+    	tractionold[i] = cnode->GetData().tractionold()[i];
 
     // Evaluate trailtraction (tractionold+temptrac in penalty case)
     vector<double> trailtraction(dim);
@@ -2393,28 +2418,28 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
     else if (cnode->Active()==true && ((abs(maxtantrac) - magnitude >= 0)or ftype==INPAR::CONTACT::friction_stick))
     {
     	//cout << "Node " << gid << " is stick" << endl;
-    	cnode->Slip() = false;
+    	cnode->GetData().Slip() = false;
 
     	// in the stick case, traction is trailtraction
     	for (int i=0;i<dim;i++)
-    		cnode->traction()[i]=trailtraction[i];
+    		cnode->GetData().traction()[i]=trailtraction[i];
 
       // compute lagrange multipliers and store into node
       for( int j=0;j<dim;++j)
-        cnode->lm()[j] = n[j]*(- kappa * ppnor * gap) + trailtraction[j];
+        cnode->GetData().lm()[j] = n[j]*(- kappa * ppnor * gap) + trailtraction[j];
     }
     else
     {
     	//cout << "Node " << gid << " is slip" << endl;
-    	cnode->Slip() = true;
+    	cnode->GetData().Slip() = true;
 
     	// in the slip case, traction is evaluated with a return map algorithm
     	for (int i=0;i<dim;i++)
-    		cnode->traction()[i]=maxtantrac/magnitude*trailtraction[i];
+    		cnode->GetData().traction()[i]=maxtantrac/magnitude*trailtraction[i];
 
     	// compute lagrange multipliers and store into node
       for( int j=0;j<dim;++j)
-        cnode->lm()[j] = n[j]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[j];
+        cnode->GetData().lm()[j] = n[j]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[j];
     }
 
     // linearization of contact forces (lagrange multipliers)
@@ -2422,10 +2447,10 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
     // the normal part was already done in AssembleRegNormalTraction
 
     // stick nodes
-    if(cnode->Active() == true && cnode->Slip() == false)
+    if(cnode->Active() == true && cnode->GetData().Slip() == false)
     {
 	    /***************************************** tanplane.deriv(jump) ***/
-	    vector<map<int,double> >& derivjump = cnode->GetDerivJump();
+	    vector<map<int,double> >& derivjump = cnode->GetData().GetDerivJump();
 	    map<int,double>::iterator colcurr;
 
 	    // loop over dimensions
@@ -2444,7 +2469,7 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
 	    }
 
 	    /**************************************** deriv(tanplane).jump  ***/
-	    vector<map<int,double> >& derivn = cnode->GetDerivN();
+	    vector<map<int,double> >& derivn = cnode->GetData().GetDerivN();
 
 	    // loop over dimensions
 	    for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
@@ -2455,7 +2480,7 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
 	      	for (int dim =0;dim<cnode->NumDof();++dim)
 	      	{
 	      		int col = colcurr->first;
-	          double val =-pptan*kappa*(colcurr->second)*n[dim]*cnode->jump()[dim];
+	          double val =-pptan*kappa*(colcurr->second)*n[dim]*cnode->GetData().jump()[dim];
 	          cnode->AddDerivZValue(dimrow,col,val);
 	      	}
 	      }
@@ -2470,18 +2495,18 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
 	      	for (int dimrow =0;dimrow<cnode->NumDof();++dimrow)
 	      	{
 	      		int col = colcurr->first;
-	          double val =-pptan*kappa*(colcurr->second)*n[dimrow]*cnode->jump()[dim];
+	          double val =-pptan*kappa*(colcurr->second)*n[dimrow]*cnode->GetData().jump()[dim];
 	          cnode->AddDerivZValue(dimrow,col,val);
 	      	}
 	      }
       }
     }
     // slip nodes
-    else if (cnode->Active() == true && cnode->Slip()== true)
+    else if (cnode->Active() == true && cnode->GetData().Slip()== true)
     {
 	    /******************** tanplane.deriv(jump).maxtantrac/magnidude ***/
 
-    	vector<map<int,double> >& derivjump = cnode->GetDerivJump();
+    	vector<map<int,double> >& derivjump = cnode->GetData().GetDerivJump();
 	    map<int,double>::iterator colcurr;
 
 	    // loop over dimensions
@@ -2500,7 +2525,7 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
 	    }
 
 	    /******************** deriv(tanplane).jump.maxtantrac/magnitude ***/
-	    vector<map<int,double> >& derivn = cnode->GetDerivN();
+	    vector<map<int,double> >& derivn = cnode->GetData().GetDerivN();
 
 	    // loop over dimensions
 	    for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
@@ -2511,7 +2536,7 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
 	      	for (int dim =0;dim<cnode->NumDof();++dim)
 	      	{
 	      		int col = colcurr->first;
-	          double val =-pptan*kappa*(colcurr->second)*n[dim]*cnode->jump()[dim]*maxtantrac/magnitude;
+	          double val =-pptan*kappa*(colcurr->second)*n[dim]*cnode->GetData().jump()[dim]*maxtantrac/magnitude;
 	          cnode->AddDerivZValue(dimrow,col,val);
 	      	}
 	      }
@@ -2525,14 +2550,14 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
 	      	for (int dimrow =0;dimrow<cnode->NumDof();++dimrow)
 	      	{
 	      		int col = colcurr->first;
-	          double val =-pptan*kappa*(colcurr->second)*n[dimrow]*cnode->jump()[dim]*maxtantrac/magnitude;
+	          double val =-pptan*kappa*(colcurr->second)*n[dimrow]*cnode->GetData().jump()[dim]*maxtantrac/magnitude;
 	      		cnode->AddDerivZValue(dimrow,col,val);
 	      	}
 	      }
       }
 
 	    /******************** tanplane.jump.deriv(maxtantrac)/magnitude ***/
-      map<int,double>& derivg = cnode->GetDerivG();
+      map<int,double>& derivg = cnode->GetData().GetDerivG();
       map<int,double>::iterator gcurr;
 
       for( int j=0;j<cnode->NumDof();++j)
@@ -2554,7 +2579,7 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
 	    {
 	    	double traction = 0;
 	    	for (int dim=0;dim<cnode->NumDof();++dim)
-	    	  traction += tanplane(dimout,dim)*cnode->jump()[dim]*kappa*pptan;
+	    	  traction += tanplane(dimout,dim)*cnode->GetData().jump()[dim]*kappa*pptan;
 
 	    	traction+= tractionold[dimout];
 
@@ -2580,7 +2605,7 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
 		  {
 		    double traction = 0;
 		    for (int dim=0;dim<cnode->NumDof();++dim)
-		      traction += tanplane(dimout,dim)*cnode->jump()[dim]*kappa*pptan;
+		      traction += tanplane(dimout,dim)*cnode->GetData().jump()[dim]*kappa*pptan;
 
 		    traction+=tractionold[dimout];
 
@@ -2591,7 +2616,7 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
 
 		      for (int dim=0;dim<cnode->NumDof();++dim)
 		      {
-		      	double val =-colcurr->second*n[dim]*cnode->jump()[dim]*traction/magnitude*pptan*kappa;
+		      	double val =-colcurr->second*n[dim]*cnode->GetData().jump()[dim]*traction/magnitude*pptan*kappa;
 	        	for(int dimrow=0;dimrow<cnode->NumDof();++dimrow)
 	        	{
 	         	  double val1 = val*temp[dimrow];
@@ -2606,7 +2631,7 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
 			{
 			  double traction = 0;
 			  for (int dim=0;dim<cnode->NumDof();++dim)
-			    traction += tanplane(dimout,dim)*cnode->jump()[dim]*kappa*pptan;
+			    traction += tanplane(dimout,dim)*cnode->GetData().jump()[dim]*kappa*pptan;
 
 			    traction += tractionold[dimout];
 
@@ -2618,7 +2643,7 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
 		      {
 			      int col = colcurr->first;
 
-			     	double val =-colcurr->second*n[dimout]*cnode->jump()[dim]*traction/magnitude*pptan*kappa;
+			     	double val =-colcurr->second*n[dimout]*cnode->GetData().jump()[dim]*traction/magnitude*pptan*kappa;
 
 			     	for(int dimrow=0;dimrow<cnode->NumDof();++dimrow)
 				    {
@@ -2632,9 +2657,9 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
     else
     {
       // clear tractions
-      for( int j=0;j<dim;++j) cnode->lm()[j] = 0;
+      for( int j=0;j<dim;++j) cnode->GetData().lm()[j] = 0;
       // clear derivz
-      cnode->GetDerivZ().clear();
+      cnode->GetData().GetDerivZ().clear();
     }
   } // loop over active nodes
   return;
@@ -2666,20 +2691,20 @@ void CONTACT::Interface::AssembleRegTangentForcesAugmented()
     CNode* cnode = static_cast<CNode*>(node);
 
     // get some informatiom form the node
-    double gap = cnode->Getg();
+    double gap = cnode->GetData().Getg();
     int dim = cnode->NumDof();
-    double kappa = cnode->Kappa();
-    double* n = cnode->n();
+    double kappa = cnode->GetData().Kappa();
+    double* n = cnode->GetData().n();
 
     // Lagrange multiplier from Uzawa algorithm
     Epetra_SerialDenseMatrix lmuzawa(dim,1);
     for (int k=0;k<dim;++k)
-      lmuzawa(k,0) = cnode->lmuzawa()[k];
+      lmuzawa(k,0) = cnode->GetData().lmuzawa()[k];
 
     // Lagrange multiplier in normal direction
     double lmuzawan = 0.0;
     for (int k=0;k<dim;++k)
-      lmuzawan += cnode->lmuzawa()[k]*cnode->n()[k];
+      lmuzawan += cnode->GetData().lmuzawa()[k]*cnode->GetData().n()[k];
 
     // tangential plane
     Epetra_SerialDenseMatrix tanplane(dim,dim);
@@ -2715,7 +2740,7 @@ void CONTACT::Interface::AssembleRegTangentForcesAugmented()
     Epetra_SerialDenseMatrix jumpvec(dim,1);
 
     for (int i=0;i<dim;i++)
-      jumpvec(i,0) = cnode->jump()[i];
+      jumpvec(i,0) = cnode->GetData().jump()[i];
 
     // evaluate kappa.pptan.jumptan
     Epetra_SerialDenseMatrix temptrac(dim,1);
@@ -2741,20 +2766,20 @@ void CONTACT::Interface::AssembleRegTangentForcesAugmented()
     }
     else if (cnode->Active()==true && ((abs(maxtantrac) - magnitude >= 0)or ftype==INPAR::CONTACT::friction_stick))    {
     	//cout << "Node " << gid << " is stick" << endl;
-    	cnode->Slip() = false;
+    	cnode->GetData().Slip() = false;
 
       // compute lagrange multipliers and store into node
       for( int j=0;j<dim;++j)
-        cnode->lm()[j] = n[j]*(lmuzawan - kappa * ppnor * gap)+trailtraction[j];
+        cnode->GetData().lm()[j] = n[j]*(lmuzawan - kappa * ppnor * gap)+trailtraction[j];
     }
     else
     {
     	//cout << "Node " << gid << " is slip" << endl;
-    	cnode->Slip() = true;
+    	cnode->GetData().Slip() = true;
 
      	// compute lagrange multipliers and store into node
       for( int j=0;j<dim;++j)
-        cnode->lm()[j] = n[j]*(lmuzawan - kappa * ppnor * gap)+trailtraction[j]*maxtantrac/magnitude;
+        cnode->GetData().lm()[j] = n[j]*(lmuzawan - kappa * ppnor * gap)+trailtraction[j]*maxtantrac/magnitude;
     }
 
     // linearization of contact forces (lagrange multipliers)
@@ -2762,10 +2787,10 @@ void CONTACT::Interface::AssembleRegTangentForcesAugmented()
     // the normal part was already done in AssembleRegNormalTraction
 
     // stick nodes
-    if(cnode->Active() == true && cnode->Slip() == false)
+    if(cnode->Active() == true && cnode->GetData().Slip() == false)
     {
 	    /***************************************** tanplane.deriv(jump) ***/
-	    vector<map<int,double> >& derivjump = cnode->GetDerivJump();
+	    vector<map<int,double> >& derivjump = cnode->GetData().GetDerivJump();
 	    map<int,double>::iterator colcurr;
 
 	    // loop over dimensions
@@ -2784,7 +2809,7 @@ void CONTACT::Interface::AssembleRegTangentForcesAugmented()
 	    }
 
 	    /******************************* deriv(tanplane).(lmuzawa+jump) ***/
-	    vector<map<int,double> >& derivn = cnode->GetDerivN();
+	    vector<map<int,double> >& derivn = cnode->GetData().GetDerivN();
 
 	    // loop over dimensions
 	    for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
@@ -2795,8 +2820,8 @@ void CONTACT::Interface::AssembleRegTangentForcesAugmented()
 	      	for (int dim =0;dim<cnode->NumDof();++dim)
 	      	{
 	      		int col = colcurr->first;
-	          double val =-pptan*kappa*(colcurr->second)*n[dim]*(cnode->jump()[dim]);
-	          val = val - (colcurr->second)*n[dim]*(cnode->lmuzawa()[dim]);
+	          double val =-pptan*kappa*(colcurr->second)*n[dim]*(cnode->GetData().jump()[dim]);
+	          val = val - (colcurr->second)*n[dim]*(cnode->GetData().lmuzawa()[dim]);
 	          cnode->AddDerivZValue(dimrow,col,val);
 	      	}
 	      }
@@ -2811,8 +2836,8 @@ void CONTACT::Interface::AssembleRegTangentForcesAugmented()
 	      	for (int dimrow =0;dimrow<cnode->NumDof();++dimrow)
 	      	{
 	      		int col = colcurr->first;
-	          double val =-pptan*kappa*(colcurr->second)*n[dimrow]*(cnode->jump()[dim]);
-	          val = val-(colcurr->second)*n[dimrow]*(cnode->lmuzawa()[dim]);
+	          double val =-pptan*kappa*(colcurr->second)*n[dimrow]*(cnode->GetData().jump()[dim]);
+	          val = val-(colcurr->second)*n[dimrow]*(cnode->GetData().lmuzawa()[dim]);
 	          cnode->AddDerivZValue(dimrow,col,val);
 	      	}
 	      }
@@ -2820,10 +2845,10 @@ void CONTACT::Interface::AssembleRegTangentForcesAugmented()
     }
 
     // slip nodes
-    else if (cnode->Active() == true && cnode->Slip()== true)
+    else if (cnode->Active() == true && cnode->GetData().Slip()== true)
     {
     	/***************************************** tanplane.deriv(jump) ***/
-    	vector<map<int,double> >& derivjump = cnode->GetDerivJump();
+    	vector<map<int,double> >& derivjump = cnode->GetData().GetDerivJump();
 	    map<int,double>::iterator colcurr;
 
 	    // loop over dimensions
@@ -2842,7 +2867,7 @@ void CONTACT::Interface::AssembleRegTangentForcesAugmented()
       }
 
       /******************************* deriv(tanplane).(lmuzawa+jump) ***/
-      vector<map<int,double> >& derivn = cnode->GetDerivN();
+      vector<map<int,double> >& derivn = cnode->GetData().GetDerivN();
 
 	    // loop over dimensions
 	    for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
@@ -2853,8 +2878,8 @@ void CONTACT::Interface::AssembleRegTangentForcesAugmented()
 	        for (int dim =0;dim<cnode->NumDof();++dim)
 	        {
 	          int col = colcurr->first;
-	          double val =-pptan*kappa*(colcurr->second)*n[dim]*cnode->jump()[dim];
-	          val = (val - (colcurr->second)*n[dim]*(cnode->lmuzawa()[dim]))*maxtantrac/magnitude;
+	          double val =-pptan*kappa*(colcurr->second)*n[dim]*cnode->GetData().jump()[dim];
+	          val = (val - (colcurr->second)*n[dim]*(cnode->GetData().lmuzawa()[dim]))*maxtantrac/magnitude;
 	          cnode->AddDerivZValue(dimrow,col,val);
 	        }
 	      }
@@ -2869,15 +2894,15 @@ void CONTACT::Interface::AssembleRegTangentForcesAugmented()
 	        for (int dimrow =0;dimrow<cnode->NumDof();++dimrow)
 	        {
 	          int col = colcurr->first;
-	          double val =-pptan*kappa*(colcurr->second)*n[dimrow]*cnode->jump()[dim];
-	          val = (val-(colcurr->second)*n[dimrow]*(cnode->lmuzawa()[dim]))*maxtantrac/magnitude;
+	          double val =-pptan*kappa*(colcurr->second)*n[dimrow]*cnode->GetData().jump()[dim];
+	          val = (val-(colcurr->second)*n[dimrow]*(cnode->GetData().lmuzawa()[dim]))*maxtantrac/magnitude;
 	          cnode->AddDerivZValue(dimrow,col,val);
 	        }
 	      }
 	    }
 
 	    /******************** tanplane.jump.deriv(maxtantrac)/magnitude ***/
-      map<int,double>& derivg = cnode->GetDerivG();
+      map<int,double>& derivg = cnode->GetData().GetDerivG();
       map<int,double>::iterator gcurr;
 
       for( int j=0;j<cnode->NumDof();++j)
@@ -2911,7 +2936,7 @@ void CONTACT::Interface::AssembleRegTangentForcesAugmented()
       {
       	double traction = 0;
       	for (int dim=0;dim<cnode->NumDof();++dim)
-      	  traction += tanplane(dimout,dim)*(lmuzawa(dim,0)+cnode->jump()[dim]*kappa*pptan);
+      	  traction += tanplane(dimout,dim)*(lmuzawa(dim,0)+cnode->GetData().jump()[dim]*kappa*pptan);
 
         for (int dim=0;dim<cnode->NumDof();++dim)
  	      {
@@ -2935,7 +2960,7 @@ void CONTACT::Interface::AssembleRegTangentForcesAugmented()
 	    {
 	      double traction = 0;
 	      for (int dim=0;dim<cnode->NumDof();++dim)
-    	    traction += tanplane(dimout,dim)*(lmuzawa(dim,0)+cnode->jump()[dim]*kappa*pptan);
+    	    traction += tanplane(dimout,dim)*(lmuzawa(dim,0)+cnode->GetData().jump()[dim]*kappa*pptan);
 
 	      // loop over all entries of the current derivative map
 	      for (colcurr=derivn[dimout].begin();colcurr!=derivn[dimout].end();++colcurr)
@@ -2944,7 +2969,7 @@ void CONTACT::Interface::AssembleRegTangentForcesAugmented()
 
 	        for (int dim=0;dim<cnode->NumDof();++dim)
 	        {
-	        	double val =-colcurr->second*n[dim]*(lmuzawa(dim,0)+cnode->jump()[dim]*pptan*kappa)*traction/magnitude;
+	        	double val =-colcurr->second*n[dim]*(lmuzawa(dim,0)+cnode->GetData().jump()[dim]*pptan*kappa)*traction/magnitude;
 	        	for(int dimrow=0;dimrow<cnode->NumDof();++dimrow)
           	{
          	    double val1 = val*temp[dimrow];
@@ -2959,7 +2984,7 @@ void CONTACT::Interface::AssembleRegTangentForcesAugmented()
 		  {
 		    double traction = 0;
 		    for (int dim=0;dim<cnode->NumDof();++dim)
-    	    traction += tanplane(dimout,dim)*(lmuzawa(dim,0)+cnode->jump()[dim]*kappa*pptan);
+    	    traction += tanplane(dimout,dim)*(lmuzawa(dim,0)+cnode->GetData().jump()[dim]*kappa*pptan);
 
 	      for (int dim=0;dim<cnode->NumDof();++dim)
 	      {
@@ -2967,7 +2992,7 @@ void CONTACT::Interface::AssembleRegTangentForcesAugmented()
   	      for (colcurr=derivn[dim].begin();colcurr!=derivn[dim].end();++colcurr)
 	        {
 		        int col = colcurr->first;
-		     	  double val =-colcurr->second*n[dimout]*(lmuzawa(dim,0)+cnode->jump()[dim]*pptan*kappa)*traction/magnitude;
+		     	  double val =-colcurr->second*n[dimout]*(lmuzawa(dim,0)+cnode->GetData().jump()[dim]*pptan*kappa)*traction/magnitude;
 
 		      	for(int dimrow=0;dimrow<cnode->NumDof();++dimrow)
 			      {
@@ -2981,9 +3006,9 @@ void CONTACT::Interface::AssembleRegTangentForcesAugmented()
     else
     {
       // clear tractions
-      for( int j=0;j<dim;++j) cnode->lm()[j] = 0;
+      for( int j=0;j<dim;++j) cnode->GetData().lm()[j] = 0;
       // clear derivz
-      cnode->GetDerivZ().clear();
+      cnode->GetData().GetDerivZ().clear();
     }
   } // loop over active nodes
   return;
@@ -3004,7 +3029,7 @@ void CONTACT::Interface::AssembleLM(Epetra_Vector& zglobal)
     CNode* cnode = static_cast<CNode*>(node);
 
     int dim = cnode->NumDof();
-    double* lm = cnode->lm();
+    double* lm = cnode->GetData().lm();
 
     Epetra_SerialDenseVector lmnode(dim);
     vector<int> lmdof(dim);
@@ -3046,7 +3071,7 @@ void CONTACT::Interface::AssembleLinZ(LINALG::SparseMatrix& linzglobal)
       dserror("ERROR: AssembleLinZ: Node ownership inconsistency!");
 
     // derivz is the vector<map> we want to assemble
-    vector<map<int,double> >& derivz = cnode->GetDerivZ();
+    vector<map<int,double> >& derivz = cnode->GetData().GetDerivZ();
 
     if ( (int) derivz.size()>0 )
     {
@@ -3108,9 +3133,9 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
       dserror("ERROR: AssembleDMG: Node ownership inconsistency!");
 
     /**************************************************** D-matrix ******/
-    if ((cnode->GetD()).size()>0)
+    if ((cnode->GetData().GetD()).size()>0)
     {
-      vector<map<int,double> > dmap = cnode->GetD();
+      vector<map<int,double> > dmap = cnode->GetData().GetD();
       int rowsize = cnode->NumDof();
       int colsize = (int)dmap[0].size();
 
@@ -3160,9 +3185,9 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
     }
 
     /**************************************************** M-matrix ******/
-    if ((cnode->GetM()).size()>0)
+    if ((cnode->GetData().GetM()).size()>0)
     {
-      vector<map<int,double> > mmap = cnode->GetM();
+      vector<map<int,double> > mmap = cnode->GetData().GetM();
       int rowsize = cnode->NumDof();
       int colsize = (int)mmap[0].size();
 
@@ -3193,9 +3218,9 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
     }
 
     /************************************************* Mmod-matrix ******/
-    if ((cnode->GetMmod()).size()>0)
+    if ((cnode->GetData().GetMmod()).size()>0)
     {
-      vector<map<int,double> > mmap = cnode->GetMmod();
+      vector<map<int,double> > mmap = cnode->GetData().GetMmod();
       int rowsize = cnode->NumDof();
       int colsize = (int)mmap[0].size();
 
@@ -3234,9 +3259,9 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
     }
 
     /**************************************************** g-vector ******/
-    if (cnode->Getg()!=0.0)
+    if (cnode->GetData().Getg()!=0.0)
     {
-      double gap = cnode->Getg();
+      double gap = cnode->GetData().Getg();
 
       /*
       // replace integrated gap by definition of gap
@@ -3244,12 +3269,12 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
       {
         // check two versions of weighted gap
         double defgap = 0.0;
-        double wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
+        double wii = (cnode->GetData().GetD()[0])[cnode->Dofs()[0]];
 
         for (int j=0;j<3;++j)
-          defgap-= (cnode->n()[j])*wii*(cnode->xspatial()[j]);
+          defgap-= (cnode->GetData().n()[j])*wii*(cnode->xspatial()[j]);
 
-        vector<map<int,double> > mmap = cnode->GetM();
+        vector<map<int,double> > mmap = cnode->GetData().GetM();
         map<int,double>::iterator mcurr;
 
         for (int m=0;m<mnodefullmap_->NumMyElements();++m)
@@ -3276,7 +3301,7 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
           if (!hasentry || abs(mik)<1.0e-12) continue;
 
           for (int j=0;j<3;++j)
-            defgap+= (cnode->n()[j]) * mik * mxi[j];
+            defgap+= (cnode->GetData().n()[j]) * mik * mxi[j];
         }
 
         //cout << "SNode: " << cnode->Id() << " IntGap: " << gap << " DefGap: " << defgap << endl;
@@ -3308,7 +3333,7 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
       if (!cnode->HasProj() && !cnode->Active())
       {
       	gap = 1.0e12;
-      	cnode->Getg()=gap;
+      	cnode->GetData().Getg()=gap;
       }
 #endif // #ifndef CONTACTPETROVGALERKIN
 
@@ -3371,12 +3396,12 @@ void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& nglobal,
       Epetra_SerialDenseMatrix Nnode(1,colsize);
 
       // we need D diagonal entry of this node
-      double wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
+      double wii = (cnode->GetData().GetD()[0])[cnode->Dofs()[0]];
 
       for (int j=0;j<colsize;++j)
       {
         lmcol[j] = cnode->Dofs()[j];
-        Nnode(0,j) = wii * cnode->n()[j];
+        Nnode(0,j) = wii * cnode->GetData().n()[j];
       }
 
       // assemble into matrix of normal vectors N
@@ -3388,7 +3413,7 @@ void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& nglobal,
       for (int j=0;j<colsize;++j)
       {
         lmcol[j] = cnode->Dofs()[j];
-        Tnode(0,j) = cnode->txi()[j];
+        Tnode(0,j) = cnode->GetData().txi()[j];
       }
 
       // assemble into matrix of normal vectors T
@@ -3416,12 +3441,12 @@ void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& nglobal,
       Epetra_SerialDenseMatrix Nnode(1,colsize);
 
       // we need D diagonal entry of this node
-      double wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
+      double wii = (cnode->GetData().GetD()[0])[cnode->Dofs()[0]];
 
       for (int j=0;j<colsize;++j)
       {
         lmcol[j] = cnode->Dofs()[j];
-        Nnode(0,j) = wii * cnode->n()[j];
+        Nnode(0,j) = wii * cnode->GetData().n()[j];
       }
 
       // assemble into matrix of normal vectors N
@@ -3433,8 +3458,8 @@ void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& nglobal,
       for (int j=0;j<colsize;++j)
       {
         lmcol[j] = cnode->Dofs()[j];
-        Tnode(0,j) = cnode->txi()[j];
-        Tnode(1,j) = cnode->teta()[j];
+        Tnode(0,j) = cnode->GetData().txi()[j];
+        Tnode(1,j) = cnode->GetData().teta()[j];
       }
 
       // assemble into matrix of normal vectors T
@@ -3472,7 +3497,7 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
       dserror("ERROR: AssembleS: Node ownership inconsistency!");
 
     // prepare assembly
-    map<int,double>& dgmap = cnode->GetDerivG();
+    map<int,double>& dgmap = cnode->GetData().GetDerivG();
     map<int,double>::iterator colcurr;
     int row = activen_->GID(i);
 
@@ -3517,7 +3542,7 @@ void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal)
     if (Dim()==2)
     {
       // prepare assembly
-      vector<map<int,double> >& dtmap = cnode->GetDerivTxi();
+      vector<map<int,double> >& dtmap = cnode->GetData().GetDerivTxi();
       map<int,double>::iterator colcurr;
       int colsize = (int)dtmap[0].size();
       int mapsize = (int)dtmap.size();
@@ -3541,8 +3566,8 @@ void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal)
         for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
         {
           int col = colcurr->first;
-          double val = cnode->lm()[j]*(colcurr->second);
-          //cout << "lm[" << j << "]=" << cnode->lm()[j] << " deriv=" << colcurr->second << endl;
+          double val = cnode->GetData().lm()[j]*(colcurr->second);
+          //cout << "lm[" << j << "]=" << cnode->GetData().lm()[j] << " deriv=" << colcurr->second << endl;
           //cout << "Assemble P: " << row << " " << col << " " << val << endl;
           // do not assemble zeros into P matrix
           if (abs(val)>1.0e-12) pglobal.Assemble(val,row,col);
@@ -3556,8 +3581,8 @@ void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal)
     else if (Dim()==3)
     {
       // prepare assembly
-      vector<map<int,double> >& dtximap = cnode->GetDerivTxi();
-      vector<map<int,double> >& dtetamap = cnode->GetDerivTeta();
+      vector<map<int,double> >& dtximap = cnode->GetData().GetDerivTxi();
+      vector<map<int,double> >& dtetamap = cnode->GetData().GetDerivTeta();
       map<int,double>::iterator colcurr;
       int colsizexi = (int)dtximap[0].size();
       int colsizeeta = (int)dtetamap[0].size();
@@ -3586,8 +3611,8 @@ void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal)
         for (colcurr=dtximap[j].begin();colcurr!=dtximap[j].end();++colcurr)
         {
           int col = colcurr->first;
-          double val = cnode->lm()[j]*(colcurr->second);
-          //cout << "lm[" << j << "]=" << cnode->lm()[j] << " deriv=" << colcurr->second << endl;
+          double val = cnode->GetData().lm()[j]*(colcurr->second);
+          //cout << "lm[" << j << "]=" << cnode->GetData().lm()[j] << " deriv=" << colcurr->second << endl;
           //cout << "Assemble P: " << rowxi << " " << col << " " << val << endl;
           // do not assemble zeros into P matrix
           if (abs(val)>1.0e-12) pglobal.Assemble(val,rowxi,col);
@@ -3607,8 +3632,8 @@ void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal)
         for (colcurr=dtetamap[j].begin();colcurr!=dtetamap[j].end();++colcurr)
         {
           int col = colcurr->first;
-          double val = cnode->lm()[j]*(colcurr->second);
-          //cout << "lm[" << j << "]=" << cnode->lm()[j] << " deriv=" << colcurr->second << endl;
+          double val = cnode->GetData().lm()[j]*(colcurr->second);
+          //cout << "lm[" << j << "]=" << cnode->GetData().lm()[j] << " deriv=" << colcurr->second << endl;
           //cout << "Assemble P: " << roweta << " " << col << " " << val << endl;
           // do not assemble zeros into P matrix
           if (abs(val)>1.0e-12) pglobal.Assemble(val,roweta,col);
@@ -3654,7 +3679,7 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
     int dim = cnode->NumDof();
 
     // Mortar matrix D derivatives
-    map<int,map<int,double> >& dderiv = cnode->GetDerivD();
+    map<int,map<int,double> >& dderiv = cnode->GetData().GetDerivD();
 
     map<int,double>::iterator colcurr;
     map<int,map<int,double> >::iterator dcurr;
@@ -3672,7 +3697,7 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
           dserror("ERROR: Cannot find node with gid %",dcurr->first);
         CNode* csnode = static_cast<CNode*>(snode);
 
-        double* lm = csnode->lm();
+        double* lm = csnode->GetData().lm();
 
         // get dderiv row
         map<int,double>& dderivrow = dderiv[dcurr->first];
@@ -3689,11 +3714,11 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
 
     /** old version, using dual shape functions **
     // Mortar matrix D derivatives
-    map<int,double>& dderiv = cnode->GetDerivD();
+    map<int,double>& dderiv = cnode->GetData().GetDerivD();
     map<int,double>::iterator colcurr;
 
     // current Lagrange multipliers
-    double* lm = cnode->lm();
+    double* lm = cnode->GetData().lm();
 
     // loop over all slave node dofs for assembly
     for (int j=0; j<numdof; ++j)
@@ -3743,20 +3768,26 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CNode* cnode = static_cast<CNode*>(node);
 
-    // Mortar matrix M derivatives
-    map<int,map<int,double> >& mderiv = cnode->GetDerivM();
+    // create variables
     map<int,double>::iterator colcurr;
     map<int,map<int,double> >::iterator mcurr;
-
-    // current Lagrange multipliers
-    double* lm = cnode->lm();
+    double* lm = NULL;
+    int mastersize = 0;
+    map<int,map<int,double> > tempmap;
+    map<int,map<int,double> >& mderiv = tempmap;
 
     // inter-proc. communication
     // (we want to keep all procs around, although at the moment only
     // the cnode owning proc does relevant work!)
-    int mastersize = 0;
     if (Comm().MyPID()==cnode->Owner())
     {
+			// Mortar matrix M derivatives
+			mderiv = cnode->GetData().GetDerivM();
+
+			// current Lagrange multipliers
+			lm = cnode->GetData().lm();
+
+			// get sizes and iterator start
       mastersize = (int)mderiv.size();
       mcurr = mderiv.begin();
     }
@@ -3785,11 +3816,17 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
       CNode* cmnode = static_cast<CNode*>(mnode);
       int mnumdof = cmnode->NumDof();
 
-      // Mortar matrix M derivatives
-      map<int,double>& thismderiv = cnode->GetDerivM()[mgid];
+      // create variables
       int mapsize = 0;
+      map<int,double> tempmap2;
+      map<int,double>& thismderiv = tempmap2;
+
+      // Mortar matrix M derivatives
       if (Comm().MyPID()==cnode->Owner())
+      {
+      	thismderiv = cnode->GetData().GetDerivM()[mgid];
         mapsize = (int)(thismderiv.size());
+      }
       lComm()->Broadcast(&mapsize,1,procmap_[cnode->Owner()]);
 
       // loop over all master node dofs
@@ -3872,8 +3909,8 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
       dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
 
     // prepare assembly, get information from node
-    vector<map<int,double> > dtximap = cnode->GetDerivTxi();
-    vector<map<int,double> > dtetamap = cnode->GetDerivTeta();
+    vector<map<int,double> > dtximap = cnode->GetData().GetDerivTxi();
+    vector<map<int,double> > dtetamap = cnode->GetData().GetDerivTeta();
 
    for (int j=0;j<Dim()-1;++j)
  	  	if ((int)dtximap[j].size() != (int)dtximap[j+1].size())
@@ -3888,9 +3925,9 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 
 	  // more information from node
     double* xi = cnode->xspatial();
-    double* txi = cnode->txi();
-    double* teta = cnode->teta();
-    double* jump = cnode->jump();
+    double* txi = cnode->GetData().txi();
+    double* teta = cnode->GetData().teta();
+    double* jump = cnode->GetData().jump();
 
     // iterator for maps
     map<int,double>::iterator colcurr;
@@ -3946,11 +3983,11 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 
     // we need the nodal entries of the D-matrix and the old ones
     // they must have an entry
-    vector<map<int,double> > dmapold=cnode->GetDOld();
+    vector<map<int,double> > dmapold=cnode->GetData().GetDOld();
     if(dmapold.size()<1)
         dserror("ERROR: AssembleLinStick: No dmap-entries form previous time step");
 
-    double D= (cnode->GetD()[0])[cnode->Dofs()[0]];
+    double D= (cnode->GetData().GetD()[0])[cnode->Dofs()[0]];
     double Dold= dmapold[0][cnode->Dofs()[0]];
 
     // loop over dimensions
@@ -3971,8 +4008,8 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 
     /*** 02 **************************************** tangent.(M-Mn-1) ***/
     // we need the nodal entries of the M-matrix and the old ones
-    vector<map<int,double> > mmap = cnode->GetM();
-    vector<map<int,double> > mmapold = cnode->GetMOld();
+    vector<map<int,double> > mmap = cnode->GetData().GetM();
+    vector<map<int,double> > mmapold = cnode->GetData().GetMOld();
 
     // map from previous time step must have an entry
     if(mmapold.size()<1)
@@ -3985,8 +4022,8 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
     // iterator
     set<int>::iterator mcurr;
 
-    set <int> mnodescurrent = cnode->GetMNodes();
-  	set <int> mnodesold = cnode->GetMNodesOld();
+    set <int> mnodescurrent = cnode->GetData().GetMNodes();
+  	set <int> mnodesold = cnode->GetData().GetMNodesOld();
 
   	for (mcurr=mnodescurrent.begin(); mcurr != mnodescurrent.end(); mcurr++)
   	  mnodes.insert(*mcurr);
@@ -4102,7 +4139,7 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
     }
 
     // prepare assembly
-    map<int,double>& ddmap = cnode->GetDerivD()[gid];
+    map<int,double>& ddmap = cnode->GetData().GetDerivD()[gid];
 
     // loop over all entries of the current derivative map
     for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
@@ -4121,7 +4158,7 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 
     /*** 4 *************************************** tangent.Deriv(M).x ***/
     // we need the Lin(M-matrix) entries of this node
-    map<int,map<int,double> >& dmmap = cnode->GetDerivM();
+    map<int,map<int,double> >& dmmap = cnode->GetData().GetDerivM();
     map<int,map<int,double> >::iterator dmcurr;
 
     // loop over all master nodes in the DerivM-map of the active slave node
@@ -4143,7 +4180,7 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 
       }
       // compute matrix entry of the current active node / master node pair
-      map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+      map<int,double>& thisdmmap = cnode->GetData().GetDerivM(gid);
 
       // loop over all entries of the current derivative map
       for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -4201,7 +4238,7 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 //      dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
 //
 //    // prepare assembly
-//    vector<map<int,double> > dnmap = cnode->GetDerivN();
+//    vector<map<int,double> > dnmap = cnode->GetData().GetDerivN();
 //    map<int,double>::iterator colcurr;
 //
 //    // calculate DerivT from DerivN
@@ -4221,9 +4258,9 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 //    int mapsize = (int)dtmap.size();
 //    int row = stickt->GID(i);
 //    double* xi = cnode->xspatial();
-//    double* txi = cnode->txi();
-//    double* jump = cnode->jump();
-//    double& wgap = cnode->Getg();
+//    double* txi = cnode->GetData().txi();
+//    double* jump = cnode->GetData().jump();
+//    double& wgap = cnode->GetData().Getg();
 //
 //    double utan = 0;
 //    double nz = 0;
@@ -4231,7 +4268,7 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 //    for (int dim = 0;dim < Dim();dim++)
 //    {
 //      utan += txi[dim]*jump[dim];
-//      nz += cnode->n()[dim] * cnode->lm()[dim];
+//      nz += cnode->GetData().n()[dim] * cnode->GetData().lm()[dim];
 //    }
 //
 //    // initialization of nz if nz = wgap = 0
@@ -4265,7 +4302,7 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 //    for (int dim=0;dim<cnode->NumDof();++dim)
 //    {
 //      int col = cnode->Dofs()[dim];
-//      double val = -frcoeff*cnode->n()[dim]*ct*utan;
+//      double val = -frcoeff*cnode->GetData().n()[dim]*ct*utan;
 //      // do not assemble zeros into matrix
 //      if (abs(val)>1.0e-12) linstickLMglobal.Assemble(val,row,col);
 //    }
@@ -4274,8 +4311,8 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 //    /************************************************** -tan.(D-Dn-1) ***/
 //
 //    // we need the nodal entries of the D-matrix and the old one
-//    double D= (cnode->GetD()[0])[cnode->Dofs()[0]];
-//    double Dold= (cnode->GetDOld()[0])[cnode->Dofs()[0]];
+//    double D= (cnode->GetData().GetD()[0])[cnode->Dofs()[0]];
+//    double Dold= (cnode->GetData().GetDOld()[0])[cnode->Dofs()[0]];
 //
 //    // loop over all derivative maps (=dimensions)
 //    for (int dim=0;dim<cnode->NumDof();++dim)
@@ -4291,8 +4328,8 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 //    /*************************************************** tan.(M-Mn-1) ***/
 //
 //    // we need the nodal entries of the M-matrix and the old one
-//    vector<map<int,double> > mmap = cnode->GetM();
-//    vector<map<int,double> > mmapold = cnode->GetMOld();
+//    vector<map<int,double> > mmap = cnode->GetData().GetM();
+//    vector<map<int,double> > mmapold = cnode->GetData().GetMOld();
 //
 //    // create a set of nodes including nodes according to M entries
 //    // from current and previous time step
@@ -4406,7 +4443,7 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 //      tdotx += txi[dim]*xi[dim];
 //
 //    // prepare assembly
-//    map<int,double>& ddmap = cnode->GetDerivD();
+//    map<int,double>& ddmap = cnode->GetData().GetDerivD();
 //
 //    // loop over all entries of the current derivative map
 //    for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
@@ -4420,7 +4457,7 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 //    /***********************************************   -T.DerivM.x ******/
 //
 //    // we need the Lin(M-matrix) entries of this node
-//    map<int,map<int,double> >& dmmap = cnode->GetDerivM();
+//    map<int,map<int,double> >& dmmap = cnode->GetData().GetDerivM();
 //    map<int,map<int,double> >::iterator dmcurr;
 //
 //    // loop over all master nodes in the DerivM-map of the active slave node
@@ -4438,7 +4475,7 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 //        tdotx += txi[dim]*mxi[dim];
 //
 //      // compute matrix entry of the current active node / master node pair
-//      map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+//      map<int,double>& thisdmmap = cnode->GetData().GetDerivM(gid);
 //
 //      // loop over all entries of the current derivative map
 //      for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -4453,7 +4490,7 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 //    /**************************************-frcoeff*cn*ct*utan*DerivG ***/
 //
 //    // prepare assembly
-//    map<int,double>& dgmap = cnode->GetDerivG();
+//    map<int,double>& dgmap = cnode->GetData().GetDerivG();
 //
 //    for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
 //    {
@@ -4476,7 +4513,7 @@ void CONTACT::Interface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal
 //      for (colcurr=dnmap[j].begin();colcurr!=dnmap[j].end();++colcurr)
 //      {
 //        int col = colcurr->first;
-//        double val = -frcoeff*cnode->lm()[j]*ct*utan*colcurr->second;
+//        double val = -frcoeff*cnode->GetData().lm()[j]*ct*utan*colcurr->second;
 //
 //        // do not assemble zeros into s matrix
 //        if (abs(val)>1.0e-12) linstickDISglobal.Assemble(val,row,col);
@@ -4531,9 +4568,9 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
 		    dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
 
       // prepare assembly, get information from node
-		  vector<map<int,double> > dnmap = cnode->GetDerivN();
-	    vector<map<int,double> > dtximap = cnode->GetDerivTxi();
-	    vector<map<int,double> > dtetamap = cnode->GetDerivTeta();
+		  vector<map<int,double> > dnmap = cnode->GetData().GetDerivN();
+	    vector<map<int,double> > dtximap = cnode->GetData().GetDerivTxi();
+	    vector<map<int,double> > dtetamap = cnode->GetData().GetDerivTeta();
 
       // check for Dimension of derivative maps
 		  for (int j=0;j<Dim()-1;++j)
@@ -4552,13 +4589,13 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
 			 }
 
       // more information from node
-	    double* jump = cnode->jump();
-	    double* n = cnode->n();
-	    double* txi = cnode->txi();
-	    double* teta = cnode->teta();
+	    double* jump = cnode->GetData().jump();
+	    double* n = cnode->GetData().n();
+	    double* txi = cnode->GetData().txi();
+	    double* teta = cnode->GetData().teta();
 	    double* xi = cnode->xspatial();
-		  double* z = cnode->lm();
-		  double& wgap = cnode->Getg();
+		  double* z = cnode->GetData().lm();
+		  double& wgap = cnode->GetData().Getg();
 
 		  // iterator for maps
 	    map<int,double>::iterator colcurr;
@@ -4616,7 +4653,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
 
     	// in the case of frictionless contact for nodes just coming into
     	// contact, the frictionless contact condition is applied.
-    	if (cnode->ActiveOld()==false)
+    	if (cnode->GetData().ActiveOld()==false)
   	  {
     		friclessandfirst=true;
     		for (int dim=0;dim<cnode->NumDof();++dim)
@@ -4733,11 +4770,11 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
 				/*** 01  *********** -Deriv(euclidean).ct.tangent.(D-Dn-1)*ztan ***/
 
 				// we need the nodal entries of the D-matrix and the old one
-				vector<map<int,double> > dmapold=cnode->GetDOld();
+				vector<map<int,double> > dmapold=cnode->GetData().GetDOld();
 				if(dmapold.size()<1)
 						dserror("ERROR: AssembleLinSlip: No dmap-entries form previous time step");
 
-				double D= (cnode->GetD()[0])[cnode->Dofs()[0]];
+				double D= (cnode->GetData().GetD()[0])[cnode->Dofs()[0]];
 				double Dold= dmapold[0][cnode->Dofs()[0]];
 
 				// loop over dimensions
@@ -4771,8 +4808,8 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
 				/*** 02  *********** -Deriv(euclidean).ct.tangent.(M-Mn-1)*ztan ***/
 
 				// we need the nodal entries of the M-matrix and the old one
-				vector<map<int,double> > mmap = cnode->GetM();
-				vector<map<int,double> > mmapold = cnode->GetMOld();
+				vector<map<int,double> > mmap = cnode->GetData().GetM();
+				vector<map<int,double> > mmapold = cnode->GetData().GetMOld();
 
 				// map from previous time step must have an entry
 				if(mmapold.size()<1)
@@ -4785,8 +4822,8 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
 				 // iterator
 				 set<int>::iterator mcurr;
 
-				 set <int> mnodescurrent = cnode->GetMNodes();
-				set <int> mnodesold = cnode->GetMNodesOld();
+				 set <int> mnodescurrent = cnode->GetData().GetMNodes();
+				set <int> mnodesold = cnode->GetData().GetMNodesOld();
 
 				for (mcurr=mnodescurrent.begin(); mcurr != mnodescurrent.end(); mcurr++)
 					mnodes.insert(*mcurr);
@@ -4995,7 +5032,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
 					}
 
 					// prepare assembly
-					map<int,double>& ddmap = cnode->GetDerivD()[gid];
+					map<int,double>& ddmap = cnode->GetData().GetDerivD()[gid];
 
 				// loop over all entries of the current derivative map
 					for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
@@ -5015,7 +5052,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
 
 					/*** 5 ******************* deriv(euclidean).tan.deriv(M).ztan ***/
 					// we need the Lin(M-matrix) entries of this node
-					map<int,map<int,double> >& dmmap = cnode->GetDerivM();
+					map<int,map<int,double> >& dmmap = cnode->GetData().GetDerivM();
 					map<int,map<int,double> >::iterator dmcurr;
 
 					// loop over all master nodes in the DerivM-map of the active slave node
@@ -5037,7 +5074,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
 						}
 
 						// compute entry of the current active node / master node pair
-						map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+						map<int,double>& thisdmmap = cnode->GetData().GetDerivM(gid);
 
 						// loop over all entries of the current derivative map
 						for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -5160,7 +5197,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
 						}
 
 						// compute entry of the current active node / master node pair
-						map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+						map<int,double>& thisdmmap = cnode->GetData().GetDerivM(gid);
 
 						 // loop over all entries of the current derivative map
 						 for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -5197,7 +5234,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
 
 					/*** 11 ****************** frcoeff*cn*deriv (g).(ztan+ct*utan) ***/
 					// prepare assembly
-					map<int,double>& dgmap = cnode->GetDerivG();
+					map<int,double>& dgmap = cnode->GetData().GetDerivG();
 
 					// loop over all entries of the current derivative map
 					for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
@@ -5233,7 +5270,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
       // dtx = -dny
       // FIXGIT: in the future DerivD will be called directly form node
 
-      vector<map<int,double> > dnmap = cnode->GetDerivN();
+      vector<map<int,double> > dnmap = cnode->GetData().GetDerivN();
 
       // iterator
       map<int,double>::iterator colcurr;
@@ -5247,11 +5284,11 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
         dtmap[0].insert(pair<int,double>(colcurr->first,(-1)*colcurr->second));
 
       // get more information from node
-      double* jump = cnode->jump();
-      double* n = cnode->n();
-      double* txi = cnode->txi();
+      double* jump = cnode->GetData().jump();
+      double* n = cnode->GetData().n();
+      double* txi = cnode->GetData().txi();
       double* xi = cnode->xspatial();
-      double* z = cnode->lm();
+      double* z = cnode->GetData().lm();
       int row = slipt_->GID(i);
 
       int colsize = (int)dtmap[0].size();
@@ -5301,7 +5338,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
         double val = (prefactor*ztan+sum-frcoeff*znor)*txi[dim]-frcoeff*(ztan+ct*jumptan)*n[dim];
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val = txi[dim];
+        if (cnode->GetData().ActiveOld()==false) val = txi[dim];
 #endif
 
         // do not assemble zeros into matrix
@@ -5323,7 +5360,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
       rhsnode(0) = (value1+value2+value3);
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) rhsnode(0) = 0;
+        if (cnode->GetData().ActiveOld()==false) rhsnode(0) = 0;
 #endif
 
       lm[0] = cnode->Dofs()[1];
@@ -5336,8 +5373,8 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
       /***************************** -Deriv(abs)*ct*tan.(D-Dn-1)*ztan ***/
 
       // we need the nodal entries of the D-matrix and the old one
-      double D= (cnode->GetD()[0])[cnode->Dofs()[0]];
-      double Dold= (cnode->GetDOld()[0])[cnode->Dofs()[0]];
+      double D= (cnode->GetData().GetD()[0])[cnode->Dofs()[0]];
+      double Dold= (cnode->GetData().GetDOld()[0])[cnode->Dofs()[0]];
 
       // loop over all derivative maps (=dimensions)
       for (int dim=0;dim<cnode->NumDof();++dim)
@@ -5347,7 +5384,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
        //cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val = 0;
+        if (cnode->GetData().ActiveOld()==false) val = 0;
 #endif
 
 
@@ -5358,8 +5395,8 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
       /***************************** -Deriv(abs)*ct*tan.(M-Mn-1)*ztan ***/
 
       // we need the nodal entries of the M-matrix and the old one
-      vector<map<int,double> > mmap = cnode->GetM();
-      vector<map<int,double> > mmapold = cnode->GetMOld();
+      vector<map<int,double> > mmap = cnode->GetData().GetM();
+      vector<map<int,double> > mmapold = cnode->GetData().GetMOld();
 
       // create a set of nodes including nodes according to M entries
       // from current and previous time step
@@ -5368,8 +5405,8 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
       // iterator
       set<int>::iterator mcurr;
 
-      set <int> mnodescurrent = cnode->GetMNodes();
-    	set <int> mnodesold = cnode->GetMNodesOld();
+      set <int> mnodescurrent = cnode->GetData().GetMNodes();
+    	set <int> mnodesold = cnode->GetData().GetMNodesOld();
 
     	for (mcurr=mnodescurrent.begin(); mcurr != mnodescurrent.end(); mcurr++)
     	  mnodes.insert(*mcurr);
@@ -5398,7 +5435,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
           //cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val =0;
+        if (cnode->GetData().ActiveOld()==false) val =0;
 #endif
 
          // do not assemble zeros into matrix
@@ -5416,7 +5453,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
         //cout << "03 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val =0;
+        if (cnode->GetData().ActiveOld()==false) val =0;
 #endif
 
        // do not assemble zeros into matrix
@@ -5445,7 +5482,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
           //cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val =0;
+        if (cnode->GetData().ActiveOld()==false) val =0;
 #endif
 
           // do not assemble zeros into matrix
@@ -5471,7 +5508,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
             //cout << "1 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val =0;
+        if (cnode->GetData().ActiveOld()==false) val =0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -5498,7 +5535,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
             //cout << "2 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-          if (cnode->ActiveOld()==false) val = (colcurr->second)*z[j];
+          if (cnode->GetData().ActiveOld()==false) val = (colcurr->second)*z[j];
 #endif
 
           // do not assemble zeros into matrix
@@ -5525,7 +5562,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
             //cout << "3 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val =0;
+        if (cnode->GetData().ActiveOld()==false) val =0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -5545,7 +5582,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
           tdotx += txi[dim]*xi[dim];
 
         // prepare assembly
-        map<int,double>& ddmap = cnode->GetDerivD()[gid];
+        map<int,double>& ddmap = cnode->GetData().GetDerivD()[gid];
 
         // loop over all entries of the current derivative map
         for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
@@ -5555,7 +5592,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
           //cout << "4 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val =0;
+        if (cnode->GetData().ActiveOld()==false) val =0;
 #endif
 
           // do not assemble zeros into matrix
@@ -5565,7 +5602,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
         /**************************** Deriv(abs).ct.tan.DerivM.x*ztan ***/
 
         // we need the Lin(M-matrix) entries of this node
-        map<int,map<int,double> >& dmmap = cnode->GetDerivM();
+        map<int,map<int,double> >& dmmap = cnode->GetData().GetDerivM();
         map<int,map<int,double> >::iterator dmcurr;
 
         // loop over all master nodes in the DerivM-map of the active slave node
@@ -5583,7 +5620,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
             tdotx += txi[dim]*mxi[dim];
 
           // compute entry of the current active node / master node pair
-          map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+          map<int,double>& thisdmmap = cnode->GetData().GetDerivM(gid);
 
           // loop over all entries of the current derivative map
           for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -5593,7 +5630,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
             //cout << "5 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val =0;
+        if (cnode->GetData().ActiveOld()==false) val =0;
 #endif
 
             // do not assemble zeros into matrix
@@ -5616,7 +5653,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
             //cout << "6 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val =0;
+        if (cnode->GetData().ActiveOld()==false) val =0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -5643,7 +5680,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
             //cout << "7 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val =0;
+        if (cnode->GetData().ActiveOld()==false) val =0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -5670,7 +5707,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
            //cout << "8 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val =0;
+        if (cnode->GetData().ActiveOld()==false) val =0;
 #endif
 
            // do not assemble zeros into matrix
@@ -5694,7 +5731,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
              tdotx += txi[dim]*mxi[dim];
 
            // compute entry of the current active node / master node pair
-           map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+           map<int,double>& thisdmmap = cnode->GetData().GetDerivM(gid);
 
            // loop over all entries of the current derivative map
            for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -5704,7 +5741,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
             //cout << "9 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val =0;
+        if (cnode->GetData().ActiveOld()==false) val =0;
 #endif
 
              // do not assemble zeros into matrix
@@ -5727,7 +5764,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
            //cout << "10 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val =0;
+        if (cnode->GetData().ActiveOld()==false) val =0;
 #endif
 
            // do not assemble zeros into s matrix
@@ -5765,7 +5802,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
       // dtx = -dny
       // FIXGIT: in the future DerivD will be called directly form node
 
-      vector<map<int,double> > dnmap = cnode->GetDerivN();
+      vector<map<int,double> > dnmap = cnode->GetData().GetDerivN();
 
       // iterator
       map<int,double>::iterator colcurr;
@@ -5779,10 +5816,10 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
         dtmap[0].insert(pair<int,double>(colcurr->first,(-1)*colcurr->second));
 
       // get more information from node
-      double* jump = cnode->jump();
-      double* txi = cnode->txi();
+      double* jump = cnode->GetData().jump();
+      double* txi = cnode->GetData().txi();
       double* xi = cnode->xspatial();
-      double* z = cnode->lm();
+      double* z = cnode->GetData().lm();
       int row = slipt_->GID(i);
 
       int colsize = (int)dtmap[0].size();
@@ -5831,7 +5868,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
         double val = (prefactor*ztan+sum-frbound)*txi[dim];
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val = txi[dim];
+        if (cnode->GetData().ActiveOld()==false) val = txi[dim];
 #endif
 
         // do not assemble zeros into matrix
@@ -5851,7 +5888,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
       rhsnode(0) = (value1+value2);
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) rhsnode(0) = 0;
+        if (cnode->GetData().ActiveOld()==false) rhsnode(0) = 0;
 #endif
 
       lm[0] = cnode->Dofs()[1];
@@ -5864,8 +5901,8 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
       /***************************** -Deriv(abs)*ct*tan.(D-Dn-1)*ztan ***/
 
       // we need the nodal entries of the D-matrix and the old one
-      double D= (cnode->GetD()[0])[cnode->Dofs()[0]];
-      double Dold= (cnode->GetDOld()[0])[cnode->Dofs()[0]];
+      double D= (cnode->GetData().GetD()[0])[cnode->Dofs()[0]];
+      double Dold= (cnode->GetData().GetDOld()[0])[cnode->Dofs()[0]];
 
       if (abs(Dold)<0.0001)
         dserror ("Error:No entry for Dold");
@@ -5877,7 +5914,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
         double val = prefactor*(-1)*ct*txi[dim]*(D-Dold)*ztan;
        //cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val = 0;
+        if (cnode->GetData().ActiveOld()==false) val = 0;
 #endif
 
        // do not assemble zeros into matrix
@@ -5887,8 +5924,8 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
       /***************************** -Deriv(abs)*ct*tan.(M-Mn-1)*ztan ***/
 
       // we need the nodal entries of the M-matrix and the old one
-      vector<map<int,double> > mmap = cnode->GetM();
-      vector<map<int,double> > mmapold = cnode->GetMOld();
+      vector<map<int,double> > mmap = cnode->GetData().GetM();
+      vector<map<int,double> > mmapold = cnode->GetData().GetMOld();
 
       // create a set of nodes including nodes according to M entries
       // from current and previous time step
@@ -5897,8 +5934,8 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
       // iterator
       set<int>::iterator mcurr;
 
-      set <int> mnodescurrent = cnode->GetMNodes();
-    	set <int> mnodesold = cnode->GetMNodesOld();
+      set <int> mnodescurrent = cnode->GetData().GetMNodes();
+    	set <int> mnodesold = cnode->GetData().GetMNodesOld();
 
     	for (mcurr=mnodescurrent.begin(); mcurr != mnodescurrent.end(); mcurr++)
     	  mnodes.insert(*mcurr);
@@ -5927,7 +5964,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
           //cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val = 0;
+        if (cnode->GetData().ActiveOld()==false) val = 0;
 #endif
 
          // do not assemble zeros into matrix
@@ -5945,7 +5982,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
         //cout << "03 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val = 0;
+        if (cnode->GetData().ActiveOld()==false) val = 0;
 #endif
 
         // do not assemble zeros into matrix
@@ -5974,7 +6011,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
           //cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-          if (cnode->ActiveOld()==false) val = 0;
+          if (cnode->GetData().ActiveOld()==false) val = 0;
 #endif
           // do not assemble zeros into matrix
           if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
@@ -5999,7 +6036,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
             //cout << "1 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-            if (cnode->ActiveOld()==false) val = 0;
+            if (cnode->GetData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -6026,7 +6063,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
             //cout << "2 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-          if (cnode->ActiveOld()==false) val = (colcurr->second)*z[j];
+          if (cnode->GetData().ActiveOld()==false) val = (colcurr->second)*z[j];
 #endif
 
             // do not assemble zeros into matrix
@@ -6053,7 +6090,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
             //cout << "3 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val = 0;
+        if (cnode->GetData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -6073,7 +6110,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
           tdotx += txi[dim]*xi[dim];
 
         // prepare assembly
-        map<int,double>& ddmap = cnode->GetDerivD()[gid];
+        map<int,double>& ddmap = cnode->GetData().GetDerivD()[gid];
 
         // loop over all entries of the current derivative map
         for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
@@ -6083,7 +6120,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
           //cout << "4 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val = 0;
+        if (cnode->GetData().ActiveOld()==false) val = 0;
 #endif
 
           // do not assemble zeros into matrix
@@ -6093,7 +6130,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
         /**************************** Deriv(abs).ct.tan.DerivM.x*ztan ***/
 
         // we need the Lin(M-matrix) entries of this node
-        map<int,map<int,double> >& dmmap = cnode->GetDerivM();
+        map<int,map<int,double> >& dmmap = cnode->GetData().GetDerivM();
         map<int,map<int,double> >::iterator dmcurr;
 
         // loop over all master nodes in the DerivM-map of the active slave node
@@ -6111,7 +6148,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
             tdotx += txi[dim]*mxi[dim];
 
           // compute entry of the current active node / master node pair
-          map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+          map<int,double>& thisdmmap = cnode->GetData().GetDerivM(gid);
 
           // loop over all entries of the current derivative map
           for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -6121,7 +6158,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
             //cout << "5 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val = 0;
+        if (cnode->GetData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into matrix
@@ -6144,7 +6181,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
             //cout << "6 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val = 0;
+        if (cnode->GetData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -6171,7 +6208,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
             //cout << "7 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val = 0;
+        if (cnode->GetData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -6198,7 +6235,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
            //cout << "8 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val = 0;
+        if (cnode->GetData().ActiveOld()==false) val = 0;
 #endif
 
            // do not assemble zeros into matrix
@@ -6222,7 +6259,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
              tdotx += txi[dim]*mxi[dim];
 
            // compute entry of the current active node / master node pair
-           map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+           map<int,double>& thisdmmap = cnode->GetData().GetDerivM(gid);
 
            // loop over all entries of the current derivative map
            for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -6232,7 +6269,7 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
             //cout << "9 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) val = 0;
+        if (cnode->GetData().ActiveOld()==false) val = 0;
 #endif
 
              // do not assemble zeros into matrix
@@ -6360,7 +6397,7 @@ bool CONTACT::Interface::BuildActiveSet()
     }
 
     // add node / dofs to temporary map IF slip
-    if (cnode->Slip())
+    if (cnode->GetData().Slip())
     {
       myslipnodegids[countslipnodes] = cnode->Id();
       ++countslipnodes;

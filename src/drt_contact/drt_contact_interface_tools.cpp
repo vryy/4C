@@ -96,7 +96,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
     dserror("Gmsh output implemented for a maximum of 99 iterations");
   filename << iter;
 #endif // #ifdef CONTACTGMSH3
-  
+
   filename << ".pos";
 
   // do output to file in c-style
@@ -277,12 +277,12 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         for (int j=0;j<3;++j)
         {
           nc[j]=cnode->xspatial()[j];
-          nn[j]=cnode->n()[j];
-          nt1[j]=cnode->txi()[j];
-          nt2[j]=cnode->teta()[j];
-          lmn +=  (cnode->Active())*nn[j]* cnode->lm()[j];
-          lmt1 +=  (cnode->Active())*nt1[j]* cnode->lm()[j];
-          lmt2 +=  (cnode->Active())*nt2[j]* cnode->lm()[j];
+          nn[j]=cnode->GetData().n()[j];
+          nt1[j]=cnode->GetData().txi()[j];
+          nt2[j]=cnode->GetData().teta()[j];
+          lmn +=  (cnode->Active())*nn[j]* cnode->GetData().lm()[j];
+          lmt1 +=  (cnode->Active())*nt1[j]* cnode->GetData().lm()[j];
+          lmt2 +=  (cnode->Active())*nt2[j]* cnode->GetData().lm()[j];
         }
 
         //******************************************************************
@@ -316,14 +316,14 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
         }
 
         // frictional contact, slip node = {G}
-        else if (fric && cnode->Active() && cnode->Slip())
+        else if (fric && cnode->Active() && cnode->GetData().Slip())
         {
           gmshfilecontent << "T3(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
           gmshfilecontent << "{" << "G" << "};" << endl;
         }
 
         //frictional contact, stick node = {H}
-        else if (fric && cnode->Active() && !cnode->Slip())
+        else if (fric && cnode->Active() && !cnode->GetData().Slip())
         {
           gmshfilecontent << "T3(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
           gmshfilecontent << "{" << "H" << "};" << endl;
@@ -392,7 +392,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
   //******************************************************************
   // Master elements are equal on each proc!!
   //******************************************************************
-  	
+
   int gnslayers;
  	// bestimmung Anzahl globales max. an layern nochmal überprüfen!!!!!!
 
@@ -526,7 +526,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
       fprintf(fp,gmshfile.str().c_str());
       fclose(fp);
     }
-  	
+
     //print full tree with treenodesmap
     for (int j=0;j < (int)binarytree_->Mtreenodesmap().size();j++)
     {
@@ -620,13 +620,13 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
 	   	{
 	  	  if ( (int)(binarytree_->ContactMap()[0]).size() != (int)(binarytree_->ContactMap()[1]).size() )
 	   		dserror("ERROR: Binarytree ContactMap does not have right size!");
-	  	
+
 	  	  for (int j=0; j<(int)((binarytree_->ContactMap()[0]).size());j++)
 	   		{
 	   	    std::ostringstream currentfilename;
 	   	    currentfilename << filenamectn.str().c_str() << "_ct.pos";
 	   	  	(binarytree_->ContactMap()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
-	
+
           //create new sheet "Treenode" in gmsh
           fp = fopen(currentfilename.str().c_str(), "a");
           std::stringstream gmshfile;
@@ -635,7 +635,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
           fclose(fp);
 
 	   			(binarytree_->ContactMap()[1][j])->PrintDopsForGmsh(currentfilename.str().c_str());
-	    			
+
 	   			if (j<(int)((binarytree_->ContactMap()).size())-1)
 	   			{
 	          //create new sheet "Treenode" in gmsh
@@ -644,10 +644,10 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
             gmshfile << "};" << endl << "View \" CS-Treenode \" { " << endl;
             fprintf(fp,gmshfile.str().c_str());
             fclose(fp);
-	   			}  			
+	   			}
 	    	}
 	    }
-	   	
+
 	  	lComm()->Barrier();
 	  }
 
@@ -663,7 +663,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
 	    fprintf(fp,gmshfile.str().c_str());
 	  	fclose(fp);
 	  }
-  }	
+  }
 #endif //CONTACTGMSHCTN
 
   return;
@@ -740,48 +740,48 @@ void CONTACT::Interface::FDCheckNormalDeriv()
 
         cout << "Normal-derivative-maps: " << endl;
         cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
-        for (CI p=(jcnode->GetDerivN()[0]).begin();p!=(jcnode->GetDerivN()[0]).end();++p)
+        for (CI p=(jcnode->GetData().GetDerivN()[0]).begin();p!=(jcnode->GetData().GetDerivN()[0]).end();++p)
           cout << p->first << '\t' << p->second << endl;
         cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
-        for (CI p=(jcnode->GetDerivN()[1]).begin();p!=(jcnode->GetDerivN()[1]).end();++p)
+        for (CI p=(jcnode->GetData().GetDerivN()[1]).begin();p!=(jcnode->GetData().GetDerivN()[1]).end();++p)
           cout << p->first << '\t' << p->second << endl;
         cout << "Row dof id: " << jcnode->Dofs()[2] << endl;
-        for (CI p=(jcnode->GetDerivN()[2]).begin();p!=(jcnode->GetDerivN()[2]).end();++p)
+        for (CI p=(jcnode->GetData().GetDerivN()[2]).begin();p!=(jcnode->GetData().GetDerivN()[2]).end();++p)
           cout << p->first << '\t' << p->second << endl;
 
         cout << "Tangent txi-derivative-maps: " << endl;
         cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
-        for (CI p=(jcnode->GetDerivTxi()[0]).begin();p!=(jcnode->GetDerivTxi()[0]).end();++p)
+        for (CI p=(jcnode->GetData().GetDerivTxi()[0]).begin();p!=(jcnode->GetData().GetDerivTxi()[0]).end();++p)
           cout << p->first << '\t' << p->second << endl;
         cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
-        for (CI p=(jcnode->GetDerivTxi()[1]).begin();p!=(jcnode->GetDerivTxi()[1]).end();++p)
+        for (CI p=(jcnode->GetData().GetDerivTxi()[1]).begin();p!=(jcnode->GetData().GetDerivTxi()[1]).end();++p)
           cout << p->first << '\t' << p->second << endl;
         cout << "Row dof id: " << jcnode->Dofs()[2] << endl;
-        for (CI p=(jcnode->GetDerivTxi()[2]).begin();p!=(jcnode->GetDerivTxi()[2]).end();++p)
+        for (CI p=(jcnode->GetData().GetDerivTxi()[2]).begin();p!=(jcnode->GetData().GetDerivTxi()[2]).end();++p)
           cout << p->first << '\t' << p->second << endl;
 
         cout << "Tangent teta-derivative-maps: " << endl;
         cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
-        for (CI p=(jcnode->GetDerivTeta()[0]).begin();p!=(jcnode->GetDerivTeta()[0]).end();++p)
+        for (CI p=(jcnode->GetData().GetDerivTeta()[0]).begin();p!=(jcnode->GetData().GetDerivTeta()[0]).end();++p)
           cout << p->first << '\t' << p->second << endl;
         cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
-        for (CI p=(jcnode->GetDerivTeta()[1]).begin();p!=(jcnode->GetDerivTeta()[1]).end();++p)
+        for (CI p=(jcnode->GetData().GetDerivTeta()[1]).begin();p!=(jcnode->GetData().GetDerivTeta()[1]).end();++p)
           cout << p->first << '\t' << p->second << endl;
         cout << "Row dof id: " << jcnode->Dofs()[2] << endl;
-        for (CI p=(jcnode->GetDerivTeta()[2]).begin();p!=(jcnode->GetDerivTeta()[2]).end();++p)
+        for (CI p=(jcnode->GetData().GetDerivTeta()[2]).begin();p!=(jcnode->GetData().GetDerivTeta()[2]).end();++p)
           cout << p->first << '\t' << p->second << endl;
       }
 
       // store reference normals / tangents
-      refnx[j] = jcnode->n()[0];
-      refny[j] = jcnode->n()[1];
-      refnz[j] = jcnode->n()[2];
-      reftxix[j] = jcnode->txi()[0];
-      reftxiy[j] = jcnode->txi()[1];
-      reftxiz[j] = jcnode->txi()[2];
-      reftetax[j] = jcnode->teta()[0];
-      reftetay[j] = jcnode->teta()[1];
-      reftetaz[j] = jcnode->teta()[2];
+      refnx[j] = jcnode->GetData().n()[0];
+      refny[j] = jcnode->GetData().n()[1];
+      refnz[j] = jcnode->GetData().n()[2];
+      reftxix[j] = jcnode->GetData().txi()[0];
+      reftxiy[j] = jcnode->GetData().txi()[1];
+      reftxiz[j] = jcnode->GetData().txi()[2];
+      reftetax[j] = jcnode->GetData().teta()[0];
+      reftetay[j] = jcnode->GetData().teta()[1];
+      reftetaz[j] = jcnode->GetData().teta()[2];
 
     }
 
@@ -831,15 +831,15 @@ void CONTACT::Interface::FDCheckNormalDeriv()
       // build NEW averaged normal at each slave node
       kcnode->BuildAveragedNormal();
 
-      newnx[k] = kcnode->n()[0];
-      newny[k] = kcnode->n()[1];
-      newnz[k] = kcnode->n()[2];
-      newtxix[k] = kcnode->txi()[0];
-      newtxiy[k] = kcnode->txi()[1];
-      newtxiz[k] = kcnode->txi()[2];
-      newtetax[k] = kcnode->teta()[0];
-      newtetay[k] = kcnode->teta()[1];
-      newtetaz[k] = kcnode->teta()[2];
+      newnx[k] = kcnode->GetData().n()[0];
+      newny[k] = kcnode->GetData().n()[1];
+      newnz[k] = kcnode->GetData().n()[2];
+      newtxix[k] = kcnode->GetData().txi()[0];
+      newtxiy[k] = kcnode->GetData().txi()[1];
+      newtxiz[k] = kcnode->GetData().txi()[2];
+      newtetax[k] = kcnode->GetData().teta()[0];
+      newtetay[k] = kcnode->GetData().teta()[1];
+      newtetaz[k] = kcnode->GetData().teta()[2];
 
       // get reference normal / tangent
       double refn[3] = {0.0, 0.0, 0.0};
@@ -1010,10 +1010,10 @@ void CONTACT::Interface::FDCheckNormalDeriv()
 //    CNode* cnode = static_cast<CNode*>(node);
 //
 //    typedef map<int,double>::const_iterator CI;
-//    map<int,double> derivdmap = cnode->GetDerivD()[gid];
-//    
-//    if ((int)(cnode->GetD().size())==0) break;
-//    map<int,double > dmap = cnode->GetD()[0];
+//    map<int,double> derivdmap = cnode->GetData().GetDerivD()[gid];
+//
+//    if ((int)(cnode->GetData().GetD().size())==0) break;
+//    map<int,double > dmap = cnode->GetData().GetD()[0];
 //
 //    cout << endl << "Node: " << cnode->Id() << "  Owner: " << cnode->Owner() << endl;
 //
@@ -1077,8 +1077,8 @@ void CONTACT::Interface::FDCheckNormalDeriv()
 //      DRT::Node* knode = idiscret_->gNode(kgid);
 //      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
 //      CNode* kcnode = static_cast<CNode*>(knode);
-//      if ((int)(kcnode->GetD().size())==0) break;
-//      map<int,double > dmap = kcnode->GetD()[0];
+//      if ((int)(kcnode->GetData().GetD().size())==0) break;
+//      map<int,double > dmap = kcnode->GetData().GetD()[0];
 //
 //      newD[k]=dmap[kcnode->Dofs()[0]];
 //
@@ -1143,10 +1143,10 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
 
   // create storage for D-Matrix entries
   map<int, map<int,double> > refD; // stores dof-wise the entries of D
-  map<int, map<int,double> > newD; 
-  
+  map<int, map<int,double> > newD;
+
   map<int, map<int, map<int,double> > > refDerivD; // stores old derivm for every node
-  
+
   // print reference to screen (D-derivative-maps) and store them for later comparison
   // loop over proc's slave nodes
   for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
@@ -1158,28 +1158,28 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     CNode* cnode = static_cast<CNode*>(node);
 
     int dim = cnode->NumDof();
-    
+
     typedef map<int,map<int,double> >::const_iterator CID;
     typedef map<int,double>::const_iterator CI;
 
-    if ((int)(cnode->GetD().size())==0)
+    if ((int)(cnode->GetData().GetD().size())==0)
       continue;
 
     for( int d=0; d<dim; d++ )
     {
       int dof = cnode->Dofs()[d];
-      refD[dof] = cnode->GetD()[d];
+      refD[dof] = cnode->GetData().GetD()[d];
     }
-    
-    refDerivD[gid] = cnode->GetDerivD();
+
+    refDerivD[gid] = cnode->GetData().GetDerivD();
   }
-  
+
   // global loop to apply FD scheme to all SLAVE dofs (=3*nodes)
   for (int fd=0; fd<3*snodefullmap_->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
     int w=0;
-    
+
     // Initialize
     Initialize();
 
@@ -1191,7 +1191,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     CNode* snode = static_cast<CNode*>(node);
 
     int sdof = snode->Dofs()[fd%3];
-    
+
     cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << endl;
 
     // do step forward (modify nodal displacement)
@@ -1219,7 +1219,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
 
     // *******************************************************************
     // contents of Evaluate()
-    // *******************************************************************    
+    // *******************************************************************
     Evaluate();
 
     // compute finite difference derivative
@@ -1230,10 +1230,10 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
       CNode* kcnode = static_cast<CNode*>(knode);
-      
+
       int dim = kcnode->NumDof();
-      
-      if ((int)(kcnode->GetD().size())==0)
+
+      if ((int)(kcnode->GetData().GetD().size())==0)
         continue;
 
       typedef map<int,double>::const_iterator CI;
@@ -1241,10 +1241,10 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
       for( int d=0; d<dim; d++ )
       {
         int dof = kcnode->Dofs()[d];
-        
+
         // store D-values into refD
-        newD[dof] = kcnode->GetD()[d];
-        
+        newD[dof] = kcnode->GetData().GetD()[d];
+
         // print results (derivatives) to screen
         for (CI p=newD[dof].begin(); p!=newD[dof].end(); ++p)
         {
@@ -1253,12 +1253,12 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
             double finit = (newD[dof][p->first]-refD[dof][p->first])/delta;
             double analy = ((refDerivD[kgid])[(p->first)/Dim()])[sdof];
             double dev = finit - analy;
-        
+
             // kgid: currently tested dof of slave node kgid
             // (p->first)/Dim(): paired master
             // sdof: currently modified slave dof
             cout << "(" << dof << "," << (p->first)/Dim() << "," << sdof << ") : fd=" << finit << " derivd=" << analy << " DEVIATION " << dev;
-            
+
             if( abs(dev) > 1e-4 )
             {
               cout << " ***** WARNING ***** ";
@@ -1269,7 +1269,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
               cout << " ***** warning ***** ";
               w++;
             }
-            
+
             cout << endl;
           }
         }
@@ -1289,16 +1289,16 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     {
       snode->xspatial()[2] -= delta;
     }
-    
+
     cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
   }
-  
+
   // global loop to apply FD scheme to all MASTER dofs (=3*nodes)
   for (int fd=0; fd<3*mnodefullmap_->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
     int w=0;
-    
+
     // Initialize
     Initialize();
 
@@ -1310,7 +1310,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     CNode* mnode = static_cast<CNode*>(node);
 
     int mdof = mnode->Dofs()[fd%3];
-    
+
     cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << endl;
 
     // do step forward (modify nodal displacement)
@@ -1338,7 +1338,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
 
     // *******************************************************************
     // contents of Evaluate()
-    // *******************************************************************    
+    // *******************************************************************
     Evaluate();
 
     // compute finite difference derivative
@@ -1349,10 +1349,10 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
       CNode* kcnode = static_cast<CNode*>(knode);
-      
+
       int dim = kcnode->NumDof();
-      
-      if ((int)(kcnode->GetD().size())==0)
+
+      if ((int)(kcnode->GetData().GetD().size())==0)
         continue;
 
       typedef map<int,double>::const_iterator CI;
@@ -1360,10 +1360,10 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
       for( int d=0; d<dim; d++ )
       {
         int dof = kcnode->Dofs()[d];
-        
+
         // store D-values into refD
-        newD[dof] = kcnode->GetD()[d];
-        
+        newD[dof] = kcnode->GetData().GetD()[d];
+
         // print results (derivatives) to screen
         for (CI p=newD[dof].begin(); p!=newD[dof].end(); ++p)
         {
@@ -1372,12 +1372,12 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
             double finit = (newD[dof][p->first]-refD[dof][p->first])/delta;
             double analy = ((refDerivD[kgid])[(p->first)/Dim()])[mdof];
             double dev = finit - analy;
-        
+
             // kgid: currently tested dof of slave node kgid
             // (p->first)/Dim(): paired master
             // sdof: currently modified slave dof
             cout << "(" << dof << "," << (p->first)/Dim() << "," << mdof << ") : fd=" << finit << " derivd=" << analy << " DEVIATION " << dev;
-            
+
             if( abs(dev) > 1e-4 )
             {
               cout << " ***** WARNING ***** ";
@@ -1388,7 +1388,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
               cout << " ***** warning ***** ";
               w++;
             }
-            
+
             cout << endl;
           }
         }
@@ -1408,10 +1408,10 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     {
       mnode->xspatial()[2] -= delta;
     }
-    
+
     cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
   }
-  
+
   // back to normal...
 
   // Initialize
@@ -1427,7 +1427,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
 
   // *******************************************************************
   // contents of Evaluate()
-  // *******************************************************************    
+  // *******************************************************************
   Evaluate();
 
   return;
@@ -1449,10 +1449,10 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
 
   // create storage for M-Matrix entries
   map<int, map<int,double> > refM; // stores dof-wise the entries of M
-  map<int, map<int,double> > newM; 
-  
+  map<int, map<int,double> > newM;
+
   map<int, map<int, map<int,double> > > refDerivM; // stores old derivm for every node
-  
+
   // print reference to screen (M-derivative-maps) and store them for later comparison
   // loop over proc's slave nodes
   for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
@@ -1464,28 +1464,28 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     CNode* cnode = static_cast<CNode*>(node);
 
     int dim = cnode->NumDof();
-    
+
     typedef map<int,map<int,double> >::const_iterator CIM;
     typedef map<int,double>::const_iterator CI;
 
-    if ((int)(cnode->GetM().size())==0)
+    if ((int)(cnode->GetData().GetM().size())==0)
       continue;
 
     for( int d=0; d<dim; d++ )
     {
       int dof = cnode->Dofs()[d];
-      refM[dof] = cnode->GetM()[d];
+      refM[dof] = cnode->GetData().GetM()[d];
     }
-    
-    refDerivM[gid] = cnode->GetDerivM();
+
+    refDerivM[gid] = cnode->GetData().GetDerivM();
   }
-  
+
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
   for (int fd=0; fd<3*snodefullmap_->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
     int w=0;
-    
+
     // Initialize
     Initialize();
 
@@ -1497,7 +1497,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     CNode* snode = static_cast<CNode*>(node);
 
     int sdof = snode->Dofs()[fd%3];
-    
+
     cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << endl;
 
     // do step forward (modify nodal displacement)
@@ -1525,7 +1525,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
 
     // *******************************************************************
     // contents of Evaluate()
-    // *******************************************************************    
+    // *******************************************************************
     Evaluate();
 
     // compute finite difference derivative
@@ -1536,10 +1536,10 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
       CNode* kcnode = static_cast<CNode*>(knode);
-      
+
       int dim = kcnode->NumDof();
-      
-      if ((int)(kcnode->GetM().size())==0)
+
+      if ((int)(kcnode->GetData().GetM().size())==0)
         continue;
 
       typedef map<int,double>::const_iterator CI;
@@ -1547,10 +1547,10 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
       for( int d=0; d<dim; d++ )
       {
         int dof = kcnode->Dofs()[d];
-        
+
         // store M-values into refM
-        newM[dof] = kcnode->GetM()[d];
-        
+        newM[dof] = kcnode->GetData().GetM()[d];
+
         // print results (derivatives) to screen
         for (CI p=newM[dof].begin(); p!=newM[dof].end(); ++p)
         {
@@ -1559,12 +1559,12 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
             double finit = (newM[dof][p->first]-refM[dof][p->first])/delta;
             double analy = ((refDerivM[kgid])[(p->first)/Dim()])[sdof];
             double dev = finit - analy;
-        
+
             // kgid: currently tested dof of slave node kgid
             // (p->first)/Dim(): paired master
             // sdof: currently modified slave dof
             cout << "(" << dof << "," << (p->first)/Dim() << "," << sdof << ") : fd=" << finit << " derivm=" << analy << " DEVIATION " << dev;
-            
+
             if( abs(dev) > 1e-4 )
             {
               cout << " ***** WARNING ***** ";
@@ -1575,7 +1575,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
               cout << " ***** warning ***** ";
               w++;
             }
-            
+
             cout << endl;
           }
         }
@@ -1595,7 +1595,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     {
       snode->xspatial()[2] -= delta;
     }
-    
+
     cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
   }
 
@@ -1604,7 +1604,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
   {
     // store warnings for this finite difference
     int w=0;
-    
+
     // Initialize
     Initialize();
 
@@ -1616,7 +1616,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     CNode* mnode = static_cast<CNode*>(node);
 
     int mdof = mnode->Dofs()[fd%3];
-    
+
     cout << "\nDEVIATION FOR M-NODE # " << gid << " DOF: " << mdof << endl;
 
     // do step forward (modify nodal displacement)
@@ -1644,7 +1644,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
 
     // *******************************************************************
     // contents of Evaluate()
-    // *******************************************************************    
+    // *******************************************************************
     Evaluate();
 
     // compute finite difference derivative
@@ -1655,10 +1655,10 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
       CNode* kcnode = static_cast<CNode*>(knode);
-      
+
       int dim = kcnode->NumDof();
-      
-      if ((int)(kcnode->GetM().size())==0)
+
+      if ((int)(kcnode->GetData().GetM().size())==0)
         continue;
 
       typedef map<int,double>::const_iterator CI;
@@ -1666,10 +1666,10 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
       for( int d=0; d<dim; d++ )
       {
         int dof = kcnode->Dofs()[d];
-        
+
         // store M-values into refM
-        newM[dof] = kcnode->GetM()[d];
-        
+        newM[dof] = kcnode->GetData().GetM()[d];
+
         // print results (derivatives) to screen
         for (CI p=newM[dof].begin(); p!=newM[dof].end(); ++p)
         {
@@ -1678,12 +1678,12 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
             double finit = (newM[dof][p->first]-refM[dof][p->first])/delta;
             double analy = ((refDerivM[kgid])[(p->first)/Dim()])[mdof];
             double dev = finit - analy;
-        
+
             // dof: currently tested dof of slave node kgid
             // (p->first)/Dim(): paired master
             // mdof: currently modified master dof
             cout << "(" << dof << "," << (p->first)/Dim() << "," << mdof << ") : fd=" << finit << " derivm=" << analy << " DEVIATION " << dev;
-            
+
             if( abs(dev) > 1e-4 )
             {
               cout << " ***** WARNING ***** ";
@@ -1694,7 +1694,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
               cout << " ***** warning ***** ";
               w++;
             }
-            
+
             cout << endl;
           }
         }
@@ -1714,7 +1714,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     {
       mnode->xspatial()[2] -= delta;
     }
-    
+
     cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
   }
 
@@ -1733,7 +1733,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
 
   // *******************************************************************
   // contents of Evaluate()
-  // *******************************************************************    
+  // *******************************************************************
   Evaluate();
 
   return;
@@ -1766,12 +1766,12 @@ void CONTACT::Interface::FDCheckGapDeriv()
     {
       // check two versions of weighted gap
       double defgap = 0.0;
-      double wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
+      double wii = (cnode->GetData().GetD()[0])[cnode->Dofs()[0]];
 
       for (int j=0;j<3;++j)
-        defgap-= (cnode->n()[j])*wii*(cnode->xspatial()[j]);
+        defgap-= (cnode->GetData().n()[j])*wii*(cnode->xspatial()[j]);
 
-      vector<map<int,double> > mmap = cnode->GetM();
+      vector<map<int,double> > mmap = cnode->GetData().GetM();
       map<int,double>::iterator mcurr;
 
       for (int m=0;m<mnodefullmap_->NumMyElements();++m)
@@ -1798,15 +1798,15 @@ void CONTACT::Interface::FDCheckGapDeriv()
         if (!hasentry || abs(mik)<1.0e-12) continue;
 
         for (int j=0;j<3;++j)
-          defgap+= (cnode->n()[j]) * mik * mxi[j];
+          defgap+= (cnode->GetData().n()[j]) * mik * mxi[j];
       }
 
-      //cout << "SNode: " << cnode->Id() << " IntGap: " << cnode->Getg() << " DefGap: " << defgap << endl;
-      //cnode->Getg() = defgap;
+      //cout << "SNode: " << cnode->Id() << " IntGap: " << cnode->GetData().Getg() << " DefGap: " << defgap << endl;
+      //cnode->GetData().Getg = defgap;
     }
 
     // store gap-values into refG
-    refG[i]=cnode->Getg();
+    refG[i]=cnode->GetData().Getg();
   }
 
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
@@ -1868,12 +1868,12 @@ void CONTACT::Interface::FDCheckGapDeriv()
       {
         // check two versions of weighted gap
         double defgap = 0.0;
-        double wii = (kcnode->GetD()[0])[kcnode->Dofs()[0]];
+        double wii = (kcnode->GetData().GetD()[0])[kcnode->Dofs()[0]];
 
         for (int j=0;j<3;++j)
-          defgap-= (kcnode->n()[j])*wii*(kcnode->xspatial()[j]);
+          defgap-= (kcnode->GetData().n()[j])*wii*(kcnode->xspatial()[j]);
 
-        vector<map<int,double> > mmap = kcnode->GetM();
+        vector<map<int,double> > mmap = kcnode->GetData().GetM();
         map<int,double>::iterator mcurr;
 
         for (int m=0;m<mnodefullmap_->NumMyElements();++m)
@@ -1900,15 +1900,15 @@ void CONTACT::Interface::FDCheckGapDeriv()
           if (!hasentry || abs(mik)<1.0e-12) continue;
 
           for (int j=0;j<3;++j)
-            defgap+= (kcnode->n()[j]) * mik * mxi[j];
+            defgap+= (kcnode->GetData().n()[j]) * mik * mxi[j];
         }
 
-        //cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->Getg() << " DefGap: " << defgap << endl;
-        //kcnode->Getg() = defgap;
+        //cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->GetData().Getg << " DefGap: " << defgap << endl;
+        //kcnode->GetData().Getg = defgap;
       }
 
       // store gap-values into newG
-      newG[k]=kcnode->Getg();
+      newG[k]=kcnode->GetData().Getg();
 
       // print results (derivatives) to screen
       if (abs(newG[k]-refG[k]) > 1e-12)
@@ -1917,8 +1917,8 @@ void CONTACT::Interface::FDCheckGapDeriv()
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
         cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newG[k]-refG[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
       }
     }
@@ -1998,12 +1998,12 @@ void CONTACT::Interface::FDCheckGapDeriv()
       {
         // check two versions of weighted gap
         double defgap = 0.0;
-        double wii = (kcnode->GetD()[0])[kcnode->Dofs()[0]];
+        double wii = (kcnode->GetData().GetD()[0])[kcnode->Dofs()[0]];
 
         for (int j=0;j<3;++j)
-          defgap-= (kcnode->n()[j])*wii*(kcnode->xspatial()[j]);
+          defgap-= (kcnode->GetData().n()[j])*wii*(kcnode->xspatial()[j]);
 
-        vector<map<int,double> > mmap = kcnode->GetM();
+        vector<map<int,double> > mmap = kcnode->GetData().GetM();
         map<int,double>::iterator mcurr;
 
         for (int m=0;m<mnodefullmap_->NumMyElements();++m)
@@ -2030,15 +2030,15 @@ void CONTACT::Interface::FDCheckGapDeriv()
           if (!hasentry || abs(mik)<1.0e-12) continue;
 
           for (int j=0;j<3;++j)
-            defgap+= (kcnode->n()[j]) * mik * mxi[j];
+            defgap+= (kcnode->GetData().n()[j]) * mik * mxi[j];
         }
 
-        //cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->Getg() << " DefGap: " << defgap << endl;
-        //kcnode->Getg() = defgap;
+        //cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->GetData().Getg << " DefGap: " << defgap << endl;
+        //kcnode->GetData().Getg = defgap;
       }
 
       // store gap-values into newG
-      newG[k]=kcnode->Getg();
+      newG[k]=kcnode->GetData().Getg();
 
       // print results (derivatives) to screen
       if (abs(newG[k]-refG[k]) > 1e-12)
@@ -2047,8 +2047,8 @@ void CONTACT::Interface::FDCheckGapDeriv()
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
         cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newG[k]-refG[k])/delta << endl;
-        //cout << "Analytical: " << mnode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[mnode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->GetDerivG()[mnode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //cout << "Analytical: " << mnode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[mnode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetData().GetDerivG()[mnode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
       }
     }
@@ -2104,8 +2104,8 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     double valeta = 0.0;
     for (int dim=0;dim<3;++dim)
     {
-      valxi  += (cnode->txi()[dim])*(cnode->lm()[dim]);
-      valeta += (cnode->teta()[dim])*(cnode->lm()[dim]);
+      valxi  += (cnode->GetData().txi()[dim])*(cnode->GetData().lm()[dim]);
+      valeta += (cnode->GetData().teta()[dim])*(cnode->GetData().lm()[dim]);
     }
 
     // store gap-values into refTLM
@@ -2126,43 +2126,43 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       //reset nodal normal vector
       for (int j=0;j<3;++j)
       {
-        node->n()[j]=0.0;
-        node->txi()[j]=0.0;
-        node->teta()[j]=0.0;
+        node->GetData().n()[j]=0.0;
+        node->GetData().txi()[j]=0.0;
+        node->GetData().teta()[j]=0.0;
       }
 
       // reset derivative maps of normal vector
-      for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-        (node->GetDerivN())[j].clear();
-      (node->GetDerivN()).resize(0);
+      for (int j=0;j<(int)((node->GetData().GetDerivN()).size());++j)
+        (node->GetData().GetDerivN())[j].clear();
+      (node->GetData().GetDerivN()).resize(0);
 
       // reset derivative maps of tangent vectors
-      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-        (node->GetDerivTxi())[j].clear();
-      (node->GetDerivTxi()).resize(0);
-      for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
-        (node->GetDerivTeta())[j].clear();
-      (node->GetDerivTeta()).resize(0);
-      
-      // reset nodal Mortar maps
-      for (int j=0;j<(int)((node->GetD()).size());++j)
-        (node->GetD())[j].clear();
-      for (int j=0;j<(int)((node->GetM()).size());++j)
-        (node->GetM())[j].clear();
-      for (int j=0;j<(int)((node->GetMmod()).size());++j)
-        (node->GetMmod())[j].clear();
+      for (int j=0;j<(int)((node->GetData().GetDerivTxi()).size());++j)
+        (node->GetData().GetDerivTxi())[j].clear();
+      (node->GetData().GetDerivTxi()).resize(0);
+      for (int j=0;j<(int)((node->GetData().GetDerivTeta()).size());++j)
+        (node->GetData().GetDerivTeta())[j].clear();
+      (node->GetData().GetDerivTeta()).resize(0);
 
-      (node->GetD()).resize(0);
-      (node->GetM()).resize(0);
-      (node->GetMmod()).resize(0);
+      // reset nodal Mortar maps
+      for (int j=0;j<(int)((node->GetData().GetD()).size());++j)
+        (node->GetData().GetD())[j].clear();
+      for (int j=0;j<(int)((node->GetData().GetM()).size());++j)
+        (node->GetData().GetM())[j].clear();
+      for (int j=0;j<(int)((node->GetData().GetMmod()).size());++j)
+        (node->GetData().GetMmod())[j].clear();
+
+      (node->GetData().GetD()).resize(0);
+      (node->GetData().GetM()).resize(0);
+      (node->GetData().GetMmod()).resize(0);
 
       // reset derivative map of Mortar matrices
-      (node->GetDerivD()).clear();
-      (node->GetDerivM()).clear();
+      (node->GetData().GetDerivD()).clear();
+      (node->GetData().GetDerivM()).clear();
 
       // reset nodal weighted gap
-      node->Getg() = 1.0e12;
-      (node->GetDerivG()).clear();
+      node->GetData().Getg() = 1.0e12;
+      (node->GetData().GetDerivG()).clear();
 
       // reset feasible projection status
       node->HasProj() = false;
@@ -2290,8 +2290,8 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       double valeta = 0.0;
       for (int dim=0;dim<3;++dim)
       {
-        valxi  += (kcnode->txi()[dim])*(kcnode->lm()[dim]);
-        valeta += (kcnode->teta()[dim])*(kcnode->lm()[dim]);
+        valxi  += (kcnode->GetData().txi()[dim])*(kcnode->GetData().lm()[dim]);
+        valeta += (kcnode->GetData().teta()[dim])*(kcnode->GetData().lm()[dim]);
       }
 
       // store gap-values into newTLM
@@ -2344,43 +2344,43 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       //reset nodal normal vector
       for (int j=0;j<3;++j)
       {
-        node->n()[j]=0.0;
-        node->txi()[j]=0.0;
-        node->teta()[j]=0.0;
+        node->GetData().n()[j]=0.0;
+        node->GetData().txi()[j]=0.0;
+        node->GetData().teta()[j]=0.0;
       }
 
       // reset derivative maps of normal vector
-      for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-        (node->GetDerivN())[j].clear();
-      (node->GetDerivN()).resize(0);
+      for (int j=0;j<(int)((node->GetData().GetDerivN()).size());++j)
+        (node->GetData().GetDerivN())[j].clear();
+      (node->GetData().GetDerivN()).resize(0);
 
       // reset derivative maps of tangent vectors
-      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-        (node->GetDerivTxi())[j].clear();
-      (node->GetDerivTxi()).resize(0);
-      for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
-        (node->GetDerivTeta())[j].clear();
-      (node->GetDerivTeta()).resize(0);
-      
-      // reset nodal Mortar maps
-      for (int j=0;j<(int)((node->GetD()).size());++j)
-        (node->GetD())[j].clear();
-      for (int j=0;j<(int)((node->GetM()).size());++j)
-        (node->GetM())[j].clear();
-      for (int j=0;j<(int)((node->GetMmod()).size());++j)
-        (node->GetMmod())[j].clear();
+      for (int j=0;j<(int)((node->GetData().GetDerivTxi()).size());++j)
+        (node->GetData().GetDerivTxi())[j].clear();
+      (node->GetData().GetDerivTxi()).resize(0);
+      for (int j=0;j<(int)((node->GetData().GetDerivTeta()).size());++j)
+        (node->GetData().GetDerivTeta())[j].clear();
+      (node->GetData().GetDerivTeta()).resize(0);
 
-      (node->GetD()).resize(0);
-      (node->GetM()).resize(0);
-      (node->GetMmod()).resize(0);
+      // reset nodal Mortar maps
+      for (int j=0;j<(int)((node->GetData().GetD()).size());++j)
+        (node->GetData().GetD())[j].clear();
+      for (int j=0;j<(int)((node->GetData().GetM()).size());++j)
+        (node->GetData().GetM())[j].clear();
+      for (int j=0;j<(int)((node->GetData().GetMmod()).size());++j)
+        (node->GetData().GetMmod())[j].clear();
+
+      (node->GetData().GetD()).resize(0);
+      (node->GetData().GetM()).resize(0);
+      (node->GetData().GetMmod()).resize(0);
 
       // reset derivative map of Mortar matrices
-      (node->GetDerivD()).clear();
-      (node->GetDerivM()).clear();
+      (node->GetData().GetDerivD()).clear();
+      (node->GetData().GetDerivM()).clear();
 
       // reset nodal weighted gap
-      node->Getg() = 1.0e12;
-      (node->GetDerivG()).clear();
+      node->GetData().Getg() = 1.0e12;
+      (node->GetData().GetDerivG()).clear();
 
       // reset feasible projection status
       node->HasProj() = false;
@@ -2508,8 +2508,8 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       double valeta = 0.0;
       for (int dim=0;dim<3;++dim)
       {
-        valxi  += (kcnode->txi()[dim])*(kcnode->lm()[dim]);
-        valeta += (kcnode->teta()[dim])*(kcnode->lm()[dim]);
+        valxi  += (kcnode->GetData().txi()[dim])*(kcnode->GetData().lm()[dim]);
+        valeta += (kcnode->GetData().teta()[dim])*(kcnode->GetData().lm()[dim]);
       }
 
       // store gap-values into newTLM
@@ -2561,43 +2561,43 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     //reset nodal normal vector
     for (int j=0;j<3;++j)
     {
-      node->n()[j]=0.0;
-      node->txi()[j]=0.0;
-      node->teta()[j]=0.0;
+      node->GetData().n()[j]=0.0;
+      node->GetData().txi()[j]=0.0;
+      node->GetData().teta()[j]=0.0;
     }
 
     // reset derivative maps of normal vector
-    for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-      (node->GetDerivN())[j].clear();
-    (node->GetDerivN()).resize(0);
+    for (int j=0;j<(int)((node->GetData().GetDerivN()).size());++j)
+      (node->GetData().GetDerivN())[j].clear();
+    (node->GetData().GetDerivN()).resize(0);
 
     // reset derivative maps of tangent vectors
-    for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-      (node->GetDerivTxi())[j].clear();
-    (node->GetDerivTxi()).resize(0);
-    for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
-      (node->GetDerivTeta())[j].clear();
-    (node->GetDerivTeta()).resize(0);
+    for (int j=0;j<(int)((node->GetData().GetDerivTxi()).size());++j)
+      (node->GetData().GetDerivTxi())[j].clear();
+    (node->GetData().GetDerivTxi()).resize(0);
+    for (int j=0;j<(int)((node->GetData().GetDerivTeta()).size());++j)
+      (node->GetData().GetDerivTeta())[j].clear();
+    (node->GetData().GetDerivTeta()).resize(0);
 
     // reset nodal Mortar maps
-    for (int j=0;j<(int)((node->GetD()).size());++j)
-      (node->GetD())[j].clear();
-    for (int j=0;j<(int)((node->GetM()).size());++j)
-      (node->GetM())[j].clear();
-    for (int j=0;j<(int)((node->GetMmod()).size());++j)
-      (node->GetMmod())[j].clear();
+    for (int j=0;j<(int)((node->GetData().GetD()).size());++j)
+      (node->GetData().GetD())[j].clear();
+    for (int j=0;j<(int)((node->GetData().GetM()).size());++j)
+      (node->GetData().GetM())[j].clear();
+    for (int j=0;j<(int)((node->GetData().GetMmod()).size());++j)
+      (node->GetData().GetMmod())[j].clear();
 
-    (node->GetD()).resize(0);
-    (node->GetM()).resize(0);
-    (node->GetMmod()).resize(0);
+    (node->GetData().GetD()).resize(0);
+    (node->GetData().GetM()).resize(0);
+    (node->GetData().GetMmod()).resize(0);
 
     // reset derivative map of Mortar matrices
-    (node->GetDerivD()).clear();
-    (node->GetDerivM()).clear();
+    (node->GetData().GetDerivD()).clear();
+    (node->GetData().GetDerivM()).clear();
 
     // reset nodal weighted gap
-    node->Getg() = 1.0e12;
-    (node->GetDerivG()).clear();
+    node->GetData().Getg() = 1.0e12;
+    (node->GetData().GetDerivG()).clear();
 
     // reset feasible projection status
     node->HasProj() = false;
@@ -2696,14 +2696,14 @@ void CONTACT::Interface::FDCheckStickDeriv()
   // get out of here if not participating in interface
   if (!lComm())
     return;
- 
+
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
   vector<double> refCtxi(nrow);
   vector<double> refCteta(nrow);
   vector<double> newCtxi(nrow);
   vector<double> newCteta(nrow);
- 
+
   // store reference
   // loop over proc's slave nodes
   for (int i=0; i<snoderowmap_->NumMyElements();++i)
@@ -2715,21 +2715,21 @@ void CONTACT::Interface::FDCheckStickDeriv()
 
     double jumptxi = 0;
     double jumpteta = 0;
-    
-    if (cnode->Active() and !(cnode->Slip()))
+
+    if (cnode->Active() and !(cnode->GetData().Slip()))
     {
     	// calculate value of C-function
-      double D = (cnode->GetD()[0])[cnode->Dofs()[0]];
-      double Dold = (cnode->GetDOld()[0])[cnode->Dofs()[0]];
+      double D = (cnode->GetData().GetD()[0])[cnode->Dofs()[0]];
+      double Dold = (cnode->GetData().GetDOld()[0])[cnode->Dofs()[0]];
 
       for (int dim=0;dim<cnode->NumDof();++dim)
       {
-      	jumptxi -= (cnode->txi()[dim])*(D-Dold)*(cnode->xspatial()[dim]);
-      	jumpteta -= (cnode->teta()[dim])*(D-Dold)*(cnode->xspatial()[dim]);
-      }      
-      
-      vector<map<int,double> > mmap = cnode->GetM();
-      vector<map<int,double> > mmapold = cnode->GetMOld();
+      	jumptxi -= (cnode->GetData().txi()[dim])*(D-Dold)*(cnode->xspatial()[dim]);
+      	jumpteta -= (cnode->GetData().teta()[dim])*(D-Dold)*(cnode->xspatial()[dim]);
+      }
+
+      vector<map<int,double> > mmap = cnode->GetData().GetM();
+      vector<map<int,double> > mmapold = cnode->GetData().GetMOld();
 
       map<int,double>::iterator colcurr;
       set <int> mnodes;
@@ -2758,8 +2758,8 @@ void CONTACT::Interface::FDCheckStickDeriv()
 
         for (int dim=0;dim<cnode->NumDof();++dim)
         {
-          jumptxi+= (cnode->txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
-          jumpteta+= (cnode->teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+          jumptxi+= (cnode->GetData().txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+          jumpteta+= (cnode->GetData().teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
         }
       } //  loop over master nodes
     } // if cnode == Stick
@@ -2769,9 +2769,9 @@ void CONTACT::Interface::FDCheckStickDeriv()
     refCteta[i] = jumpteta;
   } // loop over procs slave nodes
 
-  
+
 //  FD CHECK for Lagrange Multipliers (will be needed when formulating
-//  stick condition according to Hueber)  
+//  stick condition according to Hueber)
 //  // global loop to apply FD scheme for LM to all slave dofs (=3*nodes)
 //  for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
 //  {
@@ -2781,29 +2781,29 @@ void CONTACT::Interface::FDCheckStickDeriv()
 //   DRT::Node* node = idiscret_->gNode(gid);
 //   if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
 //   CNode* snode = static_cast<CNode*>(node);
-//      
+//
 //   // apply finite difference scheme
 //   if (Comm().MyPID()==snode->Owner())
 //   {
 //     cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
 //          << " Dof: " << snode->Dofs()[fd%3] << endl;
 //   }
-//       
+//
 //   // do step forward (modify nodal lagrange multiplier)
 //   double delta = 1e-8;
 //   if (fd%3==0)
 //   {
-//     snode->lm()[0] += delta;
+//     snode->GetData().lm()[0] += delta;
 //   }
 //   else if (fd%3==1)
 //   {
-//     snode->lm()[1] += delta;
+//     snode->GetData().lm()[1] += delta;
 //   }
 //   else
 //   {
-//     snode->lm()[2] += delta;
+//     snode->GetData().lm()[2] += delta;
 //   }
-//     
+//
 //   // compute finite difference derivative
 //   for (int k=0; k<snoderowmap_->NumMyElements();++k)
 //   {
@@ -2811,38 +2811,38 @@ void CONTACT::Interface::FDCheckStickDeriv()
 //     DRT::Node* knode = idiscret_->gNode(kgid);
 //     if (!node) dserror("ERROR: Cannot find node with gid %",kgid);
 //     CNode* kcnode = static_cast<CNode*>(knode);
-//     
+//
 //     double jumptan = 0;
 //     double ztan = 0;
 //     double znor = 0;
-//     
-//     if (kcnode->Active() and !(kcnode->Slip()))
+//
+//     if (kcnode->Active() and !(kcnode->GetData().Slip()))
 //     {
 //       // check two versions of weighted gap
-//       double D = (kcnode->GetD()[0])[kcnode->Dofs()[0]];
-//       double Dold = (kcnode->GetDOld()[0])[kcnode->Dofs()[0]];
-//             
+//       double D = (kcnode->GetData().GetD()[0])[kcnode->Dofs()[0]];
+//       double Dold = (kcnode->GetData().GetDOld()[0])[kcnode->Dofs()[0]];
+//
 //       for (int dim=0;dim<kcnode->NumDof();++dim)
 //       {
-//       	jumptan -= (kcnode->txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-//        ztan += (kcnode->txi()[dim])*(kcnode->lm()[dim]); 
-//        znor += (kcnode->n()[dim])*(kcnode->lm()[dim]); 
-//       }           
-//         
-//       vector<map<int,double> > mmap = kcnode->GetM();
-//       vector<map<int,double> > mmapold = kcnode->GetMOld();
-//       
+//       	jumptan -= (kcnode->GetData().txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
+//        ztan += (kcnode->GetData().txi()[dim])*(kcnode->GetData().lm()[dim]);
+//        znor += (kcnode->GetData().n()[dim])*(kcnode->GetData().lm()[dim]);
+//       }
+//
+//       vector<map<int,double> > mmap = kcnode->GetData().GetM();
+//       vector<map<int,double> > mmapold = kcnode->GetData().GetMOld();
+//
 //       map<int,double>::iterator colcurr;
 //       set <int> mnodes;
-//               
+//
 //       for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
 //         mnodes.insert((colcurr->first)/Dim());
-//                
+//
 //       for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
 //         mnodes.insert((colcurr->first)/Dim());
-//         
+//
 //       set<int>::iterator mcurr;
-//         
+//
 //       // loop over all master nodes (find adjacent ones to this stick node)
 //       for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
 //       {
@@ -2851,25 +2851,25 @@ void CONTACT::Interface::FDCheckStickDeriv()
 //         if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
 //         CNode* cmnode = static_cast<CNode*>(mnode);
 //         const int* mdofs = cmnode->Dofs();
-//           
+//
 //         double mik = (mmap[0])[mdofs[0]];
 //         double mikold = (mmapold[0])[mdofs[0]];
 //         map<int,double>::iterator mcurr;
-//         
+//
 //         for (int dim=0;dim<kcnode->NumDof();++dim)
 //         {
-//            jumptan+= (kcnode->txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+//            jumptan+= (kcnode->GetData().txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
 //         }
 //       } //  loop over master nodes
 //     } // if cnode == Slip
-// 
+//
 //       // store C in vector
-//#ifdef CONTACTCOMPHUEBER  
-//         newC[k] = -frcoeff*(znor-cn*kcnode->Getg())*ct*jumptan;
-//#else    
+//#ifdef CONTACTCOMPHUEBER
+//         newC[k] = -frcoeff*(znor-cn*kcnode->GetData().Getg)*ct*jumptan;
+//#else
 //         newC[k] = jumptan;
-//#endif  
-//     
+//#endif
+//
 //       // print results (derivatives) to screen
 //       if (abs(newC[k]-refC[k]) > 1e-12)
 //       {
@@ -2877,26 +2877,26 @@ void CONTACT::Interface::FDCheckStickDeriv()
 //         //cout << "Ref-G: " << refG[k] << endl;
 //         //cout << "New-G: " << newG[k] << endl;
 //         cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newC[k]-refC[k])/delta << endl;
-//         //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
-//         //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+//         //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+//         //if (abs(kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
 //         //  cout << "***WARNING*****************************************************************************" << endl;
 //       }
 //     }
 //     // undo finite difference modification
 //     if (fd%3==0)
 //     {
-//       snode->lm()[0] -= delta;
+//       snode->GetData().lm()[0] -= delta;
 //     }
 //     else if (fd%3==1)
 //     {
-//       snode->lm()[1] -= delta;
+//       snode->GetData().lm()[1] -= delta;
 //     }
 //     else
 //     {
-//       snode->lm()[2] -= delta;
-//     }   
+//       snode->GetData().lm()[2] -= delta;
+//     }
 //   } // loop over procs slave nodes
-  
+
 
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
   for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
@@ -2957,21 +2957,21 @@ void CONTACT::Interface::FDCheckStickDeriv()
 
       double jumptxi = 0;
       double jumpteta = 0;
-      
-      if (kcnode->Active() and !(kcnode->Slip()))
+
+      if (kcnode->Active() and !(kcnode->GetData().Slip()))
       {
         // check two versions of weighted gap
-        double D = (kcnode->GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->GetDOld()[0])[kcnode->Dofs()[0]];
+        double D = (kcnode->GetData().GetD()[0])[kcnode->Dofs()[0]];
+        double Dold = (kcnode->GetData().GetDOld()[0])[kcnode->Dofs()[0]];
 
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
-          jumptxi -= (kcnode->txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-          jumpteta -= (kcnode->teta()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-        }           
-        
-        vector<map<int,double> > mmap = kcnode->GetM();
-        vector<map<int,double> > mmapold = kcnode->GetMOld();
+          jumptxi -= (kcnode->GetData().txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
+          jumpteta -= (kcnode->GetData().teta()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
+        }
+
+        vector<map<int,double> > mmap = kcnode->GetData().GetM();
+        vector<map<int,double> > mmapold = kcnode->GetData().GetMOld();
 
         map<int,double>::iterator colcurr;
         set <int> mnodes;
@@ -3000,8 +3000,8 @@ void CONTACT::Interface::FDCheckStickDeriv()
 
           for (int dim=0;dim<kcnode->NumDof();++dim)
           {
-            jumptxi+= (kcnode->txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
-            jumpteta+= (kcnode->teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+            jumptxi+= (kcnode->GetData().txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+            jumpteta+= (kcnode->GetData().teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
           }
         } //  loop over master nodes
       } // if cnode == Slip
@@ -3016,8 +3016,8 @@ void CONTACT::Interface::FDCheckStickDeriv()
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
         cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
       }
 
@@ -3028,8 +3028,8 @@ void CONTACT::Interface::FDCheckStickDeriv()
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
         cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
       }
     }
@@ -3107,21 +3107,21 @@ void CONTACT::Interface::FDCheckStickDeriv()
 
       double jumptxi = 0;
       double jumpteta = 0;
-      
-      if (kcnode->Active() and !(kcnode->Slip()))
+
+      if (kcnode->Active() and !(kcnode->GetData().Slip()))
       {
         // check two versions of weighted gap
-        double D = (kcnode->GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->GetDOld()[0])[kcnode->Dofs()[0]];
+        double D = (kcnode->GetData().GetD()[0])[kcnode->Dofs()[0]];
+        double Dold = (kcnode->GetData().GetDOld()[0])[kcnode->Dofs()[0]];
 
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
-          jumptxi -= (kcnode->txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-          jumpteta -= (kcnode->teta()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-        }           
-        
-        vector<map<int,double> > mmap = kcnode->GetM();
-        vector<map<int,double> > mmapold = kcnode->GetMOld();
+          jumptxi -= (kcnode->GetData().txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
+          jumpteta -= (kcnode->GetData().teta()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
+        }
+
+        vector<map<int,double> > mmap = kcnode->GetData().GetM();
+        vector<map<int,double> > mmapold = kcnode->GetData().GetMOld();
 
         map<int,double>::iterator colcurr;
         set <int> mnodes;
@@ -3150,15 +3150,15 @@ void CONTACT::Interface::FDCheckStickDeriv()
 
           for (int dim=0;dim<kcnode->NumDof();++dim)
           {
-            jumptxi+= (kcnode->txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
-            jumpteta+= (kcnode->teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+            jumptxi+= (kcnode->GetData().txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+            jumpteta+= (kcnode->GetData().teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
           }
         } //  loop over master nodes
       } // if cnode == Slip
 
     newCtxi[k] = jumptxi;
     newCteta[k] = jumpteta;
-      
+
       // print results (derivatives) to screen
       if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
       {
@@ -3166,8 +3166,8 @@ void CONTACT::Interface::FDCheckStickDeriv()
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
         cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
       }
 
@@ -3178,8 +3178,8 @@ void CONTACT::Interface::FDCheckStickDeriv()
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
         cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
       }
     }
@@ -3215,7 +3215,7 @@ void CONTACT::Interface::FDCheckSlipDeriv()
   // get out of here if not participating in interface
   if (!lComm())
     return;
-  
+
   // information from interface contact parameter list
   INPAR::CONTACT::ContactFrictionType ftype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(IParams(),"FRICTION");
@@ -3223,7 +3223,7 @@ void CONTACT::Interface::FDCheckSlipDeriv()
   double frcoeff = IParams().get<double>("FRCOEFF");
   double ct = IParams().get<double>("SEMI_SMOOTH_CT");
   double cn = IParams().get<double>("SEMI_SMOOTH_CN");
-  
+
    // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
   vector<double> refCtxi(nrow);
@@ -3247,23 +3247,23 @@ void CONTACT::Interface::FDCheckSlipDeriv()
     double znor = 0;
     double euclidean = 0;
 
-    if (cnode->Slip())
+    if (cnode->GetData().Slip())
     {
       // calculate value of C-function
-      double D = (cnode->GetD()[0])[cnode->Dofs()[0]];
-      double Dold = (cnode->GetDOld()[0])[cnode->Dofs()[0]];
+      double D = (cnode->GetData().GetD()[0])[cnode->Dofs()[0]];
+      double Dold = (cnode->GetData().GetDOld()[0])[cnode->Dofs()[0]];
 
       for (int dim=0;dim<cnode->NumDof();++dim)
       {
-      	jumptxi -= (cnode->txi()[dim])*(D-Dold)*(cnode->xspatial()[dim]);
-      	jumpteta -= (cnode->teta()[dim])*(D-Dold)*(cnode->xspatial()[dim]);
-        ztxi += (cnode->txi()[dim])*(cnode->lm()[dim]);
-        zteta += (cnode->teta()[dim])*(cnode->lm()[dim]);
-        znor += (cnode->n()[dim])*(cnode->lm()[dim]);
+      	jumptxi -= (cnode->GetData().txi()[dim])*(D-Dold)*(cnode->xspatial()[dim]);
+      	jumpteta -= (cnode->GetData().teta()[dim])*(D-Dold)*(cnode->xspatial()[dim]);
+        ztxi += (cnode->GetData().txi()[dim])*(cnode->GetData().lm()[dim]);
+        zteta += (cnode->GetData().teta()[dim])*(cnode->GetData().lm()[dim]);
+        znor += (cnode->GetData().n()[dim])*(cnode->GetData().lm()[dim]);
       }
-      
-      vector<map<int,double> > mmap = cnode->GetM();
-      vector<map<int,double> > mmapold = cnode->GetMOld();
+
+      vector<map<int,double> > mmap = cnode->GetData().GetM();
+      vector<map<int,double> > mmapold = cnode->GetData().GetMOld();
 
       map<int,double>::iterator colcurr;
       set <int> mnodes;
@@ -3292,11 +3292,11 @@ void CONTACT::Interface::FDCheckSlipDeriv()
 
         for (int dim=0;dim<cnode->NumDof();++dim)
         {
-           jumptxi+= (cnode->txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
-           jumpteta+= (cnode->teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+           jumptxi+= (cnode->GetData().txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+           jumpteta+= (cnode->GetData().teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
         }
       } //  loop over master nodes
-      
+
     	// evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
     	vector<double> sum1 (Dim()-1,0);
     	sum1[0] =  ztxi+ct*jumptxi;
@@ -3307,20 +3307,20 @@ void CONTACT::Interface::FDCheckSlipDeriv()
 
     // store C in vector
     if (ftype==INPAR::CONTACT::friction_tresca)
-    {	
+    {
     	refCtxi[i] = euclidean*ztxi-frbound*(ztxi+ct*jumptxi);
     	refCteta[i] = euclidean*zteta-frbound*(zteta+ct*jumpteta);
     }
     else if (ftype==INPAR::CONTACT::friction_coulomb)
-    {	
+    {
     	refCtxi[i] = euclidean*ztxi-(frcoeff*znor)*(ztxi+ct*jumptxi);
     	refCteta[i] = euclidean*zteta-(frcoeff*znor)*(zteta+ct*jumpteta);
-    }	
-    else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");  	
-#ifdef CONTACTCOMPHUEBER  
-  refCtxi[i] = euclidean*ztxi-(frcoeff*(znor-cn*cnode->Getg()))*(ztxi+ct*jumptxi);
-  refCteta[i] = euclidean*zteta-(frcoeff*(znor-cn*cnode->Getg()))*(zteta+ct*jumpteta);
-#endif 
+    }
+    else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");
+#ifdef CONTACTCOMPHUEBER
+  refCtxi[i] = euclidean*ztxi-(frcoeff*(znor-cn*cnode->GetData().Getg()))*(ztxi+ct*jumptxi);
+  refCteta[i] = euclidean*zteta-(frcoeff*(znor-cn*cnode->GetData().Getg()))*(zteta+ct*jumpteta);
+#endif
 
   } // loop over procs slave nodes
 
@@ -3345,15 +3345,15 @@ void CONTACT::Interface::FDCheckSlipDeriv()
     double delta = 1e-8;
     if (fd%3==0)
     {
-      snode->lm()[0] += delta;
+      snode->GetData().lm()[0] += delta;
     }
     else if (fd%3==1)
     {
-      snode->lm()[1] += delta;
+      snode->GetData().lm()[1] += delta;
     }
     else
     {
-      snode->lm()[2] += delta;
+      snode->GetData().lm()[2] += delta;
     }
 
     // compute finite difference derivative
@@ -3371,22 +3371,22 @@ void CONTACT::Interface::FDCheckSlipDeriv()
       double znor = 0;
       double euclidean = 0;
 
-      if (kcnode->Slip())
+      if (kcnode->GetData().Slip())
       {
         // check two versions of weighted gap
-        double D = (kcnode->GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->GetDOld()[0])[kcnode->Dofs()[0]];
+        double D = (kcnode->GetData().GetD()[0])[kcnode->Dofs()[0]];
+        double Dold = (kcnode->GetData().GetDOld()[0])[kcnode->Dofs()[0]];
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
-          jumptxi -= (kcnode->txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-          jumpteta -= (kcnode->teta()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-          ztxi += (kcnode->txi()[dim])*(kcnode->lm()[dim]);
-          zteta += (kcnode->teta()[dim])*(kcnode->lm()[dim]);
-          znor += (kcnode->n()[dim])*(kcnode->lm()[dim]);
+          jumptxi -= (kcnode->GetData().txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
+          jumpteta -= (kcnode->GetData().teta()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
+          ztxi += (kcnode->GetData().txi()[dim])*(kcnode->GetData().lm()[dim]);
+          zteta += (kcnode->GetData().teta()[dim])*(kcnode->GetData().lm()[dim]);
+          znor += (kcnode->GetData().n()[dim])*(kcnode->GetData().lm()[dim]);
         }
 
-        vector<map<int,double> > mmap = kcnode->GetM();
-        vector<map<int,double> > mmapold = kcnode->GetMOld();
+        vector<map<int,double> > mmap = kcnode->GetData().GetM();
+        vector<map<int,double> > mmapold = kcnode->GetData().GetMOld();
 
         map<int,double>::iterator colcurr;
         set <int> mnodes;
@@ -3414,11 +3414,11 @@ void CONTACT::Interface::FDCheckSlipDeriv()
 
           for (int dim=0;dim<kcnode->NumDof();++dim)
           {
-             jumptxi+= (kcnode->txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
-             jumpteta+= (kcnode->teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+             jumptxi+= (kcnode->GetData().txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+             jumpteta+= (kcnode->GetData().teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
           }
         } //  loop over master nodes
-       
+
       	// evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
       	vector<double> sum1 (Dim()-1,0);
       	sum1[0] = ztxi+ct*jumptxi;
@@ -3429,21 +3429,21 @@ void CONTACT::Interface::FDCheckSlipDeriv()
 
       // store C in vector
       if (ftype==INPAR::CONTACT::friction_tresca)
-      {	
+      {
       	newCtxi[k] = euclidean*ztxi-frbound*(ztxi+ct*jumptxi);
        	newCteta[k] = euclidean*zteta-frbound*(zteta+ct*jumpteta);
       }
       else if (ftype==INPAR::CONTACT::friction_coulomb)
-      {	
+      {
        	newCtxi[k] = euclidean*ztxi-(frcoeff*znor)*(ztxi+ct*jumptxi);
        	newCteta[k] = euclidean*zteta-(frcoeff*znor)*(zteta+ct*jumpteta);
-      }	
-      else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");  	
-#ifdef CONTACTCOMPHUEBER  
-  newCtxi[k] = euclidean*ztxi-(frcoeff*(znor-cn*kcnode->Getg()))*(ztxi+ct*jumptxi);
-  newCteta[k] = euclidean*zteta-(frcoeff*(znor-cn*kcnode->Getg()))*(zteta+ct*jumpteta);
-#endif  
-    
+      }
+      else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");
+#ifdef CONTACTCOMPHUEBER
+  newCtxi[k] = euclidean*ztxi-(frcoeff*(znor-cn*kcnode->GetData().Getg()))*(ztxi+ct*jumptxi);
+  newCteta[k] = euclidean*zteta-(frcoeff*(znor-cn*kcnode->GetData().Getg()))*(zteta+ct*jumpteta);
+#endif
+
       // print results (derivatives) to screen
       if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
       {
@@ -3451,11 +3451,11 @@ void CONTACT::Interface::FDCheckSlipDeriv()
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
         cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
       }
- 
+
       // print results (derivatives) to screen
        if (abs(newCteta[k]-refCteta[k]) > 1e-12)
        {
@@ -3463,27 +3463,27 @@ void CONTACT::Interface::FDCheckSlipDeriv()
          //cout << "Ref-G: " << refG[k] << endl;
          //cout << "New-G: " << newG[k] << endl;
          cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << endl;
-         //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
-         //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+         //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+         //if (abs(kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
          //  cout << "***WARNING*****************************************************************************" << endl;
        }
      }
     // undo finite difference modification
     if (fd%3==0)
     {
-      snode->lm()[0] -= delta;
+      snode->GetData().lm()[0] -= delta;
     }
     else if (fd%3==1)
     {
-      snode->lm()[1] -= delta;
+      snode->GetData().lm()[1] -= delta;
     }
     else
     {
-      snode->lm()[2] -= delta;
+      snode->GetData().lm()[2] -= delta;
     }
   } // loop over procs slave nodes
 
-  
+
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
   for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
   {
@@ -3546,23 +3546,23 @@ void CONTACT::Interface::FDCheckSlipDeriv()
       double znor = 0;
       double euclidean = 0;
 
-      if (kcnode->Slip())
+      if (kcnode->GetData().Slip())
       {
         // check two versions of weighted gap
-        double D = (kcnode->GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->GetDOld()[0])[kcnode->Dofs()[0]];
+        double D = (kcnode->GetData().GetD()[0])[kcnode->Dofs()[0]];
+        double Dold = (kcnode->GetData().GetDOld()[0])[kcnode->Dofs()[0]];
 
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
-          jumptxi -= (kcnode->txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-          jumpteta -= (kcnode->teta()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-          ztxi += (kcnode->txi()[dim])*(kcnode->lm()[dim]);
-          zteta += (kcnode->teta()[dim])*(kcnode->lm()[dim]);
-          znor += (kcnode->n()[dim])*(kcnode->lm()[dim]);
+          jumptxi -= (kcnode->GetData().txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
+          jumpteta -= (kcnode->GetData().teta()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
+          ztxi += (kcnode->GetData().txi()[dim])*(kcnode->GetData().lm()[dim]);
+          zteta += (kcnode->GetData().teta()[dim])*(kcnode->GetData().lm()[dim]);
+          znor += (kcnode->GetData().n()[dim])*(kcnode->GetData().lm()[dim]);
         }
 
-        vector<map<int,double> > mmap = kcnode->GetM();
-        vector<map<int,double> > mmapold = kcnode->GetMOld();
+        vector<map<int,double> > mmap = kcnode->GetData().GetM();
+        vector<map<int,double> > mmapold = kcnode->GetData().GetMOld();
 
         map<int,double>::iterator colcurr;
         set <int> mnodes;
@@ -3591,8 +3591,8 @@ void CONTACT::Interface::FDCheckSlipDeriv()
 
           for (int dim=0;dim<kcnode->NumDof();++dim)
           {
-            jumptxi+= (kcnode->txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
-            jumpteta+= (kcnode->teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+            jumptxi+= (kcnode->GetData().txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+            jumpteta+= (kcnode->GetData().teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
           }
         } //  loop over master nodes
 
@@ -3607,20 +3607,20 @@ void CONTACT::Interface::FDCheckSlipDeriv()
 
       // store C in vector
       if (ftype==INPAR::CONTACT::friction_tresca)
-      {	
+      {
       	newCtxi[k] = euclidean*ztxi-frbound*(ztxi+ct*jumptxi);
        	newCteta[k] = euclidean*zteta-frbound*(zteta+ct*jumpteta);
       }
       else if (ftype==INPAR::CONTACT::friction_coulomb)
-      {	
+      {
        	newCtxi[k] = euclidean*ztxi-(frcoeff*znor)*(ztxi+ct*jumptxi);
        	newCteta[k] = euclidean*zteta-(frcoeff*znor)*(zteta+ct*jumpteta);
-      }	
-      else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");  	
-#ifdef CONTACTCOMPHUEBER  
-  newCtxi[k] = euclidean*ztxi-(frcoeff*(znor-cn*kcnode->Getg()))*(ztxi+ct*jumptxi);
-  newCteta[k] = euclidean*zteta-(frcoeff*(znor-cn*kcnode->Getg()))*(zteta+ct*jumpteta);
-#endif  
+      }
+      else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");
+#ifdef CONTACTCOMPHUEBER
+  newCtxi[k] = euclidean*ztxi-(frcoeff*(znor-cn*kcnode->GetData().Getg()))*(ztxi+ct*jumptxi);
+  newCteta[k] = euclidean*zteta-(frcoeff*(znor-cn*kcnode->GetData().Getg()))*(zteta+ct*jumpteta);
+#endif
 
       // print results (derivatives) to screen
       if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
@@ -3629,11 +3629,11 @@ void CONTACT::Interface::FDCheckSlipDeriv()
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
         cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
       }
-      
+
       // print results (derivatives) to screen
       if (abs(newCteta[k]-refCteta[k]) > 1e-12)
       {
@@ -3641,8 +3641,8 @@ void CONTACT::Interface::FDCheckSlipDeriv()
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
         cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
       }
     }
@@ -3722,24 +3722,24 @@ void CONTACT::Interface::FDCheckSlipDeriv()
       double zteta = 0;
       double znor = 0;
       double euclidean = 0;
-      
-      if (kcnode->Slip())
+
+      if (kcnode->GetData().Slip())
       {
         // check two versions of weighted gap
-        double D = (kcnode->GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->GetDOld()[0])[kcnode->Dofs()[0]];
+        double D = (kcnode->GetData().GetD()[0])[kcnode->Dofs()[0]];
+        double Dold = (kcnode->GetData().GetDOld()[0])[kcnode->Dofs()[0]];
 
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
-          jumptxi -= (kcnode->txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-          jumpteta -= (kcnode->teta()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-          ztxi += (kcnode->txi()[dim])*(kcnode->lm()[dim]);
-          zteta += (kcnode->teta()[dim])*(kcnode->lm()[dim]);
-          znor += (kcnode->n()[dim])*(kcnode->lm()[dim]);
+          jumptxi -= (kcnode->GetData().txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
+          jumpteta -= (kcnode->GetData().teta()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
+          ztxi += (kcnode->GetData().txi()[dim])*(kcnode->GetData().lm()[dim]);
+          zteta += (kcnode->GetData().teta()[dim])*(kcnode->GetData().lm()[dim]);
+          znor += (kcnode->GetData().n()[dim])*(kcnode->GetData().lm()[dim]);
         }
 
-        vector<map<int,double> > mmap = kcnode->GetM();
-        vector<map<int,double> > mmapold = kcnode->GetMOld();
+        vector<map<int,double> > mmap = kcnode->GetData().GetM();
+        vector<map<int,double> > mmapold = kcnode->GetData().GetMOld();
 
         map<int,double>::iterator colcurr;
         set <int> mnodes;
@@ -3768,37 +3768,37 @@ void CONTACT::Interface::FDCheckSlipDeriv()
 
           for (int dim=0;dim<kcnode->NumDof();++dim)
           {
-             jumptxi+= (kcnode->txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
-             jumpteta+= (kcnode->teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+             jumptxi+= (kcnode->GetData().txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+             jumpteta+= (kcnode->GetData().teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
           }
         } //  loop over master nodes
-        
+
       	// evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
       	vector<double> sum1 (Dim()-1,0);
       	sum1[0] = ztxi+ct*jumptxi;
       	if (Dim()==3) sum1[1] = zteta+ct*jumpteta;
       	if (Dim()==2) euclidean = abs(sum1[0]);
       	if (Dim()==3) euclidean = sqrt(sum1[0]*sum1[0]+sum1[1]*sum1[1]);
-       
+
      } // if cnode == Slip
 
       // store C in vector
       if (ftype==INPAR::CONTACT::friction_tresca)
-      {	
+      {
       	newCtxi[k] = euclidean*ztxi-frbound*(ztxi+ct*jumptxi);
        	newCteta[k] = euclidean*zteta-frbound*(zteta+ct*jumpteta);
       }
       else if (ftype==INPAR::CONTACT::friction_coulomb)
-      {	
+      {
        	newCtxi[k] = euclidean*ztxi-(frcoeff*znor)*(ztxi+ct*jumptxi);
        	newCteta[k] = euclidean*zteta-(frcoeff*znor)*(zteta+ct*jumpteta);
-      }	
-      else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");  	
-#ifdef CONTACTCOMPHUEBER  
-  newCtxi[k] = euclidean*ztxi-(frcoeff*(znor-cn*kcnode->Getg()))*(ztxi+ct*jumptxi);
-  newCteta[k] = euclidean*zteta-(frcoeff*(znor-cn*kcnode->Getg()))*(zteta+ct*jumpteta);
-#endif  
- 
+      }
+      else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");
+#ifdef CONTACTCOMPHUEBER
+  newCtxi[k] = euclidean*ztxi-(frcoeff*(znor-cn*kcnode->GetData().Getg()))*(ztxi+ct*jumptxi);
+  newCteta[k] = euclidean*zteta-(frcoeff*(znor-cn*kcnode->GetData().Getg()))*(zteta+ct*jumpteta);
+#endif
+
       // print results (derivatives) to screen
       if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
       {
@@ -3806,19 +3806,19 @@ void CONTACT::Interface::FDCheckSlipDeriv()
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
         cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
       }
-      
+
       if (abs(newCteta[k]-refCteta[k]) > 1e-12)
       {
         cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << endl;
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
         cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
       }
     }
@@ -3853,7 +3853,7 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
 {
   // this method is outdated
   dserror("ERROR: FDCheckVertex3DDeriv is outdated and needs to be updated!");
-    
+
   /*************************************/
   /* NOTE: This is a 3D method only !!!*/
   /*************************************/
@@ -3892,40 +3892,40 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
       //reset nodal normal vector
       for (int j=0;j<3;++j)
       {
-        node->n()[j]=0.0;
-        node->txi()[j]=0.0;
-        node->teta()[j]=0.0;
+        node->GetData().n()[j]=0.0;
+        node->GetData().txi()[j]=0.0;
+        node->GetData().teta()[j]=0.0;
       }
 
       // reset derivative maps of normal vector
-      for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-        (node->GetDerivN())[j].clear();
-      (node->GetDerivN()).resize(0);
+      for (int j=0;j<(int)((node->GetData().GetDerivN()).size());++j)
+        (node->GetData().GetDerivN())[j].clear();
+      (node->GetData().GetDerivN()).resize(0);
 
       // reset derivative maps of tangent vector
-      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-        (node->GetDerivTxi())[j].clear();
-      (node->GetDerivTxi()).resize(0);
-      
-      // reset nodal Mortar maps
-      for (int j=0;j<(int)((node->GetD()).size());++j)
-        (node->GetD())[j].clear();
-      for (int j=0;j<(int)((node->GetM()).size());++j)
-        (node->GetM())[j].clear();
-      for (int j=0;j<(int)((node->GetMmod()).size());++j)
-        (node->GetMmod())[j].clear();
+      for (int j=0;j<(int)((node->GetData().GetDerivTxi()).size());++j)
+        (node->GetData().GetDerivTxi())[j].clear();
+      (node->GetData().GetDerivTxi()).resize(0);
 
-      (node->GetD()).resize(0);
-      (node->GetM()).resize(0);
-      (node->GetMmod()).resize(0);
+      // reset nodal Mortar maps
+      for (int j=0;j<(int)((node->GetData().GetD()).size());++j)
+        (node->GetData().GetD())[j].clear();
+      for (int j=0;j<(int)((node->GetData().GetM()).size());++j)
+        (node->GetData().GetM())[j].clear();
+      for (int j=0;j<(int)((node->GetData().GetMmod()).size());++j)
+        (node->GetData().GetMmod())[j].clear();
+
+      (node->GetData().GetD()).resize(0);
+      (node->GetData().GetM()).resize(0);
+      (node->GetData().GetMmod()).resize(0);
 
       // reset derivative map of Mortar matrices
-      (node->GetDerivD()).clear();
-      (node->GetDerivM()).clear();
+      (node->GetData().GetDerivD()).clear();
+      (node->GetData().GetDerivM()).clear();
 
       // reset nodal weighted gap
-      node->Getg() = 1.0e12;
-      (node->GetDerivG()).clear();
+      node->GetData().Getg() = 1.0e12;
+      (node->GetData().GetDerivG()).clear();
 
       // reset feasible projection status
       node->HasProj() = false;
@@ -4099,20 +4099,20 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
       //reset nodal normal vector
       for (int j=0;j<3;++j)
       {
-        node->n()[j]=0.0;
-        node->txi()[j]=0.0;
-        node->teta()[j]=0.0;
+        node->GetData().n()[j]=0.0;
+        node->GetData().txi()[j]=0.0;
+        node->GetData().teta()[j]=0.0;
       }
 
       // reset derivative maps of normal vector
-      for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-        (node->GetDerivN())[j].clear();
-      (node->GetDerivN()).resize(0);
+      for (int j=0;j<(int)((node->GetData().GetDerivN()).size());++j)
+        (node->GetData().GetDerivN())[j].clear();
+      (node->GetData().GetDerivN()).resize(0);
 
       // reset derivative maps of tangent vector
-      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-        (node->GetDerivTxi())[j].clear();
-      (node->GetDerivTxi()).resize(0);
+      for (int j=0;j<(int)((node->GetData().GetDerivTxi()).size());++j)
+        (node->GetData().GetDerivTxi())[j].clear();
+      (node->GetData().GetDerivTxi()).resize(0);
 
       // reset closest node
       // (FIXME: at the moment we do not need this info. in the next
@@ -4120,24 +4120,24 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
       node->ClosestNode() = -1;
 
       // reset nodal Mortar maps
-      for (int j=0;j<(int)((node->GetD()).size());++j)
-        (node->GetD())[j].clear();
-      for (int j=0;j<(int)((node->GetM()).size());++j)
-        (node->GetM())[j].clear();
-      for (int j=0;j<(int)((node->GetMmod()).size());++j)
-        (node->GetMmod())[j].clear();
+      for (int j=0;j<(int)((node->GetData().GetD()).size());++j)
+        (node->GetData().GetD())[j].clear();
+      for (int j=0;j<(int)((node->GetData().GetM()).size());++j)
+        (node->GetData().GetM())[j].clear();
+      for (int j=0;j<(int)((node->GetData().GetMmod()).size());++j)
+        (node->GetData().GetMmod())[j].clear();
 
-      (node->GetD()).resize(0);
-      (node->GetM()).resize(0);
-      (node->GetMmod()).resize(0);
+      (node->GetData().GetD()).resize(0);
+      (node->GetData().GetM()).resize(0);
+      (node->GetData().GetMmod()).resize(0);
 
       // reset derivative map of Mortar matrices
-      (node->GetDerivD()).clear();
-      (node->GetDerivM()).clear();
+      (node->GetData().GetDerivD()).clear();
+      (node->GetData().GetDerivM()).clear();
 
       // reset nodal weighted gap
-      node->Getg() = 1.0e12;
-      (node->GetDerivG()).clear();
+      node->GetData().Getg() = 1.0e12;
+      (node->GetData().GetDerivG()).clear();
 
       // reset feasible projection status
       node->HasProj() = false;
@@ -4311,40 +4311,40 @@ void CONTACT::Interface::FDCheckVertex3DDeriv(vector<vector<double> >& testv)
     //reset nodal normal vector
     for (int j=0;j<3;++j)
     {
-      node->n()[j]=0.0;
-      node->txi()[j]=0.0;
-      node->teta()[j]=0.0;
+      node->GetData().n()[j]=0.0;
+      node->GetData().txi()[j]=0.0;
+      node->GetData().teta()[j]=0.0;
     }
 
     // reset derivative maps of normal vector
-    for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-      (node->GetDerivN())[j].clear();
-    (node->GetDerivN()).resize(0);
+    for (int j=0;j<(int)((node->GetData().GetDerivN()).size());++j)
+      (node->GetData().GetDerivN())[j].clear();
+    (node->GetData().GetDerivN()).resize(0);
 
     // reset derivative maps of tangent vector
-    for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-      (node->GetDerivTxi())[j].clear();
-    (node->GetDerivTxi()).resize(0);
-    
-    // reset nodal Mortar maps
-    for (int j=0;j<(int)((node->GetD()).size());++j)
-      (node->GetD())[j].clear();
-    for (int j=0;j<(int)((node->GetM()).size());++j)
-      (node->GetM())[j].clear();
-    for (int j=0;j<(int)((node->GetMmod()).size());++j)
-      (node->GetMmod())[j].clear();
+    for (int j=0;j<(int)((node->GetData().GetDerivTxi()).size());++j)
+      (node->GetData().GetDerivTxi())[j].clear();
+    (node->GetData().GetDerivTxi()).resize(0);
 
-    (node->GetD()).resize(0);
-    (node->GetM()).resize(0);
-    (node->GetMmod()).resize(0);
+    // reset nodal Mortar maps
+    for (int j=0;j<(int)((node->GetData().GetD()).size());++j)
+      (node->GetData().GetD())[j].clear();
+    for (int j=0;j<(int)((node->GetData().GetM()).size());++j)
+      (node->GetData().GetM())[j].clear();
+    for (int j=0;j<(int)((node->GetData().GetMmod()).size());++j)
+      (node->GetData().GetMmod())[j].clear();
+
+    (node->GetData().GetD()).resize(0);
+    (node->GetData().GetM()).resize(0);
+    (node->GetData().GetMmod()).resize(0);
 
     // reset derivative map of Mortar matrices
-    (node->GetDerivD()).clear();
-    (node->GetDerivM()).clear();
+    (node->GetData().GetDerivD()).clear();
+    (node->GetData().GetDerivM()).clear();
 
     // reset nodal weighted gap
-    node->Getg() = 1.0e12;
-    (node->GetDerivG()).clear();
+    node->GetData().Getg() = 1.0e12;
+    (node->GetData().GetDerivG()).clear();
 
     // reset feasible projection status
     node->HasProj() = false;
@@ -4460,7 +4460,7 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
 {
   // this method is outdated
   dserror("ERROR: FDCheckGP3DDeriv is outdated and needs to be updated!");
-  
+
   /*************************************/
   /* NOTE: This is a 3D method only !!!*/
   /*************************************/
@@ -4500,40 +4500,40 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
       //reset nodal normal vector
       for (int j=0;j<3;++j)
       {
-        node->n()[j]=0.0;
-        node->txi()[j]=0.0;
-        node->teta()[j]=0.0;
+        node->GetData().n()[j]=0.0;
+        node->GetData().txi()[j]=0.0;
+        node->GetData().teta()[j]=0.0;
       }
 
       // reset derivative maps of normal vector
-      for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-        (node->GetDerivN())[j].clear();
-      (node->GetDerivN()).resize(0);
+      for (int j=0;j<(int)((node->GetData().GetDerivN()).size());++j)
+        (node->GetData().GetDerivN())[j].clear();
+      (node->GetData().GetDerivN()).resize(0);
 
       // reset derivative maps of tangent vector
-      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-        (node->GetDerivTxi())[j].clear();
-      (node->GetDerivTxi()).resize(0);
-      
-      // reset nodal Mortar maps
-      for (int j=0;j<(int)((node->GetD()).size());++j)
-        (node->GetD())[j].clear();
-      for (int j=0;j<(int)((node->GetM()).size());++j)
-        (node->GetM())[j].clear();
-      for (int j=0;j<(int)((node->GetMmod()).size());++j)
-        (node->GetMmod())[j].clear();
+      for (int j=0;j<(int)((node->GetData().GetDerivTxi()).size());++j)
+        (node->GetData().GetDerivTxi())[j].clear();
+      (node->GetData().GetDerivTxi()).resize(0);
 
-      (node->GetD()).resize(0);
-      (node->GetM()).resize(0);
-      (node->GetMmod()).resize(0);
+      // reset nodal Mortar maps
+      for (int j=0;j<(int)((node->GetData().GetD()).size());++j)
+        (node->GetData().GetD())[j].clear();
+      for (int j=0;j<(int)((node->GetData().GetM()).size());++j)
+        (node->GetData().GetM())[j].clear();
+      for (int j=0;j<(int)((node->GetData().GetMmod()).size());++j)
+        (node->GetData().GetMmod())[j].clear();
+
+      (node->GetData().GetD()).resize(0);
+      (node->GetData().GetM()).resize(0);
+      (node->GetData().GetMmod()).resize(0);
 
       // reset derivative map of Mortar matrices
-      (node->GetDerivD()).clear();
-      (node->GetDerivM()).clear();
+      (node->GetData().GetDerivD()).clear();
+      (node->GetData().GetDerivM()).clear();
 
       // reset nodal weighted gap
-      node->Getg() = 1.0e12;
-      (node->GetDerivG()).clear();
+      node->GetData().Getg() = 1.0e12;
+      (node->GetData().GetDerivG()).clear();
 
       // reset feasible projection status
       node->HasProj() = false;
@@ -4883,40 +4883,40 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
       //reset nodal normal vector
       for (int j=0;j<3;++j)
       {
-        node->n()[j]=0.0;
-        node->txi()[j]=0.0;
-        node->teta()[j]=0.0;
+        node->GetData().n()[j]=0.0;
+        node->GetData().txi()[j]=0.0;
+        node->GetData().teta()[j]=0.0;
       }
 
       // reset derivative maps of normal vector
-      for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-        (node->GetDerivN())[j].clear();
-      (node->GetDerivN()).resize(0);
+      for (int j=0;j<(int)((node->GetData().GetDerivN()).size());++j)
+        (node->GetData().GetDerivN())[j].clear();
+      (node->GetData().GetDerivN()).resize(0);
 
       // reset derivative maps of tangent vector
-      for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-        (node->GetDerivTxi())[j].clear();
-      (node->GetDerivTxi()).resize(0);
-      
-      // reset nodal Mortar maps
-      for (int j=0;j<(int)((node->GetD()).size());++j)
-        (node->GetD())[j].clear();
-      for (int j=0;j<(int)((node->GetM()).size());++j)
-        (node->GetM())[j].clear();
-      for (int j=0;j<(int)((node->GetMmod()).size());++j)
-        (node->GetMmod())[j].clear();
+      for (int j=0;j<(int)((node->GetData().GetDerivTxi()).size());++j)
+        (node->GetData().GetDerivTxi())[j].clear();
+      (node->GetData().GetDerivTxi()).resize(0);
 
-      (node->GetD()).resize(0);
-      (node->GetM()).resize(0);
-      (node->GetMmod()).resize(0);
+      // reset nodal Mortar maps
+      for (int j=0;j<(int)((node->GetData().GetD()).size());++j)
+        (node->GetData().GetD())[j].clear();
+      for (int j=0;j<(int)((node->GetData().GetM()).size());++j)
+        (node->GetData().GetM())[j].clear();
+      for (int j=0;j<(int)((node->GetData().GetMmod()).size());++j)
+        (node->GetData().GetMmod())[j].clear();
+
+      (node->GetData().GetD()).resize(0);
+      (node->GetData().GetM()).resize(0);
+      (node->GetData().GetMmod()).resize(0);
 
       // reset derivative map of Mortar matrices
-      (node->GetDerivD()).clear();
-      (node->GetDerivM()).clear();
+      (node->GetData().GetDerivD()).clear();
+      (node->GetData().GetDerivM()).clear();
 
       // reset nodal weighted gap
-      node->Getg() = 1.0e12;
-      (node->GetDerivG()).clear();
+      node->GetData().Getg() = 1.0e12;
+      (node->GetData().GetDerivG()).clear();
 
       // reset feasible projection status
       node->HasProj() = false;
@@ -5266,40 +5266,40 @@ void CONTACT::Interface::FDCheckGP3DDeriv(vector<vector<double> >& testgps,
     //reset nodal normal vector
     for (int j=0;j<3;++j)
     {
-      node->n()[j]=0.0;
-      node->txi()[j]=0.0;
-      node->teta()[j]=0.0;
+      node->GetData().n()[j]=0.0;
+      node->GetData().txi()[j]=0.0;
+      node->GetData().teta()[j]=0.0;
     }
 
     // reset derivative maps of normal vector
-    for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-      (node->GetDerivN())[j].clear();
-    (node->GetDerivN()).resize(0);
+    for (int j=0;j<(int)((node->GetData().GetDerivN()).size());++j)
+      (node->GetData().GetDerivN())[j].clear();
+    (node->GetData().GetDerivN()).resize(0);
 
     // reset derivative maps of tangent vector
-    for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-      (node->GetDerivTxi())[j].clear();
-    (node->GetDerivTxi()).resize(0);
-    
-    // reset nodal Mortar maps
-    for (int j=0;j<(int)((node->GetD()).size());++j)
-      (node->GetD())[j].clear();
-    for (int j=0;j<(int)((node->GetM()).size());++j)
-      (node->GetM())[j].clear();
-    for (int j=0;j<(int)((node->GetMmod()).size());++j)
-      (node->GetMmod())[j].clear();
+    for (int j=0;j<(int)((node->GetData().GetDerivTxi()).size());++j)
+      (node->GetData().GetDerivTxi())[j].clear();
+    (node->GetData().GetDerivTxi()).resize(0);
 
-    (node->GetD()).resize(0);
-    (node->GetM()).resize(0);
-    (node->GetMmod()).resize(0);
+    // reset nodal Mortar maps
+    for (int j=0;j<(int)((node->GetData().GetD()).size());++j)
+      (node->GetData().GetD())[j].clear();
+    for (int j=0;j<(int)((node->GetData().GetM()).size());++j)
+      (node->GetData().GetM())[j].clear();
+    for (int j=0;j<(int)((node->GetData().GetMmod()).size());++j)
+      (node->GetData().GetMmod())[j].clear();
+
+    (node->GetData().GetD()).resize(0);
+    (node->GetData().GetM()).resize(0);
+    (node->GetData().GetMmod()).resize(0);
 
     // reset derivative map of Mortar matrices
-    (node->GetDerivD()).clear();
-    (node->GetDerivM()).clear();
+    (node->GetData().GetDerivD()).clear();
+    (node->GetData().GetDerivM()).clear();
 
     // reset nodal weighted gap
-    node->Getg() = 1.0e12;
-    (node->GetDerivG()).clear();
+    node->GetData().Getg() = 1.0e12;
+    (node->GetData().GetDerivG()).clear();
 
     // reset feasible projection status
     node->HasProj() = false;
@@ -5450,13 +5450,13 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
   // get out of here if not participating in interface
   if (!lComm())
     return;
-  
+
   cout << setprecision(14);
 
   // create storage for lm entries
   map<int, double> reflm;
   map<int, double> newlm;
-  
+
   map<int, map<int,double> > deltastorage;
 
   // loop over proc's slave nodes
@@ -5469,16 +5469,16 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
     CNode* cnode = static_cast<CNode*>(node);
 
     int dim = cnode->NumDof();
-    
+
     for( int d=0; d<dim; d++ )
     {
       int dof = cnode->Dofs()[d];
-    
-      if ((int)(cnode->GetDerivZ()).size()!=0)
+
+      if ((int)(cnode->GetData().GetDerivZ()).size()!=0)
       {
         typedef map<int,double>::const_iterator CI;
-        map<int,double>& derivzmap = cnode->GetDerivZ()[d];
-  
+        map<int,double>& derivzmap = cnode->GetData().GetDerivZ()[d];
+
         // print derivz-values to screen and store
         for (CI p=derivzmap.begin(); p!=derivzmap.end(); ++p)
         {
@@ -5486,20 +5486,20 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
           (deltastorage[cnode->Dofs()[d]])[p->first] = p->second;
         }
       }
-      
+
       // store lm-values into refM
-      reflm[dof] = cnode->lm()[d];
+      reflm[dof] = cnode->GetData().lm()[d];
     }
   }
-  
+
   cout << "FINITE DIFFERENCE SOLUTION\n" << endl;
-  
+
   int w = 0;
-  
+
   // global loop to apply FD scheme to all SLAVE dofs (=3*nodes)
   for (int fd=0; fd<3*snodefullmap_->NumMyElements(); ++fd)
   {
-    
+
     // Initialize
     Initialize();
 
@@ -5511,9 +5511,9 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
     CNode* snode = static_cast<CNode*>(node);
 
     int sdof = snode->Dofs()[fd%3];
-    
+
     cout << "DEVIATION FOR S-NODE # " << gid << " DOF: " << sdof << endl;
-    
+
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
     if (fd%3==0)
@@ -5552,25 +5552,25 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
       CNode* kcnode = static_cast<CNode*>(knode);
 
       int dim = kcnode->NumDof();
-      
+
       double fd;
       double dev;
-      
+
       for( int d=0; d<dim; d++ )
       {
         int dof = kcnode->Dofs()[d];
-        
-        newlm[dof] = kcnode->lm()[d];
-        
+
+        newlm[dof] = kcnode->GetData().lm()[d];
+
         fd = (newlm[dof] - reflm[dof]) / delta;
-        
+
         dev = deltastorage[dof][sdof] - fd;
-        
+
         if( dev )
         {
-          cout << " (" << dof << ", " << sdof << ") :\t fd=" <<  fd  
+          cout << " (" << dof << ", " << sdof << ") :\t fd=" <<  fd
                     << " derivz=" << deltastorage[dof][sdof] << " DEVIATION: " << dev;
-                  
+
           if( abs(dev) > 1e-4 )
           {
             cout << " **** WARNING ****";
@@ -5582,7 +5582,7 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
             w++;
           }
           cout << endl;
-          
+
           if( (abs(dev) > 1e-2) )
           {
              cout << " *************** ERROR *************** " << endl;
@@ -5607,13 +5607,13 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
     }
   }
   cout << "\n ******************** GENERATED " << w << " WARNINGS ***************** \n" << endl;
-  
+
   w = 0;
-  
+
   // global loop to apply FD scheme to all MASTER dofs (=3*nodes)
   for (int fd=0; fd<3*mnodefullmap_->NumMyElements(); ++fd)
   {
-    
+
     // Initialize
     Initialize();
 
@@ -5625,9 +5625,9 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
     CNode* mnode = static_cast<CNode*>(node);
 
     int mdof = mnode->Dofs()[fd%3];
-    
+
     cout << "DEVIATION FOR M-NODE # " << gid << " DOF: " << mdof << endl;
-    
+
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
     if (fd%3==0)
@@ -5666,26 +5666,26 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
       CNode* kcnode = static_cast<CNode*>(knode);
 
       int dim = kcnode->NumDof();
-      
+
       double fd;
       double dev;
-      
+
       // calculate derivative and deviation for every dof
       for( int d=0; d<dim; d++ )
       {
         int dof = kcnode->Dofs()[d];
-        
-        newlm[dof] = kcnode->lm()[d];
-        
+
+        newlm[dof] = kcnode->GetData().lm()[d];
+
         fd = (newlm[dof] - reflm[dof]) / delta;
-        
+
         dev = deltastorage[dof][mdof] - fd;
-        
+
         if( dev )
         {
-          cout << " (" << dof << ", " << mdof << ") :\t fd=" <<  fd  
+          cout << " (" << dof << ", " << mdof << ") :\t fd=" <<  fd
                     << " derivz=" << deltastorage[dof][mdof] << " DEVIATION: " << dev;
-                  
+
           if( abs(dev) > 1e-4 )
           {
             cout << " **** WARNING ****";
@@ -5697,7 +5697,7 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
             w++;
           }
           cout << endl;
-          
+
           if( (abs(dev) > 1e-2) )
           {
              cout << " *************** ERROR *************** " << endl;
@@ -5720,10 +5720,10 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
     {
       mnode->xspatial()[2] -= delta;
     }
-    
+
   }
   cout << "\n ******************** GENERATED " << w << " WARNINGS ***************** \n" << endl;
-  
+
   // back to normal...
 
   // Initialize
@@ -5739,7 +5739,7 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
 
   // *******************************************************************
   // contents of Evaluate()
-  // *******************************************************************    
+  // *******************************************************************
   Evaluate();
   bool isincontact, activesetchange = false;
   AssembleRegNormalForces(isincontact, activesetchange);
@@ -5755,12 +5755,12 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
   // get out of here if not participating in interface
   if (!lComm())
     return;
-  
+
   // information from interface contact parameter list
   double frcoeff = IParams().get<double>("FRCOEFF");
   double ppnor = IParams().get<double>("PENALTYPARAM");
   double pptan = IParams().get<double>("PENALTYPARAMTAN");
-  
+
    // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
   vector<double> reftrac1(nrow);
@@ -5769,21 +5769,21 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
   vector<double> newtrac2(nrow);
   vector<double> reftrac3(nrow);
   vector<double> newtrac3(nrow);
-    
+
   // store reference
   // loop over proc's slave nodes
   for (int i=0; i<snoderowmap_->NumMyElements();++i)
-  {  	
+  {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CNode* cnode = static_cast<CNode*>(node);
-    
+
     // get some informatiom form the node
-    double gap = cnode->Getg();
+    double gap = cnode->GetData().Getg();
     int dim = cnode->NumDof();
-    double kappa = cnode->Kappa();
-    double* n = cnode->n();
+    double kappa = cnode->GetData().Kappa();
+    double* n = cnode->GetData().n();
 
     // evaluate traction
     Epetra_SerialDenseMatrix jumpvec(dim,1);
@@ -5795,8 +5795,8 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
     // fill vectors and matrices
     for (int j=0;j<dim;j++)
     {
-      jumpvec(j,0) = cnode->jump()[j];
-      tractionold[j] = cnode->tractionold()[j];
+      jumpvec(j,0) = cnode->GetData().jump()[j];
+      tractionold[j] = cnode->GetData().tractionold()[j];
     }
 
     if (dim==3)
@@ -5826,19 +5826,19 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
     // Evaluate frictional trail traction
     Epetra_SerialDenseMatrix temptrac(dim,1);
     temptrac.Multiply('N','N',kappa*pptan,tanplane,jumpvec,0.0);
-     
+
     //Lagrange multiplier in normal direction
     double lmuzawan = 0.0;
     for (int j=0;j<dim;++j)
-    lmuzawan += cnode->lmuzawa()[j]*cnode->n()[j];
-     
+    lmuzawan += cnode->GetData().lmuzawa()[j]*cnode->GetData().n()[j];
+
     // Lagrange multiplier from Uzawa algorithm
     Epetra_SerialDenseMatrix lmuzawa(dim,1);
     for (int k=0;k<dim;++k)
-      lmuzawa(k,0) = cnode->lmuzawa()[k];
-          
+      lmuzawa(k,0) = cnode->GetData().lmuzawa()[k];
+
     // Lagrange multiplier in tangential direction
-    Epetra_SerialDenseMatrix lmuzawatan(dim,1);     
+    Epetra_SerialDenseMatrix lmuzawatan(dim,1);
     lmuzawatan.Multiply('N','N',1,tanplane,lmuzawa,0.0);
 
     if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_penalty)
@@ -5849,7 +5849,7 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
         magnitude += (trailtraction[j]*trailtraction[j]);
       }
     }
-    else 
+    else
     {
       for (int j=0;j<dim;j++)
       {
@@ -5857,20 +5857,20 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
         magnitude += (trailtraction[j]*trailtraction[j]);
       }
     }
-    	 
+
     // evaluate magnitude of trailtraction
     magnitude = sqrt(magnitude);
 
     // evaluate maximal tangential traction
     double maxtantrac = frcoeff*(lmuzawan - kappa * ppnor * gap);
 
-    if(cnode->Active()==true and cnode->Slip()==false)
+    if(cnode->Active()==true and cnode->GetData().Slip()==false)
     {
       reftrac1[i] = n[0]*(lmuzawan - kappa * ppnor * gap)+trailtraction[0];
       reftrac2[i] = n[1]*(lmuzawan - kappa * ppnor * gap)+trailtraction[1];
       reftrac3[i] = n[2]*(lmuzawan - kappa * ppnor * gap)+trailtraction[2];
     }
-    if(cnode->Active()==true and cnode->Slip()==true)
+    if(cnode->Active()==true and cnode->GetData().Slip()==true)
     {
       // compute lagrange multipliers and store into node
       reftrac1[i] = n[0]*(lmuzawan - kappa * ppnor * gap)+trailtraction[0]*maxtantrac/magnitude;
@@ -5934,12 +5934,12 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!node) dserror("ERROR: Cannot find node with gid %",kgid);
       CNode* kcnode = static_cast<CNode*>(knode);
-      
+
       // get some informatiom form the node
-      double gap = kcnode->Getg();
+      double gap = kcnode->GetData().Getg();
       int dim = kcnode->NumDof();
-      double kappa = kcnode->Kappa();
-      double* n = kcnode->n();
+      double kappa = kcnode->GetData().Kappa();
+      double* n = kcnode->GetData().n();
 
       // evaluate traction
       Epetra_SerialDenseMatrix jumpvec(dim,1);
@@ -5951,8 +5951,8 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
       // fill vectors and matrices
       for (int j=0;j<dim;j++)
       {
-      	jumpvec(j,0) = kcnode->jump()[j];
-        tractionold[j] = kcnode->tractionold()[j];
+      	jumpvec(j,0) = kcnode->GetData().jump()[j];
+        tractionold[j] = kcnode->GetData().tractionold()[j];
       }
 
       if (dim==3)
@@ -5983,19 +5983,19 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
       // Evaluate frictional trail traction
       Epetra_SerialDenseMatrix temptrac(dim,1);
       temptrac.Multiply('N','N',kappa*pptan,tanplane,jumpvec,0.0);
-      
+
       //Lagrange multiplier in normal direction
       double lmuzawan = 0.0;
       for (int j=0;j<dim;++j)
-        lmuzawan += kcnode->lmuzawa()[j]*kcnode->n()[j];
-      
+        lmuzawan += kcnode->GetData().lmuzawa()[j]*kcnode->GetData().n()[j];
+
       // Lagrange multiplier from Uzawa algorithm
       Epetra_SerialDenseMatrix lmuzawa(dim,1);
       for (int j=0;j<dim;++j)
-        lmuzawa(j,0) = kcnode->lmuzawa()[j];
-           
+        lmuzawa(j,0) = kcnode->GetData().lmuzawa()[j];
+
       // Lagrange multiplier in tangential direction
-      Epetra_SerialDenseMatrix lmuzawatan(dim,1);     
+      Epetra_SerialDenseMatrix lmuzawatan(dim,1);
       lmuzawatan.Multiply('N','N',1,tanplane,lmuzawa,0.0);
 
       if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_penalty)
@@ -6006,11 +6006,11 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
           magnitude += (trailtraction[j]*trailtraction[j]);
         }
       }
-      else 
+      else
       {
         for (int j=0;j<dim;j++)
         {
-      	  trailtraction[j] = lmuzawatan(j,0)+temptrac(j,0); 
+      	  trailtraction[j] = lmuzawatan(j,0)+temptrac(j,0);
           magnitude += (trailtraction[j]*trailtraction[j]);
         }
       }
@@ -6021,20 +6021,20 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
       // evaluate maximal tangential traction
       double maxtantrac = frcoeff*(lmuzawan- kappa * ppnor * gap);
 
-      if(kcnode->Active()==true and kcnode->Slip()==false)
+      if(kcnode->Active()==true and kcnode->GetData().Slip()==false)
       {
         newtrac1[k] = n[0]*(lmuzawan - kappa * ppnor * gap)+trailtraction[0];
         newtrac2[k] = n[1]*(lmuzawan - kappa * ppnor * gap)+trailtraction[1];
         newtrac3[k] = n[2]*(lmuzawan - kappa * ppnor * gap)+trailtraction[2];
       }
-      if(kcnode->Active()==true and kcnode->Slip()==true)
+      if(kcnode->Active()==true and kcnode->GetData().Slip()==true)
       {
        	// compute lagrange multipliers and store into node
       	newtrac1[k] = n[0]*(lmuzawan - kappa * ppnor * gap)+trailtraction[0]*maxtantrac/magnitude;
       	newtrac2[k] = n[1]*(lmuzawan - kappa * ppnor * gap)+trailtraction[1]*maxtantrac/magnitude;
       	newtrac3[k] = n[2]*(lmuzawan - kappa * ppnor * gap)+trailtraction[2]*maxtantrac/magnitude;
       }
-      
+
       // print results (derivatives) to screen
       if (abs(newtrac1[k]-reftrac1[k]) > 1e-12)
       {
@@ -6042,8 +6042,8 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
         cout << "Deriv0:      " <<  kcnode->Dofs()[0] << " " << snode->Dofs()[fd%3] << " " << (newtrac1[k]-reftrac1[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
       }
 
@@ -6054,8 +6054,8 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
         cout << "Deriv1:      " <<  kcnode->Dofs()[1] << " "<< snode->Dofs()[fd%3] << " " << (newtrac2[k]-reftrac2[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
       }
 
@@ -6066,8 +6066,8 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
         cout << "Deriv2:      " <<  kcnode->Dofs()[2] << " " << snode->Dofs()[fd%3] << " " << (newtrac3[k]-reftrac3[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
       }
     }
@@ -6141,12 +6141,12 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!node) dserror("ERROR: Cannot find node with gid %",kgid);
       CNode* kcnode = static_cast<CNode*>(knode);
-      
+
       // get some informatiom form the node
-      double gap = kcnode->Getg();
+      double gap = kcnode->GetData().Getg();
       int dim = kcnode->NumDof();
-      double kappa = kcnode->Kappa();
-      double* n = kcnode->n();
+      double kappa = kcnode->GetData().Kappa();
+      double* n = kcnode->GetData().n();
 
       // evaluate traction
       Epetra_SerialDenseMatrix jumpvec(dim,1);
@@ -6158,8 +6158,8 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
       // fill vectors and matrices
       for (int j=0;j<dim;j++)
       {
-      	jumpvec(j,0) = kcnode->jump()[j];
-        tractionold[j] = kcnode->tractionold()[j];
+      	jumpvec(j,0) = kcnode->GetData().jump()[j];
+        tractionold[j] = kcnode->GetData().tractionold()[j];
       }
 
       if (dim==3)
@@ -6193,15 +6193,15 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
       //Lagrange multiplier in normal direction
       double lmuzawan = 0.0;
       for (int j=0;j<dim;++j)
-        lmuzawan += kcnode->lmuzawa()[j]*kcnode->n()[j];
-      
+        lmuzawan += kcnode->GetData().lmuzawa()[j]*kcnode->GetData().n()[j];
+
       // Lagrange multiplier from Uzawa algorithm
       Epetra_SerialDenseMatrix lmuzawa(dim,1);
       for (int j=0;j<dim;++j)
-        lmuzawa(j,0) = kcnode->lmuzawa()[j];
-           
+        lmuzawa(j,0) = kcnode->GetData().lmuzawa()[j];
+
       // Lagrange multiplier in tangential direction
-      Epetra_SerialDenseMatrix lmuzawatan(dim,1);     
+      Epetra_SerialDenseMatrix lmuzawatan(dim,1);
       lmuzawatan.Multiply('N','N',1,tanplane,lmuzawa,0.0);
 
       if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_penalty)
@@ -6212,11 +6212,11 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
           magnitude += (trailtraction[j]*trailtraction[j]);
         }
       }
-      else 
+      else
       {
         for (int j=0;j<dim;j++)
         {
-      	  trailtraction[j] = lmuzawatan(j,0)+temptrac(j,0); 
+      	  trailtraction[j] = lmuzawatan(j,0)+temptrac(j,0);
           magnitude += (trailtraction[j]*trailtraction[j]);
         }
       }
@@ -6227,13 +6227,13 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
       // evaluate maximal tangential traction
       double maxtantrac = frcoeff*(lmuzawan- kappa * ppnor * gap);
 
-      if(kcnode->Active()==true and kcnode->Slip()==false)
+      if(kcnode->Active()==true and kcnode->GetData().Slip()==false)
       {
         newtrac1[k] = n[0]*(lmuzawan - kappa * ppnor * gap)+trailtraction[0];
         newtrac2[k] = n[1]*(lmuzawan - kappa * ppnor * gap)+trailtraction[1];
         newtrac3[k] = n[2]*(lmuzawan - kappa * ppnor * gap)+trailtraction[2];
       }
-      if(kcnode->Active()==true and kcnode->Slip()==true)
+      if(kcnode->Active()==true and kcnode->GetData().Slip()==true)
       {
        	// compute lagrange multipliers and store into node
       	newtrac1[k] = n[0]*(lmuzawan - kappa * ppnor * gap)+trailtraction[0]*maxtantrac/magnitude;
@@ -6248,8 +6248,8 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
         cout << "Deriv:      " <<  kcnode->Dofs()[0] << " " << mnode->Dofs()[fd%3] << " " << (newtrac1[k]-reftrac1[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
       }
 
@@ -6260,8 +6260,8 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
         cout << "Deriv:      " <<  kcnode->Dofs()[1] << " "<< mnode->Dofs()[fd%3] << " " << (newtrac2[k]-reftrac2[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
       }
 
@@ -6272,8 +6272,8 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
         //cout << "Ref-G: " << refG[k] << endl;
         //cout << "New-G: " << newG[k] << endl;
         cout << "Deriv:      " <<  kcnode->Dofs()[2] << " " << mnode->Dofs()[fd%3] << " " << (newtrac3[k]-reftrac3[k])/delta << endl;
-        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
+        //cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
+        //if (abs(kcnode->GetData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
         //  cout << "***WARNING*****************************************************************************" << endl;
       }
     }
@@ -6308,19 +6308,19 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
   // get out of here if not participating in interface
   if (!lComm())
     return;
-  
+
   cout << setprecision(14);
-  
+
   cout << "FINITE DIFFERENCE SOLUTION" << endl;
-  
+
   // global loop to apply FD scheme to all SLAVE dofs (=2*nodes)
   for (int fd=0; fd<2*snodefullmap_->NumMyElements(); ++fd)
   {
     int w = 0;
-    
+
     // create storage for contact forces in modified state
     RCP<Epetra_Vector> newfc = rcp( new Epetra_Vector(*problemrowmap));
-    
+
     // Initialize
     Initialize();
 
@@ -6330,11 +6330,11 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
     CNode* snode = static_cast<CNode*>(node);
-    
+
     cout << "\nBuilding FD for Slave Node: " << snode->Id() << " DOF: " << snode->Dofs()[fd%2] << endl;
 
-    int dof = snode->Dofs()[fd%2]; // current modified dof 
-    
+    int dof = snode->Dofs()[fd%2]; // current modified dof
+
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
     if (fd%2==0)
@@ -6358,7 +6358,7 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
     Evaluate();
     bool isincontact, activesetchange = false;
     AssembleRegNormalForces(isincontact, activesetchange);
-    
+
     RCP<LINALG::SparseMatrix> dmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
     RCP<LINALG::SparseMatrix> mmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
     RCP<Epetra_Vector> gvector = LINALG::CreateVector(*snoderowmap_, true);
@@ -6366,10 +6366,10 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
 
     AssembleDMG(*dmatrix, *mmatrix, *gvector);
     AssembleLM(*zvector);
-    
+
     dmatrix->Complete();
     mmatrix->Complete(*mdofrowmap_, *sdofrowmap_);
-    
+
     // compute new fc vector
     {
       RCP<Epetra_Vector> fcmdold = rcp(new Epetra_Vector(*sdofrowmap_));
@@ -6402,32 +6402,32 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
       LINALG::Export(*fcmm, *fcmmtemp);
       newfc->Update(1-alphaf, *fcmmtemp, 1.0);
     }
-    
+
     // compute deviation vector
     cout << "DEVIATION for S-NODE #" << gid << " DOF " << dof << endl;
-     
+
     // create storage for finite differences
     RCP<Epetra_Vector> derivfc = rcp( new Epetra_Vector(*problemrowmap));
-    
+
     derivfc->Update(1.0, *newfc, -1.0, *reffc, 1.0);
     derivfc->Scale(-1.0/delta);
-    
-    // print deviation    
+
+    // print deviation
     if( kc->NormOne() )
     {
       //cout << "derivfd" << endl;
       //cout << *derivfc << endl;
-      
+
       // loop over all dofs
       for( int k=0; k<problemrowmap->NumMyElements(); ++k )
-      {       
+      {
           int kdof = problemrowmap->GID(k);
-          
+
           // print comparision
           if( (*derivfc)[k] ) // only if derivativ present
           {
             cout << "(" << kdof << "," << dof << ") : derivfd=" << (*derivfc)[k];
-            
+
             int length = problemrowmap->NumMyElements();
             int numentries = 0;
             vector<double> nodevalues(length,0);
@@ -6435,20 +6435,20 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
             vector<int> nodeentries(length,0);
             int* nodeids = &(nodeentries)[0];
             kc->EpetraMatrix()->ExtractGlobalRowCopy(kdof, length, numentries, nodevals, nodeids);
-          
+
             if( numentries )
-            { 
+            {
               vector<int>::iterator result = find( nodeentries.begin(), nodeentries.end(), dof );
 
               if( result != nodeentries.end() )
-              {                
+              {
                 // dirty hack
                 for( int m=0; m<(int)nodevalues.size(); m++)
                 {
                   if( nodeentries[m] == *result )
                   {
                     double dev = (*derivfc)[k] - nodevalues[m];
-                  
+
                     if( abs(dev) < 1e-10)
                       cout << " PERFECT MATCH" << endl;
                     else
@@ -6457,7 +6457,7 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
                     {
                       w++;
                       // the entry is present but most likely inaccurate
-                      cout << " ****** WARNING ******"; 
+                      cout << " ****** WARNING ******";
                     }
                     else if( abs(dev) > 1e-5 )
                     {
@@ -6467,7 +6467,7 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
                     }
                   }
                 }
-                
+
               }
               else
               {
@@ -6482,7 +6482,7 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
               cout << "   NOT FOUND  ##### WARNING #####";
               w++;
             }
-            
+
             cout << endl;
           }
       }
@@ -6497,18 +6497,18 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
     {
       snode->xspatial()[1] -= delta;
     }
-    
+
     cout << " **************** GENERATED " << w << " WARNINGS IN TOTAL ********************"<< endl;
   }
-  
+
   // global loop to apply FD scheme to all MASTER dofs (=2*nodes)
   for (int fd=0; fd<2*mnodefullmap_->NumMyElements(); ++fd)
   {
     int w = 0;
-    
+
     // create storage for contact forces in modified state
     RCP<Epetra_Vector> newfc = rcp( new Epetra_Vector(*problemrowmap));
-    
+
     // Initialize
     //cout << "init" << endl;
     Initialize();
@@ -6519,11 +6519,11 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
     if (!node)
       dserror("ERROR: Cannot find master node with gid %",gid);
     CNode* mnode = static_cast<CNode*>(node);
-    
+
     cout << "\nBuilding FD for Master Node: " << mnode->Id() << " DOF: " << mnode->Dofs()[fd%2] << endl;
 
-    int dof = -1; // current modified dof 
-    
+    int dof = -1; // current modified dof
+
     // do step forward (modify nodal displacement)
     //cout << "step" << endl;
     double delta = 1e-8;
@@ -6551,25 +6551,25 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
     Evaluate();
     bool isincontact, activesetchange = false;
     AssembleRegNormalForces(isincontact, activesetchange);
-    
+
     RCP<LINALG::SparseMatrix> dmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
     RCP<LINALG::SparseMatrix> mmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
     RCP<Epetra_Vector> gvector = LINALG::CreateVector(*snoderowmap_, true);
     RCP<Epetra_Vector> zvector = LINALG::CreateVector(*sdofrowmap_, true);
-    
+
     //cout << "assemble" << endl;
     AssembleDMG(*dmatrix, *mmatrix, *gvector);
     AssembleLM(*zvector);
-    
+
     /*cout << "gap:" << endl;
     cout << *gvector << endl;
-    
+
     cout << "zvector:" << endl;
     cout << *zvector << endl;*/
-    
+
     dmatrix->Complete();
     mmatrix->Complete(*mdofrowmap_, *sdofrowmap_);
-    
+
     // compute new fc vector
     //cout << "newfc" << endl;
     {
@@ -6603,34 +6603,34 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
       LINALG::Export(*fcmm, *fcmmtemp);
       newfc->Update(1-alphaf, *fcmmtemp, 1.0);
     }
-    
+
     // compute deviation vector
     cout << "DEVIATION for M-NODE #" << gid << " DOF " << dof << endl;
-    
+
     // create storage for finite differences
     RCP<Epetra_Vector> derivfc = rcp( new Epetra_Vector(*problemrowmap));
-    
+
     /*cout << "newfc:" << endl;
     cout << *newfc << endl;*/
-    
+
     derivfc->Update(1.0, *newfc, -1.0, *reffc, 1.0);
     derivfc->Scale(-1.0/delta);
-    
+
     /*cout << "derivfc:" << endl;
     cout << *derivfc << endl;*/
-    
+
     if( kc->NormOne() )
     {
       // loop over all dofs
       for( int k=0; k<problemrowmap->NumMyElements(); ++k )
-      {       
+      {
           int kdof = problemrowmap->GID(k);
-          
+
           // print comparision
           if( (*derivfc)[k] ) // only if derivative present
           {
             cout << "(" << kdof << "," << dof << ") : derivfd=" << (*derivfc)[k];
-            
+
             int length = problemrowmap->NumMyElements();
             int numentries = 0;
             vector<double> nodevalues(length,0);
@@ -6638,9 +6638,9 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
             vector<int> nodeentries(length,0);
             int* nodeids = &(nodeentries)[0];
             kc->EpetraMatrix()->ExtractGlobalRowCopy(kdof, length, numentries, nodevals, nodeids);
-          
+
             if( numentries )
-            { 
+            {
               vector<int>::iterator result = find( nodeentries.begin(), nodeentries.end(), dof );
 
               if( result != nodeentries.end() )
@@ -6651,17 +6651,17 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
                   if( nodeentries[m] == *result )
                   {
                     double dev = (*derivfc)[k] - nodevalues[m];
-                  
+
                     if( abs(dev) < 1e-12)
                       cout << " PERFECT MATCH" << endl;
                     else
                       cout << " kc=" << nodevalues[m] << " DEVIATION: " << dev;
-                    
+
                     if( abs(dev) > 1e-4 )
                     {
                       w++;
                       // the entry is present but most likely inaccurate
-                      cout << " ****** WARNING ******"; 
+                      cout << " ****** WARNING ******";
                     }
                     else if( abs(dev) > 1e-5 )
                     {
@@ -6669,10 +6669,10 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
                       // the entry is present but inaccurate
                       cout << " ****** warning ******";
                     }
-                    
+
                   }
                 }
-                
+
               }
               else
               {
@@ -6687,7 +6687,7 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
               cout << "   NOT FOUND  ##### WARNING #####";
               w++;
             }
-            
+
             cout << endl;
           }
       }
@@ -6702,7 +6702,7 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
     {
       mnode->xspatial()[1] -= delta;
     }
-    
+
     cout << " **************** GENERATED " << w << " WARNINGS IN TOTAL ********************"<< endl;
   }
 
@@ -6721,12 +6721,12 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
 
   // *******************************************************************
   // contents of Evaluate()
-  // *******************************************************************    
+  // *******************************************************************
   Evaluate();
   bool isincontact, activesetchange = false;
   AssembleRegNormalForces(isincontact, activesetchange);
 
-  return;  
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -6734,24 +6734,24 @@ void CONTACT::Interface::FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<E
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::FDCheckPenaltyLinD(RCP<LINALG::SparseMatrix> lindmatrix, RCP<Epetra_Vector> reffcd)
 {
-  // HERE WE ASSUME ALPHA_F == 0 (STATIC) !!! 
-  
+  // HERE WE ASSUME ALPHA_F == 0 (STATIC) !!!
+
   // get out of here if not participating in interface
   if (!lComm())
     return;
-  
+
   cout << setprecision(14);
-  
+
   cout << "FINITE DIFFERENCE SOLUTION" << endl;
-  
+
   // global loop to apply FD scheme to all SLAVE dofs (=2*nodes)
   for (int fd=0; fd<2*snodefullmap_->NumMyElements(); ++fd)
   {
     int w = 0;
-    
+
     // create storage
     RCP<Epetra_Vector> newfcd = rcp( new Epetra_Vector(*sdofrowmap_));
-    
+
     // Initialize
     Initialize();
 
@@ -6761,11 +6761,11 @@ void CONTACT::Interface::FDCheckPenaltyLinD(RCP<LINALG::SparseMatrix> lindmatrix
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
     CNode* snode = static_cast<CNode*>(node);
-    
+
     cout << "\nBuilding FD for Slave Node: " << snode->Id() << " DOF: " << snode->Dofs()[fd%2] << endl;
 
-    int dof = snode->Dofs()[fd%2]; // current modified dof 
-    
+    int dof = snode->Dofs()[fd%2]; // current modified dof
+
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
     if (fd%2==0)
@@ -6789,7 +6789,7 @@ void CONTACT::Interface::FDCheckPenaltyLinD(RCP<LINALG::SparseMatrix> lindmatrix
     Evaluate();
     bool isincontact, activesetchange = false;
     AssembleRegNormalForces(isincontact, activesetchange);
-    
+
     RCP<LINALG::SparseMatrix> dmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
     RCP<LINALG::SparseMatrix> mmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
     RCP<Epetra_Vector> gvector = LINALG::CreateVector(*snoderowmap_, true);
@@ -6797,34 +6797,34 @@ void CONTACT::Interface::FDCheckPenaltyLinD(RCP<LINALG::SparseMatrix> lindmatrix
 
     AssembleDMG(*dmatrix, *mmatrix, *gvector);
     AssembleLM(*zvector);
-    
+
     dmatrix->Complete();
     mmatrix->Complete(*mdofrowmap_, *sdofrowmap_);
-    
+
     // compute new fcd vector
     dmatrix->Multiply(false, *zvector, *newfcd);
-    
+
     // compute deviation vector
     cout << "DEVIATION for S-NODE #" << gid << " DOF " << dof << endl;
-    
+
     cout << "newfcd: " << *newfcd << endl;
-    
+
     newfcd->Update(-1.0, *reffcd, 1.0);
     newfcd->Scale(1.0/delta);
-    
+
     cout << "devfcd: " << *newfcd << endl;
-    
+
     // print deviation
     // loop over all slave dofs
     for( int k=0; k<sdofrowmap_->NumMyElements(); ++k )
-    {       
+    {
         int kdof = sdofrowmap_->GID(k);
-        
+
         // print comparision
         if( (*newfcd)[k] ) // only if deviation present
         {
           cout << "(" << kdof << "," << dof << ") : devfd=" << (*newfcd)[k];
-          
+
           int length = sdofrowmap_->NumMyElements();
           int numentries = 0;
           vector<double> nodevalues(length,0);
@@ -6832,20 +6832,20 @@ void CONTACT::Interface::FDCheckPenaltyLinD(RCP<LINALG::SparseMatrix> lindmatrix
           vector<int> nodeentries(length,0);
           int* nodeids = &(nodeentries)[0];
           lindmatrix->EpetraMatrix()->ExtractGlobalRowCopy(kdof, length, numentries, nodevals, nodeids);
-        
+
           if( numentries )
-          { 
+          {
             vector<int>::iterator result = find( nodeentries.begin(), nodeentries.end(), dof );
 
             if( result != nodeentries.end() )
-            {                
+            {
               // dirty hack
               for( int m=0; m<(int)nodevalues.size(); m++)
               {
                 if( nodeentries[m] == *result )
                 {
                   double dev = (*newfcd)[k] - nodevalues[m];
-                
+
                   cout << " lind=" << nodevalues[m] << " DEVIATION: " << dev;
                   if( abs(dev) > 1e-5 )
                   {
@@ -6855,7 +6855,7 @@ void CONTACT::Interface::FDCheckPenaltyLinD(RCP<LINALG::SparseMatrix> lindmatrix
                   }
                 }
               }
-              
+
             }
             else
             {
@@ -6870,7 +6870,7 @@ void CONTACT::Interface::FDCheckPenaltyLinD(RCP<LINALG::SparseMatrix> lindmatrix
             cout << "   NOT FOUND  ##### WARNING #####";
             w++;
           }
-          
+
           cout << endl;
         }
         else
@@ -6886,10 +6886,10 @@ void CONTACT::Interface::FDCheckPenaltyLinD(RCP<LINALG::SparseMatrix> lindmatrix
     {
       snode->xspatial()[1] -= delta;
     }
-    
+
     cout << " **************** GENERATED " << w << " WARNINGS IN TOTAL ********************"<< endl;
   }
-  
+
   // back to normal...
 
   // Initialize
@@ -6905,13 +6905,13 @@ void CONTACT::Interface::FDCheckPenaltyLinD(RCP<LINALG::SparseMatrix> lindmatrix
 
   // *******************************************************************
   // contents of Evaluate()
-  // *******************************************************************    
+  // *******************************************************************
   Evaluate();
   bool isincontact, activesetchange = false;
   AssembleRegNormalForces(isincontact, activesetchange);
 
-  return;  
-  
+  return;
+
 }
 
 /*----------------------------------------------------------------------*
@@ -6919,24 +6919,24 @@ void CONTACT::Interface::FDCheckPenaltyLinD(RCP<LINALG::SparseMatrix> lindmatrix
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix, RCP<Epetra_Vector> reffcm)
 {
-  // HERE WE ASSUME ALPHA_F == 0 (STATIC) !!! 
-  
+  // HERE WE ASSUME ALPHA_F == 0 (STATIC) !!!
+
   // get out of here if not participating in interface
   if (!lComm())
     return;
-  
+
   cout << setprecision(14);
-  
+
   cout << "FINITE DIFFERENCE SOLUTION" << endl;
-  
+
   // global loop to apply FD scheme to all SLAVE dofs (=2*nodes)
   for (int fd=0; fd<2*snodefullmap_->NumMyElements(); ++fd)
   {
     int w = 0;
-    
+
     // create storage
     RCP<Epetra_Vector> newfcm = rcp( new Epetra_Vector(*mdofrowmap_));
-    
+
     // Initialize
     Initialize();
 
@@ -6946,11 +6946,11 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
     CNode* snode = static_cast<CNode*>(node);
-    
+
     cout << "\nBuilding FD for Slave Node: " << snode->Id() << " DOF: " << snode->Dofs()[fd%2] << endl;
 
-    int dof = snode->Dofs()[fd%2]; // current modified dof 
-    
+    int dof = snode->Dofs()[fd%2]; // current modified dof
+
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
     if (fd%2==0)
@@ -6974,7 +6974,7 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
     Evaluate();
     bool isincontact, activesetchange = false;
     AssembleRegNormalForces(isincontact, activesetchange);
-    
+
     RCP<LINALG::SparseMatrix> dmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
     RCP<LINALG::SparseMatrix> mmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
     RCP<Epetra_Vector> gvector = LINALG::CreateVector(*snoderowmap_, true);
@@ -6982,35 +6982,35 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
 
     AssembleDMG(*dmatrix, *mmatrix, *gvector);
     AssembleLM(*zvector);
-    
+
     dmatrix->Complete();
     mmatrix->Complete(*mdofrowmap_, *sdofrowmap_);
-    
+
     // compute new fcm vector
     mmatrix->Multiply(true, *zvector, *newfcm);
     newfcm->Scale(-1.0);
-    
+
     // compute deviation vector
     cout << "DEVIATION for S-NODE #" << gid << " DOF " << dof << endl;
-    
+
     cout << "newfcm: " << *newfcm << endl;
-    
+
     newfcm->Update(-1.0, *reffcm, 1.0);
     newfcm->Scale(1.0/delta);
-    
+
     cout << "devfcm: " << *newfcm << endl;
-    
+
     // print deviation
     // loop over all slave dofs
     for( int k=0; k<mdofrowmap_->NumMyElements(); ++k )
-    {       
+    {
         int kdof = mdofrowmap_->GID(k);
-        
+
         // print comparision
         if( (*newfcm)[k] ) // only if deviation present
         {
           cout << "(" << kdof << "," << dof << ") : devfm=" << (*newfcm)[k];
-          
+
           int length = mdofrowmap_->NumMyElements();
           int numentries = 0;
           vector<double> nodevalues(length,0);
@@ -7018,20 +7018,20 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
           vector<int> nodeentries(length,0);
           int* nodeids = &(nodeentries)[0];
           linmmatrix->EpetraMatrix()->ExtractGlobalRowCopy(kdof, length, numentries, nodevals, nodeids);
-        
+
           if( numentries )
-          { 
+          {
             vector<int>::iterator result = find( nodeentries.begin(), nodeentries.end(), dof );
 
             if( result != nodeentries.end() )
-            {                
+            {
               // dirty hack
               for( int m=0; m<(int)nodevalues.size(); m++)
               {
                 if( nodeentries[m] == *result )
                 {
                   double dev = (*newfcm)[k] - nodevalues[m];
-                
+
                   cout << " linm=" << nodevalues[m] << " DEVIATION: " << dev;
                   if( abs(dev) > 1e-5 )
                   {
@@ -7041,7 +7041,7 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
                   }
                 }
               }
-              
+
             }
             else
             {
@@ -7056,7 +7056,7 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
             cout << "   NOT FOUND  ##### WARNING #####";
             w++;
           }
-          
+
           cout << endl;
         }
         else
@@ -7072,18 +7072,18 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
     {
       snode->xspatial()[1] -= delta;
     }
-    
+
     cout << " **************** GENERATED " << w << " WARNINGS IN TOTAL ********************"<< endl;
   }
-  
+
   // global loop to apply FD scheme to all MASTER dofs (=2*nodes)
   for (int fd=0; fd<2*mnodefullmap_->NumMyElements(); ++fd)
   {
     int w = 0;
-    
+
     // create storage
     RCP<Epetra_Vector> newfcm = rcp( new Epetra_Vector(*mdofrowmap_));
-    
+
     // Initialize
     Initialize();
 
@@ -7093,11 +7093,11 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
     if (!node)
       dserror("ERROR: Cannot find master node with gid %",gid);
     CNode* mnode = static_cast<CNode*>(node);
-    
+
     cout << "\nBuilding FD for Master Node: " << mnode->Id() << " DOF: " << mnode->Dofs()[fd%2] << endl;
 
-    int dof = mnode->Dofs()[fd%2]; // current modified dof 
-    
+    int dof = mnode->Dofs()[fd%2]; // current modified dof
+
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
     if (fd%2==0)
@@ -7121,7 +7121,7 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
     Evaluate();
     bool isincontact, activesetchange = false;
     AssembleRegNormalForces(isincontact, activesetchange);
-    
+
     RCP<LINALG::SparseMatrix> dmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
     RCP<LINALG::SparseMatrix> mmatrix = rcp( new LINALG::SparseMatrix(*sdofrowmap_,100));
     RCP<Epetra_Vector> gvector = LINALG::CreateVector(*snoderowmap_, true);
@@ -7129,35 +7129,35 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
 
     AssembleDMG(*dmatrix, *mmatrix, *gvector);
     AssembleLM(*zvector);
-    
+
     dmatrix->Complete();
     mmatrix->Complete(*mdofrowmap_, *sdofrowmap_);
-    
+
     // compute new fcm vector
     mmatrix->Multiply(true, *zvector, *newfcm);
     newfcm->Scale(1.0);
-    
+
     // compute deviation vector
     cout << "DEVIATION for M-NODE #" << gid << " DOF " << dof << endl;
-    
+
     cout << "newfcm: " << *newfcm << endl;
-    
+
     newfcm->Update(-1.0, *reffcm, 1.0);
     newfcm->Scale(-1.0/delta);
-    
+
     cout << "devfcm: " << *newfcm << endl;
-    
+
     // print deviation
     // loop over all slave dofs
     for( int k=0; k<mdofrowmap_->NumMyElements(); ++k )
-    {       
+    {
         int kdof = mdofrowmap_->GID(k);
-        
+
         // print comparision
         if( (*newfcm)[k] ) // only if deviation present
         {
           cout << "(" << kdof << "," << dof << ") : devfm=" << (*newfcm)[k];
-          
+
           int length = mdofrowmap_->NumMyElements();
           int numentries = 0;
           vector<double> nodevalues(length,0);
@@ -7165,20 +7165,20 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
           vector<int> nodeentries(length,0);
           int* nodeids = &(nodeentries)[0];
           linmmatrix->EpetraMatrix()->ExtractGlobalRowCopy(kdof, length, numentries, nodevals, nodeids);
-        
+
           if( numentries )
-          { 
+          {
             vector<int>::iterator result = find( nodeentries.begin(), nodeentries.end(), dof );
 
             if( result != nodeentries.end() )
-            {                
+            {
               // dirty hack
               for( int m=0; m<(int)nodevalues.size(); m++)
               {
                 if( nodeentries[m] == *result )
                 {
                   double dev = (*newfcm)[k] - nodevalues[m];
-                
+
                   cout << " linm=" << nodevalues[m] << " DEVIATION: " << dev;
                   if( abs(dev) > 1e-5 )
                   {
@@ -7188,7 +7188,7 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
                   }
                 }
               }
-              
+
             }
             else
             {
@@ -7203,7 +7203,7 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
             cout << "   NOT FOUND  ##### WARNING #####";
             w++;
           }
-          
+
           cout << endl;
         }
         else
@@ -7219,10 +7219,10 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
     {
       mnode->xspatial()[1] -= delta;
     }
-    
+
     cout << " **************** GENERATED " << w << " WARNINGS IN TOTAL ********************"<< endl;
   }
-  
+
   // back to normal...
 
   // Initialize
@@ -7238,13 +7238,13 @@ void CONTACT::Interface::FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix
 
   // *******************************************************************
   // contents of Evaluate()
-  // *******************************************************************    
+  // *******************************************************************
   Evaluate();
   bool isincontact, activesetchange = false;
   AssembleRegNormalForces(isincontact, activesetchange);
 
-  return;  
-  
+  return;
+
 }
 
 #endif  // #ifdef CCADISCRET

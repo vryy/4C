@@ -192,7 +192,7 @@ bool CONTACT::Coupling3d::EvaluateCoupling()
   // do polygon clipping (NEW version)
   bool clip = PolygonClippingConvexHull(SlaveVertices(),MasterVertices(),Clip(),tol);
   int clipsize = (int)(Clip().size());
-  
+
   // within polygon clipping we may have performed a second rough check
   // if the two elements are really "near" (NOTE: this has only been done
   // if problems occured within polygon clipping, i.e. the projected master
@@ -261,13 +261,13 @@ bool CONTACT::Coupling3d::RoughCheckNodes()
   int nnodes = MasterIntElement().NumNode();
   DRT::Node** mynodes = MasterIntElement().Nodes();
   if (!mynodes) dserror("ERROR: RoughCheckNodes: Null pointer!");
-  
+
   // prepare check
   bool near = false;
   double sme = SlaveElement().MaxEdgeSize();
   double mme = MasterElement().MaxEdgeSize();
   double limit = 0.3 * max(sme,mme);
-  
+
   for (int i=0;i<nnodes;++i)
   {
     CNode* mycnode = static_cast<CNode*> (mynodes[i]);
@@ -419,10 +419,10 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
   //**********************************************************************
   dserror("ERROR: PolygonClipping outdated, use PolygonClippingConvexHull instead!");
   //**********************************************************************
-  
+
   // choose output
   bool out = false;
-  
+
   //**********************************************************************
   // STEP1: Input check
   // - input polygons must consist of min. 3 vertices each
@@ -454,7 +454,7 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
     cout << "Center 1: " << center1[0] << " " << center1[1] << " " << center1[2] << endl;
     cout << "Center 2: " << center2[0] << " " << center2[1] << " " << center2[2] << endl;
   }
-  
+
   // then we compute the counter-clockwise plane normal
   double diff1[3] = {0.0, 0.0, 0.0};
   double edge1[3] = {0.0, 0.0, 0.0};
@@ -564,12 +564,12 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
     for (int i=0;i<(int)poly1.size();++i)
       cout << "\nVertex " << i << ":\t" << scientific << poly1[i].Coord()[0]
            << "\t" << poly1[i].Coord()[1] << "\t" << poly1[i].Coord()[2];
-  
+
     cout << "\nInput Poylgon 2:";
     for (int i=0;i<(int)poly2.size();++i)
       cout << "\nVertex " << i << ":\t" << scientific << poly2[i].Coord()[0]
            << "\t" << poly2[i].Coord()[1] << "\t" << poly2[i].Coord()[2];
-  
+
     cout << endl << endl;
   }
 
@@ -821,7 +821,7 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
             cout << "On Polygon 1: " << ip[0] << " " << ip[1] << " " << ip[2] << endl;
             cout << "On Polygon 2: " << iq[0] << " " << iq[1] << " " << iq[2] << endl;
           }
-          
+
           // generate vectors of underlying node ids for lineclip (2x slave, 2x master)
           vector<int> lcids(4);
           lcids[0] = (int)(poly1[i].Nodeids()[0]);
@@ -1147,7 +1147,7 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
         cout << "Intersec1: " << i << " " << intersec1[i].Coord()[0] << " " << intersec1[i].Coord()[1] << " " << intersec1[i].Coord()[2];
         cout << " EntryExit: " << intersec1[i].EntryExit() << endl;
       }
-  
+
       //cout << endl;
       for (int i=0;i<(int)intersec2.size();++i)
       {
@@ -1199,7 +1199,7 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
 
       // check length of result polygon list
       if ((int)respoly.size()>8) dserror("ERROR: Length of result polygon > 8! Something went wrong!");
-      
+
     } while (current!=&intersec1[0] && current!=&intersec2[0]);
 
     // check if last entry is identical to first entry
@@ -1327,7 +1327,7 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
         cout << "\nVertex " << i << ":\t" << respoly[i].Coord()[0] << "\t" << respoly[i].Coord()[1] << "\t" << respoly[i].Coord()[2];
       cout << endl;
     }
-    
+
     // check if result polygon is convex
     // a polygon is convex if the scalar product of an edge normal and the
     // next edge direction is negative for all edges
@@ -1359,7 +1359,7 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
       if (check>0) dserror("ERROR: Result polygon not convex!");
     }
   }
-  
+
   if (out)
   {
     // **********************************************************************
@@ -1380,13 +1380,13 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
       dserror("Gmsh output implemented for a maximum of 9.999 clip polygons");
     filename << gmshcount << ".pos";
     gmshcount++;
-  
+
     // do output to file in c-style
     FILE* fp = NULL;
     fp = fopen(filename.str().c_str(), "w");
     std::stringstream gmshfilecontent;
     gmshfilecontent << "View \" Clipping \" {" << endl;
-  
+
     for (int i=0;i<(int)poly1.size();++i)
     {
       if (i!=(int)poly1.size()-1)
@@ -1402,12 +1402,12 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
                                  << poly1[i].Coord()[2] << "," << poly1[0].Coord()[0] << "," << poly1[0].Coord()[1] << ","
                                  << poly1[0].Coord()[2] << ")";
         gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
-  
+
       }
       gmshfilecontent << "T3(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << "," << 17 << ")";
       gmshfilecontent << "{" << "S" << i << "};" << endl;
     }
-  
+
     for (int i=0;i<(int)poly2.size();++i)
     {
       if (i!=(int)poly2.size()-1)
@@ -1423,12 +1423,12 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
                                  << poly2[i].Coord()[2] << "," << poly2[0].Coord()[0] << "," << poly2[0].Coord()[1] << ","
                                  << poly2[0].Coord()[2] << ")";
         gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
-  
+
       }
       gmshfilecontent << "T3(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << "," << 17 << ")";
       gmshfilecontent << "{" << "M" << i << "};" << endl;
     }
-  
+
     for (int i=0;i<(int)respoly.size();++i)
     {
       if (i!=(int)respoly.size()-1)
@@ -1444,12 +1444,12 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
                                  << respoly[i].Coord()[2] << "," << respoly[0].Coord()[0] << "," << respoly[0].Coord()[1] << ","
                                  << respoly[0].Coord()[2] << ")";
         gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
-  
+
       }
       gmshfilecontent << "T3(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << "," << 27 << ")";
       gmshfilecontent << "{" << "R" << i << "};" << endl;
     }
-  
+
   //  for (int i=0;i<(int)intersec1.size();++i)
   //  {
   //    gmshfilecontent << "T3(" << scientific << intersec1[i].Coord()[0] << "," << intersec1[i].Coord()[1] << "," << intersec1[i].Coord()[2] << "," << 17 << ")";
@@ -1458,9 +1458,9 @@ void CONTACT::Coupling3d::PolygonClipping(vector<Vertex>& poly1,
   //    else if (intersec1[i].EntryExit()==true && intersec2[i].EntryExit()==false) gmshfilecontent << "{" << "SEMX" << "};" << endl;
   //    else gmshfilecontent << "{" << "SXMX" << "};" << endl;
   //  }
-  
+
     gmshfilecontent << "};" << endl;
-  
+
     // move everything to gmsh post-processing file and close it
     fprintf(fp,gmshfilecontent.str().c_str());
     fclose(fp);
@@ -1479,7 +1479,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
 {
   // choose output
   bool out = false;
-  
+
   //**********************************************************************
   // STEP1: Input check
   // - input polygons must consist of min. 3 vertices each
@@ -1511,7 +1511,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
     cout << "Center 1: " << center1[0] << " " << center1[1] << " " << center1[2] << endl;
     cout << "Center 2: " << center2[0] << " " << center2[1] << " " << center2[2] << endl;
   }
-  
+
   // then we compute the counter-clockwise plane normal
   double diff1[3] = {0.0, 0.0, 0.0};
   double edge1[3] = {0.0, 0.0, 0.0};
@@ -1611,7 +1611,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
 
     // check scalar product
     double check = n[0]*nextedge[0]+n[1]*nextedge[1]+n[2]*nextedge[2];
-    if (check>0) 
+    if (check>0)
     {
       // this may happen, so do NOT throw an error immediately
       // but instead check if the two elements to be clipped are
@@ -1619,7 +1619,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
       // dserror, if not, simply continue with the next pair!
       cout << "***WARNING*** Input polygon 2 not convex!" << endl;
       bool nearcheck = RoughCheckNodes();
-      
+
       if (nearcheck) dserror("ERROR: Input polygon 2 not convex, but close pair!");
       else return false;
     }
@@ -1632,12 +1632,12 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
     for (int i=0;i<(int)poly1.size();++i)
       cout << "\nVertex " << i << ":\t" << scientific << poly1[i].Coord()[0]
            << "\t" << poly1[i].Coord()[1] << "\t" << poly1[i].Coord()[2];
-  
+
     cout << "\nInput Poylgon 2:";
     for (int i=0;i<(int)poly2.size();++i)
       cout << "\nVertex " << i << ":\t" << scientific << poly2[i].Coord()[0]
            << "\t" << poly2[i].Coord()[1] << "\t" << poly2[i].Coord()[2];
-  
+
     cout << endl << endl;
   }
 
@@ -1779,7 +1779,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
             cout << "On Polygon 1: " << ip[0] << " " << ip[1] << " " << ip[2] << endl;
             cout << "On Polygon 2: " << iq[0] << " " << iq[1] << " " << iq[2] << endl;
           }
-          
+
           // generate vectors of underlying node ids for lineclip (2x slave, 2x master)
           vector<int> lcids(4);
           lcids[0] = (int)(poly1[i].Nodeids()[0]);
@@ -1793,7 +1793,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
       }
     }
   }
- 
+
   if (out)
   {
     // check intersection points
@@ -1808,19 +1808,19 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
            << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << endl << endl;
     }
   }
-    
+
   //**********************************************************************
   // STEP4: Collapse line intersections
   // - this yields a collapsed vector of intersection vertices
   // - those intersection points close to poly1/poly2 vertices are deleted
   //**********************************************************************
   vector<Vertex> collintersec;
-  
+
   for (int i=0;i<(int)intersec.size();++i)
   {
     // keep track of comparisons
     bool close = false;
-    
+
     // check against all poly1 (slave) points
     for (int j=0;j<(int)poly1.size();++j)
     {
@@ -1828,7 +1828,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
       double diff[3] = {0.0, 0.0, 0.0};
       for (int k=0;k<3;++k) diff[k] = intersec[i].Coord()[k] - poly1[j].Coord()[k];
       double dist = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
-      
+
       // only keep intersection point if not close
       if (dist <= tol)
       {
@@ -1836,7 +1836,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
         break;
       }
     }
-    
+
     // do only if no close poly1 (slave) point found
     if (!close)
     {
@@ -1847,20 +1847,20 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
         double diff[3] = {0.0, 0.0, 0.0};
         for (int k=0;k<3;++k) diff[k] = intersec[i].Coord()[k] - poly2[j].Coord()[k];
         double dist = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
-        
+
         // only keep intersection point if not close
         if (dist <= tol)
         {
-          close = true;  
+          close = true;
           break;
         }
       }
     }
-    
+
     // keep intersection point only if not close to any poly1/poly2 point
     if (!close) collintersec.push_back(intersec[i]);
   }
-  
+
   if (out)
   {
     // check collapsed intersection points
@@ -1875,7 +1875,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
            << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << endl << endl;
     }
   }
-  
+
   //**********************************************************************
   // STEP5: Create points of convex hull
   // - check all poly1 points against all poly1/poly2 edges
@@ -1885,13 +1885,13 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
   // - as a result we obtain all points forming the convex hull
   //**********************************************************************
   vector<Vertex> convexhull;
-  
+
   //----------------------------------------------------check poly1 points
   for (int i=0;i<(int)poly1.size();++i)
   {
     // keep track of inside / outside status
     bool outside = false;
- 
+
     // check against all poly1 (slave) edges
     for (int j=0;j<(int)poly1.size();++j)
     {
@@ -1913,7 +1913,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
       for (int k=0;k<3;++k) n[k] /= ln;
 
       double dist = diff[0]*n[0]+diff[1]*n[1]+diff[2]*n[2];
-      
+
       // only keep point if not in outside halfspace
       if (dist > tol)
       {
@@ -1921,7 +1921,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
         break;
       }
     }
-    
+
     // do only if not already outside w.r.t. to a poly1 (slave) edge
     if (!outside)
     {
@@ -1946,7 +1946,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
         for (int k=0;k<3;++k) n[k] /= ln;
 
         double dist = diff[0]*n[0]+diff[1]*n[1]+diff[2]*n[2];
-        
+
         // only keep point if not in outside halfspace
         if (dist > tol)
         {
@@ -1955,17 +1955,17 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
         }
       }
     }
-    
+
     // only keep point if never in outside halfspace
     if (!outside) convexhull.push_back(poly1[i]);
   }
-  
+
   //----------------------------------------------------check poly2 points
   for (int i=0;i<(int)poly2.size();++i)
   {
     // keep track of inside / outside status
     bool outside = false;
- 
+
     // check against all poly1 (slave) edges
     for (int j=0;j<(int)poly1.size();++j)
     {
@@ -1987,7 +1987,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
       for (int k=0;k<3;++k) n[k] /= ln;
 
       double dist = diff[0]*n[0]+diff[1]*n[1]+diff[2]*n[2];
-      
+
       // only keep point if not in outside halfspace
       if (dist > tol)
       {
@@ -1995,7 +1995,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
         break;
       }
     }
-    
+
     // do only if not already outside w.r.t. to a poly1 (slave) edge
     if (!outside)
     {
@@ -2020,7 +2020,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
         for (int k=0;k<3;++k) n[k] /= ln;
 
         double dist = diff[0]*n[0]+diff[1]*n[1]+diff[2]*n[2];
-        
+
         // only keep point if not in outside halfspace
         if (dist > tol)
         {
@@ -2029,17 +2029,17 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
         }
       }
     }
-    
+
     // only keep point if never in outside halfspace
     if (!outside) convexhull.push_back(poly2[i]);
   }
-  
+
   //---------------------------------------------check collintersec points
   for (int i=0;i<(int)collintersec.size();++i)
   {
     // keep track of inside / outside status
     bool outside = false;
- 
+
     // check against all poly1 (slave) edges
     for (int j=0;j<(int)poly1.size();++j)
     {
@@ -2061,7 +2061,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
       for (int k=0;k<3;++k) n[k] /= ln;
 
       double dist = diff[0]*n[0]+diff[1]*n[1]+diff[2]*n[2];
-      
+
       // only keep point if not in outside halfspace
       if (dist > tol)
       {
@@ -2069,7 +2069,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
         break;
       }
     }
-    
+
     // do only if not already outside w.r.t. to a poly1 (slave) edge
     if (!outside)
     {
@@ -2094,7 +2094,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
         for (int k=0;k<3;++k) n[k] /= ln;
 
         double dist = diff[0]*n[0]+diff[1]*n[1]+diff[2]*n[2];
-        
+
         // only keep point if not in outside halfspace
         if (dist > tol)
         {
@@ -2103,11 +2103,11 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
         }
       }
     }
-    
+
     // only keep point if never in outside halfspace
     if (!outside) convexhull.push_back(collintersec[i]);
   }
-  
+
   if (out)
   {
     // check convex hull points
@@ -2119,7 +2119,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
       cout << "Type: " << testv.VType() << endl;
     }
   }
-  
+
   //**********************************************************************
   // STEP6: Collapse convex hull points
   // - this yields a collapsed vector of convex hull vertices
@@ -2129,30 +2129,30 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
   // - poly2 points close to poly1 vertices are deleted
   //**********************************************************************
   vector<Vertex> collconvexhull;
-  
+
   for (int i=0;i<(int)convexhull.size();++i)
   {
     // keep track of comparisons
     bool close = false;
-    
+
     // do not collapse poly1 (slave) points
     if (convexhull[i].VType()==CONTACT::Vertex::slave)
     {
       collconvexhull.push_back(convexhull[i]);
       continue;
     }
-    
+
     // check remaining poly2 (master) and intersec points against poly1 (slave) points
     for (int j=0;j<(int)convexhull.size();++j)
     {
       // only collapse with poly1 (slave) points
       if (convexhull[j].VType()!=CONTACT::Vertex::slave) continue;
-          
+
       // distance vector
       double diff[3] = {0.0, 0.0, 0.0};
       for (int k=0;k<3;++k) diff[k] = convexhull[i].Coord()[k] - convexhull[j].Coord()[k];
       double dist = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
-      
+
       // only keep point if not close
       if (dist <= tol)
       {
@@ -2160,14 +2160,14 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
         break;
       }
     }
-    
+
     // do not check poly2 (master) points
     if (convexhull[i].VType()==CONTACT::Vertex::projmaster)
     {
       if (!close) collconvexhull.push_back(convexhull[i]);
       continue;
     }
-        
+
     // check intersec points against poly2 (master) points
     if (!close && convexhull[i].VType()==CONTACT::Vertex::lineclip)
     {
@@ -2175,25 +2175,25 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
       {
         // only collapse with poly2 (master) points
         if (convexhull[j].VType()!=CONTACT::Vertex::projmaster) continue;
-              
+
         // distance vector
         double diff[3] = {0.0, 0.0, 0.0};
         for (int k=0;k<3;++k) diff[k] = convexhull[i].Coord()[k] - convexhull[j].Coord()[k];
         double dist = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
-        
+
         // only keep intersection point if not close
         if (dist <= tol)
         {
-          close = true;  
+          close = true;
           break;
         }
       }
     }
-    
+
     // keep intersection point only if not collapsed
     if (!close) collconvexhull.push_back(convexhull[i]);
   }
-  
+
   if (out)
   {
     // check collapsed convex hull points
@@ -2205,7 +2205,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
       cout << "Type: " << testv.VType() << endl;
     }
   }
-  
+
   //**********************************************************************
   // STEP7: Transform convex hull points to auxiliary plane
   // - x* = A * (x - p1) where p1 = translation, A = rotation
@@ -2213,7 +2213,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
   //**********************************************************************
   // number of points removed from convex hull (neede later)
   int removed = 0;
-  
+
   // only continue if more than two points remaining
   if ((int)collconvexhull.size() < 3)
   {
@@ -2238,53 +2238,53 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
                           Auxn()[0]*newxaxis[1]-Auxn()[1]*newxaxis[0]};
     double lnewxaxis = sqrt(newxaxis[0]*newxaxis[0]+newxaxis[1]*newxaxis[1]+newxaxis[2]*newxaxis[2]);
     double lnewyaxis = sqrt(newyaxis[0]*newyaxis[0]+newyaxis[1]*newyaxis[1]+newyaxis[2]*newyaxis[2]);
-    
+
     // normalize
     for (int k=0;k<3;++k)
     {
       newxaxis[k] /= lnewxaxis;
       newyaxis[k] /= lnewyaxis;
     }
-    
+
     // trafo matrix
     LINALG::Matrix<3,3> trafo;
     for (int k=0;k<3;++k)
     {
       trafo(0,k) = newxaxis[k];
       trafo(1,k) = newyaxis[k];
-      trafo(2,k) = Auxn()[k]; 
+      trafo(2,k) = Auxn()[k];
     }
-    
+
     // temporary storage for transformed points
     int np = (int)collconvexhull.size();
     Epetra_SerialDenseMatrix transformed(2,np);
-        
+
     // transform each convex hull point
     for (int i=0;i<np;++i)
     {
       double newpoint[3] = {0.0, 0.0, 0.0};
-      
+
       for (int j=0;j<3;++j)
         for (int k=0;k<3;++k) newpoint[j] += trafo(j,k) * (collconvexhull[i].Coord()[k] - newzero[k]);
- 
+
       if (abs(newpoint[2]) > tol) dserror("ERROR: Transformation to aux. plane failed: z!=0 !");
       transformed(0,i) = newpoint[0];
       transformed(1,i) = newpoint[1];
     }
- 
+
     //**********************************************************************
     // STEP8: Sort convex hull points to obtain final clip polygon
     // - this yields the final clip polygon
     // - sanity of the generated output is checked
     //**********************************************************************
-    
+
     // (1) Find point with smallest x-value
     // (if more than 1 point with identical x-value exists, choose the one with the smallest y-value)
-    
+
     // initialize starting point
     int startindex = 0;
     double startpoint[2] = {transformed(0,0), transformed(1,0)};
-    
+
     for (int i=1;i<np;++i)
     {
       if (transformed(0,i) < startpoint[0])
@@ -2306,31 +2306,31 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
         // do nothing: starting point did not change
       }
     }
-    
+
     if (out) cout << "Start of convex hull: Index " << startindex << "\t" << startpoint[0] << "\t" << startpoint[1] << endl;
-     
+
     // (2) Sort remaining points ascending w.r.t their angle with the y-axis
     // (if more than 1 point with identical angle exists, sort ascending w.r.t. their y-value)
     vector<double> cotangle(0);
     vector<double> yvalues(0);
     vector<int> sorted(0);
-    
+
     for (int i=0;i<np;++i)
     {
       // do nothing for starting point
       if (i==startindex) continue;
-      
+
       // compute angle and store
       double xdiff = transformed(0,i) - startpoint[0];
       double ydiff = transformed(1,i) - startpoint[1];
-      
+
       if (xdiff < 0) dserror("ERROR: Found point with x < x_start for convex hull!");
       if (xdiff < tol) xdiff=tol;
-      
+
       cotangle.push_back(ydiff/xdiff);
       sorted.push_back(i);
     }
-    
+
     if (out)
     {
       cout << "Unsorted convex hull:\n";
@@ -2338,19 +2338,19 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
       for (int i=0;i<np-1;++i)
         cout << "Index " << sorted[i] << "\t" << transformed(0,sorted[i]) << "\t" << transformed(1,sorted[i]) << "\t" << cotangle[sorted[i]] << endl;
     }
-    
+
     // check if sizes are correct
-    if ((int)cotangle.size() != np-1) dserror("ERROR: Size went wrong for cot angle!");   
-    
+    if ((int)cotangle.size() != np-1) dserror("ERROR: Size went wrong for cot angle!");
+
     // now sort descending w.r.t cotangle = ascending w.r.t angle
     Sort(&cotangle[0],np-1,&sorted[0]);
     std::reverse(cotangle.begin(), cotangle.end());
     std::reverse(sorted.begin(), sorted.end());
-    
+
     // get associated y-values
     for (int i=0;i<np-1;++i)
       yvalues.push_back(transformed(1,sorted[i]));
-    
+
     // sort list again where two angles are identical
     for (int i=0;i<np-2;++i)
       if (cotangle[i]==cotangle[i+1])
@@ -2360,10 +2360,10 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
           Swap(yvalues[i],yvalues[i+1]);
           Swap(sorted[i],sorted[i+1]);
         }
-    
+
     // check whether 3 points with identical angle exist (without starting point)
     int count = 0;
-    
+
     for (int i=0;i<np-1;++i)
     {
       for (int j=0;j<np-1;++j)
@@ -2371,12 +2371,12 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
         // check if cotangle is identical
         if (cotangle[j]==cotangle[i]) count += 1;
       }
-      
+
       // stop if 3 identical values found
       if (count >= 3) dserror("ERROR: 3 points on one line in convex hull!");
       else            count = 0;
     }
-    
+
     if (out)
     {
       cout << "Sorted convex hull:\n";
@@ -2384,24 +2384,24 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
       for (int i=0;i<np-1;++i)
         cout << "Index " << sorted[i] << "\t" << transformed(0,sorted[i]) << "\t" << transformed(1,sorted[i]) << "\t" << cotangle[sorted[i]] << endl;
     }
-    
+
     // (3) Go through sorted list of points
     // (keep adding points as long as the last 3 points rotate clockwise)
     // (if 3 points rotate counter-clockwise, do NOT add current point and continue)
-    
+
     // always push pack starting point
     Vertex* current = &collconvexhull[startindex];
     respoly.push_back(Vertex(current->Coord(),current->VType(),current->Nodeids(),NULL,NULL,false,false,NULL,-1.0));
-    
+
     // boolean indicating how many points are removed
     removed = 0;
-    
+
     // go through sorted list and check for clockwise rotation
     for (int i=0;i<np-1;++i)
     {
       double edge1[2] = {0.0, 0.0};
       double edge2[2] = {0.0, 0.0};
-      
+
       // first triple
       if (i==0)
       {
@@ -2410,7 +2410,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
         edge2[0] = transformed(0,sorted[1]) - transformed(0,sorted[0]);
         edge2[1] = transformed(1,sorted[1]) - transformed(1,sorted[0]);
       }
-      
+
       // standard case
       else if (i<np-2)
       {
@@ -2419,7 +2419,7 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
         edge2[0] = transformed(0,sorted[i+1]) - transformed(0,sorted[i]);
         edge2[1] = transformed(1,sorted[i+1]) - transformed(1,sorted[i]);
       }
-      
+
       // last triple
       else /* if i = np-1 */
       {
@@ -2428,13 +2428,13 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
         edge2[0] = startpoint[0] - transformed(0,sorted[i]);
         edge2[1] = startpoint[1] - transformed(1,sorted[i]);
       }
-      
+
       // check for clockwise rotation
       double cw = edge1[0]*edge2[1]-edge1[1]*edge2[0];
-      
+
       if (out) cout << "Check triple around point " << sorted[i] << endl;
       if (out) cout << "cw: " << cw << endl;
-      
+
       // add point to convex hull if clockwise triple
       // increas counter "removed" if counter-clockwise triple
       if (cw <= 0)
@@ -2445,13 +2445,13 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
       else
         removed++;
     }
-    
+
     // (4) Keep in mind that our collconvexhull should already BE the convex hull
     // (thus only sorting should be necessary, but no point should have to be removed in (3))
     if (removed>0)
       cout << "***WARNING*** In total, " << removed << " points removed from convex hull!" << endl;
   }
-  
+
   // **********************************************************************
   // STEP9: Result visualization with GMSH
   // - plot the two input polygons and their vertex numbering
@@ -2472,13 +2472,13 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
       dserror("Gmsh output implemented for a maximum of 9.999 clip polygons");
     filename << gmshcount << ".pos";
     gmshcount++;
-  
+
     // do output to file in c-style
     FILE* fp = NULL;
     fp = fopen(filename.str().c_str(), "w");
     std::stringstream gmshfilecontent;
     gmshfilecontent << "View \" Clipping \" {" << endl;
-  
+
     for (int i=0;i<(int)poly1.size();++i)
     {
       if (i!=(int)poly1.size()-1)
@@ -2494,12 +2494,12 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
                                  << poly1[i].Coord()[2] << "," << poly1[0].Coord()[0] << "," << poly1[0].Coord()[1] << ","
                                  << poly1[0].Coord()[2] << ")";
         gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
-  
+
       }
       gmshfilecontent << "T3(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << "," << 17 << ")";
       gmshfilecontent << "{" << "S" << i << "};" << endl;
     }
-  
+
     for (int i=0;i<(int)poly2.size();++i)
     {
       if (i!=(int)poly2.size()-1)
@@ -2515,12 +2515,12 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
                                  << poly2[i].Coord()[2] << "," << poly2[0].Coord()[0] << "," << poly2[0].Coord()[1] << ","
                                  << poly2[0].Coord()[2] << ")";
         gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
-  
+
       }
       gmshfilecontent << "T3(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << "," << 17 << ")";
       gmshfilecontent << "{" << "M" << i << "};" << endl;
     }
-    
+
     for (int i=0;i<(int)respoly.size();++i)
     {
       if (i!=(int)respoly.size()-1)
@@ -2536,20 +2536,20 @@ bool CONTACT::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
                                  << respoly[i].Coord()[2] << "," << respoly[0].Coord()[0] << "," << respoly[0].Coord()[1] << ","
                                  << respoly[0].Coord()[2] << ")";
         gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
-  
+
       }
       gmshfilecontent << "T3(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << "," << 27 << ")";
       gmshfilecontent << "{" << "R" << i << "};" << endl;
     }
-    
+
     gmshfilecontent << "};" << endl;
-  
+
     // move everything to gmsh post-processing file and close it
     fprintf(fp,gmshfilecontent.str().c_str());
     fclose(fp);
   }
 
-  return true;  
+  return true;
 }
 
 /*----------------------------------------------------------------------*
@@ -3135,21 +3135,21 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(Vertex& currv,
     lmatrix(1,0) += sderiv(z,0) * snode->xspatial()[1];
     lmatrix(2,0) += sderiv(z,0) * snode->xspatial()[2];
 
-    lmatrix(0,0) += alpha * sderiv(z,0) * snode->n()[0];
-    lmatrix(1,0) += alpha * sderiv(z,0) * snode->n()[1];
-    lmatrix(2,0) += alpha * sderiv(z,0) * snode->n()[2];
+    lmatrix(0,0) += alpha * sderiv(z,0) * snode->GetData().n()[0];
+    lmatrix(1,0) += alpha * sderiv(z,0) * snode->GetData().n()[1];
+    lmatrix(2,0) += alpha * sderiv(z,0) * snode->GetData().n()[2];
 
     lmatrix(0,1) += sderiv(z,1) * snode->xspatial()[0];
     lmatrix(1,1) += sderiv(z,1) * snode->xspatial()[1];
     lmatrix(2,1) += sderiv(z,1) * snode->xspatial()[2];
 
-    lmatrix(0,1) += alpha * sderiv(z,1) * snode->n()[0];
-    lmatrix(1,1) += alpha * sderiv(z,1) * snode->n()[1];
-    lmatrix(2,1) += alpha * sderiv(z,1) * snode->n()[2];
+    lmatrix(0,1) += alpha * sderiv(z,1) * snode->GetData().n()[0];
+    lmatrix(1,1) += alpha * sderiv(z,1) * snode->GetData().n()[1];
+    lmatrix(2,1) += alpha * sderiv(z,1) * snode->GetData().n()[2];
 
-    lmatrix(0,2) += sval[z] * snode->n()[0];
-    lmatrix(1,2) += sval[z] * snode->n()[1];
-    lmatrix(2,2) += sval[z] * snode->n()[2];
+    lmatrix(0,2) += sval[z] * snode->GetData().n()[0];
+    lmatrix(1,2) += sval[z] * snode->GetData().n()[1];
+    lmatrix(2,2) += sval[z] * snode->GetData().n()[2];
   }
 
   // get inverse of the 3x3 matrix L (in place)
@@ -3187,7 +3187,7 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(Vertex& currv,
     currlin[1][snode->Dofs()[2]] -= sval[z] * lmatrix(1,2);
 
     // get nodal normal derivative maps (x,y and z components)
-    vector<map<int,double> >& derivn = snode->GetDerivN();
+    vector<map<int,double> >& derivn = snode->GetData().GetDerivN();
 
     for (CI p=derivn[0].begin();p!=derivn[0].end();++p)
     {
@@ -3839,11 +3839,11 @@ mintele_(mintele)
   // 3D quadratic coupling only for aux. plane case
   if (!CouplingInAuxPlane())
     dserror("ERROR: Coupling3dQuad only for auxiliary plane case!");
-  
+
   //  3D quadratic coupling only for quadratic ansatz type
   if (!Quad())
     dserror("ERROR: Coupling3dQuad called for non-quadratic ansatz!");
-  
+
   return;
 }
 

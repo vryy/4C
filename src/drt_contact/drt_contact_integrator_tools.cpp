@@ -182,9 +182,9 @@ void CONTACT::Integrator::IntegrateDerivCell3D(
     for (int i=0;i<nrow;++i)
     {
       CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-      gpn[0]+=sval[i]*mycnode->n()[0];
-      gpn[1]+=sval[i]*mycnode->n()[1];
-      gpn[2]+=sval[i]*mycnode->n()[2];
+      gpn[0]+=sval[i]*mycnode->GetData().n()[0];
+      gpn[1]+=sval[i]*mycnode->GetData().n()[1];
+      gpn[2]+=sval[i]*mycnode->GetData().n()[2];
 
       sgpx[0]+=sval[i]*scoord(0,i);
       sgpx[1]+=sval[i]*scoord(1,i);
@@ -300,9 +300,9 @@ void CONTACT::Integrator::IntegrateDerivCell3D(
 
     for (int i=0;i<nrow;++i)
     {
-      map<int,double>& dmap_nxsl_i = scnodes[i]->GetDerivN()[0];
-      map<int,double>& dmap_nysl_i = scnodes[i]->GetDerivN()[1];
-      map<int,double>& dmap_nzsl_i = scnodes[i]->GetDerivN()[2];
+      map<int,double>& dmap_nxsl_i = scnodes[i]->GetData().GetDerivN()[0];
+      map<int,double>& dmap_nysl_i = scnodes[i]->GetData().GetDerivN()[1];
+      map<int,double>& dmap_nzsl_i = scnodes[i]->GetData().GetDerivN()[2];
 
       for (CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
         dmap_nxsl_gp[p->first] += sval[i]*(p->second);
@@ -313,21 +313,21 @@ void CONTACT::Integrator::IntegrateDerivCell3D(
 
       for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
       {
-        double valx =  sderiv(i,0)*scnodes[i]->n()[0];
+        double valx =  sderiv(i,0)*scnodes[i]->GetData().n()[0];
         dmap_nxsl_gp[p->first] += valx*(p->second);
-        double valy =  sderiv(i,0)*scnodes[i]->n()[1];
+        double valy =  sderiv(i,0)*scnodes[i]->GetData().n()[1];
         dmap_nysl_gp[p->first] += valy*(p->second);
-        double valz =  sderiv(i,0)*scnodes[i]->n()[2];
+        double valz =  sderiv(i,0)*scnodes[i]->GetData().n()[2];
         dmap_nzsl_gp[p->first] += valz*(p->second);
       }
 
       for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
       {
-        double valx =  sderiv(i,1)*scnodes[i]->n()[0];
+        double valx =  sderiv(i,1)*scnodes[i]->GetData().n()[0];
         dmap_nxsl_gp[p->first] += valx*(p->second);
-        double valy =  sderiv(i,1)*scnodes[i]->n()[1];
+        double valy =  sderiv(i,1)*scnodes[i]->GetData().n()[1];
         dmap_nysl_gp[p->first] += valy*(p->second);
-        double valz =  sderiv(i,1)*scnodes[i]->n()[2];
+        double valz =  sderiv(i,1)*scnodes[i]->GetData().n()[2];
         dmap_nzsl_gp[p->first] += valz*(p->second);
       }
     }
@@ -503,7 +503,7 @@ void CONTACT::Integrator::IntegrateDerivCell3D(
         double fac = 0.0;
 
         // get the correct map as a reference
-        map<int,double>& dmmap_jk = mycnode->GetDerivM()[mgid];
+        map<int,double>& dmmap_jk = mycnode->GetData().GetDerivM()[mgid];
 
         // (1) Lin(Phi) - dual shape functions
         for (int m=0;m<nrow;++m)
@@ -564,7 +564,7 @@ void CONTACT::Integrator::IntegrateDerivCell3D(
       double fac = 0.0;
 
       // get the corresponding map as a reference
-      map<int,double>& dgmap = mycnode->GetDerivG();
+      map<int,double>& dgmap = mycnode->GetData().GetDerivG();
 
       // (1) Lin(Phi) - dual shape functions
       for (int m=0;m<nrow;++m)
@@ -787,9 +787,9 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlane(
     for (int i=0;i<nrow;++i)
     {
       CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-      gpn[0]+=sval[i]*mycnode->n()[0];
-      gpn[1]+=sval[i]*mycnode->n()[1];
-      gpn[2]+=sval[i]*mycnode->n()[2];
+      gpn[0]+=sval[i]*mycnode->GetData().n()[0];
+      gpn[1]+=sval[i]*mycnode->GetData().n()[1];
+      gpn[2]+=sval[i]*mycnode->GetData().n()[2];
 
       sgpx[0]+=sval[i]*scoord(0,i);
       sgpx[1]+=sval[i]*scoord(1,i);
@@ -887,9 +887,9 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlane(
 
     for (int i=0;i<nrow;++i)
     {
-      map<int,double>& dmap_nxsl_i = scnodes[i]->GetDerivN()[0];
-      map<int,double>& dmap_nysl_i = scnodes[i]->GetDerivN()[1];
-      map<int,double>& dmap_nzsl_i = scnodes[i]->GetDerivN()[2];
+      map<int,double>& dmap_nxsl_i = scnodes[i]->GetData().GetDerivN()[0];
+      map<int,double>& dmap_nysl_i = scnodes[i]->GetData().GetDerivN()[1];
+      map<int,double>& dmap_nzsl_i = scnodes[i]->GetData().GetDerivN()[2];
 
       for (CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
         dmap_nxsl_gp[p->first] += sval[i]*(p->second);
@@ -900,21 +900,21 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlane(
 
       for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
       {
-        double valx =  sderiv(i,0)*scnodes[i]->n()[0];
+        double valx =  sderiv(i,0)*scnodes[i]->GetData().n()[0];
         dmap_nxsl_gp[p->first] += valx*(p->second);
-        double valy =  sderiv(i,0)*scnodes[i]->n()[1];
+        double valy =  sderiv(i,0)*scnodes[i]->GetData().n()[1];
         dmap_nysl_gp[p->first] += valy*(p->second);
-        double valz =  sderiv(i,0)*scnodes[i]->n()[2];
+        double valz =  sderiv(i,0)*scnodes[i]->GetData().n()[2];
         dmap_nzsl_gp[p->first] += valz*(p->second);
       }
 
       for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
       {
-        double valx =  sderiv(i,1)*scnodes[i]->n()[0];
+        double valx =  sderiv(i,1)*scnodes[i]->GetData().n()[0];
         dmap_nxsl_gp[p->first] += valx*(p->second);
-        double valy =  sderiv(i,1)*scnodes[i]->n()[1];
+        double valy =  sderiv(i,1)*scnodes[i]->GetData().n()[1];
         dmap_nysl_gp[p->first] += valy*(p->second);
-        double valz =  sderiv(i,1)*scnodes[i]->n()[2];
+        double valz =  sderiv(i,1)*scnodes[i]->GetData().n()[2];
         dmap_nzsl_gp[p->first] += valz*(p->second);
       }
     }
@@ -1067,7 +1067,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlane(
         double fac = 0.0;
 
         // get the correct map as a reference
-        map<int,double>& dmmap_jk = mycnode->GetDerivM()[mgid];
+        map<int,double>& dmmap_jk = mycnode->GetData().GetDerivM()[mgid];
 
         // (1) Lin(Phi) - dual shape functions
         if (duallin)
@@ -1111,7 +1111,7 @@ void CONTACT::Integrator::IntegrateDerivCell3DAuxPlane(
       double fac = 0.0;
 
       // get the corresponding map as a reference
-      map<int,double>& dgmap = mycnode->GetDerivG();
+      map<int,double>& dgmap = mycnode->GetData().GetDerivG();
 
       // (1) Lin(Phi) - dual shape functions
       if (duallin)

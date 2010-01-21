@@ -1342,8 +1342,8 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
       double nzold = 0.0;
       for (int k=0;k<3;++k)
       {
-        nz += cnode->n()[k] * cnode->lm()[k];
-        nzold += cnode->n()[k] * cnode->lmold()[k];
+        nz += cnode->GetData().n()[k] * cnode->GetData().lm()[k];
+        nzold += cnode->GetData().n()[k] * cnode->GetData().lmold()[k];
       }
 
       // friction
@@ -1354,10 +1354,10 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
       if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
       {
         // compute tangential part of Lagrange multiplier
-        tz = cnode->txi()[0]*cnode->lm()[0] + cnode->txi()[1]*cnode->lm()[1];
+        tz = cnode->GetData().txi()[0]*cnode->GetData().lm()[0] + cnode->GetData().txi()[1]*cnode->GetData().lm()[1];
 
         // compute tangential part of jump
-        tjump = cnode->txi()[0]*cnode->jump()[0] + cnode->txi()[1]*cnode->jump()[1];
+        tjump = cnode->GetData().txi()[0]*cnode->GetData().jump()[0] + cnode->GetData().txi()[1]*cnode->GetData().jump()[1];
       }
 
       // check nodes of inactive set *************************************
@@ -1376,7 +1376,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
           cnode->Active() = true;
           activesetconv_ = false;
 #ifdef CONTACTFRICTIONLESSFIRST
-       if (cnode->ActiveOld()==false) cnode->Slip() = true;
+       if (cnode->GetData().ActiveOld()==false) cnode->GetData().Slip() = true;
 #endif
         }
       }
@@ -1402,7 +1402,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
             // friction
             if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
             {
-              cnode->Slip() = false;
+              cnode->GetData().Slip() = false;
             }
             activesetconv_ = false;
           }
@@ -1422,14 +1422,14 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
             double frbound = Params().get<double>("FRBOUND");
             double ct = Params().get<double>("SEMI_SMOOTH_CT");
 
-            if(cnode->Slip() == false)
+            if(cnode->GetData().Slip() == false)
             {
               // check (tz+ct*tjump)-frbound <= 0
               if(abs(tz+ct*tjump)-frbound <= 0) {}
                 // do nothing (stick was correct)
               else
               {
-                 cnode->Slip() = true;
+                 cnode->GetData().Slip() = true;
                  activesetconv_ = false;
               }
             }
@@ -1441,15 +1441,15 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
               else
               {
 #ifdef CONTACTFRICTIONLESSFIRST
-                if(cnode->ActiveOld()==false)
+                if(cnode->GetData().ActiveOld()==false)
                 {}
                 else
                 {
-                 cnode->Slip() = false;
+                 cnode->GetData().Slip() = false;
                  activesetconv_ = false;
                 }
 #else
-                cnode->Slip() = false;
+                cnode->GetData().Slip() = false;
                 activesetconv_ = false;
 #endif
               }
@@ -1462,14 +1462,14 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
             double frcoeff = Params().get<double>("FRCOEFF");
             double ct = Params().get<double>("SEMI_SMOOTH_CT");
 
-            if(cnode->Slip() == false)
+            if(cnode->GetData().Slip() == false)
             {
               // check (tz+ct*tjump)-frbound <= 0
               if(abs(tz+ct*tjump)-frcoeff*nz <= 0) {}
                 // do nothing (stick was correct)
               else
               {
-                 cnode->Slip() = true;
+                 cnode->GetData().Slip() = true;
                  activesetconv_ = false;
               }
             }
@@ -1481,15 +1481,15 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
               else
               {
 #ifdef CONTACTFRICTIONLESSFIRST
-                if(cnode->ActiveOld()==false)
+                if(cnode->GetData().ActiveOld()==false)
                 {}
                 else
                 {
-                 cnode->Slip() = false;
+                 cnode->GetData().Slip() = false;
                  activesetconv_ = false;
                 }
 #else
-                cnode->Slip() = false;
+                cnode->GetData().Slip() = false;
                 activesetconv_ = false;
 #endif
               }
@@ -1671,8 +1671,8 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
       double nzold = 0.0;
       for (int k=0;k<3;++k)
       {
-        nz += cnode->n()[k] * cnode->lm()[k];
-        nzold += cnode->n()[k] * cnode->lmold()[k];
+        nz += cnode->GetData().n()[k] * cnode->GetData().lm()[k];
+        nzold += cnode->GetData().n()[k] * cnode->GetData().lmold()[k];
       }
 
       // friction
@@ -1686,11 +1686,11 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
        	// compute tangential parts and of Lagrange multiplier and incremental jumps
        	for (int i=0;i<Dim();++i)
        	{
-       		tz[0] += cnode->txi()[i]*cnode->lm()[i];
-           if(Dim()==3) tz[1] += cnode->teta()[i]*cnode->lm()[i];
+       		tz[0] += cnode->GetData().txi()[i]*cnode->GetData().lm()[i];
+           if(Dim()==3) tz[1] += cnode->GetData().teta()[i]*cnode->GetData().lm()[i];
 
-           tjump[0] += cnode->txi()[i]*cnode->jump()[i];
-           if(Dim()==3) tjump[1] += cnode->teta()[i]*cnode->jump()[i];
+           tjump[0] += cnode->GetData().txi()[i]*cnode->GetData().jump()[i];
+           if(Dim()==3) tjump[1] += cnode->GetData().teta()[i]*cnode->GetData().jump()[i];
        	}
 
        	// evaluate euclidean norm |tz+ct.tjump|
@@ -1718,10 +1718,10 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
           if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
           {
           	// nodes coming into contact
-            cnode->Slip() = true;
+            cnode->GetData().Slip() = true;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) cnode->Slip() = true;
+        if (cnode->GetData().ActiveOld()==false) cnode->GetData().Slip() = true;
 #endif
           }
 
@@ -1748,7 +1748,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
             // friction
             if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
             {
-              cnode->Slip() = false;
+              cnode->GetData().Slip() = false;
             }
             activesetconv_ = false;
           }
@@ -1767,14 +1767,14 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
           {
             double frbound = Params().get<double>("FRBOUND");
 
-            if(cnode->Slip() == false)
+            if(cnode->GetData().Slip() == false)
             {
               // check (euclidean)-frbound <= 0
               if(euclidean-frbound <= 0) {}
                 // do nothing (stick was correct)
               else
               {
-                 cnode->Slip() = true;
+                 cnode->GetData().Slip() = true;
                  activesetconv_ = false;
               }
             }
@@ -1786,15 +1786,15 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
               else
               {
 #ifdef CONTACTFRICTIONLESSFIRST
-                if(cnode->ActiveOld()==false)
+                if(cnode->GetData().ActiveOld()==false)
                 {}
                 else
                 {
-                 cnode->Slip() = false;
+                 cnode->GetData().Slip() = false;
                  activesetconv_ = false;
                 }
 #else
-                cnode->Slip() = false;
+                cnode->GetData().Slip() = false;
                 activesetconv_ = false;
 #endif
               }
@@ -1805,7 +1805,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
           if(ftype == INPAR::CONTACT::friction_coulomb)
           {
             double frcoeff = Params().get<double>("FRCOEFF");
-            if(cnode->Slip() == false)
+            if(cnode->GetData().Slip() == false)
             {
               // check (euclidean)-frbound <= 0
 #ifdef CONTACTCOMPHUEBER
@@ -1816,7 +1816,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
                 // do nothing (stick was correct)
               else
               {
-                 cnode->Slip() = true;
+                 cnode->GetData().Slip() = true;
                  activesetconv_ = false;
               }
             }
@@ -1832,15 +1832,15 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
               else
               {
 #ifdef CONTACTFRICTIONLESSFIRST
-                if(cnode->ActiveOld()==false)
+                if(cnode->GetData().ActiveOld()==false)
                 {}
                 else
                 {
-                 cnode->Slip() = false;
+                 cnode->GetData().Slip() = false;
                  activesetconv_ = false;
                 }
 #else
-                cnode->Slip() = false;
+                cnode->GetData().Slip() = false;
                 activesetconv_ = false;
 #endif
               }

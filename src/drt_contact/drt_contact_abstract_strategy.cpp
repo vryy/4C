@@ -74,14 +74,14 @@ isselfcontact_(false)
   bool selfcontact = 0;
   for (int i=0;i<(int)interface_.size();++i)
     if (interface_[i]->SelfContact()) ++selfcontact;
-  
+
   if (selfcontact) isselfcontact_=true;
-  
+
   // check for infeasible self contact combinations
   INPAR::CONTACT::ContactType ctype = Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(params,"CONTACT");
   if (selfcontact > 0 && ctype != INPAR::CONTACT::contact_normal)
     dserror("ERROR: Self contact only implemented for frictionless contact!");
-  
+
   // ------------------------------------------------------------------------
   // setup global accessible Epetra_Maps
   // ------------------------------------------------------------------------
@@ -93,7 +93,7 @@ isselfcontact_(false)
     gsnoderowmap_ = LINALG::MergeMap(gsnoderowmap_, interface_[i]->SlaveRowNodes());
     gsdofrowmap_ = LINALG::MergeMap(gsdofrowmap_, interface_[i]->SlaveRowDofs());
     gmdofrowmap_ = LINALG::MergeMap(gmdofrowmap_, interface_[i]->MasterRowDofs());
-  
+
     // merge active sets and slip sets of all interfaces
     // (these maps are NOT allowed to be overlapping !!!)
     interface_[i]->InitializeActiveSet();
@@ -104,7 +104,7 @@ isselfcontact_(false)
     gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
     gslipdofs_ = LINALG::MergeMap(gslipdofs_, interface_[i]->SlipDofs(), false);
     gslipt_ = LINALG::MergeMap(gslipt_, interface_[i]->SlipTDofs(), false);
-    
+
   }
 
   // setup global non-slave-or-master dof map
@@ -112,7 +112,7 @@ isselfcontact_(false)
   gndofrowmap_ = LINALG::SplitMap(*problemrowmap_, *gsdofrowmap_);
   gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_, *gmdofrowmap_);
 
-  
+
   // ------------------------------------------------------------------------
   // setup global accessible vectors and matrices
   // ------------------------------------------------------------------------
@@ -381,22 +381,22 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(AbstractStrategy::QuantityT
         {
         case AbstractStrategy::lmcurrent:
         {
-          cnode->lm()[dof] = (*vectorinterface)[locindex[dof]];
+          cnode->GetData().lm()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         case AbstractStrategy::lmold:
         {
-          cnode->lmold()[dof] = (*vectorinterface)[locindex[dof]];
+          cnode->GetData().lmold()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         case AbstractStrategy::lmuzawa:
         {
-          cnode->lmuzawa()[dof] = (*vectorinterface)[locindex[dof]];
+          cnode->GetData().lmuzawa()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         case AbstractStrategy::activeold:
         {
-          cnode->ActiveOld() = cnode->Active();
+          cnode->GetData().ActiveOld() = cnode->Active();
           break;
         }
         case AbstractStrategy::lmupdate:
@@ -423,12 +423,12 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(AbstractStrategy::QuantityT
             (*vectorinterface)[locindex[dof]] = 0.0;
 
           // store updated LM into node
-          cnode->lm()[dof] = (*vectorinterface)[locindex[dof]];
+          cnode->GetData().lm()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         case AbstractStrategy::jump:
         {
-          cnode->jump()[dof] = (*vectorinterface)[locindex[dof]];
+          cnode->GetData().jump()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         default:
@@ -478,12 +478,12 @@ void CONTACT::AbstractStrategy::OutputStresses ()
 
       for (int j=0;j<3;++j)
       {
-        nn[j]=cnode->n()[j];
-        nt1[j]=cnode->txi()[j];
-        nt2[j]=cnode->teta()[j];
-        lmn +=  nn[j]* cnode->lm()[j];
-        lmt1 += nt1[j]* cnode->lm()[j];
-        lmt2 += nt2[j]* cnode->lm()[j];
+        nn[j]=cnode->GetData().n()[j];
+        nt1[j]=cnode->GetData().txi()[j];
+        nt2[j]=cnode->GetData().teta()[j];
+        lmn +=  nn[j]* cnode->GetData().lm()[j];
+        lmt1 += nt1[j]* cnode->GetData().lm()[j];
+        lmt2 += nt2[j]* cnode->GetData().lm()[j];
       }
 
       // find indices for DOFs of current node in Epetra_Vector
@@ -635,7 +635,7 @@ void CONTACT::AbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
   // (this is NOT only needed for friction but also for calculating
   // the auxiliary positions in binarytree contact search)
   SetState("olddisplacement",dis);
-  
+
 #ifdef CONTACTGMSH1
   VisualizeGmsh(istep);
 #endif // #ifdef CONTACTGMSH1
@@ -671,7 +671,7 @@ void CONTACT::AbstractStrategy::DoWriteRestart(RCP<Epetra_Vector>& activetoggle,
       // set value active / inactive in toggle vector
       if (cnode->Active())
         (*activetoggle)[dof]=1;
-      if (cnode->Slip())
+      if (cnode->GetData().Slip())
         (*sliptoggle)[dof]=1;
     }
   }
@@ -720,7 +720,7 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
 
         // set value stick / slip in cnode
         if ((*sliptoggle)[dof]==1)
-          cnode->Slip()=true;
+          cnode->GetData().Slip()=true;
       }
     }
   }
@@ -972,7 +972,7 @@ void CONTACT::AbstractStrategy::ContactForces(RCP<Epetra_Vector> fresm)
         if (dofid<0) dserror("ERROR: ContactForces: Did not find slave dof in map");
         nodegaps[d] = (*gapslavefinal)[dofid];
         nodegapm[d] = (*gapmasterfinal)[dofid];
-        lm[d] = cnode->lm()[d];
+        lm[d] = cnode->GetData().lm()[d];
       }
 
       // moments
@@ -990,7 +990,7 @@ void CONTACT::AbstractStrategy::ContactForces(RCP<Epetra_Vector> fresm)
         gmcmnew[d] -= nodemomentm[d];
       }
 
-      cout << "NORMAL: " << cnode->n()[0] << " " << cnode->n()[1] << " " << cnode->n()[2] << endl;
+      cout << "NORMAL: " << cnode->GetData().n()[0] << " " << cnode->GetData().n()[1] << " " << cnode->GetData().n()[2] << endl;
       cout << "LM:     " << lm[0] << " " << lm[1] << " " << lm[2] << endl;
       cout << "GAP:    " << nodegaps[0]-nodegapm[0] << " " << nodegaps[1]-nodegapm[1] << " " << nodegaps[2]-nodegapm[2] << endl;
     }
@@ -1101,8 +1101,8 @@ void CONTACT::AbstractStrategy::PrintActiveSet()
       double nzold = 0.0;
       for (int k=0;k<3;++k)
       {
-        nz += cnode->n()[k] * cnode->lm()[k];
-        nzold += cnode->n()[k] * cnode->lmold()[k];
+        nz += cnode->GetData().n()[k] * cnode->GetData().lm()[k];
+        nzold += cnode->GetData().n()[k] * cnode->GetData().lmold()[k];
       }
 
       // friction
@@ -1119,10 +1119,10 @@ void CONTACT::AbstractStrategy::PrintActiveSet()
         // compute tangential parts of Lagrange multiplier and jumps
         for (int k=0;k<Dim();++k)
         {
-          ztxi += cnode->txi()[k] * cnode->lm()[k];
-          zteta += cnode->teta()[k] * cnode->lm()[k];
-          jumptxi += cnode->txi()[k] * cnode->jump()[k];
-          jumpteta += cnode->teta()[k] * cnode->jump()[k];
+          ztxi += cnode->GetData().txi()[k] * cnode->GetData().lm()[k];
+          zteta += cnode->GetData().teta()[k] * cnode->GetData().lm()[k];
+          jumptxi += cnode->GetData().txi()[k] * cnode->GetData().jump()[k];
+          jumpteta += cnode->GetData().teta()[k] * cnode->GetData().jump()[k];
         }
 
         zt = sqrt(ztxi*ztxi+zteta*zteta);
@@ -1154,7 +1154,7 @@ void CONTACT::AbstractStrategy::PrintActiveSet()
       else
       if(cnode->Active())
       {
-        if(cnode->Slip())
+        if(cnode->GetData().Slip())
           cout << "SLIP " << gid << " Normal " << nz << " Tangential " << zt << " MoveX " << cnode->xspatial()[0] - cnode->X()[0] << " MoveY " << cnode->xspatial()[1] - cnode->X()[1] << endl;
         else
          cout << "STICK " << gid << " Normal " << nz << " Tangential " << zt << " MoveX " << cnode->xspatial()[0] - cnode->X()[0] << " MoveY " << cnode->xspatial()[1] - cnode->X()[1] << endl;

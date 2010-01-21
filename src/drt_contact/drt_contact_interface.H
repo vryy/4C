@@ -73,10 +73,10 @@ class Interface
 public:
 
   //! @name Enums and Friends
-  
+
   /*!
   \brief Enum for shape function used for lagrange multiplier discretization
-  
+
   */
   enum ShapeFcnType
   {
@@ -84,12 +84,12 @@ public:
     DualFunctions,
     Undefined
   };
-  
+
   //@}
 
   /*!
   \brief Standard constructor creating empty contact interface
- 
+
   This initializes the employed shape function set for lagrangian mutlipliers
   to a specific setting. Throughout the evaluation process, this set will be employed
   for the field of lagrangian multipliers.
@@ -99,11 +99,11 @@ public:
   \param dim (in): Global problem dimension
   \param icontact (in): Global contact parameter list
   \param selfcontact (in): Flag for self contact status (default=false)
- 
+
   */
   explicit Interface(const int id, const Epetra_Comm& comm, const int dim,
                      const Teuchos::ParameterList& icontact, bool selfcontact = false);
-    
+
   /*!
   \brief Destructor
 
@@ -179,7 +179,7 @@ public:
 
   */
   virtual inline const bool& SelfContact() { return selfcontact_;}
-  
+
   /*!
   \brief Get column map of all interface nodes (Filled()==true is prerequisite)
 
@@ -190,7 +190,7 @@ public:
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
-  
+
   /*!
   \brief Get column map of all interface elements (Filled()==true is prerequisite)
 
@@ -201,7 +201,7 @@ public:
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
-      
+
   /*!
   \brief Get row map of slave nodes (Filled()==true is prerequisite)
 
@@ -245,7 +245,7 @@ public:
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
-  
+
   /*!
   \brief Get column map of master nodes (Filled()==true is prerequisite)
 
@@ -532,7 +532,7 @@ public:
 
   /*!
   \brief Update interface master and slave sets
-  
+
   This update is usually only done ONCE during FillComplete() in
   the intialization phase and sets up the slave and master sets
   (elements, nodes, dofs) for the whole simulation. Yet, in the
@@ -541,7 +541,7 @@ public:
 
   */
   virtual void UpdateMasterSlaveSets();
-  
+
   /*!
   \brief Initialize / reset interface for contact
 
@@ -624,7 +624,7 @@ public:
   */
   virtual bool SplitIntElements(CONTACT::CElement& ele,
                                 vector<RCP<CONTACT::IntElement> >& auxele);
-  
+
   /*!
   \brief Integrate penalty sclaing factor kappa on slave element
 
@@ -633,23 +633,23 @@ public:
   penalty scaling factor kappa_j = int_{slave} (N_j) dslave. The
   correct interpolation N_j is chosen for any case (2D, 3D, linear
   quadratic, CONTACTPETROVGALERKIN...)
-  
+
   TODO: maybe update kappa each time step?
 
   */
   virtual bool IntegrateKappaPenalty(CONTACT::CElement& sele);
-    
+
   /*!
   \brief Evaluate relative movement (jump) of slave nodes
-  
+
   In the case of frictional contact, an important geometric measure is
   the relative movement (jump) of the contacting bodies. Here, this is evaluated
   over change of mortar projection. Also, the directional derivatives are
   evaluated here.
-  
-  */ 
+
+  */
   virtual void EvaluateRelMov();
-  
+
   /*!
   \brief Assemble jump vector into global jump vector
 
@@ -878,7 +878,7 @@ public:
   \brief Check penalty approach with finite differences
 
   */
-  virtual void FDCheckPenaltyTracNor();  
+  virtual void FDCheckPenaltyTracNor();
   virtual void FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<Epetra_Vector> fc, RCP<LINALG::SparseMatrix> dold,
                                    RCP<LINALG::SparseMatrix> mold, RCP<Epetra_Vector> zold,
                                    RCP<Epetra_Map> problemrowmap, double alphaf);
@@ -890,13 +890,13 @@ public:
 
   */
   virtual void FDCheckPenaltyTracFric();
-  
+
   /*!
   \brief Print shape function type (enum)
 
   */
   inline void PrintShapeFcn() { cout << shapefcn_ << endl; };
-  
+
   //@}
 
 protected:
@@ -916,10 +916,10 @@ protected:
   Teuchos::ParameterList      icontact_;      // containing contact input parameters of interface
   ShapeFcnType                shapefcn_;      // employed type of shape function set
   bool                        selfcontact_;   // flag indicating if this is a self contact interface
-  
+
   RCP<Epetra_Map>             oldnodecolmap_; // column map of all interface nodes (overlap=1)
   RCP<Epetra_Map>             oldelecolmap_;  // column map of all interface elements (overlap=1)
-    
+
   RCP<Epetra_Map>             snoderowmap_;   // row map of all slave nodes
   RCP<Epetra_Map>             snodecolmap_;   // column map of all slave nodes
   RCP<Epetra_Map>             snodefullmap_;  // fully overlapping column map of all slave nodes

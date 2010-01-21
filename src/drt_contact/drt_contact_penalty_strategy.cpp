@@ -113,11 +113,11 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(const RCP<Epetra_Vector> dis)
 
       // get nodal weighted gap
       // (this is where we stored the shape function integrals)
-      double gap = cnode->Getg();
+      double gap = cnode->GetData().Getg();
 
       // store kappa as the inverse of gap
       // (this removes the scaling introduced by weighting the gap!!!)
-      cnode->Kappa() = 1.0/gap;
+      cnode->GetData().Kappa() = 1.0/gap;
 
       //cout << "S-NODE #" << gid << " kappa=" << cnode->Kappa() << endl;
     }
@@ -583,17 +583,23 @@ void CONTACT::PenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& ktef
   lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
   linmmatrix_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
 
+
   // reset nodal derivZ values
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    for (int j=0;j<interface_[i]->Discret().NumMyColNodes();++j)
-    {
-      CONTACT::CNode* node = static_cast<CONTACT::CNode*>(interface_[i]->Discret().lColNode(j));
-      for (int k=0; k<(int)((node->GetDerivZ()).size()); ++k)
-        (node->GetDerivZ())[k].clear();
-      (node->GetDerivZ()).resize(0);
-    }
-  }
+   for (int i=0; i<(int)interface_.size(); ++i)
+   {
+     for (int j=0;j<interface_[i]->OldColNodes()->NumMyElements();++j)
+     {
+
+       int gid = interface_[i]->OldColNodes()->GID(i);
+       DRT::Node* node = interface_[i]->Discret().gNode(gid);
+       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+       CNode* cnode = static_cast<CNode*>(node);
+
+       for (int k=0; k<(int)((cnode->GetData().GetDerivZ()).size()); ++k)
+         (cnode->GetData().GetDerivZ())[k].clear();
+       (cnode->GetData().GetDerivZ()).resize(0);
+     }
+   }
 
   // now redo Initialize()
   Initialize();

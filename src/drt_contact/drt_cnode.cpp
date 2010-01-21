@@ -59,27 +59,13 @@ numdof_(numdof),
 dofs_(dofs),
 closestnode_(-1),
 hasproj_(false),
-active_(false),
-activeold_(false),
-slip_(false),
-grow_(1.0e12)
+active_(false)
 {
   for (int i=0;i<3;++i)
   {
-    n()[i]=0.0;
-    txi()[i]=0.0;
-    teta()[i]=0.0;
     uold()[i]=0.0;
-    traction()[i]=0.0;
-    tractionold()[i]=0.0;
     xspatial()[i]=X()[i];
-    lm()[i]=0.0;
-    lmold()[i]=0.0;
-    lmuzawa()[i]=0.0;
-    jump()[i]=0.0;
   }
-  
-  Kappa() = 1.0;
 
   return;
 }
@@ -98,35 +84,12 @@ dofs_(old.dofs_),
 closestnode_(old.closestnode_),
 hasproj_(old.hasproj_),
 active_(old.active_),
-activeold_(old.activeold_),
-slip_(old.slip_),
-drows_(old.drows_),
-mrows_(old.mrows_),
-drowsPG_(old.drowsPG_),
-mrowsPG_(old.mrowsPG_),
-drowsold_(old.drowsold_),
-mrowsold_(old.mrowsold_),
-drowsoldPG_(old.drowsoldPG_),
-mrowsoldPG_(old.mrowsoldPG_),
-mmodrows_(old.mmodrows_),
-snodes_(old.snodes_),
-mnodes_(old.mnodes_),
-mnodesold_(old.mnodesold_),
-grow_(old.grow_)
+data_(old.data_)
 {
   for (int i=0;i<3;++i)
   {
-    n()[i]=old.n_[i];
-    txi()[i]=old.txi_[i];
-    teta()[i]=old.teta_[i];
     uold()[i]=old.uold_[i];
-    traction()[i]=old.traction_[i];
-    tractionold()[i]=old.tractionold_[i];
     xspatial()[i]=old.xspatial_[i];
-    lm()[i]=old.lm_[i];
-    lmold()[i]=old.lmold_[i];
-    lmuzawa()[i]=old.lmuzawa_[i];
-    jump()[i]=old.jump_[i];
   }
 
   return;
@@ -200,36 +163,20 @@ void CONTACT::CNode::Pack(vector<char>& data) const
   AddtoPack(data,dofs_);
   // add xspatial_
   AddtoPack(data,xspatial_,3);
-  // add n_
-  AddtoPack(data,n_,3);
-  // add txi_
-  AddtoPack(data,txi_,3);
-  // add teta_
-  AddtoPack(data,teta_,3);
   // add uold_
   AddtoPack(data,uold_,3);
-  // add traction_
-  AddtoPack(data,traction_,3);
-  // add tractionold_
-  AddtoPack(data,tractionold_,3);
-  // add lm_
-  AddtoPack(data,lm_,3);
-  // add lmold_
-  AddtoPack(data,lmold_,3);
-  // add lmuzawa_
-  AddtoPack(data,lmuzawa_,3);
-  // add jump_
-  AddtoPack(data,jump_,3);
   // add closestnode_
   AddtoPack(data,closestnode_);
   // add hasproj_
   AddtoPack(data,hasproj_);
   // add active_
   AddtoPack(data,active_);
-  // add activeold_
-  AddtoPack(data,activeold_);
-  // add slip_
-  AddtoPack(data,slip_);
+  // add data_
+  int hasdata = data_!=Teuchos::null;
+  AddtoPack(data,hasdata);
+  if (hasdata)
+    data_->Pack(data);
+
   return;
 }
 
@@ -263,36 +210,26 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,dofs_);
   // xspatial_
   ExtractfromPack(position,data,xspatial_,3);
-  // n_
-  ExtractfromPack(position,data,n_,3);
-  // txi_
-  ExtractfromPack(position,data,txi_,3);
-  // teta_
-  ExtractfromPack(position,data,teta_,3);
   // uold_
   ExtractfromPack(position,data,uold_,3);
-  // traction_
-  ExtractfromPack(position,data,traction_,3);
-  // tractionold_
-  ExtractfromPack(position,data,tractionold_,3);
-  // lm_
-  ExtractfromPack(position,data,lm_,3);
-  // lmold_
-  ExtractfromPack(position,data,lmold_,3);
-  // lmuzawa_
-  ExtractfromPack(position,data,lmuzawa_,3);
-  // jump_
-  ExtractfromPack(position,data,jump_,3);
   // closestnode_
   ExtractfromPack(position,data,closestnode_);
   // hasproj_
   ExtractfromPack(position,data,hasproj_);
   // active_
   ExtractfromPack(position,data,active_);
-  // activeold_
-  ExtractfromPack(position,data,activeold_);
-  // slip_
-  ExtractfromPack(position,data,slip_);
+  // data_
+  int hasdata;
+  ExtractfromPack(position,data,hasdata);
+  if (hasdata)
+  {
+  	data_ = Teuchos::rcp(new CONTACT::CNodeDataContainer());
+  	data_->Unpack(position,data);
+  }
+  else
+  {
+  	data_ = Teuchos::null;
+  }
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -311,15 +248,15 @@ void CONTACT::CNode::AddDValue(int& row, int& col, double& val)
     dserror("ERROR: AddDValue: function called for boundary node %i", Id());
 
   // check if this has been called before
-  if ((int)drows_.size()==0)
-    drows_.resize(NumDof());
+  if ((int)GetData().GetD().size()==0)
+  	GetData().GetD().resize(NumDof());
 
   // check row index input
-  if ((int)drows_.size()<=row)
+  if ((int)GetData().GetD().size()<=row)
     dserror("ERROR: AddDValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& dmap = drows_[row];
+  map<int,double>& dmap = GetData().GetD()[row];
   dmap[col] += val;
 
   return;
@@ -337,15 +274,15 @@ void CONTACT::CNode::AddDValuePG(int& row, int& col, double& val)
     dserror("ERROR: AddDValue: function called for boundary node %i", Id());
 
   // check if this has been called before
-  if ((int)drowsPG_.size()==0)
-    drowsPG_.resize(NumDof());
+  if ((int)GetData().GetDPG().size()==0)
+  	GetData().GetDPG().resize(NumDof());
 
   // check row index input
-  if ((int)drowsPG_.size()<=row)
+  if ((int)GetData().GetDPG().size()<=row)
     dserror("ERROR: AddDValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& dmap = drowsPG_[row];
+  map<int,double>& dmap = GetData().GetDPG()[row];
   dmap[col] += val;
 
   return;
@@ -363,15 +300,15 @@ void CONTACT::CNode::AddMValue(int& row, int& col, double& val)
     dserror("ERROR: AddDValue: function called for boundary node %i", Id());
 
   // check if this has been called before
-  if ((int)mrows_.size()==0)
-    mrows_.resize(NumDof());
+  if ((int)GetData().GetM().size()==0)
+  	GetData().GetM().resize(NumDof());
 
   // check row index input
-  if ((int)mrows_.size()<=row)
+  if ((int)GetData().GetM().size()<=row)
     dserror("ERROR: AddMValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& mmap = mrows_[row];
+  map<int,double>& mmap = GetData().GetM()[row];
   mmap[col] += val;
 
   return;
@@ -389,15 +326,15 @@ void CONTACT::CNode::AddMValuePG(int& row, int& col, double& val)
     dserror("ERROR: AddDValue: function called for boundary node %i", Id());
 
   // check if this has been called before
-  if ((int)mrowsPG_.size()==0)
-    mrowsPG_.resize(NumDof());
+  if ((int)GetData().GetMPG().size()==0)
+  	GetData().GetMPG().resize(NumDof());
 
   // check row index input
-  if ((int)mrowsPG_.size()<=row)
+  if ((int)GetData().GetMPG().size()<=row)
     dserror("ERROR: AddMValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& mmap = mrowsPG_[row];
+  map<int,double>& mmap = GetData().GetMPG()[row];
   mmap[col] += val;
 
   return;
@@ -415,15 +352,15 @@ void CONTACT::CNode::AddMmodValue(int& row, int& col, double& val)
     dserror("ERROR: AddDValue: function called for boundary node %i", Id());
 
   // check if this has been called before
-  if ((int)mmodrows_.size()==0)
-    mmodrows_.resize(NumDof());
+  if ((int)GetData().GetMmod().size()==0)
+  	GetData().GetMmod().resize(NumDof());
 
   // check row index input
-  if ((int)mmodrows_.size()<=row)
+  if ((int)GetData().GetMmod().size()<=row)
     dserror("ERROR: AddMmodValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& mmodmap = mmodrows_[row];
+  map<int,double>& mmodmap = GetData().GetMmod()[row];
   mmodmap[col] += val;
 
   return;
@@ -440,8 +377,8 @@ void CONTACT::CNode::AddSNode(int node)
   if (IsOnBound()==true)
     dserror("ERROR: AddSNode: function called for boundary node %i", Id());
 
-  snodes_.insert(node);
-	
+  GetData().GetSNodes().insert(node);
+
   return;
 }
 
@@ -456,8 +393,8 @@ void CONTACT::CNode::AddMNode(int node)
   if (IsOnBound()==true)
     dserror("ERROR: AddMNode: function called for boundary node %i", Id());
 
-  mnodes_.insert(node);
-	
+  GetData().GetMNodes().insert(node);
+
   return;
 }
 
@@ -473,10 +410,10 @@ void CONTACT::CNode::AddgValue(double& val)
     dserror("ERROR: AddDValue: function called for boundary node %i", Id());
 
   // initialize if called for the first time
-  if (grow_==1.0e12) grow_=0;
+  if (GetData().Getg()==1.0e12) GetData().Getg()=0;
 
   // add given value to grow_
-  grow_+=val;
+  GetData().Getg()+=val;
 
   return;
 }
@@ -491,17 +428,17 @@ void CONTACT::CNode::AddDerivZValue(int& row, const int& col, double val)
     dserror("ERROR: AddZValue: function called for master node %i", Id());
   if (IsOnBound()==true)
     dserror("ERROR: AddZValue: function called for boundary node %i", Id());
-    
+
   // check if this has been called before
-  if ((int)derivz_.size()==0)
-    derivz_.resize(NumDof());
-    
+  if ((int)GetData().GetDerivZ().size()==0)
+  	GetData().GetDerivZ().resize(NumDof());
+
   // check row index input
-  if ((int)derivz_.size() <= row)
+  if ((int)GetData().GetDerivZ().size() <= row)
     dserror("ERROR: AddDerivZValue: tried to access invalid row index!");
-    
+
   // add the pair (col,val) to the given row
-  map<int,double>& zmap = derivz_[row];
+  map<int,double>& zmap = GetData().GetDerivZ()[row];
   zmap[col] += val;
 
   return;
@@ -517,17 +454,17 @@ void CONTACT::CNode::AddDerivJumpValue(int& row, const int& col, double val)
     dserror("ERROR: AddJumpValue: function called for master node %i", Id());
   if (IsOnBound()==true)
     dserror("ERROR: AddJumpValue: function called for boundary node %i", Id());
-    
+
   // check if this has been called before
-  if ((int)derivjump_.size()==0)
-    derivjump_.resize(NumDof());
-    
+  if ((int)GetData().GetDerivJump().size()==0)
+  	GetData().GetDerivJump().resize(NumDof());
+
   // check row index input
-  if ((int)derivjump_.size() <= row)
+  if ((int)GetData().GetDerivJump().size() <= row)
     dserror("ERROR: AddDerivJumpValue: tried to access invalid row index!");
-    
+
   // add the pair (col,val) to the given row
-  map<int,double>& zmap = derivjump_[row];
+  map<int,double>& zmap = GetData().GetDerivJump()[row];
   zmap[col] += val;
 
   return;
@@ -541,24 +478,24 @@ void CONTACT::CNode::StoreDMOld()
   // copy drows_ to drowsold_
 
   // reset old nodal Mortar maps
-  for (int j=0;j<(int)(GetDOld().size());++j)
-  (GetDOld())[j].clear();
-  for (int j=0;j<(int)((GetMOld()).size());++j)
-  (GetMOld())[j].clear();
+  for (int j=0;j<(int)(GetData().GetDOld().size());++j)
+  (GetData().GetDOld())[j].clear();
+  for (int j=0;j<(int)((GetData().GetMOld()).size());++j)
+  (GetData().GetMOld())[j].clear();
 
   // clear and zero nodal vectors
-  drowsold_.clear();
-  mrowsold_.clear();
-  drowsold_.resize(0);
-	mrowsold_.resize(0);
-	
+  GetData().GetDOld().clear();
+  GetData().GetMOld().clear();
+  GetData().GetDOld().resize(0);
+	GetData().GetMOld().resize(0);
+
 	// write drows_ to drowsold_
-	drowsold_ = drows_;
-  mrowsold_ = mrows_;
-  
+	GetData().GetDOld() = GetData().GetD();
+  GetData().GetMOld() = GetData().GetM();
+
   // also vectors containing the according master nodes
-  mnodesold_.clear();
-  mnodesold_ = mnodes_;
+  GetData().GetMNodesOld().clear();
+  GetData().GetMNodesOld() = GetData().GetMNodes();
 
   return;
 }
@@ -571,20 +508,20 @@ void CONTACT::CNode::StoreDMOldPG()
   // copy drows_ to drowsold_
 
   // reset old nodal Mortar maps
-  for (int j=0;j<(int)(GetDOldPG().size());++j)
-  (GetDOldPG())[j].clear();
-  for (int j=0;j<(int)((GetMOldPG()).size());++j)
-  (GetMOldPG())[j].clear();
+  for (int j=0;j<(int)(GetData().GetDOldPG().size());++j)
+  (GetData().GetDOldPG())[j].clear();
+  for (int j=0;j<(int)((GetData().GetMOldPG()).size());++j)
+  (GetData().GetMOldPG())[j].clear();
 
   // clear and zero nodal vectors
-  drowsoldPG_.clear();
-  mrowsoldPG_.clear();
-  drowsoldPG_.resize(0);
-	mrowsoldPG_.resize(0);
+  GetData().GetDOldPG().clear();
+  GetData().GetMOldPG().clear();
+  GetData().GetDOldPG().resize(0);
+  GetData().GetMOldPG().resize(0);
 
 	// write drows_ to drowsold_
-	drowsoldPG_ = drowsPG_;
-  mrowsoldPG_ = mrowsPG_;
+	GetData().GetDOldPG() = GetData().GetDPG();
+	GetData().GetMOldPG() = GetData().GetMPG();
 
   return;
 }
@@ -596,10 +533,20 @@ void CONTACT::CNode::StoreTracOld()
 {
   // write entries to old ones
   for (int j=0;j<3;++j)
-    tractionold_[j]=traction_[j];
+    GetData().tractionold()[j]=GetData().traction()[j];
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  Store nodal entries penalty tractions to old ones      gitterle 10/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CNode::InitializeCnodeDataContainer()
+{
+  data_=rcp(new CONTACT::CNodeDataContainer());
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  |  Build averaged nodal normal + tangents                    popp 12/07|
@@ -609,9 +556,9 @@ void CONTACT::CNode::BuildAveragedNormal()
   // reset normal and tangents when this method is called
   for (int j=0;j<3;++j)
   {
-    n()[j]=0.0;
-    txi()[j]=0.0;
-    teta()[j]=0.0;
+    GetData().n()[j]=0.0;
+    GetData().txi()[j]=0.0;
+    GetData().teta()[j]=0.0;
   }
 
   int nseg = NumElement();
@@ -640,13 +587,13 @@ void CONTACT::CNode::BuildAveragedNormal()
 
     // add (weighted) element normal to nodal normal n
     for (int j=0;j<3;++j)
-      n()[j]+=elens(j,i)/elens(4,i);
+      GetData().n()[j]+=elens(j,i)/elens(4,i);
   }
 
   // create unit normal vector
-  double length = sqrt(n()[0]*n()[0]+n()[1]*n()[1]+n()[2]*n()[2]);
+  double length = sqrt(GetData().n()[0]*GetData().n()[0]+GetData().n()[1]*GetData().n()[1]+GetData().n()[2]*GetData().n()[2]);
   if (length==0.0) dserror("ERROR: Nodal normal length 0, node ID %i",Id());
-  else             for (int j=0;j<3;++j) n()[j]/=length;
+  else             for (int j=0;j<3;++j) GetData().n()[j]/=length;
 
   // create unit tangent vectors
   // (note that this definition is not unique in 3D!)
@@ -655,14 +602,14 @@ void CONTACT::CNode::BuildAveragedNormal()
   if (NumDof()==2)
   {
     // simple definition for txi
-    txi()[0] = -n()[1];
-    txi()[1] =  n()[0];
-    txi()[2] =  0.0;
+    GetData().txi()[0] = -GetData().n()[1];
+    GetData().txi()[1] =  GetData().n()[0];
+    GetData().txi()[2] =  0.0;
 
     // teta is z-axis
-    teta()[0] = 0.0;
-    teta()[1] = 0.0;
-    teta()[2] = 1.0;
+    GetData().teta()[0] = 0.0;
+    GetData().teta()[1] = 0.0;
+    GetData().teta()[2] = 1.0;
   }
   else if (NumDof()==3)
   {
@@ -670,44 +617,44 @@ void CONTACT::CNode::BuildAveragedNormal()
     // we want to treat a 3D mesh as pseudo 2D contact problem
     // with all nodes fixed in z-direction
     // thus, the second tangent is fixed to (0,0,1)
-    teta()[0] = 0.0;
-    teta()[1] = 0.0;
-    teta()[2] = 1.0;
+  	GetData().teta()[0] = 0.0;
+  	GetData().teta()[1] = 0.0;
+  	GetData().teta()[2] = 1.0;
 
     // txi follows from corkscrew rule (txi = teta x n)
-    txi()[0] = teta()[1]*n()[2]-teta()[2]*n()[1];
-    txi()[1] = teta()[2]*n()[0]-teta()[0]*n()[2];
-    txi()[2] = teta()[0]*n()[1]-teta()[1]*n()[0];
+    GetData().txi()[0] = GetData().teta()[1]*GetData().n()[2]-GetData().teta()[2]*GetData().n()[1];
+    GetData().txi()[1] = GetData().teta()[2]*GetData().n()[0]-GetData().teta()[0]*GetData().n()[2];
+    GetData().txi()[2] = GetData().teta()[0]*GetData().n()[1]-GetData().teta()[1]*GetData().n()[0];
 #else
     // arbitrary definition for txi
-    if (abs(n()[2])>1.0e-6)
+    if (abs(GetData().n()[2])>1.0e-6)
     {
-      txi()[0]=1.0;
-      txi()[1]=1.0;
-      txi()[2]=(-n()[0]-n()[1])/n()[2];
+      GetData().txi()[0]=1.0;
+      GetData().txi()[1]=1.0;
+      GetData().txi()[2]=(-GetData().n()[0]-GetData().n()[1])/GetData().n()[2];
     }
-    else if (abs(n()[1])>1.0e-6)
+    else if (abs(GetData().n()[1])>1.0e-6)
     {
-      txi()[0]=1.0;
-      txi()[2]=1.0;
-      txi()[1]=(-n()[0]-n()[2])/n()[1];
+      GetData().txi()[0]=1.0;
+      GetData().txi()[2]=1.0;
+      GetData().txi()[1]=(-GetData().n()[0]-GetData().n()[2])/GetData().n()[1];
     }
-    else if (abs(n()[0])>1.0e-6)
+    else if (abs(GetData().n()[0])>1.0e-6)
     {
-      txi()[1]=1.0;
-      txi()[2]=1.0;
-      txi()[0]=(-n()[1]-n()[2])/n()[0];
+      GetData().txi()[1]=1.0;
+      GetData().txi()[2]=1.0;
+      GetData().txi()[0]=(-GetData().n()[1]-GetData().n()[2])/GetData().n()[0];
     }
     else
       dserror("ERROR: Something wrong with nodal normal");
 
-    ltxi = sqrt(txi()[0]*txi()[0]+txi()[1]*txi()[1]+txi()[2]*txi()[2]);
-    for (int j=0;j<3;++j) txi()[j]/=ltxi;
+    ltxi = sqrt(GetData().txi()[0]*GetData().txi()[0]+GetData().txi()[1]*GetData().txi()[1]+GetData().txi()[2]*GetData().txi()[2]);
+    for (int j=0;j<3;++j) GetData().txi()[j]/=ltxi;
 
     // teta follows from corkscrew rule (teta = n x txi)
-    teta()[0] = n()[1]*txi()[2]-n()[2]*txi()[1];
-    teta()[1] = n()[2]*txi()[0]-n()[0]*txi()[2];
-    teta()[2] = n()[0]*txi()[1]-n()[1]*txi()[0];
+    GetData().teta()[0] = GetData().n()[1]*GetData().txi()[2]-GetData().n()[2]*GetData().txi()[1];
+    GetData().teta()[1] = GetData().n()[2]*GetData().txi()[0]-GetData().n()[0]*GetData().txi()[2];
+    GetData().teta()[2] = GetData().n()[0]*GetData().txi()[1]-GetData().n()[1]*GetData().txi()[0];
 #endif // #ifdef CONTACTPSEUDO2D
   }
   else
@@ -726,9 +673,9 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
                                          double length, double ltxi)
 {
   // prepare nodal storage maps for derivative
-  if ((int)GetDerivN().size()==0) GetDerivN().resize(3);
-  if ((int)GetDerivTxi().size()==0) GetDerivTxi().resize(3);
-  if ((int)GetDerivTeta().size()==0) GetDerivTeta().resize(3);
+  if ((int)GetData().GetDerivN().size()==0) GetData().GetDerivN().resize(3);
+  if ((int)GetData().GetDerivTxi().size()==0) GetData().GetDerivTxi().resize(3);
+  if ((int)GetData().GetDerivTeta().size()==0) GetData().GetDerivTeta().resize(3);
 
   int nseg = NumElement();
   DRT::Element** adjeles = Elements();
@@ -739,25 +686,25 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     CElement* adjcele = static_cast<CElement*> (adjeles[i]);
 
     // build element normal derivative at current node
-    adjcele->DerivNormalAtNode(Id(),i,elens,GetDerivN());
+    adjcele->DerivNormalAtNode(Id(),i,elens,GetData().GetDerivN());
   }
 
   // normalize directional derivative
   // (length differs for weighted/unweighted case bot not the procedure!)
   // (be careful with reference / copy of derivative maps!)
   typedef map<int,double>::const_iterator CI;
-  map<int,double>& derivnx = GetDerivN()[0];
-  map<int,double>& derivny = GetDerivN()[1];
-  map<int,double>& derivnz = GetDerivN()[2];
-  map<int,double> cderivnx = GetDerivN()[0];
-  map<int,double> cderivny = GetDerivN()[1];
-  map<int,double> cderivnz = GetDerivN()[2];
-  double nxnx = n()[0] * n()[0];
-  double nxny = n()[0] * n()[1];
-  double nxnz = n()[0] * n()[2];
-  double nyny = n()[1] * n()[1];
-  double nynz = n()[1] * n()[2];
-  double nznz = n()[2] * n()[2];
+  map<int,double>& derivnx = GetData().GetDerivN()[0];
+  map<int,double>& derivny = GetData().GetDerivN()[1];
+  map<int,double>& derivnz = GetData().GetDerivN()[2];
+  map<int,double> cderivnx = GetData().GetDerivN()[0];
+  map<int,double> cderivny = GetData().GetDerivN()[1];
+  map<int,double> cderivnz = GetData().GetDerivN()[2];
+  double nxnx = GetData().n()[0] * GetData().n()[0];
+  double nxny = GetData().n()[0] * GetData().n()[1];
+  double nxnz = GetData().n()[0] * GetData().n()[2];
+  double nyny = GetData().n()[1] * GetData().n()[1];
+  double nynz = GetData().n()[1] * GetData().n()[2];
+  double nznz = GetData().n()[2] * GetData().n()[2];
 
   // build a vector with all keys from x,y,z maps
   // (we need this in order not to miss any entry!)
@@ -815,8 +762,8 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     // get directional derivative of nodal tangent txi "for free"
     // (we just have to use the orthogonality of n and t)
     // the directional derivative of nodal tangent teta is 0
-    map<int,double>& derivtxix = GetDerivTxi()[0];
-    map<int,double>& derivtxiy = GetDerivTxi()[1];
+    map<int,double>& derivtxix = GetData().GetDerivTxi()[0];
+    map<int,double>& derivtxiy = GetData().GetDerivTxi()[1];
 
     for (CI p=derivny.begin();p!=derivny.end();++p)
       derivtxix[p->first] = -(p->second);
@@ -835,59 +782,59 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
 
     // get normalized tangent derivative txi
     // use corkscrew rule from BuildAveragedNormal()
-    map<int,double>& derivtxix = GetDerivTxi()[0];
-    map<int,double>& derivtxiy = GetDerivTxi()[1];
-    map<int,double>& derivtxiz = GetDerivTxi()[2];
+    map<int,double>& derivtxix = GetData().GetDerivTxi()[0];
+    map<int,double>& derivtxiy = GetData().GetDerivTxi()[1];
+    map<int,double>& derivtxiz = GetData().GetDerivTxi()[2];
 
     for (CI p=derivnx.begin();p!=derivnx.end();++p)
     {
-      derivtxiy[p->first] += teta()[2]*(p->second);
-      derivtxiz[p->first] -= teta()[1]*(p->second);
+      derivtxiy[p->first] += GetData().teta()[2]*(p->second);
+      derivtxiz[p->first] -= GetData().teta()[1]*(p->second);
     }
     for (CI p=derivny.begin();p!=derivny.end();++p)
     {
-      derivtxix[p->first] -= teta()[2]*(p->second);
-      derivtxiz[p->first] += teta()[0]*(p->second);
+      derivtxix[p->first] -= GetData().teta()[2]*(p->second);
+      derivtxiz[p->first] += GetData().teta()[0]*(p->second);
     }
     for (CI p=derivnz.begin();p!=derivnz.end();++p)
     {
-      derivtxix[p->first] += teta()[1]*(p->second);
-      derivtxiy[p->first] -= teta()[0]*(p->second);
+      derivtxix[p->first] += GetData().teta()[1]*(p->second);
+      derivtxiy[p->first] -= GetData().teta()[0]*(p->second);
     }
   }
 #else
     // unnormalized tangent derivative txi
     // use definitions for txi from BuildAveragedNormal()
-    if (abs(n()[2])>1.0e-6)
+    if (abs(GetData().n()[2])>1.0e-6)
     {
-      map<int,double>& derivtxiz = GetDerivTxi()[2];
+      map<int,double>& derivtxiz = GetData().GetDerivTxi()[2];
       for (CI p=derivnx.begin();p!=derivnx.end();++p)
-        derivtxiz[p->first] -= 1/n()[2]*(p->second);
+        derivtxiz[p->first] -= 1/GetData().n()[2]*(p->second);
       for (CI p=derivny.begin();p!=derivny.end();++p)
-        derivtxiz[p->first] -= 1/n()[2]*(p->second);
+        derivtxiz[p->first] -= 1/GetData().n()[2]*(p->second);
       for (CI p=derivnz.begin();p!=derivnz.end();++p)
-        derivtxiz[p->first] += (n()[0]+n()[1])/(n()[2]*n()[2])*(p->second);
+        derivtxiz[p->first] += (GetData().n()[0]+GetData().n()[1])/(GetData().n()[2]*GetData().n()[2])*(p->second);
 
     }
-    else if (abs(n()[1])>1.0e-6)
+    else if (abs(GetData().n()[1])>1.0e-6)
     {
-      map<int,double>& derivtxiy = GetDerivTxi()[1];
+      map<int,double>& derivtxiy = GetData().GetDerivTxi()[1];
       for (CI p=derivnx.begin();p!=derivnx.end();++p)
-        derivtxiy[p->first] -= 1/n()[1]*(p->second);
+        derivtxiy[p->first] -= 1/GetData().n()[1]*(p->second);
       for (CI p=derivny.begin();p!=derivny.end();++p)
-        derivtxiy[p->first] += (n()[0]+n()[2])/(n()[1]*n()[1])*(p->second);
+        derivtxiy[p->first] += (GetData().n()[0]+GetData().n()[2])/(GetData().n()[1]*GetData().n()[1])*(p->second);
       for (CI p=derivnz.begin();p!=derivnz.end();++p)
-        derivtxiy[p->first] -= 1/n()[1]*(p->second);
+        derivtxiy[p->first] -= 1/GetData().n()[1]*(p->second);
     }
-    else if (abs(n()[0])>1.0e-6)
+    else if (abs(GetData().n()[0])>1.0e-6)
     {
-      map<int,double>& derivtxix = GetDerivTxi()[0];
+      map<int,double>& derivtxix = GetData().GetDerivTxi()[0];
       for (CI p=derivnx.begin();p!=derivnx.end();++p)
-        derivtxix[p->first] += (n()[1]+n()[2])/(n()[0]*n()[0])*(p->second);
+        derivtxix[p->first] += (GetData().n()[1]+GetData().n()[2])/(GetData().n()[0]*GetData().n()[0])*(p->second);
       for (CI p=derivny.begin();p!=derivny.end();++p)
-        derivtxix[p->first] -= 1/n()[0]*(p->second);
+        derivtxix[p->first] -= 1/GetData().n()[0]*(p->second);
       for (CI p=derivnz.begin();p!=derivnz.end();++p)
-        derivtxix[p->first] -= 1/n()[0]*(p->second);
+        derivtxix[p->first] -= 1/GetData().n()[0]*(p->second);
     }
     else
       dserror("ERROR: Something wrong with nodal normal");
@@ -895,18 +842,18 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     // normalize txi directional derivative
     // (identical to normalization of normal derivative)
     typedef map<int,double>::const_iterator CI;
-    map<int,double>& derivtxix = GetDerivTxi()[0];
-    map<int,double>& derivtxiy = GetDerivTxi()[1];
-    map<int,double>& derivtxiz = GetDerivTxi()[2];
-    map<int,double> cderivtxix = GetDerivTxi()[0];
-    map<int,double> cderivtxiy = GetDerivTxi()[1];
-    map<int,double> cderivtxiz = GetDerivTxi()[2];
-    double txtx = txi()[0] * txi()[0];
-    double txty = txi()[0] * txi()[1];
-    double txtz = txi()[0] * txi()[2];
-    double tyty = txi()[1] * txi()[1];
-    double tytz = txi()[1] * txi()[2];
-    double tztz = txi()[2] * txi()[2];
+    map<int,double>& derivtxix = GetData().GetDerivTxi()[0];
+    map<int,double>& derivtxiy = GetData().GetDerivTxi()[1];
+    map<int,double>& derivtxiz = GetData().GetDerivTxi()[2];
+    map<int,double> cderivtxix = GetData().GetDerivTxi()[0];
+    map<int,double> cderivtxiy = GetData().GetDerivTxi()[1];
+    map<int,double> cderivtxiz = GetData().GetDerivTxi()[2];
+    double txtx = GetData().txi()[0] * GetData().txi()[0];
+    double txty = GetData().txi()[0] * GetData().txi()[1];
+    double txtz = GetData().txi()[0] * GetData().txi()[2];
+    double tyty = GetData().txi()[1] * GetData().txi()[1];
+    double tytz = GetData().txi()[1] * GetData().txi()[2];
+    double tztz = GetData().txi()[2] * GetData().txi()[2];
 
     // build a vector with all keys from x,y,z maps
     // (we need this in order not to miss any entry!)
@@ -958,39 +905,39 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
 
     // get normalized tangent derivative teta
     // use corkscrew rule from BuildAveragedNormal()
-    map<int,double>& derivtetax = GetDerivTeta()[0];
-    map<int,double>& derivtetay = GetDerivTeta()[1];
-    map<int,double>& derivtetaz = GetDerivTeta()[2];
+    map<int,double>& derivtetax = GetData().GetDerivTeta()[0];
+    map<int,double>& derivtetay = GetData().GetDerivTeta()[1];
+    map<int,double>& derivtetaz = GetData().GetDerivTeta()[2];
 
     for (CI p=derivnx.begin();p!=derivnx.end();++p)
     {
-      derivtetay[p->first] -= txi()[2]*(p->second);
-      derivtetaz[p->first] += txi()[1]*(p->second);
+      derivtetay[p->first] -= GetData().txi()[2]*(p->second);
+      derivtetaz[p->first] += GetData().txi()[1]*(p->second);
     }
     for (CI p=derivny.begin();p!=derivny.end();++p)
     {
-      derivtetax[p->first] += txi()[2]*(p->second);
-      derivtetaz[p->first] -= txi()[0]*(p->second);
+      derivtetax[p->first] += GetData().txi()[2]*(p->second);
+      derivtetaz[p->first] -= GetData().txi()[0]*(p->second);
     }
     for (CI p=derivnz.begin();p!=derivnz.end();++p)
     {
-      derivtetax[p->first] -= txi()[1]*(p->second);
-      derivtetay[p->first] += txi()[0]*(p->second);
+      derivtetax[p->first] -= GetData().txi()[1]*(p->second);
+      derivtetay[p->first] += GetData().txi()[0]*(p->second);
     }
     for (CI p=derivtxix.begin();p!=derivtxix.end();++p)
     {
-      derivtetay[p->first] += n()[2]*(p->second);
-      derivtetaz[p->first] -= n()[1]*(p->second);
+      derivtetay[p->first] += GetData().n()[2]*(p->second);
+      derivtetaz[p->first] -= GetData().n()[1]*(p->second);
     }
     for (CI p=derivtxiy.begin();p!=derivtxiy.end();++p)
     {
-      derivtetax[p->first] -= n()[2]*(p->second);
-      derivtetaz[p->first] += n()[0]*(p->second);
+      derivtetax[p->first] -= GetData().n()[2]*(p->second);
+      derivtetaz[p->first] += GetData().n()[0]*(p->second);
     }
     for (CI p=derivtxiz.begin();p!=derivtxiz.end();++p)
     {
-      derivtetax[p->first] += n()[1]*(p->second);
-      derivtetay[p->first] -= n()[0]*(p->second);
+      derivtetax[p->first] += GetData().n()[1]*(p->second);
+      derivtetay[p->first] -= GetData().n()[0]*(p->second);
     }
   }
 #endif // #ifdef CONTACTPSEUDO2D
