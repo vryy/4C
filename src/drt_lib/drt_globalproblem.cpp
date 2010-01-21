@@ -1029,6 +1029,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
         // At this point, everything for the microscale is read,
         // subsequent reading is only for macroscale
         structdis_micro->FillComplete();
+
+        // set the problem number from which to call materials again to zero
+        // (i.e. macro problem), cf. MAT::Material::Factory!
+        materials_->SetReadFromProblem(0);
       }
     }
 
