@@ -97,8 +97,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   gstatincrement_(0.0)
 {
   // what kind of equations do we actually want to solve?
-  // (For the moment, we directly conclude from the problem type when there is no user input)
-  if (scatratype_ == INPAR::SCATRA::scatratype_undefined)
+  // (For the moment, we directly conclude from the problem type, Only ELCH applications
+  //  allow the usage of a given user input)
+  if ((scatratype_ == INPAR::SCATRA::scatratype_undefined) or (prbtype_ != "elch"))
   {
     if (prbtype_ == "elch")            scatratype_ = INPAR::SCATRA::scatratype_elch_enc;
     else if (prbtype_ == "combustion") scatratype_ = INPAR::SCATRA::scatratype_levelset;
@@ -317,7 +318,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // get also turbulence model and parameters
   // -------------------------------------------------------------------
   turbmodel_ = false;
-  if (prbtype_ == "loma")
+  if (scatratype_==INPAR::SCATRA::scatratype_loma)
   {
     // scalar and velocity increment at time n+1
     phiincnp_ = LINALG::CreateVector(*dofrowmap,true);
@@ -683,7 +684,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   stringstream temp;
   temp<< DRT::Problem::Instance()->OutputControlFile()->FileName()<<".nonliniter_step"<<step_;
   string outname = temp.str();
-  string probtype = DRT::Problem::Instance()->ProblemType(); // = "elch"
+  string probtype = DRT::Problem::Instance()->ProblemType();
 
   RCP<IO::OutputControl> myoutputcontrol = rcp(new IO::OutputControl(discret_->Comm(),probtype,"Polynomial","myinput",outname,numdim,0,1000));
   // create discretization writer with my own control settings

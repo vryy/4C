@@ -144,7 +144,7 @@ void SCATRA::TimIntStationary::OutputRestart()
 {
   // This feature enables starting a time-dependent simulation from
   // a non-trivial steady-state solution that was calculated before.
-  output_->WriteVector("phin", phinp_);
+  output_->WriteVector("phin", phinp_);  // for OST and BDF2
   output_->WriteVector("phinm", phinp_); // for BDF2
   output_->WriteVector("phidtn", zeros_); // for OST
 

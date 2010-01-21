@@ -70,12 +70,11 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
     eleparams.set("scatratype",scatratype_);
 
     // other parameters that are needed by the elements
-    eleparams.set("problem type",prbtype_);
     eleparams.set("incremental solver",incremental_);
     eleparams.set("form of convective term",convform_);
-    if (prbtype_=="elch")
+    if (scatratype_==INPAR::SCATRA::scatratype_elch_enc)
       eleparams.set("frt",frt_); // factor F/RT
-    else if (prbtype_ == "loma")
+    else if (scatratype_==INPAR::SCATRA::scatratype_loma)
     {
       eleparams.set("thermodynamic pressure",thermpressn_);
       eleparams.set("time derivative of thermodynamic pressure",thermpressdtn_);
@@ -147,7 +146,6 @@ void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
   condparams.set("scatratype",scatratype_);
   condparams.set("frt",frt_); // factor F/RT
   condparams.set("total time",time_);
-  condparams.set("iselch",(prbtype_=="elch")); // a boolean
 
   //provide displacement field in case of ALE
   condparams.set("isale",isale_);
@@ -185,7 +183,6 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
   // action for elements
   condparams.set("action","calc_Neumann_inflow");
   condparams.set("scatratype",scatratype_);
-  condparams.set("problem type",prbtype_);
   condparams.set("incremental solver",incremental_);
 
   // provide velocity field and potentially acceleration/pressure field
@@ -565,75 +562,76 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
   // loads densification coefficients and the initial mean concentration
 
   // only required for ELCH with natural convection
-  if (prbtype_ == "elch" &&
-      //(Teuchos::getIntegralValue<INPAR::ELCH::NatConv>(*extraparams_,"Natural Convection")!= INPAR::ELCH::natural_convection_no))
-    (extraparams_->get<INPAR::ELCH::NatConv>("Natural Convection")!= INPAR::ELCH::natural_convection_no))
+  if (prbtype_ == "elch")
   {
-    // allocate denselch_ with *dofrowmap and initialize it
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    elchdensnp_ = LINALG::CreateVector(*dofrowmap,true);
-    elchdensnp_->PutScalar(1.0);
-
-    // Calculate the initial mean concentration value
-    if (numscal_ < 1) dserror("Error since numscal = %d. Not allowed since < 1",numscal_);
-    c0_.resize(numscal_);
-
-    discret_->ClearState();
-    discret_->SetState("phinp",phinp_);
-    // set action for elements
-    ParameterList eleparams;
-    eleparams.set("action","calc_mean_scalars");
-    eleparams.set("scatratype",scatratype_);
-    eleparams.set("inverting",false);
-
-    //provide displacement field in case of ALE
-    eleparams.set("isale",isale_);
-    if (isale_)
-      AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-    // evaluate integrals of concentrations and domain
-    Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
-    discret_->EvaluateScalars(eleparams, scalars);
-    discret_->ClearState();   // clean up
-
-    // calculate mean_concentration
-    const double domint  = (*scalars)[numscal_];
-    for(int k=0;k<numscal_;k++)
+    if (extraparams_->get<INPAR::ELCH::NatConv>("Natural Convection")!= INPAR::ELCH::natural_convection_no)
     {
-        c0_[k] = (*scalars)[k]/domint;
-    }
+      // allocate denselch_ with *dofrowmap and initialize it
+      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+      elchdensnp_ = LINALG::CreateVector(*dofrowmap,true);
+      elchdensnp_->PutScalar(1.0);
 
-    //initialization of the densification coefficient vector
-    densific_.resize(numscal_);
-    DRT::Element*   element = discret_->lRowElement(0);
-    RefCountPtr<MAT::Material>  mat = element->Material();
+      // Calculate the initial mean concentration value
+      if (numscal_ < 1) dserror("Error since numscal = %d. Not allowed since < 1",numscal_);
+      c0_.resize(numscal_);
 
-    if (mat->MaterialType() == INPAR::MAT::m_matlist)
-    {
-      const MAT::MatList* actmat = static_cast<const MAT::MatList*>(mat.get());
+      discret_->ClearState();
+      discret_->SetState("phinp",phinp_);
+      // set action for elements
+      ParameterList eleparams;
+      eleparams.set("action","calc_mean_scalars");
+      eleparams.set("scatratype",scatratype_);
+      eleparams.set("inverting",false);
 
-      for (int k = 0;k<numscal_;++k)
+      //provide displacement field in case of ALE
+      eleparams.set("isale",isale_);
+      if (isale_)
+        AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+      // evaluate integrals of concentrations and domain
+      Teuchos::RCP<Epetra_SerialDenseVector> scalars
+      = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
+      discret_->EvaluateScalars(eleparams, scalars);
+      discret_->ClearState();   // clean up
+
+      // calculate mean_concentration
+      const double domint  = (*scalars)[numscal_];
+      for(int k=0;k<numscal_;k++)
       {
-        const int matid = actmat->MatID(k);
-        Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
-
-        if (singlemat->MaterialType() == INPAR::MAT::m_ion)
-        {
-          const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
-          densific_[k] = actsinglemat->Densification();
-          if (densific_[k] < 0.0) dserror("received negative densification value");
-        }
-        else
-          dserror("material type is not allowed");
+        c0_[k] = (*scalars)[k]/domint;
       }
-    }
-    if (mat->MaterialType() == INPAR::MAT::m_ion) // for a single species calculation
-    {
-      const MAT::Ion* actmat = static_cast<const MAT::Ion*>(mat.get());
-      densific_[0] = actmat->Densification();
-      if (densific_[0] < 0.0) dserror("received negative densification value");
-      if (numscal_ > 1) dserror("Single species calculation but numscal = %d > 1",numscal_);
+
+      //initialization of the densification coefficient vector
+      densific_.resize(numscal_);
+      DRT::Element*   element = discret_->lRowElement(0);
+      RefCountPtr<MAT::Material>  mat = element->Material();
+
+      if (mat->MaterialType() == INPAR::MAT::m_matlist)
+      {
+        const MAT::MatList* actmat = static_cast<const MAT::MatList*>(mat.get());
+
+        for (int k = 0;k<numscal_;++k)
+        {
+          const int matid = actmat->MatID(k);
+          Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
+
+          if (singlemat->MaterialType() == INPAR::MAT::m_ion)
+          {
+            const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
+            densific_[k] = actsinglemat->Densification();
+            if (densific_[k] < 0.0) dserror("received negative densification value");
+          }
+          else
+            dserror("material type is not allowed");
+        }
+      }
+      if (mat->MaterialType() == INPAR::MAT::m_ion) // for a single species calculation
+      {
+        const MAT::Ion* actmat = static_cast<const MAT::Ion*>(mat.get());
+        densific_[0] = actmat->Densification();
+        if (densific_[0] < 0.0) dserror("received negative densification value");
+        if (numscal_ > 1) dserror("Single species calculation but numscal = %d > 1",numscal_);
+      }
     }
   }
 
@@ -844,7 +842,8 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
   // print out values
   if (myrank_ == 0)
   {
-    if (prbtype_=="loma") cout << "Mean scalar: " << (*scalars)[0]/domint << endl;
+    if (scatratype_==INPAR::SCATRA::scatratype_loma)
+      cout << "Mean scalar: " << (*scalars)[0]/domint << endl;
     else
     {
       cout << "Domain integral:          " << domint << endl;
@@ -866,7 +865,8 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
     if (Step() <= 1)
     {
       f.open(fname.c_str(),std::fstream::trunc);
-      if (prbtype_=="loma") f << "#| Step | Time | Mean scalar |\n";
+      if (scatratype_==INPAR::SCATRA::scatratype_loma)
+        f << "#| Step | Time | Mean scalar |\n";
       else
       {
         f << "#| Step | Time | Domain integral ";
@@ -881,7 +881,8 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
       f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
     f << Step() << " " << Time() << " ";
-    if (prbtype_=="loma") f << (*scalars)[0]/domint << "\n";
+    if (scatratype_==INPAR::SCATRA::scatratype_loma)
+      f << (*scalars)[0]/domint << "\n";
     else
     {
       f << domint << " ";
@@ -991,8 +992,6 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
   eleparams.set("action","calc_elch_electrode_kinetics");
   eleparams.set("scatratype",scatratype_);
   eleparams.set("calc_status",true); // just want to have a status ouput!
-  eleparams.set("iselch",(prbtype_=="elch")); // a boolean
-  eleparams.set("problem type",prbtype_);
   eleparams.set("frt",frt_);
 
   //provide displacement field in case of ALE
@@ -1189,7 +1188,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   // set action for elements
   ParameterList params;
   params.set("action","calc_condif_flux");
-  params.set("problem type",prbtype_);
   params.set("scatratype",scatratype_);
   params.set("frt",frt_);
   params.set("fluxtype",fluxtype);
@@ -1276,7 +1274,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
     // other parameters that might be needed by the elements
     eleparams.set("time-step length",dta_);
-    eleparams.set("problem type",prbtype_);
     eleparams.set("scatratype",scatratype_);
     eleparams.set("incremental solver",true); // say yes and you get the residual!!
     eleparams.set("form of convective term",convform_);
@@ -1679,7 +1676,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
   // we reach the desired value for the electric current.
 
   // leave method, if there's nothing to do!
-  if (prbtype_ != "elch") return true;
+  if (scatratype_ != INPAR::SCATRA::scatratype_elch_enc) return true;
 
   if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
   {
@@ -1770,7 +1767,8 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues()
 {
-  if (prbtype_ == "elch") // action only for ELCH application
+  // action only for ELCH applications
+  if (scatratype_== INPAR::SCATRA::scatratype_elch_enc)
   {
     vector<int> numfound(numscal_,0);
 

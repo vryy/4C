@@ -217,7 +217,7 @@ void SCATRA::TimIntGenAlpha::AddSpecificTimeIntegrationParameters(
   params.set("time factor",genalphafac_*dta_);
   params.set("alpha_F",alphaF_);
 
-  if (prbtype_ == "loma")
+  if (scatratype_==INPAR::SCATRA::scatratype_loma)
   {
     params.set("thermodynamic pressure",thermpressaf_);
     params.set("thermodynamic pressure at n+alpha_M",thermpressam_);
@@ -468,7 +468,7 @@ void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::ElectrodeKineticsTimeUpdate(const bool init)
 {
-  if (prbtype_ == "elch")
+  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
     if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
       dserror("Galvanostatic mode for GenAlpha not yet supported.");

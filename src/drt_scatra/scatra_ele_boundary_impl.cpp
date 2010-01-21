@@ -236,7 +236,9 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     const double frt = params.get<double>("frt"); // = F/RT
 
     // get control parameter from parameter list
-    const bool   iselch = params.get<bool>("iselch");
+    bool iselch(true);
+    if (scatratype != INPAR::SCATRA::scatratype_elch_enc)
+      iselch = false;
     const bool   is_stationary = params.get<bool>("using stationary formulation");
     const double time = params.get<double>("total time");
     double       timefac = 1.0;
@@ -457,9 +459,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     // set thermodynamic pressure and its time derivative as well as
     // flag for turbulence model if required
-    string prbtype=params.get<string>("problem type");
     thermpress_ = 0.0;
-    if (prbtype =="loma")
+    if (scatratype==INPAR::SCATRA::scatratype_loma)
       thermpress_ = params.get<double>("thermodynamic pressure");
 
     // we dont know the parent element's lm vector; so we have to build it here

@@ -42,12 +42,14 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   phidtn_ = LINALG::CreateVector(*dofrowmap,true);
 
   // ELCH with natural convection
-  if (prbtype_ == "elch" &&
-      (extraparams_->get<INPAR::ELCH::NatConv>("Natural Convection")!= INPAR::ELCH::natural_convection_no))
+  if (prbtype_ == "elch")
   {
-    // density at time n
-    elchdensn_ = LINALG::CreateVector(*dofrowmap,true);
-    elchdensn_->PutScalar(1.0);
+    if (extraparams_->get<INPAR::ELCH::NatConv>("Natural Convection")!= INPAR::ELCH::natural_convection_no)
+    {
+      // density at time n
+      elchdensn_ = LINALG::CreateVector(*dofrowmap,true);
+      elchdensn_->PutScalar(1.0);
+    }
   }
 
   // fine-scale vector at time n+1
@@ -166,7 +168,7 @@ void SCATRA::TimIntOneStepTheta::AddSpecificTimeIntegrationParameters(
   params.set("time factor",theta_*dta_);
   params.set("alpha_F",1.0);
 
-  if (prbtype_ == "loma")
+  if (scatratype_==INPAR::SCATRA::scatratype_loma)
   {
     params.set("thermodynamic pressure",thermpressnp_);
     params.set("time derivative of thermodynamic pressure",thermpressdtnp_);
@@ -411,7 +413,7 @@ void SCATRA::TimIntOneStepTheta::PrepareFirstTimeStep()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::ElectrodeKineticsTimeUpdate(const bool init)
 {
-  if (prbtype_ == "elch")
+  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
     if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
