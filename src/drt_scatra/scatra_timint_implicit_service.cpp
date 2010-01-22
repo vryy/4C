@@ -1790,7 +1790,7 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues()
     for (int k = 0; k < numscal_; k++)
     {
       if (numfound[k] > 0)
-        cout<<"WARNING: "<<numfound[k]<<
+        cout<<"WARNING: PROC "<<myrank_<<" has "<<numfound[k]<<
         " nodes with zero/neg. concentration values for species "<<k<<endl;
     }
   }
