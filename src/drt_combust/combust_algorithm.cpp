@@ -97,6 +97,13 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   // get integration cells according to initial flame front
   interfacehandle_->UpdateInterfaceHandle();
 
+  stepreinit_ = true;
+  ReinitializeGfunc();
+  // reset phin vector in ScaTra time integration scheme to phinp vector
+  ScaTraField().SetPhin(ScaTraField().Phinp());
+  // pointer not needed any more
+  stepreinit_ = false;
+
   // export interface information to the fluid time integration
   // remark: this is essential here, if DoFluidField() is not called in Timeloop() (e.g. for pure Scatra problems)
   FluidField().ImportInterface(interfacehandle_);
@@ -721,9 +728,9 @@ void COMBUST::Algorithm::PrepareTimeStep()
   fggfuncnormL2_ = 1.0;
 
   stepbeforereinit_ = false;
-  if (ScaTraField().Step() % reinitinterval_ == 0) stepbeforereinit_ = true;
+  if (Step()>0 and Step() % reinitinterval_ == 0) stepbeforereinit_ = true;
   stepreinit_ = false;
-  if (ScaTraField().Step()>1 and ScaTraField().Step() % reinitinterval_ == 1) stepreinit_ = true;
+  if (Step()>1 and Step() % reinitinterval_ == 1) stepreinit_ = true;
 
   if (Comm().MyPID()==0)
   {

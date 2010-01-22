@@ -31,7 +31,7 @@ COMBUST::Reinitializer::Reinitializer(
     combustdyn_(combustdyn),
     reinitaction_(Teuchos::getIntegralValue<INPAR::COMBUST::ReInitialActionGfunc>(combustdyn_.sublist("COMBUSTION GFUNCTION"),"REINITIALIZATION")),
     reinitband_(Teuchos::getIntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINITBAND")),
-    reinitbandwidth_(combustdyn.sublist("COMBUSTION GFUNCTION").get<double>("REINITBAND")),
+    reinitbandwidth_(combustdyn.sublist("COMBUSTION GFUNCTION").get<double>("REINITBANDWIDTH")),
     scatra_(scatra),
     flamefront_(boundaryintcells)
 {
@@ -81,7 +81,7 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
   if (comm.MyPID()==0)
   {
     std::cout << "\n--- reinitializing G-function with signed distance function ..." << std::flush;
-    std::cout << "\n /!\\ warning === third component or normal vector set to 0 to keep 2D-character!" << std::endl;
+    //std::cout << "\n /!\\ warning === third component or normal vector set to 0 to keep 2D-character!" << std::endl;
   }
   // get a pointer to the G-function discretization
   Teuchos::RCP<DRT::Discretization> gfuncdis = scatra_.Discretization();
@@ -416,8 +416,9 @@ void COMBUST::Reinitializer::ComputeNormalVectorToFlameFront(
   // remark: normal vector points into unburnt domain (G<0)
   normal(0) = (edge1(1)*edge2(2) - edge1(2)*edge2(1));
   normal(1) = (edge1(2)*edge2(0) - edge1(0)*edge2(2));
+  normal(2) = (edge1(0)*edge2(1) - edge1(1)*edge2(0));
   // TODO remove restriction to 2D
-  normal(2) = 0.0; // (edge1(0)*edge2(1) - edge1(1)*edge2(0));
+  //normal(2) = 0.0;
 
 //  const Epetra_Comm& comm = scatra_.Discretization()->Comm();
 //  cout << "proc " << comm.MyPID() << " normal " <<  normal << endl;
