@@ -962,13 +962,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 &interaction_potential);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& bromotion = list->sublist("BROWNIAN MOTION",false,"");
-  setStringToIntegralParameter<int>("BROWNIAN_MOTION","No",
-                                "determines whether stochastical forces should be considered",
-                                 yesnotuple,yesnovalue,
-                                 &bromotion);
-
-  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& statmech = list->sublist("STATISTICAL MECHANICS",false,"");
 
   //Reading kind of background fluid stream in the thermal bath
@@ -1217,8 +1210,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    IntParameter("UPPSS",1,"Increment for visualization (unused)",&tsidyn);
    IntParameter("UPRES",1,"Increment for writing solution",&tsidyn);
 
-
-
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& flucthydro = list->sublist("FLUCTUATING HYDRODYNAMICS",false,""); 
+  DoubleParameter("TEMPERATURE",300,"Temperature in K",&flucthydro);
+  DoubleParameter("BOLTZMANNCONST",1.380650424e-23,"Boltzmann constant",&flucthydro);
+  
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
 
@@ -1265,7 +1261,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "One_Step_Theta",
                                  "BDF2",
                                  "Inc_Acc_Gen_Alpha",
-                                 "Theta_Adamsbashforth"
+                                 "Theta_Adamsbashforth",
+                                 "Fluid_Stoch"
                                  ),
                                tuple<FLUID_TIMEINTTYPE>(
                                  timeint_stationary,
@@ -1275,7 +1272,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  timeint_one_step_theta,
                                  timeint_bdf2,
                                  timeint_inc_acc_gen_alpha,
-                                 timeint_theta_adamsbashforth
+                                 timeint_theta_adamsbashforth,
+                                 timeint_stoch
                                  ),
                                &fdyn);
   setStringToIntegralParameter<int>("STARTINGALGO","One_Step_Theta","",

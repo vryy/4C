@@ -340,6 +340,9 @@ public:
 
   /// calculate lift&drag forces and angular momenta
   void LiftDrag() const;
+  
+  /// compute flow rate 
+  void ComputeFlowRates() const;
 
   /// integrate shape functions at nodes marked by condition
   /*!

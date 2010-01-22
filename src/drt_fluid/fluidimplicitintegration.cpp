@@ -3485,6 +3485,12 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
     //         calculate lift'n'drag forces from the residual
     // -------------------------------------------------------------------
     LiftDrag();
+    
+    
+    // -------------------------------------------------------------------
+    //                        compute flow rates
+    // -------------------------------------------------------------------
+    ComputeFlowRates();
 
     // -------------------------------------------------------------------
     //                         output of solution
@@ -3567,6 +3573,32 @@ void FLD::FluidImplicitTimeInt::LiftDrag() const
   if (liftdragvals!=Teuchos::null and discret_->Comm().MyPID() == 0)
     FLD::UTILS::WriteLiftDragToFile(time_, step_, *liftdragvals);
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | omputeFlowRates                                           u.may 01/10|
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::ComputeFlowRates() const
+{
+  // if no flowrate condition there don t compute anything
+  vector<DRT::Condition*> flowratecond;
+  discret_->GetCondition("LineFlowRate", flowratecond);
+  if((int) flowratecond.size()== 0)
+    return;
+  
+  // only implemented for 2D 
+  if(numdim_ == 2)
+  {
+    const std::map<int,double> flowrates = FLD::UTILS::ComputeLineFlowRates(*discret_, velnp_);
+    if(discret_->Comm().MyPID() == 0)
+      FLD::UTILS::WriteFlowRatesToFile(time_, step_, flowrates );
+  }
+  else
+    dserror("flow rate computation is not implemented for the 3D case");
+    
+  // write to file
   return;
 }
 
@@ -3849,6 +3881,7 @@ const Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::InvDirichlet(
   dbcmaps_->InsertCondVector(dirichzeros, invtoggle);
   return invtoggle;
 }
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

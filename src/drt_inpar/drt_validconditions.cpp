@@ -1468,7 +1468,26 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(lineelec);
   condlist.push_back(surfelec);
+  
+  /*--------------------------------------------------------------------*/
+  // flow rate through line
 
+  std::vector<Teuchos::RCP<ConditionComponent> > lineflowratecomponents;
+  lineflowratecomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+
+  Teuchos::RCP<ConditionDefinition> lineflowrate =
+    Teuchos::rcp(new ConditionDefinition("DESIGN FLOW RATE LINE CONDITIONS",
+                                         "LineFlowRate",
+                                         "Line Flow Rate",
+                                         DRT::Condition::FlowRateThroughLine_2D,
+                                         true,
+                                         DRT::Condition::Line));
+
+  for (unsigned i=0; i<lineflowratecomponents.size(); ++i)
+  {
+    lineflowrate->AddComponent(lineflowratecomponents[i]);
+  }
+  condlist.push_back(lineflowrate);
 
   /*--------------------------------------------------------------------*/
   // flow rate through surface

@@ -556,6 +556,58 @@ std::map<int,double> FLD::UTILS::ComputeSurfaceFlowRates(
   return volumeflowratepersurface;
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+std::map<int,double> FLD::UTILS::ComputeLineFlowRates(
+    DRT::Discretization&           dis  ,
+    const RCP<Epetra_Vector>       velnp)
+{
+  ParameterList eleparams;
+  // set action for elements
+  eleparams.set("action","calc_line_flowrate");
+
+  // note that the flowrate is not yet divided by the area
+  std::map<int,double> volumeflowrateperline;
+
+  // get condition
+  std::vector< DRT::Condition* > conds;
+  dis.GetCondition ("LineFlowRate", conds);
+
+  for(vector<DRT::Condition*>::const_iterator conditer = conds.begin(); conditer!=conds.end(); ++conditer)
+  {
+    const DRT::Condition* cond = *conditer;
+    const int condID = cond->GetInt("ConditionID");
+
+    // get a vector layout from the discretization to construct matching
+    // vectors and matrices local <-> global dof numbering
+    const Epetra_Map* dofrowmap = dis.DofRowMap();
+
+    // create vector (+ initialization with zeros)
+    Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap,true);
+
+    // call loop over elements
+    dis.ClearState();
+    dis.SetState("velnp",velnp);
+    
+    dis.EvaluateCondition(eleparams,flowrates,"LineFlowRate",condID);
+    dis.ClearState();
+
+    double local_flowrate = 0.0;
+    for (int i=0; i < dofrowmap->NumMyElements(); i++)
+    {
+      local_flowrate += (*flowrates)[i];
+    }
+
+    double flowrate = 0.0;
+    dofrowmap->Comm().SumAll(&local_flowrate,&flowrate,1);
+
+    volumeflowrateperline[condID] += flowrate;
+  }
+  return volumeflowrateperline;
+}
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<int,LINALG::Matrix<3,1> > FLD::UTILS::ComputeSurfaceImpulsRates(
@@ -619,6 +671,50 @@ std::map<int,LINALG::Matrix<3,1> > FLD::UTILS::ComputeSurfaceImpulsRates(
   }
 
   return volumeflowratepersurface;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::UTILS::WriteFlowRatesToFile(
+  const double                     time,
+  const int                        step,
+  const std::map<int,double>&      flowrates
+  )
+{
+  if (flowrates.empty())
+    dserror("flowratevector is emtpty");
+  
+  // print to file
+  std::ostringstream header;
+  header << right << std::setw(16) << "Time"
+         << right << std::setw(10) << "Step"
+         << right << std::setw(10) << "ID"
+         << right << std::setw(16) << "Flowrate";
+
+  for(map<int,double >::const_iterator flowrate = flowrates.begin(); flowrate != flowrates.end(); ++flowrate)
+  {
+    std::ostringstream s;
+    s << right << std::setw(16) << scientific << time
+      << right << std::setw(10) << scientific << step
+      << right << std::setw(10) << scientific << flowrate->first
+      << right << std::setw(16) << scientific << flowrate->second;
+
+    std::ostringstream slabel;
+    slabel << std::setw(3) << setfill('0') << flowrate->first;
+    std::ofstream f;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                            + ".flowrate_ID_"+slabel.str()+".txt";
+
+    if (step <= 1)
+      f.open(fname.c_str(),std::fstream::trunc); //f << header.str() << endl;
+    else
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+    
+    f << s.str() << "\n";
+    f.close();
+  }
 }
 
 #endif /* CCADISCRET       */

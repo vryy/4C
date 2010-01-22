@@ -151,6 +151,7 @@ public:
     Brownian_Motion,
     FilamentNumber,
     ForceSensor,
+    FlowRateThroughLine_2D,
     FlowRateThroughSurface_3D,
     ImpulsRateThroughSurface_3D,
     SurfaceModeKrylovProjection,

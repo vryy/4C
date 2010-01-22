@@ -786,7 +786,8 @@ private:
      calc_surface_tension,
      enforce_weak_dbc,
      conservative_outflow_bc,
-     calc_Neumann_inflow
+     calc_Neumann_inflow,
+     calc_line_flowrate
   };
 
   // don't want = operator
@@ -930,6 +931,27 @@ private:
     vector<int>&               lm,
     Epetra_SerialDenseMatrix&  elemat1,
     Epetra_SerialDenseVector&  elevec1);
+  
+  
+  /*!
+    \brief compute flow rate through line element
+           inflow is positive outflow is negative
+
+    This method calculates the flow rate through a line element.
+
+    \param params (in)        : ParameterList for communication between control routine
+    \param discretization (in): A reference to the underlying discretization
+    \param lm (in)            : location vector of this element
+    \param elevec1 (out)      : flow rates
+    \param velnp (in)         : velocities
+  */
+  void ComputeLineFlowRate(
+      ParameterList&             params,
+      DRT::Discretization&       discretization,
+      vector<int>&               lm,
+      Epetra_SerialDenseVector&  elevec1,
+      const std::vector<double>& velnp
+      );
 
 }; // class Fluid2Line
 

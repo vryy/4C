@@ -457,6 +457,38 @@ std::map<int,double> ComputeSurfaceFlowRates(
                                            ///< (only velocities are used)
     );
 
+
+/*!
+  \brief integrate mass flow over surfaces
+
+  for each condition Id, compute the flow through a line surface
+
+  \return a map, where for each condition Id, we get the flowrate.
+          positive and negative signs indicate net inflow and outflow
+
+  \author Ursula Mayer
+  \date 10/08
+ */
+std::map<int,double> ComputeLineFlowRates(
+    DRT::Discretization&           dis  ,
+    const RCP<Epetra_Vector>       velnp
+    );
+
+
+
+/*!
+ * \brief proc 0 writes the flow rate values for each condition ID to a file
+ *
+ * \author mayer
+ * \date 01/10
+ */
+void WriteFlowRatesToFile(
+  const double                     time,
+  const int                        step,
+  const std::map<int,double>&      flowrates
+  );
+
+
 /*!
   \brief integrate impulse rate over surfaces
 

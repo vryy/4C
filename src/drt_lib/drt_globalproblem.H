@@ -240,7 +240,7 @@ public:
   const Teuchos::ParameterList& InverseAnalysisParams() const { return getParameterList()->sublist("INVERSE ANALYSIS"); }
   const Teuchos::ParameterList& StructuralContactParams() const { return getParameterList()->sublist("STRUCTURAL CONTACT"); }
   const Teuchos::ParameterList& InteractionPotentialParams() const { return getParameterList()->sublist("INTERACTION POTENTIAL"); }
-  const Teuchos::ParameterList& BrownianMotionParams() const { return getParameterList()->sublist("BROWNIAN MOTION"); }
+  const Teuchos::ParameterList& FluctuatingHydrodynamicsParams() const { return getParameterList()->sublist("FLUCTUATING HYDRODYNAMICS"); }
   const Teuchos::ParameterList& StatisticalMechanicsParams() const { return getParameterList()->sublist("STATISTICAL MECHANICS"); }
   const Teuchos::ParameterList& ThermalDynamicParams() const { return getParameterList()->sublist("THERMAL DYNAMIC"); }
   const Teuchos::ParameterList& TSIDynamicParams() const { return getParameterList()->sublist("TSI DYNAMIC"); }

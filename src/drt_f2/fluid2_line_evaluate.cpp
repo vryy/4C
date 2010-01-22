@@ -61,6 +61,8 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
         act = Fluid2Line::calc_Neumann_inflow;
     else if (action == "conservative_outflow_bc")
         act = Fluid2Line::conservative_outflow_bc;
+    else if (action == "calc_line_flowrate")
+        act = Fluid2Line::calc_line_flowrate;
     else dserror("Unknown type of action for Fluid2_Line");
 
     switch(act)
@@ -149,6 +151,24 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
         lm,
         elemat1,
         elevec1);
+      break;
+    }
+    case calc_line_flowrate:
+    {   
+      // get velocities
+      const Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+      vector<double> myvelnp;
+      if (velnp!=null)
+      {
+        myvelnp.resize(lm.size());
+        DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+      }
+      ComputeLineFlowRate(
+         params,
+         discretization,
+         lm,
+         elevec1,
+         myvelnp);
       break;
     }
     default:
@@ -1399,6 +1419,97 @@ void DRT::ELEMENTS::Fluid2Line::LineConservativeOutflowConsistency(
 
   return;
 }// DRT::ELEMENTS::Fluid2Line::LineConservativeOutflowConsistency
+
+
+/*----------------------------------------------------------------------*
+ | compute flowrate through line                            u.may 01/10 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Fluid2Line::ComputeLineFlowRate(
+    ParameterList&             params,
+    DRT::Discretization&       discretization,
+    vector<int>&               lm,
+    Epetra_SerialDenseVector&  elevec1,
+    const std::vector<double>& velnp)
+{
+  // there are 2 velocities and 1 pressure
+  const int numdof = 3;
+  const DiscretizationType distype = this->Shape();
+  const int iel   = this->NumNode();
+  DRT::UTILS::GaussRule1D  gaussrule = getOptimalGaussrule(distype);
+  
+  // allocate vector for shape functions and matrix for derivatives
+  Epetra_SerialDenseVector      funct       (iel);
+  Epetra_SerialDenseMatrix      deriv       (1,iel);
+  Epetra_SerialDenseMatrix      xyze        (2,iel); // nodal coordinates 
+  Epetra_SerialDenseMatrix      evelnp      (2,iel); // nodal velocities
+
+  // get node coordinates
+  for(int i=0; i<iel; i++)
+  {
+    xyze(0,i)=this->Nodes()[i]->X()[0];
+    xyze(1,i)=this->Nodes()[i]->X()[1];
+  }
+
+  // get element velocities
+  for(int i=0;i<iel;i++)
+  {
+    evelnp(0,i)=velnp[i*numdof+0];
+    evelnp(1,i)=velnp[i*numdof+1];
+  }
+
+  /*----------------------------------------------------------------------*
+   |               start loop over integration points                     |
+   *----------------------------------------------------------------------*/
+  const DRT::UTILS::IntegrationPoints1D  intpoints(gaussrule);
+
+  for (int gpid=0; gpid<intpoints.nquad; gpid++)
+  {
+    const double xi_gp = intpoints.qxg[gpid][0];
+
+    // get shape functions and derivatives in the plane of the element
+    DRT::UTILS::shape_function_1D(funct, xi_gp, distype);
+    DRT::UTILS::shape_function_1D_deriv1(deriv, xi_gp, distype);
+
+    // compute measure tensor for surface element and the infinitesimal
+    // area element drs for the integration
+    Epetra_SerialDenseMatrix dxydr(1,2);
+    dxydr.Multiply('N','T',1.0,deriv,xyze,0.0);
+    const double g = dxydr(0,0)*dxydr(0,0)+dxydr(0,1)*dxydr(0,1);
+    const double dr= sqrt(g);
+
+    // values are multiplied by the product from inf. area element and gauss weight
+    const double fac = dr * intpoints.qwgt[gpid];
+
+    // compute velocity at gausspoint
+    LINALG::Matrix<2,1> gpvelnp(true);
+    for(int rr=0;rr<2;++rr)
+    {
+      gpvelnp(rr)=funct(0)*evelnp(rr,0);
+      for(int nn=1;nn<iel;++nn)
+        gpvelnp(rr)+=funct(nn)*evelnp(rr,nn);
+    }
+
+    // get unit normal vector in gausspoint
+    LINALG::Matrix<2,1>   normal(true);
+    normal(0) = dxydr(0,1);
+    normal(1) = (-1.0) * dxydr(0,0);
+    const double length = normal.Norm2();
+    normal(0) = normal(0) / length;
+    normal(1) = normal(1) / length;
+
+    // flowrate = u_i * normal_i
+    const double flowrate = gpvelnp(0)*normal(0) + gpvelnp(1)*normal(1);
+
+    // store flowrate at first dof of each node
+    // use negative value so that inflow is positiv
+    for (int node=0;node<iel;++node)
+    {
+      elevec1[node*numdof] -= funct[node] * fac * flowrate;
+    }
+  }
+
+  return;
+}// DRT::ELEMENTS::Fluid2Line:ComputeLineFlowRate
 
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_FLUID2
