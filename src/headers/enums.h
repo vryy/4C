@@ -624,7 +624,8 @@ typedef enum _FLUID_TIMEINTTYPE
 
   /* One step theta / Adams-Bashforth */
   /**/
-  timeint_theta_adamsbashforth
+  timeint_theta_adamsbashforth,
+  timeint_stoch
 } FLUID_TIMEINTTYPE;
 
 
