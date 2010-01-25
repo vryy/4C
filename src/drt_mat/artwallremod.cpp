@@ -295,6 +295,14 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid, DRT::INPUT::Line
     }
   } else if (initflag==2){
     dserror("Random init not yet implemented for ARTWALLREMOD");
+  } else if (initflag==3){
+  // start with isotropic computation, thus fiber directions are set to zero
+    for (int gp = 0; gp < numgp; ++gp) {
+      Epetra_SerialDenseMatrix id(3,3);
+      a1_->at(gp).resize(3);
+      a2_->at(gp).resize(3);
+      EvaluateFiberVecs(gp,gamma,id);
+    }
   } else dserror("Unknown init for ARTWALLREMOD");
 
   // check for remodelling option and initialize
@@ -418,9 +426,6 @@ void MAT::ArtWallRemod::Evaluate(
     }
   }
 
-  // anisotropic part: ***************************************************
-  // W_aniso=(k1/(2.0*k2))*(exp(k2*pow((Ibar_{4,6} - 1.0),2)-1.0)); fiber SEF
-
   // decide whether its time to remodel
   const double time = params.get("total time",-1.0);
 //  const double dt = params.get("delta time",-1.0);
@@ -429,66 +434,90 @@ void MAT::ArtWallRemod::Evaluate(
     Remodel(gp,time,defgrd);
   }
 
-  // structural tensors in voigt notation
-  LINALG::Matrix<NUM_STRESS_3D,1> A1;
-  LINALG::Matrix<NUM_STRESS_3D,1> A2;
-  for (int i = 0; i < 3; ++i) {
-    A1(i) = a1_->at(gp)[i]*a1_->at(gp)[i];
-    A2(i) = a2_->at(gp)[i]*a2_->at(gp)[i];
-  }
-  A1(3) = a1_->at(gp)[0]*a1_->at(gp)[1]; A1(4) = a1_->at(gp)[1]*a1_->at(gp)[2]; A1(5) = a1_->at(gp)[0]*a1_->at(gp)[2];
-  A2(3) = a2_->at(gp)[0]*a2_->at(gp)[1]; A2(4) = a2_->at(gp)[1]*a2_->at(gp)[2]; A2(5) = a2_->at(gp)[0]*a2_->at(gp)[2];
-
-  // modified (fiber-) invariants Ibar_{4,6} = J_{4,6} = J^{-2/3} I_{4,6}
-  // Voigt: trace(AB) =  a11 b11 + 2 a12 b12 + 2 a13 b13 + a22 b22 + 2 a23 b23 + a33 b33
-  // however factor 2 for shear terms is already in C
-  const double J4 = incJ * ( A1(0)*C(0) + A1(1)*C(1) + A1(2)*C(2)
-                    + 1.*(A1(3)*C(3) + A1(4)*C(4) + A1(5)*C(5))); //J4 = trace(A1:C^dev)
-  const double J6 = incJ * ( A2(0)*C(0) + A2(1)*C(1) + A2(2)*C(2)
-                    + 1.*(A2(3)*C(3) + A2(4)*C(4) + A2(5)*C(5))); //J6 = trace(A2:C^dev)
-  const double exp1 = exp(k2*(J4-1.)*(J4-1.));
-  const double exp2 = exp(k2*(J6-1.)*(J6-1.));
-
-  // 'tensonly' determines if fibers can only take tension or not
-  double fib1_tension = 1.;
-  double fib2_tension = 1.;
-  if (tensonly==1)
-  {
-    if (J4 < 1.0) fib1_tension = 0.;
-    if (J6 < 1.0) fib2_tension = 0.;
-  }
-
-  // PK2 fiber part in splitted formulation, see Holzapfel p. 271
-  LINALG::Matrix<NUM_STRESS_3D,1> Sfiso(A1); // first compute Sfbar = dWf/dJ4 A1 + dWf/dJ6 A2
-  const double fib1 = fib1_tension* 2.*(k1*(J4-1.)*exp1);  // 2 dWf/dJ4
-  const double fib2 = fib2_tension* 2.*(k1*(J6-1.)*exp2);  // 2 dWf/dJ6
-  Sfiso.Scale(fib1);
-  Sfiso.Update(fib2,A2,1.0);
-
-  const double traceCSfbar =  Sfiso(0)*C(0) + Sfiso(1)*C(1) + Sfiso(2)*C(2)
-                 + 1.*(Sfiso(3)*C(3) + Sfiso(4)*C(4) + Sfiso(5)*C(5)); // trace(Sfbar C)
-  // compute Sfiso = J^{-2/3} * (Sfbar - 1/3 trace(Sfbar C) Cinv
-  for (int i = 0; i < 6; ++i) {
-    Sfiso(i) = incJ * (Sfiso(i) - third*traceCSfbar*Cinv(i));
-  }
-  (*stress) += Sfiso;
-
-  // Elasticity fiber part in splitted formulation, see Holzapfel p. 255 and 272
-  const double delta7bar1 = fib1_tension* 4.*(k1*exp1 + 2.*k1*k2*(J4-1.)*(J4-1.)*exp1); // 4 d^2Wf/dJ4dJ4
-  const double delta7bar2 = fib2_tension* 4.*(k1*exp2 + 2.*k1*k2*(J6-1.)*(J6-1.)*exp2); // 4 d^2Wf/dJ6dJ6
-
-  for (int i = 0; i < 6; ++i) {
-    for (int j = 0; j < 6; ++j) {
-      double A1iso_i = incJ*A1(i)-third*J4*Cinv(i);  // A1iso = J^{-2/3} A1 - 1/3 J4 Cinv
-      double A1iso_j = incJ*A1(j)-third*J4*Cinv(j);
-      double A2iso_i = incJ*A2(i)-third*J6*Cinv(i);  // A2iso = J^{-2/3} A2 - 1/3 J6 Cinv
-      double A2iso_j = incJ*A2(j)-third*J6*Cinv(j);
-      (*cmat)(i,j)    += delta7bar1 * A1iso_i * A1iso_j  // delta7bar1 A1iso x A1iso
-                    + delta7bar2 * A2iso_i * A2iso_j  // delta7bar2 A2iso x A2iso
-                    + 2.*third*incJ*traceCSfbar * Psl(i,j)  // 2/3 J^{-2/3} trace(Sfbar C) Psl
-                    - 2.*third* (Cinv(i) * Sfiso(j) + Cinv(j) * Sfiso(i)); // -2/3 (Cinv x Sfiso + Sfiso x Cinv)
+  // switch between isotropic and anisotropic fiber material for initial iteration step 
+  if (a1_->at(gp)[0]==0 && a1_->at(gp)[1]==0 && a1_->at(gp)[2]==0) {
+    // isotropic fiber part: ***********************************************
+    // W=(k1/(2.0*k2))*(exp(k2*pow((Ibar_1 - 3.0),2)-1.0)); fiber SEF
+    const double expiso = exp(k2*(I1*incJ-3.)*(I1*incJ-3.));
+    const double faciso = 2.*k1*(I1*incJ-3.)*expiso;
+    const double delta7iso = incJ*incJ* 4.*(k1 + 2.*k1*k2*(I1*incJ-3.)*(I1*incJ-3.))*expiso;
+    for (int i = 0; i < 6; ++i) {
+      (*stress)(i) += incJ* faciso* (Id(i) - third*I1*Cinv(i));
+      for (int j = 0; j < 6; ++j) {
+        double Siso_i = incJ* faciso* (Id(i) - third*I1*Cinv(i));
+        double Siso_j = incJ* faciso* (Id(j) - third*I1*Cinv(j));
+        double Aiso_i = Id(i) - third* I1* Cinv(i);
+        double Aiso_j = Id(j) - third* I1* Cinv(j);
+        (*cmat)(i,j) += 2*third*incJ*faciso* I1 * Psl(i,j)
+             - 2*third * Cinv(i) * Siso_j         // -2/3 Cinv x Siso
+             - 2*third * Cinv(j) * Siso_i         // -2/3 Siso x Cinv
+             + delta7iso * Aiso_i * Aiso_j;       // part with 4 d^2W/dC^2
+      }
     }
-  }
+  } else {
+    // anisotropic part: ***************************************************
+    // W_aniso=(k1/(2.0*k2))*(exp(k2*pow((Ibar_{4,6} - 1.0),2)-1.0)); fiber SEF
+    // structural tensors in voigt notation
+    LINALG::Matrix<NUM_STRESS_3D,1> A1;
+    LINALG::Matrix<NUM_STRESS_3D,1> A2;
+    for (int i = 0; i < 3; ++i) {
+      A1(i) = a1_->at(gp)[i]*a1_->at(gp)[i];
+      A2(i) = a2_->at(gp)[i]*a2_->at(gp)[i];
+    }
+    A1(3) = a1_->at(gp)[0]*a1_->at(gp)[1]; A1(4) = a1_->at(gp)[1]*a1_->at(gp)[2]; A1(5) = a1_->at(gp)[0]*a1_->at(gp)[2];
+    A2(3) = a2_->at(gp)[0]*a2_->at(gp)[1]; A2(4) = a2_->at(gp)[1]*a2_->at(gp)[2]; A2(5) = a2_->at(gp)[0]*a2_->at(gp)[2];
+
+    // modified (fiber-) invariants Ibar_{4,6} = J_{4,6} = J^{-2/3} I_{4,6}
+    // Voigt: trace(AB) =  a11 b11 + 2 a12 b12 + 2 a13 b13 + a22 b22 + 2 a23 b23 + a33 b33
+    // however factor 2 for shear terms is already in C
+    const double J4 = incJ * ( A1(0)*C(0) + A1(1)*C(1) + A1(2)*C(2)
+                      + 1.*(A1(3)*C(3) + A1(4)*C(4) + A1(5)*C(5))); //J4 = trace(A1:C^dev)
+    const double J6 = incJ * ( A2(0)*C(0) + A2(1)*C(1) + A2(2)*C(2)
+                      + 1.*(A2(3)*C(3) + A2(4)*C(4) + A2(5)*C(5))); //J6 = trace(A2:C^dev)
+    const double exp1 = exp(k2*(J4-1.)*(J4-1.));
+    const double exp2 = exp(k2*(J6-1.)*(J6-1.));
+
+    // 'tensonly' determines if fibers can only take tension or not
+    double fib1_tension = 1.;
+    double fib2_tension = 1.;
+    if (tensonly==1)
+    {
+      if (J4 < 1.0) fib1_tension = 0.;
+      if (J6 < 1.0) fib2_tension = 0.;
+    }
+
+    // PK2 fiber part in splitted formulation, see Holzapfel p. 271
+    LINALG::Matrix<NUM_STRESS_3D,1> Sfiso(A1); // first compute Sfbar = dWf/dJ4 A1 + dWf/dJ6 A2
+    const double fib1 = fib1_tension* 2.*(k1*(J4-1.)*exp1);  // 2 dWf/dJ4
+    const double fib2 = fib2_tension* 2.*(k1*(J6-1.)*exp2);  // 2 dWf/dJ6
+    Sfiso.Scale(fib1);
+    Sfiso.Update(fib2,A2,1.0);
+
+    const double traceCSfbar =  Sfiso(0)*C(0) + Sfiso(1)*C(1) + Sfiso(2)*C(2)
+                   + 1.*(Sfiso(3)*C(3) + Sfiso(4)*C(4) + Sfiso(5)*C(5)); // trace(Sfbar C)
+    // compute Sfiso = J^{-2/3} * (Sfbar - 1/3 trace(Sfbar C) Cinv
+    for (int i = 0; i < 6; ++i) {
+      Sfiso(i) = incJ * (Sfiso(i) - third*traceCSfbar*Cinv(i));
+    }
+    (*stress) += Sfiso;
+
+    // Elasticity fiber part in splitted formulation, see Holzapfel p. 255 and 272
+    const double delta7bar1 = fib1_tension* 4.*(k1*exp1 + 2.*k1*k2*(J4-1.)*(J4-1.)*exp1); // 4 d^2Wf/dJ4dJ4
+    const double delta7bar2 = fib2_tension* 4.*(k1*exp2 + 2.*k1*k2*(J6-1.)*(J6-1.)*exp2); // 4 d^2Wf/dJ6dJ6
+
+    for (int i = 0; i < 6; ++i) {
+      for (int j = 0; j < 6; ++j) {
+        double A1iso_i = incJ*A1(i)-third*J4*Cinv(i);  // A1iso = J^{-2/3} A1 - 1/3 J4 Cinv
+        double A1iso_j = incJ*A1(j)-third*J4*Cinv(j);
+        double A2iso_i = incJ*A2(i)-third*J6*Cinv(i);  // A2iso = J^{-2/3} A2 - 1/3 J6 Cinv
+        double A2iso_j = incJ*A2(j)-third*J6*Cinv(j);
+        (*cmat)(i,j)    += delta7bar1 * A1iso_i * A1iso_j  // delta7bar1 A1iso x A1iso
+                      + delta7bar2 * A2iso_i * A2iso_j  // delta7bar2 A2iso x A2iso
+                      + 2.*third*incJ*traceCSfbar * Psl(i,j)  // 2/3 J^{-2/3} trace(Sfbar C) Psl
+                      - 2.*third* (Cinv(i) * Sfiso(j) + Cinv(j) * Sfiso(i)); // -2/3 (Cinv x Sfiso + Sfiso x Cinv)
+      }
+    }
+  } // end of switch between isotropic and anisotropic fiber strain energy function
 
   // store current stress in case of remodeling
   if (remtime_->at(gp) != -1.){
@@ -526,6 +555,8 @@ void MAT::ArtWallRemod::Remodel(const int gp, const double time, const LINALG::M
 #endif
   // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
   double newgamma = atan(lambda(1)/lambda(2));
+  //compression in 2nd max direction, thus fibers are alligned to max principal direction
+  if (lambda(1) < 0) newgamma = 0.0;
 
 //  // check whether delta gamma is larger than tolerance
 //  const double gammatol = 0.01;
@@ -594,7 +625,7 @@ std::string MAT::ArtWallRemod::PrintVec(const vector<double> actvec)
   MAT::ArtWallRemodOutputToGmsh(discret_, GetStep(), 1);
   MAT::ArtWallRemodOutputToTxt(discret_, GetStep(), 1);
 }
-*/
+don't forget to include artwallremod.H */
 
 void MAT::ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
     const double time,
@@ -620,6 +651,8 @@ void MAT::ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
         double remtime = remo->Getremtimes()->at(gp);
         vector<double> lamb = remo->Getlambdas()->at(gp);
         Epetra_SerialDenseMatrix phi = remo->Getphis()->at(gp);
+        vector<double> a1s = remo->Geta1()->at(gp);
+        vector<double> a2s = remo->Geta2()->at(gp);
 
         // time
         outfile << time << ",";
@@ -640,6 +673,9 @@ void MAT::ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
           for (int j=0;j<3;++j)
             outfile << phi(j,i) << ",";
         // end
+        // fiber directions
+        for (int i=0;i<3;++i) outfile << a1s[i] << ",";
+        for (int i=0;i<3;++i) outfile << a2s[i] << ",";
         outfile << endl;
       }
     }
@@ -687,7 +723,6 @@ void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
     MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
     RCP<vector<vector<double> > > a1s = remo->Geta1();
     RCP<vector<vector<double> > > a2s = remo->Geta2();
-
 
     // material plot at gauss points
     int ngp = remo->Geta1()->size();
