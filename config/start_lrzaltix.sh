@@ -13,8 +13,8 @@ BACIDIR=$HOME/baci
 INPUTDIR=$HOME/input
 OUTPUTDIR=$HOME/output
 PREFIX=filename
-echo $OPT_TMP
-mpiexec $BACIDIR/cca_suse_mpi.altix.fast $INPUTDIR/$PREFIX.dat $OPT_TMP/zzz
-cp $OPT_TMP/zzz* $OUTDIR/
+
+mpiexec $BACIDIR/cca_suse_mpi.altix.fast $INPUTDIR/$PREFIX.dat $OUTPUTDIR/$PREFIX
+
 
 

@@ -838,7 +838,7 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
       case INPAR::MAT::mes_couplogneohooke:
       {
         MAT::ELASTIC::CoupLogNeoHooke* actmat2 =
-          static_cast<const MAT::ELASTIC::CoupLogNeoHooke*>(summat.get());
+          static_cast<MAT::ELASTIC::CoupLogNeoHooke*>(summat.get());
         //actmat2->SetMue(abs(p_cur(j)));
         //actmat2->SetLambda(abs(p_cur(j+1)));
         //actmat2->SetParmode(abs(p_cur(j+2)));
@@ -850,7 +850,7 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
       case INPAR::MAT::mes_coupblatzko:
       {
         MAT::ELASTIC::CoupBlatzKo* actmat2 =
-          static_cast<const MAT::ELASTIC::CoupBlatzKo*>(summat.get());
+          static_cast<MAT::ELASTIC::CoupBlatzKo*>(summat.get());
         actmat2->SetMue(abs(p_cur(j)));
         //actmat2->SetF(abs(p_cur(j+1)));
         actmat2->SetNue((abs(p_cur(j+1)))/(2.*(abs(p_cur(j+1))+1.)));
@@ -860,7 +860,7 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
       case INPAR::MAT::mes_isoneohooke:
       {
         MAT::ELASTIC::IsoNeoHooke* actmat2 =
-          static_cast<const MAT::ELASTIC::IsoNeoHooke*>(summat.get());
+          static_cast<MAT::ELASTIC::IsoNeoHooke*>(summat.get());
         actmat2->SetMue(abs(p_cur(j)));
         j = j+1;
         break;
@@ -868,7 +868,7 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
       case INPAR::MAT::mes_isoyeoh:
       {
         MAT::ELASTIC::IsoYeoh* actmat2 =
-          static_cast<const MAT::ELASTIC::IsoYeoh*>(summat.get());
+          static_cast<MAT::ELASTIC::IsoYeoh*>(summat.get());
         actmat2->SetC1(abs(p_cur(j)));
         actmat2->SetC2(abs(p_cur(j+1)));
         actmat2->SetC3(abs(p_cur(j+2)));
@@ -878,7 +878,7 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
       case INPAR::MAT::mes_isoquad:
       {
         MAT::ELASTIC::IsoQuad* actmat2 =
-          static_cast<const MAT::ELASTIC::IsoQuad*>(summat.get());
+          static_cast<MAT::ELASTIC::IsoQuad*>(summat.get());
         actmat2->SetC(abs(p_cur(j)));
         j = j+1;
         break;
@@ -886,7 +886,7 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
       case INPAR::MAT::mes_isocub:
       {
         MAT::ELASTIC::IsoCub* actmat2 =
-          static_cast<const MAT::ELASTIC::IsoCub*>(summat.get());
+          static_cast<MAT::ELASTIC::IsoCub*>(summat.get());
         actmat2->SetC(abs(p_cur(j)));
         j = j+1;
         break;
@@ -894,7 +894,7 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
       case INPAR::MAT::mes_isoexpo:
       {
         MAT::ELASTIC::IsoExpo* actmat2 =
-          static_cast<const MAT::ELASTIC::IsoExpo*>(summat.get());
+          static_cast<MAT::ELASTIC::IsoExpo*>(summat.get());
         actmat2->SetK1(abs(p_cur(j)));
         actmat2->SetK2(abs(p_cur(j+1)));
         j = j+2;
@@ -903,7 +903,7 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
       case INPAR::MAT::mes_isomooneyrivlin:
       {
         MAT::ELASTIC::IsoMooneyRivlin* actmat2 =
-          static_cast<const MAT::ELASTIC::IsoMooneyRivlin*>(summat.get());
+          static_cast<MAT::ELASTIC::IsoMooneyRivlin*>(summat.get());
         actmat2->SetC1(abs(p_cur(j)));
         actmat2->SetC2(abs(p_cur(j+1)));
         j = j+2;
@@ -912,7 +912,7 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
       case INPAR::MAT::mes_volsussmanbathe:
       {
         MAT::ELASTIC::VolSussmanBathe* actmat2 =
-          static_cast<const MAT::ELASTIC::VolSussmanBathe*>(summat.get());
+          static_cast<MAT::ELASTIC::VolSussmanBathe*>(summat.get());
         actmat2->SetKappa(abs(p_cur(j)));
         j = j+1;
         break;
@@ -920,7 +920,7 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
       case INPAR::MAT::mes_volpenalty:
       {
         MAT::ELASTIC::VolPenalty* actmat2 =
-          static_cast<const MAT::ELASTIC::VolPenalty*>(summat.get());
+          static_cast<MAT::ELASTIC::VolPenalty*>(summat.get());
         actmat2->SetEpsilon(abs(p_cur(j)));
         actmat2->SetGamma(abs(p_cur(j+1)));
         j = j+2;
@@ -929,7 +929,7 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
       case INPAR::MAT::mes_vologden:
       {
         MAT::ELASTIC::VolOgden* actmat2 =
-          static_cast<const MAT::ELASTIC::VolOgden*>(summat.get());
+          static_cast<MAT::ELASTIC::VolOgden*>(summat.get());
         actmat2->SetKappa(abs(p_cur(j)));
         //actmat2->SetBeta(abs(p_cur(j+1)));
         j = j+1;
@@ -938,7 +938,7 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
       case INPAR::MAT::mes_coupanisoexpotwo:
       {
         MAT::ELASTIC::CoupAnisoExpoTwo* actmat2 =
-          static_cast<const MAT::ELASTIC::CoupAnisoExpoTwo*>(summat.get());
+          static_cast<MAT::ELASTIC::CoupAnisoExpoTwo*>(summat.get());
         actmat2->SetK1(abs(p_cur(j)));
         actmat2->SetK2(abs(p_cur(j+1)));
         actmat2->SetK3(abs(p_cur(j+2)));
@@ -949,7 +949,7 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
       case INPAR::MAT::mes_coupanisoneohooketwo:
       {
         MAT::ELASTIC::CoupAnisoNeoHookeTwo* actmat2 =
-          static_cast<const MAT::ELASTIC::CoupAnisoNeoHookeTwo*>(summat.get());
+          static_cast<MAT::ELASTIC::CoupAnisoNeoHookeTwo*>(summat.get());
         actmat2->SetC1(abs(p_cur(j)));
         actmat2->SetC2(abs(p_cur(j+1)));
         j = j+2;
