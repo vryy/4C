@@ -1879,19 +1879,20 @@ bool POTENTIAL::SurfacePotential::DetermineValidContribution(
 
 
 ///////////////////////// test potential //////////////////////////////////////
-
 /*-------------------------------------------------------------------*
 | (public)                                                 umay 01/10|
 |                                                                    |
 | Call discretization to evaluate additional contributions due to    |
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
+/*
 void POTENTIAL::SurfacePotential::TestEvaluatePotential(
   ParameterList&                      p,
   RefCountPtr<Epetra_Vector>          disp,
   RefCountPtr<Epetra_Vector>          fint,
   RefCountPtr<LINALG::SparseMatrix>   stiff,
-  const double time)
+  const double                        time,
+  const int                           step)
 {
   // action for elements
   p.set("action","calc_potential_stiff");
@@ -1900,13 +1901,14 @@ void POTENTIAL::SurfacePotential::TestEvaluatePotential(
   discret_.SetState("displacement",disp);
   
   // TODO compute elements by label for volume elements of the spheres
+  EvaluateSurfacePotentialCondition(p,stiff,null,fint,null,null,"Potential");
   
   
   // compute test results 
-  computeTestVanDerWaalsSpheres(elementsByLabel_, disp, fint, time);
+  computeTestVanDerWaalsSpheres(elementsByLabel_, discret_.GetState("displacement")  , fint, time, step);
   return;
 }
-
+*/
 
 /*-------------------------------------------------------------------*
 | (public)                                                 umay 11/09|
@@ -1914,14 +1916,14 @@ void POTENTIAL::SurfacePotential::TestEvaluatePotential(
 | Call discretization to evaluate additional contributions due to    |
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
-/*
+
 void POTENTIAL::SurfacePotential::TestEvaluatePotential(ParameterList& p,
                                                       RefCountPtr<Epetra_Vector> disp,
                                                       RefCountPtr<Epetra_Vector> fint,
                                                       RefCountPtr<LINALG::SparseMatrix> stiff,
-                                                      const double time)
-{
-  
+                                                      const double time,
+                                                      const int                           step)
+{ 
   // action for elements
   p.set("action","calc_potential_stiff");
 
@@ -1942,10 +1944,10 @@ void POTENTIAL::SurfacePotential::TestEvaluatePotential(ParameterList& p,
   LINALG::Matrix<3,1> DistanceVector (true);  
  
   //Schleife über die Elemente des ersten Körpers, muss je nach Geometrie angepasst werde
-  FintSumAndCenterOfGravityVector(fint_sum_Body1, Schwerpunkt_Body1, fint, disp, 0, 1080 , 0, 3645);
-  //FintSumAndCenterOfGravityVector(fint_sum_Body1, Schwerpunkt_Body1, fint, disp, 0, 2048 , 0, 6819);
-  FintSumAndCenterOfGravityVector(fint_sum_Body2, Schwerpunkt_Body2, fint, disp, 1080, 2160 , 3645, 7290);
-  //FintSumAndCenterOfGravityVector(fint_sum_Body2, Schwerpunkt_Body2, fint, disp, 2048, 4096 , 6819, 13638);  
+  //FintSumAndCenterOfGravityVector(fint_sum_Body1, Schwerpunkt_Body1, fint, disp, 0, 1080 , 0, 3645);
+  FintSumAndCenterOfGravityVector(fint_sum_Body1, Schwerpunkt_Body1, fint, disp, 0, 2048 , 0, 6819);
+  //FintSumAndCenterOfGravityVector(fint_sum_Body2, Schwerpunkt_Body2, fint, disp, 1080, 2160 , 3645, 7290);
+  FintSumAndCenterOfGravityVector(fint_sum_Body2, Schwerpunkt_Body2, fint, disp, 2048, 4096 , 6819, 13638);  
     
   //Abstandsvektor zeigt von Körper 1 nach Körper 2
   for(int i=0; i<3; i++)
@@ -1966,7 +1968,7 @@ void POTENTIAL::SurfacePotential::TestEvaluatePotential(ParameterList& p,
 
   return;
 }
-*/
+
 
 
 /*-------------------------------------------------------------------*

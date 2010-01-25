@@ -408,9 +408,10 @@ protected:
   
   void computeTestVanDerWaalsSpheres(
     const std::map<int,std::set<int> >&     elementsByLabel,
-    const RefCountPtr<Epetra_Vector>        disp,
+    const RefCountPtr<const Epetra_Vector>  disp,
     const RefCountPtr<Epetra_Vector>        fint,
-    const double                            time
+    const double                            time,
+    const int                               step
     );
   
   
@@ -419,7 +420,7 @@ protected:
     LINALG::Matrix<3,1>&        fpot_sphere,
     LINALG::Matrix<3,1>&        cog_sphere,
     const RCP<Epetra_Vector>    fint,
-    const RCP<Epetra_Vector>    disp,
+    const RCP<const Epetra_Vector>    disp,
     const std::set<int>&        elementIds
     );
   
@@ -444,7 +445,7 @@ protected:
   
   //! get physical eleCoords
   void getPhysicalEleCoords(
-      Teuchos::RCP<Epetra_Vector>     idisp_solid,
+      Teuchos::RCP<const Epetra_Vector>     idisp_solid,
       const DRT::Element*             element,
       LINALG::SerialDenseMatrix&      xyze
       );
@@ -455,7 +456,8 @@ protected:
     const double    distance,
     const double    force1,
     const double    force2,
-    const double    time
+    const double    time,
+    const int       step
     );
   
   

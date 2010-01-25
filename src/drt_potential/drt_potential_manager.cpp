@@ -171,12 +171,13 @@ void POTENTIAL::PotentialManager::TestEvaluatePotential(  ParameterList&        
                                                           RefCountPtr<Epetra_Vector>        disp,
                                                           RefCountPtr<Epetra_Vector>        fint,
                                                           RefCountPtr<LINALG::SparseMatrix> stiff,
-                                                          const double                      time)
+                                                          const double                      time,
+                                                          const int                         step)
 {
   if(surface_)
-    surfacePotential_->TestEvaluatePotential(p, disp, fint, stiff, time);
-  //if(volume_)
-  //  volumePotential_->EvaluatePotential(p, disp, fint, stiff);
+    surfacePotential_->TestEvaluatePotential(p, disp, fint, stiff, time, step);
+  if(volume_)
+    volumePotential_->TestEvaluatePotential(p, disp, fint, stiff, time, step);
   return;
 }
 
@@ -232,7 +233,7 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
     Epetra_SerialDenseVector&       F_int)
 { 
   //TODO
-  // check in solid hex 8 if elemat and elevec are properly filed !!!
+  // check in solid hex 8 if elemat and elevec are properly filled !!!
   if( params_.get<string>("approximation type")== "None" )
     volumePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
   else

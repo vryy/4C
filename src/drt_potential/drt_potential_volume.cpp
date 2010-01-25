@@ -1154,7 +1154,8 @@ void POTENTIAL::VolumePotential::TestEvaluatePotential(
   RefCountPtr<Epetra_Vector>          disp,
   RefCountPtr<Epetra_Vector>          fint,
   RefCountPtr<LINALG::SparseMatrix>   stiff,
-  const double time)
+  const double                        time,
+  const int                           step)
 {
   // action for elements
   p.set("action","calc_potential_stiff");
@@ -1162,8 +1163,11 @@ void POTENTIAL::VolumePotential::TestEvaluatePotential(
   discret_.ClearState();
   discret_.SetState("displacement",disp);
   
+  EvaluateVolumePotentialCondition(p,stiff,null,fint,null,null,"Potential");
+ 
+  RefCountPtr<const Epetra_Vector>        disp_col = discret_.GetState("displacement");  
   // compute test results 
-  computeTestVanDerWaalsSpheres(elementsByLabel_, disp, fint, time);
+  computeTestVanDerWaalsSpheres(elementsByLabel_, disp_col  , fint, time, step);
   return;
 }
 
