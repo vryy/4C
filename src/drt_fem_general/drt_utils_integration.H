@@ -113,7 +113,7 @@ inline bool IntRuleIsOpen(DRT::UTILS::GaussRule3D intrule)
   case intrule_pyramid_8point:         return true;
   default:
     std::cout << "Integration rule not categorized" << std::endl;
-    exit(1);
+    std::exit(1);
   }
 }
 
