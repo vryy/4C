@@ -388,7 +388,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                   //cout << "should be: " << std::scientific << matrixentry << ", is: " << estif(entry, i) << " " << estif(i, entry) << endl;
               }
 
-              exit(0);
+              std::exit(0);
           }
           else
 #endif
