@@ -133,9 +133,8 @@ namespace UTILS
 
 
   //! calculate volume based on numerical integration
-  template<DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
+  template<DRT::Element::DiscretizationType DISTYPE, class M2>
   double VolumeViaNumIntegration(
-      const M1&  evelnp,  ///< nodal velocity array
       const M2&  xyze     ///< element nodal position array
   )
   {
@@ -174,7 +173,7 @@ namespace UTILS
       const M2&  xyze     ///< element nodal position array
   )
   {
-    const double vol = VolumeViaNumIntegration<DISTYPE>(evelnp, xyze);
+    const double vol = VolumeViaNumIntegration<DISTYPE>(xyze);
 
     // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
     const double hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
@@ -194,7 +193,7 @@ namespace UTILS
       const M2&                     xyze     ///< element nodal position array
   )
   {
-    const double vol = VolumeViaNumIntegration<DISTYPE>(evelnp, xyze);
+    const double vol = VolumeViaNumIntegration<DISTYPE>(xyze);
 
     const double phys_volumeratio = (1.0 - XFEM::DomainCoverageRatio(*xfemele,ih));
 
