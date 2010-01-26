@@ -57,16 +57,4 @@ void IO::GMSH::XdisToStream(
   s << "};\n";
 }
 
-std::string IO::GMSH::XdisToString(
-    const std::string& text,
-    const double scalar,
-    const Teuchos::RCP<DRT::Discretization> dis,
-    const std::map<int, GEO::DomainIntCells >& elementDomainIntCellsMap,
-    const std::map<int, GEO::BoundaryIntCells >& elementBoundaryIntCellsMap)
-{
-  std::ostringstream s;
-  XdisToStream(text, scalar, dis, elementDomainIntCellsMap, elementBoundaryIntCellsMap, s);
-  return s.str();
-}
-
 #endif // #ifdef CCADISCRET

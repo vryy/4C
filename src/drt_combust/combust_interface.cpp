@@ -117,7 +117,7 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
     std::remove(filenamedel.str().c_str());
     if (screen_out) std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
-    f_system << IO::GMSH::XdisToString("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_);
+    IO::GMSH::XdisToStream("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_, f_system);
     //f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, cutterposnp_);
     f_system.close();
     if (screen_out) cout << " done" << endl;
