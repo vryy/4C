@@ -724,7 +724,7 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
     dofswitch.mapVectorToNewDofDistribution(state_.veln_);
     dofswitch.mapVectorToNewDofDistribution(state_.velnm_);
 
-    // if dofs appear, extrapolate from the interface to the newlz created dofs
+    // if dofs appear, extrapolate from the interface to the newly created dofs
     if (Step() > 1)
     {
       if (!fluidfluidstate_.MovingFluideleids_.empty())
@@ -738,6 +738,9 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
         dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("ivelcoln") , state_.veln_ );
         dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("ivelcolnm"), state_.velnm_);
         dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("iacccoln") , state_.accn_ );
+        PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_) , "sol_field_veln_extrapolated" ,"Velocity Solution (Physical) n"    ,false, Step(), Time());
+        PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnm_), "sol_field_velnm_extrapolated","Velocity Solution (Physical) n-1"  ,false, Step(), Time());
+        PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accn_) , "sol_field_accn_extrapolated" ,"Acceleration Solution (Physical) n",false, Step(), Time());
       }
     }
   }
@@ -3343,7 +3346,7 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
 
         // finalize the complete matrix
         sysmat_projection_veln->Complete();
-        sysmat_projection_accn->Complete();
+//        sysmat_projection_accn->Complete();
 
         discret_->Comm().Barrier();
         const double dtele = ds_cputime()-telebegin;
@@ -3363,28 +3366,28 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
 
         // blank residual DOFs which are Dirichlet Conditions
         combinedDBCmapextractor->InsertCondVector(combinedDBCmapextractor->ExtractCondVector(state_.veln_), residual_veln);
-        combinedDBCmapextractor->InsertCondVector(combinedDBCmapextractor->ExtractCondVector(state_.accn_), residual_accn);
+//        combinedDBCmapextractor->InsertCondVector(combinedDBCmapextractor->ExtractCondVector(state_.accn_), residual_accn);
 
         LINALG::ApplyDirichlettoSystem(sysmat_projection_veln,state_.veln_,residual_veln,state_.veln_,*(combinedDBCmapextractor->CondMap()));
-        LINALG::ApplyDirichlettoSystem(sysmat_projection_accn,state_.accn_,residual_accn,state_.accn_,*(combinedDBCmapextractor->CondMap()));
+//        LINALG::ApplyDirichlettoSystem(sysmat_projection_accn,state_.accn_,residual_accn,state_.accn_,*(combinedDBCmapextractor->CondMap()));
         discret_->Comm().Barrier();
         const double dtDBC = ds_cputime()-tDBCbegin;
         cout << " Time needed for DBC computation and application: " << dtDBC << " s." << endl;
       }
-      //-------solve for residual displacements to correct incremental displacements
+      //-------solve for velocity
       {
         discret_->Comm().Barrier();
         const double tsolvebegin = ds_cputime();
 
         Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
 
-        solver = rcp(new LINALG::Solver(DRT::Problem::Instance()->XFluidProjectionSolverParams(),
-            discret_->Comm(),
-            DRT::Problem::Instance()->ErrorFile()->Handle()));
-        discret_->ComputeNullSpaceIfNecessary(solver->Params());
-        solver->Solve(sysmat_projection_accn->EpetraOperator(), state_.accn_, residual_accn, true, true);
-        solver->ResetTolerance();
-        solver = Teuchos::null;
+//        solver = rcp(new LINALG::Solver(DRT::Problem::Instance()->XFluidProjectionSolverParams(),
+//            discret_->Comm(),
+//            DRT::Problem::Instance()->ErrorFile()->Handle()));
+//        discret_->ComputeNullSpaceIfNecessary(solver->Params());
+//        solver->Solve(sysmat_projection_accn->EpetraOperator(), state_.accn_, residual_accn, true, true);
+//        solver->ResetTolerance();
+//        solver = Teuchos::null;
 
         solver = rcp(new LINALG::Solver(DRT::Problem::Instance()->XFluidProjectionSolverParams(),
             discret_->Comm(),
@@ -3452,7 +3455,7 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
         if (screen_out) std::cout << " done" << endl;
       }
       PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_),  "sol_field_veln_projected","Velocity Solution (Physical) n",false, Step(), Time());
-//      PlotVectorFieldToGmsh(state_.accn_,  "sol_field_accn_projected","Velocity Solution (Physical) n",false, Step(), Time());
+//      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accn_),  "sol_field_accn_projected","Acceleration Solution (Physical) n",false, Step(), Time());
 #endif
       discret_->Comm().Barrier();
       const double dtsolve = ds_cputime()-tcpu;

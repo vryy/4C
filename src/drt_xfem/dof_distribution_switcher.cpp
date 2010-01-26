@@ -250,6 +250,11 @@ void XFEM::DofDistributionSwitcher::extrapolateOldTimeStepValues(
 ) const
 {
 
+  // Achtung: extrapolation should be from fluid material velocities along the interface,
+  // not from the interface velocity.
+  // this works here, because for moving impermeable walls both velocities are equal.
+  // for fluid-fluid coupling, this will fail!!!
+
   // for now, only convex structures are tested
 
   for (std::map<int, set<XFEM::FieldEnr> >::const_iterator nodaldofs = unknownFieldEnr_.begin();
