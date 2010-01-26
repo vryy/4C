@@ -325,42 +325,24 @@ void ADAPTER::XFluidImpl::Update()
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::ComputeInterfaceAccelerationsAndVelocities()
 {
+  // for interface acceleration, the SAME factor has to be used as for the fluid
+  // time discretization. This way, we can extrapolate the fluid
+  // material velocity and acceleration into the previously unknown
+  // fluid domain.
+  // The displacement - velocity relation can be chosen freely
+
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   const double dt = fsidyn.get<double>("TIMESTEP");
 
   // use only one of these switches
-//#define USE_FSI_VEL_AND_COMPUTE_ONLY_ACCNP
-#define COMPUTE_VEL_AND_ACCNP_VIA_BETA_NEWMARK
-//#define COMPUTE_VEL_AND_ACCNP_VIA_ONE_STEP_THETA
+//#define RECOMPUTE_FSI_VEL
+//#define COMPUTE_ACCNP_VIA_BETA_NEWMARK  // this is wrong
+#define COMPUTE_ACCNP_VIA_ONE_STEP_THETA
 
-#ifdef USE_FSI_VEL_AND_COMPUTE_ONLY_ACCNP
-  double theta = 0.66;
-  if (Step() == 1)
-    theta = 1.0;
-  iaccnp_->Update(-(1.0-theta)/(theta),*iaccn_,0.0);
-  iaccnp_->Update(1.0/(theta*dt),*ivelnp_,-1.0/(theta*dt),*iveln_,1.0);
-#endif
-#ifdef COMPUTE_VEL_AND_ACCNP_VIA_BETA_NEWMARK
-  double beta;
-  double gamma;
-  if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
-  {
-    if (Step() == 1)
-    {
-      gamma = 1.0;
-      beta = gamma/2.0;
-    }
-    else
-    {
-      gamma = 0.66;
-      beta = gamma/2.0;
-    }
-  }
-  else
-  {
-    gamma = 1.0;
-    beta = gamma/2.0;
-  }
+#ifdef COMPUTE_ACCNP_VIA_BETA_NEWMARK
+  // definitivly wrong velocity-acceleration relation!!!
+  const double gamma = fluid_.Theta();
+  const double beta = gamma/2.0;
 
   // compute acceleration at timestep n+1
   iaccnp_->Update(-(1.0-(2.0*beta))/(2.0*beta),*iaccn_,0.0);
@@ -369,40 +351,29 @@ void ADAPTER::XFluidImpl::ComputeInterfaceAccelerationsAndVelocities()
 
   // compute velocity at timestep n+1
   ivelnp_->Update(1.0,*iveln_,0.0);
-  ivelnp_->Update(gamma*dt,*iaccnp_,(1-gamma)*dt,*iaccn_,1.0);
+  ivelnp_->Update(gamma*dt,*iaccnp_,(1.0-gamma)*dt,*iaccn_,1.0);
 #endif
-#ifdef COMPUTE_VEL_AND_ACCNP_VIA_ONE_STEP_THETA
 
-  double theta_vel = 0.5;
-  double theta_acc = 0.66;
-  if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
-  {
-    if (Step() == 1)
-    {
-      theta_vel = 1.0;
-      theta_acc = 1.0;
-    }
-    else
-    {
-      theta_vel = 0.66;
-      theta_acc = 0.66;
-    }
-  }
-  else
-  {
-    theta_vel = 1.0;
-    theta_acc = 1.0;
-  }
+#ifdef COMPUTE_ACCNP_VIA_ONE_STEP_THETA
+#ifdef RECOMPUTE_FSI_VEL
+  // alternative displacement-velocity relation
+  // FSI classes only provide 1.0 Backward Euler and 0.5 for theta_vel
+  // (input parameter SECONDORDER No/Yes)
+  // Here, one can use also a different approximation, but then the FSI algorithm
+  // does not know about it - with unknown consequences
+  const double theta_vel = 0.66;
 
   // compute velocity at timestep n+1
   ivelnp_->Update(-(1.0-theta_vel)/theta_vel,*iveln_,0.0);
   ivelnp_->Update(1.0/(theta_vel*dt),*idispnp_,-1.0/(theta_vel*dt),*idispn_,1.0);
-
-  // compute acceleration at timestep n+1
-  iaccnp_->Update(-(1.0-theta_acc)/theta_acc,*iaccn_,0.0);
-  iaccnp_->Update(1.0/(theta_acc*dt),*ivelnp_,-1.0/(theta_acc*dt),*iveln_,1.0);
 #endif
 
+  // compute acceleration at timestep n+1
+  const double theta = fluid_.Theta();
+  iaccnp_->Update(-(1.0-theta)/(theta),*iaccn_,0.0);
+  iaccnp_->Update(1.0/(theta*dt),*ivelnp_,-1.0/(theta*dt),*iveln_,1.0);
+
+#endif
 }
 
 
