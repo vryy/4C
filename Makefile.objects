@@ -1504,6 +1504,10 @@ OBJS_DRT_ARTNET_LIB =  src/drt_art_net/artery.o \
                    src/drt_art_net/art_junction.o\
                    src/drt_art_net/art_write_gnuplot.o\
                    src/drt_art_net/art_terminal_bc.o
+#------------------------------------- reduced dimensional airways (drt version)
+OBJS_DRT_RED_AIRWAYS =  src/drt_red_airways/red_airways_dyn_drt.o \
+                        src/drt_red_airways/red_airway.o \
+                        src/drt_red_airways/airwayimplicitintegration.o
 #------------------------------------fsi effects in biosimulations (drt version)
 OBJS_DRT_ALE_BFLOW = 
 # boundary elements

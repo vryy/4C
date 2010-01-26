@@ -37,13 +37,14 @@ typedef enum _PROBLEM_TYP
                        prb_loma,         /*  low-Mach-number flow problem */
                        prb_elch,         /*  electrochemical problem */
                        prb_combust,      /*  combustion problem */
-                       prb_art_net       /*  arterial network problem */ /*_1D_ARTERY_*/
+                       prb_art_net,      /*  arterial network problem */ /*_1D_ARTERY_*/
+                       prb_red_airways   /*  reduced dimensional airways */
 } PROBLEM_TYP;
 /* Mapping from problem type numbers to printable names. To be used to
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES { "none","fsi","fsi_xfem","fsi_lung","ssi","structure", "fluid","fluid_xfem","fluid_dgfem","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","struct_multi","loma","elch","combustion","art_net",NULL }
+#define PROBLEMNAMES { "none","fsi","fsi_xfem","fsi_lung","ssi","structure", "fluid","fluid_xfem","fluid_dgfem","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","struct_multi","loma","elch","combustion","art_net","red_airways",NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/
@@ -68,12 +69,13 @@ typedef enum _FIELDTYP
                        boundary,    /* boundary field */
                        scatra,      /* scalar transport field */
                        artery,      /* artery field*/
-                       thermo,       /* thermal field */
-                       fluidfluidboundary  /*fluidfluidboundary field*/
+                       thermo,      /* thermal field */
+                       fluidfluidboundary,  /*fluidfluidboundary field*/
+                       red_airway  /* reduced dimensional airways */ 
 } FIELDTYP;
 /* Mapping from fieldtyp numbers to printable names. To be used to
  * initialize static variables. Keep in sync! */
-#define FIELDNAMES {"none", "fluid", "ale", "structure", "thermal", "pressure", "boundary", "scatra", "artery", "thermo", "FluidFluidboundary", NULL}
+#define FIELDNAMES {"none", "fluid", "ale", "structure", "thermal", "pressure", "boundary", "scatra", "artery", "thermo", "FluidFluidboundary", "red_airway",NULL}
 
 
 
@@ -786,8 +788,8 @@ typedef enum _TSI_COUPTYP
 /*!----------------------------------------------------------------------
 \brief enum of arterial network dynamic types
 
-<pre>                                                        mah 11/08
-This is the enumeration of all types of different stabilisation schemes
+<pre>                                                      ismail 11/08
+This is the enumeration of all types of different integration schemes
 </pre>
 
 *-----------------------------------------------------------------------*/
@@ -795,3 +797,17 @@ typedef enum _ARTNET_DYNTYPE
 {
   typ_tay_gal=0
 } _ARTNET_DYNTYPE;
+
+
+/*!----------------------------------------------------------------------
+\brief enum of reduced dimensional airways dynamic types
+
+<pre>                                                     ismail 01/10
+This is the enumeration of all types of different integration schemes
+</pre>
+
+*-----------------------------------------------------------------------*/
+typedef enum _RED_AIRWAYS_DYNTYPE
+{
+  typ_crank_nicolson=0
+} _RED_AIRWAYS_DYNTYPE;

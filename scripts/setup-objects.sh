@@ -324,3 +324,8 @@ fi
 if grep '^[[:blank:]]*D_ALE_BFLOW' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_DRT_ALE_BFLOW)"
 fi
+
+# REDUCED DIMENSIONAL AIRWAYS
+if grep '^[[:blank:]]*D_RED_AIRWAYS' "$definefile" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_DRT_RED_AIRWAYS)"
+fi

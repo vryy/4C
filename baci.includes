@@ -7,6 +7,7 @@ src/drt_adapter
 src/drt_ale2
 src/drt_ale3
 src/drt_art_net
+src/drt_red_airways
 src/drt_beam2
 src/drt_beam2r
 src/drt_beam3

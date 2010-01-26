@@ -198,7 +198,8 @@ using namespace std;
 #define ParObject_Vele3Register         (int)184
 #define ParObject_Vele3Surface          (int)185
 #define ParObject_Vele3Line             (int)186
-
+#define ParObject_RedAirwayRegister     (int)187
+#define ParObject_RedAirway             (int)188
 namespace DRT
 {
 

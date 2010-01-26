@@ -79,6 +79,7 @@ extern struct _FIELD      *sm_field;
 #include "../drt_thermo/thr_dyn.H"
 #include "../drt_tsi/tsi_dyn.H"
 #include "../drt_art_net/art_net_dyn_drt.H"
+#include "../drt_red_airways/red_airways_dyn_drt.H"
 #endif
 
 /*----------------------------------------------------------------------*
@@ -389,6 +390,16 @@ case prb_art_net:
 #endif
   break;
 #endif /* D_ARTNET */
+
+#ifdef D_RED_AIRWAYS
+case prb_red_airways:
+#ifndef CCADISCRET
+  dserror("reduced dimensional airways module not available in CCARAT");
+#else
+  dyn_red_airways_drt();
+#endif
+  break;
+#endif /* D_RED_AIRWAYS */
 
 default:
   dserror("solution of unknown problemtyp requested");

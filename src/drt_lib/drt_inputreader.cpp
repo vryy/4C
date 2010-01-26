@@ -764,6 +764,7 @@ void DatFileReader::ReadDat()
   exclude.push_back("--FLUID ELEMENTS");
   exclude.push_back("--ALE ELEMENTS");
   exclude.push_back("--ARTERY ELEMENTS");
+  exclude.push_back("--REDUCED D AIRWAYS ELEMENTS");
   exclude.push_back("--TRANSPORT ELEMENTS");
   exclude.push_back("--THERMO ELEMENTS");
 

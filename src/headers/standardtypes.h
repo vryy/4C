@@ -309,6 +309,7 @@ typedef struct _GENPROB
   INT               numtf;         /* actual number of the thermal field */
   INT               numscatra;     /* actual number of the scalar transport field */
   INT               numartf;       /* actual number of the 1D_Artery field */
+  INT               numawf;        /* actual number of the reduced dimensional airways field */
 
   INT               graderw;       /* flag is gradient enhanced material model */
   INT               multisc_struct;/* flag is structural multiscale analysis -> Andrea Hund */

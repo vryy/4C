@@ -1770,6 +1770,27 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
  
   condlist.push_back(art_3d_to_red_bc);
 
+
+  /*--------------------------------------------------------------------*/
+  // 3-D/reduced-D coupling boundary condition
+  Teuchos::RCP<ConditionDefinition> windkessel_optim_bc =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF WINDKESSEL OPTIMIZATION CONDITIONS",
+                                         "Windkessel_Optimization_Cond",
+                                         "windkessel optimization condition",
+                                         DRT::Condition::WindkesselOptimCond,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  windkessel_optim_bc->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+
+
+  AddNamedReal(windkessel_optim_bc,"Psystolic");
+  AddNamedReal(windkessel_optim_bc,"Pdiastolic");
+  AddNamedReal(windkessel_optim_bc,"R1R2_ratio");
+  AddNamedReal(windkessel_optim_bc,"Tolerance");
+ 
+  condlist.push_back(windkessel_optim_bc);
+
   return vc;
 
 }

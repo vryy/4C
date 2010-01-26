@@ -167,7 +167,8 @@ public:
     StructFluidVolCoupling,
     ArtInOutletCond,
     ArtRedTo3DCouplingCond,
-    Art3DToRedCouplingCond
+    Art3DToRedCouplingCond,
+    WindkesselOptimCond
   };
 
   /*!

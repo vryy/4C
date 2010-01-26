@@ -160,6 +160,8 @@ src/drt_art_net/artery_lin_exp.cpp
 src/drt_art_net/artery_lin_exp.H
 src/drt_art_net/artnetexplicitintegration.cpp
 src/drt_art_net/artnetexplicitintegration.H
+src/drt_red_airways/red_airways_dyn_drt.cpp
+src/drt_red_airways/red_airways_dyn_drt.H
 src/drt_beam2/beam2.cpp
 src/drt_beam2/beam2.H
 src/drt_beam2/beam2_evaluate.cpp

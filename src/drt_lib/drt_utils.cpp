@@ -1089,6 +1089,22 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       plastic->Unpack(data);
       return plastic;
     }
+#ifdef D_RED_AIRWAY
+    case ParObject_RedAirway:
+    {
+      DRT::ELEMENTS::RedAirway* object = new DRT::ELEMENTS::RedAirway(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_RedAirwayRegister:
+    {
+      DRT::ELEMENTS::RedAirwayRegister* object = new DRT::ELEMENTS::RedAirwayRegister(DRT::Element::element_red_airway);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+#endif //D_RED_AIRWAY
     default:
       dserror("Unknown type of ParObject instance: %d",type);
     break;

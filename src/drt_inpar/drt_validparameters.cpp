@@ -286,6 +286,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NUMALEDIS",1,"Number of meshes in ale field",&discret);
   IntParameter("NUMARTNETDIS",1,"Number of meshes in arterial network field",&discret);
   IntParameter("NUMTHERMDIS",1,"Number of meshes in thermal field",&discret);
+  IntParameter("NUMAIRWAYSDIS",1,"Number of meshes in reduced dimensional airways network field",&discret);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& size = list->sublist("PROBLEM SIZE",false,"");
@@ -301,8 +302,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& type = list->sublist("PROBLEM TYP",false,"");
 
   {
-  Teuchos::Tuple<std::string,17> name;
-  Teuchos::Tuple<PROBLEM_TYP,17> label;
+  Teuchos::Tuple<std::string,18> name;
+  Teuchos::Tuple<PROBLEM_TYP,18> label;
   name[ 0] = "Structure";                                   label[ 0] = prb_structure;
   name[ 1] = "Fluid";                                       label[ 1] = prb_fluid;
   name[ 2] = "Fluid_XFEM";                                  label[ 2] = prb_fluid_xfem;
@@ -320,6 +321,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   name[14] = "Combustion";                                  label[14] = prb_combust;
   name[15] = "ArterialNetwork";                             label[15] = prb_art_net;
   name[16] = "Fluid_Structure_Interaction_Lung";            label[16] = prb_fsi_lung;
+  name[17] = "ReducedDimensionalAirWays";                   label[17] = prb_red_airways;
   setStringToIntegralParameter<PROBLEM_TYP>(
                                "PROBLEMTYP",
                                "Fluid_Structure_Interaction",
@@ -1459,6 +1461,23 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NUMSTEP",0,"Number of Time Steps",&andyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&andyn);
   IntParameter("UPRES",1,"Increment for writing solution",&andyn);
+ /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& redawdyn = list->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC",false,"");
+
+  setStringToIntegralParameter<int>("DYNAMICTYP","CrankNicolson",
+                               "CrankNicolson Scheme",
+                               tuple<std::string>(
+                                 "CrankNicolson"
+                                 ),
+                               tuple<int>(
+                                typ_crank_nicolson
+                                ),
+                               &redawdyn);
+
+  DoubleParameter("TIMESTEP",0.01,"Time increment dt",&redawdyn);
+  IntParameter("NUMSTEP",0,"Number of Time Steps",&redawdyn);
+  IntParameter("RESTARTEVRY",1,"Increment for writing restart",&redawdyn);
+  IntParameter("UPRES",1,"Increment for writing solution",&redawdyn);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_stab = fdyn.sublist("STABILIZATION",false,"");
 
@@ -2553,6 +2572,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& artnetsolver = list->sublist("ARTERY NETWORK SOLVER",false,"");
   SetValidSolverParameters(artnetsolver);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& redairwaysolver = list->sublist("REDUCED DIMENSIONAL AIRWAYS SOLVER",false,"");
+  SetValidSolverParameters(redairwaysolver);
   return list;
 }
 

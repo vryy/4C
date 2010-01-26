@@ -179,6 +179,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--ALE DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC", *list);
   reader.ReadGidSection("--ARTERIAL DYNAMIC", *list);
+  reader.ReadGidSection("--REDUCED DIMENSIONAL AIRWAYS DYNAMIC", *list);
   reader.ReadGidSection("--SEARCH TREE", *list);
   reader.ReadGidSection("--XFEM GENERAL", *list);
   reader.ReadGidSection("--LOMA CONTROL", *list);
@@ -205,6 +206,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--SCALAR TRANSPORT SOLVER", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER", *list);
   reader.ReadGidSection("--ARTERY NETWORK SOLVER", *list);
+  reader.ReadGidSection("--REDUCED DIMENSIONAL AIRWAYS SOLVER", *list);
 
 
   // a special section for condition names that contains a list of key-integer
@@ -330,6 +332,11 @@ void DRT::Problem::InputControl()
   case prb_art_net:
   {
     genprob.numartf = 0;  /* arterial network field index */
+    break;
+  }
+  case prb_red_airways:
+  {
+    genprob.numawf = 0;  /* reduced airway network field index */
     break;
   }
   default:
@@ -713,6 +720,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   RCP<DRT::Discretization> structdis_macro = null;
   RCP<DRT::Discretization> structdis_micro = null;
   RCP<DRT::Discretization> arterydis       = null; //_1D_ARTERY_
+  RCP<DRT::Discretization> airwaydis       = null; //
 
   // decide which kind of spatial representation is required
   const Teuchos::ParameterList& ptype = ProblemTypeParams();
@@ -743,13 +751,19 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 #ifdef D_ARTNET
     // create empty discretizations
     arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
+#ifdef D_RED_AIRWAYS
+    // create empty discretizations
+    airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
 #endif
-
+#endif
     AddDis(genprob.numsf, structdis);
     AddDis(genprob.numff, fluiddis);
     AddDis(genprob.numaf, aledis);
 #ifdef D_ARTNET
     AddDis(genprob.numartf, arterydis);
+#endif
+#ifdef D_RED_AIRWAYS
+    AddDis(genprob.numawf, airwaydis);
 #endif
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
@@ -759,6 +773,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 #ifdef D_ARTNET
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+#endif
+#ifdef D_RED_AIRWAYS
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
 #endif
 
     nodereader.Read();
@@ -1124,6 +1141,22 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
     break;
   } // end of else if (genprob.probtyp==prb_art_net)
+  case prb_red_airways: // _reduced D airways
+  {
+    // allocate and input general old stuff....
+    if (genprob.numfld!=1) dserror("numfld != 1 for reduced dimensional airways problem");
+
+    // create empty discretizations
+    airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
+    AddDis(genprob.numawf, airwaydis);
+
+
+    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
+    nodereader.Read();
+
+    break;
+  } // end of else if (genprob.probtyp==prb_red_airways)
   default:
     dserror("Type of problem unknown");
   }
