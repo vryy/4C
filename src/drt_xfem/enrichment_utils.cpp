@@ -452,8 +452,8 @@ double DomainCoverageRatioT(
   GEO::fillInitialPositionArray<DISTYPE>(&ele, xyze);
 
   //double
-  double area_ele  = 0.0;
-  double area_fict = 0.0;
+  double domain_ele  = 0.0;
+  double domain_fict = 0.0;
 
   // information about domain integration cells
   const GEO::DomainIntCells&  domainIntCells(ih.GetDomainIntCells(&ele));
@@ -511,16 +511,18 @@ double DomainCoverageRatioT(
       const double fac = intpoints.qwgt[iquad]*det*detcell;
 
       if(det < 0.0)
+      {
         dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele.Id(), det);
+      }
 
-        area_ele += fac;
+      domain_ele += fac;
 
       if(label != 0)
-        area_fict += fac;
+        domain_fict += fac;
 
     } // end loop over gauss points
   } // end loop over integration cells
-  return area_fict / area_ele;
+  return domain_fict / domain_ele;
 }
 
 
