@@ -30,6 +30,7 @@ CCADISCRET           # use new baci discretization subsystem DRT
 # D_TORSION3         # 3D torsion spring element
 # D_TORSION2         # 2D torsion spring element
 # D_ARTNET           # 1D Arterial network elements
+# D_RED_AIRWAYS      # reduced dimensional airways for calculating flow in lungs
 
 #   problem types
 #  ===============
