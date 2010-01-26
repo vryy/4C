@@ -42,8 +42,6 @@ DRT::ELEMENTS::XFluid3::ActionType DRT::ELEMENTS::XFluid3::convertStringToAction
   DRT::ELEMENTS::XFluid3::ActionType act = XFluid3::none;
   if (action == "calc_fluid_systemmat_and_residual")
     act = XFluid3::calc_fluid_systemmat_and_residual;
-  else if (action == "calc_linear_fluid")
-    act = XFluid3::calc_linear_fluid;
   else if (action == "calc_fluid_projection_systemmat_and_residual")
     act = XFluid3::calc_fluid_projection_systemmat_and_residual;
   else if (action == "calc_fluid_beltrami_error")

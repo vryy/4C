@@ -155,35 +155,6 @@ namespace XFLUID
           const bool                        ifaceForceContribution ///< is xfem element a row element?
           );
 
-
-  /*!
-   * \brief entry point for Sysmat call
-   * at one point, one has to call specific template instantiations of Sysmat using the current Shape() of the element.
-   * This is the point.
-   */
-  void callTimeRHS(
-          const XFEM::AssemblyType          assembly_type,
-          const DRT::ELEMENTS::XFluid3*     ele,
-          const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,
-          const XFEM::ElementDofManager&    eleDofManager,
-          const DRT::ELEMENTS::XFluid3::MyState&  mystate,   ///< element state variables
-          const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
-          Epetra_SerialDenseMatrix&         estif,         ///< element stiffness matrix
-          Epetra_SerialDenseVector&         eforce,        ///< element rhs vector
-          Epetra_SerialDenseMatrix&         Gds,           ///< stress-displacement coupling matrix
-          Epetra_SerialDenseVector&         rhsd,          ///< stress-displacement coupling residual
-          Teuchos::RCP<const MAT::Material> material,      ///< material
-          const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
-          const double                      dt,            ///< delta t (time step size)
-          const double                      theta,         ///< factor for one step theta scheme
-          const bool                        newton ,
-          const bool                        pstab  ,
-          const bool                        supg   ,
-          const bool                        cstab  ,
-          const bool                        ifaceForceContribution, ///< is xfem element a row element?
-          const bool                        monolithic_FSI,
-          double&                           L2
-          );
 }
 
 #endif

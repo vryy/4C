@@ -787,7 +787,8 @@ void SysmatDomainSigma(
     const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
 
     // stabilization parameter
-    const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
+    const double hk = FLD::UTILS::HK_XFEM<DISTYPE>(*ih,ele,evelnp,xyze);
+//    const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
     const double mk = FLD::UTILS::MK<DISTYPE>();
 
     // information about domain integration cells
@@ -1470,19 +1471,12 @@ void SysmatBoundarySigma(
 
             // get velocities (n+g,i) at integration point
             // gpvelnp = evelnp(i,j)*shp(j);
-            LINALG::Matrix<nsd,1> gpvelnp;
-            gpvelnp.Clear();
-            for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
-                for (std::size_t isd = 0; isd < nsd; ++isd)
-                    gpvelnp(isd) += evelnp(isd,iparam)*shp(iparam);
+            const LINALG::Matrix<nsd,1> gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp , shp, numparamvelx);
 
             // get interface velocity
-            LINALG::Matrix<nsd,1> interface_gpvelnp;
-            interface_gpvelnp.Clear();
+            LINALG::Matrix<nsd,1> interface_gpvelnp(true);
             if (timealgo != timeint_stationary)
-                for (std::size_t inode = 0; inode < numnode_boundary; ++inode)
-                    for (std::size_t isd = 0; isd < nsd; ++isd)
-                        interface_gpvelnp(isd) += vel_boundary(isd,inode)*funct_boundary(inode);
+              interface_gpvelnp  = XFLUID::interpolateVectorFieldToIntPoint(vel_boundary , funct_boundary, numnode_boundary);
 
 #if 0
             // for Jeffery-Hamel Flow
@@ -1755,12 +1749,6 @@ void SysmatSigma(
       SysmatBoundarySigma<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelnp, etau, iforcecol, Gds, rhsd,
           timealgo, dt, theta, assembler, ifaceForceContribution, monolithic_FSI, fluidfluidmatrices, params);
-    /*  for (int i=0; i<fluidfluidmatrices.Guis_uncond->M(); i++){
-        for (int j=0; j<fluidfluidmatrices.Guis_uncond->N(); j++){
-          (fluidfluidmatrices.Gsui_uncond)->operator ()(j,i)= (fluidfluidmatrices.Guis_uncond)->operator ()(i,j);
-        }
-      }*/
-          
     }
 }
 

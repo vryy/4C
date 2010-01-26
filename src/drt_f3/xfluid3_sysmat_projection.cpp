@@ -301,7 +301,8 @@ void SysmatDomainProjection(
     const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
 
     // stabilization parameter
-    const double hk = FLD::UTILS::HK<DISTYPE>(eveln,xyze);
+    const double hk = FLD::UTILS::HK_XFEM<DISTYPE>(*ih,ele,eveln,xyze);
+//    const double hk = FLD::UTILS::HK<DISTYPE>(eveln,xyze);
     const double mk = FLD::UTILS::MK<DISTYPE>();
 
     // information about domain integration cells

@@ -870,7 +870,8 @@ void SysmatDomainTauPressure(
     const size_t numparamdiscpres = XFEM::getNumParam<ASSTYPE>(dofman, DiscPres, 1);
 
     // stabilization parameter
-    const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
+    const double hk = FLD::UTILS::HK_XFEM<DISTYPE>(*ih,ele,eveln,xyze);
+//    const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
     const double mk = FLD::UTILS::MK<DISTYPE>();
 
     // information about domain integration cells
@@ -1612,19 +1613,12 @@ void SysmatBoundaryTauPressure(
 
             // get velocities (n+g,i) at integration point
             // gpvelnp = evelnp(i,j)*shp(j);
-            LINALG::Matrix<nsd,1> gpvelnp;
-            gpvelnp.Clear();
-            for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
-                for (std::size_t isd = 0; isd < nsd; ++isd)
-                    gpvelnp(isd) += evelnp(isd,iparam)*shp(iparam);
+            const LINALG::Matrix<nsd,1> gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp , shp, numparamvelx);
 
             // get interface velocity
-            LINALG::Matrix<nsd,1> interface_gpvelnp;
-            interface_gpvelnp.Clear();
+            LINALG::Matrix<nsd,1> interface_gpvelnp(true);
             if (timealgo != timeint_stationary)
-                for (std::size_t inode = 0; inode < numnode_boundary; ++inode)
-                    for (std::size_t isd = 0; isd < nsd; ++isd)
-                        interface_gpvelnp(isd) += vel_boundary(isd,inode)*funct_boundary(inode);
+              interface_gpvelnp  = XFLUID::interpolateVectorFieldToIntPoint(vel_boundary , funct_boundary, numnode_boundary);
 
             // get discontinous pressure
             //const double discpres(shp_discpres*ediscprenp);
