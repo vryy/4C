@@ -26,6 +26,8 @@
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_xfem/interfacexfsi.H"
+#include "../drt_xfem/enrichment_utils.H"
 
 
 namespace FLD
@@ -130,9 +132,9 @@ namespace UTILS
   }
 
 
-  //! calculate characteristic element size for stabilization
+  //! calculate volume based on numerical integration
   template<DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
-  double HK(
+  double VolumeViaNumIntegration(
       const M1&  evelnp,  ///< nodal velocity array
       const M2&  xyze     ///< element nodal position array
   )
@@ -162,8 +164,44 @@ namespace UTILS
 
     const double vol = wquad * xjm.Determinant();
 
+    return vol;
+  }
+
+  //! calculate characteristic element size for stabilization
+  template<DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
+  double HK(
+      const M1&  evelnp,  ///< nodal velocity array
+      const M2&  xyze     ///< element nodal position array
+  )
+  {
+    const double vol = VolumeViaNumIntegration<DISTYPE>(evelnp, xyze);
+
     // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
     const double hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+
+    return hk;
+  }
+
+  //! calculate characteristic element size for stabilization
+  //!
+  //! note: this works only for one-sided problems - two-sided problems
+  //! like two-phase flow probably require 2 h_k as they represent 2 fluids
+  template<DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
+  double HK_XFEM(
+      const XFEM::InterfaceHandle&  ih,
+      const DRT::Element*           xfemele,
+      const M1&                     evelnp,  ///< nodal velocity array
+      const M2&                     xyze     ///< element nodal position array
+  )
+  {
+    const double vol = VolumeViaNumIntegration<DISTYPE>(evelnp, xyze);
+
+    const double phys_volumeratio = (1.0 - XFEM::DomainCoverageRatio(*xfemele,ih));
+
+    const double reduced_vol = vol * phys_volumeratio;
+
+    // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
+    const double hk = pow((6.*reduced_vol/M_PI),(1.0/3.0))/sqrt(3.0);
 
     return hk;
   }
