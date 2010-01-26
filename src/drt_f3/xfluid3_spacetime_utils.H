@@ -85,7 +85,7 @@ namespace XFLUID
     if (not is_in_fluid)
     {
       std::cout << "should I arrive here?" << std::endl;
-      exit(1);
+      std::exit(1);
 //      return false;
     }
 
@@ -200,7 +200,7 @@ namespace XFLUID
       if (not is_in_fluid)
       {
         std::cout << "should I arrive here?" << std::endl;
-        exit(1);
+        std::exit(1);
   //      return false;
       }
 
