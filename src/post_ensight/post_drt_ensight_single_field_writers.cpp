@@ -189,7 +189,7 @@ void ElchEnsightWriter::WriteAllResults(PostField* field)
       string name = "c_1";
       EnsightWriter::WriteResult("phinp", name, dofbased, 1, 0);
       // write flux vectors (always 3D)
-      EnsightWriter::WriteResult("flux_phi_1", "flux_c_1", nodebased, 3);
+      EnsightWriter::WriteResult("flux", "flux", nodebased, 3);
     // there is no electric potential in this special case
   }
   else
