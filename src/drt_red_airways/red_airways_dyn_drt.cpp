@@ -73,10 +73,10 @@ void dyn_red_airways_drt()
   const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
   //  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
-  const Teuchos::ParameterList& artdyn   = DRT::Problem::Instance()->ReducedDAirwaySolverParams();
+  const Teuchos::ParameterList& rawdyn   = DRT::Problem::Instance()->ReducedDAirwayDynamicParams();
 
   if (actdis->Comm().MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, artdyn);
+    DRT::INPUT::PrintDefaultParameters(std::cout, rawdyn);
 
   // -------------------------------------------------------------------
   // create a solver
@@ -94,19 +94,19 @@ void dyn_red_airways_drt()
 
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
-  airwaystimeparams.set<int>              ("number of degrees of freedom" ,2*probsize.get<int>("DIM"));
+  airwaystimeparams.set<int>              ("number of degrees of freedom" ,1*probsize.get<int>("DIM"));
 
   // -------------------------------------------------- time integration
   // the default time step size
-  airwaystimeparams.set<double>           ("time step size"           ,artdyn.get<double>("TIMESTEP"));
+  airwaystimeparams.set<double>           ("time step size"           ,rawdyn.get<double>("TIMESTEP"));
   // maximum number of timesteps
-  airwaystimeparams.set<int>              ("max number timesteps"     ,artdyn.get<int>("NUMSTEP"));
+  airwaystimeparams.set<int>              ("max number timesteps"     ,rawdyn.get<int>("NUMSTEP"));
 
   // ----------------------------------------------- restart and output
   // restart
-  airwaystimeparams.set                  ("write restart every"       ,artdyn.get<int>("RESTARTEVRY"));
+  airwaystimeparams.set                  ("write restart every"       ,rawdyn.get<int>("RESTARTEVRY"));
   // solution output
-  airwaystimeparams.set                  ("write solution every"      ,artdyn.get<int>("UPRES"));
+  airwaystimeparams.set                  ("write solution every"      ,rawdyn.get<int>("UPRES"));
   // flag for writing the hemodynamic physiological results
   //arterytimeparams.set ("write stresses"  ,Teuchos::getIntegralValue<int>(ioflags,"HEMO_PHYS_RESULTS"));
   //---------------------- A method to initialize the flow inside the 

@@ -155,6 +155,7 @@ extern "C"
 #include "../drt_contactnew/contact_node.H"
 #include "../drt_contactnew/contact_element.H"
 #include "../drt_art_net/artery.H"
+#include "../drt_red_airways/red_airway.H"
 #include "drt_dserror.H"
 #include "standardtypes_cpp.H"
 
@@ -1160,7 +1161,8 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     transport,
     art_ele,
     so_hex8p1j1,
-    thermo
+    thermo,
+    red_airway_ele
   };
 
   TypeofElement type = none;
@@ -1204,6 +1206,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="ART")    type = art_ele;
   else if (eletype=="SOLIDH8P1J1") type = so_hex8p1j1;
   else if (eletype=="THERMO") type = thermo;
+  else if (eletype=="RED_AIRWAY")    type = red_airway_ele;
   // continue to add elements here....
   else
   {
@@ -1503,6 +1506,14 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Thermo(id,owner));
       return ele;
+    }
+    break;
+#endif
+#ifdef D_RED_AIRWAYS
+    case red_airway_ele:
+    {
+       RefCountPtr<DRT::Element> ele =  rcp(new DRT::ELEMENTS::RedAirway(id,owner));
+       return ele;
     }
     break;
 #endif

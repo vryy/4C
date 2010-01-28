@@ -11,7 +11,7 @@ Maintainer: Mahmoud Ismail
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_RED_AIRWAY
+#ifdef D_RED_AIRWAYS
 #ifdef CCADISCRET
 
 #include "red_airway.H"
@@ -27,11 +27,8 @@ using namespace DRT::UTILS;
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RedAirway::RedAirway(int id, int owner) :
 DRT::Element(id,element_red_airway,owner),
-is_ale_(false),
 data_()
 {
-  gaussrule_ = intrule1D_undefined;
-
   return;
 }
 
@@ -41,8 +38,6 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RedAirway::RedAirway(const DRT::ELEMENTS::RedAirway& old) :
 DRT::Element(old),
-gaussrule_(old.gaussrule_),
-is_ale_(old.is_ale_),
 data_(old.data_)
 {
   return;
@@ -91,9 +86,9 @@ void DRT::ELEMENTS::RedAirway::Pack(vector<char>& data) const
   Element::Pack(basedata);
   AddtoPack(data,basedata);
   // Gaussrule
-  AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
+  //  AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   // is_ale_
-  AddtoPack(data,is_ale_);
+  //  AddtoPack(data,is_ale_);
 
 
   // data_
@@ -122,11 +117,11 @@ void DRT::ELEMENTS::RedAirway::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // Gaussrule
-  int gausrule_integer;
-  ExtractfromPack(position,data,gausrule_integer);
-  gaussrule_ = GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
+  //  int gausrule_integer;
+  //  ExtractfromPack(position,data,gausrule_integer);
+  //  gaussrule_ = GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
   // is_ale_
-  ExtractfromPack(position,data,is_ale_);
+  //  ExtractfromPack(position,data,is_ale_);
 
   // data_
   vector<char> tmp(0);

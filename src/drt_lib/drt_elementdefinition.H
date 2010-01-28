@@ -84,7 +84,7 @@ namespace INPUT
     void SetupAle3Lines();
 
     void SetupThermoLines();
-
+    void SetupRedAirwayLines();
     //@}
 
     /// input line definitions per element type

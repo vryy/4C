@@ -21,7 +21,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
 
   PrintSectionHeader(stream,"STRUCTURE ELEMENTS");
 
-  PrintElementLines(stream,"ART");
+  //  PrintElementLines(stream,"ART");
   PrintElementLines(stream,"BEAM2");
   PrintElementLines(stream,"BEAM2R");
   PrintElementLines(stream,"BEAM3");
@@ -68,6 +68,12 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
 
   PrintSectionHeader(stream,"THERMO ELEMENTS");
   PrintElementLines(stream,"THERMO");
+
+  PrintSectionHeader(stream,"ARTERY ELEMENTS");
+  PrintElementLines(stream,"ART");
+
+  PrintSectionHeader(stream,"REDUCED D AIRWAYS ELEMENTS");
+  PrintElementLines(stream,"RED_AIRWAY");
 }
 
 
@@ -154,6 +160,7 @@ void DRT::INPUT::ElementDefinition::SetupValidElementLines()
   SetupAle3Lines();
 
   SetupThermoLines();
+  SetupRedAirwayLines();
 
   // backward compatibility
   // still needed?
@@ -1534,6 +1541,23 @@ void DRT::INPUT::ElementDefinition::SetupThermoLines()
   defs["LINE3"]
     .AddIntVector("LINE3",3)
     .AddNamedInt("MAT")
+    ;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupRedAirwayLines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["RED_AIRWAY"];
+
+  defs["LINE2"]
+    .AddIntVector("LINE2",2)
+    .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
+    .AddNamedDouble("WallCompliance")
+    .AddNamedDouble("AirCompliance")
+    .AddNamedDouble("WallThickness")
+    .AddNamedDouble("Area")
     ;
 }
 

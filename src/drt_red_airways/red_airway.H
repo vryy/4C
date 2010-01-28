@@ -39,13 +39,13 @@ namespace ELEMENTS
 {
 // forward declarations
 class RedAirwayExpInterface;
-template <DRT::Element::DiscretizationType distype> class RedAirway;
+template <DRT::Element::DiscretizationType distype> class AirwayImpl;
 class RedAirwayRegister;
 
 /*!
-\brief A C++ wrapper for the artery element
+\brief A C++ wrapper for the airway element
 
-\author gammi (ismail@lnm.mw.tum.de)
+\author ismail (ismail@lnm.mw.tum.de)
 */
 class RedAirway : public DRT::Element
 {
@@ -54,7 +54,7 @@ public:
   //! @name Friends
   friend class RedAirwayRegister;
   friend class RedAirwayExpInterface;
-  friend class RedAirway<DRT::Element::line2>;
+  friend class AirwayImpl<DRT::Element::line2>;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -72,10 +72,10 @@ public:
   Makes a deep copy of a Element
 
   */
-  RedAirway(const Artery& old);
+  RedAirway(const RedAirway& old);
 
   /*!
-  \brief Deep copy this instance of Artery and return pointer to the copy
+  \brief Deep copy this instance of RedAirway and return pointer to the copy
 
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
@@ -115,7 +115,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Artery;}
+  virtual int UniqueParObjectId() const { return ParObject_RedAirway;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -205,7 +205,7 @@ public:
   /*!
   \brief Evaluate an element
 
-  Evaluate artery element stiffness, mass, internal forces etc
+  Evaluate airway element stiffness, mass, internal forces etc
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
@@ -264,7 +264,7 @@ public:
   /*!
   \brief Evaluate a Neumann boundary condition
 
-  this method evaluates a line Neumann condition on the artery element
+  this method evaluates a line Neumann condition on the airway element
 
   \return 0 if successful, negative otherwise
   */
@@ -278,34 +278,38 @@ public:
   //@}
 
   //! @name Other
+  std::string type(){return elemType_;}
 
-  bool IsAle() const { return is_ale_; }
 
   //@}
 
 
 private:
 
-  //! action parameters recognized by Artery
+  //! action parameters recognized by airway
   enum ActionType
   {
-    none,
-    calc_sys_matrix_rhs,
-    get_initail_artery_state,
-    solve_riemann_problem,
-    set_term_bc
+    none
   };
 
 
-  //! Gaussrule
-  DRT::UTILS::GaussRule1D                         gaussrule_;
+  //! Element Type
+  std::string                                     elemType_;
 
-  //! flag for euler/ale net algorithm
-  bool                                            is_ale_;
-
-  //! container containing all kind of Artery thisandthat
+  //! container containing all kind of airway thisandthat
   DRT::Container                                  data_;
 
+  //! Wall Compliance
+  double                                          Ew_;
+
+  //! Air Compliance
+  double                                          Ea_;
+
+  //! Wall Thickness
+  double                                          tw_;
+
+  //! cross-sectional area
+  double                                          A_;
 
   // internal calculation methods
 
@@ -325,7 +329,7 @@ private:
     ) const;
 
 
-}; // class Artery
+}; // class RedAirway
 
 
 //=======================================================================
@@ -335,7 +339,7 @@ private:
 
 
 /*!
-\brief A register for artery element
+\brief A register for airway element
 
 \author ismail (ismail@lnm.mw.tum.de)
 */
@@ -354,13 +358,13 @@ public:
   /*!
   \brief Copy Constructor
 
-  Makes a deep copy of an ArteryRegister
+  Makes a deep copy of an RedAirwayRegister
 
   */
   RedAirwayRegister(const DRT::ELEMENTS::RedAirwayRegister& old);
 
   /*!
-  \brief Deep copy this instance of ArteryRegister and return pointer to the copy
+  \brief Deep copy this instance of RedAirwayRegister and return pointer to the copy
 
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
@@ -414,7 +418,7 @@ public:
   /*!
   \brief Call Element init routines
 
-  The method performs all steps needed to init the artery elements.
+  The method performs all steps needed to init the airway elements.
   */
   int Initialize(DRT::Discretization& dis);
 

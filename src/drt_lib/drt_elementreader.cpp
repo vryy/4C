@@ -222,7 +222,7 @@ void ElementReader::Partition()
 
           // For the time being we support old and new input facilities. To
           // smooth transition.
-
+          
           DRT::INPUT::LineDefinition* linedef = ed.ElementLines(eletype,distype);
           if (linedef!=NULL)
           {

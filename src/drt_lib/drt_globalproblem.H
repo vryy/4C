@@ -253,6 +253,7 @@ public:
   const Teuchos::ParameterList& LOMAControlParams() const { return getParameterList()->sublist("LOMA CONTROL"); }
   const Teuchos::ParameterList& ELCHControlParams() const { return getParameterList()->sublist("ELCH CONTROL"); }
   const Teuchos::ParameterList& ArterialDynamicParams() const { return getParameterList()->sublist("ARTERIAL DYNAMIC"); }
+  const Teuchos::ParameterList& ReducedDAirwayDynamicParams() const { return getParameterList()->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC"); }
 
   const Teuchos::ParameterList& StructuralNoxParams() const { return getParameterList()->sublist("STRUCT NOX"); }
 
