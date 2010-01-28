@@ -579,7 +579,8 @@ protected:
   /// this struct holds information about the fluid fluid coupling
   struct FluidFluidState
   {
-	  set<int> MovingFluideleids_;  ///< this set contains the element ids of the moving Fluid	  
+	  set<int> MovingFluideleGIDs_;  ///< this set contains the element ids of the moving Fluid	  
+	  set<int> MovingFluidNodeGIDs_;  ///< this set contains the node GIDs of the moving fluid
   }fluidfluidstate_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)

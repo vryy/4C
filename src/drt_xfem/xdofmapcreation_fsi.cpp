@@ -613,7 +613,8 @@ void XFEM::processVoidEnrichmentForElement(
 static void processStandardEnrichmentNodalBasedApproach(
     const XFEM::InterfaceHandle&                  ih,
     const std::set<XFEM::PHYSICS::Field>&         fieldset,
-    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet)
+    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
+    const set<int>                                MovingFluidnodeGIDs)
 {
   const XFEM::Enrichment enr_std(XFEM::Enrichment::typeStandard, 0);
   for (int i=0; i<ih.xfemdis()->NumMyColNodes(); ++i)
@@ -627,8 +628,11 @@ static void processStandardEnrichmentNodalBasedApproach(
     if (not voidenrichment_in_set and not voidfsienrichment_in_set)
     {
       const bool in_fluid = (0 == ih.PositionWithinConditionNP(nodalpos));
-
-      if (in_fluid)
+      
+      set<int>::const_iterator nodegid = MovingFluidnodeGIDs.find(node->Id());
+      const bool in_moving_fluid = (nodegid != MovingFluidnodeGIDs.end());
+              
+      if (in_fluid or in_moving_fluid)
       {
         for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
         {
@@ -714,7 +718,8 @@ void XFEM::createDofMapFSI(
     std::map<int, const std::set<XFEM::FieldEnr> >&     elementalDofsFinal,
     const std::set<XFEM::PHYSICS::Field>&               fieldset,
     const XFEM::ElementAnsatz&                          elementAnsatz,
-    const Teuchos::ParameterList&                       params
+    const Teuchos::ParameterList&                       params,
+    const set<int>                                      MovingFluidnodeGIDs
     )
 {
   // temporary assembly
@@ -809,7 +814,7 @@ void XFEM::createDofMapFSI(
   cout << " skipped node unknowns for "<< skipped_node_enr_count << " elements (volumeratio limit:   " << std::scientific << volumeRatioLimit   << ")" << endl;
   cout << " skipped elem unknowns for "<< skipped_elem_enr_count << " elements (boundaryratio limit: " << std::scientific << boundaryRatioLimit << ")" << endl;
 
-  processStandardEnrichmentNodalBasedApproach(ih, fieldset, nodalDofSet);
+  processStandardEnrichmentNodalBasedApproach(ih, fieldset, nodalDofSet, MovingFluidnodeGIDs);
 
 //#ifdef PARALLEL
 //  syncNodalDofs(ih, nodalDofSet);

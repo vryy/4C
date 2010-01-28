@@ -428,6 +428,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         if (ih_->ElementIntersected(Id()))
         {
           std::set<int> begids = ih_->GetIntersectingBoundaryElementsGID(this->Id());
+          // the size of the numifacepatchdof matches to the size of ifacepatchlm
           const size_t numifacepatchdof = begids.size()*3*4;
           fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
           fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), numifacepatchdof));

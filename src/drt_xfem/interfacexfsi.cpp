@@ -40,10 +40,10 @@ Maintainer: Axel Gerstenberger
 XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     const Teuchos::RCP<DRT::Discretization>  xfemdis,
     const Teuchos::RCP<DRT::Discretization>  cutterdis,
-    const set<int> 						MovingFluideleids
+    const set<int> 						MovingFluideleGIDs
     ) : InterfaceHandle(xfemdis),
         cutterdis_(cutterdis),
-        MovingFluideleids_(MovingFluideleids)
+        MovingFluideleGIDs_(MovingFluideleGIDs)
 {
   if (cutterdis == Teuchos::null)
     dserror("We need a real boundary discretization here!");
@@ -85,7 +85,7 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   {
 #ifdef QHULL
     Teuchos::RCP<GEO::Intersection> is = rcp(new GEO::Intersection());
-    is->computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs_, elementalDomainIntCells_, elementalBoundaryIntCells_, labelPerBoundaryElementId_, MovingFluideleids);
+    is->computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs_, elementalDomainIntCells_, elementalBoundaryIntCells_, labelPerBoundaryElementId_, MovingFluideleGIDs);
 #else
     dserror("you have to compile with the QHULL flag!");
 #endif

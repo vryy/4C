@@ -44,7 +44,8 @@ namespace XFEM
       std::map<int, const std::set<XFEM::FieldEnr> >&   elementalDofsFinal,  ///< enriched fields per element
       const std::set<XFEM::PHYSICS::Field>&             fieldset,
       const XFEM::ElementAnsatz&                        elementAnsatz,
-      const Teuchos::ParameterList&                     params
+      const Teuchos::ParameterList&                     params,
+      const set<int>                                    MovingFluidnodeGIDs
       );
 
 } // namespace XFEM

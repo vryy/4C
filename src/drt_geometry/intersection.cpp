@@ -80,7 +80,7 @@ void GEO::Intersection::computeIntersection(
     std::map< int, DomainIntCells >&               domainintcells,
     std::map< int, BoundaryIntCells >&             boundaryintcells,
     const std::map<int,int>&                       labelPerElementId,
-    set<int> 									   MovingFluideleids)
+    set<int> 									   MovingFluideleGIDs)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR(" GEO::Intersection");
@@ -111,8 +111,8 @@ void GEO::Intersection::computeIntersection(
     
     // for fluid-fluid-coupling consider just the elements of background fluid
 	if (cutterdis->Name() == "FluidFluidboundary"){
-	   	set<int>::const_iterator eleid = MovingFluideleids.find(xfemElement->Id());
-	   	const bool is_moving = (eleid != MovingFluideleids.end());
+	   	set<int>::const_iterator eleid = MovingFluideleGIDs.find(xfemElement->Id());
+	   	const bool is_moving = (eleid != MovingFluideleGIDs.end());
 		if(is_moving){
 			continue;
 		}

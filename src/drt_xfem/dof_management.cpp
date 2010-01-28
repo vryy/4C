@@ -36,11 +36,12 @@ XFEM::DofManager::DofManager(
     const RCP<XFEM::InterfaceHandleXFSI>&  ih,
     const std::set<XFEM::PHYSICS::Field>&  fieldset,
     const XFEM::ElementAnsatz&             element_ansatz,
-    const Teuchos::ParameterList&          params
+    const Teuchos::ParameterList&          params,
+    const set<int>                         MovingFluidnodeGIDs
     ) :
   ih_(ih)
 {
-  XFEM::createDofMapFSI(*ih, nodalDofSet_, elementalDofs_, fieldset, element_ansatz, params);
+  XFEM::createDofMapFSI(*ih, nodalDofSet_, elementalDofs_, fieldset, element_ansatz, params, MovingFluidnodeGIDs);
 
   GatherUniqueEnrichments();
 }

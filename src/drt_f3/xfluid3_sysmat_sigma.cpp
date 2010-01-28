@@ -1536,6 +1536,8 @@ void SysmatBoundarySigma(
               |  (virt tau) * n^f , u^\iface  |
                \                            */
 
+            if (not fluidfluidCoupling)
+            {
             assembler.template Vector<Sigmaxx>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_gpvelnp(0));
             assembler.template Vector<Sigmaxy>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_gpvelnp(0));
             assembler.template Vector<Sigmaxz>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_gpvelnp(0));
@@ -1545,6 +1547,7 @@ void SysmatBoundarySigma(
             assembler.template Vector<Sigmazx>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_gpvelnp(2));
             assembler.template Vector<Sigmazy>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_gpvelnp(2));
             assembler.template Vector<Sigmazz>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_gpvelnp(2));
+            }
             
             if (fluidfluidCoupling)
             {

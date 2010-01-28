@@ -40,7 +40,8 @@ namespace XFEM
           const RCP<XFEM::InterfaceHandleXFSI>&  ih,
           const std::set<XFEM::PHYSICS::Field>&  fieldset,
           const XFEM::ElementAnsatz&             element_ansatz,
-          const Teuchos::ParameterList&          params
+          const Teuchos::ParameterList&          params,
+          const set<int>                         MovingFluidnodeGIDs
           );
 
       //! constructor (for combustion problems)

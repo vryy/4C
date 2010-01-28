@@ -113,7 +113,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   emptyboundarydis->SetState("idispcoln",tmpdisp2);
   // intersection with empty cutter will result in a complete fluid domain with no holes or intersections
   Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih =
-    rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis,fluidfluidstate_.MovingFluideleids_)));
+    rcp(new XFEM::InterfaceHandleXFSI(discret_,emptyboundarydis,fluidfluidstate_.MovingFluideleGIDs_)));
 
   // apply enrichments
   std::set<XFEM::PHYSICS::Field> fieldset;
@@ -123,7 +123,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   fieldset.insert(XFEM::PHYSICS::Pres);
   const XFLUID::FluidElementAnsatz elementAnsatz;
   Teuchos::RCP<XFEM::DofManager> dofmanager =
-    rcp(new XFEM::DofManager(ih, fieldset, elementAnsatz, xparams_));
+    rcp(new XFEM::DofManager(ih, fieldset, elementAnsatz, xparams_, fluidfluidstate_.MovingFluidNodeGIDs_));
 
   // tell elements about the dofs and the integration
   TransferDofInformationToElements(ih, dofmanager);
@@ -648,7 +648,12 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   for (int iele=0; iele< MovingFluiddis->NumMyColElements(); iele++)
   {
     DRT::Element* MovingFluidele = MovingFluiddis->lColElement(iele);
-    fluidfluidstate_.MovingFluideleids_.insert(MovingFluidele->Id());
+    fluidfluidstate_.MovingFluideleGIDs_.insert(MovingFluidele->Id());
+    for (int inode=0; inode < MovingFluidele->NumNode(); inode++)
+    {
+      DRT::Node*  MovingFluidnode = MovingFluidele->Nodes()[inode];
+      fluidfluidstate_.MovingFluidNodeGIDs_.insert(MovingFluidnode->Id());
+    }
   }
 
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
@@ -665,20 +670,20 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   }
 
    // compute Intersection
-   if (!fluidfluidstate_.MovingFluideleids_.empty())
+   if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
    {      
      ComputeFluidFluidInterfaceAccelerationsAndVelocities();     
      preparefluidfluidboundaryDis();
-     ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, FluidFluidboundarydis_, fluidfluidstate_.MovingFluideleids_));
+     ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, FluidFluidboundarydis_, fluidfluidstate_.MovingFluideleGIDs_));
    }
    else
-	  ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret, fluidfluidstate_.MovingFluideleids_));
+	  ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret, fluidfluidstate_.MovingFluideleGIDs_));
 
   ih_np_->toGmsh(step_);
 
   // apply enrichments
   const Teuchos::RCP<XFEM::DofManager> dofmanager =
-      rcp(new XFEM::DofManager(ih_np_, physprob_.fieldset_, *physprob_.elementAnsatzp_, xparams_));
+      rcp(new XFEM::DofManager(ih_np_, physprob_.fieldset_, *physprob_.elementAnsatzp_, xparams_, fluidfluidstate_.MovingFluidNodeGIDs_));
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
@@ -727,7 +732,7 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
     // if dofs appear, extrapolate from the interface to the newly created dofs
     if (Step() > 1)
     {
-      if (!fluidfluidstate_.MovingFluideleids_.empty())
+      if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
       {
         dofswitch.extrapolateOldTimeStepValues(FluidFluidboundarydis_, *ih_np_->cutterposn(), FluidFluidboundarydis_->GetState("fivelcoln") , state_.veln_ );
         dofswitch.extrapolateOldTimeStepValues(FluidFluidboundarydis_, *ih_np_->cutterposn(), FluidFluidboundarydis_->GetState("fivelcolnm"), state_.velnm_);
@@ -1185,7 +1190,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       iforcecolnp->PutScalar(0.0);
       eleparams.set("interface force",iforcecolnp);
       
-      if (!fluidfluidstate_.MovingFluideleids_.empty())
+      if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
         eleparams.set("fluidfluidCoupling",true);
       else
         eleparams.set("fluidfluidCoupling",false);
@@ -1221,7 +1226,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
         sysmat_->Zero();
         // call standard loop over elements
-        if (!fluidfluidstate_.MovingFluideleids_.empty())
+        if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
         {
           FluidFluidCouplingEvaluate(eleparams,sysmat_,residual_,discret_,FluidFluidboundarydis_,ih_np_);
         }
@@ -1904,13 +1909,13 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
 
   const int output_test_step = 999999;
 
-  ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret, fluidfluidstate_.MovingFluideleids_));
+  ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret, fluidfluidstate_.MovingFluideleGIDs_));
   if (gmshdebugout)
     ih_np_->toGmsh(output_test_step);
 
   // apply enrichments
   const Teuchos::RCP<XFEM::DofManager> dofmanager =
-      rcp(new XFEM::DofManager(ih_np_, physprob_.fieldset_, *physprob_.elementAnsatzp_, xparams_));
+      rcp(new XFEM::DofManager(ih_np_, physprob_.fieldset_, *physprob_.elementAnsatzp_, xparams_, fluidfluidstate_.MovingFluidNodeGIDs_));
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
@@ -3521,8 +3526,8 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
   if (!fluiddiscret->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
   
   // see what we have for input
-  bool assemblemat1 = sysmat_!=Teuchos::null;
-  bool assemblevec1 = residual_!=Teuchos::null;
+  bool assemblemat1 = systemmatrix!=Teuchos::null;
+  bool assemblevec1 = systemvector!=Teuchos::null;
     
   // define element matrices and vectors
   Epetra_SerialDenseMatrix elematrix1;
@@ -3668,32 +3673,32 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
   
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate assemble");
-    
-      systemmatrix->Assemble(-1,elematrix1,fluidlm,fluidlmowner);
+      int eid = actele->Id();
+      systemmatrix->Assemble(eid,elematrix1,fluidlm,fluidlmowner);
       LINALG::Assemble(*systemvector,elevector1,fluidlm,fluidlmowner);
           
       if (intersected) 
       {        
-        GuisUncond_->Assemble(-1, *elematrixGuis, ifaceboundarylm, ifaceboundarylmowner, fluidlm);
-        GsuiUncond_->Assemble(-1, *elematrixGsui, fluidlm, fluidlmowner, ifaceboundarylm);
+        GuisUncond_->Assemble(eid, *elematrixGuis, ifaceboundarylm, ifaceboundarylmowner, fluidlm);
+        GsuiUncond_->Assemble(eid, *elematrixGsui, fluidlm, fluidlmowner, ifaceboundarylm);
         LINALG::Assemble(*RHSui_,*elevectorRHSui,ifaceboundarylm,ifaceboundarylmowner);
       }
     }
   } //end loop over Fluid elements
   
-  // finalize the system matrix
-  discret_->ClearState();
   GuisUncond_->Complete(fluiddofrowmap, fluiddofrowmap);
   GsuiUncond_->Complete(fluiddofrowmap, fluiddofrowmap);
-  sysmat_->Add(*GuisUncond_,false,1.0,1.0);
-  sysmat_->Add(*GsuiUncond_,false,1.0,1.0);
-  sysmat_->Complete();
+  systemmatrix->Add(*GuisUncond_,false,1.0,1.0);
+  systemmatrix->Add(*GsuiUncond_,false,1.0,1.0);  
+  systemvector->Update(1.0,*RHSui_,1.0);
   
-  residual_->Update(1.0,*RHSui_,1.0);
-
+  //string GuisUncond = "/home/shahmiri/work_tmp/GuisUncond";
+  //string GsuiUncond = "/home/shahmiri/work_tmp/GsuiUncond";
   //string sysmat = "/home/shahmiri/work_tmp/sysmat";
-  //Teuchos::RCP<LINALG::SparseMatrix> sysmatmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
-  //LINALG::PrintMatrixInMatlabFormat(sysmat,*sysmatmatrix->EpetraMatrix(),true);
+  //LINALG::PrintMatrixInMatlabFormat(GuisUncond,*GuisUncond_->EpetraMatrix(),true);
+  //LINALG::PrintMatrixInMatlabFormat(GsuiUncond,*(GsuiUncond_->EpetraMatrix()),true);
+  //Teuchos::RCP<LINALG::SparseMatrix> sysmatmatrixmatlab = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix);
+  //LINALG::PrintMatrixInMatlabFormat(sysmat,*sysmatmatrixmatlab->EpetraMatrix(),true);
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/ 
