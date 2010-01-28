@@ -787,8 +787,8 @@ void SysmatDomainSigma(
     const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
 
     // stabilization parameter
-    const double hk = FLD::UTILS::HK_XFEM<DISTYPE>(*ih,ele,evelnp,xyze);
-//    const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
+//    const double hk = FLD::UTILS::HK_XFEM<DISTYPE>(*ih,ele,evelnp,xyze);
+    const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
     const double mk = FLD::UTILS::MK<DISTYPE>();
 
     // information about domain integration cells
@@ -1532,23 +1532,6 @@ void SysmatBoundarySigma(
             assembler.template Vector<Sigmazz>(shp_tau, timefacfac*normalvec_fluid(2)*gpvelnp(2));
 
 
-               /*                            \
-              |  (virt tau) * n^f , u^\iface  |
-               \                            */
-
-            if (not fluidfluidCoupling)
-            {
-            assembler.template Vector<Sigmaxx>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_gpvelnp(0));
-            assembler.template Vector<Sigmaxy>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_gpvelnp(0));
-            assembler.template Vector<Sigmaxz>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_gpvelnp(0));
-            assembler.template Vector<Sigmayx>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_gpvelnp(1));
-            assembler.template Vector<Sigmayy>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_gpvelnp(1));
-            assembler.template Vector<Sigmayz>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_gpvelnp(1));
-            assembler.template Vector<Sigmazx>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_gpvelnp(2));
-            assembler.template Vector<Sigmazy>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_gpvelnp(2));
-            assembler.template Vector<Sigmazz>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_gpvelnp(2));
-            }
-            
             if (fluidfluidCoupling)
             {
               /*                      \
@@ -1567,17 +1550,19 @@ void SysmatBoundarySigma(
               patchassembler.template Matrix<Sigmazx,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, timefacfac*normalvec_fluid(0), shp_iface);
               patchassembler.template Matrix<Sigmazy,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, timefacfac*normalvec_fluid(1), shp_iface);
               patchassembler.template Matrix<Sigmazz,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau, timefacfac*normalvec_fluid(2), shp_iface);
-              
-              assembler.template Vector<Sigmaxx>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_gpvelnp(0));
-              assembler.template Vector<Sigmaxy>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_gpvelnp(0));
-              assembler.template Vector<Sigmaxz>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_gpvelnp(0));
-              assembler.template Vector<Sigmayx>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_gpvelnp(1));
-              assembler.template Vector<Sigmayy>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_gpvelnp(1));
-              assembler.template Vector<Sigmayz>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_gpvelnp(1));
-              assembler.template Vector<Sigmazx>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_gpvelnp(2));
-              assembler.template Vector<Sigmazy>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_gpvelnp(2));
-              assembler.template Vector<Sigmazz>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_gpvelnp(2));
             }
+
+            // always needed. Above matrix only needed for monolithic formulation
+            assembler.template Vector<Sigmaxx>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_gpvelnp(0));
+            assembler.template Vector<Sigmaxy>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_gpvelnp(0));
+            assembler.template Vector<Sigmaxz>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_gpvelnp(0));
+            assembler.template Vector<Sigmayx>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_gpvelnp(1));
+            assembler.template Vector<Sigmayy>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_gpvelnp(1));
+            assembler.template Vector<Sigmayz>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_gpvelnp(1));
+            assembler.template Vector<Sigmazx>(shp_tau, -timefacfac*normalvec_fluid(0)*interface_gpvelnp(2));
+            assembler.template Vector<Sigmazy>(shp_tau, -timefacfac*normalvec_fluid(1)*interface_gpvelnp(2));
+            assembler.template Vector<Sigmazz>(shp_tau, -timefacfac*normalvec_fluid(2)*interface_gpvelnp(2));
+
 
                /*               \
             - |  v , Dtau * n^f  |

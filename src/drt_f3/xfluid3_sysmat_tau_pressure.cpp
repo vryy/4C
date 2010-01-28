@@ -870,8 +870,8 @@ void SysmatDomainTauPressure(
     const size_t numparamdiscpres = XFEM::getNumParam<ASSTYPE>(dofman, DiscPres, 1);
 
     // stabilization parameter
-    const double hk = FLD::UTILS::HK_XFEM<DISTYPE>(*ih,ele,eveln,xyze);
-//    const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
+//    const double hk = FLD::UTILS::HK_XFEM<DISTYPE>(*ih,ele,eveln,xyze);
+    const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
     const double mk = FLD::UTILS::MK<DISTYPE>();
 
     // information about domain integration cells
