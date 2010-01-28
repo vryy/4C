@@ -1970,8 +1970,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::SCATRA::scatratype_levelset),
                                &scatradyn);
 
-  DoubleParameter("INITIALDENS",1.0,"Initial value for density",&scatradyn);
-
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(
       "NONLINEAR",
