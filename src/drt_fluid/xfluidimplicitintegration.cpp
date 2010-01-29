@@ -3505,7 +3505,6 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
 {
   params.set("action","fluidfluidCoupling");
   
-  boundarydiscret->FillComplete(true,false, false);
   fluiddiscret->FillComplete(true,false, false);
   
   if (!fluiddiscret->Filled()) dserror("fluiddis->FillComplete() was not called");
@@ -3631,6 +3630,11 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
         ifaceboundarylmowner.insert( ifaceboundarylmowner.end(), ifacefluidlmowner.begin(), ifacefluidlmowner.end());
       }
     }
+  //TEST Ausgabe
+  //  for (std::map<int,int>::const_iterator iter = fluidboundarymap.begin(); iter != fluidboundarymap.end(); ++iter)
+  //  {
+  //    cout<< "first " << iter->first << " " << " second " << iter->second << endl;
+  //  }
 
     // get dimension of element matrices and vectors
     // Reshape element matrices and vectors and init to zero
