@@ -3125,6 +3125,7 @@ void StruGenAlpha::Output()
     output_.WriteVector("velocity",vel_);
     output_.WriteVector("acceleration",acc_);
     output_.WriteVector("fexternal",fext_);
+    output_.WriteElementData();
 
 #ifdef INVERSEDESIGNCREATE // indicate that this restart is from INVERSEDESIGCREATE phase
     output_.WriteInt("InverseDesignRestartFlag",0);
