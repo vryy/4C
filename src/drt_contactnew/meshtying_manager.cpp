@@ -333,6 +333,10 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
       dserror("Penalty parameter eps = 0, must be greater than 0");
   
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
+                                                 input.get<double>("PENALTYPARAM") <= 0.0)
+      dserror("Penalty parameter eps = 0, must be greater than 0");
+  
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
                                                  input.get<int>("UZAWAMAXSTEPS") < 2)
       dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
   
