@@ -1239,6 +1239,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
       for (int inode=0; inode<mynumnp; inode++)
       {
         DRT::Node* n = dis->lRowNode(inode);
+
         const double dofgid = (double) dis->Dof(n, frompid + idf) + offset;
         if (dofgid > -1.0)
         {
