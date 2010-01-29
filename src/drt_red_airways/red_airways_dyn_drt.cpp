@@ -136,24 +136,11 @@ void dyn_red_airways_drt()
 
   }
 
-#if 0  
-  arterytimeparams.set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
-  if (!CoupledTo3D)
-  {
-    // call time-integration (or stationary) scheme
-    RCP<ParameterList> param_temp;
-    artnetexplicit->Integrate(CoupledTo3D,param_temp);
+  airwaystimeparams.set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
-    return artnetexplicit;
-    //    return  Teuchos::null;
-  }
-  else
-  {
-    return artnetexplicit;
-  }
-
-#endif // if 0
+  RCP<ParameterList> param_temp;
+  airwayimplicit->Integrate();
 
 } // end of dyn_art_net_drt()
 

@@ -46,7 +46,7 @@ class ArteryRegister;
 /*!
 \brief A C++ wrapper for the artery element
 
-\author gammi (ismail@lnm.mw.tum.de)
+\author ismail (ismail@lnm.mw.tum.de)
 */
 class Artery : public DRT::Element
 {

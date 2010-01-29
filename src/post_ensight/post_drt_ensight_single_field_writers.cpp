@@ -31,6 +31,10 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("norcontactstress", "norcontactstress", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("tancontactstress", "tancontactstress", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("interfacetraction", "interfacetraction", dofbased, field->problem()->num_dim());
+
+  // reduced dimensional airway
+  EnsightWriter::WriteResult("pnp", "pnp", dofbased, 1);
+
   
   EnsightWriter::WriteElementResults(field); //To comment
   if (stresstype_!="none")
@@ -143,6 +147,7 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
   //compute number of dofs per node (ask the first node)
   int numdofpernode = field->discretization()->NumDof(field->discretization()->lRowNode(0));
 
+  cout<<"COMPUTED DOF IS: "<<numdofpernode<<endl;
   // write results for each transported scalar
   if (numdofpernode == 1)
   {

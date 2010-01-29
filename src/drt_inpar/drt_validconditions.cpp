@@ -1788,8 +1788,32 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(windkessel_optim_bc,"Pdiastolic");
   AddNamedReal(windkessel_optim_bc,"R1R2_ratio");
   AddNamedReal(windkessel_optim_bc,"Tolerance");
- 
+
   condlist.push_back(windkessel_optim_bc);
+  /*--------------------------------------------------------------------*/
+  // Prescribed BC for reduced dimnsional airways 
+
+  Teuchos::RCP<ConditionDefinition> raw_in_bc =
+    Teuchos::rcp(new ConditionDefinition("DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS",
+                                         "RedAirwayPrescribedCond",
+                                         "Reduced d airway prescribed boundary condition",
+                                         DRT::Condition::RedAirwayPrescribedCond,
+                                         true,
+                                         DRT::Condition::Point));
+
+  raw_in_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("boundarycond", "flow",
+    Teuchos::tuple<std::string>("flow","pressure"),
+    Teuchos::tuple<std::string>("flow","pressure"),
+    true)));
+
+  std::vector<Teuchos::RCP<ConditionComponent> > redairwayinletcomponents;
+  redairwayinletcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",1)));
+  redairwayinletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
+  for (unsigned i=0; i<redairwayinletcomponents.size(); ++i)
+    raw_in_bc->AddComponent(redairwayinletcomponents[i]);
+
+  condlist.push_back(raw_in_bc);
+ 
 
   return vc;
 

@@ -38,7 +38,7 @@ class Discretization;
 namespace ELEMENTS
 {
 // forward declarations
-class RedAirwayExpInterface;
+class RedAirwayImplInterface;
 template <DRT::Element::DiscretizationType distype> class AirwayImpl;
 class RedAirwayRegister;
 
@@ -53,7 +53,7 @@ public:
 
   //! @name Friends
   friend class RedAirwayRegister;
-  friend class RedAirwayExpInterface;
+  friend class RedAirwayImplInterface;
   friend class AirwayImpl<DRT::Element::line2>;
 
   //@}
@@ -153,7 +153,7 @@ public:
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return 2;}
+  virtual int NumDofPerNode(const DRT::Node& node) const {return 1;}
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -283,13 +283,27 @@ public:
 
   //@}
 
+  //! get cross-sectional area
+  double         getA(){ return A_;}
+
+  //! get youngs modulus of the wall
+  double         getEw(){ return Ew_;}
+
+  //! get youngs modulus of the air
+  double         getEa(){ return Ea_;}
+
+  //! get wall thickness
+  double         gettw(){ return tw_;}
 
 private:
 
   //! action parameters recognized by airway
   enum ActionType
   {
-    none
+    none,
+    calc_sys_matrix_rhs,
+    get_initial_state,
+    set_bc
   };
 
 

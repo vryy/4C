@@ -36,13 +36,13 @@ namespace ELEMENTS
     this class actually defines is Impl, which returns a pointer to
     the appropriate version of airway_impl.
    */
-  class AirwayImplInterface
+  class RedAirwayImplInterface
   {
   public:
     /// Empty constructor
-    AirwayImplInterface() {}
+    RedAirwayImplInterface() {}
     /// Empty destructor
-    virtual ~AirwayImplInterface() {}
+    virtual ~RedAirwayImplInterface() {}
     /// Evaluate the element
     virtual int Evaluate(RedAirway*                ele,
                          ParameterList&            params,
@@ -68,7 +68,7 @@ namespace ELEMENTS
                                     RefCountPtr<MAT::Material>    mat) = 0;
 
     /// Internal implementation class for airway element
-    static AirwayImplInterface* Impl(DRT::ELEMENTS::RedAirway* airway);
+    static RedAirwayImplInterface* Impl(DRT::ELEMENTS::RedAirway* airway);
 
   };
 
@@ -86,7 +86,7 @@ namespace ELEMENTS
   */
 
   template <DRT::Element::DiscretizationType distype>
-  class AirwayImpl: public AirwayImplInterface
+  class AirwayImpl: public RedAirwayImplInterface
   {
   public:
     /// Constructor

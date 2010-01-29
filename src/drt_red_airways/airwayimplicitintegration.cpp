@@ -163,7 +163,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
     eleparams.set("p0",pnp_);
     eleparams.set("q0",qnp_);
     eleparams.set("lmowner",lmowner);
-    eleparams.set("action","get_initail_airway_state");
+    eleparams.set("action","get_initial_state");
     discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   }
@@ -370,13 +370,12 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
   bcval_->PutScalar(0.0);
   dbctog_->PutScalar(0.0);
   // Solve terminal BCs
-
   {
     // create the parameters for the discretization
     ParameterList eleparams;
 
     // action for elements
-    eleparams.set("action","set_term_bc");
+    eleparams.set("action","set_bc");
 
     // set vecotr values needed by elements
     discret_->ClearState();
@@ -387,10 +386,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     eleparams.set("total time",time_);
     eleparams.set("bcval",bcval_);
     eleparams.set("dbctog",dbctog_);
+    eleparams.set("rhs",rhs_);
 
-    // Add the parameters to solve terminal BCs coupled to 3D fluid boundary
-    eleparams.set("coupling with 3D fluid params",CouplingTo3DParams);
-    
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
   }
@@ -420,7 +417,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
 
 #if 0  // Exporting some values for debugging purposes
 
-
     RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
     if (A_debug != Teuchos::null)
     {
@@ -428,7 +424,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
       (A_debug->EpetraMatrix())->Print(cout);
     }
 
+    cout<<"pnp: "<<*pnp_<<endl;
+    cout<<"rhs: "<<*rhs_<<endl;
+
 #endif 
+
     // call solver
     solver_.Solve(sysmat_->EpetraOperator(),pnp_,rhs_,true,true);
   }
@@ -439,6 +439,28 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
 
   if (myrank_ == 0)
     cout << "te=" << dtele_ << ", ts=" << dtsolve_ << "\n\n" ;
+
+  // find the flow rate qnp
+  #if 0
+  {
+    // create the parameters for the discretization
+    ParameterList eleparams;
+
+    // action for elements
+    eleparams.set("action","calculate_flow_rate");
+
+    // set vecotr values needed by elements
+    discret_->ClearState();
+    discret_->SetState("pnp",pnp_);
+    discret_->SetState("qnp",qnp_);
+
+    eleparams.set("time step size",dta_);
+    eleparams.set("total time",time_);
+
+    // call standard loop over all elements
+    discret_->Evaluate(eleparams,sysmat_,rhs_);
+  }
+  #endif
 
 } // ArtNetExplicitTimeInt:Solve
 

@@ -44,6 +44,8 @@ src/drt_truss3
 src/drt_w1
 src/drt_xdiff3
 src/drt_xfem
+src/drt_art_net
+src/drt_red_airways
 src/fluid2
 src/fluid2_is
 src/fluid2_pro

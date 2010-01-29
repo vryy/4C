@@ -1090,7 +1090,7 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       plastic->Unpack(data);
       return plastic;
     }
-#ifdef D_RED_AIRWAY
+#ifdef D_RED_AIRWAYS
     case ParObject_RedAirway:
     {
       DRT::ELEMENTS::RedAirway* object = new DRT::ELEMENTS::RedAirway(-1,-1);

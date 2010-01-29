@@ -32,6 +32,11 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(const std::string& eletype,
   if (genprob.ndim!=3)
     dserror("Problem defined as %dd, but found Reduced dimensional AIRWAY element.",genprob.ndim);
 
+  // read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+  SetMaterial(material);
+
   linedef->ExtractString("TYPE",elemType_);
   if (elemType_ == "PoiseuilleResistive" || elemType_ == "InductoResistive" || elemType_ == "ComplientResistive" || elemType_ == "RLC" || elemType_ == "SUKI")
   {

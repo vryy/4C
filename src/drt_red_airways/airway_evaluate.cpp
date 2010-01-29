@@ -29,7 +29,7 @@ Maintainer: Mahmoud Ismail
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
-#include "../drt_mat/cnst_1d_art.H"
+#include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
 
 #include <blitz/array.h>
@@ -51,25 +51,23 @@ int DRT::ELEMENTS::RedAirway::Evaluate(ParameterList& params,
                                        Epetra_SerialDenseVector& elevec2,
                                        Epetra_SerialDenseVector& elevec3)
 {
-#if 0
+
   DRT::ELEMENTS::RedAirway::ActionType act = RedAirway::none;
 
   // get the action required
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action == "calc_sys_matrix_rhs")
-    act = Artery::calc_sys_matrix_rhs;
-  else if (action == "get_initail_artery_state")
-    act = Artery::get_initail_artery_state;
-  else if (action == "solve_riemann_problem")
-    act = Artery::solve_riemann_problem;
-  else if (action == "set_term_bc")
-    act = Artery::set_term_bc;
+    act = RedAirway::calc_sys_matrix_rhs;
+  else if (action == "get_initial_state")
+    act = RedAirway::get_initial_state;
+  else if (action == "set_bc")
+    act = RedAirway::set_bc;
   else
   {
 
     char errorout[200];
-    sprintf(errorout,"Unknown type of action (%s) for 1D_Artery",action.c_str());
+    sprintf(errorout,"Unknown type of action (%s) for reduced dimensional airway",action.c_str());
 
     dserror(errorout);
   }
@@ -82,46 +80,36 @@ Here must add the steps for evaluating an element
   switch(act)
   {
     case calc_sys_matrix_rhs:
-    {
-      return DRT::ELEMENTS::ArteryExpInterface::Expl(this)->Evaluate(this,
-                                                                        params,
-                                                                        discretization,
-                                                                        lm,
-                                                                        elemat1,
-                                                                        elemat2,
-                                                                        elevec1,
-                                                                        elevec2,
-                                                                        elevec3,
-                                                                        mat);
+    {                       
+      return DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->Evaluate(this,
+                                                                         params,
+                                                                         discretization,
+                                                                         lm,
+                                                                         elemat1,
+                                                                         elemat2,
+                                                                         elevec1,
+                                                                         elevec2,
+                                                                         elevec3,
+                                                                         mat);
     }
     break;
-    case get_initail_artery_state:
+    case get_initial_state:
     {
-      DRT::ELEMENTS::ArteryExpInterface::Expl(this)->Initial(this,
-                                                             params,
-                                                             discretization,
-                                                             lm,
-                                                             mat);
+      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->Initial(this,
+                                                                 params,
+                                                                 discretization,
+                                                                 lm,
+                                                                 mat);
 
     }
     break;
-    case set_term_bc:
+    case set_bc:
     {
-      DRT::ELEMENTS::ArteryExpInterface::Expl(this)->EvaluateTerminalBC(this,
-                                                                        params,
-                                                                        discretization,
-                                                                        lm,
-                                                                        mat);
-
-    }
-    break;
-    case solve_riemann_problem:
-    {
-      DRT::ELEMENTS::ArteryExpInterface::Expl(this)->SolveRiemann(this,
-                                                                  params,
-                                                                  discretization,
-                                                                  lm,
-                                                                  mat);
+      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->EvaluateTerminalBC(this,
+                                                                            params,
+                                                                            discretization,
+                                                                            lm,
+                                                                            mat);
 
     }
     break;
@@ -129,7 +117,6 @@ Here must add the steps for evaluating an element
       dserror("Unkown type of action for Artery");
   }// end of switch(act)
 
-#endif 
   return 0;
 } // end of DRT::ELEMENTS::Artery::Evaluate
 

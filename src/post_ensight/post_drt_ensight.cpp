@@ -266,6 +266,17 @@ int main(
       // writer.WriteFiles();
       break;
     }
+    case prb_red_airways:
+    {
+      string basename = problem.outname();
+      PostField* field = problem.get_discretization(0);
+      //AnyEnsightWriter writer(field, problem.outname());
+      StructureEnsightWriter writer(field, basename, problem.stresstype(), problem.straintype());
+      writer.WriteFiles();
+      //      writer.WriteFiles();
+
+      break;
+    }
     case prb_none:
     {
       // Special problem type that contains one discretization and any number
