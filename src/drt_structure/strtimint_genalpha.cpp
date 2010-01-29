@@ -91,7 +91,9 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   {
     std::cout << "with generalised-alpha" << std::endl;
     VerifyCoeff();
-    std::cout << "   p_dis = " << MethodOrderOfAccuracyDis() << std::endl
+    
+    std::cout << "   midavg = " << INPAR::STR::MidAverageString(midavg_)<<std::endl
+              << "   p_dis = " << MethodOrderOfAccuracyDis() << std::endl
               << "   p_vel = " << MethodOrderOfAccuracyVel() << std::endl
               << std::endl;
   }

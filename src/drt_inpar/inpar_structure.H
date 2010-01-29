@@ -118,6 +118,28 @@ namespace INPAR
                        ///<  \f$= (1-\alpha_f)*F_{int}(D_{n+1}) + \alpha_f*F_{int}(D_n)\f$
                        ///<  (TR means trapezoidal rule.)
     };
+    
+    /// Map mid-averaging to string 
+    static inline const std::string MidAverageString
+    (
+      const enum MidAverageEnum name  ///< enum to convert
+    )
+    {
+      switch (name)
+      {
+      case midavg_vague :
+        return "Vague";
+        break;
+      case midavg_imrlike :
+        return "IMR-like";
+      case midavg_trlike :
+        return "TR-like";
+        break;
+      default :
+        dserror("Cannot make string for time integrator %d", name);
+        return "";
+      }
+    }
 
     //@}
 
