@@ -76,9 +76,9 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     all necessary Epetra_Maps and global vector and matrix quantities.
 
     */
-    explicit CoAbstractStrategy(RCP<Epetra_Map> problemrowmap, Teuchos::ParameterList params,
-                                vector<RCP<CONTACT::CoInterface> > interface, int dim,
-                                RCP<Epetra_Comm> comm, double alphaf);
+    CoAbstractStrategy(RCP<Epetra_Map> problemrowmap, Teuchos::ParameterList params,
+                       vector<RCP<CONTACT::CoInterface> > interface, int dim,
+                       RCP<Epetra_Comm> comm, double alphaf);
 
     /*!
     \brief Destructor

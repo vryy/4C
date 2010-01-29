@@ -86,9 +86,9 @@ class StrategyBase
     Creates the strategy base object and initializes all global variables.
 
     */
-    explicit StrategyBase(RCP<Epetra_Map> problemrowmap,
-                          Teuchos::ParameterList params,
-                          int dim, RCP<Epetra_Comm> comm, double alphaf);
+    StrategyBase(RCP<Epetra_Map> problemrowmap,
+                 Teuchos::ParameterList params,
+                 int dim, RCP<Epetra_Comm> comm, double alphaf);
 
     /*!
     \brief Destructor

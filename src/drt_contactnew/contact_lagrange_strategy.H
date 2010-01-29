@@ -64,9 +64,9 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     \brief Standard Constructor
 
     */
-    explicit CoLagrangeStrategy(RCP<Epetra_Map> problemrowmap, Teuchos::ParameterList params,
-                                vector<RCP<CONTACT::CoInterface> > interface, int dim,
-                                RCP<Epetra_Comm> comm, double alphaf);
+    CoLagrangeStrategy(RCP<Epetra_Map> problemrowmap, Teuchos::ParameterList params,
+                       vector<RCP<CONTACT::CoInterface> > interface, int dim,
+                       RCP<Epetra_Comm> comm, double alphaf);
 
     /*!
     \brief Destructor

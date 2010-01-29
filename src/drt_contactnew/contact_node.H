@@ -87,8 +87,8 @@ public:
 
   */
   CoNode(int id, const double* coords, const int owner,
-        const int numdof, const vector<int>& dofs, const bool isslave,
-        const bool initactive);
+         const int numdof, const vector<int>& dofs, const bool isslave,
+         const bool initactive);
 
   /*!
   \brief Copy Constructor

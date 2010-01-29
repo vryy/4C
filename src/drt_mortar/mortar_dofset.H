@@ -66,7 +66,7 @@ public:
   \brief Standard Constructor
 
   */
-  explicit MortarDofSet();
+  MortarDofSet();
 
   /*!
   \brief Destructor

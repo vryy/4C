@@ -68,9 +68,9 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   \brief Standard Constructor
 
   */
-  explicit CoPenaltyStrategy(RCP<Epetra_Map> problemrowmap, Teuchos::ParameterList params,
-                             vector<RCP<CONTACT::CoInterface> > interface, int dim,
-                             RCP<Epetra_Comm> comm, double alphaf);
+  CoPenaltyStrategy(RCP<Epetra_Map> problemrowmap, Teuchos::ParameterList params,
+                    vector<RCP<CONTACT::CoInterface> > interface, int dim,
+                    RCP<Epetra_Comm> comm, double alphaf);
 
   /*!
   \brief Destructor

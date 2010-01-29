@@ -83,7 +83,7 @@ public:
   To be able to evaluate them, the CoIntegrator have to be created with the alternative constructor (see below). 
 
   */
-  explicit CoIntegrator(DRT::Element::DiscretizationType eletype);
+  CoIntegrator(DRT::Element::DiscretizationType eletype);
 
   /*!
   \brief Constructor  with shape function specification
@@ -96,8 +96,8 @@ public:
   and corresponding weights.
   
   */
-  explicit CoIntegrator(const MORTAR::MortarInterface::ShapeFcnType shapefcn,
-                        DRT::Element::DiscretizationType eletype);
+  CoIntegrator(const MORTAR::MortarInterface::ShapeFcnType shapefcn,
+               DRT::Element::DiscretizationType eletype);
 
   /*!
   \brief Destructor

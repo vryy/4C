@@ -87,13 +87,13 @@ public:
   \param nodes (in):    pointers to nodes adjacent to this element
   \param isslave (in):  flag indicating whether element is slave or master side
   */
-  explicit IntElement(int lid, int id, ElementType etype, int owner,
-                      const DRT::Element::DiscretizationType& parshape,
-                      const DRT::Element::DiscretizationType& shape,
-                      const int numnode,
-                      const int* nodeids,
-                      vector<DRT::Node*> nodes,
-                      const bool isslave);
+  IntElement(int lid, int id, ElementType etype, int owner,
+             const DRT::Element::DiscretizationType& parshape,
+             const DRT::Element::DiscretizationType& shape,
+             const int numnode,
+             const int* nodeids,
+             vector<DRT::Node*> nodes,
+             const bool isslave);
 
   /*!
   \brief Copy Constructor
@@ -185,13 +185,13 @@ public:
   performed in parallel by individual processes.
 
   */
-  explicit Intcell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
-                   double* auxn, const DRT::Element::DiscretizationType& shape,
-                   bool auxplane,
-                   vector<map<int,double> >& linv1,
-                   vector<map<int,double> >& linv2,
-                   vector<map<int,double> >& linv3,
-                   vector<map<int,double> >& linauxn);
+  Intcell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
+          double* auxn, const DRT::Element::DiscretizationType& shape,
+          bool auxplane,
+          vector<map<int,double> >& linv1,
+          vector<map<int,double> >& linv2,
+          vector<map<int,double> >& linv3,
+          vector<map<int,double> >& linauxn);
 
   /*!
   \brief Copy Constructor
@@ -373,10 +373,10 @@ public:
   performed in parallel by individual processes.
 
   */
-  explicit Vertex(vector<double> coord, Vertex::vType type,
-                  vector<int> nodeids, Vertex* next, Vertex* prev,
-                  bool intersect, bool entryexit, Vertex* neighbor,
-                  double alpha);
+  Vertex(vector<double> coord, Vertex::vType type,
+         vector<int> nodeids, Vertex* next, Vertex* prev,
+         bool intersect, bool entryexit, Vertex* neighbor,
+         double alpha);
 
   /*!
   \brief Copy Constructor

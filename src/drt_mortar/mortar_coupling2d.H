@@ -79,8 +79,8 @@ public:
   To be able to evaluate them, the Coupling2d have to be created with the alternative constructor (see below).
 
   */
-  explicit Coupling2d(DRT::Discretization& idiscret, int dim,
-                      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
+  Coupling2d(DRT::Discretization& idiscret, int dim,
+             MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
   
   /*!
   \brief Constructor with shape function specification
@@ -90,8 +90,8 @@ public:
   performed in parallel by individual processes.
   
   */  
-  explicit Coupling2d(const MortarInterface::ShapeFcnType shapefcn, DRT::Discretization& idiscret, int dim,
-                      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
+  Coupling2d(const MortarInterface::ShapeFcnType shapefcn, DRT::Discretization& idiscret, int dim,
+             MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
   /*!
   \brief Destructor

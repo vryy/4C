@@ -82,8 +82,8 @@ public:
   \param selfcontact (in): Flag for self contact status (default=false)
  
   */
-  explicit CoInterface(const int id, const Epetra_Comm& comm, const int dim,
-                       const Teuchos::ParameterList& icontact, bool selfcontact = false);
+  CoInterface(const int id, const Epetra_Comm& comm, const int dim,
+              const Teuchos::ParameterList& icontact, bool selfcontact = false);
     
   /*!
   \brief Destructor

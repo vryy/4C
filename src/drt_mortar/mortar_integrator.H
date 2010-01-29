@@ -84,7 +84,7 @@ public:
   To be able to evaluate them, the MortarIntegrator have to be created with the alternative constructor (see below). 
 
   */
-  explicit MortarIntegrator(DRT::Element::DiscretizationType eletype);
+  MortarIntegrator(DRT::Element::DiscretizationType eletype);
 
   /*!
   \brief Constructor  with shape function specification
@@ -97,8 +97,8 @@ public:
   and corresponding weights.
   
   */
-  explicit MortarIntegrator(const MortarInterface::ShapeFcnType shapefcn,
-                      DRT::Element::DiscretizationType eletype);
+  MortarIntegrator(const MortarInterface::ShapeFcnType shapefcn,
+                   DRT::Element::DiscretizationType eletype);
 
   /*!
   \brief Destructor

@@ -80,11 +80,11 @@ public:
   \param nodeids (in): ids of nodes adjacent to this element
   \param isslave (in): flag indicating whether element is slave or master side
   */
-  explicit CoElement(int id, ElementType etype, int owner,
-                    const DRT::Element::DiscretizationType& shape,
-                    const int numnode,
-                    const int* nodeids,
-                    const bool isslave);
+  CoElement(int id, ElementType etype, int owner,
+            const DRT::Element::DiscretizationType& shape,
+            const int numnode,
+            const int* nodeids,
+            const bool isslave);
 
   /*!
   \brief Copy Constructor

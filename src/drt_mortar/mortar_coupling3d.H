@@ -88,9 +88,9 @@ public:
   To be able to evaluate them, the Coupling3d have to be created with the alternative constructor (see below).
   
   */
-  explicit Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
-                      bool auxplane,
-                      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
+  Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
+             bool auxplane,
+             MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
   /*!
   \brief Constructor with shape function specification
@@ -100,10 +100,10 @@ public:
   performed in parallel by individual processes.
   
   */
-  explicit Coupling3d(const MortarInterface::ShapeFcnType shapefcn, 
-                      DRT::Discretization& idiscret, int dim, bool quad,
-                      bool auxplane,
-                      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
+  Coupling3d(const MortarInterface::ShapeFcnType shapefcn, 
+             DRT::Discretization& idiscret, int dim, bool quad,
+             bool auxplane,
+             MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
   /*!
   \brief Destructor
@@ -480,10 +480,10 @@ public:
   To be able to evaluate them, the Coupling3dQuad have to be created with the alternative constructor (see below).
   
   */
-  explicit Coupling3dQuad(DRT::Discretization& idiscret,
-                          int dim, bool quad, bool auxplane,
-                          MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-                          MORTAR::IntElement& sintele, MORTAR::IntElement& mintele);
+  Coupling3dQuad(DRT::Discretization& idiscret,
+                 int dim, bool quad, bool auxplane,
+                 MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+                 MORTAR::IntElement& sintele, MORTAR::IntElement& mintele);
 
   /*!
   \brief Constructor with shape function specification
@@ -493,11 +493,11 @@ public:
   performed in parallel by individual processes.
   
   */
-  explicit Coupling3dQuad(const MortarInterface::ShapeFcnType shapefcn,
-                          DRT::Discretization& idiscret,
-                          int dim, bool quad, bool auxplane,
-                          MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-                          MORTAR::IntElement& sintele, MORTAR::IntElement& mintele);
+  Coupling3dQuad(const MortarInterface::ShapeFcnType shapefcn,
+                 DRT::Discretization& idiscret,
+                 int dim, bool quad, bool auxplane,
+                 MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+                 MORTAR::IntElement& sintele, MORTAR::IntElement& mintele);
   
   /*!
   \brief Destructor

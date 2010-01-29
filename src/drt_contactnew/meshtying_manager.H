@@ -78,7 +78,7 @@ public:
   \param alphaf (in): Generalized-alpha parameter (set to 0.0 by default)
 
   */
-  explicit MtManager(DRT::Discretization& discret, double alphaf = 0.0);
+  MtManager(DRT::Discretization& discret, double alphaf = 0.0);
 
   /*!
   \brief Destructor

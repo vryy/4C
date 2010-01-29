@@ -99,8 +99,8 @@ public:
   \param icontact (in): Global contact parameter list
  
   */
-  explicit MortarInterface(const int id, const Epetra_Comm& comm, const int dim,
-                           const Teuchos::ParameterList& icontact);
+  MortarInterface(const int id, const Epetra_Comm& comm, const int dim,
+                  const Teuchos::ParameterList& icontact);
     
   /*!
   \brief Destructor

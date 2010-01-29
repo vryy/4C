@@ -61,11 +61,11 @@ public:
   \brief Standard Constructor
 
   */
-  explicit CmtStruGenAlpha(ParameterList& params,
-                           DRT::Discretization& dis,
-                           LINALG::Solver& solver,
-                           IO::DiscretizationWriter& output,
-                           INPAR::CONTACT::ContactType ctype);
+  CmtStruGenAlpha(ParameterList& params,
+                  DRT::Discretization& dis,
+                  LINALG::Solver& solver,
+                  IO::DiscretizationWriter& output,
+                  INPAR::CONTACT::ContactType ctype);
 
   /*!
   \brief Destructor

@@ -85,7 +85,7 @@ public:
   reference in the strategy_ member variable.
 
   */
-  explicit ManagerBase();
+  ManagerBase();
 
   /*!
   \brief Destructor

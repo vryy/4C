@@ -74,7 +74,7 @@ public:
   \param dim (in): Global problem dimension
 
   */
-  explicit MortarProjector(int dim);
+  MortarProjector(int dim);
 
   /*!
   \brief Destructor
