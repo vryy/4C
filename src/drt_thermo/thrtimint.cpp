@@ -686,7 +686,7 @@ void THR::TimInt::ApplyForceExternal(
   Teuchos::RCP<Epetra_Vector>& fext  //!< external force
   )
 {
-  ParameterList p;
+  Teuchos::ParameterList p;
   // action for elements
   const std::string action = "calc_thermo_fext";
   p.set("action", action);
@@ -804,15 +804,19 @@ void THR::TimInt::ApplyForceInternal(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  integrate                                               bborn 06/08 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::Integrate()
 {
+  dserror("Integrate() will not be used but ADAPTER::Thermo::Integrate()!");
+
+  /*
   // target time #timen_ and step #stepn_ already set
 
   // time loop
-  while ( (timen_ <= timemax_) and (stepn_ <= stepmax_) )
+  while ( ((timen_+((1e-10)*((*dt_)[0]))) < timemax_) and (stepn_ <= stepmax_) )
   {
     // integrate time step
     // after this step we hold tempn_, etc
@@ -837,6 +841,7 @@ void THR::TimInt::Integrate()
 
   // that's it
   return;
+  */
 }
 
 /*----------------------------------------------------------------------*/

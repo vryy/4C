@@ -131,15 +131,15 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterList&
   // overrule certain parameters for coupled problems
   // -------------------------------------------------------------------
   // the default time step size
-  tdynparams->set<double>   ("TIMESTEP"    ,prbdyn.get<double>("TIMESTEP"));
+  tdynparams->set<double> ("TIMESTEP"   ,prbdyn.get<double>("TIMESTEP"));
   // maximum simulation time
-  tdynparams->set<double>   ("MAXTIME"     ,prbdyn.get<double>("MAXTIME"));
+  tdynparams->set<double> ("MAXTIME"    ,prbdyn.get<double>("MAXTIME"));
   // maximum number of timesteps
-  tdynparams->set<int>      ("NUMSTEP"     ,prbdyn.get<int>("NUMSTEP"));
+  tdynparams->set<int>    ("NUMSTEP"    ,prbdyn.get<int>("NUMSTEP"));
   // restart
-  tdynparams->set           ("RESTARTEVRY" ,prbdyn.get<int>("RESTARTEVRY"));
+  tdynparams->set<int>    ("RESTARTEVRY",prbdyn.get<int>("RESTARTEVRY"));
   // solution output
-  tdynparams->set           ("UPRES"       ,prbdyn.get<int>("UPRES"));
+  tdynparams->set<int>    ("RESEVRYGLOB",prbdyn.get<int>("UPRES"));
 
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams
@@ -180,7 +180,7 @@ void ADAPTER::Thermo::Integrate()
   const int stepend = GetTimeNumStep();
 
   // loop ahead --- if timestepsize>0
-  while ( (time < timeend) and (step < stepend) )
+  while ( ((time + (1.e-10)*GetTimeStepSize())< timeend) and (step < stepend) )
   {
     PrepareTimeStep();
     Solve();
@@ -190,22 +190,29 @@ void ADAPTER::Thermo::Integrate()
     time +=  timestepsize;
     step += 1;
 
-    // talk to user
-    fprintf(stdout,
-            "Finalised: step %6d"
-            " | nstep %6d"
-            " | time %-14.8E"
-            " | dt %-14.8E\n",
-            step, stepend, time, timestepsize);
-    // print a beautiful line made exactly of 80 dashes
-    fprintf(stdout,
-            "--------------------------------------------------------------"
-            "------------------\n");
-    // do it, print now!
-    fflush(stdout);
+    // print step summary
+    PrintStep();
+
+//    // older version talk to user
+//    fprintf(stdout,
+//            "Finalised: step %6d"
+//            " | nstep %6d"
+//            " | time %-14.8E"
+//            " | dt %-14.8E\n",
+//            step, stepend, time, timestepsize);
+//    // print a beautiful line made exactly of 80 dashes
+//    fprintf(stdout,
+//            "--------------------------------------------------------------"
+//            "------------------\n");
+//    // do it, print now!
+//    fflush(stdout);
+
     // talk to disk
     Output();
   }
+
+  // print monitoring of time consumption
+  TimeMonitor::summarize();
 
   // Jump you f***ers
   return;

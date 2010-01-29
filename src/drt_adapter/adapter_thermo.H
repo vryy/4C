@@ -153,6 +153,9 @@ namespace ADAPTER
     /// update at time step end
     virtual void Update() = 0;
 
+    /// print info about finished time step
+    virtual void PrintStep() = 0;
+
     /// output results
     virtual void Output() = 0;
 

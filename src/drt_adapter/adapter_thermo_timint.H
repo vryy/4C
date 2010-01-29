@@ -125,6 +125,9 @@ namespace ADAPTER
     /// update at time step end
     void Update();
 
+    /// print info about finished time step
+    void PrintStep();
+
     /// output results
     void Output();
 

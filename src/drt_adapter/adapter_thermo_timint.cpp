@@ -81,50 +81,42 @@ Teuchos::RCP<THR::TimIntImpl> ADAPTER::ThermoTimInt::Create(
   Teuchos::RCP<IO::DiscretizationWriter>& output
   )
 {
+  // build the thermal time integration tti
   Teuchos::RCP<THR::TimIntImpl> tti = Teuchos::null;
 
   // create specific time integrator
   switch (Teuchos::getIntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP"))
   {
-  // Static analysis
-  case INPAR::THR::dyna_statics :
-  {
-    tti = Teuchos::rcp(new THR::TimIntStatics(ioflags, tdyn, xparams,
-                                              actdis, solver, output));
-    break;
-  }
-
-  // One-step-theta (OST) time integration
-  case INPAR::THR::dyna_onesteptheta :
-  {
-    tti = Teuchos::rcp(new THR::TimIntOneStepTheta(ioflags, tdyn, xparams,
-                                                   actdis, solver, output));
-    break;
-  }
-
-  /*
-  // Generalised energy-momentum method (GEMM) time integration
-   case INPAR::THR::dyna_gemm :
-   {
-     tti = Teuchos::rcp(new THR::TimIntGEMM(ioflags, tdyn, xparams,
-                                                    actdis, solver, output));
-     break;
+    // Static analysis
+    case INPAR::THR::dyna_statics :
+    {
+      tti = Teuchos::rcp(new THR::TimIntStatics(ioflags, tdyn, xparams,
+                                                actdis, solver, output));
+      break;
     }
-*/
-  // Generalized alpha time integration
-  case INPAR::THR::dyna_genalpha :
-  {
-    tti = Teuchos::rcp(new THR::TimIntGenAlpha(ioflags, tdyn, xparams,
-                                               actdis, solver, output));
-    break;
-  }
 
-  // Everything else
-  default :
-  {
-    // do nothing
-    break;
-  }
+    // One-step-theta (OST) time integration
+    case INPAR::THR::dyna_onesteptheta :
+    {
+      tti = Teuchos::rcp(new THR::TimIntOneStepTheta(ioflags, tdyn, xparams,
+                                                     actdis, solver, output));
+      break;
+    }
+
+    // Generalized alpha time integration
+    case INPAR::THR::dyna_genalpha :
+    {
+      tti = Teuchos::rcp(new THR::TimIntGenAlpha(ioflags, tdyn, xparams,
+                                                 actdis, solver, output));
+      break;
+    }
+
+    // Everything else
+    default :
+    {
+      // do nothing
+      break;
+    }
   } // switch
 
   // return the integrator
@@ -219,9 +211,7 @@ void ADAPTER::ThermoTimInt::PrepareTimeStep()
  | build linear system tangent matrix and rhs/force residual bborn 08/09 |
  | Monolithic TSI accesses the linearised thermo problem                |
  *----------------------------------------------------------------------*/
-void ADAPTER::ThermoTimInt::Evaluate(
-  Teuchos::RCP<const Epetra_Vector> temp
-  )
+void ADAPTER::ThermoTimInt::Evaluate(Teuchos::RCP<const Epetra_Vector> temp)
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And
@@ -256,10 +246,23 @@ void ADAPTER::ThermoTimInt::Evaluate(
  *----------------------------------------------------------------------*/
 void ADAPTER::ThermoTimInt::Update()
 {
+  // update temperature and temperature rate
+  // after this call we will have tempn_ == temp_ (temp_{n+1} == temp_n), etc.
   thermo_->UpdateStepState();
+  // update time and step
   thermo_->UpdateStepTime();
   return;
 }
+
+/*----------------------------------------------------------------------*
+ | print step summary                                        dano 01/10 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::ThermoTimInt::PrintStep()
+{
+  thermo_->PrintStep();
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  | output                                                   bborn 08/09 |
