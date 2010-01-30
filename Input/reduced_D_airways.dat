@@ -145,9 +145,9 @@ NODE            3     COORD 10.0  10.0 0.0
 NODE            4     COORD 10.0 -10.0 0.0
 ----------------------------------------------------------ELEMENTS
 ----------------------------------------REDUCED D AIRWAYS ELEMENTS
-1 RED_AIRWAY  LINE2    1   2 MAT 1 TYPE PoiseuilleResistive    WallCompliance 100.0   AirCompliance 0.0    WallThickness 1.0    Area 20.0
-2 RED_AIRWAY  LINE2    2   3 MAT 1 TYPE PoiseuilleResistive    WallCompliance 10.0    AirCompliance 0.0    WallThickness 1.0    Area 10.0
-3 RED_AIRWAY  LINE2    2   4 MAT 1 TYPE PoiseuilleResistive    WallCompliance 20.0    AirCompliance 0.0    WallThickness 1.0    Area 5.0
+1 RED_AIRWAY  LINE2    1   2 MAT 1 TYPE PoiseuilleResistive    WallCompliance 0.0   AirCompliance 0.0    WallThickness 0.0    Area 20.0
+2 RED_AIRWAY  LINE2    2   3 MAT 1 TYPE PoiseuilleResistive    WallCompliance 0.0    AirCompliance 0.0    WallThickness 0.0    Area 10.0
+3 RED_AIRWAY  LINE2    2   4 MAT 1 TYPE PoiseuilleResistive    WallCompliance 0.0    AirCompliance 0.0    WallThickness 0.0    Area 5.0
 ---------------------------------------------------ARTERY ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
