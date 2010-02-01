@@ -202,10 +202,8 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   // if not we can skip this routine to speed things up
   if (!IsInContact()) return;
 
-  // since we will modify kteff by adding additional stiffness entries,
-  // we have to uncomplete it
-  // TODO move the call of EvaluateContact in ContactStruGenAlpha before
-  // the completion of kteff to avoid this
+  // since we will modify the graph of kteff by adding additional
+  // meshtyong stiffness entries, we have to uncomplete it
   kteff->UnComplete();
 
   // we need the combined sm rowmap
@@ -295,8 +293,6 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   kteff->Add(*kc1, false, 1.0, 1.0);
   kteff->Add(*kc2, false, 1.0, 1.0);
 #endif
-
-  kteff->Complete();
 
   // **********************************************************************
   // Build RHS
@@ -479,6 +475,8 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& kt
   // remove old stiffness terms
   // (FIXME: redundant code to EvaluateContact(), expect for minus sign)
 
+  // since we will modify the graph of kteff by adding additional
+  // meshtyong stiffness entries, we have to uncomplete it
   kteff->UnComplete();
 
   kteff->Add(*lindmatrix_, false, -(1.0-alphaf_), 1.0);
@@ -490,9 +488,6 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& kt
   mtilde = LINALG::Multiply(*mmatrix_, true, *linzmatrix_, false);
   kteff->Add(*dtilde, false, -(1.0-alphaf_), 1.0);
   kteff->Add(*mtilde, false, (1.0-alphaf_), 1.0);
-
-  // we leave kteff Filled()==false here, as Evaluate() will be called below
-  // and kteff will be UnCompleted there again, anyway!
 
   // remove old force terms
   // (FIXME: redundant code to EvaluateContact(), expect for minus sign)
@@ -543,6 +538,9 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& kt
   // and finally redo Evaluate()
   RCP<Epetra_Vector> nullvec = Teuchos::null;
   Evaluate(kteff,feff,nullvec);
+  
+  // complete stiffness matrix
+  kteff->Complete();
 
   return;
 }

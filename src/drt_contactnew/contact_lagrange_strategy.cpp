@@ -110,6 +110,10 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
   // input parameters
   bool fulllin = Teuchos::getIntegralValue<int>(Params(),"FULL_LINEARIZATION");
 
+  // complete stiffness matrix
+  // (this is a prerequisite for the Split2x2 methods to be called later)
+  kteff->Complete();
+  
   /**********************************************************************/
   /* export weighted gap vector to gactiveN-map                         */
   /**********************************************************************/

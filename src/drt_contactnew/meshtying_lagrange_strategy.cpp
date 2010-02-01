@@ -293,6 +293,10 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
   // because there are still problems with the transposed version of
   // MLMultiply if a row has no entries! One day we should use ML...
 
+  // complete stiffness matrix
+  // (this is a prerequisite for the Split2x2 methods to be called later)
+  kteff->Complete();
+    
   /**********************************************************************/
   /* Split kteff into 3x3 block matrix                                  */
   /**********************************************************************/

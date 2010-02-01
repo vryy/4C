@@ -118,10 +118,8 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>& 
   // because there are still problems with the transposed version of
   // MLMultiply if a row has no entries! One day we should use ML...
 
-  // since we will modify kteff by adding additional stiffness entries,
-  // we have to uncomplete it
-  // TODO move the call of Evaluate in ContactStruGenAlpha before
-  // the completion of kteff to avoid this
+  // since we will modify the graph of kteff by adding additional
+  // meshtyong stiffness entries, we have to uncomplete it
   kteff->UnComplete();
     
   /**********************************************************************/
@@ -134,9 +132,6 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>& 
   kteff->Add(*mtd_,false,-pp,1.0);
   kteff->Add(*dm_,false,-pp,1.0);
   kteff->Add(*dd_,false,pp,1.0);
-
-  // FillComplete kteff (square)
-  kteff->Complete();
   
   // build constraint vector
     

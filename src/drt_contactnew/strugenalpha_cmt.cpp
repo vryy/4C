@@ -373,7 +373,6 @@ void CONTACT::CmtStruGenAlpha::ConsistentPredictor()
 #endif
     }
   }
-  stiff_->Complete();
 
   // keep a copy of fresm for contact forces / equilibrium check
   RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
@@ -395,6 +394,9 @@ void CONTACT::CmtStruGenAlpha::ConsistentPredictor()
   cmtmanager_->GetStrategy().VisualizeGmsh(istep,0);
 #endif // #ifdef CONTACTGMSH2
 
+  //------------------------------------ ----complete stiffness matrix
+  stiff_->Complete();
+      
   // blank residual DOFs that are on Dirichlet BC
   // in the case of local systems we have to rotate forth and back
   {
@@ -625,7 +627,6 @@ void CONTACT::CmtStruGenAlpha::ConstantPredictor()
 #endif
     }
   }
-  stiff_->Complete();
 
   // keep a copy of fresm for contact forces / equilibrium check
   RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
@@ -646,6 +647,9 @@ void CONTACT::CmtStruGenAlpha::ConstantPredictor()
   cmtmanager_->GetStrategy().VisualizeGmsh(istep,0);
 #endif // #ifdef CONTACTGMSH2
 
+  //------------------------------------ ----complete stiffness matrix
+  stiff_->Complete();
+    
   // blank residual DOFs that are on Dirichlet BC
   // in the case of local systems we have to rotate forth and back
   {
@@ -1237,7 +1241,6 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
 #endif
       }
     }
-    stiff_->Complete();
 
     // keep a copy of fresm for contact forces / equilibrium check
     RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
@@ -1256,6 +1259,9 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
     dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
 #endif // #ifdef CONTACTGMSH2
 
+    //------------------------------------ ----complete stiffness matrix
+    stiff_->Complete();
+      
     // blank residual DOFs that are on Dirichlet BC
     // in the case of local systems we have to rotate forth and back
     {
@@ -1595,7 +1601,6 @@ void CONTACT::CmtStruGenAlpha::FullNewtonLineSearch()
 #endif
       }
     }
-    stiff_->Complete();
 
     // keep a copy of fresm for contact forces / equilibrium check
     RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
@@ -1614,6 +1619,9 @@ void CONTACT::CmtStruGenAlpha::FullNewtonLineSearch()
     dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
 #endif // #ifdef CONTACTGMSH2
 
+    //------------------------------------ ----complete stiffness matrix
+    stiff_->Complete();
+      
     // blank residual DOFs that are on Dirichlet BC
     {
       Epetra_Vector fresmdbc(*fresm_);
@@ -1840,8 +1848,7 @@ void CONTACT::CmtStruGenAlpha::FullNewtonLineSearch()
 #endif
         }
       }
-      stiff_->Complete();
-
+      
       // keep a copy of fresm for contact forces / equilibrium check
       RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
 
@@ -1859,6 +1866,9 @@ void CONTACT::CmtStruGenAlpha::FullNewtonLineSearch()
       dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
 #endif // #ifdef CONTACTGMSH2
 
+      //------------------------------------ ----complete stiffness matrix
+      stiff_->Complete();
+          
       // blank residual DOFs that are on Dirichlet BC
       {
         Epetra_Vector fresmdbc(*fresm_);
@@ -2222,7 +2232,6 @@ void CONTACT::CmtStruGenAlpha::SemiSmoothNewton()
 #endif
       }
     }
-    stiff_->Complete();
 
     // keep a copy of fresm for contact forces / equilibrium check
     RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
@@ -2287,6 +2296,9 @@ void CONTACT::CmtStruGenAlpha::SemiSmoothNewton()
     cmtmanager_->GetStrategy().VisualizeGmsh(istep,numiter+1);
 #endif // #ifdef CONTACTGMSH2
 
+    //------------------------------------ ----complete stiffness matrix
+    stiff_->Complete();
+        
     // blank residual DOFs that are on Dirichlet BC
     // in the case of local systems we have to rotate forth and back
     {
@@ -2629,8 +2641,7 @@ void CONTACT::CmtStruGenAlpha::SemiSmoothNewtonLineSearch()
 #endif
       }
     }
-    stiff_->Complete();
-
+    
     // keep a copy of fresm for contact forces / equilibrium check
     RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
 
@@ -2654,6 +2665,9 @@ void CONTACT::CmtStruGenAlpha::SemiSmoothNewtonLineSearch()
     //--------------------------------------------------- contact forces
     cmtmanager_->GetStrategy().InterfaceForces(fresmcopy);
 
+    //------------------------------------ ----complete stiffness matrix
+    stiff_->Complete();
+        
 #ifdef CONTACTGMSH2
     int step  = params_.get<int>("step",0);
     int istep = step + 1;
@@ -2886,7 +2900,6 @@ void CONTACT::CmtStruGenAlpha::SemiSmoothNewtonLineSearch()
 #endif
         }
       }
-      stiff_->Complete();
 
       // keep a copy of fresm for contact forces / equilibrium check
       RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
@@ -2915,6 +2928,9 @@ void CONTACT::CmtStruGenAlpha::SemiSmoothNewtonLineSearch()
       cmtmanager_->GetStrategy().VisualizeGmsh(istep,numiter+1);
 #endif // #ifdef CONTACTGMSH2
 
+      //------------------------------------ ----complete stiffness matrix
+      stiff_->Complete();
+          
       // blank residual DOFs that are on Dirichlet BC
       {
         Epetra_Vector fresmdbc(*fresm_);
@@ -3260,8 +3276,7 @@ void CONTACT::CmtStruGenAlpha::PTC()
 #endif
       }
     }
-    stiff_->Complete();
-
+    
     // keep a copy of fresm for contact forces / equilibrium check
     RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
 
@@ -3279,6 +3294,9 @@ void CONTACT::CmtStruGenAlpha::PTC()
     dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
 #endif // #ifdef CONTACTGMSH2
 
+    //------------------------------------ ----complete stiffness matrix
+    stiff_->Complete();
+        
     // blank residual DOFs that are on Dirichlet BC
     // in the case of local systems we have to rotate forth and back
     {
