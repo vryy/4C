@@ -3305,20 +3305,20 @@ void CONTACT::CmtStruGenAlpha::PTC()
 
     //------------------------------------ PTC update of artificial time
 #if 1
-    // **** THIS IS FOR AUGMENTED LAGRANGE *******************************
-    // We need a modification of the last fresm-infnorm (stored in nc)
-    // here because this is zero for all Uzawa steps other than the first
-    // one in an augmented Lagrangian scheme!!! As we do not expect
-    // convergence problems in the second, third,... Uzawa step anyway,
-    // nc can be chosen quite high and thus PTC stabilization is reduced!
     // *******************************************************************
-    if (numiter==0 && nc < 1.0e-6)
-    {
-      if (!myrank_) cout << "nc was very small, thus changed it to 1.0E+03" << endl;
-      nc = 1000;
-    }
+    // A modification of the last fresm-infnorm (stored in nc) might be
+    // necessary here in the case of an Augmented Lagrangian strategy!
+    // This is due to the fresm-infnorm becoming approx. zero for the
+    // first Newton in the last augmentation loop shortly before Uzawa
+    // convergence. As we do not expect PTC convergence problems in these
+    // augmentation steps anyway (as we are very close to the solution
+    // already), nc could simply be chosen quite high (e.g. 1000 as during
+    // intialization, see above) and PTC stabilization would be reduced!
     // *******************************************************************
-
+    // -> Up to now everything works fine! (popp, 01/2010)
+    // -> No need for this modification!
+    // *******************************************************************
+    
     // SER step size control
     dti *= (np/nc);
     dti = max(dti,0.0);
