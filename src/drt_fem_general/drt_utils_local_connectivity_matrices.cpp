@@ -381,6 +381,28 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
           }
           break;
         }
+        // TODO
+        // Early stage: Integration of Fluid2 into Fluid3
+        case DRT::Element::quad4:
+        {
+            // nurbs 9 surfaces --- valid only on interpolated boundaries
+            const int nSurf = 1;
+            const int nNode = 4;
+            vector<int> submap(nNode, 0);
+            for(int i = 0; i < nSurf; i++)
+            {
+              map.push_back(submap);
+              for(int j = 0; j < nNode; j++)
+                map[i][j] = eleNodeNumbering_hex27_surfaces[i][j];
+            }
+        	break;
+        }
+        case DRT::Element::tri6:
+        case DRT::Element::tri3:
+        case DRT::Element::quad8:
+        case DRT::Element::quad9:
+        case DRT::Element::nurbs9:
+        case DRT::Element::nurbs4:
         default:
           dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }

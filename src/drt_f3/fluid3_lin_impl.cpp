@@ -34,63 +34,115 @@ Maintainer: Christiane Foerster
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3lin_ImplInterface* DRT::ELEMENTS::Fluid3lin_ImplInterface::Impl(DRT::ELEMENTS::Fluid3* f3)
 {
+  // Get number of dofs for a node
+  const int numdofpernode = f3->NumDofPerNode(*(f3->Nodes()[0]));
+
   switch (f3->Shape())
   {
   case DRT::Element::hex8:
   {
     static Fluid3lin_Impl<DRT::Element::hex8>* fh8;
     if (fh8==NULL)
-      fh8 = new Fluid3lin_Impl<DRT::Element::hex8>();
+      fh8 = new Fluid3lin_Impl<DRT::Element::hex8>(numdofpernode);
     return fh8;
   }
   case DRT::Element::hex20:
   {
     static Fluid3lin_Impl<DRT::Element::hex20>* fh20;
     if (fh20==NULL)
-      fh20 = new Fluid3lin_Impl<DRT::Element::hex20>();
+      fh20 = new Fluid3lin_Impl<DRT::Element::hex20>(numdofpernode);
     return fh20;
   }
   case DRT::Element::hex27:
   {
     static Fluid3lin_Impl<DRT::Element::hex27>* fh27;
     if (fh27==NULL)
-      fh27 = new Fluid3lin_Impl<DRT::Element::hex27>();
+      fh27 = new Fluid3lin_Impl<DRT::Element::hex27>(numdofpernode);
     return fh27;
   }
   case DRT::Element::tet4:
   {
     static Fluid3lin_Impl<DRT::Element::tet4>* ft4;
     if (ft4==NULL)
-      ft4 = new Fluid3lin_Impl<DRT::Element::tet4>();
+      ft4 = new Fluid3lin_Impl<DRT::Element::tet4>(numdofpernode);
     return ft4;
   }
   case DRT::Element::tet10:
   {
     static Fluid3lin_Impl<DRT::Element::tet10>* ft10;
     if (ft10==NULL)
-      ft10 = new Fluid3lin_Impl<DRT::Element::tet10>();
+      ft10 = new Fluid3lin_Impl<DRT::Element::tet10>(numdofpernode);
     return ft10;
   }
   case DRT::Element::wedge6:
   {
     static Fluid3lin_Impl<DRT::Element::wedge6>* fw6;
     if (fw6==NULL)
-      fw6 = new Fluid3lin_Impl<DRT::Element::wedge6>();
+      fw6 = new Fluid3lin_Impl<DRT::Element::wedge6>(numdofpernode);
     return fw6;
   }
   case DRT::Element::wedge15:
   {
     static Fluid3lin_Impl<DRT::Element::wedge15>* fw15;
     if (fw15==NULL)
-      fw15 = new Fluid3lin_Impl<DRT::Element::wedge15>();
+      fw15 = new Fluid3lin_Impl<DRT::Element::wedge15>(numdofpernode);
     return fw15;
   }
   case DRT::Element::pyramid5:
   {
     static Fluid3lin_Impl<DRT::Element::pyramid5>* fp5;
     if (fp5==NULL)
-      fp5 = new Fluid3lin_Impl<DRT::Element::pyramid5>();
+      fp5 = new Fluid3lin_Impl<DRT::Element::pyramid5>(numdofpernode);
     return fp5;
+  }
+  case DRT::Element::quad4:
+  {
+    static Fluid3lin_Impl<DRT::Element::quad4>* cp4;
+    if (cp4==NULL)
+      cp4 = new Fluid3lin_Impl<DRT::Element::quad4>(numdofpernode);
+    return cp4;
+  }
+  case DRT::Element::quad8:
+  {
+    static Fluid3lin_Impl<DRT::Element::quad8>* cp8;
+    if (cp8==NULL)
+      cp8 = new Fluid3lin_Impl<DRT::Element::quad8>(numdofpernode);
+    return cp8;
+  }
+  case DRT::Element::quad9:
+  {
+    static Fluid3lin_Impl<DRT::Element::quad9>* cp9;
+    if (cp9==NULL)
+      cp9 = new Fluid3lin_Impl<DRT::Element::quad9>(numdofpernode);
+    return cp9;
+  }
+  case DRT::Element::tri3:
+  {
+    static Fluid3lin_Impl<DRT::Element::tri3>* cp3;
+    if (cp3==NULL)
+      cp3 = new Fluid3lin_Impl<DRT::Element::tri3>(numdofpernode);
+    return cp3;
+  }
+  case DRT::Element::tri6:
+  {
+    static Fluid3lin_Impl<DRT::Element::tri6>* cp6;
+    if (cp6==NULL)
+      cp6 = new Fluid3lin_Impl<DRT::Element::tri6>(numdofpernode);
+    return cp6;
+  }
+  case DRT::Element::line2:
+  {
+    static Fluid3lin_Impl<DRT::Element::line2>* cl2;
+    if (cl2==NULL)
+      cl2 = new Fluid3lin_Impl<DRT::Element::line2>(numdofpernode);
+    return cl2;
+  }
+  case DRT::Element::line3:
+  {
+    static Fluid3lin_Impl<DRT::Element::line3>* cl3;
+    if (cl3==NULL)
+      cl3 = new Fluid3lin_Impl<DRT::Element::line3>(numdofpernode);
+    return cl3;
   }
 
   default:
@@ -103,8 +155,9 @@ DRT::ELEMENTS::Fluid3lin_ImplInterface* DRT::ELEMENTS::Fluid3lin_ImplInterface::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::Fluid3lin_Impl<distype>::Fluid3lin_Impl()
+DRT::ELEMENTS::Fluid3lin_Impl<distype>::Fluid3lin_Impl(int numdofpernode)
   : Fluid3lin_ImplInterface(),
+    numdofpernode_(numdofpernode),
     xyze_(),
     edeadng_(),
     funct_(),
@@ -154,9 +207,9 @@ int DRT::ELEMENTS::Fluid3lin_Impl<distype>::Evaluate(
   const int numnode = iel;
 
   // construct views
-  LINALG::Matrix<4*iel,4*iel> elemat1(elemat1_epetra.A(), true);
+  LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel> elemat1(elemat1_epetra.A(), true);
   //LINALG::Matrix<4*iel,4*iel> elemat2(elemat2_epetra.A(), true);
-  LINALG::Matrix<4*iel,1> elevec1(elevec1_epetra.A(), true);
+  LINALG::Matrix<(nsd_+1)*iel,1> elevec1(elevec1_epetra.A(), true);
   // elemat2, elevec2 and elevec3 are never used anyway
 
   // need current velocity and history vector
@@ -219,11 +272,11 @@ int DRT::ELEMENTS::Fluid3lin_Impl<distype>::Evaluate(
 
   // calculate element coefficient matrix and rhs
   Sysmat(ele,
-         evelnp,
-         eprenp,
-         edensnp,
-         emhist,
-         echist,
+         //evelnp,
+         //eprenp,
+         //edensnp,
+         //emhist,
+         //echist,
          elemat1,
          elevec1,
          mat,
@@ -246,13 +299,13 @@ int DRT::ELEMENTS::Fluid3lin_Impl<distype>::Evaluate(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Sysmat(
   Fluid3*                                              ele,
-  const LINALG::Matrix<3,iel>&     evelnp,
-  const LINALG::Matrix<iel,1>&     eprenp,
-  const LINALG::Matrix<iel,1>&     edensnp,
-  const LINALG::Matrix<3,iel>&     emhist,
-  const LINALG::Matrix<iel,1>&     echist,
-  LINALG::Matrix<4*iel,4*iel>&     estif,
-  LINALG::Matrix<4*iel,1>&         eforce,
+  //const LINALG::Matrix<nsd_,iel>&     evelnp,
+  //const LINALG::Matrix<iel,1>&     eprenp,
+  //const LINALG::Matrix<iel,1>&     edensnp,
+  //const LINALG::Matrix<nsd_,iel>&     emhist,
+  //const LINALG::Matrix<iel,1>&     echist,
+  LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&     estif,
+  LINALG::Matrix<(nsd_+1)*iel,1>&         eforce,
   Teuchos::RCP<const MAT::Material>                    material,
   double                                               time,
   double                                               timefac,
@@ -285,25 +338,36 @@ void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Sysmat(
   // stabilization parameter
   // This has to be done before anything else is calculated because
   // we use the same arrays internally.
-  Caltau(ele,evelnp,edensnp,visc,timefac);
+  Caltau(ele,/*evelnp,edensnp,*/visc,timefac);
 
   // flag for higher order elements
   const bool higher_order_ele = ele->isHigherOrderElement(distype);
 
   // gaussian points
-  const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
+  // const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
-  for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
     // coordiantes of the current integration point
-    const double e1 = intpoints.qxg[iquad][0];
-    const double e2 = intpoints.qxg[iquad][1];
-    const double e3 = intpoints.qxg[iquad][2];
+    // const double e1 = intpoints.qxg[iquad][0];
+    // const double e2 = intpoints.qxg[iquad][1];
+    // const double e3 = intpoints.qxg[iquad][2];
+
+  // coordinates of the current integration point
+  const double* gpcoord = (intpoints.IP().qxg)[iquad];
+  for (int idim=0;idim<nsd_;idim++)
+  {
+	  xsi_(idim) = gpcoord[idim];
+  }
+
+  DRT::UTILS::shape_function<distype>(xsi_,funct_);
+  DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
 
     // shape functions and their derivatives
-    DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,distype);
-    DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
+    //DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,distype);
+    //DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
 
     // get Jacobian matrix and determinant
     // actually compute its transpose....
@@ -324,7 +388,7 @@ void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Sysmat(
     */
     xjm_.MultiplyNT(deriv_,xyze_);
     const double det = xji_.Invert(xjm_);
-    const double fac = intpoints.qwgt[iquad]*det;
+    const double fac = intpoints.IP().qwgt[iquad]*det;
 
     if (det < 0.0)
       dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
@@ -348,7 +412,7 @@ void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Sysmat(
     // compute second global derivative
     if (higher_order_ele)
     {
-      DRT::UTILS::shape_function_3D_deriv2(deriv2_,e1,e2,e3,distype);
+      DRT::UTILS::shape_function_deriv2<distype>(xsi_, deriv2_);
       DRT::UTILS::gder2<distype>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
 
       // calculate 2nd velocity derivatives at integration point
@@ -755,8 +819,8 @@ void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Sysmat(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Caltau(
   Fluid3*                                           ele,
-  const LINALG::Matrix<3,iel>&  evelnp,
-  const LINALG::Matrix<iel,1>&  edensnp,
+  //const LINALG::Matrix<3,iel>&  evelnp,
+  //const LINALG::Matrix<iel,1>&  edensnp,
   const double                                      visc,
   const double                                      timefac
   )

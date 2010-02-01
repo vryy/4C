@@ -20,6 +20,7 @@ Maintainer: Georg Bauer
 #define FLUID3_STATIONARY_H
 
 #include "fluid3.H"
+#include "fluid3_ele_impl_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 
@@ -100,10 +101,13 @@ namespace ELEMENTS
   {
   public:
     /// Constructor
-    explicit Fluid3StationaryImpl();
+    explicit Fluid3StationaryImpl(int numdopernode);
 
     //! number of nodes
     static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+    //! number of space dimensions
+    static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
     /// Evaluate
     /*!
@@ -149,11 +153,11 @@ namespace ELEMENTS
       \param Cs               (i) Smagorinsky model parameter
      */
     void Sysmat(Fluid3*                                          ele,
-                const LINALG::Matrix<3,iel>& evelnp,
-                const LINALG::Matrix<3,iel>& fsevelnp,
-                const LINALG::Matrix<iel,1>& eprenp,
-                LINALG::Matrix<4*iel,4*iel>& estif,
-                LINALG::Matrix<4*iel,1>&     eforce,
+                //const LINALG::Matrix<nsd_,iel>& evelnp,
+                //const LINALG::Matrix<nsd_,iel>& fsevelnp,
+                // const LINALG::Matrix<iel,1>& eprenp,
+                LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>& estif,
+                LINALG::Matrix<(nsd_+1)*iel,1>&     eforce,
                 Teuchos::RCP<const MAT::Material>                material,
                 double                                           pseudotime,
                 const bool                                       newton,
@@ -177,8 +181,8 @@ namespace ELEMENTS
     */
     void CalTauStationary(
       Fluid3*                             ele,
-      const LINALG::Matrix<3,iel>&        evelnp,
-      const LINALG::Matrix<3,iel>&        fsevelnp,
+      //const LINALG::Matrix<3,iel>&        evelnp,
+      //const LINALG::Matrix<3,iel>&        fsevelnp,
       const double                        visc,
       const enum Fluid3::FineSubgridVisc  fssgv,
       const double                        Cs);
@@ -189,35 +193,53 @@ namespace ELEMENTS
     void BodyForce(Fluid3*      ele,
                    const double pseudotime);
 
+    //! coordinates of current integration point in reference coordinates
+    LINALG::Matrix<nsd_,1> xsi_;
+
+    //! number of components necessary to store second derivatives
+    // 1 component  for nsd=1:  (N,xx)
+    // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
+    // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
+    static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+
 
   private:
+    //number of dof's
+    const int numdofpernode_;
+
+    // split velocity and pressure and set density
+    LINALG::Matrix<iel,1> eprenp;
+    LINALG::Matrix<nsd_,iel> evelnp;
+    // get fine-scale velocity
+    LINALG::Matrix<nsd_,iel> fsevelnp;
+
     double vart_;                      /// fine-scale subgrid viscosity
-    LINALG::Matrix<3,iel> xyze_;      /// nodal position array
-    LINALG::Matrix<3,iel> edeadng_;   /// nodal dead load
+    LINALG::Matrix<nsd_,iel> xyze_;      /// nodal position array
+    LINALG::Matrix<nsd_,iel> edeadng_;   /// nodal dead load
     LINALG::Matrix<iel,1> funct_;     /// nodal shape functions
-    LINALG::Matrix<3,iel> deriv_;     /// shape derivatives with respect to \xi
-    LINALG::Matrix<6,iel> deriv2_;    /// second shape derivatives with respect to \xi
-    LINALG::Matrix<3,3> xjm_;       /// transposed of the jacobian matrix d x / d \xi
-    LINALG::Matrix<3,3> xji_;       /// inverse of the jacobian matrix
-    LINALG::Matrix<3,3> vderxy_;    /// velocity vector derivative
-    LINALG::Matrix<3,3> fsvderxy_;  /// fine-scale velocity vector derivative
-    LINALG::Matrix<3,iel> derxy_;     /// shape derivative with respect to x
-    LINALG::Matrix<6,iel> derxy2_;    /// second shape derivative with respect to x
-    LINALG::Matrix<3,1> bodyforce_; /// volumetric load at gausspoint
-    LINALG::Matrix<3,1> velino_;
-    LINALG::Matrix<3,1> velint_;    /// density-weighted velocity
-    LINALG::Matrix<3,1> fsvelint_;  /// fine-scale velocity
-    LINALG::Matrix<3,1> gradp_;     /// pressure gradient
-    LINALG::Matrix<3,1> tau_;       /// tau_Mu, tau_Mp, tau_C
-    LINALG::Matrix<3*3,iel> viscs2_;    /// viscous term including 2nd derivatives
+    LINALG::Matrix<nsd_,iel> deriv_;     /// shape derivatives with respect to \xi
+    LINALG::Matrix<numderiv2_,iel> deriv2_;    /// second shape derivatives with respect to \xi
+    LINALG::Matrix<nsd_,nsd_> xjm_;       /// transposed of the jacobian matrix d x / d \xi
+    LINALG::Matrix<nsd_,nsd_> xji_;       /// inverse of the jacobian matrix
+    LINALG::Matrix<nsd_,nsd_> vderxy_;    /// velocity vector derivative
+    LINALG::Matrix<nsd_,nsd_> fsvderxy_;  /// fine-scale velocity vector derivative
+    LINALG::Matrix<nsd_,iel> derxy_;     /// shape derivative with respect to x
+    LINALG::Matrix<numderiv2_,iel> derxy2_;    /// second shape derivative with respect to x
+    LINALG::Matrix<nsd_,1> bodyforce_; /// volumetric load at gausspoint
+    LINALG::Matrix<nsd_,1> velino_;
+    LINALG::Matrix<nsd_,1> velint_;    /// density-weighted velocity
+    LINALG::Matrix<nsd_,1> fsvelint_;  /// fine-scale velocity
+    LINALG::Matrix<nsd_,1> gradp_;     /// pressure gradient
+    LINALG::Matrix<nsd_,1> tau_;       /// tau_Mu, tau_Mp, tau_C
+    LINALG::Matrix<nsd_*nsd_,iel> viscs2_;    /// viscous term including 2nd derivatives
     LINALG::Matrix<iel,1> conv_c_;    /// linearisation of convect, convective part
     double vdiv_;                      /// velocity divergence
-    LINALG::Matrix<3,1> rhsmom_;    /// momentum equation right hand side
-    LINALG::Matrix<3,1> conv_old_;
-    LINALG::Matrix<3,1> visc_old_;
-    LINALG::Matrix<3,1> res_old_;
+    LINALG::Matrix<nsd_,1> rhsmom_;    /// momentum equation right hand side
+    LINALG::Matrix<nsd_,1> conv_old_;
+    LINALG::Matrix<nsd_,1> visc_old_;
+    LINALG::Matrix<nsd_,1> res_old_;
     LINALG::Matrix<iel,1> conv_resM_;
-    LINALG::Matrix<6,3> xder2_;
+    LINALG::Matrix<numderiv2_,nsd_> xder2_;
     double deltadens_;              /// delta density for Boussinesq Approximation
     RCP<FLD::RotationallySymmetricPeriodicBC<distype> > rotsymmpbc_; /// rotsymm periodic bc's
   };

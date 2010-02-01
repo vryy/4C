@@ -17,6 +17,7 @@ Maintainer: Ulrich Kuettler
 #ifdef CCADISCRET
 
 #include "fluid3_impl.H"
+#include "fluid3_impl_sysmat2D.H"
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/mixfrac.H"
@@ -37,69 +38,190 @@ Maintainer: Ulrich Kuettler
 #ifdef DEBUG
 #endif
 
+//#define F2_F3
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3ImplInterface* DRT::ELEMENTS::Fluid3ImplInterface::Impl(DRT::ELEMENTS::Fluid3* f3)
 {
+  const int numdofpernode = f3->NumDofPerNode(*(f3->Nodes()[0]));
   switch (f3->Shape())
   {
   case DRT::Element::hex8:
   {
     static Fluid3Impl<DRT::Element::hex8>* fh8;
     if (fh8==NULL)
-      fh8 = new Fluid3Impl<DRT::Element::hex8>();
+      fh8 = new Fluid3Impl<DRT::Element::hex8>(numdofpernode);
     return fh8;
   }
   case DRT::Element::hex20:
   {
     static Fluid3Impl<DRT::Element::hex20>* fh20;
     if (fh20==NULL)
-      fh20 = new Fluid3Impl<DRT::Element::hex20>();
+      fh20 = new Fluid3Impl<DRT::Element::hex20>(numdofpernode);
     return fh20;
   }
   case DRT::Element::hex27:
   {
     static Fluid3Impl<DRT::Element::hex27>* fh27;
     if (fh27==NULL)
-      fh27 = new Fluid3Impl<DRT::Element::hex27>();
+      fh27 = new Fluid3Impl<DRT::Element::hex27>(numdofpernode);
     return fh27;
   }
   case DRT::Element::tet4:
   {
     static Fluid3Impl<DRT::Element::tet4>* ft4;
     if (ft4==NULL)
-      ft4 = new Fluid3Impl<DRT::Element::tet4>();
+      ft4 = new Fluid3Impl<DRT::Element::tet4>(numdofpernode);
     return ft4;
   }
   case DRT::Element::tet10:
   {
     static Fluid3Impl<DRT::Element::tet10>* ft10;
     if (ft10==NULL)
-      ft10 = new Fluid3Impl<DRT::Element::tet10>();
+      ft10 = new Fluid3Impl<DRT::Element::tet10>(numdofpernode);
     return ft10;
   }
   case DRT::Element::wedge6:
   {
     static Fluid3Impl<DRT::Element::wedge6>* fw6;
     if (fw6==NULL)
-      fw6 = new Fluid3Impl<DRT::Element::wedge6>();
+      fw6 = new Fluid3Impl<DRT::Element::wedge6>(numdofpernode);
     return fw6;
   }
+  /* wedge15 cannot used since no mesh generater exists
   case DRT::Element::wedge15:
   {
     static Fluid3Impl<DRT::Element::wedge15>* fw15;
     if (fw15==NULL)
-      fw15 = new Fluid3Impl<DRT::Element::wedge15>();
+      fw15 = new Fluid3Impl<DRT::Element::wedge15>(numdofpernode);
     return fw15;
   }
+  */
   case DRT::Element::pyramid5:
   {
     static Fluid3Impl<DRT::Element::pyramid5>* fp5;
     if (fp5==NULL)
-      fp5 = new Fluid3Impl<DRT::Element::pyramid5>();
+      fp5 = new Fluid3Impl<DRT::Element::pyramid5>(numdofpernode);
     return fp5;
   }
-
+  case DRT::Element::quad4:
+  {
+    static Fluid3Impl<DRT::Element::quad4>* cp4;
+    if (cp4==NULL)
+      cp4 = new Fluid3Impl<DRT::Element::quad4>(numdofpernode);
+    return cp4;
+  }
+  case DRT::Element::quad8:
+  {
+    static Fluid3Impl<DRT::Element::quad8>* cp8;
+    if (cp8==NULL)
+      cp8 = new Fluid3Impl<DRT::Element::quad8>(numdofpernode);
+    return cp8;
+  }
+  case DRT::Element::quad9:
+  {
+    static Fluid3Impl<DRT::Element::quad9>* cp9;
+    if (cp9==NULL)
+      cp9 = new Fluid3Impl<DRT::Element::quad9>(numdofpernode);
+    return cp9;
+  }
+  case DRT::Element::tri3:
+  {
+    static Fluid3Impl<DRT::Element::tri3>* cp3;
+    if (cp3==NULL)
+      cp3 = new Fluid3Impl<DRT::Element::tri3>(numdofpernode);
+    return cp3;
+  }
+  case DRT::Element::tri6:
+  {
+    static Fluid3Impl<DRT::Element::tri6>* cp6;
+    if (cp6==NULL)
+      cp6 = new Fluid3Impl<DRT::Element::tri6>(numdofpernode);
+    return cp6;
+  }
+  // no 1D elements
+  /*
+  case DRT::Element::line2:
+  {
+    static Fluid3Impl<DRT::Element::line2>* cl2;
+    if (cl2==NULL)
+      cl2 = new Fluid3Impl<DRT::Element::line2>(numdofpernode);
+    return cl2;
+  }
+  case DRT::Element::line3:
+  {
+    static Fluid3Impl<DRT::Element::line3>* cl3;
+    if (cl3==NULL)
+      cl3 = new Fluid3Impl<DRT::Element::line3>(numdofpernode);
+    return cl3;
+  }
+  case DRT::Element::line4:
+  {
+    static Fluid3Impl<DRT::Element::line4>* cl4;
+    if (cl4==NULL)
+      cl4 = new Fluid3Impl<DRT::Element::line4>(numdofpernode);
+    return cl4;
+  }
+  case DRT::Element::line5:
+  {
+    static Fluid3Impl<DRT::Element::line5>* cl5;
+    if (cl5==NULL)
+      cl5 = new Fluid3Impl<DRT::Element::line5>(numdofpernode);
+    return cl5;
+  }
+  // no 0D elements
+  case DRT::Element::point1:
+  {
+    static Fluid3Impl<DRT::Element::tpoint1>* cp1;
+    if (cp1==NULL)
+      cp1 = new Fluid3Impl<DRT::Element::point1>(numdofpernode);
+    return cp1;
+  }
+  //nurbs are not integrated yet
+  case DRT::Element::nurbs2:
+  {
+    static Fluid3Impl<DRT::Element::nurbs2>* nu2;
+    if (nu2==NULL)
+      nu2 = new Fluid3Impl<DRT::Element::nurbs2>(numdofpernode);
+    return nu2;
+  }
+  case DRT::Element::nurbs3:
+  {
+    static Fluid3Impl<DRT::Element::nurbs3>* nu3;
+    if (nu3==NULL)
+      nu3 = new Fluid3Impl<DRT::Element::nurbs3>(numdofpernode);
+    return nu3;
+  }
+  case DRT::Element::nurbs4:
+  {
+    static Fluid3Impl<DRT::Element::nurbs4>* nu4;
+    if (nu4==NULL)
+      nu4 = new Fluid3Impl<DRT::Element::nurbs4>(numdofpernode);
+    return nu4;
+  }
+  case DRT::Element::nurbs9:
+  {
+    static Fluid3Impl<DRT::Element::nurbs9>* nu9;
+    if (nu9==NULL)
+      nu9 = new Fluid3Impl<DRT::Element::nurbs9>(numdofpernode);
+    return nu9;
+  }
+  case DRT::Element::nurbs8:
+  {
+    static Fluid3Impl<DRT::Element::nurbs8>* nu8;
+    if (nu8==NULL)
+      nu8 = new Fluid3Impl<DRT::Element::nurbs8>(numdofpernode);
+    return nu8;
+  }
+  case DRT::Element::nurbs27:
+  {
+    static Fluid3Impl<DRT::Element::nurbs27>* nu27;
+    if (nu27==NULL)
+      nu27 = new Fluid3Impl<DRT::Element::nurbs27>(numdofpernode);
+    return nu27;
+  }
+  */
   default:
     dserror("shape %d (%d nodes) not supported", f3->Shape(), f3->NumNode());
   }
@@ -109,8 +231,15 @@ DRT::ELEMENTS::Fluid3ImplInterface* DRT::ELEMENTS::Fluid3ImplInterface::Impl(DRT
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
-  : xyze_(),
+DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl(int numdofpernode)
+  : numdofpernode_(numdofpernode),
+    evelaf(true),
+    epreaf(true),
+    escaaf(true),
+    escaam(true),
+    escadtam(true),
+    emhist(true),
+    xyze_(true),
     edeadaf_(),
     funct_(),
     deriv_(),
@@ -190,9 +319,9 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   const int numnode = iel;
 
   // construct views
-  LINALG::Matrix<4*iel,4*iel> elemat1(elemat1_epetra,true);
-  LINALG::Matrix<4*iel,4*iel> elemat2(elemat2_epetra,true);
-  LINALG::Matrix<4*iel,    1> elevec1(elevec1_epetra,true);
+  LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel> elemat1(elemat1_epetra,true);
+  LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel> elemat2(elemat2_epetra,true);
+  LINALG::Matrix<(nsd_+1)*iel,    1> elevec1(elevec1_epetra,true);
   // elevec2 and elevec3 are currently not use
 
   // rotationally symmetric periodic bc's: do setup for current element
@@ -289,6 +418,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   // acceleration/scalar time derivative values are at time n+alpha_M for
   // generalized-alpha scheme and at time n+1 for all other schemes
   // ---------------------------------------------------------------------
+
   RefCountPtr<const Epetra_Vector> velaf = discretization.GetState("velaf");
   RefCountPtr<const Epetra_Vector> accam = discretization.GetState("accam");
   RefCountPtr<const Epetra_Vector> scaaf = discretization.GetState("scaaf");
@@ -314,66 +444,56 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   rotsymmpbc_->RotateMyValuesIfNecessary(myvelaf);
   rotsymmpbc_->RotateMyValuesIfNecessary(myhist);
 
-  // create objects for element arrays
-  LINALG::Matrix<3,numnode> evelaf;
-  LINALG::Matrix<numnode,1> epreaf;
-  LINALG::Matrix<numnode,1> escaaf;
-  LINALG::Matrix<numnode,1> escaam;
-  LINALG::Matrix<numnode,1> escadtam;
-  LINALG::Matrix<3,numnode> emhist;
-
   for (int i=0;i<numnode;++i)
   {
-    // velocity at n+alpha_F or n+1
-    evelaf(0,i) = myvelaf[0+(i*4)];
-    evelaf(1,i) = myvelaf[1+(i*4)];
-    evelaf(2,i) = myvelaf[2+(i*4)];
+    for (int idim=0; idim<nsd_;++idim)
+    {
+      // velocity at n+alpha_F or n+1
+      evelaf(idim,i) = myvelaf[idim+(i*numdofpernode_)];
+
+      // momentum equation part of history vector
+      // (containing information of time step t_n (mass rhs!))
+      emhist(idim,i) = myhist[idim+(i*numdofpernode_)];
+    }
 
     // pressure at n+alpha_F or n+1
-    epreaf(i) = myvelaf[3+(i*4)];
+    epreaf(i) = myvelaf[3+(i*numdofpernode_)];
 
     // scalar at n+alpha_F or n+1
-    escaaf(i) = myscaaf[3+(i*4)];
+    escaaf(i) = myscaaf[3+(i*numdofpernode_)];
 
     // scalar at n+alpha_M or n
-    escaam(i) = myscaam[3+(i*4)];
+    escaam(i) = myscaam[3+(i*numdofpernode_)];
 
     // scalar time derivative at n+alpha_M or n+1
-    escadtam(i) = myaccam[3+(i*4)];
-
-    // momentum equation part of history vector
-    // (containing information of time step t_n (mass rhs!))
-    emhist(0,i) = myhist[0+(i*4)];
-    emhist(1,i) = myhist[1+(i*4)];
-    emhist(2,i) = myhist[2+(i*4)];
+    escadtam(i) = myaccam[3+(i*numdofpernode_)];
   }
 
   // ---------------------------------------------------------------------
   // get additional state vector for generalized-alpha scheme or OST/BDF2:
   // acceleration at time n+alpha_M or velocity at time n
   // ---------------------------------------------------------------------
-  // create objects for element arrays
-  LINALG::Matrix<3,numnode> eaccam;
-  LINALG::Matrix<3,numnode> eveln;
 
   if (is_genalpha)
   {
     for (int i=0;i<numnode;++i)
     {
+      for (int idim=0; idim<nsd_;++idim)
+      {
       // acceleration at n+alpha_M
-      eaccam(0,i) = myaccam[0+(i*4)];
-      eaccam(1,i) = myaccam[1+(i*4)];
-      eaccam(2,i) = myaccam[2+(i*4)];
+      eaccam(idim,i) = myaccam[idim+(i*numdofpernode_)];
+      }
     }
   }
   else
   {
     for (int i=0;i<numnode;++i)
     {
+      for (int idim=0; idim<nsd_;++idim)
+      {
       // acceleration at n+alpha_M
-      eveln(0,i) = myscaam[0+(i*4)];
-      eveln(1,i) = myscaam[1+(i*4)];
-      eveln(2,i) = myscaam[2+(i*4)];
+      eveln(idim,i) = myscaam[idim+(i*numdofpernode_)];
+      }
     }
   }
 
@@ -384,10 +504,6 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   vector<double> mydispnp;
   RCP<const Epetra_Vector> gridv;
   vector<double> mygridv;
-
-  // create objects for element arrays
-  LINALG::Matrix<3,numnode> edispnp;
-  LINALG::Matrix<3,numnode> egridv;
 
   if (ele->is_ale_)
   {
@@ -403,15 +519,14 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
 
     for (int i=0;i<numnode;++i)
     {
+      for (int idim=0; idim<nsd_;++idim)
+      {
       // set grid displacements
-      edispnp(0,i) = mydispnp[0+(i*4)];
-      edispnp(1,i) = mydispnp[1+(i*4)];
-      edispnp(2,i) = mydispnp[2+(i*4)];
+      edispnp(idim,i) = mydispnp[idim+(i*numdofpernode_)];
 
       // set grid velocities
-      egridv(0,i) = mygridv[0+(i*4)];
-      egridv(1,i) = mygridv[1+(i*4)];
-      egridv(2,i) = mygridv[2+(i*4)];
+      egridv(idim,i) = mygridv[idim+(i*numdofpernode_)];
+      }
     }
   }
 
@@ -433,9 +548,6 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   RCP<const Epetra_Vector> fsvelaf;
   vector<double> myfsvelaf;
 
-  // create object for element array
-  LINALG::Matrix<3,numnode> fsevelaf;
-
   if (fssgv != Fluid3::no_fssgv)
   {
     fsvelaf = discretization.GetState("fsvelaf");
@@ -445,10 +557,11 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
 
     for (int i=0;i<numnode;++i)
     {
-      // get fine-scale velocity
-      fsevelaf(0,i) = myfsvelaf[0+(i*4)];
-      fsevelaf(1,i) = myfsvelaf[1+(i*4)];
-      fsevelaf(2,i) = myfsvelaf[2+(i*4)];
+      for (int idim=0; idim<nsd_;++idim)
+      {
+        // get fine-scale velocity
+        fsevelaf(idim,i) = myfsvelaf[idim+(i*numdofpernode_)];
+      }
     }
   }
 
@@ -611,8 +724,11 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
+
+  if (nsd_ == 3)
+  {
   Sysmat(ele,
-         evelaf,
+    /*     evelaf,
          eveln,
          fsevelaf,
          epreaf,
@@ -622,7 +738,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
          escadtam,
          emhist,
          edispnp,
-         egridv,
+         egridv, */
          elemat1,
          elemat2,
          elevec1,
@@ -648,7 +764,48 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
          Cs,
          Cs_delta_sq,
          l_tau);
+  }
 
+  else if (nsd_==2)
+  {
+    Sysmat2D(ele,
+      /*     evelaf,
+           eveln,
+           fsevelaf,
+           epreaf,
+           eaccam,
+           escaaf,
+           escaam,
+           escadtam,
+           emhist,
+           edispnp,
+           egridv, */
+           elemat1,
+           elemat2,
+           elevec1,
+           mat,
+           time,
+           timefac,
+           newton,
+           conservative,
+           is_genalpha,
+           higher_order_ele,
+           tau_gp,
+           mat_gp,
+           fssgv,
+           pspg,
+           supg,
+           vstab,
+           cstab,
+           cross,
+           reynolds,
+           whichtau,
+           turb_mod_action,
+           physicaltype,
+           Cs);
+  }
+
+  else dserror("Dimension is not working");
   // ---------------------------------------------------------------------
   // output values of Cs, visceff and Cs_delta_sq
   // ---------------------------------------------------------------------
@@ -684,27 +841,26 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   return 0;
 }
 
-
 /*----------------------------------------------------------------------*
  |  calculate element matrix and right hand side (private)   g.bau 03/07|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   Fluid3*                                 ele,
-  const LINALG::Matrix<3,iel>&            evelaf,
-  const LINALG::Matrix<3,iel>&            eveln,
-  const LINALG::Matrix<3,iel>&            fsevelaf,
+  /*const LINALG::Matrix<nsd_,iel>&            evelaf,
+  const LINALG::Matrix<nsd_,iel>&            eveln,
+  const LINALG::Matrix<nsd_,iel>&            fsevelaf,
   const LINALG::Matrix<iel,1>&            epreaf,
-  const LINALG::Matrix<3,iel>&            eaccam,
+  const LINALG::Matrix<nsd_,iel>&            eaccam,
   const LINALG::Matrix<iel,1>&            escaaf,
   const LINALG::Matrix<iel,1>&            escaam,
   const LINALG::Matrix<iel,1>&            escadtam,
-  const LINALG::Matrix<3,iel>&            emhist,
-  const LINALG::Matrix<3,iel>&            edispnp,
-  const LINALG::Matrix<3,iel>&            egridv,
-  LINALG::Matrix<4*iel,4*iel>&            estif,
-  LINALG::Matrix<4*iel,4*iel>&            emesh,
-  LINALG::Matrix<4*iel,1>&                eforce,
+  const LINALG::Matrix<nsd_,iel>&            emhist,
+  const LINALG::Matrix<nsd_,iel>&            edispnp,
+  const LINALG::Matrix<nsd_,iel>&            egridv,*/
+  LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&            estif,
+  LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&            emesh,
+  LINALG::Matrix<(nsd_+1)*iel,1>&                eforce,
   Teuchos::RCP<const MAT::Material>       material,
   double                                  time,
   double                                  timefac,
@@ -768,7 +924,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   // get material parameters at element center
   //----------------------------------------------------------------------
   if (not mat_gp_ or not tau_gp_)
-    GetMaterialParams(material,evelaf,escaaf,escaam,is_genalpha,physicaltype);
+    GetMaterialParams(material,/*evelaf,escaaf,escaam,*/is_genalpha,physicaltype);
 
   if (not tau_gp_)
   {
@@ -778,13 +934,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     visceff_ = visc_;
     if (turb_mod_action != Fluid3::no_model)
     {
-      CalcSubgrVisc(evelaf,vol,turb_mod_action,Cs,Cs_delta_sq,l_tau);
+      CalcSubgrVisc(/*evelaf,*/vol,turb_mod_action,Cs,Cs_delta_sq,l_tau);
 
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       visceff_ += sgvisc_;
     }
     else if (fssgv != Fluid3::no_fssgv)
-      CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,fssgv,Cs);
+      CalcFineScaleSubgrVisc(/*evelaf,fsevelaf,*/vol,fssgv,Cs);
 
     // get velocity at element center
     velint_.Multiply(evelaf,funct_);
@@ -796,10 +952,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   }
 
   // Gaussian integration points
-  const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
+  //const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
-  for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id(),higher_order_ele);
@@ -807,7 +964,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    if (mat_gp_) GetMaterialParams(material,evelaf,escaaf,escaam,is_genalpha,physicaltype);
+    if (mat_gp_) GetMaterialParams(material,/*evelaf,escaaf,escaam,*/is_genalpha,physicaltype);
 
     // get velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -821,13 +978,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       visceff_ = visc_;
       if (turb_mod_action != Fluid3::no_model)
       {
-        CalcSubgrVisc(evelaf,vol,turb_mod_action,Cs,Cs_delta_sq,l_tau);
+        CalcSubgrVisc(/*evelaf,*/vol,turb_mod_action,Cs,Cs_delta_sq,l_tau);
 
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
         visceff_ += sgvisc_;
       }
       else if (fssgv != Fluid3::no_fssgv)
-        CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,fssgv,Cs);
+        CalcFineScaleSubgrVisc(/*evelaf,fsevelaf,*/vol,fssgv,Cs);
 
       // ---------------------------------------------------------------------
       // calculate stabilization parameter at element center
@@ -3021,14 +3178,25 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::EvalShapeFuncAndDerivsAtEleCenter(
   // Gaussian points
   const DRT::UTILS::IntegrationPoints3D intpoints(integrationrule_stabili);
 
-  // shape functions and derivs at element center
-  const double e1    = intpoints.qxg[0][0];
-  const double e2    = intpoints.qxg[0][1];
-  const double e3    = intpoints.qxg[0][2];
+  // coordinates of the current integration point
+  const double* gpcoord = (intpoints.qxg)[0];
+  for (int idim=0;idim<nsd_;idim++)
+  {
+	  xsi_(idim) = gpcoord[idim];
+  }
   const double wquad = intpoints.qwgt[0];
 
-  DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,distype);
-  DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
+  DRT::UTILS::shape_function<distype>(xsi_,funct_);
+  DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+
+  // shape functions and derivs at element center
+  //const double e1    = intpoints.qxg[0][0];
+  //const double e2    = intpoints.qxg[0][1];
+  //const double e3    = intpoints.qxg[0][2];
+  //const double wquad = intpoints.qwgt[0];
+
+  //DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,distype);
+  //DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
 
   // compute Jacobian matrix and determinant
   // actually compute its transpose....
@@ -3067,7 +3235,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::EvalShapeFuncAndDerivsAtEleCenter(
   //--------------------------------------------------------------
   if (higher_order_ele)
   {
-    DRT::UTILS::shape_function_3D_deriv2(deriv2_,e1,e2,e3,distype);
+    DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
     DRT::UTILS::gder2<distype>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
   }
   else derxy2_.Clear();
@@ -3081,20 +3249,30 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::EvalShapeFuncAndDerivsAtEleCenter(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
-    const DRT::UTILS::IntegrationPoints3D& intpoints,
-    const int                              iquad,
-    const int                              eleid,
+    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,		// integration points
+    const int                              iquad,				// actual integration point
+    const int                              eleid,				// element ID
     const bool                             higher_order_ele
 )
 {
   // coordinates of the current integration point
-  const double e1 = intpoints.qxg[iquad][0];
-  const double e2 = intpoints.qxg[iquad][1];
-  const double e3 = intpoints.qxg[iquad][2];
+  const double* gpcoord = (intpoints.IP().qxg)[iquad];
+  for (int idim=0;idim<nsd_;idim++)
+  {
+	  xsi_(idim) = gpcoord[idim];
+  }
+
+  DRT::UTILS::shape_function<distype>(xsi_,funct_);
+  DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+
+  // coordinates of the current integration point
+  //const double e1 = intpoints.IP()qxg[iquad][0];
+  //const double e2 = intpoints.qxg[iquad][1];
+  //const double e3 = intpoints.qxg[iquad][2];
 
   // shape functions and their derivatives
-  DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,distype);
-  DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
+  //DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,distype);
+  //DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
 
   // get Jacobian matrix and determinant
   // actually compute its transpose....
@@ -3120,7 +3298,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
     dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det_);
 
   // compute integration factor
-  fac_ = intpoints.qwgt[iquad]*det_;
+  fac_ = intpoints.IP().qwgt[iquad]*det_;
 
   // compute global first derivates
   derxy_.Multiply(xji_,deriv_);
@@ -3130,7 +3308,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   //--------------------------------------------------------------
   if (higher_order_ele)
   {
-    DRT::UTILS::shape_function_3D_deriv2(deriv2_,e1,e2,e3,distype);
+    DRT::UTILS::shape_function_deriv2<distype>(xsi_, deriv2_);
     DRT::UTILS::gder2<distype>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
   }
   else derxy2_.Clear();
@@ -3145,9 +3323,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::GetMaterialParams(
   Teuchos::RCP<const MAT::Material>  material,
-  const LINALG::Matrix<3,iel>&       evelaf,
+/*  const LINALG::Matrix<3,iel>&       evelaf,
   const LINALG::Matrix<iel,1>&       escaaf,
-  const LINALG::Matrix<iel,1>&       escaam,
+  const LINALG::Matrix<iel,1>&       escaam,*/
   const bool                         is_genalpha,
   const INPAR::FLUID::PhysicalType	 physicaltype
 )
@@ -3416,7 +3594,7 @@ return;
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::CalcSubgrVisc(
-  const LINALG::Matrix<3,iel>&        evelaf,
+  //const LINALG::Matrix<3,iel>&        evelaf,
   const double                        vol,
   const enum Fluid3::TurbModelAction  turb_mod_action,
   double&                             Cs,
@@ -3484,7 +3662,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcSubgrVisc(
                   node j
       */
       //blitz::Array<double,1> centernodecoord(3);
-      LINALG::Matrix<3,1> centernodecoord;
+      LINALG::Matrix<nsd_,1> centernodecoord;
       //centernodecoord = blitz::sum(funct_(j)*xyze_(i,j),j);
       centernodecoord.Multiply(xyze_,funct_);
 
@@ -3517,8 +3695,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcSubgrVisc(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::CalcFineScaleSubgrVisc(
-  const LINALG::Matrix<3,iel>&       evelaf,
-  const LINALG::Matrix<3,iel>&       fsevelaf,
+/*  const LINALG::Matrix<3,iel>&       evelaf,
+  const LINALG::Matrix<3,iel>&       fsevelaf,*/
   const double                       vol,
   const enum Fluid3::FineSubgridVisc fssgv,
   double&                            Cs
@@ -3875,6 +4053,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
   return;
 }
 
+#endif
+#endif
 
-#endif
-#endif

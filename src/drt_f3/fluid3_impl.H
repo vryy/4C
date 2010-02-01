@@ -20,6 +20,7 @@ Maintainer: Ulrich Kuettler
 #define FLUID3_IMPL_H
 
 #include "fluid3.H"
+#include "fluid3_ele_impl_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
@@ -108,10 +109,13 @@ namespace ELEMENTS
   {
   public:
     /// Constructor
-    Fluid3Impl();
+    Fluid3Impl(int numdofpernode);
 
     //! number of nodes
     static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+    //! number of space dimensions
+    static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
     /*!
       \brief evaluate function for Fluid3 element
@@ -135,7 +139,7 @@ namespace ELEMENTS
       \param eveln            (i) nodal velocities at n
       \param fsevelaf         (i) fine-scale nodal velocities at n+alpha_F/n+1
       \param epreaf           (i) nodal pressure at n+alpha_F/n+1
-      \param eaccam           (i) nodal accelerations at n+alpha_M
+      \param            (i) nodal accelerations at n+alpha_M
       \param escaaf           (i) nodal scalar at n+alpha_F/n+1
       \param escaam           (i) nodal scalar at n+alpha_M/n
       \param escadtam         (i) nodal scalar derivatives at n+alpha_M/n+1
@@ -171,20 +175,20 @@ namespace ELEMENTS
                                   damping function and defined on input
       */
     void Sysmat(Fluid3*                                  ele,
-                const LINALG::Matrix<3,iel>&             evelaf,
-                const LINALG::Matrix<3,iel>&             eveln,
-                const LINALG::Matrix<3,iel>&             fsevelaf,
+               /* const LINALG::Matrix<nsd_,iel>&             evelaf,
+                const LINALG::Matrix<nsd_,iel>&             eveln,
+                const LINALG::Matrix<nsd_,iel>&             fsevelaf,
                 const LINALG::Matrix<iel,1>&             epreaf,
-                const LINALG::Matrix<3,iel>&             eaccam,
+                const LINALG::Matrix<nsd_,iel>&             ,
                 const LINALG::Matrix<iel,1>&             escaaf,
                 const LINALG::Matrix<iel,1>&             escaam,
                 const LINALG::Matrix<iel,1>&             escadtam,
-                const LINALG::Matrix<3,iel>&             emhist,
-                const LINALG::Matrix<3,iel>&             edispnp,
-                const LINALG::Matrix<3,iel>&             egridv,
-                LINALG::Matrix<4*iel,4*iel>&             estif,
-                LINALG::Matrix<4*iel,4*iel>&             emesh,
-                LINALG::Matrix<4*iel,    1>&             eforce,
+                const LINALG::Matrix<nsd_,iel>&             emhist,
+                const LINALG::Matrix<nsd_,iel>&             edispnp,
+                const LINALG::Matrix<nsd_,iel>&             egridv,*/
+                LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&             estif,
+                LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&             emesh,
+                LINALG::Matrix<(nsd_+1)*iel,    1>&             eforce,
                 Teuchos::RCP<const MAT::Material>        material,
                 double                                   time,
                 double                                   timefac,
@@ -208,6 +212,41 @@ namespace ELEMENTS
                 double&                                  Cs_delta_sq,
                 double&                                  l_tau);
 
+    void Sysmat2D(Fluid3*                                  ele,
+               /* const LINALG::Matrix<nsd_,iel>&             evelaf,
+                const LINALG::Matrix<nsd_,iel>&             eveln,
+                const LINALG::Matrix<nsd_,iel>&             fsevelaf,
+                const LINALG::Matrix<iel,1>&             epreaf,
+                const LINALG::Matrix<nsd_,iel>&             ,
+                const LINALG::Matrix<iel,1>&             escaaf,
+                const LINALG::Matrix<iel,1>&             escaam,
+                const LINALG::Matrix<iel,1>&             escadtam,
+                const LINALG::Matrix<nsd_,iel>&             emhist,
+                const LINALG::Matrix<nsd_,iel>&             edispnp,
+                const LINALG::Matrix<nsd_,iel>&             egridv,*/
+                LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&             estif,
+                LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&             emesh,
+                LINALG::Matrix<(nsd_+1)*iel,    1>&             eforce,
+                Teuchos::RCP<const MAT::Material>        material,
+                double                                   time,
+                double                                   timefac,
+                const bool                               newton,
+                const bool                               conservative,
+                const bool                               is_genalpha,
+                const bool                               higher_order_ele,
+                const bool                               tau_gp,
+                const bool                               mat_gp,
+                const enum Fluid3::FineSubgridVisc       fssgv,
+                const enum Fluid3::StabilisationAction   pspg,
+                const enum Fluid3::StabilisationAction   supg,
+                const enum Fluid3::StabilisationAction   vstab,
+                const enum Fluid3::StabilisationAction   cstab,
+                const enum Fluid3::StabilisationAction   cross,
+                const enum Fluid3::StabilisationAction   reynolds,
+                const enum Fluid3::TauType               whichtau,
+                const enum Fluid3::TurbModelAction       turb_mod_action,
+                const enum INPAR::FLUID::PhysicalType  physicaltype,
+                double&                                  Cs);
 
   private:
 
@@ -216,6 +255,12 @@ namespace ELEMENTS
      */
     void BodyForce(Fluid3*      ele,
                    const double time);
+
+    //! number of components necessary to store second derivatives
+    // 1 component  for nsd=1:  (N,xx)
+    // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
+    // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
+    static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
     /*!
      * \brief evaluate shape functions and their derivatives at element center
@@ -227,7 +272,7 @@ namespace ELEMENTS
      * \brief evaluate shape functions and their derivatives at integration point
      */
     void EvalShapeFuncAndDerivsAtIntPoint(
-        const DRT::UTILS::IntegrationPoints3D& intpoints,
+        const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,
         const int                              iquad,
         const int                              eleid,
         const bool                             higher_order_ele);
@@ -236,16 +281,16 @@ namespace ELEMENTS
        \brief get material parameters
      */
     void GetMaterialParams(Teuchos::RCP<const MAT::Material>  material,
-                           const LINALG::Matrix<3,iel>&       evelaf,
+                           /*const LINALG::Matrix<3,iel>&       evelaf,
                            const LINALG::Matrix<iel,1>&       escaaf,
-                           const LINALG::Matrix<iel,1>&       escaam,
+                           const LINALG::Matrix<iel,1>&       escaam,*/
                            const bool                         is_genalpha,
                            const enum INPAR::FLUID::PhysicalType	 physicaltype);
 
     /*!
       \brief calculate (all-scale) subgrid viscosity
     */
-    void CalcSubgrVisc(const LINALG::Matrix<3,iel>&        evelaf,
+    void CalcSubgrVisc(/*const LINALG::Matrix<3,iel>&        evelaf,*/
                        const double                        vol,
                        const enum Fluid3::TurbModelAction  turb_mod_action,
                        double&                             Cs,
@@ -253,11 +298,25 @@ namespace ELEMENTS
                        double&                             l_tau);
 
     /*!
+      \brief calculate (all-scale) subgrid viscosity
+    */
+    void CalcSubgrVisc_2D(/*const LINALG::Matrix<3,iel>&        evelaf,*/
+                       const double                        area,
+                       const enum Fluid3::TurbModelAction  turb_mod_action,
+                       double&                             Cs);
+
+    /*!
       \brief calculate fine-scale subgrid viscosity
     */
-    void CalcFineScaleSubgrVisc(const LINALG::Matrix<3,iel>&        evelaf,
-                                const LINALG::Matrix<3,iel>&        fsevelaf,
+    void CalcFineScaleSubgrVisc(/*const LINALG::Matrix<3,iel>&        evelaf,
+                                const LINALG::Matrix<3,iel>&        fsevelaf,*/
                                 const double                        vol,
+                                const enum Fluid3::FineSubgridVisc  fssgv,
+                                double&                             Cs);
+
+    void CalcFineScaleSubgrVisc_2D(/*const LINALG::Matrix<3,iel>&        evelaf,
+                                const LINALG::Matrix<3,iel>&        fsevelaf,*/
+                                const double                        area,
                                 const enum Fluid3::FineSubgridVisc  fssgv,
                                 double&                             Cs);
 
@@ -293,9 +352,9 @@ namespace ELEMENTS
 
       \return computed rate of strain
      */
-    double GetStrainRate(const LINALG::Matrix<3,iel>& evel,
-                         const LINALG::Matrix<3,iel>& derxy,
-                         LINALG::Matrix<3,3>        & velderxy)
+    double GetStrainRate(const LINALG::Matrix<nsd_,iel>& evel,
+                         const LINALG::Matrix<nsd_,iel>& derxy,
+                         LINALG::Matrix<nsd_,nsd_>        & velderxy)
     {
       double rateofstrain=0;
 
@@ -320,18 +379,18 @@ namespace ELEMENTS
       //          |          \   / ij        \   / ij |
       //          +-                                 -+
       //
-      LINALG::Matrix<3,3> two_epsilon;
-      for(int rr=0;rr<3;++rr)
+      LINALG::Matrix<nsd_,nsd_> two_epsilon;
+      for(int rr=0;rr<nsd_;++rr)
       {
-        for(int mm=0;mm<3;++mm)
+        for(int mm=0;mm<nsd_;++mm)
         {
           two_epsilon(rr,mm) = velderxy(rr,mm) + velderxy(mm,rr);
         }
       }
 
-      for(int rr=0;rr<3;rr++)
+      for(int rr=0;rr<nsd_;rr++)
       {
-        for(int mm=0;mm<3;mm++)
+        for(int mm=0;mm<nsd_;mm++)
         {
           rateofstrain += two_epsilon(rr,mm)*two_epsilon(mm,rr);
         }
@@ -344,51 +403,72 @@ namespace ELEMENTS
 
 
   private:
+    // TODO
+    // decide if it is necessary to compile all
+
+    const int numdofpernode_;
+
+    // create objects for element arrays
+    LINALG::Matrix<nsd_,iel> evelaf;
+    LINALG::Matrix<iel,1> epreaf;
+    LINALG::Matrix<iel,1> escaaf;
+    LINALG::Matrix<iel,1> escaam;
+    LINALG::Matrix<iel,1> escadtam;
+    LINALG::Matrix<nsd_,iel> emhist;
+    // create objects for element arrays
+    LINALG::Matrix<nsd_, iel> edispnp;
+    LINALG::Matrix<nsd_, iel> egridv;
+    // create object for element array
+    LINALG::Matrix<nsd_,iel> fsevelaf;
+    // create objects for element arrays
+    LINALG::Matrix<nsd_,iel> eaccam;
+    LINALG::Matrix<nsd_,iel> eveln;
+
     //! node coordinates
-    LINALG::Matrix<3,iel> xyze_;
+    LINALG::Matrix<nsd_,iel> xyze_;
     //! dead load in nodes at n+alpha_F/n+1
-    LINALG::Matrix<3,iel> edeadaf_;
+    LINALG::Matrix<nsd_,iel> edeadaf_;
     //! array for shape functions
     LINALG::Matrix<iel,1> funct_;
     //! array for shape function derivatives w.r.t r,s,t
-    LINALG::Matrix<3,iel> deriv_;
+    LINALG::Matrix<nsd_,iel> deriv_;
     //! array for second derivatives of shape function w.r.t r,s,t
-    LINALG::Matrix<6,iel> deriv2_;
+    LINALG::Matrix<numderiv2_,iel> deriv2_;
     //! transposed jacobian "dx/ds"
-    LINALG::Matrix<3,3> xjm_;
+    LINALG::Matrix<nsd_,nsd_> xjm_;
     //! inverse of transposed jacobian "ds/dx"
-    LINALG::Matrix<3,3> xji_;
+    LINALG::Matrix<nsd_,nsd_> xji_;
     //! global velocity derivatives in gausspoint w.r.t x,y,z
-    LINALG::Matrix<3,3> vderxy_;
+    LINALG::Matrix<nsd_,nsd_> vderxy_;
     //! fine-scale global velocity derivatives in gausspoint w.r.t x,y,z
-    LINALG::Matrix<3,3> fsvderxy_;
+    LINALG::Matrix<nsd_,nsd_> fsvderxy_;
     //! global derivatives of shape functions w.r.t x,y,z
-    LINALG::Matrix<3,iel> derxy_;
+    LINALG::Matrix<nsd_,iel> derxy_;
     //! global second derivatives of shape functions w.r.t x,y,z
-    LINALG::Matrix<6,iel> derxy2_;
+    LINALG::Matrix<numderiv2_,iel> derxy2_;
     //! bodyforce in gausspoint
-    LINALG::Matrix<3,1> bodyforce_;
+    LINALG::Matrix<nsd_,1> bodyforce_;
     //! vector containing all values from previous timelevel n for momentum equation
-    LINALG::Matrix<3,1> histmom_;
+    LINALG::Matrix<nsd_,1> histmom_;
     //! direction of flow (normed velocity vector)
-    LINALG::Matrix<3,1> velino_;
+    LINALG::Matrix<nsd_,1> velino_;
     //! density-weighted velocity vector in gausspoint
-    LINALG::Matrix<3,1> velint_;
+    LINALG::Matrix<nsd_,1> velint_;
     //! fine-scale velocity vector in gausspoint
-    LINALG::Matrix<3,1> fsvelint_;
+    LINALG::Matrix<nsd_,1> fsvelint_;
     //! subgrid-scale velocity vector in gausspoint
-    LINALG::Matrix<3,1> sgvelint_;
+    LINALG::Matrix<nsd_,1> sgvelint_;
     //! density-weighted ale convective velocity in gausspoint, c=rho*u-rho*u_G
-    LINALG::Matrix<3,1> convvelint_;
+    LINALG::Matrix<nsd_,1> convvelint_;
     //! acceleration vector in gausspoint
-    LINALG::Matrix<3,1> accint_;
+    LINALG::Matrix<nsd_,1> accint_;
     //! pressure gradient in gausspoint
-    LINALG::Matrix<3,1> gradp_;
+    LINALG::Matrix<nsd_,1> gradp_;
     //! the stabilisation parameters
-    LINALG::Matrix<3,1> tau_;
+    LINALG::Matrix<nsd_,1> tau_;
     //! viscous term including 2nd derivatives
     //! (This array once had three dimensions, now the first two are combined to one.)
-    LINALG::Matrix<3*3,iel> viscs2_;
+    LINALG::Matrix<nsd_*nsd_,iel> viscs2_;
     //! linearisation of convection, convective part
     LINALG::Matrix<iel,1> conv_c_;
     //! linearisation of subgrid-scale convection, convective part
@@ -396,19 +476,22 @@ namespace ELEMENTS
     //! velocity divergence
     double vdiv_;
     //! total right hand side terms at int.-point for momentum equation
-    LINALG::Matrix<3,1> rhsmom_;
+    LINALG::Matrix<nsd_,1> rhsmom_;
     //! (u_old*nabla)u_old
-    LINALG::Matrix<3,1> conv_old_;
+    LINALG::Matrix<nsd_,1> conv_old_;
     //! div epsilon(u_old)
-    LINALG::Matrix<3,1> visc_old_;
+    LINALG::Matrix<nsd_,1> visc_old_;
     //! old residual of momentum equation
-    LINALG::Matrix<3,1> momres_old_;
+    LINALG::Matrix<nsd_,1> momres_old_;
     //! old residual of continuity equation
     double conres_old_;
     //! 2nd derivatives of coord.-functions w.r.t r,s,t
-    LINALG::Matrix<6,3> xder2_;
+    LINALG::Matrix<numderiv2_,nsd_> xder2_;
 
-    LINALG::Matrix<3,3> vderiv_;
+    LINALG::Matrix<nsd_,nsd_> vderiv_;
+
+    //! coordinates of current integration point in reference coordinates
+    LINALG::Matrix<nsd_,1> xsi_;
 
     //! flag for material evaluation at Gaussian integration points
     bool mat_gp_;
@@ -451,11 +534,11 @@ namespace ELEMENTS
     //! addition to continuity equation due to thermodynamic pressure
     double thermpressadd_;
     //! global velocity derivatives in gausspoint w.r.t x,y,z at t_(n)
-    LINALG::Matrix<3,3> vderxyn_;
+    LINALG::Matrix<nsd_,nsd_> vderxyn_;
     //! scalar gradient at t_(n+alpha_F) or t_(n+1)
-    LINALG::Matrix<3,1> grad_scaaf_;
+    LINALG::Matrix<nsd_,1> grad_scaaf_;
     //! scalar gradient at t_(n)
-    LINALG::Matrix<3,1> grad_scan_;
+    LINALG::Matrix<nsd_,1> grad_scan_;
     //! convective scalar term at t_(n+alpha_F) or t_(n+1)
     double conv_scaaf_;
     //! convective scalar term at t_(n)

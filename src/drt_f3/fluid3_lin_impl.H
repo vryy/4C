@@ -20,6 +20,7 @@ Maintainer: Christiane Foerster
 #define FLUID3_LIN_IMPL_H
 
 #include "fluid3.H"
+#include "fluid3_ele_impl_utils.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 //#include <blitz/array.h>
@@ -117,10 +118,13 @@ namespace ELEMENTS
   {
   public:
     /// Constructor
-    explicit Fluid3lin_Impl();
+    explicit Fluid3lin_Impl(int numdofpernode);
 
     //! number of nodes
     static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+    //! number of space dimensions
+    static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
     /// Evaluate
     /*!
@@ -163,13 +167,13 @@ namespace ELEMENTS
       \param Cs_fs    (i) Smagorinsky model param. for fine-scale subgrid viscosity
       */
     void Sysmat(Fluid3* ele,
-                const LINALG::Matrix<3,iel>&     evelnp,
-                const LINALG::Matrix<iel,1>&     eprenp,
-                const LINALG::Matrix<iel,1>&     edensnp,
-                const LINALG::Matrix<3,iel>&     emhist,
-                const LINALG::Matrix<iel,1>&     echist,
-                LINALG::Matrix<4*iel,4*iel>&     estif,
-                LINALG::Matrix<4*iel,1>&         eforce,
+                //const LINALG::Matrix<3,iel>&     evelnp,
+                //const LINALG::Matrix<iel,1>&     eprenp,
+                //const LINALG::Matrix<iel,1>&     edensnp,
+                //const LINALG::Matrix<3,iel>&     emhist,
+                // const LINALG::Matrix<iel,1>&     echist,
+                LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&     estif,
+                LINALG::Matrix<(nsd_+1)*iel,1>&         eforce,
                 Teuchos::RCP<const MAT::Material>                    material,
                 double                                               time,
                 double                                               timefac,
@@ -177,13 +181,21 @@ namespace ELEMENTS
 
   private:
 
+    //! coordinates of current integration point in reference coordinates
+    LINALG::Matrix<nsd_,1> xsi_;
+
+    //! number of components necessary to store second derivatives
+    // 1 component  for nsd=1:  (N,xx)
+    // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
+    // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
+    static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
     /*!
       \brief calculate stabilization parameter
     */
     void Caltau(
       Fluid3*                                          ele,
-      const LINALG::Matrix<3,iel>& evelnp,
-      const LINALG::Matrix<iel,1>& edensnp,
+      //const LINALG::Matrix<3,iel>& evelnp,
+      //const LINALG::Matrix<iel,1>& edensnp,
       const double                                     visc,
       const double                                     timefac);
 
@@ -194,37 +206,46 @@ namespace ELEMENTS
 
 
   private:
-    LINALG::Matrix<3,iel> xyze_;
-    LINALG::Matrix<3,iel> edeadng_;
+    //number of dof's
+    const int numdofpernode_;
+    // create objects for element arrays
+    LINALG::Matrix<iel,1> eprenp;
+    LINALG::Matrix<nsd_,iel> evelnp;
+    LINALG::Matrix<iel,1> edensnp;
+    LINALG::Matrix<nsd_,iel> emhist;
+    LINALG::Matrix<iel,1> echist;
+
+    LINALG::Matrix<nsd_,iel> xyze_;
+    LINALG::Matrix<nsd_,iel> edeadng_;
     LINALG::Matrix<iel,1> funct_;
     LINALG::Matrix<iel,1> densfunct_;
     LINALG::Matrix<iel,1> functdens_;
-    LINALG::Matrix<3,iel> deriv_;
-    LINALG::Matrix<6,iel> deriv2_;
-    LINALG::Matrix<3,3> xjm_;
-    LINALG::Matrix<3,3> xji_;
-    LINALG::Matrix<3,3> vderxy_;
-    LINALG::Matrix<3,3> mderxy_;
-    LINALG::Matrix<3,1> pderxy_;
-    LINALG::Matrix<3,6> vderxy2_;
-    LINALG::Matrix<3,iel> derxy_;
-    LINALG::Matrix<3,iel> densderxy_;
-    LINALG::Matrix<6,iel> derxy2_;
-    LINALG::Matrix<3,1> bodyforce_;
-    LINALG::Matrix<3,1> histmom_;
+    LINALG::Matrix<nsd_,iel> deriv_;
+    LINALG::Matrix<numderiv2_,iel> deriv2_;
+    LINALG::Matrix<nsd_,nsd_> xjm_;
+    LINALG::Matrix<nsd_,nsd_> xji_;
+    LINALG::Matrix<nsd_,nsd_> vderxy_;
+    LINALG::Matrix<nsd_,nsd_> mderxy_;
+    LINALG::Matrix<nsd_,1> pderxy_;
+    LINALG::Matrix<nsd_,numderiv2_> vderxy2_;
+    LINALG::Matrix<nsd_,iel> derxy_;
+    LINALG::Matrix<nsd_,iel> densderxy_;
+    LINALG::Matrix<numderiv2_,iel> derxy2_;
+    LINALG::Matrix<nsd_,1> bodyforce_;
+    LINALG::Matrix<nsd_,1> histmom_;
     double histcon_;
-    LINALG::Matrix<3,1> velino_;
-    LINALG::Matrix<3,1> velint_; /* newest, i.e. previous time leve velocity*/
-    LINALG::Matrix<3,1> gradp_;
-    LINALG::Matrix<3,1> tau_;
+    LINALG::Matrix<nsd_,1> velino_;
+    LINALG::Matrix<nsd_,1> velint_; /* newest, i.e. previous time leve velocity*/
+    LINALG::Matrix<nsd_,1> gradp_;
+    LINALG::Matrix<nsd_,1> tau_;
     // this array once had three dimensions, I combined the first two
     // to one.
-    LINALG::Matrix<3*3,iel> viscs2_; /* viscous term including 2nd derivatives */
+    LINALG::Matrix<nsd_*nsd_,iel> viscs2_; /* viscous term including 2nd derivatives */
     LINALG::Matrix<iel,1> conv_;   /* linearisation of convect, convective part */
     double mdiv_;
-    LINALG::Matrix<3,1> rhsmom_;
+    LINALG::Matrix<nsd_,1> rhsmom_;
     double rhscon_;
-    LINALG::Matrix<6,3> xder2_;
+    LINALG::Matrix<numderiv2_,nsd_> xder2_;
     // this was a blitz::Array<int,1>
     std::vector<int> numepn_;
   };

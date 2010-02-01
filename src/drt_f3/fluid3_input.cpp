@@ -30,18 +30,16 @@ bool DRT::ELEMENTS::Fluid3::ReadElement(const std::string& eletype,
                                         DRT::INPUT::LineDefinition* linedef)
 {
   if (genprob.ndim!=3)
-    dserror("Problem defined as %dd, but found FLUID3 element.",genprob.ndim);
+    dserror("Problem defined as %dd, but Fluid3 does not support 2D elements yet",genprob.ndim);
 
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
-  // The distype is determined by the number of node. This is the wrong way
-  // around, but we do not need to switch on the distype string.
-  DiscretizationType shape = Shape();
-
-  gaussrule_ = getOptimalGaussrule(shape);
+  // Set Discretization Type
+  // setOptimalgaussrule is pushed into the element routine
+  SetDisType(DRT::StringToDistype(distype));
 
   std::string na;
   linedef->ExtractString("NA",na);

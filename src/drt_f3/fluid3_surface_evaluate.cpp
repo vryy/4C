@@ -230,8 +230,11 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
                                            Epetra_SerialDenseVector& elevec1,
                                            Epetra_SerialDenseMatrix* elemat1)
 {
+  // TODO
+  // change to flexible 2D / 3D
+
   // there are 3 velocities and 1 pressure
-  const int numdf = 4;
+  const int numdofpernode = 4;
 
   // find out whether we will use a time curve
   bool usetime = true;
@@ -463,7 +466,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
           else
             functfac = 1.0;
         }
-        elevec1[node*numdf+dim]+= funct[node]*(*onoff)[dim]*(*val)[dim]*fac*functfac;
+        elevec1[node*numdofpernode+dim]+= funct[node]*(*onoff)[dim]*(*val)[dim]*fac*functfac;
       }
     }
   }

@@ -1149,6 +1149,14 @@ void DRT::INPUT::ElementDefinition::SetupFluid3Lines()
     .AddNamedString("NA")
     ;
 
+  // TODO
+  // Early stage: Integration of Fluid2 in Fluid3
+  defs["QUAD4"]
+    .AddIntVector("QUAD4",4)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
   defs["NURBS8"]
     .AddIntVector("NURBS8",8)
     .AddNamedInt("MAT")

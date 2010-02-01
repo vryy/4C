@@ -35,6 +35,7 @@ using namespace Teuchos;
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 
 // forward declarations
@@ -75,6 +76,7 @@ public:
 
   // All the template specializations that are used, new ones must be
   // added here.
+  // 3D
   friend class Fluid3Impl<DRT::Element::tet4>;
   friend class Fluid3Impl<DRT::Element::pyramid5>;
   friend class Fluid3Impl<DRT::Element::wedge6>;
@@ -83,6 +85,14 @@ public:
   friend class Fluid3Impl<DRT::Element::wedge15>;
   friend class Fluid3Impl<DRT::Element::hex20>;
   friend class Fluid3Impl<DRT::Element::hex27>;
+  // 2D
+  friend class Fluid3Impl<DRT::Element::quad4>;
+  friend class Fluid3Impl<DRT::Element::quad8>;
+  friend class Fluid3Impl<DRT::Element::quad9>;
+  friend class Fluid3Impl<DRT::Element::tri3>;
+  friend class Fluid3Impl<DRT::Element::tri6>;
+  friend class Fluid3Impl<DRT::Element::line2>;
+  friend class Fluid3Impl<DRT::Element::line3>;
   friend class Fluid3StationaryImplInterface;
 
   // All the template specializations that are used, new ones must be
@@ -95,6 +105,14 @@ public:
   friend class Fluid3StationaryImpl<DRT::Element::wedge15>;
   friend class Fluid3StationaryImpl<DRT::Element::hex20>;
   friend class Fluid3StationaryImpl<DRT::Element::hex27>;
+  // 2D
+  friend class Fluid3StationaryImpl<DRT::Element::quad4>;
+  friend class Fluid3StationaryImpl<DRT::Element::quad8>;
+  friend class Fluid3StationaryImpl<DRT::Element::quad9>;
+  friend class Fluid3StationaryImpl<DRT::Element::tri3>;
+  friend class Fluid3StationaryImpl<DRT::Element::tri6>;
+  friend class Fluid3StationaryImpl<DRT::Element::line2>;
+  friend class Fluid3StationaryImpl<DRT::Element::line3>;
   friend class Fluid3lin_ImplInterface;
   // All the template specializations that are used, new ones must be
   // added here.
@@ -106,6 +124,14 @@ public:
   friend class Fluid3lin_Impl<DRT::Element::wedge15>;
   friend class Fluid3lin_Impl<DRT::Element::hex20>;
   friend class Fluid3lin_Impl<DRT::Element::hex27>;
+  // 2D
+  friend class Fluid3lin_Impl<DRT::Element::quad4>;
+  friend class Fluid3lin_Impl<DRT::Element::quad8>;
+  friend class Fluid3lin_Impl<DRT::Element::quad9>;
+  friend class Fluid3lin_Impl<DRT::Element::tri3>;
+  friend class Fluid3lin_Impl<DRT::Element::tri6>;
+  friend class Fluid3lin_Impl<DRT::Element::line2>;
+  friend class Fluid3lin_Impl<DRT::Element::line3>;
   friend class Fluid3ImplInterface;
 
   friend class Fluid3GenalphaResVMM<DRT::Element::tet4>;
@@ -118,6 +144,14 @@ public:
   friend class Fluid3GenalphaResVMM<DRT::Element::hex27>;
   friend class Fluid3GenalphaResVMM<DRT::Element::nurbs8>;
   friend class Fluid3GenalphaResVMM<DRT::Element::nurbs27>;
+  // 2D
+  friend class Fluid3GenalphaResVMM<DRT::Element::quad4>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::quad8>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::quad9>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::tri3>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::tri6>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::line2>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::line3>;
   friend class Fluid3GenalphaResVMMInterface;
 
   friend class Fluid3SystemEvaluator;
@@ -156,9 +190,23 @@ public:
   virtual DiscretizationType Shape() const;
 
   /*!
+  \brief set discretization type of element
+  */
+  virtual void SetDisType(DRT::Element::DiscretizationType shape)
+  {
+    distype_ = shape;
+    return;
+  };
+
+  /*!
   \brief Return number of lines of this element
   */
   virtual int NumLine() const
+  {
+    return DRT::UTILS::getNumberOfElementLines(distype_);
+  }
+
+/*
   {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 12;
    else if (NumNode()==4 || NumNode()==10) return 6;
    else {
@@ -166,11 +214,44 @@ public:
     return -1;
     }
   }
+*/
 
   /*!
   \brief Return number of surfaces of this element
   */
   virtual int NumSurface() const
+  {
+      switch(distype_)
+      {
+      case DRT::Element::hex8:
+      case DRT::Element::hex20:
+      case DRT::Element::hex27:
+        return 6; break;
+      case DRT::Element::tet4:
+      case DRT::Element::tet10:
+        return 4; break;
+      case DRT::Element::wedge6:
+      case DRT::Element::wedge15:
+      case DRT::Element::pyramid5:
+        return 5; break;
+      case DRT::Element::quad4:
+      case DRT::Element::quad8:
+      case DRT::Element::quad9:
+      case DRT::Element::nurbs4:
+      case DRT::Element::nurbs9:
+      case DRT::Element::tri3:
+      case DRT::Element::tri6:
+        return 1; break;
+      case DRT::Element::line2:
+      case DRT::Element::line3:
+        return 0; break;
+      default:
+        dserror("discretization type not yet implemented");
+      }
+      return 0;
+    }
+
+  /*
   {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 6;
     else if (NumNode()==4 || NumNode()==10) return 4;
    else if (NumNode()==6 || NumNode()==15 || NumNode()==5) return 5;
@@ -179,11 +260,41 @@ public:
    	return -1;
 	}
   }
+*/
 
   /*!
   \brief Return number of volumes of this element (always 1)
   */
-  virtual int NumVolume() const {return 1;}
+  virtual int NumVolume() const // {return 1;}
+  {
+      switch(distype_)
+      {
+      case DRT::Element::hex8:
+      case DRT::Element::hex20:
+      case DRT::Element::hex27:
+      case DRT::Element::tet4:
+      case DRT::Element::tet10:
+      case DRT::Element::wedge6:
+      case DRT::Element::wedge15:
+      case DRT::Element::pyramid5:
+        return 1;
+        break;
+      case DRT::Element::quad4:
+      case DRT::Element::quad8:
+      case DRT::Element::quad9:
+      case DRT::Element::nurbs4:
+      case DRT::Element::nurbs9:
+      case DRT::Element::tri3:
+      case DRT::Element::tri6:
+      case DRT::Element::line2:
+      case DRT::Element::line3:
+        return 0;
+        break;
+      default:
+        dserror("discretization type not yet implemented");
+      }
+      return 0;
+    }
 
   /*!
   \brief Get vector of RefCountPtrs to the lines of this element
@@ -253,7 +364,36 @@ public:
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return 4;}
+  virtual int NumDofPerNode(const DRT::Node& node) const
+  {
+    switch(distype_)
+    {
+    case DRT::Element::hex8:
+    case DRT::Element::hex20:
+    case DRT::Element::hex27:
+    case DRT::Element::tet4:
+    case DRT::Element::tet10:
+    case DRT::Element::wedge6:
+    case DRT::Element::wedge15:
+    case DRT::Element::pyramid5:
+      return 4;
+      break;
+    case DRT::Element::quad4:
+    case DRT::Element::quad8:
+    case DRT::Element::quad9:
+    case DRT::Element::nurbs4:
+    case DRT::Element::nurbs9:
+    case DRT::Element::tri3:
+    case DRT::Element::tri6:
+    case DRT::Element::line2:
+    case DRT::Element::line3:
+      return 3;
+      break;
+    default:
+      dserror("discretization type not yet implemented");
+    }
+    return 0;
+  }
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -482,6 +622,9 @@ private:
     smagorinsky_all,
     smagorinsky_small
   };
+
+  //! discretization type
+  DRT::Element::DiscretizationType distype_;
 
   //! map that converts strings to actions (stabilisation)
   static map<string,StabilisationAction>          stabstrtoact_;

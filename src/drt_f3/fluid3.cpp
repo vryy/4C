@@ -34,7 +34,7 @@ DRT::Element(id,element_fluid3,owner),
 is_ale_(false),
 data_()
 {
-    gaussrule_ = intrule3D_undefined;
+    // gaussrule_ = intrule3D_undefined;
 
     Cs_delta_sq_=0;
 
@@ -50,7 +50,7 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3::Fluid3(const DRT::ELEMENTS::Fluid3& old) :
 DRT::Element(old             ),
-gaussrule_  (old.gaussrule_  ),
+//gaussrule_  (old.gaussrule_  ),
 is_ale_     (old.is_ale_     ),
 data_       (old.data_       ),
 Cs_delta_sq_(old.Cs_delta_sq_),
@@ -77,8 +77,10 @@ DRT::Element* DRT::ELEMENTS::Fluid3::Clone() const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Fluid3::Shape() const
 {
-  switch (NumNode())
+	return distype_;
+/*  switch (NumNode())
   {
+  // 3D
   case  4: return tet4;
   case  5: return pyramid5;
   case  6: return wedge6;
@@ -91,6 +93,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Fluid3::Shape() const
     dserror("unexpected number of nodes %d", NumNode());
   }
   return dis_none;
+  */
 }
 
 /*----------------------------------------------------------------------*
@@ -109,11 +112,13 @@ void DRT::ELEMENTS::Fluid3::Pack(vector<char>& data) const
   Element::Pack(basedata);
   AddtoPack(data,basedata);
   // Gaussrule
-  AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
+  //AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   // is_ale_
   AddtoPack(data,is_ale_);
   // Cs_delta_sq_, the Smagorinsky constant for the dynamic Smagorinsky model
   AddtoPack(data,Cs_delta_sq_);
+  // Discretisation type
+  AddtoPack(data,distype_);
 
   // history variables
   AddtoPack(data,saccn_.M());
@@ -150,14 +155,16 @@ void DRT::ELEMENTS::Fluid3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // Gaussrule
-  int gausrule_integer;
-  ExtractfromPack(position,data,gausrule_integer);
-  gaussrule_ = GaussRule3D(gausrule_integer); //explicit conversion from integer to enum
+  //int gausrule_integer;
+  //ExtractfromPack(position,data,gausrule_integer);
+  //gaussrule_ = GaussRule3D(gausrule_integer); //explicit conversion from integer to enum
   // is_ale_
   ExtractfromPack(position,data,is_ale_);
   // extract Cs_delta_sq_, the Smagorinsky constant for the dynamic
   // Smagorinsky model
   ExtractfromPack(position,data,Cs_delta_sq_);
+
+  ExtractfromPack(position,data,distype_);
 
   // history variables (subscale velocities, accelerations and pressure)
   {
