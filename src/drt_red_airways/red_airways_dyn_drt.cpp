@@ -40,7 +40,8 @@ Maintainer: Mahmoud Ismail
 extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
- * Main control routine for arterial network including various solvers:
+ * Main control routine for reduced dimensional airway network including
+ * various solvers:
  *
  *        o
  *
@@ -107,11 +108,7 @@ void dyn_red_airways_drt()
   airwaystimeparams.set                  ("write restart every"       ,rawdyn.get<int>("RESTARTEVRY"));
   // solution output
   airwaystimeparams.set                  ("write solution every"      ,rawdyn.get<int>("UPRES"));
-  // flag for writing the hemodynamic physiological results
-  //arterytimeparams.set ("write stresses"  ,Teuchos::getIntegralValue<int>(ioflags,"HEMO_PHYS_RESULTS"));
-  //---------------------- A method to initialize the flow inside the 
-  //                       arteries.
-  //  int init = Teuchos::getIntegralValue<int> (artdyn,"INITIALFIELD");
+
 
   //------------------------------------------------------------------
   // create all vectors and variables associated with the time
@@ -142,6 +139,6 @@ void dyn_red_airways_drt()
   RCP<ParameterList> param_temp;
   airwayimplicit->Integrate();
 
-} // end of dyn_art_net_drt()
+} // end of dyn_red_airways_drt()
 
 #endif // #ifdef CCADISCRET

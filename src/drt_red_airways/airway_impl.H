@@ -67,6 +67,12 @@ namespace ELEMENTS
                                     vector<int>&                  lm,
                                     RefCountPtr<MAT::Material>    mat) = 0;
 
+    virtual void CalcFlowRates(RedAirway*                    ele,
+                               ParameterList&                params,
+                               DRT::Discretization&          discretization,
+                               vector<int>&                  lm,
+                               RefCountPtr<MAT::Material>    mat) = 0;
+
     /// Internal implementation class for airway element
     static RedAirwayImplInterface* Impl(DRT::ELEMENTS::RedAirway* airway);
 
@@ -162,7 +168,11 @@ namespace ELEMENTS
     /*!
      \Essential functions to compute the results of essentail matrices 
     */
-    
+    virtual void CalcFlowRates(RedAirway*                    ele,
+                               ParameterList&                params,
+                               DRT::Discretization&          discretization,
+                               vector<int>&                  lm,
+                               RefCountPtr<MAT::Material>    mat);
   private:
     //! nodal volumetric flow rate at time step "n"
     LINALG::Matrix<iel,1> qn_;

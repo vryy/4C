@@ -1,12 +1,7 @@
 
 /*!----------------------------------------------------------------------
 \file airwayimplicitintegration.cpp
-\brief Control routine for artery solvers,
-
-     including solvers based on
-
-     o two-step Taylor-Galerking scheme
-
+\brief Control routine for reduced airway solvers,
 
 <pre>
 Maintainer: Mahmoud Ismail
@@ -36,7 +31,7 @@ Maintainer: Mahmoud Ismail
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  Constructor (public)                                    ismail 01/09|
+ |  Constructor (public)                                    ismail 01/10|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -85,7 +80,9 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   // vectors and matrices
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap  = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap      = discret_->DofRowMap();
+
+  const Epetra_Map* elementrowmap  = discret_->ElementRowMap();
 
   //  const Epetra_Map* dofcolmap  = discret_->DofColMap();
 
@@ -116,10 +113,6 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
 
   // Vectors passed to the element
   // -----------------------------
-  // Volumetric flow rate at time n+1, n and n-1
-  qnp_          = LINALG::CreateVector(*dofrowmap,true);
-  qn_           = LINALG::CreateVector(*dofrowmap,true);
-  qnm_          = LINALG::CreateVector(*dofrowmap,true);
 
   // Pressures at time n+1, n and n-1
   pnp_          = LINALG::CreateVector(*dofrowmap,true);
@@ -144,7 +137,6 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   // ---------------------------------------------------------------------------------------
   ParameterList eleparams;
   discret_->ClearState();
-  discret_->SetState("qnp",qnp_);
   discret_->SetState("pnp",pnp_);
 
   // loop all elements on this proc (including ghosted ones)
@@ -161,23 +153,13 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
 
     // loop all nodes of this element, add values to the global vectors
     eleparams.set("p0",pnp_);
-    eleparams.set("q0",qnp_);
     eleparams.set("lmowner",lmowner);
     eleparams.set("action","get_initial_state");
     discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   }
 
-
-#if 0
-  cout<<"|**************************************************************************|"<<endl;
-  cout<<"|******************** The Initialize Vector qanp is ***********************|"<<endl;
-  cout<<"|**************************************************************************|"<<endl;
-  cout<<*pnp_<<endl;
-  cout<<"|**************************************************************************|"<<endl;
-#endif
-
-} // ArtNetExplicitTimeInt::ArtNetExplicitTimeInt
+} // RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -185,7 +167,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | Start the time integration.                                          |
- |                                                          ismail 12/09|
+ |                                                          ismail 01/10|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -194,7 +176,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate()
 {
   RCP<ParameterList> param;
   Integrate(false, param);
-} // ArtNetExplicitTimeInt::Integrate
+} //RedAirwayImplicitTimeInt::Integrate()
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -202,7 +184,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | Start the time integration.                                          |
- |                                                          ismail 06/09|
+ |                                                          ismail 01/10|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -229,7 +211,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate(bool CoupledTo3D,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | contains the time loop                                   ismail 06/09|
+ | contains the time loop                                   ismail 01/10|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -249,7 +231,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeLoop(bool CoupledTo3D,
     // -------------------------------------------------------------------
     if (myrank_==0)
     {
-      printf("TIME: %11.4E/%11.4E  DT = %11.4E   Solving Artery    STEP = %4d/%4d \n",
+      printf("TIME: %11.4E/%11.4E  DT = %11.4E   Solving Reduced Dimensional Airways    STEP = %4d/%4d \n",
               time_,maxtime_,dta_,step_,stepmax_);
     }
 
@@ -288,7 +270,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeLoop(bool CoupledTo3D,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | setup the variables to do a new time step                ismail 06/09|
+ | setup the variables to do a new time step                ismail 01/10|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -300,14 +282,14 @@ void AIRWAY::RedAirwayImplicitTimeInt::PrepareTimeStep()
   // -------------------------------------------------------------------
   step_ += 1;
   time_ += dta_;
-}
+} //RedAirwayImplicitTimeInt::PrepareTimeStep
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | the solver for artery                                   ismail 06/09 |
+ | the solver for reduced dimensional airway               ismail 01/10 |
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -317,8 +299,8 @@ Some detials!!
 */
 void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> CouplingTo3DParams)
 {
-  // time measurement: Artery
-  TEUCHOS_FUNC_TIME_MONITOR("   + solving artery");
+  // time measurement: Airways
+  TEUCHOS_FUNC_TIME_MONITOR("   + solving reduced dimensional airways");
 
 
   // -------------------------------------------------------------------
@@ -349,7 +331,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
 
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("qnp",qnp_);
     discret_->SetState("pnp",pnp_);
 
 
@@ -380,7 +361,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     // set vecotr values needed by elements
     discret_->ClearState();
     discret_->SetState("pnp",pnp_);
-    discret_->SetState("qnp",qnp_);
 
     eleparams.set("time step size",dta_);
     eleparams.set("total time",time_);
@@ -399,11 +379,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
   {
     // time measurement: application of dbc
     TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
-
-#if 0
-    cout<<"Boundary values are: "<<endl<<*bcval_<<endl;
-    cout<<"Boundary toggels are: "<<endl<<*dbctog_<<endl;
-#endif
 
     LINALG::ApplyDirichlettoSystem(sysmat_,pnp_,rhs_,bcval_,dbctog_);
   }
@@ -440,19 +415,17 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
   if (myrank_ == 0)
     cout << "te=" << dtele_ << ", ts=" << dtsolve_ << "\n\n" ;
 
-  // find the flow rate qnp
-  #if 0
+  // find the flow rates
   {
     // create the parameters for the discretization
     ParameterList eleparams;
 
     // action for elements
-    eleparams.set("action","calculate_flow_rate");
+    eleparams.set("action","calc_flow_rates");
 
     // set vecotr values needed by elements
     discret_->ClearState();
     discret_->SetState("pnp",pnp_);
-    discret_->SetState("qnp",qnp_);
 
     eleparams.set("time step size",dta_);
     eleparams.set("total time",time_);
@@ -460,9 +433,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
   }
-  #endif
 
-} // ArtNetExplicitTimeInt:Solve
+} // RedAirwayImplicitTimeInt::Solve
 
 
 
@@ -472,7 +444,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | call elements to calculate system matrix/rhs and assemble            |
- | this function will be kept empty untill further use     ismail 07/09 |
+ | this function will be kept empty untill further use     ismail 01/10 |
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -497,7 +469,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::AssembleMatAndRHS()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | build system matrix and rhs                              ismail 06/09|
+ | build system matrix and rhs                              ismail 01/10|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -514,8 +486,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
  |                                                                      |
- |  qnm_   =  qn_                                                       |
- |  arean_ = areap_                                                     |
+ |  pnm_  =  pn_                                                        |
+ |  pn_   =  pnp_                                                       |
  |                                                                      |
  |                                                          ismail 06/09|
  *----------------------------------------------------------------------*/
@@ -527,9 +499,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeUpdate()
 
 
   // Volumetric Flow rate/Cross-sectional area of this step become most recent
-  qnm_->Update(1.0,*qn_ ,0.0);
-  qn_ ->Update(1.0,*qnp_,0.0);
-
   pnm_->Update(1.0,*pn_ ,0.0);
   pn_ ->Update(1.0,*pnp_,0.0);
 
@@ -555,21 +524,13 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output()
     //    cout<<"My output is:"<<output_<<endl;
     output_.NewStep(step_,time_);
 
-    // "volumetric flow rate/cross-sectional area" vector
-    output_.WriteVector("qnp",qnp_);
+    // "pressure" vectors
+    output_.WriteVector("pnm",pnm_);
+    output_.WriteVector("pn",pn_);
     output_.WriteVector("pnp",pnp_);
 
-    // write domain decomposition for visualization (only once!)
-    if (step_==upres_) output_.WriteElementData();
-
-    if (uprestart_ != 0 && step_%uprestart_ == 0)
-    {
-      // also write impedance bc information if required
-      // Note: this method acts only if there is an impedance BC
-      // impedancebc_->WriteRestart(output_);
-    }
-    //#endif
-
+    // write domain decomposition for visualization
+    output_.WriteElementData();
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ != 0 && step_%uprestart_ == 0)
@@ -577,14 +538,13 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output()
     // step number and time
     output_.NewStep(step_,time_);
 
-    // "volumetric flow rate/cross-sectional area" vector
-    output_.WriteVector("qnp",qnp_);
+    // "pressure" vectors
+    output_.WriteVector("pnm",pnm_);
+    output_.WriteVector("pn",pn_);
     output_.WriteVector("pnp",pnp_);
-        
-    // also write impedance bc information if required
-    // Note: this method acts only if there is an impedance BC
-    // impedancebc_->WriteRestart(output_);
 
+    // write domain decomposition for visualization
+    output_.WriteElementData();
   }
 
   return;
@@ -595,7 +555,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | ReadRestart (public)                                     ismail 07/09|
+ | ReadRestart (public)                                     ismail 01/10|
  -----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -606,19 +566,15 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step)
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
-
-  reader.ReadVector(qnp_,"qnp");
   reader.ReadVector(pnp_,"pnp");
+  reader.ReadVector(pn_,"pn");
+  reader.ReadVector(pnm_,"pnm");
 
-  // also read impedance bc information if required
-  // Note: this method acts only if there is an impedance BC
-  // impedancebc_->ReadRestart(reader);
-
-}
+}//RedAirwayImplicitTimeInt::ReadRestart
 
 
 /*----------------------------------------------------------------------*
- | Destructor dtor (public)                                 ismail 01/09|
+ | Destructor dtor (public)                                 ismail 01/10|
  *----------------------------------------------------------------------*/
 AIRWAY::RedAirwayImplicitTimeInt::~RedAirwayImplicitTimeInt()
 {

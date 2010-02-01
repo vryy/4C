@@ -8,7 +8,7 @@ Maintainer: Mahmoud Ismail
             ismail@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15268
-</pre>
+            </pre>
 
 *----------------------------------------------------------------------*/
 #ifdef D_RED_AIRWAYS
@@ -85,11 +85,14 @@ void DRT::ELEMENTS::RedAirway::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // Gaussrule
-  //  AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
-  // is_ale_
-  //  AddtoPack(data,is_ale_);
-
+  // Cross-sectional Area
+  // AddtoPack(data,A_);
+  // AddtoPack(data,Ew_);
+  // AddtoPack(data,Ea_);
+  // AddtoPack(data,tw_);
+  // AddtoPack(data,A_);
+  // AddtoPack(data,qin_);
+  // AddtoPack(data,qout_);
 
   // data_
   vector<char> tmp(0);
@@ -251,6 +254,58 @@ void DRT::ELEMENTS::RedAirwayRegister::Print(ostream& os) const
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  Return names of visualization data                     ismail 01/10 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::RedAirway::VisNames(map<string,int>& names)
+{
+  // Put the owner of this element into the file (use base class method for this)
+  DRT::Element::VisNames(names);
+
+  // see whether we have additional data for visualization in our container
+  ostringstream temp;
+  temp << 1;
+
+  // in flow of volumetric flow profile
+  string name = "qin_";
+  names.insert(pair<string,int>(name,1));
+  
+  // out flow of volumetric flow profile
+  name = "qout_";
+  names.insert(pair<string,int>(name,1));
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Return visualization data (public)                     ismail 02/10 |
+ *----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::RedAirway::VisData(const string& name, vector<double>& data)
+{
+  // Put the owner of this element into the file (use base class method for this)
+  if(DRT::Element::VisData(name,data))
+    return true;
+
+  if ( (name == "qin_") )
+  {
+    if ((int)data.size()!=1) dserror("size mismatch");
+    const double value = qin_;
+    data[0] = value;
+    return true;
+  }
+  else if ( (name == "qout_") )
+  {
+    if ((int)data.size()!=1) dserror("size mismatch");
+    const double value = qout_;
+    data[0] = value;
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_RED_AIRWAYS

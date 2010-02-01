@@ -2,7 +2,7 @@
 /*!
 \file airway_impl.cpp
 
-\brief Internal implementation of artery_lin_exp element
+\brief Internal implementation of RedAirway element
 
 <pre>
 Maintainer: Mahmoud Ismail
@@ -52,16 +52,19 @@ DRT::ELEMENTS::RedAirwayImplInterface* DRT::ELEMENTS::RedAirwayImplInterface::Im
 
 
 
- /*----------------------------------------------------------------------*
+/*----------------------------------------------------------------------*
+ | constructor (public)                                    ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::AirwayImpl<distype>::AirwayImpl()
-  : qn_(),
-    pn_()
+  : pn_()
 {
 
 }
 
+/*----------------------------------------------------------------------*
+ | evaluate (public)                                       ismail 01/10 |
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   RedAirway*                 ele,
@@ -104,35 +107,27 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
 
-  RefCountPtr<const Epetra_Vector> qnp  = discretization.GetState("qnp");
   RefCountPtr<const Epetra_Vector> pnp  = discretization.GetState("pnp");
 
-  if (qnp==null)
-    dserror("Cannot get state vectors 'qnp'");
   if (pnp==null)
     dserror("Cannot get state vectors 'pnp'");
 
   // extract local values from the global vectors
-  vector<double> myqnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*qnp,myqnp,lm);
-
   vector<double> mypnp(lm.size());
   DRT::UTILS::ExtractMyValues(*pnp,mypnp,lm);
 
   // create objects for element arrays
   LINALG::Matrix<numnode,1> epnp;
-  LINALG::Matrix<numnode,1> eqnp;
   for (int i=0;i<numnode;++i)
   {
     // split area and volumetric flow rate, insert into element arrays
-    eqnp(i)    = myqnp[i];
     epnp(i)    = mypnp[i];
   }
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
   Sysmat(ele,
-         eqnp,
+         epnp,
          epnp,
          elemat1,
          elevec1,
@@ -145,7 +140,7 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
 
 
 /*----------------------------------------------------------------------*
- |  calculate element matrix and right hand side (private)  ismail 07/09|
+ |  calculate element matrix and right hand side (private)  ismail 01/10|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
@@ -156,7 +151,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
   Teuchos::RCP<const MAT::Material>      material)
 {
 
-  RCP<Epetra_Vector> q0    = params.get<RCP<Epetra_Vector> >("q0");
   RCP<Epetra_Vector> p0    = params.get<RCP<Epetra_Vector> >("p0");
   vector<int>        lmown = *(params.get<RCP<vector<int> > >("lmowner"));
   int myrank  = discretization.Comm().MyPID();
@@ -167,48 +161,27 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
   {
     int gid = lm[0];
     double val = 0.0;
-    q0->ReplaceGlobalValues(1,&val,&gid);
     p0->ReplaceGlobalValues(1,&val,&gid);
   }
   if(myrank == lmown[1])
   {
     int gid = lm[1];
     double val = 0.0;
-    q0->ReplaceGlobalValues(1,&val,&gid);
     p0->ReplaceGlobalValues(1,&val,&gid);
   }
 
 
-}//ArteryLinExp::Initial
+}//AirwayImpl::Initial
 
 /*----------------------------------------------------------------------*
- |  calculate element matrix and right hand side (private)  ismail 07/09|
- |                                                                      |
- |                                                                      |
- |                                                                      |
- |                               ______                                 |
- |                     _____-----      -----_____                       |
- |           _______---                          ---______              |
- | ->       / \                                         / \   ->        |
- | -->     |   |                                       |   |  -->       |
- | ---->  |     |                                     |     | ---->     |
- | ---->  |     |                                     |     | ---->     |
- | ---->  |     |                                     |     | ---->     |
- | -->     |   |                                       |   |  -->       |
- | ->       \_/_____                                ____\_/   ->        |
- |                  ---_____                _____---                    |
- |                          -----______-----                            |
- |                                                                      |
- |                                                                      |
- |                                                                      |
- |                                                                      |
+ |  calculate element matrix and right hand side (private)  ismail 01/10|
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   RedAirway*                               ele,
-  const LINALG::Matrix<iel,1>&             eqnp,
   const LINALG::Matrix<iel,1>&             epnp,
+  const LINALG::Matrix<iel,1>&             epnp2,
   LINALG::Matrix<1*iel,1*iel>&             sysmat,
   LINALG::Matrix<1*iel,    1>&             rhs,
   Teuchos::RCP<const MAT::Material>        material,
@@ -235,13 +208,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     exit(1);
   }
 
-  LINALG::Matrix<1*iel,1> qn;
   LINALG::Matrix<1*iel,1> pn;
   for(int i=0; i<iel; i++)
   {
-    qn(i,0) = eqnp(i);
     pn(i,0)   = epnp(i);
-
   }
   // set element data
   const int numnode = iel;
@@ -263,7 +233,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
 
   // check here, if we really have an airway !!
 
-  // Calculate the length of artery element
+  // Calculate the length of airway element
   const double L=sqrt(
             pow(xyze(0,0) - xyze(0,1),2)
           + pow(xyze(1,0) - xyze(1,1),2)
@@ -301,23 +271,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     dserror("[%s] is not an implimented elements yet",(ele->type()).c_str());
     exit(1);
   }
-
-
-#if 0
-  cout<<"+-------------------------!!!!!!!!!!!!!!-------------------------+"<<endl;
-  cout<<"+------------------------ THE FINAL R-LHS------------------------+"<<endl;
-  cout<<"|+++++++++++++++++++++++++!!!!      !!!!-------------------------|"<<endl;
-  cout<<"rhs is: "<<rhs<<endl;
-  cout<<"lhs is: "<<sysmat<<endl;
-  cout<<"With L= "<<L<<endl;
-  cout<<"|+++++++++++++++++++++++++!!!!      !!!!-------------------------|"<<endl;
-  cout<<"+-------------------------!!!!!!!!!!!!!!-------------------------+"<<endl;
-#endif
-
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate the values of the degrees of freedom           ismail 07/09|
+ |  Evaluate the values of the degrees of freedom           ismail 01/10|
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -449,9 +406,158 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
         dserror("precribed [%s] is not defined for reduced airways",Bc.c_str());
         exit(1);
       }
+    }
+    else
+    {
+      // ---------------------------------------------------------------
+      // If the node is a terminal node, but no b.c is prescribed to it
+      // then a zero output pressure is assumed
+      // ---------------------------------------------------------------
+      if (ele->Nodes()[i]->NumElement() == 1)
+      {
+        // -------------------------------------------------------------
+        // get the local id of the node to whome the bc is prescribed
+        // -------------------------------------------------------------
+        int local_id =  discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+        if (local_id< 0 )
+        {
+          dserror("node (%d) doesn't exist on proc(%d)",ele->Nodes()[i],discretization.Comm().MyPID());
+          exit(1);
+        }
+
+        RefCountPtr<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
+        RefCountPtr<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+
+        if (bcval==null||dbctog==null)
+        {
+          dserror("Cannot get state vectors 'bcval' and 'dbctog'");
+          exit(1);
+        }        
         
+               
+        // set pressure at node i
+        int    gid; 
+        double val; 
+        
+        gid = lm[i];
+        val = 0.0;
+        bcval->ReplaceGlobalValues(1,&val,&gid);
+      
+        gid = lm[i];
+        val = 1;
+        dbctog->ReplaceGlobalValues(1,&val,&gid);
+      }
     }
   } // End of node i has a condition
+
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Evaluate the values of the degrees of freedom           ismail 01/10|
+ |  at terminal nodes.                                                  |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
+  RedAirway*                   ele,
+  ParameterList&               params,
+  DRT::Discretization&         discretization,
+  vector<int>&                 lm,
+  RefCountPtr<MAT::Material>   material)
+{
+  const int numnode = iel;
+
+  RefCountPtr<const Epetra_Vector> pnp  = discretization.GetState("pnp");
+
+
+  double dens = 0.0;
+  double visc = 0.0;
+
+  if(material->MaterialType() == INPAR::MAT::m_fluid)
+  {
+    // get actual material
+    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+
+    // get density
+    dens = actmat->Density();
+    
+    // get kinetic viscosity
+    visc = actmat->Viscosity();
+  }
+  else
+  {
+    dserror("Material law is not a Newtonia fluid");
+    exit(1);
+  }
+
+
+
+  // extract local values from the global vectors
+  vector<double> mypnp(lm.size());
+  DRT::UTILS::ExtractMyValues(*pnp,mypnp,lm);
+
+  // create objects for element arrays
+  LINALG::Matrix<numnode,1> epnp;
+  for (int i=0;i<numnode;++i)
+  {
+    // split area and volumetric flow rate, insert into element arrays
+    epnp(i)    = mypnp[i];
+  }
+
+  // get node coordinates and number of elements per node
+  DRT::Node** nodes = ele->Nodes();
+
+  LINALG::Matrix<3,iel> xyze;
+  for (int inode=0; inode<numnode; inode++)
+  {
+    const double* x = nodes[inode]->X();
+    xyze(0,inode) = x[0];
+    xyze(1,inode) = x[1];
+    xyze(2,inode) = x[2];
+  }
+
+  // check here, if we really have an airway !!
+
+  // Calculate the length of airway element
+  const double L=sqrt(
+            pow(xyze(0,0) - xyze(0,1),2)
+          + pow(xyze(1,0) - xyze(1,1),2)
+          + pow(xyze(2,0) - xyze(2,1),2));
+
+
+  //--------------------------------------------------------------
+  //               Calculate flowrates
+  //--------------------------------------------------------------
+  double qin = 0.0;
+  double qout= 0.0;
+  if(ele->type() == "PoiseuilleResistive")
+  {
+    const double R = 8.0*PI*visc*dens*L/(pow(ele->getA(),2));
+    qin = (epnp(0)-epnp(1))/R;
+    qout= qin;
+  }
+  else if(ele->type() == "InductoResistive")
+  {
+
+  }
+  else if(ele->type() == "ComplientResistive")
+  {
+  }
+  else if(ele->type() == "RLC")
+  {
+  }
+  else if(ele->type() == "SUKI")
+  {
+
+  }
+  else
+  {
+    dserror("[%s] is not an implimented elements yet",(ele->type()).c_str());
+    exit(1);
+  }
+
+  ele->setqin(qin);
+  ele->setqout(qout);
 
 }
 

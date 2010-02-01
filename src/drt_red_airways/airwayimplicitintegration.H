@@ -1,12 +1,8 @@
 
 /*!----------------------------------------------------------------------
 \file airwayimplicitintegration.H
-\brief Associated with control routine for artery solvers,
-
-     including instationary solvers based on
-
-     o two-step Taylor-Galerkin
-
+\brief Associated with control routine for reduced dimensional airways 
+  solvers,
 
 <pre>
 Maintainer: Mahmoud Ismail
@@ -73,12 +69,12 @@ using namespace std;
 using namespace Teuchos;
 using namespace MLAPI;
 
-/// artery algorithms
+/// airway algorithms
 namespace AIRWAY
 {
 
 /*!
-\brief time integration for arterial network problems
+\brief time integration for reduced dimesnional airway network problems
 
 \author ismail (ismail@lnm.mw.tum.de)
 */
@@ -129,7 +125,7 @@ public:
 
 
   /*!
-  \brief solve linearised artery and bifurcation
+  \brief solve of airways
 
   */
   void Solve(Teuchos::RCP<ParameterList> CouplingTo3DParams);
@@ -179,10 +175,9 @@ public:
 
   //! @name access methods for composite algorithms
 
-  Teuchos::RCP<Epetra_Vector> Qnp(){ return qnp_; }
   Teuchos::RCP<Epetra_Vector> Pnp(){ return pnp_; }
-  Teuchos::RCP<Epetra_Vector> Qn() { return qn_; }
   Teuchos::RCP<Epetra_Vector> Pn() { return pn_; }
+  Teuchos::RCP<Epetra_Vector> Pnm(){ return pnm_; }
 
   /// provide access to the Dirichlet map
   const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
@@ -218,7 +213,7 @@ public:
 protected:
 
   //! @name general algorithm parameters
-  //! arterial network discretization
+  //! reduced dimensional airway network discretization
   RCP<DRT::Discretization>      discret_;
   LINALG::Solver&               solver_;
   ParameterList&                params_;
@@ -268,12 +263,6 @@ protected:
   /// rhs: right hand side vector
   RefCountPtr<Epetra_Vector>  rhs_;
 
-  //! @name Volumetric Flow rates at time n+1, n and n-1
-  RCP<Epetra_Vector>          qnp_;
-  RCP<Epetra_Vector>          qn_;
-  RCP<Epetra_Vector>          qnm_;
-  //@}
-
   //! @name pressures at time n+1, n and n-1
   RCP<Epetra_Vector>          pnp_;
   RCP<Epetra_Vector>          pn_;
@@ -288,12 +277,9 @@ protected:
   /// connection between master and slave nodes on this proc
   RCP<map<int,vector<int> > >     pbcmapmastertoslave_;
 
-  /// bio related special (outflow) boudaries
-  //  RCP<UTILS::FluidImpedanceWrapper> impedancebc_;
-
   //@}
 
-}; // class ArtNetExplicitTimeInt
+}; // class RedAirwayImplicitTimeInt
 
 }
 
