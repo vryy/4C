@@ -550,6 +550,7 @@ std::map<int,double> FLD::UTILS::ComputeSurfaceFlowRates(
     double flowrate = 0.0;
     dofrowmap->Comm().SumAll(&locflowrate,&flowrate,1);
 
+    // check !! map is not initialized
     volumeflowratepersurface[condID] += flowrate;
   }
 
@@ -574,11 +575,16 @@ std::map<int,double> FLD::UTILS::ComputeLineFlowRates(
   std::vector< DRT::Condition* > conds;
   dis.GetCondition ("LineFlowRate", conds);
 
+  //if(dis.Comm().MyPID()==0)
+  //   cout << "Volume line flow rate " << endl;
+
+
+  // each condition is on every proc , but might not have condition elements there
   for(vector<DRT::Condition*>::const_iterator conditer = conds.begin(); conditer!=conds.end(); ++conditer)
   {
     const DRT::Condition* cond = *conditer;
     const int condID = cond->GetInt("ConditionID");
-
+    
     // get a vector layout from the discretization to construct matching
     // vectors and matrices local <-> global dof numbering
     const Epetra_Map* dofrowmap = dis.DofRowMap();
@@ -596,13 +602,14 @@ std::map<int,double> FLD::UTILS::ComputeLineFlowRates(
     double local_flowrate = 0.0;
     for (int i=0; i < dofrowmap->NumMyElements(); i++)
     {
-      local_flowrate += (*flowrates)[i];
+      local_flowrate +=fabs( (*flowrates)[i]);
     }
 
-    double flowrate = 0.0;
+    double flowrate = 0.0; 
     dofrowmap->Comm().SumAll(&local_flowrate,&flowrate,1);
-
-    volumeflowrateperline[condID] += flowrate;
+    //if(dofrowmap->Comm().MyPID()==0)
+    //	cout << "gobal flow rate = " << flowrate << "\t condition ID = " << condID << endl;
+    volumeflowrateperline[condID] = flowrate;
   }
   return volumeflowrateperline;
 }
