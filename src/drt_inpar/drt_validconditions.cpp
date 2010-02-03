@@ -779,6 +779,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         "field","structure",
         Teuchos::tuple<std::string>("structure","fluid"),
         Teuchos::tuple<std::string>("structure","fluid"))));
+  sfvcomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "boundary","other",
+        Teuchos::tuple<std::string>("inflow","other"),
+        Teuchos::tuple<std::string>("inflow","other"))));
 
   Teuchos::RCP<ConditionDefinition> surfsfv =
     Teuchos::rcp(new ConditionDefinition("DESIGN STRUCTURE FLUID VOLUME COUPLING SURF CONDITIONS",
@@ -1468,7 +1474,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(lineelec);
   condlist.push_back(surfelec);
-  
+
   /*--------------------------------------------------------------------*/
   // flow rate through line
 
@@ -1746,7 +1752,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                                                            true)));
   AddNamedReal(art_red_to_3d_bc,"Tolerance");
   AddNamedInt (art_red_to_3d_bc,"MaximumIterations");
- 
+
   condlist.push_back(art_red_to_3d_bc);
 
   /*--------------------------------------------------------------------*/
@@ -1767,7 +1773,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                                                            true)));
   AddNamedReal(art_3d_to_red_bc,"Tolerance");
   AddNamedInt (art_3d_to_red_bc,"MaximumIterations");
- 
+
   condlist.push_back(art_3d_to_red_bc);
 
 

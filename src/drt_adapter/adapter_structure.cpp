@@ -280,12 +280,14 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   else
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-    if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO")==fsi_iter_monolithicxfem)
+    int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+    if (coupling==fsi_iter_monolithicxfem)
     {
       // no NOX correction required
       structure_ = tmpstr;
     }
-    else if (genprob.probtyp == prb_fsi_lung)
+    else if (coupling == fsi_iter_lung_monolithicstructuresplit or
+             coupling == fsi_iter_lung_monolithicfluidsplit)
       structure_ = rcp(new StructureLung(rcp(new StructureNOXCorrectionWrapper(tmpstr))));
     else
       structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
@@ -419,12 +421,14 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   else
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-    if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO")==fsi_iter_monolithicxfem)
+    int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+    if (coupling==fsi_iter_monolithicxfem)
     {
       // no NOX correction required
       structure_ = tmpstr;
     }
-    else if (genprob.probtyp == prb_fsi_lung)
+    else if (coupling == fsi_iter_lung_monolithicstructuresplit or
+             coupling == fsi_iter_lung_monolithicfluidsplit)
       structure_ = rcp(new StructureLung(rcp(new StructureNOXCorrectionWrapper(tmpstr))));
     else
       structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));

@@ -36,14 +36,19 @@ void ADAPTER::StructureLung::ListLungVolCons(std::set<int>& LungVolConIDs,
                                              int& MinLungVolConID)
 {
   MinLungVolConID = 1;
+  NumConstr_ = 0;
 
   for (unsigned int i=0; i<constrcond_.size();++i)
   {
     DRT::Condition& cond = *(constrcond_[i]);
     int condID = cond.GetInt("coupling id");
-    if (condID < MinLungVolConID)
-      MinLungVolConID = condID;
-    LungVolConIDs.insert(condID);
+    if (LungVolConIDs.find(condID) == LungVolConIDs.end())
+    {
+      if (condID < MinLungVolConID)
+        MinLungVolConID = condID;
+      LungVolConIDs.insert(condID);
+      NumConstr_++;
+    }
   }
 }
 
@@ -69,7 +74,6 @@ void ADAPTER::StructureLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initvo
   // set displacements
   Discretization()->ClearState();
   Discretization()->SetState("displacement", Dispnp());
-
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -167,13 +171,19 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
   if (!(Discretization()->Filled())) dserror("FillComplete() was not called");
   if (!Discretization()->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
-  // Define element action
+  // parameter list
   ParameterList params;
   params.set("action", "calc_struct_volconstrstiff");
 
   // set displacements
   Discretization()->ClearState();
   Discretization()->SetState("displacement", Dispnp());
+
+  // temporary matrix needed for assembly of "inflow" elements. in this
+  // case, only the linearization of the constraint equation needs to be
+  // considered, no other additional rhs contributions and corresponding
+  // linearizations appear!
+  LINALG::SparseMatrix TempStructConstrMatrix(StructMatrix->Matrix(0,1).RowMap(),NumConstr_,false,true);
 
   //---------------------------------------------------------------------
   // loop through conditions and evaluate them
@@ -186,8 +196,11 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
     int condID = cond.GetInt("coupling id");
     params.set("ConditionID",condID);
 
+    // elements might need condition
+    params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+
     // global and local ID of this bc in the redundant vectors
-    int gindex = condID-offsetID;
+    const int gindex = condID-offsetID;
     const int lindex = (CurrVols->Map()).LID(gindex);
     if (lindex == -1)
       dserror("Corrupt vector of current volumes");
@@ -197,9 +210,6 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
 
     // Get the sign (of volume) for this condition
     const double sign = (*SignVols)[lindex];
-
-    // elements might need condition
-    params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
 
     // define element matrices and vectors
     Epetra_SerialDenseMatrix elematrix1;
@@ -238,53 +248,83 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
       // assembly
       int eid = curr->second->Id();
 
-      // NOTE:
-      // - no time integration related scaling needed here, since everything is evaluated at the
-      //   end of the time step and assembled to the already completed system.
-      // - all element quantities are multiplied by the previously derived sign in order to assure
-      //   that computed volumes are positive and corresponding derivatives are determined with a
-      //   consistent sign.
-      // - additional multiplication with -1.0 accounts for different definition of volume
-      //   difference ("normal" volume constraint: Vref-Vcurr, lung volume constraint: Vcurr-Vref,
-      //   which seems more natural in this case)
+      // distinction whether this part of the condition belongs to the inflow boundary (in this case
+      // only contribution to overall volume and corresponding constraint matrix) or to the rest (in this case
+      // additional rhs and matrix contributions in rows corresponding to structural dofs)
 
-      elematrix1.Scale(-lagraval*sign);
-      StructMatrix->Assemble(eid,elematrix1,lm,lmowner);
+      if (*(cond.Get<string>("boundary")) == "other")
+      {
+        // NOTE:
+        // - no time integration related scaling needed here, since everything is evaluated at the
+        //   end of the time step and assembled to the already completed system.
+        // - all element quantities are multiplied by the previously derived sign in order to assure
+        //   that computed volumes are positive and corresponding derivatives are determined with a
+        //   consistent sign.
+        // - additional multiplication with -1.0 accounts for different definition of volume
+        //   difference ("normal" volume constraint: Vref-Vcurr, lung volume constraint: Vcurr-Vref,
+        //   which seems more natural in this case)
 
-      // assemble to rectangular matrix. The column corresponds to the constraint ID.
-      vector<int> colvec(1);
-      colvec[0]=gindex;
-      elevector2.Scale(-sign);
-      StructMatrix->Assemble(eid,elevector2,lm,lmowner,colvec);
+        elematrix1.Scale(-lagraval*sign);
+        StructMatrix->Assemble(eid,elematrix1,lm,lmowner);
 
-      // "Newton-ready" residual -> already scaled with -1.0
-      elevector1.Scale(lagraval*sign);
-      LINALG::Assemble(*StructRHS,elevector1,lm,lmowner);
+        // assemble to rectangular matrix. The column corresponds to the constraint ID.
+        vector<int> colvec(1);
+        colvec[0]=gindex;
+        elevector2.Scale(-sign);
+        StructMatrix->Assemble(eid,elevector2,lm,lmowner,colvec);
 
-      // No scaling with -1.0 necessary here, since the constraint rhs is determined consistently,
-      // i.e.  -(Vcurr - Vold) in the fsi algorithm, thus -1.0 is included there.
-      vector<int> constrlm;
-      vector<int> constrowner;
-      constrlm.push_back(gindex);
-      constrowner.push_back(curr->second->Owner());
-      elevector3.Scale(sign);
-      LINALG::Assemble(*CurrVols,elevector3,constrlm,constrowner);
+        // "Newton-ready" residual -> already scaled with -1.0
+        elevector1.Scale(lagraval*sign);
+        LINALG::Assemble(*StructRHS,elevector1,lm,lmowner);
 
+        // No scaling with -1.0 necessary here, since the constraint rhs is determined consistently,
+        // i.e.  -(Vcurr - Vold) in the fsi algorithm, thus -1.0 is included there.
+        vector<int> constrlm;
+        vector<int> constrowner;
+        constrlm.push_back(gindex);
+        constrowner.push_back(curr->second->Owner());
+        elevector3.Scale(sign);
+        LINALG::Assemble(*CurrVols,elevector3,constrlm,constrowner);
+      }
 
+      else if (*(cond.Get<string>("boundary")) == "inflow")
+      {
+        // in "inflow" boundary elements, we need to take care of the constraint
+        // linearization only -> assemble to TempStructConstrMatrix and add
+        // transpose of this matrix to StructMatrix later on
+        vector<int> colvec(1);
+        colvec[0]=gindex;
+        elevector2.Scale(-sign);
+        TempStructConstrMatrix.Assemble(eid,elevector2,lm,lmowner,colvec);
+
+        // No scaling with -1.0 necessary here, since the constraint rhs is determined consistently,
+        // i.e.  -(Vcurr - Vold) in the fsi algorithm, thus -1.0 is included there.
+        vector<int> constrlm;
+        vector<int> constrowner;
+        constrlm.push_back(gindex);
+        constrowner.push_back(curr->second->Owner());
+        elevector3.Scale(sign);
+        LINALG::Assemble(*CurrVols,elevector3,constrlm,constrowner);
+      }
+
+      else
+        dserror("Unknown type of structural boundary in volume constraint evaluation");
     }
   }
 
   StructMatrix->Complete();
-
-  const Teuchos::RCP<const Epetra_Map >& dispmap = StructMatrix->RangeExtractor().Map(0);
+  TempStructConstrMatrix.Complete(StructMatrix->Matrix(0,1).DomainMap(),StructMatrix->Matrix(0,1).RangeMap());
 
   LINALG::SparseMatrix& ConstrStructMatrix = StructMatrix->Matrix(1,0);
   ConstrStructMatrix.UnComplete();
   ConstrStructMatrix.Add(StructMatrix->Matrix(0,1), true, 1.0, 0.0);
+  ConstrStructMatrix.Add(TempStructConstrMatrix, true, 1.0, 1.0);
 
   StructMatrix->Complete();
 
   // Apply Dirichlet BC to stiffness matrix
+
+  const Teuchos::RCP<const Epetra_Map >& dispmap = StructMatrix->RangeExtractor().Map(0);
 
   StructMatrix->ApplyDirichlet(*GetDBCMapExtractor()->CondMap(), false);
 

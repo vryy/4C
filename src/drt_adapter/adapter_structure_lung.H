@@ -72,6 +72,9 @@ public:
 
 private:
 
+  /// number of different constraints
+  int NumConstr_;
+
   /// conditions that define the lung volume constraints
   std::vector<DRT::Condition*> constrcond_;
 

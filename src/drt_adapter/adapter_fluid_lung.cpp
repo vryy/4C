@@ -49,9 +49,12 @@ void ADAPTER::FluidLung::ListLungVolCons(std::set<int>& LungVolConIDs,
   {
     DRT::Condition& cond = *(constrcond_[i]);
     int condID = cond.GetInt("coupling id");
-    if (condID < MinLungVolConID)
-      MinLungVolConID = condID;
-    LungVolConIDs.insert(condID);
+    if (LungVolConIDs.find(condID) == LungVolConIDs.end())
+    {
+      if (condID < MinLungVolConID)
+        MinLungVolConID = condID;
+      LungVolConIDs.insert(condID);
+    }
   }
 }
 
