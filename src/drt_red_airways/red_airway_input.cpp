@@ -50,6 +50,7 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(const std::string& eletype,
     dserror("Reading type of RED_AIRWAY element failed: ComplientResistive/PoiseuilleResistive/InductoResistive/RLC/SUKI");
     exit(1);
   }
+
   return true;
 }
 

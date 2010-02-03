@@ -40,8 +40,8 @@ using namespace DRT::UTILS;
 
 
 /*---------------------------------------------------------------------*
- //evaluate the element (public)                            ismail 06/09
- *----------------------------------------------------------------------*/
+ |evaluate the element (public)                            ismail 01/10|
+ *---------------------------------------------------------------------*/
 int DRT::ELEMENTS::RedAirway::Evaluate(ParameterList& params,
                                        DRT::Discretization&      discretization,
                                        vector<int>&              lm,
@@ -63,6 +63,8 @@ int DRT::ELEMENTS::RedAirway::Evaluate(ParameterList& params,
     act = RedAirway::get_initial_state;
   else if (action == "set_bc")
     act = RedAirway::set_bc;
+  else if (action == "calc_flow_rates")
+    act = RedAirway::calc_flow_rates;
   else
   {
 
@@ -113,12 +115,22 @@ Here must add the steps for evaluating an element
 
     }
     break;
+    case calc_flow_rates:
+    {
+      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->CalcFlowRates(this,
+                                                                       params,
+                                                                       discretization,
+                                                                       lm,
+                                                                       mat);
+
+    }
+    break;
     default:
-      dserror("Unkown type of action for Artery");
+      dserror("Unkown type of action for reduced dimensional airways");
   }// end of switch(act)
 
   return 0;
-} // end of DRT::ELEMENTS::Artery::Evaluate
+} // end of DRT::ELEMENTS::RedAirway::Evaluate
 
 
 int DRT::ELEMENTS::RedAirway::EvaluateNeumann(ParameterList& params,
@@ -132,7 +144,7 @@ int DRT::ELEMENTS::RedAirway::EvaluateNeumann(ParameterList& params,
 }
 
 /*----------------------------------------------------------------------*
- |  do nothing (public)                                     ismail 01/09|
+ |  do nothing (public)                                     ismail 01/10|
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
@@ -193,7 +205,7 @@ bool DRT::ELEMENTS::RedAirway::isHigherOrderElement(
 
 
 /*----------------------------------------------------------------------*
- |  init the element (public)                               ismail 07/09|
+ |  init the element (public)                               ismail 01/10|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::RedAirwayRegister::Initialize(DRT::Discretization& dis)
 {
@@ -201,4 +213,4 @@ int DRT::ELEMENTS::RedAirwayRegister::Initialize(DRT::Discretization& dis)
 }
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_ARTNET
+#endif  // #ifdef D_RED_AIRWAYS

@@ -86,18 +86,14 @@ void DRT::ELEMENTS::RedAirway::Pack(vector<char>& data) const
   Element::Pack(basedata);
   AddtoPack(data,basedata);
   // Cross-sectional Area
-  // AddtoPack(data,A_);
-  // AddtoPack(data,Ew_);
-  // AddtoPack(data,Ea_);
-  // AddtoPack(data,tw_);
-  // AddtoPack(data,A_);
-  // AddtoPack(data,qin_);
-  // AddtoPack(data,qout_);
-
-  // data_
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
+  AddtoPack(data,elemType_);
+  AddtoPack(data,A_);
+  AddtoPack(data,Ew_);
+  AddtoPack(data,Ea_);
+  AddtoPack(data,tw_);
+  AddtoPack(data,A_);
+  AddtoPack(data,qin_);
+  AddtoPack(data,qout_);
 
   return;
 }
@@ -119,17 +115,15 @@ void DRT::ELEMENTS::RedAirway::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // Gaussrule
-  //  int gausrule_integer;
-  //  ExtractfromPack(position,data,gausrule_integer);
-  //  gaussrule_ = GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
-  // is_ale_
-  //  ExtractfromPack(position,data,is_ale_);
-
-  // data_
-  vector<char> tmp(0);
-  ExtractfromPack(position,data,tmp);
-  data_.Unpack(tmp);
+  
+  ExtractfromPack(position,data,elemType_);
+  ExtractfromPack(position,data,A_);
+  ExtractfromPack(position,data,Ew_);
+  ExtractfromPack(position,data,Ea_);
+  ExtractfromPack(position,data,tw_);
+  ExtractfromPack(position,data,A_);
+  ExtractfromPack(position,data,qin_);
+  ExtractfromPack(position,data,qout_);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -268,11 +262,11 @@ void DRT::ELEMENTS::RedAirway::VisNames(map<string,int>& names)
   temp << 1;
 
   // in flow of volumetric flow profile
-  string name = "qin_";
+  string name = "flow_in";
   names.insert(pair<string,int>(name,1));
   
   // out flow of volumetric flow profile
-  name = "qout_";
+  name = "flow_out";
   names.insert(pair<string,int>(name,1));
 
   return;
@@ -287,14 +281,14 @@ bool DRT::ELEMENTS::RedAirway::VisData(const string& name, vector<double>& data)
   if(DRT::Element::VisData(name,data))
     return true;
 
-  if ( (name == "qin_") )
+  if ( (name == "flow_in") )
   {
     if ((int)data.size()!=1) dserror("size mismatch");
     const double value = qin_;
     data[0] = value;
     return true;
   }
-  else if ( (name == "qout_") )
+  else if ( (name == "flow_out") )
   {
     if ((int)data.size()!=1) dserror("size mismatch");
     const double value = qout_;

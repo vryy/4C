@@ -55,7 +55,7 @@ ML_DAMPMED        1.0       // damping med grids
 ML_DAMPCOARSE     1.0       // damping coarse grid
 PARTITION         Cut_Elements
 ------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 3
+                                                       NDPOINT 3
 NDLINE  0
 NDSURF  0
 NDVOL   0
@@ -145,9 +145,9 @@ NODE            3     COORD 10.0  10.0 0.0
 NODE            4     COORD 10.0 -10.0 0.0
 ----------------------------------------------------------ELEMENTS
 ----------------------------------------REDUCED D AIRWAYS ELEMENTS
-1 RED_AIRWAY  LINE2    1   2 MAT 1 TYPE PoiseuilleResistive    WallCompliance 0.0   AirCompliance 0.0    WallThickness 0.0    Area 20.0
-2 RED_AIRWAY  LINE2    2   3 MAT 1 TYPE PoiseuilleResistive    WallCompliance 0.0    AirCompliance 0.0    WallThickness 0.0    Area 10.0
-3 RED_AIRWAY  LINE2    2   4 MAT 1 TYPE PoiseuilleResistive    WallCompliance 0.0    AirCompliance 0.0    WallThickness 0.0    Area 5.0
+1 RED_AIRWAY  LINE2    1   2 MAT 1 TYPE PoiseuilleResistive    WallCompliance 0.0   AirCompliance 0.0    WallThickness 10.0    Area 20.0
+2 RED_AIRWAY  LINE2    2   3 MAT 1 TYPE PoiseuilleResistive    WallCompliance 0.0    AirCompliance 0.0   WallThickness 08.0    Area 10.0
+3 RED_AIRWAY  LINE2    2   4 MAT 1 TYPE PoiseuilleResistive    WallCompliance 0.0    AirCompliance 0.0   WallThickness 07.0    Area 5.0
 ---------------------------------------------------ARTERY ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
@@ -156,7 +156,7 @@ MAT       1 MAT_fluid  VISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
-CURVE 1 on PhysiologicalWaveform Period 1.0 Flowrate 1.0 Samplingpoints 60 Arrayread 7.83 7.72 8.05 10.65 15.11 19.91 26.54 38.11 55.31 72.69 89.48 106.85 119.60 136.97 147.09 153.04 157.64 157.81 157.53 156.70 154.33 151.61 146.49 139.93 132.96 128.34 120.90 111.45 105.15 101.88 94.05 85.02 76.14 66.87 55.42 44.79 33.34 24.12 18.71 12.33 9.78 9.21 8.48 8.59 9.36 9.97 10.70 11.99 13.25 14.18 15.21 16.10 16.25 16.74 18.47 18.46 17.77 17.76 17.95 17.96
+CURVE1 on EXPR FUNC 0.3*sin(t*pi/2.0) t1 0.0 t2 20.0
 ------------------------------------------------------------CURVE2
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000.0 FACTOR 0.0 0.0
 ------------------------------------------------------------CURVE3

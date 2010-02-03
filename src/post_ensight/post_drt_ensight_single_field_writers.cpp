@@ -33,7 +33,7 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("interfacetraction", "interfacetraction", dofbased, field->problem()->num_dim());
 
   // reduced dimensional airway
-  EnsightWriter::WriteResult("pnp", "pnp", dofbased, 1);
+  EnsightWriter::WriteResult("pnp", "pressure", dofbased, 1);
 
   
   EnsightWriter::WriteElementResults(field); //To comment

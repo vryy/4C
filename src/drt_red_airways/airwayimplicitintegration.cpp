@@ -84,16 +84,6 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
 
   const Epetra_Map* elementrowmap  = discret_->ElementRowMap();
 
-  //  const Epetra_Map* dofcolmap  = discret_->DofColMap();
-
-  // -------------------------------------------------------------------
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global node numbering
-  // -------------------------------------------------------------------
-  // const Epetra_Map* noderowmap = discret_->NodeRowMap();
-
-
   // -------------------------------------------------------------------
   // get a vector layout from the discretization for a vector which only
   // contains the volumetric flow rate dofs and for one vector which only
@@ -110,7 +100,6 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   // initialize standard (stabilized) system matrix
   sysmat_  = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,3,false,true));
 
-
   // Vectors passed to the element
   // -----------------------------
 
@@ -118,6 +107,11 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   pnp_          = LINALG::CreateVector(*dofrowmap,true);
   pn_           = LINALG::CreateVector(*dofrowmap,true);
   pnm_          = LINALG::CreateVector(*dofrowmap,true);
+
+  // Volumetric flow rates at time n+1, n and n-1
+  qcnp_          = LINALG::CreateVector(*elementrowmap,true);
+  qcn_           = LINALG::CreateVector(*elementrowmap,true);
+  qcnm_          = LINALG::CreateVector(*elementrowmap,true);
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   // This part might be optimized later
@@ -136,28 +130,19 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   // and the volumetric flow rate to 0
   // ---------------------------------------------------------------------------------------
   ParameterList eleparams;
-  discret_->ClearState();
-  discret_->SetState("pnp",pnp_);
 
-  // loop all elements on this proc (including ghosted ones)
-  for (int nele=0;nele<discret_->NumMyColElements();++nele)
-  {
-    // get the element
-    DRT::Element* ele = discret_->lColElement(nele);
+  // loop all elements and initialize all of the values
 
-    // get element location vector, dirichlet flags and ownerships
-    vector<int> lm;
-    //vector<int> lmowner;
-    RCP<vector<int> > lmowner = rcp(new vector<int>);
-    ele->LocationVector(*discret_,lm,*lmowner);
-
-    // loop all nodes of this element, add values to the global vectors
-    eleparams.set("p0",pnp_);
-    eleparams.set("lmowner",lmowner);
-    eleparams.set("action","get_initial_state");
-    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-
-  }
+  eleparams.set("p0np",pnp_);
+  eleparams.set("p0n",pn_);
+  eleparams.set("p0nm",pnm_);
+  
+  eleparams.set("qc0np",qcnp_);
+  eleparams.set("qc0n",qcn_);
+  eleparams.set("qc0nm",qcnm_);
+  
+  eleparams.set("action","get_initial_state");
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
 } // RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt
 
@@ -332,6 +317,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("pnp",pnp_);
+    discret_->SetState("pn" ,pn_ );
+    discret_->SetState("pnm",pnm_);
+    discret_->SetState("qcnp",qcnp_);
+    discret_->SetState("qcn" ,qcn_ );
+    discret_->SetState("qcnm",qcnm_);
 
 
     // call standard loop over all elements
@@ -340,6 +330,23 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
 
     // finalize the complete matrix
     sysmat_->Complete();
+
+
+#if 0  // Exporting some values for debugging purposes
+
+    {
+      cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<endl;
+      RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+      if (A_debug != Teuchos::null)
+      {
+        // print to screen
+        (A_debug->EpetraMatrix())->Print(cout);
+      }
+      cout<<"Map is: ("<<myrank_<<")"<<endl<<*(discret_->DofRowMap())<<endl;
+      cout<<"---------------------------------------("<<myrank_<<"------------------------"<<endl;
+    }
+#endif 
+
   }
   // end time measurement for element
 
@@ -361,6 +368,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     // set vecotr values needed by elements
     discret_->ClearState();
     discret_->SetState("pnp",pnp_);
+    discret_->SetState("pn" ,pn_ );
+    discret_->SetState("pnm",pnm_);
+    discret_->SetState("qcnp",qcnp_);
+    discret_->SetState("qcn" ,qcn_ );
+    discret_->SetState("qcnm",qcnm_);
 
     eleparams.set("time step size",dta_);
     eleparams.set("total time",time_);
@@ -398,12 +410,14 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
       // print to screen
       (A_debug->EpetraMatrix())->Print(cout);
     }
-
+    
+    cout<<"DOF row map"<<*(discret_->DofRowMap())<<endl;
+    cout<<"bcval: "<<*bcval_<<endl;
+    cout<<"bctog: "<<*dbctog_<<endl;
     cout<<"pnp: "<<*pnp_<<endl;
     cout<<"rhs: "<<*rhs_<<endl;
 
 #endif 
-
     // call solver
     solver_.Solve(sysmat_->EpetraOperator(),pnp_,rhs_,true,true);
   }
@@ -426,7 +440,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     // set vecotr values needed by elements
     discret_->ClearState();
     discret_->SetState("pnp",pnp_);
+    discret_->SetState("pn" ,pn_ );
+    discret_->SetState("qcn" ,qcn_ );
 
+    eleparams.set("qcnp",qcnp_);
     eleparams.set("time step size",dta_);
     eleparams.set("total time",time_);
 
@@ -476,7 +493,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::AssembleMatAndRHS()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void AIRWAY::RedAirwayImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> qael)
 {
-
+  
 }
 
 
@@ -502,6 +519,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeUpdate()
   pnm_->Update(1.0,*pn_ ,0.0);
   pn_ ->Update(1.0,*pnp_,0.0);
 
+  qcnm_->Update(1.0,*qcn_ ,0.0);
+  qcn_ ->Update(1.0,*qcnp_,0.0);
+
   return;
 }// RedAirwayImplicitTimeInt::TimeUpdate
 
@@ -521,7 +541,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output()
   if (step_%upres_ == 0)
   {
     // step number and time
-    //    cout<<"My output is:"<<output_<<endl;
     output_.NewStep(step_,time_);
 
     // "pressure" vectors

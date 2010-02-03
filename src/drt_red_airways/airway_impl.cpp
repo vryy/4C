@@ -78,7 +78,12 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec3_epetra,
   RefCountPtr<MAT::Material> mat)
 {
-
+  
+  const int   myrank  = discretization.Comm().MyPID();
+  //  if (myrank != ele->Owner())
+  //  {
+  //    return 0;
+  //  }
   // the number of nodes
   const int numnode = iel;
   vector<int>::iterator it_vcr;
@@ -123,12 +128,17 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
     // split area and volumetric flow rate, insert into element arrays
     epnp(i)    = mypnp[i];
   }
+
+  RefCountPtr<const Epetra_Vector> qcn  = discretization.GetState("qcn");
+  LINALG::Matrix<numnode,1> eqn;
+  eqn(0) = (*qcn)[ele->LID()];
+  
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
   Sysmat(ele,
          epnp,
-         epnp,
+         eqn,
          elemat1,
          elevec1,
          mat,
@@ -151,25 +161,55 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
   Teuchos::RCP<const MAT::Material>      material)
 {
 
-  RCP<Epetra_Vector> p0    = params.get<RCP<Epetra_Vector> >("p0");
-  vector<int>        lmown = *(params.get<RCP<vector<int> > >("lmowner"));
-  int myrank  = discretization.Comm().MyPID();
+  const int   myrank  = discretization.Comm().MyPID();
+
+  RCP<Epetra_Vector> p0np    = params.get<RCP<Epetra_Vector> >("p0np");
+  RCP<Epetra_Vector> p0n     = params.get<RCP<Epetra_Vector> >("p0n");
+  RCP<Epetra_Vector> p0nm    = params.get<RCP<Epetra_Vector> >("p0nm");
+
+  RCP<Epetra_Vector> qc0np   = params.get<RCP<Epetra_Vector> >("qc0np");
+  RCP<Epetra_Vector> qc0n    = params.get<RCP<Epetra_Vector> >("qc0n");
+  RCP<Epetra_Vector> qc0nm   = params.get<RCP<Epetra_Vector> >("qc0nm");
 
   vector<int>::iterator it = lm.begin();
 
-  if(myrank == lmown[0])
+  //vector<int> lmowner;
+  RCP<vector<int> > lmowner = rcp(new vector<int>);
+  ele->LocationVector(discretization,lm,*lmowner);
+
+  //--------------------------------------------------------------------
+  // Initialize the pressure vectors
+  //--------------------------------------------------------------------
+  if(myrank == (*lmowner)[0])
   {
-    int gid = lm[0];
+    int    gid = lm[0];
     double val = 0.0;
-    p0->ReplaceGlobalValues(1,&val,&gid);
+    p0np->ReplaceGlobalValues(1,&val,&gid);
+    p0n ->ReplaceGlobalValues(1,&val,&gid);
+    p0nm->ReplaceGlobalValues(1,&val,&gid);
+
   }
-  if(myrank == lmown[1])
+  if(myrank == (*lmowner)[1])
   {
-    int gid = lm[1];
+    int    gid = lm[1];
     double val = 0.0;
-    p0->ReplaceGlobalValues(1,&val,&gid);
+    p0np->ReplaceGlobalValues(1,&val,&gid);
+    p0n ->ReplaceGlobalValues(1,&val,&gid);
+    p0nm->ReplaceGlobalValues(1,&val,&gid);
+
   }
 
+  //--------------------------------------------------------------------
+  // initialize the volumetric flow rate vectors
+  //--------------------------------------------------------------------
+  if(myrank == ele->Owner())
+  {
+    int    gid = ele->Id();
+    double val = 0.0;
+    qc0np->ReplaceGlobalValues(1,&val,&gid);
+    qc0n ->ReplaceGlobalValues(1,&val,&gid);
+    qc0nm->ReplaceGlobalValues(1,&val,&gid);  
+  }
 
 }//AirwayImpl::Initial
 
@@ -181,7 +221,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   RedAirway*                               ele,
   const LINALG::Matrix<iel,1>&             epnp,
-  const LINALG::Matrix<iel,1>&             epnp2,
+  const LINALG::Matrix<iel,1>&             eqn,
   LINALG::Matrix<1*iel,1*iel>&             sysmat,
   LINALG::Matrix<1*iel,    1>&             rhs,
   Teuchos::RCP<const MAT::Material>        material,
@@ -254,10 +294,24 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   }
   else if(ele->type() == "InductoResistive")
   {
-
   }
   else if(ele->type() == "ComplientResistive")
   {
+    // find Resistance 
+    const double R = 8.0*PI*visc*dens*L/(pow(ele->getA(),2));
+
+    // find Capacitance C
+    const double C    = 2.0*pow(ele->getA(),2)*L/(ele->getEw()*ele->gettw()*sqrt(M_PI));
+
+
+    //------------------------------------------------------------
+    //               Calculate the System Matrix
+    //------------------------------------------------------------
+    sysmat(0,0) = -1.0/R -2.0*C/dt ; sysmat(0,1) =  1.0/R ;
+    sysmat(1,0) =  1.0/R           ; sysmat(1,1) = -1.0/R ;
+
+    rhs(0) = -epnp(0)*2.0*C/dt - eqn(0);
+    rhs(1) = 0.0;
   }
   else if(ele->type() == "RLC")
   {
@@ -285,6 +339,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
   vector<int>&                 lm,
   RefCountPtr<MAT::Material>   material)
 {
+  const int   myrank  = discretization.Comm().MyPID();
+
   // get total time
   const double time = params.get<double>("total time");
 
@@ -323,133 +379,136 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
 
   for(int i = 0; i<ele->NumNode(); i++)
   {
-    DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
-    if(condition)
+    if (ele->Nodes()[i]->Owner()== myrank)
     {
-      // Get the type of prescribed bc
-      string Bc = *(condition->Get<string>("boundarycond"));
-
-      // double get bc value
-      double BCin = 0.0;
-      
-      const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
-      double curvefac = 1.0;
-      const  vector<double>* vals   = condition->Get<vector<double> >("val");
-
-      // -----------------------------------------------------------------
-      // Read in the value of the applied BC
-      // -----------------------------------------------------------------
-      if((*curve)[0]>=0)
+      DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
+      if(condition)
       {
-        curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
-        BCin = (*vals)[0]*curvefac;
-      }
-      else
-      {
-        dserror("no boundary condition defined!");
-        exit(1);
-      }
-
-      // -----------------------------------------------------------------------------
-      // get the local id of the node to whome the bc is prescribed
-      // -----------------------------------------------------------------------------
-      int local_id =  discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
-      if (local_id< 0 )
-      {
-        dserror("node (%d) doesn't exist on proc(%d)",ele->Nodes()[i],discretization.Comm().MyPID());
-        exit(1);
-      }
-
-      if (Bc == "pressure")
-      {
-        RefCountPtr<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
-        RefCountPtr<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
-
-        if (bcval==null||dbctog==null)
-        {
-          dserror("Cannot get state vectors 'bcval' and 'dbctog'");
-          exit(1);
-        }        
+        // Get the type of prescribed bc
+        string Bc = *(condition->Get<string>("boundarycond"));
         
-               
-        // set pressure at node i
-        int    gid; 
-        double val; 
+        // double get bc value
+        double BCin = 0.0;
         
-        gid = lm[i];
-        val = BCin;
-        bcval->ReplaceGlobalValues(1,&val,&gid);
-      
-        gid = lm[i];
-        val = 1;
-        dbctog->ReplaceGlobalValues(1,&val,&gid);
-      }
-      else if (Bc == "flow")
-      {
-        RefCountPtr<Epetra_Vector> rhs  = params.get<RCP<Epetra_Vector> >("rhs");
-        if (rhs==null)
+        const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
+        double curvefac = 1.0;
+        const  vector<double>* vals   = condition->Get<vector<double> >("val");
+        
+        // -----------------------------------------------------------------
+        // Read in the value of the applied BC
+        // -----------------------------------------------------------------
+        if((*curve)[0]>=0)
         {
-          dserror("Cannot get state vector 'rhs'");
+          curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+          BCin = (*vals)[0]*curvefac;
+        }
+        else
+        {
+          dserror("no boundary condition defined!");
           exit(1);
         }
-
-        // set pressure at node i
-        int    gid; 
-        double val; 
         
-        gid =  lm[i];
-        val = -BCin;
-        rhs->ReplaceGlobalValues(1,&val,&gid);
-      }
-      else
-      {
-        dserror("precribed [%s] is not defined for reduced airways",Bc.c_str());
-        exit(1);
-      }
-    }
-    else
-    {
-      // ---------------------------------------------------------------
-      // If the node is a terminal node, but no b.c is prescribed to it
-      // then a zero output pressure is assumed
-      // ---------------------------------------------------------------
-      if (ele->Nodes()[i]->NumElement() == 1)
-      {
-        // -------------------------------------------------------------
+        // -----------------------------------------------------------------------------
         // get the local id of the node to whome the bc is prescribed
-        // -------------------------------------------------------------
+        // -----------------------------------------------------------------------------
         int local_id =  discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
         if (local_id< 0 )
         {
-          dserror("node (%d) doesn't exist on proc(%d)",ele->Nodes()[i],discretization.Comm().MyPID());
+          dserror("node (%d) doesn't exist on proc(%d)",ele->Nodes()[i]->Id(),discretization.Comm().MyPID());
           exit(1);
         }
-
-        RefCountPtr<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
-        RefCountPtr<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
-
-        if (bcval==null||dbctog==null)
+        
+        if (Bc == "pressure")
         {
-          dserror("Cannot get state vectors 'bcval' and 'dbctog'");
-          exit(1);
-        }        
-        
-               
-        // set pressure at node i
-        int    gid; 
-        double val; 
-        
-        gid = lm[i];
-        val = 0.0;
-        bcval->ReplaceGlobalValues(1,&val,&gid);
+          RefCountPtr<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
+          RefCountPtr<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+          
+          if (bcval==null||dbctog==null)
+          {
+            dserror("Cannot get state vectors 'bcval' and 'dbctog'");
+            exit(1);
+          }        
+          
+          
+          // set pressure at node i
+          int    gid; 
+          double val; 
+          
+          gid = lm[i];
+          val = BCin;
+          bcval->ReplaceGlobalValues(1,&val,&gid);
       
-        gid = lm[i];
-        val = 1;
-        dbctog->ReplaceGlobalValues(1,&val,&gid);
+          gid = lm[i];
+          val = 1;
+          dbctog->ReplaceGlobalValues(1,&val,&gid);
+        }
+        else if (Bc == "flow")
+        {
+          RefCountPtr<Epetra_Vector> rhs  = params.get<RCP<Epetra_Vector> >("rhs");
+          if (rhs==null)
+          {
+            dserror("Cannot get state vector 'rhs'");
+            exit(1);
+          }
+          
+          // set pressure at node i
+          int    gid; 
+          double val; 
+          
+          gid =  lm[i];
+          val = -BCin + (*rhs)[gid];
+          rhs->ReplaceGlobalValues(1,&val,&gid);
+        }
+        else
+        {
+          dserror("precribed [%s] is not defined for reduced airways",Bc.c_str());
+          exit(1);
+        }
       }
-    }
-  } // End of node i has a condition
+      else
+      {
+        // ---------------------------------------------------------------
+        // If the node is a terminal node, but no b.c is prescribed to it
+        // then a zero output pressure is assumed
+        // ---------------------------------------------------------------
+        if (ele->Nodes()[i]->NumElement() == 1)
+        {
+          // -------------------------------------------------------------
+          // get the local id of the node to whome the bc is prescribed
+          // -------------------------------------------------------------
 
+          int local_id =  discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+          if (local_id< 0 )
+          {
+            dserror("node (%d) doesn't exist on proc(%d)",ele->Nodes()[i],discretization.Comm().MyPID());
+            exit(1);
+          }
+          
+          RefCountPtr<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
+          RefCountPtr<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+          
+          if (bcval==null||dbctog==null)
+          {
+            dserror("Cannot get state vectors 'bcval' and 'dbctog'");
+            exit(1);
+          }        
+          
+          
+          // set pressure at node i
+          int    gid; 
+          double val; 
+          
+          gid = lm[i];
+          val = 0.0;
+          bcval->ReplaceGlobalValues(1,&val,&gid);
+          
+          gid = lm[i];
+          val = 1;
+          dbctog->ReplaceGlobalValues(1,&val,&gid);
+        }
+      } // END of if there is no BC but the node still is at the terminal
+    } // END of if node is available on this processor
+  } // End of node i has a condition
 }
 
 
@@ -469,6 +528,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
 
   RefCountPtr<const Epetra_Vector> pnp  = discretization.GetState("pnp");
 
+  // get time-step size
+  const double dt = params.get<double>("time step size");
 
   double dens = 0.0;
   double visc = 0.0;
@@ -542,13 +603,46 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   }
   else if(ele->type() == "ComplientResistive")
   {
+    // find Resistance 
+    const double R    = 8.0*PI*visc*dens*L/(pow(ele->getA(),2));
+
+    // find Capacitance C
+    const double nue  = 0.5;
+    const double beta = sqrt(M_PI)*ele->gettw()*ele->getEw()/(1.0-pow(nue,2));
+    const double c    = sqrt(beta/(2.0*dens*ele->getA()));
+    const double C    = ele->getA()*L/(dens*pow(c,2));
+
+    RefCountPtr<const Epetra_Vector> pn   = discretization.GetState("pn");
+    RefCountPtr<const Epetra_Vector> qcn  = discretization.GetState("qcn");
+    RCP<Epetra_Vector>               qcnp = params.get<RCP<Epetra_Vector> >("qcnp");
+
+
+    // extract local values from the global vectors
+    vector<double> mypn(lm.size());
+    DRT::UTILS::ExtractMyValues(*pn,mypn,lm);
+    
+    // create objects for element arrays
+    LINALG::Matrix<numnode,1> epn;
+    for (int i=0;i<numnode;++i)
+    {
+      // split area and volumetric flow rate, insert into element arrays
+      epn(i)    = mypn[i];
+    }
+    
+    int    gid = ele->LID();
+    double qcnp_val = (2.0*C/dt)*(epnp(0)-epn(0)) - (*qcn)[gid];
+    qcnp->ReplaceGlobalValues(1,&qcnp_val,&gid);
+
+    qout = (epnp(0)-epnp(1))/R;
+    qin  = qout + qcnp_val;
+    
   }
   else if(ele->type() == "RLC")
   {
   }
   else if(ele->type() == "SUKI")
   {
-
+    
   }
   else
   {
