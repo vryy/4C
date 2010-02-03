@@ -58,11 +58,15 @@ namespace ELEMENTS
   template<> struct DisTypeToOptGaussRule<DRT::Element::wedge6>  {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_wedge_6point;};
   template<> struct DisTypeToOptGaussRule<DRT::Element::wedge15>  {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_wedge_9point;};
   template<> struct DisTypeToOptGaussRule<DRT::Element::pyramid5>{static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_pyramid_8point;};
+  template<> struct DisTypeToOptGaussRule<DRT::Element::nurbs8>   {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_8point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::nurbs27>   {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_27point; };
   template<> struct DisTypeToOptGaussRule<DRT::Element::quad4>   {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_4point;};
   template<> struct DisTypeToOptGaussRule<DRT::Element::quad8>   {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_9point;};
   template<> struct DisTypeToOptGaussRule<DRT::Element::quad9>   {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_9point;};
   template<> struct DisTypeToOptGaussRule<DRT::Element::tri3>    {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_tri_3point; };
   template<> struct DisTypeToOptGaussRule<DRT::Element::tri6>    {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_tri_6point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::nurbs4>   {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_4point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::nurbs9>   {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_9point; };
   template<> struct DisTypeToOptGaussRule<DRT::Element::line2>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_2point; };
   template<> struct DisTypeToOptGaussRule<DRT::Element::line3>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_3point; };
 

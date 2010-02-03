@@ -630,7 +630,7 @@ private:
   static map<string,StabilisationAction>          stabstrtoact_;
 
   //! Gaussrule
-  DRT::UTILS::GaussRule3D                         gaussrule_;
+  // DRT::UTILS::GaussRule3D                         gaussrule_;
   //! flag for euler/ale net algorithm
   bool                                            is_ale_;
   //! container containing all kind of fluid3 thisandthat

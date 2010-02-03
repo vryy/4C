@@ -640,6 +640,8 @@ namespace UTILS
   template<> struct DisTypeToDim<DRT::Element::wedge6>   {static const int dim = 3;};
   template<> struct DisTypeToDim<DRT::Element::wedge15>  {static const int dim = 3;};
   template<> struct DisTypeToDim<DRT::Element::pyramid5> {static const int dim = 3;};
+  template<> struct DisTypeToDim<DRT::Element::nurbs8>   {static const int dim = 3;};
+  template<> struct DisTypeToDim<DRT::Element::nurbs27>  {static const int dim = 3;};
 
 
   /*!
@@ -676,6 +678,8 @@ namespace UTILS
   template<> struct DisTypeToNumDeriv2<DRT::Element::wedge6>   {static const int numderiv2 = 6;};
   template<> struct DisTypeToNumDeriv2<DRT::Element::wedge15>  {static const int numderiv2 = 6;};
   template<> struct DisTypeToNumDeriv2<DRT::Element::pyramid5> {static const int numderiv2 = 6;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::nurbs8>   {static const int numderiv2 = 6;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::nurbs27>  {static const int numderiv2 = 6;};
 
 
   /*!

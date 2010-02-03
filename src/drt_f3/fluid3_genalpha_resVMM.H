@@ -33,6 +33,7 @@ Maintainer: Peter Gamnitzer
 #define FLUID3_GENALPHA_H
 
 #include "fluid3.H"
+#include "fluid3_ele_impl_utils.H"
 #include "fluid3_nurbs.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
@@ -240,7 +241,7 @@ namespace DRT
     {
     public:
       /// Constructor with number of nodes
-      Fluid3GenalphaResVMM();
+      Fluid3GenalphaResVMM(int numdofpernode);
 
       /// empty destructor
       ~Fluid3GenalphaResVMM(){return;};
@@ -248,6 +249,8 @@ namespace DRT
       //! number of nodes
       static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
+      //! number of space dimensions
+      static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
       //! @name Control routine calling the specific stabilised (non)conservative form
 
@@ -400,15 +403,15 @@ namespace DRT
       */
       void Sysmat_adv_qs(Fluid3*                                ele,
                          std::vector<Epetra_SerialDenseVector>& myknots,
-                         LINALG::Matrix<4*iel,4*iel>&           elemat,
-                         LINALG::Matrix<4*iel,    1>&           elevec,
-                         const LINALG::Matrix<3,iel>&           edispnp,
-                         const LINALG::Matrix<3,iel>&           egridvaf,
-                         const LINALG::Matrix<3,iel>&           evelnp,
-                         const LINALG::Matrix<iel,1>&           eprenp,
-                         const LINALG::Matrix<3,iel>&           eaccam,
-                         const LINALG::Matrix<3,iel>&           evelaf,
-                         const LINALG::Matrix<3,iel>&           fsevelaf,
+                         LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
+                         LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
+                         //const LINALG::Matrix<3,iel>&           edispnp,
+                         //const LINALG::Matrix<3,iel>&           egridvaf,
+                         //const LINALG::Matrix<3,iel>&           evelnp,
+                         //const LINALG::Matrix<iel,1>&           eprenp,
+                         //const LINALG::Matrix<3,iel>&           eaccam,
+                         //const LINALG::Matrix<3,iel>&           evelaf,
+                         //const LINALG::Matrix<3,iel>&           fsevelaf,
                          Teuchos::RCP<const MAT::Material>      material,
                          const double                           alphaM,
                          const double                           alphaF,
@@ -478,15 +481,15 @@ namespace DRT
       */
       void Sysmat_adv_td(Fluid3*                                ele,
                          std::vector<Epetra_SerialDenseVector>& myknots,
-                         LINALG::Matrix<4*iel,4*iel>&           elemat,
-                         LINALG::Matrix<4*iel,    1>&           elevec,
-                         const LINALG::Matrix<3,iel>&           edispnp,
-                         const LINALG::Matrix<3,iel>&           egridvaf,
-                         const LINALG::Matrix<3,iel>&           evelnp,
-                         const LINALG::Matrix<iel,1>&           eprenp,
-                         const LINALG::Matrix<3,iel>&           eaccam,
-                         const LINALG::Matrix<3,iel>&           evelaf,
-                         const LINALG::Matrix<3,iel>&           fsevelaf,
+                         LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
+                         LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
+                         //const LINALG::Matrix<3,iel>&           edispnp,
+                         //const LINALG::Matrix<3,iel>&           egridvaf,
+                         //const LINALG::Matrix<3,iel>&           evelnp,
+                         //const LINALG::Matrix<iel,1>&           eprenp,
+                         //const LINALG::Matrix<3,iel>&           eaccam,
+                         //const LINALG::Matrix<3,iel>&           evelaf,
+                         //const LINALG::Matrix<3,iel>&           fsevelaf,
                          Teuchos::RCP<const MAT::Material>      material,
                          const double                           alphaM,
                          const double                           alphaF,
@@ -555,15 +558,15 @@ namespace DRT
       */
       void Sysmat_cons_qs(Fluid3*                                ele,
                           std::vector<Epetra_SerialDenseVector>& myknots,
-                          LINALG::Matrix<4*iel,4*iel>&           elemat,
-                          LINALG::Matrix<4*iel,    1>&           elevec,
-                          const LINALG::Matrix<3,iel>&           edispnp,
-                          const LINALG::Matrix<3,iel>&           egridvaf,
-                          const LINALG::Matrix<3,iel>&           evelnp,
-                          const LINALG::Matrix<iel,1>&           eprenp,
-                          const LINALG::Matrix<3,iel>&           eaccam,
-                          const LINALG::Matrix<3,iel>&           evelaf,
-                          const LINALG::Matrix<3,iel>&           fsevelaf,
+                          LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
+                          LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
+                          //const LINALG::Matrix<3,iel>&           edispnp,
+                          //const LINALG::Matrix<3,iel>&           egridvaf,
+                          //const LINALG::Matrix<3,iel>&           evelnp,
+                          //const LINALG::Matrix<iel,1>&           eprenp,
+                          //const LINALG::Matrix<3,iel>&           eaccam,
+                          //const LINALG::Matrix<3,iel>&           evelaf,
+                          //const LINALG::Matrix<3,iel>&           fsevelaf,
                           Teuchos::RCP<const MAT::Material>      material,
                           const double                           alphaM,
                           const double                           alphaF,
@@ -632,15 +635,15 @@ namespace DRT
       */
       void Sysmat_cons_td(Fluid3*                                ele,
                           std::vector<Epetra_SerialDenseVector>& myknots,
-                          LINALG::Matrix<4*iel,4*iel>&           elemat,
-                          LINALG::Matrix<4*iel,    1>&           elevec,
-                          const LINALG::Matrix<3,iel>&           edispnp,
-                          const LINALG::Matrix<3,iel>&           egridvaf,
-                          const LINALG::Matrix<3,iel>&           evelnp,
-                          const LINALG::Matrix<iel,1>&           eprenp,
-                          const LINALG::Matrix<3,iel>&           eaccam,
-                          const LINALG::Matrix<3,iel>&           evelaf,
-                          const LINALG::Matrix<3,iel>&           fsevelaf,
+                          LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
+                          LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
+                          //const LINALG::Matrix<3,iel>&           edispnp,
+                          //const LINALG::Matrix<3,iel>&           egridvaf,
+                          //const LINALG::Matrix<3,iel>&           evelnp,
+                          //const LINALG::Matrix<iel,1>&           eprenp,
+                          //const LINALG::Matrix<3,iel>&           eaccam,
+                          //const LINALG::Matrix<3,iel>&           evelaf,
+                          //const LINALG::Matrix<3,iel>&           fsevelaf,
                           Teuchos::RCP<const MAT::Material>      material,
                           const double                           alphaM,
                           const double                           alphaF,
@@ -690,6 +693,12 @@ namespace DRT
       //                              In addition we use it for the output of averaged
       //                              values of visceff, Cs_delta_sq, Cs
 
+      //! number of components necessary to store second derivatives
+      // 1 component  for nsd=1:  (N,xx)
+      // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
+      // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
+      static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+
       void SetParametersForTurbulenceModel(
         const Fluid3*                       ele            ,
         ParameterList                     & turbmodelparams,
@@ -720,14 +729,14 @@ namespace DRT
         const Fluid3::FineSubgridVisc     fssgv         ,
         const bool                        is_ale        ,
         const DRT::Discretization&        discretization,
-        const vector<int>&                lm            ,
-        LINALG::Matrix<iel,1>&            eprenp        ,
-        LINALG::Matrix<3,iel>&            evelnp        ,
-        LINALG::Matrix<3,iel>&            evelaf        ,
-        LINALG::Matrix<3,iel>&            eaccam        ,
-        LINALG::Matrix<3,iel>&            edispnp       ,
-        LINALG::Matrix<3,iel>&            egridvelaf    ,
-        LINALG::Matrix<3,iel>&            fsevelaf
+        const vector<int>&                lm
+        //LINALG::Matrix<iel,1>&            eprenp        ,
+        //LINALG::Matrix<3,iel>&            evelnp        ,
+        //LINALG::Matrix<3,iel>&            evelaf        ,
+        //LINALG::Matrix<3,iel>&            eaccam        ,
+        //LINALG::Matrix<3,iel>&            edispnp       ,
+        //LINALG::Matrix<3,iel>&            egridvelaf    ,
+        //LINALG::Matrix<3,iel>&            fsevelaf
         );
 
 
@@ -748,9 +757,9 @@ namespace DRT
 
       */
       double GetStrainRate(
-        const LINALG::Matrix<3,iel>& evel     ,
-        const LINALG::Matrix<3,iel>& derxy    ,
-        LINALG::Matrix<3,3>        & velderxy
+        const LINALG::Matrix<nsd_,iel>& evel     ,
+        const LINALG::Matrix<nsd_,iel>& derxy    ,
+        LINALG::Matrix<nsd_,nsd_>        & velderxy
         )
         {
           double rateofstrain=0;
@@ -766,9 +775,9 @@ namespace DRT
           //
           // j : direction of derivative x/y/z
           //
-          for(int rr=0;rr<3;++rr)
+          for(int rr=0;rr<nsd_;++rr)
           {
-            for(int mm=0;mm<3;++mm)
+            for(int mm=0;mm<nsd_;++mm)
             {
               velderxy(rr,mm)=derxy(mm,0)*evel(rr,0);
               for(int nn=1;nn<iel;++nn)
@@ -786,19 +795,19 @@ namespace DRT
           //          |          \   / ij        \   / ij |
           //          +-                                 -+
           //
-          LINALG::Matrix<3,3> two_epsilon;
+          LINALG::Matrix<nsd_,nsd_> two_epsilon;
 
-          for(int rr=0;rr<3;++rr)
+          for(int rr=0;rr<nsd_;++rr)
           {
-            for(int mm=0;mm<3;++mm)
+            for(int mm=0;mm<nsd_;++mm)
             {
               two_epsilon(rr,mm) = velderxy(rr,mm) + velderxy(mm,rr);
             }
           }
 
-          for(int rr=0;rr<3;rr++)
+          for(int rr=0;rr<nsd_;rr++)
           {
-            for(int mm=0;mm<3;mm++)
+            for(int mm=0;mm<nsd_;mm++)
             {
               rateofstrain += two_epsilon(rr,mm)*two_epsilon(rr,mm);
             }
@@ -824,7 +833,7 @@ namespace DRT
       double ShapeFunctionsFirstAndSecondDerivatives(
         const Fluid3*                                 ele      ,
         const int                                  &  iquad    ,
-        const DRT::UTILS::IntegrationPoints3D      &  intpoints,
+        const DRT::UTILS::IntPointsAndWeights<nsd_>&  intpoints,
         const std::vector<Epetra_SerialDenseVector>&  myknots  ,
         const bool                                    hoel
         );
@@ -893,9 +902,9 @@ namespace DRT
       void SetElementData
       (
         Fluid3*                                      ele            ,
-        const LINALG::Matrix<3,iel>                & edispnp        ,
-        const LINALG::Matrix<3,iel>                & evelaf         ,
-        const LINALG::Matrix<3,iel>                & fsevelaf       ,
+        //const LINALG::Matrix<3,iel>                & edispnp        ,
+        //const LINALG::Matrix<3,iel>                & evelaf         ,
+        //const LINALG::Matrix<3,iel>                & fsevelaf       ,
         const std::vector<Epetra_SerialDenseVector>& myknots        ,
         const double                               & timealphaF     ,
         double                                     & hk             ,
@@ -946,17 +955,19 @@ namespace DRT
        */
       void InterpolateToGausspoint(
         Fluid3*                                     ele             ,
-        const LINALG::Matrix<3,iel>               & egridvaf        ,
-        const LINALG::Matrix<3,iel>               & evelnp          ,
-        const LINALG::Matrix<iel,1>               & eprenp          ,
-        const LINALG::Matrix<3,iel>               & eaccam          ,
-        const LINALG::Matrix<3,iel>               & evelaf          ,
-        const LINALG::Matrix<3,iel>               & fsevelaf        ,
+        //const LINALG::Matrix<3,iel>               & egridvaf        ,
+        //const LINALG::Matrix<3,iel>               & evelnp          ,
+        //const LINALG::Matrix<iel,1>               & eprenp          ,
+        //const LINALG::Matrix<3,iel>               & eaccam          ,
+        //const LINALG::Matrix<3,iel>               & evelaf          ,
+        //const LINALG::Matrix<3,iel>               & fsevelaf        ,
         const double                              & visceff         ,
         const enum Fluid3::FineSubgridVisc          fssgv           ,
         const bool                                  higher_order_ele);
 
       //@}
+
+      const int numdofpernode_;
 
       //! fine-scale subgrid viscosity
       double vart_;
@@ -964,27 +975,35 @@ namespace DRT
       //! constant body force
       bool   constant_bodyforce_;
 
+      LINALG::Matrix<iel,1> eprenp    ;
+      LINALG::Matrix<nsd_,iel> evelnp    ;
+      LINALG::Matrix<nsd_,iel> evelaf    ;
+      LINALG::Matrix<nsd_,iel> eaccam    ;
+      LINALG::Matrix<nsd_,iel> edispnp   ;
+      LINALG::Matrix<nsd_,iel> egridvelaf;
+      LINALG::Matrix<nsd_,iel> fsevelaf  ;
+
       // nodal arrays
       // ------------
       //! node coordinates
-      LINALG::Matrix<3,iel> xyze_;
+      LINALG::Matrix<nsd_,iel> xyze_;
       //! weights for nurbs elements
       LINALG::Matrix<iel,1> weights_;
       //! value of body force in the nodes of the element
-      LINALG::Matrix<3,iel> edeadaf_;
+      LINALG::Matrix<nsd_,iel> edeadaf_;
 
       // shape functions and derivatives, mapping from reference element to actual geometry
       // ----------------------------------------------------------------------------------
       //! vector of shape functions
       LINALG::Matrix<iel,1> funct_;
       //! vector of shape function derivatives in reference coordinate system
-      LINALG::Matrix<3,iel> deriv_;
+      LINALG::Matrix<nsd_,iel> deriv_;
       //! vector of second shape function derivatives in reference coordinate system
-      LINALG::Matrix<6,iel> deriv2_;
+      LINALG::Matrix<numderiv2_,iel> deriv2_;
       //! vector of shape function derivatives in global coordinate system
-      LINALG::Matrix<3,iel> derxy_;
+      LINALG::Matrix<nsd_,iel> derxy_;
       //! vector of second shape function derivatives in global coordinate system
-      LINALG::Matrix<6,iel> derxy2_;
+      LINALG::Matrix<numderiv2_,iel> derxy2_;
       //! derivatives needed for linearisation of viscous term including 2nd derivatives
       /*
                        corresponds to a part of the operator
@@ -993,43 +1012,43 @@ namespace DRT
 
                        on the discret level
       */
-      LINALG::Matrix<3,iel> viscs2_;
+      LINALG::Matrix<nsd_,iel> viscs2_;
       //! transpose of the jacobian matrix of the mapping (r,s,t)->(x,y,z)
-      LINALG::Matrix<3,3>   xjm_;
+      LINALG::Matrix<nsd_,nsd_>   xjm_;
       //! its inverse
-      LINALG::Matrix<3,3>   xji_;
+      LINALG::Matrix<nsd_,nsd_>   xji_;
       //! second derivatives of the mapping (r,s,t)->(x,y,z)
-      LINALG::Matrix<6,3>   xder2_;
+      LINALG::Matrix<numderiv2_,nsd_>   xder2_;
 
       // values of non geometrical quantities in gausspoints
       // ---------------------------------------------------
       //! pressure in gausspoint, time n+1
       double                prenp_;
       //! acceleration in gausspoint, time n+am
-      LINALG::Matrix<3,1>   accintam_;
+      LINALG::Matrix<nsd_,1>   accintam_;
       //! velocity in gausspoint, time n+1
-      LINALG::Matrix<3,1>   velintnp_;
+      LINALG::Matrix<nsd_,1>   velintnp_;
       //! velocity in gausspoint, time n+af
-      LINALG::Matrix<3,1>   velintaf_;
+      LINALG::Matrix<nsd_,1>   velintaf_;
       // this copy will be used to store the normed velocity at time n+af
-      LINALG::Matrix<3,1>   normed_velintaf_;
+      LINALG::Matrix<nsd_,1>   normed_velintaf_;
       //! fine-scale velocity in gausspoint, time n+af
-      LINALG::Matrix<3,1>   fsvelintaf_;
+      LINALG::Matrix<nsd_,1>   fsvelintaf_;
       //! grid velocity at time level n+af
-      LINALG::Matrix<3,1>   u_G_af_;
+      LINALG::Matrix<nsd_,1>   u_G_af_;
       //! ale convective velocity at intermediate time level n+af
       //! aleconvint_af_ = velintaf_ - gridvelintaf_
-      LINALG::Matrix<3,1>   aleconvintaf_;
+      LINALG::Matrix<nsd_,1>   aleconvintaf_;
       //! pressure gradient in gausspoint, time n+1
-      LINALG::Matrix<3,1>   pderxynp_;
+      LINALG::Matrix<nsd_,1>   pderxynp_;
       //! velocity derivatives in gausspoint, time n+1
-      LINALG::Matrix<3,3>   vderxynp_;
+      LINALG::Matrix<nsd_,nsd_>   vderxynp_;
       //! velocity derivatives in gausspoint, time n+af
-      LINALG::Matrix<3,3>   vderxyaf_;
+      LINALG::Matrix<nsd_,nsd_>   vderxyaf_;
       //! fine-scale velocity derivatives in gausspoint, time n+af
-      LINALG::Matrix<3,3>   fsvderxyaf_;
+      LINALG::Matrix<nsd_,nsd_>   fsvderxyaf_;
       //! value of body force interpolated to the gauss point, time n+af
-      LINALG::Matrix<3,1>   bodyforceaf_;
+      LINALG::Matrix<nsd_,1>   bodyforceaf_;
       //! linearisation of convection, convective part, time n+af
       LINALG::Matrix<iel,1> conv_c_af_;
       //! linearisation of convection test function, convective part, time n+af
@@ -1041,22 +1060,22 @@ namespace DRT
       // element data
       // ------------
       //! the stabilisation parameters tauM,tauMp and tauC
-      LINALG::Matrix<3,1>   tau_;
+      LINALG::Matrix<nsd_,1>   tau_;
       //! matrix of subscale velocities in gausspoints of this element, time n+alphaF
-      LINALG::Matrix<3,1>   svelaf_;
+      LINALG::Matrix<nsd_,1>   svelaf_;
       //! Convective term, most recent iteration value
-      LINALG::Matrix<3,1>   convaf_old_;
+      LINALG::Matrix<nsd_,1>   convaf_old_;
       //! Convectivion by mesh motion, most recent iteration value
-      LINALG::Matrix<3,1>   convu_G_af_old_;
+      LINALG::Matrix<nsd_,1>   convu_G_af_old_;
       //! Convective part of scale-similarity term, most recent iteration value
-      LINALG::Matrix<3,1>   convaf_s_;
+      LINALG::Matrix<nsd_,1>   convaf_s_;
       /*
                          /  n+af        \   n+af
                         |  u     o grad  | u
                          \  (i)         /   (i)
       */
       //! Subgrid velocity convective term, most recent iteration value
-      LINALG::Matrix<3,1>   convsubaf_old_;
+      LINALG::Matrix<nsd_,1>   convsubaf_old_;
       /* Most recent value for subgrid velocity convective term
 
                         /~n+af         \   n+af
@@ -1064,14 +1083,14 @@ namespace DRT
                         \   (i)        /   (i)
       */
       //! Viscous term, most recent iteration value
-      LINALG::Matrix<3,1>   viscaf_old_;
+      LINALG::Matrix<nsd_,1>   viscaf_old_;
       /*
                                         /  n+af \
                        nabla o  epsilon | u     |
                                         \  (i)  /
       */
       //! Current residual of the momentum equation
-      LINALG::Matrix<3,1>   resM_;
+      LINALG::Matrix<nsd_,1>   resM_;
 
       //! This is the convection operator using resM_ as the convecting velocity
       LINALG::Matrix<iel,1> conv_resM_;
@@ -1100,7 +1119,7 @@ namespace DRT
       // ------------------------
       //! array used for the computation of jacobian
       //! determinant and second derivatives
-      LINALG::Matrix<6,6>   bm_;
+      LINALG::Matrix<numderiv2_,numderiv2_>   bm_;
 
       //! An epetra wrapper for LAPACK library functions
       Epetra_LAPACK         solver_;
