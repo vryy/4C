@@ -3470,7 +3470,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
         double fac = 0.0;
   
         // get the corresponding map as a reference
-        map<int,double>& dgmap = mymrtrnode->GetDerivG();
+        map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivG();
   
         // (2) Lin(Phi) - slave GP coordinates
         fac = wgt*sintderiv(j,0)*gap*jac;
@@ -3502,7 +3502,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
         double fac = 0.0;
   
         // get the corresponding map as a reference
-        map<int,double>& dgmap = mymrtrnode->GetDerivG();
+        map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivG();
   
         // (1) Lin(Phi) - dual shape functions
         if (dualintlin)
