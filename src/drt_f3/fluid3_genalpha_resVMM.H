@@ -405,13 +405,13 @@ namespace DRT
                          std::vector<Epetra_SerialDenseVector>& myknots,
                          LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
                          LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
-                         //const LINALG::Matrix<3,iel>&           edispnp,
-                         //const LINALG::Matrix<3,iel>&           egridvaf,
-                         //const LINALG::Matrix<3,iel>&           evelnp,
-                         //const LINALG::Matrix<iel,1>&           eprenp,
-                         //const LINALG::Matrix<3,iel>&           eaccam,
-                         //const LINALG::Matrix<3,iel>&           evelaf,
-                         //const LINALG::Matrix<3,iel>&           fsevelaf,
+                         const LINALG::Matrix<nsd_,iel>&           edispnp,
+                         const LINALG::Matrix<nsd_,iel>&           egridvaf,
+                         const LINALG::Matrix<nsd_,iel>&           evelnp,
+                         const LINALG::Matrix<iel,1>&           eprenp,
+                         const LINALG::Matrix<nsd_,iel>&           eaccam,
+                         const LINALG::Matrix<nsd_,iel>&           evelaf,
+                         const LINALG::Matrix<nsd_,iel>&           fsevelaf,
                          Teuchos::RCP<const MAT::Material>      material,
                          const double                           alphaM,
                          const double                           alphaF,
@@ -483,13 +483,13 @@ namespace DRT
                          std::vector<Epetra_SerialDenseVector>& myknots,
                          LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
                          LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
-                         //const LINALG::Matrix<3,iel>&           edispnp,
-                         //const LINALG::Matrix<3,iel>&           egridvaf,
-                         //const LINALG::Matrix<3,iel>&           evelnp,
-                         //const LINALG::Matrix<iel,1>&           eprenp,
-                         //const LINALG::Matrix<3,iel>&           eaccam,
-                         //const LINALG::Matrix<3,iel>&           evelaf,
-                         //const LINALG::Matrix<3,iel>&           fsevelaf,
+                         const LINALG::Matrix<nsd_,iel>&           edispnp,
+                         const LINALG::Matrix<nsd_,iel>&           egridvaf,
+                         const LINALG::Matrix<nsd_,iel>&           evelnp,
+                         const LINALG::Matrix<iel,1>&           eprenp,
+                         const LINALG::Matrix<nsd_,iel>&           eaccam,
+                         const LINALG::Matrix<nsd_,iel>&           evelaf,
+                         const LINALG::Matrix<nsd_,iel>&           fsevelaf,
                          Teuchos::RCP<const MAT::Material>      material,
                          const double                           alphaM,
                          const double                           alphaF,
@@ -560,13 +560,13 @@ namespace DRT
                           std::vector<Epetra_SerialDenseVector>& myknots,
                           LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
                           LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
-                          //const LINALG::Matrix<3,iel>&           edispnp,
-                          //const LINALG::Matrix<3,iel>&           egridvaf,
-                          //const LINALG::Matrix<3,iel>&           evelnp,
-                          //const LINALG::Matrix<iel,1>&           eprenp,
-                          //const LINALG::Matrix<3,iel>&           eaccam,
-                          //const LINALG::Matrix<3,iel>&           evelaf,
-                          //const LINALG::Matrix<3,iel>&           fsevelaf,
+                          const LINALG::Matrix<nsd_,iel>&           edispnp,
+                          const LINALG::Matrix<nsd_,iel>&           egridvaf,
+                          const LINALG::Matrix<nsd_,iel>&           evelnp,
+                          const LINALG::Matrix<iel,1>&           eprenp,
+                          const LINALG::Matrix<nsd_,iel>&           eaccam,
+                          const LINALG::Matrix<nsd_,iel>&           evelaf,
+                          const LINALG::Matrix<nsd_,iel>&           fsevelaf,
                           Teuchos::RCP<const MAT::Material>      material,
                           const double                           alphaM,
                           const double                           alphaF,
@@ -637,13 +637,13 @@ namespace DRT
                           std::vector<Epetra_SerialDenseVector>& myknots,
                           LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
                           LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
-                          //const LINALG::Matrix<3,iel>&           edispnp,
-                          //const LINALG::Matrix<3,iel>&           egridvaf,
-                          //const LINALG::Matrix<3,iel>&           evelnp,
-                          //const LINALG::Matrix<iel,1>&           eprenp,
-                          //const LINALG::Matrix<3,iel>&           eaccam,
-                          //const LINALG::Matrix<3,iel>&           evelaf,
-                          //const LINALG::Matrix<3,iel>&           fsevelaf,
+                          const LINALG::Matrix<nsd_,iel>&           edispnp,
+                          const LINALG::Matrix<nsd_,iel>&           egridvaf,
+                          const LINALG::Matrix<nsd_,iel>&           evelnp,
+                          const LINALG::Matrix<iel,1>&           eprenp,
+                          const LINALG::Matrix<nsd_,iel>&           eaccam,
+                          const LINALG::Matrix<nsd_,iel>&           evelaf,
+                          const LINALG::Matrix<nsd_,iel>&           fsevelaf,
                           Teuchos::RCP<const MAT::Material>      material,
                           const double                           alphaM,
                           const double                           alphaF,
@@ -729,14 +729,14 @@ namespace DRT
         const Fluid3::FineSubgridVisc     fssgv         ,
         const bool                        is_ale        ,
         const DRT::Discretization&        discretization,
-        const vector<int>&                lm
-        //LINALG::Matrix<iel,1>&            eprenp        ,
-        //LINALG::Matrix<3,iel>&            evelnp        ,
-        //LINALG::Matrix<3,iel>&            evelaf        ,
-        //LINALG::Matrix<3,iel>&            eaccam        ,
-        //LINALG::Matrix<3,iel>&            edispnp       ,
-        //LINALG::Matrix<3,iel>&            egridvelaf    ,
-        //LINALG::Matrix<3,iel>&            fsevelaf
+        const vector<int>&                lm,
+        LINALG::Matrix<iel,1>&            eprenp        ,
+        LINALG::Matrix<nsd_,iel>&            evelnp        ,
+        LINALG::Matrix<nsd_,iel>&            evelaf        ,
+        LINALG::Matrix<nsd_,iel>&            eaccam        ,
+        LINALG::Matrix<nsd_,iel>&            edispnp       ,
+        LINALG::Matrix<nsd_,iel>&            egridvelaf    ,
+        LINALG::Matrix<nsd_,iel>&            fsevelaf
         );
 
 
@@ -902,9 +902,9 @@ namespace DRT
       void SetElementData
       (
         Fluid3*                                      ele            ,
-        //const LINALG::Matrix<3,iel>                & edispnp        ,
-        //const LINALG::Matrix<3,iel>                & evelaf         ,
-        //const LINALG::Matrix<3,iel>                & fsevelaf       ,
+        const LINALG::Matrix<nsd_,iel>                & edispnp        ,
+        const LINALG::Matrix<nsd_,iel>                & evelaf         ,
+        const LINALG::Matrix<nsd_,iel>                & fsevelaf       ,
         const std::vector<Epetra_SerialDenseVector>& myknots        ,
         const double                               & timealphaF     ,
         double                                     & hk             ,
@@ -955,12 +955,12 @@ namespace DRT
        */
       void InterpolateToGausspoint(
         Fluid3*                                     ele             ,
-        //const LINALG::Matrix<3,iel>               & egridvaf        ,
-        //const LINALG::Matrix<3,iel>               & evelnp          ,
-        //const LINALG::Matrix<iel,1>               & eprenp          ,
-        //const LINALG::Matrix<3,iel>               & eaccam          ,
-        //const LINALG::Matrix<3,iel>               & evelaf          ,
-        //const LINALG::Matrix<3,iel>               & fsevelaf        ,
+        const LINALG::Matrix<nsd_,iel>               & egridvaf        ,
+        const LINALG::Matrix<nsd_,iel>               & evelnp          ,
+        const LINALG::Matrix<iel,1>               & eprenp          ,
+        const LINALG::Matrix<nsd_,iel>               & eaccam          ,
+        const LINALG::Matrix<nsd_,iel>               & evelaf          ,
+        const LINALG::Matrix<nsd_,iel>               & fsevelaf        ,
         const double                              & visceff         ,
         const enum Fluid3::FineSubgridVisc          fssgv           ,
         const bool                                  higher_order_ele);
@@ -974,14 +974,6 @@ namespace DRT
 
       //! constant body force
       bool   constant_bodyforce_;
-
-      LINALG::Matrix<iel,1> eprenp    ;
-      LINALG::Matrix<nsd_,iel> evelnp    ;
-      LINALG::Matrix<nsd_,iel> evelaf    ;
-      LINALG::Matrix<nsd_,iel> eaccam    ;
-      LINALG::Matrix<nsd_,iel> edispnp   ;
-      LINALG::Matrix<nsd_,iel> egridvelaf;
-      LINALG::Matrix<nsd_,iel> fsevelaf  ;
 
       // nodal arrays
       // ------------

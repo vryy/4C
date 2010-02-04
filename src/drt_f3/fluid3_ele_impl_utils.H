@@ -148,15 +148,6 @@ namespace ELEMENTS
   template<> struct DisTypeToStabGaussRule<DRT::Element::line2>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_1point; };
   template<> struct DisTypeToStabGaussRule<DRT::Element::line3>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_1point; };
 
-  //! determine whether there are only two charged species present or not
-  bool IsBinaryElectrolyte(const std::vector<double>& valence);
-
-  //! calculate resultant diffusion coefficient for stabilization of binary electrolyte systems
-  double CalResDiffCoeff(
-      const std::vector<double>& valence, ///< valences
-      const std::vector<double>& diffus,  ///< diffusivities
-      const std::vector<double>& diffusvalence  ///< valences*diffusivities
-  );
 } // namespace ELEMENTS
 
 } // namespace DRT

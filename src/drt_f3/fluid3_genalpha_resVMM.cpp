@@ -163,14 +163,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Fluid3GenalphaResVMM(int numdofpernode)
 // fine-scale subgrid viscosity
   : numdofpernode_(numdofpernode),
-    vart_(0.0),
-    eprenp(true),
-    evelnp(true),
-    evelaf(true),
-    eaccam(true),
-    edispnp(true),
-    egridvelaf(true),
-    fsevelaf(true)
+    vart_(0.0)
 
 {
   return;
@@ -198,13 +191,13 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
 
   // --------------------------------------------------
   // create matrix objects for nodal values
-  //LINALG::Matrix<iel,1> eprenp    ;
-  //LINALG::Matrix<3,iel> evelnp    ;
-  //LINALG::Matrix<3,iel> evelaf    ;
-  //LINALG::Matrix<3,iel> eaccam    ;
-  //LINALG::Matrix<3,iel> edispnp   ;
-  //LINALG::Matrix<3,iel> egridvelaf;
-  //LINALG::Matrix<3,iel> fsevelaf  ;
+  LINALG::Matrix<iel,1> eprenp    ;
+  LINALG::Matrix<nsd_,iel> evelnp    ;
+  LINALG::Matrix<nsd_,iel> evelaf    ;
+  LINALG::Matrix<nsd_,iel> eaccam    ;
+  LINALG::Matrix<nsd_,iel> edispnp   ;
+  LINALG::Matrix<nsd_,iel> egridvelaf;
+  LINALG::Matrix<nsd_,iel> fsevelaf  ;
 
   // --------------------------------------------------
   // set parameters for time integration
@@ -359,14 +352,14 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
         fssgv         ,
         ele->is_ale_  ,
         discretization,
-        lm
-        //eprenp        ,
-        //evelnp        ,
-        //evelaf        ,
-        //eaccam        ,
-        //edispnp       ,
-        //egridvelaf    ,
-        //fsevelaf
+        lm,
+        eprenp        ,
+        evelnp        ,
+        evelaf        ,
+        eaccam        ,
+        edispnp       ,
+        egridvelaf    ,
+        fsevelaf
     );
 
   // --------------------------------------------------
@@ -409,13 +402,13 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
         myknots,
         elemat1,
         elevec1,
-        //edispnp,
-        //egridvelaf,
-        //evelnp,
-        //eprenp,
-        //eaccam,
-        //evelaf,
-        //fsevelaf,
+        edispnp,
+        egridvelaf,
+        evelnp,
+        eprenp,
+        eaccam,
+        evelaf,
+        fsevelaf,
         mat,
         alphaM,
         alphaF,
@@ -448,13 +441,13 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
         myknots,
         elemat1,
         elevec1,
-        //edispnp,
-        //egridvelaf,
-        //evelnp,
-        //eprenp,
-        //eaccam,
-        //evelaf,
-        //fsevelaf,
+        edispnp,
+        egridvelaf,
+        evelnp,
+        eprenp,
+        eaccam,
+        evelaf,
+        fsevelaf,
         mat,
         alphaM,
         alphaF,
@@ -490,13 +483,13 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
 	myknots,
 	elemat1,
 	elevec1,
-	//edispnp,
-	//egridvelaf,
-	//evelnp,
-	//eprenp,
-	//eaccam,
-	//evelaf,
-	//fsevelaf,
+	edispnp,
+	egridvelaf,
+	evelnp,
+	eprenp,
+	eaccam,
+	evelaf,
+	fsevelaf,
 	mat,
 	alphaM,
 	alphaF,
@@ -528,13 +521,13 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
         myknots         ,
         elemat1         ,
         elevec1         ,
-        //edispnp         ,
-        //egridvelaf      ,
-        //evelnp          ,
-        //eprenp          ,
-        //eaccam          ,
-        //evelaf          ,
-        //fsevelaf        ,
+        edispnp         ,
+        egridvelaf      ,
+        evelnp          ,
+        eprenp          ,
+        eaccam          ,
+        evelaf          ,
+        fsevelaf        ,
         mat             ,
         alphaM          ,
         alphaF          ,
@@ -629,13 +622,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs(
   std::vector<Epetra_SerialDenseVector> & myknots         ,
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&            elemat          ,
   LINALG::Matrix<(nsd_+1)*iel,1>&                elevec          ,
-  //const LINALG::Matrix<3,iel>&            edispnp         ,
-  //const LINALG::Matrix<3,iel>&            egridvaf        ,
-  //const LINALG::Matrix<3,iel>&            evelnp          ,
-  //const LINALG::Matrix<iel,1>&            eprenp          ,
-  //const LINALG::Matrix<3,iel>&            eaccam          ,
-  //const LINALG::Matrix<3,iel>&            evelaf          ,
-  //const LINALG::Matrix<3,iel>&            fsevelaf        ,
+  const LINALG::Matrix<nsd_,iel>&            edispnp         ,
+  const LINALG::Matrix<nsd_,iel>&            egridvelaf        ,
+  const LINALG::Matrix<nsd_,iel>&            evelnp          ,
+  const LINALG::Matrix<iel,1>&            eprenp          ,
+  const LINALG::Matrix<nsd_,iel>&            eaccam          ,
+  const LINALG::Matrix<nsd_,iel>&            evelaf          ,
+  const LINALG::Matrix<nsd_,iel>&            fsevelaf        ,
   Teuchos::RCP<const MAT::Material>       material        ,
   const double                            alphaM          ,
   const double                            alphaF          ,
@@ -698,9 +691,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs(
   double visc = 0.0;
 
   SetElementData(ele            ,
-                 //edispnp        ,
-                 //evelaf         ,
-                 //fsevelaf       ,
+                 edispnp        ,
+                 evelaf         ,
+                 fsevelaf       ,
                  myknots        ,
                  timealphaF     ,
                  hk             ,
@@ -749,12 +742,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs(
     //            interpolate nodal values to gausspoint
     //--------------------------------------------------------------
     InterpolateToGausspoint(ele             ,
-                            //egridvaf        ,
-                            //evelnp          ,
-                            //eprenp          ,
-                            //eaccam          ,
-                            //evelaf          ,
-                            //fsevelaf        ,
+                            egridvelaf        ,
+                            evelnp          ,
+                            eprenp          ,
+                            eaccam          ,
+                            evelaf          ,
+                            fsevelaf        ,
                             visceff         ,
                             fssgv           ,
                             higher_order_ele);
@@ -2543,13 +2536,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
   std::vector<Epetra_SerialDenseVector>&  myknots         ,
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&            elemat          ,
   LINALG::Matrix<(nsd_+1)*iel,1>&                elevec          ,
-  //const LINALG::Matrix<3,iel>&            edispnp         ,
-  //const LINALG::Matrix<3,iel>&            egridvaf        ,
-  //const LINALG::Matrix<3,iel>&            evelnp          ,
-  //const LINALG::Matrix<iel,1>&            eprenp          ,
-  //const LINALG::Matrix<3,iel>&            eaccam          ,
-  //const LINALG::Matrix<3,iel>&            evelaf          ,
-  //const LINALG::Matrix<3,iel>&            fsevelaf        ,
+  const LINALG::Matrix<nsd_,iel>&            edispnp         ,
+  const LINALG::Matrix<nsd_,iel>&            egridvelaf        ,
+  const LINALG::Matrix<nsd_,iel>&            evelnp          ,
+  const LINALG::Matrix<iel,1>&            eprenp          ,
+  const LINALG::Matrix<nsd_,iel>&            eaccam          ,
+  const LINALG::Matrix<nsd_,iel>&            evelaf          ,
+  const LINALG::Matrix<nsd_,iel>&            fsevelaf        ,
   Teuchos::RCP<const MAT::Material>       material        ,
   const double                            alphaM          ,
   const double                            alphaF          ,
@@ -2613,9 +2606,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
   double visc = 0.0;
 
   SetElementData(ele            ,
-                 //edispnp        ,
-                 //evelaf         ,
-                 //fsevelaf       ,
+                 edispnp        ,
+                 evelaf         ,
+                 fsevelaf       ,
                  myknots        ,
                  timealphaF     ,
                  hk             ,
@@ -2678,12 +2671,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
     //            interpolate nodal values to gausspoint
     //--------------------------------------------------------------
     InterpolateToGausspoint(ele             ,
-                            //egridvaf        ,
-                            //evelnp          ,
-                            //eprenp          ,
-                            //eaccam          ,
-                            //evelaf          ,
-                            //fsevelaf        ,
+                            egridvelaf        ,
+                            evelnp          ,
+                            eprenp          ,
+                            eaccam          ,
+                            evelaf          ,
+                            fsevelaf        ,
                             visceff         ,
                             fssgv           ,
                             higher_order_ele);
@@ -5076,13 +5069,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_qs(
   std::vector<Epetra_SerialDenseVector>&           myknots         ,
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&                     elemat          ,
   LINALG::Matrix<(nsd_+1)*iel,1>&                         elevec          ,
-  //const LINALG::Matrix<3,iel>&                     edispnp         ,
-  //const LINALG::Matrix<3,iel>&                     egridvaf        ,
-  //const LINALG::Matrix<3,iel>&                     evelnp          ,
-  //const LINALG::Matrix<iel,1>&                     eprenp          ,
-  //const LINALG::Matrix<3,iel>&                     eaccam          ,
-  //const LINALG::Matrix<3,iel>&                     evelaf          ,
-  //const LINALG::Matrix<3,iel>&                     fsevelaf        ,
+  const LINALG::Matrix<nsd_,iel>&                     edispnp         ,
+  const LINALG::Matrix<nsd_,iel>&                     egridvelaf        ,
+  const LINALG::Matrix<nsd_,iel>&                     evelnp          ,
+  const LINALG::Matrix<iel,1>&                     eprenp          ,
+  const LINALG::Matrix<nsd_,iel>&                     eaccam          ,
+  const LINALG::Matrix<nsd_,iel>&                     evelaf          ,
+  const LINALG::Matrix<nsd_,iel>&                     fsevelaf        ,
   Teuchos::RCP<const MAT::Material>                material        ,
   const double                                     alphaM          ,
   const double                                     alphaF          ,
@@ -5144,9 +5137,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_qs(
   double visc = 0.0;
 
   SetElementData(ele            ,
-                 //edispnp        ,
-                 //evelaf         ,
-                 //fsevelaf       ,
+                 edispnp        ,
+                 evelaf         ,
+                 fsevelaf       ,
                  myknots        ,
                  timealphaF     ,
                  hk             ,
@@ -5193,12 +5186,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_qs(
     //            interpolate nodal values to gausspoint
     //--------------------------------------------------------------
     InterpolateToGausspoint(ele             ,
-                            //egridvaf        ,
-                            //evelnp          ,
-                            //eprenp          ,
-                            //eaccam          ,
-                            //evelaf          ,
-                            //fsevelaf        ,
+                            egridvelaf        ,
+                            evelnp          ,
+                            eprenp          ,
+                            eaccam          ,
+                            evelaf          ,
+                            fsevelaf        ,
                             visceff         ,
                             fssgv           ,
                             higher_order_ele);
@@ -7037,13 +7030,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
   std::vector<Epetra_SerialDenseVector>&           myknots         ,
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&                     elemat          ,
   LINALG::Matrix<(nsd_+1)*iel,1>&                         elevec          ,
-  //const LINALG::Matrix<3,iel>&                     edispnp         ,
-  //const LINALG::Matrix<3,iel>&                     egridvaf        ,
-  //const LINALG::Matrix<3,iel>&                     evelnp          ,
-  //const LINALG::Matrix<iel,1>&                     eprenp          ,
-  //const LINALG::Matrix<3,iel>&                     eaccam          ,
-  //const LINALG::Matrix<3,iel>&                     evelaf          ,
-  //const LINALG::Matrix<3,iel>&                     fsevelaf        ,
+  const LINALG::Matrix<nsd_,iel>&                     edispnp         ,
+  const LINALG::Matrix<nsd_,iel>&                     egridvelaf        ,
+  const LINALG::Matrix<nsd_,iel>&                     evelnp          ,
+  const LINALG::Matrix<iel,1>&                     eprenp          ,
+  const LINALG::Matrix<nsd_,iel>&                     eaccam          ,
+  const LINALG::Matrix<nsd_,iel>&                     evelaf          ,
+  const LINALG::Matrix<nsd_,iel>&                     fsevelaf        ,
   Teuchos::RCP<const MAT::Material>                material        ,
   const double                                     alphaM          ,
   const double                                     alphaF          ,
@@ -7106,9 +7099,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
   double visc = 0.0;
 
   SetElementData(ele            ,
-                 //edispnp        ,
-                 //evelaf         ,
-                 //fsevelaf       ,
+                 edispnp        ,
+                 evelaf         ,
+                 fsevelaf       ,
                  myknots        ,
                  timealphaF     ,
                  hk             ,
@@ -7171,12 +7164,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
     //            interpolate nodal values to gausspoint
     //--------------------------------------------------------------
     InterpolateToGausspoint(ele             ,
-                            //egridvaf        ,
-                            //evelnp          ,
-                            //eprenp          ,
-                            //eaccam          ,
-                            //evelaf          ,
-                            //fsevelaf        ,
+                            egridvelaf        ,
+                            evelnp          ,
+                            eprenp          ,
+                            eaccam          ,
+                            evelaf          ,
+                            fsevelaf        ,
                             visceff         ,
                             fssgv           ,
                             higher_order_ele);
@@ -9708,13 +9701,13 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
   // --------------------------------------------------
   // create matrix objects for nodal values
-  //LINALG::Matrix<iel,1> eprenp    ;
-  //LINALG::Matrix<3,iel> evelnp    ;
-  //LINALG::Matrix<3,iel> evelaf    ;
-  //LINALG::Matrix<3,iel> eaccam    ;
-  //LINALG::Matrix<3,iel> edispnp   ;
-  //LINALG::Matrix<3,iel> egridvelaf;
-  //LINALG::Matrix<3,iel> fsevelaf  ;
+  LINALG::Matrix<iel,1> eprenp    ;
+  LINALG::Matrix<nsd_,iel> evelnp    ;
+  LINALG::Matrix<nsd_,iel> evelaf    ;
+  LINALG::Matrix<nsd_,iel> eaccam    ;
+  LINALG::Matrix<nsd_,iel> edispnp   ;
+  LINALG::Matrix<nsd_,iel> egridvelaf;
+  LINALG::Matrix<nsd_,iel> fsevelaf  ;
 
   // --------------------------------------------------
   // set parameters for time integration
@@ -9834,14 +9827,14 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
         fssgv         ,
         ele->is_ale_  ,
         discretization,
-        lm
-        //eprenp        ,
-        //evelnp        ,
-        //evelaf        ,
-        //eaccam        ,
-        //edispnp       ,
-        //egridvelaf    ,
-        //fsevelaf
+        lm,
+        eprenp        ,
+        evelnp        ,
+        evelaf        ,
+        eaccam        ,
+        edispnp       ,
+        egridvelaf    ,
+        fsevelaf
     );
 
   // --------------------------------------------------
@@ -9887,8 +9880,6 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
   LINALG::Matrix<2*nsd_,1>  mean_crossstress;
   LINALG::Matrix<2*nsd_,1>  mean_reystress  ;
-  // TODO
-  // the rest of this function is not variable in 2D and 3D yet
 
   double vol             = 0.0;
 
@@ -9953,9 +9944,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   double visc = 0.0;
 
   SetElementData(ele            ,
-                 //edispnp        ,
-                 //evelaf         ,
-                 //fsevelaf       ,
+                 edispnp        ,
+                 evelaf         ,
+                 fsevelaf       ,
                  myknots        ,
                  timealphaF     ,
                  hk             ,
@@ -9980,6 +9971,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   // const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
+  // TODO
+  // the integration loop is only a 3D function, since it may influence the performance
+
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
@@ -10002,12 +9996,12 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     //            interpolate nodal values to gausspoint
     //--------------------------------------------------------------
     InterpolateToGausspoint(ele             ,
-                            //egridvelaf      ,
-                            //evelnp          ,
-                            //eprenp          ,
-                            //eaccam          ,
-                            //evelaf          ,
-                            //fsevelaf        ,
+                            egridvelaf      ,
+                            evelnp          ,
+                            eprenp          ,
+                            eaccam          ,
+                            evelaf          ,
+                            fsevelaf        ,
                             visceff         ,
                             fssgv           ,
                             higher_order_ele);
@@ -10855,14 +10849,14 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ExtractValuesFromGlobalVector
         const Fluid3::FineSubgridVisc              fssgv         ,
         const bool                                 is_ale        ,
         const DRT::Discretization&                 discretization,
-        const vector<int>&                         lm
-        //LINALG::Matrix<iel,1>& eprenp        ,
-        //LINALG::Matrix<3,iel>& evelnp        ,
-        //LINALG::Matrix<3,iel>& evelaf        ,
-        //LINALG::Matrix<3,iel>& eaccam        ,
-        //LINALG::Matrix<3,iel>& edispnp       ,
-        //LINALG::Matrix<3,iel>& egridvelaf    ,
-        //LINALG::Matrix<3,iel>& fsevelaf
+        const vector<int>&                         lm,
+        LINALG::Matrix<iel,1>& eprenp        ,
+        LINALG::Matrix<nsd_,iel>& evelnp        ,
+        LINALG::Matrix<nsd_,iel>& evelaf        ,
+        LINALG::Matrix<nsd_,iel>& eaccam        ,
+        LINALG::Matrix<nsd_,iel>& edispnp       ,
+        LINALG::Matrix<nsd_,iel>& egridvelaf    ,
+        LINALG::Matrix<nsd_,iel>& fsevelaf
         )
 {
     // velocity and pressure values (current iterate, n+1)
@@ -11289,7 +11283,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
   const double &                         visceff   )
 {
   // TODO
-  // This function is not variable in 2D and 3D yet
+  // This function is only a 3D function, since it may influence the performance
   // get velocity norms
   const double vel_normaf = velintaf_.Norm2();
   const double vel_normnp = velintnp_.Norm2();
@@ -12245,7 +12239,11 @@ double DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ShapeFunctionsFirstAndSecon
 
     if(!(distype == DRT::Element::nurbs8
          ||
-         distype == DRT::Element::nurbs27))
+         distype == DRT::Element::nurbs27
+         ||
+         distype == DRT::Element::nurbs4
+         ||
+         distype == DRT::Element::nurbs9))
     {
       // get values of shape functions and derivatives in the gausspoint
       //DRT::UTILS::shape_function_3D(funct_,gp(0),gp(1),gp(2),distype);
@@ -12259,12 +12257,12 @@ double DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ShapeFunctionsFirstAndSecon
         //DRT::UTILS::shape_function_3D_deriv2(derxy2_,gp(0),gp(1),gp(2),distype);
         DRT::UTILS::shape_function_deriv2<distype>(gp, derxy2_);
       }
-      // TODO
-      // the rest of this function is not variable in 2D and 3D yet
     }
     else
     {
-      if (higher_order_ele)
+      if (distype == DRT::Element::nurbs4 or distype == DRT::Element::nurbs9)
+        dserror("2D Nurbs are not available in the 3D framework");
+      else if (higher_order_ele)
       {
         DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2
           (funct_  ,
@@ -12286,6 +12284,8 @@ double DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ShapeFunctionsFirstAndSecon
            distype );
       }
     }
+    // TODO
+    // Take a closer look to the calculation of Jacobian, ... (performance)
 
     // get transposed Jacobian matrix and determinant
     //
@@ -12778,9 +12778,9 @@ double DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ShapeFunctionsFirstAndSecon
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
   Fluid3*                                      ele            ,
-  //const LINALG::Matrix<3,iel>                & edispnp        ,
-  //const LINALG::Matrix<3,iel>                & evelaf         ,
-  //const LINALG::Matrix<3,iel>                & fsevelaf       ,
+  const LINALG::Matrix<nsd_,iel>                & edispnp        ,
+  const LINALG::Matrix<nsd_,iel>                & evelaf         ,
+  const LINALG::Matrix<nsd_,iel>                & fsevelaf       ,
   const std::vector<Epetra_SerialDenseVector>& myknots        ,
   const double                               & timealphaF     ,
   double                                     & hk             ,
@@ -12794,6 +12794,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
   double                                     & Cs_delta_sq    ,
   double                                     & visceff        )
 {
+
+  // TODO
+  // only a 3D function
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -13350,16 +13353,19 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::InterpolateToGausspoint(
   Fluid3*                                     ele             ,
-  //const LINALG::Matrix<3,iel>               & egridvaf        ,
-  //const LINALG::Matrix<3,iel>               & evelnp          ,
-  //const LINALG::Matrix<iel,1>               & eprenp          ,
-  //const LINALG::Matrix<3,iel>               & eaccam          ,
-  //const LINALG::Matrix<3,iel>               & evelaf          ,
-  //const LINALG::Matrix<3,iel>               & fsevelaf        ,
+  const LINALG::Matrix<nsd_,iel>               & egridvelaf        ,
+  const LINALG::Matrix<nsd_,iel>               & evelnp          ,
+  const LINALG::Matrix<iel,1>               & eprenp          ,
+  const LINALG::Matrix<nsd_,iel>               & eaccam          ,
+  const LINALG::Matrix<nsd_,iel>               & evelaf          ,
+  const LINALG::Matrix<nsd_,iel>               & fsevelaf        ,
   const double                              & visceff         ,
   const enum Fluid3::FineSubgridVisc          fssgv           ,
   const bool                                  higher_order_ele)
 {
+  // TODO
+  // only a 3D function -> Interpolating may influence the calculation speed
+
   // get intermediate accelerations (n+alpha_M,i) at integration point
   //
   //                 +-----
@@ -13371,7 +13377,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::InterpolateToGausspoint(
   //
   // i         : space dimension u/v/w
   //
-  for(int rr=0;rr<nsd_;++rr)
+  for(int rr=0;rr<3;++rr)
   {
     accintam_(rr)=funct_(0)*eaccam(rr,0);
     for(int nn=1;nn<iel;++nn)
@@ -13389,7 +13395,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::InterpolateToGausspoint(
   //                 +-----
   //                 node j
   //
-  for(int rr=0;rr<nsd_;++rr)
+  for(int rr=0;rr<3;++rr)
   {
     velintaf_(rr)=funct_(0)*evelaf(rr,0);
     for(int nn=1;nn<iel;++nn)
@@ -13408,7 +13414,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::InterpolateToGausspoint(
   //                node j
   //
   // required for computation of tauC
-  for(int rr=0;rr<nsd_;++rr)
+  for(int rr=0;rr<3;++rr)
   {
     velintnp_(rr)=funct_(0)*evelnp(rr,0);
     for(int nn=1;nn<iel;++nn)
@@ -13428,7 +13434,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::InterpolateToGausspoint(
     //                 +-----
     //                 node j
     //
-    for(int rr=0;rr<nsd_;++rr)
+    for(int rr=0;rr<3;++rr)
     {
       bodyforceaf_(rr)=funct_(0)*edeadaf_(rr,0);
       for(int nn=1;nn<iel;++nn)
@@ -13446,7 +13452,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::InterpolateToGausspoint(
     //       n+af       n+af
     //      f    (x) = f     = onst.
     //
-    for(int rr=0;rr<nsd_;++rr)
+    for(int rr=0;rr<3;++rr)
     {
       bodyforceaf_(rr)=edeadaf_(rr,0);
     }
@@ -13477,7 +13483,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::InterpolateToGausspoint(
   //
   // i : direction of derivative
   //
-  for(int rr=0;rr<nsd_;++rr)
+  for(int rr=0;rr<3;++rr)
   {
     pderxynp_(rr)=derxy_(rr,0)*eprenp(0);
     for(int nn=1;nn<iel;++nn)
@@ -13497,7 +13503,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::InterpolateToGausspoint(
   //
   // j : direction of derivative x/y/z
   //
-  for(int rr=0;rr<nsd_;++rr)
+  for(int rr=0;rr<3;++rr)
   {
     for(int mm=0;mm<nsd_;++mm)
     {
@@ -13518,9 +13524,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::InterpolateToGausspoint(
   //         j      +-----      j
   //                node k
   //
-  for(int rr=0;rr<nsd_;++rr)
+  for(int rr=0;rr<3;++rr)
   {
-    for(int mm=0;mm<nsd_;++mm)
+    for(int mm=0;mm<3;++mm)
     {
       vderxynp_(rr,mm)=derxy_(mm,0)*evelnp(rr,0);
       for(int nn=1;nn<iel;++nn)
@@ -13542,7 +13548,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::InterpolateToGausspoint(
   divunp_ = (vderxynp_(0,0)+vderxynp_(1,1)+vderxynp_(2,2));
 
   // get ale convective velocity (n+alpha_F,i) at integration point
-  for(int rr=0;rr<nsd_;++rr)
+  for(int rr=0;rr<3;++rr)
   {
     aleconvintaf_(rr)=velintaf_(rr);
   }
@@ -13560,7 +13566,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::InterpolateToGausspoint(
     //                 node j
     //
 
-    for(int rr=0;rr<nsd_;++rr)
+    for(int rr=0;rr<3;++rr)
     {
       u_G_af_(rr)=funct_(0)*egridvelaf(rr,0);
       for(int nn=1;nn<iel;++nn)
