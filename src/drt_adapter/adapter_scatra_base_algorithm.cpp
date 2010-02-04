@@ -131,11 +131,6 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // -------------------sublist for electrochemistry-specific parameters
   if (genprob.probtyp == prb_elch)
   {
-    // Electrochemistry is always a nonlinear problem!
-    if (getIntegralValue<INPAR::SCATRA::SolverType>(scatradyn,"SOLVERTYPE")
-        != INPAR::SCATRA::solvertype_nonlinear)
-      dserror("Set parameter SOLVERTYPE = nonlinear for electrochemistry!");
-
     // flag for natural convection
     extraparams->set<INPAR::ELCH::NatConv>("Natural Convection",
         Teuchos::getIntegralValue<INPAR::ELCH::NatConv>(prbdyn,"NATURAL_CONVECTION"));

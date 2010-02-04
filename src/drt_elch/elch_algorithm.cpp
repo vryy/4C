@@ -270,7 +270,7 @@ void ELCH::Algorithm::DoTransportStep()
 
   // solve coupled transport equations for ion concentrations and
   // electric potential
-  ScaTraField().NonlinearSolve();
+  ScaTraField().Solve();
 
   return;
 }

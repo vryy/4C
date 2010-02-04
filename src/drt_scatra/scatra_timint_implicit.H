@@ -95,17 +95,20 @@ public:
   /// do explicit predictor step (-> better starting value for nonlinear solver)
   virtual void ExplicitPredictor() = 0;
 
-  /// contains the nonlinear iteration loop
-  void NonlinearSolve();
-
   /// check convergence (or divergence) of nonlinear iteration
   bool AbortNonlinIter(const int itnum, const int itmax, const double ittol, double& actresidual);
 
   /// prepare Krylov space projection
   void PrepareKrylovSpaceProjection();
 
-  /// solve linear system
+  /// general solver call for coupled algorithms (decides if linear/nonlinear internally)
   void Solve();
+
+  /// solve linear system
+  void LinearSolve();
+
+  /// contains the nonlinear iteration loop
+  void NonlinearSolve();
 
   /// call elements to calculate system matrix and rhs and assemble
   void AssembleMatAndRHS();

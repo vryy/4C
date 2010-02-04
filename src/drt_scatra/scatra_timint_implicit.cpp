@@ -161,8 +161,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   numscal_ = discret_->NumDof(discret_->lRowNode(0));
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
-    // number of concentrations transported is numdof-1
-    numscal_ -= 1;
+    if (numscal_ > 1) // we have at least two ion species + el. potential
+    {
+      // number of concentrations transported is numdof-1
+      numscal_ -= 1;
+    }
     // set up the concentration-el.potential splitter
     FLD::UTILS::SetupFluidSplit(*discret_,numscal_,splitter_);
   }
@@ -366,6 +369,10 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // screen output (has to come after SetInitialField)
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
+    // a safety check for the solver type
+    if ((numscal_ > 1) && (!nonlinear_))
+        dserror("Solver type has to be set to >>nonlinear<< for ion transport.");
+
     frt_ = 96485.3399/(8.314472 * extraparams_->get<double>("TEMPERATURE"));
 
     double sigma = ComputeConductivity(); // every processor has to do this call
@@ -469,8 +476,7 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
     // -------------------------------------------------------------------
     //                  solve nonlinear / linear equation
     // -------------------------------------------------------------------
-    if (nonlinear_) NonlinearSolve();
-    else            Solve();
+    Solve();
 
 //REINHARD
     // -------------------------------------------------------------------
@@ -962,9 +968,21 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
 
 
 /*----------------------------------------------------------------------*
- | contains the linear solver                                  vg 08/09 |
+ | contains the call of linear/nonlinear solver               gjb 02/10 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::Solve()
+{
+  if (nonlinear_) NonlinearSolve();
+  else            LinearSolve();
+  //that's all
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | contains the linear solver                                  vg 08/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::LinearSolve()
 {
   // -------------------------------------------------------------------
   //                        output to screen
@@ -1029,9 +1047,14 @@ void SCATRA::ScaTraTimIntImpl::Solve()
 
     if (myrank_ == 0)
     {
-      printf("+-------------+-------------+\n");
-      printf("|  increment  | %10.3E  |\n",incnorm_L2/scalnorm_L2);
-      printf("+-------------+-------------+\n");
+      printf("+----------------------+-------------+\n");
+      {
+        if (scalnorm_L2 > EPS10)
+          printf("|  relative increment  | %10.3E  |\n",incnorm_L2/scalnorm_L2);
+        else // prevent division by an almost zero value
+          printf("|  absolute increment  | %10.3E  |\n",incnorm_L2);
+      }
+      printf("+----------------------+-------------+\n");
     }
   }
   else
