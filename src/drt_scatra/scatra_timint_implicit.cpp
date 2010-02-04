@@ -1050,10 +1050,11 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
       printf("+----------------------+-------------+\n");
       {
         if (scalnorm_L2 > EPS10)
-          printf("|  relative increment  | %10.3E  |\n",incnorm_L2/scalnorm_L2);
+          printf("|  relative increment (L2 norm) | %10.3E  |\n",incnorm_L2/scalnorm_L2);
         else // prevent division by an almost zero value
-          printf("|  absolute increment  | %10.3E  |\n",incnorm_L2);
+          printf("|  absolute increment (L2 norm) | %10.3E  |\n",incnorm_L2);
       }
+      printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
       printf("+----------------------+-------------+\n");
     }
   }
