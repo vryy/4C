@@ -102,6 +102,7 @@ DRT::ELEMENTS::Fluid2Stationary<distype>::Fluid2Stationary()
     res_old_(),
     conv_resM_(),
     xder2_(),
+    deltadens_(0.0),
     rotsymmpbc_(Teuchos::null)
 {
   rotsymmpbc_= Teuchos::rcp(new FLD::RotationallySymmetricPeriodicBC<distype>());
@@ -171,6 +172,9 @@ int DRT::ELEMENTS::Fluid2Stationary<distype>::Evaluate(
   bool conservative = false;
   if(newtonstr=="Newton")          newton       = true;
   if(convformstr =="conservative") conservative = true;
+  INPAR::FLUID::PhysicalType physicaltype = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
+  if ((physicaltype != INPAR::FLUID::boussinesq) and (physicaltype != INPAR::FLUID::incompressible))
+    dserror("physical type not supported in stationary FLUID2 implementation.");
 
   // --------------------------------------------------
   // set parameters for stabilisation
@@ -234,6 +238,19 @@ int DRT::ELEMENTS::Fluid2Stationary<distype>::Evaluate(
   ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
   const double Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
 
+  // get scalar field as well
+  LINALG::Matrix<numnode,1> escaaf(true);
+  RefCountPtr<const Epetra_Vector> scaaf = discretization.GetState("scaaf");
+  if (scaaf==null)
+    dserror("Cannot get state vector 'scaaf'.");
+  // extract local values from the global vector
+  vector<double> myscaaf(lm.size());
+  DRT::UTILS::ExtractMyValues(*scaaf,myscaaf,lm);
+  for (int i=0;i<numnode;++i)
+  {
+    escaaf(i) = myscaaf[2+(i*3)];
+  }
+
   // calculate element coefficient matrix and rhs
   Sysmat(ele,
          evelnp,
@@ -253,7 +270,9 @@ int DRT::ELEMENTS::Fluid2Stationary<distype>::Evaluate(
          cstab,
          cross,
          reynolds,
-         Cs);
+         Cs,
+         physicaltype,
+         escaaf);
 
   //rotate matrices and vectors if we have a rotationally symmetric problem
   rotsymmpbc_->RotateMatandVecIfNecessary(elemat1,elemat2,elevec1);
@@ -308,7 +327,9 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
   const enum Fluid2::StabilisationAction  cstab,
   const enum Fluid2::StabilisationAction  cross,
   const enum Fluid2::StabilisationAction  reynolds,
-  const double                            Cs
+  const double                            Cs,
+  const enum INPAR::FLUID::PhysicalType   physicaltype,
+  const LINALG::Matrix<iel,1>&            escaaf
   )
 {
 
@@ -445,6 +466,14 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
     // get bodyforce in gausspoint
     bodyforce_.Multiply(edeadng_,funct_);
 
+    // Boussinesq approximation: Calculation of delta rho
+    // uses funct_, thus we perform this at this late place!
+    if (physicaltype == INPAR::FLUID::boussinesq)
+    {
+      const double density_0 = actmat->Density();
+      deltadens_ =  (funct_.Dot(escaaf)- density_0)/ density_0;
+    }
+
     // perform integration for entire matrix and rhs
 
     // stabilisation parameter
@@ -457,7 +486,13 @@ void DRT::ELEMENTS::Fluid2Stationary<distype>::Sysmat(
 
     /*------------------------- evaluate rhs vector at integration point ---*/
     // histvectors are always zero in stationary case (!):
-    rhsmom_.Update(bodyforce_);
+
+    // in the case of a Boussinesq approximation: f = ((rho - rho_0)/rho_0) *g
+    // else:                                      f = rho * g
+    if (physicaltype == INPAR::FLUID::boussinesq)
+      rhsmom_.Update(deltadens_,bodyforce_);  // a scaled copy
+    else
+      rhsmom_ = bodyforce_;  //copy (rho == 1)
 
     /*----------------- get numerical representation of single operators ---*/
     /*--- convective part u_old * grad (funct) --------------------------*/

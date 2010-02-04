@@ -23,6 +23,7 @@ Maintainer: Volker Gravemeier
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 
 namespace DRT
@@ -164,7 +165,9 @@ namespace ELEMENTS
                 const enum Fluid2::StabilisationAction   cstab,
                 const enum Fluid2::StabilisationAction   cross,
                 const enum Fluid2::StabilisationAction   reynolds,
-                const double                             Cs);
+                const double                             Cs,
+                const enum INPAR::FLUID::PhysicalType    physicaltype,
+                const LINALG::Matrix<iel,1>&             escaaf);
 
     /// Internal implementation class for specific fluid element
     static Fluid2Stationary* StationaryImpl(DRT::ELEMENTS::Fluid2* f2);
@@ -208,13 +211,14 @@ namespace ELEMENTS
     LINALG::Matrix<3,1>   tau_;       /// tau_Mu, tau_Mp, tau_C
     LINALG::Matrix<4,iel> viscs2_;    /// viscous term including 2nd derivatives
     LINALG::Matrix<iel,1> conv_c_;    /// linearisation of convect, convective part
-    double vdiv_;                      /// velocity divergence
+    double vdiv_;                     /// velocity divergence
     LINALG::Matrix<2,1>   rhsmom_;    /// momentum equation right hand side
     LINALG::Matrix<2,1>   conv_old_;
     LINALG::Matrix<2,1>   visc_old_;
     LINALG::Matrix<2,1>   res_old_;
     LINALG::Matrix<iel,1> conv_resM_;
     LINALG::Matrix<3,2>   xder2_;
+    double deltadens_;                /// delta density for Boussinesq Approximation
     RCP<FLD::RotationallySymmetricPeriodicBC<distype> > rotsymmpbc_; /// rotsymm periodic bc's
   };
 
