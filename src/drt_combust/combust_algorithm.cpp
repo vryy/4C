@@ -25,6 +25,7 @@ Maintainer: Florian Henke
 #include "../drt_geometry/integrationcell.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_io/io_gmsh.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 06/08 |
@@ -99,8 +100,11 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
 
   stepreinit_ = true;
   ReinitializeGfunc();
-  // reset phin vector in ScaTra time integration scheme to phinp vector
-  ScaTraField().SetPhin(ScaTraField().Phinp());
+  if (Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn,"TIMEINT") != INPAR::FLUID::timeint_stationary)
+  {
+    // reset phin vector in ScaTra time integration scheme to phinp vector
+    ScaTraField().SetPhin(ScaTraField().Phinp());
+  }
   // pointer not needed any more
   stepreinit_ = false;
 
@@ -129,10 +133,8 @@ COMBUST::Algorithm::~Algorithm()
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::TimeLoop()
 {
-#ifndef PARALLEL
   // compute initial volume of minus domain
-  const double volume_start = interfacehandle_->ComputeVolumeMinus();
-#endif
+  const double volume_start = ComputeVolume();
 
   // time loop
   while (NotFinished())
@@ -159,20 +161,18 @@ void COMBUST::Algorithm::TimeLoop()
 
     if (stepbeforereinit_ or stepreinit_)
     {
-#ifndef PARALLEL
       // compute current volume of minus domain
-      const double volume_current_before = interfacehandle_->ComputeVolumeMinus();
+      const double volume_current_before = ComputeVolume();
       // print mass conservation check on screen
       printMassConservationCheck(volume_start, volume_current_before);
-#endif
+
       // reinitialize G-function
       ReinitializeGfunc();
-#ifndef PARALLEL
+
       // compute current volume of minus domain
-      const double volume_current_after = interfacehandle_->ComputeVolumeMinus();
+      const double volume_current_after = ComputeVolume();
       // print mass conservation check on screen
       printMassConservationCheck(volume_start, volume_current_after);
-#endif
     }
 
     // update all field solvers
@@ -181,23 +181,19 @@ void COMBUST::Algorithm::TimeLoop()
     // write output to screen and files
     Output();
 
-#ifndef PARALLEL
   // compute current volume of minus domain
-  const double volume_current = interfacehandle_->ComputeVolumeMinus();
+  const double volume_current = ComputeVolume();
   // print mass conservation check on screen
   printMassConservationCheck(volume_start, volume_current);
-#endif
   } // time loop
 
-#ifndef PARALLEL
   // compute final volume of minus domain
-  const double volume_end = interfacehandle_->ComputeVolumeMinus();
+  const double volume_end = ComputeVolume();
   // print mass conservation check on screen
   printMassConservationCheck(volume_start, volume_end);
-#endif
 
   return;
-} // TimeLoop()
+}
 
 /*------------------------------------------------------------------------------------------------*
  | public: algorithm for a stationary combustion problem                              henke 10/09 |
@@ -230,10 +226,8 @@ void COMBUST::Algorithm::SolveStationaryProblem()
   if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_stationary)
     dserror("Scatra time integration scheme is not stationary");
 
-#ifndef PARALLEL
   // compute initial volume of minus domain
-  const double volume_start = interfacehandle_->ComputeVolumeMinus();
-#endif
+  const double volume_start = ComputeVolume();
 
   //--------------------------------------
   // loop over fluid and G-function fields
@@ -268,7 +262,6 @@ void COMBUST::Algorithm::SolveStationaryProblem()
   //         time step 0.
   //      -> the time and the time step have to be advanced even though this makes no physical sense
   //         for a stationary computation
-
   //IncrementTimeAndStep();
   //FluidField().PrepareTimeStep();
   //ScaTraField().PrepareTimeStep();
@@ -276,12 +269,10 @@ void COMBUST::Algorithm::SolveStationaryProblem()
   // write output to screen and files (and Gmsh)
   Output();
 
-#ifndef PARALLEL
   // compute final volume of minus domain
-  const double volume_end = interfacehandle_->ComputeVolumeMinus();
+  const double volume_end = ComputeVolume();
   // print mass conservation check on screen
   printMassConservationCheck(volume_start, volume_end);
-#endif
 
   return;
 }
@@ -862,7 +853,7 @@ void COMBUST::Algorithm::DoGfuncField()
   // solve nonlinear convection-diffusion equation
   ScaTraField().NonlinearSolve();
   // solve linear convection-diffusion equation
-//  ScaTraField().Solve();
+//  ScaTraField().LinearSolve();
 
   return;
 }
@@ -929,15 +920,16 @@ void COMBUST::Algorithm::Output()
 
 void COMBUST::Algorithm::printMassConservationCheck(const double volume_start, const double volume_end)
 {
-  // compute mass loss
-  if (volume_start == 0.0)
-    dserror("processor without 'minus domain' -> division by zero checking mass conservation!");
-  double massloss = fabs(volume_start - volume_end) / volume_start *100;
-  // TODO seems not to work reliably; error occurs in line above
-  if (std::isnan(massloss))
-    dserror("NaN detected in mass conservation check");
-  if (Comm().MyPID()==0)
+  if (Comm().MyPID() == 0)
   {
+    // compute mass loss
+    if (volume_start == 0.0)
+      dserror(" there is no 'minus domain'! -> division by zero checking mass conservation");
+    double massloss = fabs(volume_start - volume_end) / volume_start *100;
+    // TODO seems not to work reliably; error occurs in line above
+    if (std::isnan(massloss))
+      dserror("NaN detected in mass conservation check");
+
     std::cout << "---------------------------------------" << endl;
     std::cout << "           mass conservation           " << endl;
     std::cout << " initial mass: " << volume_start << endl;
@@ -946,5 +938,23 @@ void COMBUST::Algorithm::printMassConservationCheck(const double volume_start, c
     std::cout << "---------------------------------------" << endl;
   }
 }
+
+/*------------------------------------------------------------------------------------------------*
+ | compute volume on all processors                                                   henke 02/10 |
+ *------------------------------------------------------------------------------------------------*/
+double COMBUST::Algorithm::ComputeVolume()
+{
+  // compute negative volume of discretization on this processor
+  double myvolume = interfacehandle_->ComputeVolumeMinus();
+
+  double sumvolume = 0.0;
+
+  // sum volumes on all processors
+  // remark: ifndef PARALLEL sumvolume = myvolume
+  Comm().SumAll(&myvolume,&sumvolume,1);
+
+  return sumvolume;
+}
+
 
 #endif // #ifdef CCADISCRET

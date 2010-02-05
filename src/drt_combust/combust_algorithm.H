@@ -101,6 +101,9 @@ namespace COMBUST
     /// write output
     void Output();
 
+    /// compute volume on all processors
+    double ComputeVolume();
+
     /// print mass conservation check on screen
     void printMassConservationCheck(const double volume_start, const double volume_end);
 

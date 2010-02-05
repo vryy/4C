@@ -262,12 +262,16 @@ void COMBUST::InterfaceHandleCombust::UpdateInterfaceHandle()
  *------------------------------------------------------------------------------------------------*/
 const double COMBUST::InterfaceHandleCombust::ComputeVolumeMinus()
 {
+  //dserror("not conservative in parallel: loop over row elements -> get cells belonging to this element -> loop over cells");
+
   double volume = 0.0;
-  // loop over map entries for elements
-  for(std::map<int,GEO::DomainIntCells>::iterator itermap=elementalDomainIntCells_.begin(); itermap!=elementalDomainIntCells_.end(); ++itermap)
+
+  for (int iele=0; iele<xfemdis_->NumMyRowElements(); ++iele)
   {
-    // loop over integration cells for this element
-    for(GEO::DomainIntCells::iterator itercell=itermap->second.begin(); itercell!=itermap->second.end(); itercell++)
+    const DRT::Element* ele = xfemdis_->lRowElement(iele);
+    const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(ele);
+    GEO::DomainIntCells::const_iterator itercell;
+    for(itercell = elementDomainIntCells.begin(); itercell != elementDomainIntCells.end(); ++itercell )
     {
       // pick cells belonging to minus domain
       if (itercell->getDomainPlus() == false)
