@@ -81,6 +81,12 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
    * class. InterfaceHandle only accepts "const Teuchos::RCP<DRT::Dis...>"            henke 01/09 */
   const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
   const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
+  
+  velnpip_ = rcp(new Epetra_Vector(*fluiddis->DofRowMap()),true);
+  velnpi_ = rcp(new Epetra_Vector(*fluiddis->DofRowMap()),true);
+  
+  phinpip_ = rcp(new Epetra_Vector(*gfuncdis->DofRowMap()),true);
+  phinpi_ = rcp(new Epetra_Vector(*gfuncdis->DofRowMap()),true);
 
   /*----------------------------------------------------------------------------------------------*
    * initialize all data structures needed for the combustion algorithm
@@ -92,12 +98,13 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   // construct initial flame front
   flamefront_ = rcp(new COMBUST::FlameFront(fluiddis,gfuncdis));
   flamefront_->ProcessFlameFront(combustdyn_,ScaTraField().Phinp());
-
+  
   // construct interfacehandle using initial flame front
   interfacehandle_ = rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefront_));
   // get integration cells according to initial flame front
   interfacehandle_->UpdateInterfaceHandle();
 
+//  std::cout << "No initialization of LevelSet for stationary problem" << std::endl;
   stepreinit_ = true;
   ReinitializeGfunc();
   if (Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn,"TIMEINT") != INPAR::FLUID::timeint_stationary)
@@ -111,13 +118,6 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   // export interface information to the fluid time integration
   // remark: this is essential here, if DoFluidField() is not called in Timeloop() (e.g. for pure Scatra problems)
   FluidField().ImportInterface(interfacehandle_);
-
-  velnpip_ = rcp(new Epetra_Vector(*fluiddis->DofRowMap()),true);
-  velnpi_ = rcp(new Epetra_Vector(*fluiddis->DofRowMap()),true);
-
-  // TODO these should be DofRowMaps!
-  phinpip_ = rcp(new Epetra_Vector(*gfuncdis->NodeRowMap()),true);
-  phinpi_ = rcp(new Epetra_Vector(*gfuncdis->NodeRowMap()),true);
 
 }
 
@@ -141,10 +141,22 @@ void COMBUST::Algorithm::TimeLoop()
   {
     // prepare next time step; update field vectors
     PrepareTimeStep();
-
+    
+    // solve G-function first
+    if (combusttype_ == INPAR::COMBUST::combusttype_twophaseflow)
+    {
+    // solve linear G-function equation
+    DoGfuncField();
+    
+    phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
+    
+    // update interface geometry
+    UpdateFGIteration();
+    }
+    
     // Fluid-G-function-Interaction loop
     while (NotConvergedFGI())
-    {
+    {  
       // prepare Fluid-G-function iteration
       PrepareFGIteration();
 
@@ -180,7 +192,7 @@ void COMBUST::Algorithm::TimeLoop()
 
     // write output to screen and files
     Output();
-
+    
   // compute current volume of minus domain
   const double volume_current = ComputeVolume();
   // print mass conservation check on screen
@@ -241,6 +253,7 @@ void COMBUST::Algorithm::SolveStationaryProblem()
     DoFluidField();
 
     // solve (non)linear G-function equation
+    //std::cout << "! WARNING: No DoGfuncField() in SolveStationaryProblem()" << std::endl;
     DoGfuncField();
 
     //reinitialize G-function
@@ -316,6 +329,7 @@ void COMBUST::Algorithm::ReinitializeGfunc()
   // reinitializie what will later be 'phin'
   if (stepbeforereinit_)
   {
+    cout << "reinitializing phin_" << endl;
     phireinitn_ = LINALG::CreateVector(*ScaTraField().Discretization()->DofRowMap(),true);
     // copy phi vector of ScaTra time integration scheme
     *phireinitn_ = *ScaTraField().Phinp();
@@ -330,6 +344,7 @@ void COMBUST::Algorithm::ReinitializeGfunc()
   // reinitialize what will later be 'phinp'
   if (stepreinit_)
   {
+    cout << "reinitializing phinp_" << endl;
     // reinitialize G-function (level set) field
     COMBUST::Reinitializer reinitializer(
         combustdyn_,
@@ -635,8 +650,10 @@ bool COMBUST::Algorithm::NotConvergedFGI()
 
   bool notconverged = true;
 
-  if (fgiter_ < fgitermax_)
+  if (combusttype_ == INPAR::COMBUST::combusttype_twophaseflow)
   {
+//  if (fgiter_ < fgitermax_)
+//  {
 //      if (fgiter_ == 0)
 //      {
 //
@@ -644,65 +661,78 @@ bool COMBUST::Algorithm::NotConvergedFGI()
 //      else if (fgiter_ == 1)
 //      {
 //    	  if (velnpip_->MyLength() != FluidField().ExtractInterfaceVeln()->MyLength())
-//    	    dserror("vectors must have the same length");
+//    	    dserror("vectors must have the same length 1");
 //    	  velnpip_->Update(1.0,*(FluidField().ExtractInterfaceVeln()),0.0);
-//    	  phinpip_->Update(1.0,*(flamefront_->Phinp()),0.0);
-//
-//    	  if (fgiter_ == fgitermax_)
-//    		  notconverged = false;
+//    	  phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
+//    	  
+//          if (fgiter_ == fgitermax_)
+//        	notconverged = false;
+//    	  
 //      }
-//      else
-//      {
+      if (fgiter_ > 0) //else
+      {
+//          double velnormL2 = 1.0;
+          double gfuncnormL2 = 1.0;
+          
 //    	  velnpi_->Update(1.0,*velnpip_,0.0);
-//    	  phinpi_->Update(1.0,*phinpip_,0.0);
+    	  phinpi_->Update(1.0,*phinpip_,0.0);
 //    	  velnpip_->Update(1.0,*(FluidField().ExtractInterfaceVeln()),0.0);
-//    	  phinpip_->Update(1.0,*(flamefront_->Phinp()),0.0);
-//
-//    	  fgvelnormL2_ = 1.0;
-//    	  fggfuncnormL2_ = 1.0;
-//
+//    	  velnpip_->Norm2(&velnormL2);
+    	  phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
+    	  phinpip_->Norm2(&gfuncnormL2);
+    	  
+//          if (velnormL2 < 1e-5) velnormL2 = 1.0;
+          if (gfuncnormL2 < 1e-5) gfuncnormL2 = 1.0;
+
+//    	  fgvelnormL2_ = 0.0;
+    	  fggfuncnormL2_ = 0.0;
+
 //    	  Teuchos::RCP<Epetra_Vector> incvel = rcp(new Epetra_Vector(velnpip_->Map()),true);
 //    	  if (incvel->MyLength() != FluidField().ExtractInterfaceVeln()->MyLength())
-//    	    dserror("vectors must have the same length");
+//    	    dserror("vectors must have the same length 2");
 //    	  incvel->Update(1.0,*velnpip_,-1.0,*velnpi_,0.0);
 //    	  incvel->Norm2(&fgvelnormL2_);
-//
-//    	  Teuchos::RCP<Epetra_Vector> incgfunc = rcp(new Epetra_Vector(*ScaTraField().Discretization()->NodeRowMap()),true);
-//    	  incgfunc->Update(1.0,*phinpip_,-1.0,*phinpi_,0.0);
-//    	  incgfunc->Norm2(&fggfuncnormL2_);
-//
-//    	  if (Comm().MyPID()==0)
-//    	  {
-//    	     printf("\n|+---------------------- FGI ----------------------+|");
-//    	     printf("\n|iter/itermax|----tol-----|-fluid inc--|-g-func inc-|");
-//    	     printf("\n|   %2d/%2d    | %10.3E | %10.3E | %10.3E |",fgiter_,fgitermax_,convtol_,fgvelnormL2_,fggfuncnormL2_);
-//    	     printf("\n|+-------------------------------------------------+|\n");
-//    	  }
-//
-//    	  if ((fgvelnormL2_ <= convtol_) and (fggfuncnormL2_ <= convtol_))
-//    	  {
-//             notconverged = false;
-//    	  }
-//          else
-//          {
-//             if (fgiter_ == fgitermax_)
-//             {
-//            	 notconverged = false;
-//            	 if (Comm().MyPID()==0)
-//            	 {
-//            	    printf("|+---------------- not converged ------------------+|");
-//            	    printf("\n|+-------------------------------------------------+|");
-//            	 }
-//             }
-//          }
-//      }
+
+    	  Teuchos::RCP<Epetra_Vector> incgfunc = rcp(new Epetra_Vector(*ScaTraField().Discretization()->NodeRowMap()),true);
+    	  incgfunc->Update(1.0,*phinpip_,-1.0,*phinpi_,0.0);
+    	  incgfunc->Norm2(&fggfuncnormL2_);
+
+    	  if (Comm().MyPID()==0)
+    	  {
+    	     printf("\n|+------------------------ FGI ------------------------+|");
+    	     printf("\n|iter/itermax|----tol-[Norm]--|-fluid inc--|-g-func inc-|");
+    	     printf("\n|   %2d/%2d    | %10.3E[L2] | ---------- | %10.3E |",fgiter_,fgitermax_,convtol_,fggfuncnormL2_/gfuncnormL2);
+    	     printf("\n|+-----------------------------------------------------+|\n");
+    	  }
+
+    	  if (fggfuncnormL2_/gfuncnormL2 <= convtol_) //((fgvelnormL2_/velnormL2 <= convtol_) and (fggfuncnormL2_/gfuncnormL2 <= convtol_))
+    	  {
+             notconverged = false;
+    	  }
+          else
+          {
+             if (fgiter_ == fgitermax_)
+             {
+            	 notconverged = false;
+            	 if (Comm().MyPID()==0)
+            	 {
+            	    printf("|+---------------- not converged ----------------------+|");
+            	    printf("\n|+-----------------------------------------------------+|\n");
+            	 }
+             }
+          }
+      }
+//  }
+//  else
+//  {
+//    // added by me 21/10/09
+//    notconverged = false;
+//  }
   }
   else
   {
-    // added by me 21/10/09
     notconverged = false;
   }
-
   return notconverged;
 }
 
@@ -800,12 +830,21 @@ void COMBUST::Algorithm::DoGfuncField()
   {
     // for two-phase flow, the fluid velocity field is continuous; it can be directly transferred to
     // the scalar transport field
+
     ScaTraField().SetVelocityField(
       FluidField().ExtractInterfaceVeln(),
       Teuchos::null,
       FluidField().DofSet(),
       FluidField().Discretization()
     );
+    
+    // Transfer history vector only for subgrid-velocity  
+//    ScaTraField().SetVelocityField(
+//      FluidField().ExtractInterfaceVeln(),
+//      FluidField().Hist(),
+//      FluidField().DofSet(),
+//      FluidField().Discretization()
+//    );
     break;
   }
   case INPAR::COMBUST::combusttype_premixedcombustion:

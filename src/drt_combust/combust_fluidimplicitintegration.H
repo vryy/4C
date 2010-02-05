@@ -75,6 +75,9 @@ public:
 
   /// get convection velocity vector for transfer to scalar transport field
   const Teuchos::RCP<Epetra_Vector> ConVelnp();
+ 
+  /// get history vector for transfer to scalar transport field
+  const Teuchos::RCP<Epetra_Vector> Hist();
 
   /*!
   \brief do nonlinear iteration, e.g. full Newton, Newton like or fixpoint iteration

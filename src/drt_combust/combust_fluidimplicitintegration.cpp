@@ -537,6 +537,53 @@ const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::ConVelnp()
 }
 
 /*------------------------------------------------------------------------------------------------*
+ | get history vector for transfer to scalar transport field                      rasthofer 01/10 |
+ | needed for subgrid-velocity                                                                    |
+ *------------------------------------------------------------------------------------------------*/
+const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::Hist()
+{
+  // velocity vector has to be transformed from XFEM format to Standard FEM format, because ScaTra
+  // cannot handle XFEM dofs at enriched nodes
+  // remark: has to include pressure, since ScaTraTimIntImpl::SetVelocityField() expects it!
+  std::set<XFEM::PHYSICS::Field> outputfields;
+  outputfields.insert(XFEM::PHYSICS::Velx);
+  outputfields.insert(XFEM::PHYSICS::Vely);
+  outputfields.insert(XFEM::PHYSICS::Velz);
+  outputfields.insert(XFEM::PHYSICS::Pres);
+
+  // TODO: check performance time to built convel vector; if this is costly, it could be stored as
+  //       a private member variable of the time integration scheme, since it is built in two places
+  //       (here in every nonlinear iteration, and in the Output() function after every time step)
+
+  // convection velocity vector
+  Teuchos::RCP<Epetra_Vector> veln = dofmanagerForOutput_->transformXFEMtoStandardVector(
+                                         *state_.veln_, *standarddofset_,
+                                         state_.nodalDofDistributionMap_, outputfields);
+  // acceleration vector
+  Teuchos::RCP<Epetra_Vector> accn = dofmanagerForOutput_->transformXFEMtoStandardVector(
+                                         *state_.accn_, *standarddofset_,
+                                         state_.nodalDofDistributionMap_, outputfields);
+  
+  if (veln->MyLength() != accn->MyLength())
+    dserror("vectors must have the same length");
+  
+  // history vector (OST: linaer combination of veln and accn)
+  Teuchos::RCP<Epetra_Vector> hist = LINALG::CreateVector(*standarddofset_->DofRowMap(),true);
+  
+  if (hist->MyLength() != accn->MyLength())
+    dserror("vectors must have the same length");
+  
+  //TODO 
+  //stationary case (timealgo_== timeint_stationary))
+  if (timealgo_==timeint_one_step_theta)
+    FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(veln,Teuchos::null, accn,timealgo_, dta_, theta_, hist);
+  else
+    dserror("time integration scheme not supported");
+  
+  return hist;
+}
+
+/*------------------------------------------------------------------------------------------------*
  | solve the nonlinear fluid problem                                                  henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
@@ -993,6 +1040,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   }
 
 //  if (discret_->Comm().NumProc() == 1)
+  if (step_ % 5 == 0) //write every 5th time step only
   {
     OutputToGmsh(step_, time_);
   }
@@ -1506,7 +1554,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 //      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnm_), "solution_field_velocity_nm","Velocity Solution (Physical) n-1",false, step, time);
 //      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_), "solution_field_velocity_n","Velocity Solution (Physical) n",false, step, time);
 //      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accn_), "solution_field_acceleration_n","Acceleration Solution (Physical) n",false, step, time);
-      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accnp_), "solution_field_acceleration_np","Acceleration Solution (Physical) n+1",false, step, time);
+//      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accnp_), "solution_field_acceleration_np","Acceleration Solution (Physical) n+1",false, step, time);
     }
   }
 }
