@@ -147,7 +147,6 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
   //compute number of dofs per node (ask the first node)
   int numdofpernode = field->discretization()->NumDof(field->discretization()->lRowNode(0));
 
-  cout<<"COMPUTED DOF IS: "<<numdofpernode<<endl;
   // write results for each transported scalar
   if (numdofpernode == 1)
   {

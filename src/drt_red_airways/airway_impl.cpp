@@ -594,6 +594,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   if(ele->type() == "PoiseuilleResistive")
   {
     const double R = 8.0*PI*visc*dens*L/(pow(ele->getA(),2));
+
     qin = (epnp(0)-epnp(1))/R;
     qout= qin;
   }
@@ -605,12 +606,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   {
     // find Resistance 
     const double R    = 8.0*PI*visc*dens*L/(pow(ele->getA(),2));
-
+ 
     // find Capacitance C
-    const double nue  = 0.5;
-    const double beta = sqrt(M_PI)*ele->gettw()*ele->getEw()/(1.0-pow(nue,2));
-    const double c    = sqrt(beta/(2.0*dens*ele->getA()));
-    const double C    = ele->getA()*L/(dens*pow(c,2));
+    const double C    = 2.0*pow(ele->getA(),2)*L/(ele->getEw()*ele->gettw()*sqrt(M_PI));
+
 
     RefCountPtr<const Epetra_Vector> pn   = discretization.GetState("pn");
     RefCountPtr<const Epetra_Vector> qcn  = discretization.GetState("qcn");
@@ -632,6 +631,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     int    gid = ele->LID();
     double qcnp_val = (2.0*C/dt)*(epnp(0)-epn(0)) - (*qcn)[gid];
     qcnp->ReplaceGlobalValues(1,&qcnp_val,&gid);
+
 
     qout = (epnp(0)-epnp(1))/R;
     qin  = qout + qcnp_val;

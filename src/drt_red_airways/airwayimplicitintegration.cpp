@@ -562,6 +562,12 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output()
     output_.WriteVector("pn",pn_);
     output_.WriteVector("pnp",pnp_);
 
+    // "flow" vectors for capacitances
+    output_.WriteVector("qcnm",qcnm_);
+    output_.WriteVector("qcn",qcn_);
+    output_.WriteVector("qcnp",qcnp_);
+
+
     // write domain decomposition for visualization
     output_.WriteElementData();
   }
@@ -588,6 +594,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step)
   reader.ReadVector(pnp_,"pnp");
   reader.ReadVector(pn_,"pn");
   reader.ReadVector(pnm_,"pnm");
+  reader.ReadVector(qcnp_,"qcnp");
+  reader.ReadVector(qcn_,"qcn");
+  reader.ReadVector(qcnm_,"qcnm");
 
 }//RedAirwayImplicitTimeInt::ReadRestart
 
