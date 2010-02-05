@@ -88,17 +88,17 @@ namespace COMBUST
     /// export boundary integration cells from this proc to parallel distribution
     void ExportFlameFront(std::map<int, GEO::BoundaryIntCells>& myflamefront);
 
-   /// pack boundary integration cells from set into char array
-   void packBoundaryIntCells(
-       const std::map<int, GEO::BoundaryIntCells>& dofkeyset,
-       vector<char>&                               dataSend
-   );
+    /// pack boundary integration cells from set into char array
+    void packBoundaryIntCells(
+        const std::map<int, GEO::BoundaryIntCells>& dofkeyset,
+        vector<char>&                               dataSend
+    );
 
-  /// unpack boundary integration cells from char array
-  void unpackBoundaryIntCells(
-      const vector<char>&                   dataRecv,
-      std::map<int, GEO::BoundaryIntCells>& dofkeyset
-  );
+    /// unpack boundary integration cells from char array
+    void unpackBoundaryIntCells(
+        const vector<char>&                   dataRecv,
+        std::map<int, GEO::BoundaryIntCells>& dofkeyset
+    );
 
 
   private:
@@ -113,8 +113,7 @@ namespace COMBUST
     void RefineFlameFront(const Teuchos::RCP<COMBUST::RefinementCell> cell);
 
     /// find the flame front within a refinement cell according to G-function field
-    void FindFlameFront(
-           const Teuchos::RCP<COMBUST::RefinementCell> cell);
+    void FindFlameFront(const Teuchos::RCP<COMBUST::RefinementCell> cell);
 
     /*!
      * \brief find intersection points of G-function (level set zero iso-surface) with refinement cell edges
