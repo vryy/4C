@@ -300,7 +300,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     
     RCP<Epetra_Vector> ContactNorStress() {return Teuchos::null;}
     RCP<Epetra_Vector> ContactTanStress() {return Teuchos::null;}
-    void DoWriteRestart(RCP<Epetra_Vector>& activetoggle) {}
+    void DoWriteRestart(RCP<Epetra_Vector>& activetoggle, RCP<Epetra_Vector>& sliptoggle) {}
     void InitEvalInterface() {}
     void InitEvalMortar() {}
     void Initialize() {}
@@ -308,6 +308,8 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     void SaveReferenceState(RCP<Epetra_Vector> dis) {}
     void UpdateActiveSet() {}
     void UpdateActiveSetSemiSmooth() {}
+    void EvaluateReferenceState (const RCP<Epetra_Vector> vec){}
+    void EvaluateRelMov() {} 
     
     //@}
         

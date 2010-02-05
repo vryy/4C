@@ -383,12 +383,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   int dim = psize.get<int>("DIM");
 
   // *********************************************************************
-  // FRICTION NOT YET IMPLEMENTED IN drt_contactnew/
-  // *********************************************************************
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT") != INPAR::CONTACT::contact_normal)
-    dserror("ERROR: Friction not yet implemented in drt_contactnew/");
-  
-  // *********************************************************************
   // invalid parameter combinations
   // *********************************************************************
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
@@ -482,14 +476,16 @@ void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output)
 {
   // quantities to be written for restart
   RCP<Epetra_Vector> activetoggle;
-
+  RCP<Epetra_Vector> sliptoggle;
+    
   // quantities to be written for restart
-  GetStrategy().DoWriteRestart(activetoggle);
+  GetStrategy().DoWriteRestart(activetoggle,sliptoggle);
 
   // write restart information for contact
   output.WriteVector("lagrmultold",GetStrategy().LagrMultOld());
   output.WriteVector("activetoggle",activetoggle);
-
+  output.WriteVector("sliptoggle",sliptoggle);
+  
   return;
 }
 
@@ -523,7 +519,7 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   RCP<Epetra_Vector> tangentialstresses = GetStrategy().ContactTanStress();
   RCP<Epetra_Vector> tangentialstressesexp = rcp(new Epetra_Vector(*problem));
   LINALG::Export(*tangentialstresses, *tangentialstressesexp);
-  
+
   // write to output
   output.WriteVector("norcontactstress",normalstressesexp);
   output.WriteVector("tancontactstress",tangentialstressesexp);

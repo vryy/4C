@@ -57,7 +57,8 @@ interface_(interface),
 activesetconv_(false),
 activesetsteps_(1),
 isincontact_(false),
-isselfcontact_(false)
+isselfcontact_(false),
+friction_(false)
 {
   // set potential global self contact status
   // (this is TRUE if at least one contact interface is a self contact interface)
@@ -71,6 +72,10 @@ isselfcontact_(false)
   INPAR::CONTACT::ContactType ctype = Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(params,"CONTACT");
   if (selfcontact > 0 && ctype != INPAR::CONTACT::contact_normal)
     dserror("ERROR: Self contact only implemented for frictionless contact!");
+  
+  // set frictional contact status
+  if (ctype == INPAR::CONTACT::contact_frictional)
+    friction_ = true;
   
   // ------------------------------------------------------------------------
   // setup global accessible Epetra_Maps
@@ -91,6 +96,9 @@ isselfcontact_(false)
     gactivedofs_ = LINALG::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(), false);
     gactiven_ = LINALG::MergeMap(gactiven_, interface_[i]->ActiveNDofs(), false);
     gactivet_ = LINALG::MergeMap(gactivet_, interface_[i]->ActiveTDofs(), false);
+    gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
+    gslipdofs_ = LINALG::MergeMap(gslipdofs_, interface_[i]->SlipDofs(), false);
+    gslipt_ = LINALG::MergeMap(gslipt_, interface_[i]->SlipTDofs(), false);
   }
 
   // setup global non-slave-or-master dof map
@@ -212,6 +220,7 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
   dmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
   mmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
   g_       = LINALG::CreateVector(*gsnoderowmap_, true);
+  jump_    = rcp(new Epetra_Vector(*gsdofrowmap_));
 
   // (re)setup global matrices containing fc derivatives
   lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
@@ -248,6 +257,48 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
   dmatrix_->Complete();
   mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate reference state                                gitterle 01/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::EvaluateReferenceState(const RCP<Epetra_Vector> vec)
+{
+  if (friction_ == false)  
+    return;
+  
+  // set state and do mortar calculation
+  SetState("displacement",vec);
+  InitEvalInterface();
+  InitEvalMortar();
+  
+  // store contact state to contact nodes (active or inactive)
+  StoreNodalQuantities(MORTAR::StrategyBase::activeold);
+
+  // store D and M to old ones
+  StoreDM("old");
+
+  // store nodal entries from D and M to old ones
+  StoreToOld(MORTAR::StrategyBase::dm);
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate relative movement of contact bodies            gitterle 10/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::EvaluateRelMov()
+{
+  
+  if (friction_ == false)
+    return;
+  
+  // do the evaluation on the interface
+  // loop over all slave row nodes on the current interface
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    interface_[i]->EvaluateRelMov();
+    interface_[i]->AssembleRelMov(*jump_);
+  }
   return;
 }
 
@@ -309,6 +360,15 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
         vectorglobal = LagrMultUzawa();
         break;
       }
+      case MORTAR::StrategyBase::activeold:
+      {
+        break;
+      }
+      case MORTAR::StrategyBase::jump:
+      {
+        vectorglobal = Jump();
+        break;
+      }
       default:
         dserror("ERROR: StoreNodalQuantities: Unknown state string variable!");
     } // switch
@@ -317,8 +377,8 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
     RCP<Epetra_Map> sdofrowmap = interface_[i]->SlaveRowDofs();
     RCP<Epetra_Vector> vectorinterface = rcp(new Epetra_Vector(*sdofrowmap));
 
-    if (vectorglobal != null) LINALG::Export(*vectorglobal, *vectorinterface);
-    else dserror("ERROR: StoreNodalQuantities: Null vector handed in!");
+    if (vectorglobal != null) // necessary for case "activeold"
+      LINALG::Export(*vectorglobal, *vectorinterface);
 
     // loop over all slave row nodes on the current interface
     for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
@@ -377,6 +437,16 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
 
           // store updated LM into node
           cnode->lm()[dof] = (*vectorinterface)[locindex[dof]];
+          break;
+        }
+        case MORTAR::StrategyBase::activeold:
+        {
+          cnode->ActiveOld() = cnode->Active();
+          break;
+        }
+        case MORTAR::StrategyBase::jump:
+        {
+          cnode->jump()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         default:
@@ -523,6 +593,49 @@ void CONTACT::CoAbstractStrategy::StoreDM(const string& state)
 }
 
 /*----------------------------------------------------------------------*
+ |  Store nodal quant. to old ones   (last conv. time step)gitterle 02/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::StoreToOld(MORTAR::StrategyBase::QuantityType type)
+{
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // currently this only works safely for 1 interface
+    //if (i>0) dserror("ERROR: StoreDMToNodes: Double active node check needed for n interfaces!");
+
+    // loop over all slave row nodes on the current interface
+    for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
+    {
+      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node)
+        dserror("ERROR: Cannot find node with gid %",gid);
+      CoNode* cnode = static_cast<CoNode*>(node);
+
+      switch (type)
+      {
+        case MORTAR::StrategyBase::dm:
+        {
+          // store D and M entries
+          cnode->StoreDMOld();
+          cnode->StoreDMOldPG();
+          break;
+        }
+        case MORTAR::StrategyBase::pentrac:
+        {
+          // store penalty tractions to old ones
+          cnode->StoreTracOld();
+          break;
+        }
+        default:
+          dserror("ERROR: StoreDMToNodes: Unknown state string variable!");
+      } // switch
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Update and output contact at end of time step             popp 06/09|
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
@@ -549,16 +662,34 @@ void CONTACT::CoAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
   activesetconv_ = false;
   activesetsteps_ = 1;
 
+  //----------------------------------------friction: store history values
+  // in the case of frictional contact we have to store several
+  // informations and quantities at the end of a time step (converged
+  // state) which is needed in the next time step as history
+  // information/quantities. 
+  if(friction_==true)
+  {
+    // store contact state to contact nodes (active or inactive)
+    StoreNodalQuantities(MORTAR::StrategyBase::activeold);
+  
+    // store nodal entries of D and M to old ones
+    StoreToOld(MORTAR::StrategyBase::dm);
+
+    // store nodal entries form penalty contact tractions to old ones
+    StoreToOld(MORTAR::StrategyBase::pentrac);
+  }
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  write restart information for contact                     popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::DoWriteRestart(RCP<Epetra_Vector>& activetoggle)
+void CONTACT::CoAbstractStrategy::DoWriteRestart(RCP<Epetra_Vector>& activetoggle,
+                                                 RCP<Epetra_Vector>& sliptoggle)
 {
   // initalize
   activetoggle = rcp(new Epetra_Vector(*gsnoderowmap_));
+  sliptoggle = rcp(new Epetra_Vector(*gsnoderowmap_));
 
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -577,6 +708,7 @@ void CONTACT::CoAbstractStrategy::DoWriteRestart(RCP<Epetra_Vector>& activetoggl
 
       // set value active / inactive in toggle vector
       if (cnode->Active()) (*activetoggle)[dof]=1;
+      if (cnode->Slip()) (*sliptoggle)[dof]=1;
     }
   }
 
@@ -600,6 +732,8 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   // read restart information on actice set and slip set
   RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*gsnoderowmap_));
   reader.ReadVector(activetoggle,"activetoggle");
+  RCP<Epetra_Vector> sliptoggle =rcp(new Epetra_Vector(*gsnoderowmap_));
+  reader.ReadVector(sliptoggle,"sliptoggle");
 
   // store restart information on active set and slip set
   // into nodes, therefore first loop over all interfaces
@@ -622,6 +756,9 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
 
         // set value active / inactive in cnode
         cnode->Active()=true;
+        
+        // set value stick / slip in cnode
+        if ((*sliptoggle)[dof]==1) cnode->Slip()=true;
       }
     }
   }
@@ -648,7 +785,9 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
 
   // store restart Mortar quantities
   StoreDM("old");
-
+  StoreNodalQuantities(MORTAR::StrategyBase::activeold);
+  StoreToOld(MORTAR::StrategyBase::dm);
+  
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -658,6 +797,9 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
     gactivedofs_ = LINALG::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(), false);
     gactiven_ = LINALG::MergeMap(gactiven_, interface_[i]->ActiveNDofs(), false);
     gactivet_ = LINALG::MergeMap(gactivet_, interface_[i]->ActiveTDofs(), false);
+    gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
+    gslipdofs_ = LINALG::MergeMap(gslipdofs_, interface_[i]->SlipDofs(), false);
+    gslipt_ = LINALG::MergeMap(gslipt_, interface_[i]->SlipTDofs(), false);
   }
 
   // update flag for global contact status
@@ -964,6 +1106,8 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
   // get input parameter ctype
   INPAR::CONTACT::ContactType ctype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(Params(),"CONTACT");
+  INPAR::CONTACT::ContactFrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
 
   if (Comm().MyPID()==0)
     cout << "Active contact set--------------------------------------------------------------\n";
@@ -993,6 +1137,35 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
         nz += cnode->n()[k] * cnode->lm()[k];
         nzold += cnode->n()[k] * cnode->lmold()[k];
       }
+      
+      // friction
+      double zt = 0.0;
+      double ztxi = 0.0;
+      double zteta = 0.0;
+      double jumptxi = 0.0;
+      double jumpteta = 0.0;
+
+      if(ftype == INPAR::CONTACT::friction_tresca ||
+         ftype == INPAR::CONTACT::friction_coulomb ||
+         ftype == INPAR::CONTACT::friction_stick)
+      {
+        // compute tangential parts of Lagrange multiplier and jumps
+        for (int k=0;k<Dim();++k)
+        {
+          ztxi += cnode->txi()[k] * cnode->lm()[k];
+          zteta += cnode->teta()[k] * cnode->lm()[k];
+          jumptxi += cnode->txi()[k] * cnode->jump()[k];
+          jumpteta += cnode->teta()[k] * cnode->jump()[k];
+        }
+
+        zt = sqrt(ztxi*ztxi+zteta*zteta);
+
+        // check for dimensions
+        if (Dim()==2 and abs(jumpteta)>0.0001)
+        {
+          dserror("Error: Jumpteta should be zero for 2D");
+        }
+      }
 
       if (ctype == INPAR::CONTACT::contact_normal)
       {
@@ -1013,7 +1186,13 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
       }
       else
       {
-        // insert friction here
+        if(cnode->Active())
+        {
+          if(cnode->Slip())
+            cout << "SLIP " << gid << " Normal " << nz << " Tangential " << zt << endl;
+          else
+           cout << "STICK " << gid << " Normal " << nz << " Tangential " << zt << endl;
+        }
       }
     }
   }

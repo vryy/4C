@@ -154,10 +154,15 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     // *******************************************************************
     int nrow = SlaveElement().NumNode();
     int ncol = MasterElement().NumNode();
+    int nintrow = SlaveIntElement().NumNode();
     RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
     RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
+
+    // Evaluation of D and M-entries according to Petrov-Galerkin approach
+    RCP<Epetra_SerialDenseMatrix> dsegPG = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),nrow*Dim()));
+    RCP<Epetra_SerialDenseMatrix> msegPG = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),ncol*Dim()));
+    
 #ifdef MORTARPETROVGALERKIN
-    int nintrow = SlaveIntElement().NumNode();
     RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nintrow));
 #else
     RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
@@ -171,7 +176,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
         MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
         MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
         integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),
-                 sintref,mintref,Cells()[i],Auxn(),dseg,mseg,gseg);
+                 sintref,mintref,Cells()[i],Auxn(),dseg,mseg,dsegPG,msegPG,gseg);
       }
       else
         integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),
@@ -201,6 +206,15 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     }
     else
       integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+
+    // assemble the mortar matrices gained in the case of Petrov-Galerkin
+    // approach in the case of frictional contact
+  #ifdef MORTARPETROVGALERKINFRIC
+  #ifdef MORTARONELOOP
+    integrator.AssembleDPG(Comm(),SlaveIntElement(),SlaveElement(),*dsegPG);
+  #endif
+    integrator.AssembleMPG(Comm(),SlaveIntElement(),MasterElement(),*msegPG);
+  #endif
   }
   return true;
 }

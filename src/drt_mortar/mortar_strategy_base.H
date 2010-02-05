@@ -136,7 +136,7 @@ class StrategyBase
     virtual RCP<Epetra_Vector> ContactNorStress() = 0;
     virtual RCP<Epetra_Vector> ContactTanStress() = 0;
     virtual void DoReadRestart(IO::DiscretizationReader& reader, RCP<Epetra_Vector> dis) = 0;
-    virtual void DoWriteRestart(RCP<Epetra_Vector>& activetoggle) = 0;
+    virtual void DoWriteRestart(RCP<Epetra_Vector>& activetoggle,RCP<Epetra_Vector>& sliptoggle) = 0;
     virtual void Evaluate(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) = 0;
     virtual void EvaluateMeshtying(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) = 0;
     virtual void InitEvalInterface() = 0;
@@ -162,6 +162,8 @@ class StrategyBase
     virtual void UpdateActiveSetSemiSmooth() = 0;
     virtual void UpdateAugmentedLagrange() = 0;
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
+    virtual void EvaluateReferenceState(const RCP<Epetra_Vector> vec) = 0;
+    virtual void EvaluateRelMov() = 0;
     
     //@}
 

@@ -300,7 +300,7 @@ void dyn_nlnstructural_drt()
           newcontact = true;
           break;
         case INPAR::CONTACT::contact_frictional:
-          contact = true;
+          newcontact = true;
           break;
         case INPAR::CONTACT::contact_meshtying:
           meshtying = true;

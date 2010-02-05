@@ -85,12 +85,26 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   
   */
   double ConstraintNorm() { return constrnorm_;}
+
+  /*!
+  \brief Return L2-norm of slip constraints
+  
+  */
+  double ConstraintNormTan() { return constrnormtan_;}
+
   
   /*!
   \brief Return initial penalty parameter for non-penetration
   
   */
   double InitialPenalty() { return initialpenalty_;}
+
+  /*!
+  \brief Return initial penalty parameter for tangential direction
+  
+  */
+  double InitialPenaltyTan() { return initialpenaltytan_;}
+
   
   //@}
 
@@ -201,7 +215,9 @@ protected:
     
   RCP<LINALG::SparseMatrix> linzmatrix_;         // global matrix LinZ with derivatives of LM
   double                    constrnorm_;         // L2-norm of normal contact constraints
+  double                    constrnormtan_;      // L2-norm of tangential contact constraints
   double                    initialpenalty_;     // initial penalty parameter
+  double                    initialpenaltytan_;  // initial tangential penalty parameter   
 
 }; // class CoPenaltyStrategy
 }  // namespace CONTACT

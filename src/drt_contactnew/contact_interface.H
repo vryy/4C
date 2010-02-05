@@ -148,6 +148,39 @@ public:
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
+  
+  /*!
+  \brief Get row map of slip nodes (Filled()==true is prerequisite)
+
+  */
+  virtual const RCP<Epetra_Map> SlipNodes() const
+  {
+    if (Filled()) return slipnodes_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+  /*!
+  \brief Get row map of slip node dofs (Filled()==true is prerequisite)
+
+  */
+  virtual const RCP<Epetra_Map> SlipDofs() const
+  {
+    if (Filled()) return slipdofs_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+  /*!
+  \brief Get row map of matrix T for slip nodes (Filled()==true is prerequisite)
+
+  */
+  virtual const RCP<Epetra_Map> SlipTDofs() const
+  {
+    if (Filled()) return slipt_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
 
   //@}
 
@@ -238,6 +271,29 @@ public:
   virtual bool IntegrateKappaPenalty(CONTACT::CoElement& sele);
 
   /*!
+  \brief Evaluate relative movement (jump) of slave nodes
+
+  In the case of frictional contact, an important geometric measure is
+  the relative movement (jump) of the contacting bodies. Here, this is evaluated
+  over change of mortar projection. Also, the directional derivatives are
+  evaluated here.
+
+  */
+  virtual void EvaluateRelMov();
+
+  /*!
+  \brief Assemble jump vector into global jump vector
+
+  */
+  virtual void AssembleRelMov(Epetra_Vector& jumpglobal);
+  
+  /*!
+  \brief Evaluate L2 Norm of tangential contact conditions
+
+  */
+  virtual void EvaluateTangentNorm(double& cnormtan);
+
+  /*!
   \brief Assemble gap-computed lagrange multipliers and nodal linlambda derivatives into nodal quantities
   using the Macauley bracket
 
@@ -257,6 +313,18 @@ public:
 
   */
   virtual void AssembleRegNormalForces(bool& localisincontact, bool& localactivesetchange);
+
+  /*!
+  \brief Assemble geometry dependent, tangential lagrange multipliers
+  and their derivatives in the penalty case
+  */
+  virtual void AssembleRegTangentForcesPenalty();
+
+  /*!
+  \brief Assemble geometry dependent, tangential lagrange multipliers
+  and their derivatives in the augmented lagrange case
+  */
+  virtual void AssembleRegTangentForcesAugmented();
 
   /*
   \brief Assemble LM derivatives into global matrix (penalty strategy)
@@ -319,7 +387,32 @@ public:
   
   */
   virtual void AssembleG(Epetra_Vector& gglobal);
-    
+ 
+  /*!
+  \brief Assemble matrix LinStick containing linearizations
+
+  This method builds an algebraic form of the FULL linearization
+  of the tangential stick condition delta tg = 0. Concretely, this
+  includes assembling the linearizations of the slave side
+  nodal tangents and of the Mortar matrices D  and M.
+
+  */
+  virtual void AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal,
+                                LINALG::SparseMatrix& linstickDISglobal,
+                                Epetra_Vector& linstickRHSglobal);
+  /*!
+  \brief Assemble matrix LinSlip containing linearizations
+
+  This method builds an algebraic form of the FULL linearization
+  of the tangential slip condition. Concretely, this
+  includes assembling the linearizations of the slave side
+  nodal tangents and of the Mortar matrices D  and M.
+
+  */
+  virtual void AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
+                               LINALG::SparseMatrix& linslipDISglobal,
+                               Epetra_Vector& linslipRHSglobal);
+  
   /*!
   \brief Initialize active set of this interface (t=0)
 
@@ -405,6 +498,9 @@ protected:
   RCP<Epetra_Map>             activedofs_;     // row map of all active slave dofs
   RCP<Epetra_Map>             activen_;        // row map of global N-matrix
   RCP<Epetra_Map>             activet_;        // row map of global T-matrix
+  RCP<Epetra_Map>             slipnodes_;      // row map of all slip slave nodes
+  RCP<Epetra_Map>             slipdofs_;       // row map of all slip slave dofs
+  RCP<Epetra_Map>             slipt_;          // row map of part of T-matrix (slip nodes)
 
   RCP<SelfBinaryTree>         binarytreeself_; // binary tree for self contact search
 

@@ -171,6 +171,8 @@ public:
      RCP<MORTAR::Intcell> cell, double* auxn,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
+     RCP<Epetra_SerialDenseMatrix> dsegPG,
+     RCP<Epetra_SerialDenseMatrix> msegPG,
      RCP<Epetra_SerialDenseVector> gseg);
     
   //@}
@@ -216,6 +218,24 @@ public:
                    const vector<map<int,double> >& derivauxn,
                    const vector<map<int,double> >& derivgp);
   
+  /*!
+  \brief Assemble D contribution of current overlap into slave nodes
+
+  */
+  bool AssembleDPG(const Epetra_Comm& comm,
+                 MORTAR::MortarElement& sele,
+                 MORTAR::MortarElement& mele,
+                 Epetra_SerialDenseMatrix& D_seg);
+
+  /*!
+  \brief Assemble M contribution of current overlap into slave nodes
+
+  */
+  bool AssembleMPG(const Epetra_Comm& comm,
+                   MORTAR::MortarElement& sele,
+                   MORTAR::MortarElement& mele,
+                   Epetra_SerialDenseMatrix& M_seg);
+
   //@}
    
 protected:

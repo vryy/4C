@@ -1498,10 +1498,16 @@ bool MORTAR::MortarIntegrator::AssembleD(const Epetra_Comm& comm,
           {
             double minusval = -val;
             snode->AddMValue(sdof,col,minusval);
+#ifndef MORTARPETROVGALERKINFRIC            
+            snode->AddMNode(mnode->Id());
+#endif
           }
           else
           {	
             snode->AddDValue(sdof,col,val);
+#ifndef MORTARPETROVGALERKINFRIC   
+            snode->AddSNode(mnode->Id());
+#endif
           }  
         }
       }
@@ -1577,6 +1583,9 @@ bool MORTAR::MortarIntegrator::AssembleM(const Epetra_Comm& comm,
           double val = mseg(slave*sndof+sdof,master*mndof+mdof);
           snode->AddMValue(sdof,col,val);
         }
+#ifndef MORTARPETROVGALERKINFRIC           
+        snode->AddMNode(mnode->Id());
+#endif        
       }
     }
     /*

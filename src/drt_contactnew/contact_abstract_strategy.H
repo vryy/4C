@@ -136,6 +136,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     }
 
     /*!
+    \brief Return jump vector (t_n+1)
+
+    */
+    inline RCP<Epetra_Vector> Jump() { return jump_; }
+
+    /*!
     \brief Return vector of normal contact stresses (t_n+1)
 
     */
@@ -210,6 +216,16 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     void InitEvalInterface();
 
     /*!
+    \brief Evaluate reference state
+
+    for frictional contact we need history values (relative velocity) and
+    therefore we store the nodal entries of mortar matrices (reference
+    configuration) before the first time step
+
+    */
+    void EvaluateReferenceState(const RCP<Epetra_Vector> vec);
+
+    /*!
     \brief Initialize and evaluate Mortar stuff for the next Newton step
 
     This method first checks if we are dealing with self contact and updates
@@ -224,6 +240,19 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     */
     void InitEvalMortar();
 
+    /*!
+    \brief Evaluate relative movement of contact bodies
+
+    This is for evaluating the relative movement of contact bodies. This
+    can either be done with regarding the different movement of material points
+    or regarding the change of mortar projection. The second possibility
+    is definitely objective wheras the first possibility is objective
+    only when the gap is zero.
+
+    */
+
+    void EvaluateRelMov();
+    
     /*!
     \brief Evaluate contact
 
@@ -302,6 +331,16 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     void StoreDM(const string& state);
 
     /*!
+    \brief Store current (contact) nodal entries to old ones
+
+    Contact nodes own their current entries and old ones (last converged
+    state) from. p.e. the mortar matrices D and M. This function writes the
+    current ones to the old ones.
+
+    */
+    void StoreToOld(MORTAR::StrategyBase::QuantityType type);
+
+    /*!
     \brief Update contact at end of time step
 
     \param iter (in): step index for gmsh file creation
@@ -318,7 +357,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     performed on the level of the contact algorithm, for short: here's the right place.
 
     */
-    void DoWriteRestart(RCP<Epetra_Vector>& activetoggle);
+    void DoWriteRestart(RCP<Epetra_Vector>& activetoggle, RCP<Epetra_Vector>& sliptoggle);
 
     /*!
     \brief Perform a write restart
@@ -410,6 +449,9 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     RCP<Epetra_Map> gactivedofs_;   // global active slave dof row map (of all interfaces)
     RCP<Epetra_Map> gactiven_;      // global row map of matrix N (of all interfaces)
     RCP<Epetra_Map> gactivet_;      // global row map of matrix T (of all interfaces)
+    RCP<Epetra_Map> gslipnodes_;    // global slip slave node row map (of all interfaces)
+    RCP<Epetra_Map> gslipdofs_;     // global slip slave dof row map (of all interfaces)
+    RCP<Epetra_Map> gslipt_;        // global row map of matrix T for slip dofs (of all interfaces)
 
     RCP<LINALG::SparseMatrix> dmatrix_; // global Mortar matrix D
     RCP<LINALG::SparseMatrix> mmatrix_; // global Mortar matrix M
@@ -424,7 +466,8 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     RCP<Epetra_Vector> z_;                 // current vector of Lagrange multipliers at t_n+1
     RCP<Epetra_Vector> zold_;              // old vector of Lagrange multipliers at t_n
     RCP<Epetra_Vector> zuzawa_;            // vector of Lagrange multipliers from last Uzawa step
-
+    RCP<Epetra_Vector> jump_;              // displacement jump (slave dofs)
+    
     RCP<Epetra_Vector> stressnormal_;      // vector of normal contact forces at t_n+1
     RCP<Epetra_Vector> stresstangential_;  // vector of tangential contact forces at t_n+1
 
@@ -433,6 +476,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     int  activesetsteps_;     // no. of active sets in this time/load step
     bool isincontact_;        // flag indicating global contact status
     bool isselfcontact_;      // flag indicating potential self contact
+    bool friction_;           // flag for frictional contact
 
 }; // class CoAbstractStrategy
 } // namespace CONTACT

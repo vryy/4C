@@ -60,7 +60,9 @@ CoAbstractStrategy(problemrowmap,params,interface,dim,comm,alphaf)
 
   // initialize constraint norm and initial penalty
   constrnorm_ = 0.0;
+  constrnormtan_ = 0.0;
   initialpenalty_ = Params().get<double>("PENALTYPARAM");
+  initialpenaltytan_ = Params().get<double>("PENALTYPARAMTAN");
 }
 
 /*----------------------------------------------------------------------*
@@ -166,6 +168,20 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
     // and nodal derivz matrix values, store them in nodes
     interface_[i]->AssembleRegNormalForces(localisincontact, localactivesetchange);
 
+    // evaluate lagrange multipliers (regularized forces) in tangential direction
+    INPAR::CONTACT::ContactFrictionType ftype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
+    INPAR::CONTACT::SolvingStrategy soltype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
+
+    if((ftype==INPAR::CONTACT::friction_coulomb or ftype==INPAR::CONTACT::friction_stick)
+        and soltype==INPAR::CONTACT::solution_penalty)
+      interface_[i]->AssembleRegTangentForcesPenalty();
+
+    if((ftype==INPAR::CONTACT::friction_coulomb or ftype==INPAR::CONTACT::friction_stick)
+        and soltype==INPAR::CONTACT::solution_auglag)
+      interface_[i]->AssembleRegTangentForcesAugmented();
+    
     isincontact = isincontact || localisincontact;
     activesetchange = activesetchange || localactivesetchange;
   }
@@ -189,13 +205,15 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   // this is due to the fact that we want to monitor the constraint norm
   // of the active nodes
   gactivenodes_ = null;
-
+  gslipnodes_ = null;
+  
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0;i<(int)interface_.size();++i)
   {
     interface_[i]->BuildActiveSet();
     gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes(),false);
+    gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
   }
 
   // check if contact contributions are present,
@@ -234,9 +252,19 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   {
     if( IsInContact() )
     {
-      cout << "-- CONTACTFDDERIVZ --------------------" << endl;
-      interface_[i]->FDCheckPenaltyTracNor();
-      cout << "-- CONTACTFDDERIVZ --------------------" << endl;
+      if(ftype==INPAR::CONTACT::friction_coulomb )
+      {
+        cout << "LINZMATRIX" << *linzmatrix_ << endl;
+        interface_[i]->FDCheckPenaltyTracFric();
+      }
+      else if (ftype==INPAR::CONTACT::friction_none)
+      {
+        cout << "-- CONTACTFDDERIVZ --------------------" << endl;
+        interface_[i]->FDCheckPenaltyTracNor();
+        cout << "-- CONTACTFDDERIVZ --------------------" << endl;
+      }
+      else
+        dserror("Error: FD Check for this friction type not implemented!");
     }
   }
 #endif
@@ -444,8 +472,28 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
 void CONTACT::CoPenaltyStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& kteff,
                                                   RCP<Epetra_Vector>& feff)
 {
-  // insert friction here
-  
+  // this is almost the same as in the frictionless contact
+  // whereas we chose the EvaluateContact routine with
+  // one difference
+
+  // check if friction should be applied
+  INPAR::CONTACT::ContactFrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
+
+  // coulomb friction case
+  if(ftype == INPAR::CONTACT::friction_coulomb or
+     ftype == INPAR::CONTACT::friction_stick)
+  {
+    EvaluateContact(kteff,feff);
+  }
+  else if (ftype == INPAR::CONTACT::friction_tresca)
+  {
+    dserror("Error in AbstractStrategy::Evaluate: Penalty Strategy for"
+           " Tresca friction not yet implemented");
+  }
+  else
+    dserror("Error in AbstractStrategy::Evaluate: Unknown friction type");
+
   return;
 }
 
@@ -456,11 +504,13 @@ void CONTACT::CoPenaltyStrategy::ResetPenalty()
 {
   // reset penalty parameter in strategy
   Params().set<double>("PENALTYPARAM",InitialPenalty());
+  Params().set<double>("PENALTYPARAMTAN",InitialPenaltyTan());
 
   // reset penalty parameter in all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     interface_[i]->IParams().set<double>("PENALTYPARAM",InitialPenalty());
+    interface_[i]->IParams().set<double>("PENALTYPARAMTAN",InitialPenaltyTan());
   }
   
   return;
@@ -552,19 +602,26 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
 {
   // initialize parameters
   double cnorm = 0.0;
+  double cnormtan = 0.0;
   bool updatepenalty = false;
+  bool updatepenaltytan = false;
   double ppcurr = Params().get<double>("PENALTYPARAM");
+  double ppcurrtan = Params().get<double>("PENALTYPARAMTAN");
+  INPAR::CONTACT::ContactType ctype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(Params(),"CONTACT");
 
   // gactivenodes_ is undefined
   if (gactivenodes_==Teuchos::null)
   {
     constrnorm_=0;
+    constrnormtan_=0;
   }
 
   // gactivenodes_ has no elements
   else if (gactivenodes_->NumGlobalElements()==0)
   {
     constrnorm_=0;
+    constrnormtan_=0;
   }
 
   // gactivenodes_ has at least one element
@@ -576,6 +633,15 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
 
     // compute constraint norm
     gact->Norm2(&cnorm);
+    
+    // Evaluate norm in tangential direction for frictional contact
+    if (ctype!=INPAR::CONTACT::contact_normal)
+    {
+      for (int i=0; i<(int)interface_.size(); ++i)
+        interface_[i]->EvaluateTangentNorm(cnormtan);
+
+      cnormtan = sqrt(cnormtan);
+    }
 
     //********************************************************************
     // adaptive update of penalty parameter
@@ -603,14 +669,31 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
           if (ippcurr != ppcurr) dserror("Something wrong with penalty parameter");
           interface_[i]->IParams().set<double>("PENALTYPARAM",10*ippcurr);
         }
+        // in the case of frictional contact, the tangential penalty
+        // parameter is also dated up when this is done for the normal
+        // one
+        if (ctype!=INPAR::CONTACT::contact_normal)
+        {
+          updatepenaltytan = true;
 
-        // friction
+          // update penalty parameter in strategy
+          Params().set<double>("PENALTYPARAMTAN",10*ppcurrtan);
+
+          // update penalty parameter in all interfaces
+          for (int i=0; i<(int)interface_.size(); ++i)
+          {
+            double ippcurrtan = interface_[i]->IParams().get<double>("PENALTYPARAMTAN");
+            if (ippcurrtan != ppcurrtan) dserror("Something wrong with penalty parameter");
+            interface_[i]->IParams().set<double>("PENALTYPARAMTAN",10*ippcurrtan);
+          }
+        }
       }
     }
     //********************************************************************
     
     // update constraint norm
     constrnorm_ = cnorm;
+    constrnormtan_ = cnormtan;
   }
 
   // output to screen
@@ -618,9 +701,12 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
   {
     cout << "********************************************\n";
     cout << "Normal Constraint Norm: " << cnorm << "\n";
+    if (ctype != INPAR::CONTACT::contact_normal)
+      cout << "Tangential Constraint Norm: " << cnormtan << "\n";
     if (updatepenalty)
-      cout << "Updated normal penalty parameter: " << ppcurr << " -> "
-           << Params().get<double>("PENALTYPARAM") << "\n";
+      cout << "Updated normal penalty parameter: " << ppcurr << " -> " << Params().get<double>("PENALTYPARAM") << "\n";
+    if (updatepenaltytan == true and ctype != INPAR::CONTACT::contact_normal)
+     cout << "Updated tangential penalty parameter: " << ppcurrtan << " -> " << Params().get<double>("PENALTYPARAMTAN") << "\n";
     cout << "********************************************\n\n";
   }
   

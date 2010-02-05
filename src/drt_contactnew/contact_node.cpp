@@ -53,12 +53,17 @@ CONTACT::CoNode::CoNode(int id, const double* coords, const int owner,
 MORTAR::MortarNode(id,coords,owner,numdof,dofs,isslave),
 active_(false),
 initactive_(initactive),
-grow_(1.0e12)
+grow_(1.0e12),
+activeold_(false),
+slip_(false)
 {
   for (int i=0;i<3;++i)
   {
     txi()[i]=0.0;
     teta()[i]=0.0;
+    jump()[i]=0.0;
+    traction()[i]=0.0;
+    tractionold()[i]=0.0;
   }
 
   return;
@@ -71,12 +76,26 @@ CONTACT::CoNode::CoNode(const CONTACT::CoNode& old) :
 MORTAR::MortarNode(old),
 active_(old.active_),
 initactive_(old.initactive_),
-grow_(old.grow_)
+grow_(old.grow_),
+activeold_(old.activeold_),
+slip_(old.slip_),
+drowsold_(old.drowsold_),
+mrowsold_(old.mrowsold_),
+drowsPG_(old.drowsPG_),
+mrowsPG_(old.mrowsPG_),
+drowsoldPG_(old.drowsoldPG_),
+mrowsoldPG_(old.mrowsoldPG_),
+snodes_(old.snodes_),
+mnodes_(old.mnodes_),
+mnodesold_(old.mnodesold_)
 {
   for (int i=0;i<3;++i)
   {
     txi()[i]=old.txi_[i];
     teta()[i]=old.teta_[i];
+    jump()[i]=old.jump_[i];
+    traction()[i]=old.traction_[i];
+    tractionold()[i]=old.tractionold_[i];
   }
 
   return;
@@ -140,6 +159,16 @@ void CONTACT::CoNode::Pack(vector<char>& data) const
   AddtoPack(data,txi_,3);
   // add teta_
   AddtoPack(data,teta_,3);
+  // add jump_
+  AddtoPack(data,jump_,3);
+  // add activeold_
+  AddtoPack(data,activeold_);
+  // add slip_
+  AddtoPack(data,slip_);
+  // add traction_
+  AddtoPack(data,traction_,3);
+  // add tractionold_
+  AddtoPack(data,tractionold_,3);
   
   return;
 }
@@ -171,9 +200,103 @@ void CONTACT::CoNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,txi_,3);
   // teta_
   ExtractfromPack(position,data,teta_,3);
+  // jump_
+  ExtractfromPack(position,data,jump_,3);
+  // activeold_
+  ExtractfromPack(position,data,activeold_);
+  // slip_
+  ExtractfromPack(position,data,slip_);
+  // traction_
+  ExtractfromPack(position,data,traction_,3);
+  // tractionold_
+  ExtractfromPack(position,data,tractionold_,3);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'SNodes' set                        gitterle 11/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::AddSNode(int node)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddSnode: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddSNode: function called for boundary node %i", Id());
+
+  GetSNodes().insert(node);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'MNodes' set                        gitterle 11/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::AddMNode(int node)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddMNode: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddMNode: function called for boundary node %i", Id());
+
+  GetMNodes().insert(node);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'D' map (Petrov-Galerkin approach) gitterle 12/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::AddDValuePG(int& row, int& col, double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddDValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddDValue: function called for boundary node %i", Id());
+
+  // check if this has been called before
+  if ((int)GetDPG().size()==0)
+    GetDPG().resize(NumDof());
+
+  // check row index input
+  if ((int)GetDPG().size()<=row)
+    dserror("ERROR: AddDValue: tried to access invalid row index!");
+
+  // add the pair (col,val) to the given row
+  map<int,double>& dmap = GetDPG()[row];
+  dmap[col] += val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'M' map (Petrov-Galerkin approach) gitterle 12/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::AddMValuePG(int& row, int& col, double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddDValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddDValue: function called for boundary node %i", Id());
+
+  // check if this has been called before
+  if ((int)GetMPG().size()==0)
+    GetMPG().resize(NumDof());
+
+  // check row index input
+  if ((int)GetMPG().size()<=row)
+    dserror("ERROR: AddMValue: tried to access invalid row index!");
+
+  // add the pair (col,val) to the given row
+  map<int,double>& mmap = GetMPG()[row];
+  mmap[col] += val;
+
   return;
 }
 
@@ -616,6 +739,100 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     }
   }
 #endif // #ifdef CONTACTPSEUDO2D
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'DerivJump' map                     gitterle 11/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::AddDerivJumpValue(int& row, const int& col, double val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddJumpValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddJumpValue: function called for boundary node %i", Id());
+
+  // check if this has been called before
+  if ((int)GetDerivJump().size()==0)
+    GetDerivJump().resize(NumDof());
+
+  // check row index input
+  if ((int)GetDerivJump().size() <= row)
+    dserror("ERROR: AddDerivJumpValue: tried to access invalid row index!");
+
+  // add the pair (col,val) to the given row
+  map<int,double>& zmap = GetDerivJump()[row];
+  zmap[col] += val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Store nodal entries of D and M to old ones             gitterle 12/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::StoreDMOld()
+{
+  // copy drows_ to drowsold_
+
+  // reset old nodal Mortar maps
+  for (int j=0;j<(int)(GetDOld().size());++j)
+  (GetDOld())[j].clear();
+  for (int j=0;j<(int)((GetMOld()).size());++j)
+  (GetMOld())[j].clear();
+
+  // clear and zero nodal vectors
+  GetDOld().clear();
+  GetMOld().clear();
+  GetDOld().resize(0);
+  GetMOld().resize(0);
+
+  // write drows_ to drowsold_
+  GetDOld() = GetD();
+  GetMOld() = GetM();
+
+  // also vectors containing the according master nodes
+  GetMNodesOld().clear();
+  GetMNodesOld() = GetMNodes();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Store entries of D and M to old ones (PG-approach)     gitterle 12/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::StoreDMOldPG()
+{
+  // copy drows_ to drowsold_
+
+  // reset old nodal Mortar maps
+  for (int j=0;j<(int)(GetDOldPG().size());++j)
+  (GetDOldPG())[j].clear();
+  for (int j=0;j<(int)((GetMOldPG()).size());++j)
+  (GetMOldPG())[j].clear();
+
+  // clear and zero nodal vectors
+  GetDOldPG().clear();
+  GetMOldPG().clear();
+  GetDOldPG().resize(0);
+  GetMOldPG().resize(0);
+
+  // write drows_ to drowsold_
+  GetDOldPG() = GetDPG();
+  GetMOldPG() = GetMPG();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Store nodal entries penalty tractions to old ones      gitterle 10/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::StoreTracOld()
+{
+  // write entries to old ones
+  for (int j=0;j<3;++j)
+    tractionold()[j]=traction()[j];
 
   return;
 }

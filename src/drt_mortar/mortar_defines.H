@@ -50,6 +50,7 @@ using namespace std;
 #define MORTARONELOOP            /* flag for computing D and M in one loop */
 //#define MORTARBOUNDMOD         /* flag for modification of boundary nodes */
 //#define MORTARPETROVGALERKIN   /* flag for PetrovGalerkin approach for LM */
+//#define MORTARPETROVGALERKINFRIC /* flag for PetrovGalerkin approach for LM with friction */
 
 /************************************************************************/
 /* Mortar algorithm parameters                                          */

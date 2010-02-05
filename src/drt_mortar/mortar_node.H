@@ -331,7 +331,9 @@ public:
   //! @name Empty functions (contact node)
   
   virtual void AddgValue(double& val) {}
-  
+  virtual void AddSNode(int node) {}
+  virtual void AddMNode(int node) {}
+   
   //@}
 
 protected:

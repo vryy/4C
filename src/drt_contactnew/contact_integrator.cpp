@@ -2754,6 +2754,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
      RCP<MORTAR::Intcell> cell, double* auxn,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
+     RCP<Epetra_SerialDenseMatrix> dsegPG,
+     RCP<Epetra_SerialDenseMatrix> msegPG,
      RCP<Epetra_SerialDenseVector> gseg)
 {
   
@@ -3034,6 +3036,56 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
         }
       } // nrow*ndof loop
     } // shapefcn_ switch
+    
+# ifdef MORTARPETROVGALERKINFRIC
+    // in the case of frictional contact, the D and M matrix are also evaluated
+    // with piecewise linear test functions in the case of tet10/hex20 elements
+    if (shapefcn_ != MORTAR::MortarInterface::StandardFunctions)
+      dserror("Error in IntegrateDerivCell3DAuxPlaneQuad: Only implemented for standard shape functions");
+
+    // loop over all mseg matrix entries
+    // !!! nrow represents the slave Lagrange multipliers !!!
+    // !!! ncol represents the master dofs                !!!
+    // (this DOES matter here for mseg, as it might
+    // sometimes be rectangular, not quadratic!)
+    for (int j=0; j<nintrow*ndof; ++j)
+    {
+      // for standard shape functions we use the same algorithm
+      // for dseg as in IntegrateDerivSlave2D3D (but with modified integration area)
+      // hence, mseg and dseg can not be combined into one loop
+
+      for (int k=0; k<ncol*ndof; ++k)
+      {
+        int jindex = (int)(j/ndof);
+        int kindex = (int)(k/ndof);
+
+        // multiply the two shape functions
+        double prod = sintval[jindex]*mval[kindex];
+
+        // isolate the mseg entries to be filled and
+        // add current Gauss point's contribution to mseg
+        if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+        (*msegPG)(j, k) += prod*jac*wgt;
+      }
+
+      if (dod)
+      {
+        for (int k=0; k<nrow*ndof; ++k)
+        {
+          int jindex = (int)(j/ndof);
+          int kindex = (int)(k/ndof);
+
+          // multiply the two shape functions
+          double prod = sintval[jindex]*sval[kindex];
+
+          // isolate the mseg entries to be filled and
+          // add current Gauss point's contribution to mseg
+          if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+            (*dsegPG)(j, k) += prod*jac*wgt;
+        }
+      }
+    }
+# endif
     // compute cell D/M matrix *******************************************
 
     // evaluate 2nd deriv of trace space shape functions (on slave element)
@@ -3455,6 +3507,96 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
         } // loop over master nodes
       } // shapefcn_ switch
     } // loop over slave nodes
+    
+#ifdef MORTARPETROVGALERKINFRIC
+    for (int j=0;j<nintrow;++j)
+    {
+      CONTACT::CoNode* mycnode = static_cast<CONTACT::CoNode*>(myintnodes[j]);
+      if (!mycnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+
+      // for standard shape functions we use the same algorithm
+      // for ddmap_jk as in IntegrateDerivSlave2D3D
+      // this means that ddmap_jk and dmmap_jk have to be calculated separately
+
+      // loop over master nodes for building nodal derivM
+      for (int k=0; k<ncol; ++k)
+      {
+        // global master node ID
+        int mgid = mele.Nodes()[k]->Id();
+        double fac = 0.0;
+
+        // get the correct map as a reference
+        map<int,double>& dmmap_jk = mycnode->GetDerivMPG()[mgid];
+
+        // (1) Lin(Phi) - dual shape functions
+        // this vanishes here since there are no deformation-dependent dual functions
+
+        // (2) Lin(NSlave) - slave GP coordinates
+        fac = wgt*sintderiv(j, 0)*mval[k]*jac;
+        for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
+        dmmap_jk[p->first] += fac*(p->second);
+
+        fac = wgt*sintderiv(j, 1)*mval[k]*jac;
+        for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
+        dmmap_jk[p->first] += fac*(p->second);
+
+        // (3) Lin(NMaster) - master GP coordinates
+        fac = wgt*sintval[j]*mderiv(k, 0)*jac;
+        for (CI p=dpmxigp[0].begin(); p!=dpmxigp[0].end(); ++p)
+        dmmap_jk[p->first] += fac*(p->second);
+
+        fac = wgt*sintval[j]*mderiv(k, 1)*jac;
+        for (CI p=dpmxigp[1].begin(); p!=dpmxigp[1].end(); ++p)
+           dmmap_jk[p->first] += fac*(p->second);
+
+        // (4) Lin(dsxideta) - intcell GP Jacobian
+        fac = wgt*sintval[j]*mval[k];
+        for (CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
+          dmmap_jk[p->first] += fac*(p->second);
+      } // loop over master nodes
+
+      if (dod)
+      {
+        // loop over slave nodes for building nodal derivD
+        for (int k=0; k<nrow; ++k)
+        {
+          // global master node ID
+          int sgid = sele.Nodes()[k]->Id();
+          double fac = 0.0;
+
+          // get the correct map as a reference
+          map<int,double>& ddmap_jk = mycnode->GetDerivDPG()[sgid];
+
+          // (1) Lin(Phi) - dual shape functions
+          // this vanishes here since there are no deformation-dependent dual functions
+
+          // (2) Lin(NSlave) - slave GP coordinates
+          fac = wgt*sintderiv(j, 0)*sval[k]*jac;
+          for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
+            ddmap_jk[p->first] += fac*(p->second);
+
+          fac = wgt*sintderiv(j, 1)*sval[k]*jac;
+          for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
+            ddmap_jk[p->first] += fac*(p->second);
+
+          // (3) Lin(NSlave) - slave GP coordinates
+          fac = wgt*sintval[j]*sderiv(k, 0)*jac;
+          for (CI p=dpsxigp[0].begin(); p!=dpsxigp[0].end(); ++p)
+            ddmap_jk[p->first] += fac*(p->second);
+
+          fac = wgt*sintval[j]*sderiv(k, 1)*jac;
+          for (CI p=dpsxigp[1].begin(); p!=dpsxigp[1].end(); ++p)
+            ddmap_jk[p->first] += fac*(p->second);
+
+          // (4) Lin(dsxideta) - intcell GP Jacobian
+          fac = wgt*sintval[j]*sval[k];
+          for (CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
+            ddmap_jk[p->first] += fac*(p->second);
+        } // loop over slave nodes
+      }
+    } // loop over slave nodes
+#endif   
+    
     // compute cell D/M linearization ************************************
 
     // compute cell gap linearization ************************************
@@ -4367,6 +4509,181 @@ void CONTACT::CoIntegrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele,
   */
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble D contribution (2D / 3D)                     gitterle 12/09|
+ |  This method assembles the contrubution of a 1D/2D slave             |
+ |  element to the D map of the adjacent slave nodes.                   |
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoIntegrator::AssembleDPG(const Epetra_Comm& comm,
+                                        MORTAR::MortarElement& sele,
+                                        MORTAR::MortarElement& mele,
+                                        Epetra_SerialDenseMatrix& dseg)
+{
+  MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(sele);
+
+  // get adjacent nodes to assemble to
+  DRT::Node** snodes = sintref.Nodes();
+  if (!snodes)
+    dserror("ERROR: AssembleD: Null pointer for snodes!");
+
+  DRT::Node** mnodes = mele.Nodes();
+  if (!mnodes)
+    dserror("ERROR: AssembleM: Null pointer for mnodes!");
+
+  // loop over all slave nodes
+  for (int slave=0;slave<sintref.NumNode();++slave)
+  {
+    CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(snodes[slave]);
+    int sndof = snode->NumDof();
+
+    // only process slave node rows that belong to this proc
+    if (snode->Owner() != comm.MyPID())
+      continue;
+
+    // do not process slave side boundary nodes
+    // (their row entries would be zero anyway!)
+    if (snode->IsOnBound())
+      continue;
+
+    // loop over all dofs of the slave node
+    for (int sdof=0;sdof<sndof;++sdof)
+    {
+      // loop over all slave nodes again ("master nodes")
+      for (int master=0;master<mele.NumNode();++master)
+      {
+        CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(mnodes[master]);
+        const int* mdofs = mnode->Dofs();
+        int mndof = mnode->NumDof();
+
+        // loop over all dofs of the slave node again ("master dofs")
+        for (int mdof=0;mdof<mndof;++mdof)
+        {
+          int col = mdofs[mdof];
+          double val = dseg(slave*sndof+sdof,master*mndof+mdof);
+
+          // BOUNDARY NODE MODIFICATION **********************************
+          // We have modified their neighbors' dual shape functions, so we
+          // now have a problem with off-diagonal entries occuring in D.
+          // Of course we want to keep the diagonality property of the D
+          // matrix, but still we may not modify the whole Mortar coupling
+          // setting! We achieve both by appling a quite simple but very
+          // effective trick: The boundary nodes have already been defined
+          // as being master nodes, so all we have to do here, is to shift
+          // the off-diagonal terms from D to the resepective place in M,
+          // which is not diagonal anyway! (Mind the MINUS sign!!!)
+          // *************************************************************
+          if (mnode->IsOnBound())
+          {
+            double minusval = -val;
+            snode->AddMValuePG(sdof,col,minusval);
+            snode->AddMNode(mnode->Id());
+          }
+          else
+          {
+            snode->AddDValuePG(sdof,col,val);
+            snode->AddSNode(mnode->Id());
+          }
+        }
+      }
+    }
+    /*
+#ifdef DEBUG
+    cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
+    map<int, double> nodemap0 = (snode->GetD())[0];
+    map<int, double> nodemap1 = (snode->GetD())[1];
+    typedef map<int,double>::const_iterator CI;
+
+    cout << "Row dof id: " << sdofs[0] << endl;;
+    for (CI p=nodemap0.begin();p!=nodemap0.end();++p)
+      cout << p->first << '\t' << p->second << endl;
+
+    cout << "Row dof id: " << sdofs[1] << endl;
+    for (CI p=nodemap1.begin();p!=nodemap1.end();++p)
+      cout << p->first << '\t' << p->second << endl;
+#endif // #ifdef DEBUG
+    */
+  }
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble M contribution (2D / 3D)                     gitterle 12/09|
+ |  This method assembles the contrubution of a 1D/2D slave and master  |
+ |  overlap pair to the M map of the adjacent slave nodes.              |
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoIntegrator::AssembleMPG(const Epetra_Comm& comm,
+                                        MORTAR::MortarElement& sele,
+                                        MORTAR::MortarElement& mele,
+                                        Epetra_SerialDenseMatrix& mseg)
+{
+
+  MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(sele);
+
+  // get adjacent slave nodes and master nodes
+  DRT::Node** snodes = sintref.Nodes();
+  if (!snodes)
+    dserror("ERROR: AssembleM: Null pointer for snodes!");
+  DRT::Node** mnodes = mele.Nodes();
+  if (!mnodes)
+    dserror("ERROR: AssembleM: Null pointer for mnodes!");
+
+  // loop over all slave nodes
+  for (int slave=0;slave<sintref.NumNode();++slave)
+  {
+    CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(snodes[slave]);
+    int sndof = snode->NumDof();
+
+    // only process slave node rows that belong to this proc
+    if (snode->Owner() != comm.MyPID())
+      continue;
+
+    // do not process slave side boundary nodes
+    // (their row entries would be zero anyway!)
+    if (snode->IsOnBound())
+      continue;
+
+    // loop over all dofs of the slave node
+    for (int sdof=0;sdof<sndof;++sdof)
+    {
+      // loop over all master nodes
+      for (int master=0;master<mele.NumNode();++master)
+      {
+        CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(mnodes[master]);
+        const int* mdofs = mnode->Dofs();
+        int mndof = mnode->NumDof();
+
+        // loop over all dofs of the master node
+        for (int mdof=0;mdof<mndof;++mdof)
+        {
+          int col = mdofs[mdof];
+          double val = mseg(slave*sndof+sdof,master*mndof+mdof);
+          snode->AddMValuePG(sdof,col,val);
+        }
+        snode->AddMNode(mnode->Id());
+      }
+    }
+    /*
+#ifdef DEBUG
+    cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
+    map<int, double> nodemap0 = (snode->GetM())[0];
+    map<int, double> nodemap1 = (snode->GetM())[1];
+    typedef map<int,double>::const_iterator CI;
+
+    cout << "Row dof id: " << sdofs[0] << endl;;
+    for (CI p=nodemap0.begin();p!=nodemap0.end();++p)
+      cout << p->first << '\t' << p->second << endl;
+
+    cout << "Row dof id: " << sdofs[1] << endl;
+    for (CI p=nodemap1.begin();p!=nodemap1.end();++p)
+      cout << p->first << '\t' << p->second << endl;
+#endif // #ifdef DEBUG
+     */
+  }
+
+  return true;
 }
 
 #endif //#ifdef CCADISCRET

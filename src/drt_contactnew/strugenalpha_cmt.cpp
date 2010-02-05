@@ -130,6 +130,13 @@ void CONTACT::CmtStruGenAlpha::ConsistentPredictor()
   {
     CalcRefNorms();
   }
+  
+  // FRICTIONAL CONTACT - evaluate reference state 
+  // for frictional contact we need history values (relative velocity) and
+  // therefore we store the nodal entries of mortar matrices (reference
+  // configuration) before the first time step
+  if (params_.get<int>("step") == 0)
+    cmtmanager_->GetStrategy().EvaluateReferenceState(disn_);
 
   // increment time and step
   double timen = time + dt;  // t_{n+1}
@@ -382,6 +389,20 @@ void CONTACT::CmtStruGenAlpha::ConsistentPredictor()
 
   cmtmanager_->GetStrategy().InitEvalInterface();
   cmtmanager_->GetStrategy().InitEvalMortar();
+ 
+  // friction
+  // here the relative movement of the contact bodies is evaluated
+  // therefore the current configuration and the according mortar
+  // matrices are needed
+  // it is only evaluated (resetted) for penalty strategy and
+  // augmented lagrange strategy
+  INPAR::CONTACT::SolvingStrategy strattype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
+
+  if (strattype == INPAR::CONTACT::solution_penalty
+      or strattype == INPAR::CONTACT::solution_auglag)
+    cmtmanager_->GetStrategy().EvaluateRelMov();
+
   cmtmanager_->GetStrategy().Initialize();
   cmtmanager_->GetStrategy().Evaluate(stiff_,fresm_,disn_);
 
@@ -460,7 +481,14 @@ void CONTACT::CmtStruGenAlpha::ConstantPredictor()
   {
     CalcRefNorms();
   }
-
+  
+  // FRICTIONAL CONTACT - evaluate reference state 
+  // for frictional contact we need history values (relative velocity) and
+  // therefore we store the nodal entries of mortar matrices (reference
+  // configuration) before the first time step
+  if (params_.get<int>("step") == 0)
+    cmtmanager_->GetStrategy().EvaluateReferenceState(disn_);
+  
   // increment time and step
   double timen = time + dt;
   //int istep = step + 1;
@@ -635,6 +663,20 @@ void CONTACT::CmtStruGenAlpha::ConstantPredictor()
   cmtmanager_->GetStrategy().SetState("displacement",disn_);
   cmtmanager_->GetStrategy().InitEvalInterface();
   cmtmanager_->GetStrategy().InitEvalMortar();
+  
+  // friction
+  // here the relative movement of the contact bodies is evaluated
+  // therefore the current configuration and the according mortar
+  // matrices are needed
+  // it is only evaluated (resetted) for penalty strategy and
+  // augmented lagrange strategy
+  INPAR::CONTACT::SolvingStrategy strattype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
+
+  if (strattype == INPAR::CONTACT::solution_penalty
+      or strattype == INPAR::CONTACT::solution_auglag)
+        cmtmanager_->GetStrategy().EvaluateRelMov();
+  
   cmtmanager_->GetStrategy().Initialize();
   cmtmanager_->GetStrategy().Evaluate(stiff_,fresm_,disn_);
 
@@ -1249,6 +1291,13 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
     cmtmanager_->GetStrategy().SetState("displacement",disn_);
     cmtmanager_->GetStrategy().InitEvalInterface();
     cmtmanager_->GetStrategy().InitEvalMortar();
+    
+    // friction
+    // here the relative movement of the contact bodies is evaluated
+    // therefore the current configuration and the according mortar
+    // matrices are needed
+    cmtmanager_->GetStrategy().EvaluateRelMov();
+ 
     cmtmanager_->GetStrategy().Initialize();
     cmtmanager_->GetStrategy().Evaluate(stiff_,fresm_,disn_);
 
@@ -2261,6 +2310,12 @@ void CONTACT::CmtStruGenAlpha::SemiSmoothNewton()
       cout << "\nContact.InitMortar: " << t_end321 << " seconds";
       cout << "\nContact.EvalMortar: " << t_end322 << " seconds\n\n";
 #endif // #ifdef CONTACTTIME
+      
+      // friction
+      // here the relative movement of the contact bodies is evaluated
+      // therefore the current configuration and the according mortar
+      // matrices are needed
+      cmtmanager_->GetStrategy().EvaluateRelMov();
       
       // this is the correct place to update the active set!!!
       // (on the one hand we need the new weighted gap vector g, which is
