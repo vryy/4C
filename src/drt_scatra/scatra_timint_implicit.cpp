@@ -1047,7 +1047,7 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
 
     if (myrank_ == 0)
     {
-      printf("+----------------------+-------------+\n");
+      printf("+-------------------------------+-------------+\n");
       {
         if (scalnorm_L2 > EPS10)
           printf("|  relative increment (L2 norm) | %10.3E  |",incnorm_L2/scalnorm_L2);
@@ -1055,7 +1055,7 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
           printf("|  absolute increment (L2 norm) | %10.3E  |\n",incnorm_L2);
       }
       printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
-      printf("+----------------------+-------------+\n");
+      printf("+-------------------------------+-------------+\n");
     }
   }
   else
@@ -1079,6 +1079,9 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
       // end time measurement for solver
       dtsolve_=ds_cputime()-tcpusolve;
     }
+
+    if (myrank_==0)
+      printf("Solvertype linear_full (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
   }
 
   return;
