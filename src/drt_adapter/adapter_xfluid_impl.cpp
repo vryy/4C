@@ -373,6 +373,14 @@ void ADAPTER::XFluidImpl::ComputeInterfaceAccelerationsAndVelocities()
   iaccnp_->Update(-(1.0-theta)/(theta),*iaccn_,0.0);
   iaccnp_->Update(1.0/(theta*dt),*ivelnp_,-1.0/(theta*dt),*iveln_,1.0);
 
+  if (fluid_.TimIntScheme() == timeint_stationary)
+  {
+    ivelnp_->PutScalar(0.0);
+    iveln_->PutScalar(0.0);
+    ivelnm_->PutScalar(0.0);
+    iaccnp_->PutScalar(0.0);
+    iaccn_->PutScalar(0.0);
+  }
 #endif
 }
 
