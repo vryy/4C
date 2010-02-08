@@ -484,8 +484,11 @@ void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output)
   // write restart information for contact
   output.WriteVector("lagrmultold",GetStrategy().LagrMultOld());
   output.WriteVector("activetoggle",activetoggle);
-  output.WriteVector("sliptoggle",sliptoggle);
   
+  // friction
+  if(GetStrategy().Friction())
+    output.WriteVector("sliptoggle",sliptoggle);
+
   return;
 }
 

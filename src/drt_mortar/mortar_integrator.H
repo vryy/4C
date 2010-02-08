@@ -251,7 +251,7 @@ public:
   \brief Assemble D contribution of current overlap into slave nodes
 
   */
-  bool AssembleD(const Epetra_Comm& comm,
+  virtual bool AssembleD(const Epetra_Comm& comm,
                  MORTAR::MortarElement& sele,
                  Epetra_SerialDenseMatrix& D_seg);
 
@@ -259,7 +259,7 @@ public:
   \brief Assemble M contribution of current overlap into slave nodes
 
   */
-  bool AssembleM(const Epetra_Comm& comm,
+  virtual bool AssembleM(const Epetra_Comm& comm,
                  MORTAR::MortarElement& sele,
                  MORTAR::MortarElement& mele,
                  Epetra_SerialDenseMatrix& M_seg);

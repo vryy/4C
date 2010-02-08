@@ -43,6 +43,7 @@ Maintainer: Alexander Popp
 #include "contact_integrator.H"
 #include "contact_node.H"
 #include "../drt_mortar/mortar_defines.H"
+#include "contact_defines.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
@@ -209,7 +210,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
 
     // assemble the mortar matrices gained in the case of Petrov-Galerkin
     // approach in the case of frictional contact
-  #ifdef MORTARPETROVGALERKINFRIC
+  #ifdef CONTACTPETROVGALERKINFRIC
   #ifdef MORTARONELOOP
     integrator.AssembleDPG(Comm(),SlaveIntElement(),SlaveElement(),*dsegPG);
   #endif

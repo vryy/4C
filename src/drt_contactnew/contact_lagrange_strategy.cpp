@@ -1496,9 +1496,12 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
     gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
     gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);
     gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
-    gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
-    gslipdofs_ = LINALG::MergeMap(gslipdofs_,interface_[i]->SlipDofs(),false);
-    gslipt_ = LINALG::MergeMap(gslipt_,interface_[i]->SlipTDofs(),false);
+    if(friction_)
+    {  
+      gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
+      gslipdofs_ = LINALG::MergeMap(gslipdofs_,interface_[i]->SlipDofs(),false);
+      gslipt_ = LINALG::MergeMap(gslipt_,interface_[i]->SlipTDofs(),false);
+    }
   }
 
   // CHECK FOR ZIG-ZAGGING / JAMMING OF THE ACTIVE SET
@@ -1824,9 +1827,12 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
     gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
     gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);
     gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
-    gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
-    gslipdofs_ = LINALG::MergeMap(gslipdofs_,interface_[i]->SlipDofs(),false);
-    gslipt_ = LINALG::MergeMap(gslipt_,interface_[i]->SlipTDofs(),false);
+    if(friction_)
+    {
+      gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
+      gslipdofs_ = LINALG::MergeMap(gslipdofs_,interface_[i]->SlipDofs(),false);
+      gslipt_ = LINALG::MergeMap(gslipt_,interface_[i]->SlipTDofs(),false);
+    } 
   }
 
   // output of active set status to screen

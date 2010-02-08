@@ -60,10 +60,16 @@ CONTACT::CoInterface::CoInterface(const int id, const Epetra_Comm& comm,
                                   const Teuchos::ParameterList& icontact,
                                   bool selfcontact) :
 MORTAR::MortarInterface(id,comm,dim,icontact),
-selfcontact_(selfcontact)
+selfcontact_(selfcontact),
+friction_(false)
 {
-  // empty constructor
-  
+
+  // set frictional contact status
+  INPAR::CONTACT::ContactType ctype = Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(icontact,"CONTACT");
+
+  if (ctype == INPAR::CONTACT::contact_frictional)
+    friction_ = true;
+
   return;
 }
 
@@ -489,12 +495,9 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
   // Check if PETROVGALERKIN-approach is switched on for tri6/hex20
   // in the frictional case
 #ifdef MORTARPETROVGALERKIN
-#ifndef MORTARPETROVGALERKINFRIC
+#ifndef CONTACTPETROVGALERKINFRIC
 
-  INPAR::CONTACT::ContactType ctype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(IParams(),"CONTACT");
-
-  if ((ctype==INPAR::CONTACT::contact_frictional or ctype==INPAR::CONTACT::contact_meshtying) and
+  if ((friction_ or ctype==INPAR::CONTACT::contact_meshtying) and
      (sele.Shape()==DRT::Element::tri6 or sele.Shape()==DRT::Element::quad8) )
        dserror("Frictional contact needs flag: PETROVGALERKINFRIC for tri6/quad8");
 #endif
@@ -511,6 +514,9 @@ void CONTACT::CoInterface::EvaluateRelMov()
   // get out of here if not participating in interface
   if (!lComm())
     return;
+  
+  if (friction_ == false)
+    dserror("Error in CoInterface::EvaluateRelMov(): Only evaluated for frictional contact");
 
   // parameters
   double cn = IParams().get<double>("SEMI_SMOOTH_CN");
@@ -572,7 +578,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
 
     if(activeinfuture==true)
     {
-#ifdef MORTARPETROVGALERKINFRIC
+#ifdef CONTACTPETROVGALERKINFRIC
       vector<map<int,double> > dmap = cnode->GetDPG();
       vector<map<int,double> > dmapold = cnode->GetDOldPG();
 #else
@@ -609,7 +615,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
         }
       } //  loop over adjacent slave nodes
 
-#ifdef MORTARPETROVGALERKINFRIC
+#ifdef CONTACTPETROVGALERKINFRIC
       vector<map<int,double> > mmap = cnode->GetMPG();
       vector<map<int,double> > mmapold = cnode->GetMOldPG();
 #else
@@ -702,7 +708,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
 
       /*** 03 ***********************************************************/
       // we need the Lin(D-matrix) entries of this node
-#ifdef MORTARPETROVGALERKINFRIC
+#ifdef CONTACTPETROVGALERKINFRIC
       map<int,map<int,double> >& ddmap = cnode->GetDerivDPG();
 #else
       map<int,map<int,double> >& ddmap = cnode->GetDerivD();
@@ -719,7 +725,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
         double* dxi = csnode->xspatial();
 
         // compute entry of the current stick node / slave node pair
-#ifdef MORTARPETROVGALERKINFRIC
+#ifdef CONTACTPETROVGALERKINFRIC
         map<int,double>& thisdmmap = cnode->GetDerivDPG(gid);
 #else
         map<int,double>& thisdmmap = cnode->GetDerivD(gid);
@@ -741,7 +747,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
 
       /*** 04 ***********************************************************/
       // we need the Lin(M-matrix) entries of this node
-#ifdef MORTARPETROVGALERKINFRIC
+#ifdef CONTACTPETROVGALERKINFRIC
       map<int,map<int,double> >& dmmap = cnode->GetDerivMPG();
 #else
       map<int,map<int,double> >& dmmap = cnode->GetDerivM();
@@ -759,7 +765,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
         double* mxi = cmnode->xspatial();
 
         // compute entry of the current stick node / master node pair
-#ifdef MORTARPETROVGALERKINFRIC
+#ifdef CONTACTPETROVGALERKINFRIC
         map<int,double>& thisdmmap = cnode->GetDerivMPG(gid);
 #else
         map<int,double>& thisdmmap = cnode->GetDerivM(gid);
@@ -4878,8 +4884,11 @@ bool CONTACT::CoInterface::InitializeActiveSet()
 
   // create an empty slip node map and slip dof map
   // for the first time step (t=0) all nodes are stick nodes
-  slipnodes_   = rcp(new Epetra_Map(0,0,Comm()));
-  slipdofs_    = rcp(new Epetra_Map(0,0,Comm()));
+  if(friction_)
+  {
+    slipnodes_   = rcp(new Epetra_Map(0,0,Comm()));
+    slipdofs_    = rcp(new Epetra_Map(0,0,Comm()));
+  }
   
   // split active dofs into Ndofs, Tdofs and slipTdofs
   SplitActiveDofs();
@@ -4925,7 +4934,7 @@ bool CONTACT::CoInterface::BuildActiveSet()
         ++countdofs;
       }
     }
-
+        
     // add node / dofs to temporary map IF slip
     if (cnode->Slip())
     {
@@ -4943,21 +4952,28 @@ bool CONTACT::CoInterface::BuildActiveSet()
   // resize the temporary vectors
   mynodegids.resize(countnodes);
   mydofgids.resize(countdofs);
-  myslipnodegids.resize(countslipnodes);
-  myslipdofgids.resize(countslipdofs);
 
   // communicate countnodes, countdofs, countslipnodes and countslipdofs among procs
   int gcountnodes, gcountdofs, gcountslipnodes,gcountslipdofs;
   Comm().SumAll(&countnodes,&gcountnodes,1);
   Comm().SumAll(&countdofs,&gcountdofs,1);
-  Comm().SumAll(&countslipnodes,&gcountslipnodes,1);
-  Comm().SumAll(&countslipdofs,&gcountslipdofs,1);
 
   // create active node map and active dof map
   activenodes_ = rcp(new Epetra_Map(gcountnodes,countnodes,&mynodegids[0],0,Comm()));
   activedofs_  = rcp(new Epetra_Map(gcountdofs,countdofs,&mydofgids[0],0,Comm()));
-  slipnodes_ = rcp(new Epetra_Map(gcountslipnodes,countslipnodes,&myslipnodegids[0],0,Comm()));
-  slipdofs_  = rcp(new Epetra_Map(gcountslipdofs,countslipdofs,&myslipdofgids[0],0,Comm()));
+  
+  // the last three steps for frictional contact
+  if (friction_)
+  {
+    myslipnodegids.resize(countslipnodes);
+    myslipdofgids.resize(countslipdofs);
+
+    Comm().SumAll(&countslipnodes,&gcountslipnodes,1);
+    Comm().SumAll(&countslipdofs,&gcountslipdofs,1);
+
+    slipnodes_ = rcp(new Epetra_Map(gcountslipnodes,countslipnodes,&myslipnodegids[0],0,Comm()));
+    slipdofs_  = rcp(new Epetra_Map(gcountslipdofs,countslipdofs,&myslipdofgids[0],0,Comm()));
+  }
   
   // split active dofs into Ndofs and Tdofs and slip dofs in Tslipdofs
   SplitActiveDofs();
@@ -5039,6 +5055,10 @@ bool CONTACT::CoInterface::SplitActiveDofs()
   // FRICTION - EXTRACTING TANGENTIAL DOFS FROM SLIP DOFS
   // *******************************************************************
 
+  // get out of here if there is no friction
+  if(friction_==false)
+    return true; 
+  
   // get out of here if slip set is empty
   if (slipnodes_==null)
   {

@@ -44,6 +44,7 @@ Maintainer: Alexander Popp
 #include "contact_element.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_projector.H"
+#include "contact_defines.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 08/08|
@@ -3037,7 +3038,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
       } // nrow*ndof loop
     } // shapefcn_ switch
     
-# ifdef MORTARPETROVGALERKINFRIC
+# ifdef CONTACTPETROVGALERKINFRIC
     // in the case of frictional contact, the D and M matrix are also evaluated
     // with piecewise linear test functions in the case of tet10/hex20 elements
     if (shapefcn_ != MORTAR::MortarInterface::StandardFunctions)
@@ -3508,7 +3509,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
       } // shapefcn_ switch
     } // loop over slave nodes
     
-#ifdef MORTARPETROVGALERKINFRIC
+#ifdef CONTACTPETROVGALERKINFRIC
     for (int j=0;j<nintrow;++j)
     {
       CONTACT::CoNode* mycnode = static_cast<CONTACT::CoNode*>(myintnodes[j]);
@@ -4509,6 +4510,177 @@ void CONTACT::CoIntegrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele,
   */
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble D contribution (2D / 3D)                         popp 01/08|
+ |  This method assembles the contrubution of a 1D/2D slave             |
+ |  element to the D map of the adjacent slave nodes.                   |
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoIntegrator::AssembleD(const Epetra_Comm& comm,
+                                    MORTAR::MortarElement& sele,
+                                    Epetra_SerialDenseMatrix& dseg)
+{
+  // get adjacent nodes to assemble to
+  DRT::Node** snodes = sele.Nodes();
+  if (!snodes)
+    dserror("ERROR: AssembleD: Null pointer for snodes!");
+
+  // loop over all slave nodes
+  for (int slave=0;slave<sele.NumNode();++slave)
+  {
+    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(snodes[slave]);
+    int sndof = snode->NumDof();
+    
+    // only process slave node rows that belong to this proc
+    if (snode->Owner() != comm.MyPID())
+      continue;
+
+    // do not process slave side boundary nodes
+    // (their row entries would be zero anyway!)
+    if (snode->IsOnBound())
+      continue;
+
+    // loop over all dofs of the slave node
+    for (int sdof=0;sdof<sndof;++sdof)
+    {
+      // loop over all slave nodes again ("master nodes")
+      for (int master=0;master<sele.NumNode();++master)
+      {
+        MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(snodes[master]);
+        const int* mdofs = mnode->Dofs();
+        int mndof = mnode->NumDof();
+
+        // loop over all dofs of the slave node again ("master dofs")
+        for (int mdof=0;mdof<mndof;++mdof)
+        {
+          int col = mdofs[mdof];
+          double val = dseg(slave*sndof+sdof,master*mndof+mdof);
+
+          // BOUNDARY NODE MODIFICATION **********************************
+          // We have modified their neighbors' dual shape functions, so we
+          // now have a problem with off-diagonal entries occuring in D.
+          // Of course we want to keep the diagonality property of the D
+          // matrix, but still we may not modify the whole Mortar coupling
+          // setting! We achieve both by appling a quite simple but very
+          // effective trick: The boundary nodes have already been defined
+          // as being master nodes, so all we have to do here, is to shift
+          // the off-diagonal terms from D to the resepective place in M,
+          // which is not diagonal anyway! (Mind the MINUS sign!!!)
+          // *************************************************************
+          if (mnode->IsOnBound())
+          {
+            double minusval = -val;
+            snode->AddMValue(sdof,col,minusval);
+#ifndef CONTACTPETROVGALERKINFRIC            
+            snode->AddMNode(mnode->Id());
+#endif
+          }
+          else
+          { 
+            snode->AddDValue(sdof,col,val);
+#ifndef CONTACTPETROVGALERKINFRIC   
+            snode->AddSNode(mnode->Id());
+#endif
+          }  
+        }
+      }
+    }
+    /*
+#ifdef DEBUG
+    cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
+    map<int, double> nodemap0 = (snode->GetD())[0];
+    map<int, double> nodemap1 = (snode->GetD())[1];
+    typedef map<int,double>::const_iterator CI;
+
+    cout << "Row dof id: " << sdofs[0] << endl;;
+    for (CI p=nodemap0.begin();p!=nodemap0.end();++p)
+      cout << p->first << '\t' << p->second << endl;
+
+    cout << "Row dof id: " << sdofs[1] << endl;
+    for (CI p=nodemap1.begin();p!=nodemap1.end();++p)
+      cout << p->first << '\t' << p->second << endl;
+#endif // #ifdef DEBUG
+    */
+  }
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble M contribution (2D / 3D)                         popp 01/08|
+ |  This method assembles the contrubution of a 1D/2D slave and master  |
+ |  overlap pair to the M map of the adjacent slave nodes.              |
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoIntegrator::AssembleM(const Epetra_Comm& comm,
+                                    MORTAR::MortarElement& sele,
+                                    MORTAR::MortarElement& mele,
+                                    Epetra_SerialDenseMatrix& mseg)
+{
+  // get adjacent slave nodes and master nodes
+  DRT::Node** snodes = sele.Nodes();
+  if (!snodes)
+    dserror("ERROR: AssembleM: Null pointer for snodes!");
+  DRT::Node** mnodes = mele.Nodes();
+  if (!mnodes)
+    dserror("ERROR: AssembleM: Null pointer for mnodes!");
+
+  // loop over all slave nodes
+  for (int slave=0;slave<sele.NumNode();++slave)
+  {
+    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(snodes[slave]);
+    int sndof = snode->NumDof();
+
+    // only process slave node rows that belong to this proc
+    if (snode->Owner() != comm.MyPID())
+      continue;
+
+    // do not process slave side boundary nodes
+    // (their row entries would be zero anyway!)
+    if (snode->IsOnBound())
+      continue;
+
+    // loop over all dofs of the slave node
+    for (int sdof=0;sdof<sndof;++sdof)
+    {
+      // loop over all master nodes
+      for (int master=0;master<mele.NumNode();++master)
+      {
+        MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(mnodes[master]);
+        const int* mdofs = mnode->Dofs();
+        int mndof = mnode->NumDof();
+
+        // loop over all dofs of the master node
+        for (int mdof=0;mdof<mndof;++mdof)
+        {
+          int col = mdofs[mdof];
+          double val = mseg(slave*sndof+sdof,master*mndof+mdof);
+          snode->AddMValue(sdof,col,val);
+        }
+#ifndef CONTACTPETROVGALERKINFRIC           
+        snode->AddMNode(mnode->Id());
+#endif        
+      }
+    }
+    /*
+#ifdef DEBUG
+    cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
+    map<int, double> nodemap0 = (snode->GetM())[0];
+    map<int, double> nodemap1 = (snode->GetM())[1];
+    typedef map<int,double>::const_iterator CI;
+
+    cout << "Row dof id: " << sdofs[0] << endl;;
+    for (CI p=nodemap0.begin();p!=nodemap0.end();++p)
+      cout << p->first << '\t' << p->second << endl;
+
+    cout << "Row dof id: " << sdofs[1] << endl;
+    for (CI p=nodemap1.begin();p!=nodemap1.end();++p)
+      cout << p->first << '\t' << p->second << endl;
+#endif // #ifdef DEBUG
+     */
+  }
+
+  return true;
 }
 
 /*----------------------------------------------------------------------*

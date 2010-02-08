@@ -96,9 +96,13 @@ friction_(false)
     gactivedofs_ = LINALG::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(), false);
     gactiven_ = LINALG::MergeMap(gactiven_, interface_[i]->ActiveNDofs(), false);
     gactivet_ = LINALG::MergeMap(gactivet_, interface_[i]->ActiveTDofs(), false);
-    gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
-    gslipdofs_ = LINALG::MergeMap(gslipdofs_, interface_[i]->SlipDofs(), false);
-    gslipt_ = LINALG::MergeMap(gslipt_, interface_[i]->SlipTDofs(), false);
+    
+    if (friction_)
+    {
+      gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
+      gslipdofs_ = LINALG::MergeMap(gslipdofs_, interface_[i]->SlipDofs(), false);
+      gslipt_ = LINALG::MergeMap(gslipt_, interface_[i]->SlipTDofs(), false);
+    }
   }
 
   // setup global non-slave-or-master dof map
@@ -220,7 +224,8 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
   dmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
   mmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
   g_       = LINALG::CreateVector(*gsnoderowmap_, true);
-  jump_    = rcp(new Epetra_Vector(*gsdofrowmap_));
+  if (friction_)
+    jump_    = rcp(new Epetra_Vector(*gsdofrowmap_));
 
   // (re)setup global matrices containing fc derivatives
   lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
@@ -689,7 +694,8 @@ void CONTACT::CoAbstractStrategy::DoWriteRestart(RCP<Epetra_Vector>& activetoggl
 {
   // initalize
   activetoggle = rcp(new Epetra_Vector(*gsnoderowmap_));
-  sliptoggle = rcp(new Epetra_Vector(*gsnoderowmap_));
+  if (friction_)
+    sliptoggle = rcp(new Epetra_Vector(*gsnoderowmap_));
 
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -708,7 +714,10 @@ void CONTACT::CoAbstractStrategy::DoWriteRestart(RCP<Epetra_Vector>& activetoggl
 
       // set value active / inactive in toggle vector
       if (cnode->Active()) (*activetoggle)[dof]=1;
-      if (cnode->Slip()) (*sliptoggle)[dof]=1;
+      if (friction_)
+      {
+        if (cnode->Slip()) (*sliptoggle)[dof]=1;
+      }
     }
   }
 
@@ -732,9 +741,14 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   // read restart information on actice set and slip set
   RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*gsnoderowmap_));
   reader.ReadVector(activetoggle,"activetoggle");
-  RCP<Epetra_Vector> sliptoggle =rcp(new Epetra_Vector(*gsnoderowmap_));
-  reader.ReadVector(sliptoggle,"sliptoggle");
-
+  
+  // friction
+  RCP<Epetra_Vector> sliptoggle;
+  if(friction_)
+  {  
+    sliptoggle =rcp(new Epetra_Vector(*gsnoderowmap_));
+    reader.ReadVector(sliptoggle,"sliptoggle");
+  }
   // store restart information on active set and slip set
   // into nodes, therefore first loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -757,8 +771,11 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
         // set value active / inactive in cnode
         cnode->Active()=true;
         
-        // set value stick / slip in cnode
-        if ((*sliptoggle)[dof]==1) cnode->Slip()=true;
+        if (friction_)
+        {
+          // set value stick / slip in cnode
+          if ((*sliptoggle)[dof]==1) cnode->Slip()=true;
+        }
       }
     }
   }
@@ -785,9 +802,12 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
 
   // store restart Mortar quantities
   StoreDM("old");
-  StoreNodalQuantities(MORTAR::StrategyBase::activeold);
-  StoreToOld(MORTAR::StrategyBase::dm);
   
+  if (friction_)
+  {
+    StoreNodalQuantities(MORTAR::StrategyBase::activeold);
+    StoreToOld(MORTAR::StrategyBase::dm);
+  }
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -797,9 +817,12 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
     gactivedofs_ = LINALG::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(), false);
     gactiven_ = LINALG::MergeMap(gactiven_, interface_[i]->ActiveNDofs(), false);
     gactivet_ = LINALG::MergeMap(gactivet_, interface_[i]->ActiveTDofs(), false);
-    gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
-    gslipdofs_ = LINALG::MergeMap(gslipdofs_, interface_[i]->SlipDofs(), false);
-    gslipt_ = LINALG::MergeMap(gslipt_, interface_[i]->SlipTDofs(), false);
+    if (friction_)
+    {
+      gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
+      gslipdofs_ = LINALG::MergeMap(gslipdofs_, interface_[i]->SlipDofs(), false);
+      gslipt_ = LINALG::MergeMap(gslipt_, interface_[i]->SlipTDofs(), false);
+    }  
   }
 
   // update flag for global contact status

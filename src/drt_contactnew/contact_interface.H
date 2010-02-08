@@ -493,7 +493,8 @@ protected:
 
 
   bool                        selfcontact_;    // flag indicating if this is a self contact interface
-
+  bool                        friction_;       // flag for frictional contact
+  
   RCP<Epetra_Map>             activenodes_;    // row map of all active slave nodes
   RCP<Epetra_Map>             activedofs_;     // row map of all active slave dofs
   RCP<Epetra_Map>             activen_;        // row map of global N-matrix

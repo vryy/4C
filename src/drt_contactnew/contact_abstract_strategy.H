@@ -170,6 +170,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     */
     bool& IsSelfContact() { return isselfcontact_; }
+    
+    /*!
+    \brief Return global frictional status
+
+    */
+    bool Friction() { return friction_; }
 
     //@}
 

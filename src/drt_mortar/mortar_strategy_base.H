@@ -164,6 +164,7 @@ class StrategyBase
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
     virtual void EvaluateReferenceState(const RCP<Epetra_Vector> vec) = 0;
     virtual void EvaluateRelMov() = 0;
+    virtual bool Friction() = 0;
     
     //@}
 

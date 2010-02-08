@@ -110,6 +110,12 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
      
     */
     bool ActiveSetConverged() { return true; }
+    
+    /*!
+    \brief Return friction status (this is always false for meshtying)
+     
+    */
+    bool Friction() {return false;};  
 
     /*!
     \brief Return Lagrange multiplier vector (t_n+1)

@@ -169,17 +169,13 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
     interface_[i]->AssembleRegNormalForces(localisincontact, localactivesetchange);
 
     // evaluate lagrange multipliers (regularized forces) in tangential direction
-    INPAR::CONTACT::ContactFrictionType ftype =
-      Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
     INPAR::CONTACT::SolvingStrategy soltype =
       Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
 
-    if((ftype==INPAR::CONTACT::friction_coulomb or ftype==INPAR::CONTACT::friction_stick)
-        and soltype==INPAR::CONTACT::solution_penalty)
+    if(friction_ and soltype==INPAR::CONTACT::solution_penalty)
       interface_[i]->AssembleRegTangentForcesPenalty();
 
-    if((ftype==INPAR::CONTACT::friction_coulomb or ftype==INPAR::CONTACT::friction_stick)
-        and soltype==INPAR::CONTACT::solution_auglag)
+    if(friction_ and soltype==INPAR::CONTACT::solution_auglag)
       interface_[i]->AssembleRegTangentForcesAugmented();
     
     isincontact = isincontact || localisincontact;
