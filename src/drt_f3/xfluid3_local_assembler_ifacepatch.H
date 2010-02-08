@@ -28,11 +28,6 @@ Maintainer: Axel Gerstenberger
 const static std::size_t IerrorCheckValue = 77777777;
 
 //! for non-xfem elements, figure out the order of unknowns per node in the array
-template<XFEM::PHYSICS::Field field>
-struct FieldNumPatch {static const std::size_t pos = IerrorCheckValue;};
-template<> struct FieldNumPatch<XFEM::PHYSICS::Dispx> {static const std::size_t pos = 0;};
-template<> struct FieldNumPatch<XFEM::PHYSICS::Dispy> {static const std::size_t pos = 1;};
-template<> struct FieldNumPatch<XFEM::PHYSICS::Dispz> {static const std::size_t pos = 2;};
 
 template<XFEM::PHYSICS::Field field>
 struct IfaceFieldNum {static const std::size_t pos = IerrorCheckValue;};
