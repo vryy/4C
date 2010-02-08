@@ -882,11 +882,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
   }
 
   // concentration of active species at integration point
-  double conint;
+  double conint(0.0);
   // el. potential at integration point
-  double potint;
+  double potint(0.0);
   // a 'working variable'
-  double fac_fz_i0_funct_vi;
+  double fac_fz_i0_funct_vi(0.0);
 
 
  /*----------------------------------------------------------------------*
@@ -997,6 +997,15 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     {
       if (kinetics=="Butler-Volmer")  // concentration-dependent Butler-Volmer law
       {
+#ifdef DEBUG
+        // some safety checks/ user warnings
+        if ((alphaa*eta) > 100.0)
+          cout<<"WARNING: Exp(alpha_a...) in Butler-Volmer law is near overflow!"
+          <<exp(alphaa*eta)<<endl;
+        if (((-alphac)*eta) > 100.0)
+          cout<<"WARNING: Exp(alpha_c...) in Butler-Volmer law is near overflow!"
+          <<exp((-alphac)*eta)<<endl;
+#endif
         // Butler-Volmer kinetics
         const double expterm = exp(alphaa*eta)-exp((-alphac)*eta);
         const double exptermderiv = (((-alphaa)*exp(alphaa*eta))+((-alphac)*exp((-alphac)*eta)));
@@ -1015,8 +1024,14 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
       }
       else if(kinetics == "Tafel") // Tafel kinetics
       {
+#ifdef DEBUG
+        // some safety checks/ user warnings
+        if ((-alphac)*eta > 100.0)
+          cout<<"WARNING: Exp(alpha_c...) in Tafel law is near overflow!"
+          <<exp((-alphac)*eta)<<endl;
+#endif
         const double expterm = -exp((-alphac)*eta);
-        const double exptermderiv = alphac*expterm;
+        const double exptermderiv = alphac*expterm; // do not forget the (-1) from differentiation of eta!
 
         for (int vi=0; vi<iel; ++vi)
         {
@@ -1186,6 +1201,18 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
       currentintegral += (-i0) * (alphaa*frt*eta + 1.0) * fac_; // the negative(!) normal flux density
       boundaryint += fac_;
       concentrationint += conint*fac_;
+    }
+    else if ((!iselch) && (kinetics=="Tafel"))
+    {
+      // secondary current distribution with Tafel kinetics
+      double expterm = -exp((-alphac)*eta);
+      //linea = (-alphac)*exp((-alphac)*eta);
+
+      // compute integrals
+      overpotentialint += eta * fac_;
+      currentintegral += (-i0) * expterm * fac_; // the negative(!) normal flux density
+      boundaryint += fac_;
+      //concentrationint += conint*fac_;
     }
     else
       dserror("Kinetic model not implemented: %s",kinetics.c_str());
