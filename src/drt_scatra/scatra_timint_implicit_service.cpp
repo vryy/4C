@@ -1255,12 +1255,14 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
   // was the residual already prepared? (Important only for
   // the result test)
-  if (not incremental_ and lastfluxoutputstep_ != step_)
+  if ((!nonlinear_) and (lastfluxoutputstep_ != step_))
   {
     lastfluxoutputstep_ = step_;
 
-    // For nonlinear problems we already have the actual residual vector.
-    // For linear problems we have to compute this information first:
+    // For nonlinear problems we already have the actual residual vector
+    // from the last convergence test!
+    // For linear problems we have to compute this information first, since
+    // the residual (w.o. Neumann boundary) has not been computed after the last solve!
 
     // zero out matrix entries
     sysmat_->Zero();
