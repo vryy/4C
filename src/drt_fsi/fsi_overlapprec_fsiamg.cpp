@@ -287,6 +287,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     }
   }
 
+  //-----------------------------------------------------------------
   // wrap the off-diagonal matrix blocks into MLAPI operators
   {
     MLAPI::Space dspace(Matrix(0,1).EpetraMatrix()->DomainMap());
@@ -377,7 +378,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   }
   // coarse grid:
   S.Reshape(Aaa_[anlevel_-1],"Amesos-KLU");
-  Saa_[anlevel_-1] = S;
+  Saa_[anlevel_-1] = S; 
 
   //-------------------------------------------------------------- timing
   if (!myrank) printf("Additional FSIAMG setup time %10.5e [s]\n",etime.ElapsedTime());
@@ -580,26 +581,38 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockVcycle(
   // structure
   // sxc = Rss_[level] * ( mlsx - Ass_[level] * mlsy - Asf[level] * mlfy)
   MLAPI::MultiVector sxc;
-  sxc = mlsx - Ass_[level] * mlsy;
-  sxc = sxc - ASF_[level] * mlfy;
-  sxc = Rss_[level] * sxc;
+  {
+    MLAPI::MultiVector tmp;
+    tmp = mlsx - Ass_[level] * mlsy;
+    tmp = tmp - ASF_[level] * mlfy;
+    sxc.Reshape(Rss_[level].GetOperatorRangeSpace());
+    sxc = Rss_[level] * tmp;
+  }
 
   // ale
   // axc = Raa_[level] * ( mlax - Aaa_[level] * mlay - Aaf[level] * mlfy)
   MLAPI::MultiVector axc;
-  axc = mlax - Aaa_[level] * mlay;
-  if (structuresplit_) axc = axc - AAF_[level] * mlfy;
-  else                 axc = axc - AAF_[level] * mlsy;
-  axc = Raa_[level] * axc;
-
+  {
+    MLAPI::MultiVector tmp;
+    tmp = mlax - Aaa_[level] * mlay;
+    if (structuresplit_) tmp = tmp - AAF_[level] * mlfy;
+    else                 tmp = tmp - AAF_[level] * mlsy;
+    axc.Reshape(Raa_[level].GetOperatorRangeSpace());
+    axc = Raa_[level] * tmp;
+  }
+  
   // fluid
   // fxc = Rff_[level] * ( mlfx - Aff_[level] * mlfy - Afs[level] * mlsy - Afa[level] * mlay)
   MLAPI::MultiVector fxc;
-  fxc = mlfx - Aff_[level] * mlfy;
-  fxc = fxc - AFS_[level] * mlsy;
-  fxc = fxc - AFA_[level] * mlay;
-  fxc = Rff_[level] * fxc;
-
+  {
+    MLAPI::MultiVector tmp;
+    tmp = mlfx - Aff_[level] * mlfy;
+    tmp = tmp - AFS_[level] * mlsy;
+    tmp = tmp - AFA_[level] * mlay;
+    fxc.Reshape(Rff_[level].GetOperatorRangeSpace());
+    fxc = Rff_[level] * tmp;
+  }
+  
   //----------------------------------- coarse level corrections
   MLAPI::MultiVector syc(sxc.GetVectorSpace(),1,false);
   MLAPI::MultiVector ayc(axc.GetVectorSpace(),1,false);
@@ -609,14 +622,16 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockVcycle(
   ExplicitBlockVcycle(level+1,nlevel,syc,fyc,ayc,sxc,fxc,axc);
 
   //------------------------------- prolongate coarse correction
-  MLAPI::MultiVector tmp;
-  tmp = Pss_[level] * syc;
-  mlsy.Update(1.0,tmp,1.0);
-  tmp = Paa_[level] * ayc;
-  mlay.Update(1.0,tmp,1.0);
-  tmp = Pff_[level] * fyc;
-  mlfy.Update(1.0,tmp,1.0);
-
+  {
+    MLAPI::MultiVector tmp;
+    tmp = Pss_[level] * syc;
+    mlsy.Update(1.0,tmp,1.0);
+    tmp = Paa_[level] * ayc;
+    mlay.Update(1.0,tmp,1.0);
+    tmp = Pff_[level] * fyc;
+    mlfy.Update(1.0,tmp,1.0);
+  }
+  
   //---------------------------- postsmoothing block Gauss Seidel
   // (do NOT zero initial guess)
   ExplicitBlockGaussSeidelSmoother(level,mlsy,mlfy,mlay,mlsx,mlfx,mlax,false);
