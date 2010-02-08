@@ -2847,10 +2847,9 @@ cout << "J_p: " << jp << endl;
 //            // get interface velocity
 //            LINALG::Matrix<nsd,1> interface_gpvelnp;
 //            interface_gpvelnp.Clear();
-//            if (timealgo != timeint_stationary)
-//                for (std::size_t inode = 0; inode < numnode_boundary; ++inode)
-//                    for (std::size_t isd = 0; isd < nsd; ++isd)
-//                        interface_gpvelnp(isd) += vel_boundary(isd,inode)*funct_boundary(inode);
+//            for (std::size_t inode = 0; inode < numnode_boundary; ++inode)
+//                for (std::size_t isd = 0; isd < nsd; ++isd)
+//                    interface_gpvelnp(isd) += vel_boundary(isd,inode)*funct_boundary(inode);
 //
 //            // get viscous stress unknowns
 //            static LINALG::Matrix<nsd,nsd> tau;
