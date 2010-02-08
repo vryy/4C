@@ -1474,9 +1474,7 @@ void SysmatBoundarySigma(
             const LINALG::Matrix<nsd,1> gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp , shp, numparamvelx);
 
             // get interface velocity
-            LINALG::Matrix<nsd,1> interface_gpvelnp(true);
-            if (timealgo != timeint_stationary)
-              interface_gpvelnp  = XFLUID::interpolateVectorFieldToIntPoint(vel_boundary , funct_boundary, numnode_boundary);
+            const LINALG::Matrix<nsd,1> interface_gpvelnp  = XFLUID::interpolateVectorFieldToIntPoint(vel_boundary , funct_boundary, numnode_boundary);
 
 #if 0
             // for Jeffery-Hamel Flow
