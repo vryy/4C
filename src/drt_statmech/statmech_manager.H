@@ -46,7 +46,7 @@ public:
   void StatMechReadRestart(IO::DiscretizationReader& reader);
 
   //! \brief special update for statistical mechanics including setting and deleting crosslinkers in the discretization
-  void StatMechUpdate(const double dt, const Epetra_Vector& disrow,RCP<LINALG::SparseOperator>& stiff);
+  void StatMechUpdate(const double dt, Epetra_Vector& disrow,RCP<LINALG::SparseOperator>& stiff, int ndim);
 
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void StatMechInitOutput(const int ndim, const double& dt);
@@ -78,6 +78,14 @@ protected:
 
   //! \brief Searches and saves in variable  crosslinkerneighbours_ neighbours for each row node
   void SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > currentpositions);
+  
+  //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
+  void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim);
+  
+  //! \brief Shifts current coordinate X+d (where X is constant reference coordinate by +/- period length until is lies within a box demanded by periodic boundary conditions 
+  void CoordindateShift(const double& X, double& d);
+  
+  
   
   //! \brief how often SearchNeighbours() has already been called
   int nsearch_;

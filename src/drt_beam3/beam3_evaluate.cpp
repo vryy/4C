@@ -1095,8 +1095,13 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     default:
     dserror("unknown or improper type of material law");
   }
+  
 
-  //"new" variables have to be adopted to displacement passed in from BACI driver
+  //"new" variables have to be adopted to current discplacement
+  
+  /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
+   *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
+  NodeShift<nnode,3>(params,disp);
 
   //Get integrationpoints for underintegration
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
@@ -1954,6 +1959,46 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 return;
 
 }//DRT::ELEMENTS::Beam3::CalcBrownian(.)
+
+
+/*-----------------------------------------------------------------------------------------------------------*
+ | shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions; if two   |
+ | nodes within one element are separated by a periodic boundary, one of them is shifted such that the final |
+ | distance in R^3 is the same as the initial distance in the periodic space; the shift affects computation  |
+ | on element level within that very iteration step, only (no change in global variables performed)          |                                 |
+ |                                                                                       (public) cyron 10/09|
+ *----------------------------------------------------------------------------------------------------------*/
+template<int nnode, int ndim> //number of nodes, number of dimensions
+inline void DRT::ELEMENTS::Beam3::NodeShift(ParameterList& params,  //!<parameter list
+                                            vector<double>& disp) //!<element disp vector
+{   
+  /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0) > 0.0, this
+   * method has to change the displacement variables*/
+  if(params.get<double>("PeriodLength",0.0) > 0.0)
+    //loop through all nodes except for the first node which remains fixed as reference node
+    for(int i=1;i<nnode;i++)
+      for(int dof=0; dof<ndim; dof++)
+      {
+        /*compute distance in reference configuration between i-th node and first node*/
+        double distance = 0;
+        for(int j=0;j<ndim;j++)
+          distance += pow(Nodes()[i]->X()[j]+disp[6*i+j] - Nodes()[0]->X()[j]+disp[6*0+j],2);
+        distance = sqrt(distance);
+        
+        /*if the distance in some coordinate direction between some node and the first node is larger than the
+         * distance between these two nodes in reference position times a factor \alpha we assume that the surveyed
+         * node has been affected by periodic boundary conditions. Here we set \alpha = 2 assuming that the elements
+         * are stiff enough not to be streched by a factor of two in length direction*/
+        if(Nodes()[i]->X()[dof]+disp[6*i+dof] - Nodes()[0]->X()[dof]+disp[6*0+dof] > 2*distance)
+          disp[6*i+dof] += params.get<double>("PeriodLength",0.0);
+          
+        if(Nodes()[i]->X()[dof]+disp[6*i+dof] - Nodes()[0]->X()[dof]+disp[6*0+dof] < 2*distance)
+          disp[6*i+dof] -= params.get<double>("PeriodLength",0.0);
+      }
+
+return;
+
+}//DRT::ELEMENTS::Beam3::NodeShift
 
 
 

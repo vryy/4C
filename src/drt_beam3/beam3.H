@@ -514,6 +514,11 @@ private:
                              const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
                              LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
                              LINALG::Matrix<ndim,ndim>& velbackgroundgrad); //!<gradient of velocity of background fluid
+   
+   //!shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
+   template<int nnode, int ndim> //number of nodes, number of dimensions
+   void NodeShift(ParameterList& params,  //!<parameter list
+                 vector<double>&           disp); //!<element disp vector
 
    //@}
 

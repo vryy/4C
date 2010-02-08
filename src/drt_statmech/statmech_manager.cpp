@@ -954,7 +954,7 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disrow, RCP<LINALG::SparseOperator>& stiff)
+void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP<LINALG::SparseOperator>& stiff, int ndim)
 {  
   #ifdef D_BEAM3
   
@@ -965,6 +965,11 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
   //if dynamic crosslinkers are used update comprises adding and deleting crosslinkers
   if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
   {
+    
+    /*first we modify the displacement vector so that current nodal position at the end of current time step compies with 
+     * periodic boundary conditions, i.e. no node lies outside a cube of edge length Hperiodic*/
+    PeriodicBoundaryShift(disrow,ndim);
+    
     /*the following tow rcp pointers are auxiliary variables which are needed in order provide in the very end of the
      * crosslinker administration a node row and column map; these maps have to be taken here before the first modification
      * by deleting and adding elements have been carried out with the discretization since after such modifications the maps
@@ -1056,6 +1061,46 @@ void StatMechManager::StatMechUpdate(const double dt, const Epetra_Vector& disro
   
   return;
 } // StatMechManager::StatMechUpdate()
+
+/*----------------------------------------------------------------------*
+ | Shifts current position of nodes so that they comply with periodic   |
+ | boundary conditions                                       cyron 02/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
+{   
+  //only if period length >0 has been defined periodic boundary conditions are swithced on
+  if(statmechparams_.get<double>("PeriodLength",0.0) > 0.0) 
+    for(int i = 0; i < discret_.NumMyRowNodes(); i++)
+    { 
+      //get a pointer at i-th row node
+      const DRT::Node* node = discret_.lRowNode(i);
+      
+      //get GIDs of this node's degrees of freedom
+      std::vector<int> dofnode = discret_.Dof(node);
+      
+      //loop through the first ndim degrees of freedom of this node and enforce periodic boundary conditions
+      for(int j = 0; j<ndim; j++)
+        CoordindateShift( node->X()[j],disrow[discret_.DofRowMap()->LID(dofnode[j])]);   
+    }
+}
+
+/*------------------------------------------------------------------------*
+ | Shifts current coordinate X+d (where X is constant reference coordinate|
+ | by +/- period length until is lies within a box demanded by periodic   |
+ | boundary conditions                                         cyron 02/10|
+ *-----------------------------------------------------------------------*/
+void StatMechManager::CoordindateShift(const double& X, double& d)
+{    
+  if(X+d > statmechparams_.get<double>("PeriodLength",0.0))
+    d -= statmechparams_.get<double>("PeriodLength",0.0);
+  if(X+d < 0)
+    d += statmechparams_.get<double>("PeriodLength",0.0);
+    
+  /*Recursion repeats above shift until current coordinate lies within desired domain;
+   *the following code line only matters if the current position lies at first outside
+   *the desired domain by more than one period length*/
+  CoordindateShift(X,d);
+}
 
 /*----------------------------------------------------------------------*
  | Searches and saves in variable  crosslinkerneighbours_ neighbours for|
