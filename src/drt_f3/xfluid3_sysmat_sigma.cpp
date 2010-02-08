@@ -366,7 +366,7 @@ Maintainer: Axel Gerstenberger
       assembler.template Vector<Sigmaxy>(shp_tau,    - timefacfac*(vderxy(0, 1) + vderxy(1, 0)));
       assembler.template Vector<Sigmaxz>(shp_tau,    - timefacfac*(vderxy(0, 2) + vderxy(2, 0)));
       assembler.template Vector<Sigmayy>(shp_tau,    - timefacfac*vderxy(1, 1));
-      assembler.template Vector<Sigmayz>(shp_tau,    - timefacfac*(vderxy(1, 2) + vderxy(1, 2)));
+      assembler.template Vector<Sigmayz>(shp_tau,    - timefacfac*(vderxy(1, 2) + vderxy(2, 1)));
       assembler.template Vector<Sigmazz>(shp_tau,    - timefacfac*vderxy(2, 2));
 
 
