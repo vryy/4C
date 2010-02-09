@@ -67,7 +67,6 @@ void UTILS::MPCDofSet::TransferDegreesOfFreedom(
 
         const int newlid = newnode->LID();
         const int numdofs = (*numdfcolnodes_)[newlid];
-        dsassert(sourcedis.NumDof(sourcenode)==newdis.NumDof(newnode), "number of dofs does not match!");
         for (int idof = 0; idof < numdofs; ++idof)
         {
             dofrowvec[counter] = dofs[idof];
