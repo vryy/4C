@@ -376,8 +376,7 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
          escaaf);
 
   //rotate matrices and vectors if we have a rotationally symmetric problem
-  // TODO
-  //rotsymmpbc_->RotateMatandVecIfNecessary(elemat1,elevec1);
+  rotsymmpbc_->RotateMatandVecIfNecessary(elemat1,elevec1);
 
   // This is a very poor way to transport the density to the
   // outside world. Is there a better one?
