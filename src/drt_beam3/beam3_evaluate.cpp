@@ -1971,31 +1971,26 @@ return;
 template<int nnode, int ndim> //number of nodes, number of dimensions
 inline void DRT::ELEMENTS::Beam3::NodeShift(ParameterList& params,  //!<parameter list
                                             vector<double>& disp) //!<element disp vector
-{   
+{    
   /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0) > 0.0, this
    * method has to change the displacement variables*/
   if(params.get<double>("PeriodLength",0.0) > 0.0)
     //loop through all nodes except for the first node which remains fixed as reference node
     for(int i=1;i<nnode;i++)
+    {    
       for(int dof=0; dof<ndim; dof++)
-      {
-        /*compute distance in reference configuration between i-th node and first node*/
-        double distance = 0;
-        for(int j=0;j<ndim;j++)
-          distance += pow(Nodes()[i]->X()[j]+disp[6*i+j] - Nodes()[0]->X()[j]+disp[6*0+j],2);
-        distance = sqrt(distance);
-        
-        /*if the distance in some coordinate direction between some node and the first node is larger than the
-         * distance between these two nodes in reference position times a factor \alpha we assume that the surveyed
-         * node has been affected by periodic boundary conditions. Here we set \alpha = 2 assuming that the elements
-         * are stiff enough not to be streched by a factor of two in length direction*/
-        if(Nodes()[i]->X()[dof]+disp[6*i+dof] - Nodes()[0]->X()[dof]+disp[6*0+dof] > 2*distance)
+      {   
+        /*if the distance in some coordinate direction between some node and the first node becomes smaller by adding or subtracting
+         * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
+         * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
+         * is smaller than half the periodic length*/
+        if( fabs( (Nodes()[i]->X()[dof]+disp[6*i+dof]) + params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[6*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[6*i+dof]) - (Nodes()[0]->X()[dof]+disp[6*0+dof]) ) )
           disp[6*i+dof] += params.get<double>("PeriodLength",0.0);
           
-        if(Nodes()[i]->X()[dof]+disp[6*i+dof] - Nodes()[0]->X()[dof]+disp[6*0+dof] < 2*distance)
+        if( fabs( (Nodes()[i]->X()[dof]+disp[6*i+dof]) - params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[6*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[6*i+dof]) - (Nodes()[0]->X()[dof]+disp[6*0+dof]) ) )
           disp[6*i+dof] -= params.get<double>("PeriodLength",0.0);
       }
-
+    }
 return;
 
 }//DRT::ELEMENTS::Beam3::NodeShift

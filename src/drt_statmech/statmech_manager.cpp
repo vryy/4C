@@ -592,6 +592,9 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
  *----------------------------------------------------------------------*/
 void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step)
 {
+  if(step % 100 != 0)
+    return;
+  
   /*the following method writes output data for Gmsh into file with name "filename"; all line elements are written;
    * the nodal displacements are handed over in the variable "dis"; note: in case of parallel computing only 
    * processor 0 writes; it is assumed to have a fully overlapping column map and hence all the information about
@@ -627,37 +630,144 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
       if( element->NumNode() > 2)
         dserror("Gmsh output for two noded elements only");
       
-      //preparing variable storing coordinates of all these nodes
-      int nnodes = 2;
-      LINALG::SerialDenseMatrix coord(3,nnodes);
-      
-      for(int id = 0; id<3; id++)
-       for(int jd = 0; jd<2; jd++)  
-       {
-         double referenceposition = ((element->Nodes())[jd])->X()[id];
-         vector<int> dofnode = discret_.Dof((element->Nodes())[jd]);        
-         double displacement = discol[discret_.DofColMap()->LID( dofnode[id] )];
-         coord(id,jd) =  referenceposition + displacement;
-       }
-      
-            
-      //declaring variable for color of elements
-      double color;
-      
-      //apply different colors for elements representing filaments and those representing dynamics crosslinkers
-      if (element->Id() < basisnodes_)
-        color = 1.0;
+
+
+        //preparing variable storing coordinates of all these nodes
+        int nnodes = 2;
+        LINALG::SerialDenseMatrix coord(3,nnodes);
+        
+        for(int id = 0; id<3; id++)
+         for(int jd = 0; jd<2; jd++)  
+         {
+           double referenceposition = ((element->Nodes())[jd])->X()[id];
+           vector<int> dofnode = discret_.Dof((element->Nodes())[jd]);        
+           double displacement = discol[discret_.DofColMap()->LID( dofnode[id] )];
+           coord(id,jd) =  referenceposition + displacement;
+         }
+        
+        //declaring variable for color of elements
+        double color;
+        
+        //apply different colors for elements representing filaments and those representing dynamics crosslinkers
+        if (element->Id() < basisnodes_)
+          color = 1.0;
+        else
+          color = 0.0;
+        
+      //if no periodic boundary conditions are to be applied, we just plot the current element
+      if(statmechparams_.get<double>("PeriodLength",0.0) == 0)
+      {
+    
+        //writing element by nodal coordinates as a scalar line
+        gmshfilecontent << "SL(" << scientific;
+        gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << "," 
+                       << coord(0,1) << "," << coord(1,1) << "," << coord(2,1) ;
+        /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
+         * interpolating these two colors between the nodes*/
+        gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+      }    
+      //in case of periodic boundary conditions we have to take care to plot correctly an element broken at some boundary plane
       else
-        color = 0.0;
-  
-      //writing element by nodal coordinates as a scalar line
-      gmshfilecontent << "SL(" << scientific;
-      gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << "," 
-                     << coord(0,1) << "," << coord(1,1) << "," << coord(2,1) ;
-      /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
-       * interpolating these two colors between the nodes*/
-      gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
-  
+      {   
+        //number of spatial dimensions
+        const int ndim = 3;
+        
+        //reference length of element (note: following code only for plotting linear elements)
+        double reflength = 0;
+        for(int id=0;id<ndim;id++)
+          reflength += pow(( (element->Nodes())[1])->X()[id] - ((element->Nodes())[0])->X()[id],2); 
+        reflength = sqrt(reflength);
+        
+        /*detect and save in vector "cut", at which boundaries the element is broken due to periodic boundary conditions;
+         * the entries of cut have the following meaning: 0: element not broken in respective coordinate direction, 1:
+         * element broken in respective coordinate direction (node 0 close to zero boundary and node 1 close to boundary
+         * at PeriodLength);  2: element broken in respective coordinate direction (node 1 close to zero boundary and node
+         * 0 close to boundary at PeriodLength);*/
+        LINALG::Matrix<3,1> cut(true);
+        for(int dof=0; dof<ndim; dof++)
+        {
+          if( fabs(coord(dof,1) - statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0))  < fabs(coord(dof,1) - coord(dof,0)) )
+            cut(dof) = 1;
+          if( fabs(coord(dof,1) + statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0))  < fabs(coord(dof,1) - coord(dof,0)) )
+            cut(dof) = 2;
+        }
+        
+        if(cut(0) + cut(1) + cut(2) > 0)
+        {       
+            //compute direction vector between first and second node of element
+            LINALG::Matrix<3,1> dir;
+            for(int dof=0; dof<ndim; dof++)
+              dir(dof) = coord(dof,1) - coord(dof,0);
+            
+            //from node 0 to nearest boundary where element is broken you get by vector X + lambda0*dir
+            double lambda0 = dir.Norm2();
+            for(int dof=0; dof<ndim; dof++)
+            {
+              if(cut(dof) == 1)  
+              {
+                if(fabs( - coord(dof,0) / dir(dof) ) < fabs(lambda0))
+                  lambda0 = - coord(dof,0) / dir(dof);
+              }
+              else if(cut(dof) == 2)
+              {
+                if( fabs( (statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0)) / dir(dof) ) < fabs(lambda0) )
+                  lambda0 = ( statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0) ) / dir(dof);
+              }
+            }
+            
+            //from node 1 to nearest boundary where element is broken you get by vector X + lambda1*dir
+            double lambda1 = dir.Norm2();
+            for(int dof=0; dof<ndim; dof++)
+            {
+              if(cut(dof) == 2)  
+              {
+                if(fabs( - coord(dof,1) / dir(dof) ) < fabs(lambda1))
+                  lambda1 = - coord(dof,1) / dir(dof);
+              }
+              else if(cut(dof) == 1)
+              {
+                if( fabs( (statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,1)) / dir(dof) ) < fabs(lambda1))
+                  lambda1 = ( statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,1) ) / dir(dof);
+              }
+            }
+                   
+            //declaring variable for color of elements
+            double color;
+            
+            //apply different colors for elements representing filaments and those representing dynamics crosslinkers
+            if (element->Id() < basisnodes_)
+              color = 1.0;
+            else
+              color = 0.0;
+       
+            //writing element by nodal coordinates as a scalar line
+            gmshfilecontent << "SL(" << scientific;
+            gmshfilecontent<< coord(0,0)  << "," << coord(1,0) << "," << coord(2,0) << "," 
+                           << coord(0,0) + lambda0*dir(0)  << "," << coord(1,0) + lambda0*dir(1)  << "," << coord(2,0) + lambda0*dir(2)  ;
+            /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
+             * interpolating these two colors between the nodes*/
+            gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+            
+            //writing element by nodal coordinates as a scalar line
+            gmshfilecontent << "SL(" << scientific;
+            gmshfilecontent<< coord(0,1)  << "," << coord(1,1) << "," << coord(2,1) << "," 
+                           << coord(0,1) + lambda1*dir(0)  << "," << coord(1,1)+ lambda1*dir(1)  << "," << coord(2,1) + lambda1*dir(2)  ;
+            /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
+             * interpolating these two colors between the nodes*/
+            gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;  
+        }
+        else
+        {
+            //writing element by nodal coordinates as a scalar line
+            gmshfilecontent << "SL(" << scientific;
+            gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << "," 
+                           << coord(0,1) << "," << coord(1,1) << "," << coord(2,1) ;
+            /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
+             * interpolating these two colors between the nodes*/
+            gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+        }
+      }
+      
     }  
     
     //finish data section of this view by closing curley brackets
@@ -961,15 +1071,14 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
 #ifdef MEASURETIME
     const double t_start = ds_cputime();
 #endif // #ifdef MEASURETIME
+    
+  /*first we modify the displacement vector so that current nodal position at the end of current time step compies with 
+   * periodic boundary conditions, i.e. no node lies outside a cube of edge length Hperiodic*/
+  PeriodicBoundaryShift(disrow,ndim);
       
   //if dynamic crosslinkers are used update comprises adding and deleting crosslinkers
   if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
   {
-    
-    /*first we modify the displacement vector so that current nodal position at the end of current time step compies with 
-     * periodic boundary conditions, i.e. no node lies outside a cube of edge length Hperiodic*/
-    PeriodicBoundaryShift(disrow,ndim);
-    
     /*the following tow rcp pointers are auxiliary variables which are needed in order provide in the very end of the
      * crosslinker administration a node row and column map; these maps have to be taken here before the first modification
      * by deleting and adding elements have been carried out with the discretization since after such modifications the maps
@@ -1067,7 +1176,7 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
  | boundary conditions                                       cyron 02/10|
  *----------------------------------------------------------------------*/
 void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
-{   
+{    
   //only if period length >0 has been defined periodic boundary conditions are swithced on
   if(statmechparams_.get<double>("PeriodLength",0.0) > 0.0) 
     for(int i = 0; i < discret_.NumMyRowNodes(); i++)
@@ -1092,14 +1201,21 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
 void StatMechManager::CoordindateShift(const double& X, double& d)
 {    
   if(X+d > statmechparams_.get<double>("PeriodLength",0.0))
-    d -= statmechparams_.get<double>("PeriodLength",0.0);
+  {
+    d -= statmechparams_.get<double>("PeriodLength",0.0);   
+    /*Recursion repeats above shift until current coordinate lies within desired domain;
+     *the following code line only matters if the current position lies at first outside
+     *the desired domain by more than one period length*/
+    CoordindateShift(X,d);
+  }
   if(X+d < 0)
-    d += statmechparams_.get<double>("PeriodLength",0.0);
-    
-  /*Recursion repeats above shift until current coordinate lies within desired domain;
-   *the following code line only matters if the current position lies at first outside
-   *the desired domain by more than one period length*/
-  CoordindateShift(X,d);
+  {
+    d += statmechparams_.get<double>("PeriodLength",0.0);    
+    /*Recursion repeats above shift until current coordinate lies within desired domain;
+     *the following code line only matters if the current position lies at first outside
+     *the desired domain by more than one period length*/
+    CoordindateShift(X,d);
+  }  
 }
 
 /*----------------------------------------------------------------------*
