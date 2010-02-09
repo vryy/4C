@@ -170,6 +170,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
   RCP<Epetra_Vector> qc0np   = params.get<RCP<Epetra_Vector> >("qc0np");
   RCP<Epetra_Vector> qc0n    = params.get<RCP<Epetra_Vector> >("qc0n");
   RCP<Epetra_Vector> qc0nm   = params.get<RCP<Epetra_Vector> >("qc0nm");
+  RCP<Epetra_Vector> radii   = params.get<RCP<Epetra_Vector> >("radii");
 
   vector<int>::iterator it = lm.begin();
 
@@ -196,6 +197,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
     p0np->ReplaceGlobalValues(1,&val,&gid);
     p0n ->ReplaceGlobalValues(1,&val,&gid);
     p0nm->ReplaceGlobalValues(1,&val,&gid);
+    
+    val = sqrt(ele->getA()/M_PI);
+    radii->ReplaceGlobalValues(1,&val,&gid);
 
   }
 

@@ -279,6 +279,10 @@ protected:
   RCP<Epetra_Vector>          nodeIds_;
   //@}
 
+  //! @name radii vector
+  RCP<Epetra_Vector>          radii_;
+  //@}
+
   //! @name Dirichlet boundary condition vectors
   RCP<Epetra_Vector>          bcval_;
   RCP<Epetra_Vector>          dbctog_;

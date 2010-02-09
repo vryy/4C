@@ -113,8 +113,9 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   qcn_           = LINALG::CreateVector(*elementrowmap,true);
   qcnm_          = LINALG::CreateVector(*elementrowmap,true);
 
-  // Element Node Ids
+  // vectors for postprocessing, Element Node Ids and raduis 
   nodeIds_      = LINALG::CreateVector(*dofrowmap,true);
+  radii_        = LINALG::CreateVector(*dofrowmap,true);
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   // This part might be optimized later
@@ -143,7 +144,8 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   eleparams.set("qc0np",qcnp_);
   eleparams.set("qc0n",qcn_);
   eleparams.set("qc0nm",qcnm_);
-  
+  eleparams.set("radii",radii_);
+
   eleparams.set("action","get_initial_state");
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
@@ -585,7 +587,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output()
     // write domain decomposition for visualization
     output_.WriteElementData();
 
-    if (step_==upres_) output_.WriteVector("NodeIDs",nodeIds_);
+    if (step_==upres_)
+    {
+      output_.WriteVector("NodeIDs",nodeIds_);
+      output_.WriteVector("radii",radii_);
+    }
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ != 0 && step_%uprestart_ == 0)

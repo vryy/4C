@@ -35,6 +35,7 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   // reduced dimensional airway
   EnsightWriter::WriteResult("pnp", "pressure", dofbased, 1);
   EnsightWriter::WriteResult("NodeIDs", "NodeIDs", dofbased, 1);
+  EnsightWriter::WriteResult("radii", "radii", dofbased, 1);
 
   
   EnsightWriter::WriteElementResults(field); //To comment
