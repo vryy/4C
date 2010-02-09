@@ -409,17 +409,6 @@ protected:
   
   Teuchos::RCP<IO::DiscretizationWriter> FluidFluidboundaryoutput_;
 
-  //! @name state vectors using the solid boundary parallel distribution (row vectors)
-  Teuchos::RCP<Epetra_Vector>            fidispnp_;   ///< fluid interface displacement  n+1
-  Teuchos::RCP<Epetra_Vector>            fivelnp_;    ///< fluid interface velocity      n+1
-  Teuchos::RCP<Epetra_Vector>            fitrueresnp_;///< fluid interface residual      n+1
-  Teuchos::RCP<Epetra_Vector>            fidispn_;    ///< fluid interface displacement  n
-  Teuchos::RCP<Epetra_Vector>            fiveln_;     ///< fluid interface velocity      n
-  Teuchos::RCP<Epetra_Vector>            fivelnm_;    ///< fluid interface velocity      n-1
-  Teuchos::RCP<Epetra_Vector>            fiaccnp_;    ///< fluid interface acceleration  n+1
-  Teuchos::RCP<Epetra_Vector>            fiaccn_;     ///< fluid interface acceleration  n
-  //@}
-
   // the interface map setup for interface <-> full translation
   FLD::UTILS::MapExtractor               FluidFluidinterface_;
 
@@ -581,6 +570,30 @@ protected:
   {
 	  set<int> MovingFluideleGIDs_;  ///< this set contains the element ids of the moving Fluid	  
 	  set<int> MovingFluidNodeGIDs_;  ///< this set contains the node GIDs of the moving fluid
+	  /// this a map between the dofs of fluid-fluid-boundary (first entry) and the dofs of fluid (second entry)
+	  std::map<int,int>  fluidboundarymap_; 
+	  /// this a map between the owners of fluid-fluid-boundary and the owners of fluid
+	  std::map<int,int>  fluidDofsOwnermap_;
+	  
+	  //! @name state vectors using the boundary parallel distribution (row vectors)
+	  Teuchos::RCP<Epetra_Vector>            fidispnp_;   ///< fluid interface displacement  n+1
+	  Teuchos::RCP<Epetra_Vector>            fivelnp_;    ///< fluid interface velocity      n+1
+	  Teuchos::RCP<Epetra_Vector>            fitrueresnp_;///< fluid interface residual      n+1
+	  Teuchos::RCP<Epetra_Vector>            fidispn_;    ///< fluid interface displacement  n
+	  Teuchos::RCP<Epetra_Vector>            fiveln_;     ///< fluid interface velocity      n
+	  Teuchos::RCP<Epetra_Vector>            fivelnm_;    ///< fluid interface velocity      n-1
+	  Teuchos::RCP<Epetra_Vector>            fiaccnp_;    ///< fluid interface acceleration  n+1
+	  Teuchos::RCP<Epetra_Vector>            fiaccn_;     ///< fluid interface acceleration  n
+	  //@}	  
+	  
+	  // state vectors (column vectors)
+	  Teuchos::RCP<Epetra_Vector> fidispcolnp_;
+	  Teuchos::RCP<Epetra_Vector> fidispcoln_;  
+	  Teuchos::RCP<Epetra_Vector> fivelcolnp_; 
+	  Teuchos::RCP<Epetra_Vector> fivelcoln_;   
+	  Teuchos::RCP<Epetra_Vector> fivelcolnm_;  
+	  Teuchos::RCP<Epetra_Vector> fiacccoln_;   
+	  
   }fluidfluidstate_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
