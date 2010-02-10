@@ -585,15 +585,6 @@ protected:
 	  Teuchos::RCP<Epetra_Vector>            fiaccnp_;    ///< fluid interface acceleration  n+1
 	  Teuchos::RCP<Epetra_Vector>            fiaccn_;     ///< fluid interface acceleration  n
 	  //@}	  
-	  
-	  // state vectors (column vectors)
-	  Teuchos::RCP<Epetra_Vector> fidispcolnp_;
-	  Teuchos::RCP<Epetra_Vector> fidispcoln_;  
-	  Teuchos::RCP<Epetra_Vector> fivelcolnp_; 
-	  Teuchos::RCP<Epetra_Vector> fivelcoln_;   
-	  Teuchos::RCP<Epetra_Vector> fivelcolnm_;  
-	  Teuchos::RCP<Epetra_Vector> fiacccoln_;   
-	  
   }fluidfluidstate_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)

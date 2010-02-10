@@ -1522,13 +1522,14 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     //------------------- store nodal increment for element stress update
     oldinc_->Update(1.0,*incvel_,0.0);
    
-   for (std::map<int,int>::const_iterator iter = fluidfluidstate_.fluidboundarymap_.begin(); iter != fluidfluidstate_.fluidboundarymap_.end(); ++iter)
-    {
-      (*fluidfluidstate_.fivelnp_)[fluidfluidstate_.fivelnp_->Map().LID(iter->first)] = (*state_.velnp_)[state_.velnp_->Map().LID(iter->second)];
-      (*fluidfluidstate_.fivelcolnp_)[fluidfluidstate_.fivelcolnp_->Map().LID(iter->first)] = (*state_.velnp_)[state_.velnp_->Map().LID(iter->second)];
-    }
-    FluidFluidboundarydis_->SetState("ivelnp" ,fluidfluidstate_.fivelnp_);
-    FluidFluidboundarydis_->SetState("ivelcolnp",fluidfluidstate_.fivelcolnp_);
+   if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
+   {
+     for (std::map<int,int>::const_iterator iter = fluidfluidstate_.fluidboundarymap_.begin(); iter != fluidfluidstate_.fluidboundarymap_.end(); ++iter)
+     {
+       (*fluidfluidstate_.fivelnp_)[fluidfluidstate_.fivelnp_->Map().LID(iter->first)] = (*state_.velnp_)[state_.velnp_->Map().LID(iter->second)];
+     }
+     FluidFluidboundarydis_->SetState("ivelcolnp",fluidfluidstate_.fivelnp_);
+   }
   }
 
   // compute acceleration at n+1
@@ -3484,28 +3485,28 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
 void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
 		)
 {
-    fluidfluidstate_.fidispcolnp_ = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
-    fluidfluidstate_.fidispcoln_  = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
-    fluidfluidstate_.fivelcolnp_  = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
-    fluidfluidstate_.fivelcoln_   = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
-    fluidfluidstate_.fivelcolnm_  = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
-    fluidfluidstate_.fiacccoln_   = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
+    Teuchos::RCP<Epetra_Vector> fidispcolnp = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
+    Teuchos::RCP<Epetra_Vector> fidispcoln  = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
+    Teuchos::RCP<Epetra_Vector> fivelcolnp  = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
+    Teuchos::RCP<Epetra_Vector> fivelcoln  = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
+    Teuchos::RCP<Epetra_Vector> fivelcolnm  = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
+    Teuchos::RCP<Epetra_Vector> fiacccoln   = LINALG::CreateVector(*FluidFluidboundarydis_->DofColMap(),true);
 
      // map to fluid parallel distribution
-     LINALG::Export(*fluidfluidstate_.fidispnp_,*(fluidfluidstate_.fidispcolnp_));
-     LINALG::Export(*fluidfluidstate_.fidispn_ ,*(fluidfluidstate_.fidispcoln_));
-     LINALG::Export(*fluidfluidstate_.fivelnp_ ,*(fluidfluidstate_.fivelcolnp_));
-     LINALG::Export(*fluidfluidstate_.fiveln_  ,*(fluidfluidstate_.fivelcoln_));
-     LINALG::Export(*fluidfluidstate_.fivelnm_ ,*(fluidfluidstate_.fivelcolnm_));
-     LINALG::Export(*fluidfluidstate_.fiaccn_  ,*(fluidfluidstate_.fiacccoln_));
+    LINALG::Export(*fluidfluidstate_.fidispnp_,*(fidispcolnp));
+    LINALG::Export(*fluidfluidstate_.fidispn_ ,*(fidispcoln));
+    LINALG::Export(*fluidfluidstate_.fivelnp_ ,*(fivelcolnp));
+    LINALG::Export(*fluidfluidstate_.fiveln_  ,*(fivelcoln));
+    LINALG::Export(*fluidfluidstate_.fivelnm_ ,*(fivelcolnm));
+    LINALG::Export(*fluidfluidstate_.fiaccn_  ,*(fiacccoln));
 
-     // put vectors into boundary discretization
-     FluidFluidboundarydis_->SetState("idispcolnp",fluidfluidstate_.fidispcolnp_);
-     FluidFluidboundarydis_->SetState("idispcoln" ,fluidfluidstate_.fidispcoln_);
-     FluidFluidboundarydis_->SetState("ivelcolnp" ,fluidfluidstate_.fivelcolnp_);
-     FluidFluidboundarydis_->SetState("ivelcoln"  ,fluidfluidstate_.fivelcoln_);
-     FluidFluidboundarydis_->SetState("ivelcolnm" ,fluidfluidstate_.fivelcolnm_);
-     FluidFluidboundarydis_->SetState("iacccoln"  ,fluidfluidstate_.fiacccoln_);
+    // put vectors into boundary discretization
+    FluidFluidboundarydis_->SetState("idispcolnp",fidispcolnp);
+    FluidFluidboundarydis_->SetState("idispcoln" ,fidispcoln);
+    FluidFluidboundarydis_->SetState("ivelcolnp" ,fivelcolnp);
+    FluidFluidboundarydis_->SetState("ivelcoln"  ,fivelcoln);
+    FluidFluidboundarydis_->SetState("ivelcolnm" ,fivelcolnm);
+    FluidFluidboundarydis_->SetState("iacccoln"  ,fiacccoln);
 }
 
  void FLD::XFluidImplicitTimeInt::FluidFluidCouplingEvaluate(
