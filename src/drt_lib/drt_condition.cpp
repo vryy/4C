@@ -179,6 +179,7 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==ArtRedTo3DCouplingCond)        os << "Artery reduced D 3D coupling condition";
   else if (Type()==Art3DToRedCouplingCond)        os << "Artery 3D reduced D coupling condition";
   else if (Type()==RedAirwayPrescribedCond)       os << "Reduced d airway prescribed boundary condition";
+  else if (Type()==RedLungAcinusCond)             os << "Reduced dimensional lung acinus boundary condition";
   else dserror("no output string for condition defined in DRT::Condition::Print");
 
   Container::Print(os);

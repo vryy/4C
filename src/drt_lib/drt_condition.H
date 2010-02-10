@@ -169,7 +169,8 @@ public:
     ArtRedTo3DCouplingCond,
     Art3DToRedCouplingCond,
     WindkesselOptimCond,
-    RedAirwayPrescribedCond
+    RedAirwayPrescribedCond,
+    RedLungAcinusCond
   };
 
   /*!

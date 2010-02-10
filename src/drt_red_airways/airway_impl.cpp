@@ -79,12 +79,6 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   RefCountPtr<MAT::Material> mat)
 {
   
-  const int   myrank  = discretization.Comm().MyPID();
-  //  if (myrank != ele->Owner())
-  //  {
-  //    return 0;
-  //  }
-  // the number of nodes
   const int numnode = iel;
   vector<int>::iterator it_vcr;
 
@@ -283,6 +277,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
           + pow(xyze(1,0) - xyze(1,1),2)
           + pow(xyze(2,0) - xyze(2,1),2));
 
+  double q_out = 0.0;
   if(ele->type() == "PoiseuilleResistive")
   {
     //------------------------------------------------------------
@@ -294,6 +289,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     
     rhs(0) = 0.0;
     rhs(1) = 0.0;
+
+    q_out = (eqn(0)-eqn(1))/R;
 
   }
   else if(ele->type() == "InductoResistive")
@@ -316,6 +313,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
 
     rhs(0) = -epnp(0)*2.0*C/dt - eqn(0);
     rhs(1) = 0.0;
+
+    q_out = (eqn(0)-eqn(1))/R;
   }
   else if(ele->type() == "RLC")
   {
@@ -329,6 +328,42 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     dserror("[%s] is not an implimented elements yet",(ele->type()).c_str());
     exit(1);
   }
+
+  // -------------------------------------------------------------------
+  // Adding the acinus model if Prescribed
+  // -------------------------------------------------------------------
+
+  // Check for the simple piston connected to a spring
+  for(int i = 0; i<ele->NumNode(); i++)
+  {
+
+    DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedLungAcinusCond");
+    if(condition)
+    {
+      if (i==0)
+      {
+        dserror("SMTHG IS WRONG");
+        exit(1);
+      }
+      string MatType = *(condition->Get<string>("materialType"));
+
+      if (MatType == "NeoHookean")
+      {
+        const double K = condition->GetDouble("Stiffness");
+        
+        
+        sysmat(i,i) += pow(-1.0,i)*(2.0/(K*dt));
+        rhs(i)      += pow(-1.0,i)*(q_out + 2.0/(K*dt)*epnp(i));
+      }
+      else
+      {
+        dserror("[%s] is not defined as a reduced dimensional lung acinus material",MatType.c_str());
+        exit(1);
+      }
+    }
+    
+  }
+
 }
 
 /*----------------------------------------------------------------------*
@@ -349,7 +384,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
   const double time = params.get<double>("total time");
 
   // get time-step size
-  const double dt = params.get<double>("time step size");
+  //  const double dt = params.get<double>("time step size");
 
   // the number of nodes
   const int numnode = iel;
@@ -385,9 +420,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
   {
     if (ele->Nodes()[i]->Owner()== myrank)
     {
-      DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
-      if(condition)
+      
+      if(ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
       {
+        DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
         // Get the type of prescribed bc
         string Bc = *(condition->Get<string>("boundarycond"));
         
@@ -468,6 +504,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           dserror("precribed [%s] is not defined for reduced airways",Bc.c_str());
           exit(1);
         }
+      }
+      else if(ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))
+      {
+        // ---------------------------------------------------------------
+        // If the node is conected to a reduced dimesnional acinus
+        // ---------------------------------------------------------------
+        
+        // At this state do nothing, since this boundary is resolved
+        // during the assembly of Sysmat and RHS
       }
       else
       {

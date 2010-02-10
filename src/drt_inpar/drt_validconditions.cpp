@@ -1797,7 +1797,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(windkessel_optim_bc);
   /*--------------------------------------------------------------------*/
-  // Prescribed BC for reduced dimnsional airways 
+  // Prescribed BC for reduced dimensional airways 
 
   Teuchos::RCP<ConditionDefinition> raw_in_bc =
     Teuchos::rcp(new ConditionDefinition("DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS",
@@ -1820,6 +1820,28 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(raw_in_bc);
  
+
+  /*--------------------------------------------------------------------*/
+  // Acinus model for reduced dimensional airways 
+
+  Teuchos::RCP<ConditionDefinition> acinus_bc =
+    Teuchos::rcp(new ConditionDefinition("DESIGN NODE REDUCED-D LUNG ACINUS CONDITIONS",
+                                         "RedLungAcinusCond",
+                                         "Reduced dimensional lung acinus boundary condition",
+                                         DRT::Condition::RedLungAcinusCond,
+                                         true,
+                                         DRT::Condition::Point));
+
+  acinus_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("materialType", "NeoHookean",
+    Teuchos::tuple<std::string>("NeoHookean"),
+    Teuchos::tuple<std::string>("NeoHookean"),
+    true)));
+
+  AddNamedReal(acinus_bc,"Area");
+  AddNamedReal(acinus_bc,"Stiffness");
+
+  condlist.push_back(acinus_bc);
+
 
   return vc;
 
