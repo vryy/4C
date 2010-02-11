@@ -411,24 +411,13 @@ void ADAPTER::XFluidImpl::Output()
   // first fluid output
   fluid_.StatisticsAndOutput();
 
-
-  //  boundaryoutput_->WriteVector("interface force", itrueres_);
-
   // create interface DOF vectors using the fluid parallel distribution
-  Teuchos::RCP<Epetra_Vector> ivelnpcol   = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> ivelncol    = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> iaccnpcol   = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> iaccncol    = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> idispnpcol  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-
-  // map to fluid parallel distribution
-  LINALG::Export(*ivelnp_    ,*ivelnpcol);
-  LINALG::Export(*iveln_     ,*ivelncol);
-  LINALG::Export(*iaccnp_    ,*iaccnpcol);
-  LINALG::Export(*iaccn_     ,*iaccncol);
-  LINALG::Export(*idispnp_   ,*idispnpcol);
-  LINALG::Export(*itrueresnp_,*itruerescol);
+  Teuchos::RCP<const Epetra_Vector> ivelnpcol   = DRT::UTILS::GetColVersionOfRowVector(boundarydis_, ivelnp_);
+  Teuchos::RCP<const Epetra_Vector> ivelncol    = DRT::UTILS::GetColVersionOfRowVector(boundarydis_, iveln_);
+  Teuchos::RCP<const Epetra_Vector> iaccnpcol   = DRT::UTILS::GetColVersionOfRowVector(boundarydis_, iaccnp_);
+  Teuchos::RCP<const Epetra_Vector> iaccncol    = DRT::UTILS::GetColVersionOfRowVector(boundarydis_, iaccn_);
+  Teuchos::RCP<const Epetra_Vector> idispnpcol  = DRT::UTILS::GetColVersionOfRowVector(boundarydis_, idispnp_);
+  Teuchos::RCP<const Epetra_Vector> itruerescol = DRT::UTILS::GetColVersionOfRowVector(boundarydis_, itrueresnp_);
 
   // print redundant arrays on proc 0
   if (boundarydis_->Comm().MyPID() == 0)
@@ -534,10 +523,10 @@ void ADAPTER::XFluidImpl::Output()
 
 
 void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
-    const Teuchos::RCP<Epetra_Vector>   displacementfield,
-    const Teuchos::RCP<Epetra_Vector>   vectorfield,
-    const std::string filestr,
-    const std::string name_in_gmsh
+    const Teuchos::RCP<const Epetra_Vector>   displacementfield,
+    const Teuchos::RCP<const Epetra_Vector>   vectorfield,
+    const std::string& filestr,
+    const std::string& name_in_gmsh
     ) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
@@ -596,29 +585,13 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::PrepareBoundaryDis()
 {
-  // create interface DOF vectors using the fluid parallel distribution
-  Teuchos::RCP<Epetra_Vector> idispcolnp = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> idispcoln  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> ivelcolnp  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> ivelcoln   = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> ivelcolnm  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> iacccoln   = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-
-  // map to fluid parallel distribution
-  LINALG::Export(*idispnp_,*idispcolnp);
-  LINALG::Export(*idispn_ ,*idispcoln);
-  LINALG::Export(*ivelnp_ ,*ivelcolnp);
-  LINALG::Export(*iveln_  ,*ivelcoln);
-  LINALG::Export(*ivelnm_ ,*ivelcolnm);
-  LINALG::Export(*iaccn_  ,*iacccoln);
-
-  // put vectors into boundary discretization
-  boundarydis_->SetState("idispcolnp",idispcolnp);
-  boundarydis_->SetState("idispcoln" ,idispcoln);
-  boundarydis_->SetState("ivelcolnp" ,ivelcolnp);
-  boundarydis_->SetState("ivelcoln"  ,ivelcoln);
-  boundarydis_->SetState("ivelcolnm" ,ivelcolnm);
-  boundarydis_->SetState("iacccoln"  ,iacccoln);
+  // put vectors into boundary discretization (SetState generates col vector automatically)
+  boundarydis_->SetState("idispcolnp",idispnp_);
+  boundarydis_->SetState("idispcoln" ,idispn_);
+  boundarydis_->SetState("ivelcolnp" ,ivelnp_);
+  boundarydis_->SetState("ivelcoln"  ,iveln_);
+  boundarydis_->SetState("ivelcolnm" ,ivelnm_);
+  boundarydis_->SetState("iacccoln"  ,iaccn_);
 }
 
 
@@ -734,16 +707,9 @@ void ADAPTER::XFluidImpl::ReadRestart(int step)
   reader.ReadVector(iaccn_, "iaccn");
   reader.ReadVector(itrueresnp_, "itrueresnp");
 
-  // create interface DOF vectors using the fluid parallel distribution
-  Teuchos::RCP<Epetra_Vector> idispcolnp = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> idispcoln  = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-
-  // map to fluid parallel distribution
-  LINALG::Export(*idispnp_,*idispcolnp);
-  LINALG::Export(*idispn_ ,*idispcoln);
-
-  boundarydis_->SetState("idispcolnp",idispcolnp);
-  boundarydis_->SetState("idispcoln" ,idispcoln);
+  // SetState generates colvectors automatically
+  boundarydis_->SetState("idispcolnp",idispnp_);
+  boundarydis_->SetState("idispcoln" ,idispn_);
 
   fluid_.ReadRestart(step,boundarydis_);
 }
@@ -778,11 +744,7 @@ void ADAPTER::XFluidImpl::LiftDrag()
 {
   // get forces on all procs
   // create interface DOF vectors using the fluid parallel distribution
-  Teuchos::RCP<Epetra_Vector> iforcecol = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-
-  // map to fluid parallel distribution
-  LINALG::Export(*itrueresnp_,*iforcecol);
-
+  Teuchos::RCP<const Epetra_Vector> iforcecol = DRT::UTILS::GetColVersionOfRowVector(boundarydis_, itrueresnp_);
 
   if (boundarydis_->Comm().MyPID() == 0)
   {
@@ -843,7 +805,7 @@ void ADAPTER::XFluidImpl::RemoveInternalSurfElements(
 {
   // for structures consisting of one layer of hex8 elements, internal surface elements appear
   // find internal elements
-  set<int> internal_surfeles;
+  std::set<int> internal_surfeles;
   for (int isurf=0; isurf<boundarydis_->NumMyRowElements(); ++isurf)
   {
     const DRT::Element* surfele = boundarydis_->lRowElement(isurf);
@@ -902,7 +864,7 @@ void ADAPTER::XFluidImpl::RemoveInternalSurfElements(
   if (not internal_surfeles.empty())
     cout << RED_LIGHT << "Found " << internal_surfeles.size() << " internal surface elements! Removing them..." << END_COLOR << endl;
   // remove internal elements
-  for (set<int>::const_iterator ele=internal_surfeles.begin();
+  for (std::set<int>::const_iterator ele=internal_surfeles.begin();
        ele!=internal_surfeles.end();
        ++ele)
   {

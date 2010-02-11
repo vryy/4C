@@ -380,21 +380,13 @@ void FLD::XFluidImplicitTimeInt::TimeLoop(
   }
 
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
-  Teuchos::RCP<Epetra_Vector> idispcolnp  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> ivelcolnp   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
-  Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> ivelcolnm   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-
-  cutterdiscret->SetState("idispcolnp",idispcolnp);
-  cutterdiscret->SetState("ivelcolnp",ivelcolnp);
-
-  cutterdiscret->SetState("idispcoln",idispcoln);
-  cutterdiscret->SetState("ivelcoln",ivelcoln);
-  cutterdiscret->SetState("ivelcolnm",ivelcolnm);
-  cutterdiscret->SetState("iacccoln",iacccoln);
+  cutterdiscret->SetState("idispcolnp", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
+  cutterdiscret->SetState("ivelcolnp", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
+  cutterdiscret->SetState("idispcoln", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
+  cutterdiscret->SetState("ivelcoln", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
+  cutterdiscret->SetState("ivelcolnm", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
+  cutterdiscret->SetState("iacccoln", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
 
   while (step_<stepmax_ and time_<maxtime_)
   {
@@ -743,10 +735,10 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
         dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("ivelcoln") , state_.veln_ );
         dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("ivelcolnm"), state_.velnm_);
         dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("iacccoln") , state_.accn_ );
-        PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_) , "sol_field_veln_extrapolated" ,"Velocity Solution (Physical) n"    ,false, Step(), Time());
-        PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnm_), "sol_field_velnm_extrapolated","Velocity Solution (Physical) n-1"  ,false, Step(), Time());
-        PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accn_) , "sol_field_accn_extrapolated" ,"Acceleration Solution (Physical) n",false, Step(), Time());
       }
+      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_) , "sol_field_veln_extrapolated" ,"Velocity Solution (Physical) n"    ,false, Step(), Time());
+      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnm_), "sol_field_velnm_extrapolated","Velocity Solution (Physical) n-1"  ,false, Step(), Time());
+      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accn_) , "sol_field_accn_extrapolated" ,"Acceleration Solution (Physical) n",false, Step(), Time());
     }
   }
 
@@ -803,7 +795,7 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   // rotation of matrix to improve matrix condition number
 
   // find nodes connected to enrichments
-  set<int> enr_node_gids;
+  std::set<int> enr_node_gids;
   for (int iele=0; iele < discret_->NumMyRowElements(); iele++)
   {
     const DRT::Element* ele = discret_->lRowElement(iele);
@@ -816,8 +808,8 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
     }
   }
 
-  set<int> ext_enr_ele_gids;
-  for (set<int>::const_iterator nodeid = enr_node_gids.begin(); nodeid != enr_node_gids.end();nodeid++)
+  std::set<int> ext_enr_ele_gids;
+  for (std::set<int>::const_iterator nodeid = enr_node_gids.begin(); nodeid != enr_node_gids.end();nodeid++)
   {
     const DRT::Node* node = discret_->gNode(*nodeid);
     for (int iele=0;iele<node->NumElement();iele++)
@@ -826,8 +818,8 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
     }
   }
 
-  set<int> ext_enr_node_gids;
-  for (set<int>::const_iterator eleid = ext_enr_ele_gids.begin(); eleid != ext_enr_ele_gids.end();eleid++)
+  std::set<int> ext_enr_node_gids;
+  for (std::set<int>::const_iterator eleid = ext_enr_ele_gids.begin(); eleid != ext_enr_ele_gids.end();eleid++)
   {
     const DRT::Element* ele = discret_->lRowElement(*eleid);
     for (int inode=0;inode<ele->NumNode();inode++)
@@ -2489,21 +2481,13 @@ void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
   // create zero displacement vector to use initial position of interface
   {
     const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
-    Teuchos::RCP<Epetra_Vector> idispcolnp  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-    Teuchos::RCP<Epetra_Vector> ivelcolnp   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
-    Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-    Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-    Teuchos::RCP<Epetra_Vector> ivelcolnm   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-    Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-
-    cutterdiscret->SetState("idispcolnp",idispcolnp);
-    cutterdiscret->SetState("ivelcolnp",ivelcolnp);
-
-    cutterdiscret->SetState("idispcoln",idispcoln);
-    cutterdiscret->SetState("ivelcoln",ivelcoln);
-    cutterdiscret->SetState("ivelcolnm",ivelcolnm);
-    cutterdiscret->SetState("iacccoln",iacccoln);
+    cutterdiscret->SetState("idispcolnp", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
+    cutterdiscret->SetState("ivelcolnp", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
+    cutterdiscret->SetState("idispcoln", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
+    cutterdiscret->SetState("ivelcoln", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
+    cutterdiscret->SetState("ivelcolnm", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
+    cutterdiscret->SetState("iacccoln", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
 
     ComputeInterfaceAndSetDOFs(cutterdiscret);
     cutterdiscret->ClearState();
@@ -2800,19 +2784,12 @@ void FLD::XFluidImplicitTimeInt::SolveStationaryProblem(
 {
 
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
-  const Teuchos::RCP<Epetra_Vector> idispcolnp  = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  const Teuchos::RCP<Epetra_Vector> idispcoln   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  const Teuchos::RCP<Epetra_Vector> ivelcolnp   = LINALG::CreateVector(*fluidsurface_dofcolmap,true); // one could give a velocity here to have stationary flow over the interface
-  const Teuchos::RCP<Epetra_Vector> ivelcoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  const Teuchos::RCP<Epetra_Vector> ivelcolnm   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  const Teuchos::RCP<Epetra_Vector> iacccoln    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-
-  cutterdiscret->SetState("idispcolnp", idispcolnp);
-  cutterdiscret->SetState("idispcoln", idispcoln);
-  cutterdiscret->SetState("ivelcolnp",ivelcolnp);
-  cutterdiscret->SetState("ivelcoln", ivelcoln);
-  cutterdiscret->SetState("ivelcolnm",ivelcolnm);
-  cutterdiscret->SetState("iacccoln", iacccoln);
+  cutterdiscret->SetState("idispcolnp", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
+  cutterdiscret->SetState("idispcoln", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
+  cutterdiscret->SetState("ivelcolnp", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
+  cutterdiscret->SetState("ivelcoln", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
+  cutterdiscret->SetState("ivelcolnm", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
+  cutterdiscret->SetState("iacccoln", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
 
   ComputeInterfaceAndSetDOFs(cutterdiscret);
 

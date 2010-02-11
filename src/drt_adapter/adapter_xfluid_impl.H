@@ -199,10 +199,10 @@ namespace ADAPTER {
     virtual void ComputeInterfaceAccelerationsAndVelocities();
 
     void PrintInterfaceVectorField(
-        const Teuchos::RCP<Epetra_Vector>   displacementfield,
-        const Teuchos::RCP<Epetra_Vector>   vectorfield,
-        const std::string filestr,
-        const std::string name_in_gmsh
+        const Teuchos::RCP<const Epetra_Vector>   displacementfield,
+        const Teuchos::RCP<const Epetra_Vector>   vectorfield,
+        const std::string& filestr,
+        const std::string& name_in_gmsh
         ) const;
 
     void RemoveInternalSurfElements(
