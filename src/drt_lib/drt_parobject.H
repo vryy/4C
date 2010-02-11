@@ -200,6 +200,7 @@ using namespace std;
 #define ParObject_Vele3Line             (int)186
 #define ParObject_RedAirwayRegister     (int)187
 #define ParObject_RedAirway             (int)188
+#define ParObject_FriNode               (int)189
 namespace DRT
 {
 

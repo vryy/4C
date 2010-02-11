@@ -42,6 +42,7 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/linalg_utils.H"
+#include "friction_node.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -446,12 +447,20 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
         }
         case MORTAR::StrategyBase::activeold:
         {
-          cnode->ActiveOld() = cnode->Active();
+          if(friction_==false)
+            dserror("Error in StoreNodealQuantities: This should not be "
+                     "called for contact without friction");
+          CONTACT::FriNode* frinode = static_cast<FriNode*>(cnode);
+          frinode->ActiveOld() = frinode->Active();
           break;
         }
         case MORTAR::StrategyBase::jump:
         {
-          cnode->jump()[dof] = (*vectorinterface)[locindex[dof]];
+          if(friction_==false)
+            dserror("Error in StoreNodealQuantities: This should not be "
+                     "called for contact without friction");
+          FriNode* frinode = static_cast<FriNode*>(cnode);
+          frinode->jump()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         default:
@@ -615,7 +624,7 @@ void CONTACT::CoAbstractStrategy::StoreToOld(MORTAR::StrategyBase::QuantityType 
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node)
         dserror("ERROR: Cannot find node with gid %",gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      FriNode* cnode = static_cast<FriNode*>(node);
 
       switch (type)
       {
@@ -716,7 +725,7 @@ void CONTACT::CoAbstractStrategy::DoWriteRestart(RCP<Epetra_Vector>& activetoggl
       if (cnode->Active()) (*activetoggle)[dof]=1;
       if (friction_)
       {
-        if (cnode->Slip()) (*sliptoggle)[dof]=1;
+        if (static_cast<CONTACT::FriNode*>(cnode)->Slip()) (*sliptoggle)[dof]=1;
       }
     }
   }
@@ -774,7 +783,7 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
         if (friction_)
         {
           // set value stick / slip in cnode
-          if ((*sliptoggle)[dof]==1) cnode->Slip()=true;
+          if ((*sliptoggle)[dof]==1) static_cast<CONTACT::FriNode*>(cnode)->Slip()=true;
         }
       }
     }
@@ -1129,8 +1138,6 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
   // get input parameter ctype
   INPAR::CONTACT::ContactType ctype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(Params(),"CONTACT");
-  INPAR::CONTACT::ContactFrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
 
   if (Comm().MyPID()==0)
     cout << "Active contact set--------------------------------------------------------------\n";
@@ -1161,35 +1168,6 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
         nzold += cnode->n()[k] * cnode->lmold()[k];
       }
       
-      // friction
-      double zt = 0.0;
-      double ztxi = 0.0;
-      double zteta = 0.0;
-      double jumptxi = 0.0;
-      double jumpteta = 0.0;
-
-      if(ftype == INPAR::CONTACT::friction_tresca ||
-         ftype == INPAR::CONTACT::friction_coulomb ||
-         ftype == INPAR::CONTACT::friction_stick)
-      {
-        // compute tangential parts of Lagrange multiplier and jumps
-        for (int k=0;k<Dim();++k)
-        {
-          ztxi += cnode->txi()[k] * cnode->lm()[k];
-          zteta += cnode->teta()[k] * cnode->lm()[k];
-          jumptxi += cnode->txi()[k] * cnode->jump()[k];
-          jumpteta += cnode->teta()[k] * cnode->jump()[k];
-        }
-
-        zt = sqrt(ztxi*ztxi+zteta*zteta);
-
-        // check for dimensions
-        if (Dim()==2 and abs(jumpteta)>0.0001)
-        {
-          dserror("Error: Jumpteta should be zero for 2D");
-        }
-      }
-
       if (ctype == INPAR::CONTACT::contact_normal)
       {
         // print nodes of inactive set *************************************
@@ -1207,16 +1185,43 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
         }
 
       }
-      else
+      // friction
+      else if (friction_) 
       {
-        if(cnode->Active())
-        {
-          if(cnode->Slip())
-            cout << "SLIP " << gid << " Normal " << nz << " Tangential " << zt << endl;
-          else
-           cout << "STICK " << gid << " Normal " << nz << " Tangential " << zt << endl;
+        FriNode* frinode = static_cast<FriNode*>(cnode);
+        
+        double zt = 0.0;
+        double ztxi = 0.0;
+        double zteta = 0.0;
+        double jumptxi = 0.0;
+        double jumpteta = 0.0;
+  
+          // compute tangential parts of Lagrange multiplier and jumps
+          for (int k=0;k<Dim();++k)
+          {
+            ztxi += frinode->txi()[k] * frinode->lm()[k];
+            zteta += frinode->teta()[k] * frinode->lm()[k];
+            jumptxi += frinode->txi()[k] * frinode->jump()[k];
+            jumpteta += frinode->teta()[k] * frinode->jump()[k];
+          }
+  
+          zt = sqrt(ztxi*ztxi+zteta*zteta);
+  
+          // check for dimensions
+          if (Dim()==2 and abs(jumpteta)>0.0001)
+            dserror("Error: Jumpteta should be zero for 2D");
+  
+          // print active nodes on screen
+          if(frinode->Active())
+          {
+            if(frinode->Slip())
+              cout << "SLIP " << gid << " Normal " << nz << " Tangential " << zt << endl;
+            else
+             cout << "STICK " << gid << " Normal " << nz << " Tangential " << zt << endl;
+          }
         }
-      }
+      else
+        dserror("Error in PrintActiveSet: Either friction or not!");
     }
   }
 

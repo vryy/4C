@@ -279,6 +279,7 @@ OBJS_DRT_CONTACTNEW_LIB = \
                 src/drt_contactnew/contact_lagrange_strategy.o \
                 src/drt_contactnew/contact_manager.o \
                 src/drt_contactnew/contact_node.o \
+                src/drt_contactnew/friction_node.o \
                 src/drt_contactnew/contact_penalty_strategy.o \
                 src/drt_contactnew/meshtying_abstract_strategy.o \
                 src/drt_contactnew/meshtying_lagrange_strategy.o \

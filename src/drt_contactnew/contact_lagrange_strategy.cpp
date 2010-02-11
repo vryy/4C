@@ -1315,18 +1315,18 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
       }
       
       // friction
-
       double tz = 0.0;
       double tjump = 0.0;
 
-      if(ftype == INPAR::CONTACT::friction_tresca || 
-         ftype == INPAR::CONTACT::friction_coulomb)
+      if(friction_)
       {
+        FriNode* frinode = static_cast<FriNode*>(cnode);
+        
         // compute tangential part of Lagrange multiplier
-        tz = cnode->txi()[0]*cnode->lm()[0] + cnode->txi()[1]*cnode->lm()[1];
+        tz = frinode->txi()[0]*frinode->lm()[0] + frinode->txi()[1]*frinode->lm()[1];
 
         // compute tangential part of jump
-        tjump = cnode->txi()[0]*cnode->jump()[0] + cnode->txi()[1]*cnode->jump()[1];
+        tjump = frinode->txi()[0]*frinode->jump()[0] + frinode->txi()[1]*frinode->jump()[1];
       }
 
       // check nodes of inactive set *************************************
@@ -1345,7 +1345,8 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
           cnode->Active() = true;
           activesetconv_ = false;
 #ifdef CONTACTFRICTIONLESSFIRST
-       if (cnode->ActiveOld()==false) cnode->Slip() = true;
+       if (static_cast<FriNode*>(cnode)->ActiveOld()==false)
+         static_cast<FriNode*>(cnode)->Slip() = true;
 #endif
         }
       }
@@ -1367,9 +1368,8 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
           cnode->Active() = false;
           
           // friction
-          if(ftype == INPAR::CONTACT::friction_tresca || 
-             ftype == INPAR::CONTACT::friction_coulomb)
-            cnode->Slip() = false;
+          if(friction_)
+            static_cast<FriNode*>(cnode)->Slip() = false;
           
           activesetconv_ = false;
         }
@@ -1379,17 +1379,18 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
           // friction tresca
           if(ftype == INPAR::CONTACT::friction_tresca)
           {
+            FriNode* frinode = static_cast<FriNode*>(cnode);
             double frbound = Params().get<double>("FRBOUND");
             double ct = Params().get<double>("SEMI_SMOOTH_CT");
 
-            if(cnode->Slip() == false)
+            if(frinode->Slip() == false)
             {
               // check (tz+ct*tjump)-frbound <= 0
               if(abs(tz+ct*tjump)-frbound <= 0) {}
                 // do nothing (stick was correct)
               else
               {
-                 cnode->Slip() = true;
+                 frinode->Slip() = true;
                  activesetconv_ = false;
               }
             }
@@ -1401,15 +1402,15 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
               else
               {
 #ifdef CONTACTFRICTIONLESSFIRST
-                if(cnode->ActiveOld()==false)
+                if(frinode->ActiveOld()==false)
                 {}
                 else
                 {
-                 cnode->Slip() = false;
+                 frinode->Slip() = false;
                  activesetconv_ = false;
                 }
 #else
-                cnode->Slip() = false;
+                frinode->Slip() = false;
                 activesetconv_ = false;
 #endif
               }
@@ -1419,17 +1420,18 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
           // friction coulomb
           if(ftype == INPAR::CONTACT::friction_coulomb)
           {
+            FriNode* frinode = static_cast<FriNode*>(cnode);
             double frcoeff = Params().get<double>("FRCOEFF");
             double ct = Params().get<double>("SEMI_SMOOTH_CT");
 
-            if(cnode->Slip() == false)
+            if(frinode->Slip() == false)
             {
               // check (tz+ct*tjump)-frbound <= 0
               if(abs(tz+ct*tjump)-frcoeff*nz <= 0) {}
                 // do nothing (stick was correct)
               else
               {
-                 cnode->Slip() = true;
+                 frinode->Slip() = true;
                  activesetconv_ = false;
               }
             }
@@ -1441,15 +1443,15 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
               else
               {
 #ifdef CONTACTFRICTIONLESSFIRST
-                if(cnode->ActiveOld()==false)
+                if(frinode->ActiveOld()==false)
                 {}
                 else
                 {
-                 cnode->Slip() = false;
+                 frinode->Slip() = false;
                  activesetconv_ = false;
                 }
 #else
-                cnode->Slip() = false;
+                frinode->Slip() = false;
                 activesetconv_ = false;
 #endif
               }
@@ -1637,16 +1639,19 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
       vector<double> tjump (Dim()-1,0);
       double euclidean = 0.0;
 
-      if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
-       {
+      if(friction_)
+      {
+        // static cast
+        FriNode* frinode = static_cast<FriNode*>(cnode);
+                
         // compute tangential parts and of Lagrange multiplier and incremental jumps
         for (int i=0;i<Dim();++i)
-        {
-          tz[0] += cnode->txi()[i]*cnode->lm()[i];
-           if(Dim()==3) tz[1] += cnode->teta()[i]*cnode->lm()[i];
+        {          
+          tz[0] += frinode->txi()[i]*frinode->lm()[i];
+          if(Dim()==3) tz[1] += frinode->teta()[i]*frinode->lm()[i];
 
-           tjump[0] += cnode->txi()[i]*cnode->jump()[i];
-           if(Dim()==3) tjump[1] += cnode->teta()[i]*cnode->jump()[i];
+           tjump[0] += frinode->txi()[i]*frinode->jump()[i];
+           if(Dim()==3) tjump[1] += frinode->teta()[i]*frinode->jump()[i];
         }
 
         // evaluate euclidean norm |tz+ct.tjump|
@@ -1672,13 +1677,14 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           cnode->Active() = true;
           
           //friction
-          if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
+          if(friction_)
           {
             // nodes coming into contact
-            cnode->Slip() = true;
+            static_cast<FriNode*>(cnode)->Slip() = true;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->ActiveOld()==false) cnode->Slip() = true;
+        if (static_cast<FriNode*>(cnode)->ActiveOld()==false)
+          static_cast<FriNode*>(cnode)->Slip() = true;
 #endif
           }
          
@@ -1700,8 +1706,8 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
         {
           cnode->Active() = false;
           // friction
-          if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
-            cnode->Slip() = false;
+          if(friction_)
+            static_cast<FriNode*>(cnode)->Slip() = false;
           activesetconv_ = false;
         }
         // friction
@@ -1710,16 +1716,17 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           // friction tresca
           if(ftype == INPAR::CONTACT::friction_tresca)
           {
+            FriNode* frinode = static_cast<FriNode*>(cnode);
             double frbound = Params().get<double>("FRBOUND");
 
-            if(cnode->Slip() == false)
+            if(frinode->Slip() == false)
             {
               // check (euclidean)-frbound <= 0
               if(euclidean-frbound <= 0) {}
                 // do nothing (stick was correct)
               else
               {
-                 cnode->Slip() = true;
+                 frinode->Slip() = true;
                  activesetconv_ = false;
               }
             }
@@ -1731,15 +1738,15 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
               else
               {
 #ifdef CONTACTFRICTIONLESSFIRST
-                if(cnode->ActiveOld()==false)
+                if(frinode->ActiveOld()==false)
                 {}
                 else
                 {
-                 cnode->Slip() = false;
+                 frinode->Slip() = false;
                  activesetconv_ = false;
                 }
 #else
-                cnode->Slip() = false;
+                frinode->Slip() = false;
                 activesetconv_ = false;
 #endif
               }
@@ -1749,8 +1756,9 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           // friction coulomb
           if(ftype == INPAR::CONTACT::friction_coulomb)
           {
+            FriNode* frinode = static_cast<FriNode*>(cnode);
             double frcoeff = Params().get<double>("FRCOEFF");
-            if(cnode->Slip() == false)
+            if(frinode->Slip() == false)
             {
               // check (euclidean)-frbound <= 0
 #ifdef CONTACTCOMPHUEBER
@@ -1761,7 +1769,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
                 // do nothing (stick was correct)
               else
               {
-                 cnode->Slip() = true;
+                 frinode->Slip() = true;
                  activesetconv_ = false;
               }
             }
@@ -1777,15 +1785,15 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
               else
               {
 #ifdef CONTACTFRICTIONLESSFIRST
-                if(cnode->ActiveOld()==false)
+                if(frinode->ActiveOld()==false)
                 {}
                 else
                 {
-                 cnode->Slip() = false;
+                 frinode->Slip() = false;
                  activesetconv_ = false;
                 }
 #else
-                cnode->Slip() = false;
+                frinode->Slip() = false;
                 activesetconv_ = false;
 #endif
               }

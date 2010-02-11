@@ -212,29 +212,34 @@ void CONTACT::CoInterface::Initialize()
 
     // reset feasible projection status
     node->HasProj() = false;
-    
+ 
     // FRICTION - related quantities
-    // reset derivative map of jump
-    for (int j=0; j<(int)((node->GetDerivJump()).size()); ++j)
-      (node->GetDerivJump())[j].clear();
-    (node->GetDerivJump()).resize(0);
-    
-    // reset nodal Mortar maps (Petrov-Galerkin approach)
-    for (int j=0;j<(int)((node->GetDPG()).size());++j)
-      (node->GetDPG())[j].clear();
-    for (int j=0;j<(int)((node->GetMPG()).size());++j)
-      (node->GetMPG())[j].clear();
-
-    (node->GetDPG()).resize(0);
-    (node->GetMPG()).resize(0);
-    
-    // reset derivative map of Mortar matrices
-    (node->GetDerivDPG()).clear();
-    (node->GetDerivMPG()).clear();
-
-    // reset SNodes and Mnodes
-    node->GetSNodes().clear();
-    node->GetMNodes().clear();
+    if(friction_)
+    {
+      CONTACT::FriNode* friode = static_cast<CONTACT::FriNode*>(idiscret_->lColNode(i));
+      // reset nodal Mortar maps (Petrov-Galerkin approach)
+      for (int j=0;j<(int)((frinode->GetDPG()).size());++j)
+        (frinode->GetDPG())[j].clear();
+      for (int j=0;j<(int)((frinode->GetMPG()).size());++j)
+        (frinode->GetMPG())[j].clear();
+      
+      (frinode->GetDPG()).resize(0);
+      (frinode->GetMPG()).resize(0);
+      
+      // reset SNodes and Mnodes
+      frinode->GetSNodes().clear();
+      frinode->GetMNodes().clear();
+      
+      // reset derivative map of jump
+      for (int j=0; j<(int)((frinode->GetDerivJump()).size()); ++j)
+        (frinode->GetDerivJump())[j].clear();
+      (frinode->GetDerivJump()).resize(0);
+      
+      
+      // reset derivative map of Mortar matrices
+      (frinode->GetDerivDPG()).clear();
+      (frinode->GetDerivMPG()).clear();
+    }
   }
 
   // loop over all elements to reset contact candidates / search lists
@@ -529,7 +534,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    FriNode* cnode = static_cast<FriNode*>(node);
 
     // get some informatiom form the node
     double gap = cnode->Getg();
@@ -801,7 +806,7 @@ void CONTACT::CoInterface::AssembleRelMov(Epetra_Vector& jumpglobal)
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    FriNode* cnode = static_cast<FriNode*>(node);
 
     int dim = cnode->NumDof();
     double* jump = cnode->jump();
@@ -837,7 +842,7 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    FriNode* cnode = static_cast<FriNode*>(node);
 
     // get some information form node
     double* n = cnode->n();
@@ -1085,7 +1090,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    FriNode* cnode = static_cast<FriNode*>(node);
 
     // get some informatiom form the node
     double gap = cnode->Getg();
@@ -1439,7 +1444,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    FriNode* cnode = static_cast<FriNode*>(node);
 
     // get some informatiom form the node
     double gap = cnode->Getg();
@@ -2432,7 +2437,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
     int gid = sticknodes->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    FriNode* cnode = static_cast<FriNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
@@ -2566,7 +2571,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
       int gid = *mcurr;
       DRT::Node* mnode = idiscret_->gNode(gid);
       if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-      CoNode* cmnode = static_cast<CoNode*>(mnode);
+      FriNode* cmnode = static_cast<FriNode*>(mnode);
       const int* mdofs = cmnode->Dofs();
 
       double mik = (mmap[0])[mdofs[0]];
@@ -2624,7 +2629,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
       int gid = *mcurr;
       DRT::Node* mnode = idiscret_->gNode(gid);
       if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-      CoNode* cmnode = static_cast<CoNode*>(mnode);
+      FriNode* cmnode = static_cast<FriNode*>(mnode);
       const int* mdofs = cmnode->Dofs();
 
       double mik = (mmap[0])[mdofs[0]];
@@ -2696,7 +2701,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
       int gid = dmcurr->first;
       DRT::Node* mnode = idiscret_->gNode(gid);
       if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-      CoNode* cmnode = static_cast<CoNode*>(mnode);
+      FriNode* cmnode = static_cast<FriNode*>(mnode);
       double* mxi = cmnode->xspatial();
 
       // we need the dot product ns*xm of this node pair
@@ -2761,7 +2766,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //    int gid = sticknodes->GID(i);
 //    DRT::Node* node = idiscret_->gNode(gid);
 //    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-//    CoNode* cnode = static_cast<CoNode*>(node);
+//    FriNode* cnode = static_cast<FriNode*>(node);
 //
 //    if (cnode->Owner() != Comm().MyPID())
 //      dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
@@ -2884,7 +2889,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //      int gid = *mcurr;
 //      DRT::Node* mnode = idiscret_->gNode(gid);
 //      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-//      CoNode* cmnode = static_cast<CoNode*>(mnode);
+//      FriNode* cmnode = static_cast<FriNode*>(mnode);
 //      const int* mdofs = cmnode->Dofs();
 //
 //      double mik = (mmap[0])[mdofs[0]];
@@ -2935,7 +2940,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //      int gid = *mcurr;
 //      DRT::Node* mnode = idiscret_->gNode(gid);
 //      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-//      CoNode* cmnode = static_cast<CoNode*>(mnode);
+//      FriNode* cmnode = static_cast<FriNode*>(mnode);
 //      const int* mdofs = cmnode->Dofs();
 //
 //      double mik = (mmap[0])[mdofs[0]];
@@ -2995,7 +3000,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //      int gid = dmcurr->first;
 //      DRT::Node* mnode = idiscret_->gNode(gid);
 //      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-//      CoNode* cmnode = static_cast<CoNode*>(mnode);
+//      FriNode* cmnode = static_cast<FriNode*>(mnode);
 //      double* mxi = cmnode->xspatial();
 //
 //      // we need the dot product ns*xm of this node pair
@@ -3091,7 +3096,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       int gid = slipnodes_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      FriNode* cnode = static_cast<FriNode*>(node);
 
       if (cnode->Owner() != Comm().MyPID())
         dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
@@ -3366,7 +3371,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-          CoNode* cmnode = static_cast<CoNode*>(mnode);
+          FriNode* cmnode = static_cast<FriNode*>(mnode);
           const int* mdofs = cmnode->Dofs();
 
           double mik = (mmap[0])[mdofs[0]];
@@ -3431,7 +3436,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-          CoNode* cmnode = static_cast<CoNode*>(mnode);
+          FriNode* cmnode = static_cast<FriNode*>(mnode);
           const int* mdofs = cmnode->Dofs();
 
           double mik = (mmap[0])[mdofs[0]];
@@ -3590,7 +3595,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             int gid = dmcurr->first;
             DRT::Node* mnode = idiscret_->gNode(gid);
             if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-            CoNode* cmnode = static_cast<CoNode*>(mnode);
+            FriNode* cmnode = static_cast<FriNode*>(mnode);
             double* mxi = cmnode->xspatial();
 
             // we need the dot product ns*xm of this node pair
@@ -3713,7 +3718,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             int gid = dmcurr->first;
             DRT::Node* mnode = idiscret_->gNode(gid);
             if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-            CoNode* cmnode = static_cast<CoNode*>(mnode);
+            FriNode* cmnode = static_cast<FriNode*>(mnode);
             double* mxi = cmnode->xspatial();
 
             // we need the dot product t*xm of this node pair
@@ -3787,7 +3792,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       int gid = slipnodes_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      FriNode* cnode = static_cast<FriNode*>(node);
 
       if (cnode->Owner() != Comm().MyPID())
         dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
@@ -3957,7 +3962,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         int gid = *mcurr;
         DRT::Node* mnode = idiscret_->gNode(gid);
         if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-        CoNode* cmnode = static_cast<CoNode*>(mnode);
+        FriNode* cmnode = static_cast<FriNode*>(mnode);
         const int* mdofs = cmnode->Dofs();
 
         double mik = (mmap[0])[mdofs[0]];
@@ -4005,7 +4010,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         int gid = *mcurr;
         DRT::Node* mnode = idiscret_->gNode(gid);
         if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-        CoNode* cmnode = static_cast<CoNode*>(mnode);
+        FriNode* cmnode = static_cast<FriNode*>(mnode);
         const int* mdofs = cmnode->Dofs();
 
         double mik = (mmap[0])[mdofs[0]];
@@ -4148,7 +4153,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           int gid = dmcurr->first;
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-          CoNode* cmnode = static_cast<CoNode*>(mnode);
+          FriNode* cmnode = static_cast<FriNode*>(mnode);
           double* mxi = cmnode->xspatial();
 
           // we need the dot product ns*xm of this node pair
@@ -4259,7 +4264,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
            int gid = dmcurr->first;
            DRT::Node* mnode = idiscret_->gNode(gid);
            if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-           CoNode* cmnode = static_cast<CoNode*>(mnode);
+           FriNode* cmnode = static_cast<FriNode*>(mnode);
            double* mxi = cmnode->xspatial();
 
            // we need the dot product ns*xm of this node pair
@@ -4326,7 +4331,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       int gid = slipnodes_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      FriNode* cnode = static_cast<FriNode*>(node);
 
       if (cnode->Owner() != Comm().MyPID())
         dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
@@ -4486,7 +4491,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         int gid = *mcurr;
         DRT::Node* mnode = idiscret_->gNode(gid);
         if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-        CoNode* cmnode = static_cast<CoNode*>(mnode);
+        FriNode* cmnode = static_cast<FriNode*>(mnode);
         const int* mdofs = cmnode->Dofs();
 
         double mik = (mmap[0])[mdofs[0]];
@@ -4534,7 +4539,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         int gid = *mcurr;
         DRT::Node* mnode = idiscret_->gNode(gid);
         if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-        CoNode* cmnode = static_cast<CoNode*>(mnode);
+        FriNode* cmnode = static_cast<FriNode*>(mnode);
         const int* mdofs = cmnode->Dofs();
 
         double mik = (mmap[0])[mdofs[0]];
@@ -4676,7 +4681,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           int gid = dmcurr->first;
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-          CoNode* cmnode = static_cast<CoNode*>(mnode);
+          FriNode* cmnode = static_cast<FriNode*>(mnode);
           double* mxi = cmnode->xspatial();
 
           // we need the dot product ns*xm of this node pair
@@ -4787,7 +4792,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
            int gid = dmcurr->first;
            DRT::Node* mnode = idiscret_->gNode(gid);
            if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-           CoNode* cmnode = static_cast<CoNode*>(mnode);
+           FriNode* cmnode = static_cast<FriNode*>(mnode);
            double* mxi = cmnode->xspatial();
 
            // we need the dot product ns*xm of this node pair
@@ -4936,16 +4941,19 @@ bool CONTACT::CoInterface::BuildActiveSet()
     }
         
     // add node / dofs to temporary map IF slip
-    if (cnode->Slip())
+    if (friction_)
     {
-      myslipnodegids[countslipnodes] = cnode->Id();
-      ++countslipnodes;
-
-      for (int j=0;j<numdof;++j)
+      if (static_cast<FriNode*>(cnode)->Slip())
       {
-        myslipdofgids[countslipdofs] = cnode->Dofs()[j];
-        ++countslipdofs;
-      }
+        myslipnodegids[countslipnodes] = cnode->Id();
+        ++countslipnodes;
+
+        for (int j=0;j<numdof;++j)
+        {
+          myslipdofgids[countslipdofs] = cnode->Dofs()[j];
+          ++countslipdofs;
+        }
+      }  
     }
   }
 

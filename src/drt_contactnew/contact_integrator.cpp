@@ -41,6 +41,7 @@ Maintainer: Alexander Popp
 
 #include "contact_integrator.H"
 #include "contact_node.H"
+#include "friction_node.H"
 #include "contact_element.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_projector.H"
@@ -3512,7 +3513,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 #ifdef CONTACTPETROVGALERKINFRIC
     for (int j=0;j<nintrow;++j)
     {
-      CONTACT::CoNode* mycnode = static_cast<CONTACT::CoNode*>(myintnodes[j]);
+      CONTACT::FriNode* mycnode = static_cast<CONTACT::FriNode*>(myintnodes[j]);
       if (!mycnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
 
       // for standard shape functions we use the same algorithm
@@ -4707,7 +4708,7 @@ bool CONTACT::CoIntegrator::AssembleDPG(const Epetra_Comm& comm,
   // loop over all slave nodes
   for (int slave=0;slave<sintref.NumNode();++slave)
   {
-    CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(snodes[slave]);
+    CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[slave]);
     int sndof = snode->NumDof();
 
     // only process slave node rows that belong to this proc
@@ -4725,7 +4726,7 @@ bool CONTACT::CoIntegrator::AssembleDPG(const Epetra_Comm& comm,
       // loop over all slave nodes again ("master nodes")
       for (int master=0;master<mele.NumNode();++master)
       {
-        CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(mnodes[master]);
+        CONTACT::FriNode* mnode = static_cast<CONTACT::FriNode*>(mnodes[master]);
         const int* mdofs = mnode->Dofs();
         int mndof = mnode->NumDof();
 
@@ -4805,7 +4806,7 @@ bool CONTACT::CoIntegrator::AssembleMPG(const Epetra_Comm& comm,
   // loop over all slave nodes
   for (int slave=0;slave<sintref.NumNode();++slave)
   {
-    CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(snodes[slave]);
+    CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[slave]);
     int sndof = snode->NumDof();
 
     // only process slave node rows that belong to this proc
@@ -4823,7 +4824,7 @@ bool CONTACT::CoIntegrator::AssembleMPG(const Epetra_Comm& comm,
       // loop over all master nodes
       for (int master=0;master<mele.NumNode();++master)
       {
-        CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(mnodes[master]);
+        CONTACT::FriNode* mnode = static_cast<CONTACT::FriNode*>(mnodes[master]);
         const int* mdofs = mnode->Dofs();
         int mndof = mnode->NumDof();
 

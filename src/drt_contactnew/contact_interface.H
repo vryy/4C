@@ -40,6 +40,7 @@ Maintainer: Alexander Popp
 #define CONTACT_INTERFACE_H
 
 #include "contact_node.H"
+#include "friction_node.H"
 #include "contact_element.H"
 #include "../drt_mortar/mortar_interface.H"
 

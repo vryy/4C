@@ -43,6 +43,7 @@ Maintainer: Alexander Popp
 #include "contact_lagrange_strategy.H"
 #include "contact_penalty_strategy.H"
 #include "contact_defines.H"
+#include "friction_node.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_contact.H"
@@ -276,23 +277,43 @@ discret_(discret)
               break;
             }
         }
-
-        // create CoNode object
+        
+        // check for infeasible self contact combinations
+        INPAR::CONTACT::ContactType ctype = Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(cparams,"CONTACT");
+        
+        // create CoNode object or FriNode object in the frictional case
         // for the boolean variable initactive we use isactive[j]+foundinitialactive,
         // as this is true for BOTH initial active nodes found for the first time
         // and found for the second, third, ... time!
-        RCP<CONTACT::CoNode> cnode = rcp(new CONTACT::CoNode(node->Id(),node->X(),
+        if (ctype == INPAR::CONTACT::contact_frictional)
+        {
+           RCP<CONTACT::FriNode> cnode = rcp(new CONTACT::FriNode(node->Id(),node->X(),
+                                                             node->Owner(),
+                                                             Discret().NumDof(node),
+                                                             Discret().Dof(node),
+                                                             isslave[j],isactive[j]+foundinitialactive));
+
+          // note that we do not have to worry about double entries
+          // as the AddNode function can deal with this case!
+          // the only problem would have occured for the initial active nodes,
+          // as their status could have been overwritten, but is prevented
+          // by the "foundinitialactive" block above!
+          interface->AddCoNode(cnode);
+        }
+        else
+        {
+          RCP<CONTACT::CoNode> cnode = rcp(new CONTACT::CoNode(node->Id(),node->X(),
                                                            node->Owner(),
                                                            Discret().NumDof(node),
                                                            Discret().Dof(node),
                                                            isslave[j],isactive[j]+foundinitialactive));
-
-        // note that we do not have to worry about double entries
-        // as the AddNode function can deal with this case!
-        // the only problem would have occured for the initial active nodes,
-        // as their status could have been overwritten, but is prevented
-        // by the "foundinitialactive" block above!
-        interface->AddCoNode(cnode);
+          // note that we do not have to worry about double entries
+          // as the AddNode function can deal with this case!
+          // the only problem would have occured for the initial active nodes,
+          // as their status could have been overwritten, but is prevented
+          // by the "foundinitialactive" block above!
+          interface->AddCoNode(cnode);
+        }
       }
     }
 

@@ -153,6 +153,7 @@ extern "C"
 #include "../drt_contact/drt_cnode.H"
 #include "../drt_contact/drt_celement.H"
 #include "../drt_contactnew/contact_node.H"
+#include "../drt_contactnew/friction_node.H"
 #include "../drt_contactnew/contact_element.H"
 #include "../drt_art_net/artery.H"
 #include "../drt_red_airways/red_airway.H"
@@ -1022,6 +1023,14 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       double x[3];
       vector<int> dofs(0);
       CONTACT::CoNode* node = new CONTACT::CoNode(0,x,0,0,dofs,false,false);
+      node->Unpack(data);
+      return node;
+    }
+    case ParObject_FriNode:
+    {
+      double x[3];
+      vector<int> dofs(0);
+      CONTACT::FriNode* node = new CONTACT::FriNode(0,x,0,0,dofs,false,false);
       node->Unpack(data);
       return node;
     }
