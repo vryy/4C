@@ -216,7 +216,7 @@ void CONTACT::CoInterface::Initialize()
     // FRICTION - related quantities
     if(friction_)
     {
-      CONTACT::FriNode* friode = static_cast<CONTACT::FriNode*>(idiscret_->lColNode(i));
+      CONTACT::FriNode* frinode = static_cast<CONTACT::FriNode*>(idiscret_->lColNode(i));
       // reset nodal Mortar maps (Petrov-Galerkin approach)
       for (int j=0;j<(int)((frinode->GetDPG()).size());++j)
         (frinode->GetDPG())[j].clear();
