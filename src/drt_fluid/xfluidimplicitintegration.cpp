@@ -3606,6 +3606,7 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
       for (std::set<int>::const_iterator begid = begids.begin(); begid != begids.end(); ++begid)
       {
         DRT::Element* bele = boundarydiscret->gElement(*begid);
+        params.set("boundaryelementNumnode",bele->NumNode());
         std::vector<int> ifacelm;
         std::vector<int> ifacelmowner;
         bele->LocationVector(*boundarydiscret, ifacelm, ifacelmowner);
