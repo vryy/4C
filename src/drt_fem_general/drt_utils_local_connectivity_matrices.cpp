@@ -783,6 +783,15 @@ LINALG::SerialDenseMatrix DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
             }
             break;
         }
+        case DRT::Element::line3: case DRT::Element::line2: 
+        {
+            for(int inode = 0; inode < nNode; inode++)
+            {
+                for(int isd = 0; isd < dim; isd++)
+                  map(isd, inode) = eleNodeNumbering_line3_nodes_reference[inode][isd];
+            }
+            break;
+        }
         default:
             dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }

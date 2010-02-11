@@ -36,8 +36,9 @@ XFEM::SpaceTimeBoundaryCell::SpaceTimeBoundaryCell(
       num_timestep_(2),
       xyzt_(getLinearPositionArray(posnp,posn))
 {
-  if (surf_distype != DRT::Element::quad4)
-    dserror("SpaceTimeBoundaryCell implemented only for surfaces of hex8 solid elements.");
+ // if (surf_distype != DRT::Element::quad4)
+ //   dserror("SpaceTimeBoundaryCell implemented only for surfaces of hex8 solid elements.");
+    
   return;
 }
 

@@ -411,7 +411,9 @@ namespace UTILS
                                                                     { 0.0,   0.0,   0.5},
                                                                     { 0.5,   0.0,   0.5},
                                                                     { 0.0,   0.5,   0.5}};
-
+  const double eleNodeNumbering_line3_nodes_reference[3][1] = {     {-1.0},
+                                                                    { 1.0},
+                                                                    { 0.0}};
   /*!
  \brief Returns the number of nodes
         for each discretization type
