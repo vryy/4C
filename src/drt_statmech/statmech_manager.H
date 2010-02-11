@@ -60,6 +60,8 @@ public:
   //! \brief generate gaussian randomnumbers with mean "meanvalue" and standarddeviation "standarddeviation" for parallel use
   void GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> randomnumbers,const double meanvalue, const double standarddeviation);
       
+  //! \brief Initializes beam3 elements in case of perioddic boundary conditions
+  void PeriodicBoundaryBeam3Init(DRT::Element* element);
   
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
@@ -85,7 +87,10 @@ protected:
   //! \brief Shifts current coordinate X+d (where X is constant reference coordinate by +/- period length until is lies within a box demanded by periodic boundary conditions 
   void CoordindateShift(const double& X, double& d);
   
-  
+  //! \brief gmsh output in case of periodic boundary conditions
+  void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent);
+
+
   
   //! \brief how often SearchNeighbours() has already been called
   int nsearch_;

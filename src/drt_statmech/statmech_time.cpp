@@ -65,6 +65,10 @@ unconvergedsteps_(0)
       {
         //see whether current element needs more random numbers per time step than any other before
         randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
+        
+        //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
+        if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
+          statmechmanager_->PeriodicBoundaryBeam3Init(dis.lColElement(i));
         break;
       }
 #endif  // #ifdef D_BEAM3

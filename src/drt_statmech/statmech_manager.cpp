@@ -668,106 +668,8 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
       }    
       //in case of periodic boundary conditions we have to take care to plot correctly an element broken at some boundary plane
       else
-      {   
-        //number of spatial dimensions
-        const int ndim = 3;
-        
-        //reference length of element (note: following code only for plotting linear elements)
-        double reflength = 0;
-        for(int id=0;id<ndim;id++)
-          reflength += pow(( (element->Nodes())[1])->X()[id] - ((element->Nodes())[0])->X()[id],2); 
-        reflength = sqrt(reflength);
-        
-        /*detect and save in vector "cut", at which boundaries the element is broken due to periodic boundary conditions;
-         * the entries of cut have the following meaning: 0: element not broken in respective coordinate direction, 1:
-         * element broken in respective coordinate direction (node 0 close to zero boundary and node 1 close to boundary
-         * at PeriodLength);  2: element broken in respective coordinate direction (node 1 close to zero boundary and node
-         * 0 close to boundary at PeriodLength);*/
-        LINALG::Matrix<3,1> cut(true);
-        for(int dof=0; dof<ndim; dof++)
-        {
-          if( fabs(coord(dof,1) - statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0))  < fabs(coord(dof,1) - coord(dof,0)) )
-            cut(dof) = 1;
-          if( fabs(coord(dof,1) + statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0))  < fabs(coord(dof,1) - coord(dof,0)) )
-            cut(dof) = 2;
-        }
-        
-        if(cut(0) + cut(1) + cut(2) > 0)
-        {       
-            //compute direction vector between first and second node of element
-            LINALG::Matrix<3,1> dir;
-            for(int dof=0; dof<ndim; dof++)
-              dir(dof) = coord(dof,1) - coord(dof,0);
-            
-            //from node 0 to nearest boundary where element is broken you get by vector X + lambda0*dir
-            double lambda0 = dir.Norm2();
-            for(int dof=0; dof<ndim; dof++)
-            {
-              if(cut(dof) == 1)  
-              {
-                if(fabs( - coord(dof,0) / dir(dof) ) < fabs(lambda0))
-                  lambda0 = - coord(dof,0) / dir(dof);
-              }
-              else if(cut(dof) == 2)
-              {
-                if( fabs( (statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0)) / dir(dof) ) < fabs(lambda0) )
-                  lambda0 = ( statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0) ) / dir(dof);
-              }
-            }
-            
-            //from node 1 to nearest boundary where element is broken you get by vector X + lambda1*dir
-            double lambda1 = dir.Norm2();
-            for(int dof=0; dof<ndim; dof++)
-            {
-              if(cut(dof) == 2)  
-              {
-                if(fabs( - coord(dof,1) / dir(dof) ) < fabs(lambda1))
-                  lambda1 = - coord(dof,1) / dir(dof);
-              }
-              else if(cut(dof) == 1)
-              {
-                if( fabs( (statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,1)) / dir(dof) ) < fabs(lambda1))
-                  lambda1 = ( statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,1) ) / dir(dof);
-              }
-            }
-                   
-            //declaring variable for color of elements
-            double color;
-            
-            //apply different colors for elements representing filaments and those representing dynamics crosslinkers
-            if (element->Id() < basisnodes_)
-              color = 1.0;
-            else
-              color = 0.0;
-       
-            //writing element by nodal coordinates as a scalar line
-            gmshfilecontent << "SL(" << scientific;
-            gmshfilecontent<< coord(0,0)  << "," << coord(1,0) << "," << coord(2,0) << "," 
-                           << coord(0,0) + lambda0*dir(0)  << "," << coord(1,0) + lambda0*dir(1)  << "," << coord(2,0) + lambda0*dir(2)  ;
-            /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
-             * interpolating these two colors between the nodes*/
-            gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
-            
-            //writing element by nodal coordinates as a scalar line
-            gmshfilecontent << "SL(" << scientific;
-            gmshfilecontent<< coord(0,1)  << "," << coord(1,1) << "," << coord(2,1) << "," 
-                           << coord(0,1) + lambda1*dir(0)  << "," << coord(1,1)+ lambda1*dir(1)  << "," << coord(2,1) + lambda1*dir(2)  ;
-            /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
-             * interpolating these two colors between the nodes*/
-            gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;  
-        }
-        else
-        {
-            //writing element by nodal coordinates as a scalar line
-            gmshfilecontent << "SL(" << scientific;
-            gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << "," 
-                           << coord(0,1) << "," << coord(1,1) << "," << coord(2,1) ;
-            /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
-             * interpolating these two colors between the nodes*/
-            gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
-        }
-      }
-      
+        GmshOutputPeriodicBoundary(coord, color, gmshfilecontent);
+    
     }  
     
     //finish data section of this view by closing curley brackets
@@ -781,6 +683,99 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
  
   return;
 } // StatMechManager::GmshOutput()
+
+
+
+/*----------------------------------------------------------------------*
+ | gmsh output data in case of periodic boundary conditions             |
+ |                                                    public)cyron 02/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent)
+{
+  //number of spatial dimensions
+  const int ndim = 3;
+  
+  /*detect and save in vector "cut", at which boundaries the element is broken due to periodic boundary conditions;
+   * the entries of cut have the following meaning: 0: element not broken in respective coordinate direction, 1:
+   * element broken in respective coordinate direction (node 0 close to zero boundary and node 1 close to boundary
+   * at PeriodLength);  2: element broken in respective coordinate direction (node 1 close to zero boundary and node
+   * 0 close to boundary at PeriodLength);*/
+  LINALG::Matrix<3,1> cut(true);
+  for(int dof=0; dof<ndim; dof++)
+  {
+    if( fabs(coord(dof,1) - statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0))  < fabs(coord(dof,1) - coord(dof,0)) )
+      cut(dof) = 1;
+    if( fabs(coord(dof,1) + statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0))  < fabs(coord(dof,1) - coord(dof,0)) )
+      cut(dof) = 2;
+  }
+  
+  if(cut(0) + cut(1) + cut(2) > 0)
+  {       
+      //compute direction vector between first and second node of element
+      LINALG::Matrix<3,1> dir;
+      for(int dof=0; dof<ndim; dof++)
+        dir(dof) = coord(dof,1) - coord(dof,0);
+      
+      //from node 0 to nearest boundary where element is broken you get by vector X + lambda0*dir
+      double lambda0 = dir.Norm2();
+      for(int dof=0; dof<ndim; dof++)
+      {
+        if(cut(dof) == 1)  
+        {
+          if(fabs( - coord(dof,0) / dir(dof) ) < fabs(lambda0))
+            lambda0 = - coord(dof,0) / dir(dof);
+        }
+        else if(cut(dof) == 2)
+        {
+          if( fabs( (statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0)) / dir(dof) ) < fabs(lambda0) )
+            lambda0 = ( statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0) ) / dir(dof);
+        }
+      }
+      
+      //from node 1 to nearest boundary where element is broken you get by vector X + lambda1*dir
+      double lambda1 = dir.Norm2();
+      for(int dof=0; dof<ndim; dof++)
+      {
+        if(cut(dof) == 2)  
+        {
+          if(fabs( - coord(dof,1) / dir(dof) ) < fabs(lambda1))
+            lambda1 = - coord(dof,1) / dir(dof);
+        }
+        else if(cut(dof) == 1)
+        {
+          if( fabs( (statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,1)) / dir(dof) ) < fabs(lambda1))
+            lambda1 = ( statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,1) ) / dir(dof);
+        }
+      }            
+   
+        //writing element by nodal coordinates as a scalar line
+      gmshfilecontent << "SL(" << scientific;
+      gmshfilecontent<< coord(0,0)  << "," << coord(1,0) << "," << coord(2,0) << "," 
+                     << coord(0,0) + lambda0*dir(0)  << "," << coord(1,0) + lambda0*dir(1)  << "," << coord(2,0) + lambda0*dir(2)  ;
+      /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
+       * interpolating these two colors between the nodes*/
+      gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+      
+      //writing element by nodal coordinates as a scalar line
+      gmshfilecontent << "SL(" << scientific;
+      gmshfilecontent<< coord(0,1)  << "," << coord(1,1) << "," << coord(2,1) << "," 
+                     << coord(0,1) + lambda1*dir(0)  << "," << coord(1,1)+ lambda1*dir(1)  << "," << coord(2,1) + lambda1*dir(2)  ;
+      /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
+       * interpolating these two colors between the nodes*/
+      gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;  
+  }
+  else
+  {
+      //writing element by nodal coordinates as a scalar line
+      gmshfilecontent << "SL(" << scientific;
+      gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << "," 
+                     << coord(0,1) << "," << coord(1,1) << "," << coord(2,1) ;
+      /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
+       * interpolating these two colors between the nodes*/
+      gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+  }
+  return;
+} // StatMechManager::GmshOutputPeriodicBoundary()
 
 
 /*----------------------------------------------------------------------*
@@ -1217,6 +1212,85 @@ void StatMechManager::CoordindateShift(const double& X, double& d)
     CoordindateShift(X,d);
   }  
 }
+
+/*------------------------------------------------------------------------*
+ | This function loops through all the elements of the discretization and |
+ | tests whether they are broken by periodic boundary conditions in the   |
+ | reference configuration; if yes initial values of curvature and jacobi |
+ | determinants are adapted in a proper way                    cyron 02/10|
+ *-----------------------------------------------------------------------*/
+void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
+{    
+  
+#ifdef D_BEAM3      
+  
+  DRT::ELEMENTS::Beam3* beam = dynamic_cast<DRT::ELEMENTS::Beam3*>(element);
+  
+  //3D beam elements are embeddet into R^3:
+  const int ndim = 3;
+  
+  /*get reference configuration of beam3 element in proper format for later call of SetUpReferenceGeometry;
+   * note that rotrefe for beam3 elements is related to the entry in the global total Lagrange displacement
+   * vector related to a certain rotational degree of freedom; as the displacement is initially zero also
+   * rotrefe is set to zero here*/
+  vector<double> xrefe;
+  vector<double> rotrefe;
+  
+  for(int i=0;i<beam->NumNode();i++)  
+    for(int dof=0; dof<ndim; dof++) 
+    {
+      xrefe[3*i+dof] = beam->Nodes()[i]->X()[dof];
+      rotrefe[3*i+dof] = 0.0;
+    }
+
+  /*loop through all nodes except for the first node which remains fixed as reference node; all other nodes are
+   * shifted due to periodic boundary conditions if required*/
+  for(int i=1;i<beam->NumNode();i++)
+  {    
+    for(int dof=0; dof<ndim; dof++)
+    {   
+      /*if the distance in some coordinate direction between some node and the first node becomes smaller by adding or subtracting
+       * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
+       * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
+       * is smaller than half the periodic length*/
+      if( fabs( (beam->Nodes()[i]->X()[dof]) + statmechparams_.get<double>("PeriodLength",0.0) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
+        xrefe[3*i+dof] += statmechparams_.get<double>("PeriodLength",0.0);
+        
+      if( fabs( (beam->Nodes()[i]->X()[dof]) - statmechparams_.get<double>("PeriodLength",0.0) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
+        xrefe[3*i+dof] -= statmechparams_.get<double>("PeriodLength",0.0);
+    }
+  }
+
+  //SetUpReferenceGeometry is a templated function
+  switch(beam->NumNode())
+  {
+    case 2:     
+    { 
+      beam->SetUpReferenceGeometry<2>(xrefe,rotrefe);
+      break;
+    }
+    case 3:
+    {
+      beam->SetUpReferenceGeometry<3>(xrefe,rotrefe);
+      break;
+    }
+    case 4:
+    {
+      beam->SetUpReferenceGeometry<4>(xrefe,rotrefe);
+      break;
+    }
+    case 5:
+    {
+      beam->SetUpReferenceGeometry<5>(xrefe,rotrefe);
+      break;
+    }       
+    default:
+      dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");  
+  }
+  
+#endif  
+}
+
 
 /*----------------------------------------------------------------------*
  | Searches and saves in variable  crosslinkerneighbours_ neighbours for|
