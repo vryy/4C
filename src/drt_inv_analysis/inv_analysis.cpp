@@ -79,7 +79,8 @@ STR::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   // measured
   nmp_   = 2*sdyn.get<int>("NUMSTEP");
   tstep_ = sdyn.get<double>("TIMESTEP");
-
+  // get total timespan of simulation 0.5 due to factor 2 in nmp_
+  double ttime_ = nmp_*tstep_*0.5;
   // input parameters inverse analysis
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
 
@@ -95,12 +96,14 @@ STR::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
     double cpy0 = iap.get<double>("MC_Y_0");
     double cpy1 = iap.get<double>("MC_Y_1");
     double cpy2 = iap.get<double>("MC_Y_2");
+
     for (int i=0; i<nmp_; i++)
     {
-      mcurve_[i] = cpx0*(1-exp(-pow((cpx1*(500.0/(nmp_))*(i)), cpx2)));
+      mcurve_[i] = cpx0*(1-exp(-pow((cpx1*(ttime_/(nmp_))*(i+2)), cpx2)));
       i+=1;
-      mcurve_[i] = cpy0*(1-exp(-pow((cpy1*(500.0/(nmp_))*(i-1)), cpy2)));
-    }
+      mcurve_[i] = cpy0*(1-exp(-pow((cpy1*(ttime_/(nmp_))*(i+1)), cpy2)));
+     }
+
   }
   //dserror("Halt");
 
