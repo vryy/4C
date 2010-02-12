@@ -319,3 +319,4 @@ Input/potential_vol_LJ_3D.dat                           x        x        x     
 Input/potential_vol_LJ_2D.dat                           x        x        x        x        -        -
 Input/fluidfluidCoupling_simple.dat						x		 -        x        -        -        -
 Input/fluidfluidCoupling_mIter.dat						x		 -        x        -        -        -
+Input/fluidfluid_parab_Hex20.dat						x		 -        x        -        -        - 
