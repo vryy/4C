@@ -3,7 +3,7 @@
 \brief
 This file contains routines for an anisotropic material with two fiber families.
 example input line
-MAT 1 MAT_HOLZAPFELCARDIO KAPPA 0.833 MUE 0.385 DENS 1.0 K1 1.0 K2 1.0 GAMMA 45.0 MINSTRETCH 1.0
+MAT 1 MAT_HOLZAPFELCARDIO KAPPA 0.833 MUE 0.385 DENS 1.0 K1 1.0 K2 1.0 GAMMA 45.0 MINSTRETCH 1.0 INIT 1
 
 <pre>
 Maintainer: Susanna Tinkl
@@ -32,7 +32,8 @@ MAT::PAR::HolzapfelCardio::HolzapfelCardio(
   k1_(matdata->GetDouble("K1")),
   k2_(matdata->GetDouble("K2")),
   gamma_(matdata->GetDouble("GAMMA")),
-  minstretch_(matdata->GetDouble("MINSTRETCH"))
+  minstretch_(matdata->GetDouble("MINSTRETCH")),
+  init_(matdata->GetInt("INIT"))
 {
 }
 
@@ -168,44 +169,62 @@ void MAT::HolzapfelCardio::Setup(const int numgp, DRT::INPUT::LineDefinition* li
   a2_ = rcp(new vector<vector<double> > (numgp)); 
   ca1_ = rcp(new vector<vector<double> > (numgp));
   ca2_ = rcp(new vector<vector<double> > (numgp));
+  int initflag = params_->init_;
   
   if ((params_->gamma_<0) || (params_->gamma_ >90)) dserror("Fiber angle not in [0,90]");
   const double gamma = (params_->gamma_*PI)/180.; //convert
-
-  // read local (cylindrical) cosy-directions at current element
-  vector<double> rad;
-  vector<double> axi;
-  vector<double> cir;
-  linedef->ExtractDoubleVector("RAD",rad);
-  linedef->ExtractDoubleVector("AXI",axi);
-  linedef->ExtractDoubleVector("CIR",cir);
-
-  LINALG::Matrix<3,3> locsys;
-  // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
-  double radnorm=0.; double axinorm=0.; double cirnorm=0.;
-  for (int i = 0; i < 3; i++) {
-    radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
-  }
-  radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
-  for (int i=0; i<3; i++){
-    locsys(i,0) = rad[i]/radnorm;
-    locsys(i,1) = axi[i]/axinorm;
-    locsys(i,2) = cir[i]/cirnorm;
-  }
-  for (int gp = 0; gp < numgp; gp++) {
-    a1_->at(gp).resize(3);
-    a2_->at(gp).resize(3);
-    ca1_->at(gp).resize(3);
-    ca2_->at(gp).resize(3);
-    for (int i = 0; i < 3; i++) {
-      // a1 = cos gamma e3 + sin gamma e2
-      a1_->at(gp)[i] = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
-      // a2 = cos gamma e3 - sin gamma e2
-      a2_->at(gp)[i] = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
-      ca1_->at(gp)[i] = a1_->at(gp)[i];
-      ca2_->at(gp)[i] = a2_->at(gp)[i];
+  
+  if (initflag==0){
+    // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
+    LINALG::Matrix<3,3> id(true);
+    // basis is identity
+    for (int i=0; i<3; ++i) id(i,i) = 1.0;
+    for (int gp = 0; gp < numgp; ++gp) {
+      a1_->at(gp).resize(3);
+      a2_->at(gp).resize(3);
+      ca1_->at(gp).resize(3);
+      ca2_->at(gp).resize(3);
+      EvaluateFiberVecs(gp,gamma,id,id);
     }
-  }
+  } else if (initflag==1){
+	// read local (cylindrical) cosy-directions at current element
+    vector<double> rad;
+    vector<double> axi;
+    vector<double> cir;
+    linedef->ExtractDoubleVector("RAD",rad);
+    linedef->ExtractDoubleVector("AXI",axi);
+    linedef->ExtractDoubleVector("CIR",cir);
+
+    LINALG::Matrix<3,3> locsys;
+    // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
+    double radnorm=0.; double axinorm=0.; double cirnorm=0.;
+    for (int i = 0; i < 3; i++) {
+    radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
+    }
+    radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
+    for (int i=0; i<3; i++){
+      locsys(i,0) = rad[i]/radnorm;
+      locsys(i,1) = axi[i]/axinorm;
+      locsys(i,2) = cir[i]/cirnorm;
+    }
+    LINALG::Matrix<3,3> Id(true);
+    for (int i = 0; i < 3; i++) Id(i,i) = 1.0;
+    for (int gp = 0; gp < numgp; gp++) {
+      a1_->at(gp).resize(3);
+      a2_->at(gp).resize(3);
+      ca1_->at(gp).resize(3);
+      ca2_->at(gp).resize(3);
+      EvaluateFiberVecs(gp,gamma,locsys,Id);
+    }
+  } else if (initflag==3){
+    // start with isotropic computation, thus fiber directions are set to zero
+    for (int gp = 0; gp < numgp; ++gp) {
+      a1_->at(gp).resize(3);
+      a2_->at(gp).resize(3);
+      ca1_->at(gp).resize(3);
+      ca2_->at(gp).resize(3);
+    }
+  } else dserror("INIT type not implemented");
 
   isinit_ = true;
   return;
@@ -231,7 +250,7 @@ void MAT::HolzapfelCardio::UpdateFiberDirs(const int gp, LINALG::Matrix<3,3>* de
  *----------------------------------------------------------------------*
  strain energy function
 
- W    = 1/2 mue (I1*J^(-1/3)-3) + (k1/(2.0*k2))*(exp(k2*(I_{4,6}*J^(-2/3) - 1.0)^2-1.0))
+ W    = 1/2 mue (I1*J^(-2/3)-3) + (k1/(2.0*k2))*(exp(k2*(I_{4,6}*J^(-2/3) - 1.0)^2-1.0))
 
  taken from
  G.A. Holzapfel, T.C. Gasser, R.W. Ogden: A new constitutive framework for arterial wall mechanics
@@ -372,6 +391,16 @@ void MAT::HolzapfelCardio::Evaluate
     Saniso_fib2(i) = incJ * (Saniso_fib2(i) - third*traceCSfbar2*Cinv(i));
   }
   
+  if (a1_->at(gp)[0]==0 && a1_->at(gp)[1]==0 && a1_->at(gp)[2]==0){
+    // isotropic fiber part for initial iteration step
+    // W=(k1/(2.0*k2))*(exp(k2*pow((Ibar_1 - 3.0),2)-1.0));
+    // the stress which is computed until now in the anisotropic part is zero
+    const double expiso = exp(k2*(I1*incJ-3.)*(I1*incJ-3.));
+    const double faciso = 2.*k1*(I1*incJ-3.)*expiso;
+    for (int i = 0; i < 6; i++)
+      Saniso_fib1(i) += incJ* faciso* (Id(i) - third*I1*Cinv(i));
+  }
+  
   // 3rd step: add everything up
   //============================
   (*stress) = Siso;    
@@ -439,10 +468,67 @@ void MAT::HolzapfelCardio::Evaluate
   (*cmat) += Caniso_fib1;
   (*cmat) += Caniso_fib2;
   
+  if (a1_->at(gp)[0]==0 && a1_->at(gp)[1]==0 && a1_->at(gp)[2]==0){
+    // isotropic fiber part for initial iteration step
+    // W=(k1/(2.0*k2))*(exp(k2*pow((Ibar_1 - 3.0),2)-1.0));
+    // cmat which is computed until now in the anisotropic part is zero
+    const double expiso = exp(k2*(I1*incJ-3.)*(I1*incJ-3.));
+    const double faciso = 2.*k1*(I1*incJ-3.)*expiso;
+    const double delta7iso = incJ*incJ* 4.*(k1 + 2.*k1*k2*(I1*incJ-3.)*(I1*incJ-3.))*expiso;
+    for (int i = 0; i < 6; ++i) {
+      for (int j = 0; j < 6; ++j) {
+        double Siso_i = incJ* faciso* (Id(i) - third*I1*Cinv(i));
+        double Siso_j = incJ* faciso* (Id(j) - third*I1*Cinv(j));
+        double Aiso_i = Id(i) - third* I1* Cinv(i);
+        double Aiso_j = Id(j) - third* I1* Cinv(j);
+        (*cmat)(i,j) += 2*third*incJ*faciso* I1 * Psl(i,j)
+             - 2*third * Cinv(i) * Siso_j         // -2/3 Cinv x Siso
+             - 2*third * Cinv(j) * Siso_i         // -2/3 Siso x Cinv
+             + delta7iso * Aiso_i * Aiso_j;       // part with 4 d^2W/dC^2
+      }
+    }
+  }
   
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  EvaluateFiberVecs                             (public)         01/10|
+ *----------------------------------------------------------------------*/
+void MAT::HolzapfelCardio::EvaluateFiberVecs
+(const int gp, const double gamma, const LINALG::Matrix<3,3>& locsys, const LINALG::Matrix<3,3>& defgrd)
+{
+  // gamma is the angle between the fibers and locsys(,2), locsys holds the principal directions
+  // The deformation gradient (defgrd) is needed in remodeling as then locsys is given in the
+  // spatial configuration and thus the fiber vectors have to be pulled back in the reference
+  // configuration as the material is evaluated there.
+  // If this function is called during Setup defgrd should be replaced by the Identity.
 
-#endif
+  for (int i = 0; i < 3; i++) {
+    // a1 = cos gamma e1 + sin gamma e2 with e1 related to maximal princ stress, e2 2nd largest
+    ca1_->at(gp)[i] = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
+    // a2 = cos gamma e1 - sin gamma e2 with e1 related to maximal princ stress, e2 2nd largest
+    ca2_->at(gp)[i] = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
+  }
+  
+  // pull back in reference configuration
+  vector<double> a1_0(3);
+  vector<double> a2_0(3);
+  LINALG::Matrix<3,3> idefgrd(false);
+  idefgrd.Invert(defgrd);
+  for (int i = 0; i < 3; i++) {
+    a1_0[i] = idefgrd(i,0)*ca1_->at(gp)[0] + idefgrd(i,1)*ca1_->at(gp)[1] + idefgrd(i,2)*ca1_->at(gp)[2];
+    a2_0[i] = idefgrd(i,0)*ca2_->at(gp)[0] + idefgrd(i,1)*ca2_->at(gp)[1] + idefgrd(i,2)*ca2_->at(gp)[2];
+  }
+  double a1_0norm = sqrt(a1_0[0]*a1_0[0] + a1_0[1]*a1_0[1] + a1_0[2]*a1_0[2]);
+  double a2_0norm = sqrt(a2_0[0]*a2_0[0] + a2_0[1]*a2_0[1] + a2_0[2]*a2_0[2]);
+  for (int i = 0; i < 3; i++) {
+    a1_->at(gp)[i] = a1_0[i]/a1_0norm;
+    a2_->at(gp)[i] = a2_0[i]/a2_0norm;
+  }
+
+  return;
+}
+
+#endif // CCADISCRET
 

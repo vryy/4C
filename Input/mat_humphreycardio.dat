@@ -83,7 +83,7 @@ CONV_CHECK                      AbsRes_Or_AbsDis
 DAMPING                         No
 DELTA                           0.25
 DIVERCONT                       No
-DYNAMICTYP                      Gen_Alfa
+DYNAMICTYP                      GenAlpha
 EIGEN                           0
 GAMMA                           0.5
 ITERATION                       full
@@ -152,7 +152,7 @@ STEPSIZEMIN                     0
 ----------------------------------------------------THERMAL DYNAMIC
 -------------------------------------------------------XFEM GENERAL
 ----------------------------------------------------------MATERIALS
-MAT 1 MAT_HUMPHREYCARDIO KAPPA 1000. MUE 70.0 DENS 1.0 K1C 28.0 K2C 13.2 K1M 16.0 K2M 7.0 PHIE 0.5 PHIC 0.25 PHIM 0.25
+MAT 1 MAT_HUMPHREYCARDIO KAPPA 1000. MUE 70.0 DENS 1.0 K1C 28.0 K2C 13.2 K1M 16.0 K2M 7.0 PHIE 0.5 PHIC 0.25 PHIM 0.25 INIT 1
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 4.0 c2 0.0
@@ -166,10 +166,10 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1 150000 FACTOR 1 1
 ------------------------------------------------------------FUNCT3
 ------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 63 POSITION dispx NAME dispx VALUE 4.2587570920805257e-03 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 63 POSITION dispy NAME dispy VALUE -1.1194399659681310e-02 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 63 POSITION dispz NAME dispz VALUE 1.7084401008894087e-01 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 482 POSITION dispz NAME dispz VALUE 1.0638497716304923e-01 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 63 POSITION dispx NAME dispx VALUE 4.2505649132063873e-03 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 63 POSITION dispy NAME dispy VALUE -1.1189501700430699e-02 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 63 POSITION dispz NAME dispz VALUE 1.7087672386138172e-01 TOLERANCE 1e-5
+STRUCTURE DIS 1 NODE 482 POSITION dispz NAME dispz VALUE 1.0641472149035176e-01 TOLERANCE 1e-5
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 8
 NDLINE  8

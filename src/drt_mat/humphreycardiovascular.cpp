@@ -39,7 +39,8 @@ MAT::PAR::HumphreyCardio::HumphreyCardio(
   k2m_(matdata->GetDouble("K2M")),
   phie_(matdata->GetDouble("PHIE")),
   phic_(matdata->GetDouble("PHIC")),
-  phim_(matdata->GetDouble("PHIM"))
+  phim_(matdata->GetDouble("PHIM")),
+  init_(matdata->GetInt("INIT"))
 {
 }
 
@@ -195,53 +196,83 @@ void MAT::HumphreyCardio::Setup(const int numgp, DRT::INPUT::LineDefinition* lin
   ca2_ = rcp(new vector<vector<double> > (numgp));
   ca3_ = rcp(new vector<vector<double> > (numgp));
   ca4_ = rcp(new vector<vector<double> > (numgp));
+  int initflag = params_->init_;
   
   const double gamma = (45*PI)/180.; //angle for diagonal fibers
 
-  // read local (cylindrical) cosy-directions at current element
-  vector<double> rad;
-  vector<double> axi;
-  vector<double> cir;
-  linedef->ExtractDoubleVector("RAD",rad);
-  linedef->ExtractDoubleVector("AXI",axi);
-  linedef->ExtractDoubleVector("CIR",cir);
-
-  LINALG::Matrix<3,3> locsys;
-  // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
-  double radnorm=0.; double axinorm=0.; double cirnorm=0.;
-  for (int i = 0; i < 3; i++) {
-    radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
-  }
-  radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
-  for (int i=0; i<3; i++){
-    locsys(i,0) = rad[i]/radnorm;
-    locsys(i,1) = axi[i]/axinorm;
-    locsys(i,2) = cir[i]/cirnorm;
-  }
-  for (int gp = 0; gp < numgp; gp++) {
-    a1_->at(gp).resize(3);
-    a2_->at(gp).resize(3);
-    a3_->at(gp).resize(3);
-    a4_->at(gp).resize(3);
-    ca1_->at(gp).resize(3);
-    ca2_->at(gp).resize(3);
-    ca3_->at(gp).resize(3);
-    ca4_->at(gp).resize(3);
-    for (int i = 0; i < 3; i++) {
-      // a1 = e3, circumferential direction, used for collagen and smooth muscle
-      a1_->at(gp)[i] = locsys(i,2);
-      // a2 = e2
-      a2_->at(gp)[i] = locsys(i,1);
-      // a3 = cos gamma e3 + sin gamma e2
-      a3_->at(gp)[i] = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
-      // a4 = cos gamma e3 - sin gamma e2
-      a4_->at(gp)[i] = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
-      ca1_->at(gp)[i] = a1_->at(gp)[i];
-      ca2_->at(gp)[i] = a2_->at(gp)[i];
-      ca3_->at(gp)[i] = a3_->at(gp)[i];
-      ca4_->at(gp)[i] = a4_->at(gp)[i];
+  if (initflag==0){
+    // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
+    LINALG::Matrix<3,3> id(true);
+    // basis is identity
+    for (int i=0; i<3; ++i) id(i,i) = 1.0;
+    for (int gp = 0; gp < numgp; ++gp) {
+      a1_->at(gp).resize(3);
+      a2_->at(gp).resize(3);
+      a3_->at(gp).resize(3);
+      a4_->at(gp).resize(3);
+      ca1_->at(gp).resize(3);
+      ca2_->at(gp).resize(3);
+      ca3_->at(gp).resize(3);
+      ca4_->at(gp).resize(3);
+      EvaluateFiberVecs(gp,id,id);
     }
-  }
+  } else if (initflag==1){
+    // read local (cylindrical) cosy-directions at current element
+    vector<double> rad;
+    vector<double> axi;
+    vector<double> cir;
+    linedef->ExtractDoubleVector("RAD",rad);
+    linedef->ExtractDoubleVector("AXI",axi);
+    linedef->ExtractDoubleVector("CIR",cir);
+
+    LINALG::Matrix<3,3> locsys;
+    // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
+    double radnorm=0.; double axinorm=0.; double cirnorm=0.;
+    for (int i = 0; i < 3; i++) {
+      radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
+    }
+    radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
+    for (int i=0; i<3; i++){
+      locsys(i,0) = rad[i]/radnorm;
+      locsys(i,1) = axi[i]/axinorm;
+      locsys(i,2) = cir[i]/cirnorm;
+    }
+  
+    LINALG::Matrix<3,3> Id(true);
+    for (int i = 0; i < 3; i++) Id(i,i) = 1.0;
+    for (int gp = 0; gp < numgp; gp++) {
+      a1_->at(gp).resize(3);
+      a2_->at(gp).resize(3);
+      a3_->at(gp).resize(3);
+      a4_->at(gp).resize(3);
+      ca1_->at(gp).resize(3);
+      ca2_->at(gp).resize(3);
+      ca3_->at(gp).resize(3);
+      ca4_->at(gp).resize(3);
+      EvaluateFiberVecs(gp,locsys,Id);
+      for (int i = 0; i < 3; i++) {
+        double test1=0;
+        double test2=0;
+        test1 = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
+        test2 = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
+        if (abs(a1_->at(gp)[i] - locsys(i,2)) > 0 || abs(a2_->at(gp)[i] - locsys(i,1)) > 0||
+            abs(a3_->at(gp)[i] - test1) > 0 || abs(a4_->at(gp)[i] - test2) > 0)
+        cout << "something went wrong during computation of fiber vectors" << endl;
+      }
+    }
+  } else if (initflag==3){
+    // start with isotropic computation, thus fiber directions are set to zero
+    for (int gp = 0; gp < numgp; ++gp) {
+      a1_->at(gp).resize(3);
+      a2_->at(gp).resize(3);
+      a3_->at(gp).resize(3);
+      a4_->at(gp).resize(3);
+      ca1_->at(gp).resize(3);
+      ca2_->at(gp).resize(3);
+      ca3_->at(gp).resize(3);
+      ca4_->at(gp).resize(3);
+    }
+  } else dserror("INIT type not implemented");
 
   isinit_ = true;
   return;
@@ -477,6 +508,26 @@ void MAT::HumphreyCardio::Evaluate
 	Sm_fib(i) = incJ * (Sm_fib(i) - third*traceCSmbar*Cinv(i));
   }
   
+  // isotropic fiber part
+  //---------------------
+  if (a1_->at(gp)[0]==0 && a1_->at(gp)[1]==0 && a1_->at(gp)[2]==0){
+    // isotropic fiber part for initial iteration step
+    // W=(k1~/(2.0*k2~))*(exp(k2~*pow((Ibar_1 - 3.0),2)-1.0));
+    // the stress which is computed until now in the anisotropic part is zero
+    double k1isoc = k1c*phic; // *2 ??k1c
+    double k2isoc = k2c;
+    const double expisoc = exp(k2isoc*(I1*incJ-3.)*(I1*incJ-3.));
+    const double facisoc = 2.*k1isoc*(I1*incJ-3.)*expisoc;
+    for (int i = 0; i < 6; i++)
+      Saniso_fib1(i) += incJ* facisoc* (Id(i) - third*I1*Cinv(i));
+    double k1isom = k1m*phim; // *0.5 ?? k1m*phim
+    double k2isom = k2m;
+    const double expisom = exp(k2isom*(I1*incJ-3.)*(I1*incJ-3.));
+    const double facisom = 2.*k1isom*(I1*incJ-3.)*expisom;
+    for (int i = 0; i < 6; i++)
+      Sm_fib(i) += incJ* facisom* (Id(i) - third*I1*Cinv(i));
+  }
+  
   
   // 3rd step: add everything up
   //============================
@@ -583,8 +634,95 @@ void MAT::HumphreyCardio::Evaluate
   
   (*cmat) += Cm_fib;
   
+  // isotropic fiber part
+  //---------------------
+  if (a1_->at(gp)[0]==0 && a1_->at(gp)[1]==0 && a1_->at(gp)[2]==0){
+    // isotropic fiber part for initial iteration step
+    // W=(k1~/(2.0*k2~))*(exp(k2~*pow((Ibar_1 - 3.0),2)-1.0));
+    // cmat which is computed until now in the anisotropic part is zero
+    double k1isoc = k1c*phic; // *2 ??k1c
+    double k2isoc = k2c;
+    const double expisoc = exp(k2isoc*(I1*incJ-3.)*(I1*incJ-3.));
+    const double facisoc = 2.*k1isoc*(I1*incJ-3.)*expisoc;
+    const double delta7isoc = incJ*incJ* 4.*(k1isoc + 2.*k1isoc*k2isoc*(I1*incJ-3.)*(I1*incJ-3.))*expisoc;
+    double k1isom = k1m*phim; // *0.5 ?? k1m*phim
+    double k2isom = k2m;
+    const double expisom = exp(k2isom*(I1*incJ-3.)*(I1*incJ-3.));
+    const double facisom = 2.*k1isom*(I1*incJ-3.)*expisom;
+    const double delta7isom = incJ*incJ* 4.*(k1isom + 2.*k1isom*k2isom*(I1*incJ-3.)*(I1*incJ-3.))*expisom;
+    for (int i = 0; i < 6; ++i) {
+      for (int j = 0; j < 6; ++j) {
+        double Sisoc_i = incJ* facisoc* (Id(i) - third*I1*Cinv(i));
+        double Sisoc_j = incJ* facisoc* (Id(j) - third*I1*Cinv(j));
+        double Sisom_i = incJ* facisom* (Id(i) - third*I1*Cinv(i));
+        double Sisom_j = incJ* facisom* (Id(j) - third*I1*Cinv(j));
+        double Aiso_i = Id(i) - third* I1* Cinv(i);
+        double Aiso_j = Id(j) - third* I1* Cinv(j);
+        (*cmat)(i,j) += 2*third*incJ*facisoc* I1 * Psl(i,j)
+             - 2*third * Cinv(i) * Sisoc_j         // -2/3 Cinv x Siso
+             - 2*third * Cinv(j) * Sisoc_i         // -2/3 Siso x Cinv
+             + delta7isoc * Aiso_i * Aiso_j;       // part with 4 d^2W/dC^2
+             + 2*third*incJ*facisom* I1 * Psl(i,j)
+             - 2*third * Cinv(i) * Sisom_j         // -2/3 Cinv x Siso
+             - 2*third * Cinv(j) * Sisom_i         // -2/3 Siso x Cinv
+             + delta7isom * Aiso_i * Aiso_j;       // part with 4 d^2W/dC^2
+      }
+    }
+  }
+  
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  EvaluateFiberVecs                             (public)         01/10|
+ *----------------------------------------------------------------------*/
+void MAT::HumphreyCardio::EvaluateFiberVecs
+(const int gp, const LINALG::Matrix<3,3>& locsys, const LINALG::Matrix<3,3>& defgrd)
+{
+  // locsys holds the principal directions
+  // The deformation gradient (defgrd) is needed in remodeling as then locsys is given in the
+  // spatial configuration and thus the fiber vectors have to be pulled back in the reference
+  // configuration as the material is evaluated there.
+  // If this function is called during Setup defgrd should be replaced by the Identity.
 
-#endif
+  const double gamma = (45*PI)/180.; //angle for diagonal fibers
+  
+  for (int i = 0; i < 3; i++) {
+    // a1 = e3, circumferential direction, used for collagen and smooth muscle
+    ca1_->at(gp)[i] = locsys(i,2);
+    // a2 = e2
+    ca2_->at(gp)[i] = locsys(i,1);
+    // a3 = cos gamma e3 + sin gamma e2
+    ca3_->at(gp)[i] = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
+    // a4 = cos gamma e3 - sin gamma e2
+    ca4_->at(gp)[i] = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
+  }
+  
+  // pull back in reference configuration
+  vector<double> a1_0(3);
+  vector<double> a2_0(3);
+  vector<double> a3_0(3);
+  vector<double> a4_0(3);
+  LINALG::Matrix<3,3> idefgrd(false);
+  idefgrd.Invert(defgrd);
+  for (int i = 0; i < 3; i++) {
+    a1_0[i] = idefgrd(i,0)*ca1_->at(gp)[0] + idefgrd(i,1)*ca1_->at(gp)[1] + idefgrd(i,2)*ca1_->at(gp)[2];
+    a2_0[i] = idefgrd(i,0)*ca2_->at(gp)[0] + idefgrd(i,1)*ca2_->at(gp)[1] + idefgrd(i,2)*ca2_->at(gp)[2];
+    a3_0[i] = idefgrd(i,0)*ca3_->at(gp)[0] + idefgrd(i,1)*ca3_->at(gp)[1] + idefgrd(i,2)*ca3_->at(gp)[2];
+    a4_0[i] = idefgrd(i,0)*ca4_->at(gp)[0] + idefgrd(i,1)*ca4_->at(gp)[1] + idefgrd(i,2)*ca4_->at(gp)[2];
+  }
+  double a1_0norm = sqrt(a1_0[0]*a1_0[0] + a1_0[1]*a1_0[1] + a1_0[2]*a1_0[2]);
+  double a2_0norm = sqrt(a2_0[0]*a2_0[0] + a2_0[1]*a2_0[1] + a2_0[2]*a2_0[2]);
+  double a3_0norm = sqrt(a3_0[0]*a3_0[0] + a3_0[1]*a3_0[1] + a3_0[2]*a3_0[2]);
+  double a4_0norm = sqrt(a4_0[0]*a4_0[0] + a4_0[1]*a4_0[1] + a4_0[2]*a4_0[2]);
+  for (int i = 0; i < 3; i++) {
+    a1_->at(gp)[i] = a1_0[i]/a1_0norm;
+    a2_->at(gp)[i] = a2_0[i]/a2_0norm;
+    a3_->at(gp)[i] = a3_0[i]/a3_0norm;
+    a4_->at(gp)[i] = a4_0[i]/a4_0norm;
+  }
+
+  return;
+}
+
+#endif  // CCADISCRET

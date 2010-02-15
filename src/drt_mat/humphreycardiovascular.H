@@ -67,6 +67,8 @@ namespace MAT
       const double phic_;
       // mass fraction of smooth muscle
       const double phim_;
+      // option for initialization
+      const int init_;
       //@}
 
     };  // class HumphreyCardio
@@ -158,17 +160,20 @@ namespace MAT
     double ShearMod() const {return params_->mue_;};
     
     /// return a1s
-    RCP<vector<vector<double> > > Geta1() const {return ca1_;}
+    RCP<vector<vector<double> > > Geta1() const {return a1_;};
 
     /// return a2s
-    RCP<vector<vector<double> > > Geta2() const {return ca2_;}
+    RCP<vector<vector<double> > > Geta2() const {return a2_;};
     
     /// return a3s
-    RCP<vector<vector<double> > > Geta3() const {return ca3_;}
+    RCP<vector<vector<double> > > Geta3() const {return a3_;};
 
     /// return a4s
-    RCP<vector<vector<double> > > Geta4() const {return ca4_;}
+    RCP<vector<vector<double> > > Geta4() const {return a4_;};
 
+    /// evaluate fiber directions from locsys, pull back
+    void EvaluateFiberVecs
+    (const int gp, const LINALG::Matrix<3,3>& locsys, const LINALG::Matrix<3,3>& defgrd);
 
   private:
 

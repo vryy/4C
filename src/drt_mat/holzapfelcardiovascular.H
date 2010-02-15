@@ -3,7 +3,7 @@
 \brief
 This file contains routines for an anisotropic material with two fiber families.
 example input line
-MAT 1 MAT_HOLZAPFELCARDIO KAPPA 0.833 MUE 0.385 DENS 1.0 K1 1.0 K2 1.0 GAMMA 45.0 MINSTRETCH 1.0
+MAT 1 MAT_HOLZAPFELCARDIO KAPPA 0.833 MUE 0.385 DENS 1.0 K1 1.0 K2 1.0 GAMMA 45.0 MINSTRETCH 1.0 INIT 1
 
 <pre>
 Maintainer: Susanna Tinkl
@@ -57,6 +57,8 @@ namespace MAT
       const double gamma_;
       // minimal principal stretch fibers do respond to
       const double minstretch_;
+      // option for initialization
+      const int init_;
       //@}
 
     };  // class HolzapfelCardio
@@ -148,11 +150,14 @@ namespace MAT
     double ShearMod() const {return params_->mue_;};
     
     /// return a1s
-    RCP<vector<vector<double> > > Geta1() const {return ca1_;}
+    RCP<vector<vector<double> > > Geta1() const {return a1_;};
 
     /// return a2s
-    RCP<vector<vector<double> > > Geta2() const {return ca2_;}
+    RCP<vector<vector<double> > > Geta2() const {return a2_;};
 
+    /// evaluate fiber directions from locsys and alignment angle, pull back
+    void EvaluateFiberVecs
+    (const int gp, const double gamma, const LINALG::Matrix<3,3>& locsys, const LINALG::Matrix<3,3>& defgrd);
 
   private:
 

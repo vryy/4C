@@ -1212,6 +1212,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"K2","Parameter for exponential fiber stiffness");
     AddNamedReal(m,"GAMMA","angle between fibers");
     AddNamedReal(m,"MINSTRETCH","minimal principal stretch fibers do respond to");
+    AddNamedInt(m,"INIT","option for initialization");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1235,6 +1236,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"PHIE","mass fraction of elastin");
     AddNamedReal(m,"PHIC","mass fraction of collagen");
     AddNamedReal(m,"PHIM","mass fraction of smooth muscle");
+    AddNamedInt(m,"INIT","option for initialization");
 
     AppendMaterialDefinition(matlist,m);
   }
