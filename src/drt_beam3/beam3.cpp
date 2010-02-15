@@ -342,14 +342,16 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3::MyGaussRule(int nnode, Integration
  | element nodes are already known (public)                   cyron 10/08|
  *----------------------------------------------------------------------*/
 template<int nnode>
-void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,const vector<double>& rotrefe)
+void DRT::ELEMENTS::Beam3::SetUpReferenceGeometry(const vector<double>& xrefe,const vector<double>& rotrefe, const bool secondinit)
 {
-  /*this method initialized geometric variables of the element; such an initialization can only be done once when the element is
-   * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this
-   * method will initialize the geometric variables if the class variable isinit_ == false and afterwards set this variable to
-   * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/
+  /*this method initializes geometric variables of the element; the initilization can usually be applied to elements only once;
+   *therefore after the first initilization the flag isinit is set to true and from then on this method does not take any action
+   *when called again unless it is called on purpose with the additional parameter secondinit. If this parameter is passed into
+   *the method and is true the element is initialized another time with respective xrefe and rotrefe;
+   *note: the isinit_ flag is important for avoiding reinitialization upon restart. However, it should be possible to conduct a 
+   *second initilization in principle (e.g. for periodic boundary conditions*/
 
-  if(!isinit_)
+  if(!isinit_ || secondinit)
   {
     isinit_ = true;
     

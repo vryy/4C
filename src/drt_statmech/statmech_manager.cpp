@@ -1262,27 +1262,28 @@ void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
     }
   }
 
-  //SetUpReferenceGeometry is a templated function
+  /*SetUpReferenceGeometry is a templated function; note that the third argument "true" is necessary as all beam elements
+   * have already been initialized once upon reading input file*/
   switch(beam->NumNode())
   {
     case 2:     
     { 
-      beam->SetUpReferenceGeometry<2>(xrefe,rotrefe);
+      beam->SetUpReferenceGeometry<2>(xrefe,rotrefe,true);
       break;
     }
     case 3:
     {
-      beam->SetUpReferenceGeometry<3>(xrefe,rotrefe);
+      beam->SetUpReferenceGeometry<3>(xrefe,rotrefe,true);
       break;
     }
     case 4:
     {
-      beam->SetUpReferenceGeometry<4>(xrefe,rotrefe);
+      beam->SetUpReferenceGeometry<4>(xrefe,rotrefe,true);
       break;
     }
     case 5:
     {
-      beam->SetUpReferenceGeometry<5>(xrefe,rotrefe);
+      beam->SetUpReferenceGeometry<5>(xrefe,rotrefe,true);
       break;
     }       
     default:

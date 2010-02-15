@@ -383,7 +383,7 @@ private:
   //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
   //this function is templated and receives nnode from Beam3Register::Initialize
   template<int nnode>
-  void SetUpReferenceGeometry(const vector<double>& xrefe,const vector<double>& rotrefe);
+  void SetUpReferenceGeometry(const vector<double>& xrefe,const vector<double>& rotrefe, const bool secondinit = false);
 
   //@}
 
