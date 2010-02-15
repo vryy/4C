@@ -122,6 +122,8 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   bcval_   = LINALG::CreateVector(*dofrowmap,true);
   dbctog_  = LINALG::CreateVector(*dofrowmap,true);
 
+  //  abc_  = LINALG::CreateVector(*dofrowmap,true);
+
   // Vectors used for solution process
   // ---------------------------------
 
@@ -146,6 +148,8 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   eleparams.set("qc0nm",qcnm_);
   eleparams.set("radii",radii_);
 
+
+  //  eleparams.set("abc",abc_);
   eleparams.set("action","get_initial_state");
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
@@ -170,12 +174,25 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
       int    gid = lm[0];
       double val = gid;
       nodeIds_->ReplaceGlobalValues(1,&val,&gid);
+      //      double val2 = 0.0;
+      //      if (ele->Nodes()[0]->GetCondition("RedLungAcinusCond"))
+      //      {
+      //        double val2 = 1.0+(*abc_)[gid];
+      //        abc_->ReplaceGlobalValues(1,&val2,&gid);
+      //      }
+
     }
     if(myrank_ == (*lmowner)[1])
     {
       int    gid = lm[1];
       double val = gid;
       nodeIds_->ReplaceGlobalValues(1,&val,&gid);
+      //      if (ele->Nodes()[1]->GetCondition("RedLungAcinusCond"))
+      //      {
+      //        double val2 = 1.0+(*abc_)[gid];
+      //        abc_->ReplaceGlobalValues(1,&val2,&gid);
+      //      }
+
     }
   }
 
@@ -414,6 +431,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     eleparams.set("total time",time_);
     eleparams.set("bcval",bcval_);
     eleparams.set("dbctog",dbctog_);
+    //    eleparams.set("abc",abc_);
     eleparams.set("rhs",rhs_);
 
     // call standard loop over all elements
@@ -580,8 +598,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output()
     output_.NewStep(step_,time_);
 
     // "pressure" vectors
-    output_.WriteVector("pnm",pnm_);
-    output_.WriteVector("pn",pn_);
+    //    output_.WriteVector("pnm",pnm_);
+    //    output_.WriteVector("pn",pn_);
     output_.WriteVector("pnp",pnp_);
 
     // write domain decomposition for visualization
@@ -591,6 +609,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output()
     {
       output_.WriteVector("NodeIDs",nodeIds_);
       output_.WriteVector("radii",radii_);
+      //      output_.WriteVector("abc",abc_);
     }
   }
   // write restart also when uprestart_ is not a integer multiple of upres_

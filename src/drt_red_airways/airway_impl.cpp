@@ -160,6 +160,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
   RCP<Epetra_Vector> p0np    = params.get<RCP<Epetra_Vector> >("p0np");
   RCP<Epetra_Vector> p0n     = params.get<RCP<Epetra_Vector> >("p0n");
   RCP<Epetra_Vector> p0nm    = params.get<RCP<Epetra_Vector> >("p0nm");
+  //  RCP<Epetra_Vector> abc     = params.get<RCP<Epetra_Vector> >("abc");
 
   RCP<Epetra_Vector> qc0np   = params.get<RCP<Epetra_Vector> >("qc0np");
   RCP<Epetra_Vector> qc0n    = params.get<RCP<Epetra_Vector> >("qc0n");
@@ -182,7 +183,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
     p0np->ReplaceGlobalValues(1,&val,&gid);
     p0n ->ReplaceGlobalValues(1,&val,&gid);
     p0nm->ReplaceGlobalValues(1,&val,&gid);
-
+    double val2 = 0.0;
+    //    abc->ReplaceGlobalValues(1,&val,&gid);
   }
   if(myrank == (*lmowner)[1])
   {
@@ -194,7 +196,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
     
     val = sqrt(ele->getA()/M_PI);
     radii->ReplaceGlobalValues(1,&val,&gid);
-
+    //    abc->ReplaceGlobalValues(1,&val,&gid);
   }
 
   //--------------------------------------------------------------------
@@ -290,7 +292,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     rhs(0) = 0.0;
     rhs(1) = 0.0;
 
-    q_out = (eqn(0)-eqn(1))/R;
+    q_out = (epnp(0)-epnp(1))/R;
 
   }
   else if(ele->type() == "InductoResistive")
@@ -314,7 +316,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     rhs(0) = -epnp(0)*2.0*C/dt - eqn(0);
     rhs(1) = 0.0;
 
-    q_out = (eqn(0)-eqn(1))/R;
+    q_out = (epnp(0)-epnp(1))/R;
   }
   else if(ele->type() == "RLC")
   {
@@ -342,7 +344,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     {
       if (i==0)
       {
-        dserror("SMTHG IS WRONG");
+        dserror("SMTHG IS WRONG with Node (%d) in elem(%d)",ele->Nodes()[i]->Id(),ele->Id());
         exit(1);
       }
       string MatType = *(condition->Get<string>("materialType"));
@@ -507,6 +509,14 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
       }
       else if(ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))
       {
+        #if 0
+        int gid;
+        double val;
+        RefCountPtr<Epetra_Vector> abc  = params.get<RCP<Epetra_Vector> >("abc");
+        gid = lm[i];
+        val = 1;
+        abc->ReplaceGlobalValues(1,&val,&gid);
+        #endif
         // ---------------------------------------------------------------
         // If the node is conected to a reduced dimesnional acinus
         // ---------------------------------------------------------------
@@ -516,6 +526,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
       }
       else
       {
+        #if 1
         // ---------------------------------------------------------------
         // If the node is a terminal node, but no b.c is prescribed to it
         // then a zero output pressure is assumed
@@ -555,6 +566,32 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           val = 1;
           dbctog->ReplaceGlobalValues(1,&val,&gid);
         }
+        #endif
+
+        #if 0
+        // ---------------------------------------------------------------
+        // If the node is a terminal node, but no b.c is prescribed to it
+        // then a zero output pressure is assumed
+        // ---------------------------------------------------------------
+        if (ele->Nodes()[i]->NumElement() == 1)
+        {
+          RefCountPtr<Epetra_Vector> rhs  = params.get<RCP<Epetra_Vector> >("rhs");
+          if (rhs==null)
+          {
+            dserror("Cannot get state vector 'rhs'");
+            exit(1);
+          }
+          
+          // set pressure at node i
+          int    gid; 
+          double val; 
+          
+          gid =  lm[i];
+          val =  0.0;
+          //rhs->ReplaceGlobalValues(1,&val,&gid);
+        }
+        #endif
+
       } // END of if there is no BC but the node still is at the terminal
     } // END of if node is available on this processor
   } // End of node i has a condition

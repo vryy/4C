@@ -36,6 +36,7 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("pnp", "pressure", dofbased, 1);
   EnsightWriter::WriteResult("NodeIDs", "NodeIDs", dofbased, 1);
   EnsightWriter::WriteResult("radii", "radii", dofbased, 1);
+  EnsightWriter::WriteResult("abc", "acinus_bc", dofbased, 1);
 
   
   EnsightWriter::WriteElementResults(field); //To comment

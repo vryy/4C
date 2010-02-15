@@ -286,6 +286,7 @@ protected:
   //! @name Dirichlet boundary condition vectors
   RCP<Epetra_Vector>          bcval_;
   RCP<Epetra_Vector>          dbctog_;
+  //  RCP<Epetra_Vector>          abc_;
   //@}
 
   /// connection between master and slave nodes on this proc
