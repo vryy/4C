@@ -44,14 +44,14 @@ Maintainer: Markus Gitterle
 #include "contact_element.H"
 #include "contact_defines.H"
 
+/*----------------------------------------------------------------------*/
+// METHODS RELATED TO FRINODEDATACONTAINER
+/*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                              mgit 02/10|
+ |  ctor (public)                                            mgit 01/10|
  *----------------------------------------------------------------------*/
-CONTACT::FriNode::FriNode(int id, const double* coords, const int owner,
-                          const int numdof, const vector<int>& dofs, const bool isslave,
-                          const bool initactive) :
-CONTACT::CoNode(id,coords,owner,numdof,dofs,isslave,initactive),
+CONTACT::FriNodeDataContainer::FriNodeDataContainer():
 activeold_(false),
 slip_(false)
 {
@@ -66,10 +66,9 @@ slip_(false)
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                        mgit 02/10|
+ |  copy-ctor (public)                                        mgit 01/10|
  *----------------------------------------------------------------------*/
-CONTACT::FriNode::FriNode(const CONTACT::FriNode& old) :
-CONTACT::CoNode(old),
+CONTACT::FriNodeDataContainer::FriNodeDataContainer(const CONTACT::FriNodeDataContainer& old):
 activeold_(old.activeold_),
 slip_(old.slip_),
 drowsold_(old.drowsold_),
@@ -81,6 +80,7 @@ mrowsoldPG_(old.mrowsoldPG_),
 snodes_(old.snodes_),
 mnodes_(old.mnodes_),
 mnodesold_(old.mnodesold_)
+
 {
   for (int i=0;i<3;++i)
   {
@@ -88,7 +88,80 @@ mnodesold_(old.mnodesold_)
     traction()[i]=old.traction_[i];
     tractionold()[i]=old.tractionold_[i];
   }
+  return;
+}
 
+/*----------------------------------------------------------------------*
+ |  Deep copy this instance of FriNodeDataContainer and
+    return pointer to it (public)                              mgit 01/10|
+ *----------------------------------------------------------------------*/
+CONTACT::FriNodeDataContainer* CONTACT::FriNodeDataContainer::Clone() const
+{
+  CONTACT::FriNodeDataContainer* newnodedc = new CONTACT::FriNodeDataContainer(*this);
+  return newnodedc;
+}
+
+/*----------------------------------------------------------------------*
+ |  Pack data                                                  (public) |
+ |                                                            mgit 01/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::FriNodeDataContainer::Pack(vector<char>& data) const
+{
+  // add jump_
+  DRT::ParObject::AddtoPack(data,jump_,3);
+  // add activeold_
+  DRT::ParObject::AddtoPack(data,activeold_);
+  // add slip_
+  DRT::ParObject::AddtoPack(data,slip_);
+  // add traction_
+  DRT::ParObject::AddtoPack(data,traction_,3);
+  // add tractionold_
+  DRT::ParObject::AddtoPack(data,tractionold_,3);
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Unpack data                                                (public) |
+ |                                                            mgit 01/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::FriNodeDataContainer::Unpack(int& position, const vector<char>& data)
+{
+  // jump_
+  DRT::ParObject::ExtractfromPack(position,data,jump_,3);
+  // activeold_
+  DRT::ParObject::ExtractfromPack(position,data,activeold_);
+  // slip_
+  DRT::ParObject::ExtractfromPack(position,data,slip_);
+  // traction_
+  DRT::ParObject::ExtractfromPack(position,data,traction_,3);
+  // tractionold_
+  DRT::ParObject::ExtractfromPack(position,data,tractionold_,3);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+// METHODS RELATED TO FRINODE
+/*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                              mgit 02/10|
+ *----------------------------------------------------------------------*/
+CONTACT::FriNode::FriNode(int id, const double* coords, const int owner,
+                          const int numdof, const vector<int>& dofs, const bool isslave,
+                          const bool initactive) :
+CONTACT::CoNode(id,coords,owner,numdof,dofs,isslave,initactive)
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  copy-ctor (public)                                        mgit 02/10|
+ *----------------------------------------------------------------------*/
+CONTACT::FriNode::FriNode(const CONTACT::FriNode& old) :
+CONTACT::CoNode(old)
+{
   return;
 }
 
@@ -142,16 +215,11 @@ void CONTACT::FriNode::Pack(vector<char>& data) const
   CONTACT::CoNode::Pack(basedata);
   AddtoPack(data,basedata);
   
-  // add jump_
-  AddtoPack(data,jump_,3);
-  // add activeold_
-  AddtoPack(data,activeold_);
-  // add slip_
-  AddtoPack(data,slip_);
-  // add traction_
-  AddtoPack(data,traction_,3);
-  // add tractionold_
-  AddtoPack(data,tractionold_,3);
+  // data_
+  int hasdata = data_!=Teuchos::null;
+  AddtoPack(data,hasdata);
+  if (hasdata)
+    data_->Pack(data);
   
   return;
 }
@@ -175,16 +243,18 @@ void CONTACT::FriNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   CONTACT::CoNode::Unpack(basedata);
   
-  // jump_
-  ExtractfromPack(position,data,jump_,3);
-  // activeold_
-  ExtractfromPack(position,data,activeold_);
-  // slip_
-  ExtractfromPack(position,data,slip_);
-  // traction_
-  ExtractfromPack(position,data,traction_,3);
-  // tractionold_
-  ExtractfromPack(position,data,tractionold_,3);
+  // data_
+  int hasdata;
+  ExtractfromPack(position,data,hasdata);
+  if (hasdata)
+  {
+    data_ = Teuchos::rcp(new CONTACT::FriNodeDataContainer());
+    data_->Unpack(position,data);
+  }
+  else
+  {
+    data_ = Teuchos::null;
+  }
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -202,7 +272,7 @@ void CONTACT::FriNode::AddSNode(int node)
   if (IsOnBound()==true)
     dserror("ERROR: AddSNode: function called for boundary node %i", Id());
 
-  GetSNodes().insert(node);
+  Data().GetSNodes().insert(node);
   
   return;
 }
@@ -218,7 +288,7 @@ void CONTACT::FriNode::AddMNode(int node)
   if (IsOnBound()==true)
     dserror("ERROR: AddMNode: function called for boundary node %i", Id());
 
-  GetMNodes().insert(node);
+  Data().GetMNodes().insert(node);
 
   return;
 }
@@ -235,15 +305,15 @@ void CONTACT::FriNode::AddDValuePG(int& row, int& col, double& val)
     dserror("ERROR: AddDValue: function called for boundary node %i", Id());
 
   // check if this has been called before
-  if ((int)GetDPG().size()==0)
-    GetDPG().resize(NumDof());
+  if ((int)Data().GetDPG().size()==0)
+    Data().GetDPG().resize(NumDof());
 
   // check row index input
-  if ((int)GetDPG().size()<=row)
+  if ((int)Data().GetDPG().size()<=row)
     dserror("ERROR: AddDValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& dmap = GetDPG()[row];
+  map<int,double>& dmap = Data().GetDPG()[row];
   dmap[col] += val;
 
   return;
@@ -261,15 +331,15 @@ void CONTACT::FriNode::AddMValuePG(int& row, int& col, double& val)
     dserror("ERROR: AddDValue: function called for boundary node %i", Id());
 
   // check if this has been called before
-  if ((int)GetMPG().size()==0)
-    GetMPG().resize(NumDof());
+  if ((int)Data().GetMPG().size()==0)
+    Data().GetMPG().resize(NumDof());
 
   // check row index input
-  if ((int)GetMPG().size()<=row)
+  if ((int)Data().GetMPG().size()<=row)
     dserror("ERROR: AddMValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& mmap = GetMPG()[row];
+  map<int,double>& mmap = Data().GetMPG()[row];
   mmap[col] += val;
 
   return;
@@ -287,15 +357,15 @@ void CONTACT::FriNode::AddDerivJumpValue(int& row, const int& col, double val)
     dserror("ERROR: AddJumpValue: function called for boundary node %i", Id());
 
   // check if this has been called before
-  if ((int)GetDerivJump().size()==0)
-    GetDerivJump().resize(NumDof());
+  if ((int)Data().GetDerivJump().size()==0)
+    Data().GetDerivJump().resize(NumDof());
 
   // check row index input
-  if ((int)GetDerivJump().size() <= row)
+  if ((int)Data().GetDerivJump().size() <= row)
     dserror("ERROR: AddDerivJumpValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& zmap = GetDerivJump()[row];
+  map<int,double>& zmap = Data().GetDerivJump()[row];
   zmap[col] += val;
 
   return;
@@ -309,24 +379,24 @@ void CONTACT::FriNode::StoreDMOld()
   // copy drows_ to drowsold_
 
   // reset old nodal Mortar maps
-  for (int j=0;j<(int)(GetDOld().size());++j)
-  (GetDOld())[j].clear();
-  for (int j=0;j<(int)((GetMOld()).size());++j)
-  (GetMOld())[j].clear();
+  for (int j=0;j<(int)(Data().GetDOld().size());++j)
+  (Data().GetDOld())[j].clear();
+  for (int j=0;j<(int)((Data().GetMOld()).size());++j)
+  (Data().GetMOld())[j].clear();
 
   // clear and zero nodal vectors
-  GetDOld().clear();
-  GetMOld().clear();
-  GetDOld().resize(0);
-  GetMOld().resize(0);
+  Data().GetDOld().clear();
+  Data().GetMOld().clear();
+  Data().GetDOld().resize(0);
+  Data().GetMOld().resize(0);
 
   // write drows_ to drowsold_
-  GetDOld() = GetD();
-  GetMOld() = GetM();
+  Data().GetDOld() = GetD();
+  Data().GetMOld() = GetM();
 
   // also vectors containing the according master nodes
-  GetMNodesOld().clear();
-  GetMNodesOld() = GetMNodes();
+  Data().GetMNodesOld().clear();
+  Data().GetMNodesOld() = Data().GetMNodes();
 
   return;
 }
@@ -339,20 +409,20 @@ void CONTACT::FriNode::StoreDMOldPG()
   // copy drows_ to drowsold_
 
   // reset old nodal Mortar maps
-  for (int j=0;j<(int)(GetDOldPG().size());++j)
-  (GetDOldPG())[j].clear();
-  for (int j=0;j<(int)((GetMOldPG()).size());++j)
-  (GetMOldPG())[j].clear();
+  for (int j=0;j<(int)(Data().GetDOldPG().size());++j)
+  (Data().GetDOldPG())[j].clear();
+  for (int j=0;j<(int)((Data().GetMOldPG()).size());++j)
+  (Data().GetMOldPG())[j].clear();
 
   // clear and zero nodal vectors
-  GetDOldPG().clear();
-  GetMOldPG().clear();
-  GetDOldPG().resize(0);
-  GetMOldPG().resize(0);
+  Data().GetDOldPG().clear();
+  Data().GetMOldPG().clear();
+  Data().GetDOldPG().resize(0);
+  Data().GetMOldPG().resize(0);
 
   // write drows_ to drowsold_
-  GetDOldPG() = GetDPG();
-  GetMOldPG() = GetMPG();
+  Data().GetDOldPG() = Data().GetDPG();
+  Data().GetMOldPG() = Data().GetMPG();
 
   return;
 }
@@ -364,9 +434,19 @@ void CONTACT::FriNode::StoreTracOld()
 {
   // write entries to old ones
   for (int j=0;j<3;++j)
-    tractionold()[j]=traction()[j];
+    Data().tractionold()[j]=Data().traction()[j];
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  Initialize data container                              gitterle 10/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::FriNode::InitializeDataContainer()
+{
+  data_=rcp(new CONTACT::FriNodeDataContainer());
+  return;
+}
+
 
 #endif  // #ifdef CCADISCRET

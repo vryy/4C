@@ -54,175 +54,71 @@ namespace CONTACT
 {
 
 /*!
-\brief A class for a frictional contact node derived from CONTACT::CoNode
+\brief A class containing additional data from frictional contact nodes
 
-This class represents a finite element node capable of frictional contact.
+This class contains additional information from frictional contact nodes which are
+are not needed for contact search and therefore are only available on the
+node's processor (ColMap). The class FriNode must be declared before its data 
+container.
 
 \author gitterle (gitterle@lnm.mw.tum.de)
 */
-class FriNode : public CONTACT::CoNode
+class FriNodeDataContainer
 {
 public:
-
-  //! @name Enums and Friends
-
-  /*!
-  \brief The Discretization is a friend of FriNode
-  */
-  friend class DRT::Discretization;
-
-  //@}
 
   //! @name Constructors and destructors and related methods
 
   /*!
   \brief Standard Constructor
 
-  \param id     (in): A globally unique node id
-  \param coords (in): vector of nodal coordinates, length 3
-  \param owner  (in): Owner of this node.
-  \param numdof (in): Number of degrees of freedom to this node
-  \param dofs   (in): list of global degrees of freedom
-  \param isslave(in): flag indicating whether node is slave or master
-  \param initactive (in): flag indicating whether initially set to active
-
   */
-  FriNode(int id, const double* coords, const int owner,
-         const int numdof, const vector<int>& dofs, const bool isslave,
-         const bool initactive);
+  FriNodeDataContainer();
 
   /*!
   \brief Copy Constructor
 
-  Makes a deep copy of a FriNode
+  Makes a deep copy of a FriNodeDataContainer
 
   */
-  FriNode(const CONTACT::FriNode& old);
+  FriNodeDataContainer(const CONTACT::FriNodeDataContainer& old);
 
   /*!
   \brief Deep copy the derived class and return pointer to it
 
   */
-  virtual CONTACT::FriNode* Clone() const;
+  virtual CONTACT::FriNodeDataContainer* Clone() const;
 
   /*!
   \brief Destructor
 
   */
-  virtual ~FriNode() { return; }
+  virtual ~FriNodeDataContainer() { return; }
 
   /*!
-  \brief Return unique ParObject id
+  \brief Pack this class so that it can be communicated
 
-  every class implementing ParObject needs a unique id defined at the
-  top of drt_lib/drt_parobject.H.
-
-  */
-  virtual int UniqueParObjectId() const { return ParObject_FriNode;}
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this node
+  This function packs the datacontainer. This is only called
+  when the class has been initialized and the pointer to this
+  class exists.
 
   */
   virtual void Pack(vector<char>& data) const;
 
   /*!
-  \brief Unpack data from a char vector into this class
+  \brief Unpack data from a vector into this class
 
-  \ref Pack and \ref Unpack are used to communicate this node
+  This function unpacks the datacontainer. This is only called
+  when the class has been initialized and the pointer to this
+  class exists.
 
   */
-  virtual void Unpack(const vector<char>& data);
-
+  virtual void Unpack(int& position, const vector<char>& data);
+  
   //@}
 
   //! @name Access methods
-
-  /*!
-  \brief Print this cnode
-  */
-  virtual void Print(ostream& os) const ;
-
-
-  /*!
-  \brief Add a value to the SNode set of this node
-
-  */
-  void AddSNode (int node);
-
-  /*!
-  \brief Add a value to the MNode set of this node
-
-  */
-  void AddMNode (int node);
   
-  /*!
-  \brief Add a value to the 'D' map of this node (Petrov-Galerkin approach)
-
-  The 'D' map is later assembled to the D matrix.
-  Note that drows_ here is a vector.
-
-  \param row : local dof row id to add to (rowwise)
-  \param val : value to be added
-  \param col : global dof column id of the value added
-
-  */
-  void AddDValuePG(int& row, int& col, double& val);
-
-  /*!
-  \brief Add a value to the 'M' map of this node (Petrov-Galerkin approach)
-
-  The 'M' map is later assembled to the M matrix.
-  Note that mrows_ here is a vector.
-
-  \param row : local dof row id to add to (rowwise)
-  \param val : value to be added
-  \param col : global dof column id of the value added
-
-  */
-  void AddMValuePG(int& row, int& col, double& val);
-
-  /*!
-  \brief Add a value to the map of Jump derivatives of this node
-
-  Note that derivjump_ here is a vector.
-
-  \param row : local dof row id to add to (rowwise)
-  \param val : value to be added
-  \param col : global dof column id of the value added
-
-  */
-  void AddDerivJumpValue(int& row, const int& col, double val);
-  
-  /*!
-  \brief Write nodal entries of D and M to Dold and Mold
-
-  At the end of a time step the nodal entries (vector) of the Mortar
-  Matrices D and M are stored to the old ones.
-
-  */
-  void StoreDMOld();
-
-  /*!
-  \brief Write nodal entries of D and M to Dold and Mold (PG approach)
-
-  At the end of a time step the nodal entries (vector) of the Mortar
-  Matrices D and M are stored to the old ones.
-
-  */
-  void StoreDMOldPG();
-
-  /*!
-  \brief Write nodal entries of Penalty tractions to old ones
-
-  At the end of a time step the nodal entries (vector) of the Penalty
-  tractions are stored to the old ones.
-
-  */
-  void StoreTracOld();
-
   /*!
   \brief Return jump per time step (only for slave side!) (length 3)
   */
@@ -247,7 +143,7 @@ public:
   \brief Return the old 'M' map (vector) of this node (last converged state)
   */
   virtual inline vector<map<int,double> >& GetMOld() { return mrowsold_; }
-  
+ 
   /*!
   \brief Return the 'D' map (vector) of this node (Petrov-Galerkin-approach)
   */
@@ -361,38 +257,245 @@ public:
   \brief Return old penalty traction (length 3)
   */
   virtual inline double* tractionold() { return tractionold_; }
+
+  //@}
+
+protected:
+
+  double          jump_[3];     // jump per time step
+  bool            activeold_;   // true if cnode was in contact (last converged state n)
+  bool            slip_;        // true if cnode slips (contact force reaches friction bound)
+
+  vector<map<int,double> >      drowsold_;     // nodal rows of old D matrix
+  vector<map<int,double> >      mrowsold_;     // nodal rows of old M matrix
+  vector<map<int,double> >      drowsPG_;      // nodal rows of D matrix with petrov galerkin approach
+  vector<map<int,double> >      mrowsPG_;      // nodal rows of M matrix with petrov galerkin approach
+  vector<map<int,double> >      drowsoldPG_;   // nodal rows of old D matrix with petrov galerkin approach
+  vector<map<int,double> >      mrowsoldPG_;   // nodal rows of old M matrix with petrov galerkin approach
+  set<int>                      snodes_;       // nodal set of according slave nodes
+  set<int>                      mnodes_;       // nodal set of according master nodes
+  set<int>                      mnodesold_;    // nodal set of old according masternodes
+
+  map<int,map<int,double> >     derivdPG_; // directional derivative of nodal D-matrix value
+  map<int,map<int,double> >     derivmPG_; // directional derivative of nodal M-matrix values
+  vector<map<int,double> >      derivjump_;  // directional derivative of nodal weighted jump vector
+
+  // penalty related quantities
+  double                        traction_[3];     // traction vector of current time step
+  double                        tractionold_[3];  // traction vector of previous time step
+
+}; // class FriNodeDataContainer
+
+
+/*!
+\brief A class for a frictional contact node derived from CONTACT::CoNode
+
+This class represents a finite element node capable of frictional contact.
+
+\author gitterle (gitterle@lnm.mw.tum.de)
+*/
+class FriNode : public CONTACT::CoNode
+{
+public:
+
+  //! @name Enums and Friends
+
+  /*!
+  \brief The Discretization is a friend of FriNode
+  */
+  friend class DRT::Discretization;
+
+  //@}
+
+  //! @name Constructors and destructors and related methods
+
+  /*!
+  \brief Standard Constructor
+
+  \param id     (in): A globally unique node id
+  \param coords (in): vector of nodal coordinates, length 3
+  \param owner  (in): Owner of this node.
+  \param numdof (in): Number of degrees of freedom to this node
+  \param dofs   (in): list of global degrees of freedom
+  \param isslave(in): flag indicating whether node is slave or master
+  \param initactive (in): flag indicating whether initially set to active
+
+  */
+  FriNode(int id, const double* coords, const int owner,
+         const int numdof, const vector<int>& dofs, const bool isslave,
+         const bool initactive);
+
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a FriNode
+
+  */
+  FriNode(const CONTACT::FriNode& old);
+
+  /*!
+  \brief Deep copy the derived class and return pointer to it
+
+  */
+  virtual CONTACT::FriNode* Clone() const;
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~FriNode() { return; }
+
+  /*!
+  \brief Return unique ParObject id
+
+  every class implementing ParObject needs a unique id defined at the
+  top of drt_lib/drt_parobject.H.
+
+  */
+  virtual int UniqueParObjectId() const { return ParObject_FriNode;}
+
+  /*!
+  \brief Pack this class so it can be communicated
+
+  \ref Pack and \ref Unpack are used to communicate this node
+
+  */
+  virtual void Pack(vector<char>& data) const;
+
+  /*!
+  \brief Unpack data from a char vector into this class
+
+  \ref Pack and \ref Unpack are used to communicate this node
+
+  */
+  virtual void Unpack(const vector<char>& data);
+
+  //@}
+
+  //! @name access methods
+
+  /*!
+  \brief Print this cnode
+  */
+  virtual void Print(ostream& os) const ;
+  
+  /*!
+  \brief Return of data container of this node
+
+  This method returns the data container of this node where additional
+  contact specific quantities/information are stored.
+
+  */
+  virtual inline CONTACT::FriNodeDataContainer& Data() { return *data_; }
+
+  //@}
+
+  //! @name construction methods
+ 
+  /*!
+  \brief Add a value to the SNode set of this node
+
+  */
+  void AddSNode (int node);
+
+  /*!
+  \brief Add a value to the MNode set of this node
+
+  */
+  void AddMNode (int node);
+  
+  /*!
+  \brief Add a value to the 'D' map of this node (Petrov-Galerkin approach)
+
+  The 'D' map is later assembled to the D matrix.
+  Note that drows_ here is a vector.
+
+  \param row : local dof row id to add to (rowwise)
+  \param val : value to be added
+  \param col : global dof column id of the value added
+
+  */
+  void AddDValuePG(int& row, int& col, double& val);
+
+  /*!
+  \brief Add a value to the 'M' map of this node (Petrov-Galerkin approach)
+
+  The 'M' map is later assembled to the M matrix.
+  Note that mrows_ here is a vector.
+
+  \param row : local dof row id to add to (rowwise)
+  \param val : value to be added
+  \param col : global dof column id of the value added
+
+  */
+  void AddMValuePG(int& row, int& col, double& val);
+
+  /*!
+  \brief Add a value to the map of Jump derivatives of this node
+
+  Note that derivjump_ here is a vector.
+
+  \param row : local dof row id to add to (rowwise)
+  \param val : value to be added
+  \param col : global dof column id of the value added
+
+  */
+  void AddDerivJumpValue(int& row, const int& col, double val);
+  
+  /*!
+  \brief Write nodal entries of D and M to Dold and Mold
+
+  At the end of a time step the nodal entries (vector) of the Mortar
+  Matrices D and M are stored to the old ones.
+
+  */
+  void StoreDMOld();
+
+  /*!
+  \brief Write nodal entries of D and M to Dold and Mold (PG approach)
+
+  At the end of a time step the nodal entries (vector) of the Mortar
+  Matrices D and M are stored to the old ones.
+
+  */
+  void StoreDMOldPG();
+
+  /*!
+  \brief Write nodal entries of Penalty tractions to old ones
+
+  At the end of a time step the nodal entries (vector) of the Penalty
+  tractions are stored to the old ones.
+
+  */
+  void StoreTracOld();
+
+  /*!
+  \brief Initializes the data container of the node
+
+  With this function, the container with contact specific quantities/information
+  is initialized.
+
+  */
+  void InitializeDataContainer();
   
   //@}
 
 protected:
   
-  double          jump_[3];        // jump per time step
-  bool            activeold_;      // true if cnode was in contact (last converged state n)
-  bool            slip_;           // true if cnode slips (contact force reaches friction bound)
+  RCP<CONTACT::FriNodeDataContainer> data_;       // additional information of proc's contact nodes
+  
+}; // class FriNode
 
-  vector<map<int,double> >      drowsold_;       // nodal rows of old D matrix
-  vector<map<int,double> >      mrowsold_;       // nodal rows of old M matrix
- 
-  vector<map<int,double> >      drowsPG_;        // nodal rows of D matrix with petrov galerkin approach
-  vector<map<int,double> >      mrowsPG_;        // nodal rows of M matrix with petrov galerkin approach
-  vector<map<int,double> >      drowsoldPG_;     // nodal rows of old D matrix with petrov galerkin approach
-  vector<map<int,double> >      mrowsoldPG_;     // nodal rows of old M matrix with petrov galerkin approach
-  set<int>                      snodes_;         // nodal set of according slave nodes
-  set<int>                      mnodes_;         // nodal set of according master nodes
-  set<int>                      mnodesold_;      // nodal set of old according masternodes
- 
-  map<int,map<int,double> >     derivdPG_; // directional derivative of nodal D-matrix value
-  map<int,map<int,double> >     derivmPG_; // directional derivative of nodal M-matrix values
-  vector<map<int,double> >      derivjump_;  // directional derivative of nodal weighted jump vector
+#include "../drt_mortar/mortar_node.H"
+#include "contact_node.H"
 
-  double                        traction_[3];     // traction vector of current time step
-  double                        tractionold_[3];  // traction vector of previous time step
+using namespace std;
+using namespace Teuchos;
 
-}; // class CoNode
 } // namespace CONTACT
 
-// << operator
-ostream& operator << (ostream& os, const CONTACT::FriNode& cnode);
+//// << operator
+//ostream& operator << (ostream& os, const CONTACT::FriNode& cnode);
 
 #endif  // #ifndef FRICTION_NODE_H
 #endif  // #ifdef CCADISCRET

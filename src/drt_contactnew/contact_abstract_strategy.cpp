@@ -451,7 +451,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
             dserror("Error in StoreNodealQuantities: This should not be "
                      "called for contact without friction");
           CONTACT::FriNode* frinode = static_cast<FriNode*>(cnode);
-          frinode->ActiveOld() = frinode->Active();
+          frinode->Data().ActiveOld() = frinode->Active();
           break;
         }
         case MORTAR::StrategyBase::jump:
@@ -460,7 +460,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
             dserror("Error in StoreNodealQuantities: This should not be "
                      "called for contact without friction");
           FriNode* frinode = static_cast<FriNode*>(cnode);
-          frinode->jump()[dof] = (*vectorinterface)[locindex[dof]];
+          frinode->Data().jump()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         default:
@@ -725,7 +725,7 @@ void CONTACT::CoAbstractStrategy::DoWriteRestart(RCP<Epetra_Vector>& activetoggl
       if (cnode->Active()) (*activetoggle)[dof]=1;
       if (friction_)
       {
-        if (static_cast<CONTACT::FriNode*>(cnode)->Slip()) (*sliptoggle)[dof]=1;
+        if (static_cast<CONTACT::FriNode*>(cnode)->Data().Slip()) (*sliptoggle)[dof]=1;
       }
     }
   }
@@ -783,7 +783,7 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
         if (friction_)
         {
           // set value stick / slip in cnode
-          if ((*sliptoggle)[dof]==1) static_cast<CONTACT::FriNode*>(cnode)->Slip()=true;
+          if ((*sliptoggle)[dof]==1) static_cast<CONTACT::FriNode*>(cnode)->Data().Slip()=true;
         }
       }
     }
@@ -1201,8 +1201,8 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
           {
             ztxi += frinode->txi()[k] * frinode->lm()[k];
             zteta += frinode->teta()[k] * frinode->lm()[k];
-            jumptxi += frinode->txi()[k] * frinode->jump()[k];
-            jumpteta += frinode->teta()[k] * frinode->jump()[k];
+            jumptxi += frinode->txi()[k] * frinode->Data().jump()[k];
+            jumpteta += frinode->teta()[k] * frinode->Data().jump()[k];
           }
   
           zt = sqrt(ztxi*ztxi+zteta*zteta);
@@ -1214,7 +1214,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
           // print active nodes on screen
           if(frinode->Active())
           {
-            if(frinode->Slip())
+            if(frinode->Data().Slip())
               cout << "SLIP " << gid << " Normal " << nz << " Tangential " << zt << endl;
             else
              cout << "STICK " << gid << " Normal " << nz << " Tangential " << zt << endl;

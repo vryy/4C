@@ -354,6 +354,11 @@ public:
   
   //@}
   
+  //! @name Empty function
+  virtual void InitializeDataContainer() {}
+   
+  //@}
+
 protected:
 
   bool            active_;         // true if cnode is in contact (active set strategy)

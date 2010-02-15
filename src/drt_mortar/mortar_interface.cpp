@@ -307,6 +307,18 @@ void MORTAR::MortarInterface::FillComplete()
   // separately so we can easily adress them
   UpdateMasterSlaveSets();
   
+  // Initialize data container 
+  // loop over all slave row nodes on the current interface
+  for (int i=0; i<oldnodecolmap_->NumMyElements(); ++i)
+  {
+    int gid = oldnodecolmap_->GID(i);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    MortarNode* mnode = static_cast<MortarNode*>(node);
+
+    mnode->InitializeDataContainer();
+  }
+    
   return;
 }
 

@@ -333,6 +333,7 @@ public:
   virtual void AddgValue(double& val) {}
   virtual void AddSNode(int node) {}
   virtual void AddMNode(int node) {}
+  virtual void InitializeDataContainer() {}
    
   //@}
 
