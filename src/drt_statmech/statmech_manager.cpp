@@ -1233,8 +1233,9 @@ void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
    * note that rotrefe for beam3 elements is related to the entry in the global total Lagrange displacement
    * vector related to a certain rotational degree of freedom; as the displacement is initially zero also
    * rotrefe is set to zero here*/
-  vector<double> xrefe;
-  vector<double> rotrefe;
+  vector<double> xrefe(beam->NumNode()*ndim,0);
+  vector<double> rotrefe(beam->NumNode()*ndim,0);
+  
   
   for(int i=0;i<beam->NumNode();i++)  
     for(int dof=0; dof<ndim; dof++) 
