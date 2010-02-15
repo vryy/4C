@@ -46,6 +46,7 @@ Maintainer: Axel Gerstenberger
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <cstdlib>
 
 namespace DRT
 {
