@@ -2252,7 +2252,8 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = static_cast<CoNode*>(node);
-
+    int dim = cnode->NumDof();
+    
     // Mortar matrix M derivatives
     map<int,map<int,double> >& mderiv = cnode->GetDerivM();
     map<int,double>::iterator colcurr;
@@ -2280,7 +2281,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
     lComm()->Broadcast(&mastersize,1,procmap_[cnode->Owner()]);
 
     // loop over all master nodes in the DerivM-map of the current slave node
-    for (int j=0;j<mastersize;++j)
+    for (int l=0;l<mastersize;++l)
     {
       int mgid = 0;
       if (Comm().MyPID()==cnode->Owner())
@@ -2293,7 +2294,6 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
       DRT::Node* mnode = idiscret_->gNode(mgid);
       if (!mnode) dserror("ERROR: Cannot find node with gid %",mgid);
       CoNode* cmnode = static_cast<CoNode*>(mnode);
-      int mnumdof = cmnode->NumDof();
 
       // Mortar matrix M derivatives
       map<int,double>& thismderiv = cnode->GetDerivM()[mgid];
@@ -2302,10 +2302,10 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
         mapsize = (int)(thismderiv.size());
       lComm()->Broadcast(&mapsize,1,procmap_[cnode->Owner()]);
 
-      // loop over all master node dofs
-      for (int k=0;k<mnumdof;++k)
+      // inner product M_{lj,c} * z_j for index j
+      for (int j=0;j<dim;++j)
       {
-        int row = cmnode->Dofs()[k];
+        int row = cmnode->Dofs()[j];
 
         if (Comm().MyPID()==cnode->Owner())
           colcurr = thismderiv.begin();
@@ -2318,7 +2318,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
           if (Comm().MyPID()==cnode->Owner())
           {
             col = colcurr->first;
-            val = lm[k] * (colcurr->second);
+            val = lm[j] * (colcurr->second);
             ++colcurr;
           }
           lComm()->Broadcast(&col,1,procmap_[cnode->Owner()]);
