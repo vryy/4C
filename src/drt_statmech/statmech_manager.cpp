@@ -591,7 +591,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
  *----------------------------------------------------------------------*/
 void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step)
 {
-  if(step % 100 != 0)
+  if(step % 1000 != 0)
     return;
   
   /*the following method writes output data for Gmsh into file with name "filename"; all line elements are written;
