@@ -406,7 +406,6 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       
       beginnew.PutScalar(0);
       endnew.PutScalar(0);
-      std::cout << "ndim: " << ndim << "\n";
       
       for(int i = 0; i<ndim; i++)
       {
