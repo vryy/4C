@@ -90,36 +90,52 @@ void ElementReader::Partition()
 
     // open input file at the right position
     ifstream file(inputfile_name.c_str());
-    file.seekg(reader_.ExcludedSectionPosition(sectionname_));
-
-    // loop all element lines
-    // Comments in the element section are not supported!
-
-    // Ok. We do this twice here! The first time we just gather the
-    // element numbers. With those we construct a preliminary element
-    // row map.
-    string line;
-    for (int i=0; getline(file, line); ++i)
+    ifstream::pos_type pos = reader_.ExcludedSectionPosition(sectionname_);
+    if (pos!=ifstream::pos_type(-1))
     {
-      if (line.find("--")==0)
+      file.seekg(pos);
+
+      // loop all element lines
+      // Comments in the element section are not supported!
+
+      // Ok. We do this twice here! The first time we just gather the
+      // element numbers. With those we construct a preliminary element
+      // row map.
+      string line;
+      for (int i=0; getline(file, line); ++i)
       {
-        break;
+        if (line.find("--")==0)
+        {
+          break;
+        }
+        else
+        {
+          istringstream t;
+          t.str(line);
+          int elenumber;
+          t >> elenumber;
+          elenumber -= 1;
+          eids.push_back(elenumber);
+        }
       }
-      else
-      {
-        istringstream t;
-        t.str(line);
-        int elenumber;
-        t >> elenumber;
-        elenumber -= 1;
-        eids.push_back(elenumber);
-      }
+      numele = static_cast<int>(eids.size());
     }
-    numele = static_cast<int>(eids.size());
+    else
+    {
+      // No such section. Leave as soon as possible.
+    }
   }
 
   // Simply allreduce the element ids
   comm_->Broadcast(&numele,1,0);
+
+  if (numele==0)
+  {
+    // This is it. Build an empty reader and leave.
+    coleles_ = roweles_ = colnodes_ = rownodes_ = rcp(new Epetra_Map(-1,0,NULL,0,*comm_));
+    return;
+  }
+
   eids.resize(numele);
   comm_->Broadcast(&eids[0],numele,0);
 
@@ -222,7 +238,7 @@ void ElementReader::Partition()
 
           // For the time being we support old and new input facilities. To
           // smooth transition.
-          
+
           DRT::INPUT::LineDefinition* linedef = ed.ElementLines(eletype,distype);
           if (linedef!=NULL)
           {

@@ -112,7 +112,7 @@ public:
     read so that we can read them in parallel. This is done using the
     NodeReader and the ElementReader.
    */
-  ifstream::pos_type ExcludedSectionPosition(string section) const { return excludepositions_.find(section)->second; }
+  ifstream::pos_type ExcludedSectionPosition(string section) const;
 
   /// return my communicator
   Teuchos::RCP<Epetra_Comm> Comm() const { return comm_; }

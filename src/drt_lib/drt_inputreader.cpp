@@ -99,6 +99,20 @@ int DatFileReader::MyOutputFlag() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+ifstream::pos_type DatFileReader::ExcludedSectionPosition(string section) const
+{
+  map<string,ifstream::pos_type>::const_iterator i = excludepositions_.find(section);
+  if (i==excludepositions_.end())
+  {
+    //dserror("unknown section '%s'",section.c_str());
+    return -1;
+  }
+  return i->second;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DatFileReader::Activate()
 {
   // Publish (some) internal data to the old ccarat reading system

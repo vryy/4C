@@ -990,7 +990,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  tuple<INPAR::STATMECH::StatOutput>(INPAR::STATMECH::statout_none,INPAR::STATMECH::statout_none,
                                             INPAR::STATMECH::statout_endtoendlog,INPAR::STATMECH::statout_endtoendlog,INPAR::STATMECH::statout_endtoendlog,
                                             INPAR::STATMECH::statout_anisotropic,INPAR::STATMECH::statout_anisotropic,
-                                            INPAR::STATMECH::statout_endtoendconst,INPAR::STATMECH::statout_endtoendconst,
+                                            INPAR::STATMECH::statout_endtoendconst,
                                             INPAR::STATMECH::statout_viscoelasticity,INPAR::STATMECH::statout_viscoelasticity,INPAR::STATMECH::statout_viscoelasticity,
                                             INPAR::STATMECH::statout_gmsh,INPAR::STATMECH::statout_gmsh),
                                  &statmech);
@@ -1138,7 +1138,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 tuple<std::string>(
                                   "Vague",
                                   "ConstTemp",
-                                  "ConstTempRate"
+                                  "ConstTempRate",
                                   "TangTemp"),
                                 tuple<INPAR::THR::PredEnum>(
                                   INPAR::THR::pred_vague,
@@ -1196,10 +1196,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    IntParameter("UPRES",1,"Increment for writing solution",&tsidyn);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& flucthydro = list->sublist("FLUCTUATING HYDRODYNAMICS",false,""); 
+  Teuchos::ParameterList& flucthydro = list->sublist("FLUCTUATING HYDRODYNAMICS",false,"");
   DoubleParameter("TEMPERATURE",300,"Temperature in K",&flucthydro);
   DoubleParameter("BOLTZMANNCONST",1.380650424e-23,"Boltzmann constant",&flucthydro);
-  
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
 
@@ -1574,7 +1574,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "No cross-stress term",
                                  "Include the cross-stress term with a linearization of the convective part",
-                                 "Include cross-stress term, but only explicitly on right hand side"
+                                 "Include cross-stress term, but only explicitly on right hand side",
+                                 ""
                                  ),
                                tuple<int>(0,1,2,3),
                                &fdyn_stab);
@@ -1591,7 +1592,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "No Reynolds-stress term",
                                  "Include Reynolds-stress term explicitly on right hand side",
-                                 "Include Reynolds-stress term with linearisation"
+                                 "Include Reynolds-stress term with linearisation",
+                                 ""
                                  ),
                                tuple<int>(0,1,2,3),
                                &fdyn_stab);
