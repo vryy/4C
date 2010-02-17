@@ -962,6 +962,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                            INPAR::POTENTIAL::approximation_surface,
                                            INPAR::POTENTIAL::approximation_point),
                                 &interaction_potential);
+  
+  // radius of can der Waals spheres for analytical testing
+  DoubleParameter(  "VDW_RADIUS",0.0,
+                    "radius of van der Waals spheres",
+                    &interaction_potential);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& statmech = list->sublist("STATISTICAL MECHANICS",false,"");
