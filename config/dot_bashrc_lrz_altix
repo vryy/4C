@@ -37,6 +37,7 @@ module load fortran
 module load szip/2.0
 module load hdf5
 module load metis/4.0
+module load parmetis/3.1
 module load netcdf/3.6.2
 module load mkl/10.0
 module load mpi.altix/1.22

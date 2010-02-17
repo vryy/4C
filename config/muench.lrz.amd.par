@@ -89,14 +89,18 @@ VISUAL3_INC=""
 VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpthread"
 
 # hdf5
-HDF5_LIB="-L$HDF5_BASE/lib -lhdf5_hl  -lhdf5 -lpthread -lz $SZIP_LIB"
+#HDF5_LIB="-L$HDF5_BASE/lib -lhdf5_hl  -lhdf5 -lpthread -lz $SZIP_LIB"
+# static hdf5 path
+TMP_VAR="$HDF5_HL_LIB $HDF5_LIB -lpthread -lz $SZIP_LIB"
+HDF5_LIB=$TMP_VAR
+
 
 # exodus
 #EXODUS_LIB="-lexoIIv2c -L/usr/lib/netcdf-3 -lnetcdf"
 EXODUS_LIB=""
 
 #LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
-LIBS="$METIS_LIB $MKL_LIB -lm  -lpthread  -L/lrz/sys/intel/ifort_101/lib -lguide -lifcore  -limf -lsvml -lirc -lstdc++"
+LIBS="$PARMETIS_LIB $MKL_LIB -lm  -lpthread  -L/lrz/sys/intel/ifort_101/lib -lguide -lifcore  -limf -lsvml -lirc -lstdc++"
 
 CFLAGS_OPT="-O2  -xW -axW"
 CPFLAGS_OPT="-O3  -xW -axW"
