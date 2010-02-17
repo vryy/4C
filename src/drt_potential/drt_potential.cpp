@@ -1517,11 +1517,6 @@ void POTENTIAL::Potential::WriteTestOutput(
       file << time << "\t\t\t" << force1 << "\t\t\t" << force_analytical << "\t\t\t" <<  distance << endl;  
       file.close();
     }
-    
-    
-    
-    
-
   }
   return;
 }
