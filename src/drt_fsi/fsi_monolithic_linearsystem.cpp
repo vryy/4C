@@ -208,6 +208,7 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
     outputList.set("Achieved Tolerance", achievedTol);
   }
 
+#if 0
   // Dump solution of linear system
 #ifdef HAVE_NOX_DEBUG
 #ifdef HAVE_NOX_EPETRAEXT
@@ -216,6 +217,7 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
     EpetraExt::MultiVectorToMatrixMarketFile(lhsFileName.c_str(),
 					   result.getEpetraVector());
   }
+#endif
 #endif
 #endif
 
