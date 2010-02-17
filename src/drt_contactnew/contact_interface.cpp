@@ -2339,6 +2339,8 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
             val = lm[j] * (colcurr->second);
             ++colcurr;
           }
+          // barrier here!
+          lComm()->Barrier();
           lComm()->Broadcast(&col,1,procmap_[cnode->Owner()]);
           lComm()->Broadcast(&val,1,procmap_[cnode->Owner()]);
 
@@ -2360,7 +2362,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
     if (Comm().MyPID()==cnode->Owner() && mcurr!=mderiv.end())
       dserror("ERROR: AssembleLinDM: Not all master entries of DerivM considered!");
   }
-
+  
   return;
 }
 
