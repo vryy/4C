@@ -197,7 +197,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSlave2D3D(
           int sgid = sele.Nodes()[k]->Id();
 
           // get the correct map as a reference
-          map<int,double>& ddmap_ik = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivD()[sgid];
+          map<int,double>& ddmap_ik = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
           
           // multiply the corresponding two shape functions
           double prod = 0.0;
@@ -249,7 +249,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSlave2D3D(
           if (!mymrtrnode2) dserror("ERROR: IntegrateAndDerivSlave: Null pointer!");
           bool bound2 = mymrtrnode2->IsOnBound();
           if (bound2) continue;
-          map<int,double>& nodemmap = static_cast<CONTACT::CoNode*>(mymrtrnode2)->GetDerivM()[bgid];
+          map<int,double>& nodemmap = static_cast<CONTACT::CoNode*>(mymrtrnode2)->CoData().GetDerivM()[bgid];
 
           // derivative of Jacobian
           double fac = wgt*val[i]*dualval[k];
@@ -663,8 +663,8 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
 
     for (int i=0;i<nrow;++i)
     {
-      map<int,double>& dmap_nxsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[0];
-      map<int,double>& dmap_nysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[1];
+      map<int,double>& dmap_nxsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+      map<int,double>& dmap_nysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
 
       for (CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
         dmap_nxsl_gp[p->first] += sval[i]*(p->second);
@@ -774,7 +774,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
         if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
         bool boundnode = mymrtrnode->IsOnBound();
         int sgid = mymrtrnode->Id();
-        map<int,double>& nodemap = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivD()[sgid];
+        map<int,double>& nodemap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
         double fac = 0.0;
 
         //******************************************************************
@@ -835,7 +835,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
             if (!mymrtrnode2) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
             bool boundnode2 = mymrtrnode2->IsOnBound();
             if (boundnode2) continue;
-            map<int,double>& nodemmap = static_cast<CONTACT::CoNode*>(mymrtrnode2)->GetDerivM()[bgid];
+            map<int,double>& nodemmap = static_cast<CONTACT::CoNode*>(mymrtrnode2)->CoData().GetDerivM()[bgid];
 
             // (1) Lin(Phi) - dual shape functions
             if (duallin)
@@ -902,7 +902,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
           double fac = 0.0;
 
           // get the correct map as a reference
-          map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivM()[mgid];
+          map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions 
@@ -945,7 +945,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
             double fac = 0.0;
 
             // get the correct map as a reference
-            map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivD()[sgid];
+            map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
             // (1) Lin(Phi) - dual shape functions
             // this vanishes here since there are no deformation-dependent dual functions
@@ -985,7 +985,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
       else if (shapefcn_ == MORTAR::MortarInterface::DualFunctions)
       {
         // get the D-map as a reference
-        map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivD()[sgid];
+        map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
         // loop over master nodes
         for (int k=0; k<ncol; ++k)
@@ -995,7 +995,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
           double fac = 0.0;
 
           // get the correct map as a reference
-          map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivM()[mgid];
+          map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
           // (1) Lin(Phi) - dual shape functions
           for (int m=0; m<nrow; ++m)
@@ -1071,7 +1071,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
       double fac = 0.0;
 
       // get the corresponding map as a reference
-      map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivG();
+      map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
 
 #ifdef MORTARPETROVGALERKIN
       
@@ -1511,9 +1511,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D(
 
     for (int i=0;i<nrow;++i)
     {
-      map<int,double>& dmap_nxsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[0];
-      map<int,double>& dmap_nysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[1];
-      map<int,double>& dmap_nzsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[2];
+      map<int,double>& dmap_nxsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+      map<int,double>& dmap_nysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
+      map<int,double>& dmap_nzsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[2];
 
       for (CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
         dmap_nxsl_gp[p->first] += sval[i]*(p->second);
@@ -1669,7 +1669,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D(
           double fac = 0.0;
   
           // get the correct map as a reference
-          map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivM()[mgid];
+          map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
   
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
@@ -1729,7 +1729,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D(
             double fac = 0.0;
     
             // get the correct map as a reference
-            map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivD()[sgid];
+            map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
     
             // (1) Lin(Phi) - dual shape functions
             // this vanishes here since there are no deformation-dependent dual functions
@@ -1784,7 +1784,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D(
       else if (shapefcn_ == MORTAR::MortarInterface::DualFunctions)
       {
         // get the D-map as a reference
-        map<int,double>& ddmap_jj = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivD()[sgid];
+        map<int,double>& ddmap_jj = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
   
         for (int k=0; k<ncol; ++k)
         {
@@ -1793,7 +1793,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D(
           double fac = 0.0;
   
           // get the correct map as a reference
-          map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivM()[mgid];
+          map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
   
           // (1) Lin(Phi) - dual shape functions
           if (duallin)
@@ -1883,7 +1883,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D(
       double fac = 0.0;
 
       // get the corresponding map as a reference
-      map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivG();
+      map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
 
 #ifdef MORTARPETROVGALERKIN
       
@@ -2367,9 +2367,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
 
     for (int i=0;i<nrow;++i)
     {
-      map<int,double>& dmap_nxsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[0];
-      map<int,double>& dmap_nysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[1];
-      map<int,double>& dmap_nzsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[2];
+      map<int,double>& dmap_nxsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+      map<int,double>& dmap_nysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
+      map<int,double>& dmap_nzsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[2];
 
       for (CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
         dmap_nxsl_gp[p->first] += sval[i]*(p->second);
@@ -2524,7 +2524,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
           double fac = 0.0;
 
           // get the correct map as a reference
-          map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivM()[mgid];
+          map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
@@ -2563,7 +2563,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
             double fac = 0.0;
 
             // get the correct map as a reference
-            map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivD()[sgid];
+            map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
             // (1) Lin(Phi) - dual shape functions
             // this vanishes here since there are no deformation-dependent dual functions
@@ -2597,7 +2597,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       else if (shapefcn_ == MORTAR::MortarInterface::DualFunctions)
       {
         // get the D-map as a reference
-        map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivD()[sgid];
+        map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
         for (int k=0; k<ncol; ++k)
         {
@@ -2606,7 +2606,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
           double fac = 0.0;
 
           // get the correct map as a reference
-          map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivM()[mgid];
+          map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
           // (1) Lin(Phi) - dual shape functions
           if (duallin)
@@ -2669,7 +2669,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       double fac = 0.0;
 
       // get the corresponding map as a reference
-      map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivG();
+      map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
 
 #ifdef MORTARPETROVGALERKIN
       if( shapefcn_ == MORTAR::MortarInterface::StandardFunctions )
@@ -3194,9 +3194,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 
     for (int i=0;i<nrow;++i)
     {
-      map<int,double>& dmap_nxsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[0];
-      map<int,double>& dmap_nysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[1];
-      map<int,double>& dmap_nzsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[2];
+      map<int,double>& dmap_nxsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+      map<int,double>& dmap_nysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
+      map<int,double>& dmap_nzsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[2];
 
       for (CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
         dmap_nxsl_gp[p->first] += sval[i]*(p->second);
@@ -3375,7 +3375,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
           double fac = 0.0;
 
           // get the correct map as a reference
-          map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivM()[mgid];
+          map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
@@ -3414,7 +3414,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
             double fac = 0.0;
 
             // get the correct map as a reference
-            map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivD()[sgid];
+            map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
             // (1) Lin(Phi) - dual shape functions
             // this vanishes here since there are no deformation-dependent dual functions
@@ -3448,7 +3448,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
       else if (shapefcn_ == MORTAR::MortarInterface::DualFunctions)
       {
         // get the D-map as a reference
-        map<int,double>& ddmap_jj = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivD()[sgid];
+        map<int,double>& ddmap_jj = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
         for (int k=0; k<ncol; ++k)
         {
@@ -3457,7 +3457,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
           double fac = 0.0;
 
           // get the correct map as a reference
-          map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivM()[mgid];
+          map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
 
           // (1) Lin(Phi) - dual shape functions
           if (duallin)
@@ -3614,7 +3614,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
         double fac = 0.0;
   
         // get the corresponding map as a reference
-        map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivG();
+        map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
   
         // (2) Lin(Phi) - slave GP coordinates
         fac = wgt*sintderiv(j,0)*gap*jac;
@@ -3646,7 +3646,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
         double fac = 0.0;
   
         // get the corresponding map as a reference
-        map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivG();
+        map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
   
         // (1) Lin(Phi) - dual shape functions
         if (dualintlin)
@@ -3685,7 +3685,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
       double fac = 0.0;
 
       // get the corresponding map as a reference
-      map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->GetDerivG();
+      map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
 
       // (1) Lin(Phi) - dual shape functions
       if (duallin)
@@ -3909,8 +3909,8 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
   if (startslave==true)
   {
     map<int,double> dmap_mxib;
-    map<int,double>& nxmap_b = static_cast<CONTACT::CoNode*>(smrtrnodes[0])->GetDerivN()[0];
-    map<int,double>& nymap_b = static_cast<CONTACT::CoNode*>(smrtrnodes[0])->GetDerivN()[1];
+    map<int,double>& nxmap_b = static_cast<CONTACT::CoNode*>(smrtrnodes[0])->CoData().GetDerivN()[0];
+    map<int,double>& nymap_b = static_cast<CONTACT::CoNode*>(smrtrnodes[0])->CoData().GetDerivN()[1];
 
     // add derivative of slave node coordinates
     dmap_mxib[smrtrnodes[0]->Dofs()[0]] -= smrtrnodes[0]->n()[1];
@@ -3941,8 +3941,8 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
   if (endslave==true)
   {
     map<int,double> dmap_mxia;
-    map<int,double>& nxmap_a = static_cast<CONTACT::CoNode*>(smrtrnodes[1])->GetDerivN()[0];
-    map<int,double>& nymap_a = static_cast<CONTACT::CoNode*>(smrtrnodes[1])->GetDerivN()[1];
+    map<int,double>& nxmap_a = static_cast<CONTACT::CoNode*>(smrtrnodes[1])->CoData().GetDerivN()[0];
+    map<int,double>& nymap_a = static_cast<CONTACT::CoNode*>(smrtrnodes[1])->CoData().GetDerivN()[1];
 
     // add derivative of slave node coordinates
     dmap_mxia[smrtrnodes[1]->Dofs()[0]] -= smrtrnodes[1]->n()[1];
@@ -3991,8 +3991,8 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
     // add derivatives of slave node normals
     for (int i=0;i<numsnode;++i)
     {
-      map<int,double>& nxmap_curr = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[0];
-      map<int,double>& nymap_curr = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[1];
+      map<int,double>& nxmap_curr = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+      map<int,double>& nymap_curr = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
 
       for (CI p=nxmap_curr.begin();p!=nxmap_curr.end();++p)
         dmap_sxia[p->first] -= valsxia[i]*fac_yslm_a*(p->second);
@@ -4027,8 +4027,8 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
     // add derivatives of slave node normals
     for (int i=0;i<numsnode;++i)
     {
-      map<int,double>& nxmap_curr = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[0];
-      map<int,double>& nymap_curr = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[1];
+      map<int,double>& nxmap_curr = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+      map<int,double>& nymap_curr = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
 
       for (CI p=nxmap_curr.begin();p!=nxmap_curr.end();++p)
         dmap_sxib[p->first] -= valsxib[i]*fac_yslm_b*(p->second);
@@ -4172,8 +4172,8 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele,
 
   for (int i=0;i<numsnode;++i)
   {
-    map<int,double>& dmap_nxsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[0];
-    map<int,double>& dmap_nysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[1];
+    map<int,double>& dmap_nxsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+    map<int,double>& dmap_nysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
 
     for (CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
       dmap_nxsl_gp_mod[p->first] += valsxigp[i]*(p->second);
@@ -4310,9 +4310,9 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele,
 
   for (int i=0;i<numsnode;++i)
   {
-    map<int,double>& dmap_nxsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[0];
-    map<int,double>& dmap_nysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[1];
-    map<int,double>& dmap_nzsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->GetDerivN()[2];
+    map<int,double>& dmap_nxsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+    map<int,double>& dmap_nysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
+    map<int,double>& dmap_nzsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[2];
 
     for (CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
       dmap_nxsl_gp[p->first] += valsxigp[i]*(p->second);

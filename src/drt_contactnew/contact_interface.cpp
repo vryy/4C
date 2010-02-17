@@ -166,24 +166,7 @@ void CONTACT::CoInterface::Initialize()
 
     //reset nodal normal and tangents and jumps
     for (int j=0;j<3;++j)
-    {
       node->n()[j]=0.0;
-      node->txi()[j]=0.0;
-      node->teta()[j]=0.0;
-    }
-
-    // reset derivative maps of normal vector
-    for (int j=0;j<(int)((node->GetDerivN()).size());++j)
-      (node->GetDerivN())[j].clear();
-    (node->GetDerivN()).resize(0);
-
-    // reset derivative maps of tangent vectors
-    for (int j=0;j<(int)((node->GetDerivTxi()).size());++j)
-      (node->GetDerivTxi())[j].clear();
-    (node->GetDerivTxi()).resize(0);
-    for (int j=0;j<(int)((node->GetDerivTeta()).size());++j)
-      (node->GetDerivTeta())[j].clear();
-    (node->GetDerivTeta()).resize(0);
 
     // reset nodal Mortar maps
     for (int j=0;j<(int)((node->GetD()).size());++j)
@@ -197,19 +180,6 @@ void CONTACT::CoInterface::Initialize()
     (node->GetM()).resize(0);
     (node->GetMmod()).resize(0);
 
-    // reset derivative map of Mortar matrices
-    (node->GetDerivD()).clear();
-    (node->GetDerivM()).clear();
-
-    // reset derivative map of lagrange multipliers
-    for (int j=0; j<(int)((node->GetDerivZ()).size()); ++j)
-      (node->GetDerivZ())[j].clear();
-    (node->GetDerivZ()).resize(0);
-
-    // reset nodal weighted gap and derivative
-    node->Getg() = 1.0e12;
-    (node->GetDerivG()).clear();
-
     // reset feasible projection status
     node->HasProj() = false;
    }
@@ -217,12 +187,47 @@ void CONTACT::CoInterface::Initialize()
   // loop over procs modes nodes to reset (column map)
   for (int i=0;i<OldColNodes()->NumMyElements();++i)
   {
+    int gid = OldColNodes()->GID(i);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* cnode = static_cast<CoNode*>(node);
+    
+    //reset nodal normal and tangents and jumps
+    for (int j=0;j<3;++j)
+    {
+      cnode->CoData().txi()[j]=0.0;
+      cnode->CoData().teta()[j]=0.0;
+    }
+
+    // reset derivative maps of normal vector
+    for (int j=0;j<(int)((cnode->CoData().GetDerivN()).size());++j)
+      (cnode->CoData().GetDerivN())[j].clear();
+    (cnode->CoData().GetDerivN()).resize(0);
+
+    // reset derivative maps of tangent vectors
+    for (int j=0;j<(int)((cnode->CoData().GetDerivTxi()).size());++j)
+      (cnode->CoData().GetDerivTxi())[j].clear();
+    (cnode->CoData().GetDerivTxi()).resize(0);
+    for (int j=0;j<(int)((cnode->CoData().GetDerivTeta()).size());++j)
+      (cnode->CoData().GetDerivTeta())[j].clear();
+    (cnode->CoData().GetDerivTeta()).resize(0);
+    
+    // reset derivative map of Mortar matrices
+    (cnode->CoData().GetDerivD()).clear();
+    (cnode->CoData().GetDerivM()).clear();
+    
+    // reset nodal weighted gap and derivative
+    cnode->CoData().Getg() = 1.0e12;
+    (cnode->CoData().GetDerivG()).clear();
+    
+    // reset derivative map of lagrange multipliers
+    for (int j=0; j<(int)((cnode->CoData().GetDerivZ()).size()); ++j)
+      (cnode->CoData().GetDerivZ())[j].clear();
+    (cnode->CoData().GetDerivZ()).resize(0);
+
     if (friction_)
     {  
-      int gid = OldColNodes()->GID(i);
-      DRT::Node* node = Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      FriNode* frinode = static_cast<FriNode*>(node);
+      FriNode* frinode = static_cast<FriNode*>(cnode);
 
       // reset nodal Mortar maps (Petrov-Galerkin approach)
       for (int j=0;j<(int)((frinode->Data().GetDPG()).size());++j)
@@ -544,7 +549,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
     FriNode* cnode = static_cast<FriNode*>(node);
 
     // get some informatiom form the node
-    double gap = cnode->Getg();
+    double gap = cnode->CoData().Getg();
     int dim = cnode->NumDof();
 
     // compute normal part of Lagrange multiplier
@@ -723,7 +728,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
 #ifdef CONTACTPETROVGALERKINFRIC
       map<int,map<int,double> >& ddmap = cnode->Data().GetDerivDPG();
 #else
-      map<int,map<int,double> >& ddmap = cnode->GetDerivD();
+      map<int,map<int,double> >& ddmap = cnode->CoData().GetDerivD();
 #endif
       map<int,map<int,double> >::iterator dscurr;
 
@@ -740,7 +745,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
 #ifdef CONTACTPETROVGALERKINFRIC
         map<int,double>& thisdmmap = cnode->Data().GetDerivDPG(gid);
 #else
-        map<int,double>& thisdmmap = cnode->GetDerivD(gid);
+        map<int,double>& thisdmmap = cnode->CoData().GetDerivD(gid);
 #endif
 
         // loop over all entries of the current derivative map
@@ -762,7 +767,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
 #ifdef CONTACTPETROVGALERKINFRIC
       map<int,map<int,double> >& dmmap = cnode->Data().GetDerivMPG();
 #else
-      map<int,map<int,double> >& dmmap = cnode->GetDerivM();
+      map<int,map<int,double> >& dmmap = cnode->CoData().GetDerivM();
 #endif
 
       map<int,map<int,double> >::iterator dmcurr;
@@ -780,7 +785,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
 #ifdef CONTACTPETROVGALERKINFRIC
         map<int,double>& thisdmmap = cnode->Data().GetDerivMPG(gid);
 #else
-        map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+        map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
 #endif
 
         // loop over all entries of the current derivative map
@@ -911,12 +916,12 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
 
       for (int i=0;i<dim;i++)
       {
-        jumptxi+=cnode->txi()[i]*cnode->Data().jump()[i];
-        jumpteta+=cnode->teta()[i]*cnode->Data().jump()[i];
+        jumptxi+=cnode->CoData().txi()[i]*cnode->Data().jump()[i];
+        jumpteta+=cnode->CoData().teta()[i]*cnode->Data().jump()[i];
 
         forcen+=cnode->n()[i]*cnode->lm()[i];
-        forcetxi+=cnode->txi()[i]*cnode->lm()[i];
-        forceteta+=cnode->teta()[i]*cnode->lm()[i];
+        forcetxi+=cnode->CoData().txi()[i]*cnode->lm()[i];
+        forceteta+=cnode->CoData().teta()[i]*cnode->lm()[i];
       }
 
       //cout << "FACTOR-Direction " << (jumptxi/jumpteta)/(forcetxi/forceteta) << endl;
@@ -954,11 +959,11 @@ void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
     CoNode* cnode = static_cast<CoNode*>(node);
 
     int dim = cnode->NumDof();
-    double gap = cnode->Getg();
+    double gap = cnode->CoData().Getg();
 
     // modified gap for zero initial gap
     // (if gap is below zero, it is explicitly set to zero)
-    //double modgap = cnode->Getg();
+    //double modgap = cnode->CoData().Getg();
     //if (abs(modgap) < 1.0e-10) modgap=0.0;
 
     double kappa = cnode->Kappa();
@@ -974,7 +979,7 @@ void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
     for( int j=0;j<dim;++j)
       cnode->lm()[j] = i*j;
 
-    cnode->GetDerivZ().clear();
+    cnode->CoData().GetDerivZ().clear();
 
     continue;
 #endif
@@ -1041,11 +1046,11 @@ void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
       // compute derivatives of lagrange multipliers and store into node
 
       // contribution of derivative of weighted gap
-      map<int,double>& derivg = cnode->GetDerivG();
+      map<int,double>& derivg = cnode->CoData().GetDerivG();
       map<int,double>::iterator gcurr;
 
       // contribution of derivative of normal
-      vector<map<int,double> >& derivn = cnode->GetDerivN();
+      vector<map<int,double> >& derivn = cnode->CoData().GetDerivN();
       map<int,double>::iterator ncurr;
 
       for( int j=0;j<dim;++j)
@@ -1066,7 +1071,7 @@ void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
       for( int j=0;j<dim;++j) cnode->lm()[j] = 0;
 
       // clear derivz
-      cnode->GetDerivZ().clear();
+      cnode->CoData().GetDerivZ().clear();
 
     } // Macauley-Bracket
   } // loop over slave nodes
@@ -1100,7 +1105,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     FriNode* cnode = static_cast<FriNode*>(node);
 
     // get some informatiom form the node
-    double gap = cnode->Getg();
+    double gap = cnode->CoData().Getg();
     int dim = cnode->NumDof();
     double kappa = cnode->Kappa();
     double* n = cnode->n();
@@ -1232,7 +1237,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       }
 
       /**************************************** deriv(tanplane).jump  ***/
-      vector<map<int,double> >& derivn = cnode->GetDerivN();
+      vector<map<int,double> >& derivn = cnode->CoData().GetDerivN();
 
       // loop over dimensions
       for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
@@ -1288,7 +1293,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       }
 
       /******************** deriv(tanplane).jump.maxtantrac/magnitude ***/
-      vector<map<int,double> >& derivn = cnode->GetDerivN();
+      vector<map<int,double> >& derivn = cnode->CoData().GetDerivN();
 
       // loop over dimensions
       for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
@@ -1320,7 +1325,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       }
 
       /******************** tanplane.jump.deriv(maxtantrac)/magnitude ***/
-      map<int,double>& derivg = cnode->GetDerivG();
+      map<int,double>& derivg = cnode->CoData().GetDerivG();
       map<int,double>::iterator gcurr;
 
       for( int j=0;j<cnode->NumDof();++j)
@@ -1422,7 +1427,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       // clear tractions
       for( int j=0;j<dim;++j) cnode->lm()[j] = 0;
       // clear derivz
-      cnode->GetDerivZ().clear();
+      cnode->CoData().GetDerivZ().clear();
     }
   } // loop over active nodes
   return;
@@ -1454,7 +1459,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
     FriNode* cnode = static_cast<FriNode*>(node);
 
     // get some informatiom form the node
-    double gap = cnode->Getg();
+    double gap = cnode->CoData().Getg();
     int dim = cnode->NumDof();
     double kappa = cnode->Kappa();
     double* n = cnode->n();
@@ -1572,7 +1577,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
       }
 
       /******************************* deriv(tanplane).(lmuzawa+jump) ***/
-      vector<map<int,double> >& derivn = cnode->GetDerivN();
+      vector<map<int,double> >& derivn = cnode->CoData().GetDerivN();
 
       // loop over dimensions
       for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
@@ -1630,7 +1635,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
       }
 
       /******************************* deriv(tanplane).(lmuzawa+jump) ***/
-      vector<map<int,double> >& derivn = cnode->GetDerivN();
+      vector<map<int,double> >& derivn = cnode->CoData().GetDerivN();
 
       // loop over dimensions
       for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
@@ -1665,7 +1670,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
       }
 
       /******************** tanplane.jump.deriv(maxtantrac)/magnitude ***/
-      map<int,double>& derivg = cnode->GetDerivG();
+      map<int,double>& derivg = cnode->CoData().GetDerivG();
       map<int,double>::iterator gcurr;
 
       for( int j=0;j<cnode->NumDof();++j)
@@ -1771,7 +1776,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
       // clear tractions
       for( int j=0;j<dim;++j) cnode->lm()[j] = 0;
       // clear derivz
-      cnode->GetDerivZ().clear();
+      cnode->CoData().GetDerivZ().clear();
     }
   } // loop over active nodes
   return;
@@ -1799,7 +1804,7 @@ void CONTACT::CoInterface::AssembleLinZ(LINALG::SparseMatrix& linzglobal)
       dserror("ERROR: AssembleLinZ: Node ownership inconsistency!");
 
     // derivz is the vector<map> we want to assemble
-    vector<map<int,double> >& derivz = cnode->GetDerivZ();
+    vector<map<int,double> >& derivz = cnode->CoData().GetDerivZ();
 
     if ( (int) derivz.size()>0 )
     {
@@ -1898,7 +1903,7 @@ void CONTACT::CoInterface::AssembleNT(LINALG::SparseMatrix& nglobal,
       for (int j=0;j<colsize;++j)
       {
         lmcol[j] = cnode->Dofs()[j];
-        Tnode(0,j) = cnode->txi()[j];
+        Tnode(0,j) = cnode->CoData().txi()[j];
       }
 
       // assemble into matrix of normal vectors T
@@ -1943,8 +1948,8 @@ void CONTACT::CoInterface::AssembleNT(LINALG::SparseMatrix& nglobal,
       for (int j=0;j<colsize;++j)
       {
         lmcol[j] = cnode->Dofs()[j];
-        Tnode(0,j) = cnode->txi()[j];
-        Tnode(1,j) = cnode->teta()[j];
+        Tnode(0,j) = cnode->CoData().txi()[j];
+        Tnode(1,j) = cnode->CoData().teta()[j];
       }
 
       // assemble into matrix of normal vectors T
@@ -1982,7 +1987,7 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
       dserror("ERROR: AssembleS: Node ownership inconsistency!");
 
     // prepare assembly
-    map<int,double>& dgmap = cnode->GetDerivG();
+    map<int,double>& dgmap = cnode->CoData().GetDerivG();
     map<int,double>::iterator colcurr;
     int row = activen_->GID(i);
 
@@ -2027,7 +2032,7 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
     if (Dim()==2)
     {
       // prepare assembly
-      vector<map<int,double> >& dtmap = cnode->GetDerivTxi();
+      vector<map<int,double> >& dtmap = cnode->CoData().GetDerivTxi();
       map<int,double>::iterator colcurr;
       int colsize = (int)dtmap[0].size();
       int mapsize = (int)dtmap.size();
@@ -2066,8 +2071,8 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
     else if (Dim()==3)
     {
       // prepare assembly
-      vector<map<int,double> >& dtximap = cnode->GetDerivTxi();
-      vector<map<int,double> >& dtetamap = cnode->GetDerivTeta();
+      vector<map<int,double> >& dtximap = cnode->CoData().GetDerivTxi();
+      vector<map<int,double> >& dtetamap = cnode->CoData().GetDerivTeta();
       map<int,double>::iterator colcurr;
       int colsizexi = (int)dtximap[0].size();
       int colsizeeta = (int)dtetamap[0].size();
@@ -2146,7 +2151,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
   // get out of here if not participating in interface
   if (!lComm())
     return;
-
+  
   /********************************************** LinDMatrix **********/
   // This is easy and can be done without communication, as the global
   // matrix lind has the same row map as the storage of the derivatives
@@ -2164,7 +2169,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
     int dim = cnode->NumDof();
 
     // Mortar matrix D derivatives
-    map<int,map<int,double> >& dderiv = cnode->GetDerivD();
+    map<int,map<int,double> >& dderiv = cnode->CoData().GetDerivD();
 
     map<int,double>::iterator colcurr;
     map<int,map<int,double> >::iterator dcurr;
@@ -2199,7 +2204,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
 
     /** old version, using dual shape functions **
     // Mortar matrix D derivatives
-    map<int,double>& dderiv = cnode->GetDerivD();
+    map<int,double>& dderiv = cnode->CoData().GetDerivD();
     map<int,double>::iterator colcurr;
 
     // current Lagrange multipliers
@@ -2254,23 +2259,30 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
     CoNode* cnode = static_cast<CoNode*>(node);
     int dim = cnode->NumDof();
     
-    // Mortar matrix M derivatives
-    map<int,map<int,double> >& mderiv = cnode->GetDerivM();
-    map<int,double>::iterator colcurr;
-    map<int,map<int,double> >::iterator mcurr;
+    // create variables
+     map<int,double>::iterator colcurr;
+     map<int,map<int,double> >::iterator mcurr;
+     double* lm = NULL;
+     int mastersize = 0;
+     map<int,map<int,double> > tempmap;
+     map<int,map<int,double> >& mderiv = tempmap;
 
-    // current Lagrange multipliers
-    double* lm = cnode->lm();
+     // inter-proc. communication
+     // (we want to keep all procs around, although at the moment only
+     // the cnode owning proc does relevant work!)
+     if (Comm().MyPID()==cnode->Owner())
+     {
+       // Mortar matrix M derivatives
+       mderiv = cnode->CoData().GetDerivM();
 
-    // inter-proc. communication
-    // (we want to keep all procs around, although at the moment only
-    // the cnode owning proc does relevant work!)
-    int mastersize = 0;
-    if (Comm().MyPID()==cnode->Owner())
-    {
-      mastersize = (int)mderiv.size();
-      mcurr = mderiv.begin();
-    }
+       // current Lagrange multipliers
+       lm = cnode->lm();
+
+       // get sizes and iterator start
+       mastersize = (int)mderiv.size();
+       mcurr = mderiv.begin();
+     }
+
     //********************************************************************
     // important notes:
     // 1) we use lComm here, as we only communicate among participating
@@ -2279,7 +2291,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
     // Comm numbering, which is achieved by calling the map procmap_
     //********************************************************************
     lComm()->Broadcast(&mastersize,1,procmap_[cnode->Owner()]);
-
+    
     // loop over all master nodes in the DerivM-map of the current slave node
     for (int l=0;l<mastersize;++l)
     {
@@ -2294,14 +2306,20 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
       DRT::Node* mnode = idiscret_->gNode(mgid);
       if (!mnode) dserror("ERROR: Cannot find node with gid %",mgid);
       CoNode* cmnode = static_cast<CoNode*>(mnode);
+      
+      // create variables
+       int mapsize = 0;
+       map<int,double> tempmap2;
+       map<int,double>& thismderiv = tempmap2;
 
-      // Mortar matrix M derivatives
-      map<int,double>& thismderiv = cnode->GetDerivM()[mgid];
-      int mapsize = 0;
-      if (Comm().MyPID()==cnode->Owner())
-        mapsize = (int)(thismderiv.size());
-      lComm()->Broadcast(&mapsize,1,procmap_[cnode->Owner()]);
-
+       // Mortar matrix M derivatives
+       if (Comm().MyPID()==cnode->Owner())
+       {
+         thismderiv = cnode->CoData().GetDerivM()[mgid];
+         mapsize = (int)(thismderiv.size());
+       }
+       lComm()->Broadcast(&mapsize,1,procmap_[cnode->Owner()]);
+ 
       // inner product M_{lj,c} * z_j for index j
       for (int j=0;j<dim;++j)
       {
@@ -2367,9 +2385,9 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
       dserror("ERROR: AssembleDMG: Node ownership inconsistency!");
 
     /**************************************************** g-vector ******/
-    if (cnode->Getg()!=0.0)
+    if (cnode->CoData().Getg()!=0.0)
     {
-      double gap = cnode->Getg();
+      double gap = cnode->CoData().Getg();
 
       // cout << "Node ID: " << cnode->Id() << " HasProj: " << cnode->HasProj()
       //      << " IsActive: " << cnode->Active() << " Gap: " << gap << endl;
@@ -2395,7 +2413,7 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
       if (!cnode->HasProj() && !cnode->Active())
       {
         gap = 1.0e12;
-        cnode->Getg()=gap;
+        cnode->CoData().Getg()=gap;
       }
 #endif // #ifndef CONTACTPETROVGALERKIN
 
@@ -2450,8 +2468,8 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
       dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
 
     // prepare assembly, get information from node
-    vector<map<int,double> > dtximap = cnode->GetDerivTxi();
-    vector<map<int,double> > dtetamap = cnode->GetDerivTeta();
+    vector<map<int,double> > dtximap = cnode->CoData().GetDerivTxi();
+    vector<map<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
 
    for (int j=0;j<Dim()-1;++j)
       if ((int)dtximap[j].size() != (int)dtximap[j+1].size())
@@ -2466,8 +2484,8 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 
     // more information from node
     double* xi = cnode->xspatial();
-    double* txi = cnode->txi();
-    double* teta = cnode->teta();
+    double* txi = cnode->CoData().txi();
+    double* teta = cnode->CoData().teta();
     double* jump = cnode->Data().jump();
     
     // iterator for maps
@@ -2680,7 +2698,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
     }
 
     // prepare assembly
-    map<int,double>& ddmap = cnode->GetDerivD()[gid];
+    map<int,double>& ddmap = cnode->CoData().GetDerivD()[gid];
 
     // loop over all entries of the current derivative map
     for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
@@ -2699,7 +2717,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 
     /*** 4 *************************************** tangent.Deriv(M).x ***/
     // we need the Lin(M-matrix) entries of this node
-    map<int,map<int,double> >& dmmap = cnode->GetDerivM();
+    map<int,map<int,double> >& dmmap = cnode->CoData().GetDerivM();
     map<int,map<int,double> >::iterator dmcurr;
 
     // loop over all master nodes in the DerivM-map of the active slave node
@@ -2721,7 +2739,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 
       }
       // compute matrix entry of the current active node / master node pair
-      map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+      map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
 
       // loop over all entries of the current derivative map
       for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -2779,7 +2797,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //      dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
 //
 //    // prepare assembly
-//    vector<map<int,double> > dnmap = cnode->GetDerivN();
+//    vector<map<int,double> > dnmap = cnode->CoData().GetDerivN();
 //    map<int,double>::iterator colcurr;
 //
 //    // calculate DerivT from DerivN
@@ -2799,9 +2817,9 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //    int mapsize = (int)dtmap.size();
 //    int row = stickt->GID(i);
 //    double* xi = cnode->xspatial();
-//    double* txi = cnode->txi();
+//    double* txi = cnode->CoData().txi();
 //    double* jump = cnode->Data().jump();
-//    double& wgap = cnode->Getg();
+//    double& wgap = cnode->CoData().Getg();
 //
 //    double utan = 0;
 //    double nz = 0;
@@ -2984,7 +3002,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //      tdotx += txi[dim]*xi[dim];
 //
 //    // prepare assembly
-//    map<int,double>& ddmap = cnode->GetDerivD();
+//    map<int,double>& ddmap = cnode->CoData().GetDerivD();
 //
 //    // loop over all entries of the current derivative map
 //    for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
@@ -2998,7 +3016,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //    /***********************************************   -T.DerivM.x ******/
 //
 //    // we need the Lin(M-matrix) entries of this node
-//    map<int,map<int,double> >& dmmap = cnode->GetDerivM();
+//    map<int,map<int,double> >& dmmap = cnode->CoData().GetDerivM();
 //    map<int,map<int,double> >::iterator dmcurr;
 //
 //    // loop over all master nodes in the DerivM-map of the active slave node
@@ -3031,7 +3049,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //    /**************************************-frcoeff*cn*ct*utan*DerivG ***/
 //
 //    // prepare assembly
-//    map<int,double>& dgmap = cnode->GetDerivG();
+//    map<int,double>& dgmap = cnode->CoData().GetDerivG();
 //
 //    for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
 //    {
@@ -3109,9 +3127,9 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
 
       // prepare assembly, get information from node
-      vector<map<int,double> > dnmap = cnode->GetDerivN();
-      vector<map<int,double> > dtximap = cnode->GetDerivTxi();
-      vector<map<int,double> > dtetamap = cnode->GetDerivTeta();
+      vector<map<int,double> > dnmap = cnode->CoData().GetDerivN();
+      vector<map<int,double> > dtximap = cnode->CoData().GetDerivTxi();
+      vector<map<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
 
       // check for Dimension of derivative maps
       for (int j=0;j<Dim()-1;++j)
@@ -3132,11 +3150,11 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       // more information from node
       double* jump = cnode->Data().jump();
       double* n = cnode->n();
-      double* txi = cnode->txi();
-      double* teta = cnode->teta();
+      double* txi = cnode->CoData().txi();
+      double* teta = cnode->CoData().teta();
       double* xi = cnode->xspatial();
       double* z = cnode->lm();
-      double& wgap = cnode->Getg();
+      double& wgap = cnode->CoData().Getg();
 
       // iterator for maps
       map<int,double>::iterator colcurr;
@@ -3573,7 +3591,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           }
 
           // prepare assembly
-          map<int,double>& ddmap = cnode->GetDerivD()[gid];
+          map<int,double>& ddmap = cnode->CoData().GetDerivD()[gid];
 
         // loop over all entries of the current derivative map
           for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
@@ -3593,7 +3611,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
           /*** 5 ******************* deriv(euclidean).tan.deriv(M).ztan ***/
           // we need the Lin(M-matrix) entries of this node
-          map<int,map<int,double> >& dmmap = cnode->GetDerivM();
+          map<int,map<int,double> >& dmmap = cnode->CoData().GetDerivM();
           map<int,map<int,double> >::iterator dmcurr;
 
           // loop over all master nodes in the DerivM-map of the active slave node
@@ -3615,7 +3633,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             }
 
             // compute entry of the current active node / master node pair
-            map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+            map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
 
             // loop over all entries of the current derivative map
             for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -3738,7 +3756,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             }
 
             // compute entry of the current active node / master node pair
-            map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+            map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
 
              // loop over all entries of the current derivative map
              for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -3775,7 +3793,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
           /*** 11 ****************** frcoeff*cn*deriv (g).(ztan+ct*utan) ***/
           // prepare assembly
-          map<int,double>& dgmap = cnode->GetDerivG();
+          map<int,double>& dgmap = cnode->CoData().GetDerivG();
 
           // loop over all entries of the current derivative map
           for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
@@ -3812,7 +3830,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       // dtx = -dny
       // FIXGIT: in the future DerivD will be called directly form node
 
-      vector<map<int,double> > dnmap = cnode->GetDerivN();
+      vector<map<int,double> > dnmap = cnode->CoData().GetDerivN();
 
       // iterator
       map<int,double>::iterator colcurr;
@@ -3828,7 +3846,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       // get more information from node
       double* jump = cnode->Data().jump();
       double* n = cnode->n();
-      double* txi = cnode->txi();
+      double* txi = cnode->CoData().txi();
       double* xi = cnode->xspatial();
       double* z = cnode->lm();
       int row = slipt_->GID(i);
@@ -4131,7 +4149,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           tdotx += txi[dim]*xi[dim];
 
         // prepare assembly
-        map<int,double>& ddmap = cnode->GetDerivD()[gid];
+        map<int,double>& ddmap = cnode->CoData().GetDerivD()[gid];
 
         // loop over all entries of the current derivative map
         for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
@@ -4151,7 +4169,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         /**************************** Deriv(abs).ct.tan.DerivM.x*ztan ***/
 
         // we need the Lin(M-matrix) entries of this node
-        map<int,map<int,double> >& dmmap = cnode->GetDerivM();
+        map<int,map<int,double> >& dmmap = cnode->CoData().GetDerivM();
         map<int,map<int,double> >::iterator dmcurr;
 
         // loop over all master nodes in the DerivM-map of the active slave node
@@ -4351,7 +4369,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       // dtx = -dny
       // FIXGIT: in the future DerivD will be called directly form node
 
-      vector<map<int,double> > dnmap = cnode->GetDerivN();
+      vector<map<int,double> > dnmap = cnode->CoData().GetDerivN();
 
       // iterator
       map<int,double>::iterator colcurr;
@@ -4366,7 +4384,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
       // get more information from node
       double* jump = cnode->Data().jump();
-      double* txi = cnode->txi();
+      double* txi = cnode->CoData().txi();
       double* xi = cnode->xspatial();
       double* z = cnode->lm();
       int row = slipt_->GID(i);
@@ -4659,7 +4677,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           tdotx += txi[dim]*xi[dim];
 
         // prepare assembly
-        map<int,double>& ddmap = cnode->GetDerivD()[gid];
+        map<int,double>& ddmap = cnode->CoData().GetDerivD()[gid];
 
         // loop over all entries of the current derivative map
         for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
@@ -4679,7 +4697,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         /**************************** Deriv(abs).ct.tan.DerivM.x*ztan ***/
 
         // we need the Lin(M-matrix) entries of this node
-        map<int,map<int,double> >& dmmap = cnode->GetDerivM();
+        map<int,map<int,double> >& dmmap = cnode->CoData().GetDerivM();
         map<int,map<int,double> >::iterator dmcurr;
 
         // loop over all master nodes in the DerivM-map of the active slave node
@@ -4697,7 +4715,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             tdotx += txi[dim]*mxi[dim];
 
           // compute entry of the current active node / master node pair
-          map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+          map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
 
           // loop over all entries of the current derivative map
           for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -4808,7 +4826,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
              tdotx += txi[dim]*mxi[dim];
 
            // compute entry of the current active node / master node pair
-           map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+           map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
 
            // loop over all entries of the current derivative map
            for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)

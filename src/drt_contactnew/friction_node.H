@@ -58,8 +58,8 @@ namespace CONTACT
 
 This class contains additional information from frictional contact nodes which are
 are not needed for contact search and therefore are only available on the
-node's processor (ColMap). The class FriNode must be declared before its data 
-container.
+node's processor (ColMap). The class FriNodeDataContainer must be declared
+before the FriNode itself.
 
 \author gitterle (gitterle@lnm.mw.tum.de)
 */
@@ -386,7 +386,7 @@ public:
   contact specific quantities/information are stored.
 
   */
-  virtual inline CONTACT::FriNodeDataContainer& Data() { return *data_; }
+  inline CONTACT::FriNodeDataContainer& Data() { return *fridata_; }
 
   //@}
 
@@ -476,13 +476,13 @@ public:
   is initialized.
 
   */
-  void InitializeDataContainer();
+  virtual void InitializeDataContainer();
   
   //@}
 
 protected:
   
-  RCP<CONTACT::FriNodeDataContainer> data_;       // additional information of proc's contact nodes
+  RCP<CONTACT::FriNodeDataContainer> fridata_;       // additional information of proc's contact nodes
   
 }; // class FriNode
 

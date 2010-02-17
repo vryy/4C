@@ -1323,10 +1323,10 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
         FriNode* frinode = static_cast<FriNode*>(cnode);
         
         // compute tangential part of Lagrange multiplier
-        tz = frinode->txi()[0]*frinode->lm()[0] + frinode->txi()[1]*frinode->lm()[1];
+        tz = frinode->CoData().txi()[0]*frinode->lm()[0] + frinode->CoData().txi()[1]*frinode->lm()[1];
 
         // compute tangential part of jump
-        tjump = frinode->txi()[0]*frinode->Data().jump()[0] + frinode->txi()[1]*frinode->Data().jump()[1];
+        tjump = frinode->CoData().txi()[0]*frinode->Data().jump()[0] + frinode->CoData().txi()[1]*frinode->Data().jump()[1];
       }
 
       // check nodes of inactive set *************************************
@@ -1346,7 +1346,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
           activesetconv_ = false;
 #ifdef CONTACTFRICTIONLESSFIRST
        if (static_cast<FriNode*>(cnode)->Data().ActiveOld()==false)
-         static_cast<FriNode*>(cnode)->Slip() = true;
+         static_cast<FriNode*>(cnode)->Data().Slip() = true;
 #endif
         }
       }
@@ -1647,11 +1647,11 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
         // compute tangential parts and of Lagrange multiplier and incremental jumps
         for (int i=0;i<Dim();++i)
         {          
-          tz[0] += frinode->txi()[i]*frinode->lm()[i];
-          if(Dim()==3) tz[1] += frinode->teta()[i]*frinode->lm()[i];
+          tz[0] += frinode->CoData().txi()[i]*frinode->lm()[i];
+          if(Dim()==3) tz[1] += frinode->CoData().teta()[i]*frinode->lm()[i];
 
-           tjump[0] += frinode->txi()[i]*frinode->Data().jump()[i];
-           if(Dim()==3) tjump[1] += frinode->teta()[i]*frinode->Data().jump()[i];
+           tjump[0] += frinode->CoData().txi()[i]*frinode->Data().jump()[i];
+           if(Dim()==3) tjump[1] += frinode->CoData().teta()[i]*frinode->Data().jump()[i];
         }
 
         // evaluate euclidean norm |tz+ct.tjump|

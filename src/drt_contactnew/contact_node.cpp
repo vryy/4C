@@ -44,6 +44,79 @@ Maintainer: Alexander Popp
 #include "contact_defines.H"
 
 
+/*----------------------------------------------------------------------*/
+// METHODS RELATED TO CONODEDATACONTAINER
+/*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                            mgit 02/10|
+ *----------------------------------------------------------------------*/
+CONTACT::CoNodeDataContainer::CoNodeDataContainer():
+  grow_(1.0e12)
+  {
+    for (int i=0;i<3;++i)
+    {
+      txi()[i]=0.0;
+      teta()[i]=0.0;
+    }
+
+    return;
+}
+
+/*----------------------------------------------------------------------*
+ |  copy-ctor (public)                                        mgit 02/10|
+ *----------------------------------------------------------------------*/
+CONTACT::CoNodeDataContainer::CoNodeDataContainer(const CONTACT::CoNodeDataContainer& old):
+  grow_(old.grow_)
+  {
+    for (int i=0;i<3;++i)
+    {
+      txi()[i]=old.txi_[i];
+      teta()[i]=old.teta_[i];
+    }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Deep copy this instance of CoNodeDataContainer and
+    return pointer to it (public)                              mgit 02/10|
+ *----------------------------------------------------------------------*/
+CONTACT::CoNodeDataContainer* CONTACT::CoNodeDataContainer::Clone() const
+{
+  CONTACT::CoNodeDataContainer* newnodedc = new CONTACT::CoNodeDataContainer(*this);
+  return newnodedc;
+}
+
+/*----------------------------------------------------------------------*
+ |  Pack data                                                  (public) |
+ |                                                            mgit 02/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNodeDataContainer::Pack(vector<char>& data) const
+{
+  // add txi_
+  DRT::ParObject::AddtoPack(data,txi_,3);
+  // add teta_
+  DRT::ParObject::AddtoPack(data,teta_,3);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Unpack data                                                (public) |
+ |                                                            mgit 02/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNodeDataContainer::Unpack(int& position, const vector<char>& data)
+{
+  // txi_
+  DRT::ParObject::ExtractfromPack(position,data,txi_,3);
+  // teta_
+  DRT::ParObject::ExtractfromPack(position,data,teta_,3);
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+// METHODS RELATED TO CONODE
+/*----------------------------------------------------------------------*/
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
@@ -52,15 +125,8 @@ CONTACT::CoNode::CoNode(int id, const double* coords, const int owner,
                         const bool initactive) :
 MORTAR::MortarNode(id,coords,owner,numdof,dofs,isslave),
 active_(false),
-initactive_(initactive),
-grow_(1.0e12)
+initactive_(initactive)
 {
-  for (int i=0;i<3;++i)
-  {
-    txi()[i]=0.0;
-    teta()[i]=0.0;
-  }
-
   return;
 }
 
@@ -70,15 +136,8 @@ grow_(1.0e12)
 CONTACT::CoNode::CoNode(const CONTACT::CoNode& old) :
 MORTAR::MortarNode(old),
 active_(old.active_),
-initactive_(old.initactive_),
-grow_(old.grow_)
+initactive_(old.initactive_)
 {
-  for (int i=0;i<3;++i)
-  {
-    txi()[i]=old.txi_[i];
-    teta()[i]=old.teta_[i];
-  }
-
   return;
 }
 
@@ -100,7 +159,6 @@ ostream& operator << (ostream& os, const CONTACT::CoNode& cnode)
   cnode.Print(os);
   return os;
 }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 10/07|
@@ -136,10 +194,12 @@ void CONTACT::CoNode::Pack(vector<char>& data) const
   AddtoPack(data,active_);
   // add initactive_
   AddtoPack(data,initactive_);
-  // add txi_
-  AddtoPack(data,txi_,3);
-  // add teta_
-  AddtoPack(data,teta_,3);
+  
+  // data_
+  int hasdata = codata_!=Teuchos::null;
+  AddtoPack(data,hasdata);
+  if (hasdata)
+    codata_->Pack(data);
   
   return;
 }
@@ -167,10 +227,19 @@ void CONTACT::CoNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,active_);
   // isslave_
   ExtractfromPack(position,data,initactive_);
-  // txi_
-  ExtractfromPack(position,data,txi_,3);
-  // teta_
-  ExtractfromPack(position,data,teta_,3);
+  
+  // data_
+  int hasdata;
+  ExtractfromPack(position,data,hasdata);
+  if (hasdata)
+  {
+    codata_ = Teuchos::rcp(new CONTACT::CoNodeDataContainer());
+    codata_->Unpack(position,data);
+  }
+  else
+  {
+    codata_ = Teuchos::null;
+  }
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -189,10 +258,10 @@ void CONTACT::CoNode::AddgValue(double& val)
     dserror("ERROR: AddgValue: function called for boundary node %i", Id());
 
   // initialize if called for the first time
-  if (grow_==1.0e12) grow_=0;
+  if (CoData().Getg()==1.0e12) CoData().Getg()=0;
 
   // add given value to grow_
-  grow_+=val;
+  CoData().Getg()+=val;
 
   return;
 }
@@ -209,17 +278,26 @@ void CONTACT::CoNode::AddDerivZValue(int& row, const int& col, double val)
     dserror("ERROR: AddZValue: function called for boundary node %i", Id());
     
   // check if this has been called before
-  if ((int)derivz_.size()==0)
-    derivz_.resize(NumDof());
+  if ((int)CoData().GetDerivZ().size()==0)
+    CoData().GetDerivZ().resize(NumDof());
     
   // check row index input
-  if ((int)derivz_.size() <= row)
+  if ((int)CoData().GetDerivZ().size() <= row)
     dserror("ERROR: AddDerivZValue: tried to access invalid row index!");
     
   // add the pair (col,val) to the given row
-  map<int,double>& zmap = derivz_[row];
+  map<int,double>& zmap = CoData().GetDerivZ()[row];
   zmap[col] += val;
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Initialize data container                              gitterle 02/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::InitializeDataContainer()
+{
+  codata_=rcp(new CONTACT::CoNodeDataContainer());
   return;
 }
 
@@ -232,8 +310,8 @@ void CONTACT::CoNode::BuildAveragedNormal()
   for (int j=0;j<3;++j)
   {
     n()[j]=0.0;
-    txi()[j]=0.0;
-    teta()[j]=0.0;
+    CoData().txi()[j]=0.0;
+    CoData().teta()[j]=0.0;
   }
 
   int nseg = NumElement();
@@ -277,14 +355,14 @@ void CONTACT::CoNode::BuildAveragedNormal()
   if (NumDof()==2)
   {
     // simple definition for txi
-    txi()[0] = -n()[1];
-    txi()[1] =  n()[0];
-    txi()[2] =  0.0;
+    CoData().txi()[0] = -n()[1];
+    CoData().txi()[1] =  n()[0];
+    CoData().txi()[2] =  0.0;
 
     // teta is z-axis
-    teta()[0] = 0.0;
-    teta()[1] = 0.0;
-    teta()[2] = 1.0;
+    CoData().teta()[0] = 0.0;
+    CoData().teta()[1] = 0.0;
+    CoData().teta()[2] = 1.0;
   }
   else if (NumDof()==3)
   {
@@ -292,44 +370,44 @@ void CONTACT::CoNode::BuildAveragedNormal()
     // we want to treat a 3D mesh as pseudo 2D contact problem
     // with all nodes fixed in z-direction
     // thus, the second tangent is fixed to (0,0,1)
-    teta()[0] = 0.0;
-    teta()[1] = 0.0;
-    teta()[2] = 1.0;
+    CoData().teta()[0] = 0.0;
+    CoData().teta()[1] = 0.0;
+    CoData().teta()[2] = 1.0;
 
     // txi follows from corkscrew rule (txi = teta x n)
-    txi()[0] = teta()[1]*n()[2]-teta()[2]*n()[1];
-    txi()[1] = teta()[2]*n()[0]-teta()[0]*n()[2];
-    txi()[2] = teta()[0]*n()[1]-teta()[1]*n()[0];
+    CoData().txi()[0] = CoData().teta()[1]*n()[2]-CoData().teta()[2]*n()[1];
+    CoData().txi()[1] = CoData().teta()[2]*n()[0]-CoData().teta()[0]*n()[2];
+    CoData().txi()[2] = CoData().teta()[0]*n()[1]-CoData().teta()[1]*n()[0];
 #else
     // arbitrary definition for txi
     if (abs(n()[2])>1.0e-6)
     {
-      txi()[0]=1.0;
-      txi()[1]=1.0;
-      txi()[2]=(-n()[0]-n()[1])/n()[2];
+      CoData().txi()[0]=1.0;
+      CoData().txi()[1]=1.0;
+      CoData().txi()[2]=(-n()[0]-n()[1])/n()[2];
     }
     else if (abs(n()[1])>1.0e-6)
     {
-      txi()[0]=1.0;
-      txi()[2]=1.0;
-      txi()[1]=(-n()[0]-n()[2])/n()[1];
+      CoData().txi()[0]=1.0;
+      CoData().txi()[2]=1.0;
+      CoData().txi()[1]=(-n()[0]-n()[2])/n()[1];
     }
     else if (abs(n()[0])>1.0e-6)
     {
-      txi()[1]=1.0;
-      txi()[2]=1.0;
-      txi()[0]=(-n()[1]-n()[2])/n()[0];
+      CoData().txi()[1]=1.0;
+      CoData().txi()[2]=1.0;
+      CoData().txi()[0]=(-n()[1]-n()[2])/n()[0];
     }
     else
       dserror("ERROR: Something wrong with nodal normal");
 
-    ltxi = sqrt(txi()[0]*txi()[0]+txi()[1]*txi()[1]+txi()[2]*txi()[2]);
-    for (int j=0;j<3;++j) txi()[j]/=ltxi;
+    ltxi = sqrt(CoData().txi()[0]*CoData().txi()[0]+CoData().txi()[1]*CoData().txi()[1]+CoData().txi()[2]*CoData().txi()[2]);
+    for (int j=0;j<3;++j) CoData().txi()[j]/=ltxi;
 
     // teta follows from corkscrew rule (teta = n x txi)
-    teta()[0] = n()[1]*txi()[2]-n()[2]*txi()[1];
-    teta()[1] = n()[2]*txi()[0]-n()[0]*txi()[2];
-    teta()[2] = n()[0]*txi()[1]-n()[1]*txi()[0];
+    CoData().teta()[0] = n()[1]*CoData().txi()[2]-n()[2]*CoData().txi()[1];
+    CoData().teta()[1] = n()[2]*CoData().txi()[0]-n()[0]*CoData().txi()[2];
+    CoData().teta()[2] = n()[0]*CoData().txi()[1]-n()[1]*CoData().txi()[0];
 #endif // #ifdef CONTACTPSEUDO2D
   }
   else
@@ -348,9 +426,9 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
                                           double length, double ltxi)
 {
   // prepare nodal storage maps for derivative
-  if ((int)GetDerivN().size()==0) GetDerivN().resize(3);
-  if ((int)GetDerivTxi().size()==0) GetDerivTxi().resize(3);
-  if ((int)GetDerivTeta().size()==0) GetDerivTeta().resize(3);
+  if ((int)CoData().GetDerivN().size()==0) CoData().GetDerivN().resize(3);
+  if ((int)CoData().GetDerivTxi().size()==0) CoData().GetDerivTxi().resize(3);
+  if ((int)CoData().GetDerivTeta().size()==0) CoData().GetDerivTeta().resize(3);
 
   int nseg = NumElement();
   DRT::Element** adjeles = Elements();
@@ -361,19 +439,19 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     CoElement* adjcele = static_cast<CoElement*> (adjeles[i]);
 
     // build element normal derivative at current node
-    adjcele->DerivNormalAtNode(Id(),i,elens,GetDerivN());
+    adjcele->DerivNormalAtNode(Id(),i,elens,CoData().GetDerivN());
   }
 
   // normalize directional derivative
   // (length differs for weighted/unweighted case bot not the procedure!)
   // (be careful with reference / copy of derivative maps!)
   typedef map<int,double>::const_iterator CI;
-  map<int,double>& derivnx = GetDerivN()[0];
-  map<int,double>& derivny = GetDerivN()[1];
-  map<int,double>& derivnz = GetDerivN()[2];
-  map<int,double> cderivnx = GetDerivN()[0];
-  map<int,double> cderivny = GetDerivN()[1];
-  map<int,double> cderivnz = GetDerivN()[2];
+  map<int,double>& derivnx = CoData().GetDerivN()[0];
+  map<int,double>& derivny = CoData().GetDerivN()[1];
+  map<int,double>& derivnz = CoData().GetDerivN()[2];
+  map<int,double> cderivnx = CoData().GetDerivN()[0];
+  map<int,double> cderivny = CoData().GetDerivN()[1];
+  map<int,double> cderivnz = CoData().GetDerivN()[2];
   double nxnx = n()[0] * n()[0];
   double nxny = n()[0] * n()[1];
   double nxnz = n()[0] * n()[2];
@@ -437,8 +515,8 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     // get directional derivative of nodal tangent txi "for free"
     // (we just have to use the orthogonality of n and t)
     // the directional derivative of nodal tangent teta is 0
-    map<int,double>& derivtxix = GetDerivTxi()[0];
-    map<int,double>& derivtxiy = GetDerivTxi()[1];
+    map<int,double>& derivtxix = CoData().GetDerivTxi()[0];
+    map<int,double>& derivtxiy = CoData().GetDerivTxi()[1];
 
     for (CI p=derivny.begin();p!=derivny.end();++p)
       derivtxix[p->first] = -(p->second);
@@ -457,24 +535,24 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
 
     // get normalized tangent derivative txi
     // use corkscrew rule from BuildAveragedNormal()
-    map<int,double>& derivtxix = GetDerivTxi()[0];
-    map<int,double>& derivtxiy = GetDerivTxi()[1];
-    map<int,double>& derivtxiz = GetDerivTxi()[2];
+    map<int,double>& derivtxix = CoData().GetDerivTxi()[0];
+    map<int,double>& derivtxiy = CoData().GetDerivTxi()[1];
+    map<int,double>& derivtxiz = CoData().GetDerivTxi()[2];
 
     for (CI p=derivnx.begin();p!=derivnx.end();++p)
     {
-      derivtxiy[p->first] += teta()[2]*(p->second);
-      derivtxiz[p->first] -= teta()[1]*(p->second);
+      derivtxiy[p->first] += CoData().teta()[2]*(p->second);
+      derivtxiz[p->first] -= CoData().teta()[1]*(p->second);
     }
     for (CI p=derivny.begin();p!=derivny.end();++p)
     {
-      derivtxix[p->first] -= teta()[2]*(p->second);
-      derivtxiz[p->first] += teta()[0]*(p->second);
+      derivtxix[p->first] -= CoData().teta()[2]*(p->second);
+      derivtxiz[p->first] += CoData().teta()[0]*(p->second);
     }
     for (CI p=derivnz.begin();p!=derivnz.end();++p)
     {
-      derivtxix[p->first] += teta()[1]*(p->second);
-      derivtxiy[p->first] -= teta()[0]*(p->second);
+      derivtxix[p->first] += CoData().teta()[1]*(p->second);
+      derivtxiy[p->first] -= CoData().teta()[0]*(p->second);
     }
   }
 #else
@@ -482,7 +560,7 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     // use definitions for txi from BuildAveragedNormal()
     if (abs(n()[2])>1.0e-6)
     {
-      map<int,double>& derivtxiz = GetDerivTxi()[2];
+      map<int,double>& derivtxiz = CoData().GetDerivTxi()[2];
       for (CI p=derivnx.begin();p!=derivnx.end();++p)
         derivtxiz[p->first] -= 1/n()[2]*(p->second);
       for (CI p=derivny.begin();p!=derivny.end();++p)
@@ -493,7 +571,7 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     }
     else if (abs(n()[1])>1.0e-6)
     {
-      map<int,double>& derivtxiy = GetDerivTxi()[1];
+      map<int,double>& derivtxiy = CoData().GetDerivTxi()[1];
       for (CI p=derivnx.begin();p!=derivnx.end();++p)
         derivtxiy[p->first] -= 1/n()[1]*(p->second);
       for (CI p=derivny.begin();p!=derivny.end();++p)
@@ -503,7 +581,7 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     }
     else if (abs(n()[0])>1.0e-6)
     {
-      map<int,double>& derivtxix = GetDerivTxi()[0];
+      map<int,double>& derivtxix = CoData().GetDerivTxi()[0];
       for (CI p=derivnx.begin();p!=derivnx.end();++p)
         derivtxix[p->first] += (n()[1]+n()[2])/(n()[0]*n()[0])*(p->second);
       for (CI p=derivny.begin();p!=derivny.end();++p)
@@ -517,18 +595,18 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     // normalize txi directional derivative
     // (identical to normalization of normal derivative)
     typedef map<int,double>::const_iterator CI;
-    map<int,double>& derivtxix = GetDerivTxi()[0];
-    map<int,double>& derivtxiy = GetDerivTxi()[1];
-    map<int,double>& derivtxiz = GetDerivTxi()[2];
-    map<int,double> cderivtxix = GetDerivTxi()[0];
-    map<int,double> cderivtxiy = GetDerivTxi()[1];
-    map<int,double> cderivtxiz = GetDerivTxi()[2];
-    double txtx = txi()[0] * txi()[0];
-    double txty = txi()[0] * txi()[1];
-    double txtz = txi()[0] * txi()[2];
-    double tyty = txi()[1] * txi()[1];
-    double tytz = txi()[1] * txi()[2];
-    double tztz = txi()[2] * txi()[2];
+    map<int,double>& derivtxix = CoData().GetDerivTxi()[0];
+    map<int,double>& derivtxiy = CoData().GetDerivTxi()[1];
+    map<int,double>& derivtxiz = CoData().GetDerivTxi()[2];
+    map<int,double> cderivtxix = CoData().GetDerivTxi()[0];
+    map<int,double> cderivtxiy = CoData().GetDerivTxi()[1];
+    map<int,double> cderivtxiz = CoData().GetDerivTxi()[2];
+    double txtx = CoData().txi()[0] * CoData().txi()[0];
+    double txty = CoData().txi()[0] * CoData().txi()[1];
+    double txtz = CoData().txi()[0] * CoData().txi()[2];
+    double tyty = CoData().txi()[1] * CoData().txi()[1];
+    double tytz = CoData().txi()[1] * CoData().txi()[2];
+    double tztz = CoData().txi()[2] * CoData().txi()[2];
 
     // build a vector with all keys from x,y,z maps
     // (we need this in order not to miss any entry!)
@@ -580,24 +658,24 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
 
     // get normalized tangent derivative teta
     // use corkscrew rule from BuildAveragedNormal()
-    map<int,double>& derivtetax = GetDerivTeta()[0];
-    map<int,double>& derivtetay = GetDerivTeta()[1];
-    map<int,double>& derivtetaz = GetDerivTeta()[2];
+    map<int,double>& derivtetax = CoData().GetDerivTeta()[0];
+    map<int,double>& derivtetay = CoData().GetDerivTeta()[1];
+    map<int,double>& derivtetaz = CoData().GetDerivTeta()[2];
 
     for (CI p=derivnx.begin();p!=derivnx.end();++p)
     {
-      derivtetay[p->first] -= txi()[2]*(p->second);
-      derivtetaz[p->first] += txi()[1]*(p->second);
+      derivtetay[p->first] -= CoData().txi()[2]*(p->second);
+      derivtetaz[p->first] += CoData().txi()[1]*(p->second);
     }
     for (CI p=derivny.begin();p!=derivny.end();++p)
     {
-      derivtetax[p->first] += txi()[2]*(p->second);
-      derivtetaz[p->first] -= txi()[0]*(p->second);
+      derivtetax[p->first] += CoData().txi()[2]*(p->second);
+      derivtetaz[p->first] -= CoData().txi()[0]*(p->second);
     }
     for (CI p=derivnz.begin();p!=derivnz.end();++p)
     {
-      derivtetax[p->first] -= txi()[1]*(p->second);
-      derivtetay[p->first] += txi()[0]*(p->second);
+      derivtetax[p->first] -= CoData().txi()[1]*(p->second);
+      derivtetay[p->first] += CoData().txi()[0]*(p->second);
     }
     for (CI p=derivtxix.begin();p!=derivtxix.end();++p)
     {

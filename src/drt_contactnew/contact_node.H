@@ -53,117 +53,71 @@ namespace CONTACT
 {
 
 /*!
-\brief A class for a contact node derived from MORTAR::MortarNode
+\brief A class containing additional data from contact nodes
 
-This class represents a finite element node capable of contact.
+This class contains additional information from contact nodes which are
+are not needed for contact search and therefore are only available on the
+node's processor (ColMap). The class CoNodeDataContainer must be declared 
+before the CoNode itself.
 
-\author popp (popp@lnm.mw.tum.de)
+\author gitterle (gitterle@lnm.mw.tum.de)
 */
-class CoNode : public MORTAR::MortarNode
+class CoNodeDataContainer
 {
 public:
-
-  //! @name Enums and Friends
-
-  /*!
-  \brief The Discretization is a friend of CoNode
-  */
-  friend class DRT::Discretization;
-
-  //@}
 
   //! @name Constructors and destructors and related methods
 
   /*!
   \brief Standard Constructor
 
-  \param id     (in): A globally unique node id
-  \param coords (in): vector of nodal coordinates, length 3
-  \param owner  (in): Owner of this node.
-  \param numdof (in): Number of degrees of freedom to this node
-  \param dofs   (in): list of global degrees of freedom
-  \param isslave(in): flag indicating whether node is slave or master
-  \param initactive (in): flag indicating whether initially set to active
-
   */
-  CoNode(int id, const double* coords, const int owner,
-         const int numdof, const vector<int>& dofs, const bool isslave,
-         const bool initactive);
+  CoNodeDataContainer();
 
   /*!
   \brief Copy Constructor
 
-  Makes a deep copy of a CoNode
+  Makes a deep copy of a CoNodeDataContainer
 
   */
-  CoNode(const CONTACT::CoNode& old);
+  CoNodeDataContainer(const CONTACT::CoNodeDataContainer& old);
 
   /*!
   \brief Deep copy the derived class and return pointer to it
 
   */
-  virtual CONTACT::CoNode* Clone() const;
+  virtual CONTACT::CoNodeDataContainer* Clone() const;
 
   /*!
   \brief Destructor
 
   */
-  virtual ~CoNode() { return; }
+  virtual ~CoNodeDataContainer() { return; }
 
   /*!
-  \brief Return unique ParObject id
+  \brief Pack this class so that it can be communicated
 
-  every class implementing ParObject needs a unique id defined at the
-  top of drt_lib/drt_parobject.H.
-
-  */
-  virtual int UniqueParObjectId() const { return ParObject_CoNode;}
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this node
+  This function packs the datacontainer. This is only called
+  when the class has been initialized and the pointer to this
+  class exists.
 
   */
   virtual void Pack(vector<char>& data) const;
 
   /*!
-  \brief Unpack data from a char vector into this class
+  \brief Unpack data from a vector into this class
 
-  \ref Pack and \ref Unpack are used to communicate this node
+  This function unpacks the datacontainer. This is only called
+  when the class has been initialized and the pointer to this
+  class exists.
 
   */
-  virtual void Unpack(const vector<char>& data);
-
+  virtual void Unpack(int& position, const vector<char>& data);
+  
   //@}
 
   //! @name Access methods
-
-  /*!
-  \brief Print this cnode
-  */
-  virtual void Print(ostream& os) const ;
-
-  /*!
-  \brief Is Node initialized as active node (only slave nodes)
-  */
-  virtual bool IsInitActive() const
-  { if (!IsSlave()) dserror("ERROR: InitActive requested for Master node");
-    return initactive_; }
-
-  /*!
-  \brief Modify initial active status of slave node
-
-  This belated modification is necessary to be able to use
-  the binary search tree for contact initialization in the
-  load-controlled quasistatic case (instead of input file
-  information Active/Inactive)
-
-  */
-  virtual bool& SetInitActive()
-  { if (!IsSlave()) dserror("ERROR: InitActive requested for Master node");
-    return initactive_; }
-
+  
   /*!
   \brief Return current nodal tangent t_xi (only for slave side!) (length 3)
   */
@@ -175,46 +129,10 @@ public:
   virtual double* teta() { return teta_; }
 
   /*!
-  \brief Return contact status of this node (active=true)
-  */
-  virtual bool& Active() { return active_; }
-
-  /*!
-  \brief Return scaling factor for weighted gap (penalty strategy)
-  */
-  virtual double& Kappa() { return kappa_; }
-
-  /*!
-  \brief Add a value to the weighted gap of this node
-
-  This value is later assembled to the weighted gap vec.
-  Note that grow_ here is a scalar.
-
-  \param val : value to be added
-
-  */
-  void AddgValue(double& val);
- 
-  /*!
-  \brief Add a value to the map of LM derivatives of this node
-     
-  The 'DerivZ' map is later assembled to the global DerivZ matrix.
-  Note that derivz_ here is a vector.
-  
-  Note: This is only calculated when performing a penalty strategy
-     
-  \param row : local dof row id to add to (rowwise)
-  \param val : value to be added
-  \param col : global dof column id of the value added
-  
-  */
-  void AddDerivZValue(int& row, const int& col, double val);
-
-  /*!
   \brief Return the weighted gap (scalar) of this node
   */
   virtual double& Getg() { return grow_; }
-
+ 
   /*!
   \brief Return the 'DerivN' map (vector) of this node
 
@@ -323,7 +241,185 @@ public:
 
    */
   virtual vector<map<int,double> >& GetDerivZ() { return derivz_; }
-    
+
+  //@}
+
+protected:
+  
+  double          txi_[3];         // nodal tangent t_xi for contact methods
+  double          teta_[3];        // nodal tangent t_eta for contact methods
+  double          grow_;           // nodal entry of g vector
+
+  vector<map<int,double> >      derivn_;     // directional derivative of nodal normal
+  vector<map<int,double> >      derivtxi_;   // directional derivative of nodal tangent t_xi
+  vector<map<int,double> >      derivteta_;  // directional derivative of nodal tangent t_eta
+  map<int,map<int,double> >     derivd_;     // directional derivative of nodal D-matrix value
+  map<int,map<int,double> >     derivm_;     // directional derivative of nodal M-matrix values
+  map<int,double>               derivg_;     // directional derivative of nodal weighted gap value
+
+  // Penalty-related quantities
+  vector<map<int,double> >      derivz_;     // direction derivative of nodal z-matrix value
+
+}; // class CoNodeDataContainer
+
+
+/*!
+\brief A class for a contact node derived from MORTAR::MortarNode
+
+This class represents a finite element node capable of contact.
+
+\author popp (popp@lnm.mw.tum.de)
+*/
+class CoNode : public MORTAR::MortarNode
+{
+public:
+
+  //! @name Enums and Friends
+
+  /*!
+  \brief The Discretization is a friend of CoNode
+  */
+  friend class DRT::Discretization;
+
+  //@}
+
+  //! @name Constructors and destructors and related methods
+
+  /*!
+  \brief Standard Constructor
+
+  \param id     (in): A globally unique node id
+  \param coords (in): vector of nodal coordinates, length 3
+  \param owner  (in): Owner of this node.
+  \param numdof (in): Number of degrees of freedom to this node
+  \param dofs   (in): list of global degrees of freedom
+  \param isslave(in): flag indicating whether node is slave or master
+  \param initactive (in): flag indicating whether initially set to active
+
+  */
+  CoNode(int id, const double* coords, const int owner,
+         const int numdof, const vector<int>& dofs, const bool isslave,
+         const bool initactive);
+
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a CoNode
+
+  */
+  CoNode(const CONTACT::CoNode& old);
+
+  /*!
+  \brief Deep copy the derived class and return pointer to it
+
+  */
+  virtual CONTACT::CoNode* Clone() const;
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~CoNode() { return; }
+
+  /*!
+  \brief Return unique ParObject id
+
+  every class implementing ParObject needs a unique id defined at the
+  top of drt_lib/drt_parobject.H.
+
+  */
+  virtual int UniqueParObjectId() const { return ParObject_CoNode;}
+
+  /*!
+  \brief Pack this class so it can be communicated
+
+  \ref Pack and \ref Unpack are used to communicate this node
+
+  */
+  virtual void Pack(vector<char>& data) const;
+
+  /*!
+  \brief Unpack data from a char vector into this class
+
+  \ref Pack and \ref Unpack are used to communicate this node
+
+  */
+  virtual void Unpack(const vector<char>& data);
+
+  //@}
+
+  //! @name Access methods
+
+  /*!
+  \brief Print this cnode
+  */
+  virtual void Print(ostream& os) const ;
+  
+  /*!
+  \brief Is Node initialized as active node (only slave nodes)
+  */
+  virtual bool IsInitActive() const
+  { if (!IsSlave()) dserror("ERROR: InitActive requested for Master node");
+    return initactive_; }
+
+  /*!
+  \brief Modify initial active status of slave node
+
+  This belated modification is necessary to be able to use
+  the binary search tree for contact initialization in the
+  load-controlled quasistatic case (instead of input file
+  information Active/Inactive)
+
+  */
+  virtual bool& SetInitActive()
+  { if (!IsSlave()) dserror("ERROR: InitActive requested for Master node");
+    return initactive_; }
+
+  /*!
+  \brief Return contact status of this node (active=true)
+  */
+  virtual bool& Active() { return active_; }
+
+  /*!
+  \brief Return of data container of this node
+
+  This method returns the data container of this node where additional
+  contact specific quantities/information are stored.
+
+  */
+  inline CONTACT::CoNodeDataContainer& CoData() { return *codata_; }
+
+  /*!
+  \brief Return scaling factor for weighted gap (penalty strategy)
+  */
+  virtual double& Kappa() { return kappa_; }
+
+  /*!
+  \brief Add a value to the weighted gap of this node
+
+  This value is later assembled to the weighted gap vec.
+  Note that grow_ here is a scalar.
+
+  \param val : value to be added
+
+  */
+  void AddgValue(double& val);
+ 
+  /*!
+  \brief Add a value to the map of LM derivatives of this node
+     
+  The 'DerivZ' map is later assembled to the global DerivZ matrix.
+  Note that derivz_ here is a vector.
+  
+  Note: This is only calculated when performing a penalty strategy
+     
+  \param row : local dof row id to add to (rowwise)
+  \param val : value to be added
+  \param col : global dof column id of the value added
+  
+  */
+  void AddDerivZValue(int& row, const int& col, double val);
+
   //@}
 
   //! @name Construction methods
@@ -352,33 +448,25 @@ public:
   void DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
                            double length, double ltxi);
   
+  /*!
+  \brief Initializes the data container of the node
+
+  With this function, the container with contact specific quantities/information
+  is initialized.
+
+  */
+  virtual void InitializeDataContainer();
+
+  
   //@}
   
-  //! @name Empty function
-  virtual void InitializeDataContainer() {}
-   
-  //@}
-
 protected:
 
   bool            active_;         // true if cnode is in contact (active set strategy)
   bool            initactive_;     // true if node is initialized as active node
-
-  double          txi_[3];         // nodal tangent t_xi for contact methods
-  double          teta_[3];        // nodal tangent t_eta for contact methods
-
-  double          grow_;           // nodal entry of g vector
-
-  vector<map<int,double> >      derivn_;     // directional derivative of nodal normal
-  vector<map<int,double> >      derivtxi_;   // directional derivative of nodal tangent t_xi
-  vector<map<int,double> >      derivteta_;  // directional derivative of nodal tangent t_eta
-  map<int,map<int,double> >     derivd_;     // directional derivative of nodal D-matrix value
-  map<int,map<int,double> >     derivm_;     // directional derivative of nodal M-matrix values
-  map<int,double>               derivg_;     // directional derivative of nodal weighted gap value
-
-  // Penalty-related quantities
-  vector<map<int,double> >      derivz_;     // direction derivative of nodal z-matrix value
-
+  
+  RCP<CONTACT::CoNodeDataContainer> codata_;   // additional information of proc's contact nodes
+  
 }; // class CoNode
 } // namespace CONTACT
 

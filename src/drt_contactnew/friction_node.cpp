@@ -216,10 +216,10 @@ void CONTACT::FriNode::Pack(vector<char>& data) const
   AddtoPack(data,basedata);
   
   // data_
-  int hasdata = data_!=Teuchos::null;
+  int hasdata = fridata_!=Teuchos::null;
   AddtoPack(data,hasdata);
   if (hasdata)
-    data_->Pack(data);
+    fridata_->Pack(data);
   
   return;
 }
@@ -248,12 +248,12 @@ void CONTACT::FriNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,hasdata);
   if (hasdata)
   {
-    data_ = Teuchos::rcp(new CONTACT::FriNodeDataContainer());
-    data_->Unpack(position,data);
+    fridata_ = Teuchos::rcp(new CONTACT::FriNodeDataContainer());
+    fridata_->Unpack(position,data);
   }
   else
   {
-    data_ = Teuchos::null;
+    fridata_ = Teuchos::null;
   }
 
   if (position != (int)data.size())
@@ -444,7 +444,8 @@ void CONTACT::FriNode::StoreTracOld()
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::InitializeDataContainer()
 {
-  data_=rcp(new CONTACT::FriNodeDataContainer());
+  codata_ =rcp(new CONTACT::CoNodeDataContainer());
+  fridata_=rcp(new CONTACT::FriNodeDataContainer());
   return;
 }
 

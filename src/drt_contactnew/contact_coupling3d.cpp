@@ -696,7 +696,7 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(MORTAR::Vertex& currv,
   
     // (3) all slave nodes normals part
     // get nodal normal derivative maps (x,y and z components)
-    vector<map<int,double> >& derivn = static_cast<CONTACT::CoNode*>(snode)->GetDerivN();
+    vector<map<int,double> >& derivn = static_cast<CONTACT::CoNode*>(snode)->CoData().GetDerivN();
   
     for (CI p=derivn[0].begin();p!=derivn[0].end();++p)
     {

@@ -511,8 +511,8 @@ void CONTACT::CoAbstractStrategy::OutputStresses ()
       for (int j=0;j<3;++j)
       {
         nn[j]=cnode->n()[j];
-        nt1[j]=cnode->txi()[j];
-        nt2[j]=cnode->teta()[j];
+        nt1[j]=cnode->CoData().txi()[j];
+        nt2[j]=cnode->CoData().teta()[j];
         lmn +=  nn[j]* cnode->lm()[j];
         lmt1 += nt1[j]* cnode->lm()[j];
         lmt2 += nt2[j]* cnode->lm()[j];
@@ -1199,10 +1199,10 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
           // compute tangential parts of Lagrange multiplier and jumps
           for (int k=0;k<Dim();++k)
           {
-            ztxi += frinode->txi()[k] * frinode->lm()[k];
-            zteta += frinode->teta()[k] * frinode->lm()[k];
-            jumptxi += frinode->txi()[k] * frinode->Data().jump()[k];
-            jumpteta += frinode->teta()[k] * frinode->Data().jump()[k];
+            ztxi += frinode->CoData().txi()[k] * frinode->lm()[k];
+            zteta += frinode->CoData().teta()[k] * frinode->lm()[k];
+            jumptxi += frinode->CoData().txi()[k] * frinode->Data().jump()[k];
+            jumpteta += frinode->CoData().teta()[k] * frinode->Data().jump()[k];
           }
   
           zt = sqrt(ztxi*ztxi+zteta*zteta);
