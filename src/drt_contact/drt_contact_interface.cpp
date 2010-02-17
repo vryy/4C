@@ -224,14 +224,14 @@ void CONTACT::Interface::FillComplete()
 
     // create the local communicator
     MPI_Comm  mpi_global_comm = epetrampicomm->GetMpiComm();
-    RCP<MPI_Comm> mpi_local_comm  = rcp(new MPI_Comm());
-    MPI_Comm_split(mpi_global_comm,color,key,mpi_local_comm.get());
+    MPI_Comm  mpi_local_comm;
+    MPI_Comm_split(mpi_global_comm,color,key,&mpi_local_comm);
 
     // create the new Epetra_MpiComm
-    if (*mpi_local_comm.get() == MPI_COMM_NULL)
+    if (mpi_local_comm == MPI_COMM_NULL)
       lcomm_ = null;
     else
-      lcomm_ = rcp(new Epetra_MpiComm(*mpi_local_comm.get()));
+      lcomm_ = rcp(new Epetra_MpiComm(mpi_local_comm));
 
 #else  // the easy serial case
     RCP<Epetra_Comm> copycomm = rcp(Comm().Clone());

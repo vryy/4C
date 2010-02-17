@@ -222,14 +222,14 @@ void MORTAR::MortarInterface::FillComplete()
 
     // create the local communicator
     MPI_Comm  mpi_global_comm = epetrampicomm->GetMpiComm();
-    RCP<MPI_Comm> mpi_local_comm  = rcp(new MPI_Comm());
-    MPI_Comm_split(mpi_global_comm,color,key,mpi_local_comm.get());
+    MPI_Comm  mpi_local_comm;
+    MPI_Comm_split(mpi_global_comm,color,key,&mpi_local_comm);
 
     // create the new Epetra_MpiComm
-    if (*mpi_local_comm.get() == MPI_COMM_NULL)
+    if (mpi_local_comm == MPI_COMM_NULL)
       lcomm_ = null;
     else
-      lcomm_ = rcp(new Epetra_MpiComm(*mpi_local_comm.get()));
+      lcomm_ = rcp(new Epetra_MpiComm(mpi_local_comm));
 
 #else  // the easy serial case
     RCP<Epetra_Comm> copycomm = rcp(Comm().Clone());
@@ -306,8 +306,8 @@ void MORTAR::MortarInterface::FillComplete()
   // need row and column maps of slave and master nodes / elements / dofs
   // separately so we can easily adress them
   UpdateMasterSlaveSets();
-  
-  // Initialize data container 
+
+  // Initialize data container
   // loop over all slave row nodes on the current interface
   for (int i=0; i<oldnodecolmap_->NumMyElements(); ++i)
   {
@@ -318,7 +318,7 @@ void MORTAR::MortarInterface::FillComplete()
 
     mnode->InitializeDataContainer();
   }
-    
+
   return;
 }
 
@@ -443,7 +443,7 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
     melefullmap_ = rcp(new Epetra_Map(-1,(int)mcfull.size(),&mcfull[0],0,Comm()));
     melecolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
   }
-  
+
   //********************************************************************
   // DOFS
   //********************************************************************
@@ -538,7 +538,7 @@ void MORTAR::MortarInterface::Initialize()
     (node->GetD()).resize(0);
     (node->GetM()).resize(0);
     (node->GetMmod()).resize(0);
-    
+
     // reset feasible projection status
     node->HasProj() = false;
   }
@@ -608,7 +608,7 @@ void MORTAR::MortarInterface::SetState(const string& statename, const RCP<Epetra
       element->Area()=element->ComputeArea();
     }
   }
-  
+
   if (statename=="olddisplacement")
   {
     // set displacements in interface discretization
@@ -654,7 +654,7 @@ void MORTAR::MortarInterface::SetState(const string& statename, const RCP<Epetra
       element->Area()=element->ComputeArea();
     }
   }
-  
+
   return;
 }
 
@@ -680,7 +680,7 @@ void MORTAR::MortarInterface::Evaluate()
   else if (SearchAlg()==INPAR::MORTAR::search_bfele)      EvaluateSearchBruteForce(SearchParam());
   else if (SearchAlg()==INPAR::MORTAR::search_binarytree) EvaluateSearchBinarytree();
   else                                                     dserror("ERROR: Invalid search algorithm");
-  
+
   // loop over proc's slave nodes of the interface
   // use standard column map to include processor's ghosted nodes
   // use boundary map to include slave side boundary nodes
@@ -694,7 +694,7 @@ void MORTAR::MortarInterface::Evaluate()
     // build averaged normal at each slave node
     mrtrnode->BuildAveragedNormal();
   }
-    
+
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
   for (int i=0; i<selecolmap_->NumMyElements();++i)
@@ -1079,10 +1079,10 @@ bool MORTAR::MortarInterface::EvaluateSearchBinarytree()
   //    update makes more sense here!
   //
   // *********************************************************************
-  
+
   // calculate minimal element length
   binarytree_->SetEnlarge(false);
-    
+
   // update tree in a top down way
   //binarytree_->UpdateTreeTopDown();
 
@@ -1101,7 +1101,7 @@ bool MORTAR::MortarInterface::EvaluateSearchBinarytree()
 
   // search with an combined algorithm
   binarytree_->SearchCombined();
-  
+
 	return true;
 }
 
@@ -1154,7 +1154,7 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
   {
     // create instance of coupling class
     MORTAR::Coupling2d coup(shapefcn_,Discret(),Dim(),sele,mele);
-    
+
     // do coupling
     coup.EvaluateCoupling();
   }
@@ -1680,11 +1680,11 @@ void MORTAR::MortarInterface::AssembleG(Epetra_Vector& gglobal)
     /**************************************************** g-vector ******/
     // weighted gap
     vector<double> gap(Dim());
-    
+
     // slave contribution (D)
     vector<map<int,double> > dmap = mrtrnode->GetD();
     map<int,double>::iterator dcurr;
-    
+
     for (int d=0;d<snodefullmap_->NumMyElements();++d)
     {
       int gid = snodefullmap_->GID(d);
@@ -1736,14 +1736,14 @@ void MORTAR::MortarInterface::AssembleG(Epetra_Vector& gglobal)
       if (!hasentry || abs(mik)<1.0e-12) continue;
       for (int j=0;j<(int)gap.size();++j) gap[j] -= mik * (mrtrmnode->X()[j]);
     }
-    
+
     // check if constraints fulfilled in reference configuration
     //if (i==0) cout << endl;
     //printf("NODE: %d \t gap[0]: %e \t gap[1]: %e \t gap[2]: %e \n",gid,gap[0],gap[1],gap[2]);
     //fflush(stdout);
     //if (abs(gap[0])>1.0e-12 || abs(gap[1])>1.0e-12 || abs(gap[2])>1.0e-12)
     //  cout << "***WARNING*** Non-zero initial constraint condition!" << endl;
-    
+
     // prepare assembly
     Epetra_SerialDenseVector gnode(Dim());
     vector<int> lm(Dim());
@@ -1755,7 +1755,7 @@ void MORTAR::MortarInterface::AssembleG(Epetra_Vector& gglobal)
       lm[j] = mrtrnode->Dofs()[j];
       lmowner[j] = mrtrnode->Owner();
     }
-    
+
     // do assembly
     LINALG::Assemble(gglobal,gnode,lm,lmowner);
   }
