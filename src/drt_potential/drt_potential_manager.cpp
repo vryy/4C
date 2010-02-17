@@ -99,8 +99,7 @@ void POTENTIAL::PotentialManager::ReadParameter()
       params_.set<string>("potential type","Surface");
     break;
   }
-    
-  // cout << params_.get<string>("potential type")<< endl;
+ 
   // set approximation method for volume potentials
   switch(Teuchos::getIntegralValue<INPAR::POTENTIAL::ApproximationType>(intpot,"APPROXIMATION_TYPE"))
   {
@@ -117,7 +116,8 @@ void POTENTIAL::PotentialManager::ReadParameter()
       params_.set<string>("approximation type","None");
     break;
   }
-  //cout << params_.get<string>("approximation type")<< endl;
+  
+  params_.set<double>("vdw_radius",intpot.get<double>("VDW_RADIUS"));
   
   // parameters for search tree
   const Teuchos::ParameterList& search_tree   = DRT::Problem::Instance()->SearchtreeParams();
@@ -137,6 +137,7 @@ void POTENTIAL::PotentialManager::ReadParameter()
       dserror("please specify search tree type");
     break;
   }
+  
   return;
 }
 
@@ -174,10 +175,11 @@ void POTENTIAL::PotentialManager::TestEvaluatePotential(  ParameterList&        
                                                           const double                      time,
                                                           const int                         step)
 {
+  const double vdw_radius = params_.get<double>("vdw_radius",0.0);
   if(surface_)
-    surfacePotential_->TestEvaluatePotential(p, disp, fint, stiff, time, step);
+    surfacePotential_->TestEvaluatePotential(p, disp, fint, stiff, time, step, vdw_radius);
   if(volume_)
-    volumePotential_->TestEvaluatePotential(p, disp, fint, stiff, time, step);
+    volumePotential_->TestEvaluatePotential(p, disp, fint, stiff, time, step, vdw_radius);
   return;
 }
 

@@ -269,6 +269,19 @@ protected:
   
   /*!
     \brief  compute first and second derivative of the Van-Der-Waals potential
+            for 2D problems (plane strain approximation)
+   */
+  void EvaluateVanDerWaals(
+      const double                  lambda,
+      const LINALG::Matrix<2,1>&    x,
+      const LINALG::Matrix<2,1>&    y,
+      LINALG::Matrix<2,1>&          potderiv1,
+      LINALG::Matrix<2,2>&          potderiv2
+      );
+  
+  
+  /*!
+    \brief  compute first and second derivative of the Van-Der-Waals potential
             for 3D problems (volume approximation)
    */
   void EvaluateVanDerWaals_Approx1(
@@ -407,21 +420,26 @@ protected:
   ///////////////////////  Test methods ///////////////////////
   
   void computeTestVanDerWaalsSpheres(
-    const std::map<int,std::set<int> >&     elementsByLabel,
+    const Teuchos::RCP<DRT::Discretization> potentialsurfdis,
+    const std::map<int,std::set<int> >&     elementsByLabel_Vol,
+    const std::map<int,std::set<int> >&     elementsByLabel_Surf,
     const RefCountPtr<const Epetra_Vector>  disp,
     const RefCountPtr<Epetra_Vector>        fint,
     const double                            time,
-    const int                               step
+    const int                               step,
+    const double                            vdw_radius
     );
   
   
   // compute local forces and center of gravity
   double computeLocalForceAndCOG(  
+    const Teuchos::RCP<DRT::Discretization> potentialsurfdis,
     LINALG::Matrix<3,1>&        fpot_sphere,
     LINALG::Matrix<3,1>&        cog_sphere,
     const RCP<Epetra_Vector>    fint,
     const RCP<const Epetra_Vector>    disp,
-    const std::set<int>&        elementIds
+    const std::set<int>&        elementIds,
+    const std::set<int>&        surfElementIds
     );
   
   
@@ -456,6 +474,7 @@ protected:
     const double    distance,
     const double    force1,
     const double    force2,
+    const double    force_analytical,
     const double    time,
     const int       step
     );

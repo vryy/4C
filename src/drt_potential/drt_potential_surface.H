@@ -19,6 +19,7 @@ Maintainer: Ursula Mayer
 
 #include "../drt_potential/drt_potential.H"
 #include "../drt_geometry/searchtree_nearestobject.H"
+#include "../drt_geometry/intersection_service_templates.H"
 
 
 using namespace std;
@@ -155,7 +156,8 @@ public:
       RefCountPtr<Epetra_Vector>        fint,
       RefCountPtr<LINALG::SparseMatrix> stiff,
       const double                      time,
-      const int                         step
+      const int                         step,
+      const double                      vdw_radius
   );
 
 
@@ -225,6 +227,19 @@ private:
       const int                                                   label,
       const double                                                curvefac
   );
+  
+  
+  void computeFandK_Approx2_new(
+     const DRT::Element*                                        actEle,
+     const DRT::UTILS::GaussRule2D&                             gaussrule,  
+     const std::map< int, std::map<int, GEO::NearestObject> >&  potentialObjects,
+     vector<int>&                                               lm,
+     Epetra_SerialDenseMatrix&                                  K_surf,
+     Epetra_SerialDenseVector&                                  F_int,
+     RefCountPtr<DRT::Condition>                                cond,
+     const int                                                  label,
+     const double                                               curvefac
+     );
 
 
     /*!
@@ -336,7 +351,13 @@ private:
       const LINALG::Matrix<3,1>&  y,    
       LINALG::Matrix<3,1>&        dist_unit);
 
-  
+ 
+  void ComputeNormalOnPotentialElement(
+    const DRT::Element*                     element,
+    const LINALG::Matrix<3,1>&              xp,
+    LINALG::Matrix<3,1>&                    np);
+
+ 
   //! compute surface normal in gaussian point in reference configuration
   LINALG::Matrix<3,1> ComputeNormalInGP_Initialconf(
       const DRT::Element*                     element,
@@ -351,6 +372,13 @@ private:
       const LINALG::Matrix<3,1>&              normal_gp,
       const LINALG::Matrix<3,1>&              normal_pot_gp
       );
+  
+  //! TEST compute element by label vol list
+  std::map<int, std::set<int> > computeEleByLabelVol(
+    RefCountPtr<const Epetra_Vector>    disp,
+    std::map<int, std::set<int> >       elementList
+    );
+  
   
   //! TEST compute potential forces and center of gravity
   void FintSumAndCenterOfGravityVector(  
