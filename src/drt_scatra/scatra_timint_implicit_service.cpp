@@ -1620,7 +1620,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 /*----------------------------------------------------------------------*
  |  calculate conductivity of electrolyte solution             gjb 07/09|
  *----------------------------------------------------------------------*/
-double SCATRA::ScaTraTimIntImpl::ComputeConductivity()
+Epetra_SerialDenseVector SCATRA::ScaTraTimIntImpl::ComputeConductivity()
 {
   // we perform the calculation on element level hiding the material access!
   // the initial concentration distribution has to be uniform to do so!!
@@ -1657,14 +1657,14 @@ double SCATRA::ScaTraTimIntImpl::ComputeConductivity()
   Epetra_SerialDenseVector elevector3;
 
   // define element vector
-  Epetra_SerialDenseVector sigma(1);
+  Epetra_SerialDenseVector sigma(numscal_+1);
 
   // call the element evaluate method of the first row element
   int err = actele->Evaluate(p,*discret_,lm,elematrix1,elematrix2,sigma,elevector2,elevector3);
   if (err) dserror("error while computing conductivity");
   discret_->ClearState();
 
-  return sigma(0);
+  return sigma;
 }
 
 

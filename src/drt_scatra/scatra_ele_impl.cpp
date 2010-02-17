@@ -792,7 +792,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       }
     } // for i
 
-    elevec1_epetra(0) += CalculateConductivity(ele,frt);
+    CalculateConductivity(ele,frt,elevec1_epetra);
   }
   else if (action=="get_material_parameters")
   {
@@ -4468,9 +4468,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::IntegrateShapeFunctions(
  |  Calculate conductivity (ELCH) (private)                   gjb 07/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
     const DRT::Element*  ele,
-    const double         frt
+    const double         frt,
+    Epetra_SerialDenseVector& sigma
 )
 {
   // get node coordinates
@@ -4488,16 +4489,19 @@ double DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
   EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
 
   // compute the conductivity (1/(\Omega m) = 1 Siemens / m)
-  double sigma(0.0);
+  double sigma_all(0.0);
+  const double factor = frt*96485.34;
   for(int k=0; k < numscal_; k++)
   {
     // concentration of ionic species k at element center
     double conint = funct_.Dot(ephinp_[k]);
-    sigma += valence_[k]*diffusvalence_[k]*conint;
+    double sigma_k = factor*valence_[k]*diffusvalence_[k]*conint;
+    sigma[k] += sigma_k; // insert value for this ionic species
+    sigma_all += sigma_k;
   }
-  sigma*= (frt*96485.34);
+  sigma[numscal_] += sigma_all; // conductivity based on ALL ionic species
 
-  return sigma;
+  return;
 
 } //ScaTraImpl<distype>::CalculateConductivity
 

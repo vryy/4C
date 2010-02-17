@@ -326,9 +326,10 @@ public:
        const Epetra_IntSerialDenseVector& dofids    ///< for which dof we need to integrate?
    );
 
-   double CalculateConductivity(
-       const DRT::Element*             ele, ///< the actual element
-       const double                    frt  ///< factor F/RT needed for ELCH calculations
+   void CalculateConductivity(
+       const DRT::Element*       ele, ///< the actual element
+       const double              frt, ///< factor F/RT needed for ELCH calculations
+       Epetra_SerialDenseVector& sigma ///< values for different conductivity expressions
        );
 
     //! calculate the Laplacian for all shape functions(strong form)

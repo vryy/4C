@@ -375,13 +375,17 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 
     frt_ = 96485.3399/(8.314472 * extraparams_->get<double>("TEMPERATURE"));
 
-    double sigma = ComputeConductivity(); // every processor has to do this call
+    Epetra_SerialDenseVector sigma = ComputeConductivity(); // every processor has to do this call
     if (myrank_==0)
     {
       cout<<"\nSetup of splitter: numscal = "<<numscal_<<endl;
       cout<<"Temperature value T (Kelvin)     = "<<extraparams_->get<double>("TEMPERATURE")<<endl;
       cout<<"Constant F/RT                    = "<<frt_<<endl;
-      cout<<"Conductivity of electrolyte      = "<<sigma<<endl<<endl;
+      for (int k=0;k < numscal_;k++)
+      {
+        cout<<"Electrolyte conductivity (species "<<k+1<<")   = "<<sigma[k]<<endl;
+      }
+      cout<<"Electrolyte conductivity (all species) = "<<sigma[numscal_]<<endl<<endl;
     }
   }
 

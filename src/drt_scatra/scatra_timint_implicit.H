@@ -332,8 +332,8 @@ public:
   /// returns map extractor used for convergence check either in ELCH or LOMA case
   LINALG::MapExtractor& Splitter() { return splitter_; }
 
-  /// computes conductivity of an electrolyte solution (ELCH)
-  double ComputeConductivity();
+  /// computes different conductivity expressions for electrolyte solutions (ELCH)
+  Epetra_SerialDenseVector ComputeConductivity();
 
   /// apply galvanostatic control (update electrode potential) (ELCH)
   bool ApplyGalvanostaticControl();
