@@ -30,7 +30,7 @@ NUMSTRUCDIS  1
 NUMALEDIS    0
 NUMTHERMDIS  0
 ----------------------------------------------------------------IO
-OUTPUT_OUT             Yes
+OUTPUT_OUT             No
 OUTPUT_GID             No
 OUTPUT_BIN             Yes
 STRUCT_DISP            Yes
