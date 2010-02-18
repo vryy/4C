@@ -1149,6 +1149,8 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 		//update theta and thetaprime
 		thetanew_[numgp]= thetanew_gp;
 		thetaprimenew_[numgp]= thetaprimenew_gp;
+		
+
 
 		/*to perform a curvature update at a specific Gauss point we need to know the angle deltatheta by which the triad at that
 		 * Gauss point is rotated and furthermore the derivative of this rotation angle along the curve. The latter one is
@@ -1167,8 +1169,9 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 		 *a quaternion product*/
 		updatetriad(deltatheta_gp,Tnew,numgp);
 
-		//updating local curvature according to Crisfield, Vol. 2, pages 209 - 210
-		updatecurvature(Tnew,deltatheta_gp,deltathetaprime_gp,numgp);
+		//updating local curvature according
+		//updatecurvature(Tnew,deltatheta_gp,deltathetaprime_gp,numgp);
+		approxupdatecurvature(Tnew,deltatheta_gp,deltathetaprime_gp,numgp);
 
 		epsilonn.Clear();
 
@@ -1437,7 +1440,7 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
 
 
 
-  double basisdamp   = (20e-2)*PI*20; // in Actin3D_XXX input files with(!) stochastic torsional moments:: (20e-2)*PI for A = 1.9e-8, (20e-2)*PI*3 for A = 1.9e-6; for input of Thomas Knyrim without(!) stochastic torsional moments: (20e-2)*PI*20
+  double basisdamp   = (20e-2)*PI*3; // in Actin3D_XXX input files with(!) stochastic torsional moments:: (20e-2)*PI for A = 1.9e-8, (20e-2)*PI*3 for A = 1.9e-6; for input of Thomas Knyrim without(!) stochastic torsional moments: (20e-2)*PI*20
   double anisofactor = 10; //10 for A = 1.9e-8 and A = 1.9e-6  
    
   
