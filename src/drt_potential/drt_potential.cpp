@@ -393,14 +393,14 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential(
   //----------------------------------------------------------------------
   // evaluate 1.derivative dphi/du_i
   //----------------------------------------------------------------------
-  const double dpotdr = -M_PI*depth*((693.0/256.0)*pow((double)(rootDist/distance),12) - (15.0/4.0)*pow((double)(rootDist/distance),6));
+  const double dpotdr = -PI_POT*depth*((693.0/256.0)*pow((double)(rootDist/distance),12) - (15.0/4.0)*pow((double)(rootDist/distance),6));
   for(int i = 0; i < 2; i++)
     potderiv1(i) = dpotdr*distance_unit(i);
 
   //----------------------------------------------------------------------
   // evaluate 2.derivative dphi/du_i d_uiI  (this is not a mistake !!!!)
   //----------------------------------------------------------------------
-  const double dpotdrdr = (M_PI*depth/rootDist)*((2079.0/64.0)*pow((double)(rootDist/distance),13) - (45.0/2.0)*pow((double)(rootDist/distance),7));
+  const double dpotdrdr = (PI_POT*depth/rootDist)*((2079.0/64.0)*pow((double)(rootDist/distance),13) - (45.0/2.0)*pow((double)(rootDist/distance),7));
   for(int i = 0; i < 2; i++)
     for(int j = 0; j < 2; j++)
       potderiv2(i,j) = 0.0;
@@ -491,7 +491,7 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential_Approx2(
 	computeDistance(x,y, dn_tensor_dn, distance_vec, n, distance);
 		  
 	//dpotdr entspricht -Fs
-	double F = M_PI*depth*pow(rootDist,3)*( (1.0/45.0)*pow((double)(rootDist/distance), 9) - (1.0/3.0)*pow((double)(rootDist/distance), 3) );
+	double F = PI_POT*depth*pow(rootDist,3)*( (1.0/45.0)*pow((double)(rootDist/distance), 9) - (1.0/3.0)*pow((double)(rootDist/distance), 3) );
 		  
 		  
 	for(int i = 0; i < 3; i++)
@@ -501,7 +501,7 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential_Approx2(
 	// evaluate 1. derivative
 	//----------------------------------------------------------------------	  
 		  
-	const double dFdr = M_PI*depth*pow(rootDist,2)*(pow((double)(rootDist/distance), 4)-(1.0/5.0)*pow((double)(rootDist/distance), 10));
+	const double dFdr = PI_POT*depth*pow(rootDist,2)*(pow((double)(rootDist/distance), 4)-(1.0/5.0)*pow((double)(rootDist/distance), 10));
 		  
 	for(int i = 0; i < 3; i++)
 		for(int j = 0; j < 3; j++)
@@ -676,14 +676,14 @@ void POTENTIAL::Potential::EvaluateVanDerWaals(
   //----------------------------------------------------------------------
   // evaluate 1.derivative dphi/du_i
   //----------------------------------------------------------------------
-  const double dpotdr = (M_PI*lambda)*(3.0/8.0)*(pow((double)(1.0/distance), 6));
+  const double dpotdr = (PI_POT*lambda)*(3.0/8.0)*(pow((double)(1.0/distance), 6));
   for(int i = 0; i < 2; i++)
     potderiv1(i) = dpotdr*distance_unit(i);
 
   //----------------------------------------------------------------------
   // evaluate 2.derivative dphi/du_i d_uiI  (this is not a mistake !!!!)
   //----------------------------------------------------------------------
-  const double dpotdrdr = (M_PI*lambda)*(45.0/4.0)*(pow((double)(1.0/distance), 7));
+  const double dpotdrdr = (PI_POT*lambda)*(45.0/4.0)*(pow((double)(1.0/distance), 7));
   for(int i = 0; i < 2; i++)
     for(int j = 0; j < 2; j++)
       potderiv2(i,j) = 0.0;
@@ -712,7 +712,7 @@ void POTENTIAL::Potential::EvaluateVanDerWaals_Approx1(
     LINALG::Matrix<3,1>&          potderiv1,
     LINALG::Matrix<3,3>&          potderiv2)
 {
-// evaluate distance related stuff
+  // evaluate distance related stuff
   double          distance      = 0.0;
   LINALG::Matrix<3,1>       distance_vec(true);
   LINALG::Matrix<3,1>       distance_unit(true);
@@ -770,7 +770,7 @@ void POTENTIAL::Potential::EvaluateVanDerWaals_Approx2(
 	  computeDistance(x,y, dn_tensor_dn, distance_vec, n, distance);
 	  
 	  //dpotdr entspricht -Fs
-	  double F = (-1.0)*lambda*3.141592654*(1.0/6.0)*(pow((double)(1.0/distance), 3));
+	  double F = (-1.0)*lambda*PI_POT*(1.0/6.0)*(pow((double)(1.0/distance), 3));
 	  
 	  
 	  for(int i = 0; i < 3; i++)
@@ -778,9 +778,8 @@ void POTENTIAL::Potential::EvaluateVanDerWaals_Approx2(
 
 	  //----------------------------------------------------------------------
 	  // evaluate 1. derivative
-	  //----------------------------------------------------------------------	  
-	  
-	  const double dFdr = (1.0/2.0)*3.141592654*lambda*(pow((double)(1.0/distance), 4));
+	  //----------------------------------------------------------------------	 
+	  const double dFdr = (1.0/2.0)*PI_POT*lambda*(pow((double)(1.0/distance), 4));
 	  
 	  for(int i = 0; i < 3; i++)
 	    for(int j = 0; j < 3; j++)
@@ -1250,7 +1249,7 @@ void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
     // A_ham = pi*pi*lambda*beta*beta
     const double beta = (*potentialcond.begin())->GetDouble("beta");
     const double lambda = (*potentialcond.begin())->GetDouble("lambda");
-    const double A_ham = M_PI*M_PI*beta*beta*lambda;
+    const double A_ham = PI_POT*PI_POT*beta*beta*lambda;
     const double  force_analytical = (-1.0)*(A_ham/(2.0*radius*6.0))*(
                         ( ( 2.0*(x + 1.0) )/(x*x + 2.0*x) ) -
                         ( ( x + 1.0)/pow((x*x + 2.0*x), 2) ) -
@@ -1476,8 +1475,8 @@ void POTENTIAL::Potential::WriteTestOutput(
       std::ofstream file;
       file.open(fname.c_str(), std::fstream::trunc);
       file << "Van Der Waals Potential" << endl;
-      file << "Time\t\t\tForce_numerical\t\t\tForce_analytical\t\tDistance" << endl;
-      file << time << "\t\t\t" << force1 << "\t\t\t" << force_analytical << "\t\t\t" <<  distance << endl; 
+      file << "Time\t\t\tDistance\t\tForce_numerical\t\t\tForce_analytical" << endl;
+      file << time << "\t\t\t" <<  distance << "\t\t\t" <<  force1 << "\t\t\t" << force_analytical << endl; 
       file.close();
     }
     else
@@ -1514,7 +1513,7 @@ void POTENTIAL::Potential::WriteTestOutput(
       // open file again and write new timestep
       std::ofstream file;
       file.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-      file << time << "\t\t\t" << force1 << "\t\t\t" << force_analytical << "\t\t\t" <<  distance << endl;  
+      file << time << "\t\t\t" <<  distance << "\t\t\t" <<  force1 << "\t\t\t" << force_analytical << endl; 
       file.close();
     }
   }

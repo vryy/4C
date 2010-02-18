@@ -45,9 +45,14 @@ Maintainer: Ursula Mayer
 using namespace std;
 using namespace Teuchos;
 
+#define PI_POT (3.141592653589793238462643383279502884197169399375)
+//#define PI_POT (asin(1.0)*2.0)
+
 
 namespace POTENTIAL
 {
+
+
 /*!
 \brief  Base class controlling surface and volume stresses due
         to potential forces and containing all necessary history data
