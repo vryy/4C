@@ -57,9 +57,9 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
   currentelements_(discret.NumGlobalElements()),
   outputfilenumber_(-1),
   discret_(discret)
-{ 
+{
   //initialize random generator on this processor
-  
+
   //random generator for seeding only
   ranlib::UniformClosed<double> seedgenerator;
   //seeding random generator independently on each processor
@@ -77,36 +77,36 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
    * column map is turned into a fully overlapping one even in case that dynamic crosslinkers are deactivated;
    * the reason is that also the method for Gmsh output currently relies on a fully overlapping column map
    * in case of parallel computing (otherwise the output is not written correctly*/
-    
+
     const Epetra_Map noderowmap = *(discret_.NodeRowMap());
 
     // fill my own row node ids into vector sdata
     vector<int> sdata(noderowmap.NumMyElements());
     for (int i=0; i<noderowmap.NumMyElements(); ++i)
       sdata[i] = noderowmap.GID(i);
-    
+
     //if current processor has elements it writes its number into stproc
-    vector<int> stproc(0); 
-    
-    
+    vector<int> stproc(0);
+
+
     if (noderowmap.NumMyElements())
       stproc.push_back(discret_.Comm().MyPID());
-    
-    
+
+
     //information how many processor work at all
     vector<int> allproc(discret_.Comm().NumProc());
-    
+
     //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
     for (int i=0; i<discret_.Comm().NumProc(); ++i) allproc[i] = i;
-    
+
     //declaring new variable into which the information of stproc on all processors is gathered
     vector<int> rtproc(0);
-    
-    /*gathers information of stproc and writes it into rtproc; in the end rtproc is a vector which 
+
+    /*gathers information of stproc and writes it into rtproc; in the end rtproc is a vector which
      * contains the numbers of all processors which have elements*/
     LINALG::Gather<int>(stproc,rtproc,discret_.Comm().NumProc(),&allproc[0],discret_.Comm());
-      
-    /*in analogy to stproc and rtproc the variable rdata gathers all the element numbers which are 
+
+    /*in analogy to stproc and rtproc the variable rdata gathers all the element numbers which are
      * stored on different processors in their own variables sdata; thereby each processor gets
      * the information about all the nodes numbers existing in this problem*/
     vector<int> rdata;
@@ -121,7 +121,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
     rdata.clear();
     allproc.clear();
     // rtproc still in use
-    
+
     //pass new fully overlapping column map to discretization
     discret_.ExportColumnNodes(*newnodecolmap);
 
@@ -129,26 +129,26 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
      * if necessary; after the following line we have a discretization, where each processor has a fully
      * overlapping column map regardlesse of how overlapping was managed when starting BACI; having ensured
      * this allows convenient and correct (albeit not necessarily efficient) use of search algorithms and
-     * crosslinkers in parallel computing*/     
+     * crosslinkers in parallel computing*/
     discret_.FillComplete(true,false,false);
-  
-  
+
+
   //if dynamic crosslinkers are used additional variables are initialized
   if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
-  {  
-    /* and filamentnumber_ is generated based on a column map vector as each node has to 
-     * know about each other node its filament number in order to decide weather a crosslink may be established 
+  {
+    /* and filamentnumber_ is generated based on a column map vector as each node has to
+     * know about each other node its filament number in order to decide weather a crosslink may be established
      * or not; vectors is initalized with -1, which state is changed if filament numbering is used, only*/
     filamentnumber_ = rcp( new Epetra_Vector(*(discret_.NodeColMap())) );
     filamentnumber_->PutScalar(-1);
-    
+
     //initialize crosslinkerneighbours_ and crosslinkerpartner with empty vector for each row node
     std::vector<int> emptyvector;
     crosslinkerneighbours_.resize(discret_.NumMyRowNodes(),emptyvector);
     crosslinkerpartner_.resize(discret_.NumMyRowNodes(),emptyvector);
-    
 
-    
+
+
     /*force sensors can be applied at any degree of freedom of the discretization the list of force sensors should
      * be based on a column map vector so that each processor has not only the information about each node's
      * displacement, but also about whether this has a force sensor; as a consequence each processor can write the
@@ -157,92 +157,92 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
     forcesensor_ = rcp( new Epetra_Vector(*(discret_.DofColMap())) );
     forcesensor_->PutScalar(-1);
 
-  
+
     /*since crosslinkers should be established only between different filaments the number of the filament
      * each node is belonging to is stored in the condition FilamentNumber; if no such conditions have been defined
      * the default -1 value is upkept in filamentnumber_ and crosslinkers between nodes belonging to the same filament
      * are allowed*/
-    
+
     //gettin a vector consisting of pointers to all filament number conditions set
     vector<DRT::Condition*> filamentnumberconditions(0);
     discret_.GetCondition("FilamentNumber",filamentnumberconditions);
-      
+
     //next all the pointers to all the different conditions are looped
     for (int i=0; i<(int)filamentnumberconditions.size(); ++i)
     {
       //get filament number described by the current condition
       int filamentnumber = filamentnumberconditions[i]->GetInt("Filament Number") ;
-      
+
       //get a pointer to nodal cloud coverd by the current condition
       const vector<int>* nodeids = filamentnumberconditions[i]->Nodes();
-      
+
       //loop through all the nodes of the nodal cloud
       for(int j = 0; j < (int)nodeids->size() ; j++)
       {
         //get the node's global id
         int nodenumber = (*nodeids)[j];
-        
+
         //turning global id into local one
         nodenumber = discret_.NodeColMap()->LID(nodenumber);
-        
+
         //if the node does not belong to current processor Id is set by LID() to -1 and the node is ignored
         if(nodenumber > -1)
-          (*filamentnumber_)[nodenumber] = filamentnumber;     
+          (*filamentnumber_)[nodenumber] = filamentnumber;
       }
-     }  
-    
+     }
+
     /*Young's modulus and loss modulus are to be measured by means of the reaction forces at certain sensor points; example: if for a
      * an actin network between two rheometer plates the stiffness is to be deterimined this can be done by measuring the forces exerted
      * to the upper plate which is moving forwards and backwards for example; so for measurements of viscoelastic properties of materials
-     * whithin a system certain sensor points have to be specified and in order to handle this whithing BACI these points are marked by 
+     * whithin a system certain sensor points have to be specified and in order to handle this whithing BACI these points are marked by
      * means of the condition sensorcondition*/
-    
+
     //gettin a vector consisting of pointers to all filament number conditions set
     vector<DRT::Condition*> forcesensorconditions(0);
     discret_.GetCondition("ForceSensor",forcesensorconditions);
-      
+
     //next all the pointers to all the different conditions are looped
     for (int i=0; i<(int)forcesensorconditions.size(); ++i)
     {
       //get number of nodal dof with respect to which force is to be measured; note: numbering starts with zero
       int nodedofnumber = forcesensorconditions[i]->GetInt("DOF Number") ;
-      
+
       //get a pointer to nodal cloud coverd by the current condition
       const vector<int>* nodeids = forcesensorconditions[i]->Nodes();
-      
+
       //loop through all the nodes of the nodal cloud
       for(int j = 0; j < (int)nodeids->size() ; j++)
       {
         //get the node's global id
         int nodenumber = (*nodeids)[j];
-        
+
         //testing whether current nodedofnumber makes sense for current node
         if( nodedofnumber < 0 || nodedofnumber >= discret_.NumDof(discret_.gNode(nodenumber)) )
           dserror("ForceSensor condition applied with improper local dof number");
-        
+
         //global id of degree of freedom at which force is to be measured
         int dofnumber = discret_.Dof( discret_.gNode(nodenumber), nodedofnumber-1 );
-        
-        
+
+
         /*if the node does not belong to current processor Id is set by LID() to -1 and the node is ignored; otherwise the degrees of
          * freedom affected by this condition are marked in the vector *forcesensor_ by an one entry*/
         if(nodenumber > -1)
-          (*forcesensor_)[dofnumber] = 1;   
+          (*forcesensor_)[dofnumber] = 1;
       }
-     } 
-  
+     }
+
       //we construct a search tree with maximal depth of 8 (different numbers might be tried out, too)
       octTree_ = rcp(new GEO::SearchTree(8));
-      
+
       /*after having generated a search tree and a discretization with fully overlapping column map we initialize the search tree
        * for accelerated search for each nodes neighbouring nodes; note: the tree is based on a bounding box
        * with respect to the reference positions (which are the positions at the beginning of the simulation;
-       * in case of large overall deformations of the fiber network such an initialization would have to be carried 
+       * in case of large overall deformations of the fiber network such an initialization would have to be carried
        * out in each time step with respect to the current node positions*/
 
       /*currenpositions is a map which relates each LID of any node on this processor to the nodes coordinates*/
       std::map<int,LINALG::Matrix<3,1> > currentpositions;
-      
+
       currentpositions.clear();
 
       for (int lid = 0; lid <discret_.NumMyColNodes(); ++lid)
@@ -254,17 +254,17 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
         currpos(2) = node->X()[2] ;
         currentpositions[node->LID()] = currpos;
       }
-      
+
       //find bounding box for search tree
       const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(discret_, currentpositions);
-   
+
       //initialize search tree
       octTree_->initializePointTree(rootBox,currentpositions,GEO::TreeType(GEO::OCTTREE));
-      
+
       //search neighbours for each row node on this processor among column nodes
       SearchNeighbours(currentpositions);
-      
-    
+
+
   }//if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
 
   return;
@@ -277,55 +277,55 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
 {
   /*in general simulations in statistical mechanics run over so many time steps that the amount of data stored in the error file
    * may exceed the capacity even of a server hard disk; thus, we rewind the error file in each time step so that the amount of data
-   * does not increase after the first time step any longer*/  
+   * does not increase after the first time step any longer*/
   bool printerr    = params.get<bool>("print to err",false);
   FILE* errfile    = params.get<FILE*>("err file",NULL);
   if(printerr)
     rewind(errfile);
-  
-  
+
+
   //the following variable makes sense in case of serial computing only; its use is not allowed for parallel computing!
   int num_dof = dis.GlobalLength();
-  
 
-  
+
+
   switch(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_,"SPECIAL_OUTPUT"))
   {
     case INPAR::STATMECH::statout_endtoendlog:
-    {      
+    {
       FILE* fp = NULL; //file pointer for statistical output file
-      
+
       //name of output file
       std::ostringstream outputfilename;
       outputfilename << "EndToEnd"<< outputfilenumber_ << ".dat";
-      
+
       double endtoend = 0; //end to end length at a certain time step in single filament dynamics
       double DeltaR2 = 0;
-       
+
       //as soon as system is equilibrated (after time START_FACTOR*maxtime_) a new file for storing output is generated
       if ( (time >= maxtime_ * statmechparams_.get<double>("START_FACTOR",0.0))  && (starttimeoutput_ == -1.0) )
       {
-         endtoendref_ = pow ( pow((dis)[num_dof-3]+10 - (dis)[0],2) + pow((dis)[num_dof-2] - (dis)[1],2) , 0.5);  
+         endtoendref_ = pow ( pow((dis)[num_dof-3]+10 - (dis)[0],2) + pow((dis)[num_dof-2] - (dis)[1],2) , 0.5);
          starttimeoutput_ = time;
-         istart_ = istep;      
+         istart_ = istep;
       }
       if (time > starttimeoutput_ && starttimeoutput_ > -1.0)
-      { 
+      {
         endtoend = pow ( pow((dis)[num_dof-3]+10 - (dis)[0],2) + pow((dis)[num_dof-2] - (dis)[1],2) , 0.5);
-        
+
         //applying in the following a well conditioned substraction formula according to Crisfield, Vol. 1, equ. (7.53)
         DeltaR2 = pow( (endtoend*endtoend - endtoendref_*endtoendref_) / (endtoend + endtoendref_) ,2 );
-    
+
         //writing output: writing Delta(R^2) according to PhD thesis Hallatschek, eq. (4.60), where t=0 corresponds to starttimeoutput_
         if ( (istep - istart_) % int(ceil(pow( 10, floor(log10((time - starttimeoutput_) / (10*dt))))) ) == 0 )
         {
           // open file and append new data line
           fp = fopen(outputfilename.str().c_str(), "a");
-          
+
           //defining temporary stringstream variable
           std::stringstream filecontent;
           filecontent << scientific << setprecision(15) << time - starttimeoutput_ << "  " << DeltaR2 << endl;
-          
+
           // move temporary stringstream to file and close it
           fprintf(fp,filecontent.str().c_str());
           fclose(fp);
@@ -334,12 +334,12 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
     }
     break;
     case INPAR::STATMECH::statout_endtoendconst:
-    {          
+    {
       /*in the following we assume that there is only a pulling force point Neumann condition of equal absolute
       *value on either filament length; we get the absolute value of the first one of these two conditions */
       double neumannforce;
       vector<DRT::Condition*> pointneumannconditions(0);
-      discret_.GetCondition("PointNeumann",pointneumannconditions);     
+      discret_.GetCondition("PointNeumann",pointneumannconditions);
       if(pointneumannconditions.size() > 0)
       {
         const vector<double>* val  = pointneumannconditions[0]->Get<vector<double> >("val");
@@ -348,34 +348,34 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       else
        neumannforce = 0;
 
-   
+
       FILE* fp = NULL; //file pointer for statistical output file
-         
+
       //name of output file
       std::ostringstream outputfilename;
       outputfilename << "E2E_"<< discret_.NumMyRowElements() <<'_'<< dt <<'_'<< neumannforce << '_'<< outputfilenumber_ << ".dat";
-     
+
       double endtoend = 0.0; //end to end length at a certain time step in single filament dynamics
-           
+
       //as soon as system is equilibrated (after time START_FACTOR*maxtime_) a new file for storing output is generated
       if ( (time >= maxtime_ * statmechparams_.get<double>("START_FACTOR",0.0))  && (starttimeoutput_ == -1.0) )
-      {       
+      {
        starttimeoutput_ = time;
-       istart_ = istep;   
+       istart_ = istep;
       }
-           
+
       if (time > starttimeoutput_ && starttimeoutput_ > -1.0)
-      { 
+      {
         //end to end vector
-        LINALG::Matrix<3,1> endtoendvector(true);     
+        LINALG::Matrix<3,1> endtoendvector(true);
         for(int i = 0; i<ndim; i++)
         {
           endtoendvector(i) -= ( discret_.gNode(0)                            )->X()[i] + dis[i];
           endtoendvector(i) += ( discret_.gNode(discret_.NumMyRowNodes() - 1) )->X()[i] + dis[num_dof - discret_.NumDof(discret_.gNode(discret_.NumMyRowNodes() - 1)) + i];
         }
-        
+
         endtoend = endtoendvector.Norm2();
-          
+
         //writing output: current time and end to end distance are stored at each 100th time step
         if ( (istep - istart_) % 100 == 0 )
           {
@@ -393,38 +393,39 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
     break;
     //the following output allows for anisotropic diffusion simulation of a quasi stiff polymer
     case INPAR::STATMECH::statout_anisotropic:
-    {            
+    {
       FILE* fp = NULL; //file pointer for statistical output file
-      
+
       //name of output file
       std::ostringstream outputfilename;
       outputfilename << "AnisotropicDiffusion"<< outputfilenumber_ << ".dat";
-              
-      //positions of first and last node in current time step (note: always 3D variables used; in case of 2D third compoenent just constantly zero)   
+
+      //positions of first and last node in current time step (note: always 3D variables used; in case of 2D third compoenent just constantly zero)
       LINALG::Matrix<3,1> beginnew;
       LINALG::Matrix<3,1> endnew;
-      
+
       beginnew.PutScalar(0);
       endnew.PutScalar(0);
-      
+      std::cout << "ndim: " << ndim << "\n";
+
       for(int i = 0; i<ndim; i++)
       {
         beginnew(i) = ( discret_.gNode(0)                            )->X()[i] + dis[i];
         endnew(i)   = ( discret_.gNode(discret_.NumMyRowNodes() - 1) )->X()[i] + dis[num_dof - discret_.NumDof(discret_.gNode(discret_.NumMyRowNodes() - 1)) + i];
       }
-            
+
       //unit direction vector for filament axis in last time step
       LINALG::Matrix<3,1> axisold;
       axisold  = endold_;
       axisold -= beginold_;
       axisold.Scale(1/axisold.Norm2());
-      
+
       //unit direction vector for filament axis in current time step
       LINALG::Matrix<3,1> axisnew;
       axisnew = endnew;
-      axisnew -= beginnew;      
+      axisnew -= beginnew;
       axisnew.Scale(1/axisnew.Norm2());
-     
+
       //displacement of first and last node between last time step and current time step
       LINALG::Matrix<3,1> dispbegin;
       LINALG::Matrix<3,1> dispend;
@@ -432,22 +433,22 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       dispbegin -= beginold_;
       dispend  = endnew;
       dispend -= endold_;
-        
+
       //displacement of middle point
       LINALG::Matrix<3,1> dispmiddle;
       dispmiddle  = dispbegin;
       dispmiddle += dispend;
       dispmiddle.Scale(0.5);
       sumdispmiddle_ += dispmiddle;
-   
+
       //update sum of square displacement increments of middle point
-      double incdispmiddle = dispmiddle.Norm2()*dispmiddle.Norm2();      
+      double incdispmiddle = dispmiddle.Norm2()*dispmiddle.Norm2();
       sumsquareincmid_+=incdispmiddle;
-   
-      //update sum of square displacement increments of middle point parallel to new filament axis (computed by scalar product)    
-      double disppar_square = pow(axisnew(0)*dispmiddle(0) + axisnew(1)*dispmiddle(1) + axisnew(2)*dispmiddle(2), 2);       
+
+      //update sum of square displacement increments of middle point parallel to new filament axis (computed by scalar product)
+      double disppar_square = pow(axisnew(0)*dispmiddle(0) + axisnew(1)*dispmiddle(1) + axisnew(2)*dispmiddle(2), 2);
       sumsquareincpar_+=disppar_square;
-      
+
       //update sum of square displacement increments of middle point orthogonal to new filament axis (via crossproduct)
       LINALG::Matrix<3,1> aux;
       aux(0) = dispmiddle(1)*axisnew(2) - dispmiddle(2)*axisnew(1);
@@ -455,8 +456,8 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       aux(2) = dispmiddle(0)*axisnew(1) - dispmiddle(1)*axisnew(0);
       double disport_square = aux.Norm2()*aux.Norm2();
       sumsquareincort_+=disport_square;
-      
-      
+
+
       //total displacement of rotational angle (in 2D only)
       double incangle = 0;
       if(ndim == 2)
@@ -465,12 +466,12 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
         double phiold = acos(axisold(0)/axisold.Norm2());
         if(axisold(1) < 0)
           phiold *= -1;
-        
+
         //angle of new axis relative to x-axis
         double phinew = acos(axisnew(0)/axisnew.Norm2());
         if(axisnew(1) < 0)
           phinew *= -1;
-        
+
         //angle increment
         incangle = phinew - phiold;
         if(incangle > M_PI)
@@ -483,55 +484,55 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
           incangle += 2*M_PI;
           incangle *= -1;
         }
-        
+
         //update absolute rotational displacement compared to reference configuration
         sumsquareincrot_ += incangle*incangle;
         sumrotmiddle_ += incangle;
       }
-      
+
 
       {
 	      // open file and append new data line
-	      fp = fopen(outputfilename.str().c_str(), "a");    
-	    
+	      fp = fopen(outputfilename.str().c_str(), "a");
+
 	      //defining temporary stringstream variable
 	      std::stringstream filecontent;
 	      filecontent << scientific << setprecision(15)<<dt<<" "<<sumsquareincmid_ <<" "<<sumsquareincpar_<<" "<<sumsquareincort_<<" "<<sumsquareincrot_<<" "<<sumdispmiddle_.Norm2() * sumdispmiddle_.Norm2()<<" "<<sumrotmiddle_*sumrotmiddle_ << endl;
-	    
+
 	      // move temporary stringstream to file and close it
 	      fprintf(fp,filecontent.str().c_str());
 	      fclose(fp);
       }
-       
-      //new positions in this time step become old positions in last time step     
+
+      //new positions in this time step become old positions in last time step
       beginold_ = beginnew;
       endold_   = endnew;
     }
     break;
     case INPAR::STATMECH::statout_viscoelasticity:
-    {   
+    {
        //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
-       FILE* fp = NULL; 
-            
+       FILE* fp = NULL;
+
        //content to be written into the output file
        std::stringstream filecontent;
-       
+
        //name of file into which output is written
-       std::ostringstream outputfilename; 
+       std::ostringstream outputfilename;
        outputfilename << "ViscoElOutputProc"<< discret_.Comm().MyPID() << ".dat";
-      
+
        fp = fopen(outputfilename.str().c_str(), "a");
-       
+
        /*the output to be written consists of internal forces at exactly those degrees of freedom
         * marked in *forcesensor_ by a one entry*/
-       
+
        filecontent << scientific << setprecision(10) << time;//changed
-       
+
  #ifdef DEBUG
        if(forcesensor_ == null)
          dserror("forcesensor_ is NULL pointer; possible reason: dynamic crosslinkers not activated and forcesensor applicable in this case only");
  #endif  // #ifdef DEBUG
-       
+
         double f = 0;//mean value of force
         double d = 0;//Displacement
         for(int i = 0; i < forcesensor_->MyLength(); i++)//changed
@@ -539,10 +540,10 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
           if( (*forcesensor_)[i] == 1)
              {
                f += fint[i];
-               d =  dis[i];          
+               d =  dis[i];
              }
          }
-        
+
         //Putting time, displacement, meanforce  in Filestream
         filecontent << "   "<< d << "   " << f << "   " << discret_.NumMyRowElements() << endl; //changed
         //writing filecontent into output file and closing it
@@ -554,34 +555,34 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
     //writing data for generating a Gmsh video of the simulation
     case INPAR::STATMECH::statout_gmsh:
     {
-      
+
       /*construct unique filename for gmsh output with two indices: the first one marking the time step number
        * and the second one marking the newton iteration number, where numbers are written with zeros in the front
        * e.g. number one is written as 000001, number fourteen as 000014 and so on;*/
-      
-      //note: this kind of output is possilbe for serial computing only (otherwise the following method would have to be adapted to parallel use*/   
+
+      //note: this kind of output is possilbe for serial computing only (otherwise the following method would have to be adapted to parallel use*/
       if(discret_.Comm().NumProc() > 1)
         dserror("No Gmsh output for parallel computation possible so far");
-      
+
       // first index = time step index
       std::ostringstream filename;
 
       //creating complete file name dependent on step number with 6 digits and leading zeros
       if (istep<1000000)
         filename << "./GmshOutput/network"<< std::setw(6) << setfill('0') << istep <<".pos";
-      else 
+      else
         dserror("Gmsh output implemented for a maximum of 999999 steps");
-          
+
       //calling method for writing Gmsh output
-      GmshOutput(dis,filename,istep);     
-   
+      GmshOutput(dis,filename,istep);
+
     }
     break;
     case INPAR::STATMECH::statout_none:
     default:
     break;
   }
- 
+
   return;
 } // StatMechManager::StatMechOutput()
 
@@ -591,95 +592,164 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
  *----------------------------------------------------------------------*/
 void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step)
 {
-  if(step % 1000 != 0)
+  if(step % 1 != 0)
     return;
-  
+
   /*the following method writes output data for Gmsh into file with name "filename"; all line elements are written;
-   * the nodal displacements are handed over in the variable "dis"; note: in case of parallel computing only 
+   * the nodal displacements are handed over in the variable "dis"; note: in case of parallel computing only
    * processor 0 writes; it is assumed to have a fully overlapping column map and hence all the information about
    * all the nodal position*/
   if(discret_.Comm().MyPID() == 0)
   {
-  
+
     //we need displacements also of ghost nodes and hence export displacment vector to column map format
-    Epetra_Vector  discol(*(discret_.DofColMap()),true);   
+    Epetra_Vector  discol(*(discret_.DofColMap()),true);
     LINALG::Export(disrow,discol);
 
     // do output to file in c-style
     FILE* fp = NULL;
-    
+
     //open file to write output data into
     fp = fopen(filename.str().c_str(), "w");
-  
-    // write output to temporary stringstream; 
+
+    // write output to temporary stringstream;
     std::stringstream gmshfilecontent;
     /*the beginning of the stream is "View \"" to indicate Gmsh that the following data is in order to create an image and
      * this command is followed by the name of that view displayed during it's shown in the video; in the following example
      * this name is for the 100th time step: Step00100; then the data to be presented within this view is written within { ... };
      * in the following example this data consists of scalar lines defined by the coordinates of their end points*/
     gmshfilecontent << "View \" Step " << step << " \" {" << endl;
-  
+
     //looping through all elements on the processor
     for (int i=0; i<discret_.NumMyColElements(); ++i)
     {
       //getting pointer to current element
       DRT::Element* element = discret_.lColElement(i);
-      
+
       //getting number of nodes of current element
       if( element->NumNode() > 2)
         dserror("Gmsh output for two noded elements only");
-      
+
 
 
         //preparing variable storing coordinates of all these nodes
         int nnodes = 2;
         LINALG::SerialDenseMatrix coord(3,nnodes);
-        
+
         for(int id = 0; id<3; id++)
-         for(int jd = 0; jd<2; jd++)  
+         for(int jd = 0; jd<nnodes; jd++)
          {
            double referenceposition = ((element->Nodes())[jd])->X()[id];
-           vector<int> dofnode = discret_.Dof((element->Nodes())[jd]);        
+           vector<int> dofnode = discret_.Dof((element->Nodes())[jd]);
            double displacement = discol[discret_.DofColMap()->LID( dofnode[id] )];
            coord(id,jd) =  referenceposition + displacement;
          }
-        
+
         //declaring variable for color of elements
         double color;
-        
+
         //apply different colors for elements representing filaments and those representing dynamics crosslinkers
         if (element->Id() < basisnodes_)
           color = 1.0;
         else
           color = 0.0;
-        
+
       //if no periodic boundary conditions are to be applied, we just plot the current element
       if(statmechparams_.get<double>("PeriodLength",0.0) == 0)
       {
-    
         //writing element by nodal coordinates as a scalar line
         gmshfilecontent << "SL(" << scientific;
-        gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << "," 
+        gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << ","
                        << coord(0,1) << "," << coord(1,1) << "," << coord(2,1) ;
         /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
          * interpolating these two colors between the nodes*/
         gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
-      }    
+      }
       //in case of periodic boundary conditions we have to take care to plot correctly an element broken at some boundary plane
       else
         GmshOutputPeriodicBoundary(coord, color, gmshfilecontent);
-    
-    }  
-    
+
+    }
+
+    // plot (cubic) periodic box in case of periodic boundary conditions
+    if(statmechparams_.get<double>("PeriodLength",0.0) > 0)
+    {
+    	// get current period length
+    	double pl = statmechparams_.get<double>("PeriodLength",0.0);
+    	// an rgb color vector
+    	vector<double> color(2,0.0);
+
+    	// define boundary lines (causes eye cancer!)
+    	gmshfilecontent << "SL(" << scientific;
+    	gmshfilecontent << 0.0 << "," << 0.0 << "," << 0.0 << ","
+											<< pl << "," << 0.0 << "," << 0.0 ;
+    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	// line 2
+    	gmshfilecontent << "SL(" << scientific;
+    	gmshfilecontent << pl << "," << 0.0 << "," << 0.0 << ","
+    									<< pl << "," << pl << "," << 0.0 ;
+    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	// line 3
+    	gmshfilecontent << "SL(" << scientific;
+    	gmshfilecontent << pl << "," << pl << "," << 0.0 << ","
+    									<< pl << "," << pl << "," << pl ;
+    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	// line 4
+    	gmshfilecontent << "SL(" << scientific;
+    	gmshfilecontent << pl << "," << pl << "," << pl << ","
+    									<< 0.0 << "," << pl << "," << pl ;
+    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	// line 5
+    	gmshfilecontent << "SL(" << scientific;
+    	gmshfilecontent << 0.0 << "," << pl << "," << pl << ","
+    									<< 0.0 << "," << 0.0 << "," << pl ;
+    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	// line 6
+    	gmshfilecontent << "SL(" << scientific;
+    	gmshfilecontent << 0.0 << "," << 0.0 << "," << pl << ","
+											<< 0.0 << "," << 0.0 << "," << 0.0 ;
+    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	// line 7
+    	gmshfilecontent << "SL(" << scientific;
+    	gmshfilecontent << 0.0 << "," << 0.0 << "," << 0.0 << ","
+    									<< 0.0 << "," << pl << "," << 0.0 ;
+    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	// line 8
+    	gmshfilecontent << "SL(" << scientific;
+    	gmshfilecontent << 0.0 << "," << pl << "," << 0.0 << ","
+    									<< pl << "," << pl << "," << 0.0 ;
+    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	// line 9
+    	gmshfilecontent << "SL(" << scientific;
+    	gmshfilecontent << 0.0 << "," << pl << "," << 0.0 << ","
+    									<< 0.0 << "," << pl << "," << pl ;
+    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	// line 10
+    	gmshfilecontent << "SL(" << scientific;
+    	gmshfilecontent << pl << "," << 0.0 << "," << 0.0 << ","
+    									<< pl << "," << 0.0 << "," << pl ;
+    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	// line 11
+    	gmshfilecontent << "SL(" << scientific;
+    	gmshfilecontent << pl << "," << 0.0 << "," << pl << ","
+    									<< pl << "," << pl << "," << pl ;
+    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	// line 12
+    	gmshfilecontent << "SL(" << scientific;
+    	gmshfilecontent << pl << "," << 0.0 << "," << pl << ","
+    									<< 0.0 << "," << 0.0 << "," << pl ;
+    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    }
+
     //finish data section of this view by closing curley brackets
     gmshfilecontent << "};" << endl;
-    
+
     //write content into file and close it
     fprintf(fp,gmshfilecontent.str().c_str());
     fclose(fp);
-    
+
   }//if(discret_.Comm().MyPID() == 0)
- 
+
   return;
 } // StatMechManager::GmshOutput()
 
@@ -693,81 +763,98 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 {
   //number of spatial dimensions
   const int ndim = 3;
-  
+
   /*detect and save in vector "cut", at which boundaries the element is broken due to periodic boundary conditions;
    * the entries of cut have the following meaning: 0: element not broken in respective coordinate direction, 1:
    * element broken in respective coordinate direction (node 0 close to zero boundary and node 1 close to boundary
    * at PeriodLength);  2: element broken in respective coordinate direction (node 1 close to zero boundary and node
    * 0 close to boundary at PeriodLength);*/
   LINALG::Matrix<3,1> cut(true);
+
+  /* "coord" currently holds the shifted set of coordinates.
+   * In order to determine the correct vector "dir" of the visualization at the boundaries,
+   * a copy of "coord" with adjustments in the proper places is introduced*/
+  LINALG::SerialDenseMatrix unshift = coord;
+
   for(int dof=0; dof<ndim; dof++)
   {
     if( fabs(coord(dof,1) - statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0))  < fabs(coord(dof,1) - coord(dof,0)) )
+    {
       cut(dof) = 1;
+      unshift(dof,1) -= statmechparams_.get<double>("PeriodLength",0.0);
+    }
     if( fabs(coord(dof,1) + statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0))  < fabs(coord(dof,1) - coord(dof,0)) )
+    {
       cut(dof) = 2;
+      unshift(dof,1) += statmechparams_.get<double>("PeriodLength",0.0);
+    }
   }
-  
+
   if(cut(0) + cut(1) + cut(2) > 0)
-  {       
-      //compute direction vector between first and second node of element
+  {
+      //compute direction vector between first and second node of element (normed):
       LINALG::Matrix<3,1> dir;
+      double mod=0.0;
       for(int dof=0; dof<ndim; dof++)
-        dir(dof) = coord(dof,1) - coord(dof,0);
-      
+      {
+        dir(dof) = unshift(dof,1) - unshift(dof,0);
+      	mod += dir(dof)*dir(dof);
+      }
+      for(int dof=0; dof<ndim; dof++)
+      	dir(dof) /= mod;
+
       //from node 0 to nearest boundary where element is broken you get by vector X + lambda0*dir
       double lambda0 = dir.Norm2();
       for(int dof=0; dof<ndim; dof++)
       {
-        if(cut(dof) == 1)  
+        if(cut(dof) == 1)
         {
-          if(fabs( - coord(dof,0) / dir(dof) ) < fabs(lambda0))
+          if(fabs( - coord(dof,0) / dir(dof)) < fabs(lambda0))
             lambda0 = - coord(dof,0) / dir(dof);
         }
         else if(cut(dof) == 2)
         {
           if( fabs( (statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0)) / dir(dof) ) < fabs(lambda0) )
-            lambda0 = ( statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0) ) / dir(dof);
+            lambda0 = ( statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0)) / dir(dof);
         }
       }
-      
+
       //from node 1 to nearest boundary where element is broken you get by vector X + lambda1*dir
       double lambda1 = dir.Norm2();
       for(int dof=0; dof<ndim; dof++)
       {
-        if(cut(dof) == 2)  
+        if(cut(dof) == 2)
         {
           if(fabs( - coord(dof,1) / dir(dof) ) < fabs(lambda1))
             lambda1 = - coord(dof,1) / dir(dof);
         }
         else if(cut(dof) == 1)
         {
-          if( fabs( (statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,1)) / dir(dof) ) < fabs(lambda1))
-            lambda1 = ( statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,1) ) / dir(dof);
+          if(fabs((statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,1)) / dir(dof)) < fabs(lambda1))
+            lambda1 = (statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,1)) / dir(dof);
         }
-      }            
-   
-        //writing element by nodal coordinates as a scalar line
+      }
+
+      //writing element by nodal coordinates as a scalar line
       gmshfilecontent << "SL(" << scientific;
-      gmshfilecontent<< coord(0,0)  << "," << coord(1,0) << "," << coord(2,0) << "," 
+      gmshfilecontent<< coord(0,0)  << "," << coord(1,0) << "," << coord(2,0) << ","
                      << coord(0,0) + lambda0*dir(0)  << "," << coord(1,0) + lambda0*dir(1)  << "," << coord(2,0) + lambda0*dir(2)  ;
       /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
        * interpolating these two colors between the nodes*/
       gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
-      
       //writing element by nodal coordinates as a scalar line
       gmshfilecontent << "SL(" << scientific;
-      gmshfilecontent<< coord(0,1)  << "," << coord(1,1) << "," << coord(2,1) << "," 
-                     << coord(0,1) + lambda1*dir(0)  << "," << coord(1,1)+ lambda1*dir(1)  << "," << coord(2,1) + lambda1*dir(2)  ;
+      gmshfilecontent<< coord(0,1)  << "," << coord(1,1) << "," << coord(2,1) << ","
+                     << coord(0,1) + lambda1*dir(0)  << "," << coord(1,1) + lambda1*dir(1)  << "," << coord(2,1) + lambda1*dir(2)  ;
       /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
        * interpolating these two colors between the nodes*/
-      gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;  
+      gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
   }
   else
   {
       //writing element by nodal coordinates as a scalar line
       gmshfilecontent << "SL(" << scientific;
-      gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << "," 
+      gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << ","
                      << coord(0,1) << "," << coord(1,1) << "," << coord(2,1) ;
       /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
        * interpolating these two colors between the nodes*/
@@ -783,26 +870,26 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
 {
   //initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
-  
+
   switch(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_,"SPECIAL_OUTPUT"))
   {
     case INPAR::STATMECH::statout_endtoendlog:
     {
        FILE* fp = NULL; //file pointer for statistical output file
-       
+
        //defining name of output file
        std::ostringstream outputfilename;
 
-       outputfilenumber_ = 0; 
+       outputfilenumber_ = 0;
 
        //file pointer for operating with numbering file
        FILE* fpnumbering = NULL;
        std::ostringstream numberingfilename;
-       
+
        //look for a numbering file where number of already existing output files is stored:
        numberingfilename.str("NumberOfRealizationsLog");
        fpnumbering = fopen(numberingfilename.str().c_str(), "r");
-       
+
        //if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
        if(fpnumbering == NULL)
        {
@@ -813,35 +900,35 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
            outputfilename << "EndToEnd"<< outputfilenumber_ << ".dat";
            fp = fopen(outputfilename.str().c_str(), "r");
          } while(fp != NULL);
-         
+
          //set up new file with name "outputfilename" without writing anything into this file
          fp = fopen(outputfilename.str().c_str(), "w");
          fclose(fp);
-      }         
+      }
       //if there already exists a numbering file
       else
       {
         fclose(fpnumbering);
-        
+
         //read the number of the next realization out of the file into the variable testnumber
-        std::fstream f(numberingfilename.str().c_str());            
+        std::fstream f(numberingfilename.str().c_str());
         while (f)
         {
           std::string tok;
           f >> tok;
           if (tok=="Next")
           {
-            f >> tok; 
-            if (tok=="Number:")     
+            f >> tok;
+            if (tok=="Number:")
               f >> outputfilenumber_;
           }
         } //while(f)
-        
+
         //defining outputfilename by means of new testnumber
         outputfilename.str("");
         outputfilename << "EndToEnd"<< outputfilenumber_ << ".dat";
       }
-       
+
       //increasing the number in the numbering file by one
       fpnumbering = fopen(numberingfilename.str().c_str(), "w");
       std::stringstream filecontent;
@@ -854,25 +941,25 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
     case INPAR::STATMECH::statout_endtoendconst:
     {
       FILE* fp = NULL; //file pointer for statistical output file
-             
+
        //defining name of output file
        std::ostringstream outputfilename;
        outputfilename.str("");
-       outputfilenumber_ = 0; 
+       outputfilenumber_ = 0;
 
        //file pointer for operating with numbering file
        FILE* fpnumbering = NULL;
        std::ostringstream numberingfilename;
-       
+
        //look for a numbering file where number of already existing output files is stored:
        numberingfilename.str("NumberOfRealizationsConst");
        fpnumbering = fopen(numberingfilename.str().c_str(), "r");
-       
+
        /*in the following we assume that there is only a pulling force point Neumann condition of equal absolute
        *value on either filament length; we get the absolute value of the first one of these two conditions */
        double neumannforce;
        vector<DRT::Condition*> pointneumannconditions(0);
-       discret_.GetCondition("PointNeumann",pointneumannconditions);     
+       discret_.GetCondition("PointNeumann",pointneumannconditions);
        if(pointneumannconditions.size() > 0)
        {
          const vector<double>* val  =pointneumannconditions[0]->Get<vector<double> >("val");
@@ -880,52 +967,52 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
        }
        else
         neumannforce = 0;
-       
+
        //if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
        if(fpnumbering == NULL)
        {
          do
-         {              
-          //defining name of output file        
+         {
+          //defining name of output file
            outputfilenumber_++;
            outputfilename.str("");
            outputfilename << "E2E_"<< discret_.NumMyRowElements() <<'_'<< dt <<'_'<< neumannforce << '_'<< outputfilenumber_ << ".dat";
            fp = fopen(outputfilename.str().c_str(), "r");
          } while(fp != NULL);
-         
+
          //set up new file with name "outputfilename" without writing anything into this file
          fp = fopen(outputfilename.str().c_str(), "w");
          fclose(fp);
-      }         
+      }
       //if there already exists a numbering file
       else
       {
         fclose(fpnumbering);
-        
+
         //read the number of the next realization out of the file into the variable testnumber
-        std::fstream f(numberingfilename.str().c_str());            
+        std::fstream f(numberingfilename.str().c_str());
         while (f)
         {
           std::string tok;
           f >> tok;
           if (tok=="Next")
           {
-            f >> tok; 
-            if (tok=="Number:")     
+            f >> tok;
+            if (tok=="Number:")
               f >> outputfilenumber_;
           }
         } //while(f)
-        
+
         //defining outputfilename by means of new testnumber
         outputfilename.str("");
         outputfilename << "E2E_"<< discret_.NumMyRowElements() <<'_'<< dt <<'_'<< neumannforce << '_'<<outputfilenumber_ << ".dat";
-        
+
         //set up new file with name "outputfilename" without writing anything into this file
         fp = fopen(outputfilename.str().c_str(), "w");
         fclose(fp);
       }
 
-       
+
       //increasing the number in the numbering file by one
       fpnumbering = fopen(numberingfilename.str().c_str(), "w");
       std::stringstream filecontent;
@@ -934,27 +1021,27 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
       fprintf(fpnumbering,filecontent.str().c_str());
       //close file
       fclose(fpnumbering);
-      
+
     }
     break;
     //simulating diffusion coefficient for anisotropic friction
     case INPAR::STATMECH::statout_anisotropic:
-    {     
+    {
        FILE* fp = NULL; //file pointer for statistical output file
-         
+
        //defining name of output file
        std::ostringstream outputfilename;
-  
-       outputfilenumber_ = 0; 
-  
+
+       outputfilenumber_ = 0;
+
        //file pointer for operating with numbering file
        FILE* fpnumbering = NULL;
        std::ostringstream numberingfilename;
-       
+
        //look for a numbering file where number of already existing output files is stored:
        numberingfilename.str("NumberOfRealizationsAniso");
        fpnumbering = fopen(numberingfilename.str().c_str(), "r");
-       
+
        //if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
        if(fpnumbering == NULL)
        {
@@ -965,35 +1052,35 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
            outputfilename << "AnisotropicDiffusion"<< outputfilenumber_ << ".dat";
            fp = fopen(outputfilename.str().c_str(), "r");
          } while(fp != NULL);
-         
+
          //set up new file with name "outputfilename" without writing anything into this file
          fp = fopen(outputfilename.str().c_str(), "w");
          fclose(fp);
-      }         
+      }
       //if there already exists a numbering file
       else
       {
         fclose(fpnumbering);
-        
+
         //read the number of the next realization out of the file into the variable testnumber
-        std::fstream f(numberingfilename.str().c_str());            
+        std::fstream f(numberingfilename.str().c_str());
         while (f)
         {
           std::string tok;
           f >> tok;
           if (tok=="Next")
           {
-            f >> tok; 
-            if (tok=="Number:")     
+            f >> tok;
+            if (tok=="Number:")
               f >> outputfilenumber_;
           }
         } //while(f)
-        
+
         //defining outputfilename by means of new testnumber
         outputfilename.str("");
         outputfilename <<"AnisotropicDiffusion"<< outputfilenumber_ << ".dat";
       }
-       
+
       //increasing the number in the numbering file by one
       fpnumbering = fopen(numberingfilename.str().c_str(), "w");
       std::stringstream filecontent;
@@ -1002,7 +1089,7 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
       fprintf(fpnumbering,filecontent.str().c_str());
       //close file
       fclose(fpnumbering);
-  
+
       //initializing variables for positions of first and last node at the beginning
       beginold_.PutScalar(0);
       endold_.PutScalar(0);
@@ -1010,37 +1097,37 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
        {
          beginold_(i) = ( discret_.gNode(0)                            )->X()[i];
          endold_(i)   = ( discret_.gNode(discret_.NumMyRowNodes() - 1) )->X()[i];
-       }  
-      
+       }
+
       for (int i=0; i<3; i++)
        sumdispmiddle_(i,0)=0.0;
-      
+
       sumsquareincpar_=0.0;
       sumsquareincort_=0.0;
       sumrotmiddle_=0.0;
       sumsquareincmid_=0.0;
       sumsquareincrot_=0.0;
 
-      
+
     }
     break;
     case INPAR::STATMECH::statout_viscoelasticity:
     {
       //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
-      FILE* fp = NULL; 
-          
+      FILE* fp = NULL;
+
       //content to be written into the output file
       std::stringstream filecontent;
-      
+
       //defining name of output file related to processor Id
-      std::ostringstream outputfilename; 
+      std::ostringstream outputfilename;
       outputfilename.str("");
       outputfilename << "ViscoElOutputProc"<< discret_.Comm().MyPID() << ".dat";
-    
+
       fp = fopen(outputfilename.str().c_str(), "w");
-        
+
       //filecontent << "Output for measurement of viscoelastic properties written by processor "<< discret_.Comm().MyPID() << endl;
-         
+
       // move temporary stringstream to file and close it
       fprintf(fp,filecontent.str().c_str());
       fclose(fp);
@@ -1050,7 +1137,7 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
     default:
     break;
   }
- 
+
   return;
 } // StatMechManager::StatMechInitOutput()
 
@@ -1059,17 +1146,17 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
 void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP<LINALG::SparseOperator>& stiff, int ndim)
-{  
+{
   #ifdef D_BEAM3
-  
+
 #ifdef MEASURETIME
     const double t_start = ds_cputime();
 #endif // #ifdef MEASURETIME
-    
-  /*first we modify the displacement vector so that current nodal position at the end of current time step compies with 
+
+  /*first we modify the displacement vector so that current nodal position at the end of current time step compies with
    * periodic boundary conditions, i.e. no node lies outside a cube of edge length Hperiodic*/
   PeriodicBoundaryShift(disrow,ndim);
-      
+
   //if dynamic crosslinkers are used update comprises adding and deleting crosslinkers
   if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
   {
@@ -1079,37 +1166,37 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
      * cannot be called from the discretization before calling FillComplete() again which should be done only in the very end
      * note: this way of getting node maps is all right only if no nodes are added/ deleted, but elements only*/
     const Epetra_Map noderowmap = *discret_.NodeRowMap();
-    const Epetra_Map nodecolmap = *discret_.NodeColMap(); 
-    
+    const Epetra_Map nodecolmap = *discret_.NodeColMap();
+
     /*search neighbours for each row node on this processor within column nodes*/
     const double t_search = ds_cputime();
- 
-    /*in preparation for later decision whether a crosslink should be established between two nodes we first store the 
+
+    /*in preparation for later decision whether a crosslink should be established between two nodes we first store the
      * current positions of all column map nodes in the map currentpositions; additionally we store the roational displacments
      * analogously in a map currentrotations for later use in setting up reference geometry of crosslinkers; the maps
      * currentpositions and currentrotations relate positions and rotations to a local column map node Id, respectively*/
-    std::map<int,LINALG::Matrix<3,1> > currentpositions;   
-    std::map<int,LINALG::Matrix<3,1> > currentrotations; 
+    std::map<int,LINALG::Matrix<3,1> > currentpositions;
+    std::map<int,LINALG::Matrix<3,1> > currentrotations;
     currentpositions.clear();
     currentrotations.clear();
-    
+
     /*note: access by ExtractMyValues requires column map vector, whereas displacements on level of time integration are
      * handled as row map vector*/
     Epetra_Vector  discol(*discret_.DofColMap(),true);
-    
+
     LINALG::Export(disrow,discol);
-     
+
     for (int i = 0; i <discret_.NumMyColNodes(); ++i)
     {
       //get pointer at a node
       const DRT::Node* node = discret_.lColNode(i);
-      
+
       //get GIDs of this node's degrees of freedom
       std::vector<int> dofnode = discret_.Dof(node);
 
       LINALG::Matrix<3,1> currpos;
-      LINALG::Matrix<3,1> currrot;   
-      
+      LINALG::Matrix<3,1> currrot;
+
       currpos(0) = node->X()[0] + discol[discret_.DofColMap()->LID(dofnode[0])];
       currpos(1) = node->X()[1] + discol[discret_.DofColMap()->LID(dofnode[1])];;
       currpos(2) = node->X()[2] + discol[discret_.DofColMap()->LID(dofnode[2])];
@@ -1119,49 +1206,49 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
       currentpositions[node->LID()] = currpos;
       currentrotations[node->LID()] = currrot;
     }
-    
+
     //new search for neighbour nodes after average time specified in input file
     if(time_ - nsearch_*statmechparams_.get<double>("Delta_t_search",0.0) > statmechparams_.get<double>("Delta_t_search",0.0) )
       SearchNeighbours(currentpositions);
-    
+
     cout << "\n***\nsearch time: " << ds_cputime() - t_search<< " seconds\n***\n";
 
 
 #ifdef MEASURETIME
     const double t_admin = ds_cputime();
-#endif // #ifdef MEASURETIME 
-    
+#endif // #ifdef MEASURETIME
+
     //number of elements in this time step before adding or deleting any elements
     currentelements_ = discret_.NumGlobalElements();
 
     //setting the crosslinkers for neighbours in crosslinkerneighbours_ after probability check
     SetCrosslinkers(dt,noderowmap,nodecolmap,currentpositions,currentrotations);
-        
+
     //deleting the crosslinkers in crosslinkerpartner_ after probability check
     DelCrosslinkers(dt,noderowmap,nodecolmap);
-     
+
     /*settling administrative stuff in order to make the discretization ready for the next time step: synchronize
      *the Filled() state on all processors after having added or deleted elements by ChekcFilledGlobally(); then build
      *new element maps and call FillComplete(); finally Crs matrices stiff_ has to be deleted completely and made ready
-     *for new assembly since their graph was changed*/ 
-    discret_.CheckFilledGlobally();    
-    discret_.FillComplete(true,false,false);  
+     *for new assembly since their graph was changed*/
+    discret_.CheckFilledGlobally();
+    discret_.FillComplete(true,false,false);
     stiff->Reset();
 
 #ifdef MEASURETIME
     cout << "\n***\nadministration time: " << ds_cputime() - t_admin<< " seconds\n***\n";
 #endif // #ifdef MEASURETIME
-      
+
 
   }//if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
-  
+
 #ifdef MEASURETIME
     const double Delta_t = ds_cputime()-t_start;
     cout << "\n***\ntotal time: " << Delta_t<< " seconds\n***\n";
 #endif // #ifdef MEASURETIME
-  
+
   #endif
-  
+
   return;
 } // StatMechManager::StatMechUpdate()
 
@@ -1170,20 +1257,20 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
  | boundary conditions                                       cyron 02/10|
  *----------------------------------------------------------------------*/
 void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
-{    
+{
   //only if period length >0 has been defined periodic boundary conditions are swithced on
-  if(statmechparams_.get<double>("PeriodLength",0.0) > 0.0) 
+  if(statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
     for(int i = 0; i < discret_.NumMyRowNodes(); i++)
-    { 
+    {
       //get a pointer at i-th row node
       const DRT::Node* node = discret_.lRowNode(i);
-      
+
       //get GIDs of this node's degrees of freedom
       std::vector<int> dofnode = discret_.Dof(node);
-      
+
       //loop through the first ndim degrees of freedom of this node and enforce periodic boundary conditions
       for(int j = 0; j<ndim; j++)
-        CoordindateShift( node->X()[j],disrow[discret_.DofRowMap()->LID(dofnode[j])]);   
+        CoordindateShift( node->X()[j],disrow[discret_.DofRowMap()->LID(dofnode[j])]);
     }
 }
 
@@ -1193,10 +1280,10 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
  | boundary conditions                                         cyron 02/10|
  *-----------------------------------------------------------------------*/
 void StatMechManager::CoordindateShift(const double& X, double& d)
-{    
+{
   if(X+d > statmechparams_.get<double>("PeriodLength",0.0))
   {
-    d -= statmechparams_.get<double>("PeriodLength",0.0);   
+    d -= statmechparams_.get<double>("PeriodLength",0.0);
     /*Recursion repeats above shift until current coordinate lies within desired domain;
      *the following code line only matters if the current position lies at first outside
      *the desired domain by more than one period length*/
@@ -1204,12 +1291,12 @@ void StatMechManager::CoordindateShift(const double& X, double& d)
   }
   if(X+d < 0)
   {
-    d += statmechparams_.get<double>("PeriodLength",0.0);    
+    d += statmechparams_.get<double>("PeriodLength",0.0);
     /*Recursion repeats above shift until current coordinate lies within desired domain;
      *the following code line only matters if the current position lies at first outside
      *the desired domain by more than one period length*/
     CoordindateShift(X,d);
-  }  
+  }
 }
 
 /*------------------------------------------------------------------------*
@@ -1219,25 +1306,25 @@ void StatMechManager::CoordindateShift(const double& X, double& d)
  | determinants are adapted in a proper way                    cyron 02/10|
  *-----------------------------------------------------------------------*/
 void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
-{    
-  
-#ifdef D_BEAM3      
-  
+{
+
+#ifdef D_BEAM3
+
   DRT::ELEMENTS::Beam3* beam = dynamic_cast<DRT::ELEMENTS::Beam3*>(element);
-  
+
   //3D beam elements are embeddet into R^3:
   const int ndim = 3;
-  
+
   /*get reference configuration of beam3 element in proper format for later call of SetUpReferenceGeometry;
    * note that rotrefe for beam3 elements is related to the entry in the global total Lagrange displacement
    * vector related to a certain rotational degree of freedom; as the displacement is initially zero also
    * rotrefe is set to zero here*/
   vector<double> xrefe(beam->NumNode()*ndim,0);
   vector<double> rotrefe(beam->NumNode()*ndim,0);
-  
-  
-  for(int i=0;i<beam->NumNode();i++)  
-    for(int dof=0; dof<ndim; dof++) 
+
+
+  for(int i=0;i<beam->NumNode();i++)
+    for(int dof=0; dof<ndim; dof++)
     {
       xrefe[3*i+dof] = beam->Nodes()[i]->X()[dof];
       rotrefe[3*i+dof] = 0.0;
@@ -1246,16 +1333,16 @@ void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
   /*loop through all nodes except for the first node which remains fixed as reference node; all other nodes are
    * shifted due to periodic boundary conditions if required*/
   for(int i=1;i<beam->NumNode();i++)
-  {    
+  {
     for(int dof=0; dof<ndim; dof++)
-    {   
+    {
       /*if the distance in some coordinate direction between some node and the first node becomes smaller by adding or subtracting
        * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
        * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
        * is smaller than half the periodic length*/
       if( fabs( (beam->Nodes()[i]->X()[dof]) + statmechparams_.get<double>("PeriodLength",0.0) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
         xrefe[3*i+dof] += statmechparams_.get<double>("PeriodLength",0.0);
-        
+
       if( fabs( (beam->Nodes()[i]->X()[dof]) - statmechparams_.get<double>("PeriodLength",0.0) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
         xrefe[3*i+dof] -= statmechparams_.get<double>("PeriodLength",0.0);
     }
@@ -1265,8 +1352,8 @@ void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
    * have already been initialized once upon reading input file*/
   switch(beam->NumNode())
   {
-    case 2:     
-    { 
+    case 2:
+    {
       beam->SetUpReferenceGeometry<2>(xrefe,rotrefe,true);
       break;
     }
@@ -1284,12 +1371,12 @@ void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
     {
       beam->SetUpReferenceGeometry<5>(xrefe,rotrefe,true);
       break;
-    }       
+    }
     default:
-      dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");  
+      dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
   }
-  
-#endif  
+
+#endif
 }
 
 
@@ -1298,44 +1385,44 @@ void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
  | each row nod                                              cyron 07/09|
  *----------------------------------------------------------------------*/
 void StatMechManager::SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > currentpositions)
-{   
+{
   //update the number of times the function SearchNeighbours has already been called
   nsearch_++;
-  
+
   //maximal distance bridged by a crosslinker
   double rlink = statmechparams_.get<double>("R_LINK",0.0);
-  
+
   //each processor looks for each of its row nodes for neighbours; loop index i is the local row node Id
   for(int i = 0; i < discret_.NumMyRowNodes(); i++)
-  { 
+  {
     //get GID and column map LID of row node i
     int iGID = (discret_.lRowNode(i))->Id();
     int icolID = (discret_.gNode(iGID))->LID();
-    
+
     /*getting iterator to current position of local node icolID from map currentpositions;
      * note that currentpositions is organized with respect to column map LIDs*/
     const map< int,LINALG::Matrix<3,1> >::const_iterator posi = currentpositions.find(icolID);
-    
+
     /* for each row node all comlumn nodes within a range rlink are searched; this search may
      * be performed either as a brute force search (A) or by means of a search tree (B); the
      * column map LIDs of the nodes within rlink are stored in the vector neighboursLID*/
     std::vector<int> neighboursLID;
-   
+
     //(A): brute force search
     for(std::map<int,LINALG::Matrix<3,1> >::const_iterator posj = currentpositions.begin(); posj != currentpositions.end(); posj++)
     {
       //difference vector between row node i and some column node j
-      LINALG::Matrix<3,1> difference;                
+      LINALG::Matrix<3,1> difference;
       for(int k = 0; k<3; k++)
         difference(k) = (posi->second)(k) - (posj->second)(k);
-      
+
       if(difference.Norm2() < rlink)
         neighboursLID.push_back(posj->first);
     }
-    
+
     //(B): seraching neighbours with search tree
     //neighboursLID = octTree_->searchPointsInRadius(currentpositions,(currentpositions.find(iLID))->second,rlink);
-    
+
     /* after having searched all nodes within distance rlink around row node i we delete those
      * neighbours, which do not comply with certain requirements; here we establish the following
      * requirements: first if filament numbering is activated (i.e. not all filament numbers are set to -1) the
@@ -1344,7 +1431,7 @@ void StatMechManager::SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > 
      * that crosslinkers are established from nodes with smaller GIDs to nodes with greater GIDs only; note that
      * using erase you have to be careful to keep your iterator valid despite conditional deleting of elements
      * during iteration. The following algorithms represents a very efficient and simple way to deal with this
-     * problem in a correct manner*/   
+     * problem in a correct manner*/
     vector<int>::iterator iter = neighboursLID.begin();
     while( iter != neighboursLID.end() )
     {
@@ -1354,9 +1441,9 @@ void StatMechManager::SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > 
       else
         ++iter;
     }
-    
+
     //finally the list of column map LIDs in neighboursLID is assigned to the entry of the i-th row node in crosslinkerneighbours_
-    crosslinkerneighbours_[i] = neighboursLID;   
+    crosslinkerneighbours_[i] = neighboursLID;
   }
 
 }//void SearchNeighbours(const int rlink, const std::map<int,LINALG::Matrix<3,1> > currentpositions)
@@ -1366,39 +1453,39 @@ void StatMechManager::SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > 
  | (private)                                                 cyron 02/09|
  *----------------------------------------------------------------------*/
 void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,LINALG::Matrix<3,1> >& currentrotations)
-{  
+{
   //get current on-rate for crosslinkers
   double kon = 0;
   if( (currentelements_ - basiselements_) < statmechparams_.get<double>("N_crosslink",0.0) )
     kon = statmechparams_.get<double>("K_ON_start",0.0);
   else
     kon = statmechparams_.get<double>("K_ON_end",0.0);
-  
-  
+
+
   //probability with which a crosslinker is established between neighbouring nodes
   double plink = 1.0 - exp( -dt*kon*statmechparams_.get<double>("C_CROSSLINKER",0.0) );
 
   //creating a random generator object which creates uniformly distributed random numbers in [0;1]
   ranlib::UniformClosed<double> UniformGen;
-  
+
   /*creating variable to save crosslinkers to be added in this time step on this processor; these crosslinkers are saved the following way:
    *for each row node an STL vector is saved with the column map LIDs of the nodes to which additional crosslinkers are to be set in this time step;
    *the variable is initialized with empty STL vectors*/
   std::vector< std::vector<int> >  crosslinkerstobeaddedlocal;
   std::vector<int> emptyvector;
   crosslinkerstobeaddedlocal.resize(noderowmap.NumMyElements(),emptyvector);
-  
+
   /*create counter variables to save the maximal number of crosslinkers to be added in this time step at any node in on this processor and
    * on all processors, respectively*/
   int maxaddcrosslinkslocal = 0;
   int maxaddcrosslinksglobal = 0;
-  
+
   //we loop through all row nodes and save the crosslinkers to be set without actually setting them yet; note that i is a row map LID
   for(int i = 0; i < noderowmap.NumMyElements(); i++)
-  {     
+  {
     //we loop through all column map nodes, which are neighbours of row node i and test whether a crosslink should be established
     for(int j = 0; j < (int)crosslinkerneighbours_[i].size(); j++)
-    {     
+    {
       //probability check whether crosslinker should be established:
       if(UniformGen.random() < plink)
       {
@@ -1407,230 +1494,230 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
         for(int k = 0; k < (int)crosslinkerpartner_[i].size(); k++)
           if((crosslinkerpartner_[i])[k] == (crosslinkerneighbours_[i])[j] )
             notyet = false;
-        
+
         //only if no crosslinker has  been established to the same node, yet, the crosslinker is established
         if(notyet)
-        {       
+        {
           //add new crosslink to list of already established crosslinks for row node i
           crosslinkerpartner_[i].push_back( (crosslinkerneighbours_[i])[j] );
-          
+
           //add new crosslink to list of crosslinks to be established in this time step
           crosslinkerstobeaddedlocal[i].push_back( (crosslinkerneighbours_[i])[j] );
-          
+
           //update maximal number of crosslinkers to be added at any node on this processor in this time step
-          maxaddcrosslinkslocal = max(maxaddcrosslinkslocal,(int)crosslinkerstobeaddedlocal[i].size());         
+          maxaddcrosslinkslocal = max(maxaddcrosslinkslocal,(int)crosslinkerstobeaddedlocal[i].size());
         }
-      }    
+      }
     }
   }
-  
+
   //get the maximal number of crosslinks to be added at any node on any processor in this time step
   discret_.Comm().MaxAll(&maxaddcrosslinkslocal,&maxaddcrosslinksglobal,1);
-  
+
   /*create an Epetra_MultiVector with the same information stored so far in the STL vector crosslinkerstobeaddedlocal, but using GIDs instead of node column map LIDs
    *(shifting this kind of information to an Epetra_MultiVector allows for its parallel communication); note: if no crosslinkers are added at any node we yet set the
    *numbers of vectors in the following Epetra_MultiVector to 1 instead of 0 as the latter choice would cause an error*/
   Epetra_MultiVector crosslinkerstobeaddedglobalrow(noderowmap,max(maxaddcrosslinksglobal,1));
   crosslinkerstobeaddedglobalrow.PutScalar(-1);
-  
+
   for(int i=0; i<(int)crosslinkerstobeaddedlocal.size(); i++)
     for(int j=0; j<(int)crosslinkerstobeaddedlocal[i].size(); j++)
       crosslinkerstobeaddedglobalrow[j][i] = nodecolmap.GID( (crosslinkerstobeaddedlocal[i])[j] );
-  
+
   //export Epetra_MultiVector with information about crosslinkers to be set to node column map format
-  Epetra_MultiVector crosslinkerstobeaddedglobalcol(nodecolmap,crosslinkerstobeaddedglobalrow.NumVectors(),true); 
-   
+  Epetra_MultiVector crosslinkerstobeaddedglobalcol(nodecolmap,crosslinkerstobeaddedglobalrow.NumVectors(),true);
+
   Epetra_Import importer(nodecolmap,noderowmap);
-  crosslinkerstobeaddedglobalcol.Import(crosslinkerstobeaddedglobalrow,importer,Add); 
-  
+  crosslinkerstobeaddedglobalcol.Import(crosslinkerstobeaddedglobalrow,importer,Add);
+
 
   /*at this point the information which crosslinkers are to be added to a certain node is present on each processor which knows a certain node at least in
    *its column map; now each processor loops through all column map nodes and checkes the crosslinkers to be added; if one of these crosslinkers has at least
    *one node which is a row node on this processor, the crosslinker element is added to the discretization on this processor (possibly just as a ghost element);
    *note that the following loop index i refers to node column map LIDs*/
   for(int i = 0; i < crosslinkerstobeaddedglobalcol.MyLength(); i++)
-  { 
+  {
     //getting current position and rotational status of node with column map LID i from map currentpositions
     map< int,LINALG::Matrix<3,1> >::const_iterator posi         = currentpositions.find(i);
     map< int,LINALG::Matrix<3,1> >::const_iterator roti         = currentrotations.find(i);
-    
+
     //loop through all node GIDs to which a crosslink should be established from column map node i
     for(int j = 0; j < crosslinkerstobeaddedglobalcol.NumVectors(); j++)
     {
       /*a crosslinker should be established if the following two conditions are satisfied: first there is a node stored to which it is to be established
-       * (i.e. the i-th element of the j-th vector in in the Multi_Vector crosslinkerstobeaddedglobalcol is unequal the default value -1; second one of 
+       * (i.e. the i-th element of the j-th vector in in the Multi_Vector crosslinkerstobeaddedglobalcol is unequal the default value -1; second one of
        * the two nodes between which the crosslinker should be established is a row node on this processor; otherwise one does not need to add the crosslinker
        * element on this processor (not even as a ghost element)*/
       if(crosslinkerstobeaddedglobalcol[j][i] > -0.9 &&
          ( noderowmap.LID((nodecolmap.GID(i))) > -0.9 || noderowmap.LID(((int)crosslinkerstobeaddedglobalcol[j][i])) > -0.9 ) )
       {
-        
+
         //getting current position and rotational status of node with GID crosslinkerstobeaddedglobalcol[j][i]
         map< int,LINALG::Matrix<3,1> >::const_iterator posj = currentpositions.find( nodecolmap.LID((int)crosslinkerstobeaddedglobalcol[j][i]) );
         map< int,LINALG::Matrix<3,1> >::const_iterator rotj = currentrotations.find( nodecolmap.LID((int)crosslinkerstobeaddedglobalcol[j][i]) );
-                
+
         //save positions of nodes between which a crosslinker has to be established in variables xrefe and rotrefe:
         std::vector<double> rotrefe(6);
         std::vector<double> xrefe(6);
-     
+
         for(int k = 0; k<3; k++)
         {
           //set nodal positions
           xrefe[k  ] = (posi->second)(k);
           xrefe[k+3] = (posj->second)(k);
-          
+
           //set nodal rotations (not true ones, only those given in the displacment vector)
           rotrefe[k  ] = (roti->second)(k);
           rotrefe[k+3] = (rotj->second)(k);
         }
-        
+
         /*there is the problem of how to assign to a crosslinker element a GID which is certainly not used by any
          * other element; we know that for a network at the beginning (without crosslinkers) each node has a
          * connectivity of 1 or 2 so that the number of all elements used to discretize the filaments is smaller
          * than basisnodes_. Thus we choose crosslinker GIDs >= basisnodes_. To make sure that two crosslinkers
          * never have the same GID we add to basisnodes_ the value basisnodes_*GID1, where GID1 is the GID of the
          * first node of the crosslinker element. Then we add GID2 (note: GID2 < basisnodes_), which is the GID of the second node of the
-         * crosslinker element. Hence basisnodes_ + GID1*basisnodes_ + GID2 always gives a GID which cannot be 
-         * used by any other element*/     
-       
- #ifdef D_BEAM3         
+         * crosslinker element. Hence basisnodes_ + GID1*basisnodes_ + GID2 always gives a GID which cannot be
+         * used by any other element*/
+
+ #ifdef D_BEAM3
         RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3((nodecolmap.GID(i) + 1)*basisnodes_ + (int)crosslinkerstobeaddedglobalcol[j][i], (discret_.gNode(nodecolmap.GID(i)))->Owner() ) );
-        
+
         //setting up crosslinker element parameters
         newcrosslinker ->crosssec_ = 2.375829e-05;
         newcrosslinker ->crosssecshear_ = 1.1*2.375829e-05;
         newcrosslinker ->Iyy_ = 4.49180e-11;
         newcrosslinker ->Izz_ = 4.49180e-11;
-        newcrosslinker ->Irr_ = 8.9836e-11; 
+        newcrosslinker ->Irr_ = 8.9836e-11;
 
 
         //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
-        int globalnodeids[2] = {nodecolmap.GID(i),(int)crosslinkerstobeaddedglobalcol[j][i]}; 
-               
+        int globalnodeids[2] = {nodecolmap.GID(i),(int)crosslinkerstobeaddedglobalcol[j][i]};
+
         newcrosslinker->SetNodeIds(2,globalnodeids);
         DRT::Node *nodes[] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
         newcrosslinker->BuildNodalPointers(&nodes[0]);
-                    
+
         //correct reference configuration data is computed for the new crosslinker element;
         //function SetUpReferenceGeometry is template and here only linear beam elements can be applied as crosslinkers
-        newcrosslinker->SetUpReferenceGeometry<2>(xrefe,rotrefe); 
-  
+        newcrosslinker->SetUpReferenceGeometry<2>(xrefe,rotrefe);
+
         //set material for new element
         newcrosslinker->SetMaterial(2);
-        
+
         //add new element to discretization
-        discret_.AddElement(newcrosslinker);  
-        
- #endif 
-        
-      }  
-    }   
-   } 
+        discret_.AddElement(newcrosslinker);
+
+ #endif
+
+      }
+    }
+   }
 }//void SetCrosslinkers(const Epetra_Vector& setcrosslinkercol)
 
 /*----------------------------------------------------------------------*
  | delete crosslinkers listed in crosslinkerpartner_ after random check;|
  | the random check is conducted by the owner processor of the          |
- | crosslinker, respectively, and the result of that check is           | 
- | communicated subsequently to all the other processors                |              
+ | crosslinker, respectively, and the result of that check is           |
+ | communicated subsequently to all the other processors                |
  | (private)                                                 cyron 11/09|
  *----------------------------------------------------------------------*/
 void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap)
-{ 
+{
   //get current off-rate for crosslinkers
   double koff = 0;
   if( (currentelements_ - basiselements_) < statmechparams_.get<double>("N_crosslink",0.0) )
     koff = statmechparams_.get<double>("K_OFF_start",0.0);
   else
     koff = statmechparams_.get<double>("K_OFF_end",0.0);
-  
-  
-  //probability with which a crosslink breaks up in the current time step 
+
+
+  //probability with which a crosslink breaks up in the current time step
   double punlink = 1.0 - exp( -dt*koff );
-  
+
   //creating a random generator object which creates uniformly distributed random numbers in [0;1]
   ranlib::UniformClosed<double> UniformGen;
-  
+
   /*creating variable to save crosslinkers to be deleted in this time step; these crosslinkers are saved the following way:
    *for each row node an STL vector is saved with the GIDs of the crosslinker elements to be deleted in this time step;
    *the variable is initialized with empty STL vectors*/
   std::vector< std::vector<int> >  crosslinkerstobedeletedlocal;
   std::vector<int> emptyvector;
   crosslinkerstobedeletedlocal.resize(noderowmap.NumMyElements(),emptyvector);
-  
+
   /*create counter variables to save the maximal number of crosslinkers to be deleted in this time step at any node on this processor and
    * on all processors, respectively*/
   int maxdelcrosslinkslocal = 0;
   int maxdelcrosslinksglobal = 0;
-  
-  /* this method removes crosslinkers listed in crosslinkerpartner_ after probability check; note that 
-   * removing crosslinkers should be done after setting the crosslinkers since the latter one uses 
+
+  /* this method removes crosslinkers listed in crosslinkerpartner_ after probability check; note that
+   * removing crosslinkers should be done after setting the crosslinkers since the latter one uses
    * operations only possible on a discretization on which already FillComplete() has been called;
    * note: here we loop through all row map nodes not by means of the discretization, but by means
    * of a node row map stored when the discretization was still in the fill complete state; thereby
    * we make sure that this method is unaffected by any changes in the discretization and its maps
-   * in the turn of adding and deleting crosslinkers*/ 
+   * in the turn of adding and deleting crosslinkers*/
   for(int i = 0; i < noderowmap.NumMyElements(); i++)
-  {      
+  {
     vector<int>::iterator iter = crosslinkerpartner_[i].begin();
-    
+
     //number of crosslinks to be deleted at this node
     int delcrosslinksatthisnode = 0;
-    
+
     while( iter != crosslinkerpartner_[i].end() )
     {
       if(UniformGen.random() < punlink)
-      {       
-        //we compute the GID of the crosslinker to be deleted 
+      {
+        //we compute the GID of the crosslinker to be deleted
         int crosslinkerid = (noderowmap.GID(i) + 1)*basisnodes_ +  nodecolmap.GID(*iter);
-        
+
         //add crosslink to list of crosslinks to be deleted in this time step
         crosslinkerstobedeletedlocal[i].push_back( crosslinkerid );
-               
+
         //update maximal number of crosslinkers to be deleted at any node on this processor in this time step
         delcrosslinksatthisnode++;
         maxdelcrosslinkslocal = max(maxdelcrosslinkslocal,delcrosslinksatthisnode);
-      
+
         //delete crosslinker from list of established crosslinkers
         iter = crosslinkerpartner_[i].erase(iter);
       }
       else
         ++iter;
-    }   
+    }
   }//for(int i = 0; i < discret_.NumMyRowNodes(); i++)
-  
+
   //get the maximal number of crosslinks to be deleted at any node on any processor in this time step
   discret_.Comm().MaxAll(&maxdelcrosslinkslocal,&maxdelcrosslinksglobal,1);
-  
+
   /*create an Epetra_MultiVector with the same information stored so far in the STL vector crosslinkerstobedeletedlocal, but using GIDs instead of node column map LIDs
    *(shifting this kind of information to an Epetra_MultiVector allows for its parallel communication); note: if no crosslinkers are deleted at any node we yet set the
    *numbers of vectors in the following Epetra_MultiVector to 1 instead of 0 as the latter choice would cause an error*/
   Epetra_MultiVector crosslinkerstobedeletedglobalrow(noderowmap,max(maxdelcrosslinksglobal,1));
   crosslinkerstobedeletedglobalrow.PutScalar(-1);
-  
+
   for(int i=0; i<(int)crosslinkerstobedeletedlocal.size(); i++)
     for(int j=0; j<(int)crosslinkerstobedeletedlocal[i].size(); j++)
       crosslinkerstobedeletedglobalrow[j][i] = (crosslinkerstobedeletedlocal[i])[j];
-  
-  //export Epetra_MultiVector with information about crosslinkers to be deleted to node column map format
-  Epetra_MultiVector crosslinkerstobedeletedglobalcol(nodecolmap,crosslinkerstobedeletedglobalrow.NumVectors(),true); 
-  
-  Epetra_Import importer(nodecolmap,noderowmap);
-  crosslinkerstobedeletedglobalcol.Import(crosslinkerstobedeletedglobalrow,importer,Add); 
 
-  
+  //export Epetra_MultiVector with information about crosslinkers to be deleted to node column map format
+  Epetra_MultiVector crosslinkerstobedeletedglobalcol(nodecolmap,crosslinkerstobedeletedglobalrow.NumVectors(),true);
+
+  Epetra_Import importer(nodecolmap,noderowmap);
+  crosslinkerstobedeletedglobalcol.Import(crosslinkerstobedeletedglobalrow,importer,Add);
+
+
   /*at this point the information which crosslinkers are to be deleted to a certain node is present on each processor which knows a certain node at least in
    *its column map; now each processor loops through all column map nodes and checks for the crosslinker to be added whether it exists on this processor (at
    *least as a ghost element); if yes, the crosslinker element is actually deleted*/
   for(int i = 0; i < crosslinkerstobedeletedglobalcol.MyLength(); i++)
-  { 
+  {
     for(int j = 0; j < crosslinkerstobedeletedglobalcol.NumVectors(); j++)
     {
       //GID of crosslinker to be deleted (-1 if no crosslinker is to be deleted at this point)
       int crosslinkerid = (int)crosslinkerstobedeletedglobalcol[j][i];
-      
+
       if( crosslinkerid > -0.9 )
-        discret_.DeleteElement(crosslinkerid);    
+        discret_.DeleteElement(crosslinkerid);
     }
   }
 
@@ -1641,17 +1728,17 @@ void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& nodero
  | standarddeviation "standarddeviation" for parallel use     cyron10/09|
  *----------------------------------------------------------------------*/
 void StatMechManager::GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> randomnumbers,const double meanvalue, const double standarddeviation)
-{   
+{
   //multivector for stochastic forces evaluated by each element based on row map
-  Epetra_MultiVector randomnumbersrow( *(discret_.ElementRowMap()),randomnumbers->NumVectors()); 
-    
+  Epetra_MultiVector randomnumbersrow( *(discret_.ElementRowMap()),randomnumbers->NumVectors());
+
   //creating a random generator object which creates random numbers with zero mean and unit standard deviation using the Blitz routine
   ranlib::Normal<double> normalGen(meanvalue,standarddeviation);
-  
+
   for(int i=0; i<randomnumbersrow.MyLength(); i++)
     for(int j=0; j<randomnumbersrow.NumVectors(); j++)
       randomnumbersrow[j][i] = normalGen.random();
-  
+
   //export stochastic forces from row map to column map
   Epetra_Export exporter(*discret_.ElementRowMap(),*discret_.ElementColMap());
   randomnumbers->Export(randomnumbersrow,exporter,Add);
@@ -1666,18 +1753,18 @@ void StatMechManager::GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> rand
  | (public) writing restart information for manager objects   cyron 12/08|
  *----------------------------------------------------------------------*/
 void StatMechManager::StatMechWriteRestart(IO::DiscretizationWriter& output)
-{   
+{
   output.WriteInt("istart",istart_);
   output.WriteDouble("starttimeoutput",starttimeoutput_);
   output.WriteDouble("endtoendref",endtoendref_);
   output.WriteInt("basisnodes",basisnodes_);
   output.WriteInt("outputfilenumber",outputfilenumber_);
-  
+
   /*note: the variables crosslinkerpartner_ and crosslinkerneighbours_ are not saved here; this means
    * that for crosslinked networks restarts are not possible in general; as crosslinkerneighbours_ is
    * refreshed in the constructur of the statmech_manager class saving this variable is not that important.
    * However, not saving crosslinkerpartner_ makes a reasonable restart impossible*/
- 
+
   return;
 } // StatMechManager::StatMechOutput()
 
@@ -1686,7 +1773,7 @@ void StatMechManager::StatMechWriteRestart(IO::DiscretizationWriter& output)
  *----------------------------------------------------------------------*/
 void StatMechManager::StatMechReadRestart(IO::DiscretizationReader& reader)
 {
-  // read restart information for statistical mechanics  
+  // read restart information for statistical mechanics
   istart_ = reader.ReadInt("istart");
   starttimeoutput_ = reader.ReadDouble("starttimeoutput");
   endtoendref_ = reader.ReadDouble("endtoendref");
