@@ -3407,13 +3407,6 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
   // time measurement: time loop (stationary) --- start TimeMonitor tm2
   TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
 
-  // override time integration parameters in order to avoid misuse in
-  // NonLinearSolve method below
-  const double origdta = dta_;
-  dta_= 1.0;
-  theta_ = 1.0;
-
-
   // -------------------------------------------------------------------
   // pseudo time loop (continuation loop)
   // -------------------------------------------------------------------
@@ -3429,7 +3422,7 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
    //              set (pseudo-)time dependent parameters
    // -------------------------------------------------------------------
    step_ += 1;
-   time_ += origdta;
+   time_ += dta_;
    // -------------------------------------------------------------------
    //                         out to screen
    // -------------------------------------------------------------------
@@ -3446,7 +3439,7 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
 
       // other parameters needed by the elements
       eleparams.set("total time",time_);
-      eleparams.set("delta time",origdta);
+      eleparams.set("delta time",dta_);
       eleparams.set("thsl",1.0); // no timefac in stationary case
       eleparams.set("form of convective term",convform_);
       eleparams.set("fs subgrid viscosity",fssgv_);
@@ -3485,8 +3478,7 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
     //         calculate lift'n'drag forces from the residual
     // -------------------------------------------------------------------
     LiftDrag();
-    
-    
+
     // -------------------------------------------------------------------
     //                        compute flow rates
     // -------------------------------------------------------------------
@@ -3587,8 +3579,8 @@ void FLD::FluidImplicitTimeInt::ComputeFlowRates() const
   discret_->GetCondition("LineFlowRate", flowratecond);
   if((int) flowratecond.size()== 0)
     return;
-  
-  // only implemented for 2D 
+
+  // only implemented for 2D
   if(numdim_ == 2)
   {
     const std::map<int,double> flowrates = FLD::UTILS::ComputeLineFlowRates(*discret_, velnp_);
@@ -3597,7 +3589,7 @@ void FLD::FluidImplicitTimeInt::ComputeFlowRates() const
   }
   else
     dserror("flow rate computation is not implemented for the 3D case");
-    
+
   // write to file
   return;
 }
@@ -3880,34 +3872,6 @@ const Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::InvDirichlet(
   invtoggle->PutScalar(1.0);
   dbcmaps_->InsertCondVector(dirichzeros, invtoggle);
   return invtoggle;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-double FLD::FluidImplicitTimeInt::CalcFluidVolume()
-{
-  double fluidvolume = 0.0;
-
-  ParameterList p;
-
-  // prepare element call
-  p.set("action", "calc_fluid_elementvolume");
-
-  // get volume
-  Teuchos::RCP<Epetra_SerialDenseVector> elvolume = Teuchos::rcp(new Epetra_SerialDenseVector(1));
-
-  // element call
-  discret_->ClearState();
-  if (alefluid_)
-  {
-    discret_->SetState("dispnp", dispnp_);
-  }
-  discret_->EvaluateScalars(p, elvolume);
-  discret_->ClearState();
-  fluidvolume = (*elvolume)(0);
-
-  return 0.0;
 }
 
 

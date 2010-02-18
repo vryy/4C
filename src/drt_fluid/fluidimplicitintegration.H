@@ -286,7 +286,9 @@ public:
   Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.OtherMap(); }
   Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.CondMap(); }
 
-  double ResidualScaling() const { return density_/dta_/theta_; }
+  double ResidualScaling() const
+  { if (TimIntScheme()==timeint_stationary) return density_;
+    else return density_/dta_/theta_;}
   double Dt() const { return dta_; }
 
   double Time() const { return time_; }
@@ -340,8 +342,8 @@ public:
 
   /// calculate lift&drag forces and angular momenta
   void LiftDrag() const;
-  
-  /// compute flow rate 
+
+  /// compute flow rate
   void ComputeFlowRates() const;
 
   /// integrate shape functions at nodes marked by condition

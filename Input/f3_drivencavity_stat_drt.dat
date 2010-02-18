@@ -39,7 +39,7 @@ STRUCT_DISP       Yes
 STRUCT_STRESS     No
 STRUCT_SM_DISP    No
 FLUID_SOL         Yes
-FLUID_STRESS      No
+FLUID_STRESS      Yes
 FLUID_VIS         No
 ALE_DISP          Yes
 FILESTEPS         1000
@@ -545,6 +545,9 @@ DSURF 0
 --------------------------------------DESIGN VOL LOCSYS CONDITIONS
 // DOBJECT Id
 DVOL 0
+--------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
+DSURF 1
+E 6 - standard
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1680 DNODE 1
 NODE    2178 DNODE 2
@@ -8674,10 +8677,13 @@ MAT       1 MAT_fluid  VISCOSITY 0.001 DENSITY 1.0 GAMMA 1.0
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 1623 POSITION velz NAME velz VALUE -4.643844864e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 1623 POSITION velx NAME velx VALUE -2.808855888e-02 TOLERANCE 1e-6
-FLUID DIS 1 NODE 1623 POSITION pressure NAME pressure VALUE 1.841253727e-02 TOLERANCE 1e-5
-FLUID DIS 1 NODE 1610 POSITION pressure NAME pressure VALUE 1.841253727e-02 TOLERANCE 1e-5
+FLUID DIS 1 NODE 1623 POSITION velz NAME velz VALUE -4.643835496e-01 TOLERANCE 1e-9
+FLUID DIS 1 NODE 1623 POSITION velx NAME velx VALUE -2.808840255e-02 TOLERANCE 1e-9
+FLUID DIS 1 NODE 1623 POSITION pressure NAME pressure VALUE 1.841253727e-02 TOLERANCE 1e-9
+FLUID DIS 1 NODE 1610 POSITION pressure NAME pressure VALUE 1.841253727e-02 TOLERANCE 1e-9
+FLUID DIS 1 NODE 1277 POSITION tractionx NAME tractionx VALUE -1.987759876e-02 TOLERANCE 1e-9
+FLUID DIS 1 NODE 1277 POSITION tractiony NAME tractiony VALUE 9.513520826e-03 TOLERANCE 1e-6
+FLUID DIS 1 NODE 1277 POSITION tractionz NAME tractionz VALUE 3.249899835e-02 TOLERANCE 1e-6
 -----------------------------------------------------------LOCSYS1
 -----------------------------------------------------------LOCSYS2
 -----------------------------------------------------------LOCSYS3
