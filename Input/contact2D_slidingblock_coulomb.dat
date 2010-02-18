@@ -75,17 +75,18 @@ ADAPTCONV_BETTER 0.1
 MAXITER      50
 UZAWAPARAM   1.0
 UZAWAMAXITER 20
-------------------------------------------------STRUCTURAL CONTACT
-CONTACT              Frictional
+---------------------------------------------MESHTYING AND CONTACT
+APPLICATION          MortarContact
 STRATEGY             Lagrange
 SHAPEFCN             Dual
 FRICTION             Coulomb
-FRBOUND              1.0
 FRCOEFF              0.1
 FULL_LINEARIZATION   Yes
 SEMI_SMOOTH_NEWTON   Yes
 SEMI_SMOOTH_CN       10
 SEMI_SMOOTH_CT       10
+SEARCH_ALGORITHM     Binarytree
+SEARCH_PARAM         0.3
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field

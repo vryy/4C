@@ -46,7 +46,7 @@ FILESTEPS              1000
 ------------------------------------------------------------STATIC
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
-------------------------------------------------STRUCTURAL CONTACT
+---------------------------------------------MESHTYING AND CONTACT
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     field_by_function

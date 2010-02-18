@@ -84,7 +84,7 @@ TIMETYP                         Dynamic
 --------------------------------------------STRUCT NOX/Trust Region
 ------------------------------------------------------STRUCT SOLVER
 SOLVER                          UMFPACK
--------------------------------------------------STRUCTURAL CONTACT
+----------------------------------------------MESHTYING AND CONTACT
 -------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1

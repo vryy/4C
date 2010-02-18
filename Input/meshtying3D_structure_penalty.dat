@@ -63,8 +63,8 @@ CONV_CHECK   AbsRes_And_AbsDis
 TOLRES       1.0E-6
 TOLDISP      1.0E-8
 MAXITER      50
-------------------------------------------------STRUCTURAL CONTACT
-CONTACT              Meshtying
+---------------------------------------------MESHTYING AND CONTACT
+APPLICATION          MortarMeshtying
 STRATEGY             Penalty
 SHAPEFCN             Standard
 PENALTYPARAM         1.0e6

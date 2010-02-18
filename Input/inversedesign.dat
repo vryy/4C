@@ -74,7 +74,7 @@ MAXITER      150
 UZAWAPARAM   1.0
 UZAWAMAXITER 20
 UZAWAALGO    iterative
-------------------------------------------------STRUCTURAL CONTACT
+---------------------------------------------MESHTYING AND CONTACT
 -----------------------------------------------------FLUID DYNAMIC
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE              residual_based

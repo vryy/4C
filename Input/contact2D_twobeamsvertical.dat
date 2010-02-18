@@ -81,17 +81,18 @@ UZAWAALGO    iterative
 -------------------------------------------STRUCTURAL DYNAMIC/GEMM
 ---------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 KIND                None  // None ZienkiewiczXie AdamsBashforth2
-------------------------------------------------STRUCTURAL CONTACT
-CONTACT              Frictional
+---------------------------------------------MESHTYING AND CONTACT
+APPLICATION          MortarContact
 STRATEGY             Lagrange
 SHAPEFCN             Dual
 FRICTION             Coulomb
-FRBOUND              1000
 FRCOEFF              0.9
 FULL_LINEARIZATION   Yes
 SEMI_SMOOTH_NEWTON   Yes
 SEMI_SMOOTH_CN       100
 SEMI_SMOOTH_CT       100
+SEARCH_ALGORITHM     BinaryTree
+SEARCH_PARAM         0.3
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         Amesos_KLU_nonsym   // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0            // output every so often, 0 no output

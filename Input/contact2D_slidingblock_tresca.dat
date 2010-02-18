@@ -75,16 +75,14 @@ MAXITER      50
 UZAWAPARAM   1.0
 UZAWAMAXITER 20
 UZAWAALGO    direct
-------------------------------------------------STRUCTURAL CONTACT
-CONTACT              Frictional
+---------------------------------------------MESHTYING AND CONTACT
+APPLICATION          MortarContact
 STRATEGY             Lagrange
 SHAPEFCN             Dual
 FRICTION             Tresca
 FRBOUND              1.0
-FRCOEFF              0.0
 FULL_LINEARIZATION   Yes
 SEMI_SMOOTH_NEWTON   No
-SEMI_SMOOTH_CN       1.0
 SEMI_SMOOTH_CT       1.0
 SEARCH_ALGORITHM     BruteForceEleBased
 SEARCH_PARAM         0.3

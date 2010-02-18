@@ -77,17 +77,14 @@ CONV_CHECK   AbsRes_And_AbsDis
 TOLRES       1.0E-6
 TOLDISP      1.0E-8
 MAXITER      50
-------------------------------------------------STRUCTURAL CONTACT
-CONTACT              Normal
+---------------------------------------------MESHTYING AND CONTACT
+APPLICATION          MortarContact
 STRATEGY             Lagrange
 SHAPEFCN             Dual
 FRICTION             None
-FRBOUND              0.0
-FRCOEFF              0.0
 FULL_LINEARIZATION   Yes
 SEMI_SMOOTH_NEWTON   Yes
 SEMI_SMOOTH_CN       1.0
-SEMI_SMOOTH_CT       1.0
 SEARCH_ALGORITHM     Binarytree
 SEARCH_PARAM         0.5
 -----------------------------------------------------FLUID DYNAMIC

@@ -87,7 +87,7 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
--------------------------------------------------STRUCTURAL CONTACT
+----------------------------------------------MESHTYING AND CONTACT
 -------------------------------------------------STRUCTURAL DYNAMIC
 ------------------------------------------------------------STATIC
 NONLINEAR

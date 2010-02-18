@@ -79,7 +79,7 @@ ALPHA_F      0.0
 -------------------------------------------STRUCTURAL DYNAMIC/GEMM
 ---------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 KIND                None  // None ZienkiewiczXie AdamsBashforth2
-------------------------------------------------STRUCTURAL CONTACT
+---------------------------------------------MESHTYING AND CONTACT
 ------------------------------------------------STATISTICAL MECHANICS
 -----------------------------------------------------FLUID DYNAMIC
 ---------------------------------------FLUID DYNAMIC/STABILIZATION

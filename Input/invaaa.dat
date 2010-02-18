@@ -80,7 +80,7 @@ UZAWAPARAM             1.0
 -----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 -------------------------------------------STRUCTURAL DYNAMIC/GEMM
 ---------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
-------------------------------------------------STRUCTURAL CONTACT
+---------------------------------------------MESHTYING AND CONTACT
 ------------------------------------------------STATISTICAL MECHANICS
 -----------------------------------------------------FLUID DYNAMIC
 ---------------------------------------FLUID DYNAMIC/STABILIZATION

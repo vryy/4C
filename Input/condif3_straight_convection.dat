@@ -49,11 +49,7 @@ FILESTEPS              1000
 LINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
-------------------------------------------------STRUCTURAL CONTACT
-CONTACT          None
-FRICTION         None
-FRBOUND          0.0
-FRCOEFF          0.0
+---------------------------------------------MESHTYING AND CONTACT
 -----------------------------------------------------FLUID DYNAMIC
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE       linear_full

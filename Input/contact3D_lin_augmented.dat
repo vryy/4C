@@ -63,14 +63,17 @@ CONV_CHECK   AbsRes_And_AbsDis
 TOLRES       1.0E-8
 TOLDISP      1.0E-8
 MAXITER      50
-------------------------------------------------STRUCTURAL CONTACT
-CONTACT              Normal
+---------------------------------------------MESHTYING AND CONTACT
+APPLICATION          MortarContact
 STRATEGY             Augmented
 SHAPEFCN             Standard
 PENALTYPARAM         20000
 UZAWAMAXSTEPS        10
 UZAWACONSTRTOL       1.0E-8
+FRICTION             None
 FULL_LINEARIZATION   Yes
+SEMI_SMOOTH_NEWTON   Yes
+SEMI_SMOOTH_CN       1.0
 SEARCH_ALGORITHM     BruteForceEleBased
 SEARCH_PARAM         0.3
 COUPLING_AUXPLANE    Yes

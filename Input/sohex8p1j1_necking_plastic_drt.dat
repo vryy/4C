@@ -48,8 +48,7 @@ SHAPEFCT                        Polynomial
 TIMETYP                         Dynamic
 ------------------------------------------------------STRUCT SOLVER
 SOLVER                          UMFPACK
--------------------------------------------------STRUCTURAL CONTACT
-CONTACT                         None
+----------------------------------------------MESHTYING AND CONTACT
 -------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1

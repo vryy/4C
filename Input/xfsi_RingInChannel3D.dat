@@ -160,23 +160,7 @@ Forcing Term Minimum Tolerance  = 1e-06
 Rescue Bad Newton Solver        = Yes
 ------------------------------------------------------STRUCT SOLVER
 SOLVER                          UMFPACK
--------------------------------------------------STRUCTURAL CONTACT
-CONTACT                         None
-COUPLING_AUXPLANE               Yes
-FRBOUND                         0
-FRCOEFF                         0
-FRICTION                        None
-FULL_LINEARIZATION              Yes
-PENALTYPARAM                    0
-SEARCH_ALGORITHM                Binarytree
-SEARCH_PARAM                    0.3
-SEMI_SMOOTH_CN                  1
-SEMI_SMOOTH_CT                  1
-SEMI_SMOOTH_NEWTON              Yes
-SHAPEFCN                        Dual
-STRATEGY                        LagrangianMultipliers
-UZAWACONSTRTOL                  1e-08
-UZAWAMAXSTEPS                   10
+----------------------------------------------MESHTYING AND CONTACT
 -------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1

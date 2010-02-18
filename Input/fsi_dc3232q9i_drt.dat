@@ -76,7 +76,7 @@ UZAWAMAXITER 20
 UZAWAALGO iterative
 ---------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 KIND None
-------------------------------------------------STRUCTURAL CONTACT
+---------------------------------------------MESHTYING AND CONTACT
 ------------------------------------------------STATISTICAL MECHANICS
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP Nlin_Time_Int

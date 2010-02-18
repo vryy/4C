@@ -65,12 +65,11 @@ CONV_CHECK   AbsRes_And_AbsDis
 TOLRES       1.0E-10
 TOLDISP      1.0E-8
 MAXITER      50
-------------------------------------------------STRUCTURAL CONTACT
-CONTACT              Frictional
+---------------------------------------------MESHTYING AND CONTACT
+APPLICATION          MortarContact
 STRATEGY             Lagrange
 SHAPEFCN             Dual
 FRICTION             Coulomb
-FRBOUND              100
 FRCOEFF              0.2
 FULL_LINEARIZATION   Yes
 SEMI_SMOOTH_NEWTON   Yes

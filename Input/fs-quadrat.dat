@@ -49,7 +49,7 @@ LINEAR
 -----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 -------------------------------------------STRUCTURAL DYNAMIC/GEMM
 ---------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
-------------------------------------------------STRUCTURAL CONTACT
+---------------------------------------------MESHTYING AND CONTACT
 ---------------------------------------------STATISTICAL MECHANICS
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int

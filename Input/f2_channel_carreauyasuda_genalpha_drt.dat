@@ -278,11 +278,7 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
--------------------------------------------------STRUCTURAL CONTACT
-CONTACT                         None
-FRBOUND                         0
-FRCOEFF                         0
-FRICTION                        None
+----------------------------------------------MESHTYING AND CONTACT
 -------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
