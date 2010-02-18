@@ -319,11 +319,6 @@ public:
   */
   virtual double* uold() { return uold_; }
 
-   /*!
-  \brief Return current closest node's global id (by reference)
-  */
-  virtual int& ClosestNode() { return closestnode_; }
-
   /*!
   \brief Return projection status of this node (only for slave side!)
   */
@@ -443,15 +438,10 @@ protected:
   bool            isdbc_;          // true if cnode has D.B.C.applied to at least one dof
   int             numdof_;         // number of degrees of freedom (length of dofs_)
   vector<int>     dofs_;           // degrees of freedom of this node
-  
   double          xspatial_[3];    // current configuration
   double          uold_[3];        // old displacement (last converged state)
-
-  int             closestnode_;    // closest node id on the other side of interface
   bool            hasproj_;        // true if feasible projection within search set (slave nodes only)
-
-  // Penalty-related quantities 
-  double         kappa_; // gap-scaling factor
+  double          kappa_;          // gap-scaling factor (penalty contact only)
   
   RCP<MORTAR::MortarNodeDataContainer> modata_;   // additional information of proc's mortar nodes
  

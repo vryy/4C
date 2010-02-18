@@ -774,7 +774,6 @@ bool MORTAR::MortarInterface::EvaluateSearch()
     // find closest master node to current slave node
     double mindist = 1.0e12;
     MortarNode* closestnode = snode->FindClosestNode(idiscret_,mnodefullmapnobound_,mindist);
-    snode->ClosestNode() = closestnode->Id();
 
     // proceed only if nodes are not far from each other!!!
     if (mindist<=SearchParam())
@@ -812,7 +811,6 @@ bool MORTAR::MortarInterface::EvaluateSearch()
     // find closest slave node to current master node
     double mindist = 1.0e12;
     MortarNode* closestnode = mnode->FindClosestNode(idiscret_,snodefullmapbound_,mindist);
-    mnode->ClosestNode() = closestnode->Id();
 
     // proceed only if nodes are not far from each other!!!
     if (mindist<=SearchParam())
