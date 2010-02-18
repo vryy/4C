@@ -126,13 +126,13 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   // for frictional contact we need history values and therefore we store
   // the nodal entries of mortar matrices (reference configuration) before
   // first time step
-  INPAR::CONTACT::ContactType ctype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(contactmanager_->GetStrategy().Params(),"FRICTION");
 
   INPAR::CONTACT::SolvingStrategy strattype =
       Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(contactmanager_->GetStrategy().Params(),"STRATEGY");
 
-  if(params_.get<int>("step") == 0 && ctype != INPAR::CONTACT::contact_normal)
+  if(params_.get<int>("step") == 0 && ftype != INPAR::CONTACT::friction_none)
   {
   	// set state and do mortar calculation
     contactmanager_->GetStrategy().SetState("displacement",disn_);
@@ -414,7 +414,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   if (strattype == INPAR::CONTACT::solution_penalty
   		or strattype == INPAR::CONTACT::solution_auglag)
   {
-    if(ctype != INPAR::CONTACT::contact_normal)
+    if(ftype != INPAR::CONTACT::friction_none)
       contactmanager_->GetStrategy().EvaluateRelMov();
   }
   contactmanager_->GetStrategy().Initialize();
@@ -497,13 +497,13 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   // for frictional contact we need history values and therefore we store
   // the nodal entries of mortar matrices (reference configuration) before
   // first time step
-  INPAR::CONTACT::ContactType ctype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
+  INPAR::CONTACT::FrictionType ftype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(contactmanager_->GetStrategy().Params(),"FRICTION");
 
   INPAR::CONTACT::SolvingStrategy strattype =
       Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(contactmanager_->GetStrategy().Params(),"STRATEGY");
 
-  if(params_.get<int>("step") == 0 && ctype != INPAR::CONTACT::contact_normal)
+  if(params_.get<int>("step") == 0 && ftype != INPAR::CONTACT::friction_none)
   {
   	// set state and do mortar calculation
     contactmanager_->GetStrategy().SetState("displacement",disn_);
@@ -706,7 +706,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   if (strattype == INPAR::CONTACT::solution_penalty
   		or strattype == INPAR::CONTACT::solution_auglag)
   {
-    if(ctype != INPAR::CONTACT::contact_normal)
+    if(ftype != INPAR::CONTACT::friction_none)
       contactmanager_->GetStrategy().EvaluateRelMov();
   }
 
@@ -1331,9 +1331,9 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       // here the relative movement of the contact bodies is evaluated
       // therefore the current configuration and the according mortar
       // matrices are needed
-      INPAR::CONTACT::ContactType ctype =
-        Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
-      if(ctype != INPAR::CONTACT::contact_normal)
+      INPAR::CONTACT::FrictionType ftype =
+        Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(contactmanager_->GetStrategy().Params(),"FRICTION");
+      if(ftype != INPAR::CONTACT::friction_none)
         contactmanager_->GetStrategy().EvaluateRelMov();
 
       contactmanager_->GetStrategy().Initialize();
@@ -1733,9 +1733,9 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       // here the relative movement of the contact bodies is evaluated
       // therefore the current configuration and the according mortar
       // matrices are needed
-      INPAR::CONTACT::ContactType ctype =
-        Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
-      if(ctype != INPAR::CONTACT::contact_normal)
+      INPAR::CONTACT::FrictionType ftype =
+        Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(contactmanager_->GetStrategy().Params(),"FRICTION");
+      if(ftype != INPAR::CONTACT::friction_none)
         contactmanager_->GetStrategy().EvaluateRelMov();
 
       // this is the correct place to update the active set!!!
@@ -1965,9 +1965,9 @@ void CONTACT::ContactStruGenAlpha::Update()
   // informations and quantities at the end of a time step (converged
   // state) which is needed in the next time step as history
   // information/quantities. These are:
-  INPAR::CONTACT::ContactType ctype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
-  if(ctype != INPAR::CONTACT::contact_normal)
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(contactmanager_->GetStrategy().Params(),"FRICTION");
+  if(ftype != INPAR::CONTACT::friction_none)
   {
   	// store contact state to contact nodes (active or inactive)
     contactmanager_->GetStrategy().StoreNodalQuantities(AbstractStrategy::activeold);

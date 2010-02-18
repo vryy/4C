@@ -18,27 +18,26 @@ Maintainer: Alexander Popp
 namespace INPAR
 {
 
-  /// Input parameters for structural CONTACT
+  /// Input parameters for structural CONTACT and meshtying
   namespace CONTACT
   {
 
-    /// Type of structural contact problem
-    /// (this enum represents the input file parameter CONTACT)
-    enum ContactType
+    /// Type of contact or meshtying application
+    /// (this enum represents the input file parameter APPLICATION)
+    enum ApplicationType
     {
-      contact_none,  ///< no contact
-      contact_normal,  ///< frictionless contact
-      contact_frictional,  ///< frictional contact
-      contact_meshtying,  ///< tied contact (mesh tying)
-      contact_beams  ///< beam contact
+      app_none,             ///< no meshtying or contact
+      app_mortarcontact,    ///< mortar contact
+      app_mortarmeshtying,  ///< mortar meshtying
+      app_beamcontact       ///< beam contact
     };
 
     /// Type of contact friction law
     /// (this enum represents the input file parameter FRICTION)
-    enum ContactFrictionType
+    enum FrictionType
     {
-      friction_none,  ///< no friction
-      friction_stick,  ///< perfect stick
+      friction_none,    ///< no friction
+      friction_stick,   ///< perfect stick
       friction_tresca,  ///< Tresca friction law
       friction_coulomb  ///< Coulomb friction law
     };
@@ -49,7 +48,7 @@ namespace INPAR
     {
       solution_lagmult,  ///< method of lagrange multipliers
       solution_penalty,  ///< penalty approach
-      solution_auglag  ///< augmented lagrange approach
+      solution_auglag   ///< augmented lagrange approach
     };
 
   }  // namespace CONTACT

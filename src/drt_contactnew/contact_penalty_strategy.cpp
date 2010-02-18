@@ -473,12 +473,12 @@ void CONTACT::CoPenaltyStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& k
   // one difference
 
   // check if friction should be applied
-  INPAR::CONTACT::ContactFrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
 
   // coulomb friction case
-  if(ftype == INPAR::CONTACT::friction_coulomb or
-     ftype == INPAR::CONTACT::friction_stick)
+  if (ftype == INPAR::CONTACT::friction_coulomb ||
+      ftype == INPAR::CONTACT::friction_stick)
   {
     EvaluateContact(kteff,feff);
   }
@@ -607,8 +607,6 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
   bool updatepenaltytan = false;
   double ppcurr = Params().get<double>("PENALTYPARAM");
   double ppcurrtan = Params().get<double>("PENALTYPARAMTAN");
-  INPAR::CONTACT::ContactType ctype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(Params(),"CONTACT");
 
   // gactivenodes_ is undefined
   if (gactivenodes_==Teuchos::null)
@@ -635,7 +633,7 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
     gact->Norm2(&cnorm);
     
     // Evaluate norm in tangential direction for frictional contact
-    if (ctype!=INPAR::CONTACT::contact_normal)
+    if (friction_)
     {
       for (int i=0; i<(int)interface_.size(); ++i)
         interface_[i]->EvaluateTangentNorm(cnormtan);
@@ -670,9 +668,8 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
           interface_[i]->IParams().set<double>("PENALTYPARAM",10*ippcurr);
         }
         // in the case of frictional contact, the tangential penalty
-        // parameter is also dated up when this is done for the normal
-        // one
-        if (ctype!=INPAR::CONTACT::contact_normal)
+        // parameter is also dated up when this is done for the normal one
+        if (friction_)
         {
           updatepenaltytan = true;
 
@@ -701,11 +698,11 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
   {
     cout << "********************************************\n";
     cout << "Normal Constraint Norm: " << cnorm << "\n";
-    if (ctype != INPAR::CONTACT::contact_normal)
+    if (friction_)
       cout << "Tangential Constraint Norm: " << cnormtan << "\n";
     if (updatepenalty)
       cout << "Updated normal penalty parameter: " << ppcurr << " -> " << Params().get<double>("PENALTYPARAM") << "\n";
-    if (updatepenaltytan == true and ctype != INPAR::CONTACT::contact_normal)
+    if (updatepenaltytan == true && friction_)
      cout << "Updated tangential penalty parameter: " << ppcurrtan << " -> " << Params().get<double>("PENALTYPARAMTAN") << "\n";
     cout << "********************************************\n\n";
   }

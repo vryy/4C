@@ -65,7 +65,7 @@ public:
                   DRT::Discretization& dis,
                   LINALG::Solver& solver,
                   IO::DiscretizationWriter& output,
-                  INPAR::CONTACT::ContactType ctype);
+                  INPAR::CONTACT::ApplicationType apptype);
 
   /*!
   \brief Destructor
@@ -194,6 +194,12 @@ public:
   */
   void ReadRestart(int step);
 
+  /*!
+  \brief get manager
+
+  */
+  RCP<MORTAR::ManagerBase> GetManager() {return cmtmanager_; }
+    
 protected:
 
   // don't want = operator and cctor

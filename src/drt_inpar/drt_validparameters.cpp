@@ -858,28 +858,27 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                             &iap);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& scontact = list->sublist("STRUCTURAL CONTACT",false,"");
+  Teuchos::ParameterList& scontact = list->sublist("MESHTYING AND CONTACT",false,"");
 
-  setStringToIntegralParameter<INPAR::CONTACT::ContactType>("CONTACT","None","Type of structural contact",
+  setStringToIntegralParameter<INPAR::CONTACT::ApplicationType>("APPLICATION","None","Type of contact or meshtying app",
                                tuple<std::string>("None","none",
-                                                  "Normal","normal",
-                                                  "Frictional","frictional",
-                                                  "MeshTying","Meshtying","meshtying",
-                                                  "Beams","beams"),
-                               tuple<INPAR::CONTACT::ContactType>(INPAR::CONTACT::contact_none,INPAR::CONTACT::contact_none,
-                                          INPAR::CONTACT::contact_normal,INPAR::CONTACT::contact_normal,
-                                          INPAR::CONTACT::contact_frictional,INPAR::CONTACT::contact_frictional,
-                                          INPAR::CONTACT::contact_meshtying,INPAR::CONTACT::contact_meshtying,
-                                          INPAR::CONTACT::contact_meshtying,
-                                          INPAR::CONTACT::contact_beams, INPAR::CONTACT::contact_beams),
+                                                  "MortarContact","mortarcontact",
+                                                  "MortarMeshtying","mortarmeshtying",
+                                                  "BeamContact","beamcontact"),
+                               tuple<INPAR::CONTACT::ApplicationType>(
+                                          INPAR::CONTACT::app_none,INPAR::CONTACT::app_none,
+                                          INPAR::CONTACT::app_mortarcontact,INPAR::CONTACT::app_mortarcontact,
+                                          INPAR::CONTACT::app_mortarmeshtying,INPAR::CONTACT::app_mortarmeshtying,
+                                          INPAR::CONTACT::app_beamcontact, INPAR::CONTACT::app_beamcontact),
                                &scontact);
 
-  setStringToIntegralParameter<INPAR::CONTACT::ContactFrictionType>("FRICTION","None","Type of friction law",
+  setStringToIntegralParameter<INPAR::CONTACT::FrictionType>("FRICTION","None","Type of friction law",
                                 tuple<std::string>("None","none",
                                                    "Stick","stick",
                                                    "Tresca","tresca",
                                                    "Coulomb","coulomb"),
-                                tuple<INPAR::CONTACT::ContactFrictionType>(INPAR::CONTACT::friction_none,INPAR::CONTACT::friction_none,
+                                tuple<INPAR::CONTACT::FrictionType>(
+                                           INPAR::CONTACT::friction_none,INPAR::CONTACT::friction_none,
                                            INPAR::CONTACT::friction_stick,INPAR::CONTACT::friction_stick,
                                            INPAR::CONTACT::friction_tresca,INPAR::CONTACT::friction_tresca,
                                            INPAR::CONTACT::friction_coulomb,INPAR::CONTACT::friction_coulomb),
@@ -887,19 +886,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<INPAR::CONTACT::SolvingStrategy>("STRATEGY","LagrangianMultipliers","Type of employed solving strategy",
         tuple<std::string>("LagrangianMultipliers","lagrange", "Lagrange",
-            "PenaltyMethod","penalty", "Penalty",
-            "AugmentedLagrange","augmented", "Augmented"),
-            tuple<INPAR::CONTACT::SolvingStrategy>(INPAR::CONTACT::solution_lagmult, INPAR::CONTACT::solution_lagmult, INPAR::CONTACT::solution_lagmult,
+                           "PenaltyMethod","penalty", "Penalty",
+                           "AugmentedLagrange","augmented", "Augmented"),
+        tuple<INPAR::CONTACT::SolvingStrategy>(
+                INPAR::CONTACT::solution_lagmult, INPAR::CONTACT::solution_lagmult, INPAR::CONTACT::solution_lagmult,
                 INPAR::CONTACT::solution_penalty, INPAR::CONTACT::solution_penalty, INPAR::CONTACT::solution_penalty,
                 INPAR::CONTACT::solution_auglag, INPAR::CONTACT::solution_auglag, INPAR::CONTACT::solution_auglag),
-                &scontact);
+        &scontact);
 
   setStringToIntegralParameter<INPAR::MORTAR::ShapeFcn>("SHAPEFCN","Dual","Type of employed set of shape functions",
         tuple<std::string>("Dual", "dual",
-            "Standard", "standard", "std"),
-            tuple<INPAR::MORTAR::ShapeFcn>(INPAR::MORTAR::shape_dual, INPAR::MORTAR::shape_dual,
+                           "Standard", "standard", "std"),
+        tuple<INPAR::MORTAR::ShapeFcn>(
+                INPAR::MORTAR::shape_dual, INPAR::MORTAR::shape_dual,
                 INPAR::MORTAR::shape_standard, INPAR::MORTAR::shape_standard, INPAR::MORTAR::shape_standard),
-                &scontact);
+        &scontact);
 
   DoubleParameter("PENALTYPARAM",0.0,"Penalty parameter for penalty / augmented solution strategy",&scontact);
   DoubleParameter("PENALTYPARAMTAN",0.0,"Tangential penalty parameter for penalty / augmented solution strategy",&scontact);

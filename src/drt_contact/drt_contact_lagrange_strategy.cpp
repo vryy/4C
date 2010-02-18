@@ -72,8 +72,8 @@ void CONTACT::LagrangeStrategy::Initialize()
   smatrix_ = rcp(new LINALG::SparseMatrix(*gactiven_,3));
 
   // further terms depend on friction case
-  INPAR::CONTACT::ContactFrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
 
   // (re)setup global matrix containing "no-friction"-derivatives
   if (ftype == INPAR::CONTACT::friction_none)
@@ -1313,10 +1313,8 @@ void CONTACT::LagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
 void CONTACT::LagrangeStrategy::UpdateActiveSet()
 {
   // get input parameter ctype
-  INPAR::CONTACT::ContactType ctype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(Params(),"CONTACT");
-  INPAR::CONTACT::ContactFrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
 
   // assume that active set has converged and check for opposite
   activesetconv_=true;
@@ -1347,11 +1345,10 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
       }
 
       // friction
-
       double tz = 0.0;
       double tjump = 0.0;
 
-      if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
+      if (ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
       {
         // compute tangential part of Lagrange multiplier
         tz = cnode->GetData().txi()[0]*cnode->GetData().lm()[0] + cnode->GetData().txi()[1]*cnode->GetData().lm()[1];
@@ -1395,29 +1392,19 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
         if (nz <= 0) // no averaging of Lagrange multipliers
         //if (0.5*nz+0.5*nzold <= 0) // averaging of Lagrange multipliers
         {
-          if (ctype != INPAR::CONTACT::contact_meshtying)
-          {
-            cnode->Active() = false;
-
-            // friction
-            if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
-            {
-              cnode->GetData().Slip() = false;
-            }
-            activesetconv_ = false;
-          }
-          else
-          {
-            cnode->Active() = true;   // set all nodes active for mesh tying
-            activesetconv_ = true;    // no active set loop for mesh tying
-          }
+          cnode->Active() = false;
+          activesetconv_ = false;
+          
+          // friction
+          if (ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
+            cnode->GetData().Slip() = false;   
         }
 
-        // friction
+        // only do something for friction
         else
         {
           // friction tresca
-          if(ftype == INPAR::CONTACT::friction_tresca)
+          if (ftype == INPAR::CONTACT::friction_tresca)
           {
             double frbound = Params().get<double>("FRBOUND");
             double ct = Params().get<double>("SEMI_SMOOTH_CT");
@@ -1454,10 +1441,10 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
 #endif
               }
             }
-          } // if(ftype == INPAR::CONTACT::friction_tresca)
+          } // if (ftype == INPAR::CONTACT::friction_tresca)
 
           // friction coulomb
-          if(ftype == INPAR::CONTACT::friction_coulomb)
+          if (ftype == INPAR::CONTACT::friction_coulomb)
           {
             double frcoeff = Params().get<double>("FRCOEFF");
             double ct = Params().get<double>("SEMI_SMOOTH_CT");
@@ -1494,7 +1481,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
 #endif
               }
             }
-          } // if(ftype == INPAR::CONTACT::friction_coulomb)
+          } // if (ftype == INPAR::CONTACT::friction_coulomb)
         } // if (nz <= 0)
       } // if (cnode->Active()==false)
     } // loop over all slave nodes
@@ -1569,7 +1556,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
   bool zigzagging = false;
 
   // FIXGIT: For tresca friction zig-zagging is not eliminated
-  if(ftype != INPAR::CONTACT::friction_tresca && ftype != INPAR::CONTACT::friction_coulomb)
+  if (ftype != INPAR::CONTACT::friction_tresca && ftype != INPAR::CONTACT::friction_coulomb)
   {
     if (ActiveSetSteps()>2)
     {
@@ -1634,10 +1621,8 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
   // FIXME: Here we do not consider zig-zagging yet!
 
   // get input parameter ctype
-  INPAR::CONTACT::ContactType ctype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(Params(),"CONTACT");
-  INPAR::CONTACT::ContactFrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
 
   // read weighting factor cn
   // (this is necessary in semi-smooth Newton case, as the search for the
@@ -1681,7 +1666,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
       vector<double> tjump (Dim()-1,0);
       double euclidean = 0.0;
 
-      if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
+      if (ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
        {
        	// compute tangential parts and of Lagrange multiplier and incremental jumps
        	for (int i=0;i<Dim();++i)
@@ -1713,19 +1698,17 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
         if (nz - cn*wgap > 0)
         {
           cnode->Active() = true;
+          activesetconv_ = false;
 
           //friction
-          if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
+          if (ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
           {
           	// nodes coming into contact
             cnode->GetData().Slip() = true;
-
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->GetData().ActiveOld()==false) cnode->GetData().Slip() = true;
 #endif
-          }
-
-          activesetconv_ = false;
+          }       
         }
       }
 
@@ -1741,29 +1724,19 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
         if (nz - cn*wgap <= 0) // no averaging of Lagrange multipliers
         //if ((0.5*nz+0.5*nzold) - cn*wgap <= 0) // averaging of Lagrange multipliers
         {
-          if (ctype != INPAR::CONTACT::contact_meshtying)
-          {
-            cnode->Active() = false;
+          cnode->Active() = false;
+          activesetconv_ = false;
 
-            // friction
-            if(ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
-            {
-              cnode->GetData().Slip() = false;
-            }
-            activesetconv_ = false;
-          }
-          else
-          {
-            cnode->Active() = true;   // set all nodes active for mesh tying
-            activesetconv_ = true;    // no active set loop for mesh tying
-          }
+          // friction
+          if (ftype == INPAR::CONTACT::friction_tresca || ftype == INPAR::CONTACT::friction_coulomb)
+            cnode->GetData().Slip() = false;  
         }
 
-        // friction
+        // only do something for friction
         else
         {
           // friction tresca
-          if(ftype == INPAR::CONTACT::friction_tresca)
+          if (ftype == INPAR::CONTACT::friction_tresca)
           {
             double frbound = Params().get<double>("FRBOUND");
 
@@ -1802,7 +1775,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
           } // if (fytpe=="tresca")
 
           // friction coulomb
-          if(ftype == INPAR::CONTACT::friction_coulomb)
+          if (ftype == INPAR::CONTACT::friction_coulomb)
           {
             double frcoeff = Params().get<double>("FRCOEFF");
             if(cnode->GetData().Slip() == false)
@@ -1845,7 +1818,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth()
 #endif
               }
             }
-          } // if(ftype == INPAR::CONTACT::friction_coulomb)
+          } // if (ftype == INPAR::CONTACT::friction_coulomb)
         } // if (nz - cn*wgap <= 0)
       } // if (cnode->Active()==false)
     } // loop over all slave nodes

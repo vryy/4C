@@ -173,17 +173,17 @@ void CONTACT::PenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& ktef
     interface_[i]->AssembleRegNormalForces(localisincontact, localactivesetchange);
 
     // evaluate lagrange multipliers (regularized forces) in tangential direction
-    INPAR::CONTACT::ContactFrictionType ftype =
-      Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
+    INPAR::CONTACT::FrictionType ftype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
     INPAR::CONTACT::SolvingStrategy soltype =
       Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
 
-    if((ftype==INPAR::CONTACT::friction_coulomb or ftype==INPAR::CONTACT::friction_stick)
-    	  and soltype==INPAR::CONTACT::solution_penalty)
+    if((ftype==INPAR::CONTACT::friction_coulomb || ftype==INPAR::CONTACT::friction_stick)
+    	  && soltype==INPAR::CONTACT::solution_penalty)
       interface_[i]->AssembleRegTangentForcesPenalty();
 
-    if((ftype==INPAR::CONTACT::friction_coulomb or ftype==INPAR::CONTACT::friction_stick)
-    	  and soltype==INPAR::CONTACT::solution_auglag)
+    if((ftype==INPAR::CONTACT::friction_coulomb || ftype==INPAR::CONTACT::friction_stick)
+    	  && soltype==INPAR::CONTACT::solution_auglag)
       interface_[i]->AssembleRegTangentForcesAugmented();
 
     isincontact = isincontact || localisincontact;
@@ -491,12 +491,12 @@ void CONTACT::PenaltyStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& kte
 	// one difference
 
   // check if friction should be applied
-  INPAR::CONTACT::ContactFrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
 
 	// coulomb friction case
-	if(ftype == INPAR::CONTACT::friction_coulomb or
-		 ftype == INPAR::CONTACT::friction_stick)
+	if (ftype == INPAR::CONTACT::friction_coulomb ||
+		  ftype == INPAR::CONTACT::friction_stick)
 	{
 		EvaluateContact(kteff,feff);
   }
@@ -622,8 +622,8 @@ void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
   bool updatepenaltytan = false;
   double ppcurr = Params().get<double>("PENALTYPARAM");
   double ppcurrtan = Params().get<double>("PENALTYPARAMTAN");
-  INPAR::CONTACT::ContactType ctype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(Params(),"CONTACT");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
 
   // gactivenodes_ is undefined
   if (gactivenodes_==Teuchos::null)
@@ -650,7 +650,7 @@ void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
     gact->Norm2(&cnorm);
 
     // Evaluate norm in tangential direction for frictional contact
-    if (ctype!=INPAR::CONTACT::contact_normal)
+    if (ftype != INPAR::CONTACT::friction_none)
     {
       for (int i=0; i<(int)interface_.size(); ++i)
         interface_[i]->EvaluateTangentNorm(cnormtan);
@@ -686,9 +686,8 @@ void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
         }
 
         // in the case of frictional contact, the tangential penalty
-        // parameter is also dated up when this is done for the normal
-        // one
-        if (ctype!=INPAR::CONTACT::contact_normal)
+        // parameter is also dated up when this is done for the normal one
+        if (ftype != INPAR::CONTACT::friction_none)
         {
 
         	updatepenaltytan = true;
@@ -718,11 +717,11 @@ void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
   {
     cout << "********************************************\n";
     cout << "Normal Constraint Norm: " << cnorm << "\n";
-    if (ctype != INPAR::CONTACT::contact_normal)
+    if (ftype != INPAR::CONTACT::friction_none)
       cout << "Tangential Constraint Norm: " << cnormtan << "\n";
     if (updatepenalty)
       cout << "Updated normal penalty parameter: " << ppcurr << " -> " << Params().get<double>("PENALTYPARAM") << "\n";
-    if (updatepenaltytan == true and ctype != INPAR::CONTACT::contact_normal)
+    if (updatepenaltytan == true && ftype != INPAR::CONTACT::friction_none)
      cout << "Updated tangential penalty parameter: " << ppcurrtan << " -> " << Params().get<double>("PENALTYPARAMTAN") << "\n";
     cout << "********************************************\n\n";
   }

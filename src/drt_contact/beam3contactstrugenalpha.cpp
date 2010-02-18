@@ -37,8 +37,8 @@ StruGenAlpha(params,dis,solver,output)
   // check again whether we have beam contact and create beam3cmanager
   // -------------------------------------------------------------------
   // Check for beam contact
-  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->StructuralContactParams();
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(scontact,"CONTACT") == INPAR::CONTACT::contact_beams)
+  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION") == INPAR::CONTACT::app_beamcontact)
     beamcmanager_ = rcp(new CONTACT::Beam3cmanager(dis));
   else
     dserror("ERROR: How did you arrive here...???");

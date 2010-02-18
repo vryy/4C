@@ -56,7 +56,7 @@ CONTACT::CmtStruGenAlpha::CmtStruGenAlpha(ParameterList& params,
                                           DRT::Discretization& dis,
                                           LINALG::Solver& solver,
                                           IO::DiscretizationWriter& output,
-                                          INPAR::CONTACT::ContactType ctype) :
+                                          INPAR::CONTACT::ApplicationType apptype) :
 StruGenAlpha(params,dis,solver,output)
 {
   // -------------------------------------------------------------------
@@ -73,11 +73,9 @@ StruGenAlpha(params,dis,solver,output)
     double alphaf = params_.get<double>("alpha f",0.459);
     
     // decide whether this is meshtying or contact
-    if (ctype==INPAR::CONTACT::contact_meshtying)
+    if      (apptype==INPAR::CONTACT::app_mortarmeshtying)
       cmtmanager_ = rcp(new CONTACT::MtManager(discret_,alphaf));
-    else if (ctype==INPAR::CONTACT::contact_normal)
-      cmtmanager_ = rcp(new CONTACT::CoManager(discret_,alphaf));
-    else if (ctype==INPAR::CONTACT::contact_frictional)
+    else if (apptype==INPAR::CONTACT::app_mortarcontact)
       cmtmanager_ = rcp(new CONTACT::CoManager(discret_,alphaf));
     else
       dserror("ERROR: You should not be here!");
@@ -3859,9 +3857,9 @@ void CONTACT::CmtStruGenAlpha::Integrate()
   // Newton scheme. This yields TWO nested iteration loops
   //********************************************************************
   
-  // contact type
-  INPAR::CONTACT::ContactType ctype =
-      Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(cmtmanager_->GetStrategy().Params(),"CONTACT");
+  // application type (contact or meshtying)
+  INPAR::CONTACT::ApplicationType apptype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(cmtmanager_->GetStrategy().Params(),"APPLICATION");
     
   // strategy type
   INPAR::CONTACT::SolvingStrategy soltype =
@@ -3886,7 +3884,7 @@ void CONTACT::CmtStruGenAlpha::Integrate()
     // merged into one semi-smooth Newton method and solved within ONE
     // iteration loop
     //********************************************************************
-    if (ctype != INPAR::CONTACT::contact_meshtying && semismooth)
+    if (apptype == INPAR::CONTACT::app_mortarcontact && semismooth)
     {
       // LOOP1: time steps
       for (int i=step; i<nstep; ++i)
@@ -3923,7 +3921,7 @@ void CONTACT::CmtStruGenAlpha::Integrate()
     // linearization (=geimetrical nonlinearity) is treated by a standard
     // Newton scheme. This yields TWO nested iteration loops
     //********************************************************************
-    else if (ctype != INPAR::CONTACT::contact_meshtying && !semismooth)
+    else if (apptype == INPAR::CONTACT::app_mortarcontact && !semismooth)
     {
       // LOOP1: time steps
       for (int i=step; i<nstep; ++i)
@@ -4103,10 +4101,23 @@ void CONTACT::CmtStruGenAlpha::ReadRestart(int step)
   reader.ReadVector(fext_,"fexternal");
   reader.ReadMesh(step);
 
-  // read restart information for contact
-  cmtmanager_->ReadRestart(reader,zeros_);
-  // TODO change!!!
-  // cmtmanager_->ReadRestart(reader,dis_);
+  //**********************************************************************
+  // read restart information for contact or meshtying
+  //**********************************************************************
+  // NOTE: There is an important difference here between contact and
+  // meshtying simulations. In both cases, the current coupling operators
+  // have to be re-computed for restart, but in the meshtying case this
+  // means evaluating DM in the reference configuration!
+  // Thus, dis_ is handed in as current displacement state for contact
+  // simulations, but zero_ is handed in for meshtying simulations.
+  //**********************************************************************
+  INPAR::CONTACT::ApplicationType apptype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(cmtmanager_->GetStrategy().Params(),"APPLICATION");
+  
+  if (apptype == INPAR::CONTACT::app_mortarcontact)
+    cmtmanager_->ReadRestart(reader,dis_);
+  else if (apptype == INPAR::CONTACT::app_mortarmeshtying)
+    cmtmanager_->ReadRestart(reader,zeros_);
 
   // override current time and step with values from file
   params_.set<double>("total time",time);

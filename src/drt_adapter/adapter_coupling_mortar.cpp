@@ -55,11 +55,10 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
       "FSICoupling");
 
   // get structural dynamics parameter
-  const Teuchos::ParameterList& input = DRT::Problem::Instance()->StructuralContactParams();
+  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
 
   // check for invalid paramater values
-  if (Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(DRT::Problem::Instance()->StructuralContactParams(),
-      "SHAPEFCN") != INPAR::MORTAR::shape_dual)
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
     dserror("Mortar coupling adapter only works for dual shape functions");
 
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)

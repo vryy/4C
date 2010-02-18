@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_structure_contactstrugenalpha.H
+\file adapter_structure_cmtstrugenalpha.H
 
-\brief Structure field adapter
+\brief Structure (with meshtying or contact) field adapter
 
 <pre>
 Maintainer: Ursula Mayer
@@ -25,7 +25,8 @@ Maintainer: Ursula Mayer
 #include <Epetra_Operator.h>
 
 #include "../drt_lib/drt_utils.H"
-#include "../drt_contact/contactstrugenalpha.H"
+#include "../drt_inpar/inpar_contact.H"
+#include "../drt_contactnew/strugenalpha_cmt.H"
 #include "../drt_structure/stru_resulttest.H"
 #include "../drt_structure/structure_utils_mapextractor.H"
 
@@ -33,15 +34,16 @@ Maintainer: Ursula Mayer
 
 namespace ADAPTER {
 
-  /// adapter to contact generalized alpha algorithm
-  class ContactStructureGenAlpha : public Structure
+  /// adapter to contact or meshtying generalized alpha algorithm
+  class CmtStructureGenAlpha : public Structure
   {
   public:
 
-    ContactStructureGenAlpha(Teuchos::RCP<Teuchos::ParameterList> params,
-                     Teuchos::RCP<DRT::Discretization> dis,
-                     Teuchos::RCP<LINALG::Solver> solver,
-                     Teuchos::RCP<IO::DiscretizationWriter> output);
+    CmtStructureGenAlpha(Teuchos::RCP<Teuchos::ParameterList> params,
+                         Teuchos::RCP<DRT::Discretization> dis,
+                         Teuchos::RCP<LINALG::Solver> solver,
+                         Teuchos::RCP<IO::DiscretizationWriter> output,
+                         INPAR::CONTACT::ApplicationType apptype);
 
     Teuchos::RCP<const Epetra_Vector> InitialGuess();
     Teuchos::RCP<const Epetra_Vector> RHS();
@@ -174,7 +176,7 @@ namespace ADAPTER {
   private:
 
     /// the actual structure algorithm
-    CONTACT::ContactStruGenAlpha structure_;
+    CONTACT::CmtStruGenAlpha structure_;
 
     /// the interface map setup for interface <-> full translation
     STR::UTILS::MapExtractor interface_;
@@ -185,6 +187,7 @@ namespace ADAPTER {
     Teuchos::RCP<Teuchos::ParameterList> params_;
     Teuchos::RCP<LINALG::Solver> solver_;
     Teuchos::RCP<IO::DiscretizationWriter> output_;
+    INPAR::CONTACT::ApplicationType apptype_;
 
     //@}
   };

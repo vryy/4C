@@ -78,8 +78,8 @@ isselfcontact_(false)
   if (selfcontact) isselfcontact_=true;
 
   // check for infeasible self contact combinations
-  INPAR::CONTACT::ContactType ctype = Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(params,"CONTACT");
-  if (selfcontact > 0 && ctype != INPAR::CONTACT::contact_normal)
+  INPAR::CONTACT::FrictionType ftype = Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(params,"FRICTION");
+  if (selfcontact > 0 && ftype != INPAR::CONTACT::friction_none)
     dserror("ERROR: Self contact only implemented for frictionless contact!");
 
   // ------------------------------------------------------------------------
@@ -286,8 +286,8 @@ void CONTACT::AbstractStrategy::EvaluateRelMov()
 void CONTACT::AbstractStrategy::Evaluate(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff)
 {
   // check if friction should be applied
-  INPAR::CONTACT::ContactFrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
 
    	if (ftype == INPAR::CONTACT::friction_tresca ||
         ftype == INPAR::CONTACT::friction_coulomb ||
@@ -1071,10 +1071,8 @@ void CONTACT::AbstractStrategy::Print(ostream& os) const
 void CONTACT::AbstractStrategy::PrintActiveSet()
 {
   // get input parameter ctype
-  INPAR::CONTACT::ContactType ctype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(Params(),"CONTACT");
-  INPAR::CONTACT::ContactFrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
 
   if (Comm().MyPID()==0)
     cout << "Active contact set--------------------------------------------------------------\n";
@@ -1112,9 +1110,7 @@ void CONTACT::AbstractStrategy::PrintActiveSet()
       double jumptxi = 0.0;
       double jumpteta = 0.0;
 
-      if(ftype == INPAR::CONTACT::friction_tresca ||
-         ftype == INPAR::CONTACT::friction_coulomb ||
-         ftype == INPAR::CONTACT::friction_stick)
+      if(ftype != INPAR::CONTACT::friction_none)
       {
         // compute tangential parts of Lagrange multiplier and jumps
         for (int k=0;k<Dim();++k)
@@ -1134,7 +1130,7 @@ void CONTACT::AbstractStrategy::PrintActiveSet()
         }
       }
 
-      if (ctype == INPAR::CONTACT::contact_normal)
+      if (ftype == INPAR::CONTACT::friction_none)
       {
         // print nodes of inactive set *************************************
         if (cnode->Active()==false)
@@ -1174,8 +1170,8 @@ void CONTACT::AbstractStrategy::VisualizeGmsh(const int step, const int iter)
 {
   // check for frictional contact
   bool fric = false;
-  INPAR::CONTACT::ContactFrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
   if (ftype != INPAR::CONTACT::friction_none) fric=true;
 
   // visualization with gmsh

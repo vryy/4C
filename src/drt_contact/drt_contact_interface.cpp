@@ -1746,12 +1746,12 @@ bool CONTACT::Interface::IntegrateKappaPenalty(CONTACT::CElement& sele)
 #ifdef CONTACTPETROVGALERKIN
 #ifndef CONTACTPETROVGALERKINFRIC
 
-  INPAR::CONTACT::ContactType ctype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(IParams(),"CONTACT");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
 
-  if ((ctype==INPAR::CONTACT::contact_frictional or ctype==INPAR::CONTACT::contact_meshtying) and
-  	 (sele.Shape()==DRT::Element::tri6 or sele.Shape()==DRT::Element::quad8) )
-       dserror("Frictional contact needs flag: PETROVGALERKINFRIC for tri6/hex20");
+  if ( (ftype != INPAR::CONTACT::friction_none) and
+       (sele.Shape()==DRT::Element::tri6 or sele.Shape()==DRT::Element::quad8) )
+    dserror("Frictional contact needs flag PETROVGALERKINFRIC for tet10/hex20");
 #endif
 #endif
 
@@ -2325,8 +2325,8 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
   double pptan = IParams().get<double>("PENALTYPARAMTAN");
   double frcoeff = IParams().get<double>("FRCOEFF");
 
-  INPAR::CONTACT::ContactFrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(IParams(),"FRICTION");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
 
   // loop over all slave row nodes on the current interface
   for (int i=0; i<SlaveRowNodes()->NumMyElements(); ++i)
@@ -2679,8 +2679,8 @@ void CONTACT::Interface::AssembleRegTangentForcesAugmented()
   double pptan = IParams().get<double>("PENALTYPARAMTAN");
   double frcoeff = IParams().get<double>("FRCOEFF");
 
-  INPAR::CONTACT::ContactFrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(IParams(),"FRICTION");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
 
   // loop over all slave row nodes on the current interface
   for (int i=0; i<SlaveRowNodes()->NumMyElements(); ++i)
@@ -4543,8 +4543,8 @@ void CONTACT::Interface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
     return;
 
   // information from interface contact parameter list
-  INPAR::CONTACT::ContactFrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(IParams(),"FRICTION");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
   double frbound = IParams().get<double>("FRBOUND");
   double frcoeff = IParams().get<double>("FRCOEFF");
   double ct = IParams().get<double>("SEMI_SMOOTH_CT");

@@ -70,12 +70,12 @@ friction_(false)
   if (selfcontact) isselfcontact_=true;
   
   // check for infeasible self contact combinations
-  INPAR::CONTACT::ContactType ctype = Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(params,"CONTACT");
-  if (selfcontact > 0 && ctype != INPAR::CONTACT::contact_normal)
+  INPAR::CONTACT::FrictionType ftype = Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(params,"FRICTION");
+  if (selfcontact > 0 && ftype != INPAR::CONTACT::friction_none)
     dserror("ERROR: Self contact only implemented for frictionless contact!");
   
   // set frictional contact status
-  if (ctype == INPAR::CONTACT::contact_frictional)
+  if (ftype != INPAR::CONTACT::friction_none)
     friction_ = true;
   
   // ------------------------------------------------------------------------
@@ -315,8 +315,8 @@ void CONTACT::CoAbstractStrategy::Evaluate(RCP<LINALG::SparseOperator>& kteff,
                                            RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis)
 {
   // check if friction should be applied
-  INPAR::CONTACT::ContactFrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
 
   // Frictional contact cases
   if (ftype == INPAR::CONTACT::friction_tresca  ||
@@ -1135,10 +1135,7 @@ void CONTACT::CoAbstractStrategy::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::PrintActiveSet()
 {
-  // get input parameter ctype
-  INPAR::CONTACT::ContactType ctype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(Params(),"CONTACT");
-
+  // output message
   if (Comm().MyPID()==0)
     cout << "Active contact set--------------------------------------------------------------\n";
   Comm().Barrier();
@@ -1168,7 +1165,8 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
         nzold += cnode->MoData().n()[k] * cnode->MoData().lmold()[k];
       }
       
-      if (ctype == INPAR::CONTACT::contact_normal)
+      // output for frictionless case
+      if (!friction_)
       {
         // print nodes of inactive set *************************************
         if (cnode->Active()==false)
@@ -1185,8 +1183,8 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
         }
 
       }
-      // friction
-      else if (friction_) 
+      // output for frictional case
+      else
       {
         FriNode* frinode = static_cast<FriNode*>(cnode);
         
@@ -1196,32 +1194,30 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
         double jumptxi = 0.0;
         double jumpteta = 0.0;
   
-          // compute tangential parts of Lagrange multiplier and jumps
-          for (int k=0;k<Dim();++k)
-          {
-            ztxi += frinode->CoData().txi()[k] * frinode->MoData().lm()[k];
-            zteta += frinode->CoData().teta()[k] * frinode->MoData().lm()[k];
-            jumptxi += frinode->CoData().txi()[k] * frinode->Data().jump()[k];
-            jumpteta += frinode->CoData().teta()[k] * frinode->Data().jump()[k];
-          }
-  
-          zt = sqrt(ztxi*ztxi+zteta*zteta);
-  
-          // check for dimensions
-          if (Dim()==2 and abs(jumpteta)>0.0001)
-            dserror("Error: Jumpteta should be zero for 2D");
-  
-          // print active nodes on screen
-          if(frinode->Active())
-          {
-            if(frinode->Data().Slip())
-              cout << "SLIP " << gid << " Normal " << nz << " Tangential " << zt << endl;
-            else
-             cout << "STICK " << gid << " Normal " << nz << " Tangential " << zt << endl;
-          }
+        // compute tangential parts of Lagrange multiplier and jumps
+        for (int k=0;k<Dim();++k)
+        {
+          ztxi += frinode->CoData().txi()[k] * frinode->MoData().lm()[k];
+          zteta += frinode->CoData().teta()[k] * frinode->MoData().lm()[k];
+          jumptxi += frinode->CoData().txi()[k] * frinode->Data().jump()[k];
+          jumpteta += frinode->CoData().teta()[k] * frinode->Data().jump()[k];
         }
-      else
-        dserror("Error in PrintActiveSet: Either friction or not!");
+
+        zt = sqrt(ztxi*ztxi+zteta*zteta);
+
+        // check for dimensions
+        if (Dim()==2 and abs(jumpteta)>0.0001)
+          dserror("Error: Jumpteta should be zero for 2D");
+
+        // print active nodes on screen
+        if(frinode->Active())
+        {
+          if(frinode->Data().Slip())
+            cout << "SLIP " << gid << " Normal " << nz << " Tangential " << zt << endl;
+          else
+           cout << "STICK " << gid << " Normal " << nz << " Tangential " << zt << endl;
+        }
+      }
     }
   }
 

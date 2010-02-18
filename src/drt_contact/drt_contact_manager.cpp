@@ -375,7 +375,7 @@ discret_(discret)
 bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 {
   // read parameter list from DRT::Problem
-  const Teuchos::ParameterList& input = DRT::Problem::Instance()->StructuralContactParams();
+  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
 
   const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
   int dim = psize.get<int>("DIM");
@@ -385,39 +385,27 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
                                                  input.get<double>("PENALTYPARAM") <= 0.0)
-      dserror("Penalty parameter eps = 0, must be greater than 0");
+    dserror("Penalty parameter eps = 0, must be greater than 0");
 
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
                                                  input.get<int>("UZAWAMAXSTEPS") < 2)
-      dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
+    dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
 
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
                                                  input.get<double>("UZAWACONSTRTOL") <= 0.0)
-      dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
+    dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
 
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT")   == INPAR::CONTACT::contact_normal &&
-      Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none)
-    dserror("Friction law supplied for normal contact");
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
+                                            input.get<double>("SEMI_SMOOTH_CT") == 0.0)
+  	dserror("Parameter ct = 0, must be greater than 0 for frictional contact");
 
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT")   == INPAR::CONTACT::contact_frictional &&
-      Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_none)
-    dserror("No friction law supplied for frictional contact");
-
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT") == INPAR::CONTACT::contact_frictional &&
-                                          input.get<double>("SEMI_SMOOTH_CT") == 0.0)
-  	dserror("Friction Parameter ct = 0, must be greater than 0");
-
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_tresca &&
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_tresca &&
                                                    input.get<double>("FRBOUND") <= 0.0)
     dserror("No valid Tresca friction bound provided, must be greater than 0");
 
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_coulomb &&
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_coulomb &&
                                                    input.get<double>("FRCOEFF") <= 0.0)
     dserror("No valid Coulomb friction coefficient provided, must be greater than 0");
-
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT")   == INPAR::CONTACT::contact_meshtying &&
-      Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_stick)
-    dserror("Friction law other than stick supplied for mesh tying");
 
   if (Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::MORTAR::search_bfnode &&
                                                         input.get<double>("SEARCH_PARAM") == 0.0)
@@ -426,26 +414,29 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   // not (yet) implemented combinations
   // *********************************************************************
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(input,"APPLICATION") == INPAR::CONTACT::app_mortarmeshtying)
+    dserror("Mortar meshtying not implemented in OLD drt_contact");
+  
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
       Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual )
-      dserror("Lagrange multiplier strategy only implemented for dual shape fct.");
+    dserror("Lagrange multiplier strategy only implemented for dual shape fct.");
 
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
       Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_standard )
-      dserror("Penalty strategy only implemented for standard shape fct.");
+    dserror("Penalty strategy only implemented for standard shape fct.");
 
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_tresca &&
-                                                   dim==3)
-    dserror("3D frictional contact after Tresca's law not yet implemented");
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_tresca &&
+                                                                            dim == 3)
+    dserror("3D frictional contact with Tresca's law not yet implemented");
 
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT") == INPAR::CONTACT::contact_frictional &&
-  		                                              Teuchos::getIntegralValue<int>(input,"SEMI_SMOOTH_NEWTON")!=1 &&
-  	                                                dim==3)
-  	dserror("3D frictional contact only applied for Semi-smooth Newton");
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
+  		               Teuchos::getIntegralValue<int>(input,"SEMI_SMOOTH_NEWTON") != 1 &&
+  	                                                                        dim == 3)
+  	dserror("3D frictional contact only implemented with Semi-smooth Newton");
 
 #ifndef CONTACTCOMPHUEBER
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT") == INPAR::CONTACT::contact_frictional &&
-                                                   dim==3)
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
+                                                                            dim == 3)
   	dserror("3D frictional contact without flag CONTACTCOMPHUEBER not yet implemented");
 #endif
 
@@ -453,7 +444,7 @@ bool CONTACT::Manager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // warnings
   // *********************************************************************
   if ((Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::MORTAR::search_bfele ||
-      Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM")  == INPAR::MORTAR::search_binarytree) &&
+       Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::MORTAR::search_binarytree) &&
                                                          input.get<double>("SEARCH_PARAM") == 0.0)
     cout << ("Warning: Ele-based / binary tree search called without inflation of bounding volumes\n") << endl;
 

@@ -229,17 +229,21 @@ STR::TimInt::TimInt
       if (conman_->HaveConstraint())
         dserror("ERROR: Constraints and contact cannot be treated at the same time yet");
 
+      // check consistency of input file
+      INPAR::CONTACT::ApplicationType apptype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(contactman_->GetStrategy().Params(),"APPLICATION");
+      if (apptype == INPAR::CONTACT::app_none)
+        dserror("ERROR: Contact conditions defined, but APPLICATION == none");
+      
+      // no meshtying or beam contact in new STI so far
+      if (apptype == INPAR::CONTACT::app_mortarmeshtying || apptype == INPAR::CONTACT::app_beamcontact)
+        dserror("ERROR: Mortar meshtying and beam contact not yet implemented in new STI");
+      
       // only dual Lagrange approach in new STI so far
       INPAR::CONTACT::SolvingStrategy soltype =
       Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(contactman_->GetStrategy().Params(),"STRATEGY");
       if (soltype != INPAR::CONTACT::solution_lagmult)
         dserror("ERROR: Contact in new STI only implemented for dual Lagrange strategy");
-      
-      // no meshtying in new STI so far
-      INPAR::CONTACT::ContactType ctype =
-      Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactman_->GetStrategy().Params(),"CONTACT");
-      if (ctype == INPAR::CONTACT::contact_meshtying)
-        dserror("ERROR: Meshtying not yet implemented in new STI");
     }
   }
 

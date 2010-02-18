@@ -1601,9 +1601,9 @@ void CONTACT::ContactStruGenAlpha::PTC()
       // here the relative movement of the contact bodies is evaluated
       // therefore the current configuration and the according mortar
       // matrices are needed
-      INPAR::CONTACT::ContactType ctype =
-        Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(contactmanager_->GetStrategy().Params(),"CONTACT");
-      if(ctype != INPAR::CONTACT::contact_normal)
+      INPAR::CONTACT::FrictionType ftype =
+        Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(contactmanager_->GetStrategy().Params(),"FRICTION");
+      if(ftype != INPAR::CONTACT::friction_none)
         contactmanager_->GetStrategy().EvaluateRelMov();
 
       contactmanager_->GetStrategy().Initialize();

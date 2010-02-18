@@ -486,12 +486,6 @@ protected:
   
 }; // class FriNode
 
-#include "../drt_mortar/mortar_node.H"
-#include "contact_node.H"
-
-using namespace std;
-using namespace Teuchos;
-
 } // namespace CONTACT
 
 //// << operator

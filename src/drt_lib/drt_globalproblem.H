@@ -238,7 +238,7 @@ public:
   const Teuchos::ParameterList& DesignDescriptionParams() const { return getParameterList()->sublist("DESIGN DESCRIPTION"); }
   const Teuchos::ParameterList& StructuralDynamicParams() const { return getParameterList()->sublist("STRUCTURAL DYNAMIC"); }
   const Teuchos::ParameterList& InverseAnalysisParams() const { return getParameterList()->sublist("INVERSE ANALYSIS"); }
-  const Teuchos::ParameterList& StructuralContactParams() const { return getParameterList()->sublist("STRUCTURAL CONTACT"); }
+  const Teuchos::ParameterList& MeshtyingAndContactParams() const { return getParameterList()->sublist("MESHTYING AND CONTACT"); }
   const Teuchos::ParameterList& InteractionPotentialParams() const { return getParameterList()->sublist("INTERACTION POTENTIAL"); }
   const Teuchos::ParameterList& FluctuatingHydrodynamicsParams() const { return getParameterList()->sublist("FLUCTUATING HYDRODYNAMICS"); }
   const Teuchos::ParameterList& StatisticalMechanicsParams() const { return getParameterList()->sublist("STATISTICAL MECHANICS"); }

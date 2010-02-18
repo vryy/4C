@@ -16,7 +16,7 @@ Maintainer: Ulrich Kuettler
 
 #include "adapter_structure.H"
 #include "adapter_structure_strugenalpha.H"
-#include "adapter_structure_contactstrugenalpha.H"
+#include "adapter_structure_cmtstrugenalpha.H"
 #include "adapter_structure_timint.H"
 #include "adapter_structure_constrained.H"
 #include "adapter_structure_wrapper.H"
@@ -125,7 +125,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
-  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->StructuralContactParams();
+  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
 
   //const Teuchos::ParameterList& size     = DRT::Problem::Instance()->ProblemSizeParams();
 
@@ -293,20 +293,19 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
       structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
   }
 
-  // invoke contact strugen alpha
+  // invoke contact or meshtying strugenalpha
   bool contact = false;
-  switch (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(scontact,"CONTACT"))
+  INPAR::CONTACT::ApplicationType apptype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
+  switch (apptype)
   {
-    case INPAR::CONTACT::contact_none:
+    case INPAR::CONTACT::app_none:
       contact = false;
       break;
-    case INPAR::CONTACT::contact_normal:
-      contact = true;
+    case INPAR::CONTACT::app_mortarmeshtying:
+      dserror("Adapter not yet implemented for structural mesh tying");
       break;
-    case INPAR::CONTACT::contact_frictional:
-      contact = true;
-      break;
-    case INPAR::CONTACT::contact_meshtying:
+    case INPAR::CONTACT::app_mortarcontact:
       contact = true;
       break;
     default:
@@ -317,7 +316,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   if(contact)
   {
     structure_ = rcp(new StructureNOXCorrectionWrapper(
-                       Teuchos::rcp(new ContactStructureGenAlpha(genalphaparams,actdis,solver,output))));
+                     Teuchos::rcp(new CmtStructureGenAlpha(genalphaparams,actdis,solver,output,apptype))));
   }
 }
 

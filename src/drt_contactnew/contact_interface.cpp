@@ -63,11 +63,9 @@ MORTAR::MortarInterface(id,comm,dim,icontact),
 selfcontact_(selfcontact),
 friction_(false)
 {
-
   // set frictional contact status
-  INPAR::CONTACT::ContactType ctype = Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(icontact,"CONTACT");
-
-  if (ctype == INPAR::CONTACT::contact_frictional)
+  INPAR::CONTACT::FrictionType ftype = Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(icontact,"FRICTION");
+  if (ftype != INPAR::CONTACT::friction_none)
     friction_ = true;
 
   return;
@@ -1091,8 +1089,8 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
   double pptan = IParams().get<double>("PENALTYPARAMTAN");
   double frcoeff = IParams().get<double>("FRCOEFF");
 
-  INPAR::CONTACT::ContactFrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(IParams(),"FRICTION");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
 
   // loop over all slave row nodes on the current interface
   for (int i=0; i<SlaveRowNodes()->NumMyElements(); ++i)
@@ -1445,8 +1443,8 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
   double pptan = IParams().get<double>("PENALTYPARAMTAN");
   double frcoeff = IParams().get<double>("FRCOEFF");
 
-  INPAR::CONTACT::ContactFrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(IParams(),"FRICTION");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
 
   // loop over all slave row nodes on the current interface
   for (int i=0; i<SlaveRowNodes()->NumMyElements(); ++i)
@@ -3102,8 +3100,8 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
     return;
 
   // information from interface contact parameter list
-  INPAR::CONTACT::ContactFrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(IParams(),"FRICTION");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
   double frbound = IParams().get<double>("FRBOUND");
   double frcoeff = IParams().get<double>("FRCOEFF");
   double ct = IParams().get<double>("SEMI_SMOOTH_CT");

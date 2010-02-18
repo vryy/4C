@@ -125,7 +125,7 @@ void dyn_nlnstructural_drt()
   const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
-  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->StructuralContactParams();
+  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
   const Teuchos::ParameterList& statmech = DRT::Problem::Instance()->StatisticalMechanicsParams();
 
   if (actdis->Comm().MyPID()==0)
@@ -285,31 +285,27 @@ void dyn_nlnstructural_drt()
       }
 
       // detect if contact or meshtying are present
-      // note that beam contact will be treated seperately,
-      // thus contact = meshtying = false in this case but beamcontact = true
-      bool contact = false;
-      bool newcontact = false;
+      bool mortarcontact = false;
+      bool mortarmeshtying = false;
       bool beamcontact = false;
-      bool meshtying = false;
-      INPAR::CONTACT::ContactType ctype = Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(scontact,"CONTACT");
+      bool oldcontact = false;
+      INPAR::CONTACT::ApplicationType ctype =
+        Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
       switch (ctype)
       {
-        case INPAR::CONTACT::contact_none:
+        case INPAR::CONTACT::app_none:
           break;
-        case INPAR::CONTACT::contact_normal:
-          newcontact = true;
+        case INPAR::CONTACT::app_mortarcontact:
+          mortarcontact = true;
           break;
-        case INPAR::CONTACT::contact_frictional:
-          newcontact = true;
+        case INPAR::CONTACT::app_mortarmeshtying:
+          mortarmeshtying = true;
           break;
-        case INPAR::CONTACT::contact_meshtying:
-          meshtying = true;
-          break;
-        case INPAR::CONTACT::contact_beams:
+        case INPAR::CONTACT::app_beamcontact:
           beamcontact = true;
           break;
         default:
-          dserror("Cannot cope with choice of contact type");
+          dserror("Cannot cope with choice of contact or meshtying type");
           break;
       }
 
@@ -334,18 +330,18 @@ void dyn_nlnstructural_drt()
       // create the time integrator
       bool inv_analysis = genalphaparams.get("inv_analysis",false);
       RCP<StruGenAlpha> tintegrator;
-      if (!contact && !newcontact && !meshtying && !beamcontact && !inv_analysis && !thermalbath)
+      if (!mortarcontact && !mortarmeshtying && !beamcontact && !oldcontact && !inv_analysis && !thermalbath)
         tintegrator = rcp(new StruGenAlpha(genalphaparams,*actdis,solver,output));
       else
       {
-        if (contact)
-          tintegrator = rcp(new CONTACT::ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
-        if (newcontact)
+        if (mortarcontact)
           tintegrator = rcp(new CONTACT::CmtStruGenAlpha(genalphaparams,*actdis,solver,output,ctype));
-        if (meshtying)
+        if (mortarmeshtying)
           tintegrator = rcp (new CONTACT::CmtStruGenAlpha(genalphaparams,*actdis,solver,output,ctype));
         if (beamcontact)
           tintegrator = rcp(new CONTACT::Beam3ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
+        if (oldcontact)
+          tintegrator = rcp(new CONTACT::ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
         if (inv_analysis)
           dserror("Inverse analysis moved ahead to STI");
         if (thermalbath)

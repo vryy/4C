@@ -317,12 +317,12 @@ discret_(discret)
 bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
 {
   // read parameter list from DRT::Problem
-  const Teuchos::ParameterList& input = DRT::Problem::Instance()->StructuralContactParams();
+  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
 
   // *********************************************************************
-  // this is meshtying
+  // this is mortar meshtying
   // *********************************************************************
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ContactType>(input,"CONTACT") != INPAR::CONTACT::contact_meshtying)
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(input,"APPLICATION") != INPAR::CONTACT::app_mortarmeshtying)
     dserror("You should not be here...");
   
   // *********************************************************************
@@ -330,19 +330,23 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   // *********************************************************************
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
                                                  input.get<double>("PENALTYPARAM") <= 0.0)
-      dserror("Penalty parameter eps = 0, must be greater than 0");
+    dserror("Penalty parameter eps = 0, must be greater than 0");
   
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
                                                  input.get<double>("PENALTYPARAM") <= 0.0)
-      dserror("Penalty parameter eps = 0, must be greater than 0");
+    dserror("Penalty parameter eps = 0, must be greater than 0");
   
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
-                                                 input.get<int>("UZAWAMAXSTEPS") < 2)
-      dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
+                                                   input.get<int>("UZAWAMAXSTEPS") <  2)
+    dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
   
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
-                                                 input.get<double>("UZAWACONSTRTOL") <= 0.0)
-      dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
+                                               input.get<double>("UZAWACONSTRTOL") <= 0.0)
+    dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
+  
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(input,"APPLICATION") == INPAR::CONTACT::app_mortarmeshtying &&
+            Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none)
+    dserror("Friction law supplied for mortar meshtying");
 
   if (Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::MORTAR::search_bfnode &&
                                                         input.get<double>("SEARCH_PARAM") == 0.0)
