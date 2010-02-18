@@ -127,6 +127,7 @@ void POTENTIAL::Potential::treeSearchElementsInCutOffRadius(
 }
 
 
+
 /*-------------------------------------------------------------------*
 | (protected)                                             umay  09/09|
 | serial version of search method                                    |
@@ -288,6 +289,9 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition_Approx1(
   }
   return;
 }
+
+
+
 /*-------------------------------------------------------------------*
 | (protected)                                             umay  10/09|
 |                                                                    |
@@ -338,7 +342,6 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential(
     LINALG::Matrix<3,1>&          potderiv1,
     LINALG::Matrix<3,3>&          potderiv2)
 {
-
   // evaluate distance related stuff
   double          distance      = 0.0;
   LINALG::Matrix<3,1>       distance_vec(true);
@@ -370,6 +373,7 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential(
 }
 
 
+
 /*-------------------------------------------------------------------*
 | (protected)                                             umay  07/08|
 |                                                                    |
@@ -383,7 +387,6 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential(
     LINALG::Matrix<2,1>&          potderiv1,
     LINALG::Matrix<2,2>&          potderiv2)
 {
-
   // evaluate distance related stuff
   double          distance      = 0.0;
   LINALG::Matrix<2,1>       distance_vec(true);
@@ -429,30 +432,25 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential_Approx1(
     LINALG::Matrix<3,1>&          potderiv1,
     LINALG::Matrix<3,3>&          potderiv2)
 {
-
   // evaluate distance related stuff
-  double          distance      = 0.0;
-  LINALG::Matrix<3,1>       distance_vec(true);
-  LINALG::Matrix<3,1>       distance_unit(true);
-  LINALG::Matrix<3,3>       du_tensor_du;
+  double                distance      = 0.0;
+  LINALG::Matrix<3,1>   distance_vec(true);
+  LINALG::Matrix<3,1>   distance_unit(true);
+  LINALG::Matrix<3,3>   du_tensor_du;
   computeDistance(x,y, du_tensor_du, distance_vec, distance_unit, distance);
 
   //----------------------------------------------------------------------
   // evaluate 1.derivative dphi/du_i
   //----------------------------------------------------------------------
-  
   //dpotdr entspricht -Fs
   double dpotdr = (12*depth*rootDist)*((1.0/20.0)*(pow((double)(rootDist/distance), 5))-(1.0/110.0)*pow((double)(rootDist/distance),11));
   
-  
   for(int i = 0; i < 3; i++)
     potderiv1(i) = dpotdr*distance_unit(i);
-  //cout<<"dpotdr  "<<dpotdr<<endl; 
 
   //----------------------------------------------------------------------
   // evaluate 2.derivative dphi/du_i d_uiI  (this is not a mistake !!!!)
   //----------------------------------------------------------------------
-  
   //dpotdrdr entspricht -Fsdr
   const double dpotdrdr = (12*depth)*((0.1*pow((double)(rootDist/distance),12))
                 -(0.25*pow((double)(rootDist/distance), 6)));
@@ -469,6 +467,8 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential_Approx1(
   }
 }
 
+
+
 /*-------------------------------------------------------------------*
 | (protected)                                             umay  09/09|
 |                                                                    |
@@ -482,37 +482,35 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential_Approx2(
     LINALG::Matrix<3,1>&          Fs,
     LINALG::Matrix<3,3>&          Fsderiv)
 {
-	// evaluate distance related stuff
-	double          		  distance      = 0.0;
-	LINALG::Matrix<3,1>       distance_vec(true);
-	//Normalenvektor
-	LINALG::Matrix<3,1>       n(true);
-	LINALG::Matrix<3,3>       dn_tensor_dn;
-	computeDistance(x,y, dn_tensor_dn, distance_vec, n, distance);
-		  
-	//dpotdr entspricht -Fs
-	double F = PI_POT*depth*pow(rootDist,3)*( (1.0/45.0)*pow((double)(rootDist/distance), 9) - (1.0/3.0)*pow((double)(rootDist/distance), 3) );
-		  
-		  
-	for(int i = 0; i < 3; i++)
-		Fs(i) = F*n(i);	 
+  // evaluate distance related stuff
+  double                distance      = 0.0;
+  LINALG::Matrix<3,1>   distance_vec(true);
+  //Normalenvektor
+  LINALG::Matrix<3,1>   n(true);
+  LINALG::Matrix<3,3>   dn_tensor_dn;
+  computeDistance(x,y, dn_tensor_dn, distance_vec, n, distance);
 
-	//----------------------------------------------------------------------
-	// evaluate 1. derivative
-	//----------------------------------------------------------------------	  
-		  
-	const double dFdr = PI_POT*depth*pow(rootDist,2)*(pow((double)(rootDist/distance), 4)-(1.0/5.0)*pow((double)(rootDist/distance), 10));
-		  
-	for(int i = 0; i < 3; i++)
-		for(int j = 0; j < 3; j++)
-			Fsderiv(i,j) = 0.0;
+  //dpotdr entspricht -Fs
+  double F = PI_POT*depth*pow(rootDist,3)*( (1.0/45.0)*pow((double)(rootDist/distance), 9) - (1.0/3.0)*pow((double)(rootDist/distance), 3) );
 
-	for(int i = 0; i < 3; i++)
-	{
-		Fsderiv(i,i) += F/distance;
-		for(int j = 0; j < 3; j++)
-		Fsderiv(i,j) += (dFdr - (F/distance))*dn_tensor_dn(i,j);
-	}
+  for(int i = 0; i < 3; i++)
+    Fs(i) = F*n(i);	 
+
+  //----------------------------------------------------------------------
+  // evaluate 1. derivative
+  //----------------------------------------------------------------------	  
+  const double dFdr = PI_POT*depth*pow(rootDist,2)*(pow((double)(rootDist/distance), 4)-(1.0/5.0)*pow((double)(rootDist/distance), 10));
+
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 3; j++)
+      Fsderiv(i,j) = 0.0;
+
+  for(int i = 0; i < 3; i++)
+  {
+    Fsderiv(i,i) += F/distance;
+    for(int j = 0; j < 3; j++)
+      Fsderiv(i,j) += (dFdr - (F/distance))*dn_tensor_dn(i,j);
+  }
 }
 
 
@@ -623,10 +621,10 @@ void POTENTIAL::Potential::EvaluateVanDerWaals(
     LINALG::Matrix<3,3>&          potderiv2)
 {
 // evaluate distance related stuff
-  double          distance      = 0.0;
-  LINALG::Matrix<3,1>       distance_vec(true);
-  LINALG::Matrix<3,1>       distance_unit(true);
-  LINALG::Matrix<3,3>       du_tensor_du;
+  double                distance      = 0.0;
+  LINALG::Matrix<3,1>   distance_vec(true);
+  LINALG::Matrix<3,1>   distance_unit(true);
+  LINALG::Matrix<3,3>   du_tensor_du;
   computeDistance(x,y, du_tensor_du, distance_vec, distance_unit, distance);
 
   //----------------------------------------------------------------------
@@ -666,12 +664,11 @@ void POTENTIAL::Potential::EvaluateVanDerWaals(
     LINALG::Matrix<2,1>&          potderiv1,
     LINALG::Matrix<2,2>&          potderiv2)
 {
-
   // evaluate distance related stuff
-  double          distance      = 0.0;
-  LINALG::Matrix<2,1>       distance_vec(true);
-  LINALG::Matrix<2,1>       distance_unit(true);
-  LINALG::Matrix<2,2>       du_tensor_du;
+  double                distance      = 0.0;
+  LINALG::Matrix<2,1>   distance_vec(true);
+  LINALG::Matrix<2,1>   distance_unit(true);
+  LINALG::Matrix<2,2>   du_tensor_du;
   computeDistance(x,y, du_tensor_du, distance_vec, distance_unit, distance);
   //----------------------------------------------------------------------
   // evaluate 1.derivative dphi/du_i
@@ -690,13 +687,11 @@ void POTENTIAL::Potential::EvaluateVanDerWaals(
 
   for(int i = 0; i < 2; i++)
   {
-      potderiv2(i,i) += dpotdr/distance;
-      for(int j = 0; j < 2; j++)
-        potderiv2(i,j) += (dpotdrdr - (dpotdr/distance))*du_tensor_du(i,j);
+    potderiv2(i,i) += dpotdr/distance;
+    for(int j = 0; j < 2; j++)
+      potderiv2(i,j) += (dpotdrdr - (dpotdr/distance))*du_tensor_du(i,j);
   }
 }
-
-
 
 
 
@@ -725,15 +720,12 @@ void POTENTIAL::Potential::EvaluateVanDerWaals_Approx1(
   //dotdr entspricht -Fs
   double dpotdr = (3.0/10.0)*lambda*(pow((double)(1.0/distance), 5));
   
-  
   for(int i = 0; i < 3; i++)
     potderiv1(i) = dpotdr*distance_unit(i);
-  //cout<<"dpotdr  "<<dpotdr<<endl; 
-
+ 
   //----------------------------------------------------------------------
   // evaluate 2. derivative
   //----------------------------------------------------------------------
-  
   //dpotdrdr entspricht -Fsdr
   const double dpotdrdr = -(3.0/2.0)*lambda*(pow((double)(1.0/distance), 6));
   for(int i = 0; i < 3; i++)
@@ -748,6 +740,8 @@ void POTENTIAL::Potential::EvaluateVanDerWaals_Approx1(
   }
 }
 
+
+
 /*-------------------------------------------------------------------*
 | (protected)                                             umay  11/09|
 |                                                                    |
@@ -758,40 +752,39 @@ void POTENTIAL::Potential::EvaluateVanDerWaals_Approx2(
     const LINALG::Matrix<3,1>&    x,
     const LINALG::Matrix<3,1>&    y,
     LINALG::Matrix<3,1>&          Fs,
-    LINALG::Matrix<3,3>&          Fsderiv
-    )
+    LINALG::Matrix<3,3>&          Fsderiv)
 {
-	  // evaluate distance related stuff
-	  double          			distance      = 0.0;
-	  LINALG::Matrix<3,1>       distance_vec(true);
-	  //Normalenvektor
-	  LINALG::Matrix<3,1>       n(true);
-	  LINALG::Matrix<3,3>       dn_tensor_dn;
-	  computeDistance(x,y, dn_tensor_dn, distance_vec, n, distance);
-	  
-	  //dpotdr entspricht -Fs
-	  double F = (-1.0)*lambda*PI_POT*(1.0/6.0)*(pow((double)(1.0/distance), 3));
-	  
-	  
-	  for(int i = 0; i < 3; i++)
-	    Fs(i) = F*n(i);	 
+  // evaluate distance related stuff
+  double                distance      = 0.0;
+  LINALG::Matrix<3,1>   distance_vec(true);
+  //Normalenvektor
+  LINALG::Matrix<3,1>   n(true);
+  LINALG::Matrix<3,3>   dn_tensor_dn;
+  computeDistance(x,y, dn_tensor_dn, distance_vec, n, distance);
 
-	  //----------------------------------------------------------------------
-	  // evaluate 1. derivative
-	  //----------------------------------------------------------------------	 
-	  const double dFdr = (1.0/2.0)*PI_POT*lambda*(pow((double)(1.0/distance), 4));
-	  
-	  for(int i = 0; i < 3; i++)
-	    for(int j = 0; j < 3; j++)
-	      Fsderiv(i,j) = 0.0;
+  //dpotdr entspricht -Fs
+  double F = (-1.0)*lambda*PI_POT*(1.0/6.0)*(pow((double)(1.0/distance), 3));
 
-	  for(int i = 0; i < 3; i++)
-	  {
-	      Fsderiv(i,i) += F/distance;
-	      for(int j = 0; j < 3; j++)
-	        Fsderiv(i,j) += (dFdr - (F/distance))*dn_tensor_dn(i,j);
-	  }
+  for(int i = 0; i < 3; i++)
+    Fs(i) = F*n(i);	 
+
+  //----------------------------------------------------------------------
+  // evaluate 1. derivative
+  //----------------------------------------------------------------------	 
+  const double dFdr = (1.0/2.0)*PI_POT*lambda*(pow((double)(1.0/distance), 4));
+
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 3; j++)
+      Fsderiv(i,j) = 0.0;
+
+  for(int i = 0; i < 3; i++)
+  {
+    Fsderiv(i,i) += F/distance;
+    for(int j = 0; j < 3; j++)
+      Fsderiv(i,j) += (dFdr - (F/distance))*dn_tensor_dn(i,j);
+  }
 }
+
 
 
 /*-------------------------------------------------------------------*
@@ -824,6 +817,7 @@ void POTENTIAL::Potential::computeDistance(
       du_tensor_du(i,j) = dist_unit(i)*dist_unit(j);
 
 }
+
 
 
 /*-------------------------------------------------------------------*
