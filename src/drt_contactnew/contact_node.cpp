@@ -298,6 +298,7 @@ void CONTACT::CoNode::AddDerivZValue(int& row, const int& col, double val)
 void CONTACT::CoNode::InitializeDataContainer()
 {
   codata_=rcp(new CONTACT::CoNodeDataContainer());
+  modata_=rcp(new MORTAR::MortarNodeDataContainer());
   return;
 }
 
@@ -309,7 +310,7 @@ void CONTACT::CoNode::BuildAveragedNormal()
   // reset normal and tangents when this method is called
   for (int j=0;j<3;++j)
   {
-    n()[j]=0.0;
+    MoData().n()[j]=0.0;
     CoData().txi()[j]=0.0;
     CoData().teta()[j]=0.0;
   }
@@ -340,13 +341,13 @@ void CONTACT::CoNode::BuildAveragedNormal()
 
     // add (weighted) element normal to nodal normal n
     for (int j=0;j<3;++j)
-      n()[j]+=elens(j,i)/elens(4,i);
+      MoData().n()[j]+=elens(j,i)/elens(4,i);
   }
 
   // create unit normal vector
-  double length = sqrt(n()[0]*n()[0]+n()[1]*n()[1]+n()[2]*n()[2]);
+  double length = sqrt(MoData().n()[0]*MoData().n()[0]+MoData().n()[1]*MoData().n()[1]+MoData().n()[2]*MoData().n()[2]);
   if (length==0.0) dserror("ERROR: Nodal normal length 0, node ID %i",Id());
-  else             for (int j=0;j<3;++j) n()[j]/=length;
+  else             for (int j=0;j<3;++j) MoData().n()[j]/=length;
 
   // create unit tangent vectors
   // (note that this definition is not unique in 3D!)
@@ -355,8 +356,8 @@ void CONTACT::CoNode::BuildAveragedNormal()
   if (NumDof()==2)
   {
     // simple definition for txi
-    CoData().txi()[0] = -n()[1];
-    CoData().txi()[1] =  n()[0];
+    CoData().txi()[0] = -MoData().n()[1];
+    CoData().txi()[1] =  MoData().n()[0];
     CoData().txi()[2] =  0.0;
 
     // teta is z-axis
@@ -375,28 +376,28 @@ void CONTACT::CoNode::BuildAveragedNormal()
     CoData().teta()[2] = 1.0;
 
     // txi follows from corkscrew rule (txi = teta x n)
-    CoData().txi()[0] = CoData().teta()[1]*n()[2]-CoData().teta()[2]*n()[1];
-    CoData().txi()[1] = CoData().teta()[2]*n()[0]-CoData().teta()[0]*n()[2];
-    CoData().txi()[2] = CoData().teta()[0]*n()[1]-CoData().teta()[1]*n()[0];
+    CoData().txi()[0] = CoData().teta()[1]*MoData().n()[2]-CoData().teta()[2]*MoData().n()[1];
+    CoData().txi()[1] = CoData().teta()[2]*MoData().n()[0]-CoData().teta()[0]*MoData().n()[2];
+    CoData().txi()[2] = CoData().teta()[0]*MoData().n()[1]-CoData().teta()[1]*MoData().n()[0];
 #else
     // arbitrary definition for txi
-    if (abs(n()[2])>1.0e-6)
+    if (abs(MoData().n()[2])>1.0e-6)
     {
       CoData().txi()[0]=1.0;
       CoData().txi()[1]=1.0;
-      CoData().txi()[2]=(-n()[0]-n()[1])/n()[2];
+      CoData().txi()[2]=(-MoData().n()[0]-MoData().n()[1])/MoData().n()[2];
     }
-    else if (abs(n()[1])>1.0e-6)
+    else if (abs(MoData().n()[1])>1.0e-6)
     {
       CoData().txi()[0]=1.0;
       CoData().txi()[2]=1.0;
-      CoData().txi()[1]=(-n()[0]-n()[2])/n()[1];
+      CoData().txi()[1]=(-MoData().n()[0]-MoData().n()[2])/MoData().n()[1];
     }
-    else if (abs(n()[0])>1.0e-6)
+    else if (abs(MoData().n()[0])>1.0e-6)
     {
       CoData().txi()[1]=1.0;
       CoData().txi()[2]=1.0;
-      CoData().txi()[0]=(-n()[1]-n()[2])/n()[0];
+      CoData().txi()[0]=(-MoData().n()[1]-MoData().n()[2])/MoData().n()[0];
     }
     else
       dserror("ERROR: Something wrong with nodal normal");
@@ -405,9 +406,9 @@ void CONTACT::CoNode::BuildAveragedNormal()
     for (int j=0;j<3;++j) CoData().txi()[j]/=ltxi;
 
     // teta follows from corkscrew rule (teta = n x txi)
-    CoData().teta()[0] = n()[1]*CoData().txi()[2]-n()[2]*CoData().txi()[1];
-    CoData().teta()[1] = n()[2]*CoData().txi()[0]-n()[0]*CoData().txi()[2];
-    CoData().teta()[2] = n()[0]*CoData().txi()[1]-n()[1]*CoData().txi()[0];
+    CoData().teta()[0] = MoData().n()[1]*CoData().txi()[2]-MoData().n()[2]*CoData().txi()[1];
+    CoData().teta()[1] = MoData().n()[2]*CoData().txi()[0]-MoData().n()[0]*CoData().txi()[2];
+    CoData().teta()[2] = MoData().n()[0]*CoData().txi()[1]-MoData().n()[1]*CoData().txi()[0];
 #endif // #ifdef CONTACTPSEUDO2D
   }
   else
@@ -452,12 +453,12 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
   map<int,double> cderivnx = CoData().GetDerivN()[0];
   map<int,double> cderivny = CoData().GetDerivN()[1];
   map<int,double> cderivnz = CoData().GetDerivN()[2];
-  double nxnx = n()[0] * n()[0];
-  double nxny = n()[0] * n()[1];
-  double nxnz = n()[0] * n()[2];
-  double nyny = n()[1] * n()[1];
-  double nynz = n()[1] * n()[2];
-  double nznz = n()[2] * n()[2];
+  double nxnx = MoData().n()[0] * MoData().n()[0];
+  double nxny = MoData().n()[0] * MoData().n()[1];
+  double nxnz = MoData().n()[0] * MoData().n()[2];
+  double nyny = MoData().n()[1] * MoData().n()[1];
+  double nynz = MoData().n()[1] * MoData().n()[2];
+  double nznz = MoData().n()[2] * MoData().n()[2];
 
   // build a vector with all keys from x,y,z maps
   // (we need this in order not to miss any entry!)
@@ -558,36 +559,36 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
 #else
     // unnormalized tangent derivative txi
     // use definitions for txi from BuildAveragedNormal()
-    if (abs(n()[2])>1.0e-6)
+    if (abs(MoData().n()[2])>1.0e-6)
     {
       map<int,double>& derivtxiz = CoData().GetDerivTxi()[2];
       for (CI p=derivnx.begin();p!=derivnx.end();++p)
-        derivtxiz[p->first] -= 1/n()[2]*(p->second);
+        derivtxiz[p->first] -= 1/MoData().n()[2]*(p->second);
       for (CI p=derivny.begin();p!=derivny.end();++p)
-        derivtxiz[p->first] -= 1/n()[2]*(p->second);
+        derivtxiz[p->first] -= 1/MoData().n()[2]*(p->second);
       for (CI p=derivnz.begin();p!=derivnz.end();++p)
-        derivtxiz[p->first] += (n()[0]+n()[1])/(n()[2]*n()[2])*(p->second);
+        derivtxiz[p->first] += (MoData().n()[0]+MoData().n()[1])/(MoData().n()[2]*MoData().n()[2])*(p->second);
 
     }
-    else if (abs(n()[1])>1.0e-6)
+    else if (abs(MoData().n()[1])>1.0e-6)
     {
       map<int,double>& derivtxiy = CoData().GetDerivTxi()[1];
       for (CI p=derivnx.begin();p!=derivnx.end();++p)
-        derivtxiy[p->first] -= 1/n()[1]*(p->second);
+        derivtxiy[p->first] -= 1/MoData().n()[1]*(p->second);
       for (CI p=derivny.begin();p!=derivny.end();++p)
-        derivtxiy[p->first] += (n()[0]+n()[2])/(n()[1]*n()[1])*(p->second);
+        derivtxiy[p->first] += (MoData().n()[0]+MoData().n()[2])/(MoData().n()[1]*MoData().n()[1])*(p->second);
       for (CI p=derivnz.begin();p!=derivnz.end();++p)
-        derivtxiy[p->first] -= 1/n()[1]*(p->second);
+        derivtxiy[p->first] -= 1/MoData().n()[1]*(p->second);
     }
-    else if (abs(n()[0])>1.0e-6)
+    else if (abs(MoData().n()[0])>1.0e-6)
     {
       map<int,double>& derivtxix = CoData().GetDerivTxi()[0];
       for (CI p=derivnx.begin();p!=derivnx.end();++p)
-        derivtxix[p->first] += (n()[1]+n()[2])/(n()[0]*n()[0])*(p->second);
+        derivtxix[p->first] += (MoData().n()[1]+MoData().n()[2])/(MoData().n()[0]*MoData().n()[0])*(p->second);
       for (CI p=derivny.begin();p!=derivny.end();++p)
-        derivtxix[p->first] -= 1/n()[0]*(p->second);
+        derivtxix[p->first] -= 1/MoData().n()[0]*(p->second);
       for (CI p=derivnz.begin();p!=derivnz.end();++p)
-        derivtxix[p->first] -= 1/n()[0]*(p->second);
+        derivtxix[p->first] -= 1/MoData().n()[0]*(p->second);
     }
     else
       dserror("ERROR: Something wrong with nodal normal");
@@ -679,18 +680,18 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     }
     for (CI p=derivtxix.begin();p!=derivtxix.end();++p)
     {
-      derivtetay[p->first] += n()[2]*(p->second);
-      derivtetaz[p->first] -= n()[1]*(p->second);
+      derivtetay[p->first] += MoData().n()[2]*(p->second);
+      derivtetaz[p->first] -= MoData().n()[1]*(p->second);
     }
     for (CI p=derivtxiy.begin();p!=derivtxiy.end();++p)
     {
-      derivtetax[p->first] -= n()[2]*(p->second);
-      derivtetaz[p->first] += n()[0]*(p->second);
+      derivtetax[p->first] -= MoData().n()[2]*(p->second);
+      derivtetaz[p->first] += MoData().n()[0]*(p->second);
     }
     for (CI p=derivtxiz.begin();p!=derivtxiz.end();++p)
     {
-      derivtetax[p->first] += n()[1]*(p->second);
-      derivtetay[p->first] -= n()[0]*(p->second);
+      derivtetax[p->first] += MoData().n()[1]*(p->second);
+      derivtetay[p->first] -= MoData().n()[0]*(p->second);
     }
   }
 #endif // #ifdef CONTACTPSEUDO2D

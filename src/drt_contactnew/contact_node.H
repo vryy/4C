@@ -381,6 +381,11 @@ public:
   virtual bool& Active() { return active_; }
 
   /*!
+  \brief Return scaling factor for weighted gap (penalty strategy)
+  */
+  virtual double& Kappa() { return kappa_; }
+
+  /*!
   \brief Return of data container of this node
 
   This method returns the data container of this node where additional
@@ -388,11 +393,10 @@ public:
 
   */
   inline CONTACT::CoNodeDataContainer& CoData() { return *codata_; }
+  
+  //@}
 
-  /*!
-  \brief Return scaling factor for weighted gap (penalty strategy)
-  */
-  virtual double& Kappa() { return kappa_; }
+  //! @name Evaluation methods
 
   /*!
   \brief Add a value to the weighted gap of this node
@@ -419,11 +423,7 @@ public:
   
   */
   void AddDerivZValue(int& row, const int& col, double val);
-
-  //@}
-
-  //! @name Construction methods
-
+  
   /*!
   \brief Build nodal normal
   */
@@ -456,7 +456,6 @@ public:
 
   */
   virtual void InitializeDataContainer();
-
   
   //@}
   

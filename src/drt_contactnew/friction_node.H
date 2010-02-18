@@ -390,7 +390,7 @@ public:
 
   //@}
 
-  //! @name construction methods
+  //! @name Evaluation methods
  
   /*!
   \brief Add a value to the SNode set of this node

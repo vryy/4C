@@ -644,21 +644,21 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(MORTAR::Vertex& currv,
     lmatrix(1,0) += sderiv(z,0) * snode->xspatial()[1];
     lmatrix(2,0) += sderiv(z,0) * snode->xspatial()[2];
   
-    lmatrix(0,0) += alpha * sderiv(z,0) * snode->n()[0];
-    lmatrix(1,0) += alpha * sderiv(z,0) * snode->n()[1];
-    lmatrix(2,0) += alpha * sderiv(z,0) * snode->n()[2];
+    lmatrix(0,0) += alpha * sderiv(z,0) * snode->MoData().n()[0];
+    lmatrix(1,0) += alpha * sderiv(z,0) * snode->MoData().n()[1];
+    lmatrix(2,0) += alpha * sderiv(z,0) * snode->MoData().n()[2];
   
     lmatrix(0,1) += sderiv(z,1) * snode->xspatial()[0];
     lmatrix(1,1) += sderiv(z,1) * snode->xspatial()[1];
     lmatrix(2,1) += sderiv(z,1) * snode->xspatial()[2];
   
-    lmatrix(0,1) += alpha * sderiv(z,1) * snode->n()[0];
-    lmatrix(1,1) += alpha * sderiv(z,1) * snode->n()[1];
-    lmatrix(2,1) += alpha * sderiv(z,1) * snode->n()[2];
+    lmatrix(0,1) += alpha * sderiv(z,1) * snode->MoData().n()[0];
+    lmatrix(1,1) += alpha * sderiv(z,1) * snode->MoData().n()[1];
+    lmatrix(2,1) += alpha * sderiv(z,1) * snode->MoData().n()[2];
   
-    lmatrix(0,2) += sval[z] * snode->n()[0];
-    lmatrix(1,2) += sval[z] * snode->n()[1];
-    lmatrix(2,2) += sval[z] * snode->n()[2];
+    lmatrix(0,2) += sval[z] * snode->MoData().n()[0];
+    lmatrix(1,2) += sval[z] * snode->MoData().n()[1];
+    lmatrix(2,2) += sval[z] * snode->MoData().n()[2];
   }
   
   // get inverse of the 3x3 matrix L (in place)

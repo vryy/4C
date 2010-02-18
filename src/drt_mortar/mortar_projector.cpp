@@ -259,9 +259,9 @@ bool MORTAR::MortarProjector::ProjectGaussPoint(MORTAR::MortarElement& gpele,
     {
       MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
 
-      gpn[0]+=val[i]*mymrtrnode->n()[0];
-      gpn[1]+=val[i]*mymrtrnode->n()[1];
-      gpn[2]+=val[i]*mymrtrnode->n()[2];
+      gpn[0]+=val[i]*mymrtrnode->MoData().n()[0];
+      gpn[1]+=val[i]*mymrtrnode->MoData().n()[1];
+      gpn[2]+=val[i]*mymrtrnode->MoData().n()[2];
 
       coord(0,i) = mymrtrnode->xspatial()[0];
       coord(1,i) = mymrtrnode->xspatial()[1];
@@ -340,9 +340,9 @@ bool MORTAR::MortarProjector::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
     {
       MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
 
-      gpn[0]+=val[i]*mymrtrnode->n()[0];
-      gpn[1]+=val[i]*mymrtrnode->n()[1];
-      gpn[2]+=val[i]*mymrtrnode->n()[2];
+      gpn[0]+=val[i]*mymrtrnode->MoData().n()[0];
+      gpn[1]+=val[i]*mymrtrnode->MoData().n()[1];
+      gpn[2]+=val[i]*mymrtrnode->MoData().n()[2];
 
       coord(0,i) = mymrtrnode->xspatial()[0];
       coord(1,i) = mymrtrnode->xspatial()[1];
@@ -500,7 +500,7 @@ double MORTAR::MortarProjector::EvaluateFNodalNormal(MORTAR::MortarNode& node,
   nx[2]-=node.xspatial()[2];
 
   //calculate F
-  fval = nx[0]*node.n()[1]-nx[1]*node.n()[0];
+  fval = nx[0]*node.MoData().n()[1]-nx[1]*node.MoData().n()[0];
 
   return fval;
 }
@@ -527,7 +527,7 @@ double MORTAR::MortarProjector::EvaluateGradFNodalNormal(MORTAR::MortarNode& nod
   ele.LocalToGlobal(eta,nxeta,1);
 
   // calculate GradF
-  fgrad =  nxeta[0]*node.n()[1]-nxeta[1]*node.n()[0];
+  fgrad =  nxeta[0]*node.MoData().n()[1]-nxeta[1]*node.MoData().n()[0];
 
   return fgrad;
 
@@ -567,9 +567,9 @@ double MORTAR::MortarProjector::EvaluateFElementNormal(MORTAR::MortarNode& node,
   for (int i=0;i<nnodes;++i)
   {
     MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
-    nn[0]+=val[i]*mymrtrnode->n()[0];
-    nn[1]+=val[i]*mymrtrnode->n()[1];
-    nn[2]+=val[i]*mymrtrnode->n()[2];
+    nn[0]+=val[i]*mymrtrnode->MoData().n()[0];
+    nn[1]+=val[i]*mymrtrnode->MoData().n()[1];
+    nn[2]+=val[i]*mymrtrnode->MoData().n()[2];
 
     coord(0,i) = mymrtrnode->xspatial()[0];
     coord(1,i) = mymrtrnode->xspatial()[1];
@@ -631,13 +631,13 @@ double MORTAR::MortarProjector::EvaluateGradFElementNormal(MORTAR::MortarNode& n
   {
     MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
 
-    nn[0]+=val[i]*mymrtrnode->n()[0];
-    nn[1]+=val[i]*mymrtrnode->n()[1];
-    nn[2]+=val[i]*mymrtrnode->n()[2];
+    nn[0]+=val[i]*mymrtrnode->MoData().n()[0];
+    nn[1]+=val[i]*mymrtrnode->MoData().n()[1];
+    nn[2]+=val[i]*mymrtrnode->MoData().n()[2];
 
-    nneta[0]+=deriv(i,0)*mymrtrnode->n()[0];
-    nneta[1]+=deriv(i,0)*mymrtrnode->n()[1];
-    nneta[2]+=deriv(i,0)*mymrtrnode->n()[2];
+    nneta[0]+=deriv(i,0)*mymrtrnode->MoData().n()[0];
+    nneta[1]+=deriv(i,0)*mymrtrnode->MoData().n()[1];
+    nneta[2]+=deriv(i,0)*mymrtrnode->MoData().n()[2];
 
     coord(0,i) = mymrtrnode->xspatial()[0];
     coord(1,i) = mymrtrnode->xspatial()[1];
@@ -699,9 +699,9 @@ bool MORTAR::MortarProjector::EvaluateFElementNormal3D(
   for (int i=0;i<nnodes;++i)
   {
     MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
-    nn[0]+=val[i]*mymrtrnode->n()[0];
-    nn[1]+=val[i]*mymrtrnode->n()[1];
-    nn[2]+=val[i]*mymrtrnode->n()[2];
+    nn[0]+=val[i]*mymrtrnode->MoData().n()[0];
+    nn[1]+=val[i]*mymrtrnode->MoData().n()[1];
+    nn[2]+=val[i]*mymrtrnode->MoData().n()[2];
 
     coord(0,i) = mymrtrnode->xspatial()[0];
     coord(1,i) = mymrtrnode->xspatial()[1];
@@ -757,17 +757,17 @@ bool MORTAR::MortarProjector::EvaluateGradFElementNormal3D(
   for (int i=0;i<nnodes;++i)
   {
     MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
-    nn[0]+=val[i]*mymrtrnode->n()[0];
-    nn[1]+=val[i]*mymrtrnode->n()[1];
-    nn[2]+=val[i]*mymrtrnode->n()[2];
+    nn[0]+=val[i]*mymrtrnode->MoData().n()[0];
+    nn[1]+=val[i]*mymrtrnode->MoData().n()[1];
+    nn[2]+=val[i]*mymrtrnode->MoData().n()[2];
 
-    nneta1[0]+=deriv(i,0)*mymrtrnode->n()[0];
-    nneta1[1]+=deriv(i,0)*mymrtrnode->n()[1];
-    nneta1[2]+=deriv(i,0)*mymrtrnode->n()[2];
+    nneta1[0]+=deriv(i,0)*mymrtrnode->MoData().n()[0];
+    nneta1[1]+=deriv(i,0)*mymrtrnode->MoData().n()[1];
+    nneta1[2]+=deriv(i,0)*mymrtrnode->MoData().n()[2];
 
-    nneta2[0]+=deriv(i,1)*mymrtrnode->n()[0];
-    nneta2[1]+=deriv(i,1)*mymrtrnode->n()[1];
-    nneta2[2]+=deriv(i,1)*mymrtrnode->n()[2];
+    nneta2[0]+=deriv(i,1)*mymrtrnode->MoData().n()[0];
+    nneta2[1]+=deriv(i,1)*mymrtrnode->MoData().n()[1];
+    nneta2[2]+=deriv(i,1)*mymrtrnode->MoData().n()[2];
 
     coord(0,i) = mymrtrnode->xspatial()[0];
     coord(1,i) = mymrtrnode->xspatial()[1];

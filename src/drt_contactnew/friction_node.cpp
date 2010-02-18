@@ -391,8 +391,8 @@ void CONTACT::FriNode::StoreDMOld()
   Data().GetMOld().resize(0);
 
   // write drows_ to drowsold_
-  Data().GetDOld() = GetD();
-  Data().GetMOld() = GetM();
+  Data().GetDOld() = MoData().GetD();
+  Data().GetMOld() = MoData().GetM();
 
   // also vectors containing the according master nodes
   Data().GetMNodesOld().clear();
@@ -444,6 +444,7 @@ void CONTACT::FriNode::StoreTracOld()
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::InitializeDataContainer()
 {
+  modata_=rcp(new MORTAR::MortarNodeDataContainer());
   codata_ =rcp(new CONTACT::CoNodeDataContainer());
   fridata_=rcp(new CONTACT::FriNodeDataContainer());
   return;

@@ -521,26 +521,33 @@ void MORTAR::MortarInterface::Initialize()
   {
     MORTAR::MortarNode* node = static_cast<MORTAR::MortarNode*>(idiscret_->lColNode(i));
 
-    //reset nodal normal and tangents and jumps
-    for (int j=0;j<3;++j)
-    {
-      node->n()[j]=0.0;
-    }
-
-    // reset nodal Mortar maps
-    for (int j=0;j<(int)((node->GetD()).size());++j)
-      (node->GetD())[j].clear();
-    for (int j=0;j<(int)((node->GetM()).size());++j)
-      (node->GetM())[j].clear();
-    for (int j=0;j<(int)((node->GetMmod()).size());++j)
-      (node->GetMmod())[j].clear();
-
-    (node->GetD()).resize(0);
-    (node->GetM()).resize(0);
-    (node->GetMmod()).resize(0);
-
     // reset feasible projection status
     node->HasProj() = false;
+  }
+  
+  // loop over procs modes nodes to reset (column map)
+  for (int i=0;i<OldColNodes()->NumMyElements();++i)
+  {
+    int gid = OldColNodes()->GID(i);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    MORTAR::MortarNode* monode = static_cast<MORTAR::MortarNode*>(node);
+
+    //reset nodal normal
+    for (int j=0;j<3;++j)
+      monode->MoData().n()[j]=0.0;
+    
+    // reset nodal Mortar maps
+    for (int j=0;j<(int)((monode->MoData().GetD()).size());++j)
+      (monode->MoData().GetD())[j].clear();
+    for (int j=0;j<(int)((monode->MoData().GetM()).size());++j)
+      (monode->MoData().GetM())[j].clear();
+    for (int j=0;j<(int)((monode->MoData().GetMmod()).size());++j)
+      (monode->MoData().GetMmod())[j].clear();
+    
+    (monode->MoData().GetD()).resize(0);
+    (monode->MoData().GetM()).resize(0);
+    (monode->MoData().GetMmod()).resize(0);
   }
 
   // loop over all elements to reset candidates / search lists
@@ -956,9 +963,9 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
       double auxpos [3] = {0.0, 0.0, 0.0};
       double scalar=0.0;
       for (int k=0; k<dim_;k++)
-        scalar+=(mrtrnode->X()[k]+mrtrnode->uold()[k]-mrtrnode->xspatial()[k])*mrtrnode->n()[k];
+        scalar+=(mrtrnode->X()[k]+mrtrnode->uold()[k]-mrtrnode->xspatial()[k])*mrtrnode->MoData().n()[k];
       for (int k=0;k<dim_;k++)
-        auxpos[k]= mrtrnode->xspatial()[k]+scalar*mrtrnode->n()[k];
+        auxpos[k]= mrtrnode->xspatial()[k]+scalar*mrtrnode->MoData().n()[k];
 
       for(int j=0;j<kdop/2;j++)
       {
@@ -1484,7 +1491,7 @@ void MORTAR::MortarInterface::AssembleLM(Epetra_Vector& zglobal)
     MortarNode* mrtrnode = static_cast<MortarNode*>(node);
 
     int dim = mrtrnode->NumDof();
-    double* lm = mrtrnode->lm();
+    double* lm = mrtrnode->MoData().lm();
 
     Epetra_SerialDenseVector lmnode(dim);
     vector<int> lmdof(dim);
@@ -1527,9 +1534,9 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
       dserror("ERROR: AssembleDM: Node ownership inconsistency!");
 
     /**************************************************** D-matrix ******/
-    if ((mrtrnode->GetD()).size()>0)
+    if ((mrtrnode->MoData().GetD()).size()>0)
     {
-      vector<map<int,double> > dmap = mrtrnode->GetD();
+      vector<map<int,double> > dmap = mrtrnode->MoData().GetD();
       int rowsize = mrtrnode->NumDof();
       int colsize = (int)dmap[0].size();
 
@@ -1579,9 +1586,9 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
     }
 
     /**************************************************** M-matrix ******/
-    if ((mrtrnode->GetM()).size()>0)
+    if ((mrtrnode->MoData().GetM()).size()>0)
     {
-      vector<map<int,double> > mmap = mrtrnode->GetM();
+      vector<map<int,double> > mmap = mrtrnode->MoData().GetM();
       int rowsize = mrtrnode->NumDof();
       int colsize = (int)mmap[0].size();
 
@@ -1612,9 +1619,9 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
     }
 
     /************************************************* Mmod-matrix ******/
-    if ((mrtrnode->GetMmod()).size()>0)
+    if ((mrtrnode->MoData().GetMmod()).size()>0)
     {
-      vector<map<int,double> > mmap = mrtrnode->GetMmod();
+      vector<map<int,double> > mmap = mrtrnode->MoData().GetMmod();
       int rowsize = mrtrnode->NumDof();
       int colsize = (int)mmap[0].size();
 
@@ -1682,7 +1689,7 @@ void MORTAR::MortarInterface::AssembleG(Epetra_Vector& gglobal)
     vector<double> gap(Dim());
 
     // slave contribution (D)
-    vector<map<int,double> > dmap = mrtrnode->GetD();
+    vector<map<int,double> > dmap = mrtrnode->MoData().GetD();
     map<int,double>::iterator dcurr;
 
     for (int d=0;d<snodefullmap_->NumMyElements();++d)
@@ -1710,7 +1717,7 @@ void MORTAR::MortarInterface::AssembleG(Epetra_Vector& gglobal)
     }
 
     // master contribution (M)
-    vector<map<int,double> > mmap = mrtrnode->GetM();
+    vector<map<int,double> > mmap = mrtrnode->MoData().GetM();
     map<int,double>::iterator mcurr;
 
     for (int m=0;m<mnodefullmap_->NumMyElements();++m)

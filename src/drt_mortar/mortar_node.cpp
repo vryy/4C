@@ -43,6 +43,144 @@ Maintainer: Alexander Popp
 #include "mortar_defines.H"
 #include "../drt_lib/drt_dserror.H"
 
+/*----------------------------------------------------------------------*/
+// METHODS RELATED TO MORTARNODEDATACONTAINER
+/*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                            mgit 02/10|
+ *----------------------------------------------------------------------*/
+MORTAR::MortarNodeDataContainer::MortarNodeDataContainer()
+//  isslave_(isslave),
+//  isonbound_(false),
+//  isdbc_(false),
+//  numdof_(numdof),
+//  dofs_(dofs),
+//  closestnode_(-1),
+//  hasproj_(false),
+
+  {
+    for (int i=0;i<3;++i)
+    {
+      n()[i]=0.0;
+      lm()[i]=0.0;
+      lmold()[i]=0.0;
+      lmuzawa()[i]=0.0;
+    }
+    return;
+}
+
+/*----------------------------------------------------------------------*
+ |  copy-ctor (public)                                        mgit 02/10|
+ *----------------------------------------------------------------------*/
+MORTAR::MortarNodeDataContainer::MortarNodeDataContainer(const MORTAR::MortarNodeDataContainer& old):
+//  isslave_(old.isslave_),
+//  isonbound_(old.isonbound_),
+//  isdbc_(old.isdbc_),
+//  numdof_(old.numdof_),
+//  dofs_(old.dofs_),
+//  closestnode_(old.closestnode_),
+//  hasproj_(old.hasproj_),
+  drows_(old.drows_),
+  mrows_(old.mrows_),
+  mmodrows_(old.mmodrows_)
+  {
+    for (int i=0;i<3;++i)
+    {
+      n()[i]=old.n_[i];
+      lm()[i]=old.lm_[i];
+      lmold()[i]=old.lmold_[i];
+      lmuzawa()[i]=old.lmuzawa_[i];
+    }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Deep copy this instance of MortarNodeDataContainer and
+    return pointer to it (public)                              mgit 02/10|
+ *----------------------------------------------------------------------*/
+MORTAR::MortarNodeDataContainer* MORTAR::MortarNodeDataContainer::Clone() const
+{
+  MORTAR::MortarNodeDataContainer* newnodedc = new MORTAR::MortarNodeDataContainer(*this);
+  return newnodedc;
+}
+
+/*----------------------------------------------------------------------*
+ |  Pack data                                                  (public) |
+ |                                                            mgit 02/10|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarNodeDataContainer::Pack(vector<char>& data) const
+{
+//  // add isslave_
+//  DRT::ParObject::AddtoPack(data,isslave_);
+//  // add isonbound_
+//  DRT::ParObject::AddtoPack(data,isonbound_);
+//  // add isdbc_
+//  DRT::ParObject::AddtoPack(data,isdbc_);
+//  // add numdof_
+//  DRT::ParObject::AddtoPack(data,numdof_);
+//  // add dofs_
+//  DRT::ParObject::AddtoPack(data,dofs_);
+//  // add xspatial_
+//  DRT::ParObject::AddtoPack(data,xspatial_,3);
+  // add n_
+  DRT::ParObject::AddtoPack(data,n_,3);
+//  // add uold_
+//  DRT::ParObject::AddtoPack(data,uold_,3);
+  // add lm_
+  DRT::ParObject::AddtoPack(data,lm_,3);
+  // add lmold_
+  DRT::ParObject::AddtoPack(data,lmold_,3);
+  // add lmuzawa_
+  DRT::ParObject::AddtoPack(data,lmuzawa_,3);
+//  // add closestnode_
+//  DRT::ParObject::AddtoPack(data,closestnode_);
+//  // add hasproj_
+//  DRT::ParObject::AddtoPack(data,hasproj_);
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Unpack data                                                (public) |
+ |                                                            mgit 02/10|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarNodeDataContainer::Unpack(int& position, const vector<char>& data)
+{
+//  // isslave_
+//  DRT::ParObject::ExtractfromPack(position,data,isslave_);
+//  // isonbound_
+//  DRT::ParObject::ExtractfromPack(position,data,isonbound_);
+//  // isdbc_
+//  DRT::ParObject::ExtractfromPack(position,data,isdbc_);
+//  // numdof_
+//  DRT::ParObject::ExtractfromPack(position,data,numdof_);
+//  // dofs_
+//  DRT::ParObject::ExtractfromPack(position,data,dofs_);
+//  // xspatial_
+//  DRT::ParObject::ExtractfromPack(position,data,xspatial_,3);
+  // n_
+  DRT::ParObject::ExtractfromPack(position,data,n_,3);
+//  // uold_
+//  DRT::ParObject::ExtractfromPack(position,data,uold_,3);
+  // lm_
+  DRT::ParObject::ExtractfromPack(position,data,lm_,3);
+  // lmold_
+  DRT::ParObject::ExtractfromPack(position,data,lmold_,3);
+  // lmuzawa_
+  DRT::ParObject::ExtractfromPack(position,data,lmuzawa_,3);
+//  // closestnode_
+//  DRT::ParObject::ExtractfromPack(position,data,closestnode_);
+//  // hasproj_
+//  DRT::ParObject::ExtractfromPack(position,data,hasproj_);
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+// METHODS RELATED TO MORTARNODE
+/*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -61,12 +199,8 @@ kappa_(1.0)
 {
   for (int i=0;i<3;++i)
   {
-    n()[i]=0.0;
     uold()[i]=0.0;
     xspatial()[i]=X()[i];
-    lm()[i]=0.0;
-    lmold()[i]=0.0;
-    lmuzawa()[i]=0.0;
   }
   
   return;
@@ -84,19 +218,12 @@ numdof_(old.numdof_),
 dofs_(old.dofs_),
 closestnode_(old.closestnode_),
 hasproj_(old.hasproj_),
-drows_(old.drows_),
-mrows_(old.mrows_),
-mmodrows_(old.mmodrows_),
 kappa_(old.kappa_)
 {
   for (int i=0;i<3;++i)
   {
-    n()[i]=old.n_[i];
     uold()[i]=old.uold_[i];
     xspatial()[i]=old.xspatial_[i];
-    lm()[i]=old.lm_[i];
-    lmold()[i]=old.lmold_[i];
-    lmuzawa()[i]=old.lmuzawa_[i];
   }
   
   return;
@@ -166,22 +293,22 @@ void MORTAR::MortarNode::Pack(vector<char>& data) const
   AddtoPack(data,dofs_);
   // add xspatial_
   AddtoPack(data,xspatial_,3);
-  // add n_
-  AddtoPack(data,n_,3);
   // add uold_
   AddtoPack(data,uold_,3);
-  // add lm_
-  AddtoPack(data,lm_,3);
-  // add lmold_
-  AddtoPack(data,lmold_,3);
-  // add lmuzawa_
-  AddtoPack(data,lmuzawa_,3);
   // add closestnode_
   AddtoPack(data,closestnode_);
   // add hasproj_
   AddtoPack(data,hasproj_);
   // add kappa_
   AddtoPack(data,kappa_);
+
+  
+  // data_
+  int hasdata = modata_!=Teuchos::null;
+  AddtoPack(data,hasdata);
+  if (hasdata)
+    modata_->Pack(data);
+
   return;
 }
 
@@ -213,22 +340,27 @@ void MORTAR::MortarNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,dofs_);
   // xspatial_
   ExtractfromPack(position,data,xspatial_,3);
-  // n_
-  ExtractfromPack(position,data,n_,3);
   // uold_
   ExtractfromPack(position,data,uold_,3);
-  // lm_
-  ExtractfromPack(position,data,lm_,3);
-  // lmold_
-  ExtractfromPack(position,data,lmold_,3);
-  // lmuzawa_
-  ExtractfromPack(position,data,lmuzawa_,3);
   // closestnode_
   ExtractfromPack(position,data,closestnode_);
   // hasproj_
   ExtractfromPack(position,data,hasproj_);
   // kappa_
-  ExtractfromPack(position,data,kappa_);
+  DRT::ParObject::ExtractfromPack(position,data,kappa_);
+  
+  // data_
+  int hasdata;
+  ExtractfromPack(position,data,hasdata);
+  if (hasdata)
+  {
+    modata_ = Teuchos::rcp(new MORTAR::MortarNodeDataContainer());
+    modata_->Unpack(position,data);
+  }
+  else
+  {
+    modata_ = Teuchos::null;
+  }
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -247,15 +379,15 @@ void MORTAR::MortarNode::AddDValue(int& row, int& col, double& val)
     dserror("ERROR: AddDValue: function called for boundary node %i", Id());
 
   // check if this has been called before
-  if ((int)drows_.size()==0)
-    drows_.resize(NumDof());
+  if ((int)MoData().GetD().size()==0)
+    MoData().GetD().resize(NumDof());
 
   // check row index input
-  if ((int)drows_.size()<=row)
+  if ((int)MoData().GetD().size()<=row)
     dserror("ERROR: AddDValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& dmap = drows_[row];
+  map<int,double>& dmap = MoData().GetD()[row];
   dmap[col] += val;
 
   return;
@@ -273,15 +405,15 @@ void MORTAR::MortarNode::AddMValue(int& row, int& col, double& val)
     dserror("ERROR: AddMValue: function called for boundary node %i", Id());
 
   // check if this has been called before
-  if ((int)mrows_.size()==0)
-    mrows_.resize(NumDof());
+  if ((int)MoData().GetM().size()==0)
+    MoData().GetM().resize(NumDof());
 
   // check row index input
-  if ((int)mrows_.size()<=row)
+  if ((int)MoData().GetM().size()<=row)
     dserror("ERROR: AddMValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& mmap = mrows_[row];
+  map<int,double>& mmap = MoData().GetM()[row];
   mmap[col] += val;
 
   return;
@@ -299,17 +431,26 @@ void MORTAR::MortarNode::AddMmodValue(int& row, int& col, double& val)
     dserror("ERROR: AddMmodValue: function called for boundary node %i", Id());
 
   // check if this has been called before
-  if ((int)mmodrows_.size()==0)
-    mmodrows_.resize(NumDof());
+  if ((int)MoData().GetMmod().size()==0)
+    MoData().GetMmod().resize(NumDof());
 
   // check row index input
-  if ((int)mmodrows_.size()<=row)
+  if ((int)MoData().GetMmod().size()<=row)
     dserror("ERROR: AddMmodValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& mmodmap = mmodrows_[row];
+  map<int,double>& mmodmap = MoData().GetMmod()[row];
   mmodmap[col] += val;
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Initialize data container                              gitterle 02/10|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarNode::InitializeDataContainer()
+{
+  modata_=rcp(new MORTAR::MortarNodeDataContainer());
   return;
 }
 
@@ -319,7 +460,7 @@ void MORTAR::MortarNode::AddMmodValue(int& row, int& col, double& val)
 void MORTAR::MortarNode::BuildAveragedNormal()
 {
   // reset normal and tangents when this method is called
-  for (int j=0;j<3;++j) n()[j]=0.0;
+  for (int j=0;j<3;++j) MoData().n()[j]=0.0;
 
   int nseg = NumElement();
   DRT::Element** adjeles = Elements();
@@ -347,13 +488,13 @@ void MORTAR::MortarNode::BuildAveragedNormal()
 
     // add (weighted) element normal to nodal normal n
     for (int j=0;j<3;++j)
-      n()[j]+=elens(j,i)/elens(4,i);
+      MoData().n()[j]+=elens(j,i)/elens(4,i);
   }
 
   // create unit normal vector
-  double length = sqrt(n()[0]*n()[0]+n()[1]*n()[1]+n()[2]*n()[2]);
+  double length = sqrt(MoData().n()[0]*MoData().n()[0]+MoData().n()[1]*MoData().n()[1]+MoData().n()[2]*MoData().n()[2]);
   if (length==0.0) dserror("ERROR: Nodal normal length 0, node ID %i",Id());
-  else             for (int j=0;j<3;++j) n()[j]/=length;
+  else             for (int j=0;j<3;++j) MoData().n()[j]/=length;
 
   return;
 }

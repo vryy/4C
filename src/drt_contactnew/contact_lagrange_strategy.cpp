@@ -1310,8 +1310,8 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
       double nzold = 0.0;
       for (int k=0;k<3;++k)
       {
-        nz += cnode->n()[k] * cnode->lm()[k];
-        nzold += cnode->n()[k] * cnode->lmold()[k];
+        nz += cnode->MoData().n()[k] * cnode->MoData().lm()[k];
+        nzold += cnode->MoData().n()[k] * cnode->MoData().lmold()[k];
       }
       
       // friction
@@ -1323,7 +1323,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
         FriNode* frinode = static_cast<FriNode*>(cnode);
         
         // compute tangential part of Lagrange multiplier
-        tz = frinode->CoData().txi()[0]*frinode->lm()[0] + frinode->CoData().txi()[1]*frinode->lm()[1];
+        tz = frinode->CoData().txi()[0]*frinode->MoData().lm()[0] + frinode->CoData().txi()[1]*frinode->MoData().lm()[1];
 
         // compute tangential part of jump
         tjump = frinode->CoData().txi()[0]*frinode->Data().jump()[0] + frinode->CoData().txi()[1]*frinode->Data().jump()[1];
@@ -1629,8 +1629,8 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
       double nzold = 0.0;
       for (int k=0;k<3;++k)
       {
-        nz += cnode->n()[k] * cnode->lm()[k];
-        nzold += cnode->n()[k] * cnode->lmold()[k];
+        nz += cnode->MoData().n()[k] * cnode->MoData().lm()[k];
+        nzold += cnode->MoData().n()[k] * cnode->MoData().lmold()[k];
       }
       
       // friction
@@ -1647,8 +1647,8 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
         // compute tangential parts and of Lagrange multiplier and incremental jumps
         for (int i=0;i<Dim();++i)
         {          
-          tz[0] += frinode->CoData().txi()[i]*frinode->lm()[i];
-          if(Dim()==3) tz[1] += frinode->CoData().teta()[i]*frinode->lm()[i];
+          tz[0] += frinode->CoData().txi()[i]*frinode->MoData().lm()[i];
+          if(Dim()==3) tz[1] += frinode->CoData().teta()[i]*frinode->MoData().lm()[i];
 
            tjump[0] += frinode->CoData().txi()[i]*frinode->Data().jump()[i];
            if(Dim()==3) tjump[1] += frinode->CoData().teta()[i]*frinode->Data().jump()[i];

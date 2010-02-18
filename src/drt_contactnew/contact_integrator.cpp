@@ -579,9 +579,9 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     for (int i=0;i<nrow;++i)
     {
       MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*> (mynodes[i]);
-      gpn[0]+=sval[i]*mymrtrnode->n()[0];
-      gpn[1]+=sval[i]*mymrtrnode->n()[1];
-      gpn[2]+=sval[i]*mymrtrnode->n()[2];
+      gpn[0]+=sval[i]*mymrtrnode->MoData().n()[0];
+      gpn[1]+=sval[i]*mymrtrnode->MoData().n()[1];
+      gpn[2]+=sval[i]*mymrtrnode->MoData().n()[2];
 
       sgpx[0]+=sval[i]*scoord(0,i);
       sgpx[1]+=sval[i]*scoord(1,i);
@@ -673,9 +673,9 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
 
       for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
       {
-        double valx =  sderiv(i,0)*smrtrnodes[i]->n()[0];
+        double valx =  sderiv(i,0)*smrtrnodes[i]->MoData().n()[0];
         dmap_nxsl_gp[p->first] += valx*(p->second);
-        double valy =  sderiv(i,0)*smrtrnodes[i]->n()[1];
+        double valy =  sderiv(i,0)*smrtrnodes[i]->MoData().n()[1];
         dmap_nysl_gp[p->first] += valy*(p->second);
       }
     }
@@ -1405,9 +1405,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D(
     for (int i=0;i<nrow;++i)
     {
       MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*> (mynodes[i]);
-      gpn[0]+=sval[i]*mymrtrnode->n()[0];
-      gpn[1]+=sval[i]*mymrtrnode->n()[1];
-      gpn[2]+=sval[i]*mymrtrnode->n()[2];
+      gpn[0]+=sval[i]*mymrtrnode->MoData().n()[0];
+      gpn[1]+=sval[i]*mymrtrnode->MoData().n()[1];
+      gpn[2]+=sval[i]*mymrtrnode->MoData().n()[2];
 
       sgpx[0]+=sval[i]*scoord(0,i);
       sgpx[1]+=sval[i]*scoord(1,i);
@@ -1524,21 +1524,21 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D(
 
       for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
       {
-        double valx =  sderiv(i,0)*smrtrnodes[i]->n()[0];
+        double valx =  sderiv(i,0)*smrtrnodes[i]->MoData().n()[0];
         dmap_nxsl_gp[p->first] += valx*(p->second);
-        double valy =  sderiv(i,0)*smrtrnodes[i]->n()[1];
+        double valy =  sderiv(i,0)*smrtrnodes[i]->MoData().n()[1];
         dmap_nysl_gp[p->first] += valy*(p->second);
-        double valz =  sderiv(i,0)*smrtrnodes[i]->n()[2];
+        double valz =  sderiv(i,0)*smrtrnodes[i]->MoData().n()[2];
         dmap_nzsl_gp[p->first] += valz*(p->second);
       }
 
       for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
       {
-        double valx =  sderiv(i,1)*smrtrnodes[i]->n()[0];
+        double valx =  sderiv(i,1)*smrtrnodes[i]->MoData().n()[0];
         dmap_nxsl_gp[p->first] += valx*(p->second);
-        double valy =  sderiv(i,1)*smrtrnodes[i]->n()[1];
+        double valy =  sderiv(i,1)*smrtrnodes[i]->MoData().n()[1];
         dmap_nysl_gp[p->first] += valy*(p->second);
-        double valz =  sderiv(i,1)*smrtrnodes[i]->n()[2];
+        double valz =  sderiv(i,1)*smrtrnodes[i]->MoData().n()[2];
         dmap_nzsl_gp[p->first] += valz*(p->second);
       }
     }
@@ -2279,9 +2279,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     for (int i=0;i<nrow;++i)
     {
       MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*> (mynodes[i]);
-      gpn[0]+=sval[i]*mymrtrnode->n()[0];
-      gpn[1]+=sval[i]*mymrtrnode->n()[1];
-      gpn[2]+=sval[i]*mymrtrnode->n()[2];
+      gpn[0]+=sval[i]*mymrtrnode->MoData().n()[0];
+      gpn[1]+=sval[i]*mymrtrnode->MoData().n()[1];
+      gpn[2]+=sval[i]*mymrtrnode->MoData().n()[2];
 
       sgpx[0]+=sval[i]*scoord(0,i);
       sgpx[1]+=sval[i]*scoord(1,i);
@@ -2380,21 +2380,21 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
 
       for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
       {
-        double valx =  sderiv(i,0)*smrtrnodes[i]->n()[0];
+        double valx =  sderiv(i,0)*smrtrnodes[i]->MoData().n()[0];
         dmap_nxsl_gp[p->first] += valx*(p->second);
-        double valy =  sderiv(i,0)*smrtrnodes[i]->n()[1];
+        double valy =  sderiv(i,0)*smrtrnodes[i]->MoData().n()[1];
         dmap_nysl_gp[p->first] += valy*(p->second);
-        double valz =  sderiv(i,0)*smrtrnodes[i]->n()[2];
+        double valz =  sderiv(i,0)*smrtrnodes[i]->MoData().n()[2];
         dmap_nzsl_gp[p->first] += valz*(p->second);
       }
 
       for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
       {
-        double valx =  sderiv(i,1)*smrtrnodes[i]->n()[0];
+        double valx =  sderiv(i,1)*smrtrnodes[i]->MoData().n()[0];
         dmap_nxsl_gp[p->first] += valx*(p->second);
-        double valy =  sderiv(i,1)*smrtrnodes[i]->n()[1];
+        double valy =  sderiv(i,1)*smrtrnodes[i]->MoData().n()[1];
         dmap_nysl_gp[p->first] += valy*(p->second);
-        double valz =  sderiv(i,1)*smrtrnodes[i]->n()[2];
+        double valz =  sderiv(i,1)*smrtrnodes[i]->MoData().n()[2];
         dmap_nzsl_gp[p->first] += valz*(p->second);
       }
     }
@@ -3099,9 +3099,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     for (int i=0;i<nrow;++i)
     {
       MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*> (mynodes[i]);
-      gpn[0]+=sval[i]*mymrtrnode->n()[0];
-      gpn[1]+=sval[i]*mymrtrnode->n()[1];
-      gpn[2]+=sval[i]*mymrtrnode->n()[2];
+      gpn[0]+=sval[i]*mymrtrnode->MoData().n()[0];
+      gpn[1]+=sval[i]*mymrtrnode->MoData().n()[1];
+      gpn[2]+=sval[i]*mymrtrnode->MoData().n()[2];
 
       sgpx[0]+=sval[i]*scoord(0,i);
       sgpx[1]+=sval[i]*scoord(1,i);
@@ -3207,21 +3207,21 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 
       for (CI p=dpsxigp[0].begin();p!=dpsxigp[0].end();++p)
       {
-        double valx =  sderiv(i,0)*smrtrnodes[i]->n()[0];
+        double valx =  sderiv(i,0)*smrtrnodes[i]->MoData().n()[0];
         dmap_nxsl_gp[p->first] += valx*(p->second);
-        double valy =  sderiv(i,0)*smrtrnodes[i]->n()[1];
+        double valy =  sderiv(i,0)*smrtrnodes[i]->MoData().n()[1];
         dmap_nysl_gp[p->first] += valy*(p->second);
-        double valz =  sderiv(i,0)*smrtrnodes[i]->n()[2];
+        double valz =  sderiv(i,0)*smrtrnodes[i]->MoData().n()[2];
         dmap_nzsl_gp[p->first] += valz*(p->second);
       }
 
       for (CI p=dpsxigp[1].begin();p!=dpsxigp[1].end();++p)
       {
-        double valx =  sderiv(i,1)*smrtrnodes[i]->n()[0];
+        double valx =  sderiv(i,1)*smrtrnodes[i]->MoData().n()[0];
         dmap_nxsl_gp[p->first] += valx*(p->second);
-        double valy =  sderiv(i,1)*smrtrnodes[i]->n()[1];
+        double valy =  sderiv(i,1)*smrtrnodes[i]->MoData().n()[1];
         dmap_nysl_gp[p->first] += valy*(p->second);
-        double valz =  sderiv(i,1)*smrtrnodes[i]->n()[2];
+        double valz =  sderiv(i,1)*smrtrnodes[i]->MoData().n()[2];
         dmap_nzsl_gp[p->first] += valz*(p->second);
       }
     }
@@ -3810,7 +3810,7 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
       fac_ymsl_b += valmxib[i]*(mmrtrnodes[i]->xspatial()[1]);
     }
 
-    cmxib = -1/(fac_dxm_b*(smrtrnodes[0]->n()[1])-fac_dym_b*(smrtrnodes[0]->n()[0]));
+    cmxib = -1/(fac_dxm_b*(smrtrnodes[0]->MoData().n()[1])-fac_dym_b*(smrtrnodes[0]->MoData().n()[0]));
     //cout << "cmxib: " << cmxib << endl;
 
     fac_xmsl_b -= smrtrnodes[0]->xspatial()[0];
@@ -3828,7 +3828,7 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
       fac_ymsl_a += valmxia[i]*(mmrtrnodes[i]->xspatial()[1]);
     }
 
-    cmxia = -1/(fac_dxm_a*(smrtrnodes[1]->n()[1])-fac_dym_a*(smrtrnodes[1]->n()[0]));
+    cmxia = -1/(fac_dxm_a*(smrtrnodes[1]->MoData().n()[1])-fac_dym_a*(smrtrnodes[1]->MoData().n()[0]));
     //cout << "cmxia: " << cmxia << endl;
 
     fac_xmsl_a -= smrtrnodes[1]->xspatial()[0];
@@ -3864,10 +3864,10 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
       fac_dysl_a += derivsxia(i,0)*(smrtrnodes[i]->xspatial()[1]);
       fac_xslm_a += valsxia[i]*(smrtrnodes[i]->xspatial()[0]);
       fac_yslm_a += valsxia[i]*(smrtrnodes[i]->xspatial()[1]);
-      fac_dnx_a  += derivsxia(i,0)*(smrtrnodes[i]->n()[0]);
-      fac_dny_a  += derivsxia(i,0)*(smrtrnodes[i]->n()[1]);
-      fac_nx_a   += valsxia[i]*(smrtrnodes[i]->n()[0]);
-      fac_ny_a   += valsxia[i]*(smrtrnodes[i]->n()[1]);
+      fac_dnx_a  += derivsxia(i,0)*(smrtrnodes[i]->MoData().n()[0]);
+      fac_dny_a  += derivsxia(i,0)*(smrtrnodes[i]->MoData().n()[1]);
+      fac_nx_a   += valsxia[i]*(smrtrnodes[i]->MoData().n()[0]);
+      fac_ny_a   += valsxia[i]*(smrtrnodes[i]->MoData().n()[1]);
     }
 
     fac_xslm_a -= mmrtrnodes[1]->xspatial()[0];
@@ -3886,10 +3886,10 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
       fac_dysl_b  += derivsxib(i,0)*(smrtrnodes[i]->xspatial()[1]);
       fac_xslm_b += valsxib[i]*(smrtrnodes[i]->xspatial()[0]);
       fac_yslm_b += valsxib[i]*(smrtrnodes[i]->xspatial()[1]);
-      fac_dnx_b  += derivsxib(i,0)*(smrtrnodes[i]->n()[0]);
-      fac_dny_b  += derivsxib(i,0)*(smrtrnodes[i]->n()[1]);
-      fac_nx_b   += valsxib[i]*(smrtrnodes[i]->n()[0]);
-      fac_ny_b   += valsxib[i]*(smrtrnodes[i]->n()[1]);
+      fac_dnx_b  += derivsxib(i,0)*(smrtrnodes[i]->MoData().n()[0]);
+      fac_dny_b  += derivsxib(i,0)*(smrtrnodes[i]->MoData().n()[1]);
+      fac_nx_b   += valsxib[i]*(smrtrnodes[i]->MoData().n()[0]);
+      fac_ny_b   += valsxib[i]*(smrtrnodes[i]->MoData().n()[1]);
     }
 
     fac_xslm_b -= mmrtrnodes[0]->xspatial()[0];
@@ -3913,14 +3913,14 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
     map<int,double>& nymap_b = static_cast<CONTACT::CoNode*>(smrtrnodes[0])->CoData().GetDerivN()[1];
 
     // add derivative of slave node coordinates
-    dmap_mxib[smrtrnodes[0]->Dofs()[0]] -= smrtrnodes[0]->n()[1];
-    dmap_mxib[smrtrnodes[0]->Dofs()[1]] += smrtrnodes[0]->n()[0];
+    dmap_mxib[smrtrnodes[0]->Dofs()[0]] -= smrtrnodes[0]->MoData().n()[1];
+    dmap_mxib[smrtrnodes[0]->Dofs()[1]] += smrtrnodes[0]->MoData().n()[0];
 
     // add derivatives of master node coordinates
     for (int i=0;i<nummnode;++i)
     {
-      dmap_mxib[mmrtrnodes[i]->Dofs()[0]] += valmxib[i]*(smrtrnodes[0]->n()[1]);
-      dmap_mxib[mmrtrnodes[i]->Dofs()[1]] -= valmxib[i]*(smrtrnodes[0]->n()[0]);
+      dmap_mxib[mmrtrnodes[i]->Dofs()[0]] += valmxib[i]*(smrtrnodes[0]->MoData().n()[1]);
+      dmap_mxib[mmrtrnodes[i]->Dofs()[1]] -= valmxib[i]*(smrtrnodes[0]->MoData().n()[0]);
     }
 
     // add derivative of slave node normal
@@ -3945,14 +3945,14 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
     map<int,double>& nymap_a = static_cast<CONTACT::CoNode*>(smrtrnodes[1])->CoData().GetDerivN()[1];
 
     // add derivative of slave node coordinates
-    dmap_mxia[smrtrnodes[1]->Dofs()[0]] -= smrtrnodes[1]->n()[1];
-    dmap_mxia[smrtrnodes[1]->Dofs()[1]] += smrtrnodes[1]->n()[0];
+    dmap_mxia[smrtrnodes[1]->Dofs()[0]] -= smrtrnodes[1]->MoData().n()[1];
+    dmap_mxia[smrtrnodes[1]->Dofs()[1]] += smrtrnodes[1]->MoData().n()[0];
 
     // add derivatives of master node coordinates
     for (int i=0;i<nummnode;++i)
     {
-      dmap_mxia[mmrtrnodes[i]->Dofs()[0]] += valmxia[i]*(smrtrnodes[1]->n()[1]);
-      dmap_mxia[mmrtrnodes[i]->Dofs()[1]] -= valmxia[i]*(smrtrnodes[1]->n()[0]);
+      dmap_mxia[mmrtrnodes[i]->Dofs()[0]] += valmxia[i]*(smrtrnodes[1]->MoData().n()[1]);
+      dmap_mxia[mmrtrnodes[i]->Dofs()[1]] -= valmxia[i]*(smrtrnodes[1]->MoData().n()[0]);
     }
 
     // add derivative of slave node normal
@@ -4095,9 +4095,9 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele,
   double sgpx[3] = {0.0,0.0,0.0};
   for (int i=0;i<numsnode;++i)
   {
-    sgpn[0]+=valsxigp[i]*smrtrnodes[i]->n()[0];
-    sgpn[1]+=valsxigp[i]*smrtrnodes[i]->n()[1];
-    sgpn[2]+=valsxigp[i]*smrtrnodes[i]->n()[2];
+    sgpn[0]+=valsxigp[i]*smrtrnodes[i]->MoData().n()[0];
+    sgpn[1]+=valsxigp[i]*smrtrnodes[i]->MoData().n()[1];
+    sgpn[2]+=valsxigp[i]*smrtrnodes[i]->MoData().n()[2];
 
     sgpx[0]+=valsxigp[i]*smrtrnodes[i]->xspatial()[0];
     sgpx[1]+=valsxigp[i]*smrtrnodes[i]->xspatial()[1];
@@ -4182,9 +4182,9 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele,
 
     for (CI p=derivsxi.begin();p!=derivsxi.end();++p)
     {
-      double valx =  derivsxigp(i,0)*smrtrnodes[i]->n()[0];
+      double valx =  derivsxigp(i,0)*smrtrnodes[i]->MoData().n()[0];
       dmap_nxsl_gp_mod[p->first] += valx*(p->second);
-      double valy =  derivsxigp(i,0)*smrtrnodes[i]->n()[1];
+      double valy =  derivsxigp(i,0)*smrtrnodes[i]->MoData().n()[1];
       dmap_nysl_gp_mod[p->first] += valy*(p->second);
     }
   }
@@ -4285,7 +4285,7 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele,
   for (int i=0;i<numsnode;++i)
     for (int k=0;k<3;++k)
     {
-      sgpn[k]+=valsxigp[i]*smrtrnodes[i]->n()[k];
+      sgpn[k]+=valsxigp[i]*smrtrnodes[i]->MoData().n()[k];
       sgpx[k]+=valsxigp[i]*smrtrnodes[i]->xspatial()[k];
     }
 
@@ -4323,21 +4323,21 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele,
 
     for (CI p=derivsxi[0].begin();p!=derivsxi[0].end();++p)
     {
-      double valx =  derivsxigp(i,0)*smrtrnodes[i]->n()[0];
+      double valx =  derivsxigp(i,0)*smrtrnodes[i]->MoData().n()[0];
       dmap_nxsl_gp[p->first] += valx*(p->second);
-      double valy =  derivsxigp(i,0)*smrtrnodes[i]->n()[1];
+      double valy =  derivsxigp(i,0)*smrtrnodes[i]->MoData().n()[1];
       dmap_nysl_gp[p->first] += valy*(p->second);
-      double valz =  derivsxigp(i,0)*smrtrnodes[i]->n()[2];
+      double valz =  derivsxigp(i,0)*smrtrnodes[i]->MoData().n()[2];
       dmap_nzsl_gp[p->first] += valz*(p->second);
     }
 
     for (CI p=derivsxi[1].begin();p!=derivsxi[1].end();++p)
     {
-      double valx =  derivsxigp(i,1)*smrtrnodes[i]->n()[0];
+      double valx =  derivsxigp(i,1)*smrtrnodes[i]->MoData().n()[0];
       dmap_nxsl_gp[p->first] += valx*(p->second);
-      double valy =  derivsxigp(i,1)*smrtrnodes[i]->n()[1];
+      double valy =  derivsxigp(i,1)*smrtrnodes[i]->MoData().n()[1];
       dmap_nysl_gp[p->first] += valy*(p->second);
-      double valz =  derivsxigp(i,1)*smrtrnodes[i]->n()[2];
+      double valz =  derivsxigp(i,1)*smrtrnodes[i]->MoData().n()[2];
       dmap_nzsl_gp[p->first] += valz*(p->second);
     }
   }

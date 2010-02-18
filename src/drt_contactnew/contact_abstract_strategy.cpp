@@ -412,17 +412,17 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
         {
         case MORTAR::StrategyBase::lmcurrent:
         {
-          cnode->lm()[dof] = (*vectorinterface)[locindex[dof]];
+          cnode->MoData().lm()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         case MORTAR::StrategyBase::lmold:
         {
-          cnode->lmold()[dof] = (*vectorinterface)[locindex[dof]];
+          cnode->MoData().lmold()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         case MORTAR::StrategyBase::lmuzawa:
         {
-          cnode->lmuzawa()[dof] = (*vectorinterface)[locindex[dof]];
+          cnode->MoData().lmuzawa()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         case MORTAR::StrategyBase::lmupdate:
@@ -442,7 +442,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
             (*vectorinterface)[locindex[dof]] = 0.0;
 
           // store updated LM into node
-          cnode->lm()[dof] = (*vectorinterface)[locindex[dof]];
+          cnode->MoData().lm()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         case MORTAR::StrategyBase::activeold:
@@ -510,12 +510,12 @@ void CONTACT::CoAbstractStrategy::OutputStresses ()
 
       for (int j=0;j<3;++j)
       {
-        nn[j]=cnode->n()[j];
+        nn[j]=cnode->MoData().n()[j];
         nt1[j]=cnode->CoData().txi()[j];
         nt2[j]=cnode->CoData().teta()[j];
-        lmn +=  nn[j]* cnode->lm()[j];
-        lmt1 += nt1[j]* cnode->lm()[j];
-        lmt2 += nt2[j]* cnode->lm()[j];
+        lmn +=  nn[j]* cnode->MoData().lm()[j];
+        lmt1 += nt1[j]* cnode->MoData().lm()[j];
+        lmt2 += nt2[j]* cnode->MoData().lm()[j];
       }
 
       // find indices for DOFs of current node in Epetra_Vector
@@ -1037,7 +1037,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm)
         if (dofid<0) dserror("ERROR: ContactForces: Did not find slave dof in map");
         nodegaps[d] = (*gapslavefinal)[dofid];
         nodegapm[d] = (*gapmasterfinal)[dofid];
-        lm[d] = cnode->lm()[d];
+        lm[d] = cnode->MoData().lm()[d];
       }
 
       // moments
@@ -1055,7 +1055,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm)
         gmcmnew[d] -= nodemomentm[d];
       }
 
-      cout << "NORMAL: " << cnode->n()[0] << " " << cnode->n()[1] << " " << cnode->n()[2] << endl;
+      cout << "NORMAL: " << cnode->MoData().n()[0] << " " << cnode->MoData().n()[1] << " " << cnode->MoData().n()[2] << endl;
       cout << "LM:     " << lm[0] << " " << lm[1] << " " << lm[2] << endl;
       cout << "GAP:    " << nodegaps[0]-nodegapm[0] << " " << nodegaps[1]-nodegapm[1] << " " << nodegaps[2]-nodegapm[2] << endl;
     }
@@ -1164,8 +1164,8 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
       double nzold = 0.0;
       for (int k=0;k<3;++k)
       {
-        nz += cnode->n()[k] * cnode->lm()[k];
-        nzold += cnode->n()[k] * cnode->lmold()[k];
+        nz += cnode->MoData().n()[k] * cnode->MoData().lm()[k];
+        nzold += cnode->MoData().n()[k] * cnode->MoData().lmold()[k];
       }
       
       if (ctype == INPAR::CONTACT::contact_normal)
@@ -1199,8 +1199,8 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
           // compute tangential parts of Lagrange multiplier and jumps
           for (int k=0;k<Dim();++k)
           {
-            ztxi += frinode->CoData().txi()[k] * frinode->lm()[k];
-            zteta += frinode->CoData().teta()[k] * frinode->lm()[k];
+            ztxi += frinode->CoData().txi()[k] * frinode->MoData().lm()[k];
+            zteta += frinode->CoData().teta()[k] * frinode->MoData().lm()[k];
             jumptxi += frinode->CoData().txi()[k] * frinode->Data().jump()[k];
             jumpteta += frinode->CoData().teta()[k] * frinode->Data().jump()[k];
           }

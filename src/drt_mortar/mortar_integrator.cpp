@@ -560,10 +560,10 @@ RCP<Epetra_SerialDenseMatrix> MORTAR::MortarIntegrator::IntegrateMmod2D(MORTAR::
 
   // normals
   double n[2][2];
-  n[0][0] = snode0->n()[0];
-  n[0][1] = snode0->n()[1];
-  n[1][0] = snode1->n()[0];
-  n[1][1] = snode1->n()[1];
+  n[0][0] = snode0->MoData().n()[0];
+  n[0][1] = snode0->MoData().n()[1];
+  n[1][0] = snode1->MoData().n()[0];
+  n[1][1] = snode1->MoData().n()[1];
 
   // tangents
   double t[2][2];

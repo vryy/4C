@@ -164,22 +164,6 @@ void CONTACT::CoInterface::Initialize()
   {
     CONTACT::CoNode* node = static_cast<CONTACT::CoNode*>(idiscret_->lColNode(i));
 
-    //reset nodal normal and tangents and jumps
-    for (int j=0;j<3;++j)
-      node->n()[j]=0.0;
-
-    // reset nodal Mortar maps
-    for (int j=0;j<(int)((node->GetD()).size());++j)
-      (node->GetD())[j].clear();
-    for (int j=0;j<(int)((node->GetM()).size());++j)
-      (node->GetM())[j].clear();
-    for (int j=0;j<(int)((node->GetMmod()).size());++j)
-      (node->GetMmod())[j].clear();
-
-    (node->GetD()).resize(0);
-    (node->GetM()).resize(0);
-    (node->GetMmod()).resize(0);
-
     // reset feasible projection status
     node->HasProj() = false;
    }
@@ -195,10 +179,24 @@ void CONTACT::CoInterface::Initialize()
     //reset nodal normal and tangents and jumps
     for (int j=0;j<3;++j)
     {
+      cnode->MoData().n()[j]=0.0;
       cnode->CoData().txi()[j]=0.0;
       cnode->CoData().teta()[j]=0.0;
     }
 
+    // reset nodal Mortar maps
+    for (int j=0;j<(int)((cnode->MoData().GetD()).size());++j)
+      (cnode->MoData().GetD())[j].clear();
+    for (int j=0;j<(int)((cnode->MoData().GetM()).size());++j)
+      (cnode->MoData().GetM())[j].clear();
+    for (int j=0;j<(int)((cnode->MoData().GetMmod()).size());++j)
+      (cnode->MoData().GetMmod())[j].clear();
+    
+    (cnode->MoData().GetD()).resize(0);
+    (cnode->MoData().GetM()).resize(0);
+    (cnode->MoData().GetMmod()).resize(0);
+  
+    
     // reset derivative maps of normal vector
     for (int j=0;j<(int)((cnode->CoData().GetDerivN()).size());++j)
       (cnode->CoData().GetDerivN())[j].clear();
@@ -555,7 +553,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
     // compute normal part of Lagrange multiplier
     double nz = 0.0;
     for (int k=0;k<3;++k)
-      nz += cnode->n()[k] * cnode->lm()[k];
+      nz += cnode->MoData().n()[k] * cnode->MoData().lm()[k];
 
     vector <double> jump(dim);
     for(int dim=0;dim<Dim();dim++)
@@ -563,7 +561,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
 
     double lmuzawan = 0.0;
     for (int k=0;k<dim;++k)
-      lmuzawan += cnode->lmuzawa()[k]*cnode->n()[k];
+      lmuzawan += cnode->MoData().lmuzawa()[k]*cnode->MoData().n()[k];
 
     double kappa = cnode->Kappa();
 
@@ -599,7 +597,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
       vector<map<int,double> > dmap = cnode->Data().GetDPG();
       vector<map<int,double> > dmapold = cnode->Data().GetDOldPG();
 #else
-      vector<map<int,double> > dmap = cnode->GetD();
+      vector<map<int,double> > dmap = cnode->MoData().GetD();
       vector<map<int,double> > dmapold = cnode->Data().GetDOld();
 #endif
 
@@ -636,7 +634,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
       vector<map<int,double> > mmap = cnode->Data().GetMPG();
       vector<map<int,double> > mmapold = cnode->Data().GetMOldPG();
 #else
-      vector<map<int,double> > mmap = cnode->GetM();
+      vector<map<int,double> > mmap = cnode->MoData().GetM();
       vector<map<int,double> > mmapold = cnode->Data().GetMOld();
 #endif
 
@@ -857,7 +855,7 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
     FriNode* cnode = static_cast<FriNode*>(node);
 
     // get some information form node
-    double* n = cnode->n();
+    double* n = cnode->MoData().n();
     int dim = cnode->NumDof();
 
     // tangential plane
@@ -894,7 +892,7 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
     // jump vector
     Epetra_SerialDenseMatrix forcevec(dim,1);
     for (int i=0;i<dim;i++)
-      forcevec(i,0) = cnode->lm()[i];
+      forcevec(i,0) = cnode->MoData().lm()[i];
 
     // evaluate jump in tangential direction
     Epetra_SerialDenseMatrix jumptan(dim,1);
@@ -919,9 +917,9 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
         jumptxi+=cnode->CoData().txi()[i]*cnode->Data().jump()[i];
         jumpteta+=cnode->CoData().teta()[i]*cnode->Data().jump()[i];
 
-        forcen+=cnode->n()[i]*cnode->lm()[i];
-        forcetxi+=cnode->CoData().txi()[i]*cnode->lm()[i];
-        forceteta+=cnode->CoData().teta()[i]*cnode->lm()[i];
+        forcen+=cnode->MoData().n()[i]*cnode->MoData().lm()[i];
+        forcetxi+=cnode->CoData().txi()[i]*cnode->MoData().lm()[i];
+        forceteta+=cnode->CoData().teta()[i]*cnode->MoData().lm()[i];
       }
 
       //cout << "FACTOR-Direction " << (jumptxi/jumpteta)/(forcetxi/forceteta) << endl;
@@ -970,14 +968,14 @@ void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
 
     double lmuzawan = 0.0;
     for (int k=0;k<dim;++k)
-      lmuzawan += cnode->lmuzawa()[k]*cnode->n()[k];
+      lmuzawan += cnode->MoData().lmuzawa()[k]*cnode->MoData().n()[k];
 
 #ifdef CONTACTFDPENALTYKC1
     // set lagrangian multipliers explicitely to constant
     // and corresponding derivatives to zero
 
     for( int j=0;j<dim;++j)
-      cnode->lm()[j] = i*j;
+      cnode->MoData().lm()[j] = i*j;
 
     cnode->CoData().GetDerivZ().clear();
 
@@ -1037,11 +1035,11 @@ void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
 
       localisincontact = true;
 
-      double* normal = cnode->n();
+      double* normal = cnode->MoData().n();
 
       // compute lagrange multipliers and store into node
       for( int j=0;j<dim;++j)
-        cnode->lm()[j] = (lmuzawan - kappa * pp * gap) * normal[j];
+        cnode->MoData().lm()[j] = (lmuzawan - kappa * pp * gap) * normal[j];
 
       // compute derivatives of lagrange multipliers and store into node
 
@@ -1068,7 +1066,7 @@ void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
     else
     {
       // clear lagrange multipliers
-      for( int j=0;j<dim;++j) cnode->lm()[j] = 0;
+      for( int j=0;j<dim;++j) cnode->MoData().lm()[j] = 0;
 
       // clear derivz
       cnode->CoData().GetDerivZ().clear();
@@ -1108,17 +1106,17 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     double gap = cnode->CoData().Getg();
     int dim = cnode->NumDof();
     double kappa = cnode->Kappa();
-    double* n = cnode->n();
+    double* n = cnode->MoData().n();
 
     // Lagrange multiplier from Uzawa algorithm
     Epetra_SerialDenseMatrix lmuzawa(dim,1);
     for (int k=0;k<dim;++k)
-      lmuzawa(k,0) = cnode->lmuzawa()[k];
+      lmuzawa(k,0) = cnode->MoData().lmuzawa()[k];
 
     // Lagrange multiplier in normal direction
     double lmuzawan = 0.0;
     for (int k=0;k<dim;++k)
-      lmuzawan += cnode->lmuzawa()[k]*cnode->n()[k];
+      lmuzawan += cnode->MoData().lmuzawa()[k]*cnode->MoData().n()[k];
 
     // tangential plane
     Epetra_SerialDenseMatrix tanplane(dim,dim);
@@ -1194,7 +1192,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
 
       // compute lagrange multipliers and store into node
       for( int j=0;j<dim;++j)
-        cnode->lm()[j] = n[j]*(- kappa * ppnor * gap) + trailtraction[j];
+        cnode->MoData().lm()[j] = n[j]*(- kappa * ppnor * gap) + trailtraction[j];
     }
     else
     {
@@ -1207,7 +1205,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
 
       // compute lagrange multipliers and store into node
       for( int j=0;j<dim;++j)
-        cnode->lm()[j] = n[j]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[j];
+        cnode->MoData().lm()[j] = n[j]*(- kappa * ppnor * gap)+maxtantrac/magnitude*trailtraction[j];
     }
 
     // linearization of contact forces (lagrange multipliers)
@@ -1425,7 +1423,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     else
     {
       // clear tractions
-      for( int j=0;j<dim;++j) cnode->lm()[j] = 0;
+      for( int j=0;j<dim;++j) cnode->MoData().lm()[j] = 0;
       // clear derivz
       cnode->CoData().GetDerivZ().clear();
     }
@@ -1462,17 +1460,17 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
     double gap = cnode->CoData().Getg();
     int dim = cnode->NumDof();
     double kappa = cnode->Kappa();
-    double* n = cnode->n();
+    double* n = cnode->MoData().n();
 
     // Lagrange multiplier from Uzawa algorithm
     Epetra_SerialDenseMatrix lmuzawa(dim,1);
     for (int k=0;k<dim;++k)
-      lmuzawa(k,0) = cnode->lmuzawa()[k];
+      lmuzawa(k,0) = cnode->MoData().lmuzawa()[k];
 
     // Lagrange multiplier in normal direction
     double lmuzawan = 0.0;
     for (int k=0;k<dim;++k)
-      lmuzawan += cnode->lmuzawa()[k]*cnode->n()[k];
+      lmuzawan += cnode->MoData().lmuzawa()[k]*cnode->MoData().n()[k];
 
     // tangential plane
     Epetra_SerialDenseMatrix tanplane(dim,dim);
@@ -1538,7 +1536,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
 
       // compute lagrange multipliers and store into node
       for( int j=0;j<dim;++j)
-        cnode->lm()[j] = n[j]*(lmuzawan - kappa * ppnor * gap)+trailtraction[j];
+        cnode->MoData().lm()[j] = n[j]*(lmuzawan - kappa * ppnor * gap)+trailtraction[j];
     }
     else
     {
@@ -1547,7 +1545,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
 
       // compute lagrange multipliers and store into node
       for( int j=0;j<dim;++j)
-        cnode->lm()[j] = n[j]*(lmuzawan - kappa * ppnor * gap)+trailtraction[j]*maxtantrac/magnitude;
+        cnode->MoData().lm()[j] = n[j]*(lmuzawan - kappa * ppnor * gap)+trailtraction[j]*maxtantrac/magnitude;
     }
 
     // linearization of contact forces (lagrange multipliers)
@@ -1589,7 +1587,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
           {
             int col = colcurr->first;
             double val =-pptan*kappa*(colcurr->second)*n[dim]*(cnode->Data().jump()[dim]);
-            val = val - (colcurr->second)*n[dim]*(cnode->lmuzawa()[dim]);
+            val = val - (colcurr->second)*n[dim]*(cnode->MoData().lmuzawa()[dim]);
             cnode->AddDerivZValue(dimrow,col,val);
           }
         }
@@ -1605,7 +1603,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
           {
             int col = colcurr->first;
             double val =-pptan*kappa*(colcurr->second)*n[dimrow]*(cnode->Data().jump()[dim]);
-            val = val-(colcurr->second)*n[dimrow]*(cnode->lmuzawa()[dim]);
+            val = val-(colcurr->second)*n[dimrow]*(cnode->MoData().lmuzawa()[dim]);
             cnode->AddDerivZValue(dimrow,col,val);
           }
         }
@@ -1647,7 +1645,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
           {
             int col = colcurr->first;
             double val =-pptan*kappa*(colcurr->second)*n[dim]*cnode->Data().jump()[dim];
-            val = (val - (colcurr->second)*n[dim]*(cnode->lmuzawa()[dim]))*maxtantrac/magnitude;
+            val = (val - (colcurr->second)*n[dim]*(cnode->MoData().lmuzawa()[dim]))*maxtantrac/magnitude;
             cnode->AddDerivZValue(dimrow,col,val);
           }
         }
@@ -1663,7 +1661,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
           {
             int col = colcurr->first;
             double val =-pptan*kappa*(colcurr->second)*n[dimrow]*cnode->Data().jump()[dim];
-            val = (val-(colcurr->second)*n[dimrow]*(cnode->lmuzawa()[dim]))*maxtantrac/magnitude;
+            val = (val-(colcurr->second)*n[dimrow]*(cnode->MoData().lmuzawa()[dim]))*maxtantrac/magnitude;
             cnode->AddDerivZValue(dimrow,col,val);
           }
         }
@@ -1774,7 +1772,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
     else
     {
       // clear tractions
-      for( int j=0;j<dim;++j) cnode->lm()[j] = 0;
+      for( int j=0;j<dim;++j) cnode->MoData().lm()[j] = 0;
       // clear derivz
       cnode->CoData().GetDerivZ().clear();
     }
@@ -1886,12 +1884,12 @@ void CONTACT::CoInterface::AssembleNT(LINALG::SparseMatrix& nglobal,
       Epetra_SerialDenseMatrix Nnode(1,colsize);
 
       // we need D diagonal entry of this node
-      double wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
+      double wii = (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
 
       for (int j=0;j<colsize;++j)
       {
         lmcol[j] = cnode->Dofs()[j];
-        Nnode(0,j) = wii * cnode->n()[j];
+        Nnode(0,j) = wii * cnode->MoData().n()[j];
       }
 
       // assemble into matrix of normal vectors N
@@ -1931,12 +1929,12 @@ void CONTACT::CoInterface::AssembleNT(LINALG::SparseMatrix& nglobal,
       Epetra_SerialDenseMatrix Nnode(1,colsize);
 
       // we need D diagonal entry of this node
-      double wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
+      double wii = (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
 
       for (int j=0;j<colsize;++j)
       {
         lmcol[j] = cnode->Dofs()[j];
-        Nnode(0,j) = wii * cnode->n()[j];
+        Nnode(0,j) = wii * cnode->MoData().n()[j];
       }
 
       // assemble into matrix of normal vectors N
@@ -2056,8 +2054,8 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
         for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
         {
           int col = colcurr->first;
-          double val = cnode->lm()[j]*(colcurr->second);
-          //cout << "lm[" << j << "]=" << cnode->lm()[j] << " deriv=" << colcurr->second << endl;
+          double val = cnode->MoData().lm()[j]*(colcurr->second);
+          //cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << endl;
           //cout << "Assemble P: " << row << " " << col << " " << val << endl;
           // do not assemble zeros into P matrix
           if (abs(val)>1.0e-12) pglobal.Assemble(val,row,col);
@@ -2101,8 +2099,8 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
         for (colcurr=dtximap[j].begin();colcurr!=dtximap[j].end();++colcurr)
         {
           int col = colcurr->first;
-          double val = cnode->lm()[j]*(colcurr->second);
-          //cout << "lm[" << j << "]=" << cnode->lm()[j] << " deriv=" << colcurr->second << endl;
+          double val = cnode->MoData().lm()[j]*(colcurr->second);
+          //cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << endl;
           //cout << "Assemble P: " << rowxi << " " << col << " " << val << endl;
           // do not assemble zeros into P matrix
           if (abs(val)>1.0e-12) pglobal.Assemble(val,rowxi,col);
@@ -2122,8 +2120,8 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
         for (colcurr=dtetamap[j].begin();colcurr!=dtetamap[j].end();++colcurr)
         {
           int col = colcurr->first;
-          double val = cnode->lm()[j]*(colcurr->second);
-          //cout << "lm[" << j << "]=" << cnode->lm()[j] << " deriv=" << colcurr->second << endl;
+          double val = cnode->MoData().lm()[j]*(colcurr->second);
+          //cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << endl;
           //cout << "Assemble P: " << roweta << " " << col << " " << val << endl;
           // do not assemble zeros into P matrix
           if (abs(val)>1.0e-12) pglobal.Assemble(val,roweta,col);
@@ -2187,7 +2185,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
           dserror("ERROR: Cannot find node with gid %",dcurr->first);
         CoNode* csnode = static_cast<CoNode*>(snode);
 
-        double* lm = csnode->lm();
+        double* lm = csnode->MoData().lm();
 
         // get dderiv row
         map<int,double>& dderivrow = dderiv[dcurr->first];
@@ -2208,7 +2206,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
     map<int,double>::iterator colcurr;
 
     // current Lagrange multipliers
-    double* lm = cnode->lm();
+    double* lm = cnode->MoData().lm();
 
     // loop over all slave node dofs for assembly
     for (int j=0; j<numdof; ++j)
@@ -2276,7 +2274,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
        mderiv = cnode->CoData().GetDerivM();
 
        // current Lagrange multipliers
-       lm = cnode->lm();
+       lm = cnode->MoData().lm();
 
        // get sizes and iterator start
        mastersize = (int)mderiv.size();
@@ -2548,7 +2546,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
     if(dmapold.size()<1)
         dserror("ERROR: AssembleLinStick: No dmap-entries form previous time step");
 
-    double D= (cnode->GetD()[0])[cnode->Dofs()[0]];
+    double D= (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
     double Dold= dmapold[0][cnode->Dofs()[0]];
 
     // loop over dimensions
@@ -2569,7 +2567,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 
     /*** 02 **************************************** tangent.(M-Mn-1) ***/
     // we need the nodal entries of the M-matrix and the old ones
-    vector<map<int,double> > mmap = cnode->GetM();
+    vector<map<int,double> > mmap = cnode->MoData().GetM();
     vector<map<int,double> > mmapold = cnode->Data().GetMOld();
 
     // map from previous time step must have an entry
@@ -2829,7 +2827,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //    for (int dim = 0;dim < Dim();dim++)
 //    {
 //      utan += txi[dim]*jump[dim];
-//      nz += cnode->n()[dim] * cnode->lm()[dim];
+//      nz += cnode->MoData().n()[dim] * cnode->MoData().lm()[dim];
 //    }
 //
 //    // initialization of nz if nz = wgap = 0
@@ -2863,7 +2861,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //    for (int dim=0;dim<cnode->NumDof();++dim)
 //    {
 //      int col = cnode->Dofs()[dim];
-//      double val = -frcoeff*cnode->n()[dim]*ct*utan;
+//      double val = -frcoeff*cnode->MoData().n()[dim]*ct*utan;
 //      // do not assemble zeros into matrix
 //      if (abs(val)>1.0e-12) linstickLMglobal.Assemble(val,row,col);
 //    }
@@ -2872,7 +2870,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //    /************************************************** -tan.(D-Dn-1) ***/
 //
 //    // we need the nodal entries of the D-matrix and the old one
-//    double D= (cnode->GetD()[0])[cnode->Dofs()[0]];
+//    double D= (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
 //    double Dold= (cnode->Data().GetDOld()[0])[cnode->Dofs()[0]];
 //
 //    // loop over all derivative maps (=dimensions)
@@ -2889,7 +2887,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //    /*************************************************** tan.(M-Mn-1) ***/
 //
 //    // we need the nodal entries of the M-matrix and the old one
-//    vector<map<int,double> > mmap = cnode->GetM();
+//    vector<map<int,double> > mmap = cnode->MoData().GetM();
 //    vector<map<int,double> > mmapold = cnode->Data().GetMOld();
 //
 //    // create a set of nodes including nodes according to M entries
@@ -3074,7 +3072,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //      for (colcurr=dnmap[j].begin();colcurr!=dnmap[j].end();++colcurr)
 //      {
 //        int col = colcurr->first;
-//        double val = -frcoeff*cnode->lm()[j]*ct*utan*colcurr->second;
+//        double val = -frcoeff*cnode->MoData().lm()[j]*ct*utan*colcurr->second;
 //
 //        // do not assemble zeros into s matrix
 //        if (abs(val)>1.0e-12) linstickDISglobal.Assemble(val,row,col);
@@ -3151,11 +3149,11 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
       // more information from node
       double* jump = cnode->Data().jump();
-      double* n = cnode->n();
+      double* n = cnode->MoData().n();
       double* txi = cnode->CoData().txi();
       double* teta = cnode->CoData().teta();
       double* xi = cnode->xspatial();
-      double* z = cnode->lm();
+      double* z = cnode->MoData().lm();
       double& wgap = cnode->CoData().Getg();
 
       // iterator for maps
@@ -3335,7 +3333,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         if(dmapold.size()<1)
             dserror("ERROR: AssembleLinSlip: No dmap-entries form previous time step");
 
-        double D= (cnode->GetD()[0])[cnode->Dofs()[0]];
+        double D= (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
         double Dold= dmapold[0][cnode->Dofs()[0]];
 
         // loop over dimensions
@@ -3369,7 +3367,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         /*** 02  *********** -Deriv(euclidean).ct.tangent.(M-Mn-1)*ztan ***/
 
         // we need the nodal entries of the M-matrix and the old one
-        vector<map<int,double> > mmap = cnode->GetM();
+        vector<map<int,double> > mmap = cnode->MoData().GetM();
         vector<map<int,double> > mmapold = cnode->Data().GetMOld();
 
         // map from previous time step must have an entry
@@ -3847,10 +3845,10 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
       // get more information from node
       double* jump = cnode->Data().jump();
-      double* n = cnode->n();
+      double* n = cnode->MoData().n();
       double* txi = cnode->CoData().txi();
       double* xi = cnode->xspatial();
-      double* z = cnode->lm();
+      double* z = cnode->MoData().lm();
       int row = slipt_->GID(i);
 
       int colsize = (int)dtmap[0].size();
@@ -3942,7 +3940,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       /***************************** -Deriv(abs)*ct*tan.(D-Dn-1)*ztan ***/
 
       // we need the nodal entries of the D-matrix and the old one
-      double D= (cnode->GetD()[0])[cnode->Dofs()[0]];
+      double D= (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
       double Dold= (cnode->Data().GetDOld()[0])[cnode->Dofs()[0]];
 
       // loop over all derivative maps (=dimensions)
@@ -3964,7 +3962,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       /***************************** -Deriv(abs)*ct*tan.(M-Mn-1)*ztan ***/
 
       // we need the nodal entries of the M-matrix and the old one
-      vector<map<int,double> > mmap = cnode->GetM();
+      vector<map<int,double> > mmap = cnode->MoData().GetM();
       vector<map<int,double> > mmapold = cnode->Data().GetMOld();
 
       // create a set of nodes including nodes according to M entries
@@ -4388,7 +4386,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       double* jump = cnode->Data().jump();
       double* txi = cnode->CoData().txi();
       double* xi = cnode->xspatial();
-      double* z = cnode->lm();
+      double* z = cnode->MoData().lm();
       int row = slipt_->GID(i);
 
       int colsize = (int)dtmap[0].size();
@@ -4470,7 +4468,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       /***************************** -Deriv(abs)*ct*tan.(D-Dn-1)*ztan ***/
 
       // we need the nodal entries of the D-matrix and the old one
-      double D= (cnode->GetD()[0])[cnode->Dofs()[0]];
+      double D= (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
       double Dold= (cnode->Data().GetDOld()[0])[cnode->Dofs()[0]];
 
       if (abs(Dold)<0.0001)
@@ -4493,7 +4491,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       /***************************** -Deriv(abs)*ct*tan.(M-Mn-1)*ztan ***/
 
       // we need the nodal entries of the M-matrix and the old one
-      vector<map<int,double> > mmap = cnode->GetM();
+      vector<map<int,double> > mmap = cnode->MoData().GetM();
       vector<map<int,double> > mmapold = cnode->Data().GetMOld();
 
       // create a set of nodes including nodes according to M entries

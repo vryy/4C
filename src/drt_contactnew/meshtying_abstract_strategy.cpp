@@ -238,17 +238,17 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
         {
         case MORTAR::StrategyBase::lmcurrent:
         {
-          mtnode->lm()[dof] = (*vectorinterface)[locindex[dof]];
+          mtnode->MoData().lm()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         case MORTAR::StrategyBase::lmold:
         {
-          mtnode->lmold()[dof] = (*vectorinterface)[locindex[dof]];
+          mtnode->MoData().lmold()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         case MORTAR::StrategyBase::lmuzawa:
         {
-          mtnode->lmuzawa()[dof] = (*vectorinterface)[locindex[dof]];
+          mtnode->MoData().lmuzawa()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         case MORTAR::StrategyBase::lmupdate:
@@ -258,7 +258,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
             dserror("ERROR: Slave Node %i is active and at the same time carries D.B.C.s!", mtnode->Id());
      
           // store updated LM into node
-          mtnode->lm()[dof] = (*vectorinterface)[locindex[dof]];
+          mtnode->MoData().lm()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         default:
@@ -535,7 +535,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm)
         if (dofid<0) dserror("ERROR: InterfaceForces: Did not find slave dof in map");
         nodegaps[d] = (*gapslavefinal)[dofid];
         nodegapm[d] = (*gapmasterfinal)[dofid];
-        lm[d] = mtnode->lm()[d];
+        lm[d] = mtnode->MoData().lm()[d];
       }
 
       // moments
@@ -637,7 +637,7 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet()
 
       // compute Lagrange multiplier
       double lm[3] = {0.0, 0.0, 0.0};
-      for (int k=0;k<3;++k) lm[k] = mtnode->lmold()[k];
+      for (int k=0;k<3;++k) lm[k] = mtnode->MoData().lmold()[k];
       
       // print nodes of active set *************************************
       printf("ACTIVE: %d \t lm[0]: %e \t lm[1]: %e \t lm[2]: %e \n",gid,lm[0],lm[1],lm[2]);

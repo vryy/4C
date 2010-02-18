@@ -55,6 +55,123 @@ namespace MORTAR
 {
 
 /*!
+\brief A class containing additional data from mortar nodes
+
+This class contains additional information from mortar nodes which are
+are not needed for contact search and therefore are only available on the
+node's processor (ColMap). The class MortarNodeDataContainer must be declared 
+before the MortarNode itself.
+
+\author gitterle (gitterle@lnm.mw.tum.de)
+*/
+class MortarNodeDataContainer
+{
+public:
+
+  //! @name Constructors and destructors and related methods
+
+  /*!
+  \brief Standard Constructor
+
+  */
+  MortarNodeDataContainer();
+
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a MortarNodeDataContainer
+
+  */
+  MortarNodeDataContainer(const MORTAR::MortarNodeDataContainer& old);
+
+  /*!
+  \brief Deep copy the derived class and return pointer to it
+
+  */
+  virtual MORTAR::MortarNodeDataContainer* Clone() const;
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~MortarNodeDataContainer() { return; }
+
+  /*!
+  \brief Pack this class so that it can be communicated
+
+  This function packs the datacontainer. This is only called
+  when the class has been initialized and the pointer to this
+  class exists.
+
+  */
+  virtual void Pack(vector<char>& data) const;
+
+  /*!
+  \brief Unpack data from a vector into this class
+
+  This function unpacks the datacontainer. This is only called
+  when the class has been initialized and the pointer to this
+  class exists.
+
+  */
+  virtual void Unpack(int& position, const vector<char>& data);
+  
+  //@}
+
+  //! @name Access methods
+  
+  /*!
+  \brief Return current nodal normal (only for slave side!) (length 3)
+  */
+  virtual double* n() { return n_; }
+  
+  /*!
+  \brief Return current Lagrange mutliplier in step n+1 (only for slave side!) (length 3)
+  */
+  virtual double* lm() { return lm_; }
+
+  /*!
+  \brief Return old Lagrange mutliplier from step n (only for slave side!) (length 3)
+  */
+  virtual double* lmold() { return lmold_; }
+  
+  /*!
+  \brief Return Lagrange mutliplier from last Uzawa step (only for slave side!) (length 3)
+  */
+  virtual double* lmuzawa() { return lmuzawa_; }
+
+  /*!
+  \brief Return the 'D' map (vector) of this node
+  */
+  virtual vector<map<int,double> >& GetD() { return drows_; }
+
+  /*!
+  \brief Return the 'M' map (vector) of this node
+  */
+  virtual vector<map<int,double> >& GetM() { return mrows_; }
+
+  /*!
+  \brief Return the 'Mmod' map (vector) of this node
+  */
+  virtual vector<map<int,double> >& GetMmod() { return mmodrows_; }
+    
+  //@}
+
+protected:
+
+  double          n_[3];           // nodal normal for contact methods
+  double          lm_[3];          // current Lagrange multiplier value (n+1)
+  double          lmold_[3];       // old Lagrange multiplier value (last converged state n)
+  double          lmuzawa_[3];     // Uzawa Lagrange multiplier value (last Uzawa step k)
+
+  vector<map<int,double> >      drows_;      // nodal rows of D matrix
+  vector<map<int,double> >      mrows_;      // nodal rows of M matrix
+  vector<map<int,double> >      mmodrows_;   // nodal rows of Mmod matrix
+  
+}; // class MortarNodeDataContainer
+
+
+/*!
 \brief A class for a mortar node derived from DRT::Node
 
 This class represents a finite element node capable of mortar coupling.
@@ -202,27 +319,7 @@ public:
   */
   virtual double* uold() { return uold_; }
 
-  /*!
-  \brief Return current nodal normal (only for slave side!) (length 3)
-  */
-  virtual double* n() { return n_; }
-  
-  /*!
-  \brief Return current Lagrange mutliplier in step n+1 (only for slave side!) (length 3)
-  */
-  virtual double* lm() { return lm_; }
-
-  /*!
-  \brief Return old Lagrange mutliplier from step n (only for slave side!) (length 3)
-  */
-  virtual double* lmold() { return lmold_; }
-  
-  /*!
-  \brief Return Lagrange mutliplier from last Uzawa step (only for slave side!) (length 3)
-  */
-  virtual double* lmuzawa() { return lmuzawa_; }
-
-  /*!
+   /*!
   \brief Return current closest node's global id (by reference)
   */
   virtual int& ClosestNode() { return closestnode_; }
@@ -231,7 +328,20 @@ public:
   \brief Return projection status of this node (only for slave side!)
   */
   virtual bool& HasProj() { return hasproj_; }
+  
+  /*!
+  \brief Return of data container of this node
+
+  This method returns the data container of this mortar node where additional
+  contact specific quantities/information are stored.
+
+  */
+  inline MORTAR::MortarNodeDataContainer& MoData() { return *modata_; }
     
+  //@}
+
+  //! @name Evaluation methods
+
   /*!
   \brief Add a value to the 'D' map of this node
 
@@ -272,25 +382,6 @@ public:
   void AddMmodValue(int& row, int& col, double& val);
 
   /*!
-  \brief Return the 'D' map (vector) of this node
-  */
-  virtual vector<map<int,double> >& GetD() { return drows_; }
-
-  /*!
-  \brief Return the 'M' map (vector) of this node
-  */
-  virtual vector<map<int,double> >& GetM() { return mrows_; }
-
-  /*!
-  \brief Return the 'Mmod' map (vector) of this node
-  */
-  virtual vector<map<int,double> >& GetMmod() { return mmodrows_; }
-    
-  //@}
-
-  //! @name Evaluation methods
-  
-  /*!
   \brief Build nodal normal
   */
   virtual void BuildAveragedNormal();
@@ -325,6 +416,15 @@ public:
   
   */
   virtual bool CheckMeshDistortion(double& relocation, double& limit);
+  
+  /*!
+  \brief Initializes the data container of the node
+
+  With this function, the container with contact specific quantities/information
+  is initialized.
+
+  */
+  virtual void InitializeDataContainer();
 
   //@}
   
@@ -333,7 +433,6 @@ public:
   virtual void AddgValue(double& val) {}
   virtual void AddSNode(int node) {}
   virtual void AddMNode(int node) {}
-  virtual void InitializeDataContainer() {}
    
   //@}
 
@@ -345,23 +444,17 @@ protected:
   int             numdof_;         // number of degrees of freedom (length of dofs_)
   vector<int>     dofs_;           // degrees of freedom of this node
   
-  double          n_[3];           // nodal normal for contact methods
   double          xspatial_[3];    // current configuration
   double          uold_[3];        // old displacement (last converged state)
-  double          lm_[3];          // current Lagrange multiplier value (n+1)
-  double          lmold_[3];       // old Lagrange multiplier value (last converged state n)
-  double          lmuzawa_[3];     // Uzawa Lagrange multiplier value (last Uzawa step k)
-  
+
   int             closestnode_;    // closest node id on the other side of interface
   bool            hasproj_;        // true if feasible projection within search set (slave nodes only)
 
-  vector<map<int,double> >      drows_;      // nodal rows of D matrix
-  vector<map<int,double> >      mrows_;      // nodal rows of M matrix
-  vector<map<int,double> >      mmodrows_;   // nodal rows of Mmod matrix
-  
   // Penalty-related quantities 
-  double                        kappa_; // gap-scaling factor
-
+  double         kappa_; // gap-scaling factor
+  
+  RCP<MORTAR::MortarNodeDataContainer> modata_;   // additional information of proc's mortar nodes
+ 
 }; // class MortarNode
 } // namespace MORTAR
 
