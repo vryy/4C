@@ -460,6 +460,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   }
   else
   {
+    // set gas constant to 1.0 for incompressible flow
+    gasconstant_ = 1.0;
+
     // get constant density variable for incompressible flow
     ParameterList eleparams;
     eleparams.set("action","get_density");
