@@ -56,7 +56,6 @@ int DRT::ELEMENTS::Torsion2::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_imrlike") act = Torsion2::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep") act = Torsion2::calc_struct_reset_istep;
   else if (action=="postprocess_stress") act = Torsion2::postprocess_stress;
-  else if (action=="calc_stat_force_damp") act = Torsion2::calc_stat_force_damp;
   else if (action=="calc_struct_ptcstiff") act = Torsion2::calc_struct_ptcstiff;
   else
     {
@@ -71,19 +70,12 @@ int DRT::ELEMENTS::Torsion2::Evaluate(ParameterList& params,
       EvaluatePTC(params, elemat1);
     }
     break;
-    //action type for evaluating statistical forces
-    case Torsion2::calc_stat_force_damp:
-    {
-      dserror("no statistical mechanics implemented in torsion2 element");
-    }
-    break;
     /*in case that only linear stiffness matrix is required b2_nlstiffmass is called with zero dispalcement and 
      residual values*/
     case Torsion2::calc_struct_linstiff:
     {
       //only nonlinear case implemented!
       dserror("linear stiffness matrix called, but not implemented");
-
     }
     break;
 

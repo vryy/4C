@@ -27,14 +27,8 @@ DRT::ELEMENTS::Torsion3::Torsion3(int id, int owner) :
 DRT::Element(id,element_torsion3,owner),
 data_(),
 isinit_(false),
-material_(0),
-lrefe_(0),
-crosssec_(0),
-kintype_(tr3_totlag),
-
-//note: for corotational approach integration for Neumann conditions only
-//hence enough to integrate 3rd order polynomials exactly
-gaussrule_(DRT::UTILS::intrule_line_2point)
+theta_(0.0),
+springconstant_(0.0)
 {
   return;
 }
@@ -45,15 +39,14 @@ DRT::ELEMENTS::Torsion3::Torsion3(const DRT::ELEMENTS::Torsion3& old) :
  DRT::Element(old),
  data_(old.data_),
  isinit_(old.isinit_),
- X_(old.X_),
- material_(old.material_),
- lrefe_(old.lrefe_),
- crosssec_(old.crosssec_),
- kintype_(old. kintype_),
- gaussrule_(old.gaussrule_)
+ //reference angle
+ theta_(old.theta_),
+ //springconstant
+ springconstant_(old.springconstant_)
 {
   return;
 }
+
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Torsion3 and return pointer to it (public) |
  |                                                            cyron 08/08|
@@ -78,9 +71,6 @@ DRT::ELEMENTS::Torsion3::~Torsion3()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Torsion3::Print(ostream& os) const
 {
-  os << "Torsion3 ";
-  Element::Print(os);
-  os << " gaussrule_: " << gaussrule_ << " ";
   return;
 }
 
@@ -98,7 +88,7 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Torsion3::ElementRegister() con
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Torsion3::Shape() const
 {
-  return line2;
+  return line3;
 }
 
 
@@ -119,18 +109,10 @@ void DRT::ELEMENTS::Torsion3::Pack(vector<char>& data) const
   AddtoPack(data,basedata);
   //whether element has already been initialized
   AddtoPack(data,isinit_);
-  //nodal reference coordinates
-  AddtoPack(data,X_);
-  //material type
-  AddtoPack(data,material_);
-  //reference length
-  AddtoPack(data,lrefe_);
-  //cross section
-  AddtoPack(data,crosssec_);
-  // gaussrule_
-  AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
-  //kinematic type
-  AddtoPack(data,kintype_);
+  //reference angle
+  AddtoPack(data,theta_);
+  //springcontstant
+  AddtoPack(data,springconstant_);
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
@@ -156,20 +138,10 @@ void DRT::ELEMENTS::Torsion3::Unpack(const vector<char>& data)
   Element::Unpack(basedata);
   //whether element has already been initialized
   ExtractfromPack(position,data,isinit_);
-  //nodal reference coordinates
-  ExtractfromPack(position,data,X_);
-  //material type
-  ExtractfromPack(position,data,material_);
-  //reference length
-  ExtractfromPack(position,data,lrefe_);
-  //cross section
-  ExtractfromPack(position,data,crosssec_);
-  // gaussrule_
-  int gausrule_integer;
-  ExtractfromPack(position,data,gausrule_integer);
-  gaussrule_ = DRT::UTILS::GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
-  // kinematic type
-  ExtractfromPack(position,data,kintype_);
+  //reference angle
+  ExtractfromPack(position,data,theta_);
+  //springconstant
+  ExtractfromPack(position,data,springconstant_);
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
@@ -189,23 +161,39 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Torsion3::Lines()
   return lines;
 }
 
-void DRT::ELEMENTS::Torsion3::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe)
-{
+void DRT::ELEMENTS::Torsion3::SetUpReferenceGeometry(const LINALG::Matrix<9,1>& xrefe)
+{   
   /*this method initialized geometric variables of the element; such an initialization can only be done one time when the element is
-   * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this
-   * method will initialize the geometric variables iff the class variable isinit_ == false and afterwards set this variable to
-   * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/
+   * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this 
+   * method will initialize the geometric variables iff the class variable isinit_ == false and afterwards set this variable to 
+   * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/ 
   if(!isinit_)
   {
     isinit_ = true;
-
-    //setting reference coordinates
-    X_ = xrefe;
-
-    //length in reference configuration
-    lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5);
+    
+    //reference length of vectors 1-->2  und 2-->3
+    LINALG::Matrix<2,1> lrefe;
+    for (int j=0; j<2; ++j)
+      lrefe(j) = sqrt( pow(xrefe(3+j*3)-xrefe(0+j*3),2) + pow(xrefe(4+j*3)-xrefe(1+j*3),2) + pow(xrefe(5+j*3)-xrefe(2+j*3),2) );
+      
+    //reference angle theta
+    double dotprod=0.0;
+    for (int j=0; j<3; ++j)
+      dotprod +=  (xrefe(3+j)-xrefe(0+j)) * (xrefe(6+j)-xrefe(3+j));    
+    
+    theta_=acos(dotprod/lrefe(0)/lrefe(1));
+    
+  if( (dotprod/lrefe(0)/lrefe(1)) > 1){
+    if( (dotprod/lrefe(0)/lrefe(1)-1)<10e-7){
+      theta_=0;
+    }
+    else
+      std::cout<<"\n Fehler bei der Winkelberechnung";
   }
+    
 
+  }
+ 
   return;
 }
 
@@ -304,40 +292,41 @@ void DRT::ELEMENTS::Torsion3Register::Print(ostream& os) const
 
 
 int DRT::ELEMENTS::Torsion3Register::Initialize(DRT::Discretization& dis)
-{		
+{     
   //reference node positions
-  LINALG::Matrix<6,1> xrefe;
+  LINALG::Matrix<9,1> xrefe;
 
   //setting beam reference director correctly
   for (int i=0; i<  dis.NumMyColElements(); ++i)
-  {
+  {    
     //in case that current element is not a beam3 element there is nothing to do and we go back
     //to the head of the loop
     if (dis.lColElement(i)->Type() != DRT::Element::element_torsion3) continue;
-
+    
     //if we get so far current element is a beam3 element and  we get a pointer at it
     DRT::ELEMENTS::Torsion3* currele = dynamic_cast<DRT::ELEMENTS::Torsion3*>(dis.lColElement(i));
     if (!currele) dserror("cast to Torsion3* failed");
-
+    
     //getting element's nodal coordinates and treating them as reference configuration
     if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
       dserror("Cannot get nodes in order to compute reference configuration'");
     else
-    {
-      for (int k=0; k<2; k++) //element has two nodes
+    {   
+      for (int k=0; k<3; k++) //element has three nodes
         for(int l= 0; l < 3; l++)
           xrefe(k*3 + l) = currele->Nodes()[k]->X()[l];
     }
-
+ 
     currele->SetUpReferenceGeometry(xrefe);
 
-
+    
   } //for (int i=0; i<dis_.NumMyColElements(); ++i)
 
-	
+  
   return 0;
 }
 
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_TORSION3
+

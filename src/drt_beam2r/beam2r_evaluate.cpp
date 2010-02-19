@@ -844,13 +844,13 @@ inline void DRT::ELEMENTS::Beam2r::MyDampingConstants(ParameterList& params,LINA
    for (int gp=0; gp<gausspoints.nquad; gp++)
      lrefe += gausspoints.qwgt[gp]*jacobi[gp];
      
-   double K_r = 3.49438;
-   double K_t = 1.921348;
+   double K_t = 0.2861736;
+   double K_r = 0.5204678;
    
    double p = lrefe/(0.008);
    
-   gamma(0) = 4.0*PI*lrefe*params.get<double>("ETA",0.0)/( (1/K_t)*(3*log(p) + 0.658) - (1/K_r)*(log(p) - 0.447) );
-   gamma(1) = K_r*4.0*PI*lrefe*params.get<double>("ETA",0.0)/(log(p) - 0.447);
+   gamma(0) = 4.0*PI*lrefe*params.get<double>("ETA",0.0)/(K_t*(3*log(p) + 0.658) - K_r*(log(p) - 0.447));
+   gamma(1) = 4.0*PI*lrefe*params.get<double>("ETA",0.0)/(K_r*(log(p)-0.447));
 
       
 }

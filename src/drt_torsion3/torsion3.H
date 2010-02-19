@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file torsion3.H
 
-\brief three dimensional total Lagrange truss element
+\brief three dimensional torsion element
 
 <pre>
 Maintainer: Christian Cyron
@@ -49,7 +49,7 @@ namespace DRT
 namespace ELEMENTS
 {
 /*!
-\brief three dimensional total Lagrange truss element
+\brief three dimensional torsion element
 
 \author cyron (cyron @lnm.mw.tum.de)
 */
@@ -59,8 +59,6 @@ public:
 
   //! @name Friends
   friend class Torsion3Register;
-  friend class StatMechManager;
-  friend void StatMechTime::Integrate();
 
 
   //! @name Constructors and destructors and related methods
@@ -88,13 +86,13 @@ public:
 
   /*!
   \brief Deep copy this instance of Torsion3 and return pointer to the copy
-
+    
   The Clone() method is used by the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
 .
   */
   virtual DRT::Element* Clone() const;
-
+  
    /*!
   \brief Get shape type of element
   */
@@ -153,14 +151,14 @@ public:
   /*!
   \brief Get number of degrees of freedom of a single node
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const
-  {
-    /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only
+  virtual int NumDofPerNode(const DRT::Node& node) const 
+  { 
+    /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only 
      *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
      *number of DOF to this node requested by any element connected to this node*/
     return 3;
   }
-
+  
 
   /*!
   \brief Get number of degrees of freedom per element not including nodal degrees of freedom
@@ -171,7 +169,7 @@ public:
   \brief Print this element
   */
   virtual void Print(ostream& os) const;
-
+  
 
   //@}
 
@@ -186,14 +184,10 @@ public:
   store all necessary information.
 
   */
-  //virtual bool ReadElement();
-
-  /*!
-  \brief Read input for this element
-  */
   bool ReadElement(const std::string& eletype,
                    const std::string& distype,
                    DRT::INPUT::LineDefinition* linedef);
+
 
   //@}
 
@@ -261,45 +255,10 @@ public:
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
-  /*!
-  \brief Evaluate a statistical Neumann boundary condition and related damping matrix
 
-  An element derived from this class uses the Evaluate method to receive commands
-  and parameters from some control routine in params and evaluates a  statistical Neumann boundary condition
-  as used in the problem type STATISTICAL MECHANICS
-
-  \param params (in/out)       : ParameterList for communication between control routine and elements
-  \param vector<double> mydisp : current nodal displacement
-  \param elevec1 (out)         : Force vector to be filled by element
-  \param elemat1 (out)         : damping matrix to be filled by element
-
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateStatForceDamp(ParameterList& params,
-                                    vector<double> mydisp,
-                                    Epetra_SerialDenseVector& elevec1,
-                                    Epetra_SerialDenseMatrix& elemat1,
-                                    int& ActNumDof0);
-
-  /*!
-  \brief Evaluate PTC addition to stiffness for free Brownian motion
-
-  An element derived from this class uses the Evaluate method to receive commands
-  and parameters from some control routine in params and evaluates a  statistical Neumann boundary condition
-  as used in the problem type STATISTICAL MECHANICS
-
-  \param params (in/out)       : ParameterList for communication between control routine and elements
-  \param vector<double> mydisp : current nodal displacement
-  \param elemat1 (out)         : artificial damping matrix to be filled by element
-
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluatePTC(ParameterList& params,
-                          Epetra_SerialDenseMatrix& elemat1,
-                          int& ActNumDof0);
   //@}
 
-
+  
 private:
 
   //! action parameters recognized by Torsion3
@@ -321,86 +280,42 @@ private:
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                              //!< during iteration to last converged state
     postprocess_stress,
-    calc_stat_force_damp, //calculate statistical forces and damping for Brownian dynamics
     calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
   };
-
-  //! possible kinematic types
-  enum KinematicType
-  {
-    tr3_totlag,
-    tr3_engstrain
-  };
-
-  //! container containing all kind of Torsion3 thisandthat
-  DRT::Container data_;
-
-  //! variable saving whether element has already been initialized (then isinit_ == true)
+  
+  //container containing all kind of Torsion3 thisandthat
+  DRT::Container data_; 
+  
+  // variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
-
-  //!reference node position
-  LINALG::Matrix<6,1> X_;
-
-  //! material type
-  int material_;
-
-  //! length in reference configuration
-  double lrefe_;
-
-  //! cross section area
-  double crosssec_;
-
-  //! Kinematic type
-  KinematicType kintype_;
-
-  //! gaussrule_ will be initialized automatically to a 2 point integration rule
-  DRT::UTILS::GaussRule1D gaussrule_;
-
+  
+  //reference angle
+  double theta_;
+  
+  //springconstant
+  double springconstant_;
+  
   //! @name methods for initilization of the element
-
+  
   //!sets reference coordinates X_ and refenrence length lrefe_ for elements added to the discretization after simulation start
-  void SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe);
-
+  void SetUpReferenceGeometry(const LINALG::Matrix<9,1>& xrefe);
+  
   //@}
 
   //! @name Internal calculation methods
-
-  //!calculation of nonlinear stiffness and mass matrix switching between total lagrange and enginerring strains
-  void t3_nlnstiffmass(vector<double>&           disp,
+              
+  //!calculation of nonlinear stiffness and mass matrix
+  void t3_nlnstiffmass(vector<double>&           disp, 
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
-                       Epetra_SerialDenseVector* force,
-                       int& ActNumDof0);
+                       Epetra_SerialDenseVector* force);
 
-
-  //!calculation of nonlinear stiffness and mass matrix
-  void t3_nlnstiffmass_totlag( vector<double>& disp,
-      Epetra_SerialDenseMatrix* stiffmatrix,
-      Epetra_SerialDenseMatrix* massmatrix,
-      Epetra_SerialDenseVector* force,
-      int& ActNumDof0);
-
-  /*!
-   * \brief calculate force, nonlinear stiffness and mass matrix using a engineering strain measure.
-   *
-   * Unlike the fully nonlinear implementation of #t3_nlnstiffmass_totlag, this function uses \f$\varepsilon=\Delta d / d\f$
-   * as strain measure.
-   *
-  */
-  void t3_nlnstiffmass_engstr( vector<double>& disp,
-      Epetra_SerialDenseMatrix* stiffmatrix,
-      Epetra_SerialDenseMatrix* massmatrix,
-      Epetra_SerialDenseVector* force,
-      int& ActNumDof0);
-
-  //! lump mass matrix
-  void t3_lumpmass(Epetra_SerialDenseMatrix* emass);
 
   //@}
-
+          
   // don't want = operator
   Torsion3& operator = (const Torsion3& old);
-
+  
 
 }; // class Torsion3
 
@@ -420,7 +335,7 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 class Torsion3Register : public DRT::ElementRegister
 {
 public:
-
+  
   //! @name Friends
   friend class Torsion3;
 
@@ -428,7 +343,7 @@ public:
 
   /*!
   \brief Standard Constructor
-
+  
   */
   Torsion3Register(DRT::Element::ElementType etype);
 
@@ -436,22 +351,22 @@ public:
   \brief Copy Constructor
 
   Makes a deep copy of an Torsion3Register
-
+  
   */
   Torsion3Register(const DRT::ELEMENTS::Torsion3Register& old);
 
   /*!
   \brief Deep copy this instance of Torsion3Register and return pointer to the copy
-
+  
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
-
+  
   */
   DRT::ELEMENTS::Torsion3Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
-
+  
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
@@ -459,15 +374,15 @@ public:
 
   /*!
   \brief Pack this class so it can be communicated
-
+  
   \ref Pack and \ref Unpack are used to communicate this element
-
+  
   */
   virtual void Pack(vector<char>& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
-
+  
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
@@ -494,7 +409,7 @@ public:
 
   /*!
   \brief Call Element init routines
-
+  
   The method performs all steps needed to init the Torsion3 elements. it e.g. calculates the
   field of averaged directors at nodes.
   */
