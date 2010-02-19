@@ -174,7 +174,25 @@ public:
      RCP<Epetra_SerialDenseMatrix> dsegPG,
      RCP<Epetra_SerialDenseMatrix> msegPG,
      RCP<Epetra_SerialDenseVector> gseg);
+  
+  /*!
+  \brief Compute penalty scaling factor kappa on slave element
+
+  */
+  void IntegrateKappaPenalty(MORTAR::MortarElement& sele,
+                             double* sxia, double* sxib,
+                             RCP<Epetra_SerialDenseVector> gseg);
     
+  /*!
+  \brief Compute penalty scaling factor kappa on slave integration element
+  (special version for the 3D quadratic case)
+
+  */
+  void IntegrateKappaPenalty(MORTAR::MortarElement& sele,
+                             MORTAR::IntElement& sintele,
+                             double* sxia, double* sxib,
+                             RCP<Epetra_SerialDenseVector> gseg);
+  
   //@}
 
   //! @name 2D and 3D linearization methods
@@ -251,6 +269,14 @@ public:
                    MORTAR::MortarElement& sele,
                    MORTAR::MortarElement& mele,
                    Epetra_SerialDenseMatrix& M_seg);
+  
+  /*!
+  \brief Assemble g~ contribution of current overlap into slave nodes
+
+  */
+  bool AssembleG(const Epetra_Comm& comm,
+                 MORTAR::MortarElement& sele,
+                 Epetra_SerialDenseVector& g_seg);
 
   //@}
    

@@ -163,11 +163,11 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     RCP<Epetra_SerialDenseMatrix> dsegPG = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),nrow*Dim()));
     RCP<Epetra_SerialDenseMatrix> msegPG = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),ncol*Dim()));
     
-#ifdef MORTARPETROVGALERKIN
+#ifdef CONTACTPETROVGALERKIN
     RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nintrow));
 #else
     RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
-#endif // #ifdefd MORTARPETROVGALERKIN
+#endif // #ifdefd CONTACTPETROVGALERKIN
 
     if (CouplingInAuxPlane())
     {
@@ -197,13 +197,13 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     // for assembly of g we take into account the PetrovGalerkin idea
     if (CouplingInAuxPlane() && Quad())
     {
-#ifdef MORTARPETROVGALERKIN
+#ifdef CONTACTPETROVGALERKIN
       // gap interpolation is based on piecewise linear approach
       integrator.AssembleG(Comm(),SlaveIntElement(),*gseg);
 #else
       // hap interpolation is based on truly quadratic approach
       integrator.AssembleG(Comm(),SlaveElement(),*gseg);
-#endif // #ifdef MORTARPETROVGALERKIN
+#endif // #ifdef CONTACTPETROVGALERKIN
     }
     else
       integrator.AssembleG(Comm(),SlaveElement(),*gseg);

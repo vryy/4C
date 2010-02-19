@@ -1279,7 +1279,7 @@ void CONTACT::CoLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
 {
-  // get input parameter ctype
+  // get input parameter ftype
   INPAR::CONTACT::FrictionType ftype =
     Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
 
@@ -1589,7 +1589,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
 {
   // FIXME: Here we do not consider zig-zagging yet!
 
-  // get input parameter ctype
+  // get input parameter ftype
   INPAR::CONTACT::FrictionType ftype =
     Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
   

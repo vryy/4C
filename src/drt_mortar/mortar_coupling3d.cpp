@@ -2747,7 +2747,7 @@ bool MORTAR::Coupling3d::IntegrateCells()
     // integrate cell only if not neglectable
     if (intcellarea < MORTARINTLIM*selearea) continue;
 
-    // do the cell integration (integrate and linearize both M and gap)
+    // do the cell integration (integrate and linearize M)
     // *******************************************************************
     // ************ Coupling with or without auxiliary plane *************
     // *******************************************************************
@@ -2755,12 +2755,7 @@ bool MORTAR::Coupling3d::IntegrateCells()
     int ncol = MasterElement().NumNode();
     RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
     RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
-#ifdef MORTARPETROVGALERKIN
-    int nintrow = SlaveIntElement().NumNode();
-    RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nintrow));
-#else
-    RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
-#endif // #ifdefd MORTARPETROVGALERKIN
+    RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
 
     if (CouplingInAuxPlane())
     {

@@ -471,11 +471,11 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
     for (int i=0;i<(int)sauxelements.size();++i)
     {
       // do the int element integration of kappa and store into gap
-#ifdef MORTARPETROVGALERKIN
+#ifdef CONTACTPETROVGALERKIN
       int nrow = sauxelements[i]->NumNode();
 #else
       int nrow = sele.NumNode();
-#endif // #ifdef MORTARPETROVGALERKIN
+#endif // #ifdef CONTACTPETROVGALERKIN
       RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
 
       // create a CONTACT integrator instance with correct NumGP and Dim
@@ -483,11 +483,11 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
       integrator.IntegrateKappaPenalty(sele,*(sauxelements[i]),sxia,sxib,gseg);
 
       // do the assembly into the slave nodes
-#ifdef MORTARPETROVGALERKIN
+#ifdef CONTACTPETROVGALERKIN
       integrator.AssembleG(Comm(),*(sauxelements[i]),*gseg);
 #else
       integrator.AssembleG(Comm(),sele,*gseg);
-#endif //#ifdef MORTARPETROVGALERKIN
+#endif //#ifdef CONTACTPETROVGALERKIN
     }
   }
 
@@ -507,7 +507,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
   
   // Check if PETROVGALERKIN-approach is switched on for tri6/hex20
   // in the frictional case
-#ifdef MORTARPETROVGALERKIN
+#ifdef CONTACTPETROVGALERKIN
 #ifndef CONTACTPETROVGALERKINFRIC
   if (friction_ && (sele.Shape()==DRT::Element::tri6 || sele.Shape()==DRT::Element::quad8) )
     dserror("Frictional contact needs flag: PETROVGALERKINFRIC for tri6/quad8");
@@ -2405,7 +2405,7 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
       // when applying a Petrov-Galerkin scheme with standard shape functions
       // for the weighted gap interpolation this problem does not exist
       // FIXME: Only the linear case considered here (popp 04/09)
-#ifndef MORTARPETROVGALERKIN
+#ifndef CONTACTPETROVGALERKIN
       if (!cnode->HasProj() && !cnode->Active())
       {
         gap = 1.0e12;
