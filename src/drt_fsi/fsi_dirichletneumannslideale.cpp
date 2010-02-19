@@ -403,11 +403,6 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::InitialGuess()
 {
 	if (displacementcoupling_)
 	{
-
-		//FluidToStruct is dependent on the current configuration,
-		//so only one time in time step is enough to calculate
-	  
-	  
 		//real displacement of slave side at time step begin on master side --> for calcualtion of FluidOp 
 		FTStemp_ = FluidToStruct(islave_);
 		// predict displacement
