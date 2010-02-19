@@ -11,11 +11,10 @@ namespace FSI
 {
 
   /// monolithic FSI algorithm with overlapping interface equations
-  /// for simulation of a specific class of bio problems (FSI airway
-  /// model with attached balloon built of lung parenchyma)
+  /// for simulation of a algebraically constrained structure field
   /*!
-    \author lw
-    \date 04/09
+    \author tk
+    \date 02/10
    */
   class ConstrMonolithicFluidSplit : public ConstrMonolithic
   {
