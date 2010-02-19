@@ -78,8 +78,6 @@ STR::TimInt::TimInt
   damping_(Teuchos::getIntegralValue<INPAR::STR::DampKind>(sdynparams,"DAMPING")),
   dampk_(sdynparams.get<double>("K_DAMP")),
   dampm_(sdynparams.get<double>("M_DAMP")),
-  sdcscale_(Teuchos::getIntegralValue<INPAR::STR::SDC_Scale>(sdynparams,"SDC_SCALING")),
-  sdcfact_(sdynparams.get<double>("SDC_FACTOR")),
   conman_(Teuchos::null),
   consolv_(Teuchos::null),
   surfstressman_(Teuchos::null),

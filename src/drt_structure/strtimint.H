@@ -541,12 +541,6 @@ namespace STR
     double dampm_;  //!< damping factor for mass \f$c_\text{M}\f$
     //@}
 
-    //! @name SDC Scaling for thin shell structures
-    //@{
-    enum INPAR::STR::SDC_Scale sdcscale_; //< scale director of shells?
-    double sdcfact_;  //!< scaling factor
-    //@}
-    
     //! @name Managed stuff
     //@{
 
