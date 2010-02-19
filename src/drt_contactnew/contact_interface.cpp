@@ -509,10 +509,8 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
   // in the frictional case
 #ifdef MORTARPETROVGALERKIN
 #ifndef CONTACTPETROVGALERKINFRIC
-
-  if ((friction_ or ctype==INPAR::CONTACT::contact_meshtying) and
-     (sele.Shape()==DRT::Element::tri6 or sele.Shape()==DRT::Element::quad8) )
-       dserror("Frictional contact needs flag: PETROVGALERKINFRIC for tri6/quad8");
+  if (friction_ && (sele.Shape()==DRT::Element::tri6 || sele.Shape()==DRT::Element::quad8) )
+    dserror("Frictional contact needs flag: PETROVGALERKINFRIC for tri6/quad8");
 #endif
 #endif
 
