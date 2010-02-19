@@ -28,8 +28,7 @@ DRT::Element(id,element_torsion2,owner),
 data_(),
 isinit_(false),
 theta_(0.0),
-springconstant_(0.0),
-gaussrule_(DRT::UTILS::intrule_line_2point)
+springconstant_(0.0)
 {
   return;
 }
@@ -41,8 +40,7 @@ DRT::ELEMENTS::Torsion2::Torsion2(const DRT::ELEMENTS::Torsion2& old) :
  data_(old.data_),
  isinit_(old.isinit_),
  theta_(old.theta_),
- springconstant_(old.springconstant_),
- gaussrule_(old.gaussrule_)
+ springconstant_(old.springconstant_)
 {
   return;
 }
@@ -102,18 +100,12 @@ void DRT::ELEMENTS::Torsion2::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // add base class Element
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  //whether element has already been initialized
   AddtoPack(data,isinit_);
-  //reference angle
    AddtoPack(data,theta_);
-  //springconstant
   AddtoPack(data,springconstant_);
-  //gaussrule_
-  AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
@@ -133,21 +125,12 @@ void DRT::ELEMENTS::Torsion2::Unpack(const vector<char>& data)
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // extract base class Element
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  //whether element has already been initialized
   ExtractfromPack(position,data,isinit_);
-  //reference angle
    ExtractfromPack(position,data,theta_);
-  //springconstant
-  ExtractfromPack(position,data,springconstant_);
-  // gaussrule_
-  int gausrule_integer;
-  ExtractfromPack(position,data,gausrule_integer);
-  gaussrule_ = DRT::UTILS::GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
-  
+  ExtractfromPack(position,data,springconstant_); 
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);

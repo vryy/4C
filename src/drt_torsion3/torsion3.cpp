@@ -21,7 +21,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/linalg_fixedsizematrix.H"
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            cyron 08/08|
+ |  ctor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Torsion3::Torsion3(int id, int owner) :
 DRT::Element(id,element_torsion3,owner),
@@ -33,23 +33,21 @@ springconstant_(0.0)
   return;
 }
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       cyron 08/08|
+ |  copy-ctor (public)                                       cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Torsion3::Torsion3(const DRT::ELEMENTS::Torsion3& old) :
  DRT::Element(old),
  data_(old.data_),
  isinit_(old.isinit_),
- //reference angle
  theta_(old.theta_),
- //springconstant
  springconstant_(old.springconstant_)
 {
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of Torsion3 and return pointer to it (public) |
- |                                                            cyron 08/08|
+ | Deep copy this instance of Torsion3 and return pointer to it (public)|
+ |                                                           cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::Torsion3::Clone() const
 {
@@ -58,7 +56,7 @@ DRT::Element* DRT::ELEMENTS::Torsion3::Clone() const
 }
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                            cyron 08/08|
+ |  dtor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Torsion3::~Torsion3()
 {
@@ -67,7 +65,7 @@ DRT::ELEMENTS::Torsion3::~Torsion3()
 
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                              cyron 08/08|
+ |  print this element (public)                              cyron 02/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Torsion3::Print(ostream& os) const
 {
@@ -75,7 +73,7 @@ void DRT::ELEMENTS::Torsion3::Print(ostream& os) const
 }
 
 /*----------------------------------------------------------------------*
- |  allocate and return Torsion3Register (public)               cyron 08/08|
+ |  allocate and return Torsion3Register (public)             cyron 02/10|
  *----------------------------------------------------------------------*/
 RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Torsion3::ElementRegister() const
 {
@@ -84,7 +82,7 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Torsion3::ElementRegister() con
 
 
 /*----------------------------------------------------------------------*
- |(public)                                                   cyron 08/08|
+ |(public)                                                   cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Torsion3::Shape() const
 {
@@ -94,7 +92,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Torsion3::Shape() const
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                           cyron 08/08|
+ |                                                           cyron 02/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Torsion3::Pack(vector<char>& data) const
 {
@@ -103,15 +101,11 @@ void DRT::ELEMENTS::Torsion3::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // add base class Element
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  //whether element has already been initialized
   AddtoPack(data,isinit_);
-  //reference angle
   AddtoPack(data,theta_);
-  //springcontstant
   AddtoPack(data,springconstant_);
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -123,7 +117,7 @@ void DRT::ELEMENTS::Torsion3::Pack(vector<char>& data) const
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
- |                                                           cyron 08/08|
+ |                                                           cyron 02/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Torsion3::Unpack(const vector<char>& data)
 {
@@ -132,15 +126,11 @@ void DRT::ELEMENTS::Torsion3::Unpack(const vector<char>& data)
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // extract base class Element
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  //whether element has already been initialized
   ExtractfromPack(position,data,isinit_);
-  //reference angle
   ExtractfromPack(position,data,theta_);
-  //springconstant
   ExtractfromPack(position,data,springconstant_);
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
@@ -152,7 +142,7 @@ void DRT::ELEMENTS::Torsion3::Unpack(const vector<char>& data)
 }
 
 /*----------------------------------------------------------------------*
- |  get vector of lines (public)                              cyron 08/08|
+ |  get vector of lines (public)                             cyron 02/10|
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Torsion3::Lines()
 {
@@ -188,9 +178,8 @@ void DRT::ELEMENTS::Torsion3::SetUpReferenceGeometry(const LINALG::Matrix<9,1>& 
       theta_=0;
     }
     else
-      std::cout<<"\n Fehler bei der Winkelberechnung";
-  }
-    
+      std::cout<<"\n error in computation of angle";
+  }   
 
   }
  
@@ -204,7 +193,7 @@ void DRT::ELEMENTS::Torsion3::SetUpReferenceGeometry(const LINALG::Matrix<9,1>& 
 
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            cyron 08/08|
+ |  ctor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Torsion3Register::Torsion3Register(DRT::Element::ElementType etype):
 ElementRegister(etype)
@@ -213,7 +202,7 @@ ElementRegister(etype)
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       cyron 08/08|
+ |  copy-ctor (public)                                       cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Torsion3Register::Torsion3Register(
                                const DRT::ELEMENTS::Torsion3Register& old) :
@@ -224,7 +213,7 @@ ElementRegister(old)
 
 /*----------------------------------------------------------------------*
  |  Deep copy this instance return pointer to it               (public) |
- |                                                            cyron 08/08|
+ |                                                           cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Torsion3Register* DRT::ELEMENTS::Torsion3Register::Clone() const
 {
@@ -233,7 +222,7 @@ DRT::ELEMENTS::Torsion3Register* DRT::ELEMENTS::Torsion3Register::Clone() const
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                            cyron 08/08|
+ |                                                           cyron 02/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Torsion3Register::Pack(vector<char>& data) const
 {
@@ -252,7 +241,7 @@ void DRT::ELEMENTS::Torsion3Register::Pack(vector<char>& data) const
 
 
 /*-----------------------------------------------------------------------*
- |  Unpack data (public)                                      cyron 08/08|
+ |  Unpack data (public)                                      cyron 02/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Torsion3Register::Unpack(const vector<char>& data)
 {
@@ -273,7 +262,7 @@ void DRT::ELEMENTS::Torsion3Register::Unpack(const vector<char>& data)
 
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                            cyron 08/08|
+ |  dtor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Torsion3Register::~Torsion3Register()
 {
@@ -281,7 +270,7 @@ DRT::ELEMENTS::Torsion3Register::~Torsion3Register()
 }
 
 /*----------------------------------------------------------------------*
- |  print (public)                                           cyron 08/08|
+ |  print (public)                                           cyron 02/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Torsion3Register::Print(ostream& os) const
 {
@@ -319,7 +308,7 @@ int DRT::ELEMENTS::Torsion3Register::Initialize(DRT::Discretization& dis)
  
     currele->SetUpReferenceGeometry(xrefe);
 
-    
+  
   } //for (int i=0; i<dis_.NumMyColElements(); ++i)
 
   

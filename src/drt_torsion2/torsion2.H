@@ -310,9 +310,6 @@ private:
   
   //! springconstant
   double springconstant_;
-  
-  //! gaussrule_ will be initialized automatically to a 2 point integration rule
-  DRT::UTILS::GaussRule1D gaussrule_;
 
   
   //! @name methods for initilization of the element
