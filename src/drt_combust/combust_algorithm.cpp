@@ -103,14 +103,14 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   interfacehandle_ = rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefront_));
   // get integration cells according to initial flame front
   interfacehandle_->UpdateInterfaceHandle();
-
+  
 //  std::cout << "No initialization of LevelSet for stationary problem" << std::endl;
   stepreinit_ = true;
   ReinitializeGfunc();
   if (Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn,"TIMEINT") != INPAR::FLUID::timeint_stationary)
   {
     // reset phin vector in ScaTra time integration scheme to phinp vector
-    ScaTraField().SetPhin(ScaTraField().Phinp());
+    *ScaTraField().Phin() = *ScaTraField().Phinp();
   }
   // pointer not needed any more
   stepreinit_ = false;
@@ -118,7 +118,6 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   // export interface information to the fluid time integration
   // remark: this is essential here, if DoFluidField() is not called in Timeloop() (e.g. for pure Scatra problems)
   FluidField().ImportInterface(interfacehandle_);
-
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -141,19 +140,19 @@ void COMBUST::Algorithm::TimeLoop()
   {
     // prepare next time step; update field vectors
     PrepareTimeStep();
-    
-    // solve G-function first
-    if (combusttype_ == INPAR::COMBUST::combusttype_twophaseflow)
-    {
-    // solve linear G-function equation
-    DoGfuncField();
-    
-    phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
-    
-    // update interface geometry
-    UpdateFGIteration();
-    }
-    
+
+//    // solve G-function first
+//    if (combusttype_ == INPAR::COMBUST::combusttype_twophaseflow)
+//    {
+//    // solve linear G-function equation
+//    DoGfuncField();
+//    
+//    phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
+//    
+//    // update interface geometry
+//    UpdateFGIteration();
+//    }
+
     // Fluid-G-function-Interaction loop
     while (NotConvergedFGI())
     {  
@@ -171,7 +170,7 @@ void COMBUST::Algorithm::TimeLoop()
 
     } // Fluid-G-function-Interaction loop
 
-    if (stepbeforereinit_ or stepreinit_)
+    if (stepreinit_)
     {
       // compute current volume of minus domain
       const double volume_current_before = ComputeVolume();
@@ -327,19 +326,19 @@ void COMBUST::Algorithm::ReinitializeGfunc()
 #endif
 
   // reinitializie what will later be 'phin'
-  if (stepbeforereinit_)
-  {
-    cout << "reinitializing phin_" << endl;
-    phireinitn_ = LINALG::CreateVector(*ScaTraField().Discretization()->DofRowMap(),true);
-    // copy phi vector of ScaTra time integration scheme
-    *phireinitn_ = *ScaTraField().Phinp();
-    // reinitialize G-function (level set) field
-    COMBUST::Reinitializer reinitializer(
-        combustdyn_,
-        ScaTraField(),
-        myflamefront,
-        phireinitn_);
-  }
+//  if (stepbeforereinit_)
+//  {
+//    cout << "reinitializing phin_" << endl;
+//    phireinitn_ = LINALG::CreateVector(*ScaTraField().Discretization()->DofRowMap(),true);
+//    // copy phi vector of ScaTra time integration scheme
+//    *phireinitn_ = *ScaTraField().Phinp();
+//    // reinitialize G-function (level set) field
+//    COMBUST::Reinitializer reinitializer(
+//        combustdyn_,
+//        ScaTraField(),
+//        myflamefront,
+//        phireinitn_);
+//  }
 
   // reinitialize what will later be 'phinp'
   if (stepreinit_)
@@ -660,65 +659,65 @@ bool COMBUST::Algorithm::NotConvergedFGI()
 //      }
 //      else if (fgiter_ == 1)
 //      {
-//    	  if (velnpip_->MyLength() != FluidField().ExtractInterfaceVeln()->MyLength())
-//    	    dserror("vectors must have the same length 1");
-//    	  velnpip_->Update(1.0,*(FluidField().ExtractInterfaceVeln()),0.0);
-//    	  phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
-//    	  
+//        if (velnpip_->MyLength() != FluidField().ExtractInterfaceVeln()->MyLength())
+//          dserror("vectors must have the same length 1");
+//        velnpip_->Update(1.0,*(FluidField().ExtractInterfaceVeln()),0.0);
+//        phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
+//        
 //          if (fgiter_ == fgitermax_)
-//        	notconverged = false;
-//    	  
+//          notconverged = false;
+//
 //      }
       if (fgiter_ > 0) //else
       {
 //          double velnormL2 = 1.0;
           double gfuncnormL2 = 1.0;
-          
-//    	  velnpi_->Update(1.0,*velnpip_,0.0);
-    	  phinpi_->Update(1.0,*phinpip_,0.0);
-//    	  velnpip_->Update(1.0,*(FluidField().ExtractInterfaceVeln()),0.0);
-//    	  velnpip_->Norm2(&velnormL2);
-    	  phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
-    	  phinpip_->Norm2(&gfuncnormL2);
-    	  
+
+//        velnpi_->Update(1.0,*velnpip_,0.0);
+          phinpi_->Update(1.0,*phinpip_,0.0);
+//        velnpip_->Update(1.0,*(FluidField().ExtractInterfaceVeln()),0.0);
+//        velnpip_->Norm2(&velnormL2);
+          phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
+          phinpip_->Norm2(&gfuncnormL2);
+
 //          if (velnormL2 < 1e-5) velnormL2 = 1.0;
           if (gfuncnormL2 < 1e-5) gfuncnormL2 = 1.0;
 
-//    	  fgvelnormL2_ = 0.0;
-    	  fggfuncnormL2_ = 0.0;
+//        fgvelnormL2_ = 0.0;
+          fggfuncnormL2_ = 0.0;
 
-//    	  Teuchos::RCP<Epetra_Vector> incvel = rcp(new Epetra_Vector(velnpip_->Map()),true);
-//    	  if (incvel->MyLength() != FluidField().ExtractInterfaceVeln()->MyLength())
-//    	    dserror("vectors must have the same length 2");
-//    	  incvel->Update(1.0,*velnpip_,-1.0,*velnpi_,0.0);
-//    	  incvel->Norm2(&fgvelnormL2_);
+//        Teuchos::RCP<Epetra_Vector> incvel = rcp(new Epetra_Vector(velnpip_->Map()),true);
+//        if (incvel->MyLength() != FluidField().ExtractInterfaceVeln()->MyLength())
+//          dserror("vectors must have the same length 2");
+//        incvel->Update(1.0,*velnpip_,-1.0,*velnpi_,0.0);
+//        incvel->Norm2(&fgvelnormL2_);
 
-    	  Teuchos::RCP<Epetra_Vector> incgfunc = rcp(new Epetra_Vector(*ScaTraField().Discretization()->NodeRowMap()),true);
-    	  incgfunc->Update(1.0,*phinpip_,-1.0,*phinpi_,0.0);
-    	  incgfunc->Norm2(&fggfuncnormL2_);
+          Teuchos::RCP<Epetra_Vector> incgfunc = rcp(new Epetra_Vector(*ScaTraField().Discretization()->NodeRowMap()),true);
+          incgfunc->Update(1.0,*phinpip_,-1.0,*phinpi_,0.0);
+          incgfunc->Norm2(&fggfuncnormL2_);
 
-    	  if (Comm().MyPID()==0)
-    	  {
-    	     printf("\n|+------------------------ FGI ------------------------+|");
-    	     printf("\n|iter/itermax|----tol-[Norm]--|-fluid inc--|-g-func inc-|");
-    	     printf("\n|   %2d/%2d    | %10.3E[L2] | ---------- | %10.3E |",fgiter_,fgitermax_,convtol_,fggfuncnormL2_/gfuncnormL2);
-    	     printf("\n|+-----------------------------------------------------+|\n");
-    	  }
+          if (Comm().MyPID()==0)
+         {
+             printf("\n|+------------------------ FGI ------------------------+|");
+             printf("\n|iter/itermax|----tol-[Norm]--|-fluid inc--|-g-func inc-|");
+             printf("\n|   %2d/%2d    | %10.3E[L2] | ---------- | %10.3E |",fgiter_,fgitermax_,convtol_,fggfuncnormL2_/gfuncnormL2);
+             printf("\n|+-----------------------------------------------------+|\n");
+          }
 
-    	  if (fggfuncnormL2_/gfuncnormL2 <= convtol_) //((fgvelnormL2_/velnormL2 <= convtol_) and (fggfuncnormL2_/gfuncnormL2 <= convtol_))
-    	  {
+          if (fggfuncnormL2_/gfuncnormL2 <= convtol_) //((fgvelnormL2_/velnormL2 <= convtol_) and (fggfuncnormL2_/gfuncnormL2 <= convtol_))
+          {
              notconverged = false;
-    	  }
+          }
           else
           {
              if (fgiter_ == fgitermax_)
              {
-            	 notconverged = false;
-            	 if (Comm().MyPID()==0)
-            	 {
-            	    printf("|+---------------- not converged ----------------------+|");
-            	    printf("\n|+-----------------------------------------------------+|\n");
-            	 }
+                 notconverged = false;
+                 if (Comm().MyPID()==0)
+                 {
+                    printf("|+---------------- not converged ----------------------+|");
+                    printf("\n|+-----------------------------------------------------+|\n");
+                 }
              }
           }
       }
@@ -748,10 +747,10 @@ void COMBUST::Algorithm::PrepareTimeStep()
   // fgnormfluid = large value
   fggfuncnormL2_ = 1.0;
 
-  stepbeforereinit_ = false;
-  if (Step()>0 and Step() % reinitinterval_ == 0) stepbeforereinit_ = true;
+//  stepbeforereinit_ = false;
+//  if (Step()>0 and Step() % reinitinterval_ == 0) stepbeforereinit_ = true;
   stepreinit_ = false;
-  if (Step()>1 and Step() % reinitinterval_ == 1) stepreinit_ = true;
+  if (Step() % reinitinterval_ == 0) stepreinit_ = true; //Step()>1 and 
 
   if (Comm().MyPID()==0)
   {
@@ -832,6 +831,7 @@ void COMBUST::Algorithm::DoGfuncField()
     // the scalar transport field
 
     ScaTraField().SetVelocityField(
+//      OverwriteFluidVel(),
       FluidField().ExtractInterfaceVeln(),
       Teuchos::null,
       FluidField().DofSet(),
@@ -919,16 +919,33 @@ void COMBUST::Algorithm::UpdateTimeStep()
 {
   FluidField().Update();
 
-  //
+//  //
+//  if (stepreinit_)
+//  {
+//    // reset phin vector in ScaTra time integration scheme to reinitialized vector 'phireinitn_'
+//    ScaTraField().SetPhin(phireinitn_);
+//    // pointer not needed any more
+//    phireinitn_ = Teuchos::null;
+//    //ScaTraField().CalcInitialPhidt();
+//  }
+
+//  ScaTraField().Update();
+//  if (stepreinit_)
+//  {
+//     std::cout << " ---------- UPDATE PHIDT --------" << std::endl;
+//     ScaTraField().CalcPhidtReinit();
+//     //ScaTraField().CalcInitialPhidt();
+//  }
+
   if (stepreinit_)
   {
-    // reset phin vector in ScaTra time integration scheme to reinitialized vector 'phireinitn_'
-    ScaTraField().SetPhin(phireinitn_);
-    // pointer not needed any more
-    phireinitn_ = Teuchos::null;
+    ScaTraField().UpdateReinit();
+  }
+  else
+  {
+     ScaTraField().Update();
   }
 
-  ScaTraField().Update();
   return;
 }
 

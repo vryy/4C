@@ -119,6 +119,9 @@ public:
   /// update the solution after convergence of the nonlinear iteration.
   virtual void Update() = 0;
 
+  /// update the solution after reinitialization
+  virtual void UpdateReinit() = 0;
+
   /// update configuration and output to file
   void Output();
 
@@ -167,7 +170,7 @@ public:
       );
 
   /// set initial thermodynamic pressure for low-Mach-number flow
-  void SetInitialThermPressure();
+  void SetInitialThermPressure();  
 
   /// compute initial thermodyn. pressure time derivative for low-Mach-number flow
   void ComputeInitialThermPressureDeriv();
@@ -369,6 +372,9 @@ protected:
 
   /// calculate initial value for phidtn_
   void CalcInitialPhidt();
+
+  /// calcuate phidt after reinitialization for OST scheme
+  virtual void CalcPhidtReinit() = 0;
 
   /// initialization procedure before the first time step is done
   virtual void PrepareFirstTimeStep() = 0;

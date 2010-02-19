@@ -67,6 +67,9 @@ public:
   /// Current solution becomes old solution of next timestep.
   void Update();
 
+  /// update the solution after reinitialization
+  void UpdateReinit();
+
   /// update thermodynamic pressure and time derivative for low-Mach-number flow
   void UpdateThermPressure();
 
@@ -135,6 +138,9 @@ protected:
 
   /// routine to reset phi vector due to reinitialization for OST scheme
   void SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn);
+
+  /// calcuate phidt after reinitialization for OST scheme
+  void CalcPhidtReinit();
 
 private:
 

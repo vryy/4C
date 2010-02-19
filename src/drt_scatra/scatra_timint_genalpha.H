@@ -64,6 +64,9 @@ public:
   /// update density field for ELCH natural convection
   void UpdateDensityElch(){dserror("not implemented"); return;};
 
+  /// update solution after reinitialization for OST scheme
+  void UpdateReinit() { dserror("only implemented for OST"); return; };
+
   /// read restart data
   void ReadRestart(int step);
 
@@ -128,6 +131,8 @@ protected:
   void SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn) { dserror("only implemented for OST");
                                                          return; };
 
+  /// calcuate phidt after reinitialization for OST scheme
+  void CalcPhidtReinit() { dserror("only implemented for OST"); return; };
 
 private:
 

@@ -330,6 +330,19 @@ void SCATRA::TimIntOneStepTheta::Update()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | update level set after reinitialization              rasthofer 02/10 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::UpdateReinit()
+{
+  // solution of this step becomes most recent solution of the last step
+  phin_ ->Update(1.0,*phinp_,0.0);
+  
+  // compute time derivative at time n (and n+1)
+  CalcPhidtReinit();
+  
+  //CalcInitialPhidt();
+}
 
 /*----------------------------------------------------------------------*
  | update thermodynamic pressure at n for low-Mach-number flow vg 12/08 |
@@ -450,9 +463,85 @@ void SCATRA::TimIntOneStepTheta::ElectrodeKineticsTimeUpdate(const bool init)
 void SCATRA::TimIntOneStepTheta::SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn)
 {
   if (phireinitn != Teuchos::null)
-    phin_ = phireinitn;
+    *phin_ = *phireinitn;
   else
     dserror("reinitialized phi vector at time step n does not exist");
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ | calculate time derivative of phi after reinitialization   rasthofer 02/10|
+ *--------------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::CalcPhidtReinit()
+{
+  if (myrank_ == 0)
+    std::cout<<"SCATRA: calculating time derivative of reinitialized phi"<<endl;
+
+  // call elements to calculate matrix and right-hand-side
+  {
+    // zero out matrix entries
+    sysmat_->Zero();
+
+    // add potential Neumann boundary condition at time t=0
+    residual_->Update(1.0,*neumann_loads_,0.0);
+
+    // create the parameters for the discretization
+    ParameterList eleparams;
+
+    // action for elements
+    eleparams.set("action","calc_time_deriv_reinit");
+
+    // set type of scalar transport problem
+    eleparams.set("scatratype",scatratype_);
+
+    // other parameters that are needed by the elements
+    eleparams.set("incremental solver",incremental_);
+    eleparams.set("form of convective term",convform_);
+
+    // provide velocity field and potentially acceleration/pressure field
+    // (export to column map necessary for parallel evaluation)
+    AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
+    AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
+
+    eleparams.set("time-step length",dta_);
+    eleparams.set("time factor",theta_*dta_);
+
+    // parameters for stabilization (here required for material evaluation location)
+    eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+
+    //provide displacement field in case of ALE
+    eleparams.set("isale",isale_);
+    if (isale_)
+      AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("phi0",phin_);
+
+    // call loop over elements
+    discret_->Evaluate(eleparams,sysmat_,residual_);
+    discret_->ClearState();
+
+    // finalize the complete matrix
+    sysmat_->Complete();
+  }
+
+  // apply Dirichlet boundary conditions to system matrix
+  LINALG::ApplyDirichlettoSystem(sysmat_,phidtn_,residual_,phidtn_,*(dbcmaps_->CondMap()));
+
+  // solve for phidtn
+  solver_->Solve(sysmat_->EpetraOperator(),phidtn_,residual_,true,true);
+
+  // copy solution also to phidtnp
+  phidtnp_->Update(1.0,*phidtn_,0.0);
+
+  // reset the matrix (and its graph!) since we solved
+  // a very special problem here that has a different sparsity pattern
+  if (getIntegralValue<int>(*params_,"BLOCKPRECOND"))
+    BlockSystemMatrix()->Reset();
+  else
+    SystemMatrix()->Reset();
+
   return;
 }
 

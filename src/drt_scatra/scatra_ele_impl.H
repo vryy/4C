@@ -191,6 +191,18 @@ public:
         const bool                            reinitswitch,
         const double                          frt ///< factor F/RT needed for ELCH calculations
     );
+    
+    //! calculate mass matrix and rhs for determining initial time derivative
+    virtual void TimeDerivativeReinit(
+        DRT::Element*                         ele, ///< the element
+        Epetra_SerialDenseMatrix&             emat, ///< element matrix to calculate
+        Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
+        const enum INPAR::SCATRA::TauType     whichtau, ///< stabilization parameter definition
+        const double                          dt, ///< current time-step length
+        const double                          timefac ///< time discretization factor
+//        const bool                            reinitswitch,
+//        const double                          frt ///< factor F/RT needed for ELCH calculations
+    );
 
     //! calculate normalized subgrid-diffusivity matrix
     virtual void CalcSubgridDiffMatrix(
