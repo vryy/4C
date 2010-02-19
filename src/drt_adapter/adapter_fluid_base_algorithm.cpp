@@ -291,7 +291,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit or
         coupling == fsi_iter_lung_monolithicstructuresplit or
-        coupling == fsi_iter_lung_monolithicstructuresplit)
+        coupling == fsi_iter_lung_monolithicstructuresplit or
+        coupling == fsi_iter_constr_monolithicstructuresplit or
+        coupling == fsi_iter_constr_monolithicfluidsplit)
     {
       // there are a couple of restrictions in monolithic FSI
       fluidtimeparams->set<bool>("do explicit predictor",false);
@@ -383,7 +385,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           coupling == fsi_iter_monolithiclagrange or
           coupling == fsi_iter_monolithicstructuresplit or
           coupling == fsi_iter_lung_monolithicstructuresplit or
-          coupling == fsi_iter_lung_monolithicfluidsplit)
+          coupling == fsi_iter_lung_monolithicfluidsplit or
+          coupling == fsi_iter_constr_monolithicstructuresplit or
+          coupling == fsi_iter_constr_monolithicfluidsplit)
       {
         dirichletcond = false;
       }

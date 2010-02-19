@@ -114,6 +114,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_elementdefinition.o \
                 src/drt_lib/drt_resulttest.o \
                 src/drt_fem_general/drt_utils_integration.o \
+                src/drt_fem_general/drt_utils_neumann.o \
                 src/drt_fem_general/drt_utils_dgfem_basisfunctions.o \
                 src/drt_fem_general/drt_utils_fem_shapefunctions.o \
                 src/drt_fem_general/drt_utils_boundary_integration.o \
@@ -376,6 +377,9 @@ OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
                 src/drt_fsi/fsi_lungmonolithic.o \
                 src/drt_fsi/fsi_lungmonolithic_structuresplit.o \
                 src/drt_fsi/fsi_lungmonolithic_fluidsplit.o \
+                src/drt_fsi/fsi_constrmonolithic.o \
+                src/drt_fsi/fsi_constrmonolithic_fluidsplit.o \
+                src/drt_fsi/fsi_constrmonolithic_structuresplit.o \
                 src/drt_fsi/fsi_partitionedmonolithic.o \
                 src/drt_fsi/fsi_fluid_ale.o \
                 src/drt_fsi/fsi_fluid_xfem.o \
@@ -411,7 +415,7 @@ OBJS_DRT_ADAPT= src/drt_adapter/adapter_algorithmbase.o \
                 src/drt_adapter/adapter_structure_strugenalpha.o \
                 src/drt_adapter/adapter_structure_cmtstrugenalpha.o \
                 src/drt_adapter/adapter_structure_timint.o \
-                src/drt_adapter/adapter_structure_constrained.o \
+                src/drt_adapter/adapter_structure_constr_merged.o \
                 src/drt_adapter/adapter_structure_lung.o \
                 src/drt_adapter/adapter_structure_wrapper.o \
                 src/drt_adapter/adapter_thermo.o \

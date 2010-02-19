@@ -1381,6 +1381,22 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(nodeonplaneconst3D);
 
   /*--------------------------------------------------------------------*/
+//  // Multi point constraint in 3D for a node over a plane
+//
+//  Teuchos::RCP<ConditionDefinition> nodeonlineconst3D =
+//    Teuchos::rcp(new ConditionDefinition("DESIGN LINE MULTIPNT CONSTRAINT 3D",
+//                                         "MPC_NodeOnLine_3D",
+//                                         "Node on Line Constraint",
+//                                         DRT::Condition::MPC_NodeOnLine_3D,
+//                                         false,
+//                                         DRT::Condition::Line));
+//
+//  nodeonlineconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+//  nodeonlineconst3D->AddComponent(Teuchos::rcp(new RealConditionComponent("activTime")));
+//  nodeonlineconst3D->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curveNodes",2)));
+//  condlist.push_back(nodeonlineconst3D);
+//  
+//  /*--------------------------------------------------------------------*/
   // Multi point constraint in 3D, moving all constraint nodes synchronously
 
    Teuchos::RCP<ConditionDefinition> nodemasterconst3D =
@@ -1392,9 +1408,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                           DRT::Condition::Surface));
 
    nodemasterconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+   nodemasterconst3D->AddComponent(Teuchos::rcp(new RealConditionComponent("amplitude")));
+   nodemasterconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
    nodemasterconst3D->AddComponent(Teuchos::rcp(new RealConditionComponent("activTime")));
    nodemasterconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("masterNode")));
    nodemasterconst3D->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("direction",3)));
+   nodemasterconst3D->AddComponent(Teuchos::rcp(new StringConditionComponent("value","disp",
+       Teuchos::tuple<std::string>("disp","x"),
+       Teuchos::tuple<std::string>("disp","x"),
+       true)));
+   nodemasterconst3D->AddComponent(Teuchos::rcp(new StringConditionComponent("control","rel",
+       Teuchos::tuple<std::string>("rel","abs"),
+       Teuchos::tuple<std::string>("rel","abs"),
+       true)));
    condlist.push_back(nodemasterconst3D);
 
   /*--------------------------------------------------------------------*/

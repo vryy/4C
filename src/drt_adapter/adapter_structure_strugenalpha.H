@@ -113,7 +113,7 @@ namespace ADAPTER {
     };
 
     /// get constraint manager defined in the structure
-    virtual const RCP<const UTILS::ConstrManager> GetConstraintManager()
+    virtual const RCP< UTILS::ConstrManager> GetConstraintManager()
     {
       return structure_.GetConstraintManager();
     };

@@ -21,6 +21,8 @@
 #include "fsi_lungmonolithic.H"
 #include "fsi_lungmonolithic_structuresplit.H"
 #include "fsi_lungmonolithic_fluidsplit.H"
+#include "fsi_constrmonolithic_fluidsplit.H"
+#include "fsi_constrmonolithic_structuresplit.H"
 #include "fsi_structureale.H"
 #include "fsi_fluid_ale.H"
 #include "fsi_fluid_xfem.H"
@@ -284,6 +286,8 @@ void fsi_ale_drt()
   case fsi_iter_monolithiclagrange:
   case fsi_iter_lung_monolithicstructuresplit:
   case fsi_iter_lung_monolithicfluidsplit:
+  case fsi_iter_constr_monolithicfluidsplit:
+  case fsi_iter_constr_monolithicstructuresplit:
   {
     Teuchos::RCP<FSI::Monolithic> fsi;
 
@@ -315,6 +319,14 @@ void fsi_ale_drt()
     else if (coupling==fsi_iter_lung_monolithicfluidsplit)
     {
       fsi = Teuchos::rcp(new FSI::LungMonolithicFluidSplit(comm));
+    }
+    else if (coupling==fsi_iter_constr_monolithicfluidsplit)
+    {
+      fsi = Teuchos::rcp(new FSI::ConstrMonolithicFluidSplit(comm));
+    }
+    else if (coupling==fsi_iter_constr_monolithicstructuresplit)
+    {
+      fsi = Teuchos::rcp(new FSI::ConstrMonolithicStructureSplit(comm));
     }
     else
     {

@@ -450,7 +450,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& sdyn = list->sublist("STRUCTURAL DYNAMIC",false,"");
 
-  setStringToIntegralParameter<INPAR::STR::DynamicType>("DYNAMICTYP","Gen_Alfa",
+  setStringToIntegralParameter<INPAR::STR::DynamicType>("DYNAMICTYP","GenAlpha",
                                "type of time integration control",
                                tuple<std::string>(
                                  "Centr_Diff",
@@ -635,22 +635,27 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 //        "NO",
 //        "Current",
 //        "Parameter",
+//        "Rot",
 //        "CurrentSym",
-//        "ParameterSym"),
+//        "ParameterSym",
+//        "RotSym"),
 //      tuple<INPAR::STR::SDC_Scale>(
 //        INPAR::STR::sdc_none,
 //        INPAR::STR::sdc_none,
 //        INPAR::STR::sdc_none,
 //        INPAR::STR::sdc_curr,
 //        INPAR::STR::sdc_para,
+//        INPAR::STR::sdc_rot,
 //        INPAR::STR::sdc_currsym,
-//        INPAR::STR::sdc_parasym),
+//        INPAR::STR::sdc_parasym,
+//        INPAR::STR::sdc_rotsym),
 //      &sdyn);
-//
+
+
 //  DoubleParameter("SDC_FACTOR",1.0,
 //      "Scaled director conditioning factor",
 //      &sdyn);
-
+  
   DoubleParameter("TOLCONSTR",1.0E-08,
                   "tolerance in the constr error norm for the newton iteration",
                   &sdyn);
@@ -2258,8 +2263,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     "Partitioned FSI solver with various coupling methods"
     );
 
-  Teuchos::Tuple<std::string,16> name;
-  Teuchos::Tuple<int,16> label;
+  Teuchos::Tuple<std::string,18> name;
+  Teuchos::Tuple<int,18> label;
 
   name[ 0] = "basic_sequ_stagg";                   label[ 0] = fsi_basic_sequ_stagg;
   name[ 1] = "iter_stagg_fixed_rel_param";         label[ 1] = fsi_iter_stagg_fixed_rel_param;
@@ -2277,6 +2282,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   name[13] = "iter_lung_monolithicfluidsplit";     label[13] = fsi_iter_lung_monolithicfluidsplit;
   name[14] = "iter_monolithicxfem";                label[14] = fsi_iter_monolithicxfem;
   name[15] = "pseudo_structure";                   label[15] = fsi_pseudo_structureale;
+  name[16] = "iter_constr_monolithicfluidsplit";     label[16] = fsi_iter_constr_monolithicfluidsplit;
+  name[17] = "iter_constr_monolithicstructuresplit";     label[17] = fsi_iter_constr_monolithicstructuresplit;
 
   setStringToIntegralParameter<int>("COUPALGO","iter_stagg_AITKEN_rel_param",
                                     "Iteration Scheme over the fields",

@@ -19,7 +19,7 @@ Maintainer: Thomas Kloeppel
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../drt_structure/strtimint_create.H"
-#include "adapter_structure_constrained.H"
+#include "adapter_structure_constr_merged.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition_utils.H"
 
@@ -32,7 +32,7 @@ Maintainer: Thomas Kloeppel
 
 /*======================================================================*/
 /* constructor */
-ADAPTER::StructureConstrained::StructureConstrained
+ADAPTER::StructureConstrMerged::StructureConstrMerged
 (
   RCP<Structure> stru
 )
@@ -60,7 +60,7 @@ ADAPTER::StructureConstrained::StructureConstrained
 
 /*----------------------------------------------------------------------*/
 /* */
-RCP<const Epetra_Vector> ADAPTER::StructureConstrained::InitialGuess()
+RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::InitialGuess()
 {
   //get initial guesses from structure and constraintmanager
   RCP<const Epetra_Vector> strucGuess = structure_->InitialGuess();
@@ -76,7 +76,7 @@ RCP<const Epetra_Vector> ADAPTER::StructureConstrained::InitialGuess()
 
 /*----------------------------------------------------------------------*/
 /* right-hand side alias the dynamic force residual */
-RCP<const Epetra_Vector> ADAPTER::StructureConstrained::RHS()
+RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::RHS()
 {
   //get rhs-vectors from structure and constraintmanager
   RCP<const Epetra_Vector> struRHS = structure_->RHS();
@@ -93,7 +93,7 @@ RCP<const Epetra_Vector> ADAPTER::StructureConstrained::RHS()
 
 /*----------------------------------------------------------------------*/
 /* get current displacements D_{n+1} */
-RCP<const Epetra_Vector> ADAPTER::StructureConstrained::Dispnp()
+RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Dispnp()
 {
   //get current state from structure and constraintmanager
   RCP<const Epetra_Vector> strudis = structure_->Dispnp();
@@ -110,7 +110,7 @@ RCP<const Epetra_Vector> ADAPTER::StructureConstrained::Dispnp()
 
 /*----------------------------------------------------------------------*/
 /* get last converged displacements D_{n} */
-RCP<const Epetra_Vector> ADAPTER::StructureConstrained::Dispn()
+RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Dispn()
 {
   //get last converged state from structure and constraintmanager
   RCP<const Epetra_Vector> strudis = structure_->Dispn();
@@ -126,7 +126,7 @@ RCP<const Epetra_Vector> ADAPTER::StructureConstrained::Dispn()
 
 /*----------------------------------------------------------------------*/
 /* non-overlapping DOF map */
-RCP<const Epetra_Map> ADAPTER::StructureConstrained::DofRowMap()
+RCP<const Epetra_Map> ADAPTER::StructureConstrMerged::DofRowMap()
 {
   return dofrowmap_;
 }
@@ -135,12 +135,13 @@ RCP<const Epetra_Map> ADAPTER::StructureConstrained::DofRowMap()
 /*----------------------------------------------------------------------*/
 /* stiffness, i.e. force residual R_{n+1} differentiated
  * by displacements D_{n+1} */
-RCP<LINALG::SparseMatrix> ADAPTER::StructureConstrained::SystemMatrix()
+RCP<LINALG::SparseMatrix> ADAPTER::StructureConstrMerged::SystemMatrix()
 {
   //create empty large matrix and get small ones from structure and constraints
   RCP<LINALG::SparseMatrix> mergedmatrix = rcp(new LINALG::SparseMatrix(*dofrowmap_,dofrowmap_->NumMyElements()));
   RCP<LINALG::SparseMatrix> strustiff = structure_->SystemMatrix();
-  RCP<LINALG::SparseMatrix> constiff = structure_->GetConstraintManager()->GetConstrMatrix();
+  
+  RCP<LINALG::SparseOperator> constiff = structure_->GetConstraintManager()->GetConstrMatrix();
 
   // Add matrices together
   mergedmatrix -> Add(*strustiff,false,1.0,0.0);
@@ -155,16 +156,16 @@ RCP<LINALG::SparseMatrix> ADAPTER::StructureConstrained::SystemMatrix()
 
 
 /*----------------------------------------------------------------------*/
-RCP<LINALG::BlockSparseMatrixBase> ADAPTER::StructureConstrained::BlockSystemMatrix()
+RCP<LINALG::BlockSparseMatrixBase> ADAPTER::StructureConstrMerged::BlockSystemMatrix()
 {
-  dserror("constrained BlockSparseMatrix not yet implemented");
+  dserror("constrained BlockSparseMatrix never to be implemented");
   return null;
 }
 
 
 /*----------------------------------------------------------------------*/
 /* */
-RCP<const Epetra_Vector> ADAPTER::StructureConstrained::FRobin()
+RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::FRobin()
 {
   //return structure_->GetForceRobinFSI();
   return LINALG::CreateVector(*dofrowmap_, true);
@@ -175,7 +176,7 @@ RCP<const Epetra_Vector> ADAPTER::StructureConstrained::FRobin()
 /* build linear system stiffness matrix and rhs/force residual
  *
  * Monolithic FSI accesses the linearised structure problem. */
-void ADAPTER::StructureConstrained::Evaluate(
+void ADAPTER::StructureConstrMerged::Evaluate(
   RCP<const Epetra_Vector> disp
 )
 {
@@ -199,7 +200,7 @@ void ADAPTER::StructureConstrained::Evaluate(
 
 /*----------------------------------------------------------------------*/
 /* domain map */
-const Epetra_Map& ADAPTER::StructureConstrained::DomainMap()
+const Epetra_Map& ADAPTER::StructureConstrMerged::DomainMap()
 {
   return *(LINALG::MergeMap(structure_->DomainMap(),
                             *(structure_->GetConstraintManager()->GetConstraintMap()),
@@ -209,7 +210,7 @@ const Epetra_Map& ADAPTER::StructureConstrained::DomainMap()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureConstrained::ApplyInterfaceRobinValue(
+void ADAPTER::StructureConstrMerged::ApplyInterfaceRobinValue(
   RCP<Epetra_Vector> iforce,
   RCP<Epetra_Vector> ifluidvel
 )

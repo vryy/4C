@@ -1693,7 +1693,6 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
   //=================================================== equilibrium loop
-  RCP<LINALG::SparseMatrix> constrMatrix = rcp(new  LINALG::SparseMatrix(*(constrMan_->GetConstrMatrix())));
   RCP<Epetra_Vector> constrRHS = rcp(new Epetra_Vector(*(constrMan_->GetError())));
 
   RCP<Epetra_Vector> lagrIncr = rcp(new Epetra_Vector(*(constrMan_->GetConstraintMap())));
@@ -1731,7 +1730,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     lagrIncr->PutScalar(0.0);
 
     // Call Uzawa algorithm to solve system with zeros on diagonal
-    constrSolv_->Solve(SystemMatrix(),constrMatrix,disi_,lagrIncr,fresm_,constrRHS);
+    constrSolv_->Solve(SystemMatrix(),constrMan_->GetConstrMatrix(),disi_,lagrIncr,fresm_,constrRHS);
 
     //update lagrange multiplier
     constrMan_->UpdateLagrMult(lagrIncr);
@@ -1804,7 +1803,6 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 
       pcon.set("scaleStiffEntries",1.0/(1.0-alphaf));
       constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,SystemMatrix(),pcon);
-      constrMatrix = constrMan_->GetConstrMatrix();
       constrRHS = rcp(new Epetra_Vector(*(constrMan_->GetError())));
       constrnorm=constrMan_->GetErrorNorm();
 

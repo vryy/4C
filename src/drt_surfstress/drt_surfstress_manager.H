@@ -108,7 +108,7 @@ public:
                           const RefCountPtr<Epetra_Vector> dism,
                           const RefCountPtr<Epetra_Vector> disn,
                           RefCountPtr<Epetra_Vector> fint,
-                          RefCountPtr<LINALG::SparseMatrix> stiff);
+                          RefCountPtr<LINALG::SparseOperator> stiff);
 
   /*!
     \brief Update history variables

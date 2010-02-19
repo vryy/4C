@@ -419,7 +419,7 @@ public:
   }
 
   //! Return rcp to ConstraintManager conman_
-  virtual const RCP<const UTILS::ConstrManager> GetConstraintManager()
+  virtual const RCP< UTILS::ConstrManager> GetConstraintManager()
   {
     return constrMan_;
   }

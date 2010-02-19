@@ -473,7 +473,7 @@ namespace STR
     }
 
     //! Return rcp to ConstraintManager conman_
-    virtual const RCP<const ::UTILS::ConstrManager> GetConstraintManager()
+    virtual const RCP< ::UTILS::ConstrManager> GetConstraintManager()
     {
       return conman_;
     }
@@ -494,6 +494,11 @@ namespace STR
     //! @name Fluid-structure-interaction specific methods
     //@{
 
+    //! switch structure field to block matrix in fsi simulations
+    void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+                        const LINALG::MultiMapExtractor& rangemaps);
+
+    
     //! introduce (robin) fsi surface extractor object
     //!
     //! Introduce the FSI surface to the fluid algorithm. This way special case

@@ -49,17 +49,18 @@ MPConstraint
     for (conditer=constrcond_.begin();conditer!=constrcond_.end();conditer++)
     {
       const int condID = (*conditer)->GetInt("ConditionID");
-      if (offsetID>maxID) offsetID=maxID;
-      if (Type()==mpcnormalcomp3d)
-        absconstraint_[condID]=true;
-      else
-      {
+      if (offsetID>maxID) 
+        offsetID=maxID;
+//      if (Type()==mpcnormalcomp3d)
+//        absconstraint_[condID]=true;
+//      else
+//      {
         const string* type = (*conditer)-> Get<string>("control");
         if (*type == "abs")
           absconstraint_[condID]=true;
         else
           absconstraint_[condID]=false;
-      }
+//      }
     }
 
     constraintdis_=CreateDiscretizationFromCondition(actdisc_,constrcond_,"ConstrDisc","CONSTRELE3",maxID);
@@ -137,13 +138,13 @@ void UTILS::MPConstraint3::Initialize(
       {
         int  MPCcondID  = constrcond_[i]->GetInt("ConditionID");
         //in case of a mpcnormalcomp3d-condition amplitude is always 0
-        if (Type()==mpcnormalcomp3d)
-          amplit[i]=0.0;
-        else
-        {
+//        if (Type()==mpcnormalcomp3d)
+//          amplit[i]=0.0;
+//        else
+//        {
           double    MPCampl  = constrcond_[i]->GetDouble("amplitude");
           amplit[i]=MPCampl;
-        }
+//        }
         const int mid=params.get("OffsetID",0);
         IDs[i]=MPCcondID-mid;
       }
@@ -152,14 +153,15 @@ void UTILS::MPConstraint3::Initialize(
       {
         switch (Type())
         {
-          case mpcnodeonplane3d:
+          
           case mpcnormalcomp3d:
+          case mpcnodeonplane3d:
             params.set("action","calc_MPC_state");
           break;
           case none:
             return;
           default:
-            dserror("Constraint/monitor is not an multi point constraint!");
+            dserror("Constraint is not an multi point constraint!");
         }
         InitializeConstraint(constraintdis_.find(condID)->second,params,systemvector);
       }
@@ -182,8 +184,8 @@ void UTILS::MPConstraint3::Initialize(
 *-----------------------------------------------------------------------*/
 void UTILS::MPConstraint3::Evaluate(
     ParameterList&        params,
-    RCP<LINALG::SparseMatrix> systemmatrix1,
-    RCP<LINALG::SparseMatrix> systemmatrix2,
+    RCP<LINALG::SparseOperator> systemmatrix1,
+    RCP<LINALG::SparseOperator> systemmatrix2,
     RCP<Epetra_Vector>    systemvector1,
     RCP<Epetra_Vector>    systemvector2,
     RCP<Epetra_Vector>    systemvector3)
@@ -366,8 +368,8 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
 void UTILS::MPConstraint3::EvaluateConstraint(
     RCP<DRT::Discretization> disc,
     ParameterList&        params,
-    RCP<LINALG::SparseMatrix> systemmatrix1,
-    RCP<LINALG::SparseMatrix> systemmatrix2,
+    RCP<LINALG::SparseOperator> systemmatrix1,
+    RCP<LINALG::SparseOperator> systemmatrix2,
     RCP<Epetra_Vector>    systemvector1,
     RCP<Epetra_Vector>    systemvector2,
     RCP<Epetra_Vector>    systemvector3)
@@ -405,6 +407,7 @@ void UTILS::MPConstraint3::EvaluateConstraint(
     int eid=actele->Id();
     int condID = eletocondID_.find(eid)->second;
     DRT::Condition* cond=constrcond_[eletocondvecindex_.find(eid)->second];
+    params.set< RCP<DRT::Condition> >("condition", rcp(cond,false));
 
     // computation only if time is larger or equal than initialization time for constraint
     if(inittimes_.find(condID)->second<=time)
@@ -445,7 +448,6 @@ void UTILS::MPConstraint3::EvaluateConstraint(
       if (assemblevec3) elevector3.Size(1);
       params.set("ConditionID",eid);
 
-      params.set< RCP<DRT::Condition> >("condition", rcp(cond,false));
       // call the element evaluate method
       int err = actele->Evaluate(params,*disc,lm,elematrix1,elematrix2,
                                  elevector1,elevector2,elevector3);
@@ -523,6 +525,7 @@ void UTILS::MPConstraint3::InitializeConstraint(RCP<DRT::Discretization> disc,
     int eid=actele->Id();
     int condID = eletocondID_.find(eid)->second;
     DRT::Condition* cond=constrcond_[eletocondvecindex_.find(eid)->second];
+    params.set< RCP<DRT::Condition> >("condition", rcp(cond,false));
 
     // get element location vector, dirichlet flags and ownerships
     vector<int> lm;

@@ -66,7 +66,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
     break;
     case calc_MPC_state:
     {
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vector 'displacement'");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -75,8 +75,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
       if (numnod == 4)
       {
         const int numdim = 3;
-        const int numnode = 4;
-        LINALG::Matrix<numnode,numdim> xscurr;  // material coord. of element
+        LINALG::Matrix<4,numdim> xscurr;  // material coord. of element
         SpatialConfiguration(xscurr,mydisp);
         LINALG::Matrix<numdim,1> elementnormal;
 
@@ -90,12 +89,20 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
       }
       else if (numnod == 2)
       {
-        RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
+        RCP<DRT::Condition> condition = params.get<RCP<DRT::Condition> >("condition");
         const vector<double>*  direct = condition->Get<vector<double> > ("direction");
-
-        // compute difference
-        elevec3[0] = ComputeWeightedDistance(mydisp,*direct);
-      }
+        const string* value = condition-> Get<string>("value");
+        if (*value == "disp") 
+          elevec3[0] = ComputeWeightedDistance(mydisp,*direct);
+        else if (*value == "x")
+        {
+          LINALG::Matrix<2,3> xscurr;  // material coord. of element
+          SpatialConfiguration(xscurr,mydisp);
+          elevec3[0] = ComputeWeightedDistance(xscurr,*direct);
+        }
+        else 
+          dserror("MPC cannot compute state!");
+       }
     }
     break;
     case calc_MPC_stiff:
@@ -136,8 +143,20 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
 
         //Compute weighted difference between masternode and other node and it's derivative
         ComputeFirstDerivWeightedDistance(elevec1,*direct);
-        elevec3[0] = ComputeWeightedDistance(mydisp,*direct);
         elevec2=elevec1;
+        
+        const string* value = condition-> Get<string>("value");
+        if (*value == "disp") 
+          elevec3[0] = ComputeWeightedDistance(mydisp,*direct);
+        else if (*value == "x")
+        {
+          LINALG::Matrix<2,3> xscurr;  // material coord. of element
+          SpatialConfiguration(xscurr,mydisp);
+          elevec3[0] = ComputeWeightedDistance(xscurr,*direct);
+        }
+        else 
+          dserror("MPC cannot compute state!");
+        
       }
 
     }
@@ -1836,6 +1855,25 @@ double DRT::ELEMENTS::ConstraintElement3::ComputeWeightedDistance
   for(int i = 0;i<3;i++)
   {
     result += (disp.at(i)-disp.at(i+3))*direct.at(i);
+  }
+  result/=norm;
+  return result;
+}
+
+double DRT::ELEMENTS::ConstraintElement3::ComputeWeightedDistance
+(
+  const LINALG::Matrix<2,3> disp,
+  const vector<double> direct
+)
+{
+
+  // norm of direct
+  double norm = sqrt(pow(direct.at(0),2)+pow(direct.at(1),2)+pow(direct.at(2),2));
+  double result=0.0;
+
+  for(int i = 0;i<3;i++)
+  {
+    result += (disp(0,i)-disp(1,i))*direct.at(i);
   }
   result/=norm;
   return result;

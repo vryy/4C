@@ -288,7 +288,7 @@ DSURF  0
 -------------------DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D
 DSURF  1
 // keep normal big
-E 3 - 1 0.0 1 0.0 1.0 0.0
+E 3 - 1 1.0 none 0.0 1 0.0 1.0 0.0 disp rel
 --------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
 DLINE  0
 --------------------------------ELECTRODE KINETICS LINE CONDITIONS

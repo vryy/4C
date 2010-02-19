@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_structure_constrained.H
+\file adapter_structure_constr_merged.H
 
 \brief Adapter Layer for Structures with Algebraic Constraints
 
@@ -16,8 +16,8 @@ Maintainer: Thomas Kloeppel
 /* macros */
 #ifdef CCADISCRET
 
-#ifndef ADAPTER_STRUCTURE_CONSTRAINED_H
-#define ADAPTER_STRUCTURE_CONSTRAINED_H
+#ifndef ADAPTER_STRUCTURE_CONSTR_MERGED_H
+#define ADAPTER_STRUCTURE_CONSTR_MERGED_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -51,12 +51,12 @@ namespace ADAPTER {
    *
    * \date 11/08
    */
-  class StructureConstrained : public StructureWrapper
+  class StructureConstrMerged : public StructureWrapper
   {
   public:
 
     /// Constructor
-    StructureConstrained
+    StructureConstrMerged
     (
       RCP<Structure> stru
     );
@@ -115,7 +115,7 @@ namespace ADAPTER {
      };
 
     /// Return bool indicating if constraints are defined
-    virtual const RCP<const UTILS::ConstrManager> GetConstraintManager()
+    virtual const RCP< UTILS::ConstrManager> GetConstraintManager()
     {
       return structure_->GetConstraintManager();
     };

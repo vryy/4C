@@ -273,6 +273,27 @@ private:
       }
       return;
   }
+  
+  /*!
+  \brief Create matrix with spatial configuration for 3 dimensions and 2 nodes
+  */
+  inline void SpatialConfiguration
+  (
+    LINALG::Matrix<2,3>& x, ///< nodal coords in spatial frame
+    const vector<double> disp  ///< displacements
+  ) const
+  {
+      const int numnode = 2;
+      const int numdim = 3;
+      for (int i=0; i<numnode; ++i)
+      {
+        for (int j = 0; j < numdim; ++j)
+        {
+          x(i,j) = Nodes()[i]->X()[j] + disp[i*numdim+j];
+        }
+      }
+      return;
+  }
 
   /// compute normal for 3D case using the first three nodes to specify a plane
   void ComputeNormal
@@ -317,7 +338,13 @@ private:
     Epetra_SerialDenseVector& elevector,  ///< vector to store results into
     const vector<double> direct   ///< direction to weight with
   );
-
+  
+  /// Compute difference of spatial configuration to masternode in given direction
+  double ComputeWeightedDistance
+  (
+    const LINALG::Matrix<2,3> x,
+    const vector<double> direct
+  );
 }; // class ConstraintElement3
 
 

@@ -460,9 +460,6 @@ namespace STR
     //! Return sparse mass matrix
     Teuchos::RCP<LINALG::SparseMatrix> MassMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_); }
 
-    //! switch structure field to block matrix in fsi simulations
-    void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-                        const LINALG::MultiMapExtractor& rangemaps);
 
     //! Return domain map
     const Epetra_Map& GetDomainMap() { return mass_->DomainMap(); }
@@ -544,6 +541,12 @@ namespace STR
     double dampm_;  //!< damping factor for mass \f$c_\text{M}\f$
     //@}
 
+    //! @name SDC Scaling for thin shell structures
+    //@{
+    enum INPAR::STR::SDC_Scale sdcscale_; //< scale director of shells?
+    double sdcfact_;  //!< scaling factor
+    //@}
+    
     //! @name Managed stuff
     //@{
 
@@ -578,6 +581,8 @@ namespace STR
     int step_;  //!< time step index \f$n\f$
     int stepn_;  //!< time step index \f$n+1\f$
     //@}
+    
+
 
     //! @name Global vectors
     //@{

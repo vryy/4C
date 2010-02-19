@@ -655,6 +655,8 @@ typedef enum _FSI_COUPLING
   fsi_iter_monolithicstructuresplit,
   fsi_iter_lung_monolithicstructuresplit,
   fsi_iter_lung_monolithicfluidsplit, 
+  fsi_iter_constr_monolithicstructuresplit,
+  fsi_iter_constr_monolithicfluidsplit, 
   fsi_iter_monolithicxfem,
   fsi_iter_stagg_NLCG,
   fsi_iter_stagg_MFNK_FD,

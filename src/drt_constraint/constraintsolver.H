@@ -92,7 +92,7 @@ namespace UTILS
     void Solve
     (
       RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-      RCP<LINALG::SparseMatrix> constr, ///< constraint matrix
+      RCP<LINALG::SparseOperator> constr, ///< constraint matrix
       RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
       RCP<Epetra_Vector> displagr,     ///< lagrange multiplier increment to compute
       const RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
@@ -139,7 +139,7 @@ private:
     void SolveIterative
     (
       RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-      RCP<LINALG::SparseMatrix> constr, ///< constraint matrix
+      RCP<LINALG::SparseOperator> constr, ///< constraint matrix
       RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
       RCP<Epetra_Vector> displagr,     ///< lagrange multiplier increment to compute
       const RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
@@ -152,7 +152,7 @@ private:
     void SolveDirect
     (
       RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-      RCP<LINALG::SparseMatrix> constr, ///< constraint matrix
+      RCP<LINALG::SparseOperator> constr, ///< constraint matrix
       RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
       RCP<Epetra_Vector> displagr,     ///< lagrange multiplier increment to compute
       const RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side

@@ -123,7 +123,7 @@ namespace ADAPTER {
     virtual bool HaveConstraint() = 0;
 
     /// get constraint manager defined in the structure
-    virtual const RCP<const UTILS::ConstrManager> GetConstraintManager() = 0;
+    virtual const RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
     virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;

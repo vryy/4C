@@ -75,7 +75,7 @@ namespace UTILS
       RCP<Epetra_Vector> displast,  ///< displacement at beginning of time step
       RCP<Epetra_Vector> disp,  ///< displacement at end of time step
       RCP<Epetra_Vector> fint,  ///< vector of internal forces
-      RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
+      RCP<LINALG::SparseOperator> stiff,  ///< stiffness matrix
       ParameterList scalelist
     );
 
@@ -122,12 +122,18 @@ namespace UTILS
       double factor
     );
 
-    /// Add a vector to the vector of lagrange multipliers
+    /// Add a vector as residual increment to the vector of Lagrange multipliers
     void UpdateLagrMult
     (
       RCP<Epetra_Vector> vect  ///< vector to add
     );
 
+    /// Add a vector as total increment to the vector of Lagrange multipliers
+    void UpdateTotLagrMult
+    (
+      RCP<Epetra_Vector> vect  ///< vector to add
+    );
+    
     /*!
          \brief Compute difference between current and prescribed values at a given time and a given displacement
     */
@@ -164,7 +170,7 @@ namespace UTILS
     };
 
     //! Return the additional rectangular matrix, constructed for lagrange multiplier evaluation
-    RCP<LINALG::SparseMatrix> GetConstrMatrix() const
+    RCP<LINALG::SparseOperator> GetConstrMatrix() //const
     {
       return constrMatrix_;
     };
@@ -259,6 +265,11 @@ namespace UTILS
     {
       return refbasevalues_;
     }
+    
+    //! switch constraint matrix to block matrix
+    void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+                        const LINALG::MultiMapExtractor& rangemaps);
+
 
   private:
 
@@ -291,7 +302,7 @@ namespace UTILS
     RCP<Epetra_Vector> fact_;  ///< vector with current time curve values
     RCP<Epetra_Vector> lagrMultVec_;  ///< lagrange multipliers
     RCP<Epetra_Vector> lagrMultVecOld_;  ///< lagrange multipliers
-    RCP<LINALG::SparseMatrix> constrMatrix_;  ///< additional rectangular matrix
+    RCP<LINALG::SparseOperator> constrMatrix_;  ///< additional rectangular matrix
     bool haveconstraint_;  ///< are there constraints at all?
     bool havemonitor_;  ///< are there monitor conditions?
     double uzawaparam_;  ///< parameter of Uzawa algorithm (only for the case the linear uzawa is not used)

@@ -384,14 +384,12 @@ void STR::TimIntImpl::ApplyForceStiffSurfstress
   // surface stress loads (but on internal force vector side)
   if (surfstressman_->HaveSurfStress())
   {
-    Teuchos::RCP<LINALG::SparseMatrix> mat = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff);
     // create the parameters for the discretization
     ParameterList p;
     p.set("surfstr_man", surfstressman_);
     p.set("total time", time);
     p.set("delta time", dt);
-    surfstressman_->EvaluateSurfStress(p, dism, disn, fint, mat);
-    stiff = mat;
+    surfstressman_->EvaluateSurfStress(p, dism, disn, fint, stiff);
   }
 
   // bye bye
@@ -438,9 +436,7 @@ void STR::TimIntImpl::ApplyForceStiffConstraint
 {
   if (conman_->HaveConstraint())
   {
-    Teuchos::RCP<LINALG::SparseMatrix> mat = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff);
-    conman_->StiffnessAndInternalForces(time, dis, disn, fint, mat, pcon);
-    stiff = mat;
+    conman_->StiffnessAndInternalForces(time, dis, disn, fint, stiff, pcon);
   }
 
   // wotcha
@@ -845,8 +841,6 @@ void STR::TimIntImpl::UzawaNonLinearNewtonFull()
 void STR::TimIntImpl::UzawaLinearNewtonFull()
 {
   // allocate additional vectors and matrices
-  Teuchos::RCP<LINALG::SparseMatrix> conmatrix
-    = Teuchos::rcp(new LINALG::SparseMatrix(*(conman_->GetConstrMatrix())));
   Teuchos::RCP<Epetra_Vector> conrhs
     = Teuchos::rcp(new Epetra_Vector(*(conman_->GetError())));
 
@@ -887,7 +881,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     // prepare residual Lagrange multiplier
     lagrincr->PutScalar(0.0);
     // Call constraint solver to solve system with zeros on diagonal
-    consolv_->Solve(SystemMatrix(), conmatrix,
+    consolv_->Solve(SystemMatrix(), conman_->GetConstrMatrix(),
                     disi_, lagrincr,
                     fres_, conrhs);
 
@@ -904,7 +898,6 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     // which contain forces and stiffness of constraints
     EvaluateForceStiffResidual();
     // compute residual and stiffness of constraint equations
-    conmatrix = conman_->GetConstrMatrix();
     conrhs = Teuchos::rcp(new Epetra_Vector(*(conman_->GetError())));
 
     // blank residual at (locally oriented) Dirichlet DOFs
@@ -1555,9 +1548,74 @@ void STR::TimIntImpl::ConvertConvCheck
     dserror("Requested convergence check %i cannot (yet) be converted",
             convcheck);
   }
+  if (myrank_ == 0)
   std::cout << "--------------------------------------------------------------------------------"
             << std::endl << std::endl;
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::TimIntImpl::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+                                 const LINALG::MultiMapExtractor& rangemaps)
+{
+  // (re)allocate system matrix
+  stiff_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
+  mass_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
+  if (damping_ == INPAR::STR::damp_rayleigh)
+    damp_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
+
+  // recalculate mass and damping matrices
+
+  Teuchos::RCP<Epetra_Vector> fint
+    = LINALG::CreateVector(*dofrowmap_, true); // internal force
+
+  stiff_->Zero();
+  mass_->Zero();
+
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action", "calc_struct_nlnstiffmass");
+    // other parameters that might be needed by the elements
+    p.set("total time", (*time_)[0]);
+    p.set("delta time", (*dt_)[0]);
+    if (pressure_ != Teuchos::null) p.set("volume", 0.0);
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("residual displacement", zeros_);
+    discret_->SetState("displacement", (*dis_)(0));
+    if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", (*vel_)(0));
+    discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
+    discret_->ClearState();
+  }
+
+  // finish mass matrix
+  mass_->Complete();
+
+  // close stiffness matrix
+  stiff_->Complete();
+
+  // build Rayleigh damping matrix if desired
+  if (damping_ == INPAR::STR::damp_rayleigh)
+  {
+    damp_->Add(*stiff_, false, dampk_, 0.0);
+    damp_->Add(*mass_, false, dampm_, 1.0);
+    damp_->Complete();
+  }
+
+  // in case of C0 pressure field, we need to get rid of
+  // pressure equations
+  if (pressure_ != Teuchos::null)
+  {
+    mass_->ApplyDirichlet(*(pressure_->CondMap()));
+  }
+
+  // We need to reset the stiffness matrix because its graph (topology)
+  // is not finished yet in case of constraints and posssibly other side
+  // effects (basically managers).
+  stiff_->Reset();
 }
 
 /*----------------------------------------------------------------------*/

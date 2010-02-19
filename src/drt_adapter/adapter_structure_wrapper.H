@@ -37,7 +37,7 @@ namespace ADAPTER
     { return structure_->Discretization(); }
     virtual bool HaveConstraint()
     { return structure_->HaveConstraint(); }
-    virtual const RCP<const UTILS::ConstrManager> GetConstraintManager()
+    virtual const RCP< UTILS::ConstrManager> GetConstraintManager()
     { return structure_->GetConstraintManager(); }
     virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     { return structure_->GetDBCMapExtractor(); }

@@ -140,7 +140,7 @@ void UTILS::ConstraintSolver::Setup
 void UTILS::ConstraintSolver::Solve
 (
   RCP<LINALG::SparseMatrix> stiff,
-  RCP<LINALG::SparseMatrix> constr,
+  RCP<LINALG::SparseOperator> constr,
   RCP<Epetra_Vector> dispinc,
   RCP<Epetra_Vector> lagrinc,
   const RCP<Epetra_Vector> rhsstand,
@@ -168,7 +168,7 @@ void UTILS::ConstraintSolver::Solve
 void UTILS::ConstraintSolver::SolveIterative
 (
   RCP<LINALG::SparseMatrix> stiff,
-  RCP<LINALG::SparseMatrix> constr,
+  RCP<LINALG::SparseOperator> constr,
   RCP<Epetra_Vector> dispinc,
   RCP<Epetra_Vector> lagrinc,
   const RCP<Epetra_Vector> rhsstand,
@@ -326,7 +326,7 @@ void UTILS::ConstraintSolver::SolveIterative
 void UTILS::ConstraintSolver::SolveDirect
 (
   RCP<LINALG::SparseMatrix> stiff,
-  RCP<LINALG::SparseMatrix> constr,
+  RCP<LINALG::SparseOperator> constr,
   RCP<Epetra_Vector> dispinc,
   RCP<Epetra_Vector> lagrinc,
   const RCP<Epetra_Vector> rhsstand,

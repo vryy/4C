@@ -174,7 +174,7 @@ void UTILS::SurfStressManager::EvaluateSurfStress(ParameterList& p,
                                                   const RefCountPtr<Epetra_Vector> dism,
                                                   const RefCountPtr<Epetra_Vector> disn,
                                                   RefCountPtr<Epetra_Vector> fint,
-                                                  RefCountPtr<LINALG::SparseMatrix> stiff)
+                                                  RefCountPtr<LINALG::SparseOperator> stiff)
 {
   // action for elements
   p.set("action","calc_surfstress_stiff");

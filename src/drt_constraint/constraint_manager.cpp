@@ -65,7 +65,7 @@ actdisc_(discr)
     double time = params.get<double>("total time"      ,0.0);
     const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
     //initialize constrMatrix
-    constrMatrix_=rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,true,true));
+    constrMatrix_=rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,false,true));
     //build Epetra_Map used as domainmap for constrMatrix and rowmap for result vectors
     constrmap_=rcp(new Epetra_Map(*(constrdofset_->DofRowMap())));
     //build an all reduced version of the constraintmap, since sometimes all processors
@@ -157,7 +157,7 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
         RCP<Epetra_Vector> displast,
         RCP<Epetra_Vector> disp,
         RCP<Epetra_Vector> fint,
-        RCP<LINALG::SparseMatrix> stiff,
+        RCP<LINALG::SparseOperator> stiff,
         ParameterList scalelist)
 {
   double scStiff = scalelist.get("scaleStiffEntries",1.0);
@@ -167,7 +167,7 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   ParameterList p;
   vector<DRT::Condition*> constrcond(0);
   const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
-  constrMatrix_=rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,true,true));
+  constrMatrix_->Zero();//=rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,false,true));
 
   // other parameters that might be needed by the elements
   p.set("total time",time);
@@ -218,7 +218,12 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   constrainterr_->Update(scConMat,*referencevalues_,-1.0*scConMat,*actvalues_,0.0);
   actdisc_->ClearState();
   // finalize the constraint matrix
-  constrMatrix_->Complete(*constrmap_,*dofrowmap);
+  string label(constrMatrix_->Label());
+  if (label == "LINALG::BlockSparseMatrixBase")
+    constrMatrix_->Complete();
+  else
+    constrMatrix_->Complete(*constrmap_,*dofrowmap);
+  
   return;
 }
 
@@ -299,19 +304,6 @@ void UTILS::ConstrManager::UpdateLagrMult(double factor)
 void UTILS::ConstrManager::Update()
 {
   lagrMultVecOld_->Update(1.0,*lagrMultVec_,0.0);
-  // do output for volume constraint
-  if(volconstr3d_->HaveConstraint())
-  {
-    vector<int> volconID = volconstr3d_->GetActiveCondID();
-    for (unsigned int i = 0; i < volconID.size(); i++)
-    {
-      if (constrmap_->LID(i-offsetID_)!=-1)
-      {
-        cout<< "Multiplier for Volume Constraint: "<<volconID.at(i)<<":  "<<
-              (*lagrMultVec_)[constrmap_->LID(i-offsetID_)]<<endl;
-      }
-    }
-  }
 }
 
 /*----------------------------------------------------------------------*
@@ -321,6 +313,12 @@ void UTILS::ConstrManager::Update()
 void UTILS::ConstrManager::UpdateLagrMult(RCP<Epetra_Vector> vect)
 {
   lagrMultVec_->Update(1.0,*vect,1.0);
+  return;
+}
+
+void UTILS::ConstrManager::UpdateTotLagrMult(RCP<Epetra_Vector> vect)
+{
+  lagrMultVec_->Update(1.0,*vect,1.0,*lagrMultVecOld_,0.0);
   return;
 }
 
@@ -419,6 +417,17 @@ void UTILS::ConstrManager::BuildMoniType()
     if ((*dummymonredundant)[i] != 0.0)
       (*monitortypes_)[i] = 3.0;
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void UTILS::ConstrManager::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+                                 const LINALG::MultiMapExtractor& rangemaps)
+{
+  // (re)allocate system matrix
+  constrMatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,81,false,true));
 
   return;
 }

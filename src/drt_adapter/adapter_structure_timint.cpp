@@ -118,6 +118,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::StructureTimInt::DofRowMap()
  * by displacements D_{n+1} */
 Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::StructureTimInt::SystemMatrix()
 {
+//  cout<<*structure_->SystemMatrix()<<endl;
   return structure_->SystemMatrix();
 }
 
