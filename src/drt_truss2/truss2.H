@@ -158,7 +158,7 @@ public:
     /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only
      *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
      *number of DOF to this node requested by any element connected to this node*/
-    return 3;
+    return 2;
   }
 
 
@@ -261,25 +261,6 @@ public:
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
-  /*!
-  \brief Evaluate a statistical Neumann boundary condition and related damping matrix
-
-  An element derived from this class uses the Evaluate method to receive commands
-  and parameters from some control routine in params and evaluates a  statistical Neumann boundary condition
-  as used in the problem type STATISTICAL MECHANICS
-
-  \param params (in/out)       : ParameterList for communication between control routine and elements
-  \param vector<double> mydisp : current nodal displacement
-  \param elevec1 (out)         : Force vector to be filled by element
-  \param elemat1 (out)         : damping matrix to be filled by element
-
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateStatForceDamp(ParameterList& params,
-                                    vector<double> mydisp,
-                                    Epetra_SerialDenseVector& elevec1,
-                                    Epetra_SerialDenseMatrix& elemat1,
-                                    int& ActNumDof0);
 
   /*!
   \brief Evaluate PTC addition to stiffness for free Brownian motion
@@ -328,71 +309,69 @@ private:
   //! possible kinematic types
   enum KinematicType
   {
-    tr3_totlag,
-    tr3_engstrain
+    tr2_totlag,
+    tr2_engstrain
   };
-
+  
   //! container containing all kind of Truss2 thisandthat
-  DRT::Container data_;
-
+  DRT::Container data_; 
+  
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
-
+  
   //!reference node position
-  LINALG::Matrix<6,1> X_;
-
+  LINALG::Matrix<4,1> X_;
+  
   //! material type
   int material_;
-
+  
   //! length in reference configuration
   double lrefe_;
-
+  
   //! cross section area
   double crosssec_;
-
+  
   //! Kinematic type
   KinematicType kintype_;
-
-  //! gaussrule_ will be initialized automatically to a 2 point integration rule
+  
+  //! gaussrule_ will be initialized automatically to a 2 point integration rule 
   DRT::UTILS::GaussRule1D gaussrule_;
-
+  
   //! @name methods for initilization of the element
-
+  
   //!sets reference coordinates X_ and refenrence length lrefe_ for elements added to the discretization after simulation start
-  void SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe);
-
+  void SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xrefe);
+  
   //@}
 
   //! @name Internal calculation methods
-
+              
   //!calculation of nonlinear stiffness and mass matrix switching between total lagrange and enginerring strains
-  void t2_nlnstiffmass(vector<double>&           disp,
+  void t2_nlnstiffmass(vector<double>&           disp, 
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
-                       Epetra_SerialDenseVector* force,
-                       int& ActNumDof0);
-
-
+                       Epetra_SerialDenseVector* force);
+  
+  
   //!calculation of nonlinear stiffness and mass matrix
   void t2_nlnstiffmass_totlag( vector<double>& disp,
       Epetra_SerialDenseMatrix* stiffmatrix,
       Epetra_SerialDenseMatrix* massmatrix,
-      Epetra_SerialDenseVector* force,
-      int& ActNumDof0);
-
-  /*!
+      Epetra_SerialDenseVector* force);
+  
+  /*! 
    * \brief calculate force, nonlinear stiffness and mass matrix using a engineering strain measure.
-   *
+   * 
    * Unlike the fully nonlinear implementation of #t2_nlnstiffmass_totlag, this function uses \f$\varepsilon=\Delta d / d\f$
-   * as strain measure.
-   *
-  */
+   * as strain measure. 
+   *  
+  */ 
   void t2_nlnstiffmass_engstr( vector<double>& disp,
       Epetra_SerialDenseMatrix* stiffmatrix,
       Epetra_SerialDenseMatrix* massmatrix,
-      Epetra_SerialDenseVector* force,
-      int& ActNumDof0);
-
+      Epetra_SerialDenseVector* force
+      );
+  
   //! lump mass matrix
   void t2_lumpmass(Epetra_SerialDenseMatrix* emass);
 

@@ -377,7 +377,7 @@ private:
                      Epetra_SerialDenseVector* force);//!< element internal force vector  
    
    //!computes damping coefficients for employed friction model
-   void MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel);
+   void MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel, const DRT::UTILS::IntegrationPoints1D gausspoints, const vector<double> jacobi);
    
    //!computes the number of different random numbers required in each time step for generation of stochastic forces
    int HowManyRandomNumbersINeed();

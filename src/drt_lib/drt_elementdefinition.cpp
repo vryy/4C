@@ -802,18 +802,14 @@ void DRT::INPUT::ElementDefinition::SetupTorsion2Lines()
 {
   std::map<std::string,LineDefinition>& defs = definitions_["TORSION2"];
 
-  defs["LINE2"]
-    .AddIntVector("LINE2",2)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedString("KINEM")
+  defs["LINE3"]
+    .AddIntVector("LINE3",3)
+    .AddNamedDouble("SPRING")
     ;
 
-  defs["LIN2"]
-    .AddIntVector("LIN2",2)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedString("KINEM")
+  defs["LIN3"]
+    .AddIntVector("LIN3",3)
+    .AddNamedDouble("SPRING")
     ;
 }
 
@@ -824,18 +820,14 @@ void DRT::INPUT::ElementDefinition::SetupTorsion3Lines()
 {
   std::map<std::string,LineDefinition>& defs = definitions_["TORSION3"];
 
-  defs["LINE2"]
-    .AddIntVector("LINE2",2)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedString("KINEM")
+  defs["LINE3"]
+    .AddIntVector("LINE3",3)
+    .AddNamedDouble("SPRING")
     ;
 
-  defs["LIN2"]
-    .AddIntVector("LIN2",2)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedString("KINEM")
+  defs["LIN3"]
+    .AddIntVector("LIN3",3)
+    .AddNamedDouble("SPRING")
     ;
 }
 

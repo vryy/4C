@@ -35,11 +35,11 @@ bool DRT::ELEMENTS::Truss2::ReadElement(const std::string& eletype,
 
   // geometrically non-linear with Total Lagrangean approach
   if (buffer=="totlag")
-    kintype_ = tr3_totlag;
+    kintype_ = tr2_totlag;
 
   // geometrically non-linear approach with engineering strains
   else if (buffer=="engstr")
-    kintype_ = tr3_engstrain;
+    kintype_ = tr2_engstrain;
 
   else
     dserror("Reading of Torsion2 element failed because of unknown kinematic type!");
@@ -50,7 +50,7 @@ bool DRT::ELEMENTS::Truss2::ReadElement(const std::string& eletype,
 
 #if 0
 /*----------------------------------------------------------------------*
- |  read element input (public)                              cyron 08/08|
+ |  read element input (public)                              cyron 02/10|
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Truss2::ReadElement()
 {

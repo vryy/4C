@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file truss2.cpp
-\brief three dimensional total Lagrange truss element
+\brief two dimensional total Lagrange truss element
 
 <pre>
 Maintainer: Christian Cyron
@@ -21,7 +21,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/linalg_fixedsizematrix.H"
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            cyron 08/08|
+ |  ctor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Truss2::Truss2(int id, int owner) :
 DRT::Element(id,element_truss2,owner),
@@ -30,7 +30,7 @@ isinit_(false),
 material_(0),
 lrefe_(0),
 crosssec_(0),
-kintype_(tr3_totlag),
+kintype_(tr2_totlag),
 
 //note: for corotational approach integration for Neumann conditions only
 //hence enough to integrate 3rd order polynomials exactly
@@ -39,7 +39,7 @@ gaussrule_(DRT::UTILS::intrule_line_2point)
   return;
 }
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       cyron 08/08|
+ |  copy-ctor (public)                                       cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Truss2::Truss2(const DRT::ELEMENTS::Truss2& old) :
  DRT::Element(old),
@@ -56,7 +56,7 @@ DRT::ELEMENTS::Truss2::Truss2(const DRT::ELEMENTS::Truss2& old) :
 }
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Truss2 and return pointer to it (public) |
- |                                                            cyron 08/08|
+ |                                                            cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::Truss2::Clone() const
 {
@@ -65,7 +65,7 @@ DRT::Element* DRT::ELEMENTS::Truss2::Clone() const
 }
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                            cyron 08/08|
+ |  dtor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Truss2::~Truss2()
 {
@@ -74,7 +74,7 @@ DRT::ELEMENTS::Truss2::~Truss2()
 
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                              cyron 08/08|
+ |  print this element (public)                              cyron 02/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss2::Print(ostream& os) const
 {
@@ -85,7 +85,7 @@ void DRT::ELEMENTS::Truss2::Print(ostream& os) const
 }
 
 /*----------------------------------------------------------------------*
- |  allocate and return Truss2Register (public)               cyron 08/08|
+ |  allocate and return Truss2Register (public)               cyron 02/10|
  *----------------------------------------------------------------------*/
 RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Truss2::ElementRegister() const
 {
@@ -104,7 +104,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Truss2::Shape() const
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                           cyron 08/08|
+ |                                                          cyron 02/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss2::Pack(vector<char>& data) const
 {
@@ -130,7 +130,7 @@ void DRT::ELEMENTS::Truss2::Pack(vector<char>& data) const
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   //kinematic type
-  AddtoPack(data,kintype_);
+  AddtoPack(data,kintype_);  
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
@@ -141,7 +141,7 @@ void DRT::ELEMENTS::Truss2::Pack(vector<char>& data) const
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
- |                                                           cyron 08/08|
+ |                                                           cyron 02/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss2::Unpack(const vector<char>& data)
 {
@@ -180,7 +180,7 @@ void DRT::ELEMENTS::Truss2::Unpack(const vector<char>& data)
 }
 
 /*----------------------------------------------------------------------*
- |  get vector of lines (public)                              cyron 08/08|
+ |  get vector of lines (public)                              cyron 02/10|
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Truss2::Lines()
 {
@@ -189,23 +189,23 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Truss2::Lines()
   return lines;
 }
 
-void DRT::ELEMENTS::Truss2::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe)
-{
+void DRT::ELEMENTS::Truss2::SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xrefe)
+{   
   /*this method initialized geometric variables of the element; such an initialization can only be done one time when the element is
-   * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this
-   * method will initialize the geometric variables iff the class variable isinit_ == false and afterwards set this variable to
-   * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/
+   * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this 
+   * method will initialize the geometric variables iff the class variable isinit_ == false and afterwards set this variable to 
+   * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/ 
   if(!isinit_)
   {
     isinit_ = true;
-
+    
     //setting reference coordinates
     X_ = xrefe;
-
+    
     //length in reference configuration
-    lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5);
+    lrefe_ = pow(pow(X_(2)-X_(0),2)+pow(X_(3)-X_(1),2),0.5); 
   }
-
+ 
   return;
 }
 
@@ -216,7 +216,7 @@ void DRT::ELEMENTS::Truss2::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xr
 
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            cyron 08/08|
+ |  ctor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Truss2Register::Truss2Register(DRT::Element::ElementType etype):
 ElementRegister(etype)
@@ -225,7 +225,7 @@ ElementRegister(etype)
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       cyron 08/08|
+ |  copy-ctor (public)                                       cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Truss2Register::Truss2Register(
                                const DRT::ELEMENTS::Truss2Register& old) :
@@ -236,7 +236,7 @@ ElementRegister(old)
 
 /*----------------------------------------------------------------------*
  |  Deep copy this instance return pointer to it               (public) |
- |                                                            cyron 08/08|
+ |                                                           cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Truss2Register* DRT::ELEMENTS::Truss2Register::Clone() const
 {
@@ -245,7 +245,7 @@ DRT::ELEMENTS::Truss2Register* DRT::ELEMENTS::Truss2Register::Clone() const
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                            cyron 08/08|
+ |                                                           cyron 02/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss2Register::Pack(vector<char>& data) const
 {
@@ -264,7 +264,7 @@ void DRT::ELEMENTS::Truss2Register::Pack(vector<char>& data) const
 
 
 /*-----------------------------------------------------------------------*
- |  Unpack data (public)                                      cyron 08/08|
+ |  Unpack data (public)                                      cyron 02/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss2Register::Unpack(const vector<char>& data)
 {
@@ -272,7 +272,9 @@ void DRT::ELEMENTS::Truss2Register::Unpack(const vector<char>& data)
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  if (type != UniqueParObjectId())
+    dserror("wrong instance type data");
+  
   // base class ElementRegister
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
@@ -285,7 +287,7 @@ void DRT::ELEMENTS::Truss2Register::Unpack(const vector<char>& data)
 
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                            cyron 08/08|
+ |  dtor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Truss2Register::~Truss2Register()
 {
@@ -293,7 +295,7 @@ DRT::ELEMENTS::Truss2Register::~Truss2Register()
 }
 
 /*----------------------------------------------------------------------*
- |  print (public)                                           cyron 08/08|
+ |  print (public)                                           cyron 02/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss2Register::Print(ostream& os) const
 {
@@ -304,37 +306,37 @@ void DRT::ELEMENTS::Truss2Register::Print(ostream& os) const
 
 
 int DRT::ELEMENTS::Truss2Register::Initialize(DRT::Discretization& dis)
-{		
+{     
   //reference node positions
-  LINALG::Matrix<6,1> xrefe;
+  LINALG::Matrix<4,1> xrefe;
 
   //setting beam reference director correctly
   for (int i=0; i<  dis.NumMyColElements(); ++i)
-  {
-    //in case that current element is not a beam3 element there is nothing to do and we go back
+  {    
+    //in case that current element is not a truss2 element there is nothing to do and we go back
     //to the head of the loop
     if (dis.lColElement(i)->Type() != DRT::Element::element_truss2) continue;
-
-    //if we get so far current element is a beam3 element and  we get a pointer at it
+    
+    //if we get so far current element is a truss2 element and  we get a pointer at it
     DRT::ELEMENTS::Truss2* currele = dynamic_cast<DRT::ELEMENTS::Truss2*>(dis.lColElement(i));
     if (!currele) dserror("cast to Truss2* failed");
-
+    
     //getting element's nodal coordinates and treating them as reference configuration
     if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
       dserror("Cannot get nodes in order to compute reference configuration'");
     else
-    {
+    {   
       for (int k=0; k<2; k++) //element has two nodes
-        for(int l= 0; l < 3; l++)
-          xrefe(k*3 + l) = currele->Nodes()[k]->X()[l];
+        for(int l= 0; l < 2; l++)
+          xrefe(k*2 + l) = currele->Nodes()[k]->X()[l];
     }
-
+ 
     currele->SetUpReferenceGeometry(xrefe);
-
-
+    
+    
   } //for (int i=0; i<dis_.NumMyColElements(); ++i)
 
-	
+  
   return 0;
 }
 

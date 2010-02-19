@@ -21,42 +21,34 @@ Maintainer: Christian Cyron
 #include "../drt_lib/linalg_fixedsizematrix.H"
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            cyron 08/08|
+ |  ctor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Torsion2::Torsion2(int id, int owner) :
 DRT::Element(id,element_torsion2,owner),
 data_(),
 isinit_(false),
-material_(0),
-lrefe_(0),
-crosssec_(0),
-kintype_(tr3_totlag),
-
-//note: for corotational approach integration for Neumann conditions only
-//hence enough to integrate 3rd order polynomials exactly
+theta_(0.0),
+springconstant_(0.0),
 gaussrule_(DRT::UTILS::intrule_line_2point)
 {
   return;
 }
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       cyron 08/08|
+ |  copy-ctor (public)                                       cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Torsion2::Torsion2(const DRT::ELEMENTS::Torsion2& old) :
  DRT::Element(old),
  data_(old.data_),
  isinit_(old.isinit_),
- X_(old.X_),
- material_(old.material_),
- lrefe_(old.lrefe_),
- crosssec_(old.crosssec_),
- kintype_(old. kintype_),
+ theta_(old.theta_),
+ springconstant_(old.springconstant_),
  gaussrule_(old.gaussrule_)
 {
   return;
 }
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of Torsion2 and return pointer to it (public) |
- |                                                            cyron 08/08|
+ |  Deep copy this instance of Torsion2 and return pointer to it (public)|
+ |                                                            cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::Torsion2::Clone() const
 {
@@ -65,7 +57,7 @@ DRT::Element* DRT::ELEMENTS::Torsion2::Clone() const
 }
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                            cyron 08/08|
+ |  dtor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Torsion2::~Torsion2()
 {
@@ -74,18 +66,15 @@ DRT::ELEMENTS::Torsion2::~Torsion2()
 
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                              cyron 08/08|
+ |  print this element (public)                              cyron 02/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Torsion2::Print(ostream& os) const
 {
-  os << "Torsion2 ";
-  Element::Print(os);
-  os << " gaussrule_: " << gaussrule_ << " ";
-  return;
+
 }
 
 /*----------------------------------------------------------------------*
- |  allocate and return Torsion2Register (public)               cyron 08/08|
+ |  allocate and return Torsion2Register (public)             cyron 02/10|
  *----------------------------------------------------------------------*/
 RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Torsion2::ElementRegister() const
 {
@@ -94,17 +83,17 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Torsion2::ElementRegister() con
 
 
 /*----------------------------------------------------------------------*
- |(public)                                                   cyron 08/08|
+ |(public)                                                   cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Torsion2::Shape() const
 {
-  return line2;
+  return line3;
 }
 
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                           cyron 08/08|
+ |                                                          cyron 02/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Torsion2::Pack(vector<char>& data) const
 {
@@ -119,18 +108,12 @@ void DRT::ELEMENTS::Torsion2::Pack(vector<char>& data) const
   AddtoPack(data,basedata);
   //whether element has already been initialized
   AddtoPack(data,isinit_);
-  //nodal reference coordinates
-  AddtoPack(data,X_);
-  //material type
-  AddtoPack(data,material_);
-  //reference length
-  AddtoPack(data,lrefe_);
-  //cross section
-  AddtoPack(data,crosssec_);
-  // gaussrule_
+  //reference angle
+   AddtoPack(data,theta_);
+  //springconstant
+  AddtoPack(data,springconstant_);
+  //gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
-  //kinematic type
-  AddtoPack(data,kintype_);
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
@@ -141,7 +124,7 @@ void DRT::ELEMENTS::Torsion2::Pack(vector<char>& data) const
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
- |                                                           cyron 08/08|
+ |                                                          cyron 02/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Torsion2::Unpack(const vector<char>& data)
 {
@@ -156,20 +139,15 @@ void DRT::ELEMENTS::Torsion2::Unpack(const vector<char>& data)
   Element::Unpack(basedata);
   //whether element has already been initialized
   ExtractfromPack(position,data,isinit_);
-  //nodal reference coordinates
-  ExtractfromPack(position,data,X_);
-  //material type
-  ExtractfromPack(position,data,material_);
-  //reference length
-  ExtractfromPack(position,data,lrefe_);
-  //cross section
-  ExtractfromPack(position,data,crosssec_);
+  //reference angle
+   ExtractfromPack(position,data,theta_);
+  //springconstant
+  ExtractfromPack(position,data,springconstant_);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
   gaussrule_ = DRT::UTILS::GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
-  // kinematic type
-  ExtractfromPack(position,data,kintype_);
+  
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
@@ -180,7 +158,7 @@ void DRT::ELEMENTS::Torsion2::Unpack(const vector<char>& data)
 }
 
 /*----------------------------------------------------------------------*
- |  get vector of lines (public)                              cyron 08/08|
+ |  get vector of lines (public)                             cyron 02/10|
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Torsion2::Lines()
 {
@@ -190,22 +168,39 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Torsion2::Lines()
 }
 
 void DRT::ELEMENTS::Torsion2::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe)
-{
+{   
   /*this method initialized geometric variables of the element; such an initialization can only be done one time when the element is
-   * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this
-   * method will initialize the geometric variables iff the class variable isinit_ == false and afterwards set this variable to
-   * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/
+   * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this 
+   * method will initialize the geometric variables iff the class variable isinit_ == false and afterwards set this variable to 
+   * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/ 
   if(!isinit_)
   {
     isinit_ = true;
-
-    //setting reference coordinates
-    X_ = xrefe;
-
-    //length in reference configuration
-    lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5);
+      
+    //calculation of the reference angle between the trusses    
+    theta_=acos( ( (xrefe(2)-xrefe(0))*(xrefe(4)-xrefe(2)) + (xrefe(3)-xrefe(1))*(xrefe(5)-xrefe(3)) ) 
+       / sqrt( pow(xrefe(2)-xrefe(0),2)+pow(xrefe(3)-xrefe(1),2) ) / sqrt( pow(xrefe(4)-xrefe(2),2)+pow(xrefe(5)-xrefe(3),2) ) );
+ 
+  
+  if(( ( (xrefe(2)-xrefe(0))*(xrefe(4)-xrefe(2)) + (xrefe(3)-xrefe(1))*(xrefe(5)-xrefe(3)) ) 
+         / sqrt( pow(xrefe(2)-xrefe(0),2)+pow(xrefe(3)-xrefe(1),2) ) 
+         / sqrt( pow(xrefe(4)-xrefe(2),2)+pow(xrefe(5)-xrefe(3),2) ) ) > 1){
+    if(( ( (xrefe(2)-xrefe(0))*(xrefe(4)-xrefe(2)) + (xrefe(3)-xrefe(1))*(xrefe(5)-xrefe(3)) ) 
+           / sqrt( pow(xrefe(2)-xrefe(0),2)+pow(xrefe(3)-xrefe(1),2) ) 
+           / sqrt( pow(xrefe(4)-xrefe(2),2)+pow(xrefe(5)-xrefe(3),2) ) -1  )<10e-7){
+      theta_=0;
+    }
+    else
+      std::cout<<"\n Fehler bei der Winkelberechnung";
   }
-
+   
+    
+    //cross product to determine the algebraic sign of the reference angle
+    if (( (xrefe(2)-xrefe(0))*(xrefe(5)-xrefe(3)) - (xrefe(3)-xrefe(1))*(xrefe(4)-xrefe(2)) ) <0)
+       theta_*=-1; 
+ 
+  }
+ 
   return;
 }
 
@@ -216,7 +211,7 @@ void DRT::ELEMENTS::Torsion2::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& 
 
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            cyron 08/08|
+ |  ctor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Torsion2Register::Torsion2Register(DRT::Element::ElementType etype):
 ElementRegister(etype)
@@ -225,7 +220,7 @@ ElementRegister(etype)
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       cyron 08/08|
+ |  copy-ctor (public)                                       cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Torsion2Register::Torsion2Register(
                                const DRT::ELEMENTS::Torsion2Register& old) :
@@ -236,7 +231,7 @@ ElementRegister(old)
 
 /*----------------------------------------------------------------------*
  |  Deep copy this instance return pointer to it               (public) |
- |                                                            cyron 08/08|
+ |                                                           cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Torsion2Register* DRT::ELEMENTS::Torsion2Register::Clone() const
 {
@@ -245,7 +240,7 @@ DRT::ELEMENTS::Torsion2Register* DRT::ELEMENTS::Torsion2Register::Clone() const
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                            cyron 08/08|
+ |                                                           cyron 02/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Torsion2Register::Pack(vector<char>& data) const
 {
@@ -264,7 +259,7 @@ void DRT::ELEMENTS::Torsion2Register::Pack(vector<char>& data) const
 
 
 /*-----------------------------------------------------------------------*
- |  Unpack data (public)                                      cyron 08/08|
+ |  Unpack data (public)                                     cyron 02/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Torsion2Register::Unpack(const vector<char>& data)
 {
@@ -285,7 +280,7 @@ void DRT::ELEMENTS::Torsion2Register::Unpack(const vector<char>& data)
 
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                            cyron 08/08|
+ |  dtor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Torsion2Register::~Torsion2Register()
 {
@@ -293,7 +288,7 @@ DRT::ELEMENTS::Torsion2Register::~Torsion2Register()
 }
 
 /*----------------------------------------------------------------------*
- |  print (public)                                           cyron 08/08|
+ |  print (public)                                           cyron 02/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Torsion2Register::Print(ostream& os) const
 {
@@ -304,37 +299,37 @@ void DRT::ELEMENTS::Torsion2Register::Print(ostream& os) const
 
 
 int DRT::ELEMENTS::Torsion2Register::Initialize(DRT::Discretization& dis)
-{		
+{     
   //reference node positions
   LINALG::Matrix<6,1> xrefe;
 
   //setting beam reference director correctly
   for (int i=0; i<  dis.NumMyColElements(); ++i)
-  {
-    //in case that current element is not a beam3 element there is nothing to do and we go back
+  {    
+    //in case that current element is not a torsion2 element there is nothing to do and we go back
     //to the head of the loop
     if (dis.lColElement(i)->Type() != DRT::Element::element_torsion2) continue;
-
+    
     //if we get so far current element is a beam3 element and  we get a pointer at it
     DRT::ELEMENTS::Torsion2* currele = dynamic_cast<DRT::ELEMENTS::Torsion2*>(dis.lColElement(i));
     if (!currele) dserror("cast to Torsion2* failed");
-
+    
     //getting element's nodal coordinates and treating them as reference configuration
     if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
       dserror("Cannot get nodes in order to compute reference configuration'");
     else
-    {
-      for (int k=0; k<2; k++) //element has two nodes
-        for(int l= 0; l < 3; l++)
-          xrefe(k*3 + l) = currele->Nodes()[k]->X()[l];
+    {   
+      for (int k=0; k<3; ++k) //element has three nodes
+        for(int l= 0; l < 2; ++l)
+          xrefe(k*2 + l) = currele->Nodes()[k]->X()[l];
     }
-
+ 
     currele->SetUpReferenceGeometry(xrefe);
-
-
+    
+    
   } //for (int i=0; i<dis_.NumMyColElements(); ++i)
 
-	
+  
   return 0;
 }
 

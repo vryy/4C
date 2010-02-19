@@ -824,7 +824,7 @@ int DRT::ELEMENTS::Beam2r::HowManyRandomNumbersINeed()
  | translation parallel to filament axis, damping of translation orthogonal to filament axis, damping of     |
  | rotation around filament axis                                             (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam2r::MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel)
+inline void DRT::ELEMENTS::Beam2r::MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel,const DRT::UTILS::IntegrationPoints1D gausspoints, const vector<double> jacobi)
 {  
   //translational damping coefficients according to Howard, p. 107, table 6.2;
   gamma(0) = 2*PI*params.get<double>("ETA",0.0);
@@ -839,21 +839,20 @@ inline void DRT::ELEMENTS::Beam2r::MyDampingConstants(ParameterList& params,LINA
 
   
    /* in the following section damping coefficients are replaced by those suggested in LiTang2004 assuming that actin filament is
-   //discretized by one element only and actin diameter 8nm*/
-   /*
-   double lrefe=0;
-   for (int gp=0; gp<nnode-1; gp++)
-     lrefe += gausspointsdamping.qwgt[gp]*jacobi_[gp];
+   //discretized by one element only and actin diameter 8nm*/  
+   double lrefe = 0;
+   for (int gp=0; gp<gausspoints.nquad; gp++)
+     lrefe += gausspoints.qwgt[gp]*jacobi[gp];
      
-   double K_r = 2.94382;
+   double K_r = 3.49438;
    double K_t = 1.921348;
    
-   double p=lrefe/(0.008);
+   double p = lrefe/(0.008);
    
-   gamma(0) = 4.0*PI*lrefe_*params.get<double>("ETA",0.0)/( (1/K_t)*(3*lnp + 0.658) - (1/K_r)*(lnp - 0.447) );
-   gamma(1) = K_r*4.0*PI*lrefe_*params.get<double>("ETA",0.0)/(lnp - 0.447);
+   gamma(0) = 4.0*PI*lrefe*params.get<double>("ETA",0.0)/( (1/K_t)*(3*log(p) + 0.658) - (1/K_r)*(log(p) - 0.447) );
+   gamma(1) = K_r*4.0*PI*lrefe*params.get<double>("ETA",0.0)/(log(p) - 0.447);
 
-   */    
+      
 }
 
 
@@ -902,10 +901,6 @@ inline void DRT::ELEMENTS::Beam2r::MyTranslationalDamping(ParameterList& params,
   
   //get friction model according to which forces and damping are applied
   INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
-
-  //damping coefficients for translational and rotatinal degrees of freedom
-  LINALG::Matrix<3,1> gamma(true);
-  MyDampingConstants(params,gamma,frictionmodel);
   
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
   vector<double> jacobi(jacobimass_);
@@ -920,6 +915,10 @@ inline void DRT::ELEMENTS::Beam2r::MyTranslationalDamping(ParameterList& params,
   
   //get Gauss points and weights for evaluation of damping matrix
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,integrationtype));
+  
+  //damping coefficients for translational and rotatinal degrees of freedom
+  LINALG::Matrix<3,1> gamma(true);
+  MyDampingConstants(params,gamma,frictionmodel,gausspoints,jacobi);
   
   //matrix to store basis functions and their derivatives evaluated at a certain Gauss point
   LINALG::Matrix<1,nnode> funct;
@@ -1000,11 +999,6 @@ inline void DRT::ELEMENTS::Beam2r::MyStochasticForces(ParameterList& params,  //
   //get friction model according to which forces and damping are applied
   INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
   
-  //damping coefficients for three translational and one rotatinal degree of freedom
-  LINALG::Matrix<3,1> gamma(true);
-  MyDampingConstants(params,gamma,frictionmodel);
-  
-
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
   vector<double> jacobi(jacobimass_);
   
@@ -1018,6 +1012,10 @@ inline void DRT::ELEMENTS::Beam2r::MyStochasticForces(ParameterList& params,  //
   
   //get Gauss points and weights for evaluation of damping matrix
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,integrationtype));
+  
+  //damping coefficients for three translational and one rotatinal degree of freedom
+  LINALG::Matrix<3,1> gamma(true);
+  MyDampingConstants(params,gamma,frictionmodel,gausspoints,jacobi);
   
   //matrix to store basis functions and their derivatives evaluated at a certain Gauss point
   LINALG::Matrix<1,nnode> funct;
