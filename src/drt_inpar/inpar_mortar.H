@@ -27,16 +27,27 @@ namespace INPAR
     enum ShapeFcn
     {
       shape_standard,  ///< standard shape functions
-      shape_dual  ///< dual shape functions
+      shape_dual       ///< dual shape functions
     };
     
+    /// Type of Lagrange multiplier interpolation for 3D quadratic case
+    /// (this enum represents the input file parameter LAGMULT_QUAD3D)
+    enum LagMultQuad3D
+    {
+      lagmult_quad_quad,   ///< quadratic interpolation, quadratic testing
+      lagmult_quad_pwlin,  ///< quadratic interpolation, piecewise linear testing
+      lagmult_quad_lin,    ///< quadratic interpolation, linear testing
+      lagmult_pwlin_pwlin, ///< piecewise linear interpolation, piecewise linear testing
+      lagmult_lin_lin      ///< linear interpolation, linear testing
+    };
+        
     /// Type of mortar coupling search algorithm
     /// (this enum represents the input file parameter SEARCH_ALGORITHM)
     enum SearchAlgorithm
     {
-      search_bfnode,  ///< brute force node-based
-      search_bfele,  ///< brute force element-based
-      search_binarytree  ///< binary tree element based
+      search_bfnode,      ///< brute force node-based
+      search_bfele,       ///< brute force element-based
+      search_binarytree   ///< binary tree element based
     };
 
   }  // namespace MORTAR

@@ -357,11 +357,17 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   // *********************************************************************
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
       Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual )
-      dserror("Lagrange multiplier strategy only implemented for dual shape fct.");
+    dserror("Lagrange multiplier strategy only implemented for dual shape fct.");
   
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
       Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_standard )
-      dserror("Penalty strategy only implemented for standard shape fct.");
+    dserror("Penalty strategy only implemented for standard shape fct.");
+  
+  // *********************************************************************
+  // 3D quadratic mortar (choice of interpolation and testing fcts.)
+  // *********************************************************************
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") != INPAR::MORTAR::lagmult_quad_quad)
+    dserror("Only quadratic-quadratic LM interpolation implemented for 3D quadratic meshtying");
   
   // *********************************************************************
   // warnings

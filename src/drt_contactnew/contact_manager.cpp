@@ -470,6 +470,12 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 #endif
 
   // *********************************************************************
+  // 3D quadratic mortar (choice of interpolation and testing fcts.)
+  // *********************************************************************
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") != INPAR::MORTAR::lagmult_quad_quad)
+    dserror("Only quadratic-quadratic LM interpolation implemented for 3D quadratic contact");
+    
+  // *********************************************************************
   // warnings
   // *********************************************************************
   if ((Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::MORTAR::search_bfele ||
