@@ -2500,7 +2500,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::FSI::ALEprojection_ref),
                                  &fsidyn);
 
-
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& constrfsi = fsidyn.sublist("CONSTRAINT",false,"");
+  
+  IntParameter("SIMPLEITER",2,"Number of iterations for simple pc",&constrfsi);
+  DoubleParameter("ALPHA",0.8,"alpha parameter for simple pc",&constrfsi);
+  
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& search_tree = list->sublist("SEARCH TREE",false,"");
 

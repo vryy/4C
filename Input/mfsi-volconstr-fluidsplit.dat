@@ -97,6 +97,9 @@ UPPSS 1
 UPRES 1
 SHAPEDERIVATIVES Yes
 SECONDORDER No
+------------------------------------------------------FSI DYNAMIC/CONSTRAINT
+ALPHA                           0.8
+SIMPLEITER                      2
 --------------------------------------------------------------------------IO
 ALE_DISP No
 FILESTEPS 1000

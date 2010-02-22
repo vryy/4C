@@ -178,6 +178,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/LEVELSET", *list);
   reader.ReadGidSection("--ALE DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC", *list);
+  reader.ReadGidSection("--FSI DYNAMIC/CONSTRAINT", *list);
   reader.ReadGidSection("--ARTERIAL DYNAMIC", *list);
   reader.ReadGidSection("--REDUCED DIMENSIONAL AIRWAYS DYNAMIC", *list);
   reader.ReadGidSection("--SEARCH TREE", *list);

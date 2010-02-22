@@ -536,8 +536,9 @@ FSI::LungOverlappingBlockMatrix::LungOverlappingBlockMatrix(const LINALG::MultiM
 
   // stuff needed for SIMPLE preconditioner -> this needs to be read
   // in from the input file one day!
-  alpha_ = 0.8;
-  simpleiter_ = 2;
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  alpha_ = fsidyn.sublist("CONSTRAINT").get<double>("ALPHA");
+  simpleiter_ = fsidyn.sublist("CONSTRAINT").get<int>("SIMPLEITER");
 }
 
 
@@ -955,8 +956,9 @@ FSI::ConstrOverlappingBlockMatrix::ConstrOverlappingBlockMatrix(const LINALG::Mu
 
   // stuff needed for SIMPLE preconditioner -> this needs to be read
   // in from the input file one day!
-  alpha_ = 0.8;
-  simpleiter_ = 2;
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  alpha_ = fsidyn.sublist("CONSTRAINT").get<double>("ALPHA");
+  simpleiter_ = fsidyn.sublist("CONSTRAINT").get<int>("SIMPLEITER");
 }
 
 
