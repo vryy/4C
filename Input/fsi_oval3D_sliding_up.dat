@@ -315,14 +315,6 @@ ML_SMOTIMES                     1 1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 ----------------------------------------------MESHTYING AND CONTACT
-CONTACT                         None
-FRBOUND                         0
-FRCOEFF                         0
-FRICTION                        None
-FULL_LINEARIZATION              No
-SEMI_SMOOTH_CN                  0
-SEMI_SMOOTH_CT                  0
-SEMI_SMOOTH_NEWTON              No
 -------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
