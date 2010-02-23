@@ -92,6 +92,7 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator>      matrix,
       {
         // create a copy of the scaled matrix
         // so we can reuse the preconditioner several times
+        prec_ = Teuchos::null;
         Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
         prec_ = rcp(new LINALG::AMG_Operator(Pmatrix_,mllist,true));
       }
@@ -99,6 +100,7 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator>      matrix,
       {
         // create a copy of the scaled (and downwinded) matrix
         // so we can reuse the preconditioner several times
+        prec_ = Teuchos::null;
         Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
         prec_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_,mllist,true));
         // for debugging ML
