@@ -840,19 +840,19 @@ inline void DRT::ELEMENTS::Beam2r::MyDampingConstants(ParameterList& params,LINA
   
    /* in the following section damping coefficients are replaced by those suggested in LiTang2004 assuming that actin filament is
    //discretized by one element only and actin diameter 8nm*/  
+   /*
    double lrefe = 0;
    for (int gp=0; gp<gausspoints.nquad; gp++)
      lrefe += gausspoints.qwgt[gp]*jacobi[gp];
-     
-   double K_t = 0.2861736;
-   double K_r = 0.5204678;
+    
+   double K_r = 0.2861736;
+   double K_t = 0.5204678;
    
    double p = lrefe/(0.008);
    
-   gamma(0) = 4.0*PI*lrefe*params.get<double>("ETA",0.0)/(K_t*(3*log(p) + 0.658) - K_r*(log(p) - 0.447));
-   gamma(1) = 4.0*PI*lrefe*params.get<double>("ETA",0.0)/(K_r*(log(p)-0.447));
-
-      
+   gamma(0) = 4.0*PI*params.get<double>("ETA",0.0)/(K_t*(3*log(p) + 0.658) - K_r*(log(p) - 0.447));
+   gamma(1) = 4.0*PI*params.get<double>("ETA",0.0)/(K_r*(log(p)-0.447));  
+   */ 
 }
 
 
@@ -960,7 +960,7 @@ inline void DRT::ELEMENTS::Beam2r::MyTranslationalDamping(ParameterList& params,
       for(int j=0; j<ndim; j++)
         for(int k=0; k<ndim; k++)
           tpartparvelbackgroundgrad(i,j) += tpar(i)*tpar(k)*velbackgroundgrad(k,j);
-        
+
     //loop over all line nodes
     for(int i=0; i<nnode; i++)            
       //loop over lines of matrix t_{\par} \otimes t_{\par}
@@ -977,11 +977,12 @@ inline void DRT::ELEMENTS::Beam2r::MyTranslationalDamping(ParameterList& params,
             {
               (*stiffmatrix)(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*funct(j)*jacobi[gp]*(                 (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) / dt;
               (*stiffmatrix)(i*dof+k,j*dof+l) -= gausspoints.qwgt[gp]*funct(i)*funct(j)*jacobi[gp]*( velbackgroundgrad(k,l)*gamma(1) + (gamma(0) - gamma(1))*tpartparvelbackgroundgrad(k,l) ) ;             
-              (*stiffmatrix)(i*dof+k,j*dof+k) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                                   (gamma(0) - gamma(1))*tpar(l)*(velgp(l) - velbackground(l));
-              (*stiffmatrix)(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                                   (gamma(0) - gamma(1))*tpar(k)*(velgp(l) - velbackground(l));
+              (*stiffmatrix)(i*dof+k,j*dof+k) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                               (gamma(0) - gamma(1))*tpar(l)*(velgp(l) - velbackground(l));
+              (*stiffmatrix)(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                               (gamma(0) - gamma(1))*tpar(k)*(velgp(l) - velbackground(l));
             }    
-        }   
+        }
   }
+  
  
   return;
 }//DRT::ELEMENTS::Beam3::MyTranslationalDamping(.)
@@ -1027,8 +1028,6 @@ inline void DRT::ELEMENTS::Beam2r::MyStochasticForces(ParameterList& params,  //
    * for the C++ parser in order to avoid confusion with ">>" for streams*/
    RCP<Epetra_MultiVector> randomnumbers = params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null);
    
-
-
   for(int gp=0; gp < gausspoints.nquad; gp++)
   {
     //evaluate basis functions and their derivatives at current Gauss point
