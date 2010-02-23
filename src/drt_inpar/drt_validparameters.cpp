@@ -655,7 +655,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 //  DoubleParameter("SDC_FACTOR",1.0,
 //      "Scaled director conditioning factor",
 //      &sdyn);
-  
+
   DoubleParameter("TOLCONSTR",1.0E-08,
                   "tolerance in the constr error norm for the newton iteration",
                   &sdyn);
@@ -937,9 +937,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("COUPLING_AUXPLANE","Yes","If chosen auxiliary planes are used for 3D coupling",
                                yesnotuple,yesnovalue,&scontact);
-  
+
   setStringToIntegralParameter<INPAR::MORTAR::LagMultQuad3D>("LAGMULT_QUAD3D","quad_quad","Type of LM interpolation and testing functions",
-                               tuple<std::string>("quad_quad", "quadratic_quadratic"
+                                                             tuple<std::string>("quad_quad", "quadratic_quadratic",
                                                   "quad_pwlin", "quadratic_piecewiselinear",
                                                   "quad_lin", "quadratic_linear",
                                                   "pwlin_pwlin", "piecewiselinear_piecewiselinear",
@@ -982,7 +982,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                            INPAR::POTENTIAL::approximation_surface,
                                            INPAR::POTENTIAL::approximation_point),
                                 &interaction_potential);
-  
+
   // radius of can der Waals spheres for analytical testing
   DoubleParameter(  "VDW_RADIUS",0.0,
                     "radius of van der Waals spheres",
@@ -2516,10 +2516,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& constrfsi = fsidyn.sublist("CONSTRAINT",false,"");
-  
+
   IntParameter("SIMPLEITER",2,"Number of iterations for simple pc",&constrfsi);
   DoubleParameter("ALPHA",0.8,"alpha parameter for simple pc",&constrfsi);
-  
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& search_tree = list->sublist("SEARCH TREE",false,"");
 
