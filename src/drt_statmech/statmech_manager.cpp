@@ -391,6 +391,71 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       }
     }
     break;
+    /*computing and writing into file data about correlation of orientation of different elements
+     *as it is considered in the context of the persistence length*/
+    case INPAR::STATMECH::statout_orientationcorrelation:
+    {      
+      FILE* fp = NULL; //file pointer for statistical output file
+
+      //name of output file
+      std::ostringstream outputfilename;
+      outputfilename << "OrientationCorrelation"<< outputfilenumber_ << ".dat";
+
+      double s[discret_.NumMyRowNodes()-1];
+      double cosdiffer[discret_.NumMyRowNodes()-1];
+   
+      if( (time >= maxtime_ * statmechparams_.get<double>("START_FACTOR",0.0)) && (starttimeoutput_ == -1.0) )
+      {
+        starttimeoutput_ = time;
+        istart_ = istep;
+      }           
+
+      if(time > starttimeoutput_ && starttimeoutput_ > -1.0)   
+      { 
+        Epetra_SerialDenseMatrix coord;
+        coord.Shape(discret_.NumMyRowNodes(),ndim);
+    
+        for(int id = 0; id < discret_.NumMyRowNodes(); id++) 
+          for(int j = 0; j< ndim; j++)
+            coord(id,j) = (discret_.gNode(id))->X()[j] + (dis)[(id)*(ndim-1)*3+j];
+        
+        for(int id = 0; id < discret_.NumMyRowNodes()-1; id++)
+        {
+          //initialization of the element lengths and the cosine differences
+          s[id+1] = 0;
+          cosdiffer[id+1] = 0;
+          
+          //calculate the deformed length of every element 
+          for(int j = 0; j< ndim; j++)  
+          {
+            s[id+1] = s[id+1] + pow( (coord(id+1,j) - coord(id,j)), 2);
+            cosdiffer[id+1] = cosdiffer[id+1] + ((coord(id+1,j) - coord(id,j))*(coord(0+1,j) - coord(0,j)));
+          }
+          
+          //calculate the cosine difference referring to the first element
+          //Dot product of the (id+1)th element with the 1st element and devided by the length of the (id+1)th element and the 1st element
+          s[id+1] = pow(s[id+1],0.5);
+          cosdiffer[id+1]= cosdiffer[id+1]/(s[id+1]*s[1]);
+        }
+          
+        //output cosdiffer in every 1000 timesteps, when discret_.NumMyRowNodes()-1 = 0,cosdiffer is always equil to 1!!
+        if( (istep - istart_) % 1000 == 0 )                
+        {
+          fp = fopen(outputfilename.str().c_str(), "a");
+          std::stringstream filecontent;
+          filecontent << istep;
+          filecontent << scientific << setprecision(10);
+          
+          for(int id = 0; id < discret_.NumMyRowNodes()-1; id++) 
+            filecontent<<" "<<cosdiffer[id+1];
+          
+          filecontent<<endl;                            
+          fprintf(fp,filecontent.str().c_str());
+          fclose(fp);
+        }
+       } 
+    }
+    break;
     //the following output allows for anisotropic diffusion simulation of a quasi stiff polymer
     case INPAR::STATMECH::statout_anisotropic:
     {
@@ -1021,6 +1086,75 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
       fprintf(fpnumbering,filecontent.str().c_str());
       //close file
       fclose(fpnumbering);
+
+    }
+    break;
+    /*computing and writing into file data about correlation of orientation of different elements
+     *as it is considered in the context of the persistence length*/
+    case INPAR::STATMECH::statout_orientationcorrelation:
+    {   
+      FILE* fp = NULL; //file pointer for statistical output file
+
+      //defining name of output file
+      std::ostringstream outputfilename;
+
+      outputfilenumber_ = 0;
+
+      //file pointer for operating with numbering file
+      FILE* fpnumbering = NULL;
+      std::ostringstream numberingfilename;
+
+      //look for a numbering file where number of already existing output files is stored:
+      numberingfilename.str("NumberOfRealizationsOrientCorr");
+      fpnumbering = fopen(numberingfilename.str().c_str(), "r");
+
+      //if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
+      if(fpnumbering == NULL)
+      {
+        do
+        {
+          outputfilenumber_++;
+          outputfilename.str("");
+          outputfilename << "OrientationCorrelation"<< outputfilenumber_ << ".dat";
+          fp = fopen(outputfilename.str().c_str(), "r");
+        } while(fp != NULL);
+
+        //set up new file with name "outputfilename" without writing anything into this file
+        fp = fopen(outputfilename.str().c_str(), "w");
+        fclose(fp);
+     }
+     //if there already exists a numbering file
+     else
+     {
+       fclose(fpnumbering);
+
+       //read the number of the next realization out of the file into the variable testnumber
+       std::fstream f(numberingfilename.str().c_str());
+       while (f)
+       {
+         std::string tok;
+         f >> tok;
+         if (tok=="Next")
+         {
+           f >> tok;
+           if (tok=="Number:")
+             f >> outputfilenumber_;
+         }
+       } //while(f)
+
+       //defining outputfilename by means of new testnumber
+       outputfilename.str("");
+       outputfilename <<"OrientationCorrelation"<< outputfilenumber_ << ".dat";
+     }
+
+     //increasing the number in the numbering file by one
+     fpnumbering = fopen(numberingfilename.str().c_str(), "w");
+     std::stringstream filecontent;
+     filecontent << "Next Number: "<< (outputfilenumber_ + 1);
+     //write fileconent into file!
+     fprintf(fpnumbering,filecontent.str().c_str());
+     //close file
+     fclose(fpnumbering);
 
     }
     break;

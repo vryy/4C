@@ -1006,18 +1006,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<INPAR::STATMECH::StatOutput>("SPECIAL_OUTPUT","None","kind of special statistical output data written into files",
                                  //listing possible strings in input file in category SPECIAL_OUTPUT
                                  tuple<std::string>("None","none",
-                                                    "EndToEnd_Log","endtoend_log","EndtoEnd_log",
-                                                    "anisotropic","Anisotropic",
+                                                    "endtoend_log",
+                                                    "anisotropic",
+                                                    "orientationcorrelation",
                                                     "endtoend_const",
-                                                    "Viscoelasticity","viscoelasticity","ViscoElasticity",
-                                                    "Gmsh","gmsh"),
+                                                    "viscoelasticity",
+                                                    "gmsh"),
                                  //translating input strings into BACI input parameters
                                  tuple<INPAR::STATMECH::StatOutput>(INPAR::STATMECH::statout_none,INPAR::STATMECH::statout_none,
-                                            INPAR::STATMECH::statout_endtoendlog,INPAR::STATMECH::statout_endtoendlog,INPAR::STATMECH::statout_endtoendlog,
-                                            INPAR::STATMECH::statout_anisotropic,INPAR::STATMECH::statout_anisotropic,
+                                            INPAR::STATMECH::statout_endtoendlog,
+                                            INPAR::STATMECH::statout_anisotropic,
+                                            INPAR::STATMECH::statout_orientationcorrelation,
                                             INPAR::STATMECH::statout_endtoendconst,
-                                            INPAR::STATMECH::statout_viscoelasticity,INPAR::STATMECH::statout_viscoelasticity,INPAR::STATMECH::statout_viscoelasticity,
-                                            INPAR::STATMECH::statout_gmsh,INPAR::STATMECH::statout_gmsh),
+                                            INPAR::STATMECH::statout_viscoelasticity,
+                                            INPAR::STATMECH::statout_gmsh),
                                  &statmech);
   //Reading which kind of friction model should be applied
   setStringToIntegralParameter<INPAR::STATMECH::FrictionModel>("FRICTION_MODEL","none","friction model for polymer dynamics",
