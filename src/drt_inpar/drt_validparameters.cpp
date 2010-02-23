@@ -939,7 +939,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,&scontact);
 
   setStringToIntegralParameter<INPAR::MORTAR::LagMultQuad3D>("LAGMULT_QUAD3D","quad_quad","Type of LM interpolation and testing functions",
-                                                             tuple<std::string>("quad_quad", "quadratic_quadratic",
+                               tuple<std::string>("quad_quad", "quadratic_quadratic",
                                                   "quad_pwlin", "quadratic_piecewiselinear",
                                                   "quad_lin", "quadratic_linear",
                                                   "pwlin_pwlin", "piecewiselinear_piecewiselinear",
