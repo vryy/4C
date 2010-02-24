@@ -10,6 +10,7 @@ DRT::DofSetProxy::DofSetProxy(DofSet* dofset)
   : dofset_(dofset)
 {
   dofset->RegisterProxy(this);
+  NotifyAssigned();
 }
 
 
