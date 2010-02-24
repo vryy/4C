@@ -377,7 +377,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
         endtoend = endtoendvector.Norm2();
 
         //writing output: current time and end to end distance are stored at each 100th time step
-        if ( (istep - istart_) % 100 == 0 )
+        if ( (istep - istart_) % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0 )
           {
           // open file and append new data line
           fp = fopen(outputfilename.str().c_str(), "a");
@@ -438,8 +438,8 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
           cosdiffer[id+1]= cosdiffer[id+1]/(arclength[id+1]*arclength[1]);
         }
           
-        //output cosdiffer in every 1000 timesteps, when discret_.NumMyRowNodes()-1 = 0,cosdiffer is always equil to 1!!
-        if( (istep - istart_) % 1000 == 0 )                
+        //output cosdiffer in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps, when discret_.NumMyRowNodes()-1 = 0,cosdiffer is always equil to 1!!
+        if( (istep - istart_) % statmechparams_.get<int>("OUTPUTINTERVALS",1)  == 0 )                
         {
           fp = fopen(outputfilename.str().c_str(), "a");
           std::stringstream filecontent;
@@ -459,187 +459,198 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
     //the following output allows for anisotropic diffusion simulation of a quasi stiff polymer
     case INPAR::STATMECH::statout_anisotropic:
     {
-      FILE* fp = NULL; //file pointer for statistical output file
-
-      //name of output file
-      std::ostringstream outputfilename;
-      outputfilename << "AnisotropicDiffusion"<< outputfilenumber_ << ".dat";
-
-      //positions of first and last node in current time step (note: always 3D variables used; in case of 2D third compoenent just constantly zero)
-      LINALG::Matrix<3,1> beginnew;
-      LINALG::Matrix<3,1> endnew;
-
-      beginnew.PutScalar(0);
-      endnew.PutScalar(0);
-      std::cout << "ndim: " << ndim << "\n";
-
-      for(int i = 0; i<ndim; i++)
+      //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
+      if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1)  == 0 )                
       {
-        beginnew(i) = ( discret_.gNode(0)                            )->X()[i] + dis[i];
-        endnew(i)   = ( discret_.gNode(discret_.NumMyRowNodes() - 1) )->X()[i] + dis[num_dof - discret_.NumDof(discret_.gNode(discret_.NumMyRowNodes() - 1)) + i];
-      }
-
-      //unit direction vector for filament axis in last time step
-      LINALG::Matrix<3,1> axisold;
-      axisold  = endold_;
-      axisold -= beginold_;
-      axisold.Scale(1/axisold.Norm2());
-
-      //unit direction vector for filament axis in current time step
-      LINALG::Matrix<3,1> axisnew;
-      axisnew = endnew;
-      axisnew -= beginnew;
-      axisnew.Scale(1/axisnew.Norm2());
-
-      //displacement of first and last node between last time step and current time step
-      LINALG::Matrix<3,1> dispbegin;
-      LINALG::Matrix<3,1> dispend;
-      dispbegin  = beginnew;
-      dispbegin -= beginold_;
-      dispend  = endnew;
-      dispend -= endold_;
-
-      //displacement of middle point
-      LINALG::Matrix<3,1> dispmiddle;
-      dispmiddle  = dispbegin;
-      dispmiddle += dispend;
-      dispmiddle.Scale(0.5);
-      sumdispmiddle_ += dispmiddle;
-
-      //update sum of square displacement increments of middle point
-      double incdispmiddle = dispmiddle.Norm2()*dispmiddle.Norm2();
-      sumsquareincmid_+=incdispmiddle;
-
-      //update sum of square displacement increments of middle point parallel to new filament axis (computed by scalar product)
-      double disppar_square = pow(axisnew(0)*dispmiddle(0) + axisnew(1)*dispmiddle(1) + axisnew(2)*dispmiddle(2), 2);
-      sumsquareincpar_+=disppar_square;
-
-      //update sum of square displacement increments of middle point orthogonal to new filament axis (via crossproduct)
-      LINALG::Matrix<3,1> aux;
-      aux(0) = dispmiddle(1)*axisnew(2) - dispmiddle(2)*axisnew(1);
-      aux(1) = dispmiddle(2)*axisnew(0) - dispmiddle(0)*axisnew(2);
-      aux(2) = dispmiddle(0)*axisnew(1) - dispmiddle(1)*axisnew(0);
-      double disport_square = aux.Norm2()*aux.Norm2();
-      sumsquareincort_+=disport_square;
-
-
-      //total displacement of rotational angle (in 2D only)
-      double incangle = 0;
-      if(ndim == 2)
-      {
-        //angle of old axis relative to x-axis
-        double phiold = acos(axisold(0)/axisold.Norm2());
-        if(axisold(1) < 0)
-          phiold *= -1;
-
-        //angle of new axis relative to x-axis
-        double phinew = acos(axisnew(0)/axisnew.Norm2());
-        if(axisnew(1) < 0)
-          phinew *= -1;
-
-        //angle increment
-        incangle = phinew - phiold;
-        if(incangle > M_PI)
+        FILE* fp = NULL; //file pointer for statistical output file
+  
+        //name of output file
+        std::ostringstream outputfilename;
+        outputfilename << "AnisotropicDiffusion"<< outputfilenumber_ << ".dat";
+  
+        //positions of first and last node in current time step (note: always 3D variables used; in case of 2D third compoenent just constantly zero)
+        LINALG::Matrix<3,1> beginnew;
+        LINALG::Matrix<3,1> endnew;
+  
+        beginnew.PutScalar(0);
+        endnew.PutScalar(0);
+        std::cout << "ndim: " << ndim << "\n";
+  
+        for(int i = 0; i<ndim; i++)
         {
-          incangle -= 2*M_PI;
-          incangle *= -1;
+          beginnew(i) = ( discret_.gNode(0)                            )->X()[i] + dis[i];
+          endnew(i)   = ( discret_.gNode(discret_.NumMyRowNodes() - 1) )->X()[i] + dis[num_dof - discret_.NumDof(discret_.gNode(discret_.NumMyRowNodes() - 1)) + i];
         }
-        if(incangle < -M_PI)
+  
+        //unit direction vector for filament axis in last time step
+        LINALG::Matrix<3,1> axisold;
+        axisold  = endold_;
+        axisold -= beginold_;
+        axisold.Scale(1/axisold.Norm2());
+  
+        //unit direction vector for filament axis in current time step
+        LINALG::Matrix<3,1> axisnew;
+        axisnew = endnew;
+        axisnew -= beginnew;
+        axisnew.Scale(1/axisnew.Norm2());
+  
+        //displacement of first and last node between last time step and current time step
+        LINALG::Matrix<3,1> dispbegin;
+        LINALG::Matrix<3,1> dispend;
+        dispbegin  = beginnew;
+        dispbegin -= beginold_;
+        dispend  = endnew;
+        dispend -= endold_;
+  
+        //displacement of middle point
+        LINALG::Matrix<3,1> dispmiddle;
+        dispmiddle  = dispbegin;
+        dispmiddle += dispend;
+        dispmiddle.Scale(0.5);
+        sumdispmiddle_ += dispmiddle;
+  
+        //update sum of square displacement increments of middle point
+        double incdispmiddle = dispmiddle.Norm2()*dispmiddle.Norm2();
+        sumsquareincmid_+=incdispmiddle;
+  
+        //update sum of square displacement increments of middle point parallel to new filament axis (computed by scalar product)
+        double disppar_square = pow(axisnew(0)*dispmiddle(0) + axisnew(1)*dispmiddle(1) + axisnew(2)*dispmiddle(2), 2);
+        sumsquareincpar_+=disppar_square;
+  
+        //update sum of square displacement increments of middle point orthogonal to new filament axis (via crossproduct)
+        LINALG::Matrix<3,1> aux;
+        aux(0) = dispmiddle(1)*axisnew(2) - dispmiddle(2)*axisnew(1);
+        aux(1) = dispmiddle(2)*axisnew(0) - dispmiddle(0)*axisnew(2);
+        aux(2) = dispmiddle(0)*axisnew(1) - dispmiddle(1)*axisnew(0);
+        double disport_square = aux.Norm2()*aux.Norm2();
+        sumsquareincort_+=disport_square;
+  
+  
+        //total displacement of rotational angle (in 2D only)
+        double incangle = 0;
+        if(ndim == 2)
         {
-          incangle += 2*M_PI;
-          incangle *= -1;
+          //angle of old axis relative to x-axis
+          double phiold = acos(axisold(0)/axisold.Norm2());
+          if(axisold(1) < 0)
+            phiold *= -1;
+  
+          //angle of new axis relative to x-axis
+          double phinew = acos(axisnew(0)/axisnew.Norm2());
+          if(axisnew(1) < 0)
+            phinew *= -1;
+  
+          //angle increment
+          incangle = phinew - phiold;
+          if(incangle > M_PI)
+          {
+            incangle -= 2*M_PI;
+            incangle *= -1;
+          }
+          if(incangle < -M_PI)
+          {
+            incangle += 2*M_PI;
+            incangle *= -1;
+          }
+  
+          //update absolute rotational displacement compared to reference configuration
+          sumsquareincrot_ += incangle*incangle;
+          sumrotmiddle_ += incangle;
         }
-
-        //update absolute rotational displacement compared to reference configuration
-        sumsquareincrot_ += incangle*incangle;
-        sumrotmiddle_ += incangle;
+  
+  
+        {
+  	      // open file and append new data line
+  	      fp = fopen(outputfilename.str().c_str(), "a");
+  
+  	      //defining temporary stringstream variable
+  	      std::stringstream filecontent;
+  	      filecontent << scientific << setprecision(15)<<dt<<" "<<sumsquareincmid_ <<" "<<sumsquareincpar_<<" "<<sumsquareincort_<<" "<<sumsquareincrot_<<" "<<sumdispmiddle_.Norm2() * sumdispmiddle_.Norm2()<<" "<<sumrotmiddle_*sumrotmiddle_ << endl;
+  
+  	      // move temporary stringstream to file and close it
+  	      fprintf(fp,filecontent.str().c_str());
+  	      fclose(fp);
+        }
+  
+        //new positions in this time step become old positions in last time step
+        beginold_ = beginnew;
+        endold_   = endnew;
       }
-
-
-      {
-	      // open file and append new data line
-	      fp = fopen(outputfilename.str().c_str(), "a");
-
-	      //defining temporary stringstream variable
-	      std::stringstream filecontent;
-	      filecontent << scientific << setprecision(15)<<dt<<" "<<sumsquareincmid_ <<" "<<sumsquareincpar_<<" "<<sumsquareincort_<<" "<<sumsquareincrot_<<" "<<sumdispmiddle_.Norm2() * sumdispmiddle_.Norm2()<<" "<<sumrotmiddle_*sumrotmiddle_ << endl;
-
-	      // move temporary stringstream to file and close it
-	      fprintf(fp,filecontent.str().c_str());
-	      fclose(fp);
-      }
-
-      //new positions in this time step become old positions in last time step
-      beginold_ = beginnew;
-      endold_   = endnew;
     }
     break;
     case INPAR::STATMECH::statout_viscoelasticity:
     {
-       //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
-       FILE* fp = NULL;
-
-       //content to be written into the output file
-       std::stringstream filecontent;
-
-       //name of file into which output is written
-       std::ostringstream outputfilename;
-       outputfilename << "ViscoElOutputProc"<< discret_.Comm().MyPID() << ".dat";
-
-       fp = fopen(outputfilename.str().c_str(), "a");
-
-       /*the output to be written consists of internal forces at exactly those degrees of freedom
-        * marked in *forcesensor_ by a one entry*/
-
-       filecontent << scientific << setprecision(10) << time;//changed
-
- #ifdef DEBUG
-       if(forcesensor_ == null)
-         dserror("forcesensor_ is NULL pointer; possible reason: dynamic crosslinkers not activated and forcesensor applicable in this case only");
- #endif  // #ifdef DEBUG
-
-        double f = 0;//mean value of force
-        double d = 0;//Displacement
-        for(int i = 0; i < forcesensor_->MyLength(); i++)//changed
-        {
-          if( (*forcesensor_)[i] == 1)
-             {
-               f += fint[i];
-               d =  dis[i];
-             }
-         }
-
-        //Putting time, displacement, meanforce  in Filestream
-        filecontent << "   "<< d << "   " << f << "   " << discret_.NumMyRowElements() << endl; //changed
-        //writing filecontent into output file and closing it
-        fprintf(fp,filecontent.str().c_str());
-        fclose(fp);
+      //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
+      if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1)  == 0 )                
+      {
+         //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
+         FILE* fp = NULL;
+  
+         //content to be written into the output file
+         std::stringstream filecontent;
+  
+         //name of file into which output is written
+         std::ostringstream outputfilename;
+         outputfilename << "ViscoElOutputProc"<< discret_.Comm().MyPID() << ".dat";
+  
+         fp = fopen(outputfilename.str().c_str(), "a");
+  
+         /*the output to be written consists of internal forces at exactly those degrees of freedom
+          * marked in *forcesensor_ by a one entry*/
+  
+         filecontent << scientific << setprecision(10) << time;//changed
+  
+   #ifdef DEBUG
+         if(forcesensor_ == null)
+           dserror("forcesensor_ is NULL pointer; possible reason: dynamic crosslinkers not activated and forcesensor applicable in this case only");
+   #endif  // #ifdef DEBUG
+  
+          double f = 0;//mean value of force
+          double d = 0;//Displacement
+          for(int i = 0; i < forcesensor_->MyLength(); i++)//changed
+          {
+            if( (*forcesensor_)[i] == 1)
+               {
+                 f += fint[i];
+                 d =  dis[i];
+               }
+           }
+  
+          //Putting time, displacement, meanforce  in Filestream
+          filecontent << "   "<< d << "   " << f << "   " << discret_.NumMyRowElements() << endl; //changed
+          //writing filecontent into output file and closing it
+          fprintf(fp,filecontent.str().c_str());
+          fclose(fp);
+      }
 
     }
     break;
     //writing data for generating a Gmsh video of the simulation
     case INPAR::STATMECH::statout_gmsh:
     {
-
-      /*construct unique filename for gmsh output with two indices: the first one marking the time step number
-       * and the second one marking the newton iteration number, where numbers are written with zeros in the front
-       * e.g. number one is written as 000001, number fourteen as 000014 and so on;*/
-
-      //note: this kind of output is possilbe for serial computing only (otherwise the following method would have to be adapted to parallel use*/
-      if(discret_.Comm().NumProc() > 1)
-        dserror("No Gmsh output for parallel computation possible so far");
-
-      // first index = time step index
-      std::ostringstream filename;
-
-      //creating complete file name dependent on step number with 6 digits and leading zeros
-      if (istep<1000000)
-        filename << "./GmshOutput/network"<< std::setw(6) << setfill('0') << istep <<".pos";
-      else
-        dserror("Gmsh output implemented for a maximum of 999999 steps");
-
-      //calling method for writing Gmsh output
-      GmshOutput(dis,filename,istep);
+      //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
+      if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1)  == 0 )                
+      {
+        /*construct unique filename for gmsh output with two indices: the first one marking the time step number
+         * and the second one marking the newton iteration number, where numbers are written with zeros in the front
+         * e.g. number one is written as 000001, number fourteen as 000014 and so on;*/
+  
+        //note: this kind of output is possilbe for serial computing only (otherwise the following method would have to be adapted to parallel use*/
+        if(discret_.Comm().NumProc() > 1)
+          dserror("No Gmsh output for parallel computation possible so far");
+  
+        // first index = time step index
+        std::ostringstream filename;
+  
+        //creating complete file name dependent on step number with 6 digits and leading zeros
+        if (istep<1000000)
+          filename << "./GmshOutput/network"<< std::setw(6) << setfill('0') << istep <<".pos";
+        else
+          dserror("Gmsh output implemented for a maximum of 999999 steps");
+  
+        //calling method for writing Gmsh output
+        GmshOutput(dis,filename,istep);
+      }
 
     }
     break;
@@ -657,9 +668,6 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
  *----------------------------------------------------------------------*/
 void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step)
 {
-  if(step % 100 != 0)
-    return;
-
   /*the following method writes output data for Gmsh into file with name "filename"; all line elements are written;
    * the nodal displacements are handed over in the variable "dis"; note: in case of parallel computing only
    * processor 0 writes; it is assumed to have a fully overlapping column map and hence all the information about
