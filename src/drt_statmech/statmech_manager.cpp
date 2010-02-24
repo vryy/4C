@@ -401,8 +401,8 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       std::ostringstream outputfilename;
       outputfilename << "OrientationCorrelation"<< outputfilenumber_ << ".dat";
 
-      double s[discret_.NumMyRowNodes()-1];
-      double cosdiffer[discret_.NumMyRowNodes()-1];
+      vector<double> arclength(discret_.NumMyRowNodes()-1,0);
+      vector<double> cosdiffer(discret_.NumMyRowNodes()-1,0);
    
       if( (time >= maxtime_ * statmechparams_.get<double>("START_FACTOR",0.0)) && (starttimeoutput_ == -1.0) )
       {
@@ -422,20 +422,20 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
         for(int id = 0; id < discret_.NumMyRowNodes()-1; id++)
         {
           //initialization of the element lengths and the cosine differences
-          s[id+1] = 0;
+          arclength[id+1] = 0;
           cosdiffer[id+1] = 0;
           
           //calculate the deformed length of every element 
           for(int j = 0; j< ndim; j++)  
           {
-            s[id+1] = s[id+1] + pow( (coord(id+1,j) - coord(id,j)), 2);
+            arclength[id+1] = arclength[id+1] + pow( (coord(id+1,j) - coord(id,j)), 2);
             cosdiffer[id+1] = cosdiffer[id+1] + ((coord(id+1,j) - coord(id,j))*(coord(0+1,j) - coord(0,j)));
           }
           
           //calculate the cosine difference referring to the first element
           //Dot product of the (id+1)th element with the 1st element and devided by the length of the (id+1)th element and the 1st element
-          s[id+1] = pow(s[id+1],0.5);
-          cosdiffer[id+1]= cosdiffer[id+1]/(s[id+1]*s[1]);
+          arclength[id+1] = pow(arclength[id+1],0.5);
+          cosdiffer[id+1]= cosdiffer[id+1]/(arclength[id+1]*arclength[1]);
         }
           
         //output cosdiffer in every 1000 timesteps, when discret_.NumMyRowNodes()-1 = 0,cosdiffer is always equil to 1!!
@@ -657,7 +657,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
  *----------------------------------------------------------------------*/
 void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step)
 {
-  if(step % 1 != 0)
+  if(step % 100 != 0)
     return;
 
   /*the following method writes output data for Gmsh into file with name "filename"; all line elements are written;
