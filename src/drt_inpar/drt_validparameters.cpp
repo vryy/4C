@@ -2521,7 +2521,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& constrfsi = fsidyn.sublist("CONSTRAINT",false,"");
 
-  setStringToIntegralParameter<INPAR::FSI::PrecConstr> ("PRECONDITIONER","simple","preconditioner to use",
+  setStringToIntegralParameter<INPAR::FSI::PrecConstr> ("PRECONDITIONER","Simple","preconditioner to use",
       tuple<std::string>("Simple","Simplec"),tuple<INPAR::FSI::PrecConstr>(INPAR::FSI::Simple,INPAR::FSI::Simplec),&constrfsi);
   IntParameter("SIMPLEITER",2,"Number of iterations for simple pc",&constrfsi);
   DoubleParameter("ALPHA",0.8,"alpha parameter for simple pc",&constrfsi);
