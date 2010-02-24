@@ -52,6 +52,13 @@ namespace INPAR
       ALEprojection_ref
     };
 
+    /// Preconditioner for constraint fsi problem
+    enum PrecConstr
+    {
+      Simple,
+      Simplec
+    };
+    
   }  // namespace FSI
 
 }  // namespace INPAR

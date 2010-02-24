@@ -10,6 +10,7 @@
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid.H"
 #include "../drt_ale/ale.H"
+#include "../drt_inpar/inpar_fsi.H"
 
 // debug flag to merge the MFSI block matrix to one sparse matrix
 // and use the fluid solver to solve for it
@@ -211,6 +212,7 @@ namespace FSI
 
     double alpha_;    /// "relaxation" parameter in SIMPLE approximation of matrix
     int simpleiter_;  /// number of iterations in SIMPLE preconditioner
+    INPAR::FSI::PrecConstr prec_; /// preconditioner for constraint system
   };
 
 
@@ -268,6 +270,7 @@ namespace FSI
 
     double alpha_;    /// "relaxation" parameter in SIMPLE approximation of matrix
     int simpleiter_;  /// number of iterations in SIMPLE preconditioner
+    INPAR::FSI::PrecConstr prec_; /// preconditioner for constraint system
   };
 
 }
