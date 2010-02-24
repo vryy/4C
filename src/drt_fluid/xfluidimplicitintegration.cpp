@@ -726,9 +726,9 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
     {
       if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
       {
-        dofswitch.extrapolateOldTimeStepValues(FluidFluidboundarydis_, *ih_np_->cutterposn(), FluidFluidboundarydis_->GetState("fivelcoln") , state_.veln_ );
-        dofswitch.extrapolateOldTimeStepValues(FluidFluidboundarydis_, *ih_np_->cutterposn(), FluidFluidboundarydis_->GetState("fivelcolnm"), state_.velnm_);
-        dofswitch.extrapolateOldTimeStepValues(FluidFluidboundarydis_, *ih_np_->cutterposn(), FluidFluidboundarydis_->GetState("fiacccoln") , state_.accn_ );
+        dofswitch.extrapolateOldTimeStepValues(FluidFluidboundarydis_, *ih_np_->cutterposn(), FluidFluidboundarydis_->GetState("ivelcoln") , state_.veln_ );
+        dofswitch.extrapolateOldTimeStepValues(FluidFluidboundarydis_, *ih_np_->cutterposn(), FluidFluidboundarydis_->GetState("ivelcolnm"), state_.velnm_);
+        dofswitch.extrapolateOldTimeStepValues(FluidFluidboundarydis_, *ih_np_->cutterposn(), FluidFluidboundarydis_->GetState("iacccoln") , state_.accn_ );
       }
       else
       {
