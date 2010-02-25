@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 #project(baci CXX C Fortran)
-project(baci)
+project(baci CXX C Fortran)
 
 # The version number.
 set (baci_VERSION_MAJOR 1)
@@ -22,6 +22,111 @@ configure_file (
 include_directories("${PROJECT_BINARY_DIR}/src/headers")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
+
+set(LIBRARIES "")
+
+find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)
+find_package(MPI REQUIRED)
+find_package(Trilinos REQUIRED)
+
+#find_package(Blitz)
+
+SET(Boost_USE_STATIC_LIBS ON) 
+SET(Boost_USE_MULTITHREAD OFF) 
+#FIND_PACKAGE( Boost COMPONENTS date_time filesystem iostreams program_options )
+FIND_PACKAGE( Boost COMPONENTS program_options )
+
+if (MPI_FOUND)
+    #include_directories(${MPI_INCLUDE_PATH})
+    SET(CMAKE_C_COMPILER mpicc)
+    SET(CMAKE_CXX_COMPILER mpic++)
+endif(MPI_FOUND)
+
+# trilinos libraries
+if (Trilinos_FOUND)
+  include_directories(${Trilinos_INCLUDE_DIRS})
+  link_directories(${Trilinos_LIBRARY_DIRS})
+  set(LIBRARIES
+    ${LIBRARIES}
+    #${Trilinos_LIBRARIES}
+    trilinoscouplings
+    noxepetra
+    nox
+    ifpack
+    aztecoo
+    amesos
+    ml
+    zoltan
+    epetraext
+    epetra
+    teuchos
+    #stk_mesh_fem stk_mesh_base stk_util_use_cases stk_util_parallel stk_util_diag stk_util_env stk_util_util
+    )
+endif (Trilinos_FOUND)
+
+find_package(Umfpack)
+if (Umfpack_FOUND)
+  #message("Umfpack found")
+  include_directories(${Umfpack_INCLUDE_DIRS})
+  link_directories(${Umfpack_LIBRARY_DIRS})
+  set(LIBRARIES
+    ${LIBRARIES}
+    ${Umfpack_LIBRARIES}
+    )
+else (Umfpack_FOUND)
+  #message("Umfpack not found")
+  add_definitions("-DHAVENOT_UMFPACK")
+endif (Umfpack_FOUND)
+
+find_package(SuperLU)
+if (SuperLU_FOUND)
+  include_directories(${SuperLU_INCLUDE_DIRS})
+  link_directories(${SuperLU_LIBRARY_DIRS})
+  set(LIBRARIES
+    ${LIBRARIES}
+    ${SuperLU_LIBRARIES}
+    )
+else (SuperLU_FOUND)
+  add_definitions("-DHAVENOT_SUPERLU")
+endif (SuperLU_FOUND)
+
+find_package(PARMETIS)
+if (PARMETIS_FOUND)
+  include_directories(${PARMETIS_INCLUDE_DIRS})
+  link_directories(${PARMETIS_LIBRARY_DIRS})
+  set(LIBRARIES
+    ${LIBRARIES}
+    ${PARMETIS_LIBRARIES}
+    )
+endif (PARMETIS_FOUND)
+
+if (Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIRS})
+  link_directories(${Boost_LIBRARY_DIRS})
+  set(LIBRARIES
+    ${LIBRARIES}
+    ${Boost_LIBRARIES}
+    )
+endif(Boost_FOUND)
+
+if (LAPACK_FOUND)
+  include_directories(${LAPACK_INCLUDE_DIRS})
+  link_directories(${LAPACK_LIBRARY_DIRS})
+  set(LIBRARIES
+    ${LIBRARIES}
+    ${LAPACK_LIBRARIES}
+    )
+endif(LAPACK_FOUND)
+
+if (BLAS_FOUND)
+  include_directories(${BLAS_INCLUDE_DIRS})
+  link_directories(${BLAS_LIBRARY_DIRS})
+  set(LIBRARIES
+    ${LIBRARIES}
+    ${BLAS_LIBRARIES}
+    )
+endif(BLAS_FOUND)
 
 add_definitions("-DLINUX_MUENCH")
 add_definitions("-DPARALLEL")
@@ -871,7 +976,6 @@ if (D_SOLID3)
   set( so3_source
     src/drt_so3/inversedesign.cpp
     src/drt_so3/inversedesign_evaluate.cpp
-    src/drt_so3/inversedesign_evaluate_fd.cpp
     src/drt_so3/prestress.cpp
     src/drt_so3/so_disp.cpp
     src/drt_so3/so_disp_evaluate.cpp
@@ -1078,6 +1182,15 @@ endif(D_RED_AIRWAYS)
 
 option (BINIO "binary io" ON)
 if (BINIO)
+  find_package(HDF5 REQUIRED)
+  if (HDF5_FOUND)
+    include_directories(${HDF5_INCLUDE_DIRS})
+    link_directories(${HDF5_LIBRARY_DIRS})
+    set(LIBRARIES
+      ${LIBRARIES}
+      ${HDF5_LIBRARIES}
+      )
+  endif(HDF5_FOUND)
   add_definitions("-DBINIO")
 endif(BINIO)
 
@@ -1122,17 +1235,6 @@ if (D_ALE_BFLOW)
 endif(D_ALE_BFLOW)
 
 
-option (HAVENOT_SUPERLU "do not use superLU" OFF)
-if (HAVENOT_SUPERLU)
-  add_definitions("-DHAVENOT_SUPERLU")
-endif(HAVENOT_SUPERLU)
-
-option (HAVENOT_UMFPACK "do not use UMFPACK" OFF)
-if (HAVENOT_UMFPACK)
-  add_definitions("-DHAVENOT_UMFPACK")
-endif(HAVENOT_UMFPACK)
-
-
 #   tools
 
 option (PERF "detailed time measurement" OFF)
@@ -1164,36 +1266,7 @@ if (THROWELEMENTERRORS)
 endif(THROWELEMENTERRORS)
 
 
-#include(CMakeDetermineFortranCompiler)
-#include(CMakeFortranInformation)
-
-#find_package(Threads)
-#find_package(BLAS)
-#find_package(LAPACK)
-find_package(MPI)
-find_package(Trilinos)
-#find_package(Blitz)
-
-SET(Boost_USE_STATIC_LIBS ON) 
-SET(Boost_USE_MULTITHREAD OFF) 
-FIND_PACKAGE( Boost COMPONENTS date_time filesystem iostreams program_options )
-
-if (MPI_FOUND)
-    #include_directories(${MPI_INCLUDE_PATH})
-    SET(CMAKE_C_COMPILER mpicc)
-    SET(CMAKE_CXX_COMPILER mpic++)
-endif(MPI_FOUND)
-
-if (Trilinos_FOUND)
-    include_directories(${Trilinos_INCLUDE_DIRS})
-    link_directories(${Trilinos_LIBRARY_DIRS})
-endif(Trilinos_FOUND)
-
-#if (Boost_FOUND)
-#    include_directories(${Boost_INCLUDE_DIRS})
-#    link_directories(${Boost_LIBRARY_DIRS})
-#endif(Boost_FOUND)
-
+#
 
 add_executable (baci ${baci_source})
 
@@ -1201,40 +1274,43 @@ add_executable (baci ${baci_source})
 #  /usr/lib/blitz/include
 #)
 
-find_path( NETCDF_INCLUDE_DIR netcdf.h
-   /usr/include/netcdf
-   /usr/include/netcdf-3
-)
+#find_path( NETCDF_INCLUDE_DIR netcdf.h
+#   /usr/include/netcdf
+#   /usr/include/netcdf-3
+#)
 
-find_path( NETCDF_LIBRARY libnetcdf.so
-   /usr/lib
-)
+#find_path( NETCDF_LIBRARY libnetcdf.so
+#   /usr/lib
+#)
 
-find_path( EXODUS_INCLUDE_DIR exodusII.h
-  /lnm/lib/fc8/openmpi/include
-)
+#find_path( EXODUS_INCLUDE_DIR exodusII.h
+#  /lnm/lib/fc8/openmpi/include
+#)
 
-find_path( EXODUS_LIBRARY libexoIIv2c.a
-  /lnm/lib/fc8/openmpi/lib
-)
+#find_path( EXODUS_LIBRARY libexoIIv2c.a
+#  /lnm/lib/fc8/openmpi/lib
+#)
 
-find_path( NEMESIS_INCLUDE_DIR ne_nemesisI.h
-  /lnm/lib/fc8/openmpi/include
-)
+#find_path( NEMESIS_INCLUDE_DIR ne_nemesisI.h
+#  /lnm/lib/fc8/openmpi/include
+#)
 
-find_path( NEMESIS_LIBRARY libnemIc.a
-  /lnm/lib/fc8/openmpi/lib
-)
+#find_path( NEMESIS_LIBRARY libnemIc.a
+#  /lnm/lib/fc8/openmpi/lib
+#)
 
-find_path( METIS_LIBRARY libmetis.a
-  /lnm/lib/fc8/openmpi/lib
-)
+#find_path( METIS_LIBRARY libmetis.a
+#  /lnm/lib/fc8/openmpi/lib
+#)
 
-find_path( PARMETIS_LIBRARY libparmetis.a
-  /lnm/lib/fc8/openmpi/lib
-)
+#find_path( PARMETIS_LIBRARY libparmetis.a
+#  /lnm/lib/fc8/openmpi/lib
+#)
+
+#message(${LIBRARIES})
 
 target_link_libraries (baci
+  ${LIBRARIES}
 #global_full
 ##
 ## multi field algorithms
@@ -1310,23 +1386,4 @@ target_link_libraries (baci
 #ccarat_solver
 #input_full
 #
-# libraries
-#${Trilinos_LIBRARIES}
-trilinoscouplings
-noxepetra
-nox
-ifpack
-aztecoo
-amesos
-ml
-zoltan
-epetraext
-epetra
-teuchos
-#${Boost_LIBRARIES}
-/usr/lib/libboost_program_options.so.1.39.0
-/usr/lib/libhdf5_hl.so
-/usr/lib/libhdf5.so
-/usr/lib/liblapack.a
-/usr/lib/libblas.a
 )

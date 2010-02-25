@@ -5,9 +5,11 @@
 BACI_HOME=`dirname $0`
 EXTRA_ARGS=$@
 
-cmake \
-    -D Trilinos_DIR:FILEPATH="/home/uli/fem/sandia/Trilinos_full" \
+/lnm/programs/cmake-2.8.0/bin/cmake \
+    -D Trilinos_DIR:FILEPATH="/lnm/lib/fc8/openmpi/trilinos" \
     -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
+    -D INCLUDE_INSTALL_DIR:FILEPATH="/lnm/lib/fc8/openmpi/include" \
+    -D LIB_INSTALL_DIR:FILEPATH="/lnm/lib/fc8/openmpi/lib" \
     -D D_ALE:BOOL=ON \
     -D D_FLUID2:BOOL=ON \
     -D D_FLUID3:BOOL=ON \

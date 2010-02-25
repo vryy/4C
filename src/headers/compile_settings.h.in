@@ -31,8 +31,6 @@
 #cmakedefine INVERSEDESIGNUSE
 #cmakedefine PARMETIS
 #cmakedefine D_ALE_BFLOW
-#cmakedefine HAVENOT_SUPERLU
-#cmakedefine HAVENOT_UMFPACK
 #cmakedefine PERF
 #cmakedefine COLOROUTPUT
 #cmakedefine DSERROR_DUMP
