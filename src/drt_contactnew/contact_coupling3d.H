@@ -87,8 +87,8 @@ public:
   To be able to evaluate them, the CoCoupling3d have to be created with the alternative constructor (see below).
   
   */
-  CoCoupling3d(DRT::Discretization& idiscret, int dim, bool quad,
-               bool auxplane,
+  CoCoupling3d(DRT::Discretization& idiscret,
+               int dim, bool quad, bool auxplane,
                MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
   /*!
@@ -100,8 +100,8 @@ public:
   
   */
   CoCoupling3d(const MORTAR::MortarInterface::ShapeFcnType shapefcn, 
-               DRT::Discretization& idiscret, int dim, bool quad,
-               bool auxplane,
+               DRT::Discretization& idiscret,
+               int dim, bool quad, bool auxplane,
                MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
   /*!
@@ -268,7 +268,8 @@ public:
   CoCoupling3dQuad(DRT::Discretization& idiscret,
                    int dim, bool quad, bool auxplane,
                    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-                   MORTAR::IntElement& sintele, MORTAR::IntElement& mintele);
+                   MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
+                   INPAR::MORTAR::LagMultQuad3D& lmtype);
 
   /*!
   \brief Constructor with shape function specification
@@ -282,7 +283,8 @@ public:
                    DRT::Discretization& idiscret,
                    int dim, bool quad, bool auxplane,
                    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-                   MORTAR::IntElement& sintele, MORTAR::IntElement& mintele);
+                   MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
+                   INPAR::MORTAR::LagMultQuad3D& lmtype);
   
   /*!
   \brief Destructor
@@ -304,6 +306,12 @@ public:
   */
   MORTAR::IntElement& MasterIntElement() const { return mintele_; }
 
+  /*!
+  \brief Return the Lagrange multiplier interpolation and testing type
+
+  */
+  INPAR::MORTAR::LagMultQuad3D LagMultQuad3D() { return lmtype_; }
+    
   //@}
   
 protected:
@@ -312,8 +320,9 @@ protected:
     CoCoupling3dQuad operator = (const CoCoupling3dQuad& old);
     CoCoupling3dQuad(const CoCoupling3dQuad& old);
 
-    MORTAR::IntElement&   sintele_;     // slave sub-integration element
-    MORTAR::IntElement&   mintele_;     // slave sub-integration element
+    MORTAR::IntElement&            sintele_;     // slave sub-integration element
+    MORTAR::IntElement&            mintele_;     // slave sub-integration element
+    INPAR::MORTAR::LagMultQuad3D&  lmtype_;      // type of LM interpolation and testing
 
 }; // class CoCoupling3dQuad
 }  // namespace CONTACT

@@ -2718,8 +2718,8 @@ bool MORTAR::Coupling3d::IntegrateCells()
 {
   /**********************************************************************/
   /* INTEGRATION                                                        */
-  /* Integrate the Mortar matrix M and the weighted gap function g~ on  */
-  /* the current integration cell of the slave / master element pair    */
+  /* Integrate the Mortar matrices M (and possibly D) on the current    */
+  /* integration cell of the slave / master (integration) element pair  */
   /**********************************************************************/
 
   // create an integrator instance with correct NumGP and Dim
@@ -2747,54 +2747,145 @@ bool MORTAR::Coupling3d::IntegrateCells()
     // integrate cell only if not neglectable
     if (intcellarea < MORTARINTLIM*selearea) continue;
 
-    // do the cell integration (integrate and linearize M)
     // *******************************************************************
-    // ************ Coupling with or without auxiliary plane *************
+    // different options for mortar integration
     // *******************************************************************
-    int nrow = SlaveElement().NumNode();
-    int ncol = MasterElement().NumNode();
-    RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-    RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
-    RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
-
-    if (CouplingInAuxPlane())
+    // (1) no quadratic element(s) involved -> linear LM interpolation
+    // (2) quadratic element(s) involved -> quadratic LM interpolation
+    // (3) quadratic element(s) involved -> piecew. linear LM interpolation
+    // (4) quadratic element(s) involved -> linear LM interpolation
+    // *******************************************************************
+    INPAR::MORTAR::LagMultQuad3D lmtype = LagMultQuad3D();
+    
+    // *******************************************************************
+    // case (1)
+    // *******************************************************************
+    if (!Quad())
     {
-      if (Quad())
-      {
-        // static_cast to make sure to pass in IntElement&
-        MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
-        MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
-        integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),
-                 sintref,mintref,Cells()[i],Auxn(),dseg,mseg,gseg);
-      }
-      else
-        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),
-                                                  Cells()[i],Auxn(),dseg,mseg,gseg);
-    }
-    else /*(!CouplingInAuxPlane()*/
-      integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg);
-    // *******************************************************************
-
-    // do the two assemblies into the slave nodes
+      // prepare integration of M (and possibly D) on intcells
+      int nrow = SlaveElement().NumNode();
+      int ncol = MasterElement().NumNode();
+      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
+      RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
+      RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
+      
+      // check whether aux. plane coupling or not
+      if (CouplingInAuxPlane())
+        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg);
+      else /*(!CouplingInAuxPlane()*/
+        integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg);
+      
+      // assembly of intcell contributions to M (and possibly D)
 #ifdef MORTARONELOOP
-    integrator.AssembleD(Comm(),SlaveElement(),*dseg);
+      integrator.AssembleD(Comm(),SlaveElement(),*dseg);
 #endif // #ifdef MORTARONELOOP
-    integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
+      integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
+    }
+    
+    // *******************************************************************
+    // case (2)
+    // *******************************************************************
+    else if (Quad() && lmtype==INPAR::MORTAR::lagmult_quad_quad)
+    {
+      // prepare integration of M (and possibly D) on intcells
+      int nrow = SlaveElement().NumNode();
+      int ncol = MasterElement().NumNode();
+      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
+      RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
+      RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
+      
+      // static_cast to make sure to pass in IntElement&
+      MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
+      MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
+      
+      // check whether aux. plane coupling or not
+      if (CouplingInAuxPlane())
+        integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,
+            Cells()[i],Auxn(),lmtype,dseg,mseg,gseg);
+      else /*(!CouplingInAuxPlane()*/
+        dserror("ERROR: Only aux. plane version implemented for 3D quadratic mortar");
+      
+      // check for dual shape functions
+      if (shapefcn_ == MortarInterface::DualFunctions)
+        dserror("ERROR: Quadratic LM interpolation not yet implemented for DUAL 3D quadratic mortar");
+      
+      // assembly of intcell contributions to M (and possibly D)
+#ifdef MORTARONELOOP
+      integrator.AssembleD(Comm(),SlaveElement(),*dseg);
+#endif // #ifdef MORTARONELOOP
+      integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
+    }
+    
+    // *******************************************************************
+    // case (3)
+    // *******************************************************************
+    else if (Quad() && lmtype==INPAR::MORTAR::lagmult_pwlin_pwlin)
+    {
+      // prepare integration of M (and possibly D) on intcells
+      int nrow = SlaveElement().NumNode();
+      int ncol = MasterElement().NumNode();
+      int nintrow = SlaveIntElement().NumNode();
+      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),nrow*Dim()));
+      RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),ncol*Dim()));
+      RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
+      
+      // static_cast to make sure to pass in IntElement&
+      MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
+      MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
+      
+      // check whether aux. plane coupling or not
+      if (CouplingInAuxPlane())
+        integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,
+            Cells()[i],Auxn(),lmtype,dseg,mseg,gseg);
+      else /*(!CouplingInAuxPlane()*/
+        dserror("ERROR: Only aux. plane version implemented for 3D quadratic mortar");
+      
+      // check for dual shape functions
+      if (shapefcn_ == MortarInterface::DualFunctions)
+        dserror("ERROR: Linear LM interpolation not yet implemented for DUAL 3D quadratic mortar");
+            
+      // assembly of intcell contributions to M (and possibly D)
+      // (NOTE THAT THESE ARE SPECIAL VERSIONS HERE FOR PIECEWISE LINEAR INTERPOLATION)
+#ifdef MORTARONELOOP
+      integrator.AssembleD(Comm(),SlaveElement(),sintref,*dseg);
+#endif // #ifdef MORTARONELOOP
+      integrator.AssembleM(Comm(),sintref,MasterElement(),*mseg);
+    }
+    
+    // *******************************************************************
+    // case (4)
+    // *******************************************************************
+    else if (Quad() && LagMultQuad3D()==INPAR::MORTAR::lagmult_lin_lin)
+    {
+      dserror("ERROR: Linear LM interpolation not yet implemented for 3D quad. mortar");
+    }
+    
+    // *******************************************************************
+    // other cases
+    // *******************************************************************
+    else
+    {
+      dserror("ERROR: IntegrateCells: Invalid case for 3D mortar coupling LM interpolation");
+    }
+    // *******************************************************************
   }
+  
   return true;
 }
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-MORTAR::Coupling3dQuad::Coupling3dQuad(DRT::Discretization& idiscret, int dim, bool quad,
-                                bool auxplane,
+MORTAR::Coupling3dQuad::Coupling3dQuad(DRT::Discretization& idiscret,
+                                int dim, bool quad, bool auxplane,
                                 MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
                                 MORTAR::IntElement& sintele,
-                                MORTAR::IntElement& mintele) :
+                                MORTAR::IntElement& mintele,
+                                INPAR::MORTAR::LagMultQuad3D& lmtype) :
 MORTAR::Coupling3d(MortarInterface::Undefined,idiscret,dim,quad,auxplane,sele,mele),
 sintele_(sintele),
-mintele_(mintele)
+mintele_(mintele),
+lmtype_(lmtype)
 {
   // 3D quadratic coupling only for aux. plane case
   if (!CouplingInAuxPlane())
@@ -2811,14 +2902,16 @@ mintele_(mintele)
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
 MORTAR::Coupling3dQuad::Coupling3dQuad(const MortarInterface::ShapeFcnType shapefcn,
-                                DRT::Discretization& idiscret, int dim, bool quad,
-                                bool auxplane,
+                                DRT::Discretization& idiscret,
+                                int dim, bool quad, bool auxplane,
                                 MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
                                 MORTAR::IntElement& sintele,
-                                MORTAR::IntElement& mintele) :
+                                MORTAR::IntElement& mintele,
+                                INPAR::MORTAR::LagMultQuad3D& lmtype) :
 MORTAR::Coupling3d(shapefcn,idiscret,dim,quad,auxplane,sele,mele),
 sintele_(sintele),
-mintele_(mintele)
+mintele_(mintele),
+lmtype_(lmtype)
 {
   // 3D quadratic coupling only for aux. plane case
   if (!CouplingInAuxPlane())

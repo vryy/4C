@@ -297,7 +297,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   RCP<LINALG::SparseMatrix> mtilde = rcp(new LINALG::SparseMatrix(*gmdofrowmap_));
 
   // do the multiplication dtile = D * LinZ
-  dtilde = LINALG::Multiply(*dmatrix_, false, *linzmatrix_, false);
+  dtilde = LINALG::Multiply(*dmatrix_, true, *linzmatrix_, false);
   // do the multiplication mtilde = -M(transpose) * LinZ
   mtilde = LINALG::Multiply(*mmatrix_, true, *linzmatrix_, false);
 
@@ -329,7 +329,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
     // (this way, possible self contact is automatically included)
 
     RCP<Epetra_Vector> fcmdold = rcp(new Epetra_Vector(dold_->RowMap()));
-    dold_->Multiply(false, *zold_, *fcmdold);
+    dold_->Multiply(true, *zold_, *fcmdold);
     RCP<Epetra_Vector> fcmdoldtemp = rcp(new Epetra_Vector(*problemrowmap_));
     LINALG::Export(*fcmdold, *fcmdoldtemp);
     feff->Update(-alphaf_, *fcmdoldtemp, 1.0);
@@ -348,7 +348,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
 
   {
     RCP<Epetra_Vector> fcmd = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dmatrix_->Multiply(false, *z_, *fcmd);
+    dmatrix_->Multiply(true, *z_, *fcmd);
     RCP<Epetra_Vector> fcmdtemp = rcp(new Epetra_Vector(*problemrowmap_));
     LINALG::Export(*fcmd, *fcmdtemp);
     feff->Update(-(1-alphaf_), *fcmdtemp, 1.0);
@@ -368,7 +368,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
 
   {
     RCP<Epetra_Vector> fcmdold = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dold_->Multiply(false, *zold_, *fcmdold);
+    dold_->Multiply(true, *zold_, *fcmdold);
     RCP<Epetra_Vector> fcmdoldtemp = rcp(new Epetra_Vector(*gsmdofs));
     LINALG::Export(*fcmdold, *fcmdoldtemp);
     fc->Update(-alphaf_, *fcmdoldtemp, 1.0);
@@ -384,7 +384,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
 
   {
     RCP<Epetra_Vector> fcmd = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dmatrix_->Multiply(false, *z_, *fcmd);
+    dmatrix_->Multiply(true, *z_, *fcmd);
     RCP<Epetra_Vector> fcmdtemp = rcp(new Epetra_Vector(*gsmdofs));
     LINALG::Export(*fcmd, *fcmdtemp);
     fc->Update(-(1-alphaf_), *fcmdtemp, 1.0);
@@ -530,7 +530,7 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& kt
 
   RCP<LINALG::SparseMatrix> dtilde = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
   RCP<LINALG::SparseMatrix> mtilde = rcp(new LINALG::SparseMatrix(*gmdofrowmap_));
-  dtilde = LINALG::Multiply(*dmatrix_, false, *linzmatrix_, false);
+  dtilde = LINALG::Multiply(*dmatrix_, true, *linzmatrix_, false);
   mtilde = LINALG::Multiply(*mmatrix_, true, *linzmatrix_, false);
   kteff->Add(*dtilde, false, -(1.0-alphaf_), 1.0);
   kteff->Add(*mtilde, false, (1.0-alphaf_), 1.0);
@@ -539,7 +539,7 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& kt
   // (FIXME: redundant code to EvaluateContact(), expect for minus sign)
 
   RCP<Epetra_Vector> fcmdold = rcp(new Epetra_Vector(dold_->RowMap()));
-  dold_->Multiply(false, *zold_, *fcmdold);
+  dold_->Multiply(true, *zold_, *fcmdold);
   RCP<Epetra_Vector> fcmdoldtemp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fcmdold, *fcmdoldtemp);
   feff->Update(alphaf_, *fcmdoldtemp, 1.0);
@@ -551,7 +551,7 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& kt
   feff->Update(-alphaf_, *fcmmoldtemp, 1.0);
 
   RCP<Epetra_Vector> fcmd = rcp(new Epetra_Vector(*gsdofrowmap_));
-  dmatrix_->Multiply(false, *z_, *fcmd);
+  dmatrix_->Multiply(true, *z_, *fcmd);
   RCP<Epetra_Vector> fcmdtemp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fcmd, *fcmdtemp);
   feff->Update(1-alphaf_, *fcmdtemp, 1.0);

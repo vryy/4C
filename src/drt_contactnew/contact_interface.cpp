@@ -404,6 +404,10 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
       SplitIntElements(sele,sauxelements);
       SplitIntElements(mele,mauxelements);
 
+      // get LM interpolation and testing type
+      INPAR::MORTAR::LagMultQuad3D lmtype =
+        Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D");
+            
       // loop over all IntElement pairs for coupling
       for (int i=0;i<(int)sauxelements.size();++i)
       {
@@ -411,7 +415,7 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
         {
           // create instance of coupling class
           CONTACT::CoCoupling3dQuad coup(shapefcn_,Discret(),Dim(),true,auxplane,
-                        sele,mele,*sauxelements[i],*mauxelements[j]);
+                        sele,mele,*sauxelements[i],*mauxelements[j],lmtype);
           // do coupling
           coup.EvaluateCoupling();
         }
@@ -455,7 +459,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
     sxib[0] =  1.0; sxib[1] =  1.0;
   }
 
-  // check for quadratic 3D case
+  // check for auxiliary plane 3D version
   bool auxplane = Teuchos::getIntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
 
   // ************************************************** quadratic 3D ***
@@ -464,33 +468,63 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
     // only for auxiliary plane 3D version
     if (!auxplane) dserror("ERROR: Quadratic 3D contact only for AuxPlane case!");
 
+    // get LM interpolation and testing type
+    INPAR::MORTAR::LagMultQuad3D lmtype =
+      Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D");
+          
     // build linear integration elements from quadratic CElements
     vector<RCP<MORTAR::IntElement> > sauxelements(0);
     SplitIntElements(sele,sauxelements);
 
-    for (int i=0;i<(int)sauxelements.size();++i)
+    // different options for mortar integration
+    if (lmtype == INPAR::MORTAR::lagmult_quad_quad)
     {
-      // do the int element integration of kappa and store into gap
-#ifdef CONTACTPETROVGALERKIN
-      int nrow = sauxelements[i]->NumNode();
-#else
+      // check whether this is feasible (ONLY for quad9 surfaces)
+      if (sele.Shape()==DRT::Element::quad8 || sele.Shape()==DRT::Element::tri6)
+        dserror("ERROR: Quadratic/Quadratic LM interpolation for 3D quadratic contact only feasible for quad9-surfaces");
+            
+      // do the element integration of kappa and store into gap
       int nrow = sele.NumNode();
-#endif // #ifdef CONTACTPETROVGALERKIN
       RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
 
       // create a CONTACT integrator instance with correct NumGP and Dim
-      CONTACT::CoIntegrator integrator(shapefcn_,sauxelements[i]->Shape());
-      integrator.IntegrateKappaPenalty(sele,*(sauxelements[i]),sxia,sxib,gseg);
+      CONTACT::CoIntegrator integrator(shapefcn_,sele.Shape());
+      integrator.IntegrateKappaPenalty(sele,sxia,sxib,gseg);
 
       // do the assembly into the slave nodes
-#ifdef CONTACTPETROVGALERKIN
-      integrator.AssembleG(Comm(),*(sauxelements[i]),*gseg);
-#else
       integrator.AssembleG(Comm(),sele,*gseg);
-#endif //#ifdef CONTACTPETROVGALERKIN
+    }
+    
+    else if (lmtype == INPAR::MORTAR::lagmult_pwlin_pwlin)
+    {
+      // integrate each int element seperately
+      for (int i=0;i<(int)sauxelements.size();++i)
+      {
+        // do the int element integration of kappa and store into gap
+        int nrow = sauxelements[i]->NumNode();
+        RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+
+        // create a CONTACT integrator instance with correct NumGP and Dim
+        CONTACT::CoIntegrator integrator(shapefcn_,sauxelements[i]->Shape());
+        integrator.IntegrateKappaPenalty(sele,*(sauxelements[i]),sxia,sxib,gseg,lmtype);
+
+        // do the assembly into the slave nodes
+        integrator.AssembleG(Comm(),*(sauxelements[i]),*gseg);
+      }
+    }
+    
+    else if (lmtype == INPAR::MORTAR::lagmult_lin_lin)
+    {
+      dserror("ERROR: Linear LM interpolation not yet implemented for 3D quad. contact");
+    }
+    
+    else
+    {
+      dserror("ERROR: IntegrateKappaPenalty: Invalid case for 3D mortar contact LM interpolation");
     }
   }
 
+  // *************************************************** other cases ***
   else
   {
     // do the element integration of kappa and store into gap
@@ -505,15 +539,6 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
     integrator.AssembleG(Comm(),sele,*gseg);
   }
   
-  // Check if PETROVGALERKIN-approach is switched on for tri6/hex20
-  // in the frictional case
-#ifdef CONTACTPETROVGALERKIN
-#ifndef CONTACTPETROVGALERKINFRIC
-  if (friction_ && (sele.Shape()==DRT::Element::tri6 || sele.Shape()==DRT::Element::quad8) )
-    dserror("Frictional contact needs flag: PETROVGALERKINFRIC for tri6/quad8");
-#endif
-#endif
-
   return true;
 }
 
@@ -589,13 +614,8 @@ void CONTACT::CoInterface::EvaluateRelMov()
 
     if(activeinfuture==true)
     {
-#ifdef CONTACTPETROVGALERKINFRIC
-      vector<map<int,double> > dmap = cnode->Data().GetDPG();
-      vector<map<int,double> > dmapold = cnode->Data().GetDOldPG();
-#else
       vector<map<int,double> > dmap = cnode->MoData().GetD();
       vector<map<int,double> > dmapold = cnode->Data().GetDOld();
-#endif
 
       set <int> snodes = cnode->Data().GetSNodes();
 
@@ -626,13 +646,8 @@ void CONTACT::CoInterface::EvaluateRelMov()
         }
       } //  loop over adjacent slave nodes
 
-#ifdef CONTACTPETROVGALERKINFRIC
-      vector<map<int,double> > mmap = cnode->Data().GetMPG();
-      vector<map<int,double> > mmapold = cnode->Data().GetMOldPG();
-#else
       vector<map<int,double> > mmap = cnode->MoData().GetM();
       vector<map<int,double> > mmapold = cnode->Data().GetMOld();
-#endif
 
       set <int> mnodescurrent = cnode->Data().GetMNodes();
       set <int> mnodesold = cnode->Data().GetMNodesOld();
@@ -719,11 +734,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
 
       /*** 03 ***********************************************************/
       // we need the Lin(D-matrix) entries of this node
-#ifdef CONTACTPETROVGALERKINFRIC
-      map<int,map<int,double> >& ddmap = cnode->Data().GetDerivDPG();
-#else
       map<int,map<int,double> >& ddmap = cnode->CoData().GetDerivD();
-#endif
       map<int,map<int,double> >::iterator dscurr;
 
       // loop over all slave nodes in the DerivM-map of the stick slave node
@@ -736,11 +747,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
         double* dxi = csnode->xspatial();
 
         // compute entry of the current stick node / slave node pair
-#ifdef CONTACTPETROVGALERKINFRIC
-        map<int,double>& thisdmmap = cnode->Data().GetDerivDPG(gid);
-#else
         map<int,double>& thisdmmap = cnode->CoData().GetDerivD(gid);
-#endif
 
         // loop over all entries of the current derivative map
         for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -758,12 +765,7 @@ void CONTACT::CoInterface::EvaluateRelMov()
 
       /*** 04 ***********************************************************/
       // we need the Lin(M-matrix) entries of this node
-#ifdef CONTACTPETROVGALERKINFRIC
-      map<int,map<int,double> >& dmmap = cnode->Data().GetDerivMPG();
-#else
       map<int,map<int,double> >& dmmap = cnode->CoData().GetDerivM();
-#endif
-
       map<int,map<int,double> >::iterator dmcurr;
 
       // loop over all master nodes in the DerivM-map of the stick slave node
@@ -776,12 +778,8 @@ void CONTACT::CoInterface::EvaluateRelMov()
         double* mxi = cmnode->xspatial();
 
         // compute entry of the current stick node / master node pair
-#ifdef CONTACTPETROVGALERKINFRIC
-        map<int,double>& thisdmmap = cnode->Data().GetDerivMPG(gid);
-#else
         map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
-#endif
-
+        
         // loop over all entries of the current derivative map
         for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
         {
@@ -2146,136 +2144,80 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
   if (!lComm())
     return;
   
-  /********************************************** LinDMatrix **********/
-  // This is easy and can be done without communication, as the global
-  // matrix lind has the same row map as the storage of the derivatives
-  // of the D matrix.
   /**********************************************************************/
-
-  // loop over all slave nodes (row map)
-  for (int i=0; i<snoderowmap_->NumMyElements(); ++i) // jtilde
-  {
-    int gid = snoderowmap_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
-
-    int dim = cnode->NumDof();
-
-    // Mortar matrix D derivatives
-    map<int,map<int,double> >& dderiv = cnode->CoData().GetDerivD();
-
-    map<int,double>::iterator colcurr;
-    map<int,map<int,double> >::iterator dcurr;
-
-    for( int j=0; j<dim; ++j ) // j
-    {
-      int row = cnode->Dofs()[j];
-
-      // loop over all slave nodes dof again using the map iterator
-      for ( dcurr = dderiv.begin(); dcurr != dderiv.end(); ++dcurr  ) // ktilde
-      {
-        // get the corresponding node
-        DRT::Node* snode = idiscret_->gNode(dcurr->first);
-        if (!snode)
-          dserror("ERROR: Cannot find node with gid %",dcurr->first);
-        CoNode* csnode = static_cast<CoNode*>(snode);
-
-        double* lm = csnode->MoData().lm();
-
-        // get dderiv row
-        map<int,double>& dderivrow = dderiv[dcurr->first];
-
-        // loop over all directional derivative entries using the map iterator
-        for( colcurr = dderivrow.begin(); colcurr != dderivrow.end(); ++colcurr ) // l
-        {
-          int col = colcurr->first;
-          double val = lm[j] * (colcurr->second);
-          lindglobal.Assemble(val, row, col);
-        }
-      }
-    }
-
-    /** old version, using dual shape functions **
-    // Mortar matrix D derivatives
-    map<int,double>& dderiv = cnode->CoData().GetDerivD();
-    map<int,double>::iterator colcurr;
-
-    // current Lagrange multipliers
-    double* lm = cnode->MoData().lm();
-
-    // loop over all slave node dofs for assembly
-    for (int j=0; j<numdof; ++j)
-    {
-      int row = cnode->Dofs()[j]; // row index equals global dof index of this #i slave node's dof j
-
-      cout << "  j=" << j  << " row=" << row ;
-
-      // loop over all directional derivative entries
-      for (colcurr=dderiv.begin(); colcurr!=dderiv.end(); ++colcurr)
-      {
-        int col = colcurr->first; // col index equals global id of directional derivative component ,l
-
-        double val = lm[j] * (colcurr->second);
-
-        cout << " | col=" << col << ", val=" << val << " | ";
-
-        if (abs(val)>1.0e-12)
-          lindglobal.Assemble(val, row, col);
-      }
-
-      cout << " " << endl;
-    }
-    */
-  }
-
-  /********************************************** LinMMatrix ************/
   // This is a quite complex task and we have to do a lot of parallel
   // communication here!!! The reason for this is that the directional
-  // derivative of M is stored slave-node-wise meaning that we can only
-  // address the derivative of M via the slave node row map! But now
-  // we have to assemble into a matrix linm which is based on the
-  // master node row map!!! This is not straight forward as we CANNOT
-  // do this without communication: when we have collected one slave
-  // node's contribution to linm we have to assemble this portion to
-  // the respective master nodes in parallel! Only the processor owning
-  // the master node can do this! Therefore, we communicate the derivatives
-  // of M to all procs and then explicitly call the current master proc
-  // to do the assembly into the sparse matrix linm.
+  // derivatives of D and M are stored slave-node-wise meaning that we
+  // can only address the derivatives of D and M via the slave node row
+  // map coorresponding to the Lagrange multiplier dofs! But now we have
+  // to assemble into matrices lind and linm which are based on the slave
+  // node row map corresponding to the slave displacements and to the
+  // master node row map respectively!!! This is not straight forward as
+  // we CANNOT do this without communication: when we have collected one
+  // LM slave node's contribution to lind and linm we have to assemble
+  // these portions to the respective DISP slave nodes and master nodes in
+  // parallel! Only the processor owning the DISP slave node or master node
+  // can do this! Therefore, we communicate the derivatives of D and M to
+  // all procs and then explicitly call the current DISP slave proc or
+  // master to do the assembly into lind or linm respectively.
+  /**********************************************************************/
+  // we have: D_jk,c with j = Lagrange multiplier slave dof
+  //                 with k = Displacement slave dof
+  //                 with c = Displacement slave or master dof
+  // we compute (LinD)_kc = D_jk,c * z_j
+  // (thus if D was always symmetric, we could do without communication
+  // as it would not matter if we assemble D_jk,c * z_k or D_jk,c * z_j)
+  /**********************************************************************/
+  // we have: M_jl,c with j = Lagrange multiplier slave dof
+  //                 with l = Displacement master dof
+  //                 with c = Displacement slave or master dof
+  // we compute (LinM)_lc = M_jl,c * z_j
   /**********************************************************************/
 
-  // loop over all slave nodes (full map)
-  for (int i=0;i<snodefullmap_->NumMyElements();++i)
+  // loop over all LM slave nodes (full map)
+  for (int j=0;j<snodefullmap_->NumMyElements();++j)
   {
-    int gid = snodefullmap_->GID(i);
+    int gid = snodefullmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = static_cast<CoNode*>(node);
     int dim = cnode->NumDof();
     
-    // create variables
-     map<int,double>::iterator colcurr;
-     map<int,map<int,double> >::iterator mcurr;
-     double* lm = NULL;
-     int mastersize = 0;
-     map<int,map<int,double> > tempmap;
-     map<int,map<int,double> >& mderiv = tempmap;
+    // Lagrange multipliers
+    double* lm = NULL;
+    
+    // create variables for computation of LinD
+    map<int,double>::iterator scolcurr;
+    map<int,map<int,double> >::iterator scurr;
+    int slavesize = 0;
+    map<int,map<int,double> > dtempmap;
+    map<int,map<int,double> >& dderiv = dtempmap;
+    
+    // create variables for computation of LinM
+    map<int,double>::iterator mcolcurr;
+    map<int,map<int,double> >::iterator mcurr;
+    int mastersize = 0;
+    map<int,map<int,double> > mtempmap;
+    map<int,map<int,double> >& mderiv = mtempmap;
+        
+    // inter-proc. communication
+    // (we want to keep all procs around, although at the moment only
+    // the cnode owning proc does relevant work!)
+    if (Comm().MyPID()==cnode->Owner())
+    {
+      // Mortar matrix D and M derivatives
+      dderiv = cnode->CoData().GetDerivD();
+      mderiv = cnode->CoData().GetDerivM();
 
-     // inter-proc. communication
-     // (we want to keep all procs around, although at the moment only
-     // the cnode owning proc does relevant work!)
-     if (Comm().MyPID()==cnode->Owner())
-     {
-       // Mortar matrix M derivatives
-       mderiv = cnode->CoData().GetDerivM();
+      // current Lagrange multipliers
+      lm = cnode->MoData().lm();
 
-       // current Lagrange multipliers
-       lm = cnode->MoData().lm();
-
-       // get sizes and iterator start
-       mastersize = (int)mderiv.size();
-       mcurr = mderiv.begin();
-     }
+      // get sizes and iterator start
+      slavesize = (int)dderiv.size();
+      mastersize = (int)mderiv.size();
+      scurr = dderiv.begin();
+      mcurr = mderiv.begin();
+    }
 
     //********************************************************************
     // important notes:
@@ -2284,9 +2226,84 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
     // 2) the broadcasting proc has to be given in lComm numbering, not
     // Comm numbering, which is achieved by calling the map procmap_
     //********************************************************************
+    lComm()->Broadcast(&slavesize,1,procmap_[cnode->Owner()]);
     lComm()->Broadcast(&mastersize,1,procmap_[cnode->Owner()]);
     
-    // loop over all master nodes in the DerivM-map of the current slave node
+    /********************************************** LinDMatrix **********/
+    // loop over all DISP slave nodes in the DerivD-map of the current LM slave node
+    for (int k=0;k<slavesize;++k)
+    {
+      int sgid = 0;
+      if (Comm().MyPID()==cnode->Owner())
+      {
+        sgid = scurr->first;
+        ++scurr;
+      }
+      lComm()->Broadcast(&sgid,1,procmap_[cnode->Owner()]);
+
+      DRT::Node* snode = idiscret_->gNode(sgid);
+      if (!snode) dserror("ERROR: Cannot find node with gid %",sgid);
+      CoNode* csnode = static_cast<CoNode*>(snode);
+      
+      // create variables
+      int mapsize = 0;
+      map<int,double> tempmap2;
+      map<int,double>& thisdderiv = tempmap2;
+
+      // Mortar matrix D derivatives
+      if (Comm().MyPID()==cnode->Owner())
+      {
+        thisdderiv = cnode->CoData().GetDerivD()[sgid];
+        mapsize = (int)(thisdderiv.size());
+      }
+      lComm()->Broadcast(&mapsize,1,procmap_[cnode->Owner()]);
+ 
+      // inner product D_{jk,c} * z_j for index j
+      for (int prodj=0;prodj<dim;++prodj)
+      {
+        int row = csnode->Dofs()[prodj];
+
+        if (Comm().MyPID()==cnode->Owner())
+          scolcurr = thisdderiv.begin();
+
+        // loop over all directional derivative entries
+        for (int c=0;c<mapsize;++c)
+        {
+          int col = 0;
+          double val = 0.0;
+          if (Comm().MyPID()==cnode->Owner())
+          {
+            col = scolcurr->first;
+            val = lm[prodj] * (scolcurr->second);
+            ++scolcurr;
+          }
+          // barrier here!
+          lComm()->Barrier();
+          lComm()->Broadcast(&col,1,procmap_[cnode->Owner()]);
+          lComm()->Broadcast(&val,1,procmap_[cnode->Owner()]);
+
+          // owner of DISP slave node has to do the assembly!!!
+          if (Comm().MyPID()==csnode->Owner())
+          {
+            //cout << "Assemble LinD: " << row << " " << col << " " << val << endl;
+            if (abs(val)>1.0e-12) lindglobal.Assemble(val,row,col);
+          }
+        }
+
+        // check for completeness of DerivD-Derivatives-iteration
+        if (Comm().MyPID()==cnode->Owner() && scolcurr!=thisdderiv.end())
+          dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivD considered!");
+      }
+    }
+
+    // check for completeness of DerivD-Slave-iteration
+    if (Comm().MyPID()==cnode->Owner() && scurr!=dderiv.end())
+      dserror("ERROR: AssembleLinDM: Not all DISP slave entries of DerivD considered!");
+    /******************************** Finished with LinDMatrix **********/
+    
+        
+    /********************************************** LinMMatrix **********/
+    // loop over all master nodes in the DerivM-map of the current LM slave node
     for (int l=0;l<mastersize;++l)
     {
       int mgid = 0;
@@ -2302,25 +2319,25 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
       CoNode* cmnode = static_cast<CoNode*>(mnode);
       
       // create variables
-       int mapsize = 0;
-       map<int,double> tempmap2;
-       map<int,double>& thismderiv = tempmap2;
+      int mapsize = 0;
+      map<int,double> tempmap2;
+      map<int,double>& thismderiv = tempmap2;
 
-       // Mortar matrix M derivatives
-       if (Comm().MyPID()==cnode->Owner())
-       {
-         thismderiv = cnode->CoData().GetDerivM()[mgid];
-         mapsize = (int)(thismderiv.size());
-       }
-       lComm()->Broadcast(&mapsize,1,procmap_[cnode->Owner()]);
- 
-      // inner product M_{lj,c} * z_j for index j
-      for (int j=0;j<dim;++j)
+      // Mortar matrix M derivatives
+      if (Comm().MyPID()==cnode->Owner())
       {
-        int row = cmnode->Dofs()[j];
+        thismderiv = cnode->CoData().GetDerivM()[mgid];
+        mapsize = (int)(thismderiv.size());
+      }
+      lComm()->Broadcast(&mapsize,1,procmap_[cnode->Owner()]);
+ 
+      // inner product M_{jl,c} * z_j for index j
+      for (int prodj=0;prodj<dim;++prodj)
+      {
+        int row = cmnode->Dofs()[prodj];
 
         if (Comm().MyPID()==cnode->Owner())
-          colcurr = thismderiv.begin();
+          mcolcurr = thismderiv.begin();
 
         // loop over all directional derivative entries
         for (int c=0;c<mapsize;++c)
@@ -2329,9 +2346,9 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
           double val = 0.0;
           if (Comm().MyPID()==cnode->Owner())
           {
-            col = colcurr->first;
-            val = lm[j] * (colcurr->second);
-            ++colcurr;
+            col = mcolcurr->first;
+            val = lm[prodj] * (mcolcurr->second);
+            ++mcolcurr;
           }
           // barrier here!
           lComm()->Barrier();
@@ -2347,7 +2364,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
         }
 
         // check for completeness of DerivM-Derivatives-iteration
-        if (Comm().MyPID()==cnode->Owner() && colcurr!=thismderiv.end())
+        if (Comm().MyPID()==cnode->Owner() && mcolcurr!=thismderiv.end())
           dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivM considered!");
       }
     }
@@ -2355,6 +2372,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
     // check for completeness of DerivM-Master-iteration
     if (Comm().MyPID()==cnode->Owner() && mcurr!=mderiv.end())
       dserror("ERROR: AssembleLinDM: Not all master entries of DerivM considered!");
+    /******************************** Finished with LinMMatrix **********/
   }
   
   return;
@@ -2405,13 +2423,11 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
       // when applying a Petrov-Galerkin scheme with standard shape functions
       // for the weighted gap interpolation this problem does not exist
       // FIXME: Only the linear case considered here (popp 04/09)
-#ifndef CONTACTPETROVGALERKIN
       if (!cnode->HasProj() && !cnode->Active())
       {
         gap = 1.0e12;
         cnode->CoData().Getg()=gap;
       }
-#endif // #ifndef CONTACTPETROVGALERKIN
 
       Epetra_SerialDenseVector gnode(1);
       vector<int> lm(1);

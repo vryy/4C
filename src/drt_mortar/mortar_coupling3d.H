@@ -44,6 +44,7 @@ Maintainer: Alexander Popp
 #include "mortar_interface.H"
 #include "mortar_coupling3d_classes.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_inpar/inpar_mortar.H"
 
 using namespace std;
 
@@ -88,8 +89,8 @@ public:
   To be able to evaluate them, the Coupling3d have to be created with the alternative constructor (see below).
   
   */
-  Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
-             bool auxplane,
+  Coupling3d(DRT::Discretization& idiscret,
+             int dim, bool quad, bool auxplane,
              MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
   /*!
@@ -101,8 +102,8 @@ public:
   
   */
   Coupling3d(const MortarInterface::ShapeFcnType shapefcn, 
-             DRT::Discretization& idiscret, int dim, bool quad,
-             bool auxplane,
+             DRT::Discretization& idiscret,
+             int dim, bool quad, bool auxplane,
              MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
   /*!
@@ -229,6 +230,12 @@ public:
 
   */
   virtual vector<map<int,double> >& GetDerivAuxn() { return derivauxn_; }
+  
+  /*!
+  \brief Return the Lagrange multiplier interpolation and testing type
+
+  */
+  virtual INPAR::MORTAR::LagMultQuad3D LagMultQuad3D() { return INPAR::MORTAR::lagmult_undefined; }
 
   //@}
 
@@ -483,7 +490,8 @@ public:
   Coupling3dQuad(DRT::Discretization& idiscret,
                  int dim, bool quad, bool auxplane,
                  MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-                 MORTAR::IntElement& sintele, MORTAR::IntElement& mintele);
+                 MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
+                 INPAR::MORTAR::LagMultQuad3D& lmtype);
 
   /*!
   \brief Constructor with shape function specification
@@ -497,7 +505,8 @@ public:
                  DRT::Discretization& idiscret,
                  int dim, bool quad, bool auxplane,
                  MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-                 MORTAR::IntElement& sintele, MORTAR::IntElement& mintele);
+                 MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
+                 INPAR::MORTAR::LagMultQuad3D& lmtype);
   
   /*!
   \brief Destructor
@@ -519,6 +528,12 @@ public:
   */
   MORTAR::IntElement& MasterIntElement() const { return mintele_; }
 
+  /*!
+  \brief Return the Lagrange multiplier interpolation and testing type
+
+  */
+  INPAR::MORTAR::LagMultQuad3D LagMultQuad3D() { return lmtype_; }
+  
   //@}
 
 protected:
@@ -527,8 +542,9 @@ protected:
     Coupling3dQuad operator = (const Coupling3dQuad& old);
     Coupling3dQuad(const Coupling3dQuad& old);
 
-    MORTAR::IntElement&   sintele_;     // slave sub-integration element
-    MORTAR::IntElement&   mintele_;     // slave sub-integration element
+    MORTAR::IntElement&            sintele_;     // slave sub-integration element
+    MORTAR::IntElement&            mintele_;     // slave sub-integration element 
+    INPAR::MORTAR::LagMultQuad3D&  lmtype_;      // type of LM interpolation and testing
 
 }; // class Coupling3dQuad
 }  // namespace MORTAR

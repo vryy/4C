@@ -149,74 +149,127 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     // integrate cell only if not neglectable
     if (intcellarea < MORTARINTLIM*selearea) continue;
 
-    // do the cell integration (integrate and linearize both M and gap)
     // *******************************************************************
-    // ************ Coupling with or without auxiliary plane *************
+    // different options for mortar integration
     // *******************************************************************
-    int nrow = SlaveElement().NumNode();
-    int ncol = MasterElement().NumNode();
-    int nintrow = SlaveIntElement().NumNode();
-    RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-    RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
-
-    // Evaluation of D and M-entries according to Petrov-Galerkin approach
-    RCP<Epetra_SerialDenseMatrix> dsegPG = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),nrow*Dim()));
-    RCP<Epetra_SerialDenseMatrix> msegPG = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),ncol*Dim()));
+    // (1) no quadratic element(s) involved -> linear LM interpolation
+    // (2) quadratic element(s) involved -> quadratic LM interpolation
+    // (3) quadratic element(s) involved -> piecew. linear LM interpolation
+    // (4) quadratic element(s) involved -> linear LM interpolation
+    // *******************************************************************
+    INPAR::MORTAR::LagMultQuad3D lmtype = LagMultQuad3D();
     
-#ifdef CONTACTPETROVGALERKIN
-    RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nintrow));
-#else
-    RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
-#endif // #ifdefd CONTACTPETROVGALERKIN
-
-    if (CouplingInAuxPlane())
-    {
-      if (Quad())
-      {
-        // static_cast to make sure to pass in IntElement&
-        MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
-        MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
-        integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),
-                 sintref,mintref,Cells()[i],Auxn(),dseg,mseg,dsegPG,msegPG,gseg);
-      }
-      else
-        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),
-                                                  Cells()[i],Auxn(),dseg,mseg,gseg);
-    }
-    else /*(!CouplingInAuxPlane()*/
-      integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg);
     // *******************************************************************
-
-    // do the three assemblies into the slave nodes
-#ifdef MORTARONELOOP
-    integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-#endif // #ifdef MORTARONELOOP
-    integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
-
-    // also do assembly of weighted gap vector
-    // for assembly of g we take into account the PetrovGalerkin idea
-    if (CouplingInAuxPlane() && Quad())
+    // case (1)
+    // *******************************************************************
+    if (!Quad())
     {
-#ifdef CONTACTPETROVGALERKIN
-      // gap interpolation is based on piecewise linear approach
-      integrator.AssembleG(Comm(),SlaveIntElement(),*gseg);
-#else
-      // hap interpolation is based on truly quadratic approach
+      // prepare integration and linearization of M, g (and possibly D) on intcells
+      int nrow = SlaveElement().NumNode();
+      int ncol = MasterElement().NumNode();
+      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
+      RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
+      RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+  
+      if (CouplingInAuxPlane())
+        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg);
+      else /*(!CouplingInAuxPlane()*/
+        integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg);
+  
+      // do the assembly into the slave nodes
+#ifdef MORTARONELOOP
+      integrator.AssembleD(Comm(),SlaveElement(),*dseg);
+#endif // #ifdef MORTARONELOOP
+      integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
       integrator.AssembleG(Comm(),SlaveElement(),*gseg);
-#endif // #ifdef CONTACTPETROVGALERKIN
     }
-    else
+    
+    // *******************************************************************
+    // case (2)
+    // *******************************************************************
+    else if (Quad() && lmtype==INPAR::MORTAR::lagmult_quad_quad)
+    {
+      // check whether this is feasible (ONLY for quad9 surfaces)
+      if (SlaveElement().Shape()==DRT::Element::quad8 || SlaveElement().Shape()==DRT::Element::tri6)
+        dserror("ERROR: Quadratic/Quadratic LM interpolation for 3D quadratic contact only feasible for quad9-surfaces");
+      
+      // prepare integration and linearization of M, g (and possibly D) on intcells
+      int nrow = SlaveElement().NumNode();
+      int ncol = MasterElement().NumNode();
+      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
+      RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
+      RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+      
+      // static_cast to make sure to pass in IntElement&
+      MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
+      MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
+      
+      // check whether aux. plane coupling or not
+      if (CouplingInAuxPlane())
+        integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,
+            Cells()[i],Auxn(),lmtype,dseg,mseg,gseg);
+      else /*(!CouplingInAuxPlane()*/
+        dserror("ERROR: Only aux. plane version implemented for 3D quadratic contact");
+      
+      // do the assembly into the slave nodes
+#ifdef MORTARONELOOP
+      integrator.AssembleD(Comm(),SlaveElement(),*dseg);
+#endif // #ifdef MORTARONELOOP
+      integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
       integrator.AssembleG(Comm(),SlaveElement(),*gseg);
-
-    // assemble the mortar matrices gained in the case of Petrov-Galerkin
-    // approach in the case of frictional contact
-  #ifdef CONTACTPETROVGALERKINFRIC
-  #ifdef MORTARONELOOP
-    integrator.AssembleDPG(Comm(),SlaveIntElement(),SlaveElement(),*dsegPG);
-  #endif
-    integrator.AssembleMPG(Comm(),SlaveIntElement(),MasterElement(),*msegPG);
-  #endif
+    }
+    
+    // *******************************************************************
+    // case (3)
+    // *******************************************************************
+    else if (Quad() && lmtype==INPAR::MORTAR::lagmult_pwlin_pwlin)
+    {
+      // prepare integration and linearization of M, g (and possibly D) on intcells
+      int nrow = SlaveElement().NumNode();
+      int ncol = MasterElement().NumNode();
+      int nintrow = SlaveIntElement().NumNode();
+      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),nrow*Dim()));
+      RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),ncol*Dim()));
+      RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nintrow));
+      
+      // static_cast to make sure to pass in IntElement&
+      MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
+      MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
+      
+      // check whether aux. plane coupling or not
+      if (CouplingInAuxPlane())
+        integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,
+            Cells()[i],Auxn(),lmtype,dseg,mseg,gseg);
+      else /*(!CouplingInAuxPlane()*/
+        dserror("ERROR: Only aux. plane version implemented for 3D quadratic contact");
+      
+      // do the assembly into the slave nodes
+      // (NOTE THAT THESE ARE SPECIAL VERSIONS HERE FOR PIECEWISE LINEAR INTERPOLATION)
+#ifdef MORTARONELOOP
+      integrator.AssembleD(Comm(),SlaveElement(),sintref,*dseg);
+#endif // #ifdef MORTARONELOOP
+      integrator.AssembleM(Comm(),sintref,MasterElement(),*mseg);
+      integrator.AssembleG(Comm(),sintref,*gseg);
+    }
+    
+    // *******************************************************************
+    // case (4)
+    // *******************************************************************
+    else if (Quad() && lmtype==INPAR::MORTAR::lagmult_lin_lin)
+    {
+      dserror("ERROR: lin contact not yet implemented");
+    }
+    
+    // *******************************************************************
+    // other cases
+    // *******************************************************************
+    else
+    {
+      dserror("ERROR: IntegrateCells: Invalid case for 3D mortar contact LM interpolation");
+    }
+    // *******************************************************************
   }
+  
   return true;
 }
 
@@ -1209,14 +1262,16 @@ bool CONTACT::CoCoupling3d::CenterLinearization(const vector<vector<map<int,doub
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-CONTACT::CoCoupling3dQuad::CoCoupling3dQuad(DRT::Discretization& idiscret, int dim, bool quad,
-                                bool auxplane,
+CONTACT::CoCoupling3dQuad::CoCoupling3dQuad(DRT::Discretization& idiscret,
+                                int dim, bool quad, bool auxplane,
                                 MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
                                 MORTAR::IntElement& sintele,
-                                MORTAR::IntElement& mintele) :
+                                MORTAR::IntElement& mintele,
+                                INPAR::MORTAR::LagMultQuad3D& lmtype) :
 CONTACT::CoCoupling3d(MORTAR::MortarInterface::Undefined,idiscret,dim,quad,auxplane,sele,mele),
 sintele_(sintele),
-mintele_(mintele)
+mintele_(mintele),
+lmtype_(lmtype)
 {
   // 3D quadratic coupling only for aux. plane case
   if (!CouplingInAuxPlane())
@@ -1233,14 +1288,16 @@ mintele_(mintele)
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
 CONTACT::CoCoupling3dQuad::CoCoupling3dQuad(const MORTAR::MortarInterface::ShapeFcnType shapefcn,
-                                DRT::Discretization& idiscret, int dim, bool quad,
-                                bool auxplane,
+                                DRT::Discretization& idiscret,
+                                int dim, bool quad, bool auxplane,
                                 MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
                                 MORTAR::IntElement& sintele,
-                                MORTAR::IntElement& mintele) :
+                                MORTAR::IntElement& mintele,
+                                INPAR::MORTAR::LagMultQuad3D& lmtype) :
 CONTACT::CoCoupling3d(shapefcn,idiscret,dim,quad,auxplane,sele,mele),
 sintele_(sintele),
-mintele_(mintele)
+mintele_(mintele),
+lmtype_(lmtype)
 {
   // 3D quadratic coupling only for aux. plane case
   if (!CouplingInAuxPlane())

@@ -938,13 +938,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("COUPLING_AUXPLANE","Yes","If chosen auxiliary planes are used for 3D coupling",
                                yesnotuple,yesnovalue,&scontact);
 
-  setStringToIntegralParameter<INPAR::MORTAR::LagMultQuad3D>("LAGMULT_QUAD3D","quad_quad","Type of LM interpolation and testing functions",
-                               tuple<std::string>("quad_quad", "quadratic_quadratic",
+  setStringToIntegralParameter<INPAR::MORTAR::LagMultQuad3D>("LAGMULT_QUAD3D","undefined","Type of LM ansatz/testing fct.",
+                               tuple<std::string>("undefined",
+                                                  "quad_quad", "quadratic_quadratic",
                                                   "quad_pwlin", "quadratic_piecewiselinear",
                                                   "quad_lin", "quadratic_linear",
                                                   "pwlin_pwlin", "piecewiselinear_piecewiselinear",
                                                   "lin_lin","linear_linear"),
                                tuple<INPAR::MORTAR::LagMultQuad3D>(
+                                          INPAR::MORTAR::lagmult_undefined,
                                           INPAR::MORTAR::lagmult_quad_quad, INPAR::MORTAR::lagmult_quad_quad,
                                           INPAR::MORTAR::lagmult_quad_pwlin, INPAR::MORTAR::lagmult_quad_pwlin,
                                           INPAR::MORTAR::lagmult_quad_lin, INPAR::MORTAR::lagmult_quad_lin,

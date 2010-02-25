@@ -264,7 +264,7 @@ public:
   called ONCE at the beginning of the simulation and evaluates the
   penalty scaling factor kappa_j = int_{slave} (N_j) dslave. The
   correct interpolation N_j is chosen for any case (2D, 3D, linear
-  quadratic, CONTACTPETROVGALERKIN...)
+  quadratic, piecewise linear...)
   
   TODO: maybe update kappa each time step?
 

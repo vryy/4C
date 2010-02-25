@@ -4,7 +4,7 @@
 //             http://www.lnm.mw.tum.de
 //             089 - 289-15251
 //
-// necessary defines: CCADISCRET D_SOLID3 BINIO CONTACTPETROVGALERKIN CONTACTPETROVGALERKINFRIC
+// necessary defines: CCADISCRET D_SOLID3 BINIO
 //
 ==================================================================
         General Data File CCARAT
@@ -80,6 +80,7 @@ SEMI_SMOOTH_CT       1.0
 SEARCH_ALGORITHM     Binarytree
 SEARCH_PARAM         2.0
 COUPLING_AUXPLANE    Yes
+LAGMULT_QUAD3D       pwlin_pwlin
 -----------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC

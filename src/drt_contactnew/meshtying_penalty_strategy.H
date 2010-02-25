@@ -193,8 +193,8 @@ protected:
   
   RCP<LINALG::SparseMatrix>  mtm_;                // mortar matrix product: M(^T)*M
   RCP<LINALG::SparseMatrix>  mtd_;                // mortar matrix product: M(^T)*D
-  RCP<LINALG::SparseMatrix>  dm_;                 // mortar matrix product: D*M
-  RCP<LINALG::SparseMatrix>  dd_;                 // mortar matrix product: D*D
+  RCP<LINALG::SparseMatrix>  dtm_;                // mortar matrix product: D(^T)*M
+  RCP<LINALG::SparseMatrix>  dtd_;                // mortar matrix product: D(^T)*D
   
 
 }; // class MtPenaltyStrategy

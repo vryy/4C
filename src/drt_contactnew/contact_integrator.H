@@ -169,10 +169,9 @@ public:
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
      RCP<MORTAR::Intcell> cell, double* auxn,
+     INPAR::MORTAR::LagMultQuad3D lmtype,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
-     RCP<Epetra_SerialDenseMatrix> dsegPG,
-     RCP<Epetra_SerialDenseMatrix> msegPG,
      RCP<Epetra_SerialDenseVector> gseg);
   
   /*!
@@ -191,7 +190,8 @@ public:
   void IntegrateKappaPenalty(MORTAR::MortarElement& sele,
                              MORTAR::IntElement& sintele,
                              double* sxia, double* sxib,
-                             RCP<Epetra_SerialDenseVector> gseg);
+                             RCP<Epetra_SerialDenseVector> gseg,
+                             INPAR::MORTAR::LagMultQuad3D lmtype);
   
   //@}
 
@@ -245,6 +245,16 @@ public:
                  Epetra_SerialDenseMatrix& D_seg);
 
   /*!
+  \brief Assemble D contribution of current overlap into slave nodes
+         (special version for 3D quadratic mortar with piecewise linear LM interpolation)
+
+  */
+  virtual bool AssembleD(const Epetra_Comm& comm,
+                 MORTAR::MortarElement& sele,
+                 MORTAR::IntElement& sintele,
+                 Epetra_SerialDenseMatrix& D_seg);
+    
+  /*!
   \brief Assemble M contribution of current overlap into slave nodes
 
   */
@@ -252,23 +262,16 @@ public:
                  MORTAR::MortarElement& sele,
                  MORTAR::MortarElement& mele,
                  Epetra_SerialDenseMatrix& M_seg);
-  /*!
-  \brief Assemble D contribution of current overlap into slave nodes
-
-  */
-  bool AssembleDPG(const Epetra_Comm& comm,
-                 MORTAR::MortarElement& sele,
-                 MORTAR::MortarElement& mele,
-                 Epetra_SerialDenseMatrix& D_seg);
-
+  
   /*!
   \brief Assemble M contribution of current overlap into slave nodes
+         (special version for 3D quadratic mortar with piecewise linear LM interpolation)
 
   */
-  bool AssembleMPG(const Epetra_Comm& comm,
-                   MORTAR::MortarElement& sele,
-                   MORTAR::MortarElement& mele,
-                   Epetra_SerialDenseMatrix& M_seg);
+  virtual bool AssembleM(const Epetra_Comm& comm,
+                 MORTAR::IntElement& sintele,
+                 MORTAR::MortarElement& mele,
+                 Epetra_SerialDenseMatrix& M_seg);
   
   /*!
   \brief Assemble g~ contribution of current overlap into slave nodes
@@ -276,6 +279,15 @@ public:
   */
   bool AssembleG(const Epetra_Comm& comm,
                  MORTAR::MortarElement& sele,
+                 Epetra_SerialDenseVector& g_seg);
+  
+  /*!
+  \brief Assemble g~ contribution of current overlap into slave nodes
+         (special version for 3D quadratic mortar with piecewise linear LM interpolation)
+
+  */
+  bool AssembleG(const Epetra_Comm& comm,
+                 MORTAR::IntElement& sintele,
                  Epetra_SerialDenseVector& g_seg);
 
   //@}

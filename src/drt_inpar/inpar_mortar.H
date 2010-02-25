@@ -34,6 +34,7 @@ namespace INPAR
     /// (this enum represents the input file parameter LAGMULT_QUAD3D)
     enum LagMultQuad3D
     {
+      lagmult_undefined,   ///< undefined (default for cases other than 3D quadratic)
       lagmult_quad_quad,   ///< quadratic interpolation, quadratic testing
       lagmult_quad_pwlin,  ///< quadratic interpolation, piecewise linear testing
       lagmult_quad_lin,    ///< quadratic interpolation, linear testing

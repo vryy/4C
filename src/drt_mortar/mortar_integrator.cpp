@@ -1034,17 +1034,15 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
 
 /*----------------------------------------------------------------------*
  |  Integrate and linearize a 2D slave / master cell (3D)     popp 03/09|
- |  This method integrates the cell M matrix and weighted gap g~        |
- |  and stores it in mseg and gseg respectively. Moreover, derivatives  |
- |  LinM and Ling are built and stored directly into the adjacent nodes.|
- |  (Thus this method combines EVERYTHING before done separately in     |
- |  IntegrateM3D, IntegrateG3D, DerivM3D and DerivG3D!)                 |
+ |  This method integrates the cell M matrix (and possibly D matrix)    |
+ |  and stores it in mseg and dseg respectively.                        |
  |  This is the QUADRATIC auxiliary plane coupling version!!!           |
  *----------------------------------------------------------------------*/
 void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
      RCP<MORTAR::Intcell> cell, double* auxn,
+     INPAR::MORTAR::LagMultQuad3D& lmtype,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg)
@@ -1052,7 +1050,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
   
   // explicitely defined shapefunction type needed
   if (shapefcn_ == MortarInterface::Undefined)
-    dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
+    dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad called without specific shape function defined!");
   
   /*cout << endl;
   cout << "Slave type: " << sele.Shape() << endl;
@@ -1078,9 +1076,9 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("ERROR: IntegrateDerivCell3DAuxPlane called on a wrong type of MortarElement pair!");
+    dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad called on a wrong type of MortarElement pair!");
   if (cell==null)
-    dserror("ERROR: IntegrateDerivCell3DAuxPlane called without integration cell");
+    dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad called without integration cell");
 
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
@@ -1212,33 +1210,31 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 #endif // #ifdef MORTARONELOOP
 
     // compute cell D/M matrix *******************************************
-    if (shapefcn_ == MortarInterface::StandardFunctions)
+    
+    // CASE 1: Standard LM shape functions and quadratic interpolation
+    if (shapefcn_ == MortarInterface::StandardFunctions &&
+        lmtype == INPAR::MORTAR::lagmult_quad_quad)
     {
-      // loop over all mseg matrix entries
-      // !!! nrow represents the slave Lagrange multipliers !!!
-      // !!! ncol represents the master dofs                !!!
-      // (this DOES matter here for mseg, as it might
-      // sometimes be rectangular, not quadratic!)
+      // compute all mseg (and dseg) matrix entries
+      // loop over Lagrange multiplier dofs j
       for (int j=0; j<nrow*ndof; ++j)
       {
-        // for standard shape functions we use the same algorithm
-        // for dseg as in IntegrateDerivSlave2D3D (but with modified integration area)
-        // hence, mseg and dseg can not be combined into one loop
-        
-        for (int k=0; k<ncol*ndof; ++k)
+        // loop over master displacement dofs l
+        for (int l=0; l<ncol*ndof; ++l)
         {
           int jindex = (int)(j/ndof);
-          int kindex = (int)(k/ndof);
+          int lindex = (int)(l/ndof);
   
           // multiply the two shape functions
-          double prod = sval[jindex]*mval[kindex];
+          double prod = sval[jindex]*mval[lindex];
   
           // isolate the mseg entries to be filled and
           // add current Gauss point's contribution to mseg
-          if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-            (*mseg)(j, k) += prod*jac*wgt;
+          if ((j==l) || ((j-jindex*ndof)==(l-lindex*ndof)))
+            (*mseg)(j,l) += prod*jac*wgt;
         }
   
+        // loop over slave displacement dofs k
         if (dod)
         {
           for (int k=0; k<nrow*ndof; ++k)
@@ -1249,46 +1245,95 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
             // multiply the two shape functions
             double prod = sval[jindex]*sval[kindex];
   
-            // isolate the mseg entries to be filled and
-            // add current Gauss point's contribution to mseg
+            // isolate the dseg entries to be filled and
+            // add current Gauss point's contribution to dseg
             if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-              (*dseg)(j, k) += prod*jac*wgt;
+              (*dseg)(j,k) += prod*jac*wgt;
           }
         }
       }
     }
     
-    else if (shapefcn_ == MortarInterface::DualFunctions)
+    // CASE 2: Standard LM shape functions and piecewise linear interpolation
+    else if (shapefcn_ == MortarInterface::StandardFunctions &&
+             lmtype == INPAR::MORTAR::lagmult_pwlin_pwlin)
     {
-      // loop over all mseg matrix entries
-      // !!! nrow represents the slave Lagrange multipliers !!!
-      // !!! ncol represents the master dofs                !!!
-      // (this DOES matter here for mseg, as it might
-      // sometimes be rectangular, not quadratic!)
+      // compute all mseg (and dseg) matrix entries
+      // loop over Lagrange multiplier dofs j
+      for (int j=0; j<nintrow*ndof; ++j)
+      {
+        // loop over master displacement dofs l
+        for (int l=0; l<ncol*ndof; ++l)
+        {
+          int jindex = (int)(j/ndof);
+          int lindex = (int)(l/ndof);
+  
+          // multiply the two shape functions
+          double prod = sintval[jindex]*mval[lindex];
+  
+          // isolate the mseg entries to be filled and
+          // add current Gauss point's contribution to mseg
+          if ((j==l) || ((j-jindex*ndof)==(l-lindex*ndof)))
+            (*mseg)(j,l) += prod*jac*wgt;
+        }
+  
+        // loop over slave displacement dofs k
+        if (dod)
+        {
+          for (int k=0; k<nrow*ndof; ++k)
+          {
+            int jindex = (int)(j/ndof);
+            int kindex = (int)(k/ndof);
+  
+            // multiply the two shape functions
+            double prod = sintval[jindex]*sval[kindex];
+  
+            // isolate the dseg entries to be filled and
+            // add current Gauss point's contribution to dseg
+            if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+              (*dseg)(j,k) += prod*jac*wgt;
+          }
+        }
+      }
+    }
+    
+    // CASE 3: Dual LM shape functions and quadratic interpolation
+    else if (shapefcn_ == MortarInterface::DualFunctions &&
+             lmtype == INPAR::MORTAR::lagmult_quad_quad)
+    {
+      // compute all mseg (and dseg) matrix entries
+      // loop over Lagrange multiplier dofs j
       for (int j=0; j<nrow*ndof; ++j)
       {
         // for dual shape functions we can make use
-        // of the row summing lemma: D_jj = Sum(k) M_jk
+        // of the row summing lemma: D_jj = Sum(l) M_jl
         // hence, they can be combined into one single loop
 
-        for (int k=0; k<ncol*ndof; ++k)
+        // loop over master displacement dofs l
+        for (int l=0; l<ncol*ndof; ++l)
         {
           int jindex = (int)(j/ndof);
-          int kindex = (int)(k/ndof);
+          int lindex = (int)(l/ndof);
 
           // multiply the two shape functions
-          double prod = dualval[jindex]*mval[kindex];
+          double prod = dualval[jindex]*mval[lindex];
 
-          // isolate the mseg entries to be filled and
-          // add current Gauss point's contribution to mseg
-          if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+          // isolate the mseg/dseg entries to be filled and
+          // add current Gauss point's contribution to mseg/dseg
+          if ((j==l) || ((j-jindex*ndof)==(l-lindex*ndof)))
           {
-            (*mseg)(j, k) += prod*jac*wgt;
-            if (dod) (*dseg)(j, j) += prod*jac*wgt;
+            (*mseg)(j,l) += prod*jac*wgt;
+            if (dod) (*dseg)(j,j) += prod*jac*wgt;
           }
         }
-      } // nrow*ndof loop
-    } // shapefcn_ switch
+      }
+    }
+    
+    // INVALID CASES
+    else
+    {
+      dserror("ERROR: Invalid integration case for 3D quadratic mortar!");
+    }
     // compute cell D/M matrix *******************************************
   }
   //**********************************************************************
@@ -1386,6 +1431,56 @@ bool MORTAR::MortarIntegrator::AssembleD(const Epetra_Comm& comm,
 }
 
 /*----------------------------------------------------------------------*
+ |  Assemble D contribution (2D / 3D)                         popp 02/10|
+ |  PIECEWISE LINEAR LM INTERPOLATION VERSION                           |
+ *----------------------------------------------------------------------*/
+bool MORTAR::MortarIntegrator::AssembleD(const Epetra_Comm& comm,
+                                    MORTAR::MortarElement& sele,
+                                    MORTAR::IntElement& sintele,
+                                    Epetra_SerialDenseMatrix& dseg)
+{
+  // get adjacent int nodes to assemble to
+  DRT::Node** sintnodes = sintele.Nodes();
+  if (!sintnodes) dserror("ERROR: AssembleD: Null pointer for sintnodes!");
+  DRT::Node** snodes = sele.Nodes();
+  if (!snodes) dserror("ERROR: AssembleD: Null pointer for snodes!");
+
+  // loop over all slave int nodes
+  for (int slave=0;slave<sintele.NumNode();++slave)
+  {
+    MORTAR::MortarNode* sintnode = static_cast<MORTAR::MortarNode*>(sintnodes[slave]);
+    int sintndof = sintnode->NumDof();
+
+    // only process slave int node rows that belong to this proc
+    if (sintnode->Owner() != comm.MyPID()) continue;
+
+    // loop over all dofs of the slave node
+    for (int sdof=0;sdof<sintndof;++sdof)
+    {
+      // loop over all slave nodes ("master nodes")
+      for (int master=0;master<sele.NumNode();++master)
+      {
+        MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(snodes[master]);
+        const int* mdofs = mnode->Dofs();
+        int mndof = mnode->NumDof();
+
+        // loop over all dofs of the slave node ("master dofs")
+        for (int mdof=0;mdof<mndof;++mdof)
+        {
+          int col = mdofs[mdof];
+          double val = dseg(slave*sintndof+sdof,master*mndof+mdof);
+
+          // assembly
+          sintnode->AddDValue(sdof,col,val);
+        }
+      }
+    }
+  }
+  
+  return true;
+}
+
+/*----------------------------------------------------------------------*
  |  Assemble M contribution (2D / 3D)                         popp 01/08|
  |  This method assembles the contrubution of a 1D/2D slave and master  |
  |  overlap pair to the M map of the adjacent slave nodes.              |
@@ -1455,6 +1550,54 @@ bool MORTAR::MortarIntegrator::AssembleM(const Epetra_Comm& comm,
      */
   }
 
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble M contribution (2D / 3D)                         popp 02/10|
+ |  PIECEWISE LINEAR LM INTERPOLATION VERSION                           |
+ *----------------------------------------------------------------------*/
+bool MORTAR::MortarIntegrator::AssembleM(const Epetra_Comm& comm,
+                                    MORTAR::IntElement& sintele,
+                                    MORTAR::MortarElement& mele,
+                                    Epetra_SerialDenseMatrix& mseg)
+{
+  // get adjacent slave int nodes and master nodes
+  DRT::Node** sintnodes = sintele.Nodes();
+  if (!sintnodes) dserror("ERROR: AssembleM: Null pointer for sintnodes!");
+  DRT::Node** mnodes = mele.Nodes();
+  if (!mnodes) dserror("ERROR: AssembleM: Null pointer for mnodes!");
+
+  // loop over all slave int nodes
+  for (int slave=0;slave<sintele.NumNode();++slave)
+  {
+    MORTAR::MortarNode* sintnode = static_cast<MORTAR::MortarNode*>(sintnodes[slave]);
+    int sintndof = sintnode->NumDof();
+
+    // only process slave int node rows that belong to this proc
+    if (sintnode->Owner() != comm.MyPID()) continue;
+
+    // loop over all dofs of the slave node
+    for (int sdof=0;sdof<sintndof;++sdof)
+    {
+      // loop over all master nodes
+      for (int master=0;master<mele.NumNode();++master)
+      {
+        MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(mnodes[master]);
+        const int* mdofs = mnode->Dofs();
+        int mndof = mnode->NumDof();
+
+        // loop over all dofs of the master node
+        for (int mdof=0;mdof<mndof;++mdof)
+        {
+          int col = mdofs[mdof];
+          double val = mseg(slave*sintndof+sdof,master*mndof+mdof);
+          sintnode->AddMValue(sdof,col,val);
+        }
+      }
+    }
+  }
+  
   return true;
 }
 

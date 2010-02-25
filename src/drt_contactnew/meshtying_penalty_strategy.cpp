@@ -81,14 +81,14 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   // initialize mortar matrix products
   mtm_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
   mtd_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-  dm_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-  dd_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+  dtm_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+  dtd_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
   
   // build mortar matrix products
   mtm_ = LINALG::Multiply(*mmatrix_,true,*mmatrix_,false,true);
   mtd_ = LINALG::Multiply(*mmatrix_,true,*dmatrix_,false,true);
-  dm_ = LINALG::Multiply(*dmatrix_,false,*mmatrix_,false,true);
-  dd_ = LINALG::Multiply(*dmatrix_,false,*dmatrix_,false,true);
+  dtm_ = LINALG::Multiply(*dmatrix_,true,*mmatrix_,false,true);
+  dtd_ = LINALG::Multiply(*dmatrix_,true,*dmatrix_,false,true);
   
   // print message
   if(Comm().MyPID()==0) cout << "done!\n" << endl;
@@ -130,8 +130,8 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>& 
   // add penalty meshtying stiffness terms
   kteff->Add(*mtm_,false,pp,1.0);
   kteff->Add(*mtd_,false,-pp,1.0);
-  kteff->Add(*dm_,false,-pp,1.0);
-  kteff->Add(*dd_,false,pp,1.0);
+  kteff->Add(*dtm_,false,-pp,1.0);
+  kteff->Add(*dtd_,false,pp,1.0);
   
   // build constraint vector
     
@@ -253,14 +253,14 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>& 
   feff->Update(1.0,*fmexp,1.0);
   
   RCP<Epetra_Vector> fs = rcp(new Epetra_Vector(*gsdofrowmap_));
-  dmatrix_->Multiply(false,*z_,*fs);
+  dmatrix_->Multiply(true,*z_,*fs);
   RCP<Epetra_Vector> fsexp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fs,*fsexp);
   feff->Update(-1.0,*fsexp,1.0);
   
   // add old contact forces (t_n)
   RCP<Epetra_Vector> fsold = rcp(new Epetra_Vector(*gsdofrowmap_));
-  dmatrix_->Multiply(false,*zold_,*fsold);
+  dmatrix_->Multiply(true,*zold_,*fsold);
   RCP<Epetra_Vector> fsoldexp = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fsold,*fsoldexp);
   feff->Update(alphaf_,*fsoldexp,1.0);

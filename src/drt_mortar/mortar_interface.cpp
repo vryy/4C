@@ -1179,6 +1179,10 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
       vector<RCP<MORTAR::IntElement> > mauxelements(0);
       SplitIntElements(sele,sauxelements);
       SplitIntElements(mele,mauxelements);
+      
+      // get LM interpolation and testing type
+      INPAR::MORTAR::LagMultQuad3D lmtype =
+        Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D");
 
       // loop over all IntElement pairs for coupling
       for (int i=0;i<(int)sauxelements.size();++i)
@@ -1187,7 +1191,7 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
         {
           // create instance of coupling class
           MORTAR::Coupling3dQuad coup(shapefcn_,Discret(),Dim(),true,auxplane,
-                        sele,mele,*sauxelements[i],*mauxelements[j]);
+                        sele,mele,*sauxelements[i],*mauxelements[j],lmtype);
           // do coupling
           coup.EvaluateCoupling();
         }

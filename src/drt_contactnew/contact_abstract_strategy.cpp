@@ -632,7 +632,6 @@ void CONTACT::CoAbstractStrategy::StoreToOld(MORTAR::StrategyBase::QuantityType 
         {
           // store D and M entries
           cnode->StoreDMOld();
-          cnode->StoreDMOldPG();
           break;
         }
         case MORTAR::StrategyBase::pentrac:
@@ -868,17 +867,17 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm)
     RCP<Epetra_Vector> zoldexp = rcp(new Epetra_Vector(dold_->RowMap()));
     if (dmatrix_->RowMap().NumGlobalElements()) LINALG::Export(*z_,*zexp);
     if (dold_->RowMap().NumGlobalElements()) LINALG::Export(*zold_,*zoldexp);
-    dmatrix_->Multiply(false,*zexp,*fcslavetemp);
+    dmatrix_->Multiply(true,*zexp,*fcslavetemp);
     mmatrix_->Multiply(true,*zexp,*fcmastertemp);
-    dold_->Multiply(false,*zoldexp,*fcslavetempend);
+    dold_->Multiply(true,*zoldexp,*fcslavetempend);
     mold_->Multiply(true,*zoldexp,*fcmastertempend);
   }
   // if there is no self contact everything is ok
   else
   {
-    dmatrix_->Multiply(false, *z_, *fcslavetemp);
+    dmatrix_->Multiply(true, *z_, *fcslavetemp);
     mmatrix_->Multiply(true, *z_, *fcmastertemp);
-    dold_->Multiply(false, *zold_, *fcslavetempend);
+    dold_->Multiply(true, *zold_, *fcslavetempend);
     mold_->Multiply(true, *zold_, *fcmastertempend);
   }
 
