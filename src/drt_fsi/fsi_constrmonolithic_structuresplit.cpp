@@ -382,7 +382,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
       sconT_->Matrix(0,1),
       1./timescale,
       ADAPTER::Coupling::MasterConverter(coupsf),
-      mat.Matrix(3,1));
+      mat.Matrix(3,1),false);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
