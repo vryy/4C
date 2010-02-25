@@ -207,9 +207,9 @@ DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Fluid3StationaryImpl(int numdofper
     conv_resM_(),
     xder2_(),
     deltadens_(0.0),
-    rotsymmpbc_(Teuchos::null)
+    rotsymmpbc_(NULL)
 {
-  rotsymmpbc_= Teuchos::rcp(new FLD::RotationallySymmetricPeriodicBC<distype>());
+  rotsymmpbc_= new FLD::RotationallySymmetricPeriodicBC<distype>();
 }
 
 template <DRT::Element::DiscretizationType distype>

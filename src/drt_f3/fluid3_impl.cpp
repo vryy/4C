@@ -297,9 +297,9 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl(int numdofpernode)
     thermpressaf_(),
     thermpressam_(),
     thermpressdtam_(),
-    rotsymmpbc_(Teuchos::null)
+    rotsymmpbc_(NULL)
 {
-  rotsymmpbc_= Teuchos::rcp(new FLD::RotationallySymmetricPeriodicBC<distype>());
+  rotsymmpbc_= new FLD::RotationallySymmetricPeriodicBC<distype>();
 }
 
 template <DRT::Element::DiscretizationType distype>
