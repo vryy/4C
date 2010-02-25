@@ -102,6 +102,7 @@ namespace ADAPTER {
     virtual void Update();
     virtual void StatisticsAndOutput();
     virtual void Output();
+    virtual IO::DiscretizationWriter& DiscWriter() { return fluid_.DiscWriter();}
 
     virtual void NonlinearSolve();
     virtual void Predictor();

@@ -270,6 +270,16 @@ public:
 
 
   /*!
+  \brief Access output object
+
+  */
+  IO::DiscretizationWriter& DiscWriter()
+  {
+    return output_;
+  }
+
+
+  /*!
   \brief Do console output, what is specified by input string
 
   */

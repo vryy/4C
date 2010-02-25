@@ -207,6 +207,26 @@ void FSI::LungMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcal
     Extractor().AddVector(*veln,1,f);
 
     //--------------------------------------------------------------------------------
+    // constraint
+    //--------------------------------------------------------------------------------
+    // split in two blocks according to inner and fsi structure dofs
+    Teuchos::RCP<Epetra_Map> emptymap = Teuchos::rcp(new Epetra_Map(-1,0,NULL,0,StructureField().Discretization()->Comm()));
+    LINALG::MapExtractor extractor;
+    extractor.Setup(*ConstrMap_,emptymap,ConstrMap_);
+
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> constrstructblocks =
+      AddStructConstrMatrix_->Matrix(1,0).Split<LINALG::DefaultBlockMatrixStrategy>(structfield.FSIInterface(),
+                                                                                    extractor);
+    constrstructblocks->Complete();
+
+    LINALG::SparseMatrix& csig = constrstructblocks->Matrix(0,1);
+
+    rhs = Teuchos::rcp(new Epetra_Vector(csig.RowMap()));
+    csig.Apply(*sveln,*rhs);
+    rhs->Scale(-1.*Dt());
+    Extractor().AddVector(*rhs,3,f);
+
+    //--------------------------------------------------------------------------------
     // shape derivatives
     //--------------------------------------------------------------------------------
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = fluidfield.ShapeDerivatives();

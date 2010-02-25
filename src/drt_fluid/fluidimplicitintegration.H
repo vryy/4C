@@ -204,6 +204,15 @@ public:
   void Output();
 
   /*!
+  \brief Access output object
+
+  */
+  IO::DiscretizationWriter& DiscWriter()
+  {
+    return output_;
+  }
+
+  /*!
   \brief set initial flow field for analytical test problems
 
   */

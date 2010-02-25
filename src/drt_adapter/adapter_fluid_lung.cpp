@@ -5,6 +5,15 @@
 #include "adapter_fluid_lung.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_condition_utils.H"
+
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 
 /*======================================================================*/
 /* constructor */
@@ -12,10 +21,12 @@ ADAPTER::FluidLung::FluidLung(Teuchos::RCP<Fluid> fluid)
 : FluidWrapper(fluid)
 {
   // make sure
+
   if (fluid_ == null)
     dserror("Failed to create the underlying fluid adapter");
 
   // get lung fluid-structure volume constraints
+
   std::vector<DRT::Condition*> temp;
   Discretization()->GetCondition("StructFluidSurfCoupling",temp);
   for (unsigned i=0; i<temp.size(); ++i)
@@ -27,14 +38,52 @@ ADAPTER::FluidLung::FluidLung(Teuchos::RCP<Fluid> fluid)
   if (constrcond_.size() == 0) dserror("No structure-fluid volume constraints found for lung fsi");
 
   // build map extractor for fsi <-> full map
+
   fsiinterface_ = LINALG::MapExtractor(*Interface().FullMap(), Interface().FSICondMap());
 
   // build map extractor for asi, other <-> full inner map
+
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
   maps.push_back(Interface().OtherMap());
   maps.push_back(Interface().LungASICondMap());
   Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
   innersplit_ = LINALG::MapExtractor(*fullmap, Interface().LungASICondMap());
+
+  // build mapextractor for outflow fsi boundary dofs <-> full map
+
+  std::vector<int> fsinodes;
+  DRT::UTILS::FindConditionedNodes(*Discretization(),"FSICoupling",fsinodes);
+
+  std::set<int> outflownodes;
+  DRT::UTILS::FindConditionedNodes(*Discretization(),"StructAleCoupling",outflownodes);
+
+  std::vector<int> outflowfsinodes;
+
+  for (unsigned int i=0; i<fsinodes.size(); ++i)
+  {
+    if (outflownodes.find(fsinodes[i]) != outflownodes.end())
+       outflowfsinodes.push_back(fsinodes[i]);
+  }
+
+  vector<int> dofmapvec;
+
+  for (unsigned int i=0; i<outflowfsinodes.size(); ++i)
+  {
+    DRT::Node* actnode = Discretization()->gNode(outflowfsinodes[i]);
+    const vector<int> dof = Discretization()->Dof(actnode);
+
+    if (genprob.ndim > static_cast<int>(dof.size()))
+      dserror("got just %d dofs but expected %d",dof.size(),genprob.ndim);
+    copy(&dof[0], &dof[0]+genprob.ndim, back_inserter(dofmapvec));
+  }
+
+  std::vector<int>::const_iterator pos = std::min_element(dofmapvec.begin(), dofmapvec.end());
+  if (pos!=dofmapvec.end() and *pos < 0)
+    dserror("illegal dof number %d", *pos);
+
+  Teuchos::RCP<Epetra_Map> outflowfsidofmap = rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, Discretization()->Comm()));
+
+  outflowfsiinterface_ = LINALG::MapExtractor(*Interface().FullMap(), outflowfsidofmap);
 }
 
 
@@ -79,55 +128,52 @@ void ADAPTER::FluidLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initflowra
   {
     DRT::Condition& cond = *(constrcond_[i]);
 
-    //if (*(cond.Get<string>("field")) == "fluid")
+    // Get ConditionID of current condition if defined and write value in parameterlist
+
+    int condID=cond.GetInt("coupling id");
+
+    ParameterList params;
+    params.set("ConditionID",condID);
+    params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+    params.set("action","flowrate_deriv");
+    params.set("flowrateonly", true);
+    const double dt = Dt();
+    params.set("dt", dt);
+
+    // define element matrices and vectors
+    Epetra_SerialDenseMatrix elematrix1;
+    Epetra_SerialDenseMatrix elematrix2;
+    Epetra_SerialDenseVector elevector1;
+    Epetra_SerialDenseVector elevector2;
+    Epetra_SerialDenseVector elevector3;
+
+    map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
+    // no check for empty geometry here since in parallel computations
+    // can exist processors which do not own a portion of the elements belonging
+    // to the condition geometry
+    map<int,RefCountPtr<DRT::Element> >::iterator curr;
+    for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
-      // Get ConditionID of current condition if defined and write value in parameterlist
+      // get element location vector and ownerships
+      vector<int> lm;
+      vector<int> lmowner;
+      curr->second->LocationVector(*Discretization(),lm,lmowner);
 
-      int condID=cond.GetInt("coupling id");
+      // Reshape element matrices and vectors and init to zero
+      elevector3.Size(1);
 
-      ParameterList params;
-      params.set("ConditionID",condID);
-      params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
-      params.set("action","flowrate_deriv");
-      params.set("flowrateonly", true);
-      const double dt = Dt();
-      params.set("dt", dt);
+      // call the element specific evaluate method
+      int err = curr->second->Evaluate(params,*Discretization(),lm,elematrix1,elematrix2,
+                                       elevector1,elevector2,elevector3);
+      if (err) dserror("error while evaluating elements");
 
-      // define element matrices and vectors
-      Epetra_SerialDenseMatrix elematrix1;
-      Epetra_SerialDenseMatrix elematrix2;
-      Epetra_SerialDenseVector elevector1;
-      Epetra_SerialDenseVector elevector2;
-      Epetra_SerialDenseVector elevector3;
+      // assembly
 
-      map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
-      // no check for empty geometry here since in parallel computations
-      // can exist processors which do not own a portion of the elements belonging
-      // to the condition geometry
-      map<int,RefCountPtr<DRT::Element> >::iterator curr;
-      for (curr=geom.begin(); curr!=geom.end(); ++curr)
-      {
-        // get element location vector and ownerships
-        vector<int> lm;
-        vector<int> lmowner;
-        curr->second->LocationVector(*Discretization(),lm,lmowner);
-
-        // Reshape element matrices and vectors and init to zero
-        elevector3.Size(1);
-
-        // call the element specific evaluate method
-        int err = curr->second->Evaluate(params,*Discretization(),lm,elematrix1,elematrix2,
-                                         elevector1,elevector2,elevector3);
-        if (err) dserror("error while evaluating elements");
-
-        // assembly
-
-        vector<int> constrlm;
-        vector<int> constrowner;
-        constrlm.push_back(condID-offsetID);
-        constrowner.push_back(curr->second->Owner());
-        LINALG::Assemble(*initflowrate,elevector3,constrlm,constrowner);
-      }
+      vector<int> constrlm;
+      vector<int> constrowner;
+      constrlm.push_back(condID-offsetID);
+      constrowner.push_back(curr->second->Owner());
+      LINALG::Assemble(*initflowrate,elevector3,constrlm,constrowner);
     }
   }
 }
@@ -164,90 +210,87 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
   {
     DRT::Condition& cond = *(constrcond_[i]);
 
-    //if (*(cond.Get<string>("field")) == "fluid")
+    // Get ConditionID of current condition if defined and write value in parameterlist
+    int condID=cond.GetInt("coupling id");
+    ParameterList params;
+    params.set("ConditionID",condID);
+    const double dt = Dt();
+    params.set("dt", dt);
+
+    // global and local ID of this bc in the redundant vectors
+    int gindex = condID-offsetID;
+    const int lindex = (CurrFlowRates->Map()).LID(gindex);
+
+    // Get the current lagrange multiplier value for this condition
+    const double lagraval = (*lagrMultVecRed)[lindex];
+
+    // elements might need condition
+    params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+
+    // define element matrices and vectors
+    Epetra_SerialDenseMatrix elematrix1;  // (d^2 Q)/(du dd)
+    Epetra_SerialDenseMatrix elematrix2;  // (d^2 Q)/(dd)^2
+    Epetra_SerialDenseVector elevector1;  // dQ/du
+    Epetra_SerialDenseVector elevector2;  // dQ/dd
+    Epetra_SerialDenseVector elevector3;  // Q
+
+    map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
+    // no check for empty geometry here since in parallel computations
+    // there might be processors which do not own a portion of the elements belonging
+    // to the condition geometry
+    map<int,RefCountPtr<DRT::Element> >::iterator curr;
+
+    // define element action
+    params.set("action", "flowrate_deriv");
+
+    for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
-      // Get ConditionID of current condition if defined and write value in parameterlist
-      int condID=cond.GetInt("coupling id");
-      ParameterList params;
-      params.set("ConditionID",condID);
-      const double dt = Dt();
-      params.set("dt", dt);
+      // get element location vector and ownerships
+      vector<int> lm;
+      vector<int> lmowner;
+      curr->second->LocationVector(*Discretization(),lm,lmowner);
 
-      // global and local ID of this bc in the redundant vectors
-      int gindex = condID-offsetID;
-      const int lindex = (CurrFlowRates->Map()).LID(gindex);
+      // get dimension of element matrices and vectors
+      // Reshape element matrices and vectors and init to zero
+      const int eledim = (int)lm.size();
+      elematrix1.Shape(eledim,eledim);
+      elematrix2.Shape(eledim,eledim);
+      elevector1.Size(eledim);
+      elevector2.Size(eledim);
+      elevector3.Size(1);
 
-      // Get the current lagrange multiplier value for this condition
-      const double lagraval = (*lagrMultVecRed)[lindex];
+      //---------------------------------------------------------------------
+      // call the element specific evaluate method
+      int err = curr->second->Evaluate(params,*Discretization(),lm,elematrix1,elematrix2,
+                                       elevector1,elevector2,elevector3);
+      if (err) dserror("error while evaluating elements");
 
-      // elements might need condition
-      params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+      //---------------------------------------------------------------------
+      // assembly
+      int eid = curr->second->Id();
 
-      // define element matrices and vectors
-      Epetra_SerialDenseMatrix elematrix1;  // (d^2 Q)/(du dd)
-      Epetra_SerialDenseMatrix elematrix2;  // (d^2 Q)/(dd)^2
-      Epetra_SerialDenseVector elevector1;  // dQ/du
-      Epetra_SerialDenseVector elevector2;  // dQ/dd
-      Epetra_SerialDenseVector elevector3;  // Q
+      elematrix1.Scale(-lagraval*invresscale*dttheta);
+      FluidShapeDerivMatrix->Assemble(eid,elematrix1,lm,lmowner);
 
-      map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
-      // no check for empty geometry here since in parallel computations
-      // there might be processors which do not own a portion of the elements belonging
-      // to the condition geometry
-      map<int,RefCountPtr<DRT::Element> >::iterator curr;
+      // assemble to rectangular matrix. The column corresponds to the constraint ID.
+      vector<int> colvec(1);
+      colvec[0]=gindex;
 
-      // define element action
-      params.set("action", "flowrate_deriv");
+      elevector1.Scale(-dttheta);
+      FluidConstrMatrix->Assemble(eid,elevector1,lm,lmowner,colvec);
 
-      for (curr=geom.begin(); curr!=geom.end(); ++curr)
-      {
-        // get element location vector and ownerships
-        vector<int> lm;
-        vector<int> lmowner;
-        curr->second->LocationVector(*Discretization(),lm,lmowner);
+      elevector2.Scale(-dttheta);
+      AleConstrMatrix->Assemble(eid,elevector2,lm,lmowner,colvec);
 
-        // get dimension of element matrices and vectors
-        // Reshape element matrices and vectors and init to zero
-        const int eledim = (int)lm.size();
-        elematrix1.Shape(eledim,eledim);
-        elematrix2.Shape(eledim,eledim);
-        elevector1.Size(eledim);
-        elevector2.Size(eledim);
-        elevector3.Size(1);
+      // negative sign (for shift to rhs) is already implicitly taken into account!
+      elevector1.Scale(-lagraval*invresscale);
+      LINALG::Assemble(*FluidRHS,elevector1,lm,lmowner);
 
-        //---------------------------------------------------------------------
-        // call the element specific evaluate method
-        int err = curr->second->Evaluate(params,*Discretization(),lm,elematrix1,elematrix2,
-                                         elevector1,elevector2,elevector3);
-        if (err) dserror("error while evaluating elements");
-
-        //---------------------------------------------------------------------
-        // assembly
-        int eid = curr->second->Id();
-
-        elematrix1.Scale(-lagraval*invresscale*dttheta);
-        FluidShapeDerivMatrix->Assemble(eid,elematrix1,lm,lmowner);
-
-        // assemble to rectangular matrix. The column corresponds to the constraint ID.
-        vector<int> colvec(1);
-        colvec[0]=gindex;
-
-        elevector1.Scale(-dttheta*invresscale);
-        FluidConstrMatrix->Assemble(eid,elevector1,lm,lmowner,colvec);
-
-        elevector2.Scale(-dttheta);
-        AleConstrMatrix->Assemble(eid,elevector2,lm,lmowner,colvec);
-
-        // negative sign (for shift to rhs) is already implicitly taken into account!
-        elevector1.Scale(-lagraval);
-        LINALG::Assemble(*FluidRHS,elevector1,lm,lmowner);
-
-        vector<int> constrlm;
-        vector<int> constrowner;
-        constrlm.push_back(gindex);
-        constrowner.push_back(curr->second->Owner());
-        LINALG::Assemble(*CurrFlowRates,elevector3,constrlm,constrowner);
-      }
+      vector<int> constrlm;
+      vector<int> constrowner;
+      constrlm.push_back(gindex);
+      constrowner.push_back(curr->second->Owner());
+      LINALG::Assemble(*CurrFlowRates,elevector3,constrlm,constrowner);
     }
   }
 
@@ -258,23 +301,45 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
   FluidConstrMatrix->Complete(constrmap, fluidmap);
   AleConstrMatrix->Complete();
 
-  // note: since FluidConstrMatrix was multiplied by invresscale, we
-  // have to divide by it now for obtaining ConstrFluidMatrix
-  ConstrFluidMatrix->Add(*FluidConstrMatrix, true, 1.0/invresscale, 0.0);
+  // transposed fluid constraint matrix -> linearization of constraint equation
+  ConstrFluidMatrix->Add(*FluidConstrMatrix, true, 1.0, 0.0);
   ConstrFluidMatrix->Complete(fluidmap, constrmap);
+  FluidConstrMatrix->Scale(invresscale);
 
+  // transposed "ale" constraint matrix -> linearization of constraint equation
   for (int i=0; i<Interface().NumMaps(); ++i)
     ConstrAleMatrix->Matrix(0,i).Add(AleConstrMatrix->Matrix(i,0), true, 1.0, 0.0);
   ConstrAleMatrix->Complete();
 
-  // Apply Dirichlet BC to relevant stiffness matrices
-  FluidShapeDerivMatrix->ApplyDirichlet(*GetDBCMapExtractor()->CondMap(), false);
-  FluidConstrMatrix->ApplyDirichlet(*GetDBCMapExtractor()->CondMap(), false);
-  AleConstrMatrix->ApplyDirichlet(*GetDBCMapExtractor()->CondMap(), false);
+  // Note: there is no contribution of the FSI boundary to the overall
+  // outflow, since u-u_grid is always zero here. However, in the above
+  // calculation of corresponding matrices and vectors, the coupling of
+  // displacements and velocities at the interface was not considered (i.e. a
+  // variation of the flowrate w.r.t. the velocities always involves also a
+  // variation w.r.t. the dependent displacements). Therefore, the
+  // corresponding contributions are not zero here and need to be set to zero
+  // in the following.
 
-  // Blank residual at DOFs on Dirichlet BC
+  // Apply Dirichlet BC to relevant stiffness matrices and vectors and zero
+  // out outflow fsi contributions
+  const Teuchos::RCP<const Epetra_Map >& condmap = GetDBCMapExtractor()->CondMap();
+  const Teuchos::RCP<const Epetra_Map >& outflowfsimap = outflowfsiinterface_.Map(1);
+  Teuchos::RCP<Epetra_Map> finmap = LINALG::MergeMap(*condmap, *outflowfsimap, false);
+  FluidShapeDerivMatrix->ApplyDirichlet(*finmap, false);
+  FluidConstrMatrix->ApplyDirichlet(*finmap, false);
+
   Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*DofRowMap(), true);
   GetDBCMapExtractor()->InsertCondVector(GetDBCMapExtractor()->ExtractCondVector(zeros), FluidRHS);
+  outflowfsiinterface_.InsertCondVector(outflowfsiinterface_.ExtractCondVector(zeros), FluidRHS);
+}
+
+
+/*======================================================================*/
+/* output of volume constraint related forces*/
+void ADAPTER::FluidLung::OutputForces(Teuchos::RCP<Epetra_Vector> Forces)
+{
+  IO::DiscretizationWriter& output = DiscWriter();
+  output.WriteVector("Add_Forces", Forces);
 }
 
 

@@ -169,7 +169,7 @@ namespace FSI
 
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> AddStructConstrMatrix_;  ///< matrix containing all structure constraint related stuff
 
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> AddFluidShapeDerivMatrix_; ///< additional constrait portion on block (1,2)
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> AddFluidShapeDerivMatrix_; ///< additional constraint portion on block (1,2)
     Teuchos::RCP<LINALG::SparseMatrix> FluidConstrMatrix_; ///< rectangular fluid matrix associated with constraints K_fl
     Teuchos::RCP<LINALG::SparseMatrix> ConstrFluidMatrix_;  ///< rectangular fluid matrix associated with constraints K_lf
 

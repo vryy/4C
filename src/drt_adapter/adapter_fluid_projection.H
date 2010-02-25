@@ -59,6 +59,7 @@ public:
 
     virtual void Update();
     virtual void Output();
+    virtual IO::DiscretizationWriter& DiscWriter() { return fluid_.DiscWriter();}
 
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
     virtual void StatisticsAndOutput();

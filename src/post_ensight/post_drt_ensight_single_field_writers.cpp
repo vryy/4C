@@ -26,7 +26,7 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("displacement", "displacement", dofbased, field->problem()->num_dim());
   //EnsightWriter::WriteResult("velocity", "velocity", dofbased, field->problem()->num_dim());
   //EnsightWriter::WriteResult("acceleration", "acceleration", dofbased, field->problem()->num_dim());
-  
+
   // contact and meshtying results
   EnsightWriter::WriteResult("norcontactstress", "norcontactstress", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("tancontactstress", "tancontactstress", dofbased, field->problem()->num_dim());
@@ -38,7 +38,9 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("radii", "radii", dofbased, 1);
   EnsightWriter::WriteResult("abc", "acinus_bc", dofbased, 1);
 
-  
+  // additional forces due to lung fsi (volume constraint)
+  EnsightWriter::WriteResult("Add_Forces", "Add_Forces", dofbased, field->problem()->num_dim());
+
   EnsightWriter::WriteElementResults(field); //To comment
   if (stresstype_!="none")
   {
@@ -70,6 +72,10 @@ void FluidEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("residual", "residual", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("dispnp", "ale_displacement", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("traction", "traction", dofbased, field->problem()->num_dim());
+
+  // additional forces due to lung fsi (volume constraint)
+  EnsightWriter::WriteResult("Add_Forces", "Add_Forces", dofbased, field->problem()->num_dim());
+
   WriteElementResults(field);
 }
 

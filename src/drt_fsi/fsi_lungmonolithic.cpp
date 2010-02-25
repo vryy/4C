@@ -125,10 +125,9 @@ FSI::LungMonolithic::LungMonolithic(Epetra_Comm& comm)
   CurrFlowRates_ = rcp(new Epetra_Vector(*ConstrMap_,true));
   dVfluid_ = rcp(new Epetra_Vector(*ConstrMap_,true));
 
-  // set theta for integrating fluid volumes (this may be replaced by
-  // a user defined parameter in the input file, but for the time being a
-  // hard coded value is used -> second order accuracy)
-  theta_ = 0.5;
+  // set theta for integrating fluid volumes (this should be the same theta
+  // than in the fluid time integration)
+  theta_ = 0.66;
 
   // determine initial volumes of parenchyma balloons
   Teuchos::RCP<Epetra_Vector> OldVolsRed = rcp(new Epetra_Vector(*RedConstrMap_));
@@ -793,6 +792,10 @@ void FSI::LungMonolithic::Output()
   // Discretizations.
   StructureField().Output();
 
+  // additional output of volume constraint related forces
+  ADAPTER::StructureLung& structfield = dynamic_cast<ADAPTER::StructureLung&>(StructureField());
+  structfield.OutputForces(AddStructRHS_);
+
   // Write history vectors in case of restart
   // This is done using the structure DiscretizationWriter, hence it
   // is placed in between the output of the single fields.
@@ -809,6 +812,11 @@ void FSI::LungMonolithic::Output()
   }
 
   FluidField().Output();
+
+  // additional output of volume constraint related forces
+  ADAPTER::FluidLung& fluidfield = dynamic_cast<ADAPTER::FluidLung&>(FluidField());
+  fluidfield.OutputForces(AddFluidRHS_);
+
   AleField().Output();
 
   FluidField().LiftDrag();

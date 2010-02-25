@@ -125,6 +125,9 @@ public:
   /// update configuration and output to file
   void Output();
 
+  /// Access output object
+  IO::DiscretizationWriter& DiscWriter() { return *output_; }
+
   /// read restart data
   virtual void ReadRestart(int step)=0;
 

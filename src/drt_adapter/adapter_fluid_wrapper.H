@@ -73,6 +73,8 @@ namespace ADAPTER
     { return fluid_->StatisticsAndOutput(); }
     virtual void Output()
     { return fluid_->Output(); }
+    virtual IO::DiscretizationWriter& DiscWriter()
+    { return fluid_->DiscWriter();}
     virtual void ReadRestart(int step)
     { return fluid_->ReadRestart(step); }
     virtual double Time() const

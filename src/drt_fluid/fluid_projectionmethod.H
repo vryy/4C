@@ -109,6 +109,8 @@ public:
     void TimeUpdate();		//!< update solution. current solution becomes old solution of next timestep
     void Output();			//!< output of solution
 
+    IO::DiscretizationWriter& DiscWriter() { return output_; }  //!< Access output object
+
     void ProjectionSolve();	//!< projection based solving strategy
 
     void CalcResidual();

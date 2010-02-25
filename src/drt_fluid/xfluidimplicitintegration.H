@@ -179,6 +179,15 @@ public:
   void Output();
 
   /*!
+  \brief Access output object
+
+  */
+  IO::DiscretizationWriter& DiscWriter()
+  {
+    return *output_;
+  }
+
+  /*!
   \brief set initial flow field for analytical test problems
 
   */
@@ -375,7 +384,7 @@ protected:
       );
 
   void preparefluidfluidboundaryDis();
-  
+
   void FluidFluidCouplingEvaluate(
       Teuchos::ParameterList&                   params,
       Teuchos::RCP<LINALG::SparseOperator>      systemmatrix,
@@ -383,11 +392,11 @@ protected:
       Teuchos::RCP<DRT::Discretization>         fluiddiscret,
       Teuchos::RCP<DRT::Discretization>         cutterdiscret,
       Teuchos::RCP<XFEM::InterfaceHandleXFSI>   ih);
-  
+
   void ComputeFluidFluidInterfaceAccelerationsAndVelocities();
-  
+
   void FluidFluidboundaryOutput();
-  
+
   void PrintFluidFluidBoundaryVectorField(
       const Teuchos::RCP<Epetra_Vector>   displacementfield,
       const Teuchos::RCP<Epetra_Vector>   vectorfield,
@@ -403,10 +412,10 @@ protected:
 
   //! Fluid-Fluid-Boundray discretization
   Teuchos::RCP<DRT::Discretization>			   FluidFluidboundarydis_;
-  
+
   /// the interface map setup for fsi interface, free surface, interior translation
   FLD::UTILS::MapExtractor               interface_;
-  
+
   Teuchos::RCP<IO::DiscretizationWriter> FluidFluidboundaryoutput_;
 
   // the interface map setup for interface <-> full translation
@@ -486,7 +495,7 @@ protected:
   Teuchos::RCP<LINALG::SparseMatrix> Mdu_;
   Teuchos::RCP<LINALG::SparseMatrix> Cdd_;
   Teuchos::RCP<Epetra_Vector>        RHSd_;
-  
+
   Teuchos::RCP<LINALG::SparseMatrix> GuisUncond_;
   Teuchos::RCP<LINALG::SparseMatrix> GsuiUncond_;
   Teuchos::RCP<Epetra_Vector>        RHSui_;
@@ -568,7 +577,7 @@ protected:
   /// this struct holds information about the fluid fluid coupling
   struct FluidFluidState
   {
-	  set<int> MovingFluideleGIDs_;  ///< this set contains the element ids of the moving Fluid	  
+	  set<int> MovingFluideleGIDs_;  ///< this set contains the element ids of the moving Fluid
 	  set<int> MovingFluidNodeGIDs_;  ///< this set contains the node GIDs of the moving fluid
 	  /// this a map between the dofs of fluid-fluid-boundary (first entry) and the dofs of fluid (second entry)
 	  std::map<int,int>  fluidboundarymap_; 

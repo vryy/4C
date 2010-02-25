@@ -28,6 +28,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_io/io.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
@@ -175,6 +176,9 @@ namespace ADAPTER {
 
     /// output results
     virtual void Output() = 0;
+
+    /// access to output
+    virtual IO::DiscretizationWriter& DiscWriter() = 0;
 
     /// read restart information for given time step
     virtual void ReadRestart(int step) = 0;

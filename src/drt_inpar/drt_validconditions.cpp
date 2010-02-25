@@ -779,12 +779,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         "field","structure",
         Teuchos::tuple<std::string>("structure","fluid"),
         Teuchos::tuple<std::string>("structure","fluid"))));
-  sfvcomponents.push_back(
-    Teuchos::rcp(
-      new StringConditionComponent(
-        "boundary","other",
-        Teuchos::tuple<std::string>("inflow","other"),
-        Teuchos::tuple<std::string>("inflow","other"))));
 
   Teuchos::RCP<ConditionDefinition> surfsfv =
     Teuchos::rcp(new ConditionDefinition("DESIGN STRUCTURE FLUID VOLUME COUPLING SURF CONDITIONS",
@@ -1395,7 +1389,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 //  nodeonlineconst3D->AddComponent(Teuchos::rcp(new RealConditionComponent("activTime")));
 //  nodeonlineconst3D->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curveNodes",2)));
 //  condlist.push_back(nodeonlineconst3D);
-//  
+//
 //  /*--------------------------------------------------------------------*/
   // Multi point constraint in 3D, moving all constraint nodes synchronously
 
@@ -1823,7 +1817,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(windkessel_optim_bc);
   /*--------------------------------------------------------------------*/
-  // Prescribed BC for reduced dimensional airways 
+  // Prescribed BC for reduced dimensional airways
 
   Teuchos::RCP<ConditionDefinition> raw_in_bc =
     Teuchos::rcp(new ConditionDefinition("DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS",
@@ -1845,10 +1839,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     raw_in_bc->AddComponent(redairwayinletcomponents[i]);
 
   condlist.push_back(raw_in_bc);
- 
+
 
   /*--------------------------------------------------------------------*/
-  // Acinus model for reduced dimensional airways 
+  // Acinus model for reduced dimensional airways
 
   Teuchos::RCP<ConditionDefinition> acinus_bc =
     Teuchos::rcp(new ConditionDefinition("DESIGN NODE REDUCED-D LUNG ACINUS CONDITIONS",

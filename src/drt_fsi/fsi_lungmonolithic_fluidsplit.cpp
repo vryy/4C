@@ -181,6 +181,26 @@ void FSI::LungMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     rhs = FluidToStruct(rhs);
     rhs = StructureField().Interface().InsertFSICondVector(rhs);
     Extractor().AddVector(*rhs,0,f);
+
+    //--------------------------------------------------------------------------------
+    // constraint
+    //--------------------------------------------------------------------------------
+    // split in two blocks according to inner and fsi structure dofs
+    Teuchos::RCP<Epetra_Map> emptymap = Teuchos::rcp(new Epetra_Map(-1,0,NULL,0,StructureField().Discretization()->Comm()));
+    LINALG::MapExtractor extractor;
+    extractor.Setup(*ConstrMap_,emptymap,ConstrMap_);
+
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> constrfluidblocks =
+      ConstrFluidMatrix_->Split<LINALG::DefaultBlockMatrixStrategy>(fluidfield.FSIInterface(),
+                                                                    extractor);
+    constrfluidblocks->Complete();
+
+    LINALG::SparseMatrix& cfig = constrfluidblocks->Matrix(0,1);
+    rhs = Teuchos::rcp(new Epetra_Vector(cfig.RowMap()));
+    cfig.Apply(*fveln,*rhs);
+    rhs->Scale(-1.*Dt());
+    Extractor().AddVector(*rhs,3,f);
+
   }
 
   // NOX expects a different sign here.

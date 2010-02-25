@@ -143,6 +143,15 @@ public:
   void Output();
 
   /*!
+  \brief Access output object
+
+  */
+  IO::DiscretizationWriter& DiscWriter()
+  {
+    return *output_;
+  }
+
+  /*!
   \brief set initial flow field, also for analytical test problems
   */
   void SetInitialFlowField(int whichinitialfield, int startfuncno);

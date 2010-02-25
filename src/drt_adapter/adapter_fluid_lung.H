@@ -53,6 +53,9 @@ namespace ADAPTER {
                         const int offsetID,
                         const double dttheta);
 
+    /// Write additional forces due to volume constraint
+    void OutputForces(Teuchos::RCP<Epetra_Vector> Forces);
+
     /// Get map extractor for fsi <-> full map
     LINALG::MapExtractor& FSIInterface() { return fsiinterface_;  }
 
@@ -72,8 +75,11 @@ namespace ADAPTER {
 
     /// map extractor for asi, other <-> full inner map
     LINALG::MapExtractor innersplit_;
-  };
 
+    /// map extractor for outflow fsi <-> full map
+    LINALG::MapExtractor outflowfsiinterface_;
+
+  };
 }
 
 #endif

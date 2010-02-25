@@ -56,6 +56,9 @@ public:
                       Teuchos::RCP<Epetra_Vector> lagrMultVecRed,
                       const int offsetID);
 
+  /// Write additional forces due to volume constraint
+  void OutputForces(Teuchos::RCP<Epetra_Vector> Forces);
+
   /// Write additional volume constraint stuff
   void WriteVolConRestart(Teuchos::RCP<Epetra_Vector> OldFlowRatesRed,
                           Teuchos::RCP<Epetra_Vector> OldVolsRed,
@@ -72,9 +75,6 @@ public:
 
 private:
 
-  /// number of different constraints
-  int NumConstr_;
-
   /// conditions that define the lung volume constraints
   std::vector<DRT::Condition*> constrcond_;
 
@@ -83,7 +83,6 @@ private:
   /// which are not part of a condition. however, asi dofs are of
   /// course also "inner" dofs for the structural field.
   LINALG::MapExtractor fsiinterface_;
-
 };
 
 }
