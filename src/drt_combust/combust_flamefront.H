@@ -27,8 +27,6 @@ Maintainer: Florian Henke
 namespace COMBUST
 {
 
-  class DRT::Discretization;
-
   /// COMBUST FlameFront class
   /*!
 

@@ -20,8 +20,6 @@ Maintainer: Florian Henke
 namespace COMBUST
 {
 
-  class DRT::Discretization;
-
   /// COMBUST Interface class
   /*!
 
@@ -51,7 +49,7 @@ namespace COMBUST
 
     //! update interfacehandle according to current flame front
     void UpdateInterfaceHandle();
-    
+
     //! compute volume of domain minus
     const double ComputeVolumeMinus();
 
