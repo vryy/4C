@@ -830,6 +830,8 @@ void DatFileReader::ReadDat()
           {
             if (line.find(exclude[i]) != string::npos)
             {
+              if (excludepositions_.find(exclude[i])!=excludepositions_.end())
+                dserror("section '%s' defined more than once", exclude[i].c_str());
               excludepositions_[exclude[i]] = file.tellg();
               ignoreline = true;
               break;
