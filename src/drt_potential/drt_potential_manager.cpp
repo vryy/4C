@@ -117,7 +117,16 @@ void POTENTIAL::PotentialManager::ReadParameter()
     break;
   }
   
+  // check if analytical solution should be computed
+  params_.set<bool>("analyt_sol",(not (intpot.get<std::string>("ANALYTICALSOLUTION") == "no"
+                                    or intpot.get<std::string>("ANALYTICALSOLUTION") == "No"
+                                    or intpot.get<std::string>("ANALYTICALSOLUTION") == "NO")));
+  
+  // read radius of a sphere
   params_.set<double>("vdw_radius",intpot.get<double>("VDW_RADIUS"));
+  
+  // read number of atoms offset to account for spatial discretization errors
+  params_.set<double>("n_offset",intpot.get<double>("N_OFFSET"));
   
   // parameters for search tree
   const Teuchos::ParameterList& search_tree   = DRT::Problem::Instance()->SearchtreeParams();
@@ -176,10 +185,14 @@ void POTENTIAL::PotentialManager::TestEvaluatePotential(  ParameterList&        
                                                           const int                         step)
 {
   const double vdw_radius = params_.get<double>("vdw_radius",0.0);
+  const double n_offset = params_.get<double>("n_offset",0.0);
+  p.set("vdw_radius", vdw_radius);
+  p.set("n_offset", n_offset);
+  
   if(surface_)
-    surfacePotential_->TestEvaluatePotential(p, disp, fint, stiff, time, step, vdw_radius);
+    surfacePotential_->TestEvaluatePotential(p, disp, fint, stiff, time, step);
   if(volume_)
-    volumePotential_->TestEvaluatePotential(p, disp, fint, stiff, time, step, vdw_radius);
+    volumePotential_->TestEvaluatePotential(p, disp, fint, stiff, time, step);
   return;
 }
 

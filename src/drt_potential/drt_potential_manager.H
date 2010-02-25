@@ -139,6 +139,8 @@ public:
       Epetra_SerialDenseMatrix&         K_stiff,
       Epetra_SerialDenseVector&         fint
       );
+  
+  bool ComputeAnalyticalSolution() {return params_.get<bool>("analyt_sol") ;}
 
 private:
 

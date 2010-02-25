@@ -2083,8 +2083,7 @@ void POTENTIAL::SurfacePotential::TestEvaluatePotential(
   RefCountPtr<Epetra_Vector>          fint,
   RefCountPtr<LINALG::SparseMatrix>   stiff,
   const double                        time,
-  const int                           step,
-  const double                        vdw_radius)
+  const int                           step)
 {
   // action for elements
   p.set("action","calc_potential_stiff");
@@ -2097,7 +2096,9 @@ void POTENTIAL::SurfacePotential::TestEvaluatePotential(
   
   std::map<int, std::set<int> > elementsByLabel_Vol = computeEleByLabelVol(discret_.GetState("displacement") ,elementsByLabel_);
   // compute test results 
-  computeTestVanDerWaalsSpheres(potentialdis_, elementsByLabel_Vol, elementsByLabel_, discret_.GetState("displacement")  , fint, time, step, vdw_radius);
+  computeTestVanDerWaalsSpheres(potentialdis_, elementsByLabel_Vol, elementsByLabel_, 
+                                discret_.GetState("displacement")  , fint, time, step, 
+                                p.get("vdw_radius", 0.0), p.get("n_offset", 0.0));
   return;
 }
 

@@ -1155,8 +1155,7 @@ void POTENTIAL::VolumePotential::TestEvaluatePotential(
   RefCountPtr<Epetra_Vector>          fint,
   RefCountPtr<LINALG::SparseMatrix>   stiff,
   const double                        time,
-  const int                           step,
-  const double                        vdw_radius)
+  const int                           step)
 {
   // action for elements
   p.set("action","calc_potential_stiff");
@@ -1169,7 +1168,8 @@ void POTENTIAL::VolumePotential::TestEvaluatePotential(
   RefCountPtr<const Epetra_Vector>        disp_col = discret_.GetState("displacement");  
   // compute test results 
   std::map<int, std::set<int> > empty_set;
-  computeTestVanDerWaalsSpheres(Teuchos::null, elementsByLabel_, empty_set, disp_col, fint, time, step, vdw_radius);
+  computeTestVanDerWaalsSpheres(Teuchos::null, elementsByLabel_, empty_set, disp_col, fint, 
+                                time, step, p.get("vdw_radius", 0.0), p.get("n_offset", 0.0));
   return;
 }
 

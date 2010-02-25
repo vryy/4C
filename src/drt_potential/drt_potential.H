@@ -432,7 +432,8 @@ protected:
     const RefCountPtr<Epetra_Vector>        fint,
     const double                            time,
     const int                               step,
-    const double                            vdw_radius
+    const double                            vdw_radius,
+    const double                            n_offset
     );
   
   

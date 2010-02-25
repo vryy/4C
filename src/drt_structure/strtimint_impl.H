@@ -153,6 +153,20 @@ namespace STR
       Teuchos::RCP<Epetra_Vector>& fint,  //!< internal force vector
       Teuchos::RCP<LINALG::SparseOperator>& stiff  //!< stiffness
     );
+    
+    
+    //! evaluate certain potential forces and its stiffness
+    //! and computes an anayltical solution
+    //!
+    //! Evaluation happens internal-force-like.
+    //! Which potentials are actually meant can be found
+    //! at DRT::PotentialManager
+    void TestForceStiffPotential
+    (
+      const double                      time,
+      const Teuchos::RCP<Epetra_Vector> dis,
+      const int                         step
+    );
 
     //! Evaluate forces / stiffness due to contact
     void ApplyForceStiffContact

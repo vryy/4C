@@ -125,8 +125,7 @@ public:
     RefCountPtr<Epetra_Vector>          fint,
     RefCountPtr<LINALG::SparseMatrix>   stiff,
     const double                        time,
-    const int                           step,
-    const double                        vdw_radius
+    const int                           step
     );
 
 

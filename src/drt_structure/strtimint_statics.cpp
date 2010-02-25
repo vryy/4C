@@ -123,6 +123,8 @@ void STR::TimIntStatics::EvaluateForceStiffResidual()
 
   // potential forces
   ApplyForceStiffPotential(timen_, disn_, fintn_, stiff_);
+  if(potman_->ComputeAnalyticalSolution())
+    TestForceStiffPotential(timen_, disn_, step_);
 
   // build residual  Res = F_{int;n+1}
   //                     - F_{ext;n+1}

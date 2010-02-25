@@ -396,7 +396,7 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential(
   //----------------------------------------------------------------------
   // evaluate 1.derivative dphi/du_i
   //----------------------------------------------------------------------
-  const double dpotdr = -PI_POT*depth*((693.0/256.0)*pow((double)(rootDist/distance),12) - (15.0/4.0)*pow((double)(rootDist/distance),6));
+  const double dpotdr = (-1.0)*PI_POT*depth*((693.0/256.0)*pow((double)(rootDist/distance),12) - (15.0/4.0)*pow((double)(rootDist/distance),6));
   for(int i = 0; i < 2; i++)
     potderiv1(i) = dpotdr*distance_unit(i);
 
@@ -1187,7 +1187,8 @@ void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
   const RefCountPtr<Epetra_Vector>        fint,
   const double                            time,
   const int                               step,
-  const double                            vdw_radius)
+  const double                            vdw_radius,
+  const double                            n_offset)
 {    
   // resulting potential force for each sphere
   std::vector< LINALG::Matrix<3,1> > fpot(2, LINALG::Matrix<3,1>(true));
@@ -1243,7 +1244,7 @@ void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
     // A_ham = pi*pi*lambda*beta*beta
     const double beta = (*potentialcond.begin())->GetDouble("beta");
     const double lambda = (*potentialcond.begin())->GetDouble("lambda");
-    const double A_ham = PI_POT*PI_POT*beta*beta*lambda;
+    const double A_ham = PI_POT*PI_POT*(beta-n_offset)*(beta-n_offset)*lambda;
     const double  force_analytical = (-1.0)*(A_ham/(2.0*radius*6.0))*(
                         ( ( 2.0*(x + 1.0) )/(x*x + 2.0*x) ) -
                         ( ( x + 1.0)/pow((x*x + 2.0*x), 2) ) -
@@ -1479,19 +1480,23 @@ void POTENTIAL::Potential::WriteTestOutput(
       file_in.open(fname.c_str());
       
       // create tmp outfile
-      const string tmpoutfile = "tmpoutfile.txt";
-      std::ofstream out(tmpoutfile.c_str());
+      const string tmpoutfile = DRT::Problem::Instance()->OutputControlFile()->FileName() + "tmpoutfile.txt";
+      std::ofstream out;
+      out.open(tmpoutfile.c_str());
       
       // convert time to string
       std::stringstream timess;
       timess << time;
            
       // read line and write to tmp output file if curretn time stpe is not read
+      //if(file_in.eof() != file_in.peek())
       while(!file_in.eof() )
       {
         char line_char[300];
         file_in.getline(line_char, 300);
         std::string line(line_char);
+        if(line.length()==0)
+          break;
         size_t found_tab = line.find('\t');
         size_t found_time = line.find(timess.str());
         if((found_time == string::npos || found_time > found_tab ) && line.length() > 0)

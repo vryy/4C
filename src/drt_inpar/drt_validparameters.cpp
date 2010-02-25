@@ -982,10 +982,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                            INPAR::POTENTIAL::approximation_surface,
                                            INPAR::POTENTIAL::approximation_point),
                                 &interaction_potential);
+  
+  // switches on the analytical soltion computation for two van der waals spheres
+  setStringToIntegralParameter<int>("ANALYTICALSOLUTION","no",
+                                 "computes analytical solution for two Van der Waals spheres ",
+                                  yesnotuple,yesnovalue,&interaction_potential);
 
   // radius of can der Waals spheres for analytical testing
   DoubleParameter(  "VDW_RADIUS",0.0,
                     "radius of van der Waals spheres",
+                    &interaction_potential);
+  
+  // number of atoms or molecules offset
+  DoubleParameter(  "N_OFFSET",0.0,
+                    "number of atoms or molecules offset",
                     &interaction_potential);
 
   /*----------------------------------------------------------------------*/

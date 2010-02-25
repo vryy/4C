@@ -422,6 +422,36 @@ void STR::TimIntImpl::ApplyForceStiffPotential
   return;
 }
 
+
+/*----------------------------------------------------------------------*/
+/* TEST evaluate _certain_ potential forces and stiffness
+ * evaluation happens internal-force like */
+void STR::TimIntImpl::TestForceStiffPotential
+(
+  const double                        time,
+  const Teuchos::RCP<Epetra_Vector>   dis,
+  const int                           step
+)
+{
+  // potential force loads (but on internal force vector side)
+  if (potman_ != Teuchos::null)
+  {     
+    ParameterList p; // create the parameters for manager
+    p.set("pot_man", potman_);
+    p.set("total time", time);    
+    
+    Teuchos::RefCountPtr<LINALG::SparseMatrix> stiff_test=Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_,81,true,false, LINALG::SparseMatrix::FE_MATRIX));
+    Teuchos::RefCountPtr<Epetra_Vector> fint_test=LINALG::CreateVector(*dofrowmap_, true);
+    fint_test->PutScalar(0.0);        
+    stiff_test->Zero();   
+    
+    potman_->TestEvaluatePotential(p, dis, fint_test, stiff_test, time, step);
+  }
+  // wooop
+  return;
+} 
+
+
 /*----------------------------------------------------------------------*/
 /* evaluate forces due to constraints */
 void STR::TimIntImpl::ApplyForceStiffConstraint
