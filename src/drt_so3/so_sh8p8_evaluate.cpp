@@ -46,6 +46,9 @@ Maintainer: Burkhard Bornemann
 #include "../drt_mat/yeoh.H"
 #include "../drt_mat/logneohooke.H"
 #include "../drt_mat/elasthyper.H"
+#include "../drt_potential/drt_potential_manager.H"
+
+using POTENTIAL::PotentialManager; // potential manager
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            bborn 03/08|
@@ -89,6 +92,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
   else if (action=="eas_set_multi")               act = So_hex8::eas_set_multi;
   else if (action=="calc_homog_dens")             act = So_hex8::calc_homog_dens;
   else if (action=="multi_readrestart")           act = So_hex8::multi_readrestart;
+  else if (action=="calc_potential_stiff")        act = So_hex8::calc_potential_stiff;
   else dserror("Unknown type of action for So_hex8");
 
   // what should the element do
@@ -531,6 +535,32 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
 
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
         soh8_read_restart_multi(params);
+    }
+    break;
+    
+    // compute additional stresses due to intermolecular potential forces
+    case calc_potential_stiff:
+    {
+      RefCountPtr<PotentialManager> potentialmanager =
+        params.get<RefCountPtr<PotentialManager> >("pot_man", null);
+      if (potentialmanager==null)
+        dserror("No PotentialManager in sh8p8 available");
+
+      RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+      if (cond==null)
+        dserror("Condition not available in sh8p8");
+
+      if (cond->Type()==DRT::Condition::LJ_Potential_Volume) // Lennard-Jones potential
+      {
+        potentialmanager->StiffnessAndInternalForcesPotential(this, DRT::UTILS::intrule_hex_8point, params, lm, elemat1_epetra, elevec1_epetra);
+      }
+      if (cond->Type()==DRT::Condition::VanDerWaals_Potential_Volume) // Van der Walls forces
+      {
+        potentialmanager->StiffnessAndInternalForcesPotential(this, DRT::UTILS::intrule_hex_8point, params, lm, elemat1_epetra, elevec1_epetra);
+      }
+      if( cond->Type()!=DRT::Condition::LJ_Potential_Volume &&
+          cond->Type()!=DRT::Condition::VanDerWaals_Potential_Volume)
+            dserror("Unknown condition type %d",cond->Type());
     }
     break;
 
