@@ -219,7 +219,7 @@ namespace ELEMENTS
     LINALG::Matrix<iel,1> conv_resM_;
     LINALG::Matrix<3,2>   xder2_;
     double deltadens_;                /// delta density for Boussinesq Approximation
-    RCP<FLD::RotationallySymmetricPeriodicBC<distype> > rotsymmpbc_; /// rotsymm periodic bc's
+    FLD::RotationallySymmetricPeriodicBC<distype>* rotsymmpbc_; /// rotsymm periodic bc's
   };
 
 }
