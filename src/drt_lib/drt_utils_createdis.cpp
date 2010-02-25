@@ -201,10 +201,5 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
 }
 
 
-// finally do knot vectors in the nurbs case
-
-
-
-
 
 #endif  // CCADISCRET

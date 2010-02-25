@@ -190,7 +190,11 @@ private:
       string approxtype = "Polynomial";
       if(isnurbsdis)
       {
-        if(sourceele->NumNode()==9)
+        if(sourceele->NumNode()==8)
+        {
+          approxtype="NURBS8";
+        }
+        else if(sourceele->NumNode()==9)
         {
           approxtype="NURBS9";
         }
@@ -201,6 +205,14 @@ private:
         else if(sourceele->NumNode()==27)
         {
           approxtype="NURBS27";
+        }
+        else if(sourceele->NumNode()==2)
+        {
+          approxtype="NURBS2";
+        }
+        else if(sourceele->NumNode()==3)
+        {
+          approxtype="NURBS3";
         }
         else
         {
