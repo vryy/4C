@@ -15,6 +15,8 @@ namespace IO
 
 namespace FSI
 {
+  class Monolithic;
+
 namespace UTILS
 {
 
@@ -58,6 +60,87 @@ namespace UTILS
 
     /// internal FSI iteration count
     int itnum_;
+  };
+
+
+
+  /// Helper to write unconverged results
+  class SimpleDebugWriter
+  {
+  public:
+
+    SimpleDebugWriter(Teuchos::RCP<DRT::Discretization> dis, const std::string& name);
+
+    virtual ~SimpleDebugWriter() {}
+
+    /// announce new time step
+    /*!
+      Results in a new control file
+     */
+    virtual void NewLinearSystem(int step, std::string name="");
+
+    /// announce new interface iteration step
+    virtual void NewIteration();
+
+    /// write interface vector
+    /*!
+      This includes an internal transfer of the interface vector to the
+      interface discretization.
+     */
+    virtual void WriteVector(const std::string& name, Epetra_Vector& v);
+
+  private:
+
+    /// discretization
+    Teuchos::RCP<DRT::Discretization> dis_;
+
+    /// name of output file
+    std::string name_;
+
+    /// current control file
+    Teuchos::RCP<IO::OutputControl> control_;
+
+    /// writer to control file
+    Teuchos::RCP<IO::DiscretizationWriter> writer_;
+
+    /// internal FSI iteration count
+    int itnum_;
+  };
+
+
+  /// FSI debug writer
+  class MonolithicDebugWriter
+  {
+  public:
+
+    MonolithicDebugWriter(FSI::Monolithic& algorithm);
+
+    virtual ~MonolithicDebugWriter() {}
+
+    /// announce new time step
+    /*!
+      Results in a new control file
+     */
+    virtual void NewLinearSystem();
+
+    /// announce new interface iteration step
+    virtual void NewIteration();
+
+    /// write interface vector
+    /*!
+      This includes an internal transfer of the interface vector to the
+      interface discretization.
+     */
+    virtual void WriteVector(const std::string& name, const Teuchos::RCP<Epetra_Vector>& v);
+
+  private:
+    FSI::Monolithic& algorithm_;
+
+    Teuchos::RCP<SimpleDebugWriter> struct_writer_;
+    Teuchos::RCP<SimpleDebugWriter> fluid_writer_;
+    Teuchos::RCP<SimpleDebugWriter> ale_writer_;
+
+    int counter_;
   };
 }
 }

@@ -1,12 +1,14 @@
 #ifdef CCADISCRET
 
 #include "fsi_overlapprec.H"
+#include "fsi_debugwriter.H"
 #include <Epetra_Time.h>
 
 extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(const LINALG::MultiMapExtractor& maps,
+FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg,
+                                                            const LINALG::MultiMapExtractor& maps,
                                                             ADAPTER::Structure& structure,
                                                             ADAPTER::Fluid& fluid,
                                                             ALE::Ale& ale,
@@ -30,7 +32,8 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(const LINALG::MultiM
     fiterations_(fiterations),
     aomega_(aomega),
     aiterations_(aiterations),
-    err_(err)
+    err_(err),
+    pcdbg_(pcdbg)
 {
   fluidsolver_ = Teuchos::rcp(new LINALG::Preconditioner(fluid.LinearSolver()));
 
@@ -53,11 +56,33 @@ int FSI::BlockPreconditioningMatrix::ApplyInverse(const Epetra_MultiVector &X, E
   if (UseTranspose())
     dserror("no transpose preconditioning");
 
+  Teuchos::RCP<Epetra_Vector> r;
+
+  if (pcdbg_!=Teuchos::null)
+  {
+    pcdbg_->NewIteration();
+
+    // X and Y are the same at this point (if we have been called by aztec!)
+    Epetra_Vector &y = Teuchos::dyn_cast<Epetra_Vector>(Y);
+    pcdbg_->WriteVector("x",Teuchos::rcp(&y,false));
+
+    r = Teuchos::rcp(new Epetra_Vector(y.Map()));
+    Apply(X,*r);
+  }
+
 #ifdef BLOCKMATRIXMERGE
   MergeSolve(X, Y);
 #else
   SGS(X, Y);
 #endif
+
+  if (pcdbg_!=Teuchos::null)
+  {
+    Epetra_Vector &y = Teuchos::dyn_cast<Epetra_Vector>(Y);
+    pcdbg_->WriteVector("y",Teuchos::rcp(&y,false));
+    r->Update(-1,y,1);
+    pcdbg_->WriteVector("r",r);
+  }
 
   return 0;
 }
@@ -78,8 +103,8 @@ void FSI::BlockPreconditioningMatrix::MergeSolve(const Epetra_MultiVector &X, Ep
   cout << sparse_->DomainMap()<<endl;
   cout << x.Map()<<endl;
 #endif
-  
-  
+
+
   fluidsolver_->Solve(sparse_->EpetraMatrix(),
                       Teuchos::rcp(&y,false),
                       Teuchos::rcp(new Epetra_Vector(x)),
@@ -172,7 +197,8 @@ void FSI::BlockPreconditioningMatrix::LocalBlockRichardson(Teuchos::RCP<LINALG::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(const LINALG::MultiMapExtractor& maps,
+FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg,
+                                                    const LINALG::MultiMapExtractor& maps,
                                                     ADAPTER::Structure& structure,
                                                     ADAPTER::Fluid& fluid,
                                                     ALE::Ale& ale,
@@ -187,7 +213,8 @@ FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(const LINALG::MultiMapExtrac
                                                     double aomega,
                                                     int aiterations,
                                                     FILE* err)
-  : BlockPreconditioningMatrix(maps,
+  : BlockPreconditioningMatrix(pcdbg,
+                               maps,
                                structure,
                                fluid,
                                ale,
@@ -509,7 +536,8 @@ FSI::LungOverlappingBlockMatrix::LungOverlappingBlockMatrix(const LINALG::MultiM
                                                             double aomega,
                                                             int aiterations,
                                                             FILE* err)
-  : OverlappingBlockMatrix(maps,
+  : OverlappingBlockMatrix(Teuchos::null,
+                           maps,
                            structure,
                            fluid,
                            ale,
@@ -828,11 +856,11 @@ void FSI::LungOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_Mu
 
 
     LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> invDiag(fsiextractor_, fsiextractor_, 1, false, true);
-    
+
     if (prec_ == INPAR::FSI::Simple)
     {
       // D^{-1} = diag(A(0,0))^{-1}
-      
+
       Epetra_Vector structDiagVec(StructInnerOp.RowMap(),false);
       StructInnerOp.ExtractDiagonalCopy(structDiagVec);
       int err = structDiagVec.Reciprocal(structDiagVec);
@@ -858,29 +886,29 @@ void FSI::LungOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_Mu
     else if (prec_ == INPAR::FSI::Simplec)
     {
       // D^{-1} = sum(abs(A(0,0)))^{-1}
-      
+
       Epetra_Vector structDiagVec(StructInnerOp.RowMap(),false);
       int err = StructInnerOp.EpetraMatrix()->InvRowSums(structDiagVec);
       if (err) dserror("Epetra_CrsMatrix::InvRowSums (structure matrix) returned %d",err);
       LINALG::SparseMatrix invstructDiag(structDiagVec);
-  
+
       Epetra_Vector fluidDiagVec(FluidInnerOp.RowMap(),false);
       err = FluidInnerOp.EpetraMatrix()->InvRowSums(fluidDiagVec);
       if (err) dserror("Epetra_CrsMatrix::InvRowSums (fluid matrix) returned %d",err);
       LINALG::SparseMatrix invfluidDiag(fluidDiagVec);
-  
+
       Epetra_Vector aleDiagVec(AleInnerOp.RowMap(),false);
       err =  AleInnerOp.EpetraMatrix()->InvRowSums(aleDiagVec);
       if (err) dserror("Epetra_CrsMatrix::InvRowSums (ale matrix) returned %d",err);
       LINALG::SparseMatrix invaleDiag(aleDiagVec);
-  
+
       invDiag.Assign(0,0,View,invstructDiag);
       invDiag.Assign(1,1,View,invfluidDiag);
       invDiag.Assign(2,2,View,invaleDiag);
     }
     else
       dserror("Unknown type of preconditioner for constraint fsi system");
-    
+
     invDiag.Complete();
 
 
@@ -958,7 +986,8 @@ FSI::ConstrOverlappingBlockMatrix::ConstrOverlappingBlockMatrix(const LINALG::Mu
                                                             double aomega,
                                                             int aiterations,
                                                             FILE* err)
-  : OverlappingBlockMatrix(maps,
+  : OverlappingBlockMatrix(Teuchos::null,
+                           maps,
                            structure,
                            fluid,
                            ale,
@@ -1272,11 +1301,11 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_
 
 
     LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> invDiag(fsiextractor_, fsiextractor_, 1, false, true);
-    
+
     if (prec_ == INPAR::FSI::Simple)
     {
       // D^{-1} = diag(A(0,0))^{-1}
-      
+
       Epetra_Vector structDiagVec(StructInnerOp.RowMap(),false);
       StructInnerOp.ExtractDiagonalCopy(structDiagVec);
       int err = structDiagVec.Reciprocal(structDiagVec);
@@ -1301,23 +1330,23 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_
     }
     else if (prec_ == INPAR::FSI::Simplec)
     {
-      // D^{-1} = sum(abs(A(0,0)))^{-1} 
-      
+      // D^{-1} = sum(abs(A(0,0)))^{-1}
+
       Epetra_Vector structDiagVec(StructInnerOp.RowMap(),false);
       int err = StructInnerOp.EpetraMatrix()->InvRowSums(structDiagVec);
       if (err) dserror("Epetra_CrsMatrix::InvRowSums (structure matrix) returned %d",err);
       LINALG::SparseMatrix invstructDiag(structDiagVec);
-  
+
       Epetra_Vector fluidDiagVec(FluidInnerOp.RowMap(),false);
       err = FluidInnerOp.EpetraMatrix()->InvRowSums(fluidDiagVec);
       if (err) dserror("Epetra_CrsMatrix::InvRowSums (fluid matrix) returned %d",err);
       LINALG::SparseMatrix invfluidDiag(fluidDiagVec);
-  
+
       Epetra_Vector aleDiagVec(AleInnerOp.RowMap(),false);
       err =  AleInnerOp.EpetraMatrix()->InvRowSums(aleDiagVec);
       if (err) dserror("Epetra_CrsMatrix::InvRowSums (ale matrix) returned %d",err);
       LINALG::SparseMatrix invaleDiag(aleDiagVec);
-  
+
       invDiag.Assign(0,0,View,invstructDiag);
       invDiag.Assign(1,1,View,invfluidDiag);
       invDiag.Assign(2,2,View,invaleDiag);

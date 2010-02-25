@@ -16,6 +16,13 @@
 // and use the fluid solver to solve for it
 //#define BLOCKMATRIXMERGE
 
+namespace FSI
+{
+namespace UTILS
+{
+  class MonolithicDebugWriter;
+}
+}
 
 namespace FSI
 {
@@ -25,7 +32,8 @@ namespace FSI
   {
   public:
 
-    BlockPreconditioningMatrix(const LINALG::MultiMapExtractor& maps,
+    BlockPreconditioningMatrix(Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg,
+                               const LINALG::MultiMapExtractor& maps,
                                ADAPTER::Structure& structure,
                                ADAPTER::Fluid& fluid,
                                ALE::Ale& ale,
@@ -101,6 +109,9 @@ namespace FSI
     /// log file
     FILE* err_;
 
+    /// debug writer
+    Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg_;
+
 #ifdef BLOCKMATRIXMERGE
     /// debug merged sparse
     Teuchos::RCP<LINALG::SparseMatrix> sparse_;
@@ -118,7 +129,8 @@ namespace FSI
   public:
 
     /// construction
-    OverlappingBlockMatrix(const LINALG::MultiMapExtractor& maps,
+    OverlappingBlockMatrix(Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg,
+                           const LINALG::MultiMapExtractor& maps,
                            ADAPTER::Structure& structure,
                            ADAPTER::Fluid& fluid,
                            ALE::Ale& ale,
@@ -252,7 +264,7 @@ namespace FSI
     /// setup of block preconditioners
     virtual void SetupPreconditioner();
 
-    
+
   protected:
 
     /// symmetric Gauss-Seidel block preconditioner

@@ -34,6 +34,7 @@ namespace FSI
 namespace UTILS
 {
   class DebugWriter;
+  class MonolithicDebugWriter;
 }
 
   /// monolithic FSI algorithm base
@@ -141,6 +142,7 @@ namespace UTILS
                      public NOX::Epetra::Interface::Preconditioner,
                      public NOX::Direction::UserDefinedFactory
   {
+    friend class FSI::UTILS::MonolithicDebugWriter;
   public:
     explicit Monolithic(Epetra_Comm& comm);
 
@@ -340,6 +342,9 @@ namespace UTILS
 
     /// start a new time step
     virtual void PrepareTimeStep();
+
+    /// debug writer to be used inside preconditioner
+    Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg_;
 
   private:
 

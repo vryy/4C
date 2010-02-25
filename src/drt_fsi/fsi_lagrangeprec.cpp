@@ -20,7 +20,8 @@ FSI::LagrangianBlockMatrix::LagrangianBlockMatrix(const LINALG::MultiMapExtracto
                                                   double aomega,
                                                   int aiterations,
                                                   FILE* err)
-  : BlockPreconditioningMatrix(maps,
+  : BlockPreconditioningMatrix(Teuchos::null,
+                               maps,
                                structure,
                                fluid,
                                ale,

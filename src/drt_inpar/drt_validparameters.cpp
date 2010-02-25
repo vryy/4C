@@ -982,7 +982,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                            INPAR::POTENTIAL::approximation_surface,
                                            INPAR::POTENTIAL::approximation_point),
                                 &interaction_potential);
-  
+
   // switches on the analytical soltion computation for two van der waals spheres
   setStringToIntegralParameter<int>("ANALYTICALSOLUTION","no",
                                  "computes analytical solution for two Van der Waals spheres ",
@@ -992,7 +992,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter(  "VDW_RADIUS",0.0,
                     "radius of van der Waals spheres",
                     &interaction_potential);
-  
+
   // number of atoms or molecules offset
   DoubleParameter(  "N_OFFSET",0.0,
                     "number of atoms or molecules offset",
@@ -2342,10 +2342,24 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("ALPHA_S",-1.0,"Robin parameter structure",&fsidyn);
 
   setStringToIntegralParameter<int>("DEBUGOUTPUT","No",
-                               "Output of unconverged interface values during partitioned FSI iteration.\n"
-                               "There will be a new control file for each time step.\n"
-                               "This might be helpful to understand the coupling iteration.",
-                               yesnotuple,yesnovalue,&fsidyn);
+                                    "Output of unconverged interface values during partitioned FSI iteration.\n"
+                                    "There will be a new control file for each time step.\n"
+                                    "This might be helpful to understand the coupling iteration.",
+                                    tuple<std::string>(
+                                      "No",
+                                      "Yes",
+                                      "Interface",
+                                      "Preconditioner",
+                                      "All"
+                                      ),
+                                    tuple<int>(
+                                      0,
+                                      1,
+                                      1,
+                                      2,
+                                      256
+                                      ),
+                                    &fsidyn);
 
   setStringToIntegralParameter<int>("PREDICTOR","d(n)+dt*v(n)+0.5*dt^2*a(n)",
                                "Predictor for interface displacements",
@@ -2535,7 +2549,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       tuple<std::string>("Simple","Simplec"),tuple<INPAR::FSI::PrecConstr>(INPAR::FSI::Simple,INPAR::FSI::Simplec),&constrfsi);
   IntParameter("SIMPLEITER",2,"Number of iterations for simple pc",&constrfsi);
   DoubleParameter("ALPHA",0.8,"alpha parameter for simple pc",&constrfsi);
-  
+
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& search_tree = list->sublist("SEARCH TREE",false,"");

@@ -29,7 +29,8 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
                                                     vector<double>& aomega,
                                                     vector<int>& aiterations,
                                                     FILE* err)
-  : OverlappingBlockMatrix(maps,
+  : OverlappingBlockMatrix(Teuchos::null,
+                           maps,
                            structure,
                            fluid,
                            ale,
@@ -139,7 +140,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   if ((int)aiterations_.size() < anlevel_ ||
       (int)aomega_.size() < anlevel_)
     dserror("You need at least %d values of ALEPCITER and ALEPCOMEGA in input file",anlevel_);
-  
+
 
 
   Ass_.resize(snlevel_);
@@ -378,7 +379,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   }
   // coarse grid:
   S.Reshape(Aaa_[anlevel_-1],"Amesos-KLU");
-  Saa_[anlevel_-1] = S; 
+  Saa_[anlevel_-1] = S;
 
   //-------------------------------------------------------------- timing
   if (!myrank) printf("Additional FSIAMG setup time %10.5e [s]\n",etime.ElapsedTime());
@@ -600,7 +601,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockVcycle(
     axc.Reshape(Raa_[level].GetOperatorRangeSpace());
     axc = Raa_[level] * tmp;
   }
-  
+
   // fluid
   // fxc = Rff_[level] * ( mlfx - Aff_[level] * mlfy - Afs[level] * mlsy - Afa[level] * mlay)
   MLAPI::MultiVector fxc;
@@ -612,7 +613,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockVcycle(
     fxc.Reshape(Rff_[level].GetOperatorRangeSpace());
     fxc = Rff_[level] * tmp;
   }
-  
+
   //----------------------------------- coarse level corrections
   MLAPI::MultiVector syc(sxc.GetVectorSpace(),1,false);
   MLAPI::MultiVector ayc(axc.GetVectorSpace(),1,false);
@@ -631,7 +632,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockVcycle(
     tmp = Pff_[level] * fyc;
     mlfy.Update(1.0,tmp,1.0);
   }
-  
+
   //---------------------------- postsmoothing block Gauss Seidel
   // (do NOT zero initial guess)
   ExplicitBlockGaussSeidelSmoother(level,mlsy,mlfy,mlay,mlsx,mlfx,mlax,false);
@@ -930,7 +931,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::LocalBlockRichardson(
   {
     MLAPI::MultiVector tmpz(z.GetVectorSpace(),1,false);
     MLAPI::MultiVector tmpb(b.GetVectorSpace(),1,false);
-    z.Scale(omega); 
+    z.Scale(omega);
     for (int i=0; i<iterations; ++i)
     {
       tmpb = b - A[level] * z;

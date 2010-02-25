@@ -1,6 +1,7 @@
 #ifdef CCADISCRET
 
 #include "fsi_monolithicstructuresplit.H"
+#include "fsi_debugwriter.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
 #include "fsi_nox_linearsystem_bgs.H"
@@ -160,6 +161,12 @@ void FSI::MonolithicStructureSplit::SetupSystem()
     }
   }
 
+  // enable debugging
+  if (Teuchos::getIntegralValue<int>(fsidyn,"DEBUGOUTPUT") & 2)
+  {
+    pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
+  }
+
   // create block system matrix
   switch(linearsolverstrategy_)
   {
@@ -183,6 +190,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   break;
   case INPAR::FSI::PreconditionedKrylov:
     systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrix(
+                                                          pcdbg_,
                                                           Extractor(),
                                                           StructureField(),
                                                           FluidField(),

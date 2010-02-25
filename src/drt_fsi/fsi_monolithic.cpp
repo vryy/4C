@@ -187,7 +187,7 @@ FSI::Monolithic::Monolithic(Epetra_Comm& comm)
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   // enable debugging
-  if (Teuchos::getIntegralValue<int>(fsidyn,"DEBUGOUTPUT"))
+  if (Teuchos::getIntegralValue<int>(fsidyn,"DEBUGOUTPUT")==1)
   {
     sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField().Discretization()));
     //fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(FluidField().Discretization()));
@@ -648,8 +648,8 @@ bool FSI::BlockMonolithic::computeJacobian(const Epetra_Vector &x, Epetra_Operat
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool FSI::BlockMonolithic::computePreconditioner(const Epetra_Vector &x,
-                                            Epetra_Operator &M,
-                                            Teuchos::ParameterList *precParams)
+                                                 Epetra_Operator &M,
+                                                 Teuchos::ParameterList *precParams)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::computePreconditioner");
 
@@ -664,6 +664,11 @@ bool FSI::BlockMonolithic::computePreconditioner(const Epetra_Vector &x,
   }
 
   precondreusecount_ -= 1;
+
+  if (pcdbg_!=Teuchos::null)
+  {
+    pcdbg_->NewLinearSystem();
+  }
 
   return true;
 }
