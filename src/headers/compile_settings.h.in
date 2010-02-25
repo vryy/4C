@@ -1,0 +1,40 @@
+// the configured options and settings for baci
+#define BACI_VERSION_MAJOR @baci_VERSION_MAJOR@
+#define BACI_VERSION_MINOR @baci_VERSION_MINOR@
+#define CHANGEDREVISION "unknown"
+#define CHANGEDDATE "unknown"
+#cmakedefine CCADISCRET
+#cmakedefine TRILINOS_PACKAGE
+#cmakedefine DEBUG
+#cmakedefine D_ALE
+#cmakedefine D_FLUID2
+#cmakedefine D_FLUID3
+#cmakedefine D_SHELL8
+#cmakedefine D_WALL1
+#cmakedefine D_THERMO
+#cmakedefine D_SOLID3
+#cmakedefine D_BEAM2
+#cmakedefine D_BEAM2R
+#cmakedefine D_BEAM3
+#cmakedefine D_TRUSS3
+#cmakedefine D_TRUSS2
+#cmakedefine D_TORSION3
+#cmakedefine D_TORSION2
+#cmakedefine D_ARTNET
+#cmakedefine D_RED_AIRWAYS
+#cmakedefine BINIO
+#cmakedefine QHULL
+#cmakedefine D_EXODUS
+#cmakedefine PRESTRESS
+#cmakedefine POSTSTRESS
+#cmakedefine INVERSEDESIGNCREATE
+#cmakedefine INVERSEDESIGNUSE
+#cmakedefine PARMETIS
+#cmakedefine D_ALE_BFLOW
+#cmakedefine HAVENOT_SUPERLU
+#cmakedefine HAVENOT_UMFPACK
+#cmakedefine PERF
+#cmakedefine COLOROUTPUT
+#cmakedefine DSERROR_DUMP
+#cmakedefine TRAP_FE
+#cmakedefine THROWELEMENTERRORS
