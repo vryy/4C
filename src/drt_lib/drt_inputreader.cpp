@@ -924,8 +924,18 @@ void DatFileReader::ReadDat()
 #ifdef PARALLEL
     // distribute excluded section positions
     for (vector<int>::size_type i=0; i<exclude.size(); ++i)
+    {
+      if (comm_->MyPID()==0)
+      {
+        map<string,ifstream::pos_type>::iterator ep = excludepositions_.find(exclude[i]);
+        if (ep==excludepositions_.end())
+        {
+          excludepositions_[exclude[i]] = -1;
+        }
+      }
       //comm_->Broadcast(&excludepositions_[exclude[i]],1,0);
       MPI_Bcast(&excludepositions_[exclude[i]],1,MPI_INT,0,mpicomm.GetMpiComm());
+    }
 #endif
   }
 
