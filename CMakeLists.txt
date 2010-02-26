@@ -66,18 +66,18 @@ if (Trilinos_FOUND)
 endif (Trilinos_FOUND)
 
 find_package(Umfpack)
-if (Umfpack_FOUND)
-  #message("Umfpack found")
-  include_directories(${Umfpack_INCLUDE_DIRS})
-  link_directories(${Umfpack_LIBRARY_DIRS})
+if (UMFPACK_FOUND)
+  #message("UMFPACK found")
+  include_directories(${UMFPACK_INCLUDE_DIRS})
+  link_directories(${UMFPACK_LIBRARY_DIRS})
   set(LIBRARIES
     ${LIBRARIES}
-    ${Umfpack_LIBRARIES}
+    ${UMFPACK_LIBRARIES}
     )
-else (Umfpack_FOUND)
-  #message("Umfpack not found")
+else (UMFPACK_FOUND)
+  #message("UMFPACK not found")
   add_definitions("-DHAVENOT_UMFPACK")
-endif (Umfpack_FOUND)
+endif (UMFPACK_FOUND)
 
 find_package(SuperLU)
 if (SuperLU_FOUND)
@@ -93,12 +93,15 @@ endif (SuperLU_FOUND)
 
 find_package(PARMETIS)
 if (PARMETIS_FOUND)
+  #message("PARMETIS found")
   include_directories(${PARMETIS_INCLUDE_DIRS})
   link_directories(${PARMETIS_LIBRARY_DIRS})
   set(LIBRARIES
     ${LIBRARIES}
     ${PARMETIS_LIBRARIES}
     )
+else (PARMETIS_FOUND)
+  #message("PARMETIS not found")
 endif (PARMETIS_FOUND)
 
 if (Boost_FOUND)
@@ -109,6 +112,36 @@ if (Boost_FOUND)
     ${Boost_LIBRARIES}
     )
 endif(Boost_FOUND)
+
+find_package(NemesisI)
+if (NEMESIS_FOUND)
+  include_directories(${NEMESIS_INCLUDE_DIRS})
+  link_directories(${NEMESIS_LIBRARY_DIRS})
+  set(LIBRARIES
+    ${LIBRARIES}
+    ${NEMESIS_LIBRARIES}
+    )
+endif(NEMESIS_FOUND)
+
+find_package(ExodusII)
+if (EXODUS_FOUND)
+  include_directories(${EXODUS_INCLUDE_DIRS})
+  link_directories(${EXODUS_LIBRARY_DIRS})
+  set(LIBRARIES
+    ${LIBRARIES}
+    ${EXODUS_LIBRARIES}
+    )
+endif(EXODUS_FOUND)
+
+find_package(Netcdf)
+if (NETCDF_FOUND)
+  include_directories(${NETCDF_INCLUDE_DIRS})
+  link_directories(${NETCDF_LIBRARY_DIRS})
+  set(LIBRARIES
+    ${LIBRARIES}
+    ${NETCDF_LIBRARIES}
+    )
+endif(NETCDF_FOUND)
 
 if (LAPACK_FOUND)
   include_directories(${LAPACK_INCLUDE_DIRS})
@@ -142,1041 +175,1807 @@ if (DEBUG)
   add_definitions("-DDEBUG")
 endif (DEBUG)
 
-set( adapter_source
-src/drt_adapter/adapter_algorithmbase.cpp
-src/drt_adapter/adapter_coupling.cpp
-src/drt_adapter/adapter_coupling_mortar.cpp
-src/drt_adapter/adapter_fluid_ale.cpp
-src/drt_adapter/adapter_fluid_base_algorithm.cpp
-src/drt_adapter/adapter_fluid_combust.cpp
-src/drt_adapter/adapter_fluid.cpp
-src/drt_adapter/adapter_fluid_genalpha.cpp
-src/drt_adapter/adapter_fluid_impl.cpp
-src/drt_adapter/adapter_fluid_lung.cpp
-src/drt_adapter/adapter_fluid_moving_boundary.cpp
-src/drt_adapter/adapter_fluid_projection.cpp
-src/drt_adapter/adapter_fluid_xfem.cpp
-src/drt_adapter/adapter_scatra_base_algorithm.cpp
-src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.cpp
-src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp
-src/drt_adapter/adapter_structure_cmtstrugenalpha.cpp
-src/drt_adapter/adapter_structure_constr_merged.cpp
-src/drt_adapter/adapter_structure.cpp
-src/drt_adapter/adapter_structure_lung.cpp
-src/drt_adapter/adapter_structure_strugenalpha.cpp
-src/drt_adapter/adapter_structure_timint.cpp
-src/drt_adapter/adapter_structure_wrapper.cpp
-src/drt_adapter/adapter_thermo.cpp
-src/drt_adapter/adapter_thermo_timint.cpp
-src/drt_adapter/adapter_xfluid_impl.cpp
+set(OBJS_DRT_ALE_LIB
+  src/drt_ale3/ale3.cpp
+  src/drt_ale3/ale3_nurbs.cpp
+  src/drt_ale3/ale3_surface.cpp
+  src/drt_ale2/ale2.cpp
+  src/drt_ale2/ale2_line.cpp
+  src/drt_ale2/ale2_nurbs.cpp
+  src/drt_ale3/ale3_evaluate.cpp
+  src/drt_ale3/ale3_input.cpp
+  src/drt_ale3/ale3_surface_evaluate.cpp
+  src/drt_ale2/ale2_evaluate.cpp
+  src/drt_ale2/ale2_input.cpp
+  src/drt_ale2/ale2_line_evaluate.cpp
 )
-set( ale_source
-src/drt_ale/ale.cpp
-src/drt_ale/ale_dyn.cpp
-src/drt_ale/ale_laplace.cpp
-src/drt_ale/ale_lin.cpp
-src/drt_ale/ale_resulttest.cpp
-src/drt_ale/ale_springs.cpp
-src/drt_ale/ale_springs_fixed_ref.cpp
-src/drt_ale/ale_utils_mapextractor.cpp
+set(OBJS_DRT_B2_LIB
+  src/drt_beam2/beam2.cpp
+  src/drt_beam2/beam2_input.cpp
+  src/drt_beam2/beam2_evaluate.cpp
 )
-set( ale2_source
-src/drt_ale2/ale2.cpp
-src/drt_ale2/ale2_evaluate.cpp
-src/drt_ale2/ale2_input.cpp
-src/drt_ale2/ale2_line.cpp
-src/drt_ale2/ale2_line_evaluate.cpp
-src/drt_ale2/ale2_nurbs.cpp
+set(OBJS_POST_FILE_MANAGER
+  src/post_file_manager/post_file_manager.c
+  #src/post_visual/post_map_functions.c
 )
-set( ale3_source
-src/drt_ale3/ale3.cpp
-src/drt_ale3/ale3_evaluate.cpp
-src/drt_ale3/ale3_input.cpp
-src/drt_ale3/ale3_nurbs.cpp
-src/drt_ale3/ale3_surface.cpp
-src/drt_ale3/ale3_surface_evaluate.cpp
+set(OBJS_DRT_LIB
+  src/drt_lib/drt_discret.cpp
+  src/drt_lib/drt_discret_fillcomplete.cpp
+  src/drt_lib/drt_discret_conditions.cpp
+  src/drt_lib/drt_discret_partition.cpp
+  src/drt_lib/drt_discret_utils.cpp
+  src/drt_lib/drt_globalproblem.cpp
+  src/drt_lib/drt_inputreader.cpp
+  src/drt_lib/drt_elementreader.cpp
+  src/drt_lib/drt_nodereader.cpp
+  src/drt_lib/drt_element.cpp
+  src/drt_lib/drt_elementregister.cpp
+  src/drt_lib/drt_node.cpp
+  src/drt_lib/drt_container.cpp
+  src/drt_lib/drt_condition.cpp
+  src/drt_lib/drt_condition_utils.cpp
+  src/drt_lib/drt_condition_selector.cpp
+  src/drt_lib/drt_conditiondefinition.cpp
+  src/drt_lib/drt_materialdefinition.cpp
+  src/drt_lib/drt_dofset.cpp
+  src/drt_lib/drt_dofset_base.cpp
+  src/drt_lib/drt_dofset_proxy.cpp
+  src/drt_lib/drt_linedefinition.cpp
+  src/drt_lib/drt_elementdefinition.cpp
+  src/drt_lib/drt_resulttest.cpp
+  src/drt_fem_general/drt_utils_integration.cpp
+  src/drt_fem_general/drt_utils_dgfem_basisfunctions.cpp
+  src/drt_fem_general/drt_utils_fem_shapefunctions.cpp
+  src/drt_fem_general/drt_utils_boundary_integration.cpp
+  src/drt_fem_general/drt_utils_local_connectivity_matrices.cpp
+  src/drt_lib/drt_utils.cpp
+  src/drt_lib/drt_utils_parmetis.cpp
+  src/drt_lib/drt_utils_metis.cpp
+  src/drt_lib/drt_utils_createdis.cpp
+  src/drt_lib/drt_parobject.cpp
+  src/drt_lib/drt_exporter.cpp
+  src/drt_lib/drt_dserror.cpp
+  src/drt_lib/linalg_utils.cpp
+  src/drt_lib/linalg_serialdensematrix.cpp
+  src/drt_lib/linalg_serialdensevector.cpp
+  src/drt_lib/distribute_grids.cpp
+  src/drt_lib/drt_nodematchingoctree.cpp
+  src/drt_lib/drt_parser.cpp
+  src/drt_lib/drt_timecurve.cpp
+  src/drt_lib/drt_function.cpp
+  src/drt_lib/drt_discret_evaluate.cpp
+  src/drt_lib/linalg_mapextractor.cpp
+  src/drt_lib/linalg_sparsematrix.cpp
+  src/drt_lib/linalg_blocksparsematrix.cpp
+  src/drt_fluid/drt_pbcdofset.cpp
+  src/drt_fluid/drt_periodicbc.cpp
+  src/drt_fluid/fluid_rotsym_periodicbc_utils.cpp
+  src/drt_geometry/position_array.cpp
+  src/drt_geometry/searchtree_nearestobject.cpp
+  src/drt_geometry/searchtree_geometry_service.cpp
+  src/drt_geometry/searchtree.cpp
+  src/drt_geometry/intersection_interfacepoint.cpp
+  src/drt_geometry/intersection_math.cpp
+  src/drt_geometry/intersection_service.cpp
+  src/drt_geometry/intersection.cpp
+  src/drt_geometry/integrationcell.cpp
+  src/drt_lib/drt_locsys.cpp
 )
-set( bele3_source
-src/drt_bele3/bele2.cpp
-src/drt_bele3/bele2_evaluate.cpp
-src/drt_bele3/bele3.cpp
-src/drt_bele3/bele3_evaluate.cpp
-src/drt_bele3/bele3_line.cpp
-src/drt_bele3/bele3_line_evaluate.cpp
-src/drt_bele3/vele3.cpp
-src/drt_bele3/vele3_evaluate.cpp
-src/drt_bele3/vele3_line.cpp
-src/drt_bele3/vele3_line_evaluate.cpp
-src/drt_bele3/vele3_surface.cpp
-src/drt_bele3/vele3_surface_evaluate.cpp
+set(OBJS_DRT_MAT_LIB
+  src/drt_mat/matpar_bundle.cpp
+  src/drt_mat/matpar_material.cpp
+  src/drt_mat/matpar_parameter.cpp
+  src/drt_mat/micromaterial.cpp
+  src/drt_mat/newtonianfluid.cpp
+  src/drt_mat/stvenantkirchhoff.cpp
+  src/drt_mat/lung_penalty.cpp
+  src/drt_mat/lung_ogden.cpp
+  src/drt_mat/neohooke.cpp
+  src/drt_mat/plasticneohooke.cpp
+  src/drt_mat/visconeohooke.cpp
+  src/drt_mat/viscoanisotropic.cpp
+  src/drt_mat/aaaneohooke.cpp
+  src/drt_mat/aaaraghavanvorp_damage.cpp
+  src/drt_mat/logneohooke.cpp
+  src/drt_mat/anisotropic_balzani.cpp
+  src/drt_mat/mooneyrivlin.cpp
+  src/drt_mat/yeoh.cpp
+  src/drt_mat/contchainnetw.cpp
+  src/drt_mat/artwallremod.cpp
+  src/drt_mat/biocell.cpp
+  src/drt_mat/scatra_mat.cpp
+  src/drt_mat/mixfrac.cpp
+  src/drt_mat/sutherland.cpp
+  src/drt_mat/arrhenius_spec.cpp
+  src/drt_mat/arrhenius_temp.cpp
+  src/drt_mat/arrhenius_pv.cpp
+  src/drt_mat/ferech_pv.cpp
+  src/drt_mat/carreauyasuda.cpp
+  src/drt_mat/modpowerlaw.cpp
+  src/drt_mat/material.cpp
+  src/drt_mat/matlist.cpp
+  src/drt_mat/ion.cpp
+  src/drt_mat/compogden.cpp
+  src/drt_mat/charmm.cpp
+  src/drt_mat/protein.cpp
+  src/drt_mat/itskov.cpp
+  src/drt_mat/elasthyper.cpp
+  src/drt_matelast/elast_summand.cpp
+  src/drt_matelast/elast_couplogneohooke.cpp
+  src/drt_matelast/elast_coupblatzko.cpp
+  src/drt_matelast/elast_isoneohooke.cpp
+  src/drt_matelast/elast_isoexpo.cpp
+  src/drt_matelast/elast_isomooneyrivlin.cpp
+  src/drt_matelast/elast_isoyeoh.cpp
+  src/drt_matelast/elast_isoquad.cpp
+  src/drt_matelast/elast_isocub.cpp
+  src/drt_matelast/elast_coupanisoexpotwo.cpp
+  src/drt_matelast/elast_coupanisoneohooketwo.cpp
+  src/drt_matelast/elast_volsussmanbathe.cpp
+  src/drt_matelast/elast_volpenalty.cpp
+  src/drt_matelast/elast_vologden.cpp
+  src/drt_matelast/elast_coupvarga.cpp
+  src/drt_matelast/elast_isovarga.cpp
+  src/drt_mat/cnst_1d_art.cpp
+  src/drt_mat/fourieriso.cpp
+  src/drt_mat/holzapfelcardiovascular.cpp
+  src/drt_mat/humphreycardiovascular.cpp
 )
-set( combust_element_source
-src/drt_combust/combust3.cpp
-src/drt_combust/combust3_evaluate.cpp
-src/drt_combust/combust3_input.cpp
-src/drt_combust/combust3_line.cpp
-src/drt_combust/combust3_line_evaluate.cpp
-src/drt_combust/combust3_surface.cpp
-src/drt_combust/combust3_surface_evaluate.cpp
-src/drt_combust/combust3_sysmat.cpp
+set(OBJS_MAT
+  src/materials/mat_el_iso.c
+  src/materials/mat_el_orth.c
+  src/materials/mat_pl_hoff.c
+  src/materials/mat_pl_mises_lin.c
+  src/materials/mat_pl_epc.c
+  src/materials/mat_pl_dp_lin.c
+  src/materials/mat_el_ogden.c
 )
-set( combust_source
-src/drt_combust/combust_algorithm.cpp
-src/drt_combust/combust_dyn.cpp
-src/drt_combust/combust_flamefront.cpp
-src/drt_combust/combust_fluidimplicitintegration.cpp
-src/drt_combust/combust_fluidresulttest.cpp
-src/drt_combust/combust_interface.cpp
-src/drt_combust/combust_refinementcell.cpp
-src/drt_combust/combust_reinitializer.cpp
-src/drt_combust/combust_utils.cpp
+set(OBJS_DRT_STATMECH
+  src/drt_statmech/statmech_time.cpp
+  src/drt_statmech/statmech_manager.cpp
 )
-set( constraint_element_source
-src/drt_constraint/constraint_element2.cpp
-src/drt_constraint/constraint_element2_evaluate.cpp
-src/drt_constraint/constraint_element3.cpp
-src/drt_constraint/constraint_element3_evaluate.cpp
+set(OBJS_DRT_ADAPT
+  src/drt_adapter/adapter_algorithmbase.cpp
+  src/drt_adapter/adapter_fluid.cpp
+  src/drt_adapter/adapter_structure.cpp
+  src/drt_adapter/adapter_structure_strugenalpha.cpp
+  src/drt_adapter/adapter_structure_cmtstrugenalpha.cpp
+  src/drt_adapter/adapter_structure_timint.cpp
+  src/drt_adapter/adapter_structure_constr_merged.cpp
+  src/drt_adapter/adapter_structure_lung.cpp
+  src/drt_adapter/adapter_structure_wrapper.cpp
+  src/drt_adapter/adapter_thermo.cpp
+  src/drt_adapter/adapter_thermo_timint.cpp
+  src/drt_adapter/adapter_fluid_base_algorithm.cpp
+  src/drt_adapter/adapter_fluid_ale.cpp
+  src/drt_adapter/adapter_fluid_xfem.cpp
+  src/drt_adapter/adapter_fluid_moving_boundary.cpp
+  src/drt_adapter/adapter_fluid_impl.cpp
+  src/drt_adapter/adapter_fluid_genalpha.cpp
+  src/drt_adapter/adapter_xfluid_impl.cpp
+  src/drt_adapter/adapter_fluid_lung.cpp
+  src/drt_adapter/adapter_scatra_base_algorithm.cpp
+  src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp
+  src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.cpp
+  src/drt_adapter/adapter_coupling.cpp
+  src/drt_adapter/adapter_coupling_mortar.cpp
+  src/drt_adapter/adapter_fluid_combust.cpp
+  src/drt_adapter/adapter_fluid_projection.cpp
 )
-set( constraint_source
-src/drt_constraint/constraint.cpp
-src/drt_constraint/constraintdofset.cpp
-src/drt_constraint/constraint_manager.cpp
-src/drt_constraint/constraintsolver.cpp
-src/drt_constraint/monitor.cpp
-src/drt_constraint/mpcdofset.cpp
-src/drt_constraint/multipointconstraint2.cpp
-src/drt_constraint/multipointconstraint3.cpp
-src/drt_constraint/multipointconstraint.cpp
+set(OBJS_WALLGE
+  src/wallge/wge_setdof.c
+  src/wallge/wge_inpele.c
+  src/wallge/wge_main.c
+  src/wallge/wge_init.c
+  src/wallge/wge_intg.c
+  src/wallge/wge_static_ke.c
+  src/wallge/wge_bope.c
+  src/wallge/wge_call_mat.c
+  src/wallge/wge_mat_damage.c
+  src/wallge/wge_strain.c
+  src/wallge/wge_damage_serv.c
+  src/wallge/wge_stiff.c
+  src/wallge/wge_stress.c
+  src/wallge/wge_fext.c
 )
-set( contact_source
-src/drt_contact/beam3contact.cpp
-src/drt_contact/beam3contact_manager.cpp
-src/drt_contact/beam3contactstrugenalpha.cpp
-src/drt_contact/contactstrugenalpha.cpp
-src/drt_contact/contactstrugenalpha_lsnewton.cpp
-src/drt_contact/drt_cdofset.cpp
-src/drt_contact/drt_celement.cpp
-src/drt_contact/drt_celement_shapefct.cpp
-src/drt_contact/drt_cnode.cpp
-src/drt_contact/drt_cnodedatacontainer.cpp
-src/drt_contact/drt_contact_abstract_strategy.cpp
-src/drt_contact/drt_contact_binarytree.cpp
-src/drt_contact/drt_contact_binarytree_self.cpp
-src/drt_contact/drt_contact_coupling2d.cpp
-src/drt_contact/drt_contact_coupling3d_classes.cpp
-src/drt_contact/drt_contact_coupling3d.cpp
-src/drt_contact/drt_contact_coupling3d_tools.cpp
-src/drt_contact/drt_contact_integrator.cpp
-src/drt_contact/drt_contact_integrator_tools.cpp
-src/drt_contact/drt_contact_interface.cpp
-src/drt_contact/drt_contact_interface_tools.cpp
-src/drt_contact/drt_contact_lagrange_strategy.cpp
-src/drt_contact/drt_contact_manager_base.cpp
-src/drt_contact/drt_contact_manager.cpp
-src/drt_contact/drt_contact_penalty_strategy.cpp
-src/drt_contact/drt_contact_projector.cpp
+set(OBJS_DRT_F2_LIB
+  src/drt_f2/fluid2_evaluate.cpp
+  src/drt_f2/fluid2_input.cpp
+  src/drt_f2/fluid2_line_evaluate.cpp
+  src/drt_f2/fluid2_weak_dbc.cpp
+  src/drt_f2/fluid2.cpp
+  src/drt_f2/fluid2_nurbs.cpp
+  src/drt_f2/fluid2_line.cpp
+  src/drt_f2/fluid2_impl.cpp
+  src/drt_f2/fluid2_stationary.cpp
+  src/drt_f2/fluid2_genalpha_resVMM.cpp
+  src/drt_f2/fluid2_th.cpp
 )
-set( contactnew_source
-src/drt_contactnew/contact_abstract_strategy.cpp
-src/drt_contactnew/contact_coupling2d.cpp
-src/drt_contactnew/contact_coupling3d.cpp
-src/drt_contactnew/contact_element.cpp
-src/drt_contactnew/contact_integrator.cpp
-src/drt_contactnew/contact_interface.cpp
-src/drt_contactnew/contact_lagrange_strategy.cpp
-src/drt_contactnew/contact_manager.cpp
-src/drt_contactnew/contact_node.cpp
-src/drt_contactnew/contact_penalty_strategy.cpp
-src/drt_contactnew/friction_node.cpp
-src/drt_contactnew/meshtying_abstract_strategy.cpp
-src/drt_contactnew/meshtying_lagrange_strategy.cpp
-src/drt_contactnew/meshtying_manager.cpp
-src/drt_contactnew/meshtying_penalty_strategy.cpp
-src/drt_contactnew/selfcontact_binarytree.cpp
-src/drt_contactnew/strugenalpha_cmt.cpp
+set(OBJS_DRT_CONTACT_LIB
+  src/drt_contact/drt_contact_manager_base.cpp
+  src/drt_contact/drt_contact_manager.cpp
+  src/drt_contact/beam3contact.cpp
+  src/drt_contact/beam3contact_manager.cpp
+  src/drt_contact/drt_contact_interface.cpp
+  src/drt_contact/drt_contact_interface_tools.cpp
+  src/drt_contact/drt_cnode.cpp
+  src/drt_contact/drt_cnodedatacontainer.cpp
+  src/drt_contact/drt_celement.cpp
+  src/drt_contact/drt_celement_shapefct.cpp
+  src/drt_contact/drt_cdofset.cpp
+  src/drt_contact/drt_contact_coupling2d.cpp
+  src/drt_contact/drt_contact_coupling3d.cpp
+  src/drt_contact/drt_contact_coupling3d_tools.cpp
+  src/drt_contact/drt_contact_coupling3d_classes.cpp
+  src/drt_contact/drt_contact_projector.cpp
+  src/drt_contact/drt_contact_integrator.cpp
+  src/drt_contact/drt_contact_integrator_tools.cpp
+  src/drt_contact/drt_contact_binarytree.cpp
+  src/drt_contact/drt_contact_binarytree_self.cpp
+  src/drt_contact/drt_contact_abstract_strategy.cpp
+  src/drt_contact/drt_contact_penalty_strategy.cpp
+  src/drt_contact/drt_contact_lagrange_strategy.cpp
 )
-set( elch_source
-src/drt_elch/elch_algorithm.cpp
-src/drt_elch/elch_dyn.cpp
-src/drt_elch/elch_moving_boundary_algorithm.cpp
+set(OBJS_DRT_RED_AIRWAYS_LIB
+  src/drt_red_airways/red_airway.cpp
+  src/drt_red_airways/airway_evaluate.cpp
+  src/drt_red_airways/red_airway_input.cpp
+  src/drt_red_airways/airway_impl.cpp
 )
-set( fem_general_source
-src/drt_fem_general/drt_utils_boundary_integration.cpp
-src/drt_fem_general/drt_utils_bspline.cpp
-src/drt_fem_general/drt_utils_dgfem_basisfunctions.cpp
-src/drt_fem_general/drt_utils_fem_shapefunctions.cpp
-src/drt_fem_general/drt_utils_integration.cpp
-src/drt_fem_general/drt_utils_local_connectivity_matrices.cpp
-src/drt_fem_general/drt_utils_nurbs_shapefunctions.cpp
+set(OBJS_GLOBAL
+  src/global_full/global_control.c
+  src/global_full/global_inp_control.c
+  src/global_full/global_cal_control.c
+  src/global_full/global_init_control.c
+  src/global_full/global_ass_dof.c
+  src/global_full/global_ass_dof_ndis.c
+  src/global_full/global_dyn_control.c
+  src/global_full/global_timecurve.c
+  src/global_full/global_node_find.c
+  src/global_full/global_dofconnect.c
+  src/global_full/global_monitoring.c
+  src/global_full/global_locsys.c
+  src/global_full/global_result_test.c
+  src/global_full/global_calelm.c
+  src/global_full/global_calelm_fast.c
+  src/global_full/global_calrhs.c
+  src/global_full/global_restart_control.c
+  src/global_full/global_open_files.c
+  src/global_full/global_check_max.c
+  src/global_full/global_divide_fast.c
+  src/global_full/global_subdivide.c
+  src/global_full/global_subdivide_process.c
 )
-set( fluid_element_source
-src/drt_fluid/time_integration_element.cpp
+set(OBJS_DRT_INPAR
+  src/drt_inpar/drt_validparameters.cpp
+  src/drt_inpar/drt_validconditions.cpp
+  src/drt_inpar/drt_validmaterials.cpp
+  src/drt_inpar/drt_boolifyparameters.cpp
 )
-set( fluid_source
-src/drt_fluid/drt_pbcdofset.cpp
-src/drt_fluid/drt_periodicbc.cpp
-src/drt_fluid/dyn_smag.cpp
-src/drt_fluid/fluid_coupling_red_models.cpp
-src/drt_fluid/fluid_dyn_nln_drt.cpp
-src/drt_fluid/fluid_genalpha_integration.cpp
-src/drt_fluid/fluidimpedancecondition.cpp
-src/drt_fluid/fluidimplicitintegration.cpp
-src/drt_fluid/fluid_projectionmethod.cpp
-src/drt_fluid/fluidresulttest.cpp
-src/drt_fluid/fluid_rotsym_periodicbc_utils.cpp
-src/drt_fluid/fluid_utils.cpp
-src/drt_fluid/fluid_utils_mapextractor.cpp
-src/drt_fluid/time_integration_scheme.cpp
-src/drt_fluid/turbulence_statistic_manager.cpp
-src/drt_fluid/turbulence_statistics_bfs.cpp
-src/drt_fluid/turbulence_statistics_ccy.cpp
-src/drt_fluid/turbulence_statistics_cha.cpp
-src/drt_fluid/turbulence_statistics_ldc.cpp
-src/drt_fluid/turbulence_statistics_mean_general.cpp
-src/drt_fluid/turbulence_statistics_sqc.cpp
-src/drt_fluid/xfluidimplicitintegration.cpp
-src/drt_fluid/xfluidresulttest.cpp
+set(OBJS_POST_COMMON
+  src/post_common/post_am.c
+  src/post_common/post_ds.c
+  src/post_common/post_perf.c
+  src/post_common/post_table.c
+  src/post_common/post_table_iter.c
+  src/post_common/post_elements.c
+  src/post_common/post_set.c
+  src/post_common/post_design.c
+  src/post_common/post_octtree.c
+  src/post_common/post_common.c
 )
-set( fsi_source
-src/drt_fsi/fsi_algorithm.cpp
-src/drt_fsi/fsi_constrmonolithic.cpp
-src/drt_fsi/fsi_constrmonolithic_fluidsplit.cpp
-src/drt_fsi/fsi_constrmonolithic_structuresplit.cpp
-src/drt_fsi/fsi_debugwriter.cpp
-src/drt_fsi/fsi_dirichletneumann.cpp
-src/drt_fsi/fsi_dirichletneumannslideale.cpp
-src/drt_fsi/fsi_dyn.cpp
-src/drt_fsi/fsi_fluid_ale.cpp
-src/drt_fsi/fsi_fluid_xfem.cpp
-src/drt_fsi/fsi_lagrangeprec.cpp
-src/drt_fsi/fsi_lungmonolithic.cpp
-src/drt_fsi/fsi_lungmonolithic_fluidsplit.cpp
-src/drt_fsi/fsi_lungmonolithic_structuresplit.cpp
-src/drt_fsi/fsi_matrixtransform.cpp
-src/drt_fsi/fsi_monolithic.cpp
-src/drt_fsi/fsi_monolithiclagrange.cpp
-src/drt_fsi/fsi_monolithic_linearsystem.cpp
-src/drt_fsi/fsi_monolithicoverlap.cpp
-src/drt_fsi/fsi_monolithicstructuresplit.cpp
-src/drt_fsi/fsi_monolithicxfem.cpp
-src/drt_fsi/fsi_nox_aitken.cpp
-src/drt_fsi/fsi_nox_epsilon.cpp
-src/drt_fsi/fsi_nox_fixpoint.cpp
-src/drt_fsi/fsi_nox_group.cpp
-src/drt_fsi/fsi_nox_jacobian.cpp
-src/drt_fsi/fsi_nox_linearsystem_bgs.cpp
-src/drt_fsi/fsi_nox_linearsystem_gcr.cpp
-src/drt_fsi/fsi_nox_linearsystem_partitioned.cpp
-src/drt_fsi/fsi_nox_mpe.cpp
-src/drt_fsi/fsi_nox_newton.cpp
-src/drt_fsi/fsi_nox_sd.cpp
-src/drt_fsi/fsi_overlapprec.cpp
-src/drt_fsi/fsi_overlapprec_fsiamg.cpp
-src/drt_fsi/fsi_partitioned.cpp
-src/drt_fsi/fsi_partitionedmonolithic.cpp
-src/drt_fsi/fsi_robin.cpp
-src/drt_fsi/fsi_robinneumann.cpp
-src/drt_fsi/fsi_statustest.cpp
-src/drt_fsi/fsi_structureale.cpp
-src/drt_fsi/fsi_utils.cpp
-src/drt_fsi/fs_monolithic.cpp
+set(OBJS_DRT_ARTNET
+  src/drt_art_net/art_net_dyn_drt.cpp
+  src/drt_art_net/artnetexplicitintegration.cpp
 )
-set( geometry_source
-src/drt_geometry/integrationcell.cpp
-src/drt_geometry/intersection.cpp
-src/drt_geometry/intersection_interfacepoint.cpp
-src/drt_geometry/intersection_math.cpp
-src/drt_geometry/intersection_service.cpp
-src/drt_geometry/position_array.cpp
-src/drt_geometry/searchtree.cpp
-src/drt_geometry/searchtree_geometry_service.cpp
-src/drt_geometry/searchtree_nearestobject.cpp
+set(OBJS_INTERSECTION
+  src/drt_xfem/physics.cpp
+  src/drt_xfem/field_enriched.cpp
+  src/drt_xfem/dof_management.cpp
+  src/drt_xfem/dof_management_element.cpp
+  src/drt_xfem/dof_distribution_switcher.cpp
+  src/drt_xfem/enrichment.cpp
+  src/drt_xfem/interface.cpp
+  src/drt_xfem/interfacexfsi.cpp
+  src/drt_xfem/spacetime_boundary.cpp
+  src/drt_xfem/enrichment_utils.cpp
+  src/drt_xfem/xdofmapcreation.cpp
+  src/drt_xfem/xdofmapcreation_combust.cpp
+  src/drt_xfem/xdofmapcreation_parallel_utils.cpp
+  src/drt_xfem/xdofmapcreation_fsi.cpp
 )
-set( inpar_source
-src/drt_inpar/drt_boolifyparameters.cpp
-src/drt_inpar/drt_validconditions.cpp
-src/drt_inpar/drt_validmaterials.cpp
-src/drt_inpar/drt_validparameters.cpp
+set(OBJS_POST_DRT_MONITOR
+  src/post_monitor/post_drt_monitor.cpp
 )
-set( inv_analysis_source
-src/drt_inv_analysis/gen_inv_analysis.cpp
-src/drt_inv_analysis/inv_analysis.cpp
+set(OBJS_TSI
+  src/tsi_full/tsi_coupling.c
+  src/tsi_full/tsi_dyn.c
+  src/tsi_full/tsi_fehlbg4.c
+  src/tsi_full/tsi_init.c
+  src/tsi_full/tsi_st_cendif.c
+  src/tsi_full/tsi_st_fehlbg.c
+  src/tsi_full/tsi_st_genalp.c
+  src/tsi_full/tsi_st_genalp_sub.c
+  src/tsi_full/tsi_th_ost_st_genalp.c
+  src/tsi_full/tsi_th_ost_sub.c
+  src/tsi_full/tsi_th_presc_st_genalp.c
+  src/tsi_full/tsi_th_stat.c
+  src/tsi_full/tsi_th_stat_sub.c
 )
-set( io_source
-src/drt_io/io_control.cpp
-src/drt_io/io.cpp
-src/drt_io/io_gmsh.cpp
-src/drt_io/io_gmsh_xfem_extension.cpp
-src/drt_io/io_hdf.cpp
+set(OBJS_DRT_ARTNET_LIB
+  src/drt_art_net/artery.cpp
+  src/drt_art_net/artery_evaluate.cpp
+  src/drt_art_net/artery_input.cpp
+  src/drt_art_net/artery_lin_exp.cpp
+  src/drt_art_net/art_junction.cpp
+  src/drt_art_net/art_write_gnuplot.cpp
+  src/drt_art_net/art_terminal_bc.cpp
 )
-set( lib_element_source
-src/drt_lib/drt_utils.cpp
+set(OBJS_POST_DRT_Q9NECONVERT
+  src/post_q9neconvert/post_drt_q9neconvert.cpp
 )
-set( lib_source
-src/drt_lib/distribute_grids.cpp
-src/drt_lib/drt_condition.cpp
-src/drt_lib/drt_conditiondefinition.cpp
-src/drt_lib/drt_condition_selector.cpp
-src/drt_lib/drt_condition_utils.cpp
-src/drt_lib/drt_container.cpp
-src/drt_lib/drt_discret_conditions.cpp
-src/drt_lib/drt_discret.cpp
-src/drt_lib/drt_discret_evaluate.cpp
-src/drt_lib/drt_discret_fillcomplete.cpp
-src/drt_lib/drt_discret_partition.cpp
-src/drt_lib/drt_discret_utils.cpp
-src/drt_lib/drt_dofset_base.cpp
-src/drt_lib/drt_dofset.cpp
-src/drt_lib/drt_dofset_proxy.cpp
-src/drt_lib/drt_dserror.cpp
-src/drt_lib/drt_element.cpp
-src/drt_lib/drt_elementdefinition.cpp
-src/drt_lib/drt_elementreader.cpp
-src/drt_lib/drt_elementregister.cpp
-src/drt_lib/drt_exporter.cpp
-src/drt_lib/drt_function.cpp
-src/drt_lib/drt_globalproblem.cpp
-src/drt_lib/drt_init_control.cpp
-src/drt_lib/drt_inputreader.cpp
-src/drt_lib/drt_linedefinition.cpp
-src/drt_lib/drt_locsys.cpp
-src/drt_lib/drt_materialdefinition.cpp
-src/drt_lib/drt_node.cpp
-src/drt_lib/drt_nodematchingoctree.cpp
-src/drt_lib/drt_nodereader.cpp
-src/drt_lib/drt_parobject.cpp
-src/drt_lib/drt_parser.cpp
-src/drt_lib/drt_resulttest.cpp
-src/drt_lib/drt_timecurve.cpp
-src/drt_lib/drt_utils_createdis.cpp
-src/drt_lib/drt_utils_metis.cpp
-src/drt_lib/drt_utils_parmetis.cpp
-src/drt_lib/global_inp_control2.cpp
-src/drt_lib/linalg_ana.cpp
-src/drt_lib/linalg_blocksparsematrix.cpp
-src/drt_lib/linalg_condest.cpp
-src/drt_lib/linalg_downwindmatrix.cpp
-src/drt_lib/linalg_krylov_projector.cpp
-src/drt_lib/linalg_mapextractor.cpp
-src/drt_lib/linalg_mlapi_operator.cpp
-src/drt_lib/linalg_precond.cpp
-src/drt_lib/linalg_projected_operator.cpp
-src/drt_lib/linalg_projected_precond.cpp
-src/drt_lib/linalg_serialdensematrix.cpp
-src/drt_lib/linalg_serialdensevector.cpp
-src/drt_lib/linalg_solver.cpp
-src/drt_lib/linalg_solver_spooles.cpp
-src/drt_lib/linalg_sparsematrix.cpp
-src/drt_lib/linalg_utils.cpp
-src/drt_lib/simpler_operator.cpp
+set(OBJS_DRT_COMBUST
+  src/drt_combust/combust_dyn.cpp
+  src/drt_combust/combust_algorithm.cpp
+  src/drt_combust/combust_utils.cpp
+  src/drt_combust/combust_interface.cpp
+  src/drt_combust/combust_refinementcell.cpp
+  src/drt_combust/combust_reinitializer.cpp
+  src/drt_combust/combust_flamefront.cpp
+  src/drt_combust/combust_fluidimplicitintegration.cpp
+  src/drt_combust/combust_fluidresulttest.cpp
 )
-set( loma_source
-src/drt_loma/loma_algorithm.cpp
-src/drt_loma/loma_dyn.cpp
+set(OBJS_F3F
+  src/fluid3_fast/f3f_calele.c
+  src/fluid3_fast/f3f_calint.c
+  src/fluid3_fast/f3f_calinta.c
+  src/fluid3_fast/f3f_calservice.c
+  src/fluid3_fast/f3f_calstabpar.c
+  src/fluid3_fast/f3f_caltau.c
+  src/fluid3_fast/f3f_main.c
+  src/fluid3_fast/f3f_restart.c
+  src/fluid3_fast/f3f_calstress.c
+  src/fluid3_fast/f3f_calerror.c
+  src/fluid3_fast/f3f_int_usfem.c
+  src/fluid3_fast/f3f_liftdrag.c
+  src/fluid3_fast/f3f_out.c
 )
-set( mat_source
-src/drt_mat/material.cpp
-src/drt_mat/matpar_bundle.cpp
-src/drt_mat/matpar_material.cpp
-src/drt_mat/matpar_parameter.cpp
-src/drt_mat/aaaneohooke.cpp
-src/drt_mat/aaaraghavanvorp_damage.cpp
-src/drt_mat/anisotropic_balzani.cpp
-src/drt_mat/arrhenius_pv.cpp
-src/drt_mat/arrhenius_spec.cpp
-src/drt_mat/arrhenius_temp.cpp
-src/drt_mat/artwallremod.cpp
-src/drt_mat/biocell.cpp
-src/drt_mat/carreauyasuda.cpp
-src/drt_mat/charmm.cpp
-src/drt_mat/cnst_1d_art.cpp
-src/drt_mat/compogden.cpp
-src/drt_mat/contchainnetw.cpp
-src/drt_mat/elasthyper.cpp
-src/drt_mat/ferech_pv.cpp
-src/drt_mat/fourieriso.cpp
-src/drt_mat/holzapfelcardiovascular.cpp
-src/drt_mat/humphreycardiovascular.cpp
-src/drt_mat/ion.cpp
-src/drt_mat/itskov.cpp
-src/drt_mat/logneohooke.cpp
-src/drt_mat/lung_ogden.cpp
-src/drt_mat/lung_penalty.cpp
-src/drt_mat/matlist.cpp
-src/drt_mat/micromaterial.cpp
-src/drt_mat/micromaterial_evaluate.cpp
-src/drt_mat/micromaterialgp_static.cpp
-src/drt_mat/mixfrac.cpp
-src/drt_mat/modpowerlaw.cpp
-src/drt_mat/mooneyrivlin.cpp
-src/drt_mat/neohooke.cpp
-src/drt_mat/newtonianfluid.cpp
-src/drt_mat/plasticneohooke.cpp
-src/drt_mat/protein.cpp
-src/drt_mat/scatra_mat.cpp
-src/drt_mat/stvenantkirchhoff.cpp
-src/drt_mat/sutherland.cpp
-src/drt_mat/viscoanisotropic.cpp
-src/drt_mat/visconeohooke.cpp
-src/drt_mat/yeoh.cpp
+set(OBJS_F2ML
+  src/fluid2ml/f2_mlbubmat.c
+  src/fluid2ml/f2_mlele.c
+  src/fluid2ml/f2_mlelesize.c
+  src/fluid2ml/f2_mlgalmat.c
+  src/fluid2ml/f2_mlint.c
+  src/fluid2ml/f2_mlservice.c
+  src/fluid2ml/f2_mlstabmat.c
+  src/fluid2ml/f2_mlstabpar.c
+  src/fluid2ml/f2_mlsubmesh.c
+  src/fluid2ml/f2_mltimerhs.c
+  src/fluid2ml/f2_mlvmmrhs.c
 )
-set( matelast_source
-src/drt_matelast/elast_coupanisoexpotwo.cpp
-src/drt_matelast/elast_coupanisoneohooketwo.cpp
-src/drt_matelast/elast_coupblatzko.cpp
-src/drt_matelast/elast_couplogneohooke.cpp
-src/drt_matelast/elast_coupvarga.cpp
-src/drt_matelast/elast_isocub.cpp
-src/drt_matelast/elast_isoexpo.cpp
-src/drt_matelast/elast_isomooneyrivlin.cpp
-src/drt_matelast/elast_isoneohooke.cpp
-src/drt_matelast/elast_isoquad.cpp
-src/drt_matelast/elast_isovarga.cpp
-src/drt_matelast/elast_isoyeoh.cpp
-src/drt_matelast/elast_summand.cpp
-src/drt_matelast/elast_vologden.cpp
-src/drt_matelast/elast_volpenalty.cpp
-src/drt_matelast/elast_volsussmanbathe.cpp
+set(OBJS_FILTER_COMMON
+  src/filter_common/filter_evaluation.cpp
 )
-set( mortar_source
-src/drt_mortar/mortar_binarytree.cpp
-src/drt_mortar/mortar_coupling2d.cpp
-src/drt_mortar/mortar_coupling3d_classes.cpp
-src/drt_mortar/mortar_coupling3d.cpp
-src/drt_mortar/mortar_defines.cpp
-src/drt_mortar/mortar_dofset.cpp
-src/drt_mortar/mortar_element.cpp
-src/drt_mortar/mortar_element_shapefct.cpp
-src/drt_mortar/mortar_integrator.cpp
-src/drt_mortar/mortar_interface.cpp
-src/drt_mortar/mortar_manager_base.cpp
-src/drt_mortar/mortar_node.cpp
-src/drt_mortar/mortar_projector.cpp
-src/drt_mortar/mortar_strategy_base.cpp
+set(OBJS_POST_CMP
+  src/post_cmp/post_cmp.c
 )
-set( nurbs_discret_source
-src/drt_nurbs_discret/drt_apply_nurbs_initial_condition.cpp
-src/drt_nurbs_discret/drt_control_point.cpp
-src/drt_nurbs_discret/drt_knotvector.cpp
-src/drt_nurbs_discret/drt_nurbs_discret.cpp
+set(OBJS_F3PRO
+  src/fluid3_pro/f3pro_inpele.c
+  src/fluid3_pro/f3pro_calele.c
+  src/fluid3_pro/f3pro_calint.c
+  src/fluid3_pro/f3pro_calservice.c
+  src/fluid3_pro/f3pro_main.c
 )
-set( potential_source
-src/drt_potential/drt_potential_container.cpp
-src/drt_potential/drt_potential.cpp
-src/drt_potential/drt_potential_dofset.cpp
-src/drt_potential/drt_potential_manager.cpp
-src/drt_potential/drt_potential_surface.cpp
-src/drt_potential/drt_potential_volume.cpp
+set(OBJS_OUTPUT
+  src/output/out_global.c
+  src/output/out_gid_msh.c
+  src/output/out_gid_sol.c
+  src/output/out_monitor.c
+  src/output/out_gid_solfsi.c
+  src/output/out_gid_solssi.c
+  src/output/out_gid_soldyn.c
+  src/output/out_checkfilesize.c
+  src/output/out_plt.c
 )
-set( scatra_source
-src/drt_scatra/passive_scatra_algorithm.cpp
-src/drt_scatra/scatra_dyn.cpp
-src/drt_scatra/scatra_ele_boundary_impl.cpp
-src/drt_scatra/scatra_ele_impl.cpp
-src/drt_scatra/scatra_ele_impl_utils.cpp
-src/drt_scatra/scatra_element_boundary_evaluate.cpp
-src/drt_scatra/scatra_element.cpp
-src/drt_scatra/scatra_element_evaluate.cpp
-src/drt_scatra/scatra_element_input.cpp
-src/drt_scatra/scatra_resulttest.cpp
-src/drt_scatra/scatra_timint_bdf2.cpp
-src/drt_scatra/scatra_timint_genalpha.cpp
-src/drt_scatra/scatra_timint_implicit.cpp
-src/drt_scatra/scatra_timint_implicit_service.cpp
-src/drt_scatra/scatra_timint_ost.cpp
-src/drt_scatra/scatra_timint_stat.cpp
-src/drt_scatra/scatra_utils.cpp
+set(OBJS_POST_VISUAL3
+  src/post_visual/post_visual3.c
+  src/post_visual/post_visual3_functions.c
 )
-set( statmech_source
-src/drt_statmech/bromotion_manager.cpp
-src/drt_statmech/statmech_manager.cpp
-src/drt_statmech/statmech_time.cpp
+set(OBJS_POST_VISUAL2
+  src/post_visual/post_visual2.c
 )
-set( structure_source
-src/drt_structure/str_aux.cpp
-src/drt_structure/str_invanalysis.cpp
-src/drt_structure/strtimada.cpp
-src/drt_structure/strtimada_create.cpp
-src/drt_structure/strtimada_zienxie.cpp
-src/drt_structure/strtimint_ab2.cpp
-src/drt_structure/strtimint.cpp
-src/drt_structure/strtimint_create.cpp
-src/drt_structure/strtimint_expl.cpp
-src/drt_structure/strtimint_gemm.cpp
-src/drt_structure/strtimint_genalpha.cpp
-src/drt_structure/strtimint_impl.cpp
-src/drt_structure/strtimint_impl_nox.cpp
-src/drt_structure/strtimint_noxgroup.cpp
-src/drt_structure/strtimint_noxlinsys.cpp
-src/drt_structure/strtimint_ost.cpp
-src/drt_structure/strtimint_statics.cpp
-src/drt_structure/structure_utils_mapextractor.cpp
-src/drt_structure/strudyn_direct.cpp
-src/drt_structure/stru_dyn_nln_drt.cpp
-src/drt_structure/strugenalpha.cpp
-src/drt_structure/strugenalpha_lsnewton.cpp
-src/drt_structure/stru_resulttest.cpp
-src/drt_structure/stru_static_drt.cpp
-src/structure/stru_static_lin.c
+set(OBJS_DRT_STRU_MULTI
+  src/drt_stru_multi/microstatic.cpp
+  src/drt_stru_multi/convert_mat.cpp
 )
-set( stru_multi_source
-src/drt_stru_multi/convert_mat.cpp
-src/drt_stru_multi/microstatic.cpp
+set(OBJS_OPT
+  src/optimization/opt_cal_main.c
+  src/optimization/input_optdata.c
+  src/optimization/opt_init.c
+  src/optimization/opt_cal_static_control.c
+  src/optimization/opt_cal_nlnstatic_control.c
+  src/optimization/opt_cal_eigfrq_struct.c
+  src/optimization/opt_c1_cint.c
+  src/optimization/opt_w1_cint.c
+  src/optimization/opt_fsd.c
+  src/optimization/opt_func.c
+  src/optimization/opt_linking.c
+  src/optimization/opt_vsa.c
+  src/optimization/opt_smo.c
+  src/optimization/opt_g_out.c
 )
-set( surfstress_source
-src/drt_surfstress/drt_surfstress_manager.cpp
+set(OBJS_DRT_CONTACTNEW
+  src/drt_contactnew/strugenalpha_cmt.cpp
 )
-set( thermo_main_source
-src/drt_thermo/thr_dyn.cpp
+set(OBJS_SOH8_LIB
+  src/drt_so3/so_hex8.cpp
+  src/drt_so3/so_sh8.cpp
+  src/drt_so3/so_hex8_evaluate.cpp
+  src/drt_so3/so_material.cpp
+  src/drt_so3/so_hex8_eas.cpp
+  src/drt_so3/so_hex8_input.cpp
+  src/drt_so3/so_hex8_service.cpp
+  src/drt_so3/so_hex8_multiscale.cpp
+  src/drt_so3/so_sh8_input.cpp
+  src/drt_so3/so_sh8_evaluate.cpp
+  src/drt_so3/so_sh8_service.cpp
+  src/drt_so3/so_sh8p8.cpp
+  src/drt_so3/so_sh8p8_input.cpp
+  src/drt_so3/so_sh8p8_evaluate.cpp
+  src/drt_so3/so_sh8p8_auxiliar.cpp
+  src/drt_so3/so_sh8p8_eas.cpp
+  src/drt_so3/so_tet4.cpp
+  src/drt_so3/so_tet4_evaluate.cpp
+  src/drt_so3/so_tet4_input.cpp
+  src/drt_so3/so_nstet.cpp
+  src/drt_so3/so_nstet_evaluate.cpp
+  src/drt_so3/so_nstet_nodalstrain.cpp
+  src/drt_so3/so_nstet_input.cpp
+  src/drt_so3/so_ptet.cpp
+  src/drt_so3/so_ptet_evaluate.cpp
+  src/drt_so3/so_ptet_nodalstrain.cpp
+  src/drt_so3/so_ptet_input.cpp
+  src/drt_so3/inversedesign.cpp
+  src/drt_so3/inversedesign_evaluate.cpp
+  src/drt_so3/prestress.cpp
+  src/drt_so3/so_tet10.cpp
+  src/drt_so3/so_tet10_evaluate.cpp
+  src/drt_so3/so_tet10_input.cpp
+  src/drt_so3/so_weg6.cpp
+  src/drt_so3/so_weg6_evaluate.cpp
+  src/drt_so3/so_weg6_input.cpp
+  src/drt_so3/so_disp.cpp
+  src/drt_so3/so_disp_input.cpp
+  src/drt_so3/so_disp_evaluate.cpp
+  src/drt_so3/so_shw6.cpp
+  src/drt_so3/so_shw6_evaluate.cpp
+  src/drt_so3/so_shw6_input.cpp
+  src/drt_so3/so_surface.cpp
+  src/drt_so3/so_surface_evaluate.cpp
+  src/drt_so3/so_line.cpp
+  src/drt_so3/so_line_evaluate.cpp
+  src/drt_so3/so_hex27.cpp
+  src/drt_so3/so_hex27_evaluate.cpp
+  src/drt_so3/so_hex27_input.cpp
+  src/drt_so3/so_hex27_service.cpp
+  src/drt_so3/so_hex27_multiscale.cpp
+  src/drt_so3/so_nurbs27.cpp
+  src/drt_so3/so_nurbs27_input.cpp
+  src/drt_so3/so_nurbs27_evaluate.cpp
+  src/drt_so3/so_hex20.cpp
+  src/drt_so3/so_hex20_evaluate.cpp
+  src/drt_so3/so_hex20_input.cpp
+  src/drt_so3/so_hex20_service.cpp
+  src/drt_so3/so_hex20_multiscale.cpp
+  src/drt_so3/so_hex8p1j1.cpp
+  src/drt_so3/so_hex8p1j1_input.cpp
+  src/drt_so3/so_hex8p1j1_evaluate.cpp
 )
-set( thermo_timint_source
-src/drt_thermo/thr_resulttest.cpp
-src/drt_thermo/thr_aux.cpp
-src/drt_thermo/thrtimint.cpp
-src/drt_thermo/thrtimint_genalpha.cpp
-src/drt_thermo/thrtimint_impl.cpp
-src/drt_thermo/thrtimint_ost.cpp
-src/drt_thermo/thrtimint_statics.cpp
+set(OBJS_F2IS
+  src/fluid2_is/f2is_main.c
+  src/fluid2_is/f2is_calele.c
+  src/fluid2_is/f2is_calint.c
+  src/fluid2_is/f2is_service.c
+  src/fluid2_is/f2is_inpele.c
 )
-set( tsi_source
-src/drt_tsi/tsi_algorithm.cpp
-src/drt_tsi/tsi_dyn.cpp
-src/drt_tsi/tsi_utils.cpp
+set(OBJS_POST_DRT_ENSIGHT
+  src/post_ensight/post_drt_ensight_writer.cpp
+  src/post_ensight/post_drt_ensight_writer_nurbs.cpp
+  src/post_ensight/post_drt_ensight_single_field_writers.cpp
+  src/post_ensight/post_drt_ensight_structure_stress.cpp
+  src/post_ensight/post_drt_ensight_thermo_heatflux.cpp
+  src/post_ensight/post_drt_ensight.cpp
 )
-set( xdiff3_source
-src/drt_xdiff3/xdiff3.cpp
-src/drt_xdiff3/xdiff3_evaluate.cpp
-src/drt_xdiff3/xdiff3_input.cpp
-src/drt_xdiff3/xdiff3_line.cpp
-src/drt_xdiff3/xdiff3_line_evaluate.cpp
-src/drt_xdiff3/xdiff3_surface.cpp
-src/drt_xdiff3/xdiff3_surface_evaluate.cpp
-src/drt_xdiff3/xdiff3_sysmat4.cpp
+set(OBJS_POST_OUT
+  src/post_out/post_out.c
 )
-set( xfem_source
-src/drt_xfem/dof_distribution_switcher.cpp
-src/drt_xfem/dof_management.cpp
-src/drt_xfem/dof_management_element.cpp
-src/drt_xfem/enrichment.cpp
-src/drt_xfem/enrichment_utils.cpp
-src/drt_xfem/field_enriched.cpp
-src/drt_xfem/interface.cpp
-src/drt_xfem/interfacexfsi.cpp
-src/drt_xfem/physics.cpp
-src/drt_xfem/spacetime_boundary.cpp
-src/drt_xfem/xdofmapcreation_combust.cpp
-src/drt_xfem/xdofmapcreation.cpp
-src/drt_xfem/xdofmapcreation_fsi.cpp
-src/drt_xfem/xdofmapcreation_parallel_utils.cpp
+set(OBJS_DRT_ELCH
+  src/drt_elch/elch_dyn.cpp
+  src/drt_elch/elch_algorithm.cpp
+  src/drt_elch/elch_moving_boundary_algorithm.cpp
+)
+set(OBJS_F2_TDS
+  src/fluid2_TDS/f2_int_tds.c
+  src/fluid2_TDS/f2_calmat_tds.c
+  src/fluid2_TDS/f2_update_tds.c
+  src/fluid2_TDS/f2_caltau_tds.c
+  src/fluid2_TDS/f2_calmat_incr_acc_gen_alpha_tds.c
+  src/fluid2_TDS/f2_calservice_for_TDS.c
+  src/fluid2_TDS/f2_calrhs_incr_acc_gen_alpha_tds.c
+)
+set(OBJS_DRT_BELE3_LIB
+  src/drt_bele3/bele3.cpp
+  src/drt_bele3/bele3_line.cpp
+  src/drt_bele3/bele3_line_evaluate.cpp
+  src/drt_bele3/bele3_evaluate.cpp
+  src/drt_bele3/bele2.cpp
+  src/drt_bele3/bele2_evaluate.cpp
+  src/drt_bele3/vele3.cpp
+  src/drt_bele3/vele3_line.cpp
+  src/drt_bele3/vele3_line_evaluate.cpp
+  src/drt_bele3/vele3_surface.cpp
+  src/drt_bele3/vele3_surface_evaluate.cpp
+  src/drt_bele3/vele3_evaluate.cpp
+)
+set(OBJS_DRT_SCATRA
+  src/drt_scatra/scatra_dyn.cpp
+  src/drt_scatra/scatra_timint_implicit.cpp
+  src/drt_scatra/scatra_timint_implicit_service.cpp
+  src/drt_scatra/scatra_timint_ost.cpp
+  src/drt_scatra/scatra_timint_bdf2.cpp
+  src/drt_scatra/scatra_timint_genalpha.cpp
+  src/drt_scatra/scatra_timint_stat.cpp
+  src/drt_scatra/scatra_resulttest.cpp
+  src/drt_scatra/scatra_utils.cpp
+  src/drt_scatra/passive_scatra_algorithm.cpp
+)
+set(OBJS_DRT_TSI
+  src/drt_tsi/tsi_algorithm.cpp
+  src/drt_tsi/tsi_dyn.cpp
+  src/drt_tsi/tsi_utils.cpp
+)
+set(OBJS_BRICK1
+  src/brick1/c1_out.c
+  src/brick1/c1_gid.c
+  src/brick1/c1_bop.c
+  src/brick1/c1_call_mat.c
+  src/brick1/c1_call_stiff.c
+  src/brick1/c1_funcderiv.c
+  src/brick1/c1_inpele.c
+  src/brick1/c1_intg.c
+  src/brick1/c1_jaco.c
+  src/brick1/c1_main.c
+  src/brick1/c1_mat_linel.c
+  src/brick1/c1_cint.c
+  src/brick1/c1_cal_deriv.c
+  src/brick1/c1_mat_neohook.c
+  src/brick1/c1_mat_plast_mises.c
+  src/brick1/c1_mat_plast_mises_ls.c
+  src/brick1/c1_mat_hyper_polyconvex.c
+  src/brick1/c1_mat_ogden.c
+  src/brick1/c1_mat_itskov.c
+  src/brick1/c1_mat_viscoushyper.c
+  src/brick1/c1_cal_eps.c
+  src/brick1/c1_init.c
+  src/brick1/c1_eas_service.c
+  src/brick1/c1_cstr.c
+  src/brick1/c1_load.c
+  src/brick1/c1_tsi.c
+  src/brick1/c1_surf.c
+  src/brick1/c1_locsys.c
+)
+set(OBJS_POST_MONITOR
+  src/post_monitor/post_monitor.c
+  src/post_monitor/post_out_monitor.c
+)
+set(OBJS_DRT_S8_LIB
+  src/drt_s8/shell8.cpp
+  src/drt_s8/shell8_line.cpp
+)
+set(OBJS_BEAM3
+  src/beam3/b3_bop.c
+  src/beam3/b3_cal_ele.c
+  src/beam3/b3_cal_fext.c
+  src/beam3/b3_cal_force.c
+  src/beam3/b3_cal_stiff.c
+  src/beam3/b3_call_mat.c
+  src/beam3/b3_dirich.c
+  src/beam3/b3_funcderiv.c
+  src/beam3/b3_init.c
+  src/beam3/b3_inpele.c
+  src/beam3/b3_intg.c
+  src/beam3/b3_jaco.c
+  src/beam3/b3_main.c
+  src/beam3/b3_mat_linel.c
+  src/beam3/b3_mat_plast_mises.c
+  src/beam3/b3_restart.c
+)
+set(OBJS_F3ML
+  src/fluid3ml/f3_mlbubmat.c
+  src/fluid3ml/f3_mlele.c
+  src/fluid3ml/f3_mlelesize.c
+  src/fluid3ml/f3_mlgalmat.c
+  src/fluid3ml/f3_mlint.c
+  src/fluid3ml/f3_mlservice.c
+  src/fluid3ml/f3_mlstabmat.c
+  src/fluid3ml/f3_mlstabpar.c
+  src/fluid3ml/f3_mlsubmesh.c
+  src/fluid3ml/f3_mltimerhs.c
+  src/fluid3ml/f3_mlvmmrhs.c
+)
+set(OBJS_AXISHELL
+  src/axishell/saxi_service.c
+  src/axishell/saxi_inpele.c
+  src/axishell/saxi_main.c
+  src/axishell/saxi_static_ke.c
+)
+set(OBJS_PSS
+  src/pss_full/pss_am.c
+  src/pss_full/pss_ds.c
+  src/pss_full/pss_fr.c
+  src/pss_full/pss_pss.c
+  src/pss_full/pss_perf.c
+  src/pss_full/pss_visual.c
+  src/pss_full/pss_table.c
+  src/pss_full/pss_table_iter.c
+  src/pss_full/pss_set.c
+  src/pss_full/pss_parser.c
+)
+set(OBJS_MATH
+  src/math/sort_find.c
+  src/math/math1.c
+  src/math/geometry.c
+  src/math/arcline.c
+)
+set(OBJS_DRT_RED_AIRWAYS
+  src/drt_red_airways/red_airways_dyn_drt.cpp
+  src/drt_red_airways/airwayimplicitintegration.cpp
+)
+set(OBJS_DRT_THERMO_LIB
+  src/drt_thermo/thermo_element.cpp
+  src/drt_thermo/thermo_element_input.cpp
+  src/drt_thermo/thermo_element_evaluate.cpp
+  src/drt_thermo/thermo_element_boundary_evaluate.cpp
+  src/drt_thermo/thermo_ele_impl.cpp
+  src/drt_thermo/thermo_ele_impl_utils.cpp
+  src/drt_thermo/thermo_ele_boundary_impl.cpp
+)
+set(OBJS_DRT_SCATRA_LIB
+  src/drt_scatra/scatra_ele_impl.cpp
+  src/drt_scatra/scatra_ele_impl_utils.cpp
+  src/drt_scatra/scatra_ele_boundary_impl.cpp
+  src/drt_scatra/scatra_element.cpp
+  src/drt_scatra/scatra_element_evaluate.cpp
+  src/drt_scatra/scatra_element_input.cpp
+  src/drt_scatra/scatra_element_boundary_evaluate.cpp
+)
+set(OBJS_NURBS_CPP
+  src/nurbs/nurbs_wrappers.c
+)
+set(OBJS_FSI
+  src/fsi_full/fsi_aitken.c
+  src/fsi_full/fsi_ale.c
+  src/fsi_full/fsi_ale_lin.c
+  src/fsi_full/fsi_ale_nln.c
+  src/fsi_full/fsi_ale_2step.c
+  src/fsi_full/fsi_ale_spring.c
+  src/fsi_full/fsi_ale_laplace.c
+  src/fsi_full/fsi_ale_LAS.c
+  src/fsi_full/fsi_coupforce.c
+  src/fsi_full/fsi_coupling.c
+  src/fsi_full/fsi_coupling_oct.c
+  src/fsi_full/fsi_dyn.c
+  src/fsi_full/fsi_energy.c
+  src/fsi_full/fsi_fluid.c
+  src/fsi_full/fsi_fluid_imp.c
+  src/fsi_full/fsi_fluid_pm_cont.c
+  src/fsi_full/fsi_fluid_pm_discont.c
+  src/fsi_full/fsi_fluid_pm_laplace.c
+  src/fsi_full/fsi_gradient.c
+  src/fsi_full/fsi_relax_intdisp.c
+  src/fsi_full/fsi_service.c
+  src/fsi_full/fsi_mortar.c
+  src/fsi_full/fsi_struct.c
+  src/fsi_full/fsi_newton.c
+)
+set(OBJS_POST_GID_BIN
+  src/post_gid/gid_out.c
+  src/post_gid/zlibint1.c
+  src/post_gid/zlibint2.c
+)
+set(OBJS_INPUT
+  src/input_full/input_control_global.c
+  src/input_full/input_ctr_head.c
+  src/input_full/input_sol.c
+  src/input_full/input_design.c
+  src/input_full/input_design_top.c
+  src/input_full/input_mesh.c
+  src/input_full/input_topology.c
+  src/input_full/input_curves.c
+  src/input_full/input_material.c
+  src/input_full/input_surface_energy.c
+  src/input_full/input_monitor.c
+  src/input_full/input_locsys.c
+  src/input_full/inherit_insidedesign.c
+  src/input_full/inherit_design_dis.c
+  src/input_full/inherit_design_ele.c
+  src/input_full/input_conditions.c
+  src/input_full/inp_cal_dirich_fac.c
+  src/input_full/input_funct.c
+  src/input_full/input_resultdescr.c
+  src/input_full/input_submesh.c
+)
+set(OBJS_POST_GID_COMMON
+  src/post_gid/post_gid.c
+  src/post_gid/shell9_intg.c
+  src/post_gid/shell9_funcderiv.c
+  src/post_gid/post_ale2.c
+  src/post_gid/post_ale3.c
+  src/post_gid/post_axishell.c
+  src/post_gid/post_beam3.c
+  src/post_gid/post_brick1.c
+  src/post_gid/post_fluid2.c
+  src/post_gid/post_fluid2_pro.c
+  src/post_gid/post_fluid2_is.c
+  src/post_gid/post_fluid3.c
+  src/post_gid/post_fluid3_fast.c
+  src/post_gid/post_fluid3_pro.c
+  src/post_gid/post_fluid3_is.c
+  src/post_gid/post_interf.c
+  src/post_gid/post_shell8.c
+  src/post_gid/post_shell9.c
+  src/post_gid/post_wall1.c
+  src/post_gid/post_wallge.c
+  src/post_gid/post_solid3.c
+)
+set(OBJS_DRT_T2_LIB
+  src/drt_truss2/truss2.cpp
+  src/drt_truss2/truss2_input.cpp
+  src/drt_truss2/truss2_evaluate.cpp
+)
+set(OBJS_THERM2
+  src/therm2/th2_bop.c
+  src/therm2/th2_cfg.c
+  src/therm2/th2_gid.c
+  src/therm2/th2_hflux.c
+  src/therm2/th2_inp.c
+  src/therm2/th2_intg.c
+  src/therm2/th2_jaco.c
+  src/therm2/th2_lin.c
+  src/therm2/th2_load.c
+  src/therm2/th2_main.c
+  src/therm2/th2_mat.c
+  src/therm2/th2_matlin.c
+  src/therm2/th2_shape.c
+  src/therm2/th2_temper.c
+  src/therm2/th2_out.c
+)
+set(OBJS_THERM3
+  src/therm3/th3_bop.c
+  src/therm3/th3_cfg.c
+  src/therm3/th3_gid.c
+  src/therm3/th3_hflux.c
+  src/therm3/th3_inp.c
+  src/therm3/th3_intg.c
+  src/therm3/th3_lin.c
+  src/therm3/th3_load.c
+  src/therm3/th3_load_heatconv.c
+  src/therm3/th3_main.c
+  src/therm3/th3_mat.c
+  src/therm3/th3_matlin.c
+  src/therm3/th3_metr.c
+  src/therm3/th3_out.c
+  src/therm3/th3_shape.c
+  src/therm3/th3_temper.c
+)
+set(OBJS_POST_ENSIGHT
+  src/post_ensight/post_ensight.c
+  src/post_ensight/post_functions.c
+)
+set(OBJS_F3F_F
+  src/fluid3_fast/f3f_calextrhs.c
+  src/fluid3_fast/f3f_calfuncderiv.c
+  src/fluid3_fast/f3f_calgalmat.c
+  src/fluid3_fast/f3f_caliterrhs.c
+  src/fluid3_fast/f3f_interror.c
+  src/fluid3_fast/f3f_calservice_2.c
+  src/fluid3_fast/f3f_calstabmat.c
+  src/fluid3_fast/f3f_calmatvec_usfem.c
+  src/fluid3_fast/f3f_massrhs.c
+)
+set(OBJS_DRT_STATMECH_LIB
+  src/drt_statmech/bromotion_manager.cpp
+)
+set(OBJS_DRT_COMBUST3_LIB
+  src/drt_combust/combust3.cpp
+  src/drt_combust/combust3_evaluate.cpp
+  src/drt_combust/combust3_input.cpp
+  src/drt_combust/combust3_line.cpp
+  src/drt_combust/combust3_line_evaluate.cpp
+  src/drt_combust/combust3_surface.cpp
+  src/drt_combust/combust3_surface_evaluate.cpp
+  src/drt_combust/combust3_sysmat.cpp
+)
+set(OBJS_DRT_THERMO
+  src/drt_thermo/thr_dyn.cpp
+  src/drt_thermo/thr_aux.cpp
+  src/drt_thermo/thr_resulttest.cpp
+  src/drt_thermo/thrtimint.cpp
+  src/drt_thermo/thrtimint_impl.cpp
+  src/drt_thermo/thrtimint_statics.cpp
+  src/drt_thermo/thrtimint_ost.cpp
+  src/drt_thermo/thrtimint_genalpha.cpp
+)
+set(OBJS_POST_GID_TXT
+  src/post_gid/gid_out_txt.c
+)
+set(OBJS_FLUID
+  src/fluid_full/fluid_adapt_service.c
+  src/fluid_full/fluid_curvature.c
+  src/fluid_full/fluid_consistbf.c
+  src/fluid_full/fluid_dyn.c
+  src/fluid_full/fluid_dirich.c
+  src/fluid_full/fluid_dirich_tu.c
+  src/fluid_full/fluid_dirich_tu_1.c
+  src/fluid_full/fluid_freesurf.c
+  src/fluid_full/fluid_heightfunc.c
+  src/fluid_full/fluid_imp_semimp.c
+  src/fluid_full/fluid_liftdrag.c
+  src/fluid_full/fluid_pm.c
+  src/fluid_full/fluid_pm_cont.c
+  src/fluid_full/fluid_pm_laplace.c
+  src/fluid_full/fluid_incr_acc_gen_alpha.c
+  src/fluid_full/fluid_imp_semimp_tu.c
+  src/fluid_full/fluid_imp_semimp_tu_1.c
+  src/fluid_full/fluid_mf.c
+  src/fluid_full/fluid_mfcoupling.c
+  src/fluid_full/fluid_mlservice.c
+  src/fluid_full/fluid_pm_service.c
+  src/fluid_full/fluid_pseudofsi.c
+  src/fluid_full/fluid_stationary.c
+  src/fluid_full/fluid_service.c
+  src/fluid_full/fluid_normal.c
+  src/fluid_full/fluid_locsys.c
+  src/fluid_full/fluid_service_tu.c
+  src/fluid_full/fluid_service_tu_1.c
+  src/fluid_full/inp_fluid_start_data.c
+)
+set(OBJS_DRT_FLUID
+  src/drt_fluid/fluid_utils.cpp
+  src/drt_fluid/fluid_utils_mapextractor.cpp
+  src/drt_fluid/fluid_dyn_nln_drt.cpp
+  src/drt_fluid/time_integration_scheme.cpp
+  src/drt_fluid/fluidimplicitintegration.cpp
+  src/drt_fluid/xfluidimplicitintegration.cpp
+  src/drt_fluid/fluid_genalpha_integration.cpp
+  src/drt_fluid/fluid_projectionmethod.cpp
+  src/drt_fluid/dyn_smag.cpp
+  src/drt_fluid/fluidimpedancecondition.cpp
+  src/drt_fluid/turbulence_statistic_manager.cpp
+  src/drt_fluid/turbulence_statistics_cha.cpp
+  src/drt_fluid/turbulence_statistics_ccy.cpp
+  src/drt_fluid/turbulence_statistics_ldc.cpp
+  src/drt_fluid/turbulence_statistics_bfs.cpp
+  src/drt_fluid/turbulence_statistics_sqc.cpp
+  src/drt_fluid/turbulence_statistics_mean_general.cpp
+  src/drt_fluid/fluidresulttest.cpp
+  src/drt_fluid/xfluidresulttest.cpp
+  src/drt_fluid/fluid_coupling_red_models.cpp
+)
+set(OBJS_STRUCTURE
+  src/structure/stru_dyn_nln.c
+  src/structure/stru_dyn_nln_expl.c
+  src/structure/stru_dyn_service.c
+  src/structure/stru_gemm_nln.c
+  src/structure/stru_static_lin.c
+  src/structure/stru_static_nln.c
+  src/structure/stru_static_service.c
+)
+set(OBJS_F2PRO
+  src/fluid2_pro/f2pro_inpele.c
+  src/fluid2_pro/f2pro_calele.c
+  src/fluid2_pro/f2pro_calint.c
+  src/fluid2_pro/f2pro_calservice.c
+  src/fluid2_pro/f2pro_main.c
+)
+set(OBJS_ALE
+  src/ale3/ale_call_stiff.c
+  src/ale3/ale_dirich.c
+  src/ale3/ale_dyn_control.c
+  src/ale3/ale_rhs.c
+  src/ale3/ale_service.c
+  src/ale2/ale2_call_stiff.c
+  src/ale2/ale2_bop.c
+  src/ale2/ale2_funcderiv.c
+  src/ale2/ale2_hourglass.c
+  src/ale2/ale2_inpele.c
+  src/ale2/ale2_intg.c
+  src/ale2/ale2_jaco.c
+  src/ale2/ale2_elm_geometry.c
+  src/ale2/ale2_mesh_quality.c
+  src/ale2/ale2_main.c
+  src/ale2/ale2_mat_linel.c
+  src/ale2/ale2_static_ke.c
+  src/ale3/ale3_service.c
+  src/ale3/ale3_inpele.c
+  src/ale3/ale3_main.c
+  src/ale3/ale3_static_ke.c
+)
+set(OBJS_DRT_TO2_LIB
+  src/drt_torsion2/torsion2.cpp
+  src/drt_torsion2/torsion2_input.cpp
+  src/drt_torsion2/torsion2_evaluate.cpp
+)
+set(OBJS_PRE_EXODUS
+  src/pre_exodus/pre_exodus.cpp
+  src/pre_exodus/pre_exodus_reader.cpp
+  src/pre_exodus/pre_exodus_soshextrusion.cpp
+  src/pre_exodus/pre_exodus_centerline.cpp
+  src/pre_exodus/pre_exodus_writedat.cpp
+  src/pre_exodus/pre_exodus_readbc.cpp
+  src/pre_exodus/pre_exodus_validate.cpp
+)
+set(OBJS_DRT_CONSTRAINT_LIB
+  src/drt_constraint/constraint_element3.cpp
+  src/drt_constraint/constraint_element3_evaluate.cpp
+  src/drt_constraint/constraint_element2.cpp
+  src/drt_constraint/constraint_element2_evaluate.cpp
+)
+set(OBJS_POST_DRT_GID
+  src/post_gid/post_drt_gid.cpp
+)
+set(OBJS_DRT_NURBS_DISCRET_LIB
+  src/drt_fem_general/drt_utils_nurbs_shapefunctions.cpp
+  src/drt_fem_general/drt_utils_bspline.cpp
+  src/drt_nurbs_discret/drt_nurbs_discret.cpp
+  src/drt_nurbs_discret/drt_control_point.cpp
+  src/drt_nurbs_discret/drt_knotvector.cpp
+)
+set(OBJS_DRT
+  src/drt_lib/drt_init_control.cpp
+  src/drt_lib/global_inp_control2.cpp
+  src/drt_lib/linalg_ana.cpp
+  src/drt_lib/linalg_condest.cpp
+  src/drt_lib/linalg_solver.cpp
+  src/drt_lib/linalg_solver_spooles.cpp
+  src/drt_lib/linalg_precond.cpp
+  src/drt_lib/linalg_projected_precond.cpp
+  src/drt_lib/linalg_projected_operator.cpp
+  src/drt_lib/linalg_krylov_projector.cpp
+  src/drt_lib/linalg_mlapi_operator.cpp
+  src/drt_lib/simpler_operator.cpp
+  src/drt_lib/linalg_downwindmatrix.cpp
+)
+set(OBJS_DRT_LOMA
+  src/drt_loma/loma_dyn.cpp
+  src/drt_loma/loma_algorithm.cpp
+)
+set(OBJS_VISUAL
+  src/visual/visual_global.c
+  src/visual/visual_readflaviares.c
+  src/visual/visual_vis2.c
+  src/visual/visual_vis3.c
+)
+set(OBJS_POST_DRT_COMMON
+  src/post_drt_common/post_drt_common.cpp
+)
+set(OBJS_INV_ANALYSIS
+  src/drt_inv_analysis/inv_analysis.cpp
+  src/drt_inv_analysis/gen_inv_analysis.cpp
+)
+set(OBJS_SHELL8
+  src/shell8/s8_main.c
+  src/shell8/s8_restart.c
+  src/shell8/s8_inpele.c
+  src/shell8/s8_intg.c
+  src/shell8/s8_jaco.c
+  src/shell8/s8_a3.c
+  src/shell8/s8_loccoordnode.c
+  src/shell8/s8_funcderiv.c
+  src/shell8/s8_static_ke.c
+  src/shell8/s8_static_keug.c
+  src/shell8/s8_static_mass.c
+  src/shell8/s8_cal_dyn.c
+  src/shell8/s8_stress.c
+  src/shell8/s8_tfte.c
+  src/shell8/s8_tforce.c
+  src/shell8/s8_tvkg.c
+  src/shell8/s8_load1.c
+  src/shell8/s8_tmtr.c
+  src/shell8/s8_mtr.c
+  src/shell8/s8_tvmr.c
+  src/shell8/s8_tvbo.c
+  src/shell8/s8_tvhe_linear.c
+  src/shell8/s8_tvhe.c
+  src/shell8/s8_tvma.c
+  src/shell8/s8_tmat.c
+  src/shell8/s8_eps.c
+  src/shell8/s8_intforce.c
+  src/shell8/s8_mat_linel.c
+  src/shell8/s8_mat_ogden.c
+  src/shell8/s8_mat_ogden2.c
+  src/shell8/s8_mat_ogden3.c
+  src/shell8/s8_mat_viscoushyper.c
+  src/shell8/s8_btdb.c
+  src/shell8/s8_eas.c
+  src/shell8/s8_ans.c
+  src/shell8/s8_vthv.c
+  src/shell8/s8_xint.c
+  src/shell8/s8_init.c
+  src/shell8/s8_mattransform.c
+  src/shell8/s8_contact1.c
+  src/shell8/s8_contact2.c
+  src/shell8/s8_contact_nearestnode.c
+  src/shell8/s8_contact_project.c
+  src/shell8/s8_contact_gap.c
+  src/shell8/s8_contact_history.c
+  src/shell8/s8_contact_init.c
+)
+set(OBJS_SHELL9
+  src/shell9/s9_main.c
+  src/shell9/s9_a3.c
+  src/shell9/s9_ans.c
+  src/shell9/s9_btdb.c
+  src/shell9/s9_Ccacu_sym.c
+  src/shell9/s9_Ccacu_unsym.c
+  src/shell9/s9_cal_dyn.c
+  src/shell9/s9_call_mat.c
+  src/shell9/s9_cdia.c
+  src/shell9/s9_eas.c
+  src/shell9/s9_eps.c
+  src/shell9/s9_EStrans.c
+  src/shell9/s9_funcderiv.c
+  src/shell9/s9_init.c
+  src/shell9/s9_inpele.c
+  src/shell9/s9_intforce.c
+  src/shell9/s9_intg.c
+  src/shell9/s9_jaco.c
+  src/shell9/s9_load1.c
+  src/shell9/s9_load_surf.c
+  src/shell9/s9_loccoordnode.c
+  src/shell9/s9_mat_linel.c
+  src/shell9/s9_mat_plast_hoff.c
+  src/shell9/s9_mat_plast_mises.c
+  src/shell9/s9_mat_plast_dp.c
+  src/shell9/s9_mat_plast_epc.c
+  src/shell9/s9_math.c
+  src/shell9/s9_out.c
+  src/shell9/s9_out_unsmo.c
+  src/shell9/s9_restart.c
+  src/shell9/s9_static_keug.c
+  src/shell9/s9_stress.c
+  src/shell9/s9_tforce.c
+  src/shell9/s9_tfte.c
+  src/shell9/s9_tmtr.c
+  src/shell9/s9_tvbo.c
+  src/shell9/s9_tvhe.c
+  src/shell9/s9_tvkg.c
+  src/shell9/s9_tvma.c
+  src/shell9/s9_tvmr.c
+  src/shell9/s9_vthv.c
+  src/shell9/s9_xint.c
+)
+set(OBJS_DRT_MAT
+  src/drt_mat/micromaterialgp_static.cpp
+  src/drt_mat/micromaterial_evaluate.cpp
+)
+set(OBJS_FSI_CPP
+  src/fsi_full/fsi_dyn_nox.c
+)
+set(OBJS_WALL1
+  src/wall1/w1_bop.c
+  src/wall1/w1_b_barop.c
+  src/wall1/w1_cal_deriv.c
+  src/wall1/w1_cal_eps.c
+  src/wall1/w1_cal_stress.c
+  src/wall1/w1_call_mat.c
+  src/wall1/w1_call_stiff.c
+  src/wall1/w1_funcderiv.c
+  src/wall1/w1_init.c
+  src/wall1/w1_inpele.c
+  src/wall1/w1_intg.c
+  src/wall1/w1_final.c
+  src/wall1/w1_jaco.c
+  src/wall1/w1_main.c
+  src/wall1/w1_mat_linel.c
+  src/wall1/w1_mat_plast_dp.c
+  src/wall1/w1_mat_plast_epc.c
+  src/wall1/w1_mat_plast_epc_serv.c
+  src/wall1/w1_mat_plast_epc3D.c
+  src/wall1/w1_mat_plast_mises.c
+  src/wall1/w1_mat_plast_mises3D.c
+  src/wall1/w1_mat_plast_serv.c
+  src/wall1/w1_mat_serv.c
+  src/wall1/w1_static_ke.c
+  src/wall1/w1_static_keug.c
+  src/wall1/w1_boplin.c
+  src/wall1/w1_defgrad.c
+  src/wall1/w1_call_matgeononl.c
+  src/wall1/w1_mat_linelgeonon.c
+  src/wall1/w1_cal_kg.c
+  src/wall1/w1_cal_keu.c
+  src/wall1/w1_cal_fint.c
+  src/wall1/w1_cal_fext.c
+  src/wall1/w1_mat_trans.c
+  src/wall1/w1_cal_trans.c
+  src/wall1/w1_incompmode.c
+  src/wall1/w1_locsys.c
+  src/wall1/w1_math.c
+  src/wall1/w1_restart.c
+  src/wall1/wallcontact_init.c
+  src/wall1/wall_contact_detection.c
+  src/wall1/wall_contact_update.c
+  src/wall1/wall_contact_set.c
+  src/wall1/wall_contact_flag.c
+  src/wall1/wall_contact_augmentation.c
+  src/wall1/wall_contact_his_update.c
+  src/wall1/wall_contact_detection_em.c
+  src/wall1/wall_contact_mid.c
+  src/wall1/wall_contact_augmentation_em.c
+  src/wall1/wall_contact_update_em.c
+  src/wall1/wall_contact_update_em_a.c
+  src/wall1/wall_contact_his_update_em.c
+  src/wall1/w1_history.c
+  src/wall1/w1_kinetic_energy.c
+  src/wall1/w1_strain_energy.c
+  src/wall1/w1_update_history.c
+  src/wall1/w1_mat_dam_mp.c
+  src/wall1/w1_mat_damage.c
+  src/wall1/w1_dam_service.c
+  src/wall1/w1_tri_service.c
+  src/wall1/w1_tsi.c
+)
+set(OBJS_PRE_CURVE
+  src/pre_curve/pre_curve.cpp
+)
+set(OBJS_DRT_SURFSTRESS
+  src/drt_surfstress/drt_surfstress_manager.cpp
+)
+set(OBJS_FLUID2
+  src/fluid2/f2_calcurvature.c
+  src/fluid2/f2_calelesize.c
+  src/fluid2/f2_calele.c
+  src/fluid2/f2_calele_tu.c
+  src/fluid2/f2_calele_tu_1.c
+  src/fluid2/f2_calelesize_tu.c
+  src/fluid2/f2_calelesize_tu_1.c
+  src/fluid2/f2_calextrhs.c
+  src/fluid2/f2_calfuncderiv.c
+  src/fluid2/f2_calheightfunc_sep.c
+  src/fluid2/f2_calheightfuncmat.c
+  src/fluid2/f2_calheightfuncrhs.c
+  src/fluid2/f2_calint.c
+  src/fluid2/f2_calint_tu.c
+  src/fluid2/f2_calint_tu_1.c
+  src/fluid2/f2_caliterrhs.c
+  src/fluid2/f2_caliterrhs_tu.c
+  src/fluid2/f2_caliterrhs_tu_1.c
+  src/fluid2/f2_calgalmat.c
+  src/fluid2/f2_calgalmat_tu.c
+  src/fluid2/f2_calgalmat_tu_1.c
+  src/fluid2/f2_calmatvec_usfem.c
+  src/fluid2/f2_calservice.c
+  src/fluid2/f2_calservice_tu.c
+  src/fluid2/f2_calservice_tu_1.c
+  src/fluid2/f2_calstabpar.c
+  src/fluid2/f2_calstabpar_tu.c
+  src/fluid2/f2_calstabpar_tu_1.c
+  src/fluid2/f2_calstabmat.c
+  src/fluid2/f2_calstabmat_tu.c
+  src/fluid2/f2_calstabmat_tu_1.c
+  src/fluid2/f2_calstress.c
+  src/fluid2/f2_calsurfrhs.c
+  src/fluid2/f2_caltau.c
+  src/fluid2/f2_caltimerhs_tu.c
+  src/fluid2/f2_caltimerhs_tu_1.c
+  src/fluid2/f2_caltimerhspro_tu.c
+  src/fluid2/f2_caltimerhspro_tu_1.c
+  src/fluid2/f2_caltuvisc.c
+  src/fluid2/f2_calvort.c
+  src/fluid2/f2_int_usfem.c
+  src/fluid2/f2_inpele.c
+  src/fluid2/f2_inpele_tu.c
+  src/fluid2/f2_intg.c
+  src/fluid2/f2_main.c
+  src/fluid2/f2_main_tu.c
+  src/fluid2/f2_massrhs.c
+  src/fluid2/f2_calliftdrag.c
+  src/fluid2/f2_calmat_gfs.c
+  src/fluid2/f2_ass_dof_ndis_tu.c
+  src/fluid2/f2_restart.c
+)
+set(OBJS_FLUID3
+  src/fluid3/f3_calele.c
+  src/fluid3/f3_calelesize.c
+  src/fluid3/f3_calfuncderiv.c
+  src/fluid3/f3_calgalmat.c
+  src/fluid3/f3_calheightfunc_sep.c
+  src/fluid3/f3_calint.c
+  src/fluid3/f3_caliterrhs.c
+  src/fluid3/f3_calmatvec_usfem.c
+  src/fluid3/f3_calservice.c
+  src/fluid3/f3_calstabmat.c
+  src/fluid3/f3_calstabpar.c
+  src/fluid3/f3_calstress.c
+  src/fluid3/f3_caltau.c
+  src/fluid3/f3_inpele.c
+  src/fluid3/f3_int_usfem.c
+  src/fluid3/f3_intg.c
+  src/fluid3/f3_massrhs.c
+  src/fluid3/f3_main.c
+  src/fluid3/f3_liftdrag.c
+  src/fluid3/f3_out.c
+  src/fluid3/f3_restart.c
+  src/fluid3/f3_calextrhs.c
+)
+set(OBJS_DRT_TO3_LIB
+  src/drt_torsion3/torsion3.cpp
+  src/drt_torsion3/torsion3_input.cpp
+  src/drt_torsion3/torsion3_evaluate.cpp
+)
+set(OBJS_DRT_MORTAR_LIB
+  src/drt_mortar/mortar_binarytree.cpp
+  src/drt_mortar/mortar_coupling2d.cpp
+  src/drt_mortar/mortar_coupling3d.cpp
+  src/drt_mortar/mortar_coupling3d_classes.cpp
+  src/drt_mortar/mortar_defines.cpp
+  src/drt_mortar/mortar_dofset.cpp
+  src/drt_mortar/mortar_element.cpp
+  src/drt_mortar/mortar_element_shapefct.cpp
+  src/drt_mortar/mortar_integrator.cpp
+  src/drt_mortar/mortar_interface.cpp
+  src/drt_mortar/mortar_manager_base.cpp
+  src/drt_mortar/mortar_node.cpp
+  src/drt_mortar/mortar_projector.cpp
+  src/drt_mortar/mortar_strategy_base.cpp
+)
+set(OBJS_DRT_STRUCTURE
+  src/drt_structure/stru_dyn_nln_drt.cpp
+  src/drt_structure/strugenalpha.cpp
+  src/drt_structure/strugenalpha_lsnewton.cpp
+  src/drt_structure/str_aux.cpp
+  src/drt_structure/strtimint.cpp
+  src/drt_structure/strtimint_impl.cpp
+  src/drt_structure/strtimint_impl_nox.cpp
+  src/drt_structure/strtimint_noxgroup.cpp
+  src/drt_structure/strtimint_noxlinsys.cpp
+  src/drt_structure/strtimint_expl.cpp
+  src/drt_structure/strtimint_statics.cpp
+  src/drt_structure/strtimint_genalpha.cpp
+  src/drt_structure/strtimint_ost.cpp
+  src/drt_structure/strtimint_gemm.cpp
+  src/drt_structure/strtimint_ab2.cpp
+  src/drt_structure/strtimint_create.cpp
+  src/drt_structure/strtimada.cpp
+  src/drt_structure/strtimada_zienxie.cpp
+  src/drt_structure/strtimada_create.cpp
+  src/drt_structure/strudyn_direct.cpp
+  src/drt_structure/stru_static_drt.cpp
+  src/drt_structure/stru_resulttest.cpp
+  src/drt_structure/str_invanalysis.cpp
+  src/drt_structure/structure_utils_mapextractor.cpp
+)
+set(OBJS_PAR
+  src/parallel/par_initmetis.c
+  src/parallel/par_make_comm.c
+  src/parallel/par_assignmesh.c
+)
+set(OBJS_DRT_S8
+  src/drt_s8/shell8_evaluate.cpp
+  src/drt_s8/shell8_input.cpp
+  src/drt_s8/shell8_line_evaluate.cpp
+)
+set(OBJS_POST_DRT_S8CONVERT
+  src/post_s8convert/post_drt_s8convert.cpp
+)
+set(OBJS_DRT_CONTACTNEW_LIB
+  src/drt_contactnew/contact_abstract_strategy.cpp
+  src/drt_contactnew/contact_coupling2d.cpp
+  src/drt_contactnew/contact_coupling3d.cpp
+  src/drt_contactnew/contact_element.cpp
+  src/drt_contactnew/contact_integrator.cpp
+  src/drt_contactnew/contact_interface.cpp
+  src/drt_contactnew/contact_lagrange_strategy.cpp
+  src/drt_contactnew/contact_manager.cpp
+  src/drt_contactnew/contact_node.cpp
+  src/drt_contactnew/friction_node.cpp
+  src/drt_contactnew/contact_penalty_strategy.cpp
+  src/drt_contactnew/meshtying_abstract_strategy.cpp
+  src/drt_contactnew/meshtying_lagrange_strategy.cpp
+  src/drt_contactnew/meshtying_manager.cpp
+  src/drt_contactnew/meshtying_penalty_strategy.cpp
+  src/drt_contactnew/selfcontact_binarytree.cpp
+)
+set(OBJS_IO
+  src/io/io_singlefile.cpp
+  src/io/io_restart.cpp
+  src/io/io_result.cpp
+  src/io/io_packing.cpp
+  src/io/io_elements.cpp
+)
+set(OBJS_SOLVER
+  src/solver/solver_control.c
+  src/solver/solver_service.c
+  src/solver/solver_service2.c
+  src/solver/solver_service3.c
+  src/solver/solver_add_data.c
+  src/solver/solver_add_data_fast.c
+  src/solver/solver_add_mlib.c
+  src/solver/solver_sparse_parcsr.c
+  src/solver/solver_sparse_dense.c
+  src/solver/solver_sparse_bdcsr.c
+  src/solver/solver_sparse_ccf.c
+  src/solver/solver_sparse_msr.c
+  src/solver/solver_sparse_rcptr.c
+  src/solver/solver_sparse_skyline.c
+  src/solver/solver_sparse_spooles.c
+  src/solver/solver_sparse_ucchb.c
+  src/solver/solver_mlib.c
+  src/solver/solver_aztec.c
+  src/solver/solver_hypre.c
+  src/solver/solver_superlu.c
+  src/solver/solver_lapack.c
+  src/solver/solver_mumps.c
+  src/solver/solver_umfpack.c
+  src/solver/solver_colsol.c
+  src/solver/solver_copy_matrix.c
+  src/solver/solver_spooles.c
+  src/solver/solver_mlpcg.c
+  src/solver/solver_mlpcg2.c
+  src/solver/solver_mlpcg3.c
+  src/solver/solver_mlpcg4.c
+  src/solver/solver_mlpcg_smo.c
+  src/solver/solver_mlpcg_spooles.c
+  src/solver/solver_mlpcg_matmat.c
+  src/solver/solver_mlpcg_agg.c
+  src/solver/solver_mlpcg_csr.c
+  src/solver/solver_mlpcg_overlap.c
+  src/solver/solver_mlpcg_fish.c
+  src/solver/solver_mlpcg_test.c
+  src/solver/solver_oll.c
+  src/solver/solver_oll_aztec.c
+  src/solver/solver_oll_spooles.c
+  src/solver/solver_oll_add.c
+  src/solver/solver_oll_service.c
+  src/solver/solver_oll_service2.c
+  src/solver/solver_mask_matrices.c
+  src/solver/solver_mask_mds.c
+  src/solver/solver_mask_service.c
+  src/solver/solver_sparse.c
+)
+set(OBJS_DRT_FSI
+  src/drt_fsi/fsi_dyn.cpp
+  src/drt_fsi/fsi_algorithm.cpp
+  src/drt_fsi/fsi_partitioned.cpp
+  src/drt_fsi/fsi_dirichletneumann.cpp
+  src/drt_fsi/fsi_dirichletneumannslideale.cpp
+  src/drt_fsi/fsi_robinneumann.cpp
+  src/drt_fsi/fsi_robin.cpp
+  src/drt_fsi/fsi_structureale.cpp
+  src/drt_fsi/fsi_monolithic.cpp
+  src/drt_fsi/fsi_monolithicoverlap.cpp
+  src/drt_fsi/fsi_monolithiclagrange.cpp
+  src/drt_fsi/fsi_monolithicstructuresplit.cpp
+  src/drt_fsi/fsi_monolithicxfem.cpp
+  src/drt_fsi/fs_monolithic.cpp
+  src/drt_fsi/fsi_monolithic_linearsystem.cpp
+  src/drt_fsi/fsi_lungmonolithic.cpp
+  src/drt_fsi/fsi_lungmonolithic_structuresplit.cpp
+  src/drt_fsi/fsi_lungmonolithic_fluidsplit.cpp
+  src/drt_fsi/fsi_constrmonolithic.cpp
+  src/drt_fsi/fsi_constrmonolithic_fluidsplit.cpp
+  src/drt_fsi/fsi_constrmonolithic_structuresplit.cpp
+  src/drt_fsi/fsi_partitionedmonolithic.cpp
+  src/drt_fsi/fsi_fluid_ale.cpp
+  src/drt_fsi/fsi_fluid_xfem.cpp
+  src/drt_fsi/fsi_nox_newton.cpp
+  src/drt_fsi/fsi_nox_fixpoint.cpp
+  src/drt_fsi/fsi_nox_aitken.cpp
+  src/drt_fsi/fsi_nox_jacobian.cpp
+  src/drt_fsi/fsi_nox_sd.cpp
+  src/drt_fsi/fsi_nox_linearsystem_gcr.cpp
+  src/drt_fsi/fsi_nox_linearsystem_bgs.cpp
+  src/drt_fsi/fsi_nox_linearsystem_partitioned.cpp
+  src/drt_fsi/fsi_nox_mpe.cpp
+  src/drt_fsi/fsi_nox_epsilon.cpp
+  src/drt_fsi/fsi_nox_group.cpp
+  src/drt_fsi/fsi_utils.cpp
+  src/drt_fsi/fsi_matrixtransform.cpp
+  src/drt_fsi/fsi_debugwriter.cpp
+  src/drt_fsi/fsi_statustest.cpp
+  src/drt_fsi/fsi_lagrangeprec.cpp
+  src/drt_fsi/fsi_overlapprec.cpp
+  src/drt_fsi/fsi_overlapprec_fsiamg.cpp
+)
+set(OBJS_IF
+  src/interf/if_inpele.c
+  src/interf/if_main.c
+  src/interf/if_init.c
+  src/interf/if_intg.c
+  src/interf/if_static_ke.c
+  src/interf/if_bop.c
+  src/interf/if_mat.c
+  src/interf/if_cal_deltau.c
+  src/interf/if_stiff_fint.c
+  src/interf/if_stress.c
+  src/interf/if_mat_dyn.c
+  src/interf/if_service.c
+  src/interf/if_funcderiv.c
+  src/interf/if_restart.c
+)
+set(OBJS_DRT_CONSTRAINT
+  src/drt_constraint/constraint_manager.cpp
+  src/drt_constraint/constraint.cpp
+  src/drt_constraint/monitor.cpp
+  src/drt_constraint/multipointconstraint.cpp
+  src/drt_constraint/multipointconstraint2.cpp
+  src/drt_constraint/multipointconstraint3.cpp
+  src/drt_constraint/mpcdofset.cpp
+  src/drt_constraint/constraintdofset.cpp
+  src/drt_constraint/constraintsolver.cpp
+)
+set(OBJS_DRT_IO_LIB
+  src/drt_io/io.cpp
+  src/drt_io/io_hdf.cpp
+  src/drt_io/io_control.cpp
+  src/drt_io/io_gmsh.cpp
+  src/drt_io/io_gmsh_xfem_extension.cpp
+)
+set(OBJS_S2ML
+  src/struct2_ml/s2ml_static_ke.c
+  src/struct2_ml/s2ml_cal_smelm.c
+  src/struct2_ml/s2ml_service.c
+  src/struct2_ml/s2ml_stiff_wall.c
+  src/struct2_ml/s2ml_strain.c
+  src/struct2_ml/s2ml_stiff_interf.c
+)
+set(OBJS_FORTRAN
+  src/fortran/colsol.f
+  src/fortran/mpcg_futils.f
+  src/fortran/vis2_qat2v2.f
+  src/fortran/hex_fserv.f
+  src/fortran/s8_fserv.f
+  src/fortran/opt_ffsd.f
+  src/fortran/eigen_subspace.f
+  src/solver/solver_add_msr_fast.f
+)
+set(OBJS_DRT_B2R_LIB
+  src/drt_beam2r/beam2r.cpp
+  src/drt_beam2r/beam2r_input.cpp
+  src/drt_beam2r/beam2r_evaluate.cpp
+)
+set(OBJS_DRT_POTENTIAL
+  src/drt_potential/drt_potential_container.cpp
+  src/drt_potential/drt_potential_dofset.cpp
+  src/drt_potential/drt_potential.cpp
+  src/drt_potential/drt_potential_surface.cpp
+  src/drt_potential/drt_potential_volume.cpp
+  src/drt_potential/drt_potential_manager.cpp
+)
+set(OBJS_DRT_NURBS_DISCRET
+  src/drt_nurbs_discret/drt_apply_nurbs_initial_condition.cpp
+)
+set(OBJS_MAIN
+  src/global_full/main_ccarat.c
+)
+set(OBJS_DRT_B3_LIB
+  src/drt_beam3/beam3.cpp
+  src/drt_beam3/beam3_input.cpp
+  src/drt_beam3/beam3_evaluate.cpp
+)
+set(OBJS_DRT_F3_LIB
+  src/drt_f3/fluid3.cpp
+  src/drt_f3/fluid3_nurbs.cpp
+  src/drt_f3/fluid3_impl.cpp
+  src/drt_f3/fluid3_lin_impl.cpp
+  src/drt_f3/fluid3_genalpha_resVMM.cpp
+  src/drt_f3/fluid3_stationary.cpp
+  src/drt_f3/fluid3_line.cpp
+  src/drt_f3/fluid3_surface.cpp
+  src/drt_f3/fluid3_input.cpp
+  src/drt_f3/fluid3_evaluate.cpp
+  src/drt_f3/fluid3_surface_evaluate.cpp
+  src/drt_f3/fluid3_line_evaluate.cpp
+  src/drt_f3/fluid3_weak_dbc.cpp
+  src/drt_f3/fluid3_stabilization.cpp
+  src/drt_f3/xfluid3.cpp
+  src/drt_f3/xfluid3_line.cpp
+  src/drt_f3/xfluid3_surface.cpp
+  src/drt_f3/xfluid3_input.cpp
+  src/drt_f3/xfluid3_evaluate.cpp
+  src/drt_f3/xfluid3_surface_evaluate.cpp
+  src/drt_f3/xfluid3_line_evaluate.cpp
+  src/drt_f3/xfluid3_sysmat_sigma.cpp
+  src/drt_f3/xfluid3_sysmat_tau_pressure.cpp
+  src/drt_f3/xfluid3_sysmat_projection.cpp
+  src/drt_xdiff3/xdiff3.cpp
+  src/drt_xdiff3/xdiff3_line.cpp
+  src/drt_xdiff3/xdiff3_surface.cpp
+  src/drt_xdiff3/xdiff3_input.cpp
+  src/drt_xdiff3/xdiff3_evaluate.cpp
+  src/drt_xdiff3/xdiff3_surface_evaluate.cpp
+  src/drt_xdiff3/xdiff3_line_evaluate.cpp
+  src/drt_xdiff3/xdiff3_sysmat4.cpp
+  src/drt_fluid/time_integration_element.cpp
+)
+set(OBJS_DRT_T3_LIB
+  src/drt_truss3/truss3.cpp
+  src/drt_truss3/truss3_input.cpp
+  src/drt_truss3/truss3_evaluate.cpp
+)
+set(OBJS_SOLVER_CPP
+  src/solver/solver_trilinos_service.cpp
+  src/solver/solver_trilinos_control.cpp
+  src/solver/solver_trilinos_ml.cpp
+  src/solver/solver_trilinos_spooles.cpp
+)
+set(OBJS_SOLID3
+  src/solid3/so3_bop.c
+  src/solid3/so3_cfg.c
+  src/solid3/so3_def.c
+  src/solid3/so3_gid.c
+  src/solid3/so3_inp.c
+  src/solid3/so3_int.c
+  src/solid3/so3_intg.c
+  src/solid3/so3_iv.c
+  src/solid3/so3_locsys.c
+  src/solid3/so3_load.c
+  src/solid3/so3_load_line.c
+  src/solid3/so3_load_surf.c
+  src/solid3/so3_load_vol.c
+  src/solid3/so3_main.c
+  src/solid3/so3_mat.c
+  src/solid3/so3_mat_robinson.c
+  src/solid3/so3_mat_robinson_be.c
+  src/solid3/so3_mat_robinson_fb4.c
+  src/solid3/so3_mat_stvenant.c
+  src/solid3/so3_mv6.c
+  src/solid3/so3_metr.c
+  src/solid3/so3_out.c
+  src/solid3/so3_shape.c
+  src/solid3/so3_strain.c
+  src/solid3/so3_stress.c
+  src/solid3/so3_tns3.c
+  src/solid3/so3_tsi.c
+)
+set(OBJS_SSI
+  src/ssi_full/ssi_dyn.c
+  src/ssi_full/ssi_coupling.c
+  src/ssi_full/ssi_aitken.c
+  src/ssi_full/ssi_struct.c
+  src/ssi_full/ssi_service.c
+)
+set(OBJS_DRT_ALEALG
+  src/drt_ale/ale_dyn.cpp
+  src/drt_ale/ale.cpp
+  src/drt_ale/ale_lin.cpp
+  src/drt_ale/ale_laplace.cpp
+  src/drt_ale/ale_springs.cpp
+  src/drt_ale/ale_springs_fixed_ref.cpp
+  src/drt_ale/ale_utils_mapextractor.cpp
+  src/drt_ale/ale_resulttest.cpp
+)
+set(OBJS_DRT_W1_LIB
+  src/drt_w1/wall1.cpp
+  src/drt_w1/wall1_nurbs.cpp
+  src/drt_w1/wall1_line.cpp
+  src/drt_w1/wall1_evaluate.cpp
+  src/drt_w1/wall1_mat.cpp
+  src/drt_w1/wall1_eas.cpp
+  src/drt_w1/wall1_gemm.cpp
+  src/drt_w1/wall1_input.cpp
+  src/drt_w1/wall1_line_evaluate.cpp
+)
+set(OBJS_F3IS
+  src/fluid3_is/f3is_main.c
+  src/fluid3_is/f3is_calele.c
+  src/fluid3_is/f3is_calint.c
+  src/fluid3_is/f3is_service.c
+  src/fluid3_is/f3is_inpele.c
+)
+set(OBJS_DRT_CONTACT
+  src/drt_contact/contactstrugenalpha.cpp
+  src/drt_contact/contactstrugenalpha_lsnewton.cpp
+  src/drt_contact/beam3contactstrugenalpha.cpp
+)
+set(OBJS_INPUT_CPP
+  src/input_full/input_parameterlist.cpp
+)
+set(OBJECTS
+  ${OBJS_DRT_THERMO}
+  ${OBJS_DRT_IO}
+  ${OBJS_VISUAL}
+  ${OBJS_OUTPUT}
+  ${OBJS_INV_ANALYSIS}
+  ${OBJS_DRT_LOMA}
+  ${OBJS_DRT_MAT}
+  ${OBJS_INPUT}
+  ${OBJS_DRT_STRU_MULTI}
+  ${OBJS_DRT_STATMECH}
+  ${OBJS_DRT_CONTACTNEW}
+  ${OBJS_DRT_ADAPT}
+  ${OBJS_DRT_MORTAR}
+  ${OBJS_DRT_STRUCTURE}
+  ${OBJS_DRT_COMBUST}
+  ${OBJS_IO}
+  ${OBJS_SOLVER}
+  ${OBJS_GLOBAL}
+  ${OBJS_DRT_ELCH}
+  ${OBJS_DRT_CONSTRAINT}
+  ${OBJS_DRT}
+  ${OBJS_FORTRAN}
+  ${OBJS_DRT_SCATRA}
+  ${OBJS_DRT_FLUID}
+  ${OBJS_DRT_TSI}
+  ${OBJS_DRT_NURBS_DISCRET}
+  ${OBJS_STRUCTURE}
+  ${OBJS_MAIN}
+  ${OBJS_SOLVER_CPP}
+  ${OBJS_DRT_ALEALG}
+  ${OBJS_DRT_CONTACT}
+  ${OBJS_GLOBAL_CPP}
+  ${OBJS_DRT_FSI}
+  ${OBJS_MATH}
+  ${OBJS_INPUT_CPP}
+)
+set(FILTER_OBJECTS
+  ${OBJS_DRT_F2_LIB}
+  ${OBJS_DRT_TO2_LIB}
+  ${OBJS_DRT_ALE_LIB}
+  ${OBJS_DRT_T3_LIB}
+  ${OBJS_DRT_T2_LIB}
+  ${OBJS_SOH8_LIB}
+  ${OBJS_DRT_B2_LIB}
+  ${OBJS_DRT_S8_LIB}
+  ${OBJS_DRT_B2R_LIB}
+  ${OBJS_FILTER_COMMON}
+  ${OBJS_POST_DRT_COMMON}
+  ${OBJS_DRT_TO3_LIB}
+  ${OBJS_DRT_B3_LIB}
+  ${OBJS_DRT_W1_LIB}
+  ${OBJS_DRT_COMBUST3_LIB}
+  ${OBJS_DRT_F3_LIB}
+)
+set(COMMON_OBJECTS
+  ${OBJS_DRT_IO_LIB}
+  ${OBJS_DRT_SCATRA_LIB}
+  ${OBJS_DRT_INPAR}
+  ${OBJS_DRT_CONSTRAINT_LIB}
+  ${OBJS_DRT_SURFSTRESS}
+  ${OBJS_DRT_NURBS_DISCRET_LIB}
+  ${OBJS_INTERSECTION}
+  ${OBJS_DRT_THERMO_LIB}
+  ${OBJS_DRT_CONTACT_LIB}
+  ${OBJS_DRT_CONTACTNEW_LIB}
+  ${OBJS_PAR}
+  ${OBJS_PSS}
+  ${OBJS_DRT_POTENTIAL}
+  ${OBJS_DRT_LIB}
+  ${OBJS_DRT_MAT_LIB}
+  ${OBJS_DRT_MORTAR_LIB}
+  ${OBJS_DRT_STATMECH_LIB}
+  ${OBJS_DRT_BELE3_LIB}
 )
 
-set (input_full_source
-src/input_full/inherit_design_dis.c
-src/input_full/inherit_design_ele.c
-src/input_full/inherit_insidedesign.c
-src/input_full/inp_cal_dirich_fac.c
-src/input_full/input_conditions.c
-src/input_full/input_control_global.c
-src/input_full/input_ctr_head.c
-src/input_full/input_curves.c
-src/input_full/input_design.c
-src/input_full/input_design_top.c
-src/input_full/input_funct.c
-src/input_full/input_locsys.c
-src/input_full/input_material.c
-src/input_full/input_mesh.c
-src/input_full/input_monitor.c
-src/input_full/input_resultdescr.c
-src/input_full/input_sol.c
-src/input_full/input_submesh.c
-src/input_full/input_surface_energy.c
-src/input_full/input_topology.c
-)
-
-set (global_full_source
-src/global_full/main_ccarat.c
-src/global_full/global_control.c
-src/global_full/global_inp_control.c
-src/global_full/global_cal_control.c
-src/global_full/global_init_control.c
-src/global_full/global_ass_dof.c
-src/global_full/global_ass_dof_ndis.c
-src/global_full/global_dyn_control.c
-src/global_full/global_timecurve.c
-src/global_full/global_node_find.c
-src/global_full/global_dofconnect.c
-src/global_full/global_monitoring.c
-src/global_full/global_locsys.c
-src/global_full/global_result_test.c
-src/global_full/global_calelm.c
-src/global_full/global_calelm_fast.c
-src/global_full/global_calrhs.c
-src/global_full/global_restart_control.c
-src/global_full/global_open_files.c
-src/global_full/global_check_max.c
-src/global_full/global_divide_fast.c
-src/global_full/global_subdivide.c
-src/global_full/global_subdivide_process.c
-)
-
-set (ccarat_math_source
-src/math/arcline.c
-src/math/geometry.c
-src/math/math1.c
-src/math/sort_find.c
-)
-
-set (ccarat_output_source
-src/output/out_checkfilesize.c
-src/output/out_gid_msh.c
-src/output/out_gid_sol.c
-src/output/out_gid_soldyn.c
-src/output/out_gid_solfsi.c
-src/output/out_gid_solssi.c
-src/output/out_global.c
-src/output/out_monitor.c
-src/output/out_plt.c
-)
-
-set (ccarat_solver_source
-src/solver/solver_add_data.c
-src/solver/solver_add_data_fast.c
-src/solver/solver_add_mlib.c
-src/solver/solver_aztec.c
-src/solver/solver_colsol.c
-src/solver/solver_control.c
-src/solver/solver_copy_matrix.c
-src/solver/solver_hypre.c
-src/solver/solver_lapack.c
-src/solver/solver_mask_matrices.c
-src/solver/solver_mask_mds.c
-src/solver/solver_mask_service.c
-src/solver/solver_mlib.c
-src/solver/solver_mlpcg2.c
-src/solver/solver_mlpcg3.c
-src/solver/solver_mlpcg4.c
-src/solver/solver_mlpcg_agg.c
-src/solver/solver_mlpcg.c
-src/solver/solver_mlpcg_csr.c
-src/solver/solver_mlpcg_fish.c
-src/solver/solver_mlpcg_matmat.c
-src/solver/solver_mlpcg_overlap.c
-src/solver/solver_mlpcg_smo.c
-src/solver/solver_mlpcg_spooles.c
-src/solver/solver_mlpcg_test.c
-src/solver/solver_mumps.c
-src/solver/solver_oll_add.c
-src/solver/solver_oll_aztec.c
-src/solver/solver_oll.c
-src/solver/solver_oll_service2.c
-src/solver/solver_oll_service.c
-src/solver/solver_oll_spooles.c
-src/solver/solver_service2.c
-src/solver/solver_service3.c
-src/solver/solver_service.c
-src/solver/solver_sparse_bdcsr.c
-src/solver/solver_sparse.c
-src/solver/solver_sparse_ccf.c
-src/solver/solver_sparse_dense.c
-src/solver/solver_sparse_msr.c
-src/solver/solver_sparse_parcsr.c
-src/solver/solver_sparse_rcptr.c
-src/solver/solver_sparse_skyline.c
-src/solver/solver_sparse_spooles.c
-src/solver/solver_sparse_ucchb.c
-src/solver/solver_spooles.c
-src/solver/solver_superlu.c
-src/solver/solver_umfpack.c
-)
-
-set (pss_full_source
-src/pss_full/pss_am.c
-src/pss_full/pss_ds.c
-src/pss_full/pss_fr.c
-src/pss_full/pss_pss.c
-src/pss_full/pss_perf.c
-src/pss_full/pss_visual.c
-src/pss_full/pss_table.c
-src/pss_full/pss_table_iter.c
-src/pss_full/pss_set.c
-src/pss_full/pss_parser.c
-)
-
-set (baci_source
-${adapter_source}
-${ale_source}
-${bele3_source}
-${combust_element_source}
-${combust_source}
-${constraint_element_source}
-${constraint_source}
-${contact_source}
-${contactnew_source}
-${elch_source}
-${fem_general_source}
-${fluid_element_source}
-${fluid_source}
-${fsi_source}
-${geometry_source}
-${inpar_source}
-${inv_analysis_source}
-${io_source}
-${lib_element_source}
-${lib_source}
-${loma_source}
-${mat_source}
-${matelast_source}
-${mortar_source}
-${nurbs_discret_source}
-${potential_source}
-${scatra_source}
-${statmech_source}
-${structure_source}
-${stru_multi_source}
-${surfstress_source}
-${thermo_main_source}
-${thermo_timint_source}
-${tsi_source}
-${xdiff3_source}
-${xfem_source}
-${input_full_source}
-${global_full_source}
-${ccarat_math_source}
-${ccarat_output_source}
-${ccarat_solver_source}
-${pss_full_source}
-)
 
 #   all possible elements
 
 option (D_ALE         "ale element (2D+3D)" OFF)
 if (D_ALE)
   add_definitions("-DD_ALE")
-  set (baci_source
-    ${baci_source}
-    ${ale2_source}
-    ${ale3_source}
-    )
+  set(OBJECTS ${OBJECTS} ${OBJS_ALE} ${OBJS_DRT_ALE_LIB} ${OBJS_DRT_ALE})
 endif(D_ALE)
 
 option (D_FLUID2      "fluid2" OFF)
 if (D_FLUID2)
   add_definitions("-DD_FLUID2")
-  set( f2_source
-    src/drt_f2/fluid2.cpp
-    src/drt_f2/fluid2_evaluate.cpp
-    src/drt_f2/fluid2_genalpha_resVMM.cpp
-    src/drt_f2/fluid2_impl.cpp
-    src/drt_f2/fluid2_input.cpp
-    src/drt_f2/fluid2_line.cpp
-    src/drt_f2/fluid2_line_evaluate.cpp
-    src/drt_f2/fluid2_nurbs.cpp
-    src/drt_f2/fluid2_stationary.cpp
-    src/drt_f2/fluid2_th.cpp
-    src/drt_f2/fluid2_weak_dbc.cpp
-    )
-  set (baci_source
-    ${baci_source}
-    ${f2_source}
-    )
+  set(OBJECTS ${OBJECTS} ${OBJS_FLUID2} ${OBJS_FLUID} ${OBJS_DRT_F2} ${OBJS_DRT_F2_LIB})
 endif(D_FLUID2)
 
 option (D_FLUID3      "fluid3" OFF)
 if (D_FLUID3)
   add_definitions("-DD_FLUID3")
-  set( f3_source
-    src/drt_f3/fluid3.cpp
-    src/drt_f3/fluid3_evaluate.cpp
-    src/drt_f3/fluid3_genalpha_resVMM.cpp
-    src/drt_f3/fluid3_impl.cpp
-    src/drt_f3/fluid3_input.cpp
-    src/drt_f3/fluid3_line.cpp
-    src/drt_f3/fluid3_line_evaluate.cpp
-    src/drt_f3/fluid3_lin_impl.cpp
-    src/drt_f3/fluid3_nurbs.cpp
-    src/drt_f3/fluid3_stabilization.cpp
-    src/drt_f3/fluid3_stationary.cpp
-    src/drt_f3/fluid3_surface.cpp
-    src/drt_f3/fluid3_surface_evaluate.cpp
-    src/drt_f3/fluid3_weak_dbc.cpp
-    src/drt_f3/xfluid3.cpp
-    src/drt_f3/xfluid3_evaluate.cpp
-    src/drt_f3/xfluid3_input.cpp
-    src/drt_f3/xfluid3_line.cpp
-    src/drt_f3/xfluid3_line_evaluate.cpp
-    src/drt_f3/xfluid3_surface.cpp
-    src/drt_f3/xfluid3_surface_evaluate.cpp
-    src/drt_f3/xfluid3_sysmat_projection.cpp
-    src/drt_f3/xfluid3_sysmat_sigma.cpp
-    src/drt_f3/xfluid3_sysmat_tau_pressure.cpp
-    )
-  set (baci_source
-    ${baci_source}
-    ${f3_source}
-    )
+  set(OBJECTS ${OBJECTS} ${OBJS_FLUID3} ${OBJS_FLUID} ${OBJS_DRT_F3_LIB} ${OBJS_DRT_F3} ${OBJS_DRT_COMBUST3_LIB})
 endif(D_FLUID3)
 
 option (D_SHELL8      "shell8" OFF)
 if (D_SHELL8)
   add_definitions("-DD_SHELL8")
-  set( s8_source
-    src/drt_s8/shell8.cpp
-    src/drt_s8/shell8_evaluate.cpp
-    src/drt_s8/shell8_input.cpp
-    src/drt_s8/shell8_line.cpp
-    src/drt_s8/shell8_line_evaluate.cpp
-    )
-  set (baci_source
-    ${baci_source}
-    ${s8_source}
-    )
+  set(OBJECTS ${OBJECTS} ${OBJS_SHELL8} ${OBJS_DRT_S8} ${OBJS_DRT_S8_LIB})
 endif(D_SHELL8)
 
 option (D_WALL1       "wall1" OFF)
 if (D_WALL1)
   add_definitions("-DD_WALL1")
-  set( w1_source
-    src/drt_w1/wall1.cpp
-    src/drt_w1/wall1_eas.cpp
-    src/drt_w1/wall1_evaluate.cpp
-    src/drt_w1/wall1_gemm.cpp
-    src/drt_w1/wall1_input.cpp
-    src/drt_w1/wall1_line.cpp
-    src/drt_w1/wall1_line_evaluate.cpp
-    src/drt_w1/wall1_mat.cpp
-    src/drt_w1/wall1_nurbs.cpp
-    )
-  set (baci_source
-    ${baci_source}
-    ${w1_source}
-    )
+  set(OBJECTS ${OBJECTS} ${OBJS_WALL1} ${OBJS_DRT_W1_LIB} ${OBJS_DRT_W1})
 endif(D_WALL1)
 
 option (D_THERMO      "thermal elements" OFF)
 if (D_THERMO)
   add_definitions("-DD_THERMO")
-  set( thermo_element_source
-    src/drt_thermo/thermo_ele_boundary_impl.cpp
-    src/drt_thermo/thermo_ele_impl.cpp
-    src/drt_thermo/thermo_ele_impl_utils.cpp
-    src/drt_thermo/thermo_element_boundary_evaluate.cpp
-    src/drt_thermo/thermo_element.cpp
-    src/drt_thermo/thermo_element_evaluate.cpp
-    src/drt_thermo/thermo_element_input.cpp
-    )
-  set (baci_source
-    ${baci_source}
-    ${thermo_element_source}
-    )
+#  set( thermo_element_source
+#    src/drt_thermo/thermo_ele_boundary_impl.cpp
+#    src/drt_thermo/thermo_ele_impl.cpp
+#    src/drt_thermo/thermo_ele_impl_utils.cpp
+#    src/drt_thermo/thermo_element_boundary_evaluate.cpp
+#    src/drt_thermo/thermo_element.cpp
+#    src/drt_thermo/thermo_element_evaluate.cpp
+#    src/drt_thermo/thermo_element_input.cpp
+#    )
+#  set (baci_source
+#    ${baci_source}
+#    ${thermo_element_source}
+#    )
 endif(D_THERMO)
 
 option (D_SOLID3      "spatial solid elements" OFF)
 if (D_SOLID3)
   add_definitions("-DD_SOLID3")
-  set( so3_source
-    src/drt_so3/inversedesign.cpp
-    src/drt_so3/inversedesign_evaluate.cpp
-    src/drt_so3/prestress.cpp
-    src/drt_so3/so_disp.cpp
-    src/drt_so3/so_disp_evaluate.cpp
-    src/drt_so3/so_disp_input.cpp
-    src/drt_so3/so_hex20.cpp
-    src/drt_so3/so_hex20_evaluate.cpp
-    src/drt_so3/so_hex20_input.cpp
-    src/drt_so3/so_hex20_multiscale.cpp
-    src/drt_so3/so_hex20_service.cpp
-    src/drt_so3/so_hex27.cpp
-    src/drt_so3/so_hex27_evaluate.cpp
-    src/drt_so3/so_hex27_input.cpp
-    src/drt_so3/so_hex27_multiscale.cpp
-    src/drt_so3/so_hex27_service.cpp
-    src/drt_so3/so_hex8.cpp
-    src/drt_so3/so_hex8_eas.cpp
-    src/drt_so3/so_hex8_evaluate.cpp
-    src/drt_so3/so_hex8_input.cpp
-    src/drt_so3/so_hex8_multiscale.cpp
-    src/drt_so3/so_hex8p1j1.cpp
-    src/drt_so3/so_hex8p1j1_evaluate.cpp
-    src/drt_so3/so_hex8p1j1_input.cpp
-    src/drt_so3/so_hex8_service.cpp
-    src/drt_so3/so_line.cpp
-    src/drt_so3/so_line_evaluate.cpp
-    src/drt_so3/so_material.cpp
-    src/drt_so3/so_nstet.cpp
-    src/drt_so3/so_nstet_evaluate.cpp
-    src/drt_so3/so_nstet_input.cpp
-    src/drt_so3/so_nstet_nodalstrain.cpp
-    src/drt_so3/so_nurbs27.cpp
-    src/drt_so3/so_nurbs27_evaluate.cpp
-    src/drt_so3/so_nurbs27_input.cpp
-    src/drt_so3/so_ptet.cpp
-    src/drt_so3/so_ptet_evaluate.cpp
-    src/drt_so3/so_ptet_input.cpp
-    src/drt_so3/so_ptet_nodalstrain.cpp
-    src/drt_so3/so_sh8.cpp
-    src/drt_so3/so_sh8_evaluate.cpp
-    src/drt_so3/so_sh8_input.cpp
-    src/drt_so3/so_sh8p8_auxiliar.cpp
-    src/drt_so3/so_sh8p8.cpp
-    src/drt_so3/so_sh8p8_eas.cpp
-    src/drt_so3/so_sh8p8_evaluate.cpp
-    src/drt_so3/so_sh8p8_input.cpp
-    src/drt_so3/so_sh8_service.cpp
-    src/drt_so3/so_shw6.cpp
-    src/drt_so3/so_shw6_evaluate.cpp
-    src/drt_so3/so_shw6_input.cpp
-    src/drt_so3/so_surface.cpp
-    src/drt_so3/so_surface_evaluate.cpp
-    src/drt_so3/so_tet10.cpp
-    src/drt_so3/so_tet10_evaluate.cpp
-    src/drt_so3/so_tet10_input.cpp
-    src/drt_so3/so_tet4.cpp
-    src/drt_so3/so_tet4_evaluate.cpp
-    src/drt_so3/so_tet4_input.cpp
-    src/drt_so3/so_weg6.cpp
-    src/drt_so3/so_weg6_evaluate.cpp
-    src/drt_so3/so_weg6_input.cpp
-    )
-  set (baci_source
-    ${baci_source}
-    ${so3_source}
-    )
+  set(OBJECTS ${OBJECTS} ${OBJS_SOH8} ${OBJS_SOH8_LIB})
 endif(D_SOLID3)
 
 option (D_BEAM2       "2D Timoshenko beam element" OFF)
 if (D_BEAM2)
   add_definitions("-DD_BEAM2")
-  set( beam2_source
-    src/drt_beam2/beam2.cpp
-    src/drt_beam2/beam2_evaluate.cpp
-    src/drt_beam2/beam2_input.cpp
-    )
-  set (baci_source
-    ${baci_source}
-    ${beam2_source}
-    )
+  set(OBJECTS ${OBJECTS} ${OBJS_DRT_B2} ${OBJS_DRT_B2_LIB})
 endif(D_BEAM2)
 
 option (D_BEAM2R      "2D Reissner beam element" OFF)
 if (D_BEAM2R)
   add_definitions("-DD_BEAM2R")
-  set( beam2r_source
-    src/drt_beam2r/beam2r.cpp
-    src/drt_beam2r/beam2r_evaluate.cpp
-    src/drt_beam2r/beam2r_input.cpp
-    )
-  set (baci_source
-    ${baci_source}
-    ${beam2r_source}
-    )
+  set(OBJECTS ${OBJECTS} ${OBJS_DRT_B2R} ${OBJS_DRT_B2R_LIB})
 endif(D_BEAM2R)
 
 option (D_BEAM3       "3D Reissner beam element" OFF)
 if (D_BEAM3)
   add_definitions("-DD_BEAM3")
-  set( beam3_source
-    src/drt_beam3/beam3.cpp
-    src/drt_beam3/beam3_evaluate.cpp
-    src/drt_beam3/beam3_input.cpp
-    )
-  set (baci_source
-    ${baci_source}
-    ${beam3_source}
-    )
+  #set(OBJECTS ${OBJECTS} ${OBJS_BEAM3})
+  set(OBJECTS ${OBJECTS} ${OBJS_DRT_B3} ${OBJS_DRT_B3_LIB})
 endif(D_BEAM3)
 
 option (D_TRUSS3      "3D truss element" OFF)
 if (D_TRUSS3)
   add_definitions("-DD_TRUSS3")
-  set( truss3_source
-    src/drt_truss3/truss3.cpp
-    src/drt_truss3/truss3_evaluate.cpp
-    src/drt_truss3/truss3_input.cpp
-    )
-  set (baci_source
-    ${baci_source}
-    ${truss3_source}
-    )
+  set(OBJECTS ${OBJECTS} ${OBJS_DRT_T3} ${OBJS_DRT_T3_LIB})
 endif(D_TRUSS3)
 
 option (D_TRUSS2      "2D truss element" OFF)
 if (D_TRUSS2)
   add_definitions("-DD_TRUSS2")
-  set( truss2_source
-    src/drt_truss2/truss2.cpp
-    src/drt_truss2/truss2_evaluate.cpp
-    src/drt_truss2/truss2_input.cpp
-    )
-  set (baci_source
-    ${baci_source}
-    ${truss2_source}
-    )
+  set(OBJECTS ${OBJECTS} ${OBJS_DRT_T2} ${OBJS_DRT_T2_LIB})
 endif(D_TRUSS2)
 
 option (D_TORSION3    "3D torsion spring element" OFF)
 if (D_TORSION3)
   add_definitions("-DD_TORSION3")
-  set( torsion3_source
-    src/drt_torsion3/torsion3.cpp
-    src/drt_torsion3/torsion3_evaluate.cpp
-    src/drt_torsion3/torsion3_input.cpp
-    )
-  set (baci_source
-    ${baci_source}
-    ${torsion3_source}
-    )
+  set(OBJECTS ${OBJECTS} ${OBJS_DRT_TO3} ${OBJS_DRT_TO3_LIB})
 endif(D_TORSION3)
 
 option (D_TORSION2    "2D torsion spring element" OFF)
 if (D_TORSION2)
   add_definitions("-DD_TORSION2")
-  set( torsion2_source
-    src/drt_torsion2/torsion2.cpp
-    src/drt_torsion2/torsion2_evaluate.cpp
-    src/drt_torsion2/torsion2_input.cpp
-    )
-  set (baci_source
-    ${baci_source}
-    ${torsion2_source}
-    )
+  set(OBJECTS ${OBJECTS} ${OBJS_DRT_TO2} ${OBJS_DRT_TO2_LIB})
 endif(D_TORSION2)
 
 option (D_ARTNET      "1D Arterial network elements" OFF)
 if (D_ARTNET)
   add_definitions("-DD_ARTNET")
-  set( art_net_source
-    src/drt_art_net/artery.cpp
-    src/drt_art_net/artery_evaluate.cpp
-    src/drt_art_net/artery_input.cpp
-    src/drt_art_net/artery_lin_exp.cpp
-    src/drt_art_net/art_junction.cpp
-    src/drt_art_net/art_net_dyn_drt.cpp
-    src/drt_art_net/artnetexplicitintegration.cpp
-    src/drt_art_net/art_terminal_bc.cpp
-    src/drt_art_net/art_write_gnuplot.cpp
-    )
-  set (baci_source
-    ${baci_source}
-    ${art_net_source}
-    )
+  set(OBJECTS ${OBJECTS} ${OBJS_DRT_ARTNET})
+  set(COMMON_OBJECTS ${COMMON_OBJECTS} ${OBJS_DRT_ARTNET_LIB})
 endif(D_ARTNET)
 
 option (D_RED_AIRWAYS "reduced dimensional airways for calculating flow in lungs" OFF)
 if (D_RED_AIRWAYS)
   add_definitions("-DD_RED_AIRWAYS")
-  set( red_airways_source
-    src/drt_red_airways/airway_evaluate.cpp
-    src/drt_red_airways/airway_impl.cpp
-    src/drt_red_airways/airwayimplicitintegration.cpp
-    src/drt_red_airways/red_airway.cpp
-    src/drt_red_airways/red_airway_input.cpp
-    src/drt_red_airways/red_airways_dyn_drt.cpp
-    )
-  set (baci_source
-    ${baci_source}
-    ${red_airways_source}
-    )
+  set(OBJECTS ${OBJECTS} ${OBJS_DRT_RED_AIRWAYS})
+  set(COMMON_OBJECTS ${COMMON_OBJECTS} ${OBJS_DRT_RED_AIRWAYS_LIB})
 endif(D_RED_AIRWAYS)
+
+option (D_ALE_BFLOW "adds the effect of ALE defformation on the volumetric flow rate calculation on the boundaries" OFF)
+if (D_ALE_BFLOW)
+  add_definitions("-DD_ALE_BFLOW")
+  set(OBJECTS ${OBJECTS} ${OBJS_DRT_ALE_BFLOW})
+endif (D_ALE_BFLOW)
 
 #   additional features
 
@@ -1229,11 +2028,6 @@ if (PARMETIS)
   add_definitions("-DPARMETIS")
 endif(PARMETIS)
 
-option (D_ALE_BFLOW "adds the effect of ALE defformation on the volumetric flow rate calculation on the boundaries" OFF)
-if (D_ALE_BFLOW)
-  add_definitions("-DD_ALE_BFLOW")
-endif(D_ALE_BFLOW)
-
 
 #   tools
 
@@ -1268,122 +2062,33 @@ endif(THROWELEMENTERRORS)
 
 #
 
-add_executable (baci ${baci_source})
+add_library(baci_objects ${OBJECTS} ${COMMON_OBJECTS})
+add_library(filter_objects ${FILTER_OBJECTS} ${COMMON_OBJECTS})
+#add_library(common_objects ${COMMON_OBJECTS})
 
-#find_path( BLITZ_CONFIG_DIR blitz/gnu/bzconfig.h
-#  /usr/lib/blitz/include
-#)
+add_executable (baci "")
 
-#find_path( NETCDF_INCLUDE_DIR netcdf.h
-#   /usr/include/netcdf
-#   /usr/include/netcdf-3
-#)
+add_executable (post_drt_gid     ${OBJS_POST_DRT_GID} ${OBJS_POST_GID_TXT})
+add_executable (post_drt_ensight ${OBJS_POST_DRT_ENSIGHT})
+add_executable (post_drt_monitor ${OBJS_POST_DRT_MONITOR})
+add_executable (post_drt_s8convert ${OBJS_POST_DRT_S8CONVERT})
+add_executable (post_drt_q9neconvert ${OBJS_POST_DRT_Q9NECONVERT})
 
-#find_path( NETCDF_LIBRARY libnetcdf.so
-#   /usr/lib
-#)
+add_executable (pre_curve ${OBJS_PRE_CURVE})
 
-#find_path( EXODUS_INCLUDE_DIR exodusII.h
-#  /lnm/lib/fc8/openmpi/include
-#)
+target_link_libraries (baci baci_objects ${LIBRARIES})
 
-#find_path( EXODUS_LIBRARY libexoIIv2c.a
-#  /lnm/lib/fc8/openmpi/lib
-#)
+target_link_libraries (post_drt_gid filter_objects ${LIBRARIES})
+target_link_libraries (post_drt_ensight filter_objects ${LIBRARIES})
+target_link_libraries (post_drt_monitor filter_objects ${LIBRARIES})
+target_link_libraries (post_drt_s8convert filter_objects ${LIBRARIES})
+target_link_libraries (post_drt_q9neconvert filter_objects ${LIBRARIES})
 
-#find_path( NEMESIS_INCLUDE_DIR ne_nemesisI.h
-#  /lnm/lib/fc8/openmpi/include
-#)
+target_link_libraries (pre_curve filter_objects ${LIBRARIES})
 
-#find_path( NEMESIS_LIBRARY libnemIc.a
-#  /lnm/lib/fc8/openmpi/lib
-#)
-
-#find_path( METIS_LIBRARY libmetis.a
-#  /lnm/lib/fc8/openmpi/lib
-#)
-
-#find_path( PARMETIS_LIBRARY libparmetis.a
-#  /lnm/lib/fc8/openmpi/lib
-#)
-
-#message(${LIBRARIES})
-
-target_link_libraries (baci
-  ${LIBRARIES}
-#global_full
-##
-## multi field algorithms
-#drt_fsi
-#drt_loma
-#drt_elch
-#drt_thermo_main
-##
-## adapter
-#drt_adapter
-##
-## single field algorithms
-#drt_scatra
-#drt_ale
-#drt_art_net
-#drt_combust
-#drt_fluid
-#drt_io
-#drt_nurbs_discret
-#drt_structure
-#drt_inv_analysis
-#drt_statmech
-#drt_surfstress
-#drt_thermo_timint
-#drt_tsi
-##
-## support
-#drt_potential
-#drt_contact
-#drt_contactnew
-#drt_mortar
-##
-## element creation part of framework
-#drt_lib_element
-##
-## elements
-#drt_torsion2
-#drt_torsion3
-#drt_truss2
-#drt_truss3
-#drt_f2
-#drt_f3
-#drt_s8
-#drt_so3
-#drt_beam2
-#drt_beam2r
-#drt_beam3
-#drt_bele3
-#drt_ale2
-#drt_ale3
-#drt_thermo_element
-#drt_constraint_element
-#drt_combust_element
-#drt_w1
-#drt_xdiff3
-#drt_xfem
-##
-## support code needed by elements
-#drt_fluid_element
-##drt_stru_multi
-##
-## framework
-#drt_constraint
-#drt_geometry
-#drt_fem_general
-#drt_lib
-#drt_mat
-#drt_matelast
-#drt_inpar
-#pss_full
-#ccarat_output
-#ccarat_math
-#ccarat_solver
-#input_full
-#
-)
+option (D_EXODUS "exodus filter" OFF)
+if (D_EXODUS)
+  add_definitions("-DD_EXODUS")
+  add_executable (pre_exodus ${OBJS_PRE_EXODUS})
+  target_link_libraries (pre_exodus filter_objects ${LIBRARIES})
+endif (D_EXODUS)

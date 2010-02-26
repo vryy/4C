@@ -1,59 +1,36 @@
-if (Umfpack_INCLUDE_DIR AND Umfpack_LIBRARY)
-  set(Umfpack_FIND_QUIETLY TRUE)
-endif (Umfpack_INCLUDE_DIR AND Umfpack_LIBRARY)
 
-if(CMAKE_Fortran_COMPILER_WORKS)
+if (UMFPACK_INCLUDE_DIR AND UMFPACK_LIBRARY)
+  set(UMFPACK_FIND_QUIETLY TRUE)
+endif (UMFPACK_INCLUDE_DIR AND UMFPACK_LIBRARY)
 
-  find_package(BLAS)
+find_path(UMFPACK_INCLUDE_DIR
+  NAMES
+  umfpack.h
+  PATHS
+  $ENV{UMFPACKDIR}
+  ${INCLUDE_INSTALL_DIR}
+  PATH_SUFFIXES
+  suitesparse
+  )
 
-  if(BLAS_FOUND)
+find_library(UMFPACK_LIBRARY umfpack PATHS $ENV{UMFPACKDIR} ${LIB_INSTALL_DIR})
+find_library(AMD_LIBRARY     amd     PATHS $ENV{UMFPACKDIR} ${LIB_INSTALL_DIR})
+mark_as_advanced(UMFPACK_INCLUDE_DIR UMFPACK_LIBRARY AMD_LIBRARY)
 
-    find_path(Umfpack_INCLUDE_DIR
-      NAMES
-      umfpack.h
-      PATHS
-      $ENV{UMFPACKDIR}
-      ${INCLUDE_INSTALL_DIR}
-      PATH_SUFFIXES
-      suitesparse
-      )
+#    if(UMFPACK_LIBRARY)
 
-    find_library(Umfpack_LIBRARY umfpack PATHS $ENV{UMFPACKDIR} ${LIB_INSTALL_DIR})
-
-    if(Umfpack_LIBRARY)
-
-      get_filename_component(Umfpack_LIBDIR ${Umfpack_LIBRARY} PATH)
-
-      find_library(AMD_LIBRARY amd PATHS ${Umfpack_LIBDIR} $ENV{UMFPACKDIR} ${LIB_INSTALL_DIR})
-      if (AMD_LIBRARY)
-        set(Umfpack_LIBRARY ${Umfpack_LIBRARY} ${AMD_LIBRARY})
-        #else (AMD_LIBRARY)
-        #  set(Umfpack_LIBRARY FALSE)
-      endif (AMD_LIBRARY)
-
-    endif(Umfpack_LIBRARY)
-
-#    if(Umfpack_LIBRARY)
-
-#      find_library(COLAMD_LIBRARY colamd PATHS ${Umfpack_LIBDIR} $ENV{UMFPACKDIR} ${LIB_INSTALL_DIR})
+#      find_library(COLAMD_LIBRARY colamd PATHS ${UMFPACK_LIBDIR} $ENV{UMFPACKDIR} ${LIB_INSTALL_DIR})
 #      if (COLAMD_LIBRARY)
-#        set(Umfpack_LIBRARY ${Umfpack_LIBRARY} ${COLAMD_LIBRARY})
+#        set(UMFPACK_LIBRARY ${UMFPACK_LIBRARY} ${COLAMD_LIBRARY})
 #        #else (COLAMD_LIBRARY)
-#        #  set(Umfpack_LIBRARY FALSE)
+#        #  set(UMFPACK_LIBRARY FALSE)
 #      endif (COLAMD_LIBRARY)
 
-#    endif(Umfpack_LIBRARY)
+#    endif(UMFPACK_LIBRARY)
 
-  endif(BLAS_FOUND)
-
-endif(CMAKE_Fortran_COMPILER_WORKS)
+# Per-recommendation
+SET( UMFPACK_INCLUDE_DIRS ${UMFPACK_INCLUDE_DIR})
+SET( UMFPACK_LIBRARIES    ${UMFPACK_LIBRARY} ${AMD_LIBRARY} ${COLAMD_LIBRARY} ${BLAS_LIBRARIES})
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Umfpack DEFAULT_MSG Umfpack_INCLUDE_DIR Umfpack_LIBRARY)
-
-IF(Umfpack_LIBRARY)
-  set( Umfpack_FOUND "YES" )
-  SET( Umfpack_LIBRARIES ${Umfpack_LIBRARY} ${AMD_LIBRARY} ${COLAMD_LIBRARY} ${BLAS_LIBRARIES})
-ENDIF(Umfpack_LIBRARY)
-
-mark_as_advanced(Umfpack_INCLUDE_DIR Umfpack_LIBRARY AMD_LIBRARY)
+find_package_handle_standard_args(UMFPACK DEFAULT_MSG UMFPACK_LIBRARIES UMFPACK_INCLUDE_DIRS)
