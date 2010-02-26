@@ -224,16 +224,7 @@ void CONTACT::CoInterface::Initialize()
     if (friction_)
     {  
       FriNode* frinode = static_cast<FriNode*>(cnode);
-
-      // reset nodal Mortar maps (Petrov-Galerkin approach)
-      for (int j=0;j<(int)((frinode->Data().GetDPG()).size());++j)
-        (frinode->Data().GetDPG())[j].clear();
-      for (int j=0;j<(int)((frinode->Data().GetMPG()).size());++j)
-        (frinode->Data().GetMPG())[j].clear();
-      
-      (frinode->Data().GetDPG()).resize(0);
-      (frinode->Data().GetMPG()).resize(0);
-      
+  
       // reset SNodes and Mnodes
       frinode->Data().GetSNodes().clear();
       frinode->Data().GetMNodes().clear();
@@ -242,11 +233,6 @@ void CONTACT::CoInterface::Initialize()
       for (int j=0; j<(int)((frinode->Data().GetDerivJump()).size()); ++j)
         (frinode->Data().GetDerivJump())[j].clear();
       (frinode->Data().GetDerivJump()).resize(0);
-      
-      
-      // reset derivative map of Mortar matrices
-      (frinode->Data().GetDerivDPG()).clear();
-      (frinode->Data().GetDerivMPG()).clear();
     }
   }
 

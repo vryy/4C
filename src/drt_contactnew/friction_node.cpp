@@ -73,10 +73,6 @@ activeold_(old.activeold_),
 slip_(old.slip_),
 drowsold_(old.drowsold_),
 mrowsold_(old.mrowsold_),
-drowsPG_(old.drowsPG_),
-mrowsPG_(old.mrowsPG_),
-drowsoldPG_(old.drowsoldPG_),
-mrowsoldPG_(old.mrowsoldPG_),
 snodes_(old.snodes_),
 mnodes_(old.mnodes_),
 mnodesold_(old.mnodesold_)
@@ -294,58 +290,6 @@ void CONTACT::FriNode::AddMNode(int node)
 }
 
 /*----------------------------------------------------------------------*
- |  Add a value to the 'D' map (Petrov-Galerkin approach) gitterle 12/09|
- *----------------------------------------------------------------------*/
-void CONTACT::FriNode::AddDValuePG(int& row, int& col, double& val)
-{
-  // check if this is a master node or slave boundary node
-  if (IsSlave()==false)
-    dserror("ERROR: AddDValue: function called for master node %i", Id());
-  if (IsOnBound()==true)
-    dserror("ERROR: AddDValue: function called for boundary node %i", Id());
-
-  // check if this has been called before
-  if ((int)Data().GetDPG().size()==0)
-    Data().GetDPG().resize(NumDof());
-
-  // check row index input
-  if ((int)Data().GetDPG().size()<=row)
-    dserror("ERROR: AddDValue: tried to access invalid row index!");
-
-  // add the pair (col,val) to the given row
-  map<int,double>& dmap = Data().GetDPG()[row];
-  dmap[col] += val;
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Add a value to the 'M' map (Petrov-Galerkin approach) gitterle 12/09|
- *----------------------------------------------------------------------*/
-void CONTACT::FriNode::AddMValuePG(int& row, int& col, double& val)
-{
-  // check if this is a master node or slave boundary node
-  if (IsSlave()==false)
-    dserror("ERROR: AddDValue: function called for master node %i", Id());
-  if (IsOnBound()==true)
-    dserror("ERROR: AddDValue: function called for boundary node %i", Id());
-
-  // check if this has been called before
-  if ((int)Data().GetMPG().size()==0)
-    Data().GetMPG().resize(NumDof());
-
-  // check row index input
-  if ((int)Data().GetMPG().size()<=row)
-    dserror("ERROR: AddMValue: tried to access invalid row index!");
-
-  // add the pair (col,val) to the given row
-  map<int,double>& mmap = Data().GetMPG()[row];
-  mmap[col] += val;
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  Add a value to the 'DerivJump' map                     gitterle 11/09|
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::AddDerivJumpValue(int& row, const int& col, double val)
@@ -397,32 +341,6 @@ void CONTACT::FriNode::StoreDMOld()
   // also vectors containing the according master nodes
   Data().GetMNodesOld().clear();
   Data().GetMNodesOld() = Data().GetMNodes();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Store entries of D and M to old ones (PG-approach)     gitterle 12/09|
- *----------------------------------------------------------------------*/
-void CONTACT::FriNode::StoreDMOldPG()
-{
-  // copy drows_ to drowsold_
-
-  // reset old nodal Mortar maps
-  for (int j=0;j<(int)(Data().GetDOldPG().size());++j)
-  (Data().GetDOldPG())[j].clear();
-  for (int j=0;j<(int)((Data().GetMOldPG()).size());++j)
-  (Data().GetMOldPG())[j].clear();
-
-  // clear and zero nodal vectors
-  Data().GetDOldPG().clear();
-  Data().GetMOldPG().clear();
-  Data().GetDOldPG().resize(0);
-  Data().GetMOldPG().resize(0);
-
-  // write drows_ to drowsold_
-  Data().GetDOldPG() = Data().GetDPG();
-  Data().GetMOldPG() = Data().GetMPG();
 
   return;
 }
