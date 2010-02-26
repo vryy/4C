@@ -316,6 +316,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     void UpdateActiveSetSemiSmooth() {}
     void EvaluateReferenceState (const RCP<Epetra_Vector> vec){}
     void EvaluateRelMov() {} 
+    virtual void VisualizeGmsh(const int step, const int iter = 0) {}
     
     //@}
         

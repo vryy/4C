@@ -533,28 +533,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
 
   // gactive: nothing to do
 
- #ifdef CONTACTFDGAP
-  // FD check of weighted gap g derivatives
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    RCP<LINALG::SparseMatrix> deriv = rcp(new LINALG::SparseMatrix(*gactiven_,81));
-    deriv->Add(*nmatrix_,false,1.0,1.0);
-    deriv->Add(*smatrix_,false,1.0,1.0);
-    deriv->Add(*nmhata,false,-1.0,1.0);
-    deriv->Complete(*gsmdofs,*gactiven_);
-    cout << *deriv << endl;
-    interface_[i]->FDCheckGapDeriv();
-  }
-#endif // #ifdef CONTACTFDGAP
-
-#ifdef CONTACTFDTANGLM
-  // FD check of tangential LM derivatives
-  for (int i=0; i<(int)interface_.size();++i)
-  {
-    interface_[i]->FDCheckTangLMDeriv();
-  }
-#endif // #ifdef CONTACTFDTANGLM
-
 #ifdef CONTACTFDSTICK
 
   if (gstickt->NumGlobalElements())

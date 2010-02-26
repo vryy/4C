@@ -403,6 +403,15 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     */
     virtual void PrintActiveSet();
+    
+    /*!
+    \brief Visualize contact stuff with gmsh
+
+    \param step (in): current time step index
+    \param iter (in): current iteration index
+
+    */
+    void VisualizeGmsh(const int step, const int iter = 0);
 
     //@}
         

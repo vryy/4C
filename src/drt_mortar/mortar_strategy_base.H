@@ -165,6 +165,8 @@ class StrategyBase
     virtual void EvaluateReferenceState(const RCP<Epetra_Vector> vec) = 0;
     virtual void EvaluateRelMov() = 0;
     virtual bool Friction() = 0;
+    virtual void VisualizeGmsh(const int step, const int iter = 0) = 0;
+
     
     //@}
 

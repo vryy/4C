@@ -60,18 +60,16 @@ Maintainer: Alexander Popp
 //#define CONTACTFDMORTARD          /* flag for FD check of mortar matrix D */
 //#define CONTACTFDMORTARM          /* flag for FD check of mortar matrix M */
 
-// LAGRANGE DEBUGGING OPTIONS
+// LAGRANGE AND PENALTY DEBUGGING OPTIONS 
 //#define CONTACTFDGAP              /* flag for FD check of weighted gap g */
+
+// LAGRANGE DEBUGGING OPTIONS (frictionless and frictional contact)
 //#define CONTACTFDTANGLM           /* flag for FD check of tangential LM */
+//#define CONTACTFDSTICK            /* friction: flag for FD check of stick condition */
+//#define CONTACTFDSLIP             /* friction: flag for FD check of slip condition */
 
 // PENALTY DEBUGGING OPTIONS
-//#define CONTACTFDPENALTYKTEFF     /* flag for FD check of global assembled contact tangent stiffness matrix */
-//#define CONTACTFDPENALTYKC1       /* flag for FD check of global assembled LinD and LinM part of contact tangent stiffness matrix */
 //#define CONTACTFDPENALTYDERIVTRAC /* flag for FD check of nodal derivatives of lagrange multipliers */
-
-// FRICTIONAL DEBUGGING OPTIONS
-//#define CONTACTFDSTICK            /* flag for FD check of stick condition */
-//#define CONTACTFDSLIP             /* flag for FD check of slip condition */
 
 // GMSH DEBUGGING OPTIONS
 //#define CONTACTGMSH1              /* flag for gmsh output in each time step */

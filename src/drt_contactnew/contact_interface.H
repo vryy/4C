@@ -440,8 +440,7 @@ public:
   \brief Visualize contact stuff with gmsh
 
   */
-  void VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs,
-                     const int step, const int iter, const bool fric);
+  void VisualizeGmsh(const int step, const int iter);
 
   /*!
   \brief Check normal/tangent derivatives with finite differences
@@ -472,17 +471,30 @@ public:
 
   */
   void FDCheckTangLMDeriv();
+  
+  /*!
+  \brief Check stick condition derivatives with finite differences
 
+  */
+  virtual void FDCheckStickDeriv();
+
+  /*!
+  \brief Check slip condition derivatives with finite differences
+
+  */
+  virtual void FDCheckSlipDeriv();
+  
   /*!
   \brief Check penalty approach with finite differences
 
   */
   void FDCheckPenaltyTracNor();  
-  void FDCheckPenaltyKTeff(RCP<LINALG::SparseMatrix> kc, RCP<Epetra_Vector> fc, RCP<LINALG::SparseMatrix> dold,
-                           RCP<LINALG::SparseMatrix> mold, RCP<Epetra_Vector> zold,
-                           RCP<Epetra_Map> problemrowmap, double alphaf);
-  void FDCheckPenaltyLinD(RCP<LINALG::SparseMatrix> lindmatrix, RCP<Epetra_Vector> reffcd);
-  void FDCheckPenaltyLinM(RCP<LINALG::SparseMatrix> linmmatrix, RCP<Epetra_Vector> reffcm);
+
+  /*!
+  \brief Check frictional penalty traction with finite differences
+
+  */
+  virtual void FDCheckPenaltyTracFric();
   
   //@}
 

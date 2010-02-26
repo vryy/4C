@@ -276,6 +276,7 @@ OBJS_DRT_CONTACTNEW_LIB = \
                 src/drt_contactnew/contact_element.o \
                 src/drt_contactnew/contact_integrator.o \
                 src/drt_contactnew/contact_interface.o \
+                src/drt_contactnew/contact_interface_tools.o \
                 src/drt_contactnew/contact_lagrange_strategy.o \
                 src/drt_contactnew/contact_manager.o \
                 src/drt_contactnew/contact_node.o \

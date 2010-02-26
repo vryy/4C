@@ -43,6 +43,7 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/linalg_utils.H"
 #include "friction_node.H"
+#include "contact_defines.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -667,7 +668,7 @@ void CONTACT::CoAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
   // the auxiliary positions in binarytree contact search)
   SetState("olddisplacement",dis);
   
-#ifdef CONTACTGMSH1
+#ifdef CONTACTGMSH1  
   VisualizeGmsh(istep);
 #endif // #ifdef CONTACTGMSH1
 
@@ -1223,6 +1224,16 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
   Comm().Barrier();
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | Visualization of contact segments with gmsh                popp 08/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::VisualizeGmsh(const int step, const int iter)
+{
+  // visualization with gmsh
+  for (int i=0; i<(int)interface_.size(); ++i)
+    interface_[i]->VisualizeGmsh(step, iter);
 }
 
 #endif // CCADISCRET

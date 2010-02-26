@@ -140,12 +140,6 @@ void CONTACT::CoPenaltyStrategy::Initialize()
 void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kteff,
                                                  RCP<Epetra_Vector>& feff)
 {
-  // uncomment this if you want to do finite difference checks
-  // when enabled, kc1 and kc2 as part of kteff and fc as part of
-  // feff is stored separately so they can be checked on their own
-
-//#define FDCHECKS
-
   // FIXME: Currently only the old LINALG::Multiply method is used,
   // because there are still problems with the transposed version of
   // MLMultiply if a row has no entries! One day we should use ML...
@@ -240,8 +234,8 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   linzmatrix_->Complete(*gsmdofs, *gsdofrowmap_);
 
 #ifdef CONTACTFDPENALTYDERIVTRAC
-  INPAR::CONTACT::ContactFrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ContactFrictionType>(Params(),"FRICTION");
+  INPAR::CONTACT::FrictionType ftype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
 
   // check derivatives of penalty traction
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -265,12 +259,6 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   }
 #endif
 
-#ifdef FDCHECKS
-  // for debugging purposes kc is stored separately
-  RCP<LINALG::SparseMatrix> kc1 = rcp(new LINALG::SparseMatrix(*gsmdofs,81,true,true));
-  RCP<LINALG::SparseMatrix> kc2 = rcp(new LINALG::SparseMatrix(*gsmdofs,81,true,true));
-#endif
-
   // **********************************************************************
   // Build Contact Stiffness #1
   // **********************************************************************
@@ -278,13 +266,8 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   //  Kc,1 = delta[ 0 -M(transpose) D] * LM
 
   // these calculations are readily done and incorporated into linD and linM !
-#ifndef FDCHECKS
   kteff->Add(*lindmatrix_, false, 1.0-alphaf_, 1.0);
   kteff->Add(*linmmatrix_, false, 1.0-alphaf_, 1.0);
-#else
-  kc1->Add(*lindmatrix_, false, 1.0-alphaf_, 1.0);
-  kc1->Add(*linmmatrix_, false, 1.0-alphaf_, 1.0);
-#endif
 
   // **********************************************************************
   // Build Contact Stiffness #2
@@ -302,28 +285,14 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   mtilde = LINALG::Multiply(*mmatrix_, true, *linzmatrix_, false);
 
   // add to kteff
-#ifndef FDCHECKS
   kteff->Add(*dtilde, false, 1.0-alphaf_, 1.0);
   kteff->Add(*mtilde, false, -(1.0-alphaf_), 1.0);
-#else
-  kc2->Add(*dtilde, false, 1.0-alphaf_, 1.0);
-  kc2->Add(*mtilde, false, -(1.0-alphaf_), 1.0);
-#endif
-
-  // finalize the stiffness matrix
-#ifdef FDCHECKS
-  kc1->Complete();
-  kc2->Complete();
-  kteff->Add(*kc1, false, 1.0, 1.0);
-  kteff->Add(*kc2, false, 1.0, 1.0);
-#endif
 
   // **********************************************************************
   // Build RHS
   // **********************************************************************
   // feff += -alphaf * fc,n - (1-alphaf) * fc,n+1,k
 
-#ifndef FDCHECKS
   {
     // we initialize fcmdold with dold-rowmap instead of gsdofrowmap
     // (this way, possible self contact is automatically included)
@@ -362,47 +331,6 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
     feff->Update(1-alphaf_, *fcmmtemp, 1.0);
   }
 
-#else
-  // for debugging purposes fc is stored separately
-  RCP<Epetra_Vector> fc = rcp( new Epetra_Vector(*gsmdofs));
-
-  {
-    RCP<Epetra_Vector> fcmdold = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dold_->Multiply(true, *zold_, *fcmdold);
-    RCP<Epetra_Vector> fcmdoldtemp = rcp(new Epetra_Vector(*gsmdofs));
-    LINALG::Export(*fcmdold, *fcmdoldtemp);
-    fc->Update(-alphaf_, *fcmdoldtemp, 1.0);
-  }
-
-  {
-    RCP<Epetra_Vector> fcmmold = LINALG::CreateVector(*gmdofrowmap_, true);
-    mold_->Multiply(true, *zold_, *fcmmold);
-    RCP<Epetra_Vector> fcmmoldtemp = rcp(new Epetra_Vector(*gsmdofs));
-    LINALG::Export(*fcmmold, *fcmmoldtemp);
-    fc->Update(alphaf_, *fcmmoldtemp, 1.0);
-  }
-
-  {
-    RCP<Epetra_Vector> fcmd = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dmatrix_->Multiply(true, *z_, *fcmd);
-    RCP<Epetra_Vector> fcmdtemp = rcp(new Epetra_Vector(*gsmdofs));
-    LINALG::Export(*fcmd, *fcmdtemp);
-    fc->Update(-(1-alphaf_), *fcmdtemp, 1.0);
-  }
-
-  {
-    RCP<Epetra_Vector> fcmm = LINALG::CreateVector(*gmdofrowmap_, true);
-    mmatrix_->Multiply(true, *z_, *fcmm);
-    RCP<Epetra_Vector> fcmmtemp = rcp(new Epetra_Vector(*gsmdofs));
-    LINALG::Export(*fcmm, *fcmmtemp);
-    fc->Update(1-alphaf_, *fcmmtemp, 1.0);
-  }
-
-  RCP<Epetra_Vector> fctemp = LINALG::CreateVector(*problemrowmap_,true);
-  LINALG::Export(*fc, *fctemp);
-  feff->Update(1.0, *fctemp, 1.0);
-#endif
-
 #ifdef CONTACTFDGAP
    // FD check of weighted gap g derivatives (non-penetr. condition)
 
@@ -411,53 +339,6 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   cout << "-- CONTACTFDGAP -----------------------------" << endl;
 
 #endif // #ifdef CONTACTFDGAP
-
-#ifdef CONTACTFDPENALTYKTEFF
-  // check assembled contact tangent stiffness matrix
-
-  RCP<LINALG::SparseMatrix> kc = rcp(new LINALG::SparseMatrix(*gsmdofs,81,true,true));
-  kc->Add(*kc1, false, 1.0, 1.0);
-  kc->Add(*kc2, false, 1.0, 1.0);
-  kc->Complete();
-
-  cout << "-- CONTACTFDPENALTYKTEFF --------------------" << endl;
-  interface_[0]->FDCheckPenaltyKTeff(kc, fc, dold_, mold_, zold_, gsmdofs, alphaf_);
-  cout << "-- CONTACTFDPENALTYKTEFF --------------------" << endl;
-
-#endif
-
-#ifdef CONTACTFDPENALTYKC1
-  // check assembled contact tangent stiffness matrix, 1st part (LinD, LinM)
-
-  bool lind = true;
-  bool linm = false;
-
-  cout << "-- CONTACTFDPENALTYKC1 ----------------------" << endl;
-
-  cout << "zvector: " << *z_ << endl;
-  cout << "linzmatrix: " << *linzmatrix_ << endl;
-
-  if (lind)
-  {
-    cout << "lindmatrix: " << *lindmatrix_ << endl;
-    RCP<Epetra_Vector> reffcd = LINALG::CreateVector(*gsdofrowmap_,true);
-    dmatrix_->Multiply(false,*z_,*reffcd);
-    cout << "reffcd: " << *reffcd << endl;
-    interface_[0]->FDCheckPenaltyLinD(lindmatrix_, reffcd);
-  }
-
-  if (linm)
-  {
-    cout << "linmmatrix: " << *linmmatrix_ << endl;
-    RCP<Epetra_Vector> reffcm = LINALG::CreateVector(*gmdofrowmap_,true);
-    mmatrix_->Multiply(true,*z_,*reffcm);
-    reffcm->Scale(-1.0);
-    cout << "reffcm: " << *reffcm << endl;
-    interface_[0]->FDCheckPenaltyLinM(linmmatrix_, reffcm);
-  }
-
-  cout << "-- CONTACTFDPENALTYKC1 ----------------------" << endl;
-#endif
 
   return;
 }
