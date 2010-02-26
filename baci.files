@@ -376,6 +376,8 @@ src/drt_fluid/fluid_utils.cpp
 src/drt_fluid/fluid_utils.H
 src/drt_fluid/fluidimpedancecondition.cpp
 src/drt_fluid/fluidimpedancecondition.H
+src/drt_fluid/fluid_windkessel_optimization.cpp
+src/drt_fluid/fluid_windkessel_optimization.H
 src/drt_fluid/fluidimplicitintegration.cpp
 src/drt_fluid/fluidimplicitintegration.H
 src/drt_fluid/fluidresulttest.cpp

@@ -489,6 +489,10 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // construct impedance bc wrapper
   impedancebc_     = rcp(new UTILS::FluidImpedanceWrapper(discret_, output_, dta_) );
 
+  Wk_optimization_  = rcp(new UTILS::FluidWkOptimizationWrapper(discret_,
+                                                               output_,
+                                                               impedancebc_,
+                                                               dta_) );
 
 #ifdef D_ARTNET
   // -------------------------------------------------------------------
@@ -890,7 +894,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
       // update impedance boundary condition
       impedancebc_->UpdateResidual(residual_);
-
+      
 #ifdef D_ARTNET
       // update the 3D-to-reduced_D coupling data
       coupled3D_redDbc_->UpdateResidual(residual_);
@@ -2438,6 +2442,14 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   impedancebc_->FlowRateCalculation(time_,dta_);
   impedancebc_->OutflowBoundary(time_,dta_,theta_);
 
+  // get the parameters needed to be optimized
+  ParameterList WkOpt_params;
+  WkOpt_params.set<double> ("total time", time_);
+  WkOpt_params.set<double> ("time step size", dta_);
+  impedancebc_->getResultsOfAPeriod(WkOpt_params);
+
+  // update wind kessel optimization condition
+  Wk_optimization_->Solve(WkOpt_params);
   // -------------------------------------------------------------------
   // treat the 3D-to-reduced_D couplign condition
   // note: these methods return without action, if the problem does not
@@ -2555,6 +2567,8 @@ void FLD::FluidImplicitTimeInt::Output()
       // also write impedance bc information if required
       // Note: this method acts only if there is an impedance BC
       impedancebc_->WriteRestart(output_);
+
+      Wk_optimization_->WriteRestart(output_);
     }
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
@@ -2590,6 +2604,8 @@ void FLD::FluidImplicitTimeInt::Output()
     // also write impedance bc information if required
     // Note: this method acts only if there is an impedance BC
     impedancebc_->WriteRestart(output_);
+
+    Wk_optimization_->WriteRestart(output_);
   }
 
   return;
@@ -2627,6 +2643,8 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
   // also read impedance bc information if required
   // Note: this method acts only if there is an impedance BC
   impedancebc_->ReadRestart(reader);
+
+  Wk_optimization_->ReadRestart(reader);
 
 }
 

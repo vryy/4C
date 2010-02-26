@@ -110,6 +110,43 @@ FLD::UTILS::FluidImpedanceWrapper::~FluidImpedanceWrapper()
   return;
 }
 
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Return a pointer to the pressures of condition         ismail 02/10 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+RCP<vector<double> > FLD::UTILS::FluidImpedanceWrapper::getPressures(int condid)
+{
+  return (impmap_[condid])->FluidImpedanceBc::getPressures();
+}
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Returns results of one cardiac period                   ismail 02/10|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::UTILS::FluidImpedanceWrapper::getResultsOfAPeriod(
+  ParameterList & params)
+{
+  // get an iterator to my map
+  map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
+
+  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
+  {
+    mapiter->second->FluidImpedanceBc::getResultsOfAPeriod(params,mapiter->first);
+  }
+}
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -148,6 +185,74 @@ void FLD::UTILS::FluidImpedanceWrapper::OutflowBoundary(double time, double dta,
   {
     mapiter->second->FluidImpedanceBc::OutflowBoundary(time,dta,theta,mapiter->first);
   }
+  return;
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Wrap impedances calculation                            ismail 02/10 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::UTILS::FluidImpedanceWrapper::Impedances()
+{
+  // get an iterator to my map
+  map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
+
+  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
+  {
+    double density=0.0, viscosity=0.0;
+    int    condid = mapiter->first;
+    double area = mapiter->second->FluidImpedanceBc::Area(density,viscosity,condid);
+    mapiter->second->FluidImpedanceBc::Impedances(area,density,viscosity);
+  }
+  return;
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Set windkessel parameters                              ismail 02/10 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::UTILS::FluidImpedanceWrapper::SetWindkesselParams(
+  ParameterList  & params,
+  int              condid)
+{
+  // -------------------------------------------------------------------
+  // set the windkessel params associated with the coressponding
+  // condition ID
+  // -------------------------------------------------------------------
+  impmap_[condid]->SetWindkesselParams(params);
+
+  return;
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Get windkessel parameters                              ismail 02/10 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::UTILS::FluidImpedanceWrapper::GetWindkesselParams(
+  ParameterList  & params,
+  int              condid)
+{
+  // -------------------------------------------------------------------
+  // set the windkessel params associated with the coressponding
+  // condition ID
+  // -------------------------------------------------------------------
+  impmap_[condid]->GetWindkesselParams(params);
+
   return;
 }
 
@@ -222,10 +327,10 @@ void FLD::UTILS::FluidImpedanceWrapper::ReadRestart( IO::DiscretizationReader& r
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> actdis,
-				   IO::DiscretizationWriter& output,
-				   double dta,
-				   int condid,
-				   int numcond) :
+                                               IO::DiscretizationWriter& output,
+                                               double dta,
+                                               int condid,
+                                               int numcond) :
   // call constructor for "nontrivial" objects
   discret_(actdis),
   output_ (output)
@@ -249,6 +354,8 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> 
   period_       = (impedancecond[numcond])->GetDouble("timeperiod");
   cyclesteps_   = (int)(period_/dta+0.5);
   flowratespos_ = 0;
+  pressurespos_ = 0;
+  dP_           = 0.0;
   dta_          = dta;
   
   // ---------------------------------------------------------------------
@@ -313,19 +420,26 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> 
     flowrates_    = rcp(new vector<double>);
     flowrates_->push_back(0.0);
    
-    // ---------------------------------------------------------------------
+    // -------------------------------------------------------------------
     // determine area of actual outlet and get material data
-    // ---------------------------------------------------------------------
+    // -------------------------------------------------------------------
     double density=0.0, viscosity=0.0;
     double area = Area(density,viscosity,condid);
-    
-    // ---------------------------------------------------------------------
+
+    // -------------------------------------------------------------------
     // calculate impedance values and fill vector 'impvalues_'
-    // ---------------------------------------------------------------------
+    // -------------------------------------------------------------------
     impvalues_.resize(cyclesteps_);
     Impedances(area,density,viscosity);
   }
 
+  // ---------------------------------------------------------------------
+  // initialize the pressures vecotrs
+  // ---------------------------------------------------------------------
+  pressures_ = rcp(new  vector<double>);
+  pressures_->push_back(0.0);
+  
+  
   return;
 }
 
@@ -344,7 +458,7 @@ void FLD::UTILS::FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  outp
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!
 
-  std::stringstream stream1, stream2, stream3;
+  std::stringstream stream1, stream2, stream3, stream4, stream5, dpstream;
 
 
   if(treetype_ == "windkessel_freq_indp")
@@ -361,6 +475,7 @@ void FLD::UTILS::FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  outp
     stream1 << "Pc_np" << condnum;
     // write the capacitor pressure at time step n
     output.WriteDouble(stream1.str(), Pc_np_);
+
   }
   else
   {
@@ -372,6 +487,14 @@ void FLD::UTILS::FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  outp
     stream2 << "flowratesposId" << condnum;
     output.WriteInt(stream2.str(), flowratespos_);
 
+    // write the pressures
+    stream4<< "pressuresId"<<condnum;
+    output.WriteRedundantDoubleVector(stream4.str(), pressures_);
+
+    // also write pressuresposition of this outlet
+    stream5 << "pressuresposId" << condnum;
+    output.WriteInt(stream5.str(), pressurespos_);
+
     // write cyclesteps_
     output.WriteInt("ImpedanceBC_cyclesteps", cyclesteps_);
   }
@@ -381,6 +504,8 @@ void FLD::UTILS::FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  outp
   // write time step size dta_
   output.WriteDouble("ImpedanceBC_dta", dta_);
 
+  dpstream<<"dP"<<condnum;
+  output.WriteDouble(dpstream.str(), dP_);
 
   return;
 }
@@ -398,7 +523,7 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
 {
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!
-  std::stringstream stream1, stream2, stream3;
+  std::stringstream stream1, stream2, stream3, stream4, stream5, dpstream;
 
   // also read vector impedancetbc_ (previously missing, gee)
   stream3 << "impedancetbc" << condnum;
@@ -440,10 +565,21 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   {
     stream1 << "flowratesId" << condnum;
     stream2 << "flowratesposId" << condnum;
-      
+    stream4 << "pressuresId"<<condnum;
+    stream5 << "pressuresposId" << condnum;
+
+    dpstream <<"dP"<<condnum;
+    dP_ = reader.ReadDouble(dpstream.str());
+
     flowratespos_ = reader.ReadInt(stream2.str());
     
+    // read in flow rates
     reader.ReadRedundantDoubleVector(flowrates_ ,stream1.str());
+
+    // read in pressures
+    reader.ReadRedundantDoubleVector(pressures_ ,stream4.str());
+
+    pressurespos_ = reader.ReadInt(stream5.str());
     
     // check if vector of flowrates is not empty
     if (flowrates_->size() == 0)
@@ -779,32 +915,25 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
   else
   {
     // fill vector of flowrates calculated within the last cycle
-    if (time <= period_) // we are within the very first cycle
+    if (time < period_) // we are within the very first cycle
     {
       // we are now in the initial fill-in phase
       // new data is appended to our flowrates vector
-      flowrates_->push_back(parflowrate);
       flowratespos_++;
+      flowrates_->push_back(parflowrate);
     }
     else
     {
       // we are now in the post-initial phase
       // replace the element that was computed exactly a cycle ago
+      flowratespos_++;
       int pos = flowratespos_ % cyclesteps_;
       (*flowrates_)[pos] = parflowrate;
-      flowratespos_++;
-    }
-    // set the begining of the flowrate vector as the end
-    // this is due to the periodicity reason
-    if (time >= period_ && flowratespos_ % cyclesteps_ == 0)
-    {
-      (*flowrates_)[0] = parflowrate;
-      flowratespos_++;
     }
   }
   if (myrank_ == 0)
   {
-    cout << "Impedance condition Id: " << condid << " current Flowrate = " << parflowrate << endl;
+    cout << "Impedance condition Id: " << condid << " Flowrate = " << parflowrate <<"\t time: "<<time<< endl;
   }
 
   return;
@@ -883,7 +1012,7 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
   eleparams.set("ConvolutedPressure",pressure);
 
   if (myrank_ == 0)
-    printf("Impedance condition Id: %d Pressure from convolution = %f\n",condid,pressure);
+  printf("Impedance condition Id: %d Pressure from convolution = %f\t time = %f\n",condid,pressure, time);
 
 
   impedancetbc_->PutScalar(0.0);
@@ -898,7 +1027,42 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
     fflush(stdout);
   }
 */
+  // -------------------------------------------------------------------
+  // fill the pressure vector
+  // -------------------------------------------------------------------
+  
+  // we are now in the post-initial phase
 
+  // set the begining of the flowrate vector as the end
+  // this is due to the periodicity reason
+  
+  // fill vector of flowrates calculated within the last cycle
+  if (time < period_) // we are within the very first cycle
+  {
+    // we are now in the initial fill-in phase
+    // new data is appended to our flowrates vector
+    pressurespos_++;
+    pressures_->push_back(pressure);
+  }
+  else
+  {
+    // we are now in the post-initial phase
+    // replace the element that was computed exactly a cycle ago
+    pressurespos_++;
+    int pos = pressurespos_ % (cyclesteps_);
+    if (pos == 0)
+    {
+      dP_ = pressure - (*pressures_)[pos];
+      endOfCycle_ = true;
+    }
+    else
+    {
+      endOfCycle_ = false;
+    }
+
+    (*pressures_)[pos] = pressure;
+  }
+  
   discret_->ClearState();
 
   return;
@@ -1397,7 +1561,69 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCLungImpedance(int generatio
 }//FluidImplicitTimeInt::DCLungImpedance
 
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Set windkessel parameters                              ismail 02/10 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::UTILS::FluidImpedanceBc::SetWindkesselParams(ParameterList & params)
+{
+
+  k1_ = params.get<double> ("R1");
+  k2_ = params.get<double> ("R2");
+  k3_ = params.get<double> ("C");
+}// FluidImpedanceWrapper::SetWindkesselParams
 
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Get windkessel parameters                              ismail 02/10 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::UTILS::FluidImpedanceBc::GetWindkesselParams(ParameterList & params)
+{
+
+  params.set<double> ("R1",k1_);
+  params.set<double> ("R2",k2_);
+  params.set<double> ("C",k3_);
+
+}// FluidImpedanceWrapper::SetWindkesselParams
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Returns results of one cardiac period                  ismail 02/10|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::UTILS::FluidImpedanceBc::getResultsOfAPeriod(
+  ParameterList & params,
+  int             condid)
+{
+  
+  std::stringstream pstream, qstream, dpstream, endCystream;
+
+  pstream<<"pressures"<<condid;
+  qstream<<"flowrates"<<condid;
+  dpstream<<"dP"<<condid;
+  endCystream<<"EndOfCycle"<<condid;
+  
+  params.set<RCP<vector<double> > >(pstream.str(),pressures_ );
+  params.set<RCP<vector<double> > >(qstream.str(),flowrates_);
+  params.set<double> (dpstream.str(),dP_);
+  params.set<bool> (endCystream.str(),endOfCycle_);
+  
+}
 
 #endif /* CCADISCRET       */

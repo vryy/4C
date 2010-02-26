@@ -1810,6 +1810,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   windkessel_optim_bc->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
 
 
+  windkessel_optim_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("ObjectiveFunction", "Psys_Pdia",
+                                                                              Teuchos::tuple<std::string>("Psys_Pdia","Psys_Pdia_Pavg"),
+                                                                              Teuchos::tuple<std::string>("Psys_Pdia","Psys_Pdia_Pavg"),
+                                                                              true)));
+  windkessel_optim_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("DesignVariables", "R_C",
+                                                                              Teuchos::tuple<std::string>("R_C","R1_R2_C"),
+                                                                              Teuchos::tuple<std::string>("R_C","R1_R2_C"),
+                                                                              true)));
   AddNamedReal(windkessel_optim_bc,"Psystolic");
   AddNamedReal(windkessel_optim_bc,"Pdiastolic");
   AddNamedReal(windkessel_optim_bc,"R1R2_ratio");

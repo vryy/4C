@@ -68,10 +68,16 @@ public:
   */
   void FlowRateCalculation(double time, double dta);
 
+
   /*!
   \brief Wrapper for FluidImpedacnceBc::OutflowBoundary
   */
   void OutflowBoundary(double time, double dta, double theta);
+
+  /*!
+  \brief Wrapper for FluidImpedacnceBc::Impedances
+  */
+  void Impedances();
 
   /*!
   \brief Wrapper for FluidImpedacnceBc::UpdateResidual
@@ -88,6 +94,25 @@ public:
   */
   void ReadRestart( IO::DiscretizationReader& reader);
 
+  /*!
+  \brief return pressures of one cycle
+  */
+  RCP<vector<double> > getPressures(int condid);
+
+  /*!
+  \brief Wrapper for FluidImpedacnceBc::SetWindkesselParams
+  */
+  void SetWindkesselParams(ParameterList & params, int condid);
+
+  /*!
+  \brief Wrapper for FluidImpedacnceBc::GetWindkesselParams
+  */
+  void GetWindkesselParams(ParameterList & params, int condid);
+
+ /*!
+  \brief Wrapper for FluidImpedacnceBc::getResultsAtEndOfPeriod
+  */
+  void getResultsOfAPeriod(ParameterList & params);
 
 private:
   /*!
@@ -166,6 +191,22 @@ protected:
 			double theta,
 			int condid );
 
+  /*!
+  \brief SetWindkesselParams
+  */
+  void SetWindkesselParams(ParameterList & params);
+
+  /*!
+  \brief GetWindkesselParams
+  */
+  void GetWindkesselParams(ParameterList & params);
+
+  /*!
+  \brief getResultsOfAPeriod
+  */
+  void getResultsOfAPeriod(ParameterList & params,
+                           int             condid);
+
   void UpdateResidual( RCP<Epetra_Vector> residual );
 
 private:
@@ -226,6 +267,12 @@ private:
   					  double viscosity,
   					  map<const double,complex<double> > zstored);
 
+
+  /*!
+  \brief return pressures of one cycle
+  */
+  RCP<vector<double> > getPressures(){return pressures_;}
+
 protected:
 
   RCP<Epetra_Vector> impedancetbc_;
@@ -260,9 +307,15 @@ private:
   //! Flowrate array for impedance conditions
   RCP<std::vector<double> > flowrates_;
 
+  //! pressures array for impedance conditions
+  RCP<std::vector<double> > pressures_;
+
   //! Position at which the next element should be replaced
   //! initialised to zero as the first element will be replaced first
   int flowratespos_;
+
+  //! initialised to zero as the first element will be replaced first
+  int pressurespos_;
 
   //! Number of time steps which fit (exactly) into one period
   int cyclesteps_;
@@ -286,9 +339,14 @@ private:
   //! Capcitors Pressure in at time step n
   double Pc_n_;
 
-  // Flag which indicated whether precalibrating bc is defined
+  //! Flag which indicated whether precalibrating bc is defined
   bool   IsPrecalibrated_;
 
+  //! variable discribing the value difference between pressure at (n+1)T and at (n)T
+  double dP_;
+
+  //! Flag indicating the end of a cardiac cycle
+  bool   endOfCycle_;
 
 };  // class FluidImpedanceBc
 

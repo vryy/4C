@@ -30,6 +30,7 @@ Maintainer: Peter Gamnitzer
 
 #include "fluidimpedancecondition.H"
 #include "fluid_coupling_red_models.H"
+#include "fluid_windkessel_optimization.H"
 #include "fluid_utils_mapextractor.H"
 
 #ifdef PARALLEL
@@ -606,6 +607,9 @@ protected:
 
   /// bio related special (outflow) boudaries
   RCP<UTILS::FluidImpedanceWrapper> impedancebc_;
+
+  /// bio related special (outflow) optimization of boundaries
+  RCP<UTILS::FluidWkOptimizationWrapper> Wk_optimization_;
 
 #ifdef D_ARTNET
   /// bio related, 3D to redued-D coupling
