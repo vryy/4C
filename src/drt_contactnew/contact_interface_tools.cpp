@@ -656,6 +656,86 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
   if (!lComm())
     return;
 
+  // create storage for normals / tangents
+  vector<double> refnx(int(snodecolmapbound_->NumMyElements()));
+  vector<double> refny(int(snodecolmapbound_->NumMyElements()));
+  vector<double> refnz(int(snodecolmapbound_->NumMyElements()));
+  vector<double> newnx(int(snodecolmapbound_->NumMyElements()));
+  vector<double> newny(int(snodecolmapbound_->NumMyElements()));
+  vector<double> newnz(int(snodecolmapbound_->NumMyElements()));
+
+  vector<double> reftxix(int(snodecolmapbound_->NumMyElements()));
+  vector<double> reftxiy(int(snodecolmapbound_->NumMyElements()));
+  vector<double> reftxiz(int(snodecolmapbound_->NumMyElements()));
+  vector<double> newtxix(int(snodecolmapbound_->NumMyElements()));
+  vector<double> newtxiy(int(snodecolmapbound_->NumMyElements()));
+  vector<double> newtxiz(int(snodecolmapbound_->NumMyElements()));
+
+  vector<double> reftetax(int(snodecolmapbound_->NumMyElements()));
+  vector<double> reftetay(int(snodecolmapbound_->NumMyElements()));
+  vector<double> reftetaz(int(snodecolmapbound_->NumMyElements()));
+  vector<double> newtetax(int(snodecolmapbound_->NumMyElements()));
+  vector<double> newtetay(int(snodecolmapbound_->NumMyElements()));
+  vector<double> newtetaz(int(snodecolmapbound_->NumMyElements()));
+
+  // compute and print all nodal normals / derivatives (reference)
+  for(int j=0; j<snodecolmapbound_->NumMyElements();++j)
+  {
+    int jgid = snodecolmapbound_->GID(j);
+    DRT::Node* jnode = idiscret_->gNode(jgid);
+    if (!jnode) dserror("ERROR: Cannot find node with gid %",jgid);
+    CoNode* jcnode = static_cast<CoNode*>(jnode);
+
+    typedef map<int,double>::const_iterator CI;
+
+    // print reference data
+    cout << endl << "Node: " << jcnode->Id() << "  Owner: " << jcnode->Owner() << endl;
+
+    cout << "Normal-derivative-maps: " << endl;
+    cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
+    for (CI p=(jcnode->CoData().GetDerivN()[0]).begin();p!=(jcnode->CoData().GetDerivN()[0]).end();++p)
+      cout << p->first << '\t' << p->second << endl;
+    cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
+    for (CI p=(jcnode->CoData().GetDerivN()[1]).begin();p!=(jcnode->CoData().GetDerivN()[1]).end();++p)
+      cout << p->first << '\t' << p->second << endl;
+    cout << "Row dof id: " << jcnode->Dofs()[2] << endl;
+    for (CI p=(jcnode->CoData().GetDerivN()[2]).begin();p!=(jcnode->CoData().GetDerivN()[2]).end();++p)
+      cout << p->first << '\t' << p->second << endl;
+
+    cout << "Tangent txi-derivative-maps: " << endl;
+    cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
+    for (CI p=(jcnode->CoData().GetDerivTxi()[0]).begin();p!=(jcnode->CoData().GetDerivTxi()[0]).end();++p)
+      cout << p->first << '\t' << p->second << endl;
+    cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
+    for (CI p=(jcnode->CoData().GetDerivTxi()[1]).begin();p!=(jcnode->CoData().GetDerivTxi()[1]).end();++p)
+      cout << p->first << '\t' << p->second << endl;
+    cout << "Row dof id: " << jcnode->Dofs()[2] << endl;
+    for (CI p=(jcnode->CoData().GetDerivTxi()[2]).begin();p!=(jcnode->CoData().GetDerivTxi()[2]).end();++p)
+      cout << p->first << '\t' << p->second << endl;
+
+    cout << "Tangent teta-derivative-maps: " << endl;
+    cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
+    for (CI p=(jcnode->CoData().GetDerivTeta()[0]).begin();p!=(jcnode->CoData().GetDerivTeta()[0]).end();++p)
+      cout << p->first << '\t' << p->second << endl;
+    cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
+    for (CI p=(jcnode->CoData().GetDerivTeta()[1]).begin();p!=(jcnode->CoData().GetDerivTeta()[1]).end();++p)
+      cout << p->first << '\t' << p->second << endl;
+    cout << "Row dof id: " << jcnode->Dofs()[2] << endl;
+    for (CI p=(jcnode->CoData().GetDerivTeta()[2]).begin();p!=(jcnode->CoData().GetDerivTeta()[2]).end();++p)
+      cout << p->first << '\t' << p->second << endl;
+
+    // store reference normals / tangents
+    refnx[j] = jcnode->MoData().n()[0];
+    refny[j] = jcnode->MoData().n()[1];
+    refnz[j] = jcnode->MoData().n()[2];
+    reftxix[j] = jcnode->CoData().txi()[0];
+    reftxiy[j] = jcnode->CoData().txi()[1];
+    reftxiz[j] = jcnode->CoData().txi()[2];
+    reftetax[j] = jcnode->CoData().teta()[0];
+    reftetay[j] = jcnode->CoData().teta()[1];
+    reftetaz[j] = jcnode->CoData().teta()[2];
+  }
+  
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
   for (int i=0; i<3*snodefullmap_->NumMyElements();++i)
   {
@@ -668,95 +748,6 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
     {
       MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
       element->Area()=element->ComputeArea();
-      //cout << "Element: " << element->Id() << " Nodes: " << (element->Nodes()[0])->Id() << " "
-      //     << (element->Nodes()[1])->Id() << " Area: " << element->Area() << endl;
-    }
-
-    // create storage for normals / tangents
-    vector<double> refnx(int(snodecolmapbound_->NumMyElements()));
-    vector<double> refny(int(snodecolmapbound_->NumMyElements()));
-    vector<double> refnz(int(snodecolmapbound_->NumMyElements()));
-    vector<double> newnx(int(snodecolmapbound_->NumMyElements()));
-    vector<double> newny(int(snodecolmapbound_->NumMyElements()));
-    vector<double> newnz(int(snodecolmapbound_->NumMyElements()));
-
-    vector<double> reftxix(int(snodecolmapbound_->NumMyElements()));
-    vector<double> reftxiy(int(snodecolmapbound_->NumMyElements()));
-    vector<double> reftxiz(int(snodecolmapbound_->NumMyElements()));
-    vector<double> newtxix(int(snodecolmapbound_->NumMyElements()));
-    vector<double> newtxiy(int(snodecolmapbound_->NumMyElements()));
-    vector<double> newtxiz(int(snodecolmapbound_->NumMyElements()));
-
-    vector<double> reftetax(int(snodecolmapbound_->NumMyElements()));
-    vector<double> reftetay(int(snodecolmapbound_->NumMyElements()));
-    vector<double> reftetaz(int(snodecolmapbound_->NumMyElements()));
-    vector<double> newtetax(int(snodecolmapbound_->NumMyElements()));
-    vector<double> newtetay(int(snodecolmapbound_->NumMyElements()));
-    vector<double> newtetaz(int(snodecolmapbound_->NumMyElements()));
-
-    // compute and print all nodal normals / derivatives (reference)
-    for(int j=0; j<snodecolmapbound_->NumMyElements();++j)
-    {
-      int jgid = snodecolmapbound_->GID(j);
-      DRT::Node* jnode = idiscret_->gNode(jgid);
-      if (!jnode) dserror("ERROR: Cannot find node with gid %",jgid);
-      CoNode* jcnode = static_cast<CoNode*>(jnode);
-
-      // build averaged normal at each slave node
-      jcnode->BuildAveragedNormal();
-
-      typedef map<int,double>::const_iterator CI;
-
-      // print reference data only once
-      if (i==0)
-      {
-        cout << endl << "Node: " << jcnode->Id() << "  Owner: " << jcnode->Owner() << endl;
-
-        cout << "Normal-derivative-maps: " << endl;
-        cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
-        for (CI p=(jcnode->CoData().GetDerivN()[0]).begin();p!=(jcnode->CoData().GetDerivN()[0]).end();++p)
-          cout << p->first << '\t' << p->second << endl;
-        cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
-        for (CI p=(jcnode->CoData().GetDerivN()[1]).begin();p!=(jcnode->CoData().GetDerivN()[1]).end();++p)
-          cout << p->first << '\t' << p->second << endl;
-        cout << "Row dof id: " << jcnode->Dofs()[2] << endl;
-        for (CI p=(jcnode->CoData().GetDerivN()[2]).begin();p!=(jcnode->CoData().GetDerivN()[2]).end();++p)
-          cout << p->first << '\t' << p->second << endl;
-
-        cout << "Tangent txi-derivative-maps: " << endl;
-        cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
-        for (CI p=(jcnode->CoData().GetDerivTxi()[0]).begin();p!=(jcnode->CoData().GetDerivTxi()[0]).end();++p)
-          cout << p->first << '\t' << p->second << endl;
-        cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
-        for (CI p=(jcnode->CoData().GetDerivTxi()[1]).begin();p!=(jcnode->CoData().GetDerivTxi()[1]).end();++p)
-          cout << p->first << '\t' << p->second << endl;
-        cout << "Row dof id: " << jcnode->Dofs()[2] << endl;
-        for (CI p=(jcnode->CoData().GetDerivTxi()[2]).begin();p!=(jcnode->CoData().GetDerivTxi()[2]).end();++p)
-          cout << p->first << '\t' << p->second << endl;
-
-        cout << "Tangent teta-derivative-maps: " << endl;
-        cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
-        for (CI p=(jcnode->CoData().GetDerivTeta()[0]).begin();p!=(jcnode->CoData().GetDerivTeta()[0]).end();++p)
-          cout << p->first << '\t' << p->second << endl;
-        cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
-        for (CI p=(jcnode->CoData().GetDerivTeta()[1]).begin();p!=(jcnode->CoData().GetDerivTeta()[1]).end();++p)
-          cout << p->first << '\t' << p->second << endl;
-        cout << "Row dof id: " << jcnode->Dofs()[2] << endl;
-        for (CI p=(jcnode->CoData().GetDerivTeta()[2]).begin();p!=(jcnode->CoData().GetDerivTeta()[2]).end();++p)
-          cout << p->first << '\t' << p->second << endl;
-      }
-
-      // store reference normals / tangents
-      refnx[j] = jcnode->MoData().n()[0];
-      refny[j] = jcnode->MoData().n()[1];
-      refnz[j] = jcnode->MoData().n()[2];
-      reftxix[j] = jcnode->CoData().txi()[0];
-      reftxiy[j] = jcnode->CoData().txi()[1];
-      reftxiz[j] = jcnode->CoData().txi()[2];
-      reftetax[j] = jcnode->CoData().teta()[0];
-      reftetay[j] = jcnode->CoData().teta()[1];
-      reftetaz[j] = jcnode->CoData().teta()[2];
-
     }
 
     // now fincally get the node we want to apply the FD scheme to
@@ -790,8 +781,6 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
     {
       MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
       element->Area()=element->ComputeArea();
-      //cout << "Element: " << element->Id() << " Nodes: " << (element->Nodes()[0])->Id() << " "
-      //     << (element->Nodes()[1])->Id() << " Area: " << element->Area() << endl;
     }
 
     // compute finite difference derivative
@@ -921,7 +910,6 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
           cout << snode->Dofs()[i%3] << '\t' << val << endl;
         }
       }
-
     }
 
     // undo finite difference modification
@@ -950,156 +938,14 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
   {
     MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
     element->Area()=element->ComputeArea();
-    //cout << "Element: " << element->Id() << " Nodes: " << (element->Nodes()[0])->Id() << " "
-    //     << (element->Nodes()[1])->Id() << " Area: " << element->Area() << endl;
   }
-
+  
+  // contents of Evaluate()
+  Evaluate();
+  
   return;
 }
 
-///*----------------------------------------------------------------------*
-// | Finite difference check for D-Mortar derivatives           popp 05/08|
-// *----------------------------------------------------------------------*/
-//void CONTACT::CoInterface::FDCheckMortarDDeriv()
-//{
-//  /****************************************************/
-//  /* NOTE: This is a combined 2D / 3D method already! */
-//  /****************************************************/
-//
-//  // get out of here if not participating in interface
-//  if (!lComm())
-//    return;
-//
-//  // create storage for D-Matrix entries
-//  vector<double> refD(int(snoderowmap_->NumMyElements()));
-//  vector<double> newD(int(snoderowmap_->NumMyElements()));
-//
-//  // print reference to screen (D-derivative-maps)
-//  // loop over proc's slave nodes
-//  for (int i=0; i<snoderowmap_->NumMyElements();++i)
-//  {
-//    int gid = snoderowmap_->GID(i);
-//    DRT::Node* node = idiscret_->gNode(gid);
-//    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-//    CoNode* cnode = static_cast<CoNode*>(node);
-//
-//    typedef map<int,double>::const_iterator CI;
-//    map<int,double> derivdmap = cnode->CoData().GetDerivD()[gid];
-//
-//    if ((int)(cnode->CoData().GetD().size())==0) break;
-//    map<int,double > dmap = cnode->CoData().GetD()[0];
-//
-//    cout << endl << "Node: " << cnode->Id() << "  Owner: " << cnode->Owner() << endl;
-//
-//    // store D-value into refD
-//    refD[i]=dmap[cnode->Dofs()[0]];
-//
-//    cout << "D-derivative-map: " << endl;
-//    for (CI p=derivdmap.begin();p!=derivdmap.end();++p)
-//      cout << p->first << '\t' << p->second << endl;
-//  }
-//
-//  // global loop to apply FD scheme to all slave dofs (=3*nodes)
-//  for (int i=0; i<3*snodefullmap_->NumMyElements();++i)
-//  {
-//    // Initialize()
-//    Initialize();
-//
-//    // now get the node we want to apply the FD scheme to
-//    int gid = snodefullmap_->GID(i/3);
-//    DRT::Node* node = idiscret_->gNode(gid);
-//    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
-//    CoNode* snode = static_cast<CoNode*>(node);
-//
-//    // apply finite difference scheme
-//    if (Comm().MyPID()==snode->Owner())
-//    {
-//      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << i%3
-//           << " Dof(g): " << snode->Dofs()[i%3] << endl;
-//    }
-//
-//    // do step forward (modify nodal displacement)
-//    double delta = 1e-8;
-//    if (i%3==0)
-//    {
-//      snode->xspatial()[0] += delta;
-//    }
-//    else if (i%3==1)
-//    {
-//      snode->xspatial()[1] += delta;
-//    }
-//    else
-//    {
-//      snode->xspatial()[2] += delta;
-//    }
-//
-//    // loop over all elements to set current element length / area
-//    // (use fully overlapping column map)
-//    for (int j=0;j<idiscret_->NumMyColElements();++j)
-//    {
-//      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
-//      element->Area()=element->ComputeArea();
-//    }
-//
-//    // Evaluate()
-//    Evaluate();
-//
-//    // compute finite difference derivative
-//    for (int k=0;k<snoderowmap_->NumMyElements();++k)
-//    {
-//      int kgid = snoderowmap_->GID(k);
-//      DRT::Node* knode = idiscret_->gNode(kgid);
-//      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
-//      CoNode* kcnode = static_cast<CoNode*>(knode);
-//      if ((int)(kcnode->CoData().GetD().size())==0) break;
-//      map<int,double > dmap = kcnode->CoData().GetD()[0];
-//
-//      newD[k]=dmap[kcnode->Dofs()[0]];
-//
-//      // print results (derivatives) to screen
-//      if (abs(newD[k]-refD[k])>1e-12)
-//      {
-//        cout << "Node: " << kcnode->Id() << "  Owner: " << kcnode->Owner() << endl;
-//        //cout << "Ref-D: " << refD[k] << endl;
-//        //cout << "New-D: " << newD[k] << endl;
-//        cout << "Deriv: " << snode->Dofs()[i%3] << " " << (newD[k]-refD[k])/delta << endl;
-//      }
-//    }
-//
-//    // undo finite difference modification
-//    if (i%3==0)
-//    {
-//      snode->xspatial()[0] -= delta;
-//    }
-//    else if (i%3==1)
-//    {
-//      snode->xspatial()[1] -= delta;
-//    }
-//    else
-//    {
-//      snode->xspatial()[2] -= delta;
-//    }
-//  }
-//
-//  // back to normal...
-//
-//  // Initialize
-//  Initialize();
-//
-//  // loop over all elements to set current element length / area
-//  // (use fully overlapping column map)
-//  for (int j=0;j<idiscret_->NumMyColElements();++j)
-//  {
-//    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
-//    element->Area()=element->ComputeArea();
-//  }
-//
-//  // Evaluate()
-//  Evaluate();
-//  // *******************************************************************
-//
-//  return;
-//}
 
 /*----------------------------------------------------------------------*
  | Finite difference check for D-Mortar derivatives           popp 05/08|

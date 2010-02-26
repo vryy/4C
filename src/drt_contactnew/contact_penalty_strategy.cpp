@@ -233,7 +233,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   linmmatrix_->Complete(*gsmdofs, *gmdofrowmap_);
   linzmatrix_->Complete(*gsmdofs, *gsdofrowmap_);
 
-#ifdef CONTACTFDPENALTYDERIVTRAC
+#ifdef CONTACTFDPENALTYTRAC
   INPAR::CONTACT::FrictionType ftype =
     Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
 

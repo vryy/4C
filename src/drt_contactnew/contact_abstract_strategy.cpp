@@ -240,23 +240,31 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
     interface_[i]->AssembleDM(*dmatrix_,*mmatrix_);
     interface_[i]->AssembleG(*g_);
 
+#ifdef CONTACTFDNORMAL
+    // FD check of normal derivatives
+    cout << " -- CONTACTFDNORMAL- -----------------------------------" << endl;
+    interface_[i]->FDCheckNormalDeriv();
+    cout << " -- CONTACTFDNORMAL- -----------------------------------" << endl;
+#endif // #ifdef CONTACTFDNORMAL
+  
 #ifdef CONTACTFDMORTARD
-  // FD check of Mortar matrix D derivatives
-  cout << " -- CONTACTFDMORTARD -----------------------------------" << endl;
-  dmatrix_->Complete();
-  if( dmatrix_->NormOne() )
-    interface_[i]->FDCheckMortarDDeriv();
-  dmatrix_->UnComplete();
-  cout << " -- CONTACTFDMORTARD -----------------------------------" << endl;
+    // FD check of Mortar matrix D derivatives
+    cout << " -- CONTACTFDMORTARD -----------------------------------" << endl;
+    dmatrix_->Complete();
+    if( dmatrix_->NormOne() )
+      interface_[i]->FDCheckMortarDDeriv();
+    dmatrix_->UnComplete();
+    cout << " -- CONTACTFDMORTARD -----------------------------------" << endl;
 #endif // #ifdef CONTACTFDMORTARD
+  
 #ifdef CONTACTFDMORTARM
-  // FD check of Mortar matrix M derivatives
-  cout << " -- CONTACTFDMORTARM -----------------------------------" << endl;
-  mmatrix_->Complete(*gmdofrowmap_, *gsdofrowmap_);
-  if( mmatrix_->NormOne() )
-      interface_[i]->FDCheckMortarMDeriv();
-  mmatrix_->UnComplete();
-  cout << " -- CONTACTFDMORTARM -----------------------------------" << endl;
+    // FD check of Mortar matrix M derivatives
+    cout << " -- CONTACTFDMORTARM -----------------------------------" << endl;
+    mmatrix_->Complete(*gmdofrowmap_, *gsdofrowmap_);
+    if( mmatrix_->NormOne() )
+        interface_[i]->FDCheckMortarMDeriv();
+    mmatrix_->UnComplete();
+    cout << " -- CONTACTFDMORTARM -----------------------------------" << endl;
 #endif // #ifdef CONTACTFDMORTARM
   }
 
