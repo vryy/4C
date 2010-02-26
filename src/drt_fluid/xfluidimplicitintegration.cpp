@@ -1229,6 +1229,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         else 
           discret_->Evaluate(eleparams,sysmat_,residual_);
         
+        trueresidual_->Update(ResidualScaling(),*residual_,0.0);
+        
         // test Gmshoutput
         //PlotVectorFieldToGmsh(residual_,"residual_1","res",true,step_,time_); 
  
