@@ -370,7 +370,7 @@ Maintainer: Axel Gerstenberger
       assembler.template Vector<Sigmazz>(shp_tau,    - timefacfac*vderxy(2, 2));
 
 
-      /* pressure-pressure coupling, rectangular part */
+      // stressbar-pressure coupling
       /*
                      /                    \
                     |                      |
@@ -1793,7 +1793,7 @@ void XFLUID::callSysmatSigma(
                 break;
             case DRT::Element::tet10:
                 SysmatSigma<DRT::Element::tet10,XFEM::standard_assembly>(
-                    params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             default:
