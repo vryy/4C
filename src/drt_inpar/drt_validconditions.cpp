@@ -1056,6 +1056,57 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(electro_repulsion_potential_line);
 
+  
+  /*--------------------------------------------------------------------*/
+  // Fluctuating Hydrodynamics Statistics on a surface
+
+  std::vector<Teuchos::RCP<ConditionComponent> > flucthydrostatsurfcomponents;
+  flucthydrostatsurfcomponents.push_back(
+      Teuchos::rcp(
+           new StringConditionComponent(
+             "evaluation type",
+             "nodalbased",
+             Teuchos::tuple<std::string>("elebased","nodalbased", "ele_and_nodalbased"),
+             Teuchos::tuple<std::string>("elebased","nodalbased", "ele_and_nodalbased"))));
+  
+  
+  Teuchos::RCP<ConditionDefinition> fluctHydro_statisticsSurf =
+    Teuchos::rcp(new ConditionDefinition("DESIGN FLUCTHYDRO STATISTICS SURF CONDITIONS",
+                                         "FluctHydroStatisticsSurf",
+                                         "FluctHydro_StatisticsSurf",
+                                         DRT::Condition::FluctHydro_StatisticsSurf,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<flucthydrostatsurfcomponents.size(); ++i)
+    fluctHydro_statisticsSurf->AddComponent(flucthydrostatsurfcomponents[i]);
+  
+  condlist.push_back(fluctHydro_statisticsSurf);
+  
+  /*--------------------------------------------------------------------*/
+  // Fluctuating Hydrodynamics Statistics on a line
+
+  std::vector<Teuchos::RCP<ConditionComponent> > flucthydrostatlinecomponents;
+  flucthydrostatlinecomponents.push_back(
+        Teuchos::rcp(
+          new StringConditionComponent(
+            "evaluation type",
+            "nodalbased",
+            Teuchos::tuple<std::string>("elebased","nodalbased", "ele_and_nodalbased"),
+            Teuchos::tuple<std::string>("elebased","nodalbased", "ele_and_nodalbased"))));
+  
+  Teuchos::RCP<ConditionDefinition> fluctHydro_statisticsLine =
+    Teuchos::rcp(new ConditionDefinition("DESIGN FLUCTHYDRO STATISTICS LINE CONDITIONS",
+                                         "FluctHydroStatisticsLine",
+                                         "FluctHydro_StatisticsLine",
+                                         DRT::Condition::FluctHydro_StatisticsLine,
+                                         true,
+                                         DRT::Condition::Line));
+
+  for (unsigned i=0; i<flucthydrostatlinecomponents.size(); ++i)
+      fluctHydro_statisticsLine->AddComponent(flucthydrostatlinecomponents[i]);
+
+  condlist.push_back(fluctHydro_statisticsLine);
 
   /*--------------------------------------------------------------------*/
   // Brownian Motion

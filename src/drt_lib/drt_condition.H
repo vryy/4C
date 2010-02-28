@@ -149,6 +149,8 @@ public:
     TransportNeumannInflow,
     FluidNeumannInflow,
     Brownian_Motion,
+    FluctHydro_StatisticsSurf,
+    FluctHydro_StatisticsLine,
     FilamentNumber,
     ForceSensor,
     FlowRateThroughLine_2D,
