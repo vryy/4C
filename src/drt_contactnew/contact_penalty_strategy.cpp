@@ -53,11 +53,6 @@ CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(RCP<Epetra_Map> problemrowmap,
                                               int dim, RCP<Epetra_Comm> comm, double alphaf) :
 CoAbstractStrategy(problemrowmap,params,interface,dim,comm,alphaf)
 {
-  // check if prerequisites for penalty strategies are met
-#ifdef MORTARBOUNDMOD
-  dserror("Boundary Modification not implemented for Penalty Methods.");
-#endif
-
   // initialize constraint norm and initial penalty
   constrnorm_ = 0.0;
   constrnormtan_ = 0.0;

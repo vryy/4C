@@ -40,8 +40,8 @@ Maintainer: Alexander Popp
 #define MORTAR_COUPLING3D_CLASSES_H
 
 #include "Epetra_Comm.h"
-#include "mortar_element.H"
 #include "mortar_interface.H"
+#include "mortar_element.H"
 #include "../drt_lib/drt_discret.H"
 
 using namespace std;

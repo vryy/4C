@@ -61,7 +61,7 @@ id_(id),
 comm_(comm),
 dim_(dim),
 icontact_(icontact),
-shapefcn_(MortarInterface::Undefined)
+shapefcn_(INPAR::MORTAR::shape_undefined)
 {
   RCP<Epetra_Comm> com = rcp(Comm().Clone());
   if (Dim()!=2 && Dim()!=3) dserror("ERROR: Mortar problem must be 2D or 3D");
@@ -71,9 +71,11 @@ shapefcn_(MortarInterface::Undefined)
   // overwrite shape function type
   INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(IParams(),"SHAPEFCN");
   if (shapefcn == INPAR::MORTAR::shape_dual)
-   shapefcn_ = MortarInterface::DualFunctions;
+   shapefcn_ = INPAR::MORTAR::shape_dual;
   else if (shapefcn == INPAR::MORTAR::shape_standard)
-    shapefcn_ = MortarInterface::StandardFunctions;
+    shapefcn_ = INPAR::MORTAR::shape_standard;
+  else
+    dserror("ERROR: Interface must either have dual or std. shape fct.");
 
   return;
 }
@@ -123,43 +125,58 @@ void MORTAR::MortarInterface::FillComplete()
     Discret().FillComplete(false,false,false);
   }
 
-#ifdef MORTARBOUNDMOD
-  // only applicable for 2D problems up to now
-  if (Dim()==3) dserror("ERROR: Boundary node modification not yet impl. for 3D");
-
-  // detect boundary nodes on slave side
-  // ---------------------------------------------------------------------
-  // Within our dual Lagrange multiplier framework, results can be
-  // improved by a modified treatment of these "boundary nodes". Their
-  // status is changed to MASTER and consequently they will NOT carry
-  // Lagrange multipliers later on. In order to sustain the partition
-  // of unity property of the dual shape functions on the adjacent slave
-  // elements, the dual shape functions of the adjacent nodes will be
-  // modified later on! This way, the Mortar operator entries of these
-  // "boundary nodes" are transfered to the neighboring slave nodes!
-  // ---------------------------------------------------------------------
-  for (int i=0; i<(Discret().NodeRowMap())->NumMyElements();++i)
+  // check whether crosspoints / edge nodes shall be considered or not
+  bool crosspoints = Teuchos::getIntegralValue<int>(IParams(),"CROSSPOINTS");
+  
+  // modify crosspoints / edge nodes
+  if (crosspoints)
   {
-    MORTAR::MortarNode* node = static_cast<MORTAR::MortarNode*>(idiscret_->lRowNode(i));
-
-    // candidates are slave nodes with only 1 adjacent MortarElement
-    if (node->IsSlave() && node->NumElement()==1)
+    // only applicable for 2D problems up to now
+    if (Dim()==3) dserror("ERROR: Crosspoint / edge node modification not yet impl. for 3D");
+  
+    // ---------------------------------------------------------------------
+    // Detect relevant nodes on slave side
+    // ---------------------------------------------------------------------
+    // A typical application are so-called crosspoints within mortar mesh
+    // tying, where this approach is necessary to avoid over-constraint.
+    // Otherwise these crosspoints would be active with respect to more
+    // than one interface and thus the LM cannot sufficiently represent
+    // all geometrical constraints. Another typical application is mortar
+    // contact, when we want to make use of symmetry boundary conditions.
+    // In this case, we deliberately modify so-called edge nodes of the
+    // contact boundary and thus free them from any contact constraint.
+    // ---------------------------------------------------------------------
+    // Basically, the status of the crosspoints / edge nodes is simply
+    // changed to MASTER and consequently they will NOT carry Lagrange
+    // multipliers later on. In order to sustain the partition of unity
+    // property of the LM shape functions on the adjacent slave elements,
+    // the LM shape functions of the adjacent nodes will be modified! This
+    // way, the mortar operator entries of the crosspoints / edge nodes are
+    // transfered to the neighboring slave nodes!
+    // ---------------------------------------------------------------------
+    
+    for (int i=0; i<(Discret().NodeRowMap())->NumMyElements();++i)
     {
-      //case1: linear shape functions, boundary nodes already found
-      if ((node->Elements()[0])->NumNode() == 2)
+      MORTAR::MortarNode* node = static_cast<MORTAR::MortarNode*>(idiscret_->lRowNode(i));
+  
+      // candidates are slave nodes with only 1 adjacent MortarElement
+      if (node->IsSlave() && node->NumElement()==1)
       {
-        node->SetBound()=true;
-        node->SetSlave()=false;
-      }
-      //case2: quad. shape functions, middle nodes must be sorted out
-      else if (node->Id() != (node->Elements()[0])->NodeIds()[2])
-      {
-        node->SetBound()=true;
-        node->SetSlave()=false;
+        //case1: linear shape functions, boundary nodes already found
+        if ((node->Elements()[0])->NumNode() == 2)
+        {
+          node->SetBound()=true;
+          node->SetSlave()=false;
+        }
+        //case2: quad. shape functions, middle nodes must be sorted out
+        else if (node->Id() != (node->Elements()[0])->NodeIds()[2])
+        {
+          node->SetBound()=true;
+          node->SetSlave()=false;
+        }
       }
     }
   }
-#endif // #ifdef MORTARBOUNDMOD
 
   // later we will export node and element column map to FULL overlap,
   // thus store the standard column maps first
@@ -169,7 +186,7 @@ void MORTAR::MortarInterface::FillComplete()
   oldelecolmap_ = rcp (new Epetra_Map(*(Discret().ElementColMap())));
 
   // create interface local communicator
-  // find all procs that have business on this interface (own nodes/elements)
+  // find all procs that have business on this interface (own or ghost nodes/elements)
   // build a Epetra_Comm that contains only those procs
   // this intra-communicator will be used to handle most stuff on this
   // interface so the interface will not block all other procs
@@ -180,9 +197,9 @@ void MORTAR::MortarInterface::FillComplete()
     for (int i=0; i<Comm().NumProc(); ++i)
       lin[i] = 0;
 
-    // check ownership of any elements / nodes
-    const Epetra_Map* noderowmap = Discret().NodeRowMap();
-    const Epetra_Map* elerowmap  = Discret().ElementRowMap();
+    // check ownership or ghosting of any elements / nodes
+    const Epetra_Map* noderowmap = Discret().NodeColMap();
+    const Epetra_Map* elerowmap  = Discret().ElementColMap();
 
     if (noderowmap->NumMyElements() || elerowmap->NumMyElements())
       lin[Comm().MyPID()] = 1;
@@ -248,10 +265,9 @@ void MORTAR::MortarInterface::FillComplete()
   // Note that we'll do ghosting only on procs that do own or ghost any of the
   // nodes in the natural distribution of idiscret_!
   {
+    // fill my own row node ids
     const Epetra_Map* noderowmap = Discret().NodeRowMap();
     const Epetra_Map* elerowmap  = Discret().ElementRowMap();
-
-    // fill my own row node ids
     vector<int> sdata(noderowmap->NumMyElements());
     for (int i=0; i<noderowmap->NumMyElements(); ++i)
       sdata[i] = noderowmap->GID(i);
@@ -259,9 +275,9 @@ void MORTAR::MortarInterface::FillComplete()
     // build tprocs and numproc containing processors participating
     // in this interface
     vector<int> stproc(0);
-    // a processor participates in the interface, if it owns any of
+    // a processor participates in the interface, if it owns or ghosts any of
     // the nodes or elements
-    if (noderowmap->NumMyElements() || elerowmap->NumMyElements())
+    if (oldnodecolmap_->NumMyElements() || oldelecolmap_->NumMyElements())
       stproc.push_back(Comm().MyPID());
     vector<int> rtproc(0);
     vector<int> allproc(Comm().NumProc());
@@ -313,7 +329,7 @@ void MORTAR::MortarInterface::FillComplete()
   {
     int gid = oldnodecolmap_->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %i",gid);
     MortarNode* mnode = static_cast<MortarNode*>(node);
 
     mnode->InitializeDataContainer();
@@ -1559,7 +1575,7 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
           double val = colcurr->second;
 
           // do the assembly into global D matrix
-          if (shapefcn_ == MortarInterface::DualFunctions)
+          if (shapefcn_ == INPAR::MORTAR::shape_dual)
           {
             // check for diagonality
             if (row!=col && abs(val)>1.0e-12)
@@ -1569,7 +1585,7 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
             if (row==col)
               dglobal.Assemble(val, row, col);
           }
-          else if (shapefcn_ == MortarInterface::StandardFunctions)
+          else if (shapefcn_ == INPAR::MORTAR::shape_standard)
           {
             // don't check for diagonality
             // since for standard shape functions, as in general when using

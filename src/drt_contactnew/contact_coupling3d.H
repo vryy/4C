@@ -99,7 +99,7 @@ public:
   performed in parallel by individual processes.
   
   */
-  CoCoupling3d(const MORTAR::MortarInterface::ShapeFcnType shapefcn, 
+  CoCoupling3d(const INPAR::MORTAR::ShapeFcn shapefcn, 
                DRT::Discretization& idiscret,
                int dim, bool quad, bool auxplane,
                MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
@@ -279,7 +279,7 @@ public:
   performed in parallel by individual processes.
   
   */
-  CoCoupling3dQuad(const MORTAR::MortarInterface::ShapeFcnType shapefcn,
+  CoCoupling3dQuad(const INPAR::MORTAR::ShapeFcn shapefcn,
                    DRT::Discretization& idiscret,
                    int dim, bool quad, bool auxplane,
                    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,

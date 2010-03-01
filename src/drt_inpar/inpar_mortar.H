@@ -26,6 +26,7 @@ namespace INPAR
     /// (this enum represents the input file parameter SHAPEFCN)
     enum ShapeFcn
     {
+      shape_undefined, ///< undefined
       shape_standard,  ///< standard shape functions
       shape_dual       ///< dual shape functions
     };

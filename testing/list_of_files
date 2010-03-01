@@ -231,6 +231,7 @@ Input/contact3D_slidingblock_augmented.dat              x        x        x     
 Input/contact3D_slidingblock_coulomb.dat                x        x        x        -        -        -
 Input/contact3D_slidingblock_penalty.dat                x        x        x        -        -        -
 Input/meshtying2D_structure.dat                         x        x        x        -        -        -
+Input/meshtying2D_structure_crosspoints.dat             x        x        x        -        -        -
 Input/meshtying3D_structure.dat                         x        x        x        -        -        -
 Input/meshtying3D_structure_penalty.dat                 x        x        x        -        -        -
 Input/meshtying3D_structure_augmented.dat               x        x        x        -        -        -

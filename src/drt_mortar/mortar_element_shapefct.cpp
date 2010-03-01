@@ -67,6 +67,30 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     break;
   }
   // *********************************************************************
+  // 1D modified standard shape functions (const replacing linear, line2)
+  // (used for interpolation of Lagrange mult. field near boundaries)
+  // *********************************************************************
+  case MortarElement::lin1D_edge0:
+  {
+    val[0] = 0;
+    val[1] = 1;
+    deriv(0,0) = 0;
+    deriv(1,0) = 0;
+    break;
+  }
+  // *********************************************************************
+  // 1D modified standard shape functions (const replacing linear, line2)
+  // (used for interpolation of Lagrange mult. field near boundaries)
+  // *********************************************************************
+  case MortarElement::lin1D_edge1:
+  {
+    val[0] = 1;
+    val[1] = 0;
+    deriv(0,0) = 0;
+    deriv(1,0) = 0;
+    break;
+  }
+  // *********************************************************************
   // 2D standard linear shape functions (tri3)
   // (used for interpolation of displacement field)
   // *********************************************************************
@@ -81,7 +105,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     break;
   }
   // *********************************************************************
-  // 2D standard blinear shape functions (quad4)
+  // 2D standard bilinear shape functions (quad4)
   // (used for interpolation of displacement field)
   // *********************************************************************
   case MortarElement::bilin2D:
@@ -108,6 +132,34 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     deriv(0,0) = xi[0]-0.5;
     deriv(1,0) = xi[0]+0.5;
     deriv(2,0) = -2*xi[0];
+    break;
+  }
+  // *********************************************************************
+  // 1D modified standard shape functions (linear replacing quad, line3)
+  // (used for interpolation of Lagrange mult. field near boundaries)
+  // *********************************************************************
+  case MortarElement::quad1D_edge0:
+  {
+    val[0] = 0;
+    val[1] = xi[0];
+    val[2] = 1-xi[0];
+    deriv(0,0) =  0;
+    deriv(1,0) =  1;
+    deriv(2,0) = -1;
+    break;
+  }
+  // *********************************************************************
+  // 1D modified standard shape functions (linear replacing quad, line3)
+  // (used for interpolation of Lagrange mult. field near boundaries)
+  // *********************************************************************
+  case MortarElement::quad1D_edge1:
+  {
+    val[0] = -xi[0];
+    val[1] = 0;
+    val[2] = 1+xi[0];
+    deriv(0,0) = -1;
+    deriv(1,0) =  0;
+    deriv(2,0) =  1;
     break;
   }
   // *********************************************************************
@@ -263,6 +315,30 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     break;
   }
   // *********************************************************************
+  // 1D modified dual shape functions (const replacing linear, line2)
+  // (used for interpolation of Lagrange mult. field near boundaries)
+  // *********************************************************************
+  case MortarElement::lindual1D_edge0:
+  {
+    val[0] = 0;
+    val[1] = 1;
+    deriv(0,0) = 0;
+    deriv(1,0) = 0;
+    break;
+  }
+  // *********************************************************************
+  // 1D modified dual shape functions (const replacing linear, line2)
+  // (used for interpolation of Lagrange mult. field near boundaries)
+  // *********************************************************************
+  case MortarElement::lindual1D_edge1:
+  {
+    val[0] = 1;
+    val[1] = 0;
+    deriv(0,0) = 0;
+    deriv(1,0) = 0;
+    break;
+  }
+  // *********************************************************************
   // 2D dual linear shape functions (tri3)
   // (used for interpolation of Lagrange mutliplier field)
   // *********************************************************************
@@ -339,30 +415,6 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     val=valtemp;
     deriv=derivtemp;
 
-    break;
-  }
-  // *********************************************************************
-  // 1D modified dual shape functions (const replacing linear, line2)
-  // (used for interpolation of Lagrange mult. field near boundaries)
-  // *********************************************************************
-  case MortarElement::lindual1D_edge0:
-  {
-    val[0] = 0;
-    val[1] = 1;
-    deriv(0,0) = 0;
-    deriv(1,0) = 0;
-    break;
-  }
-  // *********************************************************************
-  // 1D modified dual shape functions (const replacing linear, line2)
-  // (used for interpolation of Lagrange mult. field near boundaries)
-  // *********************************************************************
-  case MortarElement::lindual1D_edge1:
-  {
-    val[0] = 1;
-    val[1] = 0;
-    deriv(0,0) = 0;
-    deriv(1,0) = 0;
     break;
   }
   // *********************************************************************
@@ -546,10 +598,10 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate shape functions                                  popp 01/08|
+ |  Evaluate displacement shape functions                     popp 01/08|
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarElement::EvaluateShape(const double* xi, LINALG::SerialDenseVector& val,
-                                      LINALG::SerialDenseMatrix& deriv, const int& valdim)
+                                          LINALG::SerialDenseMatrix& deriv, const int& valdim)
 {
   if (!xi)
     dserror("ERROR: EvaluateShape called with xi=NULL");
@@ -615,19 +667,24 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, LINALG::SerialDenseV
 
 
 /*----------------------------------------------------------------------*
- |  Evaluate dual shape functions                             popp 12/07|
+ |  Evaluate Lagrange multiplier shape functions              popp 12/07|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarElement::EvaluateShapeDual(const double* xi, LINALG::SerialDenseVector& val,
-                                          LINALG::SerialDenseMatrix& deriv, const int& valdim)
+bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype,
+                                                 const double* xi, LINALG::SerialDenseVector& val,
+                                                 LINALG::SerialDenseMatrix& deriv, const int& valdim)
 {
   if (!xi)
-    dserror("ERROR: EvaluateShapeDual called with xi=NULL");
+    dserror("ERROR: EvaluateShapeLagMult called with xi=NULL");
   if (!IsSlave())
-    dserror("ERROR: EvaluateShapeDual called for master element");
+    dserror("ERROR: EvaluateShapeLagMult called for master element");
 
+  // dual shape functions or not
+  bool dual = false;
+  if (lmtype==INPAR::MORTAR::shape_dual) dual = true;
+  
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();
-  if (!mynodes) dserror("ERROR: EvaluateShapeDual: Null pointer!");
+  if (!mynodes) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
 
   switch(Shape())
   {
@@ -638,26 +695,35 @@ bool MORTAR::MortarElement::EvaluateShapeDual(const double* xi, LINALG::SerialDe
     // check for boundary nodes
     MortarNode* mymrtrnode0 = static_cast<MortarNode*> (mynodes[0]);
     MortarNode* mymrtrnode1 = static_cast<MortarNode*> (mynodes[1]);
-    if (!mymrtrnode0) dserror("ERROR: EvaluateShapeDual1D: Null pointer!");
-    if (!mymrtrnode1) dserror("ERROR: EvaluateShapeDual1D: Null pointer!");
+    if (!mymrtrnode0) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
+    if (!mymrtrnode1) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
     bool isonbound0 = mymrtrnode0->IsOnBound();
     bool isonbound1 = mymrtrnode1->IsOnBound();
 
     // both nodes are interior: use unmodified dual shape functions
     if (!isonbound0 && !isonbound1)
-      ShapeFunctions(MortarElement::lindual1D,xi,val,deriv);
+    {
+      if (dual) ShapeFunctions(MortarElement::lindual1D,xi,val,deriv);
+      else      ShapeFunctions(MortarElement::lin1D,xi,val,deriv);
+    }
 
     // node 0 is on boundary: modify dual shape functions
     else if (isonbound0 && !isonbound1)
-      ShapeFunctions(MortarElement::lindual1D_edge0,xi,val,deriv);
+    {
+      if (dual) ShapeFunctions(MortarElement::lindual1D_edge0,xi,val,deriv);
+      else      ShapeFunctions(MortarElement::lin1D_edge0,xi,val,deriv);
+    }
 
     // node 1 is on boundary: modify dual shape functions
     else if (!isonbound0 && isonbound1)
-      ShapeFunctions(MortarElement::lindual1D_edge1,xi,val,deriv);
+    {
+      if (dual) ShapeFunctions(MortarElement::lindual1D_edge1,xi,val,deriv);
+      else      ShapeFunctions(MortarElement::lin1D_edge1,xi,val,deriv);
+    }
 
     // both nodes are on boundary: infeasible case
     else
-      dserror("ERROR: EvaluateShapeDual1D: Element with 2 boundary nodes!");
+      dserror("ERROR: EvaluateShapeLagMult: Element with 2 boundary nodes!");
 
     break;
   }
@@ -670,32 +736,41 @@ bool MORTAR::MortarElement::EvaluateShapeDual(const double* xi, LINALG::SerialDe
     MortarNode* mymrtrnode0 = static_cast<MortarNode*> (mynodes[0]);
     MortarNode* mymrtrnode1 = static_cast<MortarNode*> (mynodes[1]);
     MortarNode* mymrtrnode2 = static_cast<MortarNode*> (mynodes[2]);
-    if (!mymrtrnode0) dserror("ERROR: EvaluateShapeDual: Null pointer!");
-    if (!mymrtrnode1) dserror("ERROR: EvaluateShapeDual: Null pointer!");
-    if (!mymrtrnode2) dserror("ERROR: EvaluateShapeDual: Null pointer!");
+    if (!mymrtrnode0) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
+    if (!mymrtrnode1) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
+    if (!mymrtrnode2) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
     bool isonbound0 = mymrtrnode0->IsOnBound();
     bool isonbound1 = mymrtrnode1->IsOnBound();
     bool isonbound2 = mymrtrnode2->IsOnBound();
 
     // all 3 nodes are interior: use unmodified dual shape functions
     if (!isonbound0 && !isonbound1 && !isonbound2)
-      ShapeFunctions(MortarElement::quaddual1D,xi,val,deriv);
+    {
+      if (dual) ShapeFunctions(MortarElement::quaddual1D,xi,val,deriv);
+      else      ShapeFunctions(MortarElement::quad1D,xi,val,deriv);
+    }
 
     // node 0 is on boundary: modify dual shape functions
     else if (isonbound0 && !isonbound1 && !isonbound2)
-      ShapeFunctions(MortarElement::quaddual1D_edge0,xi,val,deriv);
+    {
+      if (dual) ShapeFunctions(MortarElement::quaddual1D_edge0,xi,val,deriv);
+      else      ShapeFunctions(MortarElement::quad1D_edge0,xi,val,deriv);
+    }
 
     // node 1 is on boundary: modify dual shape functions
     else if (!isonbound0 && isonbound1 && !isonbound2)
-      ShapeFunctions(MortarElement::quaddual1D_edge1,xi,val,deriv);
+    {
+      if (dual) ShapeFunctions(MortarElement::quaddual1D_edge1,xi,val,deriv);
+      else      ShapeFunctions(MortarElement::quad1D_edge1,xi,val,deriv);
+    }
 
     // node 2 is on boundary: infeasible case
     else if (isonbound2)
-      dserror("ERROR: EvaluateShapeDual: Middle boundary node");
+      dserror("ERROR: EvaluateShapeLagMult: Middle boundary node");
 
     // nodes 0 and 1 are on boundary: infeasible case
     else
-      dserror("ERROR: EvaluateShapeDual: Element with 2 boundary nodes");
+      dserror("ERROR: EvaluateShapeLagMult: Element with 2 boundary nodes");
 
     break;
   }
@@ -712,30 +787,44 @@ bool MORTAR::MortarElement::EvaluateShapeDual(const double* xi, LINALG::SerialDe
     for (int i=0;i<NumNode();++i)
     {
       MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
-      if (!mymrtrnode) dserror("ERROR: EvaluateShapeDual: Null pointer!");
+      if (!mymrtrnode) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
       bound += mymrtrnode->IsOnBound();
     }
 
-    // all nodes are interior: use unmodified dual shape functions
+    // all nodes are interior: use unmodified shape functions
     if (!bound)
     {
-      if (Shape()==tri3)       ShapeFunctions(MortarElement::lindual2D,xi,val,deriv);
-      else if (Shape()==quad4) ShapeFunctions(MortarElement::bilindual2D,xi,val,deriv);
-      else if (Shape()==tri6)  ShapeFunctions(MortarElement::quaddual2D,xi,val,deriv);
-      else if (Shape()==quad8) ShapeFunctions(MortarElement::serendipitydual2D,xi,val,deriv);
-      else /*Shape()==quad9*/  ShapeFunctions(MortarElement::biquaddual2D,xi,val,deriv);
+      // dual Lagrange multipliers
+      if (dual)
+      {
+        if (Shape()==tri3)       ShapeFunctions(MortarElement::lindual2D,xi,val,deriv);
+        else if (Shape()==quad4) ShapeFunctions(MortarElement::bilindual2D,xi,val,deriv);
+        else if (Shape()==tri6)  ShapeFunctions(MortarElement::quaddual2D,xi,val,deriv);
+        else if (Shape()==quad8) ShapeFunctions(MortarElement::serendipitydual2D,xi,val,deriv);
+        else /*Shape()==quad9*/  ShapeFunctions(MortarElement::biquaddual2D,xi,val,deriv);
+      }
+      
+      // standard Lagrange multipliers
+      else
+      {
+        if (Shape()==tri3)       ShapeFunctions(MortarElement::lin2D,xi,val,deriv);
+        else if (Shape()==quad4) ShapeFunctions(MortarElement::bilin2D,xi,val,deriv);
+        else if (Shape()==tri6)  ShapeFunctions(MortarElement::quad2D,xi,val,deriv);
+        else if (Shape()==quad8) ShapeFunctions(MortarElement::serendipity2D,xi,val,deriv);
+        else /*Shape()==quad9*/  ShapeFunctions(MortarElement::biquad2D,xi,val,deriv);
+      }
     }
 
     // some nodes are on slave boundary
     else
-      dserror("ERROR: EvaluateShapeDual: boundary mod. not yet impl. for 3D contact!");
+      dserror("ERROR: EvaluateShapeLagMult: boundary mod. not yet impl. for 3D contact!");
 
     break;
   }
 
   // unknown case
   default:
-    dserror("ERROR: EvaluateShapeDual called for unknown element type");
+    dserror("ERROR: EvaluateShapeLagMult called for unknown element type");
   }
 
   return true;
@@ -1505,7 +1594,7 @@ bool MORTAR::MortarElement::DerivShapeDual(vector<vector<map<int,double> > >& de
     for (int i=0;i<NumNode();++i)
     {
       MortarNode* mycnode = static_cast<MortarNode*> (mynodes[i]);
-      if (!mycnode) dserror("ERROR: EvaluateShapeDual: Null pointer!");
+      if (!mycnode) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
       bound += mycnode->IsOnBound();
     }
 

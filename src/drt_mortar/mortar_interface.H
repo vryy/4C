@@ -71,21 +71,6 @@ class MortarInterface
 {
 public:
 
-  //! @name Enums and Friends
-  
-  /*!
-  \brief Enum for shape function used for lagrange multiplier discretization
-  
-  */
-  enum ShapeFcnType
-  {
-    StandardFunctions,
-    DualFunctions,
-    Undefined
-  };
-  
-  //@}
-
   /*!
   \brief Standard constructor creating empty mortar interface
  
@@ -593,7 +578,7 @@ protected:
   RCP<DRT::Discretization>    idiscret_;      // the discretization of the mortar interface
   int                         dim_;           // dimension of problem (2D or 3D)
   Teuchos::ParameterList      icontact_;      // containing contact input parameters of interface
-  ShapeFcnType                shapefcn_;      // employed type of shape function set
+  INPAR::MORTAR::ShapeFcn     shapefcn_;      // employed type of shape function set
   
   RCP<Epetra_Map>             oldnodecolmap_; // column map of all interface nodes (overlap=1)
   RCP<Epetra_Map>             oldelecolmap_;  // column map of all interface elements (overlap=1)

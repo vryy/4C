@@ -50,7 +50,7 @@ Maintainer: Alexander Popp
  *----------------------------------------------------------------------*/
 MORTAR::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
                                bool auxplane, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele) :
-shapefcn_(MortarInterface::Undefined),
+shapefcn_(INPAR::MORTAR::shape_undefined),
 idiscret_(idiscret),
 dim_(dim),
 quad_(quad),
@@ -65,7 +65,7 @@ mele_(mele)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-MORTAR::Coupling3d::Coupling3d(const MortarInterface::ShapeFcnType shapefcn,
+MORTAR::Coupling3d::Coupling3d(const INPAR::MORTAR::ShapeFcn shapefcn,
                                DRT::Discretization& idiscret, int dim, bool quad,
                                bool auxplane, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele) :
 shapefcn_(shapefcn),
@@ -2806,7 +2806,7 @@ bool MORTAR::Coupling3d::IntegrateCells()
         dserror("ERROR: Only aux. plane version implemented for 3D quadratic mortar");
       
       // check for dual shape functions
-      if (shapefcn_ == MortarInterface::DualFunctions)
+      if (shapefcn_ == INPAR::MORTAR::shape_dual)
         dserror("ERROR: Quadratic LM interpolation not yet implemented for DUAL 3D quadratic mortar");
       
       // assembly of intcell contributions to M (and possibly D)
@@ -2841,7 +2841,7 @@ bool MORTAR::Coupling3d::IntegrateCells()
         dserror("ERROR: Only aux. plane version implemented for 3D quadratic mortar");
       
       // check for dual shape functions
-      if (shapefcn_ == MortarInterface::DualFunctions)
+      if (shapefcn_ == INPAR::MORTAR::shape_dual)
         dserror("ERROR: Linear LM interpolation not yet implemented for DUAL 3D quadratic mortar");
             
       // assembly of intcell contributions to M (and possibly D)
@@ -2882,7 +2882,7 @@ MORTAR::Coupling3dQuad::Coupling3dQuad(DRT::Discretization& idiscret,
                                 MORTAR::IntElement& sintele,
                                 MORTAR::IntElement& mintele,
                                 INPAR::MORTAR::LagMultQuad3D& lmtype) :
-MORTAR::Coupling3d(MortarInterface::Undefined,idiscret,dim,quad,auxplane,sele,mele),
+MORTAR::Coupling3d(INPAR::MORTAR::shape_undefined,idiscret,dim,quad,auxplane,sele,mele),
 sintele_(sintele),
 mintele_(mintele),
 lmtype_(lmtype)
@@ -2901,7 +2901,7 @@ lmtype_(lmtype)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-MORTAR::Coupling3dQuad::Coupling3dQuad(const MortarInterface::ShapeFcnType shapefcn,
+MORTAR::Coupling3dQuad::Coupling3dQuad(const INPAR::MORTAR::ShapeFcn shapefcn,
                                 DRT::Discretization& idiscret,
                                 int dim, bool quad, bool auxplane,
                                 MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,

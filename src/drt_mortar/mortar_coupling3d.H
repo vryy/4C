@@ -101,7 +101,7 @@ public:
   performed in parallel by individual processes.
   
   */
-  Coupling3d(const MortarInterface::ShapeFcnType shapefcn, 
+  Coupling3d(const INPAR::MORTAR::ShapeFcn shapefcn, 
              DRT::Discretization& idiscret,
              int dim, bool quad, bool auxplane,
              MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
@@ -431,7 +431,7 @@ protected:
     Coupling3d operator = (const Coupling3d& old);
     Coupling3d(const Coupling3d& old);
 
-    const MortarInterface::ShapeFcnType shapefcn_;  // employed type of shape function set
+    const INPAR::MORTAR::ShapeFcn shapefcn_;  // employed type of shape function set
 
     DRT::Discretization&       idiscret_;    // discretization of the contact interface
     int                        dim_;         // problem dimension (here: 3D)
@@ -501,7 +501,7 @@ public:
   performed in parallel by individual processes.
   
   */
-  Coupling3dQuad(const MortarInterface::ShapeFcnType shapefcn,
+  Coupling3dQuad(const INPAR::MORTAR::ShapeFcn shapefcn,
                  DRT::Discretization& idiscret,
                  int dim, bool quad, bool auxplane,
                  MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,

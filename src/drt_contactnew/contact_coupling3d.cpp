@@ -60,7 +60,7 @@ MORTAR::Coupling3d(idiscret,dim,quad,auxplane,sele,mele)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-CONTACT::CoCoupling3d::CoCoupling3d(const MORTAR::MortarInterface::ShapeFcnType shapefcn,
+CONTACT::CoCoupling3d::CoCoupling3d(const INPAR::MORTAR::ShapeFcn shapefcn,
                                DRT::Discretization& idiscret, int dim, bool quad,
          bool auxplane, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele) :
 MORTAR::Coupling3d(shapefcn,idiscret,dim,quad,auxplane,sele,mele)
@@ -1268,7 +1268,7 @@ CONTACT::CoCoupling3dQuad::CoCoupling3dQuad(DRT::Discretization& idiscret,
                                 MORTAR::IntElement& sintele,
                                 MORTAR::IntElement& mintele,
                                 INPAR::MORTAR::LagMultQuad3D& lmtype) :
-CONTACT::CoCoupling3d(MORTAR::MortarInterface::Undefined,idiscret,dim,quad,auxplane,sele,mele),
+CONTACT::CoCoupling3d(INPAR::MORTAR::shape_undefined,idiscret,dim,quad,auxplane,sele,mele),
 sintele_(sintele),
 mintele_(mintele),
 lmtype_(lmtype)
@@ -1287,7 +1287,7 @@ lmtype_(lmtype)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-CONTACT::CoCoupling3dQuad::CoCoupling3dQuad(const MORTAR::MortarInterface::ShapeFcnType shapefcn,
+CONTACT::CoCoupling3dQuad::CoCoupling3dQuad(const INPAR::MORTAR::ShapeFcn shapefcn,
                                 DRT::Discretization& idiscret,
                                 int dim, bool quad, bool auxplane,
                                 MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,

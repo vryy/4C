@@ -96,7 +96,7 @@ public:
   and corresponding weights.
   
   */
-  CoIntegrator(const MORTAR::MortarInterface::ShapeFcnType shapefcn,
+  CoIntegrator(const INPAR::MORTAR::ShapeFcn shapefcn,
                DRT::Element::DiscretizationType eletype);
 
   /*!

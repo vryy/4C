@@ -60,7 +60,7 @@ MORTAR::Coupling2d(idiscret,dim,sele,mele)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-CONTACT::CoCoupling2d::CoCoupling2d(const MORTAR::MortarInterface::ShapeFcnType shapefcn,
+CONTACT::CoCoupling2d::CoCoupling2d(const INPAR::MORTAR::ShapeFcn shapefcn,
                                     DRT::Discretization& idiscret, int dim,
                                     MORTAR::MortarElement& sele,
                                     MORTAR::MortarElement& mele) :
@@ -77,7 +77,7 @@ MORTAR::Coupling2d(shapefcn,idiscret,dim,sele,mele)
 bool CONTACT::CoCoupling2d::IntegrateOverlap(vector<double>& xiproj)
 {
   // explicitely defined shapefunction type needed
-  if( shapefcn_ == MORTAR::MortarInterface::Undefined)
+  if( shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateOverlap called without specific shape function defined!");
   
   /**********************************************************************/

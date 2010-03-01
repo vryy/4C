@@ -86,7 +86,7 @@ public:
   performed in parallel by individual processes.
   
   */  
-  CoCoupling2d(const MORTAR::MortarInterface::ShapeFcnType shapefcn, DRT::Discretization& idiscret, int dim,
+  CoCoupling2d(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret, int dim,
                MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
   
   /*!

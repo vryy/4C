@@ -889,6 +889,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                            INPAR::CONTACT::friction_coulomb,INPAR::CONTACT::friction_coulomb),
                                 &scontact);
 
+  DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
+  DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
+  
   setStringToIntegralParameter<INPAR::CONTACT::SolvingStrategy>("STRATEGY","LagrangianMultipliers","Type of employed solving strategy",
         tuple<std::string>("LagrangianMultipliers","lagrange", "Lagrange",
                            "PenaltyMethod","penalty", "Penalty",
@@ -911,8 +914,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("PENALTYPARAMTAN",0.0,"Tangential penalty parameter for penalty / augmented solution strategy",&scontact);
   IntParameter("UZAWAMAXSTEPS",10,"Maximum no. of Uzawa steps for augmented / Uzawa solution strategy",&scontact);
   DoubleParameter("UZAWACONSTRTOL",1.0e-8,"Tolerance of constraint norm for augmented / Uzawa solution strategy",&scontact);
-  DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
-  DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
 
   setStringToIntegralParameter<int>("FULL_LINEARIZATION","Yes","If chosen full linearization of contact is applied",
                                yesnotuple,yesnovalue,&scontact);
@@ -953,6 +954,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                           INPAR::MORTAR::lagmult_pwlin_pwlin, INPAR::MORTAR::lagmult_pwlin_pwlin,
                                           INPAR::MORTAR::lagmult_lin_lin, INPAR::MORTAR::lagmult_lin_lin),
                                &scontact);
+  
+  setStringToIntegralParameter<int>("CROSSPOINTS","No","If chosen, multipliers are removed from crosspoints / edge nodes",
+                               yesnotuple,yesnovalue,&scontact);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIAL",false,"");

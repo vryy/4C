@@ -41,10 +41,12 @@ Maintainer: Alexander Popp
 #define MORTAR_ELEMENT_H
 
 #include "mortar_node.H"
+
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
+#include "../drt_inpar/inpar_mortar.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -70,29 +72,38 @@ class MortarElement : public DRT::Element
 public:
 
   //! @name Enums and Friends
-  enum ShapeType // shape function types recognized by MortarElement
-    {
-      lin1D,                  // linear 1D
-      lindual1D,              // dual linear 1D
-      lindual1D_edge0,
-      lindual1D_edge1,
-      dual1D_base_for_edge0,
-      dual1D_base_for_edge1,
-      quad1D,                 // quadratic 1D
-      quaddual1D,             // dual quadratic 1D
-      quaddual1D_edge0,
-      quaddual1D_edge1,
-      lin2D,                  // linear 2D
-      lindual2D,              // dual linear 2D
-      bilin2D,                // bilinear 2D
-      bilindual2D,            // dual bilinear 2D
-      quad2D,                 // quadratic 2D
-      quaddual2D,             // dual quadratic 2D
-      serendipity2D,          // serendipity 2D
-      serendipitydual2D,      // dual serendipity 2D
-      biquad2D,               // biquadratic 2D
-      biquaddual2D            // dual biquadratic 2D
-    };
+
+  /*!
+  \brief Enum for element shape function types recognized by MortarElements
+  
+  */
+  enum ShapeType
+  {
+    lin1D,                  // linear 1D
+    lin1D_edge0,
+    lin1D_edge1,
+    lindual1D,              // dual linear 1D
+    lindual1D_edge0,
+    lindual1D_edge1,
+    dual1D_base_for_edge0,
+    dual1D_base_for_edge1,
+    quad1D,                 // quadratic 1D
+    quad1D_edge0,
+    quad1D_edge1,
+    quaddual1D,             // dual quadratic 1D
+    quaddual1D_edge0,
+    quaddual1D_edge1,
+    lin2D,                  // linear 2D
+    lindual2D,              // dual linear 2D
+    bilin2D,                // bilinear 2D
+    bilindual2D,            // dual bilinear 2D
+    quad2D,                 // quadratic 2D
+    quaddual2D,             // dual quadratic 2D
+    serendipity2D,          // serendipity 2D
+    serendipitydual2D,      // dual serendipity 2D
+    biquad2D,               // biquadratic 2D
+    biquaddual2D            // dual biquadratic 2D
+  };
 
   //@}
 
@@ -433,16 +444,17 @@ public:
                                    vector<vector<map<int,double> > >& derivdual);
     
   /*!
-  \brief Evaluate shape functions and derivatives
+  \brief Evaluate displacement shape functions and derivatives
   */
   virtual bool EvaluateShape(const double* xi, LINALG::SerialDenseVector& val,
                              LINALG::SerialDenseMatrix& deriv, const int& valdim);
 
   /*!
-  \brief Evaluate dual shape functions and derivatives
+  \brief Evaluate Lagrange multiplier shape functions and derivatives
   */
-  virtual bool EvaluateShapeDual(const double* xi, LINALG::SerialDenseVector& val,
-                                 LINALG::SerialDenseMatrix& deriv, const int& valdim);
+  virtual bool EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype,
+                                    const double* xi, LINALG::SerialDenseVector& val,
+                                    LINALG::SerialDenseMatrix& deriv, const int& valdim);
   
   /*!
   \brief Evaluate 2nd derivative of shape functions

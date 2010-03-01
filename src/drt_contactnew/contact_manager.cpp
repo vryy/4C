@@ -398,7 +398,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 {
   // read parameter list from DRT::Problem
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
-
   const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
   int dim = psize.get<int>("DIM");
   
@@ -469,6 +468,9 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     dserror("3D frictional contact without flag CONTACTCOMPHUEBER not yet implemented");
 #endif
 
+  if (Teuchos::getIntegralValue<int>(input,"CROSSPOINTS") == true && dim == 3)
+    dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
+  
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
   // *********************************************************************

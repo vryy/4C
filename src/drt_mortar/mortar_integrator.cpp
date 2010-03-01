@@ -49,7 +49,7 @@ Maintainer: Alexander Popp
  |  ctor (public)                                             popp 08/08|
  *----------------------------------------------------------------------*/
 MORTAR::MortarIntegrator::MortarIntegrator(DRT::Element::DiscretizationType eletype) :
-shapefcn_(MortarInterface::Undefined)
+shapefcn_(INPAR::MORTAR::shape_undefined)
 {
   InitializeGP(eletype);
 }
@@ -57,7 +57,7 @@ shapefcn_(MortarInterface::Undefined)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 07/09|
  *----------------------------------------------------------------------*/
-MORTAR::MortarIntegrator::MortarIntegrator(const MortarInterface::ShapeFcnType shapefcn,
+MORTAR::MortarIntegrator::MortarIntegrator(const INPAR::MORTAR::ShapeFcn shapefcn,
                                DRT::Element::DiscretizationType eletype) :
 shapefcn_(shapefcn)
 {
@@ -147,7 +147,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivSlave2D3D(
       RCP<Epetra_SerialDenseMatrix> dseg)
 {
   // explicitely defined shapefunction type needed
-  if (shapefcn_ == MortarInterface::Undefined)
+  if (shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivSlave2D3D called without specific shape function defined!");
     
   //check input data
@@ -164,8 +164,8 @@ void MORTAR::MortarIntegrator::IntegrateDerivSlave2D3D(
   // create empty objects for shape fct. evaluation
   LINALG::SerialDenseVector val(nrow);
   LINALG::SerialDenseMatrix deriv(nrow,2,true);
-  LINALG::SerialDenseVector dualval(nrow);
-  LINALG::SerialDenseMatrix dualderiv(nrow,2,true);
+  LINALG::SerialDenseVector lmval(nrow);
+  LINALG::SerialDenseMatrix lmderiv(nrow,2,true);
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -177,10 +177,9 @@ void MORTAR::MortarIntegrator::IntegrateDerivSlave2D3D(
     if (Dim()==3) eta[1] = Coordinate(gp,1);
     double wgt = Weight(gp);
 
-    // evaluate trace space and dual space shape functions
+    // evaluate trace space and Lagrange multiplier shape functions
     sele.EvaluateShape(eta,val,deriv,nrow);
-    if (shapefcn_ == MortarInterface::DualFunctions)
-      sele.EvaluateShapeDual(eta,dualval,dualderiv,nrow);
+    sele.EvaluateShapeLagMult(shapefcn_,eta,lmval,lmderiv,nrow);
 
     // evaluate the Jacobian det
     double dxdsxi = sele.Jacobian(eta);
@@ -197,11 +196,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivSlave2D3D(
         int kindex = (int)(k/ndof);
 
         // multiply the two shape functions
-        double prod = 0.0;
-        if (shapefcn_ == MortarInterface::DualFunctions)
-          prod = dualval[jindex]*val[kindex];
-        else if (shapefcn_ == MortarInterface::StandardFunctions)
-          prod =val[jindex]*val[kindex];
+        double prod = lmval[jindex]*val[kindex];
 
         // isolate the dseg entries to be filled
         // (both the main diagonal and every other secondary diagonal)
@@ -233,7 +228,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
      RCP<Epetra_SerialDenseVector> gseg)
 { 
   // explicitely defined shapefunction type needed
-  if (shapefcn_ == MortarInterface::Undefined)
+  if (shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivSegment2D called without specific shape function defined!");
     
   //check for problem dimension
@@ -257,8 +252,8 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
   LINALG::SerialDenseMatrix sderiv(nrow,1);
   LINALG::SerialDenseVector mval(ncol);
   LINALG::SerialDenseMatrix mderiv(ncol,1);
-  LINALG::SerialDenseVector dualval(nrow);
-  LINALG::SerialDenseMatrix dualderiv(nrow,1);
+  LINALG::SerialDenseVector lmval(nrow);
+  LINALG::SerialDenseMatrix lmderiv(nrow,1);
 
   // get slave element nodes themselves
   DRT::Node** mynodes = sele.Nodes();
@@ -296,9 +291,8 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
       dserror("ERROR: IntegrateAndDerivSegment: Gauss point projection failed! mxi=%d",mxi[0]);
     }
 
-    // evaluate dual space shape functions (on slave element)
-    if (shapefcn_ == MortarInterface::DualFunctions)
-      sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
+    // evaluate Lagrange multiplier shape functions (on slave element)
+    sele.EvaluateShapeLagMult(shapefcn_,sxi,lmval,lmderiv,nrow);
 
     // evaluate trace space shape functions (on both elements)
     sele.EvaluateShape(sxi,sval,sderiv,nrow);
@@ -326,21 +320,15 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
     // decide whether boundary modification has to be considered or not
     // this is element-specific (is there a boundary node in this element?)
     bool bound = false;
-#ifdef MORTARBOUNDMOD
     for (int k=0;k<nrow;++k)
     {
-      // check the shape function type (not really necessary because only dual shape functions arrive here)
-      if (shapefcn_ == MortarInterface::StandardFunctions)
-        dserror("ERROR: IntegrateAndDerivSlave: Edge node mod. called for standard shape functions");
-      
       MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[k]);
       if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
       bound += mymrtrnode->IsOnBound();
     }
-#endif // #ifdef MORTARBOUNDMOD
 
     // compute segment D/M matrix ****************************************
-    if (shapefcn_ == MortarInterface::StandardFunctions)
+    if (shapefcn_ == INPAR::MORTAR::shape_standard)
     {
       // loop over all mseg matrix entries
       // !!! nrow represents the slave Lagrange multipliers !!!
@@ -359,7 +347,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
           int kindex = (int)(k/ndof);
 
           // multiply the two shape functions
-          double prod = sval[jindex]*mval[kindex];
+          double prod = lmval[jindex]*mval[kindex];
 
           // isolate the mseg and dseg entries to be filled
           // (both the main diagonal and every other secondary diagonal)
@@ -378,7 +366,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
             int kindex = (int)(k/ndof);
 
             // multiply the two shape functions
-            double prod = sval[jindex]*sval[kindex];
+            double prod = lmval[jindex]*sval[kindex];
 
             // isolate the mseg and dseg entries to be filled
             // (both the main diagonal and every other secondary diagonal)
@@ -392,7 +380,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
       } // nrow*ndof loop
     }
     
-    else if (shapefcn_ == MortarInterface::DualFunctions)
+    else if (shapefcn_ == INPAR::MORTAR::shape_dual)
     { 
       // loop over all mseg matrix entries
       // nrow represents the slave Lagrange multipliers !!!
@@ -422,7 +410,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
             if (!j_boundnode && !k_boundnode && (jindex!=kindex)) continue;
               
             // multiply the two shape functions 
-            double prod = dualval[jindex]*sval[kindex];
+            double prod = lmval[jindex]*sval[kindex];
     
             // isolate the dseg entries to be filled
             // (both the main diagonal and every other secondary diagonal)
@@ -440,7 +428,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
           int kindex = (int)(k/ndof);
   
           // multiply the two shape functions
-          double prod = dualval[jindex]*mval[kindex];
+          double prod = lmval[jindex]*mval[kindex];
   
           // isolate the mseg and dseg entries to be filled
           // (both the main diagonal and every other secondary diagonal for mseg)
@@ -497,8 +485,8 @@ RCP<Epetra_SerialDenseMatrix> MORTAR::MortarIntegrator::IntegrateMmod2D(MORTAR::
   LINALG::SerialDenseMatrix sderiv(nrow,1);
   LINALG::SerialDenseVector mval(ncol);
   LINALG::SerialDenseMatrix mderiv(ncol,1);
-  LINALG::SerialDenseVector dualval(nrow);
-  LINALG::SerialDenseMatrix dualderiv(nrow,1);
+  LINALG::SerialDenseVector lmval(nrow);
+  LINALG::SerialDenseMatrix lmderiv(nrow,1);
 
   // loop over all Gauss points for integration
   for (int gp=0;gp<nGP();++gp)
@@ -613,7 +601,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
      RCP<Epetra_SerialDenseVector> gseg)
 {
   // explicitely defined shapefunction type needed
-  if (shapefcn_ == MortarInterface::Undefined)
+  if (shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
     
   //check for problem dimension
@@ -638,8 +626,8 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
   LINALG::SerialDenseMatrix sderiv(nrow,2,true);
   LINALG::SerialDenseVector mval(ncol);
   LINALG::SerialDenseMatrix mderiv(ncol,2,true);
-  LINALG::SerialDenseVector dualval(nrow);
-  LINALG::SerialDenseMatrix dualderiv(nrow,2,true);
+  LINALG::SerialDenseVector lmval(nrow);
+  LINALG::SerialDenseMatrix lmderiv(nrow,2,true);
   
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -691,9 +679,8 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
       }
     }
 
-    // evaluate dual space shape functions (on slave element)
-    if(shapefcn_ == MortarInterface::DualFunctions)
-      sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
+    // evaluate Lagrange multiplier shape functions (on slave element)
+    sele.EvaluateShapeLagMult(shapefcn_,sxi,lmval,lmderiv,nrow);
 
     // evaluate trace space shape functions (on both elements)
     sele.EvaluateShape(sxi,sval,sderiv,nrow);
@@ -720,7 +707,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
 
     // compute cell D/M matrix *******************************************
     
-    if (shapefcn_ == MortarInterface::StandardFunctions)
+    if (shapefcn_ == INPAR::MORTAR::shape_standard)
     {
       // loop over all mseg matrix entries
       // !!! nrow represents the slave Lagrange multipliers !!!
@@ -739,7 +726,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
           int kindex = (int)(k/ndof);
   
           // multiply the two shape functions
-          double prod = sval[jindex]*mval[kindex];
+          double prod = lmval[jindex]*mval[kindex];
   
           // isolate the mseg entries to be filled and
           // add current Gauss point's contribution to mseg  
@@ -755,7 +742,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
             int kindex = (int)(k/ndof);
     
             // multiply the two shape functions
-            double prod = sval[jindex]*sval[kindex];
+            double prod = lmval[jindex]*sval[kindex];
     
             // isolate the mseg entries to be filled and
             // add current Gauss point's contribution to mseg  
@@ -763,11 +750,10 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
                 (*dseg)(j, k) += prod*jaccell*jacslave*wgt;
           }
         }
-      }
-      
+      } 
     }
     
-    else if (shapefcn_ == MortarInterface::DualFunctions)
+    else if (shapefcn_ == INPAR::MORTAR::shape_dual)
     {
       
       // loop over all mseg matrix entries
@@ -787,7 +773,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
           int kindex = (int)(k/ndof);
   
           // multiply the two shape functions
-          double prod = dualval[jindex]*mval[kindex];
+          double prod = lmval[jindex]*mval[kindex];
   
           // isolate the mseg entries to be filled and
           // add current Gauss point's contribution to mseg  
@@ -823,7 +809,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
      RCP<Epetra_SerialDenseVector> gseg)
 {
   // explicitely defined shapefunction type needed
-  if (shapefcn_ == MortarInterface::Undefined)
+  if (shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
     
   //check for problem dimension
@@ -849,8 +835,8 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
   LINALG::SerialDenseMatrix sderiv(nrow,2,true);
   LINALG::SerialDenseVector mval(ncol);
   LINALG::SerialDenseMatrix mderiv(ncol,2,true);
-  LINALG::SerialDenseVector dualval(nrow);
-  LINALG::SerialDenseMatrix dualderiv(nrow,2,true);
+  LINALG::SerialDenseVector lmval(nrow);
+  LINALG::SerialDenseMatrix lmderiv(nrow,2,true);
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -921,9 +907,8 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
       }
     }
 
-    // evaluate dual space shape functions (on slave element)
-    if (shapefcn_ == MortarInterface::DualFunctions)
-      sele.EvaluateShapeDual(sxi,dualval,dualderiv,nrow);
+    // evaluate Lagrange mutliplier shape functions (on slave element)
+    sele.EvaluateShapeLagMult(shapefcn_,sxi,lmval,lmderiv,nrow);
 
     // evaluate trace space shape functions (on both elements)
     sele.EvaluateShape(sxi,sval,sderiv,nrow);
@@ -948,7 +933,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
 #endif // #ifdef MORTARONELOOP
 
     // compute cell D/M matrix *******************************************
-    if (shapefcn_ == MortarInterface::StandardFunctions)
+    if (shapefcn_ == INPAR::MORTAR::shape_standard)
     {
       // loop over all mseg matrix entries
       // !!! nrow represents the slave Lagrange multipliers !!!
@@ -967,7 +952,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
           int kindex = (int)(k/ndof);
 
           // multiply the two shape functions
-          double prod = sval[jindex]*mval[kindex];
+          double prod = lmval[jindex]*mval[kindex];
 
           // isolate the mseg entries to be filled and
           // add current Gauss point's contribution to mseg
@@ -983,7 +968,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
             int kindex = (int)(k/ndof);
 
             // multiply the two shape functions
-            double prod = sval[jindex]*sval[kindex];
+            double prod = lmval[jindex]*sval[kindex];
 
             // isolate the mseg entries to be filled and
             // add current Gauss point's contribution to mseg
@@ -994,7 +979,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
       }
     }
     
-    else if (shapefcn_ == MortarInterface::DualFunctions)
+    else if (shapefcn_ == INPAR::MORTAR::shape_dual)
     {
       // loop over all mseg matrix entries
       // !!! nrow represents the slave Lagrange multipliers !!!
@@ -1013,7 +998,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
           int kindex = (int)(k/ndof);
 
           // multiply the two shape functions
-          double prod = dualval[jindex]*mval[kindex];
+          double prod = lmval[jindex]*mval[kindex];
 
           // isolate the mseg entries to be filled and
           // add current Gauss point's contribution to mseg
@@ -1049,7 +1034,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 {
   
   // explicitely defined shapefunction type needed
-  if (shapefcn_ == MortarInterface::Undefined)
+  if (shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad called without specific shape function defined!");
   
   /*cout << endl;
@@ -1091,12 +1076,10 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
   LINALG::SerialDenseMatrix sderiv(nrow,2,true);
   LINALG::SerialDenseVector mval(ncol);
   LINALG::SerialDenseMatrix mderiv(ncol,2,true);
-  LINALG::SerialDenseVector dualval(nrow);
-  LINALG::SerialDenseMatrix dualderiv(nrow,2,true);
-  LINALG::SerialDenseVector sintval(nintrow);
-  LINALG::SerialDenseMatrix sintderiv(nintrow,2,true);
-  LINALG::SerialDenseVector dualintval(nintrow);
-  LINALG::SerialDenseMatrix dualintderiv(nintrow,2,true);
+  LINALG::SerialDenseVector lmval(nrow);
+  LINALG::SerialDenseMatrix lmderiv(nrow,2,true);
+  LINALG::SerialDenseVector lmintval(nintrow);
+  LINALG::SerialDenseMatrix lmintderiv(nintrow,2,true);
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -1179,17 +1162,13 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     //cout << "SParent-GP: " << psxi[0] << " " << psxi[1] << endl;
     //cout << "MParent-GP: " << pmxi[0] << " " << pmxi[1] << endl;
 
-    // evaluate dual space shape functions (on slave element)
-    if (shapefcn_ == MortarInterface::DualFunctions)
-    {
-      sele.EvaluateShapeDual(psxi,dualval,dualderiv,nrow);
-      sintele.EvaluateShapeDual(sxi,dualintval,dualintderiv,nintrow);
-    }
+    // evaluate Lagrange multiplier shape functions (on slave element)
+    sele.EvaluateShapeLagMult(shapefcn_,psxi,lmval,lmderiv,nrow);
+    sintele.EvaluateShapeLagMult(shapefcn_,sxi,lmintval,lmintderiv,nintrow);
     
     // evaluate trace space shape functions (on both elements)
     sele.EvaluateShape(psxi,sval,sderiv,nrow);
     mele.EvaluateShape(pmxi,mval,mderiv,ncol);
-    sintele.EvaluateShape(sxi,sintval,sintderiv,nintrow);
 
     // evaluate the integration cell Jacobian
     double jac = cell->Jacobian(eta);
@@ -1212,7 +1191,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     // compute cell D/M matrix *******************************************
     
     // CASE 1: Standard LM shape functions and quadratic interpolation
-    if (shapefcn_ == MortarInterface::StandardFunctions &&
+    if (shapefcn_ == INPAR::MORTAR::shape_standard &&
         lmtype == INPAR::MORTAR::lagmult_quad_quad)
     {
       // compute all mseg (and dseg) matrix entries
@@ -1226,7 +1205,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
           int lindex = (int)(l/ndof);
   
           // multiply the two shape functions
-          double prod = sval[jindex]*mval[lindex];
+          double prod = lmval[jindex]*mval[lindex];
   
           // isolate the mseg entries to be filled and
           // add current Gauss point's contribution to mseg
@@ -1243,7 +1222,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
             int kindex = (int)(k/ndof);
   
             // multiply the two shape functions
-            double prod = sval[jindex]*sval[kindex];
+            double prod = lmval[jindex]*sval[kindex];
   
             // isolate the dseg entries to be filled and
             // add current Gauss point's contribution to dseg
@@ -1255,7 +1234,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     }
     
     // CASE 2: Standard LM shape functions and piecewise linear interpolation
-    else if (shapefcn_ == MortarInterface::StandardFunctions &&
+    else if (shapefcn_ == INPAR::MORTAR::shape_standard &&
              lmtype == INPAR::MORTAR::lagmult_pwlin_pwlin)
     {
       // compute all mseg (and dseg) matrix entries
@@ -1269,7 +1248,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
           int lindex = (int)(l/ndof);
   
           // multiply the two shape functions
-          double prod = sintval[jindex]*mval[lindex];
+          double prod = lmintval[jindex]*mval[lindex];
   
           // isolate the mseg entries to be filled and
           // add current Gauss point's contribution to mseg
@@ -1286,7 +1265,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
             int kindex = (int)(k/ndof);
   
             // multiply the two shape functions
-            double prod = sintval[jindex]*sval[kindex];
+            double prod = lmintval[jindex]*sval[kindex];
   
             // isolate the dseg entries to be filled and
             // add current Gauss point's contribution to dseg
@@ -1298,7 +1277,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     }
     
     // CASE 3: Dual LM shape functions and quadratic interpolation
-    else if (shapefcn_ == MortarInterface::DualFunctions &&
+    else if (shapefcn_ == INPAR::MORTAR::shape_dual &&
              lmtype == INPAR::MORTAR::lagmult_quad_quad)
     {
       // compute all mseg (and dseg) matrix entries
@@ -1316,7 +1295,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
           int lindex = (int)(l/ndof);
 
           // multiply the two shape functions
-          double prod = dualval[jindex]*mval[lindex];
+          double prod = lmval[jindex]*mval[lindex];
 
           // isolate the mseg/dseg entries to be filled and
           // add current Gauss point's contribution to mseg/dseg

@@ -53,11 +53,6 @@ CONTACT::MtPenaltyStrategy::MtPenaltyStrategy(DRT::Discretization& discret, RCP<
                                               int dim, RCP<Epetra_Comm> comm, double alphaf) :
 MtAbstractStrategy(discret, problemrowmap, params, interface, dim, comm, alphaf)
 {
-  // check if prerequisites for penalty strategies are met                                           
-#ifdef MORTARBOUNDMOD
-  dserror("Boundary Modification not implemented for Penalty Methods.");
-#endif
-  
   // initialize constraint norm and initial penalty
   constrnorm_ = 0.0;
   initialpenalty_ = Params().get<double>("PENALTYPARAM");

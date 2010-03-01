@@ -144,15 +144,12 @@ void CONTACT::MtLagrangeStrategy::MeshInitialization()
       vector<int> lm(Dim());
       vector<int> lmowner(Dim());
       
+      // do assembly (overwrite duplicate nodes)
       for (int k=0;k<Dim();++k)
       {
-        val[k] = mtnode->X()[k];
-        lm[k] = mtnode->Dofs()[k];
-        lmowner[k] = mtnode->Owner();
+        int dof = mtnode->Dofs()[k];
+        (*Xmaster)[(Xmaster->Map()).LID(dof)] = mtnode->X()[k];
       }
-      
-      // do assembly
-      LINALG::Assemble(*Xmaster,val,lm,lmowner);
     }
   }
   

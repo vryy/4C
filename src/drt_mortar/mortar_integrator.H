@@ -97,7 +97,7 @@ public:
   and corresponding weights.
   
   */
-  MortarIntegrator(const MortarInterface::ShapeFcnType shapefcn,
+  MortarIntegrator(const INPAR::MORTAR::ShapeFcn shapefcn,
                    DRT::Element::DiscretizationType eletype);
 
   /*!
@@ -284,8 +284,7 @@ protected:
     MortarIntegrator operator = (const MortarIntegrator& old);
     MortarIntegrator(const MortarIntegrator& old);
 
-    const MortarInterface::ShapeFcnType shapefcn_;    // employed type of shape function set
-    
+    const INPAR::MORTAR::ShapeFcn shapefcn_;    // employed type of shape function set
     int                           dim_;         // dimension of problem (2D or 3D)
     int                           ngp_;         // number of Gauss points
     Epetra_SerialDenseMatrix      coords_;      // Gauss point coordinates

@@ -48,7 +48,6 @@ using namespace std;
 /************************************************************************/
 
 #define MORTARONELOOP            /* flag for computing D and M in one loop */
-//#define MORTARBOUNDMOD         /* flag for modification of boundary nodes */
 
 /************************************************************************/
 /* Mortar algorithm parameters                                          */

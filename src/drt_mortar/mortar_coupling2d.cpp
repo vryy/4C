@@ -51,7 +51,7 @@ Maintainer: Alexander Popp
 MORTAR::Coupling2d::Coupling2d(DRT::Discretization& idiscret, int dim,
                                MORTAR::MortarElement& sele,
                                MORTAR::MortarElement& mele) :
-shapefcn_(MortarInterface::Undefined),
+shapefcn_(INPAR::MORTAR::shape_undefined),
 idiscret_(idiscret),
 dim_(dim),
 sele_(sele),
@@ -65,7 +65,7 @@ mele_(mele)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-MORTAR::Coupling2d::Coupling2d(const MortarInterface::ShapeFcnType shapefcn,
+MORTAR::Coupling2d::Coupling2d(const INPAR::MORTAR::ShapeFcn shapefcn,
                                DRT::Discretization& idiscret, int dim,
                                MORTAR::MortarElement& sele,
                                MORTAR::MortarElement& mele) :
@@ -529,7 +529,7 @@ bool MORTAR::Coupling2d::DetectOverlap(vector<bool>& hasproj,
 bool MORTAR::Coupling2d::IntegrateOverlap(vector<double>& xiproj)
 {
   // explicitely defined shapefunction type needed
-  if( shapefcn_ == MortarInterface::Undefined )
+  if (shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateOverlap called without specific shape function defined!");
   
   /**********************************************************************/

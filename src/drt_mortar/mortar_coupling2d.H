@@ -90,7 +90,7 @@ public:
   performed in parallel by individual processes.
   
   */  
-  Coupling2d(const MortarInterface::ShapeFcnType shapefcn, DRT::Discretization& idiscret, int dim,
+  Coupling2d(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret, int dim,
              MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
   /*!
@@ -190,12 +190,11 @@ protected:
     Coupling2d operator = (const Coupling2d& old);
     Coupling2d(const Coupling2d& old);
     
-    const MortarInterface::ShapeFcnType shapefcn_;  // employed type of shape function set
-
-    DRT::Discretization&       idiscret_;    // discretization of the contact interface
-    int                        dim_;         // problem dimension (here: 2D)
-    MORTAR::MortarElement&     sele_;        // slave element to perform coupling for
-    MORTAR::MortarElement&     mele_;        // master element to perform coupling for
+    const INPAR::MORTAR::ShapeFcn shapefcn_;  // employed type of shape function set
+    DRT::Discretization&          idiscret_;  // discretization of the contact interface
+    int                           dim_;       // problem dimension (here: 2D)
+    MORTAR::MortarElement&        sele_;      // slave element to perform coupling for
+    MORTAR::MortarElement&        mele_;      // master element to perform coupling for
 
 }; // class Coupling2d
 }  // namespace MORTAR

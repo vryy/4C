@@ -318,7 +318,9 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
 {
   // read parameter list from DRT::Problem
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
-
+  const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
+  int dim = psize.get<int>("DIM");
+  
   // *********************************************************************
   // this is mortar meshtying
   // *********************************************************************
@@ -362,6 +364,9 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
       Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_standard )
     dserror("Penalty strategy only implemented for standard shape fct.");
+  
+  if (Teuchos::getIntegralValue<int>(input,"CROSSPOINTS") == true && dim == 3)
+    dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
   
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
