@@ -7,7 +7,7 @@ fiber family of smooth muscle (circumferential).
 The strain energy function for one fiber family is the same as in holzapfelcardiovascular.
 
 example input line
-MAT 1 MAT_HUMPHREYCARDIO KAPPA 0.833 MUE 0.385 DENS 1.0 K1C 1.0 K2C 1.0 K1M 1.0 K2M 1.0 PHIE 0.02 PHIC 0.22 PHIM 0.76
+MAT 1 MAT_HUMPHREYCARDIO KAPPA 0.833 MUE 0.385 DENS 1.0 K1C 1.0 K2C 1.0 K1M 1.0 K2M 1.0 PHIE 0.02 PHIC 0.22 PHIM 0.76 INIT 1
 
 <pre>
 Maintainer: Susanna Tinkl
