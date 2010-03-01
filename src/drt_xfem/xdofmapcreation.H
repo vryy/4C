@@ -34,15 +34,15 @@ namespace XFEM
 
   //! check whether to sets of NodeIds are overlapping or not
   bool ConnectedElements(
-      const set<int>& patchset,
-      const set<int>& testset
+      const std::set<int>& patchset,
+      const std::set<int>& testset
       );
 
   void separateByLabel(
       const XFEM::InterfaceHandleXFSI&             ih,
       const std::set<int>&                         beles,
-      map<int, set<int> >&                         elementsByLabel,
-      map<int, set<int> >&                         nodesByLabel
+      std::map<int, std::set<int> >&                         elementsByLabel,
+      std::map<int, std::set<int> >&                         nodesByLabel
       );
 
 } // namespace XFEM

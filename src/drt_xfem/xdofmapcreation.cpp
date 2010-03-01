@@ -71,44 +71,44 @@ bool XFEM::EnrichmentInNodalDofSet(
 
 //! check whether to sets of NodeIds are overlapping or not
 bool XFEM::ConnectedElements(
-    const set<int>& patchset,
-    const set<int>& testset
+    const std::set<int>& patchset,
+    const std::set<int>& testset
     )
 {
   std::set<int> result;
   std::set_intersection(patchset.begin(), patchset.end(), testset.begin(), testset.end(),
-    std::insert_iterator<set<int> >(result, result.begin()));
+    std::insert_iterator<std::set<int> >(result, result.begin()));
   return result.size() > 0;
 }
 
 void XFEM::separateByLabel(
     const XFEM::InterfaceHandleXFSI&             ih,
     const std::set<int>&                         beles,
-    map<int, set<int> >&                         elementsByLabel,
-    map<int, set<int> >&                         nodesByLabel
+    std::map<int, std::set<int> >&                         elementsByLabel,
+    std::map<int, std::set<int> >&                         nodesByLabel
     )
 {
-    for (std::set<int>::const_iterator iele=beles.begin();iele != beles.end(); ++iele)
-    {
-      const int label = ih.GetLabelPerBoundaryElementId(*iele);
-      elementsByLabel[label].insert(*iele);
-    }
+  for (std::set<int>::const_iterator iele=beles.begin();iele != beles.end(); ++iele)
+  {
+    const int label = ih.GetLabelPerBoundaryElementId(*iele);
+    elementsByLabel[label].insert(*iele);
+  }
 
-    // translate to node set
-    for (map<int, set<int> >::const_iterator entry = elementsByLabel.begin(); entry != elementsByLabel.end();++entry)
+  // translate to node set
+  for (std::map<int, std::set<int> >::const_iterator entry = elementsByLabel.begin(); entry != elementsByLabel.end();++entry)
+  {
+    const int label = entry->first;
+    const std::set<int> eleGiDs = entry->second;
+    for (std::set<int>::const_iterator ibele = eleGiDs.begin(); ibele != eleGiDs.end(); ++ibele)
     {
-      const int label = entry->first;
-      const set<int> eleGiDs = entry->second;
-      for (set<int>::const_iterator ibele = eleGiDs.begin(); ibele != eleGiDs.end(); ++ibele)
+      const DRT::Element* bele = ih.cutterdis()->gElement(*ibele);
+      const int* bnodeids = bele->NodeIds();
+      for (int inode = 0; inode < bele->NumNode(); ++inode)
       {
-        const DRT::Element* bele = ih.cutterdis()->gElement(*ibele);
-        const int* bnodeids = bele->NodeIds();
-        for (int inode = 0; inode < bele->NumNode(); ++inode)
-        {
-          nodesByLabel[label].insert(bnodeids[inode]);
-        }
+        nodesByLabel[label].insert(bnodeids[inode]);
       }
     }
+  }
 }
 
 
