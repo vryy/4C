@@ -450,7 +450,7 @@ protected:
   
   
   // compute global forces and center of gravity
-  void computeGlobalForceAndCOG(
+  double computeGlobalForceAndCOG(
     double                vol_sphere_local, 
     LINALG::Matrix<3,1>&  fpot_sphere_local,
     LINALG::Matrix<3,1>&  cog_sphere_local,

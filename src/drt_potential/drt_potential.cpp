@@ -1221,7 +1221,7 @@ void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
   // compute global values for the center of gravity and potential force
   std::vector< LINALG::Matrix<3,1> > fpot_global(2, LINALG::Matrix<3,1>(true));
   std::vector< LINALG::Matrix<3,1> > cog_global(2, LINALG::Matrix<3,1>(true));
-  computeGlobalForceAndCOG(vol_sphere_local[0], fpot[0], cog[0], fpot_global[0], cog_global[0]);
+  const double globalvolume = computeGlobalForceAndCOG(vol_sphere_local[0], fpot[0], cog[0], fpot_global[0], cog_global[0]);
   computeGlobalForceAndCOG(vol_sphere_local[1], fpot[1], cog[1], fpot_global[1], cog_global[1]);
 
   if(discretRCP_->Comm().MyPID() == 0)
@@ -1239,6 +1239,9 @@ void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
     // compute analytical solution
     // d = distance - 2* radius
     const double radius = vdw_radius;
+    //double globalv = 63527.0;
+    // const double radius_test = pow( ((3*globalv)/(4*PI_POT) ) ,(1.0/3.0));
+    //cout << "radius_test = " << radius_test << endl;
     const double d = distance - 2.0*radius;
     const double x = d/(2.0*radius);
     // A_ham = pi*pi*lambda*beta*beta
@@ -1391,7 +1394,7 @@ double POTENTIAL::Potential::computeLocalForceAndCOG(
 /*----------------------------------------------------------------------*
  |  test compute global values                               u.may 01/10|
  *----------------------------------------------------------------------*/
-void POTENTIAL::Potential::computeGlobalForceAndCOG(
+double POTENTIAL::Potential::computeGlobalForceAndCOG(
   double                vol_sphere_local, 
   LINALG::Matrix<3,1>&  fpot_sphere_local,
   LINALG::Matrix<3,1>&  cog_sphere_local,
@@ -1416,7 +1419,7 @@ void POTENTIAL::Potential::computeGlobalForceAndCOG(
   (discretRCP_->Comm()).SumAll(&fpot_sphere_local(1),&fpot_sphere_global(1), 1);
   (discretRCP_->Comm()).SumAll(&fpot_sphere_local(2),&fpot_sphere_global(2), 1);
   
-  return;
+  return vol_sphere_global;
 }
 
 
