@@ -1061,6 +1061,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   // Fluctuating Hydrodynamics Statistics on a surface
 
   std::vector<Teuchos::RCP<ConditionComponent> > flucthydrostatsurfcomponents;
+  flucthydrostatsurfcomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   flucthydrostatsurfcomponents.push_back(
       Teuchos::rcp(
            new StringConditionComponent(
@@ -1087,6 +1088,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   // Fluctuating Hydrodynamics Statistics on a line
 
   std::vector<Teuchos::RCP<ConditionComponent> > flucthydrostatlinecomponents;
+  flucthydrostatlinecomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   flucthydrostatlinecomponents.push_back(
         Teuchos::rcp(
           new StringConditionComponent(

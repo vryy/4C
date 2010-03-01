@@ -1240,6 +1240,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& flucthydro = list->sublist("FLUCTUATING HYDRODYNAMICS",false,"");
   DoubleParameter("TEMPERATURE",300,"Temperature in K",&flucthydro);
   DoubleParameter("BOLTZMANNCONST",1.380650424e-23,"Boltzmann constant",&flucthydro);
+  setStringToIntegralParameter<int>("SEEDCONTROL","No",
+                                      "control seeding with given unsigned integer",
+                                      yesnotuple,yesnovalue,&flucthydro);
+  IntParameter("SEEDVARIABLE",0,"seed variable",&flucthydro);
+  IntParameter("SAMPLEPERIOD",1,"sample period",&flucthydro);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
