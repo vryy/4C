@@ -950,7 +950,7 @@ double DRT::UTILS::JefferyHamelFlowFunction::RadialVelocity(
     )
 {
 #ifdef DEBUG
-  if (alpha < 0.01 or alpha > (M_PI/4.0+0.01))
+  if (alpha < -0.01 or alpha > (M_PI/4.0+0.01))
   {
     dserror("angle out of range! Must be between 0 and PI/4");
   }
