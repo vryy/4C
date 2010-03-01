@@ -306,7 +306,8 @@ void DRT::Discretization::EvaluateNeumann(ParameterList&          params,
       if (!NodeRowMap()->MyGID((*nodeids)[i])) continue;
       DRT::Node* actnode = gNode((*nodeids)[i]);
       if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
-      vector<int> dofs = Dof(actnode);
+      // call explicitly the main dofset, i.e. the first column
+      vector<int> dofs = Dof(0,actnode);
       const unsigned numdf = dofs.size();
       for (unsigned j=0; j<numdf; ++j)
       {
@@ -699,7 +700,8 @@ void DoDirichletCondition(DRT::Condition&             cond,
     if (!dis.NodeRowMap()->MyGID((*nodeids)[i])) continue;
     DRT::Node* actnode = dis.gNode((*nodeids)[i]);
     if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
-    vector<int> dofs = dis.Dof(actnode);
+    // call explicitly the main dofset, i.e. the first column
+    vector<int> dofs = dis.Dof(0,actnode);
     const unsigned numdf = dofs.size();
     for (unsigned j=0; j<numdf; ++j)
     {
