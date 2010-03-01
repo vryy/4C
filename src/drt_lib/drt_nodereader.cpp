@@ -124,8 +124,8 @@ void NodeReader::Read()
           int nodeid;
           file >> nodeid >> tmp >> coords[0] >> coords[1] >> coords[2];
           nodeid--;
-          if (nodeid != filecount)
-            dserror("Reading of nodes failed: Nodes must be numbered consecutive!!");
+          //          if (nodeid != filecount)
+          //            dserror("Reading of nodes failed: Nodes must be numbered consecutive!!");
           if (tmp!="COORD")
             dserror("failed to read node %d",nodeid);
           std::vector<Teuchos::RCP<DRT::Discretization> > diss = FindDisNode(nodeid);
