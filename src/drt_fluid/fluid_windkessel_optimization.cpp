@@ -1297,7 +1297,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::WriteRestart(
   std::stringstream stream1;
 
   // output optimization step  
-  stream1<<"Step";
+  stream1<<"Optimization_Step";
   output.WriteInt(stream1.str(), step_);
 
 }//FluidWkOptimizationWrapper::WriteRestart
@@ -1318,7 +1318,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::ReadRestart(
   std::stringstream stream1;
   
   // read in step number
-  stream1<<"step";
+  stream1<<"Optimization_Step";
   step_ = reader.ReadInt(stream1.str());
 
 }//FluidWkOptimizationWrapper::ReadRestart
