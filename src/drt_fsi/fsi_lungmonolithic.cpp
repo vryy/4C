@@ -518,17 +518,19 @@ void FSI::LungMonolithic::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Ep
   Teuchos::RCP<Epetra_Vector> sr = Extractor().ExtractVector(r,0);
   Teuchos::RCP<Epetra_Vector> fr = Extractor().ExtractVector(r,1);
   Teuchos::RCP<Epetra_Vector> ar = Extractor().ExtractVector(r,2);
+  Teuchos::RCP<Epetra_Vector> cr = Extractor().ExtractVector(r,3);
 
   // increment additional ale residual
   aleresidual_->Update(-1.,*ar,0.);
 
   ios_base::fmtflags flags = Utils()->out().flags();
 
-  double n,ns,nf,na;
+  double n,ns,nf,na,nc;
   r.Norm2(&n);
   sr->Norm2(&ns);
   fr->Norm2(&nf);
   ar->Norm2(&na);
+  cr->Norm2(&nc);
   Utils()->out() << std::scientific
                  << "\nlinear solver quality:\n"
                  << "L_2-norms:\n"
@@ -536,16 +538,19 @@ void FSI::LungMonolithic::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Ep
                  << END_COLOR "   |rs|=" YELLOW << ns
                  << END_COLOR "   |rf|=" YELLOW << nf
                  << END_COLOR "   |ra|=" YELLOW << na
+                 << END_COLOR "   |rc|=" YELLOW << nc
                  << END_COLOR "\n";
   r.NormInf(&n);
   sr->NormInf(&ns);
   fr->NormInf(&nf);
   ar->NormInf(&na);
+  cr->NormInf(&nc);
   Utils()->out() << "L_inf-norms:\n"
                  << END_COLOR "   |r|=" YELLOW << n
                  << END_COLOR "   |rs|=" YELLOW << ns
                  << END_COLOR "   |rf|=" YELLOW << nf
                  << END_COLOR "   |ra|=" YELLOW << na
+                 << END_COLOR "   |rc|=" YELLOW << nc
                  << END_COLOR "\n";
 
   Utils()->out().flags(flags);

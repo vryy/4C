@@ -173,13 +173,16 @@ void FSI::LungMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcal
     if (a==Teuchos::null)
       dserror("expect ale block matrix");
 
-    LINALG::SparseMatrix aig(a->Matrix(0,1), Copy);
+    LINALG::SparseMatrix& aig = a->Matrix(0,1);
+
     Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
     Teuchos::RCP<Epetra_Vector> sveln = FluidToStruct(fveln);
     Teuchos::RCP<Epetra_Vector> aveln = StructToAle(sveln);
     Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
     aig.Apply(*aveln,*rhs);
+
     rhs->Scale(-1.*Dt());
+
     Extractor().AddVector(*rhs,2,f);
 
     //--------------------------------------------------------------------------------
@@ -207,7 +210,7 @@ void FSI::LungMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcal
     Extractor().AddVector(*veln,1,f);
 
     //--------------------------------------------------------------------------------
-    // constraint
+    // constraint structure
     //--------------------------------------------------------------------------------
     // split in two blocks according to inner and fsi structure dofs
     Teuchos::RCP<Epetra_Map> emptymap = Teuchos::rcp(new Epetra_Map(-1,0,NULL,0,StructureField().Discretization()->Comm()));
@@ -223,6 +226,14 @@ void FSI::LungMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcal
 
     rhs = Teuchos::rcp(new Epetra_Vector(csig.RowMap()));
     csig.Apply(*sveln,*rhs);
+    rhs->Scale(-1.*Dt());
+    Extractor().AddVector(*rhs,3,f);
+
+    //--------------------------------------------------------------------------------
+    // constraint ale
+    //--------------------------------------------------------------------------------
+    LINALG::SparseMatrix& caig = ConstrAleMatrix_->Matrix(0,1);
+    caig.Apply(*fveln,*rhs);
     rhs->Scale(-1.*Dt());
     Extractor().AddVector(*rhs,3,f);
 
@@ -254,6 +265,7 @@ void FSI::LungMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcal
 
       LINALG::SparseMatrix& afmgg = AddFluidShapeDerivMatrix_->Matrix(1,1);
       LINALG::SparseMatrix& afmGg = AddFluidShapeDerivMatrix_->Matrix(3,1);
+
       rhs = Teuchos::rcp(new Epetra_Vector(afmgg.RowMap()));
       afmgg.Apply(*fveln,*rhs);
       veln = FluidField().Interface().InsertVector(rhs,1);
@@ -358,7 +370,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
                    1.,
                    ADAPTER::Coupling::MasterConverter(coupfsout_),
                    mat.Matrix(1,0),
-                   false,
+                   true,
                    false);
     fmiGtransform_(mmm->FullRowMap(),
                    mmm->FullColMap(),
@@ -366,7 +378,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
                    1.,
                    ADAPTER::Coupling::MasterConverter(coupfsout_),
                    mat.Matrix(1,0),
-                   false,
+                   true,
                    true);
     fmGGtransform_(mmm->FullRowMap(),
                    mmm->FullColMap(),
@@ -374,7 +386,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
                    1.,
                    ADAPTER::Coupling::MasterConverter(coupfsout_),
                    mat.Matrix(1,0),
-                   false,
+                   true,
                    true);
 
     mat.Matrix(1,1).Add(addfmgg,false,1./timescale,1.0);
@@ -386,7 +398,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
                       1.,
                       ADAPTER::Coupling::MasterConverter(coupfsout_),
                       mat.Matrix(1,0),
-                      false,
+                      true,
                       true);
     addfmGGtransform_(AddFluidShapeDerivMatrix_->FullRowMap(),
                       AddFluidShapeDerivMatrix_->FullColMap(),
@@ -394,7 +406,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
                       1.,
                       ADAPTER::Coupling::MasterConverter(coupfsout_),
                       mat.Matrix(1,0),
-                      false,
+                      true,
                       true);
   }
 
@@ -476,7 +488,6 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
                  ADAPTER::Coupling::MasterConverter(coupsf),
                  mat.Matrix(1,3),
                  true);
-  mat.Matrix(1,3).Complete(*ConstrMap_,*FluidField().Discretization()->DofRowMap());
 
   /*----------------------------------------------------------------------*/
   // ale part
@@ -526,13 +537,14 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
 
   mat.Assign(3,0,View,csii);
 
-  csigtransform_(*coupsf.SlaveDofMap(),
+  mat.Matrix(3,1).UnComplete();
+  csigtransform_(*coupsf.MasterDofMap(),
                  csig.ColMap(),
                  csig,
                  1./timescale,
-                 ADAPTER::Coupling::SlaveConverter(coupsf),
+                 ADAPTER::Coupling::MasterConverter(coupsf),
                  mat.Matrix(3,1),
-                 false,
+                 true,
                  true);
 
   /*----------------------------------------------------------------------*/
@@ -542,13 +554,13 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
   mat.Matrix(3,1).Add(caig, false, 1./timescale, 1.0);
 
   LINALG::SparseMatrix& caiG = ConstrAleMatrix_->Matrix(0,3);
-  caiGtransform_(*coupsaout_.SlaveDofMap(),
+  caiGtransform_(*coupfsout_.MasterDofMap(),
                  caiG.ColMap(),
                  caiG,
                  1.0,
-                 ADAPTER::Coupling::SlaveConverter(coupsaout_),
+                 ADAPTER::Coupling::MasterConverter(coupfsout_),
                  mat.Matrix(3,0),
-                 false,
+                 true,
                  true);
 
   /*----------------------------------------------------------------------*/
