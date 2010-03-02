@@ -116,5 +116,43 @@ bool TSI::UTILS::ThermoStructureCloneStrategy::DetermineEleType(
   return true; // yes, we copy EVERY element (no submeshes)
 }
 
+/*----------------------------------------------------------------------*
+ | print TSI-logo                                            dano 03/10 |
+ *----------------------------------------------------------------------*/
+void TSI::printlogo()
+{
+  // more at http://www.ascii-art.de under entry "rockets"
+  std::cout << "Welcome to Thermo-Structure-Interaction " << std::endl;
+  std::cout<<"         !"<<std::endl;
+  std::cout<<"         !"<<std::endl;
+  std::cout<<"         ^"<<std::endl;
+  std::cout<<"        / \\"<<std::endl;
+  std::cout<<"       /___\\"<<std::endl;
+  std::cout<<"      |=   =|"<<std::endl;
+  std::cout<<"      |     |"<<std::endl;
+  std::cout<<"      |     |"<<std::endl;
+  std::cout<<"      |     |"<<std::endl;
+  std::cout<<"      |     |"<<std::endl;
+  std::cout<<"      |     |"<<std::endl;
+  std::cout<<"      | TSI |"<<std::endl;
+  std::cout<<"      |     |"<<std::endl;
+  std::cout<<"     /|##!##|\\"<<std::endl;
+  std::cout<<"    / |##!##| \\"<<std::endl;
+  std::cout<<"   /  |##!##|  \\"<<std::endl;
+  std::cout<<"  |  / ^ | ^ \\  |"<<std::endl;
+  std::cout<<"  | /  ( | )  \\ |"<<std::endl;
+  std::cout<<"  |/   ( | )   \\|"<<std::endl;
+  std::cout<<"      ((   ))"<<std::endl;
+  std::cout<<"     ((  :  ))"<<std::endl;
+  std::cout<<"     ((  :  ))"<<std::endl;
+  std::cout<<"      ((   ))"<<std::endl;
+  std::cout<<"       (( ))"<<std::endl;
+  std::cout<<"        ( )"<<std::endl;
+  std::cout<<"         ."<<std::endl;
+  std::cout<<"         ."<<std::endl;
+  std::cout<<"         ."<<std::endl;
+  std::cout<<"\n"<<std::endl;
+}
+
 /*----------------------------------------------------------------------*/
 #endif // CCADISCRET

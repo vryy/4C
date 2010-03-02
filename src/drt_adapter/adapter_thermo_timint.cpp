@@ -62,7 +62,8 @@ ADAPTER::ThermoTimInt::ThermoTimInt(
     dserror("Failed to create thermal integrator");
 
   // initialise temperature increments to 0 (in words zero)
-  tempinc_ = Teuchos::rcp(new Epetra_Vector(*(DofRowMap()),true));
+  // DofRowMap for multiple dofsets
+  tempinc_ = Teuchos::rcp(new Epetra_Vector(*(DofRowMap(0)),true));
 
   // good bye
   return;
@@ -158,6 +159,15 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::ThermoTimInt::Tempn()
 }
 
 /*----------------------------------------------------------------------*
+ | non-overlapping DOF map for multiple dofsets              dano 02/10 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> ADAPTER::ThermoTimInt::DofRowMap(unsigned nds)
+{
+  const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
+  return Teuchos::rcp(new Epetra_Map(*dofrowmap));
+}
+
+/*----------------------------------------------------------------------*
  | non-overlapping DOF map                                  bborn 08/09 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> ADAPTER::ThermoTimInt::DofRowMap()
@@ -220,7 +230,8 @@ void ADAPTER::ThermoTimInt::Evaluate(Teuchos::RCP<const Epetra_Vector> temp)
   // increment only.
   if (temp != Teuchos::null)
   {
-    // residual temperatures (or iteration increments or iteratively incremental temperatures)
+    // residual temperatures (or iteration increments or iteratively
+    // incremental temperatures)
     Teuchos::RCP<Epetra_Vector> tempi = Teuchos::rcp(new Epetra_Vector(*temp));
     tempi->Update(-1.0, *tempinc_, 1.0);
 

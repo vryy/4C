@@ -51,6 +51,9 @@ namespace ADAPTER {
     /// actually Dispm()-called, mid-displacement?
     Teuchos::RCP<const Epetra_Vector> Dispnm();
     Teuchos::RCP<const Epetra_Map> DofRowMap();
+    /// DOF map of vector of unknowns
+    // new method for multiple dofsets
+    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds);
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
     void UseBlockMatrix();

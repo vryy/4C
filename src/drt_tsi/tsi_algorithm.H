@@ -102,25 +102,39 @@ namespace TSI
     /// write output
     virtual void Output();
 
+    /// convergence check for natural convection solver
+    bool ConvergenceCheck(int itnum, int itmax, double ittol);
+
     //@}
 
     //! @name Transfer helpers
 
-//    virtual Teuchos::RCP<Epetra_Vector> StructToThermo(Teuchos::RCP<Epetra_Vector> iv) const;
+////    virtual Teuchos::RCP<Epetra_Vector> StructToThermo(Teuchos::RCP<Epetra_Vector> iv) const;
 //    virtual Teuchos::RCP<Epetra_Vector> ThermoToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
-//
-//    virtual Teuchos::RCP<Epetra_Vector> StructToThermo(Teuchos::RCP<const Epetra_Vector> iv) const;
+////
+////    virtual Teuchos::RCP<Epetra_Vector> StructToThermo(Teuchos::RCP<const Epetra_Vector> iv) const;
 //    virtual Teuchos::RCP<Epetra_Vector> ThermoToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
-
-    //@}
-
-//    ADAPTER::TSCoupling& StructureThermoCoupling() { return coupst_; }
 //
-//    const ADAPTER::TSCoupling& StructureThermoCoupling() const { return coupst_; }
-
+//    //@}
+//
+//    TSI::Algorithm& StructureThermoCoupling() { return coupst_; }
+//
+//    const TSI::Algorithm& StructureThermoCoupling() const { return coupst_; }
+//
   private:
 
-    // 14.12.09 not yet used!
+    // 10.02.10
+    /// (preliminary) maximum number of iterations and tolerance for outer iteration
+//    const int itmax_;
+    int itmax_;
+    /// temperature tolerance
+    //   const double ittol_;
+    double ittol_;
+
+    /// temperature increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> tempincnp_;
+
+//    // 14.12.09 not yet used!
 //    /// coupling of structure and temperature
 //    TSI::Algorithm  coupst_;
   };

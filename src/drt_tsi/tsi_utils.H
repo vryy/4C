@@ -79,6 +79,9 @@ namespace UTILS
 
 } // namespace UTILS
 
+  /*! prints the BACI tsi-logo on the screen */
+  void printlogo();
+
 } // namespace TSI
 
 /*----------------------------------------------------------------------*/

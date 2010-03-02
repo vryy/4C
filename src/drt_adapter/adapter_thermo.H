@@ -109,6 +109,9 @@ namespace ADAPTER
     /// DOF map of vector of unknowns
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap() = 0;
 
+    /// DOF map of vector of unknowns for multiple dofsets
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) = 0;
+
     /// domain map of system matrix (do we really need this?)
     virtual const Epetra_Map& DomainMap() = 0;
 

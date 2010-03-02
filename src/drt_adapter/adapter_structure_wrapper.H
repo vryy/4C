@@ -25,6 +25,10 @@ namespace ADAPTER
 
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap()
     { return structure_->DofRowMap(); }
+    /// dof map of vector of unknowns for multiple dofsets
+    // new method
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds)
+    { return Teuchos::rcp(new Epetra_Map(*Discretization()->DofRowMap(nds))); }
     virtual const Epetra_Map& DomainMap()
     { return structure_->DomainMap(); }
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()

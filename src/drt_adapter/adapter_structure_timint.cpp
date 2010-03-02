@@ -112,6 +112,13 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::StructureTimInt::DofRowMap()
   return Teuchos::rcp(new Epetra_Map(*dofrowmap));
 }
 
+/*----------------------------------------------------------------------*/
+/* non-overlapping DOF map */
+Teuchos::RCP<const Epetra_Map> ADAPTER::StructureTimInt::DofRowMap(unsigned nds)
+{
+  const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
+  return Teuchos::rcp(new Epetra_Map(*dofrowmap));
+}
 
 /*----------------------------------------------------------------------*/
 /* stiffness, i.e. force residual R_{n+1} differentiated

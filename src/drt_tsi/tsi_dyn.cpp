@@ -60,18 +60,20 @@ void tsi_dyn_drt()
   Epetra_SerialComm comm;
 #endif
 
-//  // print TSI-Logo to screen
-//  if (comm.MyPID()==0) printlogo();
+  // print TSI-Logo to screen
+  if (comm.MyPID()==0) TSI::printlogo();
 
   // access the structure discretization, make sure it is filled
-  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null; // introduced 25.01.10
+  structdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+  // set degrees of freedom in the discretization 25.01.10
   if (!structdis->Filled() or !structdis->HaveDofs()) structdis->FillComplete();
 
   // access the thermo discretization
-  Teuchos::RCP<DRT::Discretization> thermdis = DRT::Problem::Instance()->Dis(genprob.numtf,0);
+  Teuchos::RCP<DRT::Discretization> thermdis = Teuchos::null;
+  thermdis = DRT::Problem::Instance()->Dis(genprob.numtf,0);
   if (!thermdis->Filled()) thermdis->FillComplete();
 
-  // 10.12.09: for TSI necessary???????? access the problem-specific parameter list
   // access the problem-specific parameter list
 //  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
 
@@ -125,13 +127,6 @@ void tsi_dyn_drt()
 //    break;
   return;
 } // tsi_dyn_drt()
-
-/*----------------------------------------------------------------------*
- | print TSI-logo                                            dano 12/09 |
- *----------------------------------------------------------------------*/
-//void printlogo()
-//{
-//}
 
 /*----------------------------------------------------------------------*/
 #endif  // CCADISCRET

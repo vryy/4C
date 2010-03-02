@@ -119,6 +119,15 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::CmtStructureGenAlpha::DofRowMap()
 
 
 /*----------------------------------------------------------------------*/
+/* non-overlapping DOF map */
+Teuchos::RCP<const Epetra_Map> ADAPTER::CmtStructureGenAlpha::DofRowMap(unsigned nds)
+{
+  const Epetra_Map* dofrowmap = dis_->DofRowMap(nds);
+  return Teuchos::rcp(new Epetra_Map(*dofrowmap));
+}
+
+
+/*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::CmtStructureGenAlpha::SystemMatrix()
 {

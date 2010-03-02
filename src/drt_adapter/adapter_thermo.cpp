@@ -127,6 +127,11 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterList&
   Teuchos::RCP<Teuchos::ParameterList> tdynparams
     = rcp(new ParameterList(DRT::Problem::Instance()->ThermalDynamicParams()));
 
+  // add extra parameters (a kind of work-around)
+  Teuchos::RCP<Teuchos::ParameterList> xparams
+    = Teuchos::rcp(new Teuchos::ParameterList());
+  xparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
+
   // -------------------------------------------------------------------
   // overrule certain parameters for coupled problems
   // -------------------------------------------------------------------
@@ -140,11 +145,6 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterList&
   tdynparams->set<int>    ("RESTARTEVRY",prbdyn.get<int>("RESTARTEVRY"));
   // solution output
   tdynparams->set<int>    ("RESEVRYGLOB",prbdyn.get<int>("UPRES"));
-
-  // add extra parameters (a kind of work-around)
-  Teuchos::RCP<Teuchos::ParameterList> xparams
-    = Teuchos::rcp(new Teuchos::ParameterList());
-  xparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
 
   // create a linear solver
   Teuchos::RCP<Teuchos::ParameterList> solveparams

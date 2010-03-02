@@ -75,6 +75,10 @@ namespace ADAPTER {
     /// dof map of vector of unknowns
     Teuchos::RCP<const Epetra_Map> DofRowMap();
 
+    /// dof map of vector of unknowns
+    // new method for multiple dofsets
+    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds);
+
     /// direct access to system matrix
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
 

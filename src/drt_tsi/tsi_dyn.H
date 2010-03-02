@@ -25,9 +25,6 @@ extern "C"
 /* entry point for the solution of thermo-structure-interaction problems */
 void tsi_dyn_drt();
 
-/*! prints the BACI tsi-logo on the screen */
-/*void printlogo();*/
-
 #ifdef __cplusplus
 }
 #endif

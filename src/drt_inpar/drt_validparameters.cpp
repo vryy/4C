@@ -1237,7 +1237,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    IntParameter("NUMSTEP",200,"maximum number of Timesteps",&tsidyn);
    DoubleParameter("MAXTIME",1000.0,"Total simulation time",&tsidyn);
    DoubleParameter("TIMESTEP",0.05,"time step size dt",&tsidyn);
-
+   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&tsidyn);
+   IntParameter("ITEMAX",1,"Maximum number of iterations over fields",&tsidyn);
    IntParameter("UPRES",1,"Increment for writing solution",&tsidyn);
 
   /*----------------------------------------------------------------------*/
