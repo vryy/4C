@@ -243,6 +243,9 @@ int FLD::UTILS::FluidWkOptimizationWrapper::GetObjectiveFunctionSize(RCP<DRT::Co
 void FLD::UTILS::FluidWkOptimizationWrapper::Solve(ParameterList params)
 {
 
+  // -------------------------------------------------------------------
+  // do nothing if the windkessel optimization bc is not defined
+  // -------------------------------------------------------------------
   if (optwkmap_.size()== 0)
   {
     return;
@@ -1106,6 +1109,14 @@ void FLD::UTILS::FluidWkOptimizationWrapper::CalcAdjointJacobian()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidWkOptimizationWrapper::UpdateResidual()
 {
+  // -------------------------------------------------------------------
+  // do nothing if the windkessel optimization bc is not defined
+  // -------------------------------------------------------------------
+  if (optwkmap_.size()== 0)
+  {
+    return;
+  }
+
   *fnm_ = *fn_;
   *xnm_ = *xn_;
   
@@ -1217,6 +1228,14 @@ void FLD::UTILS::FluidWkOptimizationWrapper::GetDesignVariables(
   int condid,
   int index)
 {
+  // -------------------------------------------------------------------
+  // do nothing if the windkessel optimization bc is not defined
+  // -------------------------------------------------------------------
+  if (optwkmap_.size()== 0)
+  {
+    return;
+  }
+
   ParameterList params;
 
   // -----------------------------------------------------------------
@@ -1294,6 +1313,14 @@ void FLD::UTILS::FluidWkOptimizationWrapper::GetDesignVariables(
 void FLD::UTILS::FluidWkOptimizationWrapper::WriteRestart(
   IO::DiscretizationWriter&  output)
 {
+  // -------------------------------------------------------------------
+  // do nothing if the windkessel optimization bc is not defined
+  // -------------------------------------------------------------------
+  if (optwkmap_.size()== 0)
+  {
+    return;
+  }
+
   std::stringstream stream1;
 
   // output optimization step  
@@ -1315,6 +1342,15 @@ void FLD::UTILS::FluidWkOptimizationWrapper::WriteRestart(
 void FLD::UTILS::FluidWkOptimizationWrapper::ReadRestart(
   IO::DiscretizationReader& reader)
 {
+
+  // -------------------------------------------------------------------
+  // do nothing if the windkessel optimization bc is not defined
+  // -------------------------------------------------------------------
+  if (optwkmap_.size()== 0)
+  {
+    return;
+  }
+
   std::stringstream stream1;
   
   // read in step number
