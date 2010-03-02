@@ -552,13 +552,13 @@ void DRT::Element::LocationVector(const Discretization& dis, vector<int>& lm, ve
     for (int i=0; i<numnode; ++i)
     {
       const Node* node = nodes[i];
-      dis.Dof(this,node,lm);
+      dis.Dof(0,this,node,lm);
       lmowner.resize(lm.size(),node->Owner());
     }
   }
 
   // fill the vector with element dofs
-  dis.Dof(this,lm);
+  dis.Dof(0,this,lm);
   lmowner.resize(lm.size(),Owner());
   return;
 }

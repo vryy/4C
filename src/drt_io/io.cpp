@@ -910,7 +910,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
       << "    step = " << step << "\n\n"
       << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
       << "    num_ele = " << dis_->NumGlobalElements() << "\n"
-      << "    num_dof = " << dis_->DofRowMap()->NumGlobalElements() << "\n\n"
+      << "    num_dof = " << dis_->DofRowMap(0)->NumGlobalElements() << "\n\n"
       ;
 
     WriteCondition("SurfacePeriodic");

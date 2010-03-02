@@ -414,7 +414,7 @@ void DRT::Discretization::Print(ostream& os) const
         os << *(curr->second);
         if (Filled())
         {
-          vector<int> dof = Dof(&*(curr->second));
+          vector<int> dof = Dof(0,&*(curr->second));
           if (dof.size())
           {
             os << " Dofs ";
@@ -440,7 +440,7 @@ void DRT::Discretization::Print(ostream& os) const
         os << *(curr->second);
         if (Filled())
         {
-          vector<int> dof = Dof(&*(curr->second));
+          vector<int> dof = Dof(0,&*(curr->second));
           if (dof.size())
           {
             os << " Dofs ";
