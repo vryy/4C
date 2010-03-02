@@ -393,7 +393,7 @@ FSI::UTILS::MatrixRowColTransform::operator()(const LINALG::SparseMatrix& src,
 
   Teuchos::RCP<Epetra_CrsMatrix> edst = dst.EpetraMatrix();
 
-  coltrans_.SetupGidMap(*rowconverter.SrcMap(),permsrc->ColMap(),colconverter,src.Comm());
+  coltrans_.SetupGidMap(*colconverter.SrcMap(),permsrc->ColMap(),colconverter,src.Comm());
   coltrans_.MatrixInsert(permsrc,dstmap,edst,exactmatch,addmatrix,1.0);
 
   return true;
