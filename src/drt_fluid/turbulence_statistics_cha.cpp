@@ -65,7 +65,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     }
   }
 
-  if(physicaltype_ == INPAR::FLUID::loma)
+  if(physicaltype_ != INPAR::FLUID::loma)
   {
      // get fluid viscosity from material definition --- for computation
      // of ltau
