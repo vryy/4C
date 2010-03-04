@@ -42,7 +42,7 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_solver.H"
+//#include "../drt_lib/linalg_solver.H"
 
 
 /*----------------------------------------------------------------------*
@@ -144,8 +144,8 @@ void CONTACT::MtPenaltyStrategy::MeshInitialization()
   mmatrix_->Multiply(false,*Xmaster,*rhs);
   
   // solve with default solver
-  LINALG::Solver solver(Comm());
-  solver.Solve(dmatrix_->EpetraOperator(),Xslavemod,rhs,true);
+  //LINALG::Solver solver(Comm());
+  //solver.Solve(dmatrix_->EpetraOperator(),Xslavemod,rhs,true);
       
   //**********************************************************************
   // (3) perform mesh initialization node by node
