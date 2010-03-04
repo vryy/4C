@@ -393,7 +393,13 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // in this case, we need basis vectors for the nullspace/kernel
   vector<DRT::Condition*> KSPCond;
   discret_->GetCondition("KrylovSpaceProjection",KSPCond);
-  int nummodes = KSPCond.size();
+  int numcond = KSPCond.size();
+  int nummodes = 0;
+  for(int icond = 0; icond < numcond; icond++)
+  {
+    const std::string* name = KSPCond[icond]->Get<std::string>("discretization");
+    if (*name == "scatra") nummodes++;
+  }
 
   if (nummodes > 0)
   {
