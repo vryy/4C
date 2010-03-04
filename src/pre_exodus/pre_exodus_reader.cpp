@@ -445,6 +445,22 @@ vector<double> EXODUS::Mesh::GetNode(const int NodeID) const
   return it->second;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void EXODUS::Mesh::SetNode(const int              NodeID,
+                           const vector<double>   coord) 
+{
+  // if entry exits already , delete it first and the insert the new value
+  // other wise nothing is inserted
+  if(nodes_->find(NodeID) != nodes_->end())
+    nodes_->erase(NodeID);
+    
+  nodes_->insert(make_pair(NodeID,coord));
+  return;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const

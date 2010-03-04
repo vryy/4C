@@ -147,6 +147,9 @@ public:
 
   //! Get one nodal coords
   vector<double> GetNode(const int NodeID) const;
+  
+  //! Set one nodal coords
+  void SetNode(const int NodeID, const vector<double> coord);
 
   //! Close Exodus File
   void CloseExo() const;

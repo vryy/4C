@@ -293,6 +293,23 @@ int main(
       cout << "        in...." << timer->totalElapsedTime() <<" secs" << endl;
       timer->reset();
     }
+    
+    // in case of periodic boundary conditions : 
+    // ensure that the two coordinates of two matching nodes, 
+    // which should be the same are exactly the same
+    // in order to keep the Krylov norm below 1e-6 :-)
+    // only supported for angle 0.0
+    {
+      if(PeriodicBoundaryConditionsFound(condefs))
+      {
+        timer->start();
+        CorrectNodalCoordinatesForPeriodicBoundaryConditions(mymesh,condefs);
+        timer->stop();
+        cout << "...Ensure high quality p.b.c.";
+        cout << "               in...." << timer->totalElapsedTime() <<" secs" << endl;
+        timer->reset();
+      }
+    }
 
     // write the BACI input file
     {

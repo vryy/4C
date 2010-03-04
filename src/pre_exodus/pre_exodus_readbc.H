@@ -75,6 +75,29 @@ inline string CondTypeToString(const EXODUS::cond_type);
 void PrintBCDef(ostream& os, const EXODUS::elem_def& def);
 void PrintBCDef(ostream& os, const EXODUS::cond_def& def);
 
+// ! Check if periodic boundary conditions are defined
+bool PeriodicBoundaryConditionsFound(vector<EXODUS::cond_def> condefs);
+
+// ! Correct nodal coordinates for periodic boundary conditions
+void CorrectNodalCoordinatesForPeriodicBoundaryConditions(
+    EXODUS::Mesh&             mesh,
+    vector<EXODUS::cond_def>  condefs);
+
+// ! Correct nodal coordinates in the YZ plane for periodic boundary conditions
+void CorrectYZPlaneForPeriodicBoundaryConditions(
+    EXODUS::Mesh&                   mesh,
+    const vector<EXODUS::cond_def>& condefs);
+
+// ! Correct nodal coordinates in the XZ plane for periodic boundary conditions
+void CorrectXZPlaneForPeriodicBoundaryConditions(
+    EXODUS::Mesh&                   mesh,
+    const vector<EXODUS::cond_def>& condefs);
+
+// ! Correct nodal coordinates in the XY plane for periodic boundary conditions
+void CorrectXYPlaneForPeriodicBoundaryConditions(
+    EXODUS::Mesh&                   mesh,
+    const vector<EXODUS::cond_def>& condefs);
+
 } // of namespace EXODUS
 
 
