@@ -42,6 +42,7 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_solver.H"
 
 
 /*----------------------------------------------------------------------*
@@ -86,7 +87,7 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   dtd_ = LINALG::Multiply(*dmatrix_,true,*dmatrix_,false,true);
   
   // print message
-  if(Comm().MyPID()==0) cout << "done!\n" << endl;
+  if(Comm().MyPID()==0) cout << "done!" << endl;
     
   return;
 }
@@ -96,9 +97,66 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
  *----------------------------------------------------------------------*/
 void CONTACT::MtPenaltyStrategy::MeshInitialization()
 {
-  // not yet implemented for penalty case
+  // print message
+  if(Comm().MyPID()==0)
+  {
+    cout << "Performing mesh initialization...........";
+    fflush(stdout);
+  }
   
-  return;  
+  //**********************************************************************
+  // (1) get master positions on global level
+  //**********************************************************************
+  // fill Xmaster first
+  RCP<Epetra_Vector> Xmaster = LINALG::CreateVector(*gmdofrowmap_,true);
+  
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // loop over all master row nodes on the current interface
+    for (int j=0; j<interface_[i]->MasterRowNodes()->NumMyElements(); ++j)
+    {
+      int gid = interface_[i]->MasterRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+      
+      // prepare assembly   
+      Epetra_SerialDenseVector val(Dim());
+      vector<int> lm(Dim());
+      vector<int> lmowner(Dim());
+      
+      // do assembly (overwrite duplicate nodes)
+      for (int k=0;k<Dim();++k)
+      {
+        int dof = mtnode->Dofs()[k];
+        (*Xmaster)[(Xmaster->Map()).LID(dof)] = mtnode->X()[k];
+      }
+    }
+  }
+  
+  //**********************************************************************
+  // (1) solve for modified slave positions on global level
+  //**********************************************************************
+  // create linear problem
+  RCP<Epetra_Vector> Xslavemod = LINALG::CreateVector(*gsdofrowmap_,true);
+  RCP<Epetra_Vector> rhs = LINALG::CreateVector(*gsdofrowmap_,true);
+  mmatrix_->Multiply(false,*Xmaster,*rhs);
+  
+  // solve with default solver
+  LINALG::Solver solver(Comm());
+  solver.Solve(dmatrix_->EpetraOperator(),Xslavemod,rhs,true);
+      
+  //**********************************************************************
+  // (3) perform mesh initialization node by node
+  //**********************************************************************
+  // this can be done in the AbstractStrategy now
+  MtAbstractStrategy::MeshInitialization(Xslavemod);
+  
+  // print message
+  if(Comm().MyPID()==0) cout << "done!\n" << endl;
+      
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -136,10 +194,13 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>& 
   // VERSION 2: constraints for x (current configuration)
   //     (+) rotational invariance
   //     (-) initial stresses
+  // VERSION 3: mesh initialization (default)
+  //     (+) rotational invariance
+  //     (+) initial stresses
   
-  // For the penalty strategy there is a difference between versions
-  // 1 and 2, as the constraints are not exactly fulfilled in the
-  // reference configuration X due to the missing mesh initialization!
+  // As long as we perform mesh initialization, there is no difference
+  // between versions 1 and 2, as the constraints are then exactly
+  // fulfilled in the reference configuration X already (version 3)!
 
 #ifdef MESHTYINGUCONSTR
   //**********************************************************************

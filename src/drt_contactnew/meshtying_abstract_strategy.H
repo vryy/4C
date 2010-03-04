@@ -179,6 +179,26 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     virtual void MortarCoupling(const RCP<Epetra_Vector> dis);
 
     /*!
+    \brief Do mesh intialization for rotational invariance
+    
+    Only do this ONCE for meshtying upon initialization!
+    This method relocates the slave nodes such that the meshtying constraint
+    is satisifed in the reference condiguration, which is a prerequisite for
+    ensuring both rotational invariance and absence of initial stresses at the
+    same time. Basically the constraint equation needs to be solved for this,
+    which is specific to the applied solving strategy (dual Lagrange or Penalty).
+    In the dual LM, matrix D is diagonal, thus its inversion is trivial and no
+    linear system needs to be solved. In the penalty case, matrix D is not diagonal
+    and we apply a default LINALG::Solver to solve for the modified slave poitions.
+    Thus, this linear system solve is done in the derived method FIRST and then
+    we refer back to this base class function.
+    
+    \param Xslavemod (in): modified slave reference configuration
+     
+    */   
+    virtual void MeshInitialization(RCP<Epetra_Vector> Xslavemod);
+    
+    /*!
     \brief Evaluate contact
      
     This is just a tiny control routine, deciding which Evaluate-routine
@@ -290,7 +310,6 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     virtual void EvaluateMeshtying(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) = 0;
     virtual void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
     virtual double InitialPenalty() = 0;
-    virtual void MeshInitialization() = 0;
     virtual void Recover(RCP<Epetra_Vector> disi) = 0;
     virtual void ResetPenalty() = 0;   
     virtual void UpdateAugmentedLagrange() = 0;

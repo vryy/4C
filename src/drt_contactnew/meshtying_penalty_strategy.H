@@ -106,7 +106,6 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   \brief Mesh intialization for rotational invariance
   
   Only do this ONCE for meshtying upon initialization!
-  (not yet implemented for penalty strategy)
   
   */
   void MeshInitialization();
