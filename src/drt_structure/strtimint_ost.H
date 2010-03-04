@@ -131,6 +131,10 @@ namespace STR
 
   public:
 
+    //! verify if given coefficients are in admissable range;
+    //! prints also info to STDOUT
+    void VerifyCoeff();
+
     //! @name Construction
     //@{
 
@@ -266,7 +270,7 @@ namespace STR
 
     //@}
 
-    //! @name Generalised-alpha specific methods
+    //! @name One-Step-Theta specific methods
     //@{
 
     //! Evaluate mid-state vectors by averaging end-point vectors

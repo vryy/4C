@@ -19,6 +19,17 @@ Maintainer: Burkhard Bornemann
 /* headers */
 #include "strtimint_ost.H"
 
+/*----------------------------------------------------------------------*/
+void STR::TimIntOneStepTheta::VerifyCoeff()
+{
+  // beta
+  if ( (theta_ <= 0.0) or (theta_ > 1.0) )
+    dserror("beta out of range (0.0,1.0]");
+
+  // done
+  return;
+}
+
 /*======================================================================*/
 /* constructor */
 STR::TimIntOneStepTheta::TimIntOneStepTheta
@@ -54,6 +65,7 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
   // info to user
   if (myrank_ == 0)
   {
+    VerifyCoeff();
     std::cout << "with one-step-theta" << std::endl
               << "   theta = " << theta_ << std::endl
               << std::endl;
