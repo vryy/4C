@@ -273,7 +273,7 @@ public:
     );
 
     //! evaluate shape functions and their derivatives at current integration point
-    virtual void EvalShapeFuncAndDerivsAtIntPoint(
+    virtual double EvalShapeFuncAndDerivsAtIntPoint(
         const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, ///< integration points
         const int                                    iquad,     ///< id of current Gauss point
         const int                                    eleid       ///< the element id
@@ -283,6 +283,7 @@ public:
     virtual void CalMatAndRHS(
         Epetra_SerialDenseMatrix&             emat,
         Epetra_SerialDenseVector&             erhs,
+        const double                          fac,      ///< integration factor
         const bool                            fssgd,
         const double                          timefac,
         const double                          alphaF,
@@ -294,7 +295,8 @@ public:
         Epetra_SerialDenseMatrix&             emat,   ///< element matrix
         Epetra_SerialDenseVector&             erhs,   ///< element rhs
         const double                          frt,    ///< factor F/RT
-        const double                          timefac ///< time discretization factor
+        const double                          timefac,///< time discretization factor
+        const double                          fac     ///< integration factor
     );
 
     //! calculate error compared to analytical solutions
@@ -512,6 +514,10 @@ public:
 
     //! node coordinates
     LINALG::Matrix<nsd_,iel> xyze_;
+    //! weights for nurbs elements
+    LINALG::Matrix<iel,1> weights_;
+    //! knot vector for nurbs elements
+    std::vector<Epetra_SerialDenseVector> myknots_;
     //! bodyforce in element nodes
     vector<LINALG::Matrix<iel,1> > bodyforce_;
     //! density at t_(n)
@@ -572,8 +578,6 @@ public:
     vector<double> sgdiff_;
     //! 2nd derivatives of coord.-functions w.r.t r,s,t
     LINALG::Matrix<numderiv2_,nsd_> xder2_;
-    //! integration factor for current GP: fac = GaussWeight * det(J)
-    double fac_;
     //! convective term
     LINALG::Matrix<iel,1> conv_;
     //! subgrid-scale convective term

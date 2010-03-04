@@ -30,6 +30,8 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
@@ -77,6 +79,20 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(
     if (ch27==NULL)
       ch27 = new ScaTraImpl<DRT::Element::hex27>(numdofpernode,numscal);
     return ch27;
+  }
+  case DRT::Element::nurbs8:
+  {
+    static ScaTraImpl<DRT::Element::nurbs8>* cn8;
+    if (cn8==NULL)
+      cn8 = new ScaTraImpl<DRT::Element::nurbs8>(numdofpernode,numscal);
+    return cn8;
+  }
+  case DRT::Element::nurbs27:
+  {
+    static ScaTraImpl<DRT::Element::nurbs27>* cn27;
+    if (cn27==NULL)
+      cn27 = new ScaTraImpl<DRT::Element::nurbs27>(numdofpernode,numscal);
+    return cn27;
   }
   case DRT::Element::tet4:
   {
@@ -134,6 +150,20 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(
       cp9 = new ScaTraImpl<DRT::Element::quad9>(numdofpernode,numscal);
     return cp9;
   }*/
+  case DRT::Element::nurbs4:
+  {
+    static ScaTraImpl<DRT::Element::nurbs4>* cn4;
+    if (cn4==NULL)
+      cn4 = new ScaTraImpl<DRT::Element::nurbs4>(numdofpernode,numscal);
+    return cn4;
+  }
+  case DRT::Element::nurbs9:
+  {
+    static ScaTraImpl<DRT::Element::nurbs9>* cn9;
+    if (cn9==NULL)
+      cn9 = new ScaTraImpl<DRT::Element::nurbs9>(numdofpernode,numscal);
+    return cn9;
+  }
   case DRT::Element::tri3:
   {
     static ScaTraImpl<DRT::Element::tri3>* cp3;
@@ -189,6 +219,8 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     fsphinp_(numscal_),
     edispnp_(true),
     xyze_(true),
+    weights_(true),
+    myknots_(nsd_),
     bodyforce_(numdofpernode_),
     densn_(numscal_),
     densnp_(numscal_),
@@ -218,7 +250,6 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     tau_(numscal_),
     sgdiff_(numscal_),
     xder2_(true),
-    fac_(0.0),
     conv_(true),
     sgconv_(true),
     diff_(true),
@@ -511,6 +542,28 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
             fsphinp_[k](i,0) = myfsphinp[k+(i*numdofpernode_)];
           }
         }
+      }
+    }
+
+    // --------------------------------------------------
+    // Now do the nurbs specific stuff
+    //std::vector<Epetra_SerialDenseVector> myknots_(nsd_);
+
+    // for isogeometric elements
+    if(SCATRA::IsNurbs(distype))
+    {
+      DRT::NURBS::NurbsDiscretization* nurbsdis
+        =
+        dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+      bool zero_size = false;
+      zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots_,ele->Id());
+
+      // if we have a zero sized element due to a interpolated
+      // point --- exit here
+      if(zero_size)
+      {
+        return(0);
       }
     }
 
@@ -950,6 +1003,20 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
 
+  // get node weights for nurbs elements
+  if(SCATRA::IsNurbs(distype))
+  {
+    for (int inode=0; inode<iel; inode++)
+    {
+      DRT::Node** nodes = ele->Nodes();
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+
+      weights_(inode) = cp->W();
+    }
+  }
+
   // in the ALE case add nodal displacements
   if (isale_) xyze_ += edispnp_;
 
@@ -970,12 +1037,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   // use one-point Gauss rule to do calculations at the element center
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
-  // evaluate shape functions and derivatives at element center
-  EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
-
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
-  const double vol = fac_;
+  const double vol = EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
 
   //----------------------------------------------------------------------
   // get material parameters (evaluation at element center)
@@ -1043,7 +1107,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   {
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
-      EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
       //----------------------------------------------------------------------
       // get material parameters (evaluation at integration point)
@@ -1114,7 +1178,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       if (is_genalpha_) dserror("GenAlpha is not supported by ELCH!");
 
       // compute matrix and rhs for electrochemistry problem
-      CalMatElch(sys_mat,residual,frt,timefac);
+      CalMatElch(sys_mat,residual,frt,timefac,fac);
     }
 
   }
@@ -1301,7 +1365,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
-      EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
       //----------------------------------------------------------------------
       // get material parameters (evaluation at integration point)
       //----------------------------------------------------------------------
@@ -1376,6 +1440,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         // compute matrix and rhs
         CalMatAndRHS(sys_mat,
                      residual,
+                     fac,
                      fssgd,
                      timefac,
                      alphaF,
@@ -1387,7 +1452,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   {
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
-      EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
       //----------------------------------------------------------------------
       // get material parameters (evaluation at integration point)
@@ -1456,6 +1521,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         // compute matrix and rhs
         CalMatAndRHS(sys_mat,
                      residual,
+                     fac,
                      fssgd,
                      timefac,
                      alphaF,
@@ -2734,7 +2800,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
  | evaluate shape functions and derivatives at int. point     gjb 08/08 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
+double DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
     const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
     const int                                    iquad,      ///< id of current Gauss point
     const int                                    eleid       ///< the element id
@@ -2745,9 +2811,69 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   for (int idim=0;idim<nsd_;idim++)
     {xsi_(idim) = gpcoord[idim];}
 
-  // shape functions and their first derivatives
-  DRT::UTILS::shape_function<distype>(xsi_,funct_);
-  DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+  if (not SCATRA::IsNurbs(distype))
+  {
+    // shape functions and their first derivatives
+    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+    if (use2ndderiv_)
+    {
+      // get the second derivatives of standard element at current GP
+      DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
+    }
+  }
+  else // nurbs elements are always somewhat special...
+  {
+    if (nsd_ == 3)
+    {
+    if (use2ndderiv_)
+    {
+      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2
+      (funct_  ,
+          deriv_  ,
+          derxy2_ ,
+          xsi_    ,
+          myknots_,
+          weights_,
+          distype );
+    }
+    else
+    {
+      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+      (funct_  ,
+          deriv_  ,
+          xsi_    ,
+          myknots_,
+          weights_,
+          distype );
+    }
+    }
+    else if (nsd_ == 2)
+    {
+      if (use2ndderiv_)
+      {
+        DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2
+        (funct_  ,
+            deriv_  ,
+            derxy2_ ,
+            xsi_    ,
+            myknots_,
+            weights_,
+            distype );
+      }
+      else
+      {
+        DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+        (funct_  ,
+            deriv_  ,
+            xsi_    ,
+            myknots_,
+            weights_,
+            distype );
+      }
+    }
+    else dserror("Only 3D and 2D nurbs supported.");
+  } // IsNurbs()
 
   // compute Jacobian matrix and determinant
   // actually compute its transpose....
@@ -2774,7 +2900,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
     dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det);
 
   // set integration factor: fac = Gauss weight * det(J)
-  fac_ = intpoints.IP().qwgt[iquad]*det;
+  const double fac = intpoints.IP().qwgt[iquad]*det;
 
   // compute global derivatives
   derxy_.Multiply(xij_,deriv_);
@@ -2782,17 +2908,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   // compute second global derivatives (if needed)
   if (use2ndderiv_)
   {
-    // get the second derivatives of standard element at current GP
-    DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
-
     // get global second derivatives
     DRT::UTILS::gder2<distype>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
   }
   else
     derxy2_.Clear();
 
-  // say goodbye
-  return;
+  // return integration factor for current GP: fac = Gauss weight * det(J)
+  return fac;
+
 } //ScaTraImpl::CalcSubgrVelocity
 
 
@@ -2803,6 +2927,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
     Epetra_SerialDenseMatrix&             emat,
     Epetra_SerialDenseVector&             erhs,
+    const double                          fac,
     const bool                            fssgd,
     const double                          timefac,
     const double                          alphaF,
@@ -2813,8 +2938,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
 // 1) element matrix: stationary terms
 //----------------------------------------------------------------
 // stabilization parameter and integration factors
-const double taufac     = tau_[dofindex]*fac_;
-const double timefacfac = timefac*fac_;
+const double taufac     = tau_[dofindex]*fac;
+const double timefacfac = timefac*fac;
 const double timetaufac = timefac*taufac;
 const double fac_diffus = timefacfac*diffus_[dofindex];
 
@@ -2952,7 +3077,7 @@ if (use2ndderiv_)
 //----------------------------------------------------------------
 if (not is_stationary_)
 {
-  const double densamfac = fac_*densam_[dofindex];
+  const double densamfac = fac*densam_[dofindex];
   //----------------------------------------------------------------
   // standard Galerkin transient term
   //----------------------------------------------------------------
@@ -3247,7 +3372,7 @@ else if (is_incremental_ and not is_genalpha_)
     residual = densnp_[dofindex]*dens_phi + timefac*(densnp_[dofindex]*conv_phi - diff_phi + rea_phi) - rhsint;
     rhsfac   = timefacfac;
 
-    const double vtrans = fac_*densnp_[dofindex]*dens_phi;
+    const double vtrans = fac*densnp_[dofindex]*dens_phi;
     for (int vi=0; vi<iel; ++vi)
     {
       const int fvi = vi*numdofpernode_+dofindex;
@@ -3258,7 +3383,7 @@ else if (is_incremental_ and not is_genalpha_)
   else
   {
     residual = densnp_[dofindex]*conv_phi - diff_phi + rea_phi - rhsint;
-    rhsfac   = fac_;
+    rhsfac   = fac;
   }
   rhstaufac = taufac;
 
@@ -3295,7 +3420,7 @@ else
 //----------------------------------------------------------------
 // standard Galerkin bodyforce term
 //----------------------------------------------------------------
-double vrhs = fac_*rhsint;
+double vrhs = fac*rhsint;
 for (int vi=0; vi<iel; ++vi)
 {
   const int fvi = vi*numdofpernode_+dofindex;
@@ -3432,7 +3557,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
     DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
     // evaluate shape functions and derivatives at element center
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id()); //fac unused
 
     GetMaterialParams(ele);
   }
@@ -3445,7 +3570,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
   /*----------------------------------------------------------------------*/
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
@@ -3477,7 +3602,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
       if (conservative_) GetVelocityDivergence(vdiv_,evelnp_,derxy_);
 
       // diffusive integration factor
-      const double fac_diffus = fac_*diffus_[k];
+      const double fac_diffus = fac*diffus_[k];
 
       // get value of current scalar
       conint_[k] = funct_.Dot(ephinp_[k]);
@@ -3499,7 +3624,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
       // transient term
       for (int vi=0; vi<iel; ++vi)
       {
-        const double v = fac_*funct_(vi)*densnp_[k];
+        const double v = fac*funct_(vi)*densnp_[k];
         const int fvi = vi*numdofpernode_+k;
 
         for (int ui=0; ui<iel; ++ui)
@@ -3513,7 +3638,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
       //----------------------------------------------------------------
       // element right hand side: convective term in convective form
       //----------------------------------------------------------------
-      double vrhs = fac_*densnp_[k]*conv_ephi0_k;
+      double vrhs = fac*densnp_[k]*conv_ephi0_k;
       for (int vi=0; vi<iel; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
@@ -3550,7 +3675,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
       //----------------------------------------------------------------
       if (reaction_)
       {
-        vrhs = fac_*densnp_[k]*reacoeff_[k]*conint_[k];
+        vrhs = fac*densnp_[k]*reacoeff_[k]*conint_[k];
         for (int vi=0; vi<iel; ++vi)
         {
           const int fvi = vi*numdofpernode_+k;
@@ -3562,7 +3687,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
       //----------------------------------------------------------------
       // element right hand side: bodyforce term
       //----------------------------------------------------------------
-      vrhs = fac_*rhs_[k];
+      vrhs = fac*rhs_[k];
       for (int vi=0; vi<iel; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
@@ -3579,7 +3704,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
       // schemes since ML needs to have off-diagonal entries for the aggregation!
       for (int vi=0; vi<iel; ++vi)
       {
-        const double v = fac_*funct_(vi); // density assumed to be 1.0 here
+        const double v = fac*funct_(vi); // density assumed to be 1.0 here
         const int fvi = vi*numdofpernode_+numscal_;
 
         for (int ui=0; ui<iel; ++ui)
@@ -3619,12 +3744,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
   // use one-point Gauss rule to do calculations at the element center
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
-  // evaluate shape functions and derivatives at element center
-  EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
-
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
-  const double vol = fac_;
+  const double vol = EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
 
   //------------------------------------------------------------------------------------
   // get material parameters and stabilization parameters (evaluation at element center)
@@ -3658,7 +3780,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
   /*----------------------------------------------------------------------*/
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
@@ -3694,10 +3816,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
         CalTau(ele,diffus,dt,timefac,whichtau,vol,k);
       }
 
-      const double fac_tau = fac_*tau_[k];
+      const double fac_tau = fac*tau_[k];
 
       // diffusive integration factor
-      const double fac_diffus = fac_*diffus_[k];
+      const double fac_diffus = fac*diffus_[k];
 
       // get value of current scalar
       conint_[k] = funct_.Dot(ephinp_[k]);
@@ -3719,7 +3841,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
       // transient term
       for (int vi=0; vi<iel; ++vi)
       {
-        const double v = fac_*funct_(vi)*densnp_[k];
+        const double v = fac*funct_(vi)*densnp_[k];
         const int fvi = vi*numdofpernode_+k;
 
         for (int ui=0; ui<iel; ++ui)
@@ -3750,7 +3872,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
       //----------------------------------------------------------------
       // element right hand side: convective term in convective form
       //----------------------------------------------------------------
-      double vrhs = fac_*densnp_[k]*conv_ephi0_k;
+      double vrhs = fac*densnp_[k]*conv_ephi0_k;
       for (int vi=0; vi<iel; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
@@ -3793,7 +3915,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
       //----------------------------------------------------------------
       if (reaction_)
       {
-        vrhs = fac_*densnp_[k]*reacoeff_[k]*conint_[k];
+        vrhs = fac*densnp_[k]*reacoeff_[k]*conint_[k];
         for (int vi=0; vi<iel; ++vi)
         {
           const int fvi = vi*numdofpernode_+k;
@@ -3805,7 +3927,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
       //----------------------------------------------------------------
       // element right hand side: bodyforce term
       //----------------------------------------------------------------
-      vrhs = fac_*rhs_[k];
+      vrhs = fac*rhs_[k];
       for (int vi=0; vi<iel; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
@@ -3844,12 +3966,12 @@ DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<di
 // integration loop
 for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
 {
-  EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+  const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
   for (int k=0;k<numscal_;++k)
   {
     // parameter for artificial diffusivity (scaled to one here)
-    double kartfac = fac_;
+    double kartfac = fac;
     if (not is_stationary_) kartfac *= timefac;
 
     for (int vi=0; vi<iel; ++vi)
@@ -3882,7 +4004,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     Epetra_SerialDenseMatrix&             emat,
     Epetra_SerialDenseVector&             erhs,
     const double                          frt,
-    const double                          timefac
+    const double                          timefac,
+    const double                          fac
 )
 {
   // get values of all transported scalars at integration point
@@ -3927,17 +4050,17 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
   for (int k = 0; k < numscal_;++k) // loop over all transported scalars
   {
     // stabilization parameters
-    taufac = tau_[k]*fac_;
+    taufac = tau_[k]*fac;
 
     if (is_stationary_)
     {
-      timefacfac  = fac_;
+      timefacfac  = fac;
       timetaufac  = taufac;
       rhsint = rhs_[k];     // set rhs at integration point
     }
     else
     {
-      timefacfac  = timefac * fac_;
+      timefacfac  = timefac * fac;
       timetaufac  = timefac * taufac;
       rhsint = hist_[k] + rhs_[k]*timefac;     // set rhs at integration point
     }
@@ -3971,7 +4094,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 #endif
       const double timefacfac_funct_vi = timefacfac*funct_(vi);
       const double timefacfac_diffus_valence_k_mig_vi = timefacfac*diffus_valence_k*migconv_(vi);
-      const double valence_k_fac_funct_vi = valence_[k]*fac_*funct_(vi);
+      const double valence_k_fac_funct_vi = valence_[k]*fac*funct_(vi);
 
       for (int ui=0; ui<iel; ++ui)
       {
@@ -4106,7 +4229,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       const int fvi = vi*numdofpernode_+k;
 
       // RHS source term
-      erhs[fvi] += fac_*funct_(vi)*rhsint ;
+      erhs[fvi] += fac*funct_(vi)*rhsint ;
 
       // nonlinear migration term
       erhs[fvi] += conint_[k]*timefacfac*diffus_valence_k*migconv_(vi);
@@ -4129,7 +4252,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
       // electroneutrality condition
       // for incremental formulation, there is the residuum on the rhs! : 0-ENC*phi_i
-      erhs[vi*numdofpernode_+numscal_] -= valence_[k]*fac_*funct_(vi)*funct_ephinp_k;
+      erhs[vi*numdofpernode_+numscal_] -= valence_[k]*fac*funct_(vi)*funct_ephinp_k;
 
       // Stabilization terms:
 
@@ -4164,7 +4287,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       for (int vi=0; vi<iel; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
-        const double fac_funct_vi = fac_*funct_(vi);
+        const double fac_funct_vi = fac*funct_(vi);
         for (int ui=0; ui<iel; ++ui)
         {
          const int fui = ui*numdofpernode_+k;
@@ -4252,7 +4375,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   // start loop over integration points
   for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
   {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
     // get values of all transported scalars at integration point
     for (int k=0; k<2; ++k)
@@ -4311,9 +4434,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
     deltacon.Update(1.0,conint,-1.0,c);
 
     // add square to L2 error
-    errors[0] += deltacon(0)*deltacon(0)*fac_; // cation concentration
-    errors[1] += deltacon(1)*deltacon(1)*fac_; // anion concentration
-    errors[2] += deltapot*deltapot*fac_; // electric potential in electrolyte solution
+    errors[0] += deltacon(0)*deltacon(0)*fac; // cation concentration
+    errors[1] += deltacon(1)*deltacon(1)*fac; // anion concentration
+    errors[2] += deltapot*deltapot*fac; // electric potential in electrolyte solution
 
   } // end of loop over integration points
 
@@ -4628,14 +4751,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateScalars(
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
     // calculate integrals of (inverted) scalar(s) and domain
     if (inverting)
     {
       for (int i=0; i<iel; i++)
       {
-        const double fac_funct_i = fac_*funct_(i);
+        const double fac_funct_i = fac*funct_(i);
         for (int k = 0; k < numscal_; k++)
         {
           scalars[k] += fac_funct_i/ephinp[i*numdofpernode_+k];
@@ -4647,7 +4770,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateScalars(
     {
       for (int i=0; i<iel; i++)
       {
-        const double fac_funct_i = fac_*funct_(i);
+        const double fac_funct_i = fac*funct_(i);
         for (int k = 0; k < numscal_; k++)
         {
           scalars[k] += fac_funct_i*ephinp[i*numdofpernode_+k];
@@ -4697,7 +4820,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateDomainAndBodyforce(
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
     // get bodyforce in gausspoint
     rhs_[0] = bodyforce_[0].Dot(funct_);
@@ -4705,9 +4828,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateDomainAndBodyforce(
     // calculate integrals of domain and bodyforce
     for (int i=0; i<iel; i++)
     {
-      scalars[0] += fac_*funct_(i);
+      scalars[0] += fac*funct_(i);
     }
-    scalars[1] += fac_*rhs_[0];
+    scalars[1] += fac*rhs_[0];
 
   } // loop over integration points
 
@@ -4737,7 +4860,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::IntegrateShapeFunctions(
   // loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid,ele->Id());
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid,ele->Id());
 
     // compute integral of shape functions (only for dofid)
     for (int k=0;k<numdofpernode_;k++)
@@ -4746,7 +4869,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::IntegrateShapeFunctions(
       {
         for (int node=0;node<iel;node++)
         {
-          elevec1[node*numdofpernode_+k] += funct_(node) * fac_;
+          elevec1[node*numdofpernode_+k] += funct_(node) * fac;
         }
       }
     }
