@@ -120,7 +120,7 @@ using namespace std;
 #define ParObject_ViscoNeoHooke         (int)104
 #define ParObject_Yeoh                  (int)105
 #define ParObject_AAAraghavanvorp_damage (int)106
-// missing ints result from removed Condif3 elements
+#define ParObject_AAAgasser             (int)107
 #define ParObject_Knotvector            (int)108
 #define ParObject_ControlPoint          (int)109
 #define ParObject_Fluid2Nurbs           (int)110
