@@ -24,6 +24,7 @@ Maintainer: Lena Wiechert
 #include "neohooke.H"
 #include "plasticneohooke.H"
 #include "aaaneohooke.H"
+#include "aaagasser.H"
 #include "aaaraghavanvorp_damage.H"
 #include "logneohooke.H"
 #include "scatra_mat.H"
@@ -173,6 +174,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
       curmat->SetParameter(new MAT::PAR::AAAneohooke(curmat));
     MAT::PAR::AAAneohooke* params = static_cast<MAT::PAR::AAAneohooke*>(curmat->Parameter());
     return Teuchos::rcp(new AAAneohooke(params));
+  }
+  case INPAR::MAT::m_aaagasser:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::AAAgasser(curmat));
+    MAT::PAR::AAAgasser* params = static_cast<MAT::PAR::AAAgasser*>(curmat->Parameter());
+    return Teuchos::rcp(new AAAgasser(params));
   }
   case INPAR::MAT::m_aaaraghavanvorp_damage:
   {
