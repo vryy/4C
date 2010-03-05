@@ -257,7 +257,30 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     // *******************************************************************
     else if (Quad() && lmtype==INPAR::MORTAR::lagmult_lin_lin)
     {
-      dserror("ERROR: lin contact not yet implemented");
+      // prepare integration and linearization of M, g (and possibly D) on intcells
+      int nrow = SlaveElement().NumNode();
+      int ncol = MasterElement().NumNode();
+      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
+      RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
+      RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+      
+      // static_cast to make sure to pass in IntElement&
+      MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
+      MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
+      
+      // check whether aux. plane coupling or not
+      if (CouplingInAuxPlane())
+        integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,
+            Cells()[i],Auxn(),lmtype,dseg,mseg,gseg);
+      else /*(!CouplingInAuxPlane()*/
+        dserror("ERROR: Only aux. plane version implemented for 3D quadratic contact");
+      
+      // do the assembly into the slave nodes
+#ifdef MORTARONELOOP
+      integrator.AssembleD(Comm(),SlaveElement(),*dseg);
+#endif // #ifdef MORTARONELOOP
+      integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
+      integrator.AssembleG(Comm(),SlaveElement(),*gseg);
     }
     
     // *******************************************************************

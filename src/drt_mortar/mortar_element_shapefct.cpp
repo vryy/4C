@@ -854,18 +854,6 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
   case DRT::Element::quad8:
   case DRT::Element::quad9:
   {
-    // check for boundary nodes
-    bool bound = false;
-    for (int i=0;i<NumNode();++i)
-    {
-      MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
-      if (!mymrtrnode) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
-      bound += mymrtrnode->IsOnBound();
-    }
-
-    // all nodes are interior: use unmodified shape functions
-    if (!bound)
-    {
       // dual Lagrange multipliers
       if (dual)
       {
@@ -885,12 +873,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
         else if (Shape()==quad8) ShapeFunctions(MortarElement::serendipity2D,xi,val,deriv);
         else /*Shape()==quad9*/  ShapeFunctions(MortarElement::biquad2D,xi,val,deriv);
       }
-    }
-
-    // some nodes are on slave boundary
-    else
-      dserror("ERROR: EvaluateShapeLagMult: boundary mod. not yet impl. for 3D contact!");
-
+      
     break;
   }
 

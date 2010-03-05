@@ -227,6 +227,7 @@ Input/contact3D_pwlin_penalty_hex20.dat                 x        x        x     
 Input/contact3D_pwlin_penalty_hex27.dat                 x        x        x        -        -        -
 Input/contact3D_pwlin_penalty_tet10.dat                 x        x        x        -        -        -
 Input/contact3D_quad_penalty_hex27.dat                  x        x        x        -        -        -
+Input/contact3D_onlylin_penalty_hex27.dat               x        x        x        -        -        -
 Input/contact3D_slidingblock_augmented_tet10.dat        x        x        x        -        -        -
 Input/contact3D_slidingblock_augmented.dat              x        x        x        -        -        -
 Input/contact3D_slidingblock_coulomb.dat                x        x        x        -        -        -

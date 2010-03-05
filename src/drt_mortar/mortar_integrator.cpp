@@ -1428,15 +1428,11 @@ bool MORTAR::MortarIntegrator::AssembleD(const Epetra_Comm& comm,
           double val = dseg(slave*sndof+sdof,master*mndof+mdof);
 
           // BOUNDARY NODE MODIFICATION **********************************
-          // We have modified their neighbors' dual shape functions, so we
-          // now have a problem with off-diagonal entries occuring in D.
-          // Of course we want to keep the diagonality property of the D
-          // matrix, but still we may not modify the whole Mortar coupling
-          // setting! We achieve both by appling a quite simple but very
-          // effective trick: The boundary nodes have already been defined
-          // as being master nodes, so all we have to do here, is to shift
-          // the off-diagonal terms from D to the resepective place in M,
-          // which is not diagonal anyway! (Mind the MINUS sign!!!)
+          // The boundary nodes have already been re-defined  as being
+          // master nodes, so all we have to do here is to shift the terms
+          // associated with a boundary node from D to the resepective
+          // place in M! Mind the minus sign, which is needed because M
+          // will later enter the contact forces with another minus sign.
           // *************************************************************
           if (mnode->IsOnBound())
           {
@@ -1450,22 +1446,6 @@ bool MORTAR::MortarIntegrator::AssembleD(const Epetra_Comm& comm,
         }
       }
     }
-    /*
-#ifdef DEBUG
-    cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
-    map<int, double> nodemap0 = (snode->GetD())[0];
-    map<int, double> nodemap1 = (snode->GetD())[1];
-    typedef map<int,double>::const_iterator CI;
-
-    cout << "Row dof id: " << sdofs[0] << endl;;
-    for (CI p=nodemap0.begin();p!=nodemap0.end();++p)
-      cout << p->first << '\t' << p->second << endl;
-
-    cout << "Row dof id: " << sdofs[1] << endl;
-    for (CI p=nodemap1.begin();p!=nodemap1.end();++p)
-      cout << p->first << '\t' << p->second << endl;
-#endif // #ifdef DEBUG
-    */
   }
 
   return true;
@@ -1573,22 +1553,6 @@ bool MORTAR::MortarIntegrator::AssembleM(const Epetra_Comm& comm,
         }
       }
     }
-    /*
-#ifdef DEBUG
-    cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
-    map<int, double> nodemap0 = (snode->GetM())[0];
-    map<int, double> nodemap1 = (snode->GetM())[1];
-    typedef map<int,double>::const_iterator CI;
-
-    cout << "Row dof id: " << sdofs[0] << endl;;
-    for (CI p=nodemap0.begin();p!=nodemap0.end();++p)
-      cout << p->first << '\t' << p->second << endl;
-
-    cout << "Row dof id: " << sdofs[1] << endl;
-    for (CI p=nodemap1.begin();p!=nodemap1.end();++p)
-      cout << p->first << '\t' << p->second << endl;
-#endif // #ifdef DEBUG
-     */
   }
 
   return true;

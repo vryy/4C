@@ -501,7 +501,16 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
     
     else if (lmtype == INPAR::MORTAR::lagmult_lin_lin)
     {
-      dserror("ERROR: Linear LM interpolation not yet implemented for 3D quad. contact");
+      // do the element integration of kappa and store into gap
+      int nrow = sele.NumNode();
+      RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+
+      // create a CONTACT integrator instance with correct NumGP and Dim
+      CONTACT::CoIntegrator integrator(shapefcn_,sele.Shape());
+      integrator.IntegrateKappaPenalty(sele,sxia,sxib,gseg);
+
+      // do the assembly into the slave nodes
+      integrator.AssembleG(Comm(),sele,*gseg);
     }
     
     else
