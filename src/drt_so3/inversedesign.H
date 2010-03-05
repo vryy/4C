@@ -159,6 +159,7 @@ void sow6_nlnstiffmass(
 
   /// id problem for tet4 element
 void so_tet4_nlnstiffmass(
+      ParameterList&           params,
       DRT::ELEMENTS::So_tet4*   ele,            ///< this element
       vector<int>&              lm,             ///< location matrix
       vector<double>&           disp,           ///< current displacements

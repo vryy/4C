@@ -119,7 +119,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       for (unsigned i=0; i<mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (unsigned i=0; i<myres.size(); ++i) myres[i] = 0.0;
-      so_tet4_nlnstiffmass(lm,mydisp,myres, &elemat1, NULL, &elevec1, NULL,NULL,actmat,
+      so_tet4_nlnstiffmass(params,lm,mydisp,myres, &elemat1, NULL, &elevec1, NULL,NULL,actmat,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
    }
     break;
@@ -136,10 +136,10 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 #ifndef INVERSEDESIGNCREATE
-      so_tet4_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
+      so_tet4_nlnstiffmass(params,lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
 #else
-      invdesign_->so_tet4_nlnstiffmass(this,lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
+      invdesign_->so_tet4_nlnstiffmass(params,this,lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
                                        INPAR::STR::stress_none,INPAR::STR::strain_none);
 #endif
     }
@@ -158,7 +158,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4> myemat(true); // to zero
-      so_tet4_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,actmat,
+      so_tet4_nlnstiffmass(params,lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,actmat,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
@@ -176,10 +176,10 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 #ifndef INVERSEDESIGNCREATE
-      so_tet4_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+      so_tet4_nlnstiffmass(params,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
 #else
-      invdesign_->so_tet4_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+      invdesign_->so_tet4_nlnstiffmass(params,this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
                                        INPAR::STR::stress_none,INPAR::STR::strain_none);
 #endif
       if (act==calc_struct_nlnstifflmass) so_tet4_lumpmass(&elemat2);
@@ -205,9 +205,9 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
       INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
 #ifndef INVERSEDESIGNCREATE
-      so_tet4_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
+      so_tet4_nlnstiffmass(params,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
 #else
-      invdesign_->so_tet4_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
+      invdesign_->so_tet4_nlnstiffmass(params,this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
 #endif
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
@@ -537,6 +537,7 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
  |  evaluate the element (private)                            vlf 08/07 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
+      ParameterList&            params,
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
       vector<double>&           residual,       // current residual displ
@@ -784,7 +785,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     */
     LINALG::Matrix<NUMSTR_SOTET4,NUMSTR_SOTET4> cmat(true);
     LINALG::Matrix<NUMSTR_SOTET4,1> stress(true);
-    so_tet4_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp);
+    so_tet4_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
 
     // return gp stresses
     switch (iostress)

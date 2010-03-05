@@ -40,6 +40,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
+#include "../drt_mat/aaagasser.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/logneohooke.H"
 #include "../drt_mat/mooneyrivlin.H"
@@ -111,6 +112,18 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_aaagasser: /*-- AAA thrombus material acc. to GASSER [2008] */
+    {
+      MAT::AAAgasser* gasser = static_cast<MAT::AAAgasser*>(mat.get());
+      double normdist = params.get("iltthick meanvalue",-999.0);
+      if (normdist==-999.0) dserror("Aneurysm mean ilt distance not found");
+      //printf("Element %d normdist %15.10e\n",Id(),normdist);
+      gasser->Evaluate(*glstrain,*cmat,*stress, normdist);
+      //gasser->Evaluate(*glstrain,*cmat,*stress);
+      *density = gasser->Density();
       return;
       break;
     }
@@ -447,6 +460,18 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_aaagasser: /*-- AAA thrombus material acc. to GASSER [2008] */
+    {
+      MAT::AAAgasser* gasser = static_cast<MAT::AAAgasser*>(mat.get());
+      double normdist = params.get("iltthick meanvalue",-999.0);
+      if (normdist==-999.0) dserror("Aneurysm mean ilt distance not found");
+      //printf("Element %d normdist %15.10e\n",Id(),normdist);
+      gasser->Evaluate(*glstrain,*cmat,*stress, normdist);
+      //gasser->Evaluate(*glstrain,*cmat,*stress);
+      *density = gasser->Density();
       return;
       break;
     }
@@ -1109,8 +1134,8 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
                     double* density,
                     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
                     LINALG::Matrix<3,3>* defgrd,
-                    const int gp
-                    //ParameterList&          params
+                    const int gp,
+                    ParameterList& params
                     )
 {
 #ifdef DEBUG
@@ -1148,6 +1173,18 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_aaagasser: /*-- AAA thrombus material acc. to GASSER [2008] */
+    {
+      MAT::AAAgasser* gasser = static_cast<MAT::AAAgasser*>(mat.get());
+      double normdist = params.get("iltthick meanvalue",-999.0);
+      if (normdist==-999.0) dserror("Aneurysm mean ilt distance not found");
+      //printf("Element %d normdist %15.10e\n",Id(),normdist);
+      gasser->Evaluate(*glstrain,*cmat,*stress, normdist);
+      //gasser->Evaluate(*glstrain,*cmat,*stress);
+      *density = gasser->Density();
       return;
       break;
     }

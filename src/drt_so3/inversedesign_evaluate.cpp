@@ -1352,6 +1352,7 @@ void DRT::ELEMENTS::InvDesign::sow6_StoreMaterialConfiguration(
  |                                                             gee 09/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
+      ParameterList&            params,
       DRT::ELEMENTS::So_tet4*   ele,            ///< this element
       vector<int>&              lm,             ///< location matrix
       vector<double>&           disp,           ///< current displacements
@@ -1493,7 +1494,7 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
     //------------------------------------------------- call material law
     LINALG::Matrix<6,6> cmat(true);
     LINALG::Matrix<6,1> stress(true);
-    ele->so_tet4_mat_sel(&stress,&cmat,&density,&glstrain, &F,gp);
+    ele->so_tet4_mat_sel(&stress,&cmat,&density,&glstrain, &F,gp,params);
 
     //------------------------------------------- compute cauchy stresses
     LINALG::Matrix<6,1> cstress;

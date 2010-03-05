@@ -412,7 +412,9 @@ protected:
   virtual void InitJacobianMapping();
 
   //! Calculate nonlinear stiffness and mass matrix
-  virtual void so_tet4_nlnstiffmass(vector<int>&              lm,
+  virtual void so_tet4_nlnstiffmass(
+                                 ParameterList&            params,
+                                 vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
                                     LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,
@@ -465,7 +467,8 @@ protected:
                     double* density,
                     LINALG::Matrix<6,1>* glstrain,
                     LINALG::Matrix<3,3>* defgrd,
-                    const int gp);
+                    const int gp,
+                    ParameterList& params);
 
 }; // class So_tet4
 
