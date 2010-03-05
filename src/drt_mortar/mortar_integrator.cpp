@@ -1209,9 +1209,9 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 
     // compute cell D/M matrix *******************************************
     
-    // CASE 1: Standard LM shape functions and quadratic interpolation
+    // CASE 1/2: Standard LM shape functions and quadratic or linear interpolation
     if (shapefcn_ == INPAR::MORTAR::shape_standard &&
-        lmtype == INPAR::MORTAR::lagmult_quad_quad)
+        (lmtype == INPAR::MORTAR::lagmult_quad_quad || lmtype == INPAR::MORTAR::lagmult_lin_lin))
     {
       // compute all mseg (and dseg) matrix entries
       // loop over Lagrange multiplier dofs j
@@ -1252,7 +1252,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
       }
     }
     
-    // CASE 2: Standard LM shape functions and piecewise linear interpolation
+    // CASE 3: Standard LM shape functions and piecewise linear interpolation
     else if (shapefcn_ == INPAR::MORTAR::shape_standard &&
              lmtype == INPAR::MORTAR::lagmult_pwlin_pwlin)
     {
@@ -1285,49 +1285,6 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
   
             // multiply the two shape functions
             double prod = lmintval[jindex]*sval[kindex];
-  
-            // isolate the dseg entries to be filled and
-            // add current Gauss point's contribution to dseg
-            if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-              (*dseg)(j,k) += prod*jac*wgt;
-          }
-        }
-      }
-    }
-    
-    // CASE 3: Standard LM shape functions and linear interpolation
-    else if (shapefcn_ == INPAR::MORTAR::shape_standard &&
-             lmtype == INPAR::MORTAR::lagmult_lin_lin)
-    {
-      // compute all mseg (and dseg) matrix entries
-      // loop over Lagrange multiplier dofs j
-      for (int j=0; j<nrow*ndof; ++j)
-      {
-        // loop over master displacement dofs l
-        for (int l=0; l<ncol*ndof; ++l)
-        {
-          int jindex = (int)(j/ndof);
-          int lindex = (int)(l/ndof);
-  
-          // multiply the two shape functions
-          double prod = lmval[jindex]*mval[lindex];
-  
-          // isolate the mseg entries to be filled and
-          // add current Gauss point's contribution to mseg
-          if ((j==l) || ((j-jindex*ndof)==(l-lindex*ndof)))
-            (*mseg)(j,l) += prod*jac*wgt;
-        }
-  
-        // loop over slave displacement dofs k
-        if (dod)
-        {
-          for (int k=0; k<nrow*ndof; ++k)
-          {
-            int jindex = (int)(j/ndof);
-            int kindex = (int)(k/ndof);
-  
-            // multiply the two shape functions
-            double prod = lmval[jindex]*sval[kindex];
   
             // isolate the dseg entries to be filled and
             // add current Gauss point's contribution to dseg

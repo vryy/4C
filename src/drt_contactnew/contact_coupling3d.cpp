@@ -154,8 +154,8 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     // *******************************************************************
     // (1) no quadratic element(s) involved -> linear LM interpolation
     // (2) quadratic element(s) involved -> quadratic LM interpolation
-    // (3) quadratic element(s) involved -> piecew. linear LM interpolation
-    // (4) quadratic element(s) involved -> linear LM interpolation
+    // (3) quadratic element(s) involved -> linear LM interpolation
+    // (4) quadratic element(s) involved -> piecew. linear LM interpolation
     // *******************************************************************
     INPAR::MORTAR::LagMultQuad3D lmtype = LagMultQuad3D();
     
@@ -185,13 +185,18 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     }
     
     // *******************************************************************
-    // case (2)
+    // cases (2) and (3)
     // *******************************************************************
-    else if (Quad() && lmtype==INPAR::MORTAR::lagmult_quad_quad)
+    else if (Quad() && (lmtype==INPAR::MORTAR::lagmult_quad_quad || lmtype==INPAR::MORTAR::lagmult_lin_lin))
     {
-      // check whether this is feasible (ONLY for quad9 surfaces)
-      if (SlaveElement().Shape()==DRT::Element::quad8 || SlaveElement().Shape()==DRT::Element::tri6)
-        dserror("ERROR: Quadratic/Quadratic LM interpolation for 3D quadratic contact only feasible for quad9-surfaces");
+      // check whether quad_quad case is feasible
+      if (lmtype==INPAR::MORTAR::lagmult_quad_quad)
+      {
+        if (SlaveElement().Shape()==DRT::Element::quad8)
+          dserror("ERROR: Quad/Quad LM interpolation for 3D quadratic contact only feasible for quad9-surfaces");
+        else if (SlaveElement().Shape()==DRT::Element::tri6)
+          dserror("ERROR: Quad/Quad LM interpolation for 3D quadratic contact only feasible for quad9-surfaces");
+      }
       
       // prepare integration and linearization of M, g (and possibly D) on intcells
       int nrow = SlaveElement().NumNode();
@@ -220,7 +225,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     }
     
     // *******************************************************************
-    // case (3)
+    // case (4)
     // *******************************************************************
     else if (Quad() && lmtype==INPAR::MORTAR::lagmult_pwlin_pwlin)
     {
@@ -250,37 +255,6 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
 #endif // #ifdef MORTARONELOOP
       integrator.AssembleM(Comm(),sintref,MasterElement(),*mseg);
       integrator.AssembleG(Comm(),sintref,*gseg);
-    }
-    
-    // *******************************************************************
-    // case (4)
-    // *******************************************************************
-    else if (Quad() && lmtype==INPAR::MORTAR::lagmult_lin_lin)
-    {
-      // prepare integration and linearization of M, g (and possibly D) on intcells
-      int nrow = SlaveElement().NumNode();
-      int ncol = MasterElement().NumNode();
-      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-      RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
-      RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
-      
-      // static_cast to make sure to pass in IntElement&
-      MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
-      MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
-      
-      // check whether aux. plane coupling or not
-      if (CouplingInAuxPlane())
-        integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,
-            Cells()[i],Auxn(),lmtype,dseg,mseg,gseg);
-      else /*(!CouplingInAuxPlane()*/
-        dserror("ERROR: Only aux. plane version implemented for 3D quadratic contact");
-      
-      // do the assembly into the slave nodes
-#ifdef MORTARONELOOP
-      integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-#endif // #ifdef MORTARONELOOP
-      integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
-      integrator.AssembleG(Comm(),SlaveElement(),*gseg);
     }
     
     // *******************************************************************
