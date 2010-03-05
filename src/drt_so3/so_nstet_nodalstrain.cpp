@@ -40,16 +40,38 @@ using namespace std;
 int DRT::ELEMENTS::NStetRegister::Initialize(DRT::Discretization& dis)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStetRegister::Initialize");
-
   const int myrank = dis.Comm().MyPID();
-
+  const int numproc = dis.Comm().NumProc();
   const int numele = dis.NumMyColElements();
+  
+#ifndef EXTENDEDPARALLELOVERLAP
+  if (numproc>1)
+    dserror("NStet elements need extended parallel overlap, use define EXTENDEDPARALLELOVERLAP");
+#endif
+
+  //---------------------------------------------------------------------
+  // check for first nstet element and define type of stabilization
+  // make sure all use the same stabilization
+  for (int i=0; i<numele; ++i)
+  {
+    if (dis.lColElement(i)->Type() != DRT::Element::element_nstet) continue;
+    stabtype_ = static_cast<DRT::ELEMENTS::NStet*>(dis.lColElement(i))->stabtype_;
+    break;
+  }
+  for (int i=0; i<numele; ++i)
+  {
+    if (dis.lColElement(i)->Type() != DRT::Element::element_nstet) continue;
+    if (stabtype_ != static_cast<DRT::ELEMENTS::NStet*>(dis.lColElement(i))->stabtype_)
+      dserror("All NStet elements have to use same stabilization");
+  }
+  
+  //---------------------------------------------------------------------
+  // map of row nodes adjacent to nstet elements
   for (int i=0; i<numele; ++i)
   {
     if (dis.lColElement(i)->Type() != DRT::Element::element_nstet) continue;
 
-    DRT::ELEMENTS::NStet* actele = dynamic_cast<DRT::ELEMENTS::NStet*>(dis.lColElement(i));
-    if (!actele) dserror("cast to NStet* failed");
+    DRT::ELEMENTS::NStet* actele = (DRT::ELEMENTS::NStet*)(dis.lColElement(i));
 
     // init the element (also set pointer to this register class)
     actele->InitElement(this);
@@ -58,13 +80,15 @@ int DRT::ELEMENTS::NStetRegister::Initialize(DRT::Discretization& dis)
     elecids_[actele->Id()] = actele;
 
     // compute a map of all row nodes adjacent to a NStet element
-    for (int j=0; j<actele->NumNode(); ++j) {
+    for (int j=0; j<actele->NumNode(); ++j) 
+    {
       DRT::Node* node = actele->Nodes()[j];
       if (myrank == node->Owner())
         noderids_.insert(pair<int,DRT::Node*>(node->Id(),node));
     }
   }
 
+  //---------------------------------------------------------------------
   // compute adjacency for each row node
   std::map<int,DRT::Node*>::iterator node;
   for (node=noderids_.begin(); node != noderids_.end(); ++node)
@@ -85,7 +109,8 @@ int DRT::ELEMENTS::NStetRegister::Initialize(DRT::Discretization& dis)
 
     // patch of all nodes adjacent to adjacent elements
     map<int,DRT::Node*> nodepatch;
-    for (int j=0; j<(int)adjele.size(); ++j) {
+    for (int j=0; j<(int)adjele.size(); ++j) 
+    {
       DRT::Node** nodes = adjele[j]->Nodes();
       for (int k=0; k<adjele[j]->NumNode(); ++k)
         nodepatch[nodes[k]->Id()] = nodes[k];
@@ -110,6 +135,7 @@ int DRT::ELEMENTS::NStetRegister::Initialize(DRT::Discretization& dis)
     adjlm_[nodeidL] = lm;
 
   } // for (node=noderids_.begin(); node != noderids_.end(); ++node)
+
 
   return 0;
 }
@@ -146,7 +172,7 @@ void DRT::ELEMENTS::NStetRegister::PreEvaluate(DRT::Discretization& dis,
   bool assemblevec3 = systemvector3!=Teuchos::null;
   if (assemblevec2 || assemblevec3) dserror("Wrong assembly expectations");
 
-  // nodal stiffness and force (we don't do mass here)
+  //--------------- nodal stiffness and force (we don't do mass here)
   LINALG::SerialDenseMatrix stiff;
   LINALG::SerialDenseVector force1;
 
@@ -164,6 +190,9 @@ void DRT::ELEMENTS::NStetRegister::PreEvaluate(DRT::Discretization& dis,
     vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     ele->second->DeformationGradient(mydisp);
+#if 0
+    ele->second->DeformedVolume(mydisp);
+#endif
   }
 
   //-----------------------------------------------------------------
@@ -202,7 +231,7 @@ void DRT::ELEMENTS::NStetRegister::PreEvaluate(DRT::Discretization& dis,
     const int ndofperpatch = numnodepatch*3;
 
     // location and ownership vector of nodal patch
-    vector<int>& lm      = adjlm_[nodeLid];
+    vector<int>& lm = adjlm_[nodeLid];
 
     if (action != "calc_struct_stress")
     {
@@ -257,6 +286,114 @@ void DRT::ELEMENTS::NStetRegister::PreEvaluate(DRT::Discretization& dis,
 
   //---------------------------------------------------------------------
   } // for (node=noderids_.begin(); node != noderids_.end(); ++node)
+
+#if 1
+  //--------------------------------------------- do volumetric stabilization 
+  if (stabtype_==DRT::ELEMENTS::so_nstet4_vol ||
+      stabtype_==DRT::ELEMENTS::so_nstet4_voldev)
+  {
+    const int myrank = dis.Comm().MyPID();
+    // loop all elements where I own at least one node. These are the original
+    // overlap-of-one column elements
+    for (int ele=0; ele<dis.ElementColMap()->NumMyElements(); ++ele)
+    {
+      if (dis.lColElement(ele)->Type() != DRT::Element::element_nstet) continue;
+      DRT::ELEMENTS::NStet* actele = (DRT::ELEMENTS::NStet*)dis.lColElement(ele);
+      bool colelement=false;
+      for (int i=0; i<actele->NumNode(); ++i)
+        if (actele->Nodes()[i]->Owner()==myrank)
+        {
+          colelement=true;
+          break;
+        }
+      if (!colelement) continue;
+      
+      // build patch of elements adjacent to this element including itself
+      map<int,DRT::ELEMENTS::NStet*>  adjele;
+      for (int i=0; i<actele->NumNode(); ++i)
+        for (int j=0; j<actele->Nodes()[i]->NumElement(); ++j)
+        {
+          if (actele->Nodes()[i]->Elements()[j]->Type() != DRT::Element::element_nstet)
+            continue;
+          adjele[actele->Nodes()[i]->Elements()[j]->Id()] = 
+                    (DRT::ELEMENTS::NStet*)actele->Nodes()[i]->Elements()[j];
+        }
+        
+      // Build patch of nodes adjacent to this patch. By definition of the
+      // present overlap-of-three all these nodes should exist on this proc
+      map<int,DRT::Node*>  adjnode;
+      {
+        map<int,DRT::ELEMENTS::NStet*>::iterator fool;
+        for (fool=adjele.begin(); fool != adjele.end(); ++fool)
+          for (int i=0; i<fool->second->NumNode(); ++i)
+            adjnode[fool->second->Nodes()[i]->Id()] = fool->second->Nodes()[i];
+      }
+          
+      // build location vector and numdof per patch
+      vector<int> adjlm;
+      vector<int> adjlmowner;
+      {
+        map<int,DRT::Node*>::iterator nfool;
+        for (nfool=adjnode.begin(); nfool!=adjnode.end(); ++nfool)
+        {
+          vector<int> dofs = dis.Dof(nfool->second);
+          if ((int)dofs.size() != NODDOF_NSTET) dserror("Number of dofs wrong");
+          for (int i=0; i<NODDOF_NSTET; ++i)
+          {
+            adjlm.push_back(dofs[i]);
+            adjlmowner.push_back(nfool->second->Owner());
+          }
+        }
+      }
+      
+      // build nodal patches for the nodes adjacent to actele
+      vector<map<int,DRT::ELEMENTS::NStet*> > nodaladjele(actele->NumNode());
+      vector<map<int,DRT::Node*> >            nodaladjnode(actele->NumNode());
+      for (int i=0; i<actele->NumNode(); ++i)
+      {
+        DRT::Node* actnode = actele->Nodes()[i];
+        for (int j=0; j<actnode->NumElement(); ++j)
+        {
+          if (actnode->Elements()[j]->Type()==DRT::Element::element_nstet)
+          {
+            int id = actnode->Elements()[j]->Id();
+            DRT::ELEMENTS::NStet* ele = (DRT::ELEMENTS::NStet*)(actnode->Elements()[j]);
+            nodaladjele[i].insert(pair<int,DRT::ELEMENTS::NStet*>(id,ele));
+          }
+          else 
+            continue;
+          DRT::Element* ele = actnode->Elements()[j];
+          for (int k=0; k<ele->NumNode(); ++k)
+          {
+            nodaladjnode[i].insert(pair<int,DRT::Node*>(ele->Nodes()[k]->Id(),ele->Nodes()[k]));
+          }
+        }
+      }
+      
+      // do volumetric stabilization of this element
+      const int ndofperpatch = (int)adjlm.size();
+      stiff.LightShape(ndofperpatch,ndofperpatch);
+      force1.LightSize(ndofperpatch);
+      actele->VolStabilization(adjele,adjnode,adjlm,adjlmowner,nodaladjele,nodaladjnode,stiff,force1);
+      //cout << force1; fflush(stdout);
+#if 1
+      if (assemblevec1)
+      {
+        // row map assembly onto own dofs as it is an element quantity
+        for (int i=0; i<ndofperpatch; ++i)
+        {
+          const int rgid = adjlm[i];
+          if (!systemvector1->Map().MyGID(rgid)) continue;
+          const int lid = systemvector1->Map().LID(rgid);
+          (*systemvector1)[lid] += (force1[i]);
+        }
+      }
+#endif      
+      
+      
+    } // for (int i=0; i<dis.ElementColMap()->NumMyElements(); ++i)
+  }
+#endif
 
 
   //-------------------------------------------------------------------------
@@ -370,6 +507,26 @@ void DRT::ELEMENTS::NStetRegister::NodalIntegration(Epetra_SerialDenseMatrix*   
     FnodeL.Update(V,adjele[i]->F_,1.0);
   }
   FnodeL.Scale(1.0/VnodeL);
+
+#if 0
+  //-----------------------------------------------------------------------
+  // build nodal deformed volume
+  double vnodeL = 0.0;
+  for (int i=0; i<neleinpatch; ++i)
+  {
+    const double v = adjele[i]->v_/NUMNOD_NSTET;
+    vnodeL += v;
+  }
+  
+  //-----------------------------------------------------------------------
+  // modify the nodal F to be of exact volume change
+  //printf("Jv %15.10e JF %15.10e Delta %15.10e\n",Jv,JF,Jv-JF);
+  double Jv = vnodeL/VnodeL;
+  double JF = FnodeL.Determinant();
+  const double othird = 1./3.;
+  FnodeL.Scale(pow(Jv,othird)*pow(JF,-othird));
+#endif    
+   
 
   //-----------------------------------------------------------------------
   // do positioning map global nodes -> position in B-Operator
@@ -577,30 +734,37 @@ void DRT::ELEMENTS::NStetRegister::NodalIntegration(Epetra_SerialDenseMatrix*   
   }
 
   //------------------------------------------------------ stabilization
-  if (adjele[0]->stabtype_==DRT::ELEMENTS::NStet::so_tet4_voldev ||
-      adjele[0]->stabtype_==DRT::ELEMENTS::NStet::so_tet4_dev)
+  switch(adjele[0]->stabtype_)
   {
-    // define stuff we need
-    LINALG::Matrix<6,6> cmatdev;
-    LINALG::Matrix<6,1> stressdev;
-
-    // compute deviatoric stress and tangent
-    DevStressTangent(stressdev,cmatdev,cmat,stress,cauchygreen);
-
-    // reduce deviatoric stresses
-    stress.Update(-ALPHA_NSTET,stressdev,1.0);
-
-    // reduce deviatoric tangent
-    cmat.Update(-ALPHA_NSTET,cmatdev,1.0);
+    case DRT::ELEMENTS::so_nstet4_voldev:
+    case DRT::ELEMENTS::so_nstet4_dev:
+    {
+      LINALG::Matrix<6,6> cmatdev;
+      LINALG::Matrix<6,1> stressdev;
+      // compute deviatoric stress and tangent
+#if 0
+      DevStressTangent(stressdev,cmatdev,cmat,stress,cauchygreen);
+#else
+      MAT::VolumetrifyAndIsochorify(NULL,NULL,&stressdev,&cmatdev,glstrain,stress,cmat);
+#endif
+      // reduce deviatoric stresses
+      stress.Update(-ALPHA_NSTET,stressdev,1.0);
+      // reduce deviatoric tangent
+      cmat.Update(-ALPHA_NSTET,cmatdev,1.0);
+    }
+    break;
+    case DRT::ELEMENTS::so_nstet4_puso:
+    {
+      stress.Scale(1.0-ALPHA_NSTET);
+      cmat.Scale(1.0-ALPHA_NSTET);
+    }
+    break;
+    case DRT::ELEMENTS::so_nstet4_stab_none:
+    break;
+    default:
+      dserror("Unknown type of stabilization");
+    break;
   }
-  else if (adjele[0]->stabtype_==DRT::ELEMENTS::NStet::so_tet4_puso)
-  {
-    stress.Scale(1.0-ALPHA_NSTET);
-    cmat.Scale(1.0-ALPHA_NSTET);
-  }
-  // do nothing
-  else if (adjele[0]->stabtype_==DRT::ELEMENTS::NStet::so_tet4_stab_none);
-  else dserror("Unknown type of stabilization");
   
 
   //----------------------------------------------------- internal forces

@@ -266,7 +266,6 @@ void DRT::ELEMENTS::NStetRegister::Pack(vector<char>& data) const
   vector<char> basedata(0);
   ElementRegister::Pack(basedata);
   AddtoPack(data,basedata);
-
   return;
 }
 
@@ -286,7 +285,6 @@ void DRT::ELEMENTS::NStetRegister::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   ElementRegister::Unpack(basedata);
-
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;

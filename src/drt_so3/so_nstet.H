@@ -43,7 +43,7 @@ using namespace Teuchos;
 #define NUMDIM_NSTET       3    ///< number of dimensions
 #define NUMCOORD_NSTET     4    ///< number of shape function cooordinates (ksi1-ksi4)
 
-#define ALPHA_NSTET      0.2    ///< stabilization parameter
+#define ALPHA_NSTET      0.1    ///< stabilization parameter
 
 namespace DRT
 {
@@ -54,6 +54,15 @@ namespace ELEMENTS
 {
 class StructuralVolume;
 class NStet;
+
+  enum NStet_StabType
+  {
+    so_nstet4_stab_none,
+    so_nstet4_voldev,
+    so_nstet4_puso,
+    so_nstet4_vol,
+    so_nstet4_dev
+  };
 
 //---------------------------------------------------------------------
 /*!
@@ -161,6 +170,9 @@ public:
 
 private:
 
+  // type of stabilization used
+  NStet_StabType                                      stabtype_;
+
   // map of row nodes adjacent to nstet elements
   map<int,DRT::Node*>                                 noderids_;
   // map of column nstet elements 
@@ -172,7 +184,7 @@ private:
 
   // vector of elements adjacent to each row node
   map<int,vector<DRT::ELEMENTS::NStet*> >             adjele_;
-  // map of nodes forming a patch around a node
+  // map of nodes forming a patch around a row node
   map<int,map<int,DRT::Node*> >                       adjnode_;
   // map of location vectors for patch around a node
   map<int,vector<int> >                               adjlm_;
@@ -454,25 +466,19 @@ protected:
     so_tet4_stress_nd123
   };
 
-  enum StabType
-  {
-    so_tet4_stab_none,
-    so_tet4_voldev,
-    so_tet4_puso,
-    so_tet4_vol,
-    so_tet4_dev
-  };
-
   //! type of stress evaluation
   StressType                                               stresstype_;
   //! type of stabilization
-  StabType                                                 stabtype_;
+  NStet_StabType                                           stabtype_;
   //! number of the material law
   int                                                      material_;
   //! vector of history variables for each Gauss point
   vector<RCP<MAT::Material> >                              mat_;
-  //! volume of element
+  //! material volume of element
   double                                                   V_;
+  //! current spatial volume of element
+  //bool                                                     visNew_;
+  //double                                                   v_;
   //! derivs of shape functions wrt to material coords
   LINALG::Matrix<NUMNOD_NSTET,NUMDIM_NSTET>                nxyz_;
   //! element's def-gradient and flag indicating age of it
@@ -520,7 +526,18 @@ protected:
     return;
   }
 
-  //! standards displ. tet4 calc routine
+  //! volumetric stabilization
+  virtual void VolStabilization(map<int,DRT::ELEMENTS::NStet*>&          adjele,
+                                map<int,DRT::Node*>&                     adjnode,
+                                vector<int>&                             adjlm,
+                                vector<int>&                             adjlmowner,
+                                vector<map<int,DRT::ELEMENTS::NStet*> >& nodaladjele,
+                                vector<map<int,DRT::Node*> >&            nodaladjnode,
+                                LINALG::SerialDenseMatrix&               stiff,
+                                LINALG::SerialDenseVector&               force);
+  
+  
+  //! almost standard displ. tet4 calc routine
   virtual void nstetnlnstiffmass(vector<int>&              lm,
                                 vector<double>&           disp,
                                 vector<double>&           residual,
@@ -528,11 +545,28 @@ protected:
                                 LINALG::Matrix<NUMDOF_NSTET,NUMDOF_NSTET>* massmatrix,
                                 LINALG::Matrix<NUMDOF_NSTET,          1>* force);
 
+  //! almost standard displ. tet4 calc routine
+  virtual void calcstress(vector<int>&              lm,
+                          vector<double>&           disp,
+                          LINALG::Matrix<NUMGPT_NSTET,NUMSTR_NSTET>* stresses,
+                          LINALG::Matrix<NUMGPT_NSTET,NUMSTR_NSTET>* elestrain,
+                          const INPAR::STR::StressType     iostress,
+                          const INPAR::STR::StrainType     iostrain);
+
+  /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store them in elevecs
+  void so_tet4_expol
+  (
+      LINALG::Matrix<NUMGPT_NSTET,NUMSTR_NSTET>& stresses, ///< gp stresses
+      LINALG::Matrix<NUMDOF_NSTET,1>& elevec1, ///< nodal normal stresses
+      LINALG::Matrix<NUMDOF_NSTET,1>& elevec2  ///< nodal shear stresses
+  );
+
   //! lump mass matrix (bborn 07/08)
   void nstetlumpmass(LINALG::Matrix<NUMDOF_NSTET,NUMDOF_NSTET>* emass);
 
   void DeformationGradient(vector<double>& disp);
 
+  //void DeformedVolume(vector<double>& disp);
 
   void so_nstet_expol(LINALG::Matrix<NUMGPT_NSTET,NUMSTR_NSTET>& stresses,
                      LINALG::Matrix<NUMNOD_NSTET,NUMSTR_NSTET>& nodalstresses);

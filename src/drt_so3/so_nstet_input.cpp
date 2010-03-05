@@ -30,12 +30,12 @@ bool DRT::ELEMENTS::NStet::ReadElement(const std::string& eletype,
   SetMaterial(material);
 
   linedef->ExtractString("STAB",buffer);
-  if (buffer=="none")         stabtype_ = DRT::ELEMENTS::NStet::so_tet4_stab_none;
+  if (buffer=="none")         stabtype_ = DRT::ELEMENTS::so_nstet4_stab_none;
   else if (buffer=="voldev" || buffer=="devvol")  
-                              stabtype_ = DRT::ELEMENTS::NStet::so_tet4_voldev;
-  else if (buffer=="vol")     stabtype_ = DRT::ELEMENTS::NStet::so_tet4_vol;
-  else if (buffer=="dev")     stabtype_ = DRT::ELEMENTS::NStet::so_tet4_dev;
-  else if (buffer=="puso")    stabtype_ = DRT::ELEMENTS::NStet::so_tet4_puso;
+                              stabtype_ = DRT::ELEMENTS::so_nstet4_voldev;
+  else if (buffer=="vol")     stabtype_ = DRT::ELEMENTS::so_nstet4_vol;
+  else if (buffer=="dev")     stabtype_ = DRT::ELEMENTS::so_nstet4_dev;
+  else if (buffer=="puso")    stabtype_ = DRT::ELEMENTS::so_nstet4_puso;
   else dserror("Unknown type of stabilization for NStet: {VolDev,Vol,Dev,Puso}");
 
   return true;
