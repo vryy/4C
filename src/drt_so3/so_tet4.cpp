@@ -225,8 +225,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_expol
      elevec2(3*i+1)=nodalstresses(i,4);
      elevec2(3*i+2)=nodalstresses(i,5);
    }
-
-
+  return;
 }
 
 
