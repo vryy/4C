@@ -13,10 +13,10 @@ Maintainer: Michael Gee
 #include "linalg_downwindmatrix.H"
 #include "simpler_operator.H"
 
-#define SIMPLEC_DIAGONAL      0    // 1: row sums     0: just diagonal
+#define SIMPLEC_DIAGONAL      1    // 1: row sums     0: just diagonal
 #define CHEAPSIMPLE_ALGORITHM 1    // 1: AMG          0: true solve
 #define SIMPLER_ALGORITHM     0    // 1: triple solve 0: double solve
-#define SIMPLER_ALPHA         1.0  // simple pressure damping parameter
+#define SIMPLER_ALPHA         0.8  // simple pressure damping parameter
 #define SIMPLER_TIMING        0    // printout timing of setup
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 02/08|
@@ -213,20 +213,9 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
   // Allocate and compute abs(rowsum(A(0,0))^{-1}
   //-------------------------------------------------------------------------
   {
-    Epetra_Vector diag(*mmex_.Map(0),true);
+    Epetra_Vector diag(*mmex_.Map(0),false);
     RCP<Epetra_CrsMatrix> A00 = (*A_)(0,0).EpetraMatrix();
-    const int nlrows = A00->RowMap().NumMyElements();
-    for (int i=0; i<nlrows; ++i)
-    {
-      int numentries;
-      double* vals;
-      int err = A00->ExtractMyRowView(i,numentries,vals);
-      if (err) dserror("Epetra_CrsMatrix::ExtractMyRowView returned %d",err);
-      for (int j=0; j<numentries; ++j) diag[i] += vals[j];
-      diag[i] = abs(diag[i]);
-    }
-    int err = diag.Reciprocal(diag);
-    if (err) dserror("Epetra_MultiVector::Reciprocal returned %d",err);
+    A00->InvRowSums(diag);
     diagAinv_ = rcp(new SparseMatrix(diag));
     diagAinv_->Complete(*mmex_.Map(0),*mmex_.Map(0));
   }
@@ -435,7 +424,7 @@ void LINALG::SIMPLER_Operator::Simple(LINALG::ANA::Vector& vx, LINALG::ANA::Vect
 
   //------------------------------------------------------------ U-solve
 
-  if (alpha_ != 1.0) px *= 1./alpha_;
+  if (alpha_ != 1.0) px *= alpha_;
 
   vx = vwork1_ - diagAinv * (A01 * px);
 
@@ -520,7 +509,7 @@ void LINALG::SIMPLER_Operator::CheapSimple(LINALG::ANA::Vector& vx, LINALG::ANA:
 
   //------------------------------------------------------------ U-solve
 
-  if (alpha_ != 1.0) px *= (1./alpha_);
+  if (alpha_ != 1.0) px *= alpha_;
 
   vx = vwork1_ - diagAinv * (A01 * px);
 
