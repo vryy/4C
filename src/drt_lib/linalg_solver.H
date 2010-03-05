@@ -525,13 +525,13 @@ It uses ML instead of EpetraExt for the multiplication kernel.
       ok if your product has less nonzeros than with the other
       LINALG::Multiply methods.
 
-\param A (in)       : Matrix A for C=A*B
-\param B (in)       : Matrix B for C=A*B
+\param Aorig (in)       : Matrix A for C=A*B
+\param Borig (in)       : Matrix B for C=A*B
 \param complete (in): flag indicating whether C shall be called FillComplete.
                       There intentionally is NO default value for this here.
 */
-RCP<SparseMatrix> MLMultiply(const Epetra_CrsMatrix& A,
-                             const Epetra_CrsMatrix& B,
+RCP<SparseMatrix> MLMultiply(const Epetra_CrsMatrix& Aorig,
+                             const Epetra_CrsMatrix& Borig,
                              bool complete);
 
 /*!
