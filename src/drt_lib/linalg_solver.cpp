@@ -1283,10 +1283,21 @@ RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const LINALG::SparseMatrix& A,
  | Multiply matrices A*B                                     mwgee 02/08|
  *----------------------------------------------------------------------*/
 //static void CopySortDeleteZeros(const Epetra_CrsMatrix& A, Epetra_CrsMatrix& As);
-RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& A,
-                                             const Epetra_CrsMatrix& B,
+RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Aorig,
+                                             const Epetra_CrsMatrix& Borig,
                                              bool complete)
 {
+#if 1
+  EpetraExt::CrsMatrix_SolverMap Atransform;
+  EpetraExt::CrsMatrix_SolverMap Btransform;
+  const Epetra_CrsMatrix& A = Atransform(const_cast<Epetra_CrsMatrix&>(Aorig));
+  const Epetra_CrsMatrix& B = Btransform(const_cast<Epetra_CrsMatrix&>(Borig));
+#else
+  const Epetra_CrsMatrix& A = Aorig;
+  const Epetra_CrsMatrix& B = Borig;
+#endif  
+
+
   // make sure FillComplete was called on the matrices
   if (!A.Filled()) dserror("A has to be FillComplete");
   if (!B.Filled()) dserror("B has to be FillComplete");
