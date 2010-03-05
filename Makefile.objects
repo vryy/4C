@@ -224,21 +224,22 @@ OBJS_DRT_CONSTRAINT_LIB      = \
                 src/drt_constraint/constraint_element2_evaluate.o          
 #----------------------------------------------------- drt version mortar
 OBJS_DRT_MORTAR_LIB = \
+                src/drt_mortar/mortar_element.o \
+                src/drt_mortar/mortar_element_integrator.o \
+                src/drt_mortar/mortar_element_shapefct.o \
+                src/drt_mortar/mortar_node.o
+OBJS_DRT_MORTAR = \
                 src/drt_mortar/mortar_binarytree.o \
                 src/drt_mortar/mortar_coupling2d.o \
                 src/drt_mortar/mortar_coupling3d.o \
                 src/drt_mortar/mortar_coupling3d_classes.o \
                 src/drt_mortar/mortar_defines.o \
                 src/drt_mortar/mortar_dofset.o \
-                src/drt_mortar/mortar_element.o \
-                src/drt_mortar/mortar_element_shapefct.o \
                 src/drt_mortar/mortar_integrator.o \
                 src/drt_mortar/mortar_interface.o \
                 src/drt_mortar/mortar_manager_base.o \
-                src/drt_mortar/mortar_node.o \
                 src/drt_mortar/mortar_projector.o \
                 src/drt_mortar/mortar_strategy_base.o
-OBJS_DRT_MORTAR =  
 #----------------------------------------------------- drt version contact
 OBJS_DRT_CONTACT_LIB = \
                 src/drt_contact/drt_contact_manager_base.o \
@@ -270,24 +271,24 @@ OBJS_DRT_CONTACT = \
                 src/drt_contact/beam3contactstrugenalpha.o
 #------------------------------------------drt version contact + meshtying
 OBJS_DRT_CONTACTNEW_LIB = \
+                src/drt_contactnew/contact_element.o \
+                src/drt_contactnew/contact_node.o \
+                src/drt_contactnew/friction_node.o
+OBJS_DRT_CONTACTNEW = \
                 src/drt_contactnew/contact_abstract_strategy.o \
                 src/drt_contactnew/contact_coupling2d.o \
                 src/drt_contactnew/contact_coupling3d.o \
-                src/drt_contactnew/contact_element.o \
                 src/drt_contactnew/contact_integrator.o \
                 src/drt_contactnew/contact_interface.o \
                 src/drt_contactnew/contact_interface_tools.o \
                 src/drt_contactnew/contact_lagrange_strategy.o \
                 src/drt_contactnew/contact_manager.o \
-                src/drt_contactnew/contact_node.o \
-                src/drt_contactnew/friction_node.o \
                 src/drt_contactnew/contact_penalty_strategy.o \
                 src/drt_contactnew/meshtying_abstract_strategy.o \
                 src/drt_contactnew/meshtying_lagrange_strategy.o \
                 src/drt_contactnew/meshtying_manager.o \
                 src/drt_contactnew/meshtying_penalty_strategy.o \
-                src/drt_contactnew/selfcontact_binarytree.o
-OBJS_DRT_CONTACTNEW = \
+                src/drt_contactnew/selfcontact_binarytree.o \
                 src/drt_contactnew/strugenalpha_cmt.o
 #----------------------------------------------------- drt version statmech
 OBJS_DRT_STATMECH = \

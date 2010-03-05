@@ -259,6 +259,16 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
   DRT::Node** mynodes = sele.Nodes();
   if(!mynodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
+  // decide whether boundary modification has to be considered or not
+  // this is element-specific (is there a boundary node in this element?)
+  bool bound = false;
+  for (int k=0;k<nrow;++k)
+  {
+    MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[k]);
+    if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+    bound += mymrtrnode->IsOnBound();
+  }
+  
   //**********************************************************************
   // loop over all Gauss points for integration
   //**********************************************************************
@@ -316,16 +326,6 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
     // (evaluation of occuring terms is handled similarly)
     dod = true;
 #endif // #ifdef MORTARONELOOP
-    
-    // decide whether boundary modification has to be considered or not
-    // this is element-specific (is there a boundary node in this element?)
-    bool bound = false;
-    for (int k=0;k<nrow;++k)
-    {
-      MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[k]);
-      if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
-      bound += mymrtrnode->IsOnBound();
-    }
 
     // compute segment D/M matrix ****************************************
     if (shapefcn_ == INPAR::MORTAR::shape_standard)
@@ -1081,6 +1081,20 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
   LINALG::SerialDenseVector lmintval(nintrow);
   LINALG::SerialDenseMatrix lmintderiv(nintrow,2,true);
 
+  // get slave element nodes themselves
+  DRT::Node** mynodes = sele.Nodes();
+  if(!mynodes) dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad: Null pointer!");
+  
+  // decide whether boundary modification has to be considered or not
+  // this is element-specific (is there a boundary node in this element?)
+  bool bound = false;
+  for (int k=0;k<nrow;++k)
+  {
+    MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[k]);
+    if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+    bound += mymrtrnode->IsOnBound();
+  }
+
   //**********************************************************************
   // loop over all Gauss points for integration
   //**********************************************************************
@@ -1162,9 +1176,14 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     //cout << "SParent-GP: " << psxi[0] << " " << psxi[1] << endl;
     //cout << "MParent-GP: " << pmxi[0] << " " << pmxi[1] << endl;
 
-    // evaluate Lagrange multiplier shape functions (on slave element)
-    sele.EvaluateShapeLagMult(shapefcn_,psxi,lmval,lmderiv,nrow);
-    sintele.EvaluateShapeLagMult(shapefcn_,sxi,lmintval,lmintderiv,nintrow);
+    // evaluate Lagrange multiplier shape functions (on slave element)  
+    if (bound)
+      sele.EvaluateShapeLagMultLin(shapefcn_,psxi,lmval,lmderiv,nrow);
+    else
+    {
+      sele.EvaluateShapeLagMult(shapefcn_,psxi,lmval,lmderiv,nrow);
+      sintele.EvaluateShapeLagMult(shapefcn_,sxi,lmintval,lmintderiv,nintrow);
+    }
     
     // evaluate trace space shape functions (on both elements)
     sele.EvaluateShape(psxi,sval,sderiv,nrow);
@@ -1276,7 +1295,50 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
       }
     }
     
-    // CASE 3: Dual LM shape functions and quadratic interpolation
+    // CASE 3: Standard LM shape functions and linear interpolation
+    else if (shapefcn_ == INPAR::MORTAR::shape_standard &&
+             lmtype == INPAR::MORTAR::lagmult_lin_lin)
+    {
+      // compute all mseg (and dseg) matrix entries
+      // loop over Lagrange multiplier dofs j
+      for (int j=0; j<nrow*ndof; ++j)
+      {
+        // loop over master displacement dofs l
+        for (int l=0; l<ncol*ndof; ++l)
+        {
+          int jindex = (int)(j/ndof);
+          int lindex = (int)(l/ndof);
+  
+          // multiply the two shape functions
+          double prod = lmval[jindex]*mval[lindex];
+  
+          // isolate the mseg entries to be filled and
+          // add current Gauss point's contribution to mseg
+          if ((j==l) || ((j-jindex*ndof)==(l-lindex*ndof)))
+            (*mseg)(j,l) += prod*jac*wgt;
+        }
+  
+        // loop over slave displacement dofs k
+        if (dod)
+        {
+          for (int k=0; k<nrow*ndof; ++k)
+          {
+            int jindex = (int)(j/ndof);
+            int kindex = (int)(k/ndof);
+  
+            // multiply the two shape functions
+            double prod = lmval[jindex]*sval[kindex];
+  
+            // isolate the dseg entries to be filled and
+            // add current Gauss point's contribution to dseg
+            if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+              (*dseg)(j,k) += prod*jac*wgt;
+          }
+        }
+      }
+    }
+    
+    // CASE 4: Dual LM shape functions and quadratic interpolation
     else if (shapefcn_ == INPAR::MORTAR::shape_dual &&
              lmtype == INPAR::MORTAR::lagmult_quad_quad)
     {

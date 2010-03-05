@@ -2842,7 +2842,7 @@ bool MORTAR::Coupling3d::IntegrateCells()
       
       // check for dual shape functions
       if (shapefcn_ == INPAR::MORTAR::shape_dual)
-        dserror("ERROR: Linear LM interpolation not yet implemented for DUAL 3D quadratic mortar");
+        dserror("ERROR: Piecewise linear LM interpolation not yet implemented for DUAL 3D quadratic mortar");
             
       // assembly of intcell contributions to M (and possibly D)
       // (NOTE THAT THESE ARE SPECIAL VERSIONS HERE FOR PIECEWISE LINEAR INTERPOLATION)
@@ -2857,7 +2857,33 @@ bool MORTAR::Coupling3d::IntegrateCells()
     // *******************************************************************
     else if (Quad() && LagMultQuad3D()==INPAR::MORTAR::lagmult_lin_lin)
     {
-      dserror("ERROR: Linear LM interpolation not yet implemented for 3D quad. mortar");
+      // prepare integration of M (and possibly D) on intcells
+      int nrow = SlaveElement().NumNode();
+      int ncol = MasterElement().NumNode();
+      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
+      RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
+      RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
+      
+      // static_cast to make sure to pass in IntElement&
+      MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
+      MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
+      
+      // check whether aux. plane coupling or not
+      if (CouplingInAuxPlane())
+        integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,
+            Cells()[i],Auxn(),lmtype,dseg,mseg,gseg);
+      else /*(!CouplingInAuxPlane()*/
+        dserror("ERROR: Only aux. plane version implemented for 3D quadratic mortar");
+      
+      // check for dual shape functions
+      if (shapefcn_ == INPAR::MORTAR::shape_dual)
+        dserror("ERROR: Linear LM interpolation not yet implemented for DUAL 3D quadratic mortar");
+         
+      // assembly of intcell contributions to M (and possibly D)
+#ifdef MORTARONELOOP
+      integrator.AssembleD(Comm(),SlaveElement(),*dseg);
+#endif // #ifdef MORTARONELOOP
+      integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
     }
     
     // *******************************************************************

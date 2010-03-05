@@ -42,7 +42,7 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_lib/linalg_utils.H"
-//#include "../drt_lib/linalg_solver.H"
+#include "../drt_lib/linalg_solver.H"
 
 
 /*----------------------------------------------------------------------*
@@ -121,11 +121,6 @@ void CONTACT::MtPenaltyStrategy::MeshInitialization()
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
       
-      // prepare assembly   
-      Epetra_SerialDenseVector val(Dim());
-      vector<int> lm(Dim());
-      vector<int> lmowner(Dim());
-      
       // do assembly (overwrite duplicate nodes)
       for (int k=0;k<Dim();++k)
       {
@@ -144,8 +139,8 @@ void CONTACT::MtPenaltyStrategy::MeshInitialization()
   mmatrix_->Multiply(false,*Xmaster,*rhs);
   
   // solve with default solver
-  //LINALG::Solver solver(Comm());
-  //solver.Solve(dmatrix_->EpetraOperator(),Xslavemod,rhs,true);
+  LINALG::Solver solver(Comm());
+  solver.Solve(dmatrix_->EpetraOperator(),Xslavemod,rhs,true);
       
   //**********************************************************************
   // (3) perform mesh initialization node by node

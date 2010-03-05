@@ -41,7 +41,6 @@ Maintainer: Alexander Popp
 #include "contact_element.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/linalg_utils.H"
-#include "../drt_mortar/mortar_integrator.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -378,7 +377,7 @@ void CONTACT::CoElement::DerivArea(map<int,double>& derivarea)
   else if (dt==line3 || dt==quad4 || dt==tri6 || dt==quad8 || dt==quad9)
   {
     // Gauss quadrature with correct NumGP and Dim
-    MORTAR::MortarIntegrator integrator(dt);
+    MORTAR::ElementIntegrator integrator(dt);
 
     // loop over all Gauss points, build Jacobian derivative
     for (int j=0;j<integrator.nGP();++j)

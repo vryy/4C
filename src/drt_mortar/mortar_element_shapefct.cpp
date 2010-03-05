@@ -39,10 +39,8 @@ Maintainer: Alexander Popp
 #ifdef CCADISCRET
 
 #include "mortar_element.H"
-#include "mortar_integrator.H"
 #include "mortar_defines.H"
 #include "../drt_lib/linalg_utils.H"
-
 
 /*----------------------------------------------------------------------*
  |  1D/2D shape function repository                           popp 04/08|
@@ -197,6 +195,28 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     break;
   }
   // *********************************************************************
+  // 2D linear part of standard quadratic shape functions (tri6)
+  // (used for interpolation of Lagrange mult. field in 3D quad.mortar)
+  // *********************************************************************
+  case MortarElement::quad2D_only_lin:
+  {
+    val[0] = 1-xi[0]-xi[1];
+    val[1] = xi[0];
+    val[2] = xi[1];
+    val[3] = 0.0;
+    val[4] = 0.0;
+    val[5] = 0.0;
+    
+    deriv(0,0) = -1.0; deriv(0,1) = -1.0;
+    deriv(1,0) =  1.0; deriv(1,1) =  0.0;
+    deriv(2,0) =  0.0; deriv(2,1) =  1.0;
+    deriv(3,0) =  0.0; deriv(3,1) =  0.0;
+    deriv(4,0) =  0.0; deriv(4,1) =  0.0;
+    deriv(5,0) =  0.0; deriv(5,1) =  0.0;
+        
+    break;
+  }
+  // *********************************************************************
   // 2D serendipity shape functions (quad8)
   // (used for interpolation of displacement field)
   // *********************************************************************
@@ -250,6 +270,32 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     break;
   }
   // *********************************************************************
+  // 2D bilinear part of serendipity quadratic shape functions (quad8)
+  // (used for interpolation of Lagrange mult. field in 3D quad.mortar)
+  // *********************************************************************
+  case MortarElement::serendipity2D_only_lin:
+  {
+    val[0] = 0.25*(1-xi[0])*(1-xi[1]);
+    val[1] = 0.25*(1+xi[0])*(1-xi[1]);
+    val[2] = 0.25*(1+xi[0])*(1+xi[1]);
+    val[3] = 0.25*(1-xi[0])*(1+xi[1]);
+    val[4] = 0.0;
+    val[5] = 0.0;
+    val[6] = 0.0;
+    val[7] = 0.0;
+    
+    deriv(0,0) = -0.25*(1-xi[1]); deriv(0,1) = -0.25*(1-xi[0]);
+    deriv(1,0) =  0.25*(1-xi[1]); deriv(1,1) = -0.25*(1+xi[0]);
+    deriv(2,0) =  0.25*(1+xi[1]); deriv(2,1) =  0.25*(1+xi[0]);
+    deriv(3,0) = -0.25*(1+xi[1]); deriv(3,1) =  0.25*(1-xi[0]);
+    deriv(4,0) =  0.0;            deriv(4,1) =  0.0;
+    deriv(5,0) =  0.0;            deriv(5,1) =  0.0;
+    deriv(6,0) =  0.0;            deriv(6,1) =  0.0;
+    deriv(7,0) =  0.0;            deriv(7,1) =  0.0;
+    
+    break;
+  }
+  // *********************************************************************
   // 2D standard biquadratic shape functions (quad9)
   // (used for interpolation of displacement field)
   // *********************************************************************
@@ -300,6 +346,32 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     deriv(8,0)=-2.0*r*s2;
     deriv(8,1)=-2.0*s*r2;
 
+    break;
+  }
+  // *********************************************************************
+  // 2D bilinear part of biquadratic quadratic shape functions (quad9)
+  // (used for interpolation of Lagrange mult. field in 3D quad.mortar)
+  // *********************************************************************
+  case MortarElement::biquad2D_only_lin:
+  {
+    val[0] = 0.25*(1-xi[0])*(1-xi[1]);
+    val[1] = 0.25*(1+xi[0])*(1-xi[1]);
+    val[2] = 0.25*(1+xi[0])*(1+xi[1]);
+    val[3] = 0.25*(1-xi[0])*(1+xi[1]);
+    val[4] = 0.0;
+    val[5] = 0.0;
+    val[6] = 0.0;
+    val[7] = 0.0;
+    
+    deriv(0,0) = -0.25*(1-xi[1]); deriv(0,1) = -0.25*(1-xi[0]);
+    deriv(1,0) =  0.25*(1-xi[1]); deriv(1,1) = -0.25*(1+xi[0]);
+    deriv(2,0) =  0.25*(1+xi[1]); deriv(2,1) =  0.25*(1+xi[0]);
+    deriv(3,0) = -0.25*(1+xi[1]); deriv(3,1) =  0.25*(1-xi[0]);
+    deriv(4,0) =  0.0;            deriv(4,1) =  0.0;
+    deriv(5,0) =  0.0;            deriv(5,1) =  0.0;
+    deriv(6,0) =  0.0;            deriv(6,1) =  0.0;
+    deriv(7,0) =  0.0;            deriv(7,1) =  0.0;
+    
     break;
   }
   // *********************************************************************
@@ -372,7 +444,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     int nnodes = NumNode();
 
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    MORTAR::MortarIntegrator integrator(Shape());
+    MORTAR::ElementIntegrator integrator(Shape());
 
     LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
     LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
@@ -463,7 +535,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     LINALG::SerialDenseMatrix derivtemp(nnodes,1,true);
 
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    MORTAR::MortarIntegrator integrator(Shape());
+    MORTAR::ElementIntegrator integrator(Shape());
 
     LINALG::SerialDenseMatrix me(nnodes-1,nnodes-1,true);
     LINALG::SerialDenseMatrix de(nnodes-1,nnodes-1,true);
@@ -535,7 +607,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     LINALG::SerialDenseMatrix derivtemp(nnodes,1,true);
 
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    MORTAR::MortarIntegrator integrator(Shape());
+    MORTAR::ElementIntegrator integrator(Shape());
 
     LINALG::SerialDenseMatrix me(nnodes-1,nnodes-1,true);
     LINALG::SerialDenseMatrix de(nnodes-1,nnodes-1,true);
@@ -831,6 +903,83 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
 }
 
 /*----------------------------------------------------------------------*
+ |  Evaluate Lagrange multiplier shape functions              popp 12/07|
+ |  THIS IS A SPECIAL VERSION FOR 3D QUADRATIC MORTAR WITH LIN LM!      |
+ *----------------------------------------------------------------------*/
+bool MORTAR::MortarElement::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFcn& lmtype,
+                                                    const double* xi, LINALG::SerialDenseVector& val,
+                                                    LINALG::SerialDenseMatrix& deriv, const int& valdim)
+{
+  if (!xi)
+    dserror("ERROR: EvaluateShapeLagMultLin called with xi=NULL");
+  if (!IsSlave())
+    dserror("ERROR: EvaluateShapeLagMultLin called for master element");
+
+  // check for feasible element types (tri6, quad8 or quad9)
+  if (Shape()!=DRT::Element::tri6 && Shape()!=DRT::Element::quad8 && Shape()!=DRT::Element::quad9)
+    dserror("ERROR: Linear LM interpolation only for tri6/quad8/quad9 elements");
+  
+  // dual shape functions or not
+  bool dual = false;
+  if (lmtype==INPAR::MORTAR::shape_dual) dual = true;
+  
+  // get node number and node pointers
+  DRT::Node** mynodes = Nodes();
+  if (!mynodes) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
+
+  switch(Shape())
+  {
+    // 3D quadratic cases (quadratic triangle, biquadratic and serendipity quad)
+    case DRT::Element::tri6:
+    case DRT::Element::quad8:
+    case DRT::Element::quad9:
+    {
+      // check for boundary nodes
+      bool bound = false;
+      for (int i=0;i<NumNode();++i)
+      {
+        MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
+        if (!mymrtrnode) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
+        bound += mymrtrnode->IsOnBound();
+      }
+  
+      // all nodes are interior: use unmodified shape functions
+      if (!bound)
+      {
+        dserror("ERROR: You should not be here...");
+      }
+  
+      // the quadratic nodes are defined as slave boundary
+      else
+      { 
+        // dual Lagrange multipliers
+        if (dual)
+        {
+          if (Shape()==tri6)       ShapeFunctions(MortarElement::quaddual2D_only_lin,xi,val,deriv);
+          else if (Shape()==quad8) ShapeFunctions(MortarElement::serendipitydual2D_only_lin,xi,val,deriv);
+          else /*Shape()==quad9*/  ShapeFunctions(MortarElement::biquaddual2D_only_lin,xi,val,deriv);
+        }
+        
+        // standard Lagrange multipliers
+        else
+        {
+          if (Shape()==tri6)       ShapeFunctions(MortarElement::quad2D_only_lin,xi,val,deriv);
+          else if (Shape()==quad8) ShapeFunctions(MortarElement::serendipity2D_only_lin,xi,val,deriv);
+          else /*Shape()==quad9*/  ShapeFunctions(MortarElement::biquad2D_only_lin,xi,val,deriv);
+        }
+      }
+  
+      break;
+    }
+      
+    // unknown case
+    default:
+      dserror("ERROR: EvaluateShapeLagMult called for unknown element type");
+  }
+
+  return true;
+}
+/*----------------------------------------------------------------------*
  |  1D/2D shape function linearizations repository            popp 05/08|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::ShapeType shape,
@@ -860,7 +1009,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     GetNodalCoords(coord);
 
     // prepare computation with Gauss quadrature
-    MORTAR::MortarIntegrator integrator(Shape());
+    MORTAR::ElementIntegrator integrator(Shape());
     LINALG::SerialDenseVector val(nnodes);
     LINALG::SerialDenseMatrix deriv(nnodes,2,true);
     LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
@@ -1035,7 +1184,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     LINALG::SerialDenseMatrix derivlin(nnodes-1,1);
 
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    MORTAR::MortarIntegrator integrator(Shape());
+    MORTAR::ElementIntegrator integrator(Shape());
 
     LINALG::SerialDenseMatrix me(nnodes-1,nnodes-1,true);
     LINALG::SerialDenseMatrix de(nnodes-1,nnodes-1,true);
@@ -1225,7 +1374,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     LINALG::SerialDenseMatrix derivlin(nnodes-1,1);
 
     // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    MORTAR::MortarIntegrator integrator(Shape());
+    MORTAR::ElementIntegrator integrator(Shape());
 
     LINALG::SerialDenseMatrix me(nnodes-1,nnodes-1,true);
     LINALG::SerialDenseMatrix de(nnodes-1,nnodes-1,true);

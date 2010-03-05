@@ -39,8 +39,6 @@ Maintainer: Alexander Popp
 #ifdef CCADISCRET
 
 #include "mortar_element.H"
-#include "mortar_integrator.H"
-#include "mortar_defines.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/linalg_utils.H"
 
@@ -760,7 +758,7 @@ double MORTAR::MortarElement::ComputeArea()
   else if (dt==line3 || dt==quad4 || dt==tri6 || dt==quad8 || dt==quad9)
   {
     // Gauss quadrature with correct NumGP and Dim
-    MORTAR::MortarIntegrator integrator(dt);
+    MORTAR::ElementIntegrator integrator(dt);
     double detg = 0.0;
 
     // loop over all Gauss points, build Jacobian and compute area

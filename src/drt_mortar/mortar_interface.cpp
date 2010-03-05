@@ -97,7 +97,7 @@ void MORTAR::MortarInterface::Print(ostream& os) const
 {
   if (Comm().MyPID()==0)
   {
-    os << "Mortar Interface Id " << id_ << endl;
+    os << "\nMortar Interface Id " << id_ << endl;
     os << "Mortar Interface Discretization:" << endl;
   }
   os << Discret();
@@ -125,6 +125,7 @@ void MORTAR::MortarInterface::FillComplete()
     Discret().FillComplete(false,false,false);
   }
 
+  //**********************************************************************
   // check whether crosspoints / edge nodes shall be considered or not
   bool crosspoints = Teuchos::getIntegralValue<int>(IParams(),"CROSSPOINTS");
   
@@ -177,6 +178,120 @@ void MORTAR::MortarInterface::FillComplete()
       }
     }
   }
+  //**********************************************************************
+  
+  //**********************************************************************
+  // check for linear interpolation of 3D quadratic Lagrange multipliers
+  bool lagmultlin = (Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D")
+                     == INPAR::MORTAR::lagmult_lin_lin);
+  
+  // modify crosspoints / edge nodes
+  if (lagmultlin)
+  {
+    // if dimension is not 3 dont change anything
+    if (Dim()!=3) dserror("ERROR: Lin/Lin interpolation of LM only for 3D quadratic mortar");
+    
+    // modification for different DiscretizationTypes on slave side: search all node->Elements()[k]
+    // if there is one element of type tri6 or quad8 then prove for one of these elements
+    // ------> not implemented jet!!!
+    // TODO: mixed (hex27,hex20,tet10) discretizations !!!
+            
+    // modified treatment of vertex nodes and edge nodes
+    // detect middle nodes (quadratic nodes) on slave side
+    // set status of middle nodes -> MASTER
+    // set status of vertex nodes -> SLAVE
+       
+    // loop over all elements  
+    for (int i=0; i<Discret().NodeRowMap()->NumMyElements(); ++i)
+    {
+      // get node and cast to cnode
+      MORTAR::MortarNode* node = static_cast<MORTAR::MortarNode*>(idiscret_->lRowNode(i));
+      
+      // candiates are slave nodes with shape tri6 and quad8
+      if (node->IsSlave())
+      {
+        //search the first adjacent element
+        MORTAR::MortarElement::DiscretizationType shape = (node->Elements()[0])->Shape();
+        
+        // which discretization type
+        switch(shape)
+        {
+          // tri6 contact elements (= tet10 discretizations)
+          case MORTAR::MortarElement::tri6:
+          {     
+            // case1: vertex nodes remain SLAVE
+            if (node->Id() == (node->Elements()[0])->NodeIds()[0]
+             || node->Id() == (node->Elements()[0])->NodeIds()[1]
+             || node->Id() == (node->Elements()[0])->NodeIds()[2])
+            {
+              // do nothing
+            }
+  
+            // case2: middle nodes must be set to MASTER
+            else
+            {
+              node->SetBound() = true;
+              node->SetSlave() = false;
+            }
+  
+            break;
+          }
+          
+          // quad8 contact elements (= hex20 discretizations)
+          case MORTAR::MortarElement::quad8:
+          {
+            // case1: vertex nodes remain SLAVE
+            if (node->Id() == (node->Elements()[0])->NodeIds()[0]
+             || node->Id() == (node->Elements()[0])->NodeIds()[1]
+             || node->Id() == (node->Elements()[0])->NodeIds()[2]
+             || node->Id() == (node->Elements()[0])->NodeIds()[3])
+            {
+              // do nothing  
+            }
+            
+            // case2: middle nodes must be set to MASTER
+            else
+            {
+              node->SetBound() = true;
+              node->SetSlave() = false;
+            }
+            
+            break;
+          }
+
+          // quad9 contact elements (= hex27 discretizations)
+          case MORTAR::MortarElement::quad9:
+          {
+            // case1: vertex nodes remain SLAVE
+            if (node->Id() == (node->Elements()[0])->NodeIds()[0]
+             || node->Id() == (node->Elements()[0])->NodeIds()[1]
+             || node->Id() == (node->Elements()[0])->NodeIds()[2]
+             || node->Id() == (node->Elements()[0])->NodeIds()[3])
+            {
+              // do nothing  
+            }
+            
+            // case2: middle nodes must be set to MASTER
+            else
+            {
+              node->SetBound() = true;
+              node->SetSlave() = false;
+            }
+            
+            break;
+          }
+                    
+          // other cases
+          default:
+          {
+            dserror("ERROR: Lin/Lin interpolation of LM only for tri6/quad8/quad9 contact elements");
+            break;
+          }
+        } // switch(Shape)
+      } // if (IsSlave())
+    } // for-loop
+  }
+  //**********************************************************************
 
   // later we will export node and element column map to FULL overlap,
   // thus store the standard column maps first

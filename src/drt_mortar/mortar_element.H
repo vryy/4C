@@ -74,35 +74,44 @@ public:
   //! @name Enums and Friends
 
   /*!
-  \brief Enum for element shape function types recognized by MortarElements
+  \brief Enum for shape function types recognized by MortarElements
   
   */
   enum ShapeType
   {
-    lin1D,                  // linear 1D
-    lin1D_edge0,
-    lin1D_edge1,
-    lindual1D,              // dual linear 1D
-    lindual1D_edge0,
-    lindual1D_edge1,
-    dual1D_base_for_edge0,
-    dual1D_base_for_edge1,
-    quad1D,                 // quadratic 1D
-    quad1D_edge0,
-    quad1D_edge1,
-    quaddual1D,             // dual quadratic 1D
-    quaddual1D_edge0,
-    quaddual1D_edge1,
-    lin2D,                  // linear 2D
-    lindual2D,              // dual linear 2D
-    bilin2D,                // bilinear 2D
-    bilindual2D,            // dual bilinear 2D
-    quad2D,                 // quadratic 2D
-    quaddual2D,             // dual quadratic 2D
-    serendipity2D,          // serendipity 2D
-    serendipitydual2D,      // dual serendipity 2D
-    biquad2D,               // biquadratic 2D
-    biquaddual2D            // dual biquadratic 2D
+    lin1D,                      // displacements / std LM linear 1D
+    quad1D,                     // displacements / std LM quadratic 1D
+    lin2D,                      // displacements / std LM linear 2D
+    bilin2D,                    // displacements / std LM bilinear 2D
+    quad2D,                     // displacements / std LM quadratic 2D
+    serendipity2D,              // displacements / std LM serendipity 2D
+    biquad2D,                   // displacements / std LM biquadratic 2D
+    
+    lindual1D,                  // dual LM linear 1D
+    quaddual1D,                 // dual LM quadratic 1D
+    lindual2D,                  // dual LM linear 2D
+    bilindual2D,                // dual LM bilinear 2D
+    quaddual2D,                 // dual LM quadratic 2D
+    serendipitydual2D,          // dual LM serendipity 2D
+    biquaddual2D,               // dual LM biquadratic 2D
+     
+    lin1D_edge0,                // crosspoint LM modification 1D
+    lin1D_edge1,                // crosspoint LM modification 1D
+    lindual1D_edge0,            // crosspoint LM modification 1D
+    lindual1D_edge1,            // crosspoint LM modification 1D
+    dual1D_base_for_edge0,      // crosspoint LM modification 1D
+    dual1D_base_for_edge1,      // crosspoint LM modification 1D
+    quad1D_edge0,               // crosspoint LM modification 1D
+    quad1D_edge1,               // crosspoint LM modification 1D
+    quaddual1D_edge0,           // crosspoint LM modification 1D
+    quaddual1D_edge1,           // crosspoint LM modification 1D
+    
+    quad2D_only_lin,            // quadratic LM modification 2D
+    quaddual2D_only_lin,        // quadratic LM modification 2D
+    serendipity2D_only_lin,     // quadratic LM modification 2D
+    serendipitydual2D_only_lin, // quadratic LM modification 2D
+    biquad2D_only_lin,          // quadratic LM modification 2D
+    biquaddual2D_only_lin       // quadratic LM modification 2D
   };
 
   //@}
@@ -455,6 +464,14 @@ public:
   virtual bool EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype,
                                     const double* xi, LINALG::SerialDenseVector& val,
                                     LINALG::SerialDenseMatrix& deriv, const int& valdim);
+ 
+  /*!
+  \brief Evaluate Lagrange multiplier shape functions and derivatives
+  (special version for 3D quadratic mortar with linear Lagrange multipliers)
+  */
+  virtual bool EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFcn& lmtype,
+                                       const double* xi, LINALG::SerialDenseVector& val,
+                                       LINALG::SerialDenseMatrix& deriv, const int& valdim);
   
   /*!
   \brief Evaluate 2nd derivative of shape functions
@@ -531,6 +548,62 @@ private:
   vector<int>                        searchelements_; // global ids of potentially contacting elements
 
 }; // class MortarElement
+
+/*!
+\brief A class to perform Gaussian integration on a mortar element
+
+\author popp (popp@lnm.mw.tum.de)
+*/
+
+class ElementIntegrator
+{
+public:
+
+  /*!
+  \brief Standard constructor
+  
+  */
+  ElementIntegrator(DRT::Element::DiscretizationType eletype);
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~ElementIntegrator() {}
+    
+  //! @name Access methods
+
+  /*!
+  \brief Return number of Gauss points
+  
+  */
+  int nGP() {return ngp_;}
+
+  /*!
+  \brief Return coordinates of a specific GP
+
+  */
+  double Coordinate(int& gp, int dir) {return coords_(gp,dir);}
+
+  /*!
+  \brief Return weight of a specific GP in 1D/2D CElement
+
+  */
+  double Weight(int& gp) {return weights_[gp];}
+
+  //@}
+
+protected:
+
+    // don't want = operator and cctor
+    ElementIntegrator operator = (const ElementIntegrator& old);
+    ElementIntegrator(const ElementIntegrator& old);
+
+    int                           ngp_;         // number of Gauss points
+    Epetra_SerialDenseMatrix      coords_;      // Gauss point coordinates
+    vector<double>                weights_;     // Gauss point weights
+
+}; // class ElementIntegrator
 } // namespace MORTAR
 
 // << operator
