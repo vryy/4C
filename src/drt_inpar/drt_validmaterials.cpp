@@ -411,6 +411,34 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
+  // AAA thrombus material according to GASSER et. al. [2008]
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_AAAGasser",
+                                            "AAA thrombus material according to GASSER [2008]",
+                                            INPAR::MAT::m_aaagasser));
+    
+    AddNamedReal(m,"DENS","mass density");
+    AddNamedString(m,"VOL","Type of volumetric Strain Energy Density (OSM,SuBa,SiTa)","OSM");
+    AddNamedReal(m,"NUE","Poisson's ratio");
+    AddNamedReal(m,"BETA","empiric constant for OSM");
+    AddNamedReal(m,"CLUM","luminal stiffness parameter");
+    AddNamedReal(m,"CMED","medial stiffness parameter");
+    AddNamedReal(m,"CABLUM","abluminal stiffness parameter");
+    
+    /*   
+    AddNamedReal(m,"DENS","mass density");
+    AddNamedReal(m,"KAPPA","dilatation modulus");
+    AddNamedReal(m,"BETA","empiric constant");
+    AddNamedReal(m,"CLUM","luminal stiffness parameter");
+    AddNamedReal(m,"CMED","medial stiffness parameter");
+    AddNamedReal(m,"CABLUM","abluminal stiffness parameter");
+    */
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
   // aneurysm wall material according to Raghavan and Vorp [2000] with damage Simo
   {
     Teuchos::RCP<MaterialDefinition> m
