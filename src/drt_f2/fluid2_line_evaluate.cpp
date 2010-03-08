@@ -154,7 +154,7 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
       break;
     }
     case calc_line_flowrate:
-    {   
+    {
       // get velocities
       const Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
       vector<double> myvelnp;
@@ -306,12 +306,6 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
     escanp(i) = myscanp[2+(i*3)];
   }
 
-  // This is a hack for low-Mach-number flow with temperature
-  // equation until material data will be available here
-  // get thermodynamic pressure and its time derivative or history
-  double thermpress = params.get<double>("thermpress at n+1");
-  double gasconstant = 287.0;
-
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
@@ -385,6 +379,12 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
     double dens = 1.0;
     if (physicaltype == INPAR::FLUID::loma)
     {
+      // This is a hack for low-Mach-number flow with temperature
+      // equation until material data will be available here
+      // get thermodynamic pressure and its time derivative or history
+      double thermpress = params.get<double>("thermpress at n+1");
+      double gasconstant = 287.0;
+
       double temp = 0.0;
       for (int i=0;i<2;++i)
       {
@@ -1436,11 +1436,11 @@ void DRT::ELEMENTS::Fluid2Line::ComputeLineFlowRate(
   const DiscretizationType distype = this->Shape();
   const int iel   = this->NumNode();
   DRT::UTILS::GaussRule1D  gaussrule = getOptimalGaussrule(distype);
-  
+
   // allocate vector for shape functions and matrix for derivatives
   Epetra_SerialDenseVector      funct       (iel);
   Epetra_SerialDenseMatrix      deriv       (1,iel);
-  Epetra_SerialDenseMatrix      xyze        (2,iel); // nodal coordinates 
+  Epetra_SerialDenseMatrix      xyze        (2,iel); // nodal coordinates
   Epetra_SerialDenseMatrix      evelnp      (2,iel); // nodal velocities
 
   // get node coordinates
