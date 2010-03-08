@@ -37,6 +37,7 @@ Maintainer: Moritz Frenzel
 
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_mat/thermostvenantkirchhoff.H"
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
@@ -96,6 +97,15 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(*glstrain,*cmat,*stress);
       *density = stvk->Density();
+      return;
+      break;
+    }
+    // added this material only for hex8
+    case INPAR::MAT::m_thermostvenant: /*------------------ st.venant-kirchhoff-material with temperature */
+    {
+      MAT::ThermoStVenantKirchhoff* thrstvk = static_cast <MAT::ThermoStVenantKirchhoff*>(mat.get());
+      thrstvk->Evaluate(*glstrain,*cmat,*stress);
+      *density = thrstvk->Density();
       return;
       break;
     }
@@ -403,7 +413,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       *density = plastic->Density();
       return;
       break;
-    } 
+    }
     default:
       dserror("Unknown type of material");
     break;
@@ -1176,26 +1186,14 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       return;
       break;
     }
-    case INPAR::MAT::m_aaagasser: /*-- AAA thrombus material acc. to GASSER [2008] */
-    {
-      MAT::AAAgasser* gasser = static_cast<MAT::AAAgasser*>(mat.get());
-      double normdist = params.get("iltthick meanvalue",-999.0);
-      if (normdist==-999.0) dserror("Aneurysm mean ilt distance not found");
-      //printf("Element %d normdist %15.10e\n",Id(),normdist);
-      gasser->Evaluate(*glstrain,*cmat,*stress, normdist);
-      //gasser->Evaluate(*glstrain,*cmat,*stress);
-      *density = gasser->Density();
-      return;
-      break;
-    }
-/*    case INPAR::MAT::m_aaaraghavanvorp_damage: //-- special case of generalised NeoHookean material see Raghavan, Vorp, with damage 
+    case INPAR::MAT::m_aaaraghavanvorp_damage: //-- special case of generalised NeoHookean material see Raghavan, Vorp, with damage
     {
       MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
       aaadamage->Evaluate(glstrain,gp,params,cmat,stress);
       *density = aaadamage->Density();
       return;
       break;
-  } */ 
+    }
     case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
     {
       MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());

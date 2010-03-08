@@ -114,6 +114,7 @@ extern "C"
 #include "../drt_thermo/thermo_element.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_mat/thermostvenantkirchhoff.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/logneohooke.H"
@@ -791,6 +792,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       MAT::StVenantKirchhoff* stvenantk = new MAT::StVenantKirchhoff();
       stvenantk->Unpack(data);
       return stvenantk;
+    }
+    case ParObject_ThermoStVenantKirchhoff:
+    {
+      MAT::ThermoStVenantKirchhoff* thrstvenantk = new MAT::ThermoStVenantKirchhoff();
+      thrstvenantk->Unpack(data);
+      return thrstvenantk;
     }
     case ParObject_LungPenalty:
     {

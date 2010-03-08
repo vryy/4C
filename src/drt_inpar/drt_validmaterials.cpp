@@ -321,6 +321,23 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+  /*--------------------------------------------------------------------*/
+  // de St.Venant--Kirchhoff with temperature
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_ThrStVenantK",
+                                            "Thermo St.Venant--Kirchhoff material",
+                                            INPAR::MAT::m_thermostvenant));
+
+    AddNamedReal(m,"YOUNG","Young's modulus");
+    AddNamedReal(m,"NUE","Poisson's ratio");
+    AddNamedReal(m,"DENS","mass density");
+    AddNamedReal(m,"THEXPANS","coefficient of linear thermal expansion",true);
+    AddNamedReal(m,"INITTEMP","initial temperature",true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
   /*----------------------------------------------------------------------*/
   // Elastic orthotropic material
   {
@@ -373,7 +390,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
-  
+
   /*----------------------------------------------------------------------*/
   // Plastic Neo-Hooke / von Mises
   {
@@ -1268,7 +1285,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
-  
+
   /*----------------------------------------------------------------------*/
   // deliver
   return vm;

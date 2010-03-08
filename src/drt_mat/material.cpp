@@ -20,6 +20,7 @@ Maintainer: Lena Wiechert
 #include "material.H"
 #include "newtonianfluid.H"
 #include "stvenantkirchhoff.H"
+#include "thermostvenantkirchhoff.H"
 #include "micromaterial.H"
 #include "neohooke.H"
 #include "plasticneohooke.H"
@@ -90,6 +91,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
       curmat->SetParameter(new MAT::PAR::StVenantKirchhoff(curmat));
     MAT::PAR::StVenantKirchhoff* params = static_cast<MAT::PAR::StVenantKirchhoff*>(curmat->Parameter());
     return Teuchos::rcp(new StVenantKirchhoff(params));
+  }
+  case INPAR::MAT::m_thermostvenant:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ThermoStVenantKirchhoff(curmat));
+    MAT::PAR::ThermoStVenantKirchhoff* params = static_cast<MAT::PAR::ThermoStVenantKirchhoff*>(curmat->Parameter());
+    return Teuchos::rcp(new ThermoStVenantKirchhoff(params));
   }
   case INPAR::MAT::m_struct_multiscale:
   {

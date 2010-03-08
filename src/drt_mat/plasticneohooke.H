@@ -6,7 +6,7 @@
        following rate-independent von Mises plasticity with combined
        (nonlinear) isotropic and kinematic hardening and a nearly
        incompressible Neo Hookean material law.
-       
+
        Refer also to the master thesis of A.A. van der Stelt (2009).
 
 <pre>
@@ -157,16 +157,26 @@ namespace MAT
     MAT::PAR::PlasticNeoHooke* params_;
 
     /// plastic history deformation
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histplasticrcgcurr_; /// current plastic right cauchy-green tensor
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histplasticrcglast_; /// last converged state of plastic right cauchy-green tensor
-    Teuchos::RCP<vector<LINALG::Matrix<1,1> > > histeplasticscurr_;              /// current equivalent plastic strain
-    Teuchos::RCP<vector<LINALG::Matrix<1,1> > > histeplasticslast_;              /// last converged state of equivalent plastic strain
-    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > histplasticbstresscurr_;         /*added*/
-    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > histplasticbstresslast_;         /*added*/
-    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > lamdacurr_;                      /*added*/
-    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > lamdalast_;                      /*added*/
-    Teuchos::RCP<vector<LINALG::Matrix<3,3> > > nsetcurr_;                       /*added*/
-    Teuchos::RCP<vector<LINALG::Matrix<3,3> > > nsetlast_;                       /*added*/
+    // current plastic strain (right cauchy-green tensor)
+    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histplasticrcgcurr_;
+    // last converged state of plastic right cauchy-green tensor
+    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histplasticrcglast_;
+    // current equivalent plastic strain
+    Teuchos::RCP<vector<LINALG::Matrix<1,1> > > histeplasticscurr_;
+    // last converged state of equivalent plastic strain
+    Teuchos::RCP<vector<LINALG::Matrix<1,1> > > histeplasticslast_;
+    // current backward stress /*added*/
+    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > histplasticbstresscurr_;
+    // backward stress of last converged state  /*added*/
+    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > histplasticbstresslast_;
+    // current eigenvalues /*added*/
+    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > lamdacurr_;
+    // eigenvalues of the last converged state  /*added*/
+    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > lamdalast_;
+    // matrix of the current three eigenvectors in 3D /*added*/
+    Teuchos::RCP<vector<LINALG::Matrix<3,3> > > nsetcurr_;
+    // matrix of the three eigenvectors in 3D of last converged state /*added*/
+    Teuchos::RCP<vector<LINALG::Matrix<3,3> > > nsetlast_;
 
     /// indicator if #Initialize routine has been called
     bool isinit_;

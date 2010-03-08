@@ -62,16 +62,26 @@ MAT::PlasticNeoHooke::PlasticNeoHooke()
   : params_(NULL)
 {
   isinit_=false;
-  histplasticrcgcurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >); ///< current plastic strain
-  histeplasticscurr_=rcp(new vector<LINALG::Matrix<1,1> >);              ///< current plastic strain
-  histplasticrcglast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >); ///< plastic strain of last converged state
-  histeplasticslast_=rcp(new vector<LINALG::Matrix<1,1> >);              ///< of last converged state
-  histplasticbstresscurr_=rcp(new vector<LINALG::Matrix<3,1> >);         ///< current backward stress  /*added*/
-  histplasticbstresslast_=rcp(new vector<LINALG::Matrix<3,1> >);         ///< backward stress of last converged state /*added*/
-  lamdacurr_=rcp(new vector<LINALG::Matrix<3,1> >);                      ///< current eigenvalues /*added*/
-  lamdalast_=rcp(new vector<LINALG::Matrix<3,1> >);                      ///< eigenvalues of the last converged state /*added*/
-  nsetcurr_=rcp(new vector<LINALG::Matrix<3,3> >);                       ///< matrix of the current three eigenvectors in 3D  /*added*/
-  nsetlast_=rcp(new vector<LINALG::Matrix<3,3> >);                       ///< matrix of the three eigenvectors in 3D of last converged state /*added*/
+  // current plastic strain
+  histplasticrcgcurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  // current plastic strain
+  histeplasticscurr_=rcp(new vector<LINALG::Matrix<1,1> >);
+  // plastic strain of last converged state
+  histplasticrcglast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  // of last converged state
+  histeplasticslast_=rcp(new vector<LINALG::Matrix<1,1> >);
+  // of last converged state
+  histplasticbstresscurr_=rcp(new vector<LINALG::Matrix<3,1> >);
+  // backward stress of last converged state /*added*/
+  histplasticbstresslast_=rcp(new vector<LINALG::Matrix<3,1> >);
+  // current eigenvalues /*added*/
+  lamdacurr_=rcp(new vector<LINALG::Matrix<3,1> >);
+  // eigenvalues of the last converged state /*added*/
+  lamdalast_=rcp(new vector<LINALG::Matrix<3,1> >);
+  // matrix of the current three eigenvectors in 3D  /*added*/
+  nsetcurr_=rcp(new vector<LINALG::Matrix<3,3> >);
+  // matrix of the three eigenvectors in 3D of last converged state /*added*/
+  nsetlast_=rcp(new vector<LINALG::Matrix<3,3> >);
 }
 
 /*----------------------------------------------------------------------*
@@ -320,51 +330,81 @@ void MAT::PlasticNeoHooke::Evaluate
   )
 {
   // get material parameters
-  double ym =       params_->youngs_;       ///< Young's modulus
-  double nu =       params_->poissonratio_; ///< Poisson's ratio
-  double H =        params_->isohard_;      ///< isotropic hardening parameter
-  double KH_y0 =    params_->yield_;        ///< initial Kirchhoff yield stress
-  double sigmainf = params_->infyield_;     ///< saturation model (nonlin. iso. hard.) 0.715
-  double deltad =   params_->exp_;          ///< saturation model (nonlin. iso. hard.) 16.93
-  double Hkin =     params_->kinhard_;      ///< kinematic hardening parameter
+  // Young's modulus
+  double ym =       params_->youngs_;
+  // Poisson's ratio
+  double nu =       params_->poissonratio_;
+  // isotropic hardening parameter
+  double H =        params_->isohard_;
+  // initial Kirchhoff yield stress
+  double KH_y0 =    params_->yield_;
+  // saturation model (nonlin. iso. hard.) 0.715
+  double sigmainf = params_->infyield_;
+  // saturation model (nonlin. iso. hard.) 16.93
+  double deltad =   params_->exp_;
+  // kinematic hardening parameter
+  double Hkin =     params_->kinhard_;
 
   //cout << "\nisohardening " << H << " kinhardening " << Hkin << "\n";
 
   // initialize scalars
-  double lambda = 0.0;                      ///< lame constant
-  double mue = 0.0;                         ///< lame constant
-  double kappa = 0.0;                       ///< bulk modulus kappa = lambda + 2*mu
-  double f = 0.0;                           ///< yield function
-  double dev_tau_abs = 0.0;                 ///< total Kirchhoff stress
-  double dj = 0.0;                          ///< plastic multiplier
-  double cab = 0.0;                         ///< offdiagonal coefficient of \f[\hat{C}^{SE}\f]
-  double cbb = 0.0;                         ///< diagonal coefficient of \f[\hat{C}^{SE}\f]
-  double c1 = 0.0;                          ///< coefficient of \f[\hat{C}^{SE}\f]
+  // lame constant
+  double lambda = 0.0;
+  // lame constant
+  double mue = 0.0;
+  // bulk modulus kappa = lambda + 2*mu
+  double kappa = 0.0;
+  // yield function
+  double f = 0.0;
+  // total Kirchhoff stress
+  double dev_tau_abs = 0.0;
+  // plastic multiplier
+  double dj = 0.0;
+  // offdiagonal coefficient of \f[\hat{C}^{SE}\f]
+  double cab = 0.0;
+  // diagonal coefficient of \f[\hat{C}^{SE}\f]
+  double cbb = 0.0;
+  // coefficient of \f[\hat{C}^{SE}\f]
+  double c1 = 0.0;
 
   //----------------------------------------------------------------------
   // initialize vectors                                              12/09
   //----------------------------------------------------------------------
-  LINALG::Matrix<3,1> Le_trial;             ///< store trial eigenvalues
-  LINALG::Matrix<3,1> Le;                   ///< store new eigenvalues
-  LINALG::Matrix<3,1> dev_KH_trial;         ///< prinicple trial Kirchhoff deviatoric stresses
-  LINALG::Matrix<3,1> dev_KH;               ///< principle Kirchhoff deviatoric stresses
-  LINALG::Matrix<3,1> dev_PK2_principle;    ///< principle PK2 deviatoric stresses
-  LINALG::Matrix<3,1> PK2_principle;        ///< prinple PK2 stresses
-  LINALG::Matrix<3,3> PK2;                  ///< PK2 stresses
-  LINALG::Matrix<3,1> Vec;                  ///< direction vector for return mapping
+  // store trial eigenvalues
+  LINALG::Matrix<3,1> Le_trial;
+  // store new eigenvalues
+  LINALG::Matrix<3,1> Le;
+  // prinicple trial Kirchhoff deviatoric stresses
+  LINALG::Matrix<3,1> dev_KH_trial;
+  // principle Kirchhoff deviatoric stresses
+  LINALG::Matrix<3,1> dev_KH;
+  // principle PK2 deviatoric stresses
+  LINALG::Matrix<3,1> dev_PK2_principle;
+  // prinple PK2 stresses
+  LINALG::Matrix<3,1> PK2_principle;
+  // PK2 stresses
+  LINALG::Matrix<3,3> PK2;
+  // direction vector for return mapping
+  LINALG::Matrix<3,1> Vec;
 
   //----------------------------------------------------------------------
   // initialize matrices                                             12/09
   //----------------------------------------------------------------------
-  LINALG::Matrix<3,3> be_trial;             ///< left-Cauchy Green tensor trial
-  LINALG::Matrix<3,3> n_trial;              ///< the current trial eigenvectors
-  LINALG::Matrix<3,3> be;                   ///< left-Cauchy Green strain tensor
+  // left-Cauchy Green tensor trial
+  LINALG::Matrix<3,3> be_trial;
+  // the current trial eigenvectors
+  LINALG::Matrix<3,3> n_trial;
+  // left-Cauchy Green strain tensor
+  LINALG::Matrix<3,3> be;
   LINALG::Matrix<3,3> N_trial;
 
   // add value
-  lambda = nu*ym/((1.0+nu)*(1.0-2.0*nu));   ///< Lame's first parameter lambda
-  mue = ym/(2.0*(1.0+nu));                  ///< Shear modulus parameter mu
-  kappa = lambda+2.0/3.0*mue;               ///< Bulk modulus
+  // Lame's first parameter lambda
+  lambda = nu*ym/((1.0+nu)*(1.0-2.0*nu));
+  // Shear modulus parameter mu
+  mue = ym/(2.0*(1.0+nu));
+  // Bulk modulus
+  kappa = lambda+2.0/3.0*mue;
 
   // build identity tensor I & C
   LINALG::Matrix<NUM_STRESS_3D,1> Id;
@@ -441,23 +481,23 @@ void MAT::PlasticNeoHooke::Evaluate
   // ^I1 = tr(C^)
 
   // Jacobian
-  double J = (*defgrd).Determinant(); //!< Jacobian
+  double J = (*defgrd).Determinant(); /// Jacobian
 
   // Pressure
-  double p = kappa*(log(J)/J); //!< Pressure
+  double p = kappa*(log(J)/J); /// Pressure
 
   // be_trial: b_e^(trial) = F C_p^(-1) F^T
   LINALG::Matrix<3,3> Matrix1;
-  Matrix1.MultiplyNT(C_Plastic_Inv,*defgrd);  //!< Matrix1 = C_(p,n)^(-1) * F_(n+1)^T
-  be_trial.MultiplyNN(*defgrd,Matrix1);  //!< trial left Cauchy-Green tensor
-                                         //!< b_(e,n+1)^(trial) = F_(n+1) * Matrix1
+  Matrix1.MultiplyNT(C_Plastic_Inv,*defgrd);  /// Matrix1 = C_(p,n)^(-1) * F_(n+1)^T
+  be_trial.MultiplyNN(*defgrd,Matrix1);  /// trial left Cauchy-Green tensor
+                                         /// b_(e,n+1)^(trial) = F_(n+1) * Matrix1
 
   //----------------------------------------------------------------------
   // Decompose be_trial                                             12/09
   //----------------------------------------------------------------------
   // evaluate eigenproblem
-  Epetra_SerialDenseVector Le_trial_E(3);  //!< stored three eigenvalues
-  Epetra_SerialDenseMatrix be_trial_E(3,3);  //!< trial stretches
+  Epetra_SerialDenseVector Le_trial_E(3);  /// stored three eigenvalues
+  Epetra_SerialDenseMatrix be_trial_E(3,3);  /// trial stretches
   for (int i=0; i<3; ++i)
   {
     for (int j=0; j<3; ++j)
@@ -529,7 +569,7 @@ void MAT::PlasticNeoHooke::Evaluate
     for (int j=0; j<3; ++j)
     {
       // check if eigenvectors are arranged like this in be_trial
-      VABtemp1(0,0) = n_trial(0,i);  //!< n_trial: principle directions
+      VABtemp1(0,0) = n_trial(0,i);  /// n_trial: principle directions
       VABtemp1(1,0) = n_trial(1,i);
       VABtemp1(2,0) = n_trial(2,i);
 
@@ -596,9 +636,9 @@ void MAT::PlasticNeoHooke::Evaluate
     Vec.Update(1.0/(dev_tau_abs),tempdev);
 
     // Newton-Raphson solver to determine the plastic multiplier dj (B.34)
-    dj = 0.0;  //!< plastic multiplier
-    double Rdj = 0.0;  //!< final state of the yield function
-    double Rtan = 0.0;  //!< tangent
+    dj = 0.0;  /// plastic multiplier
+    double Rdj = 0.0;  /// final state of the yield function
+    double Rtan = 0.0;  /// tangent
     double convtol = 1.0e-12;
     int maxiter = 10;
 
@@ -683,7 +723,7 @@ void MAT::PlasticNeoHooke::Evaluate
   LINALG::Matrix<3,3> Finv(*defgrd);
   Finv.Invert();
   // the eigenvectors
-  LINALG::Matrix<3,1> Vtemp1; //!< basis vectors of the Kirchhoff stress (t_n+1)
+  LINALG::Matrix<3,1> Vtemp1; /// basis vectors of the Kirchhoff stress (t_n+1)
   LINALG::Matrix<3,1> Vtemp2;
 
   // map the eigenvectors to the reference configuration n --> N
@@ -695,7 +735,7 @@ void MAT::PlasticNeoHooke::Evaluate
     Vtemp1(2,0) = n_trial(2,i);
 
     // pull back of the basis vectors
-    LINALG::Matrix<3,1> Ntemp;  //!< referential eigenvector
+    LINALG::Matrix<3,1> Ntemp;  /// referential eigenvector
     Ntemp.Multiply(sqrt(Le(i,0)),Finv,Vtemp1) ;
 
     // the referential eigenvectors
