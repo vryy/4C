@@ -195,6 +195,16 @@ namespace ELEMENTS
     //! separately.
     virtual int NumDofPerNode(const DRT::Node& node) const { return numdofpernode_; }
 
+    //! \brief Get number of degrees of freedom of a certain node
+    //!        (implements pure virtual DRT::Element)
+    //!
+    //! The element decides how many degrees of freedom its nodes must have.
+    //! As this may vary along a simulation, the element can redecide the
+    //! number of degrees of freedom per node along the way for each of it's nodes
+    //! separately.
+    // 01.03.10 new method
+    virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const { return numdofpernode_;}
+
     //!
     //! \brief Get number of degrees of freedom per element
     //!        (implements pure virtual DRT::Element)
@@ -274,6 +284,50 @@ namespace ELEMENTS
 
     //! @name Evaluation
 
+    // 02.02.10 not used since Evaluate(la) is included
+//    //! \brief Evaluate an element, i.e. call the implementation to evaluate element
+//    //! tangent, capacity, internal forces or evaluate errors, statistics or updates
+//    //! etc. directly.
+//    //!
+//    //! Following implementations of the element are allowed:
+//    //! <pre>
+//    //!  o Evaluation of thermal system matrix and residual for the One-Step-Theta
+//    //!
+//    //!  o Evaluation of thermal system matrix and residual for the stationary thermal solver
+//    //! </pre>
+//    //!
+//    //! \param params (in/out): ParameterList for communication between control routine
+//    //!                         and elements
+//    //! \param discretization (in): A reference to the underlying discretization
+//    //! \param lm (in):         location vector of this element
+//    //! \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+//    //!                         the controlling method does not expect the element to fill
+//    //!                         this matrix.
+//    //! \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+//    //!                         the controlling method does not expect the element to fill
+//    //!                         this matrix.
+//    //! \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+//    //!                         the controlling method does not expect the element
+//    //!                         to fill this vector
+//    //! \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+//    //!                         the controlling method does not expect the element
+//    //!                         to fill this vector
+//    //! \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+//    //!                         the controlling method does not expect the element
+//    //!                         to fill this vector
+//    //! \return 0 if successful, negative otherwise
+//    int Evaluate(
+//      Teuchos::ParameterList& params,
+//      DRT::Discretization& discretization,
+//      std::vector<int>& lm,
+//      Epetra_SerialDenseMatrix& elemat1,
+//      Epetra_SerialDenseMatrix& elemat2,
+//      Epetra_SerialDenseVector& elevec1,
+//      Epetra_SerialDenseVector& elevec2,
+//      Epetra_SerialDenseVector& elevec3
+//      );
+
+    //  29.01.2010 new Evaluate for volume coupling
     //! \brief Evaluate an element, i.e. call the implementation to evaluate element
     //! tangent, capacity, internal forces or evaluate errors, statistics or updates
     //! etc. directly.
@@ -288,7 +342,7 @@ namespace ELEMENTS
     //! \param params (in/out): ParameterList for communication between control routine
     //!                         and elements
     //! \param discretization (in): A reference to the underlying discretization
-    //! \param lm (in):         location vector of this element
+    //! \param la (in)        : location array of this element
     //! \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
     //!                         the controlling method does not expect the element to fill
     //!                         this matrix.
@@ -308,7 +362,7 @@ namespace ELEMENTS
     int Evaluate(
       Teuchos::ParameterList& params,
       DRT::Discretization& discretization,
-      std::vector<int>& lm,
+      DRT::Element::LocationArray& la,
       Epetra_SerialDenseMatrix& elemat1,
       Epetra_SerialDenseMatrix& elemat2,
       Epetra_SerialDenseVector& elevec1,
@@ -514,6 +568,42 @@ namespace ELEMENTS
 
     //! @name Evaluation
 
+//    //! \brief Evaluate an element
+//    //!
+//    //! Evaluate Thermo element tangent, capacity, internal forces etc
+//    //!
+//    //! \param params (in/out): ParameterList for communication between control routine
+//    //!                         and elements
+//    //! \param discretization (in): A reference to the underlying discretization
+//    //! \param lm (in):         location vector of this element, vector of degrees of freedom adressed by this element
+//    //! \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+//    //!                         the controlling method does not expect the element to fill
+//    //!                         this matrix.
+//    //! \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+//    //!                         the controlling method does not expect the element to fill
+//    //!                         this matrix.
+//    //! \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+//    //!                         the controlling method does not expect the element
+//    //!                         to fill this vector
+//    //! \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+//    //!                         the controlling method does not expect the element
+//    //!                         to fill this vector
+//    //! \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+//    //!                         the controlling method does not expect the element
+//    //!                         to fill this vector
+//    //! \return 0 if successful, negative otherwise
+//    int Evaluate(
+//      Teuchos::ParameterList& params,
+//      DRT::Discretization& discretization,
+//      std::vector<int>& lm,
+//      Epetra_SerialDenseMatrix& elemat1,
+//      Epetra_SerialDenseMatrix& elemat2,
+//      Epetra_SerialDenseVector& elevec1,
+//      Epetra_SerialDenseVector& elevec2,
+//      Epetra_SerialDenseVector& elevec3
+//      );
+
+    // 29.01.10 new method for volume coupling
     //! \brief Evaluate an element
     //!
     //! Evaluate Thermo element tangent, capacity, internal forces etc
@@ -521,7 +611,8 @@ namespace ELEMENTS
     //! \param params (in/out): ParameterList for communication between control routine
     //!                         and elements
     //! \param discretization (in): A reference to the underlying discretization
-    //! \param lm (in):         location vector of this element, vector of degrees of freedom adressed by this element
+    //! \param la (in):         location array of this element, vector of
+    //!                         degrees of freedom adressed by this element
     //! \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
     //!                         the controlling method does not expect the element to fill
     //!                         this matrix.
@@ -541,7 +632,7 @@ namespace ELEMENTS
     int Evaluate(
       Teuchos::ParameterList& params,
       DRT::Discretization& discretization,
-      std::vector<int>& lm,
+      DRT::Element::LocationArray& la,
       Epetra_SerialDenseMatrix& elemat1,
       Epetra_SerialDenseMatrix& elemat2,
       Epetra_SerialDenseVector& elevec1,

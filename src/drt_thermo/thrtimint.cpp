@@ -37,8 +37,8 @@ Maintainer: Burkhard Bornemann
 void THR::TimInt::Logo()
 {
   std::cout << "Welcome to Thermal Time Integration " << std::endl;
-  std::cout << "      _______________________________  " << std::endl;
-  std::cout << "  ===(_________|_|_|_|_|_37°C_|_|____)   " << std::endl;
+  std::cout << "      _______________________________" << std::endl;
+  std::cout << "  ===(_________|_|_|_|_|_37°C_|_|____)" << std::endl;
   std::cout << std::endl;
 }
 
@@ -102,7 +102,8 @@ THR::TimInt::TimInt(
   }
 
   // time state
-  time_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, 0.0));  // HERE SHOULD BE SOMETHING LIKE (tdynparams.get<double>("TIMEINIT"))
+  time_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, 0.0));
+  // HERE SHOULD BE SOMETHING LIKE (tdynparams.get<double>("TIMEINIT"))
   dt_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, tdynparams.get<double>("TIMESTEP")));
   step_ = 0;
   timen_ = (*time_)[0] + (*dt_)[0];  // set target time to initial time plus step size
@@ -176,8 +177,9 @@ void THR::TimInt::DetermineCapaConsistTempRate()
     p.set("delta time", (*dt_)[0]);
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("residual temperature", zeros_);
-    discret_->SetState("temperature", (*temp_)(0));
+    // SetState(0,...) in case of multiple dofsets (e.g. TSI)
+    discret_->SetState(0, "residual temperature", zeros_);
+    discret_->SetState(0, "temperature", (*temp_)(0));
     discret_->Evaluate(p, Teuchos::null, tang_, fint, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -299,7 +301,7 @@ void THR::TimInt::ReadRestart(const int step)
 
   // fix pointer to #dofrowmap_, which has not really changed, but is
   // located at different place
-  dofrowmap_ = discret_->DofRowMap();
+  dofrowmap_ = discret_->DofRowMap(0);
 }
 
 /*----------------------------------------------------------------------*
@@ -444,8 +446,9 @@ void THR::TimInt::OutputHeatfluxTempgrad(bool& datawritten)
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("residual temperature", zeros_);
-  discret_->SetState("temperature", (*temp_)(0));
+  // SetState(0,...) in case of multiple dofsets (e.g. TSI)
+  discret_->SetState(0, "residual temperature", zeros_);
+  discret_->SetState(0, "temperature", (*temp_)(0));
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
@@ -630,7 +633,8 @@ void THR::TimInt::OutputEnergy()
 
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("temperature", (*temp_)(0));
+    // SetState(0,...) in case of multiple dofsets (e.g. TSI)
+    discret_->SetState(0, "temperature", (*temp_)(0));
     // get energies
     Teuchos::RCP<Epetra_SerialDenseVector> energies
       = Teuchos::rcp(new Epetra_SerialDenseVector(1));
@@ -697,7 +701,8 @@ void THR::TimInt::ApplyForceExternal(
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("temperature", temp);
+  // SetState(0,...) in case of multiple dofsets (e.g. TSI)
+  discret_->SetState(0, "temperature", temp);
   // get load vector
   discret_->EvaluateNeumann(p, *fext);
   discret_->ClearState();
@@ -729,8 +734,9 @@ void THR::TimInt::ApplyForceTangInternal(
   p.set("delta time", dt);
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("residual temperature", tempi);
-  discret_->SetState("temperature", temp);
+  // SetState(0,...) in case of multiple dofsets (e.g. TSI)
+  discret_->SetState(0, "residual temperature", tempi);
+  discret_->SetState(0, "temperature", temp);
   discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
@@ -763,8 +769,9 @@ void THR::TimInt::ApplyForceTangInternal(
   p.set("delta time", dt);
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("residual temperature", tempi);
-  discret_->SetState("temperature", temp);
+  // SetState(0,...) in case of multiple dofsets (e.g. TSI)
+  discret_->SetState(0,"residual temperature", tempi);
+  discret_->SetState(0,"temperature", temp);
   discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, fcap);
   discret_->ClearState();
 
@@ -794,8 +801,9 @@ void THR::TimInt::ApplyForceInternal(
   p.set("delta time", dt);
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("residual temperature", tempi);  // these are incremental
-  discret_->SetState("temperature", temp);
+  // SetState(0,...) in case of multiple dofsets (e.g. TSI)
+  discret_->SetState(0, "residual temperature", tempi);  // these are incremental
+  discret_->SetState(0, "temperature", temp);
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();

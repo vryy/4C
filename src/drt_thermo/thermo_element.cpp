@@ -235,7 +235,7 @@ void DRT::ELEMENTS::Thermo::VisNames(std::map<std::string,int>& names)
   DRT::Element::VisNames(names);
 
   // see whether we have additional data for visualization in our container
-  for (int k = 0 ;k<numdofpernode_; k++)
+  for (int k=0 ;k<numdofpernode_; k++)
   {
     std::ostringstream temp;
     temp << k;

@@ -372,7 +372,27 @@ void THR::TimIntImpl::NewtonFull()
   // equilibrium iteration loop
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
-
+    //    04.03.10 like Georg did in scatra_timint_implicit.cpp
+    /*
+          // matrix printing options (DEBUGGING!)
+          RCP<LINALG::SparseMatrix> A = SystemMatrix();
+          if (A != Teuchos::null)
+          {
+            // print to file in matlab format
+            const std::string fname = "sparsematrix.mtl";
+            LINALG::PrintMatrixInMatlabFormat(fname,*(A->EpetraMatrix()));
+            // print to screen
+            (A->EpetraMatrix())->Print(cout);
+            // print sparsity pattern to file
+            LINALG::PrintSparsityToPostscript( *(A->EpetraMatrix()) );
+          }
+          else
+          {
+            Teuchos::RCP<LINALG::BlockSparseMatrixBase> A = BlockSystemMatrix();
+            const std::string fname = "sparsematrix.mtl";
+            LINALG::PrintBlockMatrixInMatlabFormat(fname,*(A));
+          }
+          */
     // make negative residual
     fres_->Scale(-1.0);
 

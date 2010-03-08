@@ -83,7 +83,7 @@ void THR::ResultTest::TestNode(
       if (position == "temp")
       {
         unknownpos = false;
-        result = (*temp_)[tempmap.LID(thrdisc_->Dof(actnode,0))];
+        result = (*temp_)[tempmap.LID(thrdisc_->Dof(0,actnode,0))];
       }
     }
 
@@ -95,13 +95,14 @@ void THR::ResultTest::TestNode(
       if (position == "rate")
       {
         unknownpos = false;
-        result = (*rate_)[ratemap.LID(thrdisc_->Dof(actnode,0))];
+        // 01.03.10 NEW
+        result = (*rate_)[ratemap.LID(thrdisc_->Dof(0,actnode,0))];
       }
     }
 
     // catch position strings, which are not handled by thermo result test
     if (unknownpos)
-      dserror("position '%s' not supported in structure testing", position.c_str());
+      dserror("position '%s' not supported in thermo testing", position.c_str());
 
     // compare values
     const int err = CompareValues(result, res);

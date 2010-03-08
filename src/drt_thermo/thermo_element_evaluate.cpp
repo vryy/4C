@@ -28,13 +28,47 @@ Maintainer: Caroline Danowski
 #include "thermo_element.H"
 #include "../drt_thermo/thermo_ele_impl.H"
 
+///*----------------------------------------------------------------------*
+// |  evaluate the element (public)                            dano 09/09 |
+// *----------------------------------------------------------------------*/
+//int DRT::ELEMENTS::Thermo::Evaluate(
+//  Teuchos::ParameterList& params,
+//  DRT::Discretization& discretization,
+//  std::vector<int>& lm,
+//  Epetra_SerialDenseMatrix& elemat1,
+//  Epetra_SerialDenseMatrix& elemat2,
+//  Epetra_SerialDenseVector& elevec1,
+//  Epetra_SerialDenseVector& elevec2,
+//  Epetra_SerialDenseVector& elevec3
+//  )
+//{
+//
+//  // all physics-related stuff is included in the implementation class that can
+//  // be used in principle inside any element (at the moment: only Thermo element)
+//  // If this element has special features/ methods that do not fit in the
+//  // generalized implementation class, you have to do a switch here in order to
+//  // call element-specific routines
+//  return DRT::ELEMENTS::TemperImplInterface::Impl(this)->Evaluate(
+//    this,
+//    params,
+//    discretization,
+//    lm,
+//    elemat1,
+//    elemat2,
+//    elevec1,
+//    elevec2,
+//    elevec3
+//    );
+//
+//} //DRT::ELEMENTS::Thermo::Evaluate
+
 /*----------------------------------------------------------------------*
- |  evaluate the element (public)                            dano 09/09 |
+ |  evaluate the element for volume coupling (public)        dano 02/10 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Thermo::Evaluate(
   Teuchos::ParameterList& params,
   DRT::Discretization& discretization,
-  std::vector<int>& lm,
+  LocationArray& la,
   Epetra_SerialDenseMatrix& elemat1,
   Epetra_SerialDenseMatrix& elemat2,
   Epetra_SerialDenseVector& elevec1,
@@ -42,7 +76,6 @@ int DRT::ELEMENTS::Thermo::Evaluate(
   Epetra_SerialDenseVector& elevec3
   )
 {
-
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Thermo element)
   // If this element has special features/ methods that do not fit in the
@@ -52,15 +85,14 @@ int DRT::ELEMENTS::Thermo::Evaluate(
     this,
     params,
     discretization,
-    lm,
+    la,
     elemat1,
     elemat2,
     elevec1,
     elevec2,
     elevec3
     );
-
-} //DRT::ELEMENTS::Thermo::Evaluate
+} // Evaluate
 
 /*----------------------------------------------------------------------*
  |  do nothing (public)                                      dano 09/09 |

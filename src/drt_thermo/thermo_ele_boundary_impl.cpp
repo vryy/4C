@@ -105,8 +105,9 @@ DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInt
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl
-(int numdofpernode)
+DRT::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl(
+  int numdofpernode
+  )
 : numdofpernode_(numdofpernode),
     xyze_(true),  // initialize to zero
     xsi_(true),
@@ -119,15 +120,83 @@ DRT::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl
   return;
 }
 
+///*----------------------------------------------------------------------*
+// |                                                           dano 09/09 |
+// *----------------------------------------------------------------------*/
+//template <DRT::Element::DiscretizationType distype>
+//int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
+//  DRT::ELEMENTS::ThermoBoundary* ele,
+//  Teuchos::ParameterList& params,
+//  DRT::Discretization& discretization,
+//  std::vector<int>& lm,
+//  Epetra_SerialDenseMatrix& elemat1_epetra,
+//  Epetra_SerialDenseMatrix& elemat2_epetra,
+//  Epetra_SerialDenseVector& elevec1_epetra,
+//  Epetra_SerialDenseVector& elevec2_epetra,
+//  Epetra_SerialDenseVector& elevec3_epetra
+//  )
+//{
+//  // First, do the things that are needed for all actions:
+//  // get the material (of the parent element)
+//  DRT::ELEMENTS::Thermo* parentele = ele->ParentElement();
+//  Teuchos::RCP<MAT::Material> mat = parentele->Material();
+//
+//  // Now, check for the action parameter
+//  const std::string action = params.get<std::string>("action","none");
+//  if (action == "calc_normal_vectors")
+//  {
+//    // access the global vector
+//    const Teuchos::RCP<Epetra_MultiVector> normals
+//      = params.get< Teuchos::RCP<Epetra_MultiVector> >("normal vectors", Teuchos::null);
+//    if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
+//
+//    // get node coordinates (we have a nsd_+1 dimensional domain!)
+//    GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+//
+//    // determine constant normal to this element
+//    GetConstNormal(normal_,xyze_);
+//
+//    // loop over the element nodes
+//    for (int j=0;j<iel;j++)
+//    {
+//      const int nodegid = (ele->Nodes()[j])->Id();
+//      if (normals->Map().MyGID(nodegid) )
+//      { // OK, the node belongs to this processor
+//
+//        // scaling to a unit vector is performed on the global level after
+//        // assembly of nodal contributions since we have no reliable information
+//        // about the number of boundary elements adjacent to a node
+//        for (int dim=0; dim<(nsd_+1); dim++)
+//        {
+//          normals->SumIntoGlobalValue(nodegid,dim,normal_(dim));
+//        }
+//      }
+//      // else: the node belongs to another processor; the ghosted
+//      //       element will contribute the right value on that proc
+//    }
+//  }
+//  else if (action =="integrate_shape_functions")
+//  {
+//    // NOTE: add area value only for elements which are NOT ghosted!
+//    const bool addarea = (ele->Owner() == discretization.Comm().MyPID());
+//    IntegrateShapeFunctions(ele,params,elevec1_epetra,addarea);
+//  }
+//  else
+//    dserror("Unknown type of action for Temperature Implementation: %s",action.c_str());
+//
+//  return 0;
+//} // Evaluate
+
+// 01.02.10
 /*----------------------------------------------------------------------*
- |                                                           dano 09/09 |
+ | Evaluate the element in case of volume coupling           dano 02/10 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
   DRT::ELEMENTS::ThermoBoundary* ele,
   Teuchos::ParameterList& params,
   DRT::Discretization& discretization,
-  std::vector<int>& lm,
+  DRT::Element::LocationArray& la,
   Epetra_SerialDenseMatrix& elemat1_epetra,
   Epetra_SerialDenseMatrix& elemat2_epetra,
   Epetra_SerialDenseVector& elevec1_epetra,
@@ -145,7 +214,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
   if (action == "calc_normal_vectors")
   {
     // access the global vector
-    const Teuchos::RCP<Epetra_MultiVector> normals = params.get< Teuchos::RCP<Epetra_MultiVector> >("normal vectors", Teuchos::null);
+    const Teuchos::RCP<Epetra_MultiVector> normals
+      = params.get< Teuchos::RCP<Epetra_MultiVector> >("normal vectors", Teuchos::null);
     if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
 
     // get node coordinates (we have a nsd_+1 dimensional domain!)
@@ -183,7 +253,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     dserror("Unknown type of action for Temperature Implementation: %s",action.c_str());
 
   return 0;
-}
+} // Evaluate
 
 /*----------------------------------------------------------------------*
  |  Integrate a Surface/Line Neumann boundary condition       gjb 01/09 |
@@ -318,28 +388,28 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
   // determine normal to this element
   switch(nsd_)
   {
-  case 2:
-  {
-    LINALG::Matrix<3,1> dist1(true), dist2(true);
-    for (int i=0; i<3; i++)
+    case 2:
     {
-      dist1(i) = xyze(i,1)-xyze(i,0);
-      dist2(i) = xyze(i,2)-xyze(i,0);
-    }
+      LINALG::Matrix<3,1> dist1(true), dist2(true);
+      for (int i=0; i<3; i++)
+      {
+        dist1(i) = xyze(i,1)-xyze(i,0);
+        dist2(i) = xyze(i,2)-xyze(i,0);
+      }
 
-    normal(0) = dist1(1)*dist2(2) - dist1(2)*dist2(1);
-    normal(1) = dist1(2)*dist2(0) - dist1(0)*dist2(2);
-    normal(2) = dist1(0)*dist2(1) - dist1(1)*dist2(0);
-  }
-  break;
-  case 1:
-  {
-    normal(0) = xyze(1,1) - xyze(1,0);
-    normal(1) = (-1.0)*(xyze(0,1) - xyze(0,0));
-  }
-  break;
-  default:
-    dserror("Illegal number of space dimensions: %d",nsd_);
+      normal(0) = dist1(1)*dist2(2) - dist1(2)*dist2(1);
+      normal(1) = dist1(2)*dist2(0) - dist1(0)*dist2(2);
+      normal(2) = dist1(0)*dist2(1) - dist1(1)*dist2(0);
+    }
+    break;
+    case 1:
+    {
+      normal(0) = xyze(1,1) - xyze(1,0);
+      normal(1) = (-1.0)*(xyze(0,1) - xyze(0,0));
+    }
+    break;
+    default:
+      dserror("Illegal number of space dimensions: %d",nsd_);
   } // switch(nsd)
 
   // length of normal to this element

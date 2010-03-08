@@ -51,6 +51,22 @@ namespace ELEMENTS
     /// Empty destructor
     virtual ~TemperImplInterface() {}
 
+//    // 02.02.10 not used since Evaluate(la) is included
+//    /// Evaluate the element
+//    //!  This class does not provide a definition for this function, it
+//    //!  must be defined in TemperImpl.
+//    virtual int Evaluate(
+//      DRT::Element* ele,
+//      Teuchos::ParameterList& params,
+//      DRT::Discretization& discretization,
+//      std::vector<int>& lm,
+//      Epetra_SerialDenseMatrix& elemat1_epetra,
+//      Epetra_SerialDenseMatrix& elemat2_epetra,
+//      Epetra_SerialDenseVector& elevec1_epetra,
+//      Epetra_SerialDenseVector& elevec2_epetra,
+//      Epetra_SerialDenseVector& elevec3_epetra
+//      ) = 0;
+
     /// Evaluate the element
     //!  This class does not provide a definition for this function, it
     //!  must be defined in TemperImpl.
@@ -58,7 +74,7 @@ namespace ELEMENTS
       DRT::Element* ele,
       Teuchos::ParameterList& params,
       DRT::Discretization& discretization,
-      std::vector<int>& lm,
+      DRT::Element::LocationArray& la,
       Epetra_SerialDenseMatrix& elemat1_epetra,
       Epetra_SerialDenseMatrix& elemat2_epetra,
       Epetra_SerialDenseVector& elevec1_epetra,
@@ -131,12 +147,27 @@ namespace ELEMENTS
     //! number of Gauss points
     static const int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
 
-    //! Evaluate
+//    // 02.02.10 not used since Evaluate(la) is included
+//    //! Evaluate
+//    virtual int Evaluate(
+//      DRT::Element* ele,
+//      Teuchos::ParameterList& params,
+//      DRT::Discretization& discretization,
+//      std::vector<int>& lm,
+//      Epetra_SerialDenseMatrix& elemat1_epetra,
+//      Epetra_SerialDenseMatrix& elemat2_epetra,
+//      Epetra_SerialDenseVector& elevec1_epetra,
+//      Epetra_SerialDenseVector& elevec2_epetra,
+//      Epetra_SerialDenseVector& elevec3_epetra
+//      );
+
+    // new method for volume coupling
+    //! Evaluate for multiple dofsets 01.02.10
     virtual int Evaluate(
       DRT::Element* ele,
       Teuchos::ParameterList& params,
       DRT::Discretization& discretization,
-      std::vector<int>& lm,
+      DRT::Element::LocationArray& la,
       Epetra_SerialDenseMatrix& elemat1_epetra,
       Epetra_SerialDenseMatrix& elemat2_epetra,
       Epetra_SerialDenseVector& elevec1_epetra,

@@ -86,7 +86,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
   // This is again really ugly as we have to extract the actual
   // element type in order to access the material property
 
-  // note: SetMaterial() was reimplemented by the transport element!
+  // note: SetMaterial() was reimplemented by the thermo element!
 #if defined(D_THERMO)
       DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(newele.get());
       if (therm!=NULL)

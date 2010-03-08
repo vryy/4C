@@ -53,7 +53,24 @@ namespace ELEMENTS
     TemperBoundaryImplInterface() {}
     //! Empty destructor
     virtual ~TemperBoundaryImplInterface() {}
-    //! Evaluate the element
+
+//    //! Evaluate the element
+//    //!
+//    //! This class does not provide a definition for this function, it
+//    //! must be defined in TemperBoundaryImpl.
+//    virtual int Evaluate(
+//      DRT::ELEMENTS::ThermoBoundary* ele,
+//      Teuchos::ParameterList& params,
+//      DRT::Discretization& discretization,
+//      std::vector<int>& lm,
+//      Epetra_SerialDenseMatrix& elemat1_epetra,
+//      Epetra_SerialDenseMatrix& elemat2_epetra,
+//      Epetra_SerialDenseVector& elevec1_epetra,
+//      Epetra_SerialDenseVector& elevec2_epetra,
+//      Epetra_SerialDenseVector& elevec3_epetra
+//      ) = 0;
+
+    //! Evaluate the element in the case of multiple dofsets
     //!
     //! This class does not provide a definition for this function, it
     //! must be defined in TemperBoundaryImpl.
@@ -61,7 +78,7 @@ namespace ELEMENTS
       DRT::ELEMENTS::ThermoBoundary* ele,
       Teuchos::ParameterList& params,
       DRT::Discretization& discretization,
-      std::vector<int>& lm,
+      DRT::Element::LocationArray& la,
       Epetra_SerialDenseMatrix& elemat1_epetra,
       Epetra_SerialDenseMatrix& elemat2_epetra,
       Epetra_SerialDenseVector& elevec1_epetra,
@@ -133,12 +150,25 @@ namespace ELEMENTS
     //! number of space dimensions
     static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
-    //! Evaluate
+//    //! Evaluate
+//    virtual int Evaluate(
+//      DRT::ELEMENTS::ThermoBoundary* ele,
+//      Teuchos::ParameterList& params,
+//      DRT::Discretization& discretization,
+//      std::vector<int>& lm,
+//      Epetra_SerialDenseMatrix& elemat1_epetra,
+//      Epetra_SerialDenseMatrix& elemat2_epetra,
+//      Epetra_SerialDenseVector& elevec1_epetra,
+//      Epetra_SerialDenseVector& elevec2_epetra,
+//      Epetra_SerialDenseVector& elevec3_epetra
+//      );
+
+    //! Evaluate in case of multiple dofsets 01.02.10
     virtual int Evaluate(
       DRT::ELEMENTS::ThermoBoundary* ele,
       Teuchos::ParameterList& params,
       DRT::Discretization& discretization,
-      std::vector<int>& lm,
+      DRT::Element::LocationArray& la,
       Epetra_SerialDenseMatrix& elemat1_epetra,
       Epetra_SerialDenseMatrix& elemat2_epetra,
       Epetra_SerialDenseVector& elevec1_epetra,

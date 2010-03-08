@@ -126,7 +126,7 @@ STR::TimInt::TimInt
 
       discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
 
-      dofrowmap_ = discret_->DofRowMap();
+      dofrowmap_ = discret_->DofRowMap(0);
     }
   }
 
@@ -224,7 +224,7 @@ STR::TimInt::TimInt
 
       // store DBC status in contact nodes
       contactman_->GetStrategy().StoreDirichletStatus(dbcmaps_);
-      
+
       // contact and constraints together still needs discussion
       if (conman_->HaveConstraint())
         dserror("ERROR: Constraints and contact cannot be treated at the same time yet");
@@ -234,11 +234,11 @@ STR::TimInt::TimInt
       Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(contactman_->GetStrategy().Params(),"APPLICATION");
       if (apptype == INPAR::CONTACT::app_none)
         dserror("ERROR: Contact conditions defined, but APPLICATION == none");
-      
+
       // no meshtying or beam contact in new STI so far
       if (apptype == INPAR::CONTACT::app_mortarmeshtying || apptype == INPAR::CONTACT::app_beamcontact)
         dserror("ERROR: Mortar meshtying and beam contact not yet implemented in new STI");
-      
+
       // only dual Lagrange approach in new STI so far
       INPAR::CONTACT::SolvingStrategy soltype =
       Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(contactman_->GetStrategy().Params(),"STRATEGY");
@@ -318,9 +318,10 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     if (pressure_ != Teuchos::null) p.set("volume", 0.0);
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("residual displacement", zeros_);
-    discret_->SetState("displacement", (*dis_)(0));
-    if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", (*vel_)(0));
+    // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
+    discret_->SetState(0,"residual displacement", zeros_);
+    discret_->SetState(0,"displacement", (*dis_)(0));
+    if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", (*vel_)(0));
     discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -730,8 +731,9 @@ void STR::TimInt::OutputStressStrain
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("residual displacement", zeros_);
-  discret_->SetState("displacement", (*dis_)(0));
+  // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
+  discret_->SetState(0,"residual displacement", zeros_);
+  discret_->SetState(0,"displacement", (*dis_)(0));
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
@@ -864,7 +866,7 @@ void STR::TimInt::ApplyForceExternal
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("displacement", dis);
-  if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", vel);
+  if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", vel);
   // get load vector
   discret_->EvaluateNeumann(p, *fext);
   discret_->ClearState();
@@ -897,9 +899,10 @@ void STR::TimInt::ApplyForceStiffInternal
   if (pressure_ != Teuchos::null) p.set("volume", 0.0);
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("residual displacement", disi);
-  discret_->SetState("displacement", dis);
-  if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", vel);
+  // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
+  discret_->SetState(0,"residual displacement", disi);
+  discret_->SetState(0,"displacement", dis);
+  if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
   discret_->Evaluate(p, stiff, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();

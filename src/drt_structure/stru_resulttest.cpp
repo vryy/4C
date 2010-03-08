@@ -93,26 +93,25 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
     if (dis_ != null)
     {
       const Epetra_BlockMap& disnpmap = dis_->Map();
-
       if (position=="dispx")
       {
         unknownpos = false;
-        result = (*dis_)[disnpmap.LID(strudisc_->Dof(actnode,0))];
+        result = (*dis_)[disnpmap.LID(strudisc_->Dof(0,actnode,0))];
       }
       else if (position=="dispy")
       {
         unknownpos = false;
-        result = (*dis_)[disnpmap.LID(strudisc_->Dof(actnode,1))];
+        result = (*dis_)[disnpmap.LID(strudisc_->Dof(0,actnode,1))];
       }
       else if (position=="dispz")
       {
         unknownpos = false;
-        result = (*dis_)[disnpmap.LID(strudisc_->Dof(actnode,2))];
+        result = (*dis_)[disnpmap.LID(strudisc_->Dof(0,actnode,2))];
       }
       else if (position=="press")
       {
         unknownpos = false;
-        result = (*dis_)[disnpmap.LID(strudisc_->Dof(actnode,3))];
+        result = (*dis_)[disnpmap.LID(strudisc_->Dof(0,actnode,3))];
       }
     }
 
@@ -124,17 +123,17 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
       if (position=="velx")
       {
         unknownpos = false;
-        result = (*vel_)[velnpmap.LID(strudisc_->Dof(actnode,0))];
+        result = (*vel_)[velnpmap.LID(strudisc_->Dof(0,actnode,0))];
       }
       else if (position=="vely")
       {
         unknownpos = false;
-        result = (*vel_)[velnpmap.LID(strudisc_->Dof(actnode,1))];
+        result = (*vel_)[velnpmap.LID(strudisc_->Dof(0,actnode,1))];
       }
       else if (position=="velz")
       {
         unknownpos = false;
-        result = (*vel_)[velnpmap.LID(strudisc_->Dof(actnode,2))];
+        result = (*vel_)[velnpmap.LID(strudisc_->Dof(0,actnode,2))];
       }
     }
 
@@ -146,17 +145,17 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
       if (position=="accx")
       {
         unknownpos = false;
-        result = (*acc_)[accnpmap.LID(strudisc_->Dof(actnode,0))];
+        result = (*acc_)[accnpmap.LID(strudisc_->Dof(0,actnode,0))];
       }
       else if (position=="accy")
       {
         unknownpos = false;
-        result = (*acc_)[accnpmap.LID(strudisc_->Dof(actnode,1))];
+        result = (*acc_)[accnpmap.LID(strudisc_->Dof(0,actnode,1))];
       }
       else if (position=="accz")
       {
         unknownpos = false;
-        result = (*acc_)[accnpmap.LID(strudisc_->Dof(actnode,2))];
+        result = (*acc_)[accnpmap.LID(strudisc_->Dof(0,actnode,2))];
       }
     }
 

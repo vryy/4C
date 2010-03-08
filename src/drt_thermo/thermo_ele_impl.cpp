@@ -184,15 +184,312 @@ DRT::ELEMENTS::TemperImpl<distype>::TemperImpl(int numdofpernode)
   return;
 }
 
+///*----------------------------------------------------------------------*
+// |                                                                      |
+// *----------------------------------------------------------------------*/
+//template <DRT::Element::DiscretizationType distype>
+//int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
+//  DRT::Element* ele,
+//  Teuchos::ParameterList& params,
+//  DRT::Discretization& discretization,
+//  std::vector<int>& lm,
+//  Epetra_SerialDenseMatrix& elemat1_epetra,
+//  Epetra_SerialDenseMatrix& elemat2_epetra,
+//  Epetra_SerialDenseVector& elevec1_epetra,
+//  Epetra_SerialDenseVector& elevec2_epetra,
+//  Epetra_SerialDenseVector& elevec3_epetra
+//  )
+//{
+//  // check length
+//  if (lm.size() != iel*numdofpernode_)
+//    dserror("Location vector length does not match!");
+//  // set views
+//  LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_> etang(elemat1_epetra,true);  // view only!
+//  LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_> ecapa(elemat2_epetra,true);  // view only!
+//  LINALG::Matrix<iel*numdofpernode_,1> efint(elevec1_epetra,true);  // view only!
+//  //LINALG::Matrix<iel*numdofpernode_,1> efext(elevec2_epetra,true);  // view only!
+//  LINALG::Matrix<iel*numdofpernode_,1> efcap(elevec3_epetra,true);  // view only!
+//  // disassemble temperature
+//  if (discretization.HasState("temperature"))
+//  {
+//    std::vector<double> mytempnp(lm.size());
+//    Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("temperature");
+//    if (tempnp == Teuchos::null)
+//      dserror("Cannot get state vector 'tempnp'");
+//    DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,lm);
+//    LINALG::Matrix<iel*numdofpernode_,1> etemp(&(mytempnp[0]),true);  // view only!
+//    etemp_.Update(etemp);  // copy
+//  }
+//  // initialize capacity matrix
+//  ecapa_.Clear();
+//  // check for the action parameter
+//  const std::string action = params.get<std::string>("action","none");
+//  // extract time
+//  const double time = params.get<double>("total time");
+//  // calculate tangent K and internal force F_int = K * Theta
+//  if (action == "calc_thermo_fintcond")
+//  {
+//    CalculateFintCondCapa(
+//      ele,
+//      time,
+//      &etang,
+//      NULL,
+//      &efint,
+//      NULL,
+//      NULL,NULL
+//      );
+//  }
+//  // calculate only the internal force F_int
+//  else if (action == "calc_thermo_fint")
+//  {
+//    CalculateFintCondCapa(
+//      ele,
+//      time,
+//      NULL,
+//      NULL,
+//      &efint,
+//      NULL,
+//      NULL,NULL
+//      );
+//  }
+//  // calculate only the internal force F_int
+//  else if (action == "calc_thermo_fintcapa")
+//  {
+//    CalculateFintCondCapa(
+//      ele,
+//      time,
+//      NULL,
+//      &ecapa,  // delivers capacity matrix
+//      &efint,
+//      NULL,
+//      NULL,NULL
+//      );
+//    // copy capacity matrix if available
+//    //if (ecapa.A() != NULL) ecapa.Update(ecapa_);
+//  }
+//  // calculate tangent matrix K and consistent capacity matrix C
+//  else if (action == "calc_thermo_finttang")
+//  {
+//    CalculateFintCondCapa(
+//      ele,
+//      time,
+//      &etang,
+//      &ecapa_,
+//      &efint,
+//      NULL,
+//      NULL,NULL
+//      );
+//    // copy capacity matrix if available
+//    if (ecapa.A() != NULL) ecapa.Update(ecapa_);
+//    // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
+//    // check the time integrator
+//    const INPAR::THR::DynamicType timint
+//      = params.get<INPAR::THR::DynamicType>("time integrator",INPAR::THR::dyna_undefined);
+//    switch (timint) {
+//    case INPAR::THR::dyna_statics :
+//    {
+//      // continue
+//      break;
+//    }
+//    case INPAR::THR::dyna_onesteptheta :
+//    {
+//      const double theta = params.get<double>("theta");
+//      const double stepsize = params.get<double>("delta time");
+//      etang.Update(1.0/stepsize,ecapa_,theta);  // combined tangent and conductivity matrix to one global matrix
+//      efcap.Multiply(ecapa_,etemp_);
+//      break;
+//    }
+//    case INPAR::THR::dyna_genalpha :
+//    {
+////      //const double theta = params.get<double>("theta");
+////      const double stepsize = params.get<double>("delta time");
+////      etang.Update(theta/stepsize,ecapa,1.0);
+//      break;
+//    }
+//    case INPAR::THR::dyna_undefined :
+//    default :
+//    {
+//      dserror("Don't know what to do...");
+//      break;
+//    }
+//    }
+//  }
+//  // Calculate/ evaluate heatflux q and temperature gradients gradtemp at gauss points
+//  else if (action == "proc_thermo_heatflux")
+//  {
+//    // get storage arrays of Gauss-point-wise vectors
+//    Teuchos::RCP<std::vector<char> > heatfluxdata = params.get<Teuchos::RCP<std::vector<char> > >("heatflux");
+//    Teuchos::RCP<std::vector<char> > tempgraddata = params.get<Teuchos::RCP<std::vector<char> > >("tempgrad");
+//    // working arrays
+//    LINALG::Matrix<nquad_,nsd_> eheatflux;
+//    LINALG::Matrix<nquad_,nsd_> etempgrad;
+//    // specific choice of heat flux / temperature gradient
+//    //const INPAR::THR::HeatFluxType ioheatflux = params.get<INPAR::THR::HeatFluxType>("ioheatflux");
+//    //const INPAR::THR::TempGradType iotempgrad = params.get<INPAR::THR::TempGradType>("iotempgrad");
+//    //
+//    CalculateFintCondCapa(
+//      ele,
+//      time,
+//      NULL,
+//      NULL,
+//      NULL,
+//      NULL,
+//      &eheatflux,&etempgrad
+//      );
+//     // store in
+//     ParObject::AddtoPack(*heatfluxdata, eheatflux);
+//     ParObject::AddtoPack(*tempgraddata, etempgrad);
+//  }
+//  // Calculate heatflux q and temperature gradients gradtemp at gauss points
+//  else if (action == "postproc_thermo_heatflux")
+//  {
+//    const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpheatfluxmap
+//      = params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpheatfluxmap");
+//    std::string heatfluxtype = params.get<std::string>("heatfluxtype","ndxyz");
+//    const int gid = ele->Id();
+//    LINALG::Matrix<nquad_,nsd_> gpheatflux(((*gpheatfluxmap)[gid])->A(),true);  // view only!
+//
+//    // set views to components
+//    LINALG::Matrix<iel*numdofpernode_,1> efluxx(elevec1_epetra,true);  // view only!
+//    LINALG::Matrix<iel*numdofpernode_,1> efluxy(elevec2_epetra,true);  // view only!
+//    LINALG::Matrix<iel*numdofpernode_,1> efluxz(elevec3_epetra,true);  // view only!
+//
+//    // catch unknown heatflux types
+//    bool processed = false;
+//
+//    // nodally
+//    // extrapolate heatflux q and temperature gradient gradtemp stored at gauss points
+//    if ( (heatfluxtype == "ndxyz") or (heatfluxtype == "cxyz_ndxyz") )
+//    {
+//      processed = processed or true;
+//      // extrapolate heatfluxes/temperature gradients at Gauss points to nodes
+//      // and store results in
+//      ExtrapolateFromGaussPointsToNodes(ele, gpheatflux, efluxx, efluxy, efluxz);
+//    }
+//
+//    // centered
+//    if ( (heatfluxtype == "cxyz") or (heatfluxtype == "cxyz_ndxyz") )
+//    {
+//      processed = processed or true;
+//
+//      Teuchos::RCP<Epetra_MultiVector> eleheatflux = params.get<Teuchos::RCP<Epetra_MultiVector> >("eleheatflux");
+//      const Epetra_BlockMap& elemap = eleheatflux->Map();
+//      int lid = elemap.LID(gid);
+//      if (lid != -1)
+//      {
+//        for (int idim=0; idim<nsd_; ++idim)
+//        {
+//          //double& s = ; // resolve pointer for faster access
+//          double s = 0.0;
+//          for (int jquad=0; jquad<nquad_; ++jquad)
+//            s += gpheatflux(jquad,idim);
+//          s /= nquad_;
+//          (*((*eleheatflux)(idim)))[lid] = s;
+//        }
+//      }
+//    }
+//
+//    // catch unknown heatflux types
+//    if (not processed)
+//      dserror("unknown type of heatflux/temperature gradient output on element level");
+//  }
+///*  // Calculate heatflux q and temperature gradients gradtemp at gauss points
+//  else if (action=="calc_thermo_heatflux")
+//  {
+//   // extract local values from the global vectors
+////   Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("tempnp");
+////   if (tempnp==Teuchos::null)
+////        dserror("Cannot get state vector 'tempnp'");
+////   std::vector<double> mytempnp(lm.size());
+////   DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,lm);
+//
+//   // we always get an 3D flux vector for each node
+//   LINALG::Matrix<3,iel> eflux(true);
+//
+//   // do a loop for systems of the temperatures
+//   // calculate heatflux vectors for actual temperature
+//   eflux.Clear();
+//   CalculateHeatFlux(eflux,ele);
+//
+//   // assembly
+//   for (int k=0;k<iel;k++)
+//   { // form arithmetic mean of assembled nodal flux vectors
+//     // => factor is the number of adjacent elements for each node
+//     const double factor = ((ele->Nodes())[k])->NumElement();
+//     elevec1_epetra[k*numdofpernode_] += eflux(0,k)/factor;
+//     elevec2_epetra[k*numdofpernode_] += eflux(1,k)/factor;
+//     elevec3_epetra[k*numdofpernode_] += eflux(2,k)/factor;
+//   } // loop over elements
+//
+//  }
+//  // Extrapolate heatflux q and temperature gradients gradtemp stored at gauss points
+//  // to element nodes
+//  else if (action=="postprocess_heatflux")
+//  {
+//    dserror("Action is not implemented: %s", action.c_str());
+//  } // calc_therm_heatflux
+//  else if (action =="calc_initial_time_deriv")
+//    // calculate time derivative for time value t_0
+//  {
+//
+//    // get initial temperature rate values at the nodes
+//    const Teuchos::RCP<Epetra_MultiVector> rate = params.get< Teuchos::RCP<Epetra_MultiVector> >("temperature rate field",Teuchos::null);
+//    DRT::UTILS::ExtractMyNodeBasedValues(ele,eratenp_,rate,nsd_);
+//
+//    // need initial field
+//    Teuchos::RCP<const Epetra_Vector> temp0 = discretization.GetState("temp0");
+//    if (temp0==Teuchos::null)
+//      dserror("Cannot get state vector 'temp0'");
+//
+//    // extract local values from the global vector
+//    std::vector<double> mytemp0(lm.size());
+//    DRT::UTILS::ExtractMyValues(*temp0,mytemp0,lm);
+//
+//    // fill element arrays
+//    for (int i=0;i<iel;++i)
+//    {
+//      for (int k = 0; k< numdofpernode_; ++k)
+//      {
+//        // split for each temperature, insert into element arrays
+//        etempnp_[k](i,0) = mytemp0[k+(i*numdofpernode_)];
+//      } // for k
+//    } // for i
+//
+//    // calculate matrix and rhs
+//    InitialTimeDerivative(
+//        ele,
+//        elemat1_epetra,
+//        elevec1_epetra
+//        );
+//  }*/
+//  else if (action == "integrate_shape_functions")
+//  {
+//    // calculate integral of shape functions
+//    const Epetra_IntSerialDenseVector dofids = params.get<Epetra_IntSerialDenseVector>("dofids");
+//    IntegrateShapeFunctions(ele,elevec1_epetra,dofids);
+//  }
+//  else if (action == "calc_thermo_update_istep")
+//  {
+//    ;  // do nothing
+//  }
+//  else
+//  {
+//    dserror("Unknown type of action for Temperature Implementation: %s",action.c_str());
+//  }
+//
+//  return 0;
+//}
+
+
 /*----------------------------------------------------------------------*
- |                                                                      |
+ | Evaluate for multiple dofsets                             dano 02/10 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   DRT::Element* ele,
   Teuchos::ParameterList& params,
   DRT::Discretization& discretization,
-  std::vector<int>& lm,
+  DRT::Element::LocationArray& la,
   Epetra_SerialDenseMatrix& elemat1_epetra,
   Epetra_SerialDenseMatrix& elemat2_epetra,
   Epetra_SerialDenseVector& elevec1_epetra,
@@ -201,7 +498,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   )
 {
   // check length
-  if (lm.size() != iel*numdofpernode_)
+  if (la[0].Size() != iel*numdofpernode_)
     dserror("Location vector length does not match!");
   // set views
   LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_> etang(elemat1_epetra,true);  // view only!
@@ -210,13 +507,16 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   //LINALG::Matrix<iel*numdofpernode_,1> efext(elevec2_epetra,true);  // view only!
   LINALG::Matrix<iel*numdofpernode_,1> efcap(elevec3_epetra,true);  // view only!
   // disassemble temperature
-  if (discretization.HasState("temperature"))
+  if (discretization.HasState(0, "temperature"))
   {
-    std::vector<double> mytempnp(lm.size());
-    Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("temperature");
+    // std::vector<double> mytempnp(lm.size());
+    //  lm.size == la.Size or la[0].lm_.size()??? 03.02.10
+    // std::vector<double> mytempnp(la.Size());
+    std::vector<double> mytempnp((la[0].lm_).size());
+    Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(0,"temperature");
     if (tempnp == Teuchos::null)
       dserror("Cannot get state vector 'tempnp'");
-    DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,lm);
+    DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[0].lm_);
     LINALG::Matrix<iel*numdofpernode_,1> etemp(&(mytempnp[0]),true);  // view only!
     etemp_.Update(etemp);  // copy
   }
@@ -236,7 +536,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       NULL,
       &efint,
       NULL,
-      NULL,NULL
+      NULL,
+      NULL
       );
   }
   // calculate only the internal force F_int
@@ -249,7 +550,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       NULL,
       &efint,
       NULL,
-      NULL,NULL
+      NULL,
+      NULL
       );
   }
   // calculate only the internal force F_int
@@ -262,7 +564,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       &ecapa,  // delivers capacity matrix
       &efint,
       NULL,
-      NULL,NULL
+      NULL,
+      NULL
       );
     // copy capacity matrix if available
     //if (ecapa.A() != NULL) ecapa.Update(ecapa_);
@@ -277,7 +580,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       &ecapa_,
       &efint,
       NULL,
-      NULL,NULL
+      NULL,
+      NULL
       );
     // copy capacity matrix if available
     if (ecapa.A() != NULL) ecapa.Update(ecapa_);
@@ -301,9 +605,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     }
     case INPAR::THR::dyna_genalpha :
     {
-//      //const double theta = params.get<double>("theta");
-//      const double stepsize = params.get<double>("delta time");
-//      etang.Update(theta/stepsize,ecapa,1.0);
       break;
     }
     case INPAR::THR::dyna_undefined :
@@ -314,18 +615,23 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     }
     }
   }
-  // Calculate/ evaluate heatflux q and temperature gradients gradtemp at gauss points
+  // Calculate/ evaluate heatflux q and temperature gradients gradtemp at
+  // gauss points
   else if (action == "proc_thermo_heatflux")
   {
     // get storage arrays of Gauss-point-wise vectors
-    Teuchos::RCP<std::vector<char> > heatfluxdata = params.get<Teuchos::RCP<std::vector<char> > >("heatflux");
-    Teuchos::RCP<std::vector<char> > tempgraddata = params.get<Teuchos::RCP<std::vector<char> > >("tempgrad");
+    Teuchos::RCP<std::vector<char> > heatfluxdata
+      = params.get<Teuchos::RCP<std::vector<char> > >("heatflux");
+    Teuchos::RCP<std::vector<char> > tempgraddata
+      = params.get<Teuchos::RCP<std::vector<char> > >("tempgrad");
     // working arrays
     LINALG::Matrix<nquad_,nsd_> eheatflux;
     LINALG::Matrix<nquad_,nsd_> etempgrad;
     // specific choice of heat flux / temperature gradient
-    //const INPAR::THR::HeatFluxType ioheatflux = params.get<INPAR::THR::HeatFluxType>("ioheatflux");
-    //const INPAR::THR::TempGradType iotempgrad = params.get<INPAR::THR::TempGradType>("iotempgrad");
+    //const INPAR::THR::HeatFluxType ioheatflux
+    //   = params.get<INPAR::THR::HeatFluxType>("ioheatflux");
+    //const INPAR::THR::TempGradType iotempgrad
+    //   = params.get<INPAR::THR::TempGradType>("iotempgrad");
     //
     CalculateFintCondCapa(
       ele,
@@ -334,7 +640,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       NULL,
       NULL,
       NULL,
-      &eheatflux,&etempgrad
+      &eheatflux,
+      &etempgrad
       );
      // store in
      ParObject::AddtoPack(*heatfluxdata, eheatflux);
@@ -393,75 +700,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     if (not processed)
       dserror("unknown type of heatflux/temperature gradient output on element level");
   }
-/*  // Calculate heatflux q and temperature gradients gradtemp at gauss points
-  else if (action=="calc_thermo_heatflux")
-  {
-   // extract local values from the global vectors
-//   Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("tempnp");
-//   if (tempnp==Teuchos::null)
-//        dserror("Cannot get state vector 'tempnp'");
-//   std::vector<double> mytempnp(lm.size());
-//   DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,lm);
-
-   // we always get an 3D flux vector for each node
-   LINALG::Matrix<3,iel> eflux(true);
-
-   // do a loop for systems of the temperatures
-   // calculate heatflux vectors for actual temperature
-   eflux.Clear();
-   CalculateHeatFlux(eflux,ele);
-
-   // assembly
-   for (int k=0;k<iel;k++)
-   { // form arithmetic mean of assembled nodal flux vectors
-     // => factor is the number of adjacent elements for each node
-     const double factor = ((ele->Nodes())[k])->NumElement();
-     elevec1_epetra[k*numdofpernode_] += eflux(0,k)/factor;
-     elevec2_epetra[k*numdofpernode_] += eflux(1,k)/factor;
-     elevec3_epetra[k*numdofpernode_] += eflux(2,k)/factor;
-   } // loop over elements
-
-  }
-  // Extrapolate heatflux q and temperature gradients gradtemp stored at gauss points
-  // to element nodes
-  else if (action=="postprocess_heatflux")
-  {
-    dserror("Action is not implemented: %s", action.c_str());
-  } // calc_therm_heatflux
-  else if (action =="calc_initial_time_deriv")
-    // calculate time derivative for time value t_0
-  {
-
-    // get initial temperature rate values at the nodes
-    const Teuchos::RCP<Epetra_MultiVector> rate = params.get< Teuchos::RCP<Epetra_MultiVector> >("temperature rate field",Teuchos::null);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,eratenp_,rate,nsd_);
-
-    // need initial field
-    Teuchos::RCP<const Epetra_Vector> temp0 = discretization.GetState("temp0");
-    if (temp0==Teuchos::null)
-      dserror("Cannot get state vector 'temp0'");
-
-    // extract local values from the global vector
-    std::vector<double> mytemp0(lm.size());
-    DRT::UTILS::ExtractMyValues(*temp0,mytemp0,lm);
-
-    // fill element arrays
-    for (int i=0;i<iel;++i)
-    {
-      for (int k = 0; k< numdofpernode_; ++k)
-      {
-        // split for each temperature, insert into element arrays
-        etempnp_[k](i,0) = mytemp0[k+(i*numdofpernode_)];
-      } // for k
-    } // for i
-
-    // calculate matrix and rhs
-    InitialTimeDerivative(
-        ele,
-        elemat1_epetra,
-        elevec1_epetra
-        );
-  }*/
   else if (action == "integrate_shape_functions")
   {
     // calculate integral of shape functions
@@ -478,7 +716,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   }
 
   return 0;
-}
+} // Evaluate for multiple dofsets
+
 
 /*----------------------------------------------------------------------*
  | Evaluate the external load                               bborn 09/09 |
@@ -524,7 +763,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(
       NULL,
       NULL,
       &efext,
-      NULL,NULL
+      NULL,
+      NULL
       );
   }
   else
@@ -582,6 +822,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
     }
 
     // gradient of current temperature value
+    // \f {\rm grad} \Theta = \frac{d\Theta_j}{dx_i} = LNT = B_ij T_j \f
     gradtemp_.MultiplyNN(derxy_,etemp_);
     // store it
     if (etempgrad != NULL)
@@ -598,12 +839,14 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
     // internal force vector
     if (efint != NULL)
     {
+      // \f f_{int} = {\mathbf q} \cdot {\rm grad} \delta\Theta \f
       efint->MultiplyTN(fac_,derxy_,heatflux_,1.0);
     }
 
     // conductivity matrix
     if (etang != NULL)
     {
+      // \f {\matbf k}^e = {\mathbf t}^e {\mathbf B}^T (-k){\mathbf I} {\mathbf B} \f
       LINALG::Matrix<nsd_,iel> aop(false);
       aop.MultiplyNN(cmat_,derxy_);
       etang->MultiplyTN(fac_,derxy_,aop,1.0);
@@ -729,7 +972,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
   const int iquad,  ///< id of current Gauss point
-  const int eleid   ///< the element id
+  const int eleid  ///< the element id
   )
 {
   // coordinates of the current integration point
@@ -827,6 +1070,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
   )
 {
   // this quick'n'dirty hack functions only for hex8
+  // (number of gauss points equals number of nodes)
   if ( not ( (distype == DRT::Element::hex8)
              or (distype == DRT::Element::quad4)
              or (distype == DRT::Element::line2) ) )
