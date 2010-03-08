@@ -740,6 +740,8 @@ FSI::LungMonolithic::CreateStatusTest(Teuchos::ParameterList& nlParams,
   fluidpresscombo->addStatusTest(fluidPress);
   //fluidpresscombo->addStatusTest(fluidPressUpdate);
 
+  converged->addStatusTest(fluidpresscombo);
+
 
   // setup tests for volume constraint
 
