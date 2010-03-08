@@ -375,12 +375,6 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
     escanp(i) = myscanp[3+(i*4)];
   }
 
-  // This is a hack for low-Mach-number flow with temperature
-  // equation until material data will be available here
-  // get thermodynamic pressure and its time derivative or history
-  double thermpress = params.get<double>("thermpress at n+1",0.0);
-  double gasconstant = 287.0;
-
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
@@ -421,6 +415,12 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
     double dens = 1.0;
     if (physicaltype == INPAR::FLUID::loma)
     {
+      // This is a hack for low-Mach-number flow with temperature
+      // equation until material data will be available here
+      // get thermodynamic pressure and its time derivative or history
+      double thermpress = params.get<double>("thermpress at n+1");
+      double gasconstant = 287.0;
+
       double temp = 0.0;
       for (int i=0;i<3;++i)
       {
