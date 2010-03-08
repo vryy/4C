@@ -226,6 +226,8 @@ public:
       case DRT::Element::hex8:
       case DRT::Element::hex20:
       case DRT::Element::hex27:
+      case DRT::Element::nurbs8:
+      case DRT::Element::nurbs27:
         return 6; break;
       case DRT::Element::tet4:
       case DRT::Element::tet10:
@@ -277,6 +279,8 @@ public:
       case DRT::Element::wedge6:
       case DRT::Element::wedge15:
       case DRT::Element::pyramid5:
+      case DRT::Element::nurbs8:
+      case DRT::Element::nurbs27:
         return 1;
         break;
       case DRT::Element::quad4:
@@ -376,6 +380,8 @@ public:
     case DRT::Element::wedge6:
     case DRT::Element::wedge15:
     case DRT::Element::pyramid5:
+    case DRT::Element::nurbs8:
+    case DRT::Element::nurbs27:
       return 4;
       break;
     case DRT::Element::quad4:
