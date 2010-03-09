@@ -252,7 +252,8 @@ public:
       const bool printtofile,   ///< flag for output to file
       double& currentsum,       ///< net current over all boundaries (out)
       double& pottangent,       ///< tangent of current w.r.t. electrode potential (out)
-      double& currresidual      ///< neg. residual of current equation (out)
+      double& currresidual,      ///< neg. residual of current equation (out)
+      double& electrodesurface   ///< surface of the electrode
       );
 
 //REINHARD

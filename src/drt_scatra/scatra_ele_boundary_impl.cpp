@@ -1153,7 +1153,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
         if (kinetics=="Butler-Volmer")
         {
           expterm = pow(conint/refcon,gamma) * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
-          linea = pow(conint/refcon,gamma) * frt*((alphaa*exp(alphaa*frt*eta))+ (alphac*exp((-alphac)*frt*eta)));
+          linea = pow(conint/refcon,gamma) * frt*((alphaa*exp(alphaa*frt*eta)) + (alphac*exp((-alphac)*frt*eta)));
         }
         if (kinetics=="Butler-Volmer-Yang1997")
         {

@@ -2235,6 +2235,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("GSTATCURTOL",1e-15,"Current Tolerance",&elchcontrol);
   IntParameter("GSTATCURVENO",-1,"function number defining the imposed current curve",&elchcontrol);
   IntParameter("GSTATITEMAX",10,"maximum number of iterations for galvanostatic mode",&elchcontrol);
+  DoubleParameter("LENGTH_CURRENT_PATH",0,"average length of the current path",&elchcontrol);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrol = list->sublist("COMBUSTION CONTROL",false,
       "control parameters for a combustion problem");

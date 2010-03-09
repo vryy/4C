@@ -417,6 +417,24 @@ void SCATRA::TimIntGenAlpha::OutputRestart()
   output_->WriteVector("phidtn", phidtn_);
   output_->WriteVector("phin",   phin_);
 
+  // write electrode potential of the first, galvanostatic electro kinetic condition
+  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
+  {
+  if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+  {
+    // define a vector with all electro kinetic BC 
+    vector<DRT::Condition*> cond;
+    discret_->GetCondition("ElectrodeKinetics",cond);
+    if (!cond.empty())
+    {
+      // electrode potential of the first electro kinetic BC
+      double pot = cond[0]->GetDouble("pot");
+      // write electrode potential to the .case file	
+      output_->WriteDouble("pot",pot);
+    }
+  }
+  }
+
   return;
 }
 
@@ -435,6 +453,24 @@ void SCATRA::TimIntGenAlpha::ReadRestart(int step)
   reader.ReadVector(phin_,   "phin");
   reader.ReadVector(phidtnp_,"phidtnp");
   reader.ReadVector(phidtn_, "phidtn");
+
+  // get electrode potential of the first, galvanostatic ButlerVolmer condition
+  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
+  {
+  if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+  {
+    // define a vector with all electro kinetic BC 
+    vector<DRT::Condition*> cond;
+    discret_->GetCondition("ElectrodeKinetics",cond);
+    if (!cond.empty())
+    {
+      // read electrode potential from the .case file
+      double pot = reader.ReadDouble("pot");
+      // adapt electrode potential of the first electro kinetic condition
+      cond[0]->Add("pot",pot);
+    }
+  }
+  }
 
   return;
 }

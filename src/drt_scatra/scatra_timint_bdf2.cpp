@@ -420,6 +420,39 @@ void SCATRA::TimIntBDF2::OutputRestart()
   output_->WriteVector("phin", phin_);
   output_->WriteVector("phinm", phinm_);
 
+  // write electrode potential of the first, galvanostatic electro kinetic condition
+  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
+  {
+  if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+  {
+    // define a vector with all electro kinetic BC 
+    vector<DRT::Condition*> cond;
+    discret_->GetCondition("ElectrodeKinetics",cond);
+    if (!cond.empty())
+    {
+      // electrode potential of the first electro kinetic BC
+      double potnp = cond[0]->GetDouble("pot");
+      // write electrode potential to the .case file	
+      output_->WriteDouble("pot",potnp);
+
+      // electrode potential of the first electro kinetic BC at time n
+      double potn = cond[0]->GetDouble("potn");
+      // write electrode potential to the .case file	
+      output_->WriteDouble("potn",potn);
+
+      // electrode potential of the first electro kinetic BC at time n -1
+      double potnm = cond[0]->GetDouble("potnm");
+      // write electrode potential to the .case file	
+      output_->WriteDouble("potnm",potnm);
+
+      // history electrode potential of the first electro kinetic BC 
+      double pothist = cond[0]->GetDouble("pothist");
+      // write electrode potential to the .case file	
+      output_->WriteDouble("pothist",pothist);
+    }
+  }
+  }
+
   return;
 }
 
@@ -437,6 +470,39 @@ void SCATRA::TimIntBDF2::ReadRestart(int step)
   reader.ReadVector(phinp_,"phinp");
   reader.ReadVector(phin_, "phin");
   reader.ReadVector(phinm_,"phinm");
+
+  // get electrode potential of the first, galvanostatic ButlerVolmer condition
+  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
+  {
+  if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+  {
+    // define a vector with all electro kinetic BC 
+    vector<DRT::Condition*> cond;
+    discret_->GetCondition("ElectrodeKinetics",cond);
+    if (!cond.empty())
+    {
+      // read electrode potential from the .case file
+      double pot = reader.ReadDouble("pot");
+      // adapt electrode potential of the first electro kinetic condition
+      cond[0]->Add("pot",pot);
+
+      // read electrode potential from the .case file
+      double potn = reader.ReadDouble("potn");
+      // adapt electrode potential of the first electro kinetic condition
+      cond[0]->Add("potn",potn);
+
+      // read electrode potential from the .case file
+      double potnm = reader.ReadDouble("potnm");
+      // adapt electrode potential of the first electro kinetic condition
+      cond[0]->Add("potnm",potnm);
+
+      // read electrode potential from the .case file
+      double pothist = reader.ReadDouble("pothist");
+      // adapt electrode potential of the first electro kinetic condition
+      cond[0]->Add("pothist",pothist);
+    }
+  }
+  }
 
   return;
 }

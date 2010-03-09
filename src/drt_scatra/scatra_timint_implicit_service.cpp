@@ -945,6 +945,7 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo(
   {
     double currtangent(0.0); // this value remains unused here!
     double currresidual(0.0); // this value remains unused here!
+    double electrodesurface(0.0); // this value remains unused here!
 
     OutputSingleElectrodeInfo(
         cond[condid],
@@ -953,7 +954,8 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo(
         printtofile,
         sum,
         currtangent,
-        currresidual);
+        currresidual,
+   	electrodesurface);
   } // loop over condid
 
   if ((myrank_==0) and printtoscreen)
@@ -980,7 +982,8 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
     const bool printtofile,
     double& currentsum,
     double& currtangent,
-    double& currresidual)
+    double& currresidual,
+    double& electrodesurface)
 {
   // set vector values needed by elements
   discret_->ClearState();
@@ -1054,6 +1057,7 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
   currentsum += parcurrentintegral; // sum of currents
   currtangent  = parcurrderiv;      // tangent w.r.t. electrode potential on metal side
   currresidual = parcurrentresidual;
+  electrodesurface = parboundaryint;
 
   // clean up
   discret_->ClearState();
@@ -1686,82 +1690,122 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
     discret_->GetCondition("ElectrodeKinetics",cond);
     if (!cond.empty())
     {
+      const double potold = cond[0]->GetDouble("pot");
+      double potnew = potold;
       double actualcurrent(0.0);
       double currtangent(0.0);
       double currresidual(0.0);
-      // note: only the potential at the boundary with id 0 will be adjusted up to now!!
-      OutputSingleElectrodeInfo(cond[0],0,false,false,actualcurrent,currtangent,currresidual);
-
-      // DEBUG: (write intermediated steps also to file and screen)
-      // OutputSingleElectrodeInfo(cond[0],0,true,true,actualcurrent,pottangent);
+      double electrodesurface(0.0);
+      //Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first residual is calculated
+      double newtonrhs(0.0);
 
       int gstatitemax = (extraparams_->sublist("ELCH CONTROL").get<int>("GSTATITEMAX"));
       double gstatcurrenttol = (extraparams_->sublist("ELCH CONTROL").get<double>("GSTATCURTOL"));
       const int curvenum = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCURVENO");
       const double tol = extraparams_->sublist("ELCH CONTROL").get<double>("GSTATCONVTOL");
+      const double effective_length = extraparams_->sublist("ELCH CONTROL").get<double>("LENGTH_CURRENT_PATH");
 
-      double targetcurrent = DRT::Problem::Instance()->Curve(curvenum-1).f(time_);
-      double timefac = 1.0/ResidualScaling();
-      double newtonrhs = currresidual - (timefac*targetcurrent);
-      double potold = cond[0]->GetDouble("pot");
-
-      if (myrank_==0)
+      // loop over all BV
+      // degenerated to a loop over 2 BV conditions
+      for (int icond = 0; icond < cond.size(); icond++)
       {
-        cout<<"\nGALVANOSTATIC MODE:\n";
-        cout<<"iteration "<<gstatnumite_<<" / "<<gstatitemax<<endl;
-        cout<<"  actual reaction current = "<<actualcurrent<<endl;
-        cout<<"  required total current  = "<<targetcurrent<<endl;
-        cout<<"  negative residual (rhs) = "<<newtonrhs<<endl;
-      }
+        actualcurrent = 0.0;
+        currtangent = 0.0;
+        currresidual = 0.0;
 
-      if (gstatnumite_ > gstatitemax)
-      {
-        if (myrank_==0)
+      	// note: only the potential at the boundary with id 0 will be adjusted up to now!!
+      	OutputSingleElectrodeInfo(cond[icond],icond,false,false,actualcurrent,currtangent,currresidual,electrodesurface);
+
+      	// DEBUG: (write intermediated steps also to file and screen)
+      	// OutputSingleElectrodeInfo(cond[0],0,true,true,actualcurrent,pottangent);
+
+        double targetcurrent = DRT::Problem::Instance()->Curve(curvenum-1).f(time_);
+        double timefac = 1.0/ResidualScaling();
+	
+        if (icond > 1)
+	  dserror("More than 2 Butler-Volmer conditions. All Butler-Volmer conditions cannot be connected in series anymore and therefore the procedure is not anymore correct.");
+
+	else if (icond==0)
         {
-          cout<<"  --> maximum number iterations reached. Not yet converged!"<<endl<<endl;
-        }
-        return true; // we proceed to next time step
-      }
-      else if (abs(newtonrhs)< gstatcurrenttol)
-      {
-        if (myrank_==0)
-        {
-          cout<<"  --> Newton-RHS-Residual is smaller than " << gstatcurrenttol<< "!" <<endl<<endl;
-        }
-        return true; // we proceed to next time step
-      }
-      else if ((gstatnumite_ > 1) and (abs(gstatincrement_)< (1+abs(potold))*tol)) // < ATOL + |pot|* RTOL
-      {
-        if (myrank_==0)
-        {
-          cout<<"  --> converged: |"<<gstatincrement_<<"| < "<<(1+abs(potold))*tol<<endl<<endl;
+          //Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first residual is calculated
+	  // newtonrhs = -(I_soll - I)
+	  newtonrhs = currresidual - (timefac*targetcurrent);
+          if (myrank_==0)
+          {
+            cout<<"\nGALVANOSTATIC MODE:\n";
+            cout<<"iteration "<<gstatnumite_<<" / "<<gstatitemax<<endl;
+            cout<<"  actual reaction current = "<<actualcurrent<<endl;
+            cout<<"  required total current  = "<<targetcurrent<<endl;
+            cout<<"  negative residual (rhs) = "<<newtonrhs<<endl<<endl;
+	  }
+	
+	  if (gstatnumite_ > gstatitemax)
+          {
+            if (myrank_==0) cout<< endl <<"  --> maximum number iterations reached. Not yet converged!"<<endl<<endl;
+            return true; // we proceed to next time step
+          }
+          else if (abs(newtonrhs)< gstatcurrenttol)
+          {
+            if (myrank_==0) cout<< endl <<"  --> Newton-RHS-Residual is smaller than " << gstatcurrenttol<< "!" <<endl<<endl;
+            return true; // we proceed to next time step
+          }
+          // increment of the last iteration
+	  else if ((gstatnumite_ > 1) and (abs(gstatincrement_)< (1+abs(potold))*tol)) // < ATOL + |pot|* RTOL
+          {
+            if (myrank_==0) cout<< endl <<"  --> converged: |"<<gstatincrement_<<"| < "<<(1+abs(potold))*tol<<endl<<endl;
+	    return true; // galvanostatic control has converged
+          }
+
+	  // update applied electric potential
+	  // potential drop ButlerVolmer conditions (surface ovepotential) and in the electrolyte (ohmic overpotential) are conected in parallel:
+	  // 
+	  // I_0 = I_BV1 = I_ohmic = I_BV2 
+	  // R(I_soll, I) = R_BV1(I_soll, I) = R_ohmic(I_soll, I) = -R_BV2(I_soll, I)
+	  // delta E_0 = delta U_BV1 + delta U_ohmic - (delta U_BV2)
+	  // => delta E_0 = (R_BV1(I_soll, I)/J) + (R_ohmic(I_soll, I)/J) - (-R_BV2(I_soll, I)/J)
+
+          // Calculate Conductivity
+          const Epetra_SerialDenseVector sigma = ComputeConductivity();
+          // Newton step:  Delta pot = - Residual / (-Jacobian)
+          potnew += (-1.0*effective_length*newtonrhs)/(sigma(numscal_)*timefac*electrodesurface);
+	  
+	  // print additional information
+	  if (myrank_==0)
+	  {
+	    cout<< "  area                          =" << electrodesurface << endl;
+	    cout<< "  actualcurrent - targetcurrent =" << (targetcurrent - actualcurrent) << endl;
+	    cout<< "  conductivity                  =" << sigma(numscal_) << endl;
+	    cout<< "  ohmic overpotential           =" << (-1.0*effective_length*newtonrhs)/(sigma(numscal_)*timefac*electrodesurface) << endl;
+	  }
         }
 
-        return true; // galvanostatic control has converged
-      }
-      else
-      {
-        gstatnumite_++;
-        if (abs(currtangent)<EPS12)
-          dserror("Tangent in galvanostatic control is near zero: %f",currtangent);
         // Newton step:  Jacobian * \Delta pot = - Residual
         gstatincrement_ = newtonrhs/currtangent;
         // update electric potential
-        double potnew = potold + gstatincrement_;
-        if (myrank_==0)
-        {
-          cout<< "  old electrode potential = "<<potold<<endl;
-          cout<< "  new electrode potential = "<<potnew<<endl<<endl;
-        }
-        // replace potential value of the boundary condition (on all processors)
-        cond[0]->Add("pot",potnew);
-        return false; // not yet converged -> continue Newton iteration with updated potential
-      }
+        potnew += gstatincrement_;
+	// print potential drop due to surface overpotential
+	if (myrank_==0) cout<< "  surface overpotential BV" << icond <<"     =" << gstatincrement_ << endl;
+    } 
+    // end loop over electrode kinetics
+
+    // Apply new electrode potential
+    if (abs(currtangent)<EPS12)
+      dserror("Tangent in galvanostatic control is near zero: %f",currtangent);
+
+    if (myrank_==0)
+    {
+      cout<< endl;
+      cout<< "  old electrode potential = "<<potold<<endl;
+      cout<< "  new electrode potential = "<<potnew<<endl<<endl;
+    }
+    // replace potential value of the boundary condition (on all processors)
+    cond[0]->Add("pot",potnew);
+    gstatnumite_++;
+    return false; // not yet converged -> continue Newton iteration with updated potential
     }
   }
-
   return true;
-}
+} // end ApplyGalvanostaticControl()
 
 
 /*----------------------------------------------------------------------*
