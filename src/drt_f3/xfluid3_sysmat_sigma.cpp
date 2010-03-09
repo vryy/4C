@@ -31,7 +31,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/xfem_element_utils.H"
 #include "../drt_fluid/time_integration_element.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_function.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 
@@ -1183,30 +1183,27 @@ void SysmatDomainSigma(
               enr_viscs2.zz(iparam) = 0.5 * (shp.dxdx(iparam) + shp.dydy(iparam) + 2.0 * shp.dzdz(iparam));
             }
 
-#if 0
-            // for Jeffery-Hamel Flow
-            LINALG::Matrix<3,1> physpos(true);
-            GEO::elementToCurrentCoordinates(DISTYPE, xyze, posXiDomain, physpos);
+            if (0)
+            {  
+              // for Jeffery-Hamel Flow
+              LINALG::Matrix<3,1> physpos(true);
+              GEO::elementToCurrentCoordinates(DISTYPE, xyze, posXiDomain, physpos);
 
-            const double x = physpos(0);
-            const double y = physpos(1);
+              double position[2];
+              position[0] = physpos(0);
+              position[1] = physpos(1);
+              const double u_exact_x = DRT::Problem::Instance()->Funct(0).Evaluate(0,position,0.0,NULL);
+              const double u_exact_y = DRT::Problem::Instance()->Funct(0).Evaluate(1,position,0.0,NULL);
+              
+              if (1.0 < position[0] and position[0] < 2.0 and 0.0 < position[1] and position[1] < position[0])
+              {
+                const double epsilon_x = (gpvelnp(0) - u_exact_x);
+                const double epsilon_y = (gpvelnp(1) - u_exact_y);
 
-            const double alpha = atan(y/x);
-            const double u_alpha = DRT::UTILS::JefferyHamelFlowFunction::RadialVelocity(alpha);
-
-            const double nu = 1;
-            const double u_exact_x = nu * (u_alpha/(x*x+y*y))*x;
-            const double u_exact_y = nu * (u_alpha/(x*x+y*y))*y;
-
-            if (1.0 < x and x < 2.0 and 0.0 < y and y < x)
-            {
-              const double epsilon_x = (gpvelnp(0) - u_exact_x);
-              const double epsilon_y = (gpvelnp(1) - u_exact_y);
-
-              L2 += (epsilon_x*epsilon_x + epsilon_y*epsilon_y)*fac;
+                L2 += (epsilon_x*epsilon_x + epsilon_y*epsilon_y)*fac;
+              }
             }
-#endif
-
+            
             //////////////////////////////////////
             // now build single stiffness terms //
             //////////////////////////////////////
