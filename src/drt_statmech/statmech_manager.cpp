@@ -394,73 +394,67 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
     /*computing and writing into file data about correlation of orientation of different elements
      *as it is considered in the context of the persistence length*/
     case INPAR::STATMECH::statout_orientationcorrelation:
-    {      
+    {   
+      
       FILE* fp = NULL; //file pointer for statistical output file
 
       //name of output file
       std::ostringstream outputfilename;
+      outputfilename.str("");
       outputfilename << "OrientationCorrelation"<< outputfilenumber_ << ".dat";
-
-      vector<double> arclength(discret_.NumMyRowNodes()-1,0);
-      vector<double> cosdiffer(discret_.NumMyRowNodes()-1,0);
-   
-      if( (time >= maxtime_ * statmechparams_.get<double>("START_FACTOR",0.0)) && (starttimeoutput_ == -1.0) )
-      {
-        starttimeoutput_ = time;
-        istart_ = istep;
-      }           
-
-      if(time > starttimeoutput_ && starttimeoutput_ > -1.0)   
+           
+      vector<double> arclength(discret_.NumMyRowElements(),0);
+      vector<double> cosdiffer(discret_.NumMyRowElements(),0);
+         
+      //after initilization time write output cosdiffer in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps, 
+      //when discret_.NumMyRowNodes()-1 = 0,cosdiffer is always equil to 1!!
+      if((time >= maxtime_ * statmechparams_.get<double>("START_FACTOR",0.0)) && (istep % statmechparams_.get<int>("OUTPUTINTERVALS",1)  == 0) )   
       { 
+        
         Epetra_SerialDenseMatrix coord;
         coord.Shape(discret_.NumMyRowNodes(),ndim);
     
         for(int id = 0; id < discret_.NumMyRowNodes(); id++) 
           for(int j = 0; j< ndim; j++)
             coord(id,j) = (discret_.gNode(id))->X()[j] + (dis)[(id)*(ndim-1)*3+j];
-        
-        for(int id = 0; id < discret_.NumMyRowNodes()-1; id++)
+              
+        for(int id = 0; id < discret_.NumMyRowElements(); id++)
         {
-          //initialization of the element lengths and the cosine differences
-          arclength[id+1] = 0;
-          cosdiffer[id+1] = 0;
           
           //calculate the deformed length of every element 
           for(int j = 0; j< ndim; j++)  
           {
-            arclength[id+1] = arclength[id+1] + pow( (coord(id+1,j) - coord(id,j)), 2);
-            cosdiffer[id+1] = cosdiffer[id+1] + ((coord(id+1,j) - coord(id,j))*(coord(0+1,j) - coord(0,j)));
+            arclength[id] += pow( (coord(id+1,j) - coord(id,j)), 2);
+            cosdiffer[id] += (coord(id+1,j) - coord(id,j))*(coord(0+1,j) - coord(0,j));
           }
           
           //calculate the cosine difference referring to the first element
           //Dot product of the (id+1)th element with the 1st element and devided by the length of the (id+1)th element and the 1st element
-          arclength[id+1] = pow(arclength[id+1],0.5);
-          cosdiffer[id+1]= cosdiffer[id+1]/(arclength[id+1]*arclength[1]);
-        }
-          
-        //output cosdiffer in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps, when discret_.NumMyRowNodes()-1 = 0,cosdiffer is always equil to 1!!
-        if( (istep - istart_) % statmechparams_.get<int>("OUTPUTINTERVALS",1)  == 0 )                
-        {
-          fp = fopen(outputfilename.str().c_str(), "a");
-          std::stringstream filecontent;
-          filecontent << istep;
-          filecontent << scientific << setprecision(10);
-          
-          for(int id = 0; id < discret_.NumMyRowNodes()-1; id++) 
-            filecontent<<" "<<cosdiffer[id+1];
-          
-          filecontent<<endl;                            
-          fprintf(fp,filecontent.str().c_str());
-          fclose(fp);
-        }
-       } 
+          arclength[id] = pow(arclength[id],0.5);
+          cosdiffer[id]= cosdiffer[id]/(arclength[id]*arclength[0]);
+        }     
+              
+        fp = fopen(outputfilename.str().c_str(), "a");             
+        std::stringstream filecontent;
+        filecontent << istep;
+        filecontent << scientific << setprecision(10);
+        
+        for(int id = 0; id < discret_.NumMyRowElements(); id++) 
+          filecontent<<" "<<cosdiffer[id];
+        
+        filecontent<<endl;                            
+        fprintf(fp,filecontent.str().c_str());       
+        fclose(fp);  
+        
+     } 
+      
     }
     break;
     //the following output allows for anisotropic diffusion simulation of a quasi stiff polymer
     case INPAR::STATMECH::statout_anisotropic:
     {
       //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
-      if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1)  == 0 )                
+      if((time >= maxtime_ * statmechparams_.get<double>("START_FACTOR",0.0)) && (istep % statmechparams_.get<int>("OUTPUTINTERVALS",1)  == 0) )                
       {
         FILE* fp = NULL; //file pointer for statistical output file
   
@@ -1111,11 +1105,13 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
       //file pointer for operating with numbering file
       FILE* fpnumbering = NULL;
       std::ostringstream numberingfilename;
-
+      
       //look for a numbering file where number of already existing output files is stored:
       numberingfilename.str("NumberOfRealizationsOrientCorr");
       fpnumbering = fopen(numberingfilename.str().c_str(), "r");
-
+      
+      
+      
       //if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
       if(fpnumbering == NULL)
       {
@@ -1154,6 +1150,10 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
        outputfilename.str("");
        outputfilename <<"OrientationCorrelation"<< outputfilenumber_ << ".dat";
      }
+      
+     //set up new file with name "outputfilename" without writing anything into this file
+     fp = fopen(outputfilename.str().c_str(), "w");
+     fclose(fp);
 
      //increasing the number in the numbering file by one
      fpnumbering = fopen(numberingfilename.str().c_str(), "w");
@@ -1163,7 +1163,6 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
      fprintf(fpnumbering,filecontent.str().c_str());
      //close file
      fclose(fpnumbering);
-
     }
     break;
     //simulating diffusion coefficient for anisotropic friction
@@ -1222,6 +1221,10 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
         outputfilename.str("");
         outputfilename <<"AnisotropicDiffusion"<< outputfilenumber_ << ".dat";
       }
+       
+      //set up new file with name "outputfilename" without writing anything into this file
+      fp = fopen(outputfilename.str().c_str(), "w");
+      fclose(fp);
 
       //increasing the number in the numbering file by one
       fpnumbering = fopen(numberingfilename.str().c_str(), "w");
