@@ -1,13 +1,16 @@
 # -*- shell-script -*-
 # these moduls have to be loaded to be able to compile/link correctly
-#module load ccomp
-#module load fortran
-#module load szip/2.0
-#module load hdf5
-#module load metis/4.0
-#module load netcdf/3.6.2
-#module load mkl/10.0
-#module load mpi.altix/1.22
+# load modules for altix 
+# module unload ccomp
+# module load ccomp/intel/11.1
+# module unload fortran
+# module load fortran/intel/11.1
+# module load szip/2.0
+# module load hdf5
+# module load parmetis/3.1
+# module load netcdf/3.6.2
+# module load mkl/10.2
+# module load mpi.altix/1.22
 
 
 
@@ -100,10 +103,7 @@ EXODUS_LIB="-L$HOME/lib/exodusii-4.81 -lexoIIv2c $NETCDF_LIB"
 #EXODUS_LIB=""
 
 #LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
-#LIBS="$METIS_LIB $MKL_LIB -lm -lguide -lpthread -L/lrz/sys/intel/ifort_91/lib -lifcore -lirc -lstdc++"
-#LIBS="$METIS_LIB $MKL_LIB -lm -lguide -lpthread -L/lrz/sys/intel/ifort_101/lib -lifcore -lirc"
-LIBS="$METIS_LIB $MKL_LIB -lmkl_lapack -lguide -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -L/lrz/sys/intel/ifort_101/lib -lifcore -lirc"
-#LIBS="$METIS_LIB $MKL_LIB -L/lrz/sys/intel/ifort_101/lib -lifcore -lirc"
+LIBS="$PARMETIS_LIB $MKL_LIB -lmkl_lapack -lguide -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -L$IFORT_BASE/lib/ia64 -lifcore -lirc"
 
 CFLAGS_OPT="-O2 -override-limits"
 CPFLAGS_OPT="-O2 -override-limits"
