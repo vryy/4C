@@ -460,4 +460,46 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::StructureTimInt::CreateFieldTest()
 
 
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::StructureTimInt::Integrate()
+{
+  // a few parameters
+  double time = GetTime();
+  const double timeend = GetTimeEnd();
+  const double timestepsize = GetTimeStepSize();
+  int step = GetTimeStep();
+  const int stepend = GetTimeNumStep();
+
+  // loop ahead --- if timestepsize>0
+  while ( (time < timeend) and (step < stepend) )
+  {
+    PrepareTimeStep();
+    Solve();
+
+    // update
+    Update();
+    time +=  timestepsize;
+    step += 1;
+
+    // talk to user
+    fprintf(stdout,
+            "Finalised: step %6d"
+            " | nstep %6d"
+            " | time %-14.8E"
+            " | dt %-14.8E\n",
+            step, stepend, time, timestepsize);
+    // print a beautiful line made exactly of 80 dashes
+    fprintf(stdout,
+            "--------------------------------------------------------------"
+            "------------------\n");
+    // do it, print now!
+    fflush(stdout);
+    // talk to disk
+    Output();
+  }
+
+  // Jump you f***ers
+  return;
+}
+/*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

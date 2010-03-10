@@ -98,6 +98,9 @@ namespace ADAPTER
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest()
     { return structure_->CreateFieldTest(); }
 
+    /// Integrate from t1 to t2
+    virtual void Integrate() { structure_->Integrate(); }
+
   protected:
 
     Teuchos::RCP<Structure> structure_;

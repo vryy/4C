@@ -139,6 +139,9 @@ namespace ADAPTER {
 
     //@}
 
+    /// Integrate from t1 to t2
+    virtual void Integrate() { dserror("Integrate() StructureConstrMerged not impl."); }
+
   private:
 
     /// the interface map setup for interface <-> full translation

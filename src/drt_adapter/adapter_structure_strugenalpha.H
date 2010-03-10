@@ -39,6 +39,7 @@ namespace ADAPTER {
   public:
 
     StructureGenAlpha(Teuchos::RCP<Teuchos::ParameterList> params,
+                     Teuchos::RCP<StruGenAlpha> tintegrator,
                      Teuchos::RCP<DRT::Discretization> dis,
                      Teuchos::RCP<LINALG::Solver> solver,
                      Teuchos::RCP<IO::DiscretizationWriter> output);
@@ -68,8 +69,15 @@ namespace ADAPTER {
     /// @name Time step helpers
     //@{
 
+    /// Integrate from t1 to t2
+    virtual void Integrate() { structure_->Integrate(); }
+
     /// Get the current time
-    virtual double GetTime() const { dserror("Not impl."); return -1.0; }
+    virtual double GetTime() const 
+    { 
+      cout << *params_;
+      dserror("Not implemented 1"); return -1.0; 
+    }
 
     /// Get upper limit of time range of interest
     virtual double GetTimeEnd() const { dserror("Not impl."); return -1.0; }
@@ -81,14 +89,17 @@ namespace ADAPTER {
     virtual int GetTimeStep() const { dserror("Not impl."); return -1; }
 
     /// Get number of time steps
-    virtual int GetTimeNumStep() const { dserror("Not impl."); return -1; }
+    virtual int GetTimeNumStep() const 
+    { 
+      dserror("Not impl."); return -1; 
+    }
 
     void PrepareTimeStep();
     void Evaluate(Teuchos::RCP<const Epetra_Vector> disp);
     void Update();
     void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr)
     {
-      structure_.UpdateIterIncrConstr(lagrincr);
+      structure_->UpdateIterIncrConstr(lagrincr);
     }
     void Output();
 
@@ -112,19 +123,19 @@ namespace ADAPTER {
     /// are there any algebraic constraints?
     virtual bool HaveConstraint()
     {
-      return structure_.HaveConstraint();
+      return structure_->HaveConstraint();
     };
 
     /// get constraint manager defined in the structure
     virtual const RCP< UTILS::ConstrManager> GetConstraintManager()
     {
-      return structure_.GetConstraintManager();
+      return structure_->GetConstraintManager();
     };
 
     //! Return MapExtractor for Dirichlet boundary conditions
     virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     {
-      return LINALG::ConvertDirichletToggleVectorToMaps(structure_.Dirichlet());
+      return LINALG::ConvertDirichletToggleVectorToMaps(structure_->Dirichlet());
     };
 
     /// get the linear solver object used for this field
@@ -177,7 +188,7 @@ namespace ADAPTER {
   private:
 
     /// the actual structure algorithm
-    StruGenAlpha structure_;
+    Teuchos::RCP<StruGenAlpha> structure_;
 
     /// the interface map setup for interface <-> full translation
     STR::UTILS::MapExtractor interface_;

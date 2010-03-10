@@ -170,7 +170,7 @@ namespace ADAPTER {
 
     /// Take the time and integrate (time loop)
     /// \date 11/08
-    void Integrate();
+    virtual void Integrate() = 0;
 
     /// start new time step
     virtual void PrepareTimeStep() = 0;

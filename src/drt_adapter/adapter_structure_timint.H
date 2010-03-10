@@ -100,6 +100,9 @@ namespace ADAPTER {
     /// @name Time step helpers
     //@{
 
+    /// Integrate from t1 to t2
+    virtual void Integrate();
+    
     /// Get the current time
     virtual double GetTime() const { return structure_->GetTime(); }
 

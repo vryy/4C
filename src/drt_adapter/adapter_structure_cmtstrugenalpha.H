@@ -176,6 +176,9 @@ namespace ADAPTER {
     /// create result test for encapulated structure algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
+    /// Integrate from t1 to t2
+    virtual void Integrate() { dserror("Integrate() CmtStructureGenAlpha not impl."); }
+
   private:
 
     /// the actual structure algorithm
