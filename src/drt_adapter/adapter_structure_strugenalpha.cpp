@@ -250,7 +250,7 @@ void ADAPTER::StructureGenAlpha::Update()
 void ADAPTER::StructureGenAlpha::Output()
 {
   structure_->Output();
-  structure_.UpdateElement();
+  structure_->UpdateElement();
 }
 
 
