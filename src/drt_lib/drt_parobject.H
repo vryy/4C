@@ -478,18 +478,19 @@ public:
 
   */
   template<unsigned i, unsigned j>
-  static void AddtoPack(vector< char > & data,const vector<LINALG::Matrix<i,j> > stuff)
+  static void AddtoPack(vector< char > & data,const vector<LINALG::Matrix<i,j> >& stuff)
   {
     //add length of vector to be packed so that later the vector can be restored with correct length when unpacked
     int vectorlength = stuff.size();
     AddtoPack(data,vectorlength);
 
-    //pointer to the first element of the first matrix in the vector stuff
-    const double* A = (stuff[0]).A();
+    for ( int p=0; p<vectorlength; ++p )
+    {
+      const double* A = stuff[p].A();
 
-    //add all data in vector to pack
-    AddtoPack(data,A,vectorlength*i*j*sizeof(double));
-
+      //add all data in vector to pack
+      AddtoPack(data,A,i*j*sizeof(double));
+    }
     return;
   }
 
@@ -655,19 +656,15 @@ public:
     //resize vector stuff appropriately
     stuff.resize(vectorlength);
 
-    /*continue extracting if and only if vector has at least length one and the matrices in the vector have
-     *at least one line and column, respectively (otherwise no data to be extracted)*/
-    if(i*j*vectorlength)
+    for ( int p=0; p<vectorlength; ++p )
     {
-      //pointer to the first element of the first matrix in the vector stuff
-      double* A = (stuff[0]).A();
+      double* A = stuff[p].A();
 
       //actual extraction of data
-      ExtractfromPack(position,data,A,vectorlength*i*j*sizeof(double));
+      ExtractfromPack(position,data,A,i*j*sizeof(double));
     }
 
     return;
-
   }
 
   /*!
