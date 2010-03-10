@@ -11,10 +11,20 @@ EXTRA_ARGS=$@
     -D INCLUDE_INSTALL_DIR:FILEPATH="/lnm/lib/fc8/openmpi/include" \
     -D LIB_INSTALL_DIR:FILEPATH="/lnm/lib/fc8/openmpi/lib" \
     -D D_ALE:BOOL=ON \
+    -D D_BEAM2:BOOL=ON \
+    -D D_BEAM2R:BOOL=ON \
+    -D D_BEAM3:BOOL=ON \
     -D D_FLUID2:BOOL=ON \
     -D D_FLUID3:BOOL=ON \
-    -D D_WALL1:BOOL=ON \
-    -D D_THERMO:BOOL=ON \
+    -D D_SHELL8:BOOL=ON \
+    -D D_SOH8:BOOL=ON \
     -D D_SOLID3:BOOL=ON \
+    -D D_SOTET:BOOL=ON \
+    -D D_THERMO:BOOL=ON \
+    -D D_TORSION2:BOOL=ON \
+    -D D_TORSION3:BOOL=ON \
+    -D D_TRUSS2:BOOL=ON \
+    -D D_TRUSS3:BOOL=ON \
+    -D D_WALL1:BOOL=ON \
     $EXTRA_ARGS \
     ${BACI_HOME}

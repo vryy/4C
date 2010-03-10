@@ -12,8 +12,6 @@ ENDIF (NEMESIS_INCLUDE_DIR)
 
 FIND_PATH(NEMESIS_INCLUDE_DIR ne_nemesisI.h
   ${INCLUDE_INSTALL_DIR}
-  /usr/include/netcdf
-  /usr/include/netcdf-3
   /usr/local/include
   /usr/include
 )

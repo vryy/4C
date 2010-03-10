@@ -1,5 +1,12 @@
+#
+# Build system for baci and support tools.
+# Including nightly test definitions.
+#
+
+#
+### General Setup
+
 cmake_minimum_required(VERSION 2.8)
-#project(baci CXX C Fortran)
 project(baci CXX C Fortran)
 
 # The version number.
@@ -8,10 +15,6 @@ set (baci_VERSION_MINOR 0)
 
 # configure a header file to pass some of the CMake settings
 # to the source code
-#configure_file (
-#  "${PROJECT_SOURCE_DIR}/baci_config.h.in"
-#  "${PROJECT_BINARY_DIR}/baci_config.h"
-#  )
 configure_file (
   "${PROJECT_SOURCE_DIR}/src/headers/compile_settings.h.in"
   "${PROJECT_BINARY_DIR}/src/headers/compile_settings.h"
@@ -22,6 +25,9 @@ configure_file (
 include_directories("${PROJECT_BINARY_DIR}/src/headers")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
+
+#
+### External Libraries
 
 set(LIBRARIES "")
 
@@ -34,16 +40,15 @@ find_package(Trilinos REQUIRED)
 
 SET(Boost_USE_STATIC_LIBS ON) 
 SET(Boost_USE_MULTITHREAD OFF) 
-#FIND_PACKAGE( Boost COMPONENTS date_time filesystem iostreams program_options )
-FIND_PACKAGE( Boost COMPONENTS program_options )
+FIND_PACKAGE( Boost COMPONENTS date_time filesystem iostreams program_options )
 
 if (MPI_FOUND)
-    #include_directories(${MPI_INCLUDE_PATH})
-    SET(CMAKE_C_COMPILER mpicc)
-    SET(CMAKE_CXX_COMPILER mpic++)
+  SET(CMAKE_C_COMPILER mpicc)
+  SET(CMAKE_CXX_COMPILER mpic++)
 endif(MPI_FOUND)
 
 # trilinos libraries
+# Choose trilinos libraries explicitly.
 if (Trilinos_FOUND)
   include_directories(${Trilinos_INCLUDE_DIRS})
   link_directories(${Trilinos_LIBRARY_DIRS})
@@ -67,7 +72,6 @@ endif (Trilinos_FOUND)
 
 find_package(Umfpack)
 if (UMFPACK_FOUND)
-  #message("UMFPACK found")
   include_directories(${UMFPACK_INCLUDE_DIRS})
   link_directories(${UMFPACK_LIBRARY_DIRS})
   set(LIBRARIES
@@ -75,7 +79,6 @@ if (UMFPACK_FOUND)
     ${UMFPACK_LIBRARIES}
     )
 else (UMFPACK_FOUND)
-  #message("UMFPACK not found")
   add_definitions("-DHAVENOT_UMFPACK")
 endif (UMFPACK_FOUND)
 
@@ -91,17 +94,40 @@ else (SuperLU_FOUND)
   add_definitions("-DHAVENOT_SUPERLU")
 endif (SuperLU_FOUND)
 
-find_package(PARMETIS)
+find_package(Qhull)
+if (QHULL_FOUND)
+  include_directories(${QHULL_INCLUDE_DIRS})
+  link_directories(${QHULL_LIBRARY_DIRS})
+  set(LIBRARIES
+    ${LIBRARIES}
+    ${QHULL_LIBRARIES}
+    )
+endif (QHULL_FOUND)
+
+find_package(Tetgen)
+if (TETGEN_FOUND)
+  include_directories(${TETGEN_INCLUDE_DIRS})
+  link_directories(${TETGEN_LIBRARY_DIRS})
+  set(LIBRARIES
+    ${LIBRARIES}
+    ${TETGEN_LIBRARIES}
+    )
+endif (TETGEN_FOUND)
+
+if (QHULL_FOUND)
+  if (TETGEN_FOUND)
+    add_definitions("-DQHULL")
+  endif (TETGEN_FOUND)
+endif (QHULL_FOUND)
+
+find_package(PARMETIS REQUIRED)
 if (PARMETIS_FOUND)
-  #message("PARMETIS found")
   include_directories(${PARMETIS_INCLUDE_DIRS})
   link_directories(${PARMETIS_LIBRARY_DIRS})
   set(LIBRARIES
     ${LIBRARIES}
     ${PARMETIS_LIBRARIES}
     )
-else (PARMETIS_FOUND)
-  #message("PARMETIS not found")
 endif (PARMETIS_FOUND)
 
 if (Boost_FOUND)
@@ -113,7 +139,7 @@ if (Boost_FOUND)
     )
 endif(Boost_FOUND)
 
-find_package(NemesisI)
+find_package(NemesisI REQUIRED)
 if (NEMESIS_FOUND)
   include_directories(${NEMESIS_INCLUDE_DIRS})
   link_directories(${NEMESIS_LIBRARY_DIRS})
@@ -123,7 +149,7 @@ if (NEMESIS_FOUND)
     )
 endif(NEMESIS_FOUND)
 
-find_package(ExodusII)
+find_package(ExodusII REQUIRED)
 if (EXODUS_FOUND)
   include_directories(${EXODUS_INCLUDE_DIRS})
   link_directories(${EXODUS_LIBRARY_DIRS})
@@ -133,7 +159,7 @@ if (EXODUS_FOUND)
     )
 endif(EXODUS_FOUND)
 
-find_package(Netcdf)
+find_package(Netcdf REQUIRED)
 if (NETCDF_FOUND)
   include_directories(${NETCDF_INCLUDE_DIRS})
   link_directories(${NETCDF_LIBRARY_DIRS})
@@ -161,11 +187,15 @@ if (BLAS_FOUND)
     )
 endif(BLAS_FOUND)
 
+#
+# Legacy defines
+
 add_definitions("-DLINUX_MUENCH")
 add_definitions("-DPARALLEL")
 add_definitions("-DLOOPL=15")
 add_definitions("-DCCADISCRET")
 add_definitions("-DTRILINOS_PACKAGE")
+add_definitions("-DD_FLUID")
 add_definitions("-DD_FSI")
 
 ### compile time options
@@ -174,6 +204,8 @@ option (DEBUG "Turn on special debug code" ON)
 if (DEBUG)
   add_definitions("-DDEBUG")
 endif (DEBUG)
+
+### List of files
 
 set(OBJS_DRT_ALE_LIB
   src/drt_ale3/ale3.cpp
@@ -267,6 +299,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/micromaterial.cpp
   src/drt_mat/newtonianfluid.cpp
   src/drt_mat/stvenantkirchhoff.cpp
+  src/drt_mat/thermostvenantkirchhoff.cpp
   src/drt_mat/lung_penalty.cpp
   src/drt_mat/lung_ogden.cpp
   src/drt_mat/neohooke.cpp
@@ -274,6 +307,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/visconeohooke.cpp
   src/drt_mat/viscoanisotropic.cpp
   src/drt_mat/aaaneohooke.cpp
+  src/drt_mat/aaagasser.cpp
   src/drt_mat/aaaraghavanvorp_damage.cpp
   src/drt_mat/logneohooke.cpp
   src/drt_mat/anisotropic_balzani.cpp
@@ -604,6 +638,20 @@ set(OBJS_OPT
   src/optimization/opt_g_out.c
 )
 set(OBJS_DRT_CONTACTNEW
+  src/drt_contactnew/contact_abstract_strategy.cpp
+  src/drt_contactnew/contact_coupling2d.cpp
+  src/drt_contactnew/contact_coupling3d.cpp
+  src/drt_contactnew/contact_integrator.cpp
+  src/drt_contactnew/contact_interface.cpp
+  src/drt_contactnew/contact_interface_tools.cpp
+  src/drt_contactnew/contact_lagrange_strategy.cpp
+  src/drt_contactnew/contact_manager.cpp
+  src/drt_contactnew/contact_penalty_strategy.cpp
+  src/drt_contactnew/meshtying_abstract_strategy.cpp
+  src/drt_contactnew/meshtying_lagrange_strategy.cpp
+  src/drt_contactnew/meshtying_manager.cpp
+  src/drt_contactnew/meshtying_penalty_strategy.cpp
+  src/drt_contactnew/selfcontact_binarytree.cpp
   src/drt_contactnew/strugenalpha_cmt.cpp
 )
 set(OBJS_SOH8_LIB
@@ -1413,21 +1461,24 @@ set(OBJS_DRT_TO3_LIB
   src/drt_torsion3/torsion3_input.cpp
   src/drt_torsion3/torsion3_evaluate.cpp
 )
-set(OBJS_DRT_MORTAR_LIB
+set(OBJS_DRT_MORTAR
   src/drt_mortar/mortar_binarytree.cpp
   src/drt_mortar/mortar_coupling2d.cpp
   src/drt_mortar/mortar_coupling3d.cpp
   src/drt_mortar/mortar_coupling3d_classes.cpp
   src/drt_mortar/mortar_defines.cpp
   src/drt_mortar/mortar_dofset.cpp
-  src/drt_mortar/mortar_element.cpp
-  src/drt_mortar/mortar_element_shapefct.cpp
   src/drt_mortar/mortar_integrator.cpp
   src/drt_mortar/mortar_interface.cpp
   src/drt_mortar/mortar_manager_base.cpp
-  src/drt_mortar/mortar_node.cpp
   src/drt_mortar/mortar_projector.cpp
   src/drt_mortar/mortar_strategy_base.cpp
+)
+set(OBJS_DRT_MORTAR_LIB
+  src/drt_mortar/mortar_element.cpp
+  src/drt_mortar/mortar_element_integrator.cpp
+  src/drt_mortar/mortar_element_shapefct.cpp
+  src/drt_mortar/mortar_node.cpp
 )
 set(OBJS_DRT_STRUCTURE
   src/drt_structure/stru_dyn_nln_drt.cpp
@@ -1469,23 +1520,9 @@ set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
 )
 set(OBJS_DRT_CONTACTNEW_LIB
-  src/drt_contactnew/contact_abstract_strategy.cpp
-  src/drt_contactnew/contact_coupling2d.cpp
-  src/drt_contactnew/contact_coupling3d.cpp
   src/drt_contactnew/contact_element.cpp
-  src/drt_contactnew/contact_integrator.cpp
-  src/drt_contactnew/contact_interface.cpp
-  src/drt_contactnew/contact_interface_tools.cpp
-  src/drt_contactnew/contact_lagrange_strategy.cpp
-  src/drt_contactnew/contact_manager.cpp
   src/drt_contactnew/contact_node.cpp
   src/drt_contactnew/friction_node.cpp
-  src/drt_contactnew/contact_penalty_strategy.cpp
-  src/drt_contactnew/meshtying_abstract_strategy.cpp
-  src/drt_contactnew/meshtying_lagrange_strategy.cpp
-  src/drt_contactnew/meshtying_manager.cpp
-  src/drt_contactnew/meshtying_penalty_strategy.cpp
-  src/drt_contactnew/selfcontact_binarytree.cpp
 )
 set(OBJS_IO
   src/io/io_singlefile.cpp
@@ -2107,6 +2144,8 @@ macro (baci_test arg nproc)
     PROPERTIES PASS_REGULAR_EXPRESSION "processor 0 finished normally")
 endmacro (baci_test)
 
+
+
 baci_test(beam2rcubic 1)
 baci_test(beam2rcubic 4)
 baci_test(beam2rlinear 1)
@@ -2273,9 +2312,6 @@ baci_test(f3_drt_impl_initialfield_volforce_pbc 1)
 baci_test(f3_drt_impl_initialfield_volforce_pbc 4)
 baci_test(f3_ew_Q1_27x_drt 1)
 baci_test(f3_ew_Q1_27x_drt 4)
-baci_test(fluidfluidCoupling_mIter 1)
-baci_test(fluidfluidCoupling_simple 1)
-baci_test(fluidfluid_parab_Hex20 1)
 baci_test(force_sensor_test 1)
 baci_test(force_sensor_test 4)
 baci_test(fs-kugel-tet 1)
@@ -2329,12 +2365,6 @@ baci_test(fsi_ring2D_sliding_up 4)
 baci_test(inv_analysis 1)
 baci_test(invaaa 1)
 baci_test(invaaa 4)
-baci_test(inversedesign 1)
-baci_test(inversedesign 4)
-baci_test(inversedesign_tet4 1)
-baci_test(inversedesign_tet4 4)
-baci_test(inversedesign_wedge6 1)
-baci_test(inversedesign_wedge6 4)
 baci_test(loadlin 1)
 baci_test(loadlin 4)
 baci_test(locsys2D 1)
@@ -2357,6 +2387,8 @@ baci_test(mat_humphreycardio 4)
 baci_test(mat_itskov 1)
 baci_test(meshtying2D_structure 1)
 baci_test(meshtying2D_structure 4)
+baci_test(meshtying2D_structure_crosspoints 1)
+baci_test(meshtying2D_structure_crosspoints 4)
 baci_test(meshtying3D_structure 1)
 baci_test(meshtying3D_structure 4)
 baci_test(meshtying3D_structure_augmented 1)
@@ -2383,12 +2415,6 @@ baci_test(potential_vol_LJ_2D 1)
 baci_test(potential_vol_LJ_2D 4)
 baci_test(potential_vol_LJ_3D 1)
 baci_test(potential_vol_LJ_3D 4)
-baci_test(prestress_hex8 1)
-baci_test(prestress_hex8 4)
-baci_test(prestress_tet4 1)
-baci_test(prestress_tet4 4)
-baci_test(prestress_weg6 1)
-baci_test(prestress_weg6 4)
 baci_test(scatra_gaussian_hill_pbc 1)
 baci_test(scatra_gaussian_hill_pbc 4)
 baci_test(scatra_gaussian_hill_pbc_gena_cons 1)
@@ -2499,43 +2525,68 @@ baci_test(w1q4_cantilever_eas 4)
 baci_test(w1q4_patch_eas 1)
 baci_test(w1q4_patch_eas 4)
 baci_test(w1q9_dyn_rot_drt 1)
-baci_test(xf3_beltrami_tet4_drt 1)
-baci_test(xf3_beltrami_tet4_drt 4)
-baci_test(xf3_drivencavity_stat_drt 1)
-baci_test(xf3_drivencavity_stat_drt 4)
-baci_test(xf3_ew_Q1_27x_drt 1)
-baci_test(xf3_ew_Q1_27x_drt 4)
-baci_test(xf3_flow_over_corner_fixpoint 1)
-baci_test(xf3_flow_over_corner_fixpoint 4)
-baci_test(xf3_flow_over_corner_newton 1)
-baci_test(xf3_multibody_hex8 1)
-baci_test(xf3_multibody_hex8 4)
-baci_test(xf3_multibody_hex8_tp_condense_no 1)
-baci_test(xf3_multibody_hex8_tp_condense_no 4)
-baci_test(xf3_multibody_hex8_tp_condense_yes 1)
-baci_test(xf3_multibody_hex8_tp_condense_yes 4)
-baci_test(xf3_pure_shear_forces 1)
-baci_test(xf3_pure_shear_forces 4)
-baci_test(xf3_pure_shear_forces_bdf2 1)
-baci_test(xf3_pure_shear_forces_bdf2 4)
-baci_test(xf3_pure_shear_forces_ost 1)
-baci_test(xf3_pure_shear_forces_ost 4)
-baci_test(xf3_pure_shear_forces_tp 1)
-baci_test(xf3_pure_shear_forces_tp 4)
-baci_test(xf3_pure_shear_forces_tp_ost 1)
-baci_test(xf3_pure_shear_forces_tp_ost 4)
-baci_test(xf3_pure_shear_forces_tp_ost_no_condense 1)
-baci_test(xf3_pure_shear_forces_tp_ost_no_condense 4)
-baci_test(xfsi_RingInChannel3D 1)
-baci_test(xfsi_RingInChannel3D 4)
-baci_test(xfsi_bending_2d_stationary_hex20 1)
-baci_test(xfsi_bending_2d_stationary_hex20 4)
-baci_test(xfsi_bending_2d_stationary_hex8 1)
-baci_test(xfsi_bending_2d_stationary_hex8 4)
-baci_test(xfsi_fluid_pusher_BE 1)
-baci_test(xfsi_fluid_pusher_bdf2 1)
-baci_test(xfsi_fluid_pusher_ost 1)
-baci_test(xfsi_fluid_pusher_ost_projection 1)
-baci_test(xfsi_multibody_hex20 1)
-baci_test(xfsi_multibody_hex20 4)
-baci_test(xfsi_shooter_thin 1)
+
+if (INVERSEDESIGNCREATE)
+  baci_test(inversedesign 1)
+  baci_test(inversedesign 4)
+  baci_test(inversedesign_tet4 1)
+  baci_test(inversedesign_tet4 4)
+  baci_test(inversedesign_wedge6 1)
+  baci_test(inversedesign_wedge6 4)
+endif (INVERSEDESIGNCREATE)
+
+if (PRESTRESS)
+  baci_test(prestress_hex8 1)
+  baci_test(prestress_hex8 4)
+  baci_test(prestress_tet4 1)
+  baci_test(prestress_tet4 4)
+  baci_test(prestress_weg6 1)
+  baci_test(prestress_weg6 4)
+endif (PRESTRESS)
+
+if (QHULL)
+  baci_test(fluidfluidCoupling_mIter 1)
+  baci_test(fluidfluidCoupling_simple 1)
+  baci_test(fluidfluid_parab_Hex20 1)
+  baci_test(xf3_beltrami_tet4_drt 1)
+  baci_test(xf3_beltrami_tet4_drt 4)
+  baci_test(xf3_drivencavity_stat_drt 1)
+  baci_test(xf3_drivencavity_stat_drt 4)
+  baci_test(xf3_ew_Q1_27x_drt 1)
+  baci_test(xf3_ew_Q1_27x_drt 4)
+  baci_test(xf3_flow_over_corner_fixpoint 1)
+  baci_test(xf3_flow_over_corner_fixpoint 4)
+  baci_test(xf3_flow_over_corner_newton 1)
+  baci_test(xf3_multibody_hex8 1)
+  baci_test(xf3_multibody_hex8 4)
+  baci_test(xf3_multibody_hex8_tp_condense_no 1)
+  baci_test(xf3_multibody_hex8_tp_condense_no 4)
+  baci_test(xf3_multibody_hex8_tp_condense_yes 1)
+  baci_test(xf3_multibody_hex8_tp_condense_yes 4)
+  baci_test(xf3_pure_shear_forces 1)
+  baci_test(xf3_pure_shear_forces 4)
+  baci_test(xf3_pure_shear_forces_bdf2 1)
+  baci_test(xf3_pure_shear_forces_bdf2 4)
+  baci_test(xf3_pure_shear_forces_ost 1)
+  baci_test(xf3_pure_shear_forces_ost 4)
+  baci_test(xf3_pure_shear_forces_tp 1)
+  baci_test(xf3_pure_shear_forces_tp 4)
+  baci_test(xf3_pure_shear_forces_tp_ost 1)
+  baci_test(xf3_pure_shear_forces_tp_ost 4)
+  baci_test(xf3_pure_shear_forces_tp_ost_no_condense 1)
+  baci_test(xf3_pure_shear_forces_tp_ost_no_condense 4)
+  baci_test(xfsi_RingInChannel3D 1)
+  baci_test(xfsi_RingInChannel3D 4)
+  baci_test(xfsi_bending_2d_stationary_hex20 1)
+  baci_test(xfsi_bending_2d_stationary_hex20 4)
+  baci_test(xfsi_bending_2d_stationary_hex8 1)
+  baci_test(xfsi_bending_2d_stationary_hex8 4)
+  baci_test(xfsi_fluid_pusher_BE 1)
+  baci_test(xfsi_fluid_pusher_bdf2 1)
+  baci_test(xfsi_fluid_pusher_ost 1)
+  baci_test(xfsi_fluid_pusher_ost_projection 1)
+  baci_test(xfsi_multibody_hex20 1)
+  baci_test(xfsi_multibody_hex20 4)
+  baci_test(xfsi_shooter_thin 1)
+endif (QHULL)
+
