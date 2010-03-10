@@ -696,7 +696,6 @@ void LINALG::Solver::Solve_aztec(
             A_->OperatorRangeMap().NumGlobalElements(),(int)status[AZ_its],status[AZ_solve_time]);
     fflush(outfile_);
   }
-
   return;
 }
 
