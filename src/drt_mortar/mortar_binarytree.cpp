@@ -89,7 +89,7 @@ void MORTAR::BinaryTreeNode::InitializeTree(double& enlarge)
 {
 	// return if proc. has no elements!
 	if (elelist_.size()==0) return;
-	
+
 	// calculate bounding volume
   CalculateSlabsDop(true);
   EnlargeGeometry(enlarge);
@@ -99,7 +99,7 @@ void MORTAR::BinaryTreeNode::InitializeTree(double& enlarge)
   {
     // divide treenode
   	DivideTreeNode();
-  	
+
   	// check what to do with left child
   	if (leftchild_->Elelist().size()==0)
   	{
@@ -114,11 +114,11 @@ void MORTAR::BinaryTreeNode::InitializeTree(double& enlarge)
   		//if leaftchild is master leaf
   		if (leftchild_->Type()==3)
   			mleafsmap_[0].push_back(leftchild_);
-  		
+
   		// recursively initialize the whole tree
   		leftchild_->InitializeTree(enlarge);
   	}
-  	
+
   	// check what to do with right child
   	if (rightchild_->elelist_.size()==0)
   	{
@@ -133,10 +133,10 @@ void MORTAR::BinaryTreeNode::InitializeTree(double& enlarge)
   		// if rightchild is master leaf
   		if (rightchild_->Type()==3)
   			mleafsmap_[1].push_back(rightchild_);
-  		
+
   		// recursively initialize the whole tree
-  		rightchild_->InitializeTree(enlarge);	
-  	}		
+  		rightchild_->InitializeTree(enlarge);
+  	}
   }
 
   return;
@@ -189,11 +189,11 @@ void MORTAR::BinaryTreeNode::CalculateSlabsDop(bool isinit)
 			                     +(dopnormals_(j,1)*dopnormals_(j,1))
 			                     +(dopnormals_(j,2)*dopnormals_(j,2)));
 	      double dcurrent = num/denom;
-	
+
 	      if (dcurrent > slabs_(j,1)) slabs_(j,1) = dcurrent;
 	      if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
 		  }
-			
+
 	    // if update for contactsearch --> add auxiliary positions
 			if (!isinit)
   		{
@@ -221,11 +221,11 @@ void MORTAR::BinaryTreeNode::CalculateSlabsDop(bool isinit)
                              +(dopnormals_(j,1)*dopnormals_(j,1))
                              +(dopnormals_(j,2)*dopnormals_(j,2)));
           double dcurrent = num/denom;
-	  		
+
 	  			if (dcurrent > slabs_(j,1)) slabs_(j,1) = dcurrent;
 	  			if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
     		}
-  		}	  		
+  		}
     }
   }
 
@@ -251,15 +251,15 @@ void MORTAR::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
 				slabs_(k,0)=leftchild_->Slabs()(k,0);
 			else
 				slabs_(k,0)=rightchild_->Slabs()(k,0);
-				
+
 			// for maximum
 			if (leftchild_->Slabs()(k,1)>=rightchild_->Slabs()(k,1))
 				slabs_(k,1)=leftchild_->Slabs()(k,1);
 			else
-				slabs_(k,1)=rightchild_->Slabs()(k,1);		
-		}	
+				slabs_(k,1)=rightchild_->Slabs()(k,1);
+		}
 	}
-	
+
 	//if current treenode is leafnode
 	if (type_==1||type_==3)
 	{
@@ -269,7 +269,7 @@ void MORTAR::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
       slabs_(j,0) =  1.0e12;
       slabs_(j,1) = -1.0e12;
     }
-	
+
     int gid = Elelist()[0];
     DRT::Element* element= idiscret_.gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
@@ -309,7 +309,7 @@ void MORTAR::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
       double normal[3] = {0.0, 0.0, 0.0};
       mrtrelement->LocalCoordinatesOfNode(k,xi);
       mrtrelement->ComputeUnitNormalAtXi(xi,normal);
-              
+
       // now the auxiliary position
       double auxpos [3] = {0.0, 0.0, 0.0};
       double scalar=0.0;
@@ -333,18 +333,18 @@ void MORTAR::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
         if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
       }
     }
-	
+
 		for (int i=0 ; i<kdop_/2 ; i++)
 		{
-			slabs_(i,0)=slabs_(i,0)-enlarge;	
+			slabs_(i,0)=slabs_(i,0)-enlarge;
 			slabs_(i,1)=slabs_(i,1)+enlarge;
 		}
-	
+
 	  //Prints Slabs to std::cout
 	  //PrintSlabs();
-		
+
 	} // current treenode is leaf
-	
+
 	return;
 }
 /*----------------------------------------------------------------------*
@@ -353,14 +353,14 @@ void MORTAR::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
 void MORTAR::BinaryTreeNode::DivideTreeNode()
 {
   // map of elements belonging to left / right child treenode
-	vector<int> leftelements(0);	
+	vector<int> leftelements(0);
 	vector<int> rightelements(0);
 
   //if only 2 elements in Treenode, create new treenodes out of them
   if (elelist_.size()==2)
   {
-  	leftelements.push_back(Elelist()[0]);	
-  	rightelements.push_back(Elelist()[1]);  	
+  	leftelements.push_back(Elelist()[0]);
+  	rightelements.push_back(Elelist()[1]);
   }
   // if more than 2 elements in Treenode
   else if (elelist_.size()>2)
@@ -369,7 +369,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
 		double lmax = 0.0;					// max. length of sides of DOP
 		int splittingnormal = -1;		// defines side to split
 		double xmedian[3] = {0.0, 0.0, 0.0}; // coordinates of centroid
-	
+
 		for(int i=0;i<kdop_/2;++i)
 		{
 			double lcurrent=abs(slabs_(i,1)-slabs_(i,0));
@@ -379,7 +379,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
 				splittingnormal = i;
 		  }
 		}
-	
+
 		// find median of centroid coordinates to divide area
 		// coordinates of median
 		for(int i=0; i<dim_;++i)
@@ -389,28 +389,28 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
 		double d = xmedian[0]*dopnormals_(splittingnormal,0)
 		         + xmedian[1]*dopnormals_(splittingnormal,1)
 						 + xmedian[2]*dopnormals_(splittingnormal,2);
-		
+
 		//split treenode into two parts
 		for (int i=0; i<((int)elelist_.size());++i)
 	  {
 			bool isright = false; // true, if element should be sorted into right treenode
 			bool isleft = false;	// true, if element should be sorted into left treenode
-		
+
 	    int gid = Elelist()[i];
 	    DRT::Element* element= idiscret_.gElement(gid);
 	    if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
 	    DRT::Node** nodes = element->Nodes();
-	
+
 	    //vector of values of Hesse-Normalform of nodes of elements
 	    Epetra_SerialDenseVector  axbycz;
 	    axbycz.Resize(element->NumNode());
-	
+
 	    for (int k=0;k<element->NumNode();++k)
 		  {
 	      MortarNode* mrtrnode = static_cast<MortarNode*>(nodes[k]);
 	      if (!mrtrnode) dserror("ERROR: Null pointer!");
 				const double* posnode = mrtrnode->X();
-				
+
 				//split along chosen area
 				//ax+by+cz< or > d = criterion
 				//compute ax+by+cz for chosen node
@@ -423,20 +423,20 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
 				 						+ posnode[2]*dopnormals_(splittingnormal,2);
 				else
 				  dserror("ERROR: Problem dimension must be 2D or 3D!");
-				
+
 				 if (axbycz[k]>=d) isright=true;
 				 if (axbycz[k]<d)  isleft=true;
 		  }
 
 	    if (isright==false && isleft==false)
 		    dserror("ERROR: Current element could neither be sorted into left- or right-child node!");
-	
+
 	    // if element is split through, it is sorted into left treenode
 	    if (isright==true && isleft==true) isright=false;
-	
+
 			// sort elements into child treenodes
 	    if (isright) rightelements.push_back(gid);
-			if (isleft)  leftelements.push_back(gid);	
+			if (isleft)  leftelements.push_back(gid);
 		}
   }
 
@@ -453,14 +453,14 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
     rightelements.push_back(leftelements[leftelements.size()-1]);
 		leftelements.pop_back();
 	}
-	
+
 	// define type of newly created children treenodes
   if (elelist_.size()>=2)
   {
     //defines type of left and right TreeNode
 	  BinaryTreeNodeType lefttype = UNDEFINED;
 	  BinaryTreeNodeType righttype = UNDEFINED;
-	
+
 	  // is the new left child treenode a leaf node?
 	  if (leftelements.size()==1)
 	  {
@@ -474,7 +474,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
 	  	else if (type_==2) lefttype = MASTER_INNER;
 	  	else               dserror("ERROR: Invalid TreeNodeType");
 	  }
-	
+
 	  // is the new right child treenode a leaf node?
 	  if (rightelements.size()==1)
 	  {
@@ -490,39 +490,39 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
 	  }
 
 	  // build left child treenode
-		leftchild_= rcp(new BinaryTreeNode(lefttype,idiscret_, static_cast<RCP<BinaryTreeNode> >(this),
+		leftchild_= rcp(new BinaryTreeNode(lefttype,idiscret_, rcp(this, false),
 		                leftelements, dopnormals_, kdop_, dim_, (layer_+1), streenodesmap_, mtreenodesmap_,
 		                sleafsmap_, mleafsmap_));
-		
+
 		// build right child treenode
-		rightchild_= rcp(new BinaryTreeNode(righttype,idiscret_,static_cast<RCP<BinaryTreeNode> >(this),
+		rightchild_= rcp(new BinaryTreeNode(righttype,idiscret_, rcp(this, false),
 		                 rightelements, dopnormals_, kdop_, dim_, (layer_+1), streenodesmap_, mtreenodesmap_,
 		                 sleafsmap_, mleafsmap_));
-	
+
 		// update slave and mastertreenodes map
 		// if parent treenode is slave
 		if (type_==0)
 		{
 			// if map of treenodes does not have enogh rows-->resize!
 			if ((int)(streenodesmap_.size())<=(layer_+1))
-			  streenodesmap_.resize((layer_+2));			
-						
+			  streenodesmap_.resize((layer_+2));
+
 			// put new pointers to children into map
-			streenodesmap_[(layer_+1)].push_back(leftchild_);				
+			streenodesmap_[(layer_+1)].push_back(leftchild_);
 			streenodesmap_[(layer_+1)].push_back(rightchild_);
 		}
-		
+
 		// if parent treenode is master
 		if (type_==2)
 		{
 			// if map of treenodes does not have enogh rows-->resize!
 			if ((int)(mtreenodesmap_.size())<=(layer_+1))
-						mtreenodesmap_.resize((layer_+2));			
-						
+						mtreenodesmap_.resize((layer_+2));
+
 			// put new pointers to children into map
-			mtreenodesmap_[(layer_+1)].push_back(leftchild_);				
+			mtreenodesmap_[(layer_+1)].push_back(leftchild_);
 			mtreenodesmap_[(layer_+1)].push_back(rightchild_);
-		}				
+		}
   }
 
   else dserror( "ERROR: Only 1 or 0 elements in map-->TreeNode cannot be devided!!");
@@ -571,7 +571,7 @@ void MORTAR::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
 {
   FILE* fp = NULL;
 	std::ostringstream currentfilename;
-	
+
   if (dim_==2)
   {
     fp = fopen(filename.c_str(), "a");
@@ -580,7 +580,7 @@ void MORTAR::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
 
 	  // Matrix containing coordinates of points defining kdop (x,y,z)
   	Epetra_SerialDenseMatrix position(kdop_,3);
-  	
+
 	  for (int i=0;i<kdop_;i++) position(i,2)=0.0;
 
 		//point 0
@@ -896,7 +896,7 @@ void MORTAR::BinaryTreeNode::EnlargeGeometry(double& enlarge)
 	// scale slabs with Scalar enlarge
 	for (int i=0;i<kdop_/2;++i)
 	{
-			slabs_(i,0)=slabs_(i,0)-enlarge;	
+			slabs_(i,0)=slabs_(i,0)-enlarge;
 			slabs_(i,1)=slabs_(i,1)+enlarge;
 	}
 	//PrintSlabs();
@@ -1078,7 +1078,7 @@ eps_(eps)
 void MORTAR::BinaryTree::SetEnlarge(bool isinit)
 {
 	double lmin = 1.0e12;
-	
+
 	// calculate mininmal length of slave elements
 	for (int i=0;i<selements_->NumMyElements();++i)
   {
@@ -1089,7 +1089,7 @@ void MORTAR::BinaryTree::SetEnlarge(bool isinit)
     double mincurrent = mrtrelement->MinEdgeSize(isinit);
     if (mincurrent < lmin) lmin = mincurrent;
   }
-	
+
 	// calculate minimal length of master elements
   for (int i=0;i<melements_->NumMyElements();++i)
   {
@@ -1124,15 +1124,15 @@ void MORTAR::BinaryTree::PrintTree(RCP<BinaryTreeNode> treenode)
   cout <<"\n" <<Comm().MyPID()<< " Tree at layer: " << treenode->Layer()<< " Elements: ";
 	for (int i=0;i<(int)(treenode->Elelist().size());i++)
 	  cout <<" "<<treenode->Elelist().at(i);
-		
+
 	// while treenode is inner node
 	if (treenode->Type()==0 || treenode->Type()==2)
 	{
 		PrintTree(treenode->Leftchild());
 		PrintTree(treenode->Rightchild());
 	}
-	
-	return;	
+
+	return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1155,7 +1155,7 @@ void MORTAR::BinaryTree::PrintTreeOfMap(vector<vector<RCP<BinaryTreeNode> > >& t
 			cout << ") ";
 		}
 	}
-	
+
 	return;
 }
 
@@ -1173,9 +1173,9 @@ void MORTAR::BinaryTree::EvaluateUpdateTreeTopDown(RCP<BinaryTreeNode> treenode)
 	if (treenode->Type()==0||treenode->Type()==2)
 	{
 	  EvaluateUpdateTreeTopDown(treenode->Leftchild());
-	  EvaluateUpdateTreeTopDown(treenode->Rightchild());		
+	  EvaluateUpdateTreeTopDown(treenode->Rightchild());
 	}
-	
+
 	return;
 }
 
@@ -1190,7 +1190,7 @@ void MORTAR::BinaryTree::EvaluateUpdateTreeBottomUp(vector<vector<RCP<BinaryTree
   	for (int j=0;j<(int)(treenodesmap[i].size());j++)
 			treenodesmap[i][j]->UpdateSlabsBottomUp(enlarge_);
 	}
-	
+
 	return;
 }
 
@@ -1201,14 +1201,14 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(RCP<BinaryTreeNode> streenode,
                                                  RCP<BinaryTreeNode> mtreenode)
 {
 	// tree needs to be updated before running contact search!
-	
+
   // if there are no elements
 	if (streenode->Type()==4 || mtreenode->Type()==5) return;
-	
+
 	// check if treenodes intercept
 	// (they only intercept if ALL slabs intercept!)
 	int nintercepts = 0;
-	
+
 	for (int i=0;i<kdop_/2;++i)
 	{
 		if (streenode->Slabs()(i,0) <= mtreenode->Slabs()(i,0))
@@ -1226,7 +1226,7 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(RCP<BinaryTreeNode> streenode,
 				nintercepts++;
 		}
 	}
-	
+
 	//treenodes intercept
 	if (nintercepts==kdop_/2)
 	{
@@ -1239,7 +1239,7 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(RCP<BinaryTreeNode> streenode,
 			EvaluateSearchSeparate(streenode->Rightchild(),mtreenode->Leftchild());
 			EvaluateSearchSeparate(streenode->Rightchild(),mtreenode->Rightchild());
 		}
-		
+
 		// slave treenode is inner, master treenode is leaf
 		if (streenode->Type()==0 && mtreenode->Type()==3)
 		{
@@ -1247,7 +1247,7 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(RCP<BinaryTreeNode> streenode,
 			EvaluateSearchSeparate(streenode->Leftchild(),mtreenode);
 			EvaluateSearchSeparate(streenode->Rightchild(),mtreenode);
 		}
-		
+
 		// slave treenode is leaf,  master treenode is inner
 		if (streenode->Type()==1 && mtreenode->Type()==2)
 		{
@@ -1255,7 +1255,7 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(RCP<BinaryTreeNode> streenode,
 			EvaluateSearchSeparate(streenode,mtreenode->Leftchild());
 			EvaluateSearchSeparate(streenode,mtreenode->Rightchild());
 		}
-		
+
 		// both treenodes are leaf --> feasible pair
 		if (streenode->Type()==1 && mtreenode->Type()==3)
 		{
@@ -1276,7 +1276,7 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(RCP<BinaryTreeNode> streenode,
 		couplingmap_[1].push_back(mtreenode);
 	}
 #endif // #ifdef MORTARGMSHCTN
-		
+
 	return;
 }
 
@@ -1287,14 +1287,14 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(RCP<BinaryTreeNode> streenode,
                                                 RCP<BinaryTreeNode> mtreenode)
 {
 	// root nodes need to be updated before running combined contact search!
-	
+
   // if there are no elements
 	if (streenode->Type()==4 || mtreenode->Type()==5) return;
-	
+
 	// check if treenodes intercept
 	// (they only intercept if ALL slabs intercept!)
 	int nintercepts = 0;
-	
+
 	for (int i=0;i<kdop_/2;++i)
 	{
 		if (streenode->Slabs()(i,0) <= mtreenode->Slabs()(i,0))
@@ -1310,9 +1310,9 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(RCP<BinaryTreeNode> streenode,
 				nintercepts++;
 			else if (mtreenode->Slabs()(i,1) >= streenode->Slabs()(i,0))
 				nintercepts++;
-		}	
+		}
 	}
-	
+
 	//treenodes intercept
 	if (nintercepts==kdop_/2)
 	{
@@ -1321,20 +1321,20 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(RCP<BinaryTreeNode> streenode,
 		{
 			//cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!";
 			streenode->Leftchild()->CalculateSlabsDop(false);
-      streenode->Leftchild()->EnlargeGeometry(enlarge_);	
+      streenode->Leftchild()->EnlargeGeometry(enlarge_);
 			streenode->Rightchild()->CalculateSlabsDop(false);
       streenode->Rightchild()->EnlargeGeometry(enlarge_);
 			mtreenode->Leftchild()->CalculateSlabsDop(false);
 			mtreenode->Leftchild()->EnlargeGeometry(enlarge_);
 			mtreenode->Rightchild()->CalculateSlabsDop(false);
       mtreenode->Rightchild()->EnlargeGeometry(enlarge_);
-	
+
 			EvaluateSearchCombined(streenode->Leftchild(),mtreenode->Leftchild());
 			EvaluateSearchCombined(streenode->Leftchild(),mtreenode->Rightchild());
 			EvaluateSearchCombined(streenode->Rightchild(),mtreenode->Leftchild());
 			EvaluateSearchCombined(streenode->Rightchild(),mtreenode->Rightchild());
 		}
-		
+
 		// slave treenode is inner,  master treenode is leaf
 		if (streenode->Type()==0 && mtreenode->Type()==3)
 		{
@@ -1343,11 +1343,11 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(RCP<BinaryTreeNode> streenode,
       streenode->Leftchild()->EnlargeGeometry(enlarge_);
 			streenode->Rightchild()->CalculateSlabsDop(false);
       streenode->Rightchild()->EnlargeGeometry(enlarge_);
-			
+
       EvaluateSearchCombined(streenode->Leftchild(),mtreenode);
 			EvaluateSearchCombined(streenode->Rightchild(),mtreenode);
 		}
-		
+
 		// slave treenode is leaf,  master treenode is inner
 		if (streenode->Type()==1 && mtreenode->Type()==2)
 		{
@@ -1356,11 +1356,11 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(RCP<BinaryTreeNode> streenode,
       mtreenode->Leftchild()->EnlargeGeometry(enlarge_);
 			mtreenode->Rightchild()->CalculateSlabsDop(false);
       mtreenode->Rightchild()->EnlargeGeometry(enlarge_);
-		
+
       EvaluateSearchCombined(streenode,mtreenode->Leftchild());
 			EvaluateSearchCombined(streenode,mtreenode->Rightchild());
 		}
-		
+
 		// both treenodes are leaf --> feasible pair
 		if (streenode->Type()==1 && mtreenode->Type()==3)
 		{
@@ -1371,7 +1371,7 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(RCP<BinaryTreeNode> streenode,
 	    //     << sgid <<"and master-Element: "<< mgid;
 	    DRT::Element* element= idiscret_.gElement(sgid);
 	    MORTAR::MortarElement* selement = static_cast<MORTAR::MortarElement*>(element);
-			selement->AddSearchElements(mgid);	
+			selement->AddSearchElements(mgid);
      }
 	}
 
