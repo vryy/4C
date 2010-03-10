@@ -375,7 +375,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 
     frt_ = 96485.3399/(8.314472 * extraparams_->get<double>("TEMPERATURE"));
 
-    Epetra_SerialDenseVector sigma = ComputeConductivity(); // every processor has to do this call
+    // conductivity must be stored for the galvanostatic condition in global variable
+    sigma_ = ComputeConductivity(); // every processor has to do this call
     if (myrank_==0)
     {
       cout<<"\nSetup of splitter: numscal = "<<numscal_<<endl;
@@ -383,9 +384,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       cout<<"Constant F/RT                    = "<<frt_<<endl;
       for (int k=0;k < numscal_;k++)
       {
-        cout<<"Electrolyte conductivity (species "<<k+1<<")   = "<<sigma[k]<<endl;
+        cout<<"Electrolyte conductivity (species "<<k+1<<")   = "<<sigma_[k]<<endl;
       }
-      cout<<"Electrolyte conductivity (all species) = "<<sigma[numscal_]<<endl<<endl;
+      cout<<"Electrolyte conductivity (all species) = "<<sigma_[numscal_]<<endl<<endl;
     }
   }
 

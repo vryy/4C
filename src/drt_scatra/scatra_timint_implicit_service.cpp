@@ -1707,7 +1707,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
 
       // loop over all BV
       // degenerated to a loop over 2 BV conditions
-      for (int icond = 0; icond < cond.size(); icond++)
+      for (unsigned int icond = 0; icond < cond.size(); icond++)
       {
         actualcurrent = 0.0;
         currtangent = 0.0;
@@ -1721,7 +1721,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
 
         double targetcurrent = DRT::Problem::Instance()->Curve(curvenum-1).f(time_);
         double timefac = 1.0/ResidualScaling();
-	
+
         if (icond > 1)
 	  dserror("More than 2 Butler-Volmer conditions. All Butler-Volmer conditions cannot be connected in series anymore and therefore the procedure is not anymore correct.");
 
@@ -1738,7 +1738,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
             cout<<"  required total current  = "<<targetcurrent<<endl;
             cout<<"  negative residual (rhs) = "<<newtonrhs<<endl<<endl;
 	  }
-	
+
 	  if (gstatnumite_ > gstatitemax)
           {
             if (myrank_==0) cout<< endl <<"  --> maximum number iterations reached. Not yet converged!"<<endl<<endl;
@@ -1750,32 +1750,30 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
             return true; // we proceed to next time step
           }
           // increment of the last iteration
-	  else if ((gstatnumite_ > 1) and (abs(gstatincrement_)< (1+abs(potold))*tol)) // < ATOL + |pot|* RTOL
+          else if ((gstatnumite_ > 1) and (abs(gstatincrement_)< (1+abs(potold))*tol)) // < ATOL + |pot|* RTOL
           {
             if (myrank_==0) cout<< endl <<"  --> converged: |"<<gstatincrement_<<"| < "<<(1+abs(potold))*tol<<endl<<endl;
-	    return true; // galvanostatic control has converged
+            return true; // galvanostatic control has converged
           }
 
-	  // update applied electric potential
-	  // potential drop ButlerVolmer conditions (surface ovepotential) and in the electrolyte (ohmic overpotential) are conected in parallel:
-	  // 
-	  // I_0 = I_BV1 = I_ohmic = I_BV2 
-	  // R(I_soll, I) = R_BV1(I_soll, I) = R_ohmic(I_soll, I) = -R_BV2(I_soll, I)
-	  // delta E_0 = delta U_BV1 + delta U_ohmic - (delta U_BV2)
-	  // => delta E_0 = (R_BV1(I_soll, I)/J) + (R_ohmic(I_soll, I)/J) - (-R_BV2(I_soll, I)/J)
+          // update applied electric potential
+          // potential drop ButlerVolmer conditions (surface ovepotential) and in the electrolyte (ohmic overpotential) are conected in parallel:
+          //
+          // I_0 = I_BV1 = I_ohmic = I_BV2
+          // R(I_soll, I) = R_BV1(I_soll, I) = R_ohmic(I_soll, I) = -R_BV2(I_soll, I)
+          // delta E_0 = delta U_BV1 + delta U_ohmic - (delta U_BV2)
+          // => delta E_0 = (R_BV1(I_soll, I)/J) + (R_ohmic(I_soll, I)/J) - (-R_BV2(I_soll, I)/J)
 
-          // Calculate Conductivity
-          const Epetra_SerialDenseVector sigma = ComputeConductivity();
           // Newton step:  Delta pot = - Residual / (-Jacobian)
-          potnew += (-1.0*effective_length*newtonrhs)/(sigma(numscal_)*timefac*electrodesurface);
-	  
+          potnew += (-1.0*effective_length*newtonrhs)/(sigma_(numscal_)*timefac*electrodesurface);
+
 	  // print additional information
 	  if (myrank_==0)
 	  {
 	    cout<< "  area                          =" << electrodesurface << endl;
 	    cout<< "  actualcurrent - targetcurrent =" << (targetcurrent - actualcurrent) << endl;
-	    cout<< "  conductivity                  =" << sigma(numscal_) << endl;
-	    cout<< "  ohmic overpotential           =" << (-1.0*effective_length*newtonrhs)/(sigma(numscal_)*timefac*electrodesurface) << endl;
+	    cout<< "  conductivity                  =" << sigma_(numscal_) << endl;
+	    cout<< "  ohmic overpotential           =" << (-1.0*effective_length*newtonrhs)/(sigma_(numscal_)*timefac*electrodesurface) << endl;
 	  }
         }
 
@@ -1785,7 +1783,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
         potnew += gstatincrement_;
 	// print potential drop due to surface overpotential
 	if (myrank_==0) cout<< "  surface overpotential BV" << icond <<"     =" << gstatincrement_ << endl;
-    } 
+    }
     // end loop over electrode kinetics
 
     // Apply new electrode potential

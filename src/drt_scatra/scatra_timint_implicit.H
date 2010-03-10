@@ -173,7 +173,7 @@ public:
       );
 
   /// set initial thermodynamic pressure for low-Mach-number flow
-  void SetInitialThermPressure();  
+  void SetInitialThermPressure();
 
   /// compute initial thermodyn. pressure time derivative for low-Mach-number flow
   void ComputeInitialThermPressureDeriv();
@@ -670,6 +670,9 @@ protected:
 
   /// value of electric potential increment in galvanostatic mode (ELCH)
   double gstatincrement_;
+
+  /// conductivity of the single species and the whole electrolyte
+  Epetra_SerialDenseVector sigma_;
 
   /// unit outer normal vector field for flux output
   RCP<Epetra_MultiVector> normals_;
