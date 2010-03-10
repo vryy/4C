@@ -3464,6 +3464,7 @@ void CONTACT::CmtStruGenAlpha::UpdateandOutput()
 {
   Update();
   Output();
+  UpdateElement();
   return;
 } // ContactStruGenAlpha::UpdateandOutput()
 
@@ -3613,7 +3614,17 @@ void CONTACT::CmtStruGenAlpha::Update()
   acc_->Scale(0.0);
 #endif
 
+} // CmtStruGenAlpha::Update()
 
+
+/*----------------------------------------------------------------------*
+ |  update element (public)                                     st 03/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::CmtStruGenAlpha::UpdateElement()
+{
+  double timen         = params_.get<double>("total time"             ,0.0);
+  double dt            = params_.get<double>("delta time"             ,0.01);
+  double alphaf        = params_.get<double>("alpha f"                ,0.459);
   //------ update anything that needs to be updated at the element level
 #ifdef STRUGENALPHA_FINTLIKETR
   {
@@ -3641,8 +3652,7 @@ void CONTACT::CmtStruGenAlpha::Update()
     discret_.Evaluate(p,null,null,null,null,null);
   }
 #endif
-
-} // CmtStruGenAlpha::Update()
+} // CmtStruGenAlpha::UpdateElement()
 
 
 /*----------------------------------------------------------------------*

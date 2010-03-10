@@ -249,6 +249,9 @@ namespace STR
     //! Update step
     void UpdateStepState();
 
+    //! Update element
+    void UpdateStepElement();
+    
     //! Read and set restart for forces
     void ReadRestartForce();
     //@}

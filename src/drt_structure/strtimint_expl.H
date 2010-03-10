@@ -77,6 +77,9 @@ namespace STR
     //! Thus the 'last' converged is lost and a reset of the time step
     //! becomes impossible. We are ready and keen awating the next time step.
     virtual void UpdateStepState() = 0;
+    
+    //! Update Element
+    virtual void UpdateStepElement() = 0;
 
     //! Update configuration and time after time step
     void UpdateStepAndTime()
@@ -89,6 +92,8 @@ namespace STR
       //
       timen_ += (*dt_)[0];
       stepn_ += 1;
+      // element update
+      UpdateStepElement();
     }
 
     //@}

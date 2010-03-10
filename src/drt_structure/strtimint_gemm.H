@@ -183,6 +183,9 @@ namespace STR
 
     //! Update step
     void UpdateStepState();
+    
+    //! Update Element
+    void UpdateStepElement();
 
     //! Read and set restart for forces
     void ReadRestartForce();

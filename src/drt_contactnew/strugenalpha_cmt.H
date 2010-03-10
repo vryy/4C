@@ -184,6 +184,9 @@ public:
 
   /// update configuration
   virtual void Update();
+  
+  /// update elements
+  virtual void UpdateElement();
 
   /// output to file/screen
   virtual void Output();

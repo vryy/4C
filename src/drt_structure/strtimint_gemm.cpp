@@ -385,21 +385,6 @@ void STR::TimIntGEMM::UpdateStepState()
   //    F_{int;n} := F_{int;n+1}
   // nothing to be done
 
-  // update anything that needs to be updated at the element level
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // other parameters that might be needed by the elements
-    p.set("total time", timen_);
-    //p.set("delta time", (*dt_)[0]);
-    // action for elements
-    //p.set("alpha f", alphaf_);
-    p.set("action", "calc_struct_update_istep");
-    // go to elements
-    discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-                       Teuchos::null, Teuchos::null, Teuchos::null);
-  }
-
   // update surface stress
   UpdateStepSurfstress();
 
@@ -411,6 +396,24 @@ void STR::TimIntGEMM::UpdateStepState()
 
   // look out
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* update after time step after output on element level*/
+// update anything that needs to be updated at the element level
+void STR::TimIntGEMM::UpdateStepElement()
+{
+  // create the parameters for the discretization
+  ParameterList p;
+  // other parameters that might be needed by the elements
+  p.set("total time", timen_);
+  //p.set("delta time", (*dt_)[0]);
+  // action for elements
+  //p.set("alpha f", alphaf_);
+  p.set("action", "calc_struct_update_istep");
+  // go to elements
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+                     Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
 /*----------------------------------------------------------------------*/

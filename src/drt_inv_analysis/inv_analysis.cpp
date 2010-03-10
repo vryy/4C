@@ -289,6 +289,9 @@ Epetra_SerialDenseVector STR::InvAnalysis::CalcCvector()
 
     // write output
     sti_->OutputStep();
+    
+    // Update Element
+    sti_->UpdateStepElement();
 
     // get current time ...
     time = sti_->GetTime();

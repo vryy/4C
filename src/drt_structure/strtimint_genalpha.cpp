@@ -492,28 +492,6 @@ void STR::TimIntGenAlpha::UpdateStepState()
     fint_->Update(1.0, *fintn_, 0.0);
   }
 
-  // update anything that needs to be updated at the element level
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // other parameters that might be needed by the elements
-    p.set("total time", timen_);
-    p.set("delta time", (*dt_)[0]);
-    // action for elements
-    if (midavg_ == INPAR::STR::midavg_trlike)
-    {
-      p.set("action", "calc_struct_update_istep");
-    }
-    else if (midavg_ == INPAR::STR::midavg_imrlike)
-    {
-      p.set("alpha f", alphaf_);
-      p.set("action", "calc_struct_update_imrlike");
-    }
-    // go to elements
-    discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-                       Teuchos::null, Teuchos::null, Teuchos::null);
-  }
-
   // update surface stress
   UpdateStepSurfstress();
 
@@ -525,6 +503,34 @@ void STR::TimIntGenAlpha::UpdateStepState()
 
   // look out
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* update after time step after output on element level*/
+// update anything that needs to be updated at the element level
+void STR::TimIntGenAlpha::UpdateStepElement()
+{
+  // create the parameters for the discretization
+  ParameterList p;
+  // other parameters that might be needed by the elements
+  p.set("total time", timen_);
+  p.set("delta time", (*dt_)[0]);
+  // action for elements
+  if (midavg_ == INPAR::STR::midavg_trlike)
+  {
+    p.set("action", "calc_struct_update_istep");
+  }
+  else if (midavg_ == INPAR::STR::midavg_imrlike)
+  {
+    p.set("alpha f", alphaf_);
+    p.set("action", "calc_struct_update_imrlike");
+  }
+  // go to elements
+  discret_->ClearState();
+  discret_->SetState("displacement",(*dis_)(0));
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+                     Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->ClearState();
 }
 
 /*----------------------------------------------------------------------*/

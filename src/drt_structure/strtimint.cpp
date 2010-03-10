@@ -976,6 +976,9 @@ void STR::TimInt::Integrate()
 
     // write output
     OutputStep();
+    
+    // update everything on the element level
+    UpdateStepElement();
   }
 
   // print monitoring of time consumption

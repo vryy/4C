@@ -188,7 +188,7 @@ namespace ADAPTER {
     //! Access to output object
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() = 0;
 
-    /// output results
+    /// output results, update at element level
     virtual void Output() = 0;
 
     /// read restart information for given time step

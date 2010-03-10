@@ -392,21 +392,6 @@ void STR::TimIntOneStepTheta::UpdateStepState()
   //    F_{int;n} := F_{int;n+1}
   fint_->Update(1.0, *fintn_, 0.0);
 
-  // update anything that needs to be updated at the element level
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // other parameters that might be needed by the elements
-    p.set("total time", timen_);
-    p.set("delta time", (*dt_)[0]);
-    //p.set("alpha f", theta_);
-    // action for elements
-    p.set("action", "calc_struct_update_istep");
-    // go to elements
-    discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-                       Teuchos::null, Teuchos::null, Teuchos::null);
-  }
-
   // update surface stress
   UpdateStepSurfstress();
 
@@ -418,6 +403,27 @@ void STR::TimIntOneStepTheta::UpdateStepState()
 
   // look out
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* update after time step after output on element level*/
+// update anything that needs to be updated at the element level
+void STR::TimIntOneStepTheta::UpdateStepElement()
+{
+  // create the parameters for the discretization
+  ParameterList p;
+  // other parameters that might be needed by the elements
+  p.set("total time", timen_);
+  p.set("delta time", (*dt_)[0]);
+  //p.set("alpha f", theta_);
+  // action for elements
+  p.set("action", "calc_struct_update_istep");
+  // go to elements
+  discret_->ClearState();
+  discret_->SetState("displacement",(*dis_)(0));
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+                     Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->ClearState();
 }
 
 /*----------------------------------------------------------------------*/

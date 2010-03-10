@@ -250,6 +250,7 @@ void ADAPTER::StructureTimInt::Update()
 void ADAPTER::StructureTimInt::Output()
 {
   structure_->OutputStep();
+  structure_->UpdateStepElement();
 }
 
 

@@ -242,6 +242,9 @@ public:
   /// output to file/screen
   virtual void Output();
 
+  /// update element
+  virtual void UpdateElement();
+
   /*!
   \brief restart calculation from a given step
 

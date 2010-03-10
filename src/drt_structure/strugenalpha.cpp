@@ -2925,6 +2925,7 @@ void StruGenAlpha::UpdateandOutput()
 {
   Update();
   Output();
+  UpdateElement();
   return;
 } // StruGenAlpha::UpdateandOutput()
 
@@ -3037,34 +3038,6 @@ void StruGenAlpha::Update()
 #endif
 
 
-  //------ update anything that needs to be updated at the element level
-#ifdef STRUGENALPHA_FINTLIKETR
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_update_istep");
-    // other parameters that might be needed by the elements
-    p.set("total time",timen);
-    p.set("delta time",dt);
-    p.set("alpha f",alphaf);
-    discret_.Evaluate(p,null,null,null,null,null);
-  }
-#else
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    //p.set("action","calc_struct_update_istep");
-    p.set("action","calc_struct_update_imrlike");
-    // other parameters that might be needed by the elements
-    p.set("total time",timen);
-    p.set("delta time",dt);
-    p.set("alpha f",alphaf);
-    discret_.Evaluate(p,null,null,null,null,null);
-  }
-#endif
-
   //----------------- update surface stress history variables if present
   if (surf_stress_man_->HaveSurfStress())
   {
@@ -3077,6 +3050,49 @@ void StruGenAlpha::Update()
     constrMan_->Update();
   }
 
+}
+
+/*----------------------------------------------------------------------*
+ |  update element (public)                                     st 03/10|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::UpdateElement()
+{
+  double timen         = params_.get<double>("total time"             ,0.0);
+  double dt            = params_.get<double>("delta time"             ,0.01);
+  double alphaf        = params_.get<double>("alpha f"                ,0.459);
+  //------ update anything that needs to be updated at the element level
+#ifdef STRUGENALPHA_FINTLIKETR
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_update_istep");
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    p.set("alpha f",alphaf);
+    discret_.ClearState();
+    discret_.SetState("displacement",dis_);
+    discret_.Evaluate(p,null,null,null,null,null);
+    discret_.ClearState();
+  }
+#else
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    //p.set("action","calc_struct_update_istep");
+    p.set("action","calc_struct_update_imrlike");
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    p.set("alpha f",alphaf);
+    discret_.ClearState();
+    discret_.SetState("displacement",dis_);
+    discret_.Evaluate(p,null,null,null,null,null);
+    discret_.ClearState();
+  }
+#endif
 }
 
 /*----------------------------------------------------------------------*

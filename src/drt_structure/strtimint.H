@@ -193,6 +193,13 @@ namespace STR
     //! becomes impossible. We are ready and keen awating the next
     //! time step.
     virtual void UpdateStepState() = 0;
+    
+    //! Update everything on element level after time step and after output
+    //!
+    //! Thus the 'last' converged is lost and a reset of the time step
+    //! becomes impossible. We are ready and keen awating the next
+    //! time step.
+    virtual void UpdateStepElement() = 0;
 
     //! Update time and step counter
     void UpdateStepTime();

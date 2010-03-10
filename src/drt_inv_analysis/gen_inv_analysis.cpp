@@ -449,6 +449,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
     tintegrator->FullNewton();
     tintegrator->Update();
     if (outputtofile) tintegrator->Output();
+    tintegrator->UpdateElement();
     if (!myrank) printf("Step %d\n",i);
     Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(tintegrator->Disp()));
     if (!myrank)

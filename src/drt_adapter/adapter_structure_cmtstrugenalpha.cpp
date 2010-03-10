@@ -252,6 +252,7 @@ void ADAPTER::CmtStructureGenAlpha::Update()
 void ADAPTER::CmtStructureGenAlpha::Output()
 {
   structure_.Output();
+  structure_.UpdateElement();
 }
 
 

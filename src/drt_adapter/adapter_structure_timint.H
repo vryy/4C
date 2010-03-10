@@ -148,7 +148,7 @@ namespace ADAPTER {
       return output_;
     }
 
-    /// output results
+    /// output results, update at element level
     void Output();
 
     //@}
