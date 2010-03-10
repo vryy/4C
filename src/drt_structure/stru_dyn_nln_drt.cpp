@@ -105,10 +105,35 @@ void caldyn_drt()
  *----------------------------------------------------------------------*/
 void dyn_nlnstructural_drt()
 {
+
+#if 0
+  // the adapter expects a couple of variables that do not exist in the StructuralDynamicParams()
+  // list so rename them here to the expected name
+  int upres = DRT::Problem::Instance()->StructuralDynamicParams().get<int>("RESEVRYDISP");
+  const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->StructuralDynamicParams()).set<int>("UPRES",upres);
+
+  // create an adapterbase and adapter
+  ADAPTER::StructureBaseAlgorithm adapterbase(DRT::Problem::Instance()->StructuralDynamicParams());
+  ADAPTER::Structure& structadaptor = const_cast<ADAPTER::Structure&>(adapterbase.StructureField());
+
+  // do restart
+  if (genprob.restart) structadaptor.ReadRestart(genprob.restart);
+
+  // run time integration
+  structadaptor.Integrate();
+
+  // test results
+  DRT::Problem::Instance()->AddFieldTest(structadaptor.CreateFieldTest());
+  DRT::Problem::Instance()->TestAll(structadaptor.DofRowMap()->Comm());
+  
+  // time to go home...
+  return;
+#endif
+
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RefCountPtr<DRT::Discretization> actdis = null;
+  RCP<DRT::Discretization> actdis = null;
   actdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
 
   // set degrees of freedom in the discretization
@@ -157,7 +182,6 @@ void dyn_nlnstructural_drt()
 
       INPAR::STR::ControlType controltype = Teuchos::getIntegralValue<INPAR::STR::ControlType>(sdyn,"CONTROLTYPE");
       genalphaparams.set<INPAR::STR::ControlType>("CONTROLTYPE",controltype);
-
       {
         vector<int> controlnode;
         std::istringstream contnode(Teuchos::getNumericStringParameter(sdyn,"CONTROLNODE"));
@@ -342,8 +366,6 @@ void dyn_nlnstructural_drt()
           tintegrator = rcp(new CONTACT::Beam3ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
         if (oldcontact)
           tintegrator = rcp(new CONTACT::ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
-        if (inv_analysis)
-          dserror("Inverse analysis moved ahead to STI");
         if (thermalbath)
           tintegrator = rcp(new StatMechTime(genalphaparams,*actdis,solver,output));
       }
