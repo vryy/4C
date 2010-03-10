@@ -150,6 +150,12 @@ public:
   virtual void FullNewton();
 
   /*!
+  \brief contact/meshtying Newton dummy for overloading only
+
+  */
+  virtual void ContactMeshtyingNewton() { dserror("Unexpected base class call!"); }
+
+  /*!
   \brief do full Newton iteration with disp or arclength control
 
   */
