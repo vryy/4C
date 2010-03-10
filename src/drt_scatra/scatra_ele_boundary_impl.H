@@ -154,10 +154,10 @@ public:
   private:
 
     //! evaluate shape functions and derivatives at int. point
-    void EvalShapeFuncAndIntFac(
+    double EvalShapeFuncAndIntFac(
         const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-        const int&                                   iquad,      ///< id of current Gauss point
-        const int&                                   eleid       ///< the element id
+        const int                                    iquad,      ///< id of current Gauss point
+        const int                                    eleid       ///< the element id
     );
 
     //! evaluate an electrode kinetics boundary condition
@@ -270,8 +270,6 @@ public:
     LINALG::Matrix<nsd_+1,1> velint_;
     //! metric tensor at integration point
     LINALG::Matrix<nsd_,nsd_>  metrictensor_;
-    //! integration factor for current GP: fac = GaussWeight * drs
-    double fac_;
 
     //! thermodynamic pressure (LOMA specific)
     double thermpress_;

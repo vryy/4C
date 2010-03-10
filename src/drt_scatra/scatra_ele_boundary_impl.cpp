@@ -127,8 +127,7 @@ DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl
     derxy_(true),
     normal_(true),
     velint_(true),
-    metrictensor_(true),
-    fac_(0.0)
+    metrictensor_(true)
     {
         return;
     }
@@ -562,10 +561,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
+    double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
 
     // multiply integration factor with the timecurve factor
-    fac_ *= curvefac;
+    fac *= curvefac;
 
     // factor given by spatial function
     double functfac = 1.0;
@@ -600,7 +599,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
             functfac = 1.0;
         }
 
-        const double val_fac_functfac = (*val)[dof]*fac_*functfac;
+        const double val_fac_functfac = (*val)[dof]*fac*functfac;
 
         for (int node=0;node<iel;++node)
         {
@@ -643,7 +642,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
+    const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
 
     for(int k=0;k<numdofpernode_;++k)
     {
@@ -721,7 +720,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
         else dserror("Material type is not supported");
 
         // integration factor for left-hand side
-        const double lhsfac = dens*normvel*timefac*fac_;
+        const double lhsfac = dens*normvel*timefac*fac;
 
         // integration factor for right-hand side
         double rhsfac    = 0.0;
@@ -732,7 +731,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
         else if (is_incremental_ and not is_genalpha_)
         {
           if (not is_stationary_) rhsfac = lhsfac;
-          else                    rhsfac = dens*normvel*fac_;
+          else                    rhsfac = dens*normvel*fac;
         }
 
         // matrix
@@ -774,10 +773,10 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
  | evaluate shape functions and int. factor at int. point     gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
+double DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
     const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-    const int&                                   iquad,      ///< id of current Gauss point
-    const int&                                   eleid       ///< the element id
+    const int                                    iquad,      ///< id of current Gauss point
+    const int                                    eleid       ///< the element id
 )
 {
   // coordinates of the current integration point
@@ -793,11 +792,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
   double drs(0.0);
   DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze_,deriv_,metrictensor_,drs);
 
-  // set the integration factor
-  fac_ = intpoints.IP().qwgt[iquad] * drs;
-
-  // say goodbye
-  return;
+  // return the integration factor
+  return intpoints.IP().qwgt[iquad] * drs;
 }
 
 
@@ -894,7 +890,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
   *----------------------------------------------------------------------*/
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+    const double fac = EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
 
     // elch-specific values at integration point:
     conint = funct_.Dot(conreact);
@@ -942,7 +938,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 
         for (int vi=0; vi<iel; ++vi)
         {
-          fac_fz_i0_funct_vi = fac_*fz*i0*funct_(vi);
+          fac_fz_i0_funct_vi = fac*fz*i0*funct_(vi);
           // ---------------------matrix
           for (int ui=0; ui<iel; ++ui)
           {
@@ -964,7 +960,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 
           for (int vi=0; vi<iel; ++vi)
           {
-            fac_fz_i0_funct_vi = fac_*fz*i0*funct_(vi);
+            fac_fz_i0_funct_vi = fac*fz*i0*funct_(vi);
             // ---------------------matrix
             for (int ui=0; ui<iel; ++ui)
             {
@@ -980,7 +976,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
       {
         for (int vi=0; vi<iel; ++vi)
         {
-          fac_fz_i0_funct_vi = fac_*fz*i0*funct_(vi);
+          fac_fz_i0_funct_vi = fac*fz*i0*funct_(vi);
           // ---------------------matrix
           for (int ui=0; ui<iel; ++ui)
           {
@@ -1012,7 +1008,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 
         for (int vi=0; vi<iel; ++vi)
         {
-          const double fac_i0_funct_vi = fac_*i0*funct_(vi);
+          const double fac_i0_funct_vi = fac*i0*funct_(vi);
           // ---------------------matrix
           for (int ui=0; ui<iel; ++ui)
           {
@@ -1035,7 +1031,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 
         for (int vi=0; vi<iel; ++vi)
         {
-          const double fac_i0_funct_vi = fac_*i0*funct_(vi);
+          const double fac_i0_funct_vi = fac*i0*funct_(vi);
           // ---------------------matrix
           for (int ui=0; ui<iel; ++ui)
           {
@@ -1132,7 +1128,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
   // loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+    const double fac = EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
 
     // elch-specific values at integration point:
     conint = funct_.Dot(conreact);
@@ -1176,31 +1172,31 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
       }
 
       // compute integrals
-      overpotentialint += eta * fac_;
-      currentintegral += (-i0) * expterm * fac_; // the negative(!) normal flux density
-      boundaryint += fac_;
-      concentrationint += conint*fac_;
+      overpotentialint += eta * fac;
+      currentintegral += (-i0) * expterm * fac; // the negative(!) normal flux density
+      boundaryint += fac;
+      concentrationint += conint*fac;
 
       // tangent and rhs for galvanostatic problems
-      currderiv += i0*linea*timefac*fac_;
-      currentresidual += (-i0) * expterm * timefac *fac_;
+      currderiv += i0*linea*timefac*fac;
+      currentresidual += (-i0) * expterm * timefac *fac;
 
       if (dlcapacitance > EPS12)
       {
       // add contributions due to double-layer capacitance
-        currderiv -= dlcapacitance*fac_;
-        currentresidual += dlcapacitance*(pot0-pot0hist)*fac_;
-        currentresidual += fac_*dlcapacitance*(-potint+pothistint);
+        currderiv -= dlcapacitance*fac;
+        currentresidual += dlcapacitance*(pot0-pot0hist)*fac;
+        currentresidual += fac*dlcapacitance*(-potint+pothistint);
       }
 
     }
     else if (iselch && (kinetics=="linear")) // linear: i_n = i_0*(alphaa*frt*eta + 1.0)
     {
       // compute integrals
-      overpotentialint += eta * fac_;
-      currentintegral += (-i0) * (alphaa*frt*eta + 1.0) * fac_; // the negative(!) normal flux density
-      boundaryint += fac_;
-      concentrationint += conint*fac_;
+      overpotentialint += eta * fac;
+      currentintegral += (-i0) * (alphaa*frt*eta + 1.0) * fac; // the negative(!) normal flux density
+      boundaryint += fac;
+      concentrationint += conint*fac;
     }
     else if ((!iselch) && (kinetics=="Tafel"))
     {
@@ -1209,9 +1205,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
       //linea = (-alphac)*exp((-alphac)*eta);
 
       // compute integrals
-      overpotentialint += eta * fac_;
-      currentintegral += (-i0) * expterm * fac_; // the negative(!) normal flux density
-      boundaryint += fac_;
+      overpotentialint += eta * fac;
+      currentintegral += (-i0) * expterm * fac; // the negative(!) normal flux density
+      boundaryint += fac;
       //concentrationint += conint*fac_;
     }
     else
@@ -1301,21 +1297,21 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::IntegrateShapeFunctions(
   // loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+    const double fac = EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
 
     // compute integral of shape functions
     for (int node=0;node<iel;++node)
     {
       for (int k=0; k< numscal_; k++)
       {
-        elevec1[node*numdofpernode_+k] += funct_(node) * fac_;
+        elevec1[node*numdofpernode_+k] += funct_(node) * fac;
       }
     }
 
     if (addarea)
     {
       // area calculation
-      boundaryint += fac_;
+      boundaryint += fac;
     }
 
   } //loop ove r integration points
@@ -1349,13 +1345,13 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::DifffluxAndDivuIntegral(
   // loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+    const double fac = EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
 
     // compute integral of normal flux
     for (int node=0;node<iel;++node)
     {
-      difffluxintegral += funct_(node) * ediffflux[node] * fac_;
-      divuintegral     += funct_(node) * edivu[node] * fac_;
+      difffluxintegral += funct_(node) * ediffflux[node] * fac;
+      divuintegral     += funct_(node) * edivu[node] * fac;
     }
   } // loop over integration points
 
