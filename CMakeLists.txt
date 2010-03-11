@@ -27,6 +27,29 @@ include_directories("${PROJECT_BINARY_DIR}/src/headers")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
 #
+### Build in default values
+
+IF(NOT CMAKE_BUILD_TYPE)
+  SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
+      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+      FORCE)
+ENDIF(NOT CMAKE_BUILD_TYPE)
+
+# these are the fedora 8 with openmpi paths
+
+if (NOT INCLUDE_INSTALL_DIR)
+  set ( INCLUDE_INSTALL_DIR "/lnm/lib/fc8/openmpi/include" )
+endif (NOT INCLUDE_INSTALL_DIR)
+
+if (NOT LIB_INSTALL_DIR)
+  set ( LIB_INSTALL_DIR "/lnm/lib/fc8/openmpi/lib" )
+endif (NOT LIB_INSTALL_DIR)
+
+if (NOT Trilinos_DIR)
+  set ( Trilinos_DIR "/lnm/lib/fc8/openmpi/trilinos" )
+endif (NOT Trilinos_DIR)
+
+#
 ### External Libraries
 
 set(LIBRARIES "")
@@ -93,32 +116,6 @@ if (SUPERLU_FOUND)
 else (SUPERLU_FOUND)
   add_definitions("-DHAVENOT_SUPERLU")
 endif (SUPERLU_FOUND)
-
-find_package(Qhull)
-if (QHULL_FOUND)
-  include_directories(${QHULL_INCLUDE_DIRS})
-  link_directories(${QHULL_LIBRARY_DIRS})
-  set(LIBRARIES
-    ${LIBRARIES}
-    ${QHULL_LIBRARIES}
-    )
-endif (QHULL_FOUND)
-
-find_package(Tetgen)
-if (TETGEN_FOUND)
-  include_directories(${TETGEN_INCLUDE_DIRS})
-  link_directories(${TETGEN_LIBRARY_DIRS})
-  set(LIBRARIES
-    ${LIBRARIES}
-    ${TETGEN_LIBRARIES}
-    )
-endif (TETGEN_FOUND)
-
-if (QHULL_FOUND)
-  if (TETGEN_FOUND)
-    add_definitions("-DQHULL")
-  endif (TETGEN_FOUND)
-endif (QHULL_FOUND)
 
 find_package(PARMETIS REQUIRED)
 if (PARMETIS_FOUND)
@@ -2032,6 +2029,26 @@ endif(BINIO)
 
 option (QHULL "needed for XFEM simulations" ON)
 if (QHULL)
+  find_package(Qhull REQUIRED)
+  if (QHULL_FOUND)
+    include_directories(${QHULL_INCLUDE_DIRS})
+    link_directories(${QHULL_LIBRARY_DIRS})
+    set(LIBRARIES
+      ${LIBRARIES}
+      ${QHULL_LIBRARIES}
+      )
+  endif (QHULL_FOUND)
+
+  find_package(Tetgen REQUIRED)
+  if (TETGEN_FOUND)
+    include_directories(${TETGEN_INCLUDE_DIRS})
+    link_directories(${TETGEN_LIBRARY_DIRS})
+    set(LIBRARIES
+      ${LIBRARIES}
+      ${TETGEN_LIBRARIES}
+      )
+  endif (TETGEN_FOUND)
+
   add_definitions("-DQHULL")
 endif(QHULL)
 
