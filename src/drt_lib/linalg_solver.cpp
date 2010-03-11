@@ -143,6 +143,10 @@ LINALG::Solver::~Solver()
   if (symbfacIVL_)     IVL_free(symbfacIVL_);           symbfacIVL_    =NULL;
 #endif
 #endif
+
+  // destroy in the right order
+  Reset();
+
   return;
 }
 
@@ -1294,7 +1298,7 @@ RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Aorig,
 #else
   const Epetra_CrsMatrix& A = Aorig;
   const Epetra_CrsMatrix& B = Borig;
-#endif  
+#endif
 
 
   // make sure FillComplete was called on the matrices

@@ -58,6 +58,14 @@ namespace LINALG
     /// construction from a solver object
     explicit Preconditioner(Teuchos::RCP<Solver> solver);
 
+    virtual ~Preconditioner()
+    {
+      // destruction order is important
+      solver_ = Teuchos::null;
+      prec_ = Teuchos::null;
+      Pmatrix_ = Teuchos::null;
+    }
+
     /// create internal preconditioner object
     /*!
       Destroy any existing one.
