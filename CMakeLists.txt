@@ -368,7 +368,6 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_fluid.cpp
   src/drt_adapter/adapter_structure.cpp
   src/drt_adapter/adapter_structure_strugenalpha.cpp
-  src/drt_adapter/adapter_structure_cmtstrugenalpha.cpp
   src/drt_adapter/adapter_structure_timint.cpp
   src/drt_adapter/adapter_structure_constr_merged.cpp
   src/drt_adapter/adapter_structure_lung.cpp
