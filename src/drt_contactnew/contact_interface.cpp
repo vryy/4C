@@ -3861,13 +3861,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       int colsize = (int)dtmap[0].size();
       int mapsize = (int)dtmap.size();
       
-      cout << dtmap.size() << endl;
-      cout << dtmap[0].size() << endl;
-      cout << dtmap[1].size() << endl;
-      cout << dtmap[2].size() << endl;
-       
-      exit(0);
-
       for (int j=0;j<mapsize-1;++j)
         if ((int)dtmap[j].size() != (int)dtmap[j+1].size())
           dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivT-map is inconsistent!");
@@ -3876,11 +3869,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       double znor    = n[0]*z[0] + n[1]*z[1];
       double ztan    = txi[0]*z[0] + txi[1]*z[1];
       double jumptan = txi[0]*jump[0] + txi[1]*jump[1];
-      //double temp = ztan + ct*jumptan;
-      //double epk = frbound/abs(temp);
-      //double Fpk = ztan*temp/(frbound*abs(temp));
-      //double Mpk = epk*(1-Fpk);
-      //double fac = 1/(abs(ztan+ct*jumptan))*1/(1-Mpk)*(-1);
 
       // calculation of |ztan+ct*utan|
       double sum = 0;
@@ -4194,7 +4182,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             tdotx += txi[dim]*mxi[dim];
 
           // compute entry of the current active node / master node pair
-          map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+          map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
 
           // loop over all entries of the current derivative map
           for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
@@ -4305,7 +4293,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
              tdotx += txi[dim]*mxi[dim];
 
            // compute entry of the current active node / master node pair
-           map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+           map<int,double>& thisdmmap = cnode->CoData().GetDerivM(gid);
 
            // loop over all entries of the current derivative map
            for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)

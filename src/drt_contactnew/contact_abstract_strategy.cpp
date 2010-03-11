@@ -825,6 +825,16 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
     StoreNodalQuantities(MORTAR::StrategyBase::activeold);
     StoreToOld(MORTAR::StrategyBase::dm);
   }
+
+  // (re)setup active global Epetra_Maps
+  gactivenodes_ = null;
+  gactivedofs_ = null;
+  gactiven_ = null;
+  gactivet_ = null;
+  gslipnodes_ = null;
+  gslipdofs_ = null;
+  gslipt_ = null;
+
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -1221,9 +1231,9 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
         if(frinode->Active())
         {
           if(frinode->Data().Slip())
-            cout << "SLIP " << gid << " Normal " << nz << " Tangential " << zt << endl;
+            cout << "SLIP " << gid << " Normal " << nz << " Tangential " << zt << " Jump1 " << jumptxi << " Jump2 " << jumpteta <<  endl;
           else
-           cout << "STICK " << gid << " Normal " << nz << " Tangential " << zt << endl;
+           cout << "STICK " << gid << " Normal " << nz << " Tangential " << zt << " Jump1 " << jumptxi << " Jump2 " << jumpteta <<  endl;
         }
       }
     }
