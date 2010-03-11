@@ -83,16 +83,16 @@ else (UMFPACK_FOUND)
 endif (UMFPACK_FOUND)
 
 find_package(SuperLU)
-if (SuperLU_FOUND)
-  include_directories(${SuperLU_INCLUDE_DIRS})
-  link_directories(${SuperLU_LIBRARY_DIRS})
+if (SUPERLU_FOUND)
+  include_directories(${SUPERLU_INCLUDE_DIRS})
+  link_directories(${SUPERLU_LIBRARY_DIRS})
   set(LIBRARIES
     ${LIBRARIES}
-    ${SuperLU_LIBRARIES}
+    ${SUPERLU_LIBRARIES}
     )
-else (SuperLU_FOUND)
+else (SUPERLU_FOUND)
   add_definitions("-DHAVENOT_SUPERLU")
-endif (SuperLU_FOUND)
+endif (SUPERLU_FOUND)
 
 find_package(Qhull)
 if (QHULL_FOUND)
