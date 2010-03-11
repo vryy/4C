@@ -200,7 +200,7 @@ add_definitions("-DD_FSI")
 
 ### compile time options
 
-option (DEBUG "Turn on special debug code" ON)
+option (DEBUG "Turn on special debug code" OFF)
 if (DEBUG)
   add_definitions("-DDEBUG")
 endif (DEBUG)
@@ -1897,37 +1897,37 @@ set(COMMON_OBJECTS
 
 #   all possible elements
 
-option (D_ALE         "ale element (2D+3D)" OFF)
+option (D_ALE         "ale element (2D+3D)" ON)
 if (D_ALE)
   add_definitions("-DD_ALE")
   set(OBJECTS ${OBJECTS} ${OBJS_ALE} ${OBJS_DRT_ALE_LIB} ${OBJS_DRT_ALE})
 endif(D_ALE)
 
-option (D_FLUID2      "fluid2" OFF)
+option (D_FLUID2      "fluid2" ON)
 if (D_FLUID2)
   add_definitions("-DD_FLUID2")
   set(OBJECTS ${OBJECTS} ${OBJS_FLUID2} ${OBJS_FLUID} ${OBJS_DRT_F2} ${OBJS_DRT_F2_LIB})
 endif(D_FLUID2)
 
-option (D_FLUID3      "fluid3" OFF)
+option (D_FLUID3      "fluid3" ON)
 if (D_FLUID3)
   add_definitions("-DD_FLUID3")
   set(OBJECTS ${OBJECTS} ${OBJS_FLUID3} ${OBJS_FLUID} ${OBJS_DRT_F3_LIB} ${OBJS_DRT_F3} ${OBJS_DRT_COMBUST3_LIB})
 endif(D_FLUID3)
 
-option (D_SHELL8      "shell8" OFF)
+option (D_SHELL8      "shell8" ON)
 if (D_SHELL8)
   add_definitions("-DD_SHELL8")
   set(OBJECTS ${OBJECTS} ${OBJS_SHELL8} ${OBJS_DRT_S8} ${OBJS_DRT_S8_LIB})
 endif(D_SHELL8)
 
-option (D_WALL1       "wall1" OFF)
+option (D_WALL1       "wall1" ON)
 if (D_WALL1)
   add_definitions("-DD_WALL1")
   set(OBJECTS ${OBJECTS} ${OBJS_WALL1} ${OBJS_DRT_W1_LIB} ${OBJS_DRT_W1})
 endif(D_WALL1)
 
-option (D_THERMO      "thermal elements" OFF)
+option (D_THERMO      "thermal elements" ON)
 if (D_THERMO)
   add_definitions("-DD_THERMO")
 #  set( thermo_element_source
@@ -1945,50 +1945,50 @@ if (D_THERMO)
 #    )
 endif(D_THERMO)
 
-option (D_SOLID3      "spatial solid elements" OFF)
+option (D_SOLID3      "spatial solid elements" ON)
 if (D_SOLID3)
   add_definitions("-DD_SOLID3")
   set(OBJECTS ${OBJECTS} ${OBJS_SOH8} ${OBJS_SOH8_LIB})
 endif(D_SOLID3)
 
-option (D_BEAM2       "2D Timoshenko beam element" OFF)
+option (D_BEAM2       "2D Timoshenko beam element" ON)
 if (D_BEAM2)
   add_definitions("-DD_BEAM2")
   set(OBJECTS ${OBJECTS} ${OBJS_DRT_B2} ${OBJS_DRT_B2_LIB})
 endif(D_BEAM2)
 
-option (D_BEAM2R      "2D Reissner beam element" OFF)
+option (D_BEAM2R      "2D Reissner beam element" ON)
 if (D_BEAM2R)
   add_definitions("-DD_BEAM2R")
   set(OBJECTS ${OBJECTS} ${OBJS_DRT_B2R} ${OBJS_DRT_B2R_LIB})
 endif(D_BEAM2R)
 
-option (D_BEAM3       "3D Reissner beam element" OFF)
+option (D_BEAM3       "3D Reissner beam element" ON)
 if (D_BEAM3)
   add_definitions("-DD_BEAM3")
   #set(OBJECTS ${OBJECTS} ${OBJS_BEAM3})
   set(OBJECTS ${OBJECTS} ${OBJS_DRT_B3} ${OBJS_DRT_B3_LIB})
 endif(D_BEAM3)
 
-option (D_TRUSS3      "3D truss element" OFF)
+option (D_TRUSS3      "3D truss element" ON)
 if (D_TRUSS3)
   add_definitions("-DD_TRUSS3")
   set(OBJECTS ${OBJECTS} ${OBJS_DRT_T3} ${OBJS_DRT_T3_LIB})
 endif(D_TRUSS3)
 
-option (D_TRUSS2      "2D truss element" OFF)
+option (D_TRUSS2      "2D truss element" ON)
 if (D_TRUSS2)
   add_definitions("-DD_TRUSS2")
   set(OBJECTS ${OBJECTS} ${OBJS_DRT_T2} ${OBJS_DRT_T2_LIB})
 endif(D_TRUSS2)
 
-option (D_TORSION3    "3D torsion spring element" OFF)
+option (D_TORSION3    "3D torsion spring element" ON)
 if (D_TORSION3)
   add_definitions("-DD_TORSION3")
   set(OBJECTS ${OBJECTS} ${OBJS_DRT_TO3} ${OBJS_DRT_TO3_LIB})
 endif(D_TORSION3)
 
-option (D_TORSION2    "2D torsion spring element" OFF)
+option (D_TORSION2    "2D torsion spring element" ON)
 if (D_TORSION2)
   add_definitions("-DD_TORSION2")
   set(OBJECTS ${OBJECTS} ${OBJS_DRT_TO2} ${OBJS_DRT_TO2_LIB})
@@ -2030,7 +2030,7 @@ if (BINIO)
   add_definitions("-DBINIO")
 endif(BINIO)
 
-option (QHULL "needed for XFEM simulations" OFF)
+option (QHULL "needed for XFEM simulations" ON)
 if (QHULL)
   add_definitions("-DQHULL")
 endif(QHULL)
@@ -2060,7 +2060,7 @@ if (INVERSEDESIGNUSE)
   add_definitions("-DINVERSEDESIGNUSE")
 endif(INVERSEDESIGNUSE)
 
-option (PARMETIS "use parmetis for parallel setup of node graph" OFF)
+option (PARMETIS "use parmetis for parallel setup of node graph" ON)
 if (PARMETIS)
   add_definitions("-DPARMETIS")
 endif(PARMETIS)
@@ -2133,6 +2133,7 @@ endif (D_EXODUS)
 ###------------------------------------------------------------------ Test definitions
 
 ENABLE_TESTING()
+include(CTest)
 
 macro (baci_test arg nproc restart)
   add_test(NAME ${arg}-${nproc}
