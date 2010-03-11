@@ -621,6 +621,7 @@ ScalarT DRT::UTILS::ExplicitTimeSlice::Fct(const ScalarT& T)
   switch (numex_)
   {
   case -1: /* f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 */
+    if (c1_<EPS13) dserror ("Illegal constant C1 in time curve");
     if (T <= c1_)
     {
       ScalarT val1 = T/c1_*M_PI/2;
@@ -655,6 +656,7 @@ ScalarT DRT::UTILS::ExplicitTimeSlice::Fct(const ScalarT& T)
     break;
   }
   case -5: /* f(t)=(sin(PI(t:C1-0.5))+1)*0.5 */
+    if (c1_<EPS13) dserror ("Illegal constant C1 in time curve");
     if (T<=c1_)
     {
       ScalarT val1 = M_PI*(T/c1_-1./2.);
