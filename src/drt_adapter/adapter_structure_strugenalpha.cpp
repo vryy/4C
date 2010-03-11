@@ -276,7 +276,11 @@ void ADAPTER::StructureGenAlpha::Solve()
 {
   std::string equil = params_->get<string>("equilibrium iteration","undefined solution algorithm");
 
-  if (structure_->HaveConstraint())
+  if (structure_->HaveContactMeshtying())
+  {
+    structure_->CmtNonlinearSolve();
+  }
+  else if (structure_->HaveConstraint())
   {
     structure_->FullNewtonLinearUzawa();
   }
@@ -299,10 +303,6 @@ void ADAPTER::StructureGenAlpha::Solve()
   else if (equil=="ptc")
   {
     structure_->PTC();
-  }
-  else if (equil=="cmt newton")
-  {
-    structure_->ContactMeshtyingNewton();
   }
   else
     dserror("Unknown type of equilibrium iteration '%s'", equil.c_str());

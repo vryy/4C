@@ -113,6 +113,18 @@ public:
   Teuchos::RCP<Epetra_Vector> LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
 
   /*!
+  \brief nonlinear solver for contact and meshtying
+  
+  This is a control routine which chooses the nonlinear solution method
+  specified in the input file for the current contact or meshtying problem.
+  It will either be called directly from Integrate() or from the Solve()
+  method in the structural ADAPTER (adapter_structure_strugenalpha.cpp) in
+  multiphysics problems (e.g. FSI simulations).
+
+  */
+  void CmtNonlinearSolve();
+  
+  /*!
   \brief do full Newton iteration
 
   This is the nonlinear solution method of choice for:
@@ -202,6 +214,12 @@ public:
 
   */
   RCP<MORTAR::ManagerBase> GetManager() {return cmtmanager_; }
+  
+  /*!
+  \brief return bool indicating if contact or meshtying are defined
+
+  */
+  bool HaveContactMeshtying() { return true; }
     
 protected:
 

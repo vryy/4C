@@ -16,7 +16,6 @@ Maintainer: Ulrich Kuettler
 
 #include "adapter_structure.H"
 #include "adapter_structure_strugenalpha.H"
-#include "adapter_structure_cmtstrugenalpha.H"
 #include "adapter_structure_timint.H"
 #include "adapter_structure_constr_merged.H"
 #include "adapter_structure_wrapper.H"
@@ -397,16 +396,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
     else // everything else
       structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
   }
-
-#if 0 // at some point, this is supposed to go away as it becomes part of 
-      // ADAPTER::StructureGenAlpha
-  if(contact)
-  {
-    tmpstr = null;
-    structure_ = rcp(new StructureNOXCorrectionWrapper(
-                   rcp(new CmtStructureGenAlpha(genalphaparams,actdis,solver,output,apptype))));
-  }
-#endif
 }
 
 /*----------------------------------------------------------------------*/

@@ -3807,6 +3807,34 @@ void CONTACT::CmtStruGenAlpha::Output()
   }
 } // CmtStruGenAlpha::Output()
 
+/*----------------------------------------------------------------------*
+ |  nonlinear solution in one time step                      popp  03/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::CmtStruGenAlpha::CmtNonlinearSolve()
+{
+  // TODO: currently only contact as valid application type
+  INPAR::CONTACT::ApplicationType apptype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(cmtmanager_->GetStrategy().Params(),"APPLICATION");
+  
+  if (apptype == INPAR::CONTACT::app_mortarmeshtying)
+    dserror("ERROR: CmtNonlinearSolve for Adapter not yet implemented for meshtying");
+  
+  // TODO: currently only dual LM / semi-smooth Newton for multiphysics
+  std::string equil = params_.get<string>("equilibrium iteration","undefined solution algorithm");
+  
+  if (equil=="full newton")
+  {
+    // semi-smooth Newton type
+    bool semismooth = Teuchos::getIntegralValue<int>(cmtmanager_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
+    
+    if (semismooth) SemiSmoothNewton();
+    else            dserror("only semismooth newton implemented");
+  }
+  else
+    dserror("Unknown type of equilibrium iteration '%s'", equil.c_str());
+    
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  integrate in time          (static/public)               popp  02/08|

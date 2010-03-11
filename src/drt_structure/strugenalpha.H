@@ -150,12 +150,6 @@ public:
   virtual void FullNewton();
 
   /*!
-  \brief contact/meshtying Newton dummy for overloading only
-
-  */
-  virtual void ContactMeshtyingNewton() { dserror("Unexpected base class call!"); }
-
-  /*!
   \brief do full Newton iteration with disp or arclength control
 
   */
@@ -167,26 +161,27 @@ public:
   Newton with line search if residual reduction fails.
   This implementation is from C.T.Kelly:Itertiave Methods for Linear and Nonlin. Eqs.,
   pages 138ff
+  
   */
   virtual void LineSearchNewton();
 
   /*!
   \brief test oppositely converging newton
+  
   */
   virtual void OppNewton();
 
 
   /*!
-    \brief do classical augmented lagrange for volume constraint
+  \brief do classical augmented lagrange for volume constraint
 
-    */
+  */
   virtual void NonLinearUzawaFullNewton(int predictor);
 
-
   /*!
-    \brief do full Newton iteration respecting volume constraint
+  \brief do full Newton iteration respecting volume constraint
 
-    */
+  */
   virtual void FullNewtonLinearUzawa();
 
   /*!
@@ -211,6 +206,12 @@ public:
   */
   virtual void PTC();
 
+  /*!
+  \brief contact/meshtying nonlinear solver dummy for overloading only
+
+  */
+  virtual void CmtNonlinearSolve() { dserror("Unexpected base class call!"); }
+  
   /*!
   \brief Compute the residual to a given state x
 
@@ -415,8 +416,12 @@ public:
 
   double AlphaF() { return params_.get<double>("alpha f",0.459); }
   const Epetra_Map& DomainMap() { return mass_->DomainMap(); }
+  
+  //! Return bool indicating if contact or meshtying are defined
+  virtual bool HaveContactMeshtying() { return false; }
+    
   //! Return bool indicating if constraints are defined
-  bool HaveConstraint() {return constrMan_->HaveConstraint(); }
+  bool HaveConstraint() { return constrMan_->HaveConstraint(); }
 
   //! Update lagrange multipliers stored in Constraint manager
   virtual void UpdateIterIncrConstr
@@ -440,8 +445,8 @@ public:
   Teuchos::RCP<Epetra_Vector> LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
 
   /// setup equilibrium with additional external forces
-  void ApplyExternalForce(const STR::UTILS::MapExtractor& extractor,
-                          Teuchos::RCP<Epetra_Vector> iforce);
+  virtual void ApplyExternalForce(const STR::UTILS::MapExtractor& extractor,
+                                  Teuchos::RCP<Epetra_Vector> iforce);
 
   /// introduce (robin) fsi surface extractor object
   /*!
