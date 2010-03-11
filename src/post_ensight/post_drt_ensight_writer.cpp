@@ -196,8 +196,6 @@ void EnsightWriter::WriteGeoFile(const string& geofilename)
   // if more are needed, this has to go into a loop
   map<string, vector<ofstream::pos_type> > resultfilepos;
 
-
-  vector<ofstream::pos_type> fileposition;
   {
     WriteGeoFileOneTimeStep(geofile, resultfilepos, "geo");
   }
@@ -206,7 +204,8 @@ void EnsightWriter::WriteGeoFile(const string& geofilename)
   // TODO: ens_checker complains if this is turned!!!! but I can't see, whats wrong here a.ger 11/07
   // it is also correct to ommit WriteIndexTable, however the EnsightGold Format manual says,
   // it would improve performance to have it on...
-  // WriteIndexTable(geofile, fileposition);
+  // Writing the index for the result fields is fine. Complains only for the geometry-file  gb 02/10
+  // WriteIndexTable(geofile, resultfilepos["geo"]);
 
   if (geofile.is_open())
     geofile.close();
@@ -1126,60 +1125,6 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
                                      0,
                                      datamap.Comm()));
 
-#if 0
-  // care for rotationally symmetric periodic boundary conditions
-  // note: only vector fields with numdf > 1 require checking!
-  if(numdf > 1)
-  {
-    vector<DRT::Condition*> mypbccond;
-    // get periodic boundary conditions
-    dis->GetCondition("SurfacePeriodic",mypbccond);
-    if(mypbccond.empty())
-    {
-      dis->GetCondition("LinePeriodic",mypbccond);
-    }
-
-    // loop all periodic boundary conditions
-    for (unsigned numcond=0;numcond<mypbccond.size();++numcond)
-    {
-      const string* mymasterslavetoggle
-      = mypbccond[numcond]->Get<string>("Is slave periodic boundary condition");
-      const double rotangle = FLD::GetRotAngleFromCondition(mypbccond[numcond]);
-
-      // only slave node with non-zero angle of rotation
-      // require rotation of vector results!
-      if((*mymasterslavetoggle=="Slave")
-          && (abs(rotangle)> EPS13))
-      {
-        const vector<int>* nodes = mypbccond[numcond]->Nodes();
-        for (unsigned int inode=0; inode < nodes->size(); inode++)
-        {
-          const int nodegid = nodes->at(inode);
-
-          if (dis->HaveGlobalNode(nodegid)) // is node on this proc?
-          {
-            cout<<"nodegid = "<<nodegid<<"  rotangle = "<<rotangle<<endl;
-            DRT::Node* n = dis->gNode(nodegid);
-            double values[3];
-            int    indices[3];
-            for (int idf=0; idf<numdf; ++idf)
-            {
-              int dofgid = dis->Dof(n,idf);
-              int lid = datamap.LID(dofgid);
-              indices[idf] = lid;
-              values[idf] = FLD::GetComponentOfRotatedVectorField(idf,data,lid,rotangle);
-            }
-            // we have to modify the data read from written output
-            int err = data->ReplaceMyValues(2,values,indices);
-            if (err!= 0) cout<<"Could not insert data";
-          }
-        }
-        cout<<endl<<endl;
-      } // end is slave condition?
-    } // end loop periodic boundary conditions
-  } // if numdf>1
-
-#endif
   //switch between nurbs an others
   if(field_->problem()->SpatialApproximation()=="Nurbs")
   {
@@ -1931,7 +1876,7 @@ string EnsightWriter::GetFileSectionStringFromFilesets(
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteCoordinatesForPolynomialShapefunctions
 (
-  ofstream&                              geofile ,
+  ofstream&                      geofile ,
   const RCP<DRT::Discretization> dis     ,
   RCP<Epetra_Map>&               proc0map
   )

@@ -850,13 +850,23 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   case prb_scatra:
   {
     // allocate and input general old stuff....
-    if (genprob.numfld!=2) dserror("numfld != 2 for scalar transport problem");
+    //if (genprob.numfld!=2) dserror("numfld != 2 for scalar transport problem");
 
     // create empty discretizations
-    fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
-    AddDis(genprob.numff, fluiddis);
+    std::string distype = ptype.get<std::string>("SHAPEFCT");
 
-    scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
+    if(distype == "Nurbs")
+    {
+      fluiddis = rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
+      scatradis = rcp(new DRT::NURBS::NurbsDiscretization("scatra",reader.Comm()));
+    }
+    else
+    {
+      fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
+      scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
+    }
+
+    AddDis(genprob.numff, fluiddis);
     AddDis(genprob.numscatra, scatradis);
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");

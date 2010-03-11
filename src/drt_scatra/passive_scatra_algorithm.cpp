@@ -109,12 +109,19 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
   }
 
   // transfer convective velocity to scalar transport field solver
-  ScaTraField().SetVelocityField(
-      FluidField().Velnp(),
-      FluidField().Hist(),
-      Teuchos::null,
-      FluidField().Discretization()
-  );
+  if (ScaTraField().MethodName()== INPAR::SCATRA::timeint_gen_alpha)
+    ScaTraField().SetVelocityField(
+        FluidField().Velnp(),
+        Teuchos::null,  // TODO: feed in correct vector for gen. alpha!
+        Teuchos::null,
+        FluidField().Discretization());
+  else
+    ScaTraField().SetVelocityField(
+        FluidField().Velnp(),
+        FluidField().Hist(),
+        Teuchos::null,
+        FluidField().Discretization()
+    );
 
   // solve the linear convection-diffusion equation(s)
   ScaTraField().Solve();
@@ -140,8 +147,7 @@ void SCATRA::PassiveScaTraAlgorithm::Output()
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
-  FluidField().Output();
-  FluidField().LiftDrag();
+  FluidField().StatisticsAndOutput();
   ScaTraField().Output();
 
   return;

@@ -68,7 +68,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
   // get the knotvector itself
   RefCountPtr<DRT::NURBS::Knotvector> knotvec=nurbsdis->GetKnotVector();
 
-  // detrmine number of patches from knotvector
+  // determine number of patches from knotvector
   int npatches=knotvec->ReturnNP();
 
   // get vispoint offsets among patches
@@ -1921,6 +1921,12 @@ void EnsightWriter::WriteDofResultStepForNurbs(
       {
         coldofset.insert(lm[inode*(dim+1)+dim]);
       }
+      else if(name == "phi"
+          ||
+          name == "phi")
+      {
+        coldofset.insert(lm[inode]);
+      }
       else
       {
         dserror("up to now, I'm only able to write velocity, displacement and pressure\n");
@@ -2059,9 +2065,18 @@ void EnsightWriter::WriteDofResultStepForNurbs(
         my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*(dim+1)+dim])];
       }
     }
+    else if(name == "phi")
+    {
+      my_data.resize(numnp);
+
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode])];
+      }
+    }
     else
     {
-      dserror("up to now, I'm only able to write velocity, displacement and pressure\n");
+      dserror("Up to now, I'm not able to write a field named %s\n",name.c_str());
     }
 
     switch (actele->Shape())
