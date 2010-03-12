@@ -59,10 +59,10 @@ CONTACT::CmtStruGenAlpha::CmtStruGenAlpha(ParameterList& params,
                                           INPAR::CONTACT::ApplicationType apptype) :
 StruGenAlpha(params,dis,solver,output)
 {
-  // -------------------------------------------------------------------
+  //**********************************************************************
   // see whether we have contact boundary conditions
   // and create meshtying OR contact manager if so
-  // -------------------------------------------------------------------
+  //**********************************************************************
   {
     // check contact conditions
     vector<DRT::Condition*> contactconditions(0);
@@ -73,7 +73,7 @@ StruGenAlpha(params,dis,solver,output)
     double alphaf = params_.get<double>("alpha f",0.459);
     
     // decide whether this is meshtying or contact
-    if      (apptype==INPAR::CONTACT::app_mortarmeshtying)
+    if (apptype==INPAR::CONTACT::app_mortarmeshtying)
       cmtmanager_ = rcp(new CONTACT::MtManager(discret_,alphaf));
     else if (apptype==INPAR::CONTACT::app_mortarcontact)
       cmtmanager_ = rcp(new CONTACT::CoManager(discret_,alphaf));
@@ -81,19 +81,71 @@ StruGenAlpha(params,dis,solver,output)
       dserror("ERROR: You should not be here!");
   }
 
-  // map containing Dirichlet DOFs
-  Teuchos::ParameterList p;
-  double time = params_.get<double>("total time"     ,0.0);
-  p.set("total time", time);
-  RCP<LINALG::MapExtractor> dbcmaps = rcp(new LINALG::MapExtractor());
-  discret_.EvaluateDirichlet(p, zeros_, Teuchos::null, Teuchos::null,
-                              Teuchos::null, dbcmaps);
-  zeros_->PutScalar(0.0); // just in case of change
-
+  //**********************************************************************
   // save Dirichlet B.C. status in Contact Manager
-  // all nodes on all interfaces then know if D.B.C.s are applied on their dofs
-  cmtmanager_->GetStrategy().StoreDirichletStatus(dbcmaps);
+  // all nodes on all interfaces then know if D.B.C.s are applied
+  //**********************************************************************
+  {
+    // map containing Dirichlet DOFs
+    Teuchos::ParameterList p;
+    double time = params_.get<double>("total time",0.0);
+    p.set("total time", time);
+    RCP<LINALG::MapExtractor> dbcmaps = rcp(new LINALG::MapExtractor());
+    discret_.EvaluateDirichlet(p,zeros_,Teuchos::null,Teuchos::null,Teuchos::null,dbcmaps);
+    zeros_->PutScalar(0.0); // just in case
+    cmtmanager_->GetStrategy().StoreDirichletStatus(dbcmaps);
+  }
+  
+  //**********************************************************************
+  // visualization of initial configuration
+  //**********************************************************************
+#ifdef CONTACTGMSH3
+  cmtmanager_->GetStrategy().VisualizeGmsh(0,0);
+#endif // #ifdef CONTACTGMSH2
+  
+  //**********************************************************************
+  // initialization of contact or meshting
+  //**********************************************************************
+  {
+    // FOR MESHTYING (ONLY ONCE), NO FUNCTIONALITY FOR CONTACT CASES
+    // (1) Do mortar coupling in reference configuration
+    //     (for restart this has already been done in Strategy object)
+    // (2) Perform mesh intialization by relocating slave nodes such
+    //     that rotational invariance is satisfied.
+    if (params_.get<int>("step") == 0)
+    {
+     cmtmanager_->GetStrategy().MortarCoupling(zeros_);
+     cmtmanager_->GetStrategy().MeshInitialization();
+    }
+    
+    // FOR PENALTY CONTACT (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
+    // (1) Explicitly store gap-scaling factor kappa
+    //     (for restart this need not be done)
+    if (params_.get<int>("step") == 0)
+     cmtmanager_->GetStrategy().SaveReferenceState(disn_);
+  }
 
+  //**********************************************************************
+  // output of strategy type to screen
+  //**********************************************************************
+  {
+    // strategy type
+    INPAR::CONTACT::SolvingStrategy soltype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
+    
+    // output
+    if (discret_.Comm().MyPID() == 0)
+    {
+      cout << "===== DRT_NEWCONTACT ===========================================" << endl;  
+      if (soltype == INPAR::CONTACT::solution_lagmult)
+        cout << "===== Lagrange multiplier strategy =============================" << endl;
+      else if (soltype == INPAR::CONTACT::solution_penalty)
+        cout << "===== Penalty strategy =========================================" << endl;
+      else if (soltype == INPAR::CONTACT::solution_auglag)
+        cout << "===== Augmented Lagrange strategy ==============================" << endl;
+    }
+  }
+  
   return;
 } // CmtStruGenAlpha::CmtStruGenAlpha
 
@@ -3812,72 +3864,25 @@ void CONTACT::CmtStruGenAlpha::Output()
  *----------------------------------------------------------------------*/
 void CONTACT::CmtStruGenAlpha::CmtNonlinearSolve()
 {
-  // TODO: currently only contact as valid application type
+  //********************************************************************
+  // get some parameters
+  //********************************************************************
+  // application type
   INPAR::CONTACT::ApplicationType apptype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(cmtmanager_->GetStrategy().Params(),"APPLICATION");
   
-  if (apptype == INPAR::CONTACT::app_mortarmeshtying)
-    dserror("ERROR: CmtNonlinearSolve for Adapter not yet implemented for meshtying");
+  // strategy type
+  INPAR::CONTACT::SolvingStrategy soltype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
   
-  // TODO: currently only dual LM / semi-smooth Newton for multiphysics
-  std::string equil = params_.get<string>("equilibrium iteration","undefined solution algorithm");
+  // semi-smooth Newton type
+  bool semismooth = Teuchos::getIntegralValue<int>(cmtmanager_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
   
-  if (equil=="full newton")
-  {
-    // semi-smooth Newton type
-    bool semismooth = Teuchos::getIntegralValue<int>(cmtmanager_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
-    
-    if (semismooth) SemiSmoothNewton();
-    else            dserror("only semismooth newton implemented");
-  }
-  else
-    dserror("Unknown type of equilibrium iteration '%s'", equil.c_str());
-    
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  integrate in time          (static/public)               popp  02/08|
- *----------------------------------------------------------------------*/
-void CONTACT::CmtStruGenAlpha::Integrate()
-{
-  int    step    = params_.get<int>   ("step" ,0);
-  int    nstep   = params_.get<int>   ("nstep",5);
-  double maxtime = params_.get<double>("max time",0.0);
-
-#ifdef CONTACTGMSH3
-  cmtmanager_->GetStrategy().VisualizeGmsh(0,0);
-#endif // #ifdef CONTACTGMSH2
-
-  // can have values "full newton" , "modified newton" , "nonlinear cg"
+  // iteration type
   string equil = params_.get<string>("equilibrium iteration","full newton");
-
-  // can have values takes values "constant" consistent"
-  string pred  = params_.get<string>("predictor","constant");
-  int predictor=-1;
-  if      (pred=="constant")   predictor = 1;
-  else if (pred=="consistent") predictor = 2;
-  else dserror("Unknown type of predictor");
-
-  // unknown types of nonlinear iteration schemes
   if (equil != "full newton" && equil != "line search newton" && equil != "ptc")
     dserror("Unknown type of equilibrium iteration");
 
-  //**********************************************************************
-  // FOR MESHTYING (DO THIS ONLY ONCE), NO FUNCTIONALITY FOR CONTACT
-  // (1) Do mortar coupling in reference configuration
-  //     (for restart this has already been done in Strategy object)
-  // (2) Perform mesh intialization by relocating slave nodes such
-  //     that rotational invariance is satisfied.
-  //     (for restart this is not needed, as relocated mesh is stored)
-  //**********************************************************************
-  if (params_.get<int>("step") == 0)
-  {
-   cmtmanager_->GetStrategy().MortarCoupling(zeros_);
-   cmtmanager_->GetStrategy().MeshInitialization();
-  }
-  //**********************************************************************
-  
   //********************************************************************
   // OPTIONS FOR PRIMAL-DUAL ACTIVE SET STRATEGY (PDASS) FOR CONTACT
   // ONLY ONE OPTION FOR MESHTYING -> FULL NEWTON
@@ -3894,27 +3899,12 @@ void CONTACT::CmtStruGenAlpha::Integrate()
   // linearization (=geimetrical nonlinearity) is treated by a standard
   // Newton scheme. This yields TWO nested iteration loops
   //********************************************************************
-  
-  // application type (contact or meshtying)
-  INPAR::CONTACT::ApplicationType apptype =
-      Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(cmtmanager_->GetStrategy().Params(),"APPLICATION");
-    
-  // strategy type
-  INPAR::CONTACT::SolvingStrategy soltype =
-      Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
-  
-  // semi-smooth Newton type
-  bool semismooth = Teuchos::getIntegralValue<int>(cmtmanager_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
 
+  //********************************************************************
   // Solving Strategy using Lagrangian Multipliers
+  //********************************************************************
   if (soltype == INPAR::CONTACT::solution_lagmult)
   {
-    if (discret_.Comm().MyPID() == 0)
-    {
-      cout << "===== DRT_NEWCONTACT ===========================================" << endl;
-      cout << "===== Lagrange multiplier strategy =============================" << endl;
-    }
-
     //********************************************************************
     // 1) SEMI-SMOOTH NEWTON FOR CONTACT
     // The search for the correct active set (=contact nonlinearity) and
@@ -3924,32 +3914,19 @@ void CONTACT::CmtStruGenAlpha::Integrate()
     //********************************************************************
     if (apptype == INPAR::CONTACT::app_mortarcontact && semismooth)
     {
-      // LOOP1: time steps
-      for (int i=step; i<nstep; ++i)
-      {
-  #ifdef CONTACTTIME
-        const double t_start = ds_cputime();
-  #endif // #ifdef CONTACTTIME
-
-        // predictor step
-        if      (predictor==1) ConstantPredictor();
-        else if (predictor==2) ConsistentPredictor();
-
-        // LOOP2: nonlinear iteration (Newton)
-        if (equil=="full newton")              SemiSmoothNewton();
-        else if (equil=="line search newton")  SemiSmoothNewtonLineSearch();
-        else if (equil=="ptc")                 dserror("ERROR: No semi-smooth PTC available!");
-
-        UpdateandOutput();
-
-  #ifdef CONTACTTIME
-        const double t_end = ds_cputime()-t_start;
-        cout << "\n***\nTime Step (overall): " << t_end << " seconds\n***\n";
-  #endif // #ifdef CONTACTTIME
-
-        double time = params_.get<double>("total time",0.0);
-        if (time>=maxtime) break;
-      }
+#ifdef CONTACTTIME
+      const double t_start = ds_cputime();
+#endif // #ifdef CONTACTTIME
+      
+      // nonlinear iteration
+      if (equil=="full newton")              SemiSmoothNewton();
+      else if (equil=="line search newton")  SemiSmoothNewtonLineSearch();
+      else if (equil=="ptc")                 dserror("ERROR: No semi-smooth PTC available!");
+      
+#ifdef CONTACTTIME
+      const double t_end = ds_cputime()-t_start;
+      cout << "\n***\nTime Step (overall): " << t_end << " seconds\n***\n";
+#endif // #ifdef CONTACTTIME
     }
     
     //********************************************************************
@@ -3961,28 +3938,27 @@ void CONTACT::CmtStruGenAlpha::Integrate()
     //********************************************************************
     else if (apptype == INPAR::CONTACT::app_mortarcontact && !semismooth)
     {
-      // LOOP1: time steps
-      for (int i=step; i<nstep; ++i)
+      // predictor type (needed here because of nested loops)
+      string pred  = params_.get<string>("predictor","constant");
+      
+      // active set strategy
+      int activeiter = 0;
+      while (cmtmanager_->GetStrategy().ActiveSetConverged()==false)
       {
-        // LOOP2: active set strategy
-        while (cmtmanager_->GetStrategy().ActiveSetConverged()==false)
-        {
-          // predictor step
-          if      (predictor==1) ConstantPredictor();
-          else if (predictor==2) ConsistentPredictor();
-  
-          // LOOP3: nonlinear iteration (Newton)
-          if (equil=="full newton")             FullNewton();
-          else if (equil=="line search newton") FullNewtonLineSearch();
-          else if (equil=="ptc")                PTC();
-  
-          // update of active set (fixed-point)
-          cmtmanager_->GetStrategy().UpdateActiveSet();
-        }
-  
-        UpdateandOutput();
-        double time = params_.get<double>("total time",0.0);
-        if (time>=maxtime) break;
+        // increase active set iteration index
+        ++activeiter;
+        
+        // predictor step (except for first active set step)
+        if (activeiter>1 && pred=="constant")        ConstantPredictor();
+        else if (activeiter>1 && pred=="consistent") ConsistentPredictor();
+        
+        // nonlinear iteration
+        if (equil=="full newton")             FullNewton();
+        else if (equil=="line search newton") FullNewtonLineSearch();
+        else if (equil=="ptc")                PTC();
+
+        // update of active set (fixed-point)
+        cmtmanager_->GetStrategy().UpdateActiveSet();
       }
     }
     
@@ -3995,120 +3971,103 @@ void CONTACT::CmtStruGenAlpha::Integrate()
     //********************************************************************
     else
     {
-      // LOOP1: time steps
-      for (int i=step; i<nstep; ++i)
-      {
-        // predictor step
-        if      (predictor==1) ConstantPredictor();
-        else if (predictor==2) ConsistentPredictor();
-  
-        // LOOP3: nonlinear iteration (Newton)
-        if (equil=="full newton")             FullNewton();
-        else if (equil=="line search newton") FullNewtonLineSearch();
-        else if (equil=="ptc")                PTC();
-  
-        UpdateandOutput();
-        double time = params_.get<double>("total time",0.0);
-        if (time>=maxtime) break;
-      }
+      // nonlinear iteration
+      if (equil=="full newton")             FullNewton();
+      else if (equil=="line search newton") FullNewtonLineSearch();
+      else if (equil=="ptc")                PTC();
     }
-    //********************************************************************
-    // END OF OPTIONS FOR LM STRATEGY
-    //********************************************************************
   }
 
+  //********************************************************************
   // Solving Strategy using Regularization Techniques (Penalty Method)
+  //********************************************************************
   else if (soltype == INPAR::CONTACT::solution_penalty)
   {
-    if (discret_.Comm().MyPID() == 0)
+    // nonlinear iteration
+    if (equil=="full newton")             FullNewton();
+    else if (equil=="line search newton") FullNewtonLineSearch();
+    else if (equil=="ptc")                PTC();
+
+    // update constraint norm
+    cmtmanager_->GetStrategy().UpdateConstraintNorm();
+  }
+
+  //********************************************************************
+  // Solving Strategy using Augmented Lagrange Techniques (with Uzawa)
+  //********************************************************************
+  else if (soltype == INPAR::CONTACT::solution_auglag)
+  {
+    // get tolerance and maximum Uzawa steps
+    double eps = cmtmanager_->GetStrategy().Params().get<double>("UZAWACONSTRTOL");
+    int maxuzawaiter = cmtmanager_->GetStrategy().Params().get<int>("UZAWAMAXSTEPS");
+
+    // Augmented Lagrangian loop (Uzawa)
+    int uzawaiter=0;
+    do
     {
-      cout << "===== DRT_NEWCONTACT ===========================================" << endl;
-      cout << "===== Penalty strategy =========================================" << endl;
-    }
+      // increase iteration index
+      ++uzawaiter;
+      if (uzawaiter > maxuzawaiter) dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
+      if (discret_.Comm().MyPID() == 0) cout << "Starting Uzawa step No. " << uzawaiter << endl;
 
-    // explicitely store gap-scaling
-    cmtmanager_->GetStrategy().SaveReferenceState(disn_);
+      // for second, third,... Uzawa step: out-of-balance force
+      if (uzawaiter>1) cmtmanager_->GetStrategy().InitializeUzawa(stiff_,fresm_);
 
-    // LOOP1: time steps
-    for (int i=step; i<nstep; ++i)
-    {
-      // predictor step
-      if (predictor==1)      ConstantPredictor();
-      else if (predictor==2) ConsistentPredictor();
-
-      // LOOP2: nonlinear iteration (Newton)
+      // nonlinear iteration
       if (equil=="full newton")             FullNewton();
       else if (equil=="line search newton") FullNewtonLineSearch();
       else if (equil=="ptc")                PTC();
 
-      cmtmanager_->GetStrategy().UpdateConstraintNorm();
-      UpdateandOutput();
-      double time = params_.get<double>("total time", 0.0);
-      if (time>=maxtime) break;
-    }
+      // update constraint norm and penalty parameter
+      cmtmanager_->GetStrategy().UpdateConstraintNorm(uzawaiter);
+
+      // store Lagrange multipliers for next Uzawa step
+      cmtmanager_->GetStrategy().UpdateAugmentedLagrange();
+      cmtmanager_->GetStrategy().StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
+
+    } while (cmtmanager_->GetStrategy().ConstraintNorm() >= eps);
+          
+    // reset penalty parameter
+    cmtmanager_->GetStrategy().ResetPenalty();
   }
 
-  // Solving Strategy using Augmented Lagrange Techniques (with Uzawa)
-  else if (soltype == INPAR::CONTACT::solution_auglag)
+  return;
+} // void CmtStruGenAlpha::CmtNonlinearSolve()
+
+
+/*----------------------------------------------------------------------*
+ |  integrate in time          (static/public)               popp  02/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::CmtStruGenAlpha::Integrate()
+{
+  // time parameters
+  int    step    = params_.get<int>   ("step" ,0);
+  int    nstep   = params_.get<int>   ("nstep",5);
+  double maxtime = params_.get<double>("max time",0.0);
+
+  // predictor type
+  string pred = params_.get<string>("predictor","constant");
+  if (pred != "constant" && pred != "consistent")
+    dserror("Unknown type of predictor");
+
+  // time step loop
+  for (int i=step; i<nstep; ++i)
   {
-    if (discret_.Comm().MyPID() == 0)
-    {
-      cout << "===== DRT_NEWCONTACT ===========================================" << endl;
-      cout << "===== Augmented Lagrange strategy ==============================" << endl;
-    }
-
-    // explicitely store gap-scaling
-    cmtmanager_->GetStrategy().SaveReferenceState(disn_);
-
-    // LOOP1: time steps
-    for (int i=step; i<nstep; ++i)
-    {
-      // reset penalty parameter
-      cmtmanager_->GetStrategy().ResetPenalty();
-
-      // predictor step
-       if (predictor==1)      ConstantPredictor();
-       else if (predictor==2) ConsistentPredictor();
-
-      // get tolerance and maximum Uzawa steps
-      double eps = cmtmanager_->GetStrategy().Params().get<double>("UZAWACONSTRTOL");
-      int maxuzawaiter = cmtmanager_->GetStrategy().Params().get<int>("UZAWAMAXSTEPS");
-
-      // LOOP2: augmented Lagrangian (Uzawa)
-      int uzawaiter=0;
-      do
-      {
-        // increase iteration index
-        ++uzawaiter;
-        if (uzawaiter > maxuzawaiter)
-          dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
-
-        if (discret_.Comm().MyPID() == 0)
-          cout << "Starting Uzawa step No. " << uzawaiter << endl;
-
-        // for second, third,... Uzawa step: out-of-balance force
-        if (uzawaiter>1) cmtmanager_->GetStrategy().InitializeUzawa(stiff_,fresm_);
-
-        // LOOP3: nonlinear iteration (Newton)
-        if (equil=="full newton")             FullNewton();
-        else if (equil=="line search newton") FullNewtonLineSearch();
-        else if (equil=="ptc")                PTC();
-
-        // update constraint norm and penalty parameter
-        cmtmanager_->GetStrategy().UpdateConstraintNorm(uzawaiter);
-
-        // store Lagrange multipliers for next Uzawa step
-        cmtmanager_->GetStrategy().UpdateAugmentedLagrange();
-        cmtmanager_->GetStrategy().StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
-
-      } while (cmtmanager_->GetStrategy().ConstraintNorm() >= eps);
-
-      UpdateandOutput();
-      double time = params_.get<double>("total time", 0.0);
-      if (time>=maxtime) break;
-    }
+    // predictor step
+    if (pred=="constant")        ConstantPredictor();
+    else if (pred=="consistent") ConsistentPredictor();
+   
+    // nonlinear solution routine
+    CmtNonlinearSolve();
+    
+    // update and output
+    UpdateandOutput();
+    
+    // check if maxtime reached
+    double time = params_.get<double>("total time",0.0);
+    if (time>=maxtime) break;
   }
-
+  
   return;
 } // void CmtStruGenAlpha::Integrate()
 
