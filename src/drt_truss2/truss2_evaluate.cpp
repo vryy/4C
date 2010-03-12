@@ -290,8 +290,6 @@ void DRT::ELEMENTS::Truss2::t2_nlnstiffmass( vector<double>& disp,
     return;
   }
   
-  
-  
 }
 
 
@@ -385,8 +383,7 @@ void DRT::ELEMENTS::Truss2::t2_nlnstiffmass_totlag( vector<double>& disp,
      (*force)(i) = (4*ym*crosssec_*epsilon/lrefe_) * aux(i);
     
     for (int i=0; i<2; ++i)
-     (*force)(2 + i) = (4*ym*crosssec_*epsilon/lrefe_) * aux(i+2);
-    
+     (*force)(2 + i) = (4*ym*crosssec_*epsilon/lrefe_) * aux(i+2);    
   }
   
 
@@ -402,15 +399,10 @@ void DRT::ELEMENTS::Truss2::t2_nlnstiffmass_totlag( vector<double>& disp,
         (*stiffmatrix)(i + 2 ,i + 2)   =  (ym*crosssec_*epsilon/lrefe_);
         (*stiffmatrix)(i + 2 ,i    )   = -(ym*crosssec_*epsilon/lrefe_);
     }
-
-        
+       
     for (int i=0; i<4; ++i)
-    {
       for (int j=0; j<4; ++j)
-          (*stiffmatrix)(i,j) += (16*ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
-    }  
-
-      
+          (*stiffmatrix)(i,j) += (16*ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);     
   }
   
   //calculating consistent mass matrix
@@ -508,8 +500,7 @@ void DRT::ELEMENTS::Truss2::t2_nlnstiffmass_engstr( vector<double>& disp,
   
   //computing linear stiffness matrix
   if (stiffmatrix != NULL)
-  {      
-    
+  {        
     for (int i=0; i<2; ++i)
     { 
         //stiffness entries for first node
@@ -519,14 +510,10 @@ void DRT::ELEMENTS::Truss2::t2_nlnstiffmass_engstr( vector<double>& disp,
         (*stiffmatrix)(i + 2,i + 2)   =  forcescalar;
         (*stiffmatrix)(i + 2,i    )   = -forcescalar;
     }
-    
-   
-    
+
     for (int i=0; i<4; ++i)
-    {
       for (int j=0; j<4; ++j)
         (*stiffmatrix)(i,j) += (ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);  
-    }  
  
   }
   

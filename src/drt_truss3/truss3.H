@@ -37,6 +37,7 @@ using namespace Teuchos;
 #include "../drt_statmech/statmech_manager.H"
 #include "../drt_statmech/statmech_time.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../drt_inpar/inpar_statmech.H"
 
 
 /*!
@@ -262,24 +263,7 @@ public:
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
-  /*!
-  \brief Evaluate a statistical Neumann boundary condition and related damping matrix
 
-  An element derived from this class uses the Evaluate method to receive commands
-  and parameters from some control routine in params and evaluates a  statistical Neumann boundary condition
-  as used in the problem type STATISTICAL MECHANICS
-
-  \param params (in/out)       : ParameterList for communication between control routine and elements
-  \param vector<double> mydisp : current nodal displacement
-  \param elevec1 (out)         : Force vector to be filled by element
-  \param elemat1 (out)         : damping matrix to be filled by element
-
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateStatForceDamp(ParameterList& params,
-                                    vector<double> mydisp,
-                                    Epetra_SerialDenseVector& elevec1,
-                                    Epetra_SerialDenseMatrix& elemat1);
 
   /*!
   \brief Evaluate PTC addition to stiffness for free Brownian motion
@@ -323,6 +307,14 @@ private:
     calc_brownian, //calculate statistical forces and damping for Brownian dynamics
     calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
   };
+  
+  //! kind of integration to be performed
+  enum IntegrationType
+  {
+    gaussexactintegration,
+    gaussunderintegration,
+    lobattointegration
+  };
 
   //! possible kinematic types
   enum KinematicType
@@ -345,6 +337,12 @@ private:
 
   //! length in reference configuration
   double lrefe_;
+  
+  //! Vector holding value of Jacobi determinant jacobi for complete integration of massmatrix
+  vector<double> jacobimass_;
+  
+  //! Vector holding value of Jacobi determinant jacobi at nodes
+  vector<double> jacobinode_;
 
   //! cross section area
   double crosssec_;
@@ -363,9 +361,14 @@ private:
   //@}
 
   //! @name Internal calculation methods
+  
+  //!determine Gauss rule from required type of integration
+  DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
 
   //!calculation of nonlinear stiffness and mass matrix switching between total lagrange and enginerring strains
-  void t3_nlnstiffmass(vector<double>&           disp,
+  void t3_nlnstiffmass(ParameterList&            params,
+                       vector<double>&           vel,
+                       vector<double>&           disp,
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
                        Epetra_SerialDenseVector* force);
@@ -393,6 +396,47 @@ private:
   void t3_lumpmass(Epetra_SerialDenseMatrix* emass);
 
   //@}
+  
+  //! @name Methods for Brownian dynamics simulations
+
+   //!compute damping matrix and statistical forces according to fluctuation dissipation theorem
+   template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
+   void CalcBrownian(ParameterList& params,  //!<parameter list
+                     const vector<double>&           vel,  //!< element velocity vector
+                     const vector<double>&           disp, //!<element disp vector
+                     Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                     Epetra_SerialDenseVector* force);//!< element internal force vector  
+   
+   //!computes damping coefficients for employed friction model
+   void MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel);
+   
+   //!computes the number of different random numbers required in each time step for generation of stochastic forces
+   int HowManyRandomNumbersINeed();
+   
+   //!computes translational damping forces and stiffness
+   template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
+   void MyTranslationalDamping(ParameterList& params,  //!<parameter list
+                             const vector<double>&           vel,  //!< element velocity vector
+                             const vector<double>&           disp, //!<element disp vector
+                             Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                             Epetra_SerialDenseVector* force);//!< element internal force vector
+   
+   //!computes stochastic translational forces and resulting stiffness
+   template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
+   void MyStochasticForces(ParameterList& params,  //!<parameter list
+                         const vector<double>&           vel,  //!< element velocity vector
+                         const vector<double>&           disp, //!<element disp vector
+                         Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                         Epetra_SerialDenseVector* force);//!< element internal force vector
+   
+   //!computes velocity of background fluid and gradient of that velocity at a certain evaluation point in the physical space and adds respective terms to internal forces and damping matrix
+   template<int ndim> //number of dimensions of embedding space
+   void MyBackgroundVelocity(ParameterList& params,  //!<parameter list
+                             const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
+                             LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
+                             LINALG::Matrix<ndim,ndim>& velbackgroundgrad); //!<gradient of velocity of background fluid
+
+   //@}
 
   // don't want = operator
   Truss3& operator = (const Truss3& old);

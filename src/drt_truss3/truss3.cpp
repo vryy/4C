@@ -47,6 +47,8 @@ DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old) :
  X_(old.X_),
  material_(old.material_),
  lrefe_(old.lrefe_),
+ jacobimass_(old.jacobimass_),
+ jacobinode_(old.jacobinode_),
  crosssec_(old.crosssec_),
  kintype_(old. kintype_),
  gaussrule_(old.gaussrule_)
@@ -116,19 +118,14 @@ void DRT::ELEMENTS::Truss3::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  //whether element has already been initialized
   AddtoPack(data,isinit_);
-  //nodal reference coordinates
   AddtoPack(data,X_);
-  //material type
   AddtoPack(data,material_);
-  //reference length
   AddtoPack(data,lrefe_);
-  //cross section
+  AddtoPack(data,jacobimass_);
+  AddtoPack(data,jacobinode_);
   AddtoPack(data,crosssec_);
-  // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
-  //kinematic type
   AddtoPack(data,kintype_);
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -153,15 +150,12 @@ void DRT::ELEMENTS::Truss3::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  //whether element has already been initialized
   ExtractfromPack(position,data,isinit_);
-  //nodal reference coordinates
   ExtractfromPack(position,data,X_);
-  //material type
   ExtractfromPack(position,data,material_);
-  //reference length
   ExtractfromPack(position,data,lrefe_);
-  //cross section
+  ExtractfromPack(position,data,jacobimass_);
+  ExtractfromPack(position,data,jacobinode_);
   ExtractfromPack(position,data,crosssec_);
   // gaussrule_
   int gausrule_integer;
@@ -188,6 +182,109 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Truss3::Lines()
   return lines;
 }
 
+/*----------------------------------------------------------------------*
+ |determine Gauss rule from required type of integration                |
+ |                                                   (public)cyron 09/09|
+ *----------------------------------------------------------------------*/
+DRT::UTILS::GaussRule1D DRT::ELEMENTS::Truss3::MyGaussRule(int nnode, IntegrationType integrationtype)
+{
+  DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule1D_undefined;
+  
+  switch(nnode)
+  {
+    case 2:
+    {     
+      switch(integrationtype)
+      {
+        case gaussexactintegration:
+        {
+          gaussrule = DRT::UTILS::intrule_line_2point;
+          break;
+        }
+        case gaussunderintegration:
+        {
+          gaussrule =  DRT::UTILS::intrule_line_1point;
+          break;
+        }
+        case lobattointegration:
+        {
+          gaussrule =  DRT::UTILS::intrule_line_lobatto2point;
+          break;
+        }
+        default:
+          dserror("unknown type of integration");
+      }
+      break;
+    }
+    case 3:
+    {
+      switch(integrationtype)
+      {
+        case gaussexactintegration:
+        {
+          gaussrule = DRT::UTILS::intrule_line_3point;
+          break;
+        }
+        case gaussunderintegration:
+        {
+          gaussrule =  DRT::UTILS::intrule_line_2point;
+          break;
+        }
+        case lobattointegration:
+        {
+          gaussrule =  DRT::UTILS::intrule_line_lobatto3point;
+          break;
+        }
+        default:
+          dserror("unknown type of integration");
+      }
+      break;
+    }
+    case 4:
+    {
+      switch(integrationtype)
+      {
+        case gaussexactintegration:
+        {
+          gaussrule = DRT::UTILS::intrule_line_4point;
+          break;
+        }
+        case gaussunderintegration:
+        {
+          gaussrule =  DRT::UTILS::intrule_line_3point;
+          break;
+        }
+        default:
+          dserror("unknown type of integration");
+      }
+      break;
+    }
+    case 5:
+    {
+      switch(integrationtype)
+      {
+        case gaussexactintegration:
+        {
+          gaussrule = DRT::UTILS::intrule_line_5point;
+          break;
+        }
+        case gaussunderintegration:
+        {
+          gaussrule =  DRT::UTILS::intrule_line_4point;
+          break;
+        }
+        default:
+          dserror("unknown type of integration");
+      }
+      break;
+    }
+    default:
+      dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+  }
+  
+  return gaussrule;
+}
+
 void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe)
 {
   /*this method initialized geometric variables of the element; such an initialization can only be done one time when the element is
@@ -203,6 +300,12 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xr
 
     //length in reference configuration
     lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5);
+    
+    //set jacobi determinants for integration of mass matrix and at nodes
+    jacobimass_.resize(1);
+    jacobimass_[0] = lrefe_ / 2.0;
+    jacobinode_.resize(1);
+    jacobinode_[0] = lrefe_ / 2.0;
   }
 
   return;
