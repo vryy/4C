@@ -130,17 +130,16 @@ void StatMechTime::Integrate()
   for (int i=step; i<nstep; ++i)
   {
 
-    /*
-    //the following block makes the random number generation dependent on the time step number
+    //if input flag is set random number seed should be the same for all realizations
+    if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"FIXEDSEED"))
     {
       //random generator for seeding only (necessary for thermal noise)
       ranlib::Normal<double> seedgenerator(0,1);
       //seeding random generator
-      int seedvariable = time(0);
-      seedvariable = i;
+      int seedvariable = i;
       seedgenerator.seed((unsigned int)seedvariable);
     }
-    */
+    
 
 
     /*multivector for stochastic forces evaluated by each element; the numbers of vectors in the multivector equals the maximal
@@ -165,6 +164,7 @@ void StatMechTime::Integrate()
       double time = params_.get<double>("total time",0.0);
       statmechmanager_->time_ = time;    
         
+      
       do
       {
         //assuming that iterations will converge
@@ -614,6 +614,9 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
   if (numiter>=maxiter)
   {
     isconverged_ = 0;
+    //if not converged because of NaN this should be detected, too
+    if(isnan(fresmnorm))
+      isconverged_ = (int)fresmnorm;
     unconvergedsteps_++;
     std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
      //dserror("PTC unconverged in %d iterations",numiter);
@@ -920,6 +923,9 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
   if (numiter>=maxiter)
   {
     isconverged_ = 0;
+    //if not converged because of NaN this should be detected, too
+    if(isnan(fresmnorm))
+      isconverged_ = (int)fresmnorm;
     unconvergedsteps_++;
     std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
      //dserror("FullNewton unconverged in %d iterations",numiter);

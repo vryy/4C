@@ -1082,6 +1082,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("PeriodLength",0.0,"Edge length of cube for periodic boundary conditions problem",&statmech);
   //Number of time steps between two special outputs written
   IntParameter("OUTPUTINTERVALS",1,"Number of time steps between two special outputs written",&statmech);
+  //Reading whether fixed seed for random numbers should be applied
+  setStringToIntegralParameter<int>("FIXEDSEED","No","If chosen fixed seed for random numbers in each time step is applied",
+                               yesnotuple,yesnovalue,&statmech);
 
   /*----------------------------------------------------------------------*/
    Teuchos::ParameterList& tdyn = list->sublist("THERMAL DYNAMIC",false,"");
