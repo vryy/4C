@@ -241,6 +241,9 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
    * in any other case*/
   disn_->PutScalar(0.0); 
   veln_->PutScalar(0.0);
+  dism_->PutScalar(0.0); 
+  velm_->PutScalar(0.0);
+  fresm_->PutScalar(0.0);
 
   //consistent predictor for backward Euler time integration scheme
   disn_->Update(1.0,*dis_,0.0);
