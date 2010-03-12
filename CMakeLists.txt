@@ -1500,6 +1500,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/stru_resulttest.cpp
   src/drt_structure/str_invanalysis.cpp
   src/drt_structure/structure_utils_mapextractor.cpp
+  src/drt_patspec/patspec.cpp
 )
 set(OBJS_PAR
   src/parallel/par_initmetis.c
