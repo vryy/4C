@@ -347,6 +347,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>("Polynomial","Nurbs"),
                                tuple<int>(1,0),
                                &type);
+                               
+  setStringToIntegralParameter<int>("PATSPEC","No","Triggers application of patient specific tools in discretization construction",yesnotuple,yesnovalue,&type);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& io = list->sublist("IO",false,"");
