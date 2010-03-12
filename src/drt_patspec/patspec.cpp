@@ -18,7 +18,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |                                                             gee 03/10|
  *----------------------------------------------------------------------*/
-void PATSPEC::PatientSpecificGeometryComputation(DRT::Discretization& dis)
+void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
 {
   if (!dis.Comm().MyPID())
   {

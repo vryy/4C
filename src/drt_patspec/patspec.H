@@ -20,7 +20,7 @@ Maintainer: Michael Gee
 namespace PATSPEC
 {
 
-  void PatientSpecificGeometryComputation(DRT::Discretization& dis);
+  void PatientSpecificGeometry(DRT::Discretization& dis);
 
 
 
