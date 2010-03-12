@@ -232,6 +232,15 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
   // increment time and step
   double timen = time + dt;  // t_{n+1}
   //int istep = step + 1;  // n+1
+  
+  /*special part for STATMECH: initialize disn_ and veln_ with zero; this is necessary only for the following case:
+   * assume that an iteration step did not converge and is repeated with new random numbers; if the failure of conver
+   * gence lead to disn_ = NaN and veln_ = NaN this would affect also the next trial as e.g. disn_->Update(1.0,*dis_,0.0);
+   * would set disn_ to NaN as even 0*NaN = NaN!; this would defeat the purpose of the repeated iterations with new 
+   * random numbers and has thus to be avoided; therefore we initialized disn_ and veln_ with zero which has no effect
+   * in any other case*/
+  disn_->PutScalar(0.0); 
+  veln_->PutScalar(0.0);
 
   //consistent predictor for backward Euler time integration scheme
   disn_->Update(1.0,*dis_,0.0);
@@ -614,9 +623,6 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
   if (numiter>=maxiter)
   {
     isconverged_ = 0;
-    //if not converged because of NaN this should be detected, too
-    if(isnan(fresmnorm))
-      isconverged_ = (int)fresmnorm;
     unconvergedsteps_++;
     std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
      //dserror("PTC unconverged in %d iterations",numiter);
@@ -923,9 +929,6 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
   if (numiter>=maxiter)
   {
     isconverged_ = 0;
-    //if not converged because of NaN this should be detected, too
-    if(isnan(fresmnorm))
-      isconverged_ = (int)fresmnorm;
     unconvergedsteps_++;
     std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
      //dserror("FullNewton unconverged in %d iterations",numiter);
