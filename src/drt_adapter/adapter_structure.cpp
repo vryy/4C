@@ -277,6 +277,11 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
     break;
   }
 
+#if 0
+  // test for patient specific needs
+  if (Teuchos::getIntegralValue<int>(probtype,"PATSPEC"))
+    PATSPEC::PatientSpecificGeometryComputation(*actdis);
+#endif
 
   // sanity checks and default flags
   if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
