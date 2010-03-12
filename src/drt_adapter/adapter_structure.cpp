@@ -38,6 +38,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_contact/beam3contactstrugenalpha.H"
 #include "../drt_contactnew/strugenalpha_cmt.H"
 #include "../drt_statmech/statmech_time.H"
+#include "../drt_patspec/patspec.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -277,11 +278,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
     break;
   }
 
-#if 0
   // test for patient specific needs
   if (Teuchos::getIntegralValue<int>(probtype,"PATSPEC"))
-    PATSPEC::PatientSpecificGeometryComputation(*actdis);
-#endif
+    PATSPEC::PatientSpecificGeometry(*actdis);
 
   // sanity checks and default flags
   if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
