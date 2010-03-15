@@ -81,7 +81,7 @@ QHULL_INC=
 QHULL_LIB="-lqhull -ltet"
 
 # super_lu
-#SUPERLU_LIB="-lsuperlu_dist"
+SUPERLU_LIB="-lsuperlu_dist"
 
 # fast elements
 LOOPL="-DLOOPL=15"
