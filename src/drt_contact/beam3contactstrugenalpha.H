@@ -13,6 +13,7 @@ Maintainer: Alexander Popp
 #ifndef BEAM3CONTACTSTRUGENALPHA_H
 #define BEAM3CONTACTSTRUGENALPHA_H
 
+#include "drt_contact_manager.H"
 #include "../drt_structure/strugenalpha.H"
 
 #ifdef D_BEAM3

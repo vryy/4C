@@ -39,6 +39,7 @@ Maintainer: Alexander Popp
 #ifndef CONTACTSTRUGENALPHA_H
 #define CONTACTSTRUGENALPHA_H
 
+#include "drt_contact_manager.H"
 #include "../drt_structure/strugenalpha.H"
 
 namespace CONTACT
