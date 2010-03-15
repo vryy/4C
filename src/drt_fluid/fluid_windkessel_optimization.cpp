@@ -682,13 +682,13 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_dphi(
     //  => -------- =
     //      par phi
     //  _                                                             .                               _
-    // |      C                  1            2.C.alfa.dt             .  R2              R2.R1         |
+    // |      C                  1             2.C.alfa.R             .  R2              R2.R1         |
     // | -----------.(P - P ) - ---(Q + Q ) - -------------.(Q - Q )  . ----.(P - P ) - -----.(Q - Q ) |
-    // | dt.(1+alfa)   0  -1     2  -1   0    R.(1+alfa)^2    0  -1   .  dt    0  -1      dt    0   -1 |
+    // | dt.(1+alfa)   0  -1     2  -1   0    dt.(1+alfa)^2   0  -1   .  dt    0  -1      dt    0   -1 |
     // | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
-    // |      C                  1            2.C.alfa.dt             .  R2              R2.R1         |
+    // |      C                  1             2.C.alfa.R             .  R2              R2.R1         |
     // | -----------.(P - P ) - ---(Q + Q ) - -------------.(Q - Q )  . ----.(P - P ) - -----.(Q - Q ) |
-    // | dt.(1+alfa)   1   0     2   0   1    R.(1+alfa)^2    1   0   .  dt    1   0      dt    1   0  |
+    // | dt.(1+alfa)   1   0     2   0   1    dt.(1+alfa)^2   1   0   .  dt    1   0      dt    1   0  |
     // | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
     // |                                                              .                                |
     // |                               .                              .               .                |
@@ -696,9 +696,9 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_dphi(
     // |                               .                              .               .                |
     // |                                                              .                                |
     // | . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . .|
-    // |      C                  1            2.C.alfa.dt             .  R2              R2.R1         |
+    // |      C                  1             2.C.alfa.R             .  R2              R2.R1         |
     // | -----------.(P - P ) - ---(Q + Q ) - -------------.(Q - Q )  . ----.(P - P ) - -----.(Q - Q ) |
-    // | dt.(1+alfa)   n  nm     2   nm  n    R.(1+alfa)^2    n  nm   .  dt    n  nm      dt    n  nm  |
+    // | dt.(1+alfa)   n  nm     2   nm  n    dt.(1+alfa)^2   n  nm   .  dt    n  nm      dt    n  nm  |
     // |_. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  _|
 
     // -----------------------------------------------------------------
@@ -721,7 +721,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_dphi(
       // Evaluate dN_dphi_
       // ---------------------------------------------------------------
       (*dN_dphi_)(i+k,index  ) = C/(dt*(1.0+alfa))*(Pn-Pnm)
-        - 0.5*(Qn+Qnm) - 2.0*C*alfa*dt*R/(pow(1.0+alfa,2.0))*(Qn-Qnm);
+        - 0.5*(Qn+Qnm) - 2.0*C*alfa*R/((pow(1.0+alfa,2.0))*dt)*(Qn-Qnm);
 
       (*dN_dphi_)(i+k,index+1) = R2/(dt)*(Pn-Pnm)
         - R1*R2/dt*(Qn-Qnm);

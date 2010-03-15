@@ -1819,6 +1819,12 @@ void DRT::ELEMENTS::Fluid3Surface::AreaCaculation(ParameterList& params,
                                                   DRT::Discretization& discretization,
                                                   vector<int>&               lm)
 {
+  
+  if (this->Owner() !=  discretization.Comm().MyPID())
+  {
+    params.set<double>("Area calculation", 0.0);
+    return;
+  }
   const int iel   = this->NumNode();
   const DiscretizationType distype = this->Shape();
   // allocate vector for shape functions and matrix for derivatives
@@ -1952,6 +1958,11 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCalculation(ParameterList& p
                                                                 DRT::Discretization&       discretization,
                                                                 vector<int>&               lm)
 {
+  if (this->Owner() !=  discretization.Comm().MyPID())
+  {
+    params.set<double>("Outlet flowrate", 0.0);
+    return;
+  }
   const int iel   = this->NumNode();
   const DiscretizationType distype = this->Shape();
   // allocate vector for shape functions and matrix for derivatives
