@@ -19,9 +19,6 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_StrUtils.hpp>
 #include <Teuchos_any.hpp>
 
-#include <AztecOO.h>
-
-
 #include "drt_validparameters.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -41,6 +38,8 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_invanalysis.H"
 #include "../drt_inpar/inpar_searchtree.H"
 #include "../drt_inpar/inpar_xfem.H"
+
+#include <AztecOO.h>
 
 /*----------------------------------------------------------------------*/
 //! Print function to be called from C
@@ -347,7 +346,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>("Polynomial","Nurbs"),
                                tuple<int>(1,0),
                                &type);
-                               
+
   setStringToIntegralParameter<int>("PATSPEC","No","Triggers application of patient specific tools in discretization construction",yesnotuple,yesnovalue,&type);
 
   /*----------------------------------------------------------------------*/
@@ -893,7 +892,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
   DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
-  
+
   setStringToIntegralParameter<INPAR::CONTACT::SolvingStrategy>("STRATEGY","LagrangianMultipliers","Type of employed solving strategy",
         tuple<std::string>("LagrangianMultipliers","lagrange", "Lagrange",
                            "PenaltyMethod","penalty", "Penalty",
@@ -956,7 +955,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                           INPAR::MORTAR::lagmult_pwlin_pwlin, INPAR::MORTAR::lagmult_pwlin_pwlin,
                                           INPAR::MORTAR::lagmult_lin_lin, INPAR::MORTAR::lagmult_lin_lin),
                                &scontact);
-  
+
   setStringToIntegralParameter<int>("CROSSPOINTS","No","If chosen, multipliers are removed from crosspoints / edge nodes",
                                yesnotuple,yesnovalue,&scontact);
 
