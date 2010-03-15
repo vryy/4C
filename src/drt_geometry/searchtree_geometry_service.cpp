@@ -13,7 +13,7 @@ Maintainer: Ursula Mayer
 #ifdef CCADISCRET
 #include "searchtree_geometry_service.H"
 #include "intersection_service.H"
-#include "../drt_contact/drt_celement.H"
+#include "../drt_contactnew/contact_element.H"
 
 
 /*----------------------------------------------------------------------*
@@ -541,7 +541,7 @@ LINALG::Matrix<3,2> GEO::computeContactXAABB(
     const int nsd = 2;
     LINALG::Matrix<3,2> XAABB;
 
-    CONTACT::CElement* selement = static_cast<CONTACT::CElement*>(element);
+    CONTACT::CoElement* selement = static_cast<CONTACT::CoElement*>(element);
     double area = selement->Area();
 
     // first node
