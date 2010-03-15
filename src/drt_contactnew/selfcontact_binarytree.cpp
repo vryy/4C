@@ -642,13 +642,18 @@ void CONTACT::SelfDualEdge::CalculateCosts()
  |  ctor SelfBinaryTree (public)                              popp 11/09|
  *----------------------------------------------------------------------*/
 CONTACT::SelfBinaryTree::SelfBinaryTree(DRT::Discretization& discret,
+                                        const Epetra_Comm* lcomm,
                                         RCP<Epetra_Map> elements,
                                         int dim, double eps) :
 idiscret_(discret),
+lcomm_(lcomm),
 elements_(elements),
 dim_(dim),
 eps_(eps)
 {
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+  
   // initialize sizes
   treenodes_.resize(1);
   leafsmap_.clear();
@@ -1029,6 +1034,9 @@ eps_(eps)
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTree::SetEnlarge(bool isinit)
 {
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+    
   // minimal length of finite elements
   double lmin = 1.0e12;
   
@@ -1817,6 +1825,9 @@ void CONTACT::SelfBinaryTree::MasterSlaveSorting(int eleID,bool isslave)
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTree::SearchContactCombined()
 {
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+    
   // check is root node available
   if (root_==null) dserror("ERROR: No root node for search!");
   

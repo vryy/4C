@@ -697,11 +697,9 @@ void MORTAR::MortarInterface::Initialize()
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::SetState(const string& statename, const RCP<Epetra_Vector> vec)
 {
-  // ***WARNING:*** This is not possible here, as idiscret_->SetState()
-  // needs all procs around, not only the interface local ones!
-  // get out of here if not participating in interface
-  // if (!lComm())
-  //   return;
+  // ***WARNING:*** This is commented out here, as idiscret_->SetState()
+  // needs all the procs around, not only the interface local ones!
+  // if (!lComm()) return;
 
   if (statename=="displacement")
   {
@@ -803,10 +801,7 @@ void MORTAR::MortarInterface::Evaluate()
 {
   // interface needs to be complete
   if (!Filled() && Comm().MyPID()==0)
-      dserror("ERROR: FillComplete() not called on interface %", id_);
-
-  // get out of here if not participating in interface
-  if (!lComm()) return;
+    dserror("ERROR: FillComplete() not called on interface %", id_);
 
   //**********************************************************************
   // search algorithm
@@ -817,8 +812,11 @@ void MORTAR::MortarInterface::Evaluate()
   if (SearchAlg()==INPAR::MORTAR::search_bfnode)          EvaluateSearch();
   else if (SearchAlg()==INPAR::MORTAR::search_bfele)      EvaluateSearchBruteForce(SearchParam());
   else if (SearchAlg()==INPAR::MORTAR::search_binarytree) EvaluateSearchBinarytree();
-  else                                                     dserror("ERROR: Invalid search algorithm");
+  else                                                    dserror("ERROR: Invalid search algorithm");
 
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+  
   // loop over proc's slave nodes of the interface
   // use standard column map to include processor's ghosted nodes
   // use boundary map to include slave side boundary nodes

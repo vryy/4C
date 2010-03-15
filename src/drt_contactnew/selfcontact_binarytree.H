@@ -594,11 +594,13 @@ public:
   For now, we only consider the serial case (1 processor) here!!!
   
   \param discret (in):    The contact interface discretization
+  \param lcomm (in):      Local interface communicator
   \param elements (in):   All elements on self contact interface (fully overlapping map)
   \param dim (in):        The problem dimension 
   
   */
   SelfBinaryTree(DRT::Discretization& discret,
+                 const Epetra_Comm* lcomm,
                  RCP<Epetra_Map> elements,
                  int dim, double eps);
 
@@ -621,6 +623,12 @@ public:
 
   */
   virtual DRT::Discretization& Discret() const { return idiscret_; }
+  
+  /*!
+  \brief Get local interface communicator (only contains participating processors)
+
+  */
+  virtual const Epetra_Comm* lComm() const { return lcomm_; }
   
   /*!
   \brief Get matrix of DOP normals
@@ -753,6 +761,7 @@ protected:
   SelfBinaryTree(const SelfBinaryTree& old);
 
   DRT::Discretization&                       idiscret_;       // contact interface discretization
+  const Epetra_Comm*                         lcomm_;          // local interface communicator
   RCP<Epetra_Map>                            elements_;       // all contact elements on surface (full map)
   
   const int                                  dim_;            // problem dimension (2D or 3D)

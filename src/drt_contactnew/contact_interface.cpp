@@ -97,8 +97,9 @@ void CONTACT::CoInterface::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::CreateSearchTree()
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return;
+  // ***WARNING:*** This is commented out here, as idiscret_->SetState()
+  // needs all the procs around, not only the interface local ones!
+  // if (!lComm()) return;
   
   // warning
 #ifdef MORTARGMSHCTN
@@ -124,12 +125,16 @@ void CONTACT::CoInterface::CreateSearchTree()
       RCP<Epetra_Map> elefullmap = rcp(new Epetra_Map(*idiscret_->ElementColMap()));
 
       // create binary tree object for self contact search
-      binarytreeself_ = rcp(new CONTACT::SelfBinaryTree(Discret(),elefullmap,Dim(),SearchParam()));
+      // (TODO: NOTE THAT SELF CONTACT SEARCH IS NOT YET PARALLELIZED!)
+      binarytreeself_ = rcp(new CONTACT::SelfBinaryTree(Discret(),lComm(),elefullmap,Dim(),SearchParam()));
 
     }
     //*****TWO BODY CONTACT*****
     else
     {
+      // get out of here if not participating in interface
+      if (!lComm()) return;
+      
       // create binary tree object for contact search and setup tree
       binarytree_ = rcp(new MORTAR::BinaryTree(Discret(),selecolmap_,melefullmap_,Dim(),SearchParam()));
 
@@ -153,8 +158,7 @@ void CONTACT::CoInterface::CreateSearchTree()
 void CONTACT::CoInterface::Initialize()
 {
   // get out of here if not participating in interface
-  if (!lComm())
-    return;
+  if (!lComm()) return;
 
   // loop over all nodes to reset normals, closestnode and Mortar maps
   // (use fully overlapping column map)
@@ -252,8 +256,9 @@ void CONTACT::CoInterface::Initialize()
  *----------------------------------------------------------------------*/
 bool CONTACT::CoInterface::EvaluateSearchBinarytree()
 {
-  // get out of here if not participating in interface
-  if (!lComm()) return true;
+  // ***WARNING:*** This is commented out here, as UpdateMasterSlaveSets()
+  // needs all the procs around, not only the interface local ones!
+  // if (!lComm()) return true;
 
   // *********************************************************************
   // Possible versions for self contact:
@@ -294,6 +299,9 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
   // *********************************************************************
   else
   {
+    // get out of here if not participating in interface
+    if (!lComm()) return true;
+    
     // calculate minimal element length
     binarytree_->SetEnlarge(false);
 
