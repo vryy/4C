@@ -155,17 +155,17 @@ LINALG::Solver::~Solver()
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Reset()
 {
-  A_        = null;
-  Aplus_    = null;
-  P_        = null;
-  Pmatrix_  = null;
-  x_        = null;
-  b_        = null;
   lp_       = rcp(new Epetra_LinearProblem());
-  factored_ = false;
-  ncall_    = 0;
   amesos_   = null;
   aztec_    = null;
+  P_        = null;
+  Pmatrix_  = null;
+  A_        = null;
+  Aplus_    = null;
+  x_        = null;
+  b_        = null;
+  factored_ = false;
+  ncall_    = 0;
 #ifdef PARALLEL
 #ifdef SPOOLES_PACKAGE
   if (frontmtx_)       FrontMtx_free(frontmtx_);        frontmtx_      =NULL;

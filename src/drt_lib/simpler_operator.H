@@ -87,7 +87,13 @@ public:
   /*!
   \brief Destructor
   */
-  virtual ~SIMPLER_Operator() {}
+  virtual ~SIMPLER_Operator()
+  {
+    vsolver_ = Teuchos::null;
+    psolver_ = Teuchos::null;
+    Pv_ = Teuchos::null;
+    Pp_ = Teuchos::null;
+  }
 
   /*!
   \brief Returns the label of this class.
