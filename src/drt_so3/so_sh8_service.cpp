@@ -46,7 +46,7 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
   }
   // vector of df(origin), ie parametric derivatives of shape functions
   // evaluated at the origin (r,s,t)=(0,0,0)
-  const double df0_vector[NUMDOF_SOH8*NUMNOD_SOH8] =
+  const double df0_vector[] =
                {-0.125,-0.125,-0.125,
                 +0.125,-0.125,-0.125,
                 +0.125,+0.125,-0.125,
@@ -76,12 +76,14 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
   const double t_stretch = sqrt(jac0stretch(2,2));
 
   // minimal stretch equivalents with "thinnest" direction
-  const double max_stretch = max(r_stretch, max(s_stretch, t_stretch));
+  //const double max_stretch = max(r_stretch, max(s_stretch, t_stretch));
+  double max_stretch;
 
   ThicknessDirection thickdir = none; // of actual element
   int thick_index = -1;
 
-  if (max_stretch == r_stretch) {
+  if (r_stretch>=s_stretch and r_stretch>=t_stretch) {
+    max_stretch = r_stretch;
     if ((max_stretch / s_stretch <= 1.5) || (max_stretch / t_stretch <=1.5)) {
       //cout << "ID: " << this->Id() << ", has aspect ratio of: ";
       //cout << max_stretch / s_stretch << " , " << max_stretch / t_stretch << endl;
@@ -91,7 +93,8 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
     thickdir = autor;
     thick_index = 0;
   }
-  else if (max_stretch == s_stretch) {
+  else if (s_stretch>r_stretch and s_stretch>=t_stretch) {
+    max_stretch = s_stretch;
     if ((max_stretch / r_stretch <= 1.5) || (max_stretch / t_stretch <=1.5)) {
       //cout << "ID: " << this->Id() << ", has aspect ratio of: ";
       //cout << max_stretch / s_stretch << " , " << max_stretch / t_stretch << endl;
@@ -101,7 +104,8 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
     thickdir = autos;
     thick_index = 1;
   }
-  else if (max_stretch == t_stretch) {
+  else if (t_stretch>r_stretch and t_stretch>s_stretch) {
+    max_stretch = t_stretch;
     if ((max_stretch / r_stretch <= 1.5) || (max_stretch / s_stretch <=1.5)) {
       //cout << "ID: " << this->Id() << ", has aspect ratio of: ";
       //cout << max_stretch / s_stretch << " , " << max_stretch / t_stretch << endl;
@@ -113,7 +117,7 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
   }
 
   if (thick_index == -1)
-    dserror("Trouble with thick_index=%g", thick_index);
+    dserror("Trouble with thick_index=%d %g,%g,%g,%g", thick_index,r_stretch,s_stretch,t_stretch,max_stretch);
 
   // thickness-vector in parameter-space, has 1.0 in thickness-coord
   LINALG::Matrix<NUMDIM_SOH8,1> loc_thickvec(true);
