@@ -972,6 +972,50 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
           }
         } // if (kinetics=="Butler-Volmer-Yang1997")
       }
+      else if(kinetics=="Tafel") // Tafel law (= remove anodic term from Butler-Volmer!)
+      {
+        // concentration-dependent Tafel law
+        double pow_conint_gamma_k(0.0);
+
+  #ifdef DEBUG
+        // some safety checks/ user warnings
+        if (((-alphac)*frt*eta) > 100.0)
+            cout<<"WARNING: Exp(alpha_c...) in Butler-Volmer law is near overflow!"
+            <<exp((-alphac)*frt*eta)<<endl;
+  #endif
+          if ((conint/refcon) < EPS13)
+          {
+            pow_conint_gamma_k = pow(EPS13,gamma);
+  #ifdef DEBUG
+            cout<<"WARNING: Rel. Conc. in Tafel formula is zero/negative: "<<(conint/refcon)<<endl;
+            cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<endl;
+  #endif
+          }
+          else
+            pow_conint_gamma_k = pow(conint/refcon,gamma);
+
+          // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
+          const double expterm = -exp((-alphac)*frt*eta);
+
+          double concterm = 0.0;
+          if (conint > EPS13)
+            concterm = gamma*pow(conint,(gamma-1.0))/pow(refcon,gamma);
+          else
+            concterm = gamma*pow(EPS13,(gamma-1.0))/pow(refcon,gamma);
+
+          for (int vi=0; vi<iel; ++vi)
+          {
+            fac_fz_i0_funct_vi = fac*fz*i0*funct_(vi);
+            // ---------------------matrix
+            for (int ui=0; ui<iel; ++ui)
+            {
+              emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += fac_fz_i0_funct_vi*concterm*funct_(ui)*expterm;
+              emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*pow_conint_gamma_k*(-alphac)*frt*exp((-alphac)*frt*eta)*funct_(ui);
+            }
+            // ------------right-hand-side
+            erhs[vi*numdofpernode_+k] -= fac_fz_i0_funct_vi*pow_conint_gamma_k*expterm;
+          }
+      }
       else if(kinetics=="linear") // linear law:  i_n = i_0*(alphaa*frt*(V_M - phi) + 1.0)
       {
         for (int vi=0; vi<iel; ++vi)
@@ -1195,6 +1239,16 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
       // compute integrals
       overpotentialint += eta * fac;
       currentintegral += (-i0) * (alphaa*frt*eta + 1.0) * fac; // the negative(!) normal flux density
+      boundaryint += fac;
+      concentrationint += conint*fac;
+    }
+    else if (iselch && (kinetics=="Tafel")) // concentration-dependent Tafel kinetics
+    {
+      const double expterm = pow(conint/refcon,gamma) * (-exp((-alphac)*frt*eta));
+      linea = pow(conint/refcon,gamma) * frt*(alphac*exp((-alphac)*frt*eta));
+      // compute integrals
+      overpotentialint += eta * fac;
+      currentintegral += (-i0) * expterm * fac; // the negative(!) normal flux density
       boundaryint += fac;
       concentrationint += conint*fac;
     }
