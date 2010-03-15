@@ -13,6 +13,11 @@ Maintainer: Malte Neumann
 #include <stdarg.h>
 #include "../headers/standardtypes.h"
 #include "../io/io.h"
+
+#ifdef CCADISCRET
+#include "../drt_lib/drt_dserror.H"
+#endif
+
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -581,7 +586,7 @@ void dsmemreport()
 } /* end of dsmemreport */
 
 
-
+#ifndef CCADISCRET
 
 /*
   The latest file position.
@@ -774,7 +779,7 @@ void dslatest(char* file, INT line)
   latest_line = line;
 }
 
-
+#endif
 
 
 

@@ -13,6 +13,9 @@ Maintainer: Michael Gee
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "../io/io.h"
+#ifdef CCADISCRET
+#include "../drt_lib/drt_dserror.H"
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |

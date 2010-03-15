@@ -116,8 +116,11 @@ void ntaini_ccadiscret(int argc, char** argv)
   if (argc > 3)
   {
     std::string restart(argv[3]);
-    if (restart=="restart")
-      genprob.restart++;
+    if (restart.substr( 0, 8 )=="restart=")
+    {
+      int r = atoi( restart.substr( 8, std::string::npos ).c_str() );
+      genprob.restart = r;
+    }
   }
 }
 

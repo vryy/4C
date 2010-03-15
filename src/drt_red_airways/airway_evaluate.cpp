@@ -14,11 +14,6 @@ Maintainer: Mahmoud Ismail
 #ifdef D_RED_AIRWAYS
 #ifdef CCADISCRET
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
 
 #include "red_airway.H"
 #include "airway_impl.H"

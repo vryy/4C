@@ -15,11 +15,6 @@ written by: Alexander Volf
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "so_tet10.H"
 #include "../drt_lib/drt_utils.H"

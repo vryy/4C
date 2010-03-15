@@ -108,6 +108,24 @@ void cpp_dsassert_func(const std::string file, const int line, const bool test, 
 } /* end of dsassert_func */
 
 /*----------------------------------------------------------------------*
+ |  assert function                                          mwgee 11/06|
+ | used by macro dsassert in dserror.H                                  |
+ *----------------------------------------------------------------------*/
+extern "C"
+void cpp_dsassert_func(const char* file, const int line, const int test, const char* text)
+{
+#ifdef DEBUG
+  if (!test)
+  {
+    latest_file = file;
+    latest_line = line;
+    cpp_dserror_func(text);
+  }
+#endif
+  return;
+} /* end of dsassert_func */
+
+/*----------------------------------------------------------------------*
  |  set file and line                                        mwgee 11/06|
  | used by macro dsassert and dserror in dserror.H                      |
  *----------------------------------------------------------------------*/
@@ -116,6 +134,70 @@ void cpp_dslatest(const std::string file, const int line)
   latest_file = file;
   latest_line = line;
 }
+
+/*----------------------------------------------------------------------*
+ |  set file and line                                        mwgee 11/06|
+ | used by macro dsassert and dserror in dserror.H                      |
+ *----------------------------------------------------------------------*/
+extern "C"
+void cpp_dslatest(const char* file, const int line)
+{
+  latest_file = file;
+  latest_line = line;
+}
+
+/*----------------------------------------------------------------------*
+ | error function                                            mwgee 11/06|
+ | used by macro dsassert in dserror.H                                  |
+ *----------------------------------------------------------------------*/
+extern "C"
+void cpp_dserror_func(const char* text, ...)
+{
+  int myrank;
+#ifdef PARALLEL
+  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+#else
+  myrank=0;
+#endif
+
+  char errbuf[2048];
+
+  va_list ap;
+  va_start(ap, text);
+
+  sprintf(errbuf,"PROC %d ERROR in %s, line %i:\n",myrank,latest_file.c_str(),latest_line);
+  vsprintf(&errbuf[strlen(errbuf)],text,ap);
+
+  va_end(ap);
+
+#ifdef THROWELEMENTERRORS
+  if (elementcall)
+  {
+    throw std::string(errbuf);
+  }
+  else
+#endif
+  {
+    char line[] = "=========================================================================\n";
+    printf("\n\n");
+    printf(line);
+    printf(errbuf);
+    printf("\n");
+    printf(line);
+    printf("\n\n");
+    fflush(stdout);
+
+#ifdef DSERROR_DUMP
+    abort();
+#endif
+
+#ifdef PARALLEL
+    MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
+#else
+    exit(0);
+#endif
+  }
+} /* end of dserror_func */
 
 /*----------------------------------------------------------------------*
  | error function                                            mwgee 11/06|

@@ -14,11 +14,6 @@ Maintainer: Mahmoud Ismail
 #ifdef D_ARTNET
 #ifdef CCADISCRET
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
 
 #include "artery.H"
 #include "artery_lin_exp.H"

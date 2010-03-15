@@ -46,6 +46,9 @@ table. This table can be queried for those values quite easily.
 
 #include "pss_table.h"
 
+#ifdef CCADISCRET
+#include "../drt_lib/drt_dserror.H"
+#endif
 
 /*!----------------------------------------------------------------------
 \brief ranks and communicators

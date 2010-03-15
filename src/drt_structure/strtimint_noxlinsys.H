@@ -33,7 +33,6 @@
 /* forward declarations */
 class SparseMatrix;
 class BlockSparseMatrix;
-class LINALG::Solver;
 
 namespace NOX {
 namespace STR {

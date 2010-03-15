@@ -35,7 +35,7 @@ const int MAXNODHARDCODED = 1000;
 /*----------------------------------------------------------------------*/
 void write_vector_result(string result_name, PostField* field, PostResult* result)
 {
-  CHAR* componentnames[] = { "x", "y", "z" };
+  char* componentnames[] = { "x", "y", "z" };
 
   //double time = map_read_real(result->group(), "time");
   int step = map_read_int(result->group(), "step");
@@ -124,8 +124,8 @@ void write_scalar_result(string result_name, PostField* field, PostResult* resul
 void write_serialdensematrix_result(string result_name, PostField* field,
                                     PostResult* result)
 {
-  CHAR* gaussname = "";
-  CHAR* componentnames[] = { "xx", "yy", "zz", "xy", "yz", "xz"};
+  char* gaussname = "";
+  char* componentnames[] = { "xx", "yy", "zz", "xy", "yz", "xz"};
   int numdim = 0;
   int numstress = 0;
 

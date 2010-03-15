@@ -20,6 +20,10 @@ Maintainer: Malte Neumann
 #include "../drt_lib/drt_elementdefinition.H"
 #include "../drt_lib/drt_resulttest.H"
 
+#ifdef CCADISCRET
+#include "../drt_lib/drt_dserror.H"
+#endif
+
 #ifdef TRAP_FE
 
 #ifdef LINUX_MUENCH

@@ -16,11 +16,6 @@ Maintainer: Caroline Danowski
 #ifdef CCADISCRET
 #ifdef D_THERMO
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
 
 /*----------------------------------------------------------------------*
  |  headers                                                    gjb 01/08|

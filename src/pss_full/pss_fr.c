@@ -13,6 +13,11 @@ Maintainer: Malte Neumann
 
 #include <ctype.h>
 #include "../headers/standardtypes.h"
+
+#ifdef CCADISCRET
+#include "../drt_lib/drt_dserror.H"
+#endif
+
 /*!----------------------------------------------------------------------
 \brief ranks and communicators
 

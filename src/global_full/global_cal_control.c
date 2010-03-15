@@ -30,6 +30,10 @@ Maintainer: Michael Gee
 #include "../tsi_full/tsi_prototypes.h"
 #endif
 
+#ifdef CCADISCRET
+#include "../drt_lib/drt_dserror.H"
+#endif
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |

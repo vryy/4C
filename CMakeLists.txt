@@ -222,9 +222,6 @@ set(OBJS_DRT_B2_LIB
   src/drt_beam2/beam2_input.cpp
   src/drt_beam2/beam2_evaluate.cpp
 )
-set(OBJS_POST_FILE_MANAGER
-  src/post_file_manager/post_file_manager.c
-)
 set(OBJS_DRT_LIB
   src/drt_lib/drt_discret.cpp
   src/drt_lib/drt_discret_fillcomplete.cpp
@@ -350,15 +347,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/holzapfelcardiovascular.cpp
   src/drt_mat/humphreycardiovascular.cpp
 )
-set(OBJS_MAT
-  src/materials/mat_el_iso.c
-  src/materials/mat_el_orth.c
-  src/materials/mat_pl_hoff.c
-  src/materials/mat_pl_mises_lin.c
-  src/materials/mat_pl_epc.c
-  src/materials/mat_pl_dp_lin.c
-  src/materials/mat_el_ogden.c
-)
 set(OBJS_DRT_STATMECH
   src/drt_statmech/statmech_time.cpp
   src/drt_statmech/statmech_manager.cpp
@@ -389,22 +377,6 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_coupling_mortar.cpp
   src/drt_adapter/adapter_fluid_combust.cpp
   src/drt_adapter/adapter_fluid_projection.cpp
-)
-set(OBJS_WALLGE
-  src/wallge/wge_setdof.c
-  src/wallge/wge_inpele.c
-  src/wallge/wge_main.c
-  src/wallge/wge_init.c
-  src/wallge/wge_intg.c
-  src/wallge/wge_static_ke.c
-  src/wallge/wge_bope.c
-  src/wallge/wge_call_mat.c
-  src/wallge/wge_mat_damage.c
-  src/wallge/wge_strain.c
-  src/wallge/wge_damage_serv.c
-  src/wallge/wge_stiff.c
-  src/wallge/wge_stress.c
-  src/wallge/wge_fext.c
 )
 set(OBJS_DRT_F2_LIB
   src/drt_f2/fluid2_evaluate.cpp
@@ -480,18 +452,6 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/drt_validmaterials.cpp
   src/drt_inpar/drt_boolifyparameters.cpp
 )
-set(OBJS_POST_COMMON
-  src/post_common/post_am.c
-  src/post_common/post_ds.c
-  src/post_common/post_perf.c
-  src/post_common/post_table.c
-  src/post_common/post_table_iter.c
-  src/post_common/post_elements.c
-  src/post_common/post_set.c
-  src/post_common/post_design.c
-  src/post_common/post_octtree.c
-  src/post_common/post_common.c
-)
 set(OBJS_DRT_ARTNET
   src/drt_art_net/art_net_dyn_drt.cpp
   src/drt_art_net/artnetexplicitintegration.cpp
@@ -514,21 +474,6 @@ set(OBJS_INTERSECTION
 )
 set(OBJS_POST_DRT_MONITOR
   src/post_monitor/post_drt_monitor.cpp
-)
-set(OBJS_TSI
-  src/tsi_full/tsi_coupling.c
-  src/tsi_full/tsi_dyn.c
-  src/tsi_full/tsi_fehlbg4.c
-  src/tsi_full/tsi_init.c
-  src/tsi_full/tsi_st_cendif.c
-  src/tsi_full/tsi_st_fehlbg.c
-  src/tsi_full/tsi_st_genalp.c
-  src/tsi_full/tsi_st_genalp_sub.c
-  src/tsi_full/tsi_th_ost_st_genalp.c
-  src/tsi_full/tsi_th_ost_sub.c
-  src/tsi_full/tsi_th_presc_st_genalp.c
-  src/tsi_full/tsi_th_stat.c
-  src/tsi_full/tsi_th_stat_sub.c
 )
 set(OBJS_DRT_ARTNET_LIB
   src/drt_art_net/artery.cpp
@@ -553,46 +498,21 @@ set(OBJS_DRT_COMBUST
   src/drt_combust/combust_fluidimplicitintegration.cpp
   src/drt_combust/combust_fluidresulttest.cpp
 )
-set(OBJS_F3F
-  src/fluid3_fast/f3f_calele.c
-  src/fluid3_fast/f3f_calint.c
-  src/fluid3_fast/f3f_calinta.c
-  src/fluid3_fast/f3f_calservice.c
-  src/fluid3_fast/f3f_calstabpar.c
-  src/fluid3_fast/f3f_caltau.c
-  src/fluid3_fast/f3f_main.c
-  src/fluid3_fast/f3f_restart.c
-  src/fluid3_fast/f3f_calstress.c
-  src/fluid3_fast/f3f_calerror.c
-  src/fluid3_fast/f3f_int_usfem.c
-  src/fluid3_fast/f3f_liftdrag.c
-  src/fluid3_fast/f3f_out.c
-)
-set(OBJS_F2ML
-  src/fluid2ml/f2_mlbubmat.c
-  src/fluid2ml/f2_mlele.c
-  src/fluid2ml/f2_mlelesize.c
-  src/fluid2ml/f2_mlgalmat.c
-  src/fluid2ml/f2_mlint.c
-  src/fluid2ml/f2_mlservice.c
-  src/fluid2ml/f2_mlstabmat.c
-  src/fluid2ml/f2_mlstabpar.c
-  src/fluid2ml/f2_mlsubmesh.c
-  src/fluid2ml/f2_mltimerhs.c
-  src/fluid2ml/f2_mlvmmrhs.c
+set(OBJS_LINALG
+  src/drt_lib/linalg_ana.cpp
+  src/drt_lib/linalg_condest.cpp
+  src/drt_lib/linalg_solver.cpp
+  src/drt_lib/linalg_solver_spooles.cpp
+  src/drt_lib/linalg_precond.cpp
+  src/drt_lib/linalg_projected_precond.cpp
+  src/drt_lib/linalg_projected_operator.cpp
+  src/drt_lib/linalg_krylov_projector.cpp
+  src/drt_lib/linalg_mlapi_operator.cpp
+  src/drt_lib/simpler_operator.cpp
+  src/drt_lib/linalg_downwindmatrix.cpp
 )
 set(OBJS_FILTER_COMMON
   src/filter_common/filter_evaluation.cpp
-)
-set(OBJS_POST_CMP
-  src/post_cmp/post_cmp.c
-)
-set(OBJS_F3PRO
-  src/fluid3_pro/f3pro_inpele.c
-  src/fluid3_pro/f3pro_calele.c
-  src/fluid3_pro/f3pro_calint.c
-  src/fluid3_pro/f3pro_calservice.c
-  src/fluid3_pro/f3pro_main.c
 )
 set(OBJS_OUTPUT
   src/output/out_global.c
@@ -605,32 +525,9 @@ set(OBJS_OUTPUT
   src/output/out_checkfilesize.c
   src/output/out_plt.c
 )
-set(OBJS_POST_VISUAL3
-  src/post_visual/post_visual3.c
-  src/post_visual/post_visual3_functions.c
-)
-set(OBJS_POST_VISUAL2
-  src/post_visual/post_visual2.c
-)
 set(OBJS_DRT_STRU_MULTI
   src/drt_stru_multi/microstatic.cpp
   src/drt_stru_multi/convert_mat.cpp
-)
-set(OBJS_OPT
-  src/optimization/opt_cal_main.c
-  src/optimization/input_optdata.c
-  src/optimization/opt_init.c
-  src/optimization/opt_cal_static_control.c
-  src/optimization/opt_cal_nlnstatic_control.c
-  src/optimization/opt_cal_eigfrq_struct.c
-  src/optimization/opt_c1_cint.c
-  src/optimization/opt_w1_cint.c
-  src/optimization/opt_fsd.c
-  src/optimization/opt_func.c
-  src/optimization/opt_linking.c
-  src/optimization/opt_vsa.c
-  src/optimization/opt_smo.c
-  src/optimization/opt_g_out.c
 )
 set(OBJS_DRT_CONTACTNEW
   src/drt_contactnew/contact_abstract_strategy.cpp
@@ -713,13 +610,6 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_hex8p1j1_input.cpp
   src/drt_so3/so_hex8p1j1_evaluate.cpp
 )
-set(OBJS_F2IS
-  src/fluid2_is/f2is_main.c
-  src/fluid2_is/f2is_calele.c
-  src/fluid2_is/f2is_calint.c
-  src/fluid2_is/f2is_service.c
-  src/fluid2_is/f2is_inpele.c
-)
 set(OBJS_POST_DRT_ENSIGHT
   src/post_ensight/post_drt_ensight_writer.cpp
   src/post_ensight/post_drt_ensight_writer_nurbs.cpp
@@ -728,22 +618,10 @@ set(OBJS_POST_DRT_ENSIGHT
   src/post_ensight/post_drt_ensight_thermo_heatflux.cpp
   src/post_ensight/post_drt_ensight.cpp
 )
-set(OBJS_POST_OUT
-  src/post_out/post_out.c
-)
 set(OBJS_DRT_ELCH
   src/drt_elch/elch_dyn.cpp
   src/drt_elch/elch_algorithm.cpp
   src/drt_elch/elch_moving_boundary_algorithm.cpp
-)
-set(OBJS_F2_TDS
-  src/fluid2_TDS/f2_int_tds.c
-  src/fluid2_TDS/f2_calmat_tds.c
-  src/fluid2_TDS/f2_update_tds.c
-  src/fluid2_TDS/f2_caltau_tds.c
-  src/fluid2_TDS/f2_calmat_incr_acc_gen_alpha_tds.c
-  src/fluid2_TDS/f2_calservice_for_TDS.c
-  src/fluid2_TDS/f2_calrhs_incr_acc_gen_alpha_tds.c
 )
 set(OBJS_DRT_BELE3_LIB
   src/drt_bele3/bele3.cpp
@@ -776,80 +654,9 @@ set(OBJS_DRT_TSI
   src/drt_tsi/tsi_dyn.cpp
   src/drt_tsi/tsi_utils.cpp
 )
-set(OBJS_BRICK1
-  src/brick1/c1_out.c
-  src/brick1/c1_gid.c
-  src/brick1/c1_bop.c
-  src/brick1/c1_call_mat.c
-  src/brick1/c1_call_stiff.c
-  src/brick1/c1_funcderiv.c
-  src/brick1/c1_inpele.c
-  src/brick1/c1_intg.c
-  src/brick1/c1_jaco.c
-  src/brick1/c1_main.c
-  src/brick1/c1_mat_linel.c
-  src/brick1/c1_cint.c
-  src/brick1/c1_cal_deriv.c
-  src/brick1/c1_mat_neohook.c
-  src/brick1/c1_mat_plast_mises.c
-  src/brick1/c1_mat_plast_mises_ls.c
-  src/brick1/c1_mat_hyper_polyconvex.c
-  src/brick1/c1_mat_ogden.c
-  src/brick1/c1_mat_itskov.c
-  src/brick1/c1_mat_viscoushyper.c
-  src/brick1/c1_cal_eps.c
-  src/brick1/c1_init.c
-  src/brick1/c1_eas_service.c
-  src/brick1/c1_cstr.c
-  src/brick1/c1_load.c
-  src/brick1/c1_tsi.c
-  src/brick1/c1_surf.c
-  src/brick1/c1_locsys.c
-)
-set(OBJS_POST_MONITOR
-  src/post_monitor/post_monitor.c
-  src/post_monitor/post_out_monitor.c
-)
 set(OBJS_DRT_S8_LIB
   src/drt_s8/shell8.cpp
   src/drt_s8/shell8_line.cpp
-)
-set(OBJS_BEAM3
-  src/beam3/b3_bop.c
-  src/beam3/b3_cal_ele.c
-  src/beam3/b3_cal_fext.c
-  src/beam3/b3_cal_force.c
-  src/beam3/b3_cal_stiff.c
-  src/beam3/b3_call_mat.c
-  src/beam3/b3_dirich.c
-  src/beam3/b3_funcderiv.c
-  src/beam3/b3_init.c
-  src/beam3/b3_inpele.c
-  src/beam3/b3_intg.c
-  src/beam3/b3_jaco.c
-  src/beam3/b3_main.c
-  src/beam3/b3_mat_linel.c
-  src/beam3/b3_mat_plast_mises.c
-  src/beam3/b3_restart.c
-)
-set(OBJS_F3ML
-  src/fluid3ml/f3_mlbubmat.c
-  src/fluid3ml/f3_mlele.c
-  src/fluid3ml/f3_mlelesize.c
-  src/fluid3ml/f3_mlgalmat.c
-  src/fluid3ml/f3_mlint.c
-  src/fluid3ml/f3_mlservice.c
-  src/fluid3ml/f3_mlstabmat.c
-  src/fluid3ml/f3_mlstabpar.c
-  src/fluid3ml/f3_mlsubmesh.c
-  src/fluid3ml/f3_mltimerhs.c
-  src/fluid3ml/f3_mlvmmrhs.c
-)
-set(OBJS_AXISHELL
-  src/axishell/saxi_service.c
-  src/axishell/saxi_inpele.c
-  src/axishell/saxi_main.c
-  src/axishell/saxi_static_ke.c
 )
 set(OBJS_PSS
   src/pss_full/pss_am.c
@@ -893,32 +700,6 @@ set(OBJS_DRT_SCATRA_LIB
 )
 set(OBJS_NURBS_CPP
   src/nurbs/nurbs_wrappers.cpp
-)
-set(OBJS_FSI
-  src/fsi_full/fsi_aitken.c
-  src/fsi_full/fsi_ale.c
-  src/fsi_full/fsi_ale_lin.c
-  src/fsi_full/fsi_ale_nln.c
-  src/fsi_full/fsi_ale_2step.c
-  src/fsi_full/fsi_ale_spring.c
-  src/fsi_full/fsi_ale_laplace.c
-  src/fsi_full/fsi_ale_LAS.c
-  src/fsi_full/fsi_coupforce.c
-  src/fsi_full/fsi_coupling.c
-  src/fsi_full/fsi_coupling_oct.c
-  src/fsi_full/fsi_dyn.c
-  src/fsi_full/fsi_energy.c
-  src/fsi_full/fsi_fluid.c
-  src/fsi_full/fsi_fluid_imp.c
-  src/fsi_full/fsi_fluid_pm_cont.c
-  src/fsi_full/fsi_fluid_pm_discont.c
-  src/fsi_full/fsi_fluid_pm_laplace.c
-  src/fsi_full/fsi_gradient.c
-  src/fsi_full/fsi_relax_intdisp.c
-  src/fsi_full/fsi_service.c
-  src/fsi_full/fsi_mortar.c
-  src/fsi_full/fsi_struct.c
-  src/fsi_full/fsi_newton.c
 )
 set(OBJS_POST_GID_BIN
   src/post_gid/gid_out.c
@@ -975,56 +756,6 @@ set(OBJS_DRT_T2_LIB
   src/drt_truss2/truss2_input.cpp
   src/drt_truss2/truss2_evaluate.cpp
 )
-set(OBJS_THERM2
-  src/therm2/th2_bop.c
-  src/therm2/th2_cfg.c
-  src/therm2/th2_gid.c
-  src/therm2/th2_hflux.c
-  src/therm2/th2_inp.c
-  src/therm2/th2_intg.c
-  src/therm2/th2_jaco.c
-  src/therm2/th2_lin.c
-  src/therm2/th2_load.c
-  src/therm2/th2_main.c
-  src/therm2/th2_mat.c
-  src/therm2/th2_matlin.c
-  src/therm2/th2_shape.c
-  src/therm2/th2_temper.c
-  src/therm2/th2_out.c
-)
-set(OBJS_THERM3
-  src/therm3/th3_bop.c
-  src/therm3/th3_cfg.c
-  src/therm3/th3_gid.c
-  src/therm3/th3_hflux.c
-  src/therm3/th3_inp.c
-  src/therm3/th3_intg.c
-  src/therm3/th3_lin.c
-  src/therm3/th3_load.c
-  src/therm3/th3_load_heatconv.c
-  src/therm3/th3_main.c
-  src/therm3/th3_mat.c
-  src/therm3/th3_matlin.c
-  src/therm3/th3_metr.c
-  src/therm3/th3_out.c
-  src/therm3/th3_shape.c
-  src/therm3/th3_temper.c
-)
-set(OBJS_POST_ENSIGHT
-  src/post_ensight/post_ensight.c
-  src/post_ensight/post_functions.c
-)
-set(OBJS_F3F_F
-  src/fluid3_fast/f3f_calextrhs.f
-  src/fluid3_fast/f3f_calfuncderiv.f
-  src/fluid3_fast/f3f_calgalmat.f
-  src/fluid3_fast/f3f_caliterrhs.f
-  src/fluid3_fast/f3f_interror.f
-  src/fluid3_fast/f3f_calservice_2.f
-  src/fluid3_fast/f3f_calstabmat.f
-  src/fluid3_fast/f3f_calmatvec_usfem.f
-  src/fluid3_fast/f3f_massrhs.f
-)
 set(OBJS_DRT_STATMECH_LIB
   src/drt_statmech/bromotion_manager.cpp
 )
@@ -1050,37 +781,6 @@ set(OBJS_DRT_THERMO
 )
 set(OBJS_POST_GID_TXT
   src/post_gid/gid_out_txt.c
-)
-set(OBJS_FLUID
-  src/fluid_full/fluid_adapt_service.c
-  src/fluid_full/fluid_curvature.c
-  src/fluid_full/fluid_consistbf.c
-  src/fluid_full/fluid_dyn.c
-  src/fluid_full/fluid_dirich.c
-  src/fluid_full/fluid_dirich_tu.c
-  src/fluid_full/fluid_dirich_tu_1.c
-  src/fluid_full/fluid_freesurf.c
-  src/fluid_full/fluid_heightfunc.c
-  src/fluid_full/fluid_imp_semimp.c
-  src/fluid_full/fluid_liftdrag.c
-  src/fluid_full/fluid_pm.c
-  src/fluid_full/fluid_pm_cont.c
-  src/fluid_full/fluid_pm_laplace.c
-  src/fluid_full/fluid_incr_acc_gen_alpha.c
-  src/fluid_full/fluid_imp_semimp_tu.c
-  src/fluid_full/fluid_imp_semimp_tu_1.c
-  src/fluid_full/fluid_mf.c
-  src/fluid_full/fluid_mfcoupling.c
-  src/fluid_full/fluid_mlservice.c
-  src/fluid_full/fluid_pm_service.c
-  src/fluid_full/fluid_pseudofsi.c
-  src/fluid_full/fluid_stationary.c
-  src/fluid_full/fluid_service.c
-  src/fluid_full/fluid_normal.c
-  src/fluid_full/fluid_locsys.c
-  src/fluid_full/fluid_service_tu.c
-  src/fluid_full/fluid_service_tu_1.c
-  src/fluid_full/inp_fluid_start_data.c
 )
 set(OBJS_DRT_FLUID
   src/drt_fluid/fluid_utils.cpp
@@ -1113,36 +813,6 @@ set(OBJS_STRUCTURE
   src/structure/stru_static_lin.c
   src/structure/stru_static_nln.c
   src/structure/stru_static_service.c
-)
-set(OBJS_F2PRO
-  src/fluid2_pro/f2pro_inpele.c
-  src/fluid2_pro/f2pro_calele.c
-  src/fluid2_pro/f2pro_calint.c
-  src/fluid2_pro/f2pro_calservice.c
-  src/fluid2_pro/f2pro_main.c
-)
-set(OBJS_ALE
-  src/ale3/ale_call_stiff.c
-  src/ale3/ale_dirich.c
-  src/ale3/ale_dyn_control.c
-  src/ale3/ale_rhs.c
-  src/ale3/ale_service.c
-  src/ale2/ale2_call_stiff.c
-  src/ale2/ale2_bop.c
-  src/ale2/ale2_funcderiv.c
-  src/ale2/ale2_hourglass.c
-  src/ale2/ale2_inpele.c
-  src/ale2/ale2_intg.c
-  src/ale2/ale2_jaco.c
-  src/ale2/ale2_elm_geometry.c
-  src/ale2/ale2_mesh_quality.c
-  src/ale2/ale2_main.c
-  src/ale2/ale2_mat_linel.c
-  src/ale2/ale2_static_ke.c
-  src/ale3/ale3_service.c
-  src/ale3/ale3_inpele.c
-  src/ale3/ale3_main.c
-  src/ale3/ale3_static_ke.c
 )
 set(OBJS_DRT_TO2_LIB
   src/drt_torsion2/torsion2.cpp
@@ -1177,27 +847,10 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
 set(OBJS_DRT
   src/drt_lib/drt_init_control.cpp
   src/drt_lib/global_inp_control2.cpp
-  src/drt_lib/linalg_ana.cpp
-  src/drt_lib/linalg_condest.cpp
-  src/drt_lib/linalg_solver.cpp
-  src/drt_lib/linalg_solver_spooles.cpp
-  src/drt_lib/linalg_precond.cpp
-  src/drt_lib/linalg_projected_precond.cpp
-  src/drt_lib/linalg_projected_operator.cpp
-  src/drt_lib/linalg_krylov_projector.cpp
-  src/drt_lib/linalg_mlapi_operator.cpp
-  src/drt_lib/simpler_operator.cpp
-  src/drt_lib/linalg_downwindmatrix.cpp
 )
 set(OBJS_DRT_LOMA
   src/drt_loma/loma_dyn.cpp
   src/drt_loma/loma_algorithm.cpp
-)
-set(OBJS_VISUAL
-  src/visual/visual_global.c
-  src/visual/visual_readflaviares.c
-  src/visual/visual_vis2.c
-  src/visual/visual_vis3.c
 )
 set(OBJS_POST_DRT_COMMON
   src/post_drt_common/post_drt_common.cpp
@@ -1254,50 +907,6 @@ set(OBJS_SHELL8
   src/shell8/s8_contact_history.c
   src/shell8/s8_contact_init.c
 )
-set(OBJS_SHELL9
-  src/shell9/s9_main.c
-  src/shell9/s9_a3.c
-  src/shell9/s9_ans.c
-  src/shell9/s9_btdb.c
-  src/shell9/s9_Ccacu_sym.c
-  src/shell9/s9_Ccacu_unsym.c
-  src/shell9/s9_cal_dyn.c
-  src/shell9/s9_call_mat.c
-  src/shell9/s9_cdia.c
-  src/shell9/s9_eas.c
-  src/shell9/s9_eps.c
-  src/shell9/s9_EStrans.c
-  src/shell9/s9_funcderiv.c
-  src/shell9/s9_init.c
-  src/shell9/s9_inpele.c
-  src/shell9/s9_intforce.c
-  src/shell9/s9_intg.c
-  src/shell9/s9_jaco.c
-  src/shell9/s9_load1.c
-  src/shell9/s9_load_surf.c
-  src/shell9/s9_loccoordnode.c
-  src/shell9/s9_mat_linel.c
-  src/shell9/s9_mat_plast_hoff.c
-  src/shell9/s9_mat_plast_mises.c
-  src/shell9/s9_mat_plast_dp.c
-  src/shell9/s9_mat_plast_epc.c
-  src/shell9/s9_math.c
-  src/shell9/s9_out.c
-  src/shell9/s9_out_unsmo.c
-  src/shell9/s9_restart.c
-  src/shell9/s9_static_keug.c
-  src/shell9/s9_stress.c
-  src/shell9/s9_tforce.c
-  src/shell9/s9_tfte.c
-  src/shell9/s9_tmtr.c
-  src/shell9/s9_tvbo.c
-  src/shell9/s9_tvhe.c
-  src/shell9/s9_tvkg.c
-  src/shell9/s9_tvma.c
-  src/shell9/s9_tvmr.c
-  src/shell9/s9_vthv.c
-  src/shell9/s9_xint.c
-)
 set(OBJS_DRT_MAT
   src/drt_mat/micromaterialgp_static.cpp
   src/drt_mat/micromaterial_evaluate.cpp
@@ -1305,151 +914,11 @@ set(OBJS_DRT_MAT
 set(OBJS_FSI_CPP
   src/fsi_full/fsi_dyn_nox.cpp
 )
-set(OBJS_WALL1
-  src/wall1/w1_bop.c
-  src/wall1/w1_b_barop.c
-  src/wall1/w1_cal_deriv.c
-  src/wall1/w1_cal_eps.c
-  src/wall1/w1_cal_stress.c
-  src/wall1/w1_call_mat.c
-  src/wall1/w1_call_stiff.c
-  src/wall1/w1_funcderiv.c
-  src/wall1/w1_init.c
-  src/wall1/w1_inpele.c
-  src/wall1/w1_intg.c
-  src/wall1/w1_final.c
-  src/wall1/w1_jaco.c
-  src/wall1/w1_main.c
-  src/wall1/w1_mat_linel.c
-  src/wall1/w1_mat_plast_dp.c
-  src/wall1/w1_mat_plast_epc.c
-  src/wall1/w1_mat_plast_epc_serv.c
-  src/wall1/w1_mat_plast_epc3D.c
-  src/wall1/w1_mat_plast_mises.c
-  src/wall1/w1_mat_plast_mises3D.c
-  src/wall1/w1_mat_plast_serv.c
-  src/wall1/w1_mat_serv.c
-  src/wall1/w1_static_ke.c
-  src/wall1/w1_static_keug.c
-  src/wall1/w1_boplin.c
-  src/wall1/w1_defgrad.c
-  src/wall1/w1_call_matgeononl.c
-  src/wall1/w1_mat_linelgeonon.c
-  src/wall1/w1_cal_kg.c
-  src/wall1/w1_cal_keu.c
-  src/wall1/w1_cal_fint.c
-  src/wall1/w1_cal_fext.c
-  src/wall1/w1_mat_trans.c
-  src/wall1/w1_cal_trans.c
-  src/wall1/w1_incompmode.c
-  src/wall1/w1_locsys.c
-  src/wall1/w1_math.c
-  src/wall1/w1_restart.c
-  src/wall1/wallcontact_init.c
-  src/wall1/wall_contact_detection.c
-  src/wall1/wall_contact_update.c
-  src/wall1/wall_contact_set.c
-  src/wall1/wall_contact_flag.c
-  src/wall1/wall_contact_augmentation.c
-  src/wall1/wall_contact_his_update.c
-  src/wall1/wall_contact_detection_em.c
-  src/wall1/wall_contact_mid.c
-  src/wall1/wall_contact_augmentation_em.c
-  src/wall1/wall_contact_update_em.c
-  src/wall1/wall_contact_update_em_a.c
-  src/wall1/wall_contact_his_update_em.c
-  src/wall1/w1_history.c
-  src/wall1/w1_kinetic_energy.c
-  src/wall1/w1_strain_energy.c
-  src/wall1/w1_update_history.c
-  src/wall1/w1_mat_dam_mp.c
-  src/wall1/w1_mat_damage.c
-  src/wall1/w1_dam_service.c
-  src/wall1/w1_tri_service.c
-  src/wall1/w1_tsi.c
-)
 set(OBJS_PRE_CURVE
   src/pre_curve/pre_curve.cpp
 )
 set(OBJS_DRT_SURFSTRESS
   src/drt_surfstress/drt_surfstress_manager.cpp
-)
-set(OBJS_FLUID2
-  src/fluid2/f2_calcurvature.c
-  src/fluid2/f2_calelesize.c
-  src/fluid2/f2_calele.c
-  src/fluid2/f2_calele_tu.c
-  src/fluid2/f2_calele_tu_1.c
-  src/fluid2/f2_calelesize_tu.c
-  src/fluid2/f2_calelesize_tu_1.c
-  src/fluid2/f2_calextrhs.c
-  src/fluid2/f2_calfuncderiv.c
-  src/fluid2/f2_calheightfunc_sep.c
-  src/fluid2/f2_calheightfuncmat.c
-  src/fluid2/f2_calheightfuncrhs.c
-  src/fluid2/f2_calint.c
-  src/fluid2/f2_calint_tu.c
-  src/fluid2/f2_calint_tu_1.c
-  src/fluid2/f2_caliterrhs.c
-  src/fluid2/f2_caliterrhs_tu.c
-  src/fluid2/f2_caliterrhs_tu_1.c
-  src/fluid2/f2_calgalmat.c
-  src/fluid2/f2_calgalmat_tu.c
-  src/fluid2/f2_calgalmat_tu_1.c
-  src/fluid2/f2_calmatvec_usfem.c
-  src/fluid2/f2_calservice.c
-  src/fluid2/f2_calservice_tu.c
-  src/fluid2/f2_calservice_tu_1.c
-  src/fluid2/f2_calstabpar.c
-  src/fluid2/f2_calstabpar_tu.c
-  src/fluid2/f2_calstabpar_tu_1.c
-  src/fluid2/f2_calstabmat.c
-  src/fluid2/f2_calstabmat_tu.c
-  src/fluid2/f2_calstabmat_tu_1.c
-  src/fluid2/f2_calstress.c
-  src/fluid2/f2_calsurfrhs.c
-  src/fluid2/f2_caltau.c
-  src/fluid2/f2_caltimerhs_tu.c
-  src/fluid2/f2_caltimerhs_tu_1.c
-  src/fluid2/f2_caltimerhspro_tu.c
-  src/fluid2/f2_caltimerhspro_tu_1.c
-  src/fluid2/f2_caltuvisc.c
-  src/fluid2/f2_calvort.c
-  src/fluid2/f2_int_usfem.c
-  src/fluid2/f2_inpele.c
-  src/fluid2/f2_inpele_tu.c
-  src/fluid2/f2_intg.c
-  src/fluid2/f2_main.c
-  src/fluid2/f2_main_tu.c
-  src/fluid2/f2_massrhs.c
-  src/fluid2/f2_calliftdrag.c
-  src/fluid2/f2_calmat_gfs.c
-  src/fluid2/f2_ass_dof_ndis_tu.c
-  src/fluid2/f2_restart.c
-)
-set(OBJS_FLUID3
-  src/fluid3/f3_calele.c
-  src/fluid3/f3_calelesize.c
-  src/fluid3/f3_calfuncderiv.c
-  src/fluid3/f3_calgalmat.c
-  src/fluid3/f3_calheightfunc_sep.c
-  src/fluid3/f3_calint.c
-  src/fluid3/f3_caliterrhs.c
-  src/fluid3/f3_calmatvec_usfem.c
-  src/fluid3/f3_calservice.c
-  src/fluid3/f3_calstabmat.c
-  src/fluid3/f3_calstabpar.c
-  src/fluid3/f3_calstress.c
-  src/fluid3/f3_caltau.c
-  src/fluid3/f3_inpele.c
-  src/fluid3/f3_int_usfem.c
-  src/fluid3/f3_intg.c
-  src/fluid3/f3_massrhs.c
-  src/fluid3/f3_main.c
-  src/fluid3/f3_liftdrag.c
-  src/fluid3/f3_out.c
-  src/fluid3/f3_restart.c
-  src/fluid3/f3_calextrhs.c
 )
 set(OBJS_DRT_TO3_LIB
   src/drt_torsion3/torsion3.cpp
@@ -1502,11 +971,6 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/structure_utils_mapextractor.cpp
   src/drt_patspec/patspec.cpp
 )
-set(OBJS_PAR
-  src/parallel/par_initmetis.c
-  src/parallel/par_make_comm.c
-  src/parallel/par_assignmesh.c
-)
 set(OBJS_DRT_S8
   src/drt_s8/shell8_evaluate.cpp
   src/drt_s8/shell8_input.cpp
@@ -1526,56 +990,6 @@ set(OBJS_IO
   src/io/io_result.cpp
   src/io/io_packing.cpp
   src/io/io_elements.cpp
-)
-set(OBJS_SOLVER
-  src/solver/solver_control.c
-  src/solver/solver_service.c
-  src/solver/solver_service2.c
-  src/solver/solver_service3.c
-  src/solver/solver_add_data.c
-  src/solver/solver_add_data_fast.c
-  src/solver/solver_add_mlib.c
-  src/solver/solver_sparse_parcsr.c
-  src/solver/solver_sparse_dense.c
-  src/solver/solver_sparse_bdcsr.c
-  src/solver/solver_sparse_ccf.c
-  src/solver/solver_sparse_msr.c
-  src/solver/solver_sparse_rcptr.c
-  src/solver/solver_sparse_skyline.c
-  src/solver/solver_sparse_spooles.c
-  src/solver/solver_sparse_ucchb.c
-  src/solver/solver_mlib.c
-  src/solver/solver_aztec.c
-  src/solver/solver_hypre.c
-  src/solver/solver_superlu.c
-  src/solver/solver_lapack.c
-  src/solver/solver_mumps.c
-  src/solver/solver_umfpack.c
-  src/solver/solver_colsol.c
-  src/solver/solver_copy_matrix.c
-  src/solver/solver_spooles.c
-  src/solver/solver_mlpcg.c
-  src/solver/solver_mlpcg2.c
-  src/solver/solver_mlpcg3.c
-  src/solver/solver_mlpcg4.c
-  src/solver/solver_mlpcg_smo.c
-  src/solver/solver_mlpcg_spooles.c
-  src/solver/solver_mlpcg_matmat.c
-  src/solver/solver_mlpcg_agg.c
-  src/solver/solver_mlpcg_csr.c
-  src/solver/solver_mlpcg_overlap.c
-  src/solver/solver_mlpcg_fish.c
-  src/solver/solver_mlpcg_test.c
-  src/solver/solver_oll.c
-  src/solver/solver_oll_aztec.c
-  src/solver/solver_oll_spooles.c
-  src/solver/solver_oll_add.c
-  src/solver/solver_oll_service.c
-  src/solver/solver_oll_service2.c
-  src/solver/solver_mask_matrices.c
-  src/solver/solver_mask_mds.c
-  src/solver/solver_mask_service.c
-  src/solver/solver_sparse.c
 )
 set(OBJS_DRT_FSI
   src/drt_fsi/fsi_dyn.cpp
@@ -1621,22 +1035,6 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_overlapprec.cpp
   src/drt_fsi/fsi_overlapprec_fsiamg.cpp
 )
-set(OBJS_IF
-  src/interf/if_inpele.c
-  src/interf/if_main.c
-  src/interf/if_init.c
-  src/interf/if_intg.c
-  src/interf/if_static_ke.c
-  src/interf/if_bop.c
-  src/interf/if_mat.c
-  src/interf/if_cal_deltau.c
-  src/interf/if_stiff_fint.c
-  src/interf/if_stress.c
-  src/interf/if_mat_dyn.c
-  src/interf/if_service.c
-  src/interf/if_funcderiv.c
-  src/interf/if_restart.c
-)
 set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint_manager.cpp
   src/drt_constraint/constraint.cpp
@@ -1654,14 +1052,6 @@ set(OBJS_DRT_IO_LIB
   src/drt_io/io_control.cpp
   src/drt_io/io_gmsh.cpp
   src/drt_io/io_gmsh_xfem_extension.cpp
-)
-set(OBJS_S2ML
-  src/struct2_ml/s2ml_static_ke.c
-  src/struct2_ml/s2ml_cal_smelm.c
-  src/struct2_ml/s2ml_service.c
-  src/struct2_ml/s2ml_stiff_wall.c
-  src/struct2_ml/s2ml_strain.c
-  src/struct2_ml/s2ml_stiff_interf.c
 )
 set(OBJS_FORTRAN
   src/fortran/colsol.f
@@ -1737,48 +1127,6 @@ set(OBJS_DRT_T3_LIB
   src/drt_truss3/truss3_input.cpp
   src/drt_truss3/truss3_evaluate.cpp
 )
-set(OBJS_SOLVER_CPP
-  src/solver/solver_trilinos_service.cpp
-  src/solver/solver_trilinos_control.cpp
-  src/solver/solver_trilinos_ml.cpp
-  src/solver/solver_trilinos_spooles.cpp
-)
-set(OBJS_SOLID3
-  src/solid3/so3_bop.c
-  src/solid3/so3_cfg.c
-  src/solid3/so3_def.c
-  src/solid3/so3_gid.c
-  src/solid3/so3_inp.c
-  src/solid3/so3_int.c
-  src/solid3/so3_intg.c
-  src/solid3/so3_iv.c
-  src/solid3/so3_locsys.c
-  src/solid3/so3_load.c
-  src/solid3/so3_load_line.c
-  src/solid3/so3_load_surf.c
-  src/solid3/so3_load_vol.c
-  src/solid3/so3_main.c
-  src/solid3/so3_mat.c
-  src/solid3/so3_mat_robinson.c
-  src/solid3/so3_mat_robinson_be.c
-  src/solid3/so3_mat_robinson_fb4.c
-  src/solid3/so3_mat_stvenant.c
-  src/solid3/so3_mv6.c
-  src/solid3/so3_metr.c
-  src/solid3/so3_out.c
-  src/solid3/so3_shape.c
-  src/solid3/so3_strain.c
-  src/solid3/so3_stress.c
-  src/solid3/so3_tns3.c
-  src/solid3/so3_tsi.c
-)
-set(OBJS_SSI
-  src/ssi_full/ssi_dyn.c
-  src/ssi_full/ssi_coupling.c
-  src/ssi_full/ssi_aitken.c
-  src/ssi_full/ssi_struct.c
-  src/ssi_full/ssi_service.c
-)
 set(OBJS_DRT_ALEALG
   src/drt_ale/ale_dyn.cpp
   src/drt_ale/ale.cpp
@@ -1800,25 +1148,14 @@ set(OBJS_DRT_W1_LIB
   src/drt_w1/wall1_input.cpp
   src/drt_w1/wall1_line_evaluate.cpp
 )
-set(OBJS_F3IS
-  src/fluid3_is/f3is_main.c
-  src/fluid3_is/f3is_calele.c
-  src/fluid3_is/f3is_calint.c
-  src/fluid3_is/f3is_service.c
-  src/fluid3_is/f3is_inpele.c
-)
 set(OBJS_DRT_CONTACT
   src/drt_contact/contactstrugenalpha.cpp
   src/drt_contact/contactstrugenalpha_lsnewton.cpp
   src/drt_contact/beam3contactstrugenalpha.cpp
 )
-set(OBJS_INPUT_CPP
-  src/input_full/input_parameterlist.cpp
-)
 set(OBJECTS
   ${OBJS_DRT_THERMO}
   ${OBJS_DRT_IO}
-  ${OBJS_VISUAL}
   ${OBJS_OUTPUT}
   ${OBJS_INV_ANALYSIS}
   ${OBJS_DRT_LOMA}
@@ -1832,8 +1169,6 @@ set(OBJECTS
   ${OBJS_DRT_STRUCTURE}
   ${OBJS_DRT_COMBUST}
   ${OBJS_IO}
-  ${OBJS_SOLVER}
-  ${OBJS_GLOBAL}
   ${OBJS_DRT_ELCH}
   ${OBJS_DRT_CONSTRAINT}
   ${OBJS_DRT}
@@ -1844,23 +1179,22 @@ set(OBJECTS
   ${OBJS_DRT_NURBS_DISCRET}
   ${OBJS_STRUCTURE}
   ${OBJS_MAIN}
-  ${OBJS_SOLVER_CPP}
   ${OBJS_DRT_ALEALG}
   ${OBJS_DRT_CONTACT}
   ${OBJS_GLOBAL_CPP}
   ${OBJS_DRT_FSI}
   ${OBJS_MATH}
-  ${OBJS_INPUT_CPP}
+  ${OBJS_GLOBAL}
 )
 set(FILTER_OBJECTS
   ${OBJS_DRT_F2_LIB}
   ${OBJS_DRT_TO2_LIB}
   ${OBJS_DRT_ALE_LIB}
-  ${OBJS_DRT_T3_LIB}
+  ${OBJS_DRT_F3_LIB}
   ${OBJS_DRT_T2_LIB}
   ${OBJS_SOH8_LIB}
   ${OBJS_DRT_B2_LIB}
-  ${OBJS_DRT_S8_LIB}
+  ${OBJS_DRT_T3_LIB}
   ${OBJS_DRT_B2R_LIB}
   ${OBJS_FILTER_COMMON}
   ${OBJS_POST_DRT_COMMON}
@@ -1868,10 +1202,9 @@ set(FILTER_OBJECTS
   ${OBJS_DRT_B3_LIB}
   ${OBJS_DRT_W1_LIB}
   ${OBJS_DRT_COMBUST3_LIB}
-  ${OBJS_DRT_F3_LIB}
+  ${OBJS_DRT_S8_LIB}
 )
 set(COMMON_OBJECTS
-  ${OBJS_DRT_IO_LIB}
   ${OBJS_DRT_SCATRA_LIB}
   ${OBJS_DRT_INPAR}
   ${OBJS_DRT_CONSTRAINT_LIB}
@@ -1881,7 +1214,7 @@ set(COMMON_OBJECTS
   ${OBJS_DRT_THERMO_LIB}
   ${OBJS_DRT_CONTACT_LIB}
   ${OBJS_DRT_CONTACTNEW_LIB}
-  ${OBJS_PAR}
+  ${OBJS_DRT_IO_LIB}
   ${OBJS_PSS}
   ${OBJS_DRT_POTENTIAL}
   ${OBJS_DRT_LIB}
@@ -1927,19 +1260,6 @@ endif(D_WALL1)
 option (D_THERMO      "thermal elements" ON)
 if (D_THERMO)
   add_definitions("-DD_THERMO")
-#  set( thermo_element_source
-#    src/drt_thermo/thermo_ele_boundary_impl.cpp
-#    src/drt_thermo/thermo_ele_impl.cpp
-#    src/drt_thermo/thermo_ele_impl_utils.cpp
-#    src/drt_thermo/thermo_element_boundary_evaluate.cpp
-#    src/drt_thermo/thermo_element.cpp
-#    src/drt_thermo/thermo_element_evaluate.cpp
-#    src/drt_thermo/thermo_element_input.cpp
-#    )
-#  set (baci_source
-#    ${baci_source}
-#    ${thermo_element_source}
-#    )
 endif(D_THERMO)
 
 option (D_SOLID3      "spatial solid elements" ON)
@@ -1963,7 +1283,6 @@ endif(D_BEAM2R)
 option (D_BEAM3       "3D Reissner beam element" ON)
 if (D_BEAM3)
   add_definitions("-DD_BEAM3")
-  #set(OBJECTS ${OBJECTS} ${OBJS_BEAM3})
   set(OBJECTS ${OBJECTS} ${OBJS_DRT_B3} ${OBJS_DRT_B3_LIB})
 endif(D_BEAM3)
 
@@ -2116,6 +1435,7 @@ endif(THROWELEMENTERRORS)
 
 ###------------------------------------------------------------------ Binaries
 
+add_library(linalg_objects ${OBJS_LINALG})
 add_library(baci_objects ${OBJECTS} ${COMMON_OBJECTS})
 add_library(filter_objects ${FILTER_OBJECTS} ${COMMON_OBJECTS})
 #add_library(common_objects ${COMMON_OBJECTS})
@@ -2130,21 +1450,21 @@ add_executable (post_drt_q9neconvert ${OBJS_POST_DRT_Q9NECONVERT})
 
 add_executable (pre_curve ${OBJS_PRE_CURVE})
 
-target_link_libraries (baci baci_objects ${LIBRARIES})
+target_link_libraries (baci baci_objects linalg_objects ${LIBRARIES})
 
-target_link_libraries (post_drt_gid filter_objects ${LIBRARIES})
-target_link_libraries (post_drt_ensight filter_objects ${LIBRARIES})
-target_link_libraries (post_drt_monitor filter_objects ${LIBRARIES})
-target_link_libraries (post_drt_s8convert filter_objects ${LIBRARIES})
-target_link_libraries (post_drt_q9neconvert filter_objects ${LIBRARIES})
+target_link_libraries (post_drt_gid filter_objects linalg_objects ${LIBRARIES})
+target_link_libraries (post_drt_ensight filter_objects linalg_objects ${LIBRARIES})
+target_link_libraries (post_drt_monitor filter_objects linalg_objects ${LIBRARIES})
+target_link_libraries (post_drt_s8convert filter_objects linalg_objects ${LIBRARIES})
+target_link_libraries (post_drt_q9neconvert filter_objects linalg_objects ${LIBRARIES})
 
-target_link_libraries (pre_curve filter_objects ${LIBRARIES})
+target_link_libraries (pre_curve filter_objects linalg_objects ${LIBRARIES})
 
 option (D_EXODUS "exodus filter" OFF)
 if (D_EXODUS)
   add_definitions("-DD_EXODUS")
   add_executable (pre_exodus ${OBJS_PRE_EXODUS})
-  target_link_libraries (pre_exodus filter_objects ${LIBRARIES})
+  target_link_libraries (pre_exodus filter_objects linalg_objects ${LIBRARIES})
 endif (D_EXODUS)
 
 ###------------------------------------------------------------------ Test definitions

@@ -42,12 +42,6 @@ Maintainer: Michael Gee
 #ifndef DSERROR_H
 #define DSERROR_H
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
-
 #ifdef __cplusplus
 
 #include <cstdlib>
@@ -73,5 +67,17 @@ void ExitElementLoop();
 void ElementError(int ele, const std::string& err);
 
 #endif // THROWELEMENTERRORS
+#else
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
+
+void cpp_dsassert_func(const char* file, const int line, const int test, const char* string);
+void cpp_dserror_func(const char* string, ...);
+void cpp_dslatest(const char* file, const int line);
+#define dsassert(test, string) cpp_dsassert_func(__FILE__, __LINE__, test, string)
+#define dserror cpp_dslatest(__FILE__, __LINE__), cpp_dserror_func
+
 #endif // #ifdef __cplusplus
 #endif // #ifndef DSERROR_H

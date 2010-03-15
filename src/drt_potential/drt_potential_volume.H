@@ -18,11 +18,6 @@ Maintainer: Ursula Mayer
 #define DRT_POTENTIAL_VOLUME_H_
 
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
 
 #include "../drt_potential/drt_potential.H"
 

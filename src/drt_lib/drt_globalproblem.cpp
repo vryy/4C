@@ -240,7 +240,11 @@ void DRT::Problem::InputControl()
 
   genprob.probtyp        = Teuchos::getIntegralValue<PROBLEM_TYP>(type,"PROBLEMTYP");
   genprob.timetyp        = Teuchos::getIntegralValue<TIME_TYP>(type,"TIMETYP");
-  genprob.restart        = type.get<int>("RESTART");
+
+  // If there is a restart flag on the command line, ignore the input file.
+  if ( genprob.restart==0 )
+    genprob.restart        = type.get<int>("RESTART");
+
   genprob.numfld         = type.get<int>("NUMFIELD");
   genprob.multisc_struct = type.get<int>("MULTISC_STRUCT");
 

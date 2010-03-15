@@ -45,8 +45,6 @@ extern "C"
 #endif
 
 
-class DRT::Discretization;
-
 namespace GEO
 {
 
@@ -84,7 +82,7 @@ class Intersection
       map< int, DomainIntCells >&                 domainintcells,          ///< domainintegrationcells for each intersected element
       map< int, BoundaryIntCells >&               boundaryintcells,        ///< boundaryintegrationcells for each intersected element
       const std::map<int,int>&                    labelPerElementId,
-      set<int> 									  MovingFluideleids		   ///< set of element ids of the moving fluid 
+      set<int> 									  MovingFluideleids		   ///< set of element ids of the moving fluid
       );
 
 
@@ -542,7 +540,7 @@ class Intersection
   */
   void createInitialLimits(
     const DRT::Element::DiscretizationType&   distype,
-    LINALG::Matrix<3,1>&        				      xsi,			
+    LINALG::Matrix<3,1>&        				      xsi,
     LINALG::Matrix<3,1>&        				      upLimit,
     LINALG::Matrix<3,1>&        				      loLimit
     ) const;
@@ -1001,8 +999,8 @@ class Intersection
     const map<int,LINALG::Matrix<3,1> >&        currentcutterpositions,
     BoundaryIntCells&                           listBoundaryICPerElement
     );
-  	
-    	
+
+
   /*!
   \brief  checks if Steiner points are inserted additionally. They are lifted up such they
           are lying in a cutter element.

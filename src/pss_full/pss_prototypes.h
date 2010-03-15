@@ -312,7 +312,7 @@ void amprint(FILE* err,ARRAY *a,INT fdim, INT sdim);
 
 
 /* to make sure we do not have a redefinition here as its also defined in dserror.H */
-#ifndef DSERROR_H
+#ifndef CCADISCRET
 #define DSERROR_H
 
 /*----------------------------------------------------------------------*
@@ -755,4 +755,3 @@ DOUBLE perf_time (void);
 
 
 #endif
-

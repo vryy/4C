@@ -55,6 +55,7 @@ Maintainer: Burkhard Bornemann
 #include <map>
 #include <cmath>
 #include <string>
+#include <cstring>
 #include <cstdlib>
 
 #include "drt_dserror.H"
@@ -343,7 +344,7 @@ SyntaxTreeNode<T>* Parser<T>::ParsePrimary()
     if (lhs==NULL)
     {
       if ((integer_ == 2) &&
-	  (strncmp("pi", str_, integer_)==0))
+	  (std::strncmp("pi", str_, integer_)==0))
       {
 	lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_number,NULL,NULL);
 	lhs->v_.number = M_PI;
