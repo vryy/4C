@@ -44,6 +44,7 @@ Maintainer: Alexander Popp
 #include "meshtying_defines.H"
 #include "meshtying_manager.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_colors.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_contact.H"
 
@@ -96,6 +97,23 @@ StruGenAlpha(params,dis,solver,output)
     cmtmanager_->GetStrategy().StoreDirichletStatus(dbcmaps);
   }
   
+  //********************************************************************
+  // print warning messages for multifield problems (e.g FSI)
+  //********************************************************************
+  const string probtype = DRT::Problem::Instance()->ProblemType(); 
+  if (probtype!="structure" && discret_.Comm().MyPID() == 0)
+  {
+#ifdef CONTACTPSEUDO2D
+    cout << RED << "WARNING: The flag CONTACTPSEUDO2D is switched on. If this "
+         << "is a real 3D problem, switch it off!" << END_COLOR << endl;
+#else
+    cout << RED << "WARNING: The flag CONTACTPSEUDO2D is switched off. If this "
+         << "is a 2D problem modeled pseudo-3D, switch it on!" << END_COLOR << endl;
+#endif // #ifdef CONTACTPSEUDO2D
+    cout << RED << "WARNING: Contact and Meshtying are still experimental "
+         << "for the chosen problem type \"" << probtype << "\"!\n" << END_COLOR << endl;
+  }
+    
   //**********************************************************************
   // visualization of initial configuration
   //**********************************************************************
@@ -138,11 +156,11 @@ StruGenAlpha(params,dis,solver,output)
     {
       cout << "===== DRT_NEWCONTACT ===========================================" << endl;  
       if (soltype == INPAR::CONTACT::solution_lagmult)
-        cout << "===== Lagrange multiplier strategy =============================" << endl;
+        cout << "===== Lagrange multiplier strategy =============================\n" << endl;
       else if (soltype == INPAR::CONTACT::solution_penalty)
-        cout << "===== Penalty strategy =========================================" << endl;
+        cout << "===== Penalty strategy =========================================\n" << endl;
       else if (soltype == INPAR::CONTACT::solution_auglag)
-        cout << "===== Augmented Lagrange strategy ==============================" << endl;
+        cout << "===== Augmented Lagrange strategy ==============================\n" << endl;
     }
   }
   
