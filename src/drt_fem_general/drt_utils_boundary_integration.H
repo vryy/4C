@@ -95,16 +95,17 @@ void ComputeMetricTensorForSurface(
   double*                         sqrtdetg
   );
 
-//! compute kovariant metric tensor for surface/line element (template)
+//! compute kovariant metric tensor for surface/line element and optionally, the normalized normal vector at the Gausspoint (template)
 template<DRT::Element::DiscretizationType DISTYPE>
 void ComputeMetricTensorForBoundaryEle(
   const LINALG::Matrix< (1 + DRT::UTILS::DisTypeToDim<DISTYPE>::dim), DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>&  xyze,
   const LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,  DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>&  deriv,
   LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,        DRT::UTILS::DisTypeToDim<DISTYPE>::dim>&                    metrictensor,
-  double&  sqrtdetg
+  double&  sqrtdetg,
+  LINALG::Matrix<(1 + DRT::UTILS::DisTypeToDim<DISTYPE>::dim),        1>* normalvec = NULL
   )
 {
-  /*
+  /* 2D boundary Element
   |                                              0 1 2
   |                                             +-+-+-+
   |       0 1 2              0...iel-1          | | | | 0
@@ -130,10 +131,15 @@ void ComputeMetricTensorForBoundaryEle(
   |                                 +-            -+
   |
   */
+
+  /* 1D boundary Element
+  |
+  |   dxyzdrs(1,2) = deriv(1,iel) * xyze(2, iel)^T
+   */
   LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,1 + DRT::UTILS::DisTypeToDim<DISTYPE>::dim> dxyzdrs(true);
   dxyzdrs.MultiplyNT(1.0,deriv,xyze,0.0);
 
-  /*
+  /* 2D boundary Element
   |
   |      +-           -+    +-            -+   +-            -+ T
   |      |             |    | dx   dy   dz |   | dx   dy   dz |
@@ -147,6 +153,12 @@ void ComputeMetricTensorForBoundaryEle(
   |
   | the calculation of g21 is redundant since g21=g12
   */
+
+  /* 1D boundary Element
+  |
+  |   metrictensor(1,1) = dxyzdrs(1,2) * dxyzdrs(1,2)^T
+   */
+
   metrictensor.Clear();
   metrictensor.MultiplyNT(1.0,dxyzdrs,dxyzdrs,0.0);
 
@@ -157,6 +169,29 @@ void ComputeMetricTensorForBoundaryEle(
                         \/
   */
   sqrtdetg = sqrt(metrictensor.Determinant());
+
+  // Calculate
+  if (normalvec != NULL)
+  {
+    if (DRT::UTILS::DisTypeToDim<DISTYPE>::dim == 2)
+    {
+      (*normalvec)(0) = dxyzdrs(0,1)*dxyzdrs(1,2)-dxyzdrs(1,1)*dxyzdrs(0,2);
+      (*normalvec)(1) = dxyzdrs(0,2)*dxyzdrs(1,0)-dxyzdrs(1,2)*dxyzdrs(0,0);
+      (*normalvec)(2) = dxyzdrs(0,0)*dxyzdrs(1,1)-dxyzdrs(1,0)*dxyzdrs(0,1);
+      // normalize normal
+      normalvec->Scale(normalvec->Norm2());
+
+    }
+    else if (DRT::UTILS::DisTypeToDim<DISTYPE>::dim == 1)
+    {
+      (*normalvec)(0) = dxyzdrs(0,1);
+      (*normalvec)(1) = -dxyzdrs(0,0);
+      // normalize normal
+      normalvec->Scale(normalvec->Norm2());
+    }
+    else
+      dserror("There are only 2D and 1D boundary elements");
+  }
 
   return;
 }
