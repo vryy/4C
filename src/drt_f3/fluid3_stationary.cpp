@@ -17,6 +17,8 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "fluid3_stationary.H"
+#include "fluid3_stationary_2D.H"
+
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
@@ -250,15 +252,23 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
 
   if (ele->is_ale_) dserror("No ALE support within stationary fluid solver.");
 
+  // split velocity and pressure and set density
+  LINALG::Matrix<numnode,1> eprenp;
+  LINALG::Matrix<nsd_,numnode> evelnp;
 
   for (int i=0;i<numnode;++i)
   {
     // split velocity and pressure, insert into element arrays
-    evelnp(0,i) = myvelnp[0+(i*4)];
-    evelnp(1,i) = myvelnp[1+(i*4)];
-    evelnp(2,i) = myvelnp[2+(i*4)];
+    //evelnp(0,i) = myvelnp[0+(i*4)];
+    //evelnp(1,i) = myvelnp[1+(i*4)];
+    //evelnp(2,i) = myvelnp[2+(i*4)];
 
-    eprenp(i) = myvelnp[3+(i*4)];
+    for(int idim=0; idim < nsd_; idim++)
+    {
+      evelnp(idim,i) = myvelnp[idim + (i*numdofpernode_)];
+    }
+
+    eprenp(i) = myvelnp[nsd_+(i*numdofpernode_)];
   }
 
   // get control parameter
@@ -303,7 +313,9 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
   // flag for higher order elements
   bool higher_order_ele = ele->isHigherOrderElement(ele->Shape());
 
+  // get fine-scale velocity
   RCP<const Epetra_Vector> fsvelnp;
+  LINALG::Matrix<nsd_,numnode> fsevelnp;
 
   if (fssgv != Fluid3::no_fssgv)
   {
@@ -319,18 +331,27 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
     // get fine-scale velocity and insert into element arrays
     for (int i=0;i<numnode;++i)
     {
-      fsevelnp(0,i) = myfsvelnp[0+(i*4)];
-      fsevelnp(1,i) = myfsvelnp[1+(i*4)];
-      fsevelnp(2,i) = myfsvelnp[2+(i*4)];
+      //fsevelnp(0,i) = myfsvelnp[0+(i*4)];
+      //fsevelnp(1,i) = myfsvelnp[1+(i*4)];
+      //fsevelnp(2,i) = myfsvelnp[2+(i*4)];
+
+      for (int idim = 0; idim < nsd_; idim++)
+      {
+        fsevelnp(idim,i) = myfsvelnp[idim+(i*numdofpernode_)];
+      }
     }
   }
   else
   {
     for (int i=0;i<numnode;++i)
     {
-      fsevelnp(0,i) = 0.0;
-      fsevelnp(1,i) = 0.0;
-      fsevelnp(2,i) = 0.0;
+      //fsevelnp(0,i) = 0.0;
+      //fsevelnp(1,i) = 0.0;
+      //fsevelnp(2,i) = 0.0;
+      for (int idim = 0; idim < nsd_; idim++)
+      {
+        fsevelnp(idim,i) = 0.0;
+      }
     }
   }
 
@@ -349,31 +370,61 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
 
   for (int i=0;i<numnode;++i)
   {
-    escaaf(i) = myscaaf[3+(i*4)];
+    escaaf(i) = myscaaf[nsd_+(i*numdofpernode_)];
   }
 
-  // calculate element coefficient matrix and rhs
-  Sysmat(ele,
-         //evelnp,
-         //fsevelnp,
-         //eprenp,
-         elemat1,
-         elevec1,
-         mat,
-         pseudotime,
-         newton,
-         conservative,
-         higher_order_ele,
-         fssgv,
-         pspg,
-         supg,
-         vstab,
-         cstab,
-         cross,
-         reynolds,
-         Cs,
-         physicaltype,
-         escaaf);
+  if (nsd_==3)
+  {
+    // calculate element coefficient matrix and rhs
+    Sysmat(ele,
+           evelnp,
+           fsevelnp,
+           eprenp,
+           elemat1,
+           elevec1,
+           mat,
+           pseudotime,
+           newton,
+           conservative,
+           higher_order_ele,
+           fssgv,
+           pspg,
+           supg,
+           vstab,
+           cstab,
+           cross,
+           reynolds,
+           Cs,
+           physicaltype,
+           escaaf);
+  }
+
+  else if(nsd_==2)
+  {
+    Sysmat(ele,
+           evelnp,
+           fsevelnp,
+           eprenp,
+           elemat1,
+           elevec1,
+           mat,
+           pseudotime,
+           newton,
+           conservative,
+           higher_order_ele,
+           fssgv,
+           pspg,
+           supg,
+           vstab,
+           cstab,
+           cross,
+           reynolds,
+           Cs,
+           physicaltype,
+           escaaf);
+  }
+
+  else dserror("1D elements does not exist in Fluid3");
 
   //rotate matrices and vectors if we have a rotationally symmetric problem
   rotsymmpbc_->RotateMatandVecIfNecessary(elemat1,elevec1);
@@ -415,9 +466,9 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Sysmat(
   Fluid3*                                          ele,
-  //const LINALG::Matrix<nsd_,iel>&                     evelnp,
-  //const LINALG::Matrix<nsd_,iel>&                     fsevelnp,
-  //const LINALG::Matrix<iel,1>&                     eprenp,
+  const LINALG::Matrix<nsd_,iel>&                     evelnp,
+  const LINALG::Matrix<nsd_,iel>&                     fsevelnp,
+  const LINALG::Matrix<iel,1>&                     eprenp,
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&                     estif,
   LINALG::Matrix<(nsd_+1)*iel,1>&                         eforce,
   Teuchos::RCP<const MAT::Material>                material,
@@ -460,7 +511,7 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Sysmat(
   // stabilization parameter
   // This has to be done before anything else is calculated because
   // we use the same arrays internally.
-  CalTauStationary(ele,/*evelnp,fsevelnp,*/visc,fssgv,Cs);
+  CalTauStationary(ele,evelnp,fsevelnp,visc,fssgv,Cs);
 
   // in case of viscous stabilisation decide whether to use GLS or usfemM
   double vstabfac= 0.0;
@@ -1704,8 +1755,8 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Sysmat(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::CalTauStationary(
   Fluid3*                             ele,
-  //const LINALG::Matrix<3,iel>&        evelnp,
-  //const LINALG::Matrix<3,iel>&        fsevelnp,
+  const LINALG::Matrix<nsd_,iel>&        evelnp,
+  const LINALG::Matrix<nsd_,iel>&        fsevelnp,
   const double                        visc,
   const enum Fluid3::FineSubgridVisc  fssgv,
   const double                        Cs
@@ -1919,7 +1970,15 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::BodyForce(Fluid3*      ele,
   vector<DRT::Condition*> myneumcond;
 
   // check whether all nodes have a unique VolumeNeumann condition
-  DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
+  //DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
+
+  // check whether all nodes have a unique VolumeNeumann condition
+  if(nsd_==3)
+    DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
+  else if (nsd_==2)
+    DRT::UTILS::FindElementConditions(ele, "SurfaceNeumann", myneumcond);
+  else
+    dserror("Body force for a 1D problem is not yet implemented");
 
   if (myneumcond.size()>1)
     dserror("more than one VolumeNeumann cond on one node");
@@ -1965,7 +2024,7 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::BodyForce(Fluid3*      ele,
     int functnum = -1;
 
     // set this condition to the edeadng array
-    for(int isd=0;isd<3;isd++)
+    for(int isd=0;isd<nsd_;isd++)
     {
       // get factor given by spatial function
       if (functions) functnum = (*functions)[isd];

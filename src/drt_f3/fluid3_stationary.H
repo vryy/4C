@@ -101,7 +101,7 @@ namespace ELEMENTS
   {
   public:
     /// Constructor
-    explicit Fluid3StationaryImpl(int numdopernode);
+    explicit Fluid3StationaryImpl(int numdofpernode);
 
     //! number of nodes
     static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -153,10 +153,10 @@ namespace ELEMENTS
       \param Cs               (i) Smagorinsky model parameter
      */
     void Sysmat(Fluid3*                                          ele,
-                //const LINALG::Matrix<nsd_,iel>& evelnp,
-                //const LINALG::Matrix<nsd_,iel>& fsevelnp,
-                // const LINALG::Matrix<iel,1>& eprenp,
-                LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>& estif,
+                const LINALG::Matrix<nsd_,iel>&             evelnp,
+                const LINALG::Matrix<nsd_,iel>&             fsevelnp,
+                const LINALG::Matrix<iel,1>&                eprenp,
+                LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&  estif,
                 LINALG::Matrix<(nsd_+1)*iel,1>&     eforce,
                 Teuchos::RCP<const MAT::Material>                material,
                 double                                           pseudotime,
@@ -174,6 +174,28 @@ namespace ELEMENTS
                 const enum INPAR::FLUID::PhysicalType            physicaltype,
                 const LINALG::Matrix<iel,1>&                     escaaf);
 
+    void Sysmat_2D(Fluid3*                                  ele,
+                const LINALG::Matrix<nsd_,iel>&             evelnp,
+                const LINALG::Matrix<nsd_,iel>&             fsevelnp,
+                const LINALG::Matrix<iel,1>&             eprenp,
+                LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&             estif,
+                LINALG::Matrix<(nsd_+1)*iel,    1>&             eforce,
+                Teuchos::RCP<const MAT::Material>        material,
+                double                                   pseudotime,
+                const bool                               newton,
+                const bool                               conservative,
+                const bool                               higher_order_ele,
+                const enum Fluid3::FineSubgridVisc       fssgv,
+                const enum Fluid3::StabilisationAction   pspg,
+                const enum Fluid3::StabilisationAction   supg,
+                const enum Fluid3::StabilisationAction   vstab,
+                const enum Fluid3::StabilisationAction   cstab,
+                const enum Fluid3::StabilisationAction   cross,
+                const enum Fluid3::StabilisationAction   reynolds,
+                const double                             Cs,
+                const enum INPAR::FLUID::PhysicalType    physicaltype,
+                const LINALG::Matrix<iel,1>&             escaaf);
+
   private:
 
     /*!
@@ -181,8 +203,16 @@ namespace ELEMENTS
     */
     void CalTauStationary(
       Fluid3*                             ele,
-      //const LINALG::Matrix<3,iel>&        evelnp,
-      //const LINALG::Matrix<3,iel>&        fsevelnp,
+      const LINALG::Matrix<nsd_,iel>&        evelnp,
+      const LINALG::Matrix<nsd_,iel>&        fsevelnp,
+      const double                        visc,
+      const enum Fluid3::FineSubgridVisc  fssgv,
+      const double                        Cs);
+
+    void CalTauStationary2D(
+      Fluid3*                             ele,
+      const LINALG::Matrix<nsd_,iel>&        evelnp,
+      const LINALG::Matrix<nsd_,iel>&        fsevelnp,
       const double                        visc,
       const enum Fluid3::FineSubgridVisc  fssgv,
       const double                        Cs);
@@ -207,11 +237,13 @@ namespace ELEMENTS
     //number of dof's
     const int numdofpernode_;
 
+    /*
     // split velocity and pressure and set density
     LINALG::Matrix<iel,1> eprenp;
     LINALG::Matrix<nsd_,iel> evelnp;
     // get fine-scale velocity
     LINALG::Matrix<nsd_,iel> fsevelnp;
+    */
 
     double vart_;                      /// fine-scale subgrid viscosity
     LINALG::Matrix<nsd_,iel> xyze_;      /// nodal position array
