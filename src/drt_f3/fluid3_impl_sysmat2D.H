@@ -16,7 +16,7 @@ Maintainer: Volker Gravemeier
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
-//#include "fluid3_impl.H"
+#include "fluid3_impl.H"
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/mixfrac.H"
@@ -43,17 +43,17 @@ Maintainer: Volker Gravemeier
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D(
   Fluid3*                                 ele,
-  //const LINALG::Matrix<2,iel>&            evelaf,
-  //const LINALG::Matrix<2,iel>&            eveln,
-  //const LINALG::Matrix<2,iel>&            fsevelaf,
-  //const LINALG::Matrix<iel,1>&            epreaf,
-  //const LINALG::Matrix<2,iel>&            eaccam,
-  //const LINALG::Matrix<iel,1>&            escaaf,
-  //const LINALG::Matrix<iel,1>&            escaam,
-  //const LINALG::Matrix<iel,1>&            escadtam,
-  //const LINALG::Matrix<2,iel>&            emhist,
-  //const LINALG::Matrix<2,iel>&            edispnp,
-  //const LINALG::Matrix<2,iel>&            egridv,
+  const LINALG::Matrix<nsd_,iel>&            evelaf,
+  const LINALG::Matrix<nsd_,iel>&            eveln,
+  const LINALG::Matrix<nsd_,iel>&            fsevelaf,
+  const LINALG::Matrix<iel,1>&            epreaf,
+  const LINALG::Matrix<nsd_,iel>&            eaccam,
+  const LINALG::Matrix<iel,1>&            escaaf,
+  const LINALG::Matrix<iel,1>&            escaam,
+  const LINALG::Matrix<iel,1>&            escadtam,
+  const LINALG::Matrix<nsd_,iel>&            emhist,
+  const LINALG::Matrix<nsd_,iel>&            edispnp,
+  const LINALG::Matrix<nsd_,iel>&            egridv,
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&            estif,
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&            emesh,
   LINALG::Matrix<(nsd_+1)*iel,    1>&            eforce,
@@ -117,7 +117,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D(
   // get material parameters at element center
   //----------------------------------------------------------------------
   if (not mat_gp_ or not tau_gp_)
-    GetMaterialParams(material,/*evelaf,escaaf,escaam,*/is_genalpha,physicaltype);
+    GetMaterialParams(material,evelaf,escaaf,escaam,is_genalpha,physicaltype);
 
   if (not tau_gp_)
   {
@@ -127,13 +127,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D(
     visceff_ = visc_;
     if (turb_mod_action == Fluid3::smagorinsky)
     {
-      CalcSubgrVisc_2D(/*evelaf,*/area,turb_mod_action,Cs);
+      CalcSubgrVisc_2D(evelaf,area,turb_mod_action,Cs);
 
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       visceff_ += sgvisc_;
     }
     else if (fssgv != Fluid3::no_fssgv)
-      CalcFineScaleSubgrVisc(/*evelaf,fsevelaf,*/area,fssgv,Cs);
+      CalcFineScaleSubgrVisc_2D(evelaf,fsevelaf,area,fssgv,Cs);
 
     // get velocity at element center
     velint_.Multiply(evelaf,funct_);
@@ -141,7 +141,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D(
     // ---------------------------------------------------------------------
     // calculate stabilization parameter at element center
     // ---------------------------------------------------------------------
-    CalcStabParameter(timefac,area,whichtau);
+    CalcStabParameter_2D(timefac,area,whichtau);
   }
 
   // Gaussian integration points
@@ -157,7 +157,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D(
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    if (mat_gp_) GetMaterialParams(material/*,evelaf,escaaf,escaam,*/,is_genalpha,physicaltype);
+    if (mat_gp_) GetMaterialParams(material,evelaf,escaaf,escaam,is_genalpha,physicaltype);
 
     // get velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -171,18 +171,18 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D(
       visceff_ = visc_;
       if (turb_mod_action == Fluid3::smagorinsky)
       {
-        CalcSubgrVisc_2D(/*evelaf,*/area,turb_mod_action,Cs);
+        CalcSubgrVisc_2D(evelaf,area,turb_mod_action,Cs);
 
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
         visceff_ += sgvisc_;
       }
       else if (fssgv != Fluid3::no_fssgv)
-        CalcFineScaleSubgrVisc_2D(/*evelaf,fsevelaf,*/area,fssgv,Cs);
+        CalcFineScaleSubgrVisc_2D(evelaf,fsevelaf,area,fssgv,Cs);
 
       // ---------------------------------------------------------------------
       // calculate stabilization parameter at element center
       // ---------------------------------------------------------------------
-      CalcStabParameter(timefac,area,whichtau);
+      CalcStabParameter_2D(timefac,area,whichtau);
     }
 
     // get momentum history data at integration point
@@ -1602,7 +1602,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::CalcSubgrVisc_2D(
-  //const LINALG::Matrix<2,iel>&        evelaf,
+  const LINALG::Matrix<nsd_,iel>&        evelaf,
   const double                        area,
   const enum Fluid3::TurbModelAction  turb_mod_action,
   double&                             Cs
@@ -1650,8 +1650,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcSubgrVisc_2D(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::CalcFineScaleSubgrVisc_2D(
-  //const LINALG::Matrix<2,iel>&       evelaf,
-  //const LINALG::Matrix<2,iel>&       fsevelaf,
+  const LINALG::Matrix<nsd_,iel>&       evelaf,
+  const LINALG::Matrix<nsd_,iel>&       fsevelaf,
   const double                       area,
   const enum Fluid3::FineSubgridVisc fssgv,
   double&                            Cs
@@ -1705,6 +1705,242 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcFineScaleSubgrVisc_2D(
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  calculation of stabilization parameter                     vg 09/09 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter_2D(
+  const double               timefac,
+  const double               area,
+  const enum Fluid3::TauType whichtau
+  )
+{
+  // get characteristic element length
+  const double hk = sqrt(area);
+
+  // get element-type constant for tau
+  double mk=0.0;
+  switch (distype)
+  {
+    case DRT::Element::tri3:
+    case DRT::Element::quad4:
+      mk = 0.333333333333333333333;
+      break;
+    case DRT::Element::quad8:
+    case DRT::Element::quad9:
+    case DRT::Element::tri6:
+      mk = 0.083333333333333333333;
+      break;
+    default:
+      dserror("type unknown!\n");
+  }
+
+  // get velocity norm
+  const double vel_norm = velint_.Norm2();
+
+  // normed velocity at element centre (currently not used)
+  //if (vel_norm>=1e-6) velino_ = velint_/vel_norm;
+  //else
+  //{
+  //  velino_.Clear();
+  //  velino_(0) = 1;
+  //}
+
+  // get streamlength (currently not used)
+  //const double val = blitz::sum(blitz::abs(blitz::sum(velino_(j)*derxy_(j,i),j)));
+  //const double strle = 2.0/val;
+
+  // ---------------------------------------------------------------
+  // computation of stabilization parameter tau
+  // ---------------------------------------------------------------
+  if (whichtau == Fluid3::franca_barrenechea_valentin_wall)
+  {
+    /*----------------------------------------------------- compute tau_Mu ---*/
+    /* stability parameter definition according to
+
+    Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
+    element method for a generalized Stokes problem. Numerische
+    Mathematik, Vol. 92, pp. 652-677, 2002.
+    http://www.lncc.br/~valentin/publication.htm
+
+    and:
+
+    Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
+    Finite Element Method for the Advective-Reactive-Diffusive
+    Equation. Computer Methods in Applied Mechanics and Enginnering,
+    Vol. 190, pp. 1785-1800, 2000.
+    http://www.lncc.br/~valentin/publication.htm                   */
+
+    /* viscous : reactive forces */
+    const double re1 = 4.0 * timefac * visceff_ / (mk * densaf_ * DSQR(hk));
+
+    /* convective : viscous forces */
+    const double re2 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
+
+    const double xi1 = DMAX(re1,1.0);
+    const double xi2 = DMAX(re2,1.0);
+
+    tau_(0) = timefac*DSQR(hk)/(DSQR(hk)*densaf_*xi1+(4.0*timefac*visceff_/mk)*xi2);
+    tau_(1) = tau_(0);
+
+    /*------------------------------------------------------ compute tau_C ---*/
+    // PhD thesis Wall (1999)
+    /*
+                      xi2 ^
+                          |
+                        1 |   +-----------
+                          |  /
+                          | /
+                          |/
+                          +--------------> Re2
+                              1
+    */
+    const double xi_tau_c = DMIN(re2,1.0);
+    tau_(2) = densaf_ * vel_norm * hk * 0.5 * xi_tau_c;
+  }
+  else if(whichtau == Fluid3::bazilevs)
+  {
+    /*
+
+    tau_M: Bazilevs et al. (2007)
+                                                                              1.0
+                 +-                                                      -+ - ---
+                 |        2                                               |   2.0
+                 | 4.0*rho         n+1             n+1          2         |
+          tau  = | -------  + rho*u     * G * rho*u     + C * mu  * G : G |
+             M   |     2                  -                I        -   - |
+                 |   dt                   -                         -   - |
+                 +-                                                      -+
+
+    */
+    /*            +-           -+   +-           -+   +-           -+
+                  |             |   |             |   |             |
+                  |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
+            G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
+             ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
+                  |    i     j  |   |    i     j  |   |    i     j  |
+                  +-           -+   +-           -+   +-           -+
+    */
+    /*            +----
+                   \
+          G : G =   +   G   * G
+          -   -    /     ij    ij
+          -   -   +----
+                   i,j
+    */
+    /*                                 +----
+               n+1             n+1     \         n+1              n+1
+          rho*u     * G * rho*u     =   +   rho*u    * G   * rho*u
+                      -                /         i     -ij        j
+                      -               +----        -
+                                        i,j
+    */
+    double G;
+    double normG = 0;
+    double Gnormu = 0;
+
+    const double dens_sqr = densaf_*densaf_;
+    for (int nn=0;nn<2;++nn)
+    {
+      const double dens_sqr_velint_nn = dens_sqr*velint_(nn);
+      for (int rr=0;rr<2;++rr)
+      {
+        G = xji_(nn,0)*xji_(rr,0);
+        for (int mm=1;mm<2;++mm)
+        {
+          G += xji_(nn,mm)*xji_(rr,mm);
+        }
+        normG += G*G;
+        Gnormu+=dens_sqr_velint_nn*G*velint_(rr);
+      }
+    }
+
+    // definition of constant:
+    // 12.0/m_k = 36.0 for linear elements and 144.0 for quadratic elements
+    // (differently defined, e.g., in Akkerman et al. (2008))
+    const double CI = 12.0/mk;
+
+    tau_(0) = 1.0/(sqrt((4.0*dens_sqr)/(dt_*dt_)+Gnormu+CI*visceff_*visceff_*normG));
+    tau_(1) = tau_(0);
+
+    /*
+      tau_C: Bazilevs et al. (2007), derived from fine-scale complement Shur
+                                     operator of the pressure equation
+
+                                  1.0
+                    tau  = -----------------
+                       C            /     \
+                            tau  * | g * g |
+                               M    \-   -/
+    */
+    /*           +-     -+   +-     -+   +-     -+
+                 |       |   |       |   |       |
+                 |  dr   |   |  ds   |   |  dt   |
+            g  = |  ---  | + |  ---  | + |  ---  |
+             i   |  dx   |   |  dx   |   |  dx   |
+                 |    i  |   |    i  |   |    i  |
+                 +-     -+   +-     -+   +-     -+
+    */
+    /*           +----
+                  \
+         g * g =   +   g * g
+         -   -    /     i   i
+                 +----
+                   i
+    */
+    const double g0 = xji_(0,0) + xji_(0,1);
+    const double g1 = xji_(1,0) + xji_(1,1);
+
+    const double normgsq = g0*g0+g1*g1;
+
+    tau_(2) = 1.0/(tau_(0)*normgsq);
+  }
+  else if(whichtau == Fluid3::codina)
+  {
+    /*----------------------------------------------------- compute tau_Mu ---*/
+    /* stability parameter definition according to
+
+    Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
+    element method for a generalized Stokes problem. Numerische
+    Mathematik, Vol. 92, pp. 652-677, 2002.
+    http://www.lncc.br/~valentin/publication.htm
+
+    and:
+
+    Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
+    Finite Element Method for the Advective-Reactive-Diffusive
+    Equation. Computer Methods in Applied Mechanics and Enginnering,
+    Vol. 190, pp. 1785-1800, 2000.
+    http://www.lncc.br/~valentin/publication.htm                   */
+
+    /* viscous : reactive forces */
+    const double re1 = 4.0 * timefac * visceff_ / (mk * densaf_ * DSQR(hk));
+
+    /* convective : viscous forces */
+    const double re2 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
+
+    const double xi1 = DMAX(re1,1.0);
+    const double xi2 = DMAX(re2,1.0);
+
+    tau_(0) = timefac*DSQR(hk)/(DSQR(hk)*densaf_*xi1+(4.0*timefac*visceff_/mk)*xi2);
+    tau_(1) = tau_(0);
+
+    /*------------------------------------------------------ compute tau_C ---*/
+    /*-- stability parameter definition according to Codina (2002), CMAME 191
+     *
+     * Analysis of a stabilized finite element approximation of the transient
+     * convection-diffusion-reaction equation using orthogonal subscales.
+     * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
+     *
+     * */
+    tau_(2) = sqrt(DSQR(visceff_)+DSQR(0.5*densaf_*vel_norm*hk));
+  }
+  else dserror("unknown definition of tau\n");
+
+  return;
+}
+
 
 #endif
 #endif

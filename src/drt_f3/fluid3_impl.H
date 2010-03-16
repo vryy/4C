@@ -65,7 +65,7 @@ namespace ELEMENTS
                          RefCountPtr<MAT::Material> mat) = 0;
 
     /// Internal implementation class for fluid element
-    static Fluid3ImplInterface* Impl(DRT::ELEMENTS::Fluid3* f3);
+    static Fluid3ImplInterface* Impl(DRT::ELEMENTS::Fluid3* ele);
 
   };
 
@@ -174,18 +174,18 @@ namespace ELEMENTS
       \param l_tau            (i) viscous length scale, required for van driest
                                   damping function and defined on input
       */
-    void Sysmat(Fluid3*                                  ele,
-               /* const LINALG::Matrix<nsd_,iel>&             evelaf,
+    void Sysmat(Fluid3*                                     ele,
+                const LINALG::Matrix<nsd_,iel>&             evelaf,
                 const LINALG::Matrix<nsd_,iel>&             eveln,
                 const LINALG::Matrix<nsd_,iel>&             fsevelaf,
-                const LINALG::Matrix<iel,1>&             epreaf,
+                const LINALG::Matrix<iel,1>&                epreaf,
                 const LINALG::Matrix<nsd_,iel>&             ,
-                const LINALG::Matrix<iel,1>&             escaaf,
-                const LINALG::Matrix<iel,1>&             escaam,
-                const LINALG::Matrix<iel,1>&             escadtam,
+                const LINALG::Matrix<iel,1>&                escaaf,
+                const LINALG::Matrix<iel,1>&                escaam,
+                const LINALG::Matrix<iel,1>&                escadtam,
                 const LINALG::Matrix<nsd_,iel>&             emhist,
                 const LINALG::Matrix<nsd_,iel>&             edispnp,
-                const LINALG::Matrix<nsd_,iel>&             egridv,*/
+                const LINALG::Matrix<nsd_,iel>&             egridv,
                 LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&             estif,
                 LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&             emesh,
                 LINALG::Matrix<(nsd_+1)*iel,    1>&             eforce,
@@ -213,7 +213,7 @@ namespace ELEMENTS
                 double&                                  l_tau);
 
     void Sysmat2D(Fluid3*                                  ele,
-               /* const LINALG::Matrix<nsd_,iel>&             evelaf,
+                const LINALG::Matrix<nsd_,iel>&             evelaf,
                 const LINALG::Matrix<nsd_,iel>&             eveln,
                 const LINALG::Matrix<nsd_,iel>&             fsevelaf,
                 const LINALG::Matrix<iel,1>&             epreaf,
@@ -223,7 +223,7 @@ namespace ELEMENTS
                 const LINALG::Matrix<iel,1>&             escadtam,
                 const LINALG::Matrix<nsd_,iel>&             emhist,
                 const LINALG::Matrix<nsd_,iel>&             edispnp,
-                const LINALG::Matrix<nsd_,iel>&             egridv,*/
+                const LINALG::Matrix<nsd_,iel>&             egridv,
                 LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&             estif,
                 LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&             emesh,
                 LINALG::Matrix<(nsd_+1)*iel,    1>&             eforce,
@@ -245,7 +245,7 @@ namespace ELEMENTS
                 const enum Fluid3::StabilisationAction   reynolds,
                 const enum Fluid3::TauType               whichtau,
                 const enum Fluid3::TurbModelAction       turb_mod_action,
-                const enum INPAR::FLUID::PhysicalType  physicaltype,
+                const enum INPAR::FLUID::PhysicalType    physicaltype,
                 double&                                  Cs);
 
   private:
@@ -281,16 +281,16 @@ namespace ELEMENTS
        \brief get material parameters
      */
     void GetMaterialParams(Teuchos::RCP<const MAT::Material>  material,
-                           /*const LINALG::Matrix<3,iel>&       evelaf,
-                           const LINALG::Matrix<iel,1>&       escaaf,
-                           const LINALG::Matrix<iel,1>&       escaam,*/
-                           const bool                         is_genalpha,
-                           const enum INPAR::FLUID::PhysicalType	 physicaltype);
+                           const LINALG::Matrix<nsd_,iel>&        evelaf,
+                           const LINALG::Matrix<iel,1>&           escaaf,
+                           const LINALG::Matrix<iel,1>&           escaam,
+                           const bool                             is_genalpha,
+                           const enum INPAR::FLUID::PhysicalType  physicaltype);
 
     /*!
       \brief calculate (all-scale) subgrid viscosity
     */
-    void CalcSubgrVisc(/*const LINALG::Matrix<3,iel>&        evelaf,*/
+    void CalcSubgrVisc(const LINALG::Matrix<nsd_,iel>&     evelaf,
                        const double                        vol,
                        const enum Fluid3::TurbModelAction  turb_mod_action,
                        double&                             Cs,
@@ -300,7 +300,7 @@ namespace ELEMENTS
     /*!
       \brief calculate (all-scale) subgrid viscosity
     */
-    void CalcSubgrVisc_2D(/*const LINALG::Matrix<3,iel>&        evelaf,*/
+    void CalcSubgrVisc_2D(const LINALG::Matrix<nsd_,iel>&  evelaf,
                        const double                        area,
                        const enum Fluid3::TurbModelAction  turb_mod_action,
                        double&                             Cs);
@@ -308,14 +308,14 @@ namespace ELEMENTS
     /*!
       \brief calculate fine-scale subgrid viscosity
     */
-    void CalcFineScaleSubgrVisc(/*const LINALG::Matrix<3,iel>&        evelaf,
-                                const LINALG::Matrix<3,iel>&        fsevelaf,*/
+    void CalcFineScaleSubgrVisc(const LINALG::Matrix<nsd_,iel>&     evelaf,
+                                const LINALG::Matrix<nsd_,iel>&     fsevelaf,
                                 const double                        vol,
                                 const enum Fluid3::FineSubgridVisc  fssgv,
                                 double&                             Cs);
 
-    void CalcFineScaleSubgrVisc_2D(/*const LINALG::Matrix<3,iel>&        evelaf,
-                                const LINALG::Matrix<3,iel>&        fsevelaf,*/
+    void CalcFineScaleSubgrVisc_2D(const LINALG::Matrix<nsd_,iel>&  evelaf,
+                                const LINALG::Matrix<nsd_,iel>&     fsevelaf,
                                 const double                        area,
                                 const enum Fluid3::FineSubgridVisc  fssgv,
                                 double&                             Cs);
@@ -340,6 +340,10 @@ namespace ELEMENTS
            tauC : Codina
     */
     void CalcStabParameter(const double               timefac,
+                           const double               vol,
+                           const enum Fluid3::TauType whichtau);
+
+    void CalcStabParameter_2D(const double               timefac,
                            const double               vol,
                            const enum Fluid3::TauType whichtau);
 
@@ -403,27 +407,8 @@ namespace ELEMENTS
 
 
   private:
-    // TODO
-    // decide if it is necessary to compile all
-
+    //! DOF's per node
     const int numdofpernode_;
-
-    // create objects for element arrays
-    LINALG::Matrix<nsd_,iel> evelaf;
-    LINALG::Matrix<iel,1> epreaf;
-    LINALG::Matrix<iel,1> escaaf;
-    LINALG::Matrix<iel,1> escaam;
-    LINALG::Matrix<iel,1> escadtam;
-    LINALG::Matrix<nsd_,iel> emhist;
-    // create objects for element arrays
-    LINALG::Matrix<nsd_, iel> edispnp;
-    LINALG::Matrix<nsd_, iel> egridv;
-    // create object for element array
-    LINALG::Matrix<nsd_,iel> fsevelaf;
-    // create objects for element arrays
-    LINALG::Matrix<nsd_,iel> eaccam;
-    LINALG::Matrix<nsd_,iel> eveln;
-
     //! node coordinates
     LINALG::Matrix<nsd_,iel> xyze_;
     //! dead load in nodes at n+alpha_F/n+1
@@ -464,8 +449,8 @@ namespace ELEMENTS
     LINALG::Matrix<nsd_,1> accint_;
     //! pressure gradient in gausspoint
     LINALG::Matrix<nsd_,1> gradp_;
-    //! the stabilisation parameters
-    LINALG::Matrix<nsd_,1> tau_;
+    //! the stabilisation parameters -> it is a (3,1) vector for 2D and 3D
+    LINALG::Matrix<3,1> tau_;
     //! viscous term including 2nd derivatives
     //! (This array once had three dimensions, now the first two are combined to one.)
     LINALG::Matrix<nsd_*nsd_,iel> viscs2_;
