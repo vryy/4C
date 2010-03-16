@@ -232,9 +232,9 @@ int DRT::ELEMENTS::Fluid3lin_Impl<distype>::Evaluate(
 
   // create objects for element arrays
   LINALG::Matrix<numnode,1> eprenp;
-  LINALG::Matrix<3,numnode> evelnp;
+  LINALG::Matrix<nsd_,numnode> evelnp;
   LINALG::Matrix<numnode,1> edensnp;
-  LINALG::Matrix<3,numnode> emhist;
+  LINALG::Matrix<nsd_,numnode> emhist;
   LINALG::Matrix<numnode,1> echist;
 
   // split velocity and pressure, insert into element arrays
@@ -272,11 +272,11 @@ int DRT::ELEMENTS::Fluid3lin_Impl<distype>::Evaluate(
 
   // calculate element coefficient matrix and rhs
   Sysmat(ele,
-         //evelnp,
-         //eprenp,
-         //edensnp,
-         //emhist,
-         //echist,
+         evelnp,
+         eprenp,
+         edensnp,
+         emhist,
+         echist,
          elemat1,
          elevec1,
          mat,
@@ -299,11 +299,11 @@ int DRT::ELEMENTS::Fluid3lin_Impl<distype>::Evaluate(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Sysmat(
   Fluid3*                                              ele,
-  //const LINALG::Matrix<nsd_,iel>&     evelnp,
-  //const LINALG::Matrix<iel,1>&     eprenp,
-  //const LINALG::Matrix<iel,1>&     edensnp,
-  //const LINALG::Matrix<nsd_,iel>&     emhist,
-  //const LINALG::Matrix<iel,1>&     echist,
+  const LINALG::Matrix<nsd_,iel>&     evelnp,
+  const LINALG::Matrix<iel,1>&     eprenp,
+  const LINALG::Matrix<iel,1>&     edensnp,
+  const LINALG::Matrix<nsd_,iel>&     emhist,
+  const LINALG::Matrix<iel,1>&     echist,
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&     estif,
   LINALG::Matrix<(nsd_+1)*iel,1>&         eforce,
   Teuchos::RCP<const MAT::Material>                    material,
@@ -338,7 +338,7 @@ void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Sysmat(
   // stabilization parameter
   // This has to be done before anything else is calculated because
   // we use the same arrays internally.
-  Caltau(ele,/*evelnp,edensnp,*/visc,timefac);
+  Caltau(ele,evelnp,edensnp,visc,timefac);
 
   // flag for higher order elements
   const bool higher_order_ele = ele->isHigherOrderElement(distype);
@@ -819,8 +819,8 @@ void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Sysmat(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Caltau(
   Fluid3*                                           ele,
-  //const LINALG::Matrix<3,iel>&  evelnp,
-  //const LINALG::Matrix<iel,1>&  edensnp,
+  const LINALG::Matrix<nsd_,iel>&  evelnp,
+  const LINALG::Matrix<iel,1>&  edensnp,
   const double                                      visc,
   const double                                      timefac
   )

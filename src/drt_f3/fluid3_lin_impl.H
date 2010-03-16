@@ -167,11 +167,11 @@ namespace ELEMENTS
       \param Cs_fs    (i) Smagorinsky model param. for fine-scale subgrid viscosity
       */
     void Sysmat(Fluid3* ele,
-                //const LINALG::Matrix<3,iel>&     evelnp,
-                //const LINALG::Matrix<iel,1>&     eprenp,
-                //const LINALG::Matrix<iel,1>&     edensnp,
-                //const LINALG::Matrix<3,iel>&     emhist,
-                // const LINALG::Matrix<iel,1>&     echist,
+                const LINALG::Matrix<nsd_,iel>&     evelnp,
+                const LINALG::Matrix<iel,1>&     eprenp,
+                const LINALG::Matrix<iel,1>&     edensnp,
+                const LINALG::Matrix<nsd_,iel>&     emhist,
+                const LINALG::Matrix<iel,1>&     echist,
                 LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&     estif,
                 LINALG::Matrix<(nsd_+1)*iel,1>&         eforce,
                 Teuchos::RCP<const MAT::Material>                    material,
@@ -194,8 +194,8 @@ namespace ELEMENTS
     */
     void Caltau(
       Fluid3*                                          ele,
-      //const LINALG::Matrix<3,iel>& evelnp,
-      //const LINALG::Matrix<iel,1>& edensnp,
+      const LINALG::Matrix<nsd_,iel>& evelnp,
+      const LINALG::Matrix<iel,1>& edensnp,
       const double                                     visc,
       const double                                     timefac);
 
@@ -208,12 +208,6 @@ namespace ELEMENTS
   private:
     //number of dof's
     const int numdofpernode_;
-    // create objects for element arrays
-    LINALG::Matrix<iel,1> eprenp;
-    LINALG::Matrix<nsd_,iel> evelnp;
-    LINALG::Matrix<iel,1> edensnp;
-    LINALG::Matrix<nsd_,iel> emhist;
-    LINALG::Matrix<iel,1> echist;
 
     LINALG::Matrix<nsd_,iel> xyze_;
     LINALG::Matrix<nsd_,iel> edeadng_;
@@ -237,7 +231,7 @@ namespace ELEMENTS
     LINALG::Matrix<nsd_,1> velino_;
     LINALG::Matrix<nsd_,1> velint_; /* newest, i.e. previous time leve velocity*/
     LINALG::Matrix<nsd_,1> gradp_;
-    LINALG::Matrix<nsd_,1> tau_;
+    LINALG::Matrix<3,1> tau_;
     // this array once had three dimensions, I combined the first two
     // to one.
     LINALG::Matrix<nsd_*nsd_,iel> viscs2_; /* viscous term including 2nd derivatives */
