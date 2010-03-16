@@ -269,14 +269,14 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
       // assembly
       int eid = curr->second->Id();
 
-      elematrix1.Scale(-lagraval*invresscale*dttheta);
+      elematrix1.Scale(-lagraval*invresscale);
       FluidShapeDerivMatrix->Assemble(eid,elematrix1,lm,lmowner);
 
       // assemble to rectangular matrix. The column corresponds to the constraint ID.
       vector<int> colvec(1);
       colvec[0]=gindex;
 
-      elevector1.Scale(-dttheta);
+      elevector1.Scale(-1.0);
       FluidConstrMatrix->Assemble(eid,elevector1,lm,lmowner,colvec);
 
       elevector2.Scale(-dttheta);
@@ -305,6 +305,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
   ConstrFluidMatrix->Add(*FluidConstrMatrix, true, 1.0, 0.0);
   ConstrFluidMatrix->Complete(fluidmap, constrmap);
   FluidConstrMatrix->Scale(invresscale);
+  ConstrFluidMatrix->Scale(dttheta);
 
   // transposed "ale" constraint matrix -> linearization of constraint equation
   for (int i=0; i<Interface().NumMaps(); ++i)

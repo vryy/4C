@@ -125,10 +125,7 @@ FSI::LungMonolithic::LungMonolithic(Epetra_Comm& comm)
   CurrFlowRates_ = rcp(new Epetra_Vector(*ConstrMap_,true));
   dVfluid_ = rcp(new Epetra_Vector(*ConstrMap_,true));
 
-  // set theta for integrating fluid volumes
-  // note: since the acceleration is assumed to be constant over the time
-  // step, the velocities are linear and corresponding flow rates have to be
-  // integrated in time using the trapezoidal rule
+  // time integration factor for flow rates
   theta_ = 0.5;
 
   // determine initial volumes of parenchyma balloons
