@@ -119,72 +119,15 @@ public:
   */
   virtual int NumSurface() const
   {
-    switch(distype_)
-    {
-    case DRT::Element::hex8:
-    case DRT::Element::hex20:
-    case DRT::Element::hex27:
-    case DRT::Element::nurbs8:
-    case DRT::Element::nurbs27:
-      return 6; break;
-    case DRT::Element::tet4:
-    case DRT::Element::tet10:
-      return 4; break;
-    case DRT::Element::wedge6:
-    case DRT::Element::wedge15:
-    case DRT::Element::pyramid5:
-      return 5; break;
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
-    case DRT::Element::nurbs4:
-    case DRT::Element::nurbs9:
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
-      return 1; break;
-    case DRT::Element::line2:
-    case DRT::Element::line3:
-      return 0; break;
-    default:
-      dserror("discretization type not yet implemented");
-    }
-    return 0;
+    return DRT::UTILS::getNumberOfElementSurfaces(distype_);
   }
 
   /*!
   \brief Return number of volumes of this element
   */
   virtual int NumVolume() const
-{
-    switch(distype_)
-    {
-    case DRT::Element::hex8:
-    case DRT::Element::hex20:
-    case DRT::Element::hex27:
-    case DRT::Element::tet4:
-    case DRT::Element::tet10:
-    case DRT::Element::wedge6:
-    case DRT::Element::wedge15:
-    case DRT::Element::pyramid5:
-    case DRT::Element::nurbs8:
-    case DRT::Element::nurbs27:
-      return 1;
-      break;
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
-    case DRT::Element::nurbs4:
-    case DRT::Element::nurbs9:
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
-    case DRT::Element::line2:
-    case DRT::Element::line3:
-      return 0;
-      break;
-    default:
-      dserror("discretization type not yet implemented");
-    }
-    return 0;
+  {
+    return DRT::UTILS::getNumberOfElementVolumes(distype_);
   }
 
   /*!

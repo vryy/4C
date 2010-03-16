@@ -177,23 +177,40 @@ int DRT::UTILS::getNumberOfElementLines(
     int numLines = 0;
     switch(distype)
     {
-        case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
+        case DRT::Element::hex8:
+        case DRT::Element::hex20:
+        case DRT::Element::hex27:
+        case DRT::Element::nurbs8:
+        case DRT::Element::nurbs27:
             numLines = 12;
             break;
-        case DRT::Element::wedge6: case DRT::Element::wedge15:
+        case DRT::Element::wedge6:
+        case DRT::Element::wedge15:
             numLines = 9;
             break;
-        case DRT::Element::tet4: case DRT::Element::tet10:
+        case DRT::Element::pyramid5:
+            numLines = 8;
+            break;
+        case DRT::Element::tet4:
+        case DRT::Element::tet10:
             numLines = 6;
             break;
-        case DRT::Element::quad4: case DRT::Element::quad8: case DRT::Element::quad9:
+        case DRT::Element::quad4:
+        case DRT::Element::quad8:
+        case DRT::Element::quad9:
             numLines = 4;
             break;
-        case DRT::Element::nurbs4: case DRT::Element::nurbs9:
+        case DRT::Element::nurbs4:
+        case DRT::Element::nurbs9:
             numLines = 4;
             break;
-        case DRT::Element::tri3: case DRT::Element::tri6:
+        case DRT::Element::tri3:
+        case DRT::Element::tri6:
             numLines = 3;
+            break;
+        case DRT::Element::line2:
+        case DRT::Element::line3:
+            numLines = 1;
             break;
         default:
             dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
@@ -203,7 +220,7 @@ int DRT::UTILS::getNumberOfElementLines(
 
 
 /*----------------------------------------------------------------------*
- |  returns the number of lines                              a.ger 08/07|
+ |  returns the number of surfaces                           a.ger 08/07|
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/
 int DRT::UTILS::getNumberOfElementSurfaces(
@@ -212,19 +229,81 @@ int DRT::UTILS::getNumberOfElementSurfaces(
     int numSurf = 0;
     switch(distype)
     {
-        case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
+        // 3D
+        case DRT::Element::hex8:
+        case DRT::Element::hex20:
+        case DRT::Element::hex27:
+        case DRT::Element::nurbs8:
+        case DRT::Element::nurbs27:
             numSurf = 6;
             break;
-        case DRT::Element::wedge6: case DRT::Element::wedge15:
+        case DRT::Element::wedge6:
+        case DRT::Element::wedge15:
+        case DRT::Element::pyramid5:
             numSurf = 5;
             break;
-        case DRT::Element::tet4: case DRT::Element::tet10:
+        case DRT::Element::tet4:
+        case DRT::Element::tet10:
             numSurf = 4;
             break;
+        // 2D
+        case DRT::Element::quad4:
+        case DRT::Element::quad8:
+        case DRT::Element::quad9:
+        case DRT::Element::tri3:
+        case DRT::Element::tri6:
+        case DRT::Element::nurbs4:
+        case DRT::Element::nurbs9:
+          numSurf = 1;
+          break;
+        // 1D
+        case DRT::Element::line2:
+        case DRT::Element::line3:
+          numSurf = 0;
+          break;
         default:
             dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
     return numSurf;
+}
+
+/*----------------------------------------------------------------------*
+ |  returns the number of volumes                             ehrl 03/10|
+ |  for each discretization type                                        |
+ *----------------------------------------------------------------------*/
+int DRT::UTILS::getNumberOfElementVolumes(
+    const DRT::Element::DiscretizationType&     distype)
+{
+    int numVol = 0;
+    switch(distype)
+    {
+      case DRT::Element::hex8:
+      case DRT::Element::hex20:
+      case DRT::Element::hex27:
+      case DRT::Element::tet4:
+      case DRT::Element::tet10:
+      case DRT::Element::wedge6:
+      case DRT::Element::wedge15:
+      case DRT::Element::pyramid5:
+      case DRT::Element::nurbs8:
+      case DRT::Element::nurbs27:
+        numVol = 1;
+        break;
+      case DRT::Element::quad4:
+      case DRT::Element::quad8:
+      case DRT::Element::quad9:
+      case DRT::Element::tri3:
+      case DRT::Element::tri6:
+      case DRT::Element::nurbs4:
+      case DRT::Element::nurbs9:
+      case DRT::Element::line2:
+      case DRT::Element::line3:
+        return numVol = 0;
+        break;
+      default:
+        dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
+    }
+    return numVol;
 }
 
 /*----------------------------------------------------------------------*
@@ -381,28 +460,6 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
           }
           break;
         }
-        // TODO
-        // Early stage: Integration of Fluid2 into Fluid3
-        case DRT::Element::quad4:
-        {
-            // nurbs 9 surfaces --- valid only on interpolated boundaries
-            const int nSurf = 1;
-            const int nNode = 4;
-            vector<int> submap(nNode, 0);
-            for(int i = 0; i < nSurf; i++)
-            {
-              map.push_back(submap);
-              for(int j = 0; j < nNode; j++)
-                map[i][j] = eleNodeNumbering_hex27_surfaces[i][j];
-            }
-        	break;
-        }
-        case DRT::Element::tri6:
-        case DRT::Element::tri3:
-        case DRT::Element::quad8:
-        case DRT::Element::quad9:
-        case DRT::Element::nurbs9:
-        case DRT::Element::nurbs4:
         default:
           dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
@@ -783,7 +840,7 @@ LINALG::SerialDenseMatrix DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
             }
             break;
         }
-        case DRT::Element::line3: case DRT::Element::line2: 
+        case DRT::Element::line3: case DRT::Element::line2:
         {
             for(int inode = 0; inode < nNode; inode++)
             {
