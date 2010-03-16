@@ -112,10 +112,6 @@
 #cmakedefine PARMETIS
 #endif
 
-#ifndef D_ALE_BFLOW
-#cmakedefine D_ALE_BFLOW
-#endif
-
 #ifndef PERF
 #cmakedefine PERF
 #endif
