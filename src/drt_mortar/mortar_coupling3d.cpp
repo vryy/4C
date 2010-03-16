@@ -2787,6 +2787,15 @@ bool MORTAR::Coupling3d::IntegrateCells()
     // *******************************************************************
     else if (Quad() && (lmtype==INPAR::MORTAR::lagmult_quad_quad || lmtype==INPAR::MORTAR::lagmult_lin_lin))
     {
+      // check whether quad_quad case is feasible (dual LM only)
+      if (lmtype==INPAR::MORTAR::lagmult_quad_quad && shapefcn_ == INPAR::MORTAR::shape_dual)
+      {
+        if (SlaveElement().Shape()==DRT::Element::quad8)
+          dserror("ERROR: Quad/Quad DUAL LM interpolation for 3D quadratic mortar only feasible for quad9-surfaces");
+        else if (SlaveElement().Shape()==DRT::Element::tri6)
+          dserror("ERROR: Quad/Quad DUAL LM interpolation for 3D quadratic mortar only feasible for quad9-surfaces");
+      }
+            
       // prepare integration of M (and possibly D) on intcells
       int nrow = SlaveElement().NumNode();
       int ncol = MasterElement().NumNode();
@@ -2804,10 +2813,6 @@ bool MORTAR::Coupling3d::IntegrateCells()
             Cells()[i],Auxn(),lmtype,dseg,mseg,gseg);
       else /*(!CouplingInAuxPlane()*/
         dserror("ERROR: Only aux. plane version implemented for 3D quadratic mortar");
-      
-      // check for dual shape functions
-      if (shapefcn_ == INPAR::MORTAR::shape_dual)
-        dserror("ERROR: Quadratic LM interpolation not yet implemented for DUAL 3D quadratic mortar");
       
       // assembly of intcell contributions to M (and possibly D)
 #ifdef MORTARONELOOP
