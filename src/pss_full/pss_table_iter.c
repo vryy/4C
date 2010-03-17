@@ -14,6 +14,7 @@ Iterate the symbol table and visit all entries.
 */
 
 #include "pss_table_iter.h"
+#include "pss_prototypes.h"
 
 #ifdef CCADISCRET
 #include "../drt_lib/drt_dserror.H"
@@ -47,19 +48,11 @@ static void push_map_node(MAP_ITERATOR* iterator, MAP_NODE* map_node)
 {
   STACK_ELEMENT* new_element;
 
-#ifdef DEBUG
-  dstrc_enter("push_map_node");
-#endif
-
   new_element=(STACK_ELEMENT*)CCACALLOC(1, sizeof(STACK_ELEMENT));
   new_element->map_node=map_node;
   new_element->snext=iterator->stack.head.snext;
   iterator->stack.head.snext=new_element;
   iterator->stack.count++;
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 /*----------------------------------------------------------------------*/
@@ -74,10 +67,6 @@ static void pop_map_node(MAP_ITERATOR* iterator)
 {
   STACK_ELEMENT* tmp_free;
 
-#ifdef DEBUG
-  dstrc_enter("pop_map_node");
-#endif
-
   if (iterator->stack.count==0)
   {
     dserror("map iterator stack empty");
@@ -89,10 +78,6 @@ static void pop_map_node(MAP_ITERATOR* iterator)
     iterator->stack.count--;
     CCAFREE(tmp_free);
   }
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 /*----------------------------------------------------------------------*/
@@ -109,10 +94,6 @@ static void pop_map_node(MAP_ITERATOR* iterator)
 INT next_map_node(MAP_ITERATOR* iterator)
 {
   INT result = 0;
-
-#ifdef DEBUG
-  dstrc_enter("next_map_node");
-#endif
 
   /* if the map is empty there is nothing to iterate */
   if (iterator->map!=NULL)
@@ -156,10 +137,6 @@ INT next_map_node(MAP_ITERATOR* iterator)
     }
   }
   }
-  
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return result;
 }
 
@@ -221,10 +198,6 @@ DOUBLE result_map_read_key(MAP* map, CHAR* key)
 {
   MAP_ITERATOR iterator;   /* used for stepping through all map_nodes*/
 
-#ifdef DEBUG
-  dstrc_enter("result_map_read_key");
-#endif
-
   init_map_iterator(&iterator, map);
   while (next_map_node(&iterator)) /*loop over all map_nodes*/
   {
@@ -238,17 +211,11 @@ DOUBLE result_map_read_key(MAP* map, CHAR* key)
       {
         if (map_find_symbol(node_iterator.symbol->s.dir, key)!=NULL)
         {
-#ifdef DEBUG
-          dstrc_exit();
-#endif
           return map_read_real(node_iterator.symbol->s.dir, key);
         }
       }
     }
   }
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return 0;
 }
 
@@ -275,10 +242,6 @@ MAP_NODE* iterator_get_node(MAP_ITERATOR* iterator)
 /*----------------------------------------------------------------------*/
 MAP* iterator_get_map(MAP_ITERATOR* iterator)
 {
-#ifdef DEBUG
-  dstrc_enter("iterator_get_node");
-#endif
-
   MAP_NODE* actnode = iterator_get_node(iterator);
   MAP* ret = NULL;
 
@@ -288,12 +251,7 @@ MAP* iterator_get_map(MAP_ITERATOR* iterator)
   else
     dserror("iterator has no map symbol");
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-
   return ret;
-
 }
 
 /*----------------------------------------------------------------------*/
@@ -307,16 +265,10 @@ MAP* iterator_get_map(MAP_ITERATOR* iterator)
 INT iterator_find_symbol(MAP_ITERATOR* iterator, char* name)
 {
   int ret = 0;
-#ifdef DEBUG
-  dstrc_enter("iterator_get_node");
-#endif
 
   if (map_find_symbol(iterator_get_map(iterator), name)!=NULL)
     ret = 1;
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return ret;
 }
 
@@ -334,15 +286,8 @@ INT iterator_find_symbol(MAP_ITERATOR* iterator, char* name)
 INT node_iterator_get_real_as_float(MAP_NODE_ITERATOR* node_iterator, float* real)
 {
   INT ret;
-#ifdef DEBUG
-  dstrc_enter("iterator_get_node");
-#endif
 
   ret = symbol_get_real_as_float(node_iterator->symbol, real);
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 
   return ret;
 }

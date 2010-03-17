@@ -259,16 +259,7 @@ void ElementReader::Partition()
           }
           else
           {
-            dserror("old element input system should not be used anymore");
-
-            // Set the current row to the empty slot after the file rows
-            // and store the current line. This way the elements can use
-            // the normal fr* functions to read the line.
-            // Of course this is a hack.
-            allfiles.actrow = allfiles.numrows;
-            allfiles.actplace = allfiles.input_file[allfiles.actrow] = const_cast<char*>(line.c_str());
-            // let this element read its input line
-            ele->ReadElement();
+            dserror("a matching line definition is needed");
           }
 
           // add element to discretization
@@ -311,9 +302,6 @@ void ElementReader::Partition()
 
   if (myrank==0)
   {
-    // Reset fr* functions. Still required.
-    frrewind();
-
     numnodes = (int)nodes_.size();
 
     // copy set content into nids vector

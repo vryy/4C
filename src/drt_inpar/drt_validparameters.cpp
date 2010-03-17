@@ -39,6 +39,9 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_searchtree.H"
 #include "../drt_inpar/inpar_xfem.H"
 
+#include "../headers/fluid.h"
+#include "../headers/dynamic.h"
+
 #include <AztecOO.h>
 
 /*----------------------------------------------------------------------*/
@@ -132,7 +135,7 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream,
           if (values!=Teuchos::null)
           {
             unsigned len = 0;
-            for (unsigned i=0; i<values->size(); ++i)
+            for (int i=0; i<values->size(); ++i)
             {
               len += (*values)[i].length()+1;
             }
@@ -147,7 +150,7 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream,
             }
             else
             {
-              for (unsigned i=0; i<values->size(); ++i)
+              for (int i=0; i<values->size(); ++i)
               {
                 stream << blue2light << "//     " << magentalight << (*values)[i] << endcolor << '\n';
               }
@@ -436,11 +439,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   condition.disableRecursiveValidation();
 
-  //ParameterList& stat = list->sublist("STATIC",false,"");
-
   /*----------------------------------------------------------------------*/
-  //Teuchos::ParameterList& eigen = list->sublist("EIGENVALUE ANALYSIS",false,"");
+  Teuchos::ParameterList& stat = list->sublist("STATIC",false,"");
 
+  //IntParameter("LINEAR",0,"",&stat);
+  //IntParameter("NONLINEAR",0,"",&stat);
+
+  setStringToIntegralParameter<int>("NEWTONRAPHSO","Load_Control",
+                                    "",
+                                    tuple<std::string>("Load_Control"),
+                                    tuple<int>(control_load),
+                                    &stat);
+
+  IntParameter("MAXITER",0,"",&stat);
+  IntParameter("NUMSTEP",0,"",&stat);
+  IntParameter("RESEVRYDISP",1,"",&stat);
+  IntParameter("RESEVRYSTRS",1,"",&stat);
+  IntParameter("RESTARTEVRY",20,"",&stat);
+
+  DoubleParameter("TOLDISP",0.0,"",&stat);
+  DoubleParameter("STEPSIZE",0.0,"",&stat);
 
   /*--------------------------------------------------------------------*/
   /* parameters for NOX - non-linear solution */

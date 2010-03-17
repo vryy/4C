@@ -651,7 +651,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
 
       // get cpu time
-      const double tcpu=ds_cputime();
+      const double tcpu=Teuchos::Time::wallTime();
 
       sysmat_->Zero();
 
@@ -715,7 +715,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       }
 
       // end time measurement for element
-      dtele=ds_cputime()-tcpu;
+      dtele=Teuchos::Time::wallTime()-tcpu;
 
     } // end of element call
 
@@ -893,7 +893,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
 
       // get cpu time
-      const double tcpusolve=ds_cputime();
+      const double tcpusolve=Teuchos::Time::wallTime();
 
       // do adaptive linear solver tolerance (not in first solve)
       if (isadapttol and itnum>1)
@@ -907,7 +907,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       solver_.ResetTolerance();
 
       // end time measurement for solver
-      dtsolve = ds_cputime()-tcpusolve;
+      dtsolve = Teuchos::Time::wallTime()-tcpusolve;
     }
 
     //------------------------------------------------ update (u,p) trial

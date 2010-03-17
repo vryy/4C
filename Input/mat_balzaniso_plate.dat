@@ -45,20 +45,21 @@ STRUCT_STRESS                   No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 ------------------------------------------------------------STATIC
-NONLINEAR
-KINTYP       Tot_Lagr
+//NONLINEAR
+//KINTYP       Tot_Lagr
 NEWTONRAPHSO Load_Control
 NUMSTEP      10
 MAXITER      50
-TOLRESID     1.0E-06
+//TOLRESID     1.0E-06
 TOLDISP      1.0E-06
 STEPSIZE     1.0E-6
-IARC         No
-ARCSCL       1.0
-SIGNCHCSP    No
+//IARC         No
+//ARCSCL       1.0
+//SIGNCHCSP    No
 RESEVRYDISP  10
 RESEVRYSTRS  1
 RESTARTEVRY  100
+//
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 -----------------------------------------------------FLUID DYNAMIC

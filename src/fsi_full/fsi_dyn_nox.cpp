@@ -1474,7 +1474,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 
   while (fsidyn->step < fsidyn->nstep && fsidyn->time <= fsidyn->maxtime)
   {
-    double t2=ds_cputime();
+    double t2=Teuchos::Time::wallTime();
 
     fsidyn->step++;
     fsidyn->time += fsidyn->dt;
@@ -1980,7 +1980,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     perf_end(43);
 
 
-    double tt=ds_cputime()-t2;
+    double tt=Teuchos::Time::wallTime()-t2;
     if (par.myrank==0)
     {
       fprintf(out," %10.3f |\n",tt);

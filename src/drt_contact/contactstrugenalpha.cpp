@@ -1470,8 +1470,8 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
           !contactmanager_->GetStrategy().ActiveSetConverged()) && numiter<maxiter)
   {
 #ifdef CONTACTTIME
-    const double t_start0 = ds_cputime();
-    const double t_start = ds_cputime();
+    const double t_start0 = Teuchos::Time::wallTime();
+    const double t_start = Teuchos::Time::wallTime();
 #endif // #ifdef CONTACTTIME
     //-----------------------------transform to local coordinate systems
     if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(SystemMatrix(),fresm_);
@@ -1505,7 +1505,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     //----------------------- transform back to global coordinate system
     if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(disi_);
 #ifdef CONTACTTIME
-    const double t_end = ds_cputime()-t_start;
+    const double t_end = Teuchos::Time::wallTime()-t_start;
     cout << "\n***\nSolve: " << t_end << " seconds\n***\n";
 #endif // #ifdef CONTACTTIME
 
@@ -1568,7 +1568,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       accm_->PutScalar(0.0);
     }
 #ifdef CONTACTTIME
-    const double t_start2 = ds_cputime();
+    const double t_start2 = Teuchos::Time::wallTime();
 #endif // #ifdef CONTACTTIME
 
     //---------------------------- compute internal forces and stiffness
@@ -1639,7 +1639,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       }
     }
 #ifdef CONTACTTIME
-    const double t_end2 = ds_cputime()-t_start2;
+    const double t_end2 = Teuchos::Time::wallTime()-t_start2;
     cout << "\n***\nDiscret.Evaluate: " << t_end2 << " seconds\n***\n";
 #endif // #ifdef CONTACTTIME
 
@@ -1703,28 +1703,28 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     // keep a copy of fresm for contact forces / equilibrium check
     RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
 #ifdef CONTACTTIME
-    const double t_start3 = ds_cputime();
+    const double t_start3 = Teuchos::Time::wallTime();
 #endif // #ifdef CONTACTTIME
 
     //-------------------------make contact modifications to lhs and rhs
     //-------------------- update active set for semi-smooth Newton case
     {
 #ifdef CONTACTTIME
-      const double t_start31 = ds_cputime();
+      const double t_start31 = Teuchos::Time::wallTime();
 #endif // #ifdef CONTACTTIME
       contactmanager_->GetStrategy().SetState("displacement",disn_);
 #ifdef CONTACTTIME
-      const double t_end31 = ds_cputime()-t_start31;
+      const double t_end31 = Teuchos::Time::wallTime()-t_start31;
       cout << "\n***\nContact.SetState: " << t_end31 << " seconds";
-      const double t_start32 = ds_cputime();
+      const double t_start32 = Teuchos::Time::wallTime();
 #endif // #ifdef CONTACTTIME
       contactmanager_->GetStrategy().InitEvalInterface();
 #ifdef CONTACTTIME
-      const double t_end321 = ds_cputime()-t_start32;
+      const double t_end321 = Teuchos::Time::wallTime()-t_start32;
 #endif // #ifdef CONTACTTIME
       contactmanager_->GetStrategy().InitEvalMortar();
 #ifdef CONTACTTIME
-      const double t_end322 = ds_cputime()-t_start32;
+      const double t_end322 = Teuchos::Time::wallTime()-t_start32;
       cout << "\nContact.InitMortar: " << t_end321 << " seconds";
       cout << "\nContact.EvalMortar: " << t_end322 << " seconds\n\n";
 #endif // #ifdef CONTACTTIME
@@ -1743,18 +1743,18 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       // computed in EvaluateMortar() above and on the other hand we want to
       // run the Evaluate()routine below with the NEW active set already)
 #ifdef CONTACTTIME
-      const double t_start33 = ds_cputime();
+      const double t_start33 = Teuchos::Time::wallTime();
 #endif // #ifdef CONTACTTIME
       contactmanager_->GetStrategy().UpdateActiveSetSemiSmooth();
 #ifdef CONTACTTIME
-      const double t_end33 = ds_cputime()-t_start33;
+      const double t_end33 = Teuchos::Time::wallTime()-t_start33;
       cout << "\nContact.UpdateActiveSet: " << t_end33 << " seconds";
-      const double t_start34 = ds_cputime();
+      const double t_start34 = Teuchos::Time::wallTime();
 #endif // #ifdef CONTACTTIME
       contactmanager_->GetStrategy().Initialize();
       contactmanager_->GetStrategy().Evaluate(stiff_,fresm_);
 #ifdef CONTACTTIME
-      const double t_end34 = ds_cputime()-t_start34;
+      const double t_end34 = Teuchos::Time::wallTime()-t_start34;
       cout << "\nContact.StiffFresm: " << t_end34 << " seconds";
 #endif // #ifdef CONTACTTIME
     }
@@ -1762,7 +1762,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     //--------------------------------------------------- contact forces
     contactmanager_->GetStrategy().ContactForces(fresmcopy);
 #ifdef CONTACTTIME
-    const double t_end3 = ds_cputime()-t_start3;
+    const double t_end3 = Teuchos::Time::wallTime()-t_start3;
     cout << "\n->Contact.Evaluate: " << t_end3 << " seconds\n***\n";
 #endif // #ifdef CONTACTTIME
 
@@ -1785,7 +1785,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     disi_->Norm2(&disinorm);
     fresm_->Norm2(&fresmnorm);
 #ifdef CONTACTTIME
-    const double t_end0 = ds_cputime()-t_start0;
+    const double t_end0 = Teuchos::Time::wallTime()-t_start0;
     cout << "\n***\nIteration Step (overall): " << t_end0 << " seconds\n***\n";
 #endif // #ifdef CONTACTTIME
 
@@ -2271,7 +2271,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
       for (int i=step; i<nstep; ++i)
       {
   #ifdef CONTACTTIME
-        const double t_start = ds_cputime();
+        const double t_start = Teuchos::Time::wallTime();
   #endif // #ifdef CONTACTTIME
 
         // predictor step
@@ -2286,7 +2286,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
         UpdateandOutput();
 
   #ifdef CONTACTTIME
-        const double t_end = ds_cputime()-t_start;
+        const double t_end = Teuchos::Time::wallTime()-t_start;
         cout << "\n***\nTime Step (overall): " << t_end << " seconds\n***\n";
   #endif // #ifdef CONTACTTIME
 

@@ -11,12 +11,8 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 #include <stdarg.h>
-#include "../headers/standardtypes.h"
-#include "../io/io.h"
-
-#ifdef CCADISCRET
+#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_dserror.H"
-#endif
 
 /*!----------------------------------------------------------------------
 \brief file pointers

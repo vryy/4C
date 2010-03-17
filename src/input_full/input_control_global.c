@@ -626,9 +626,6 @@ void inpctrstat()
 INT  ierr;
 char buffer[50];
 INT  counter;
-#ifdef DEBUG
-dstrc_enter("inpctrstat");
-#endif
 /*----------------------------------------------------------------------*/
 /*----------------------------------------- allocate a structure STATIC */
 statvar = (STATIC_VAR*)CCACALLOC(1,sizeof(STATIC_VAR));
@@ -719,23 +716,6 @@ if (statvar->nonlinear)
   frrewind();
 }
 /*----------------------------------------------------------------*/
-if (ioflags.relative_displ>0)
-{
-  if (frfind("-RELATIVE DISPLACEMENT NODES")==1)
-  {
-    frread();
-    counter=0;
-    while(strncmp(allfiles.actplace,"------",6)!=0)
-    {
-      frint("NODE",&(statvar->reldisnode_ID[counter]),&ierr);
-      if (ierr) statvar->reldisnode_ID[counter]--;
-      frint("DOF",&(statvar->reldis_dof[counter]),&ierr);
-      counter++;
-      frread();
-    }
-  }
-}
-/*----------------------------------------------------------------*/
 if (statvar->isrelstepsize==1)
 {
   if (frfind("-VARIABLE STEP SIZES")==1)
@@ -753,28 +733,7 @@ if (statvar->isrelstepsize==1)
     if(counter>19)  dserror("not more than 20 different stepsizes!");
   }
 }
-/*----------------------------------------------------------------*/
-#ifdef D_MLSTRUCT
-if (genprob.multisc_struct == 1)
-{
-  if (frfind("--SMVALUES")==1)
-  {
-     frread();
-     while(strncmp(allfiles.actplace,"------",6)!=0)
-     {
-        frdouble("EPS_EQUIVAL",&(statvar->eps_equiv),&ierr);
-        frread();
-     }
-  }
 }
-#endif
-
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
-return;
-} /* end of inpctrstat */
 
 
 #ifndef CCADISCRET
@@ -827,58 +786,6 @@ dstrc_exit();
 return;
 } /* end of inpctreig */
 #endif
-
-/*----------------------------------------------------------------------*
- | input of eigensolution problem data                       al 8/02    |
- *----------------------------------------------------------------------*/
-void inpctr_eig_struct(ALLEIG *alleig)
-{
-
-INT    ierr;
-char   buffer[50];
-#ifdef DEBUG
-dstrc_enter("inpctr_eig_struct");
-#endif
-
-if (frfind("--EIGENVALUE ANALYSIS")==0) goto end;
-frread();
-while(strncmp(allfiles.actplace,"------",6)!=0)
-{
-/*--------------read chars */
-   frchar("SOLTYP"   ,buffer    ,&ierr);
-   if (ierr==1)
-   {
-      if (frwordcmp(buffer,"SUBSPACE")==0)
-          alleig->soltyp=subspace;
-      else
-          alleig->soltyp=eig_none;
-   }
-/*--------------read INT */
-   frint("STURM ",&(alleig->sturm ),&ierr);
-   frint("SUBTYP",&(alleig->subtyp),&ierr);
-   frint("IFSH"  ,&(alleig->ifsh  ),&ierr);
-   frint("ILMP"  ,&(alleig->ilmp  ),&ierr);
-   frint("RANGE" ,&(alleig->range ),&ierr);
-   frint("NUMVEC",&(alleig->numvec),&ierr);
-   frint("NROOT" ,&(alleig->nroot ),&ierr);
-   frint("ITEMAX",&(alleig->itemax),&ierr);
-   frint("IFCTR" ,&(alleig->ifctr ),&ierr);
-/*--------------read DOUBLE */
-   frdouble("TOLEIG",&(alleig->toleig),&ierr);
-   frdouble("SHIFT" ,&(alleig->shift ),&ierr);
-   frdouble("BOULO" ,&(alleig->boulo ),&ierr);
-   frdouble("BOUUP" ,&(alleig->bouup ),&ierr);
-   frread();
-}
-frrewind();
-
-end:
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
-return;
-} /* end of inpctr_eig_struct */
 
 
 #ifndef CCADISCRET

@@ -506,7 +506,7 @@ namespace FLD
     // sampling takes place only in the sampling period
     if(step>=samstart_ && step<=samstop_ && flow_ != no_special_flow)
     {
-      double tcpu=ds_cputime();
+      double tcpu=Teuchos::Time::wallTime();
 
       //--------------------------------------------------
       // calculate means, fluctuations etc of velocity,
@@ -604,7 +604,7 @@ namespace FLD
       {
         cout << "Computing statistics: mean values, fluctuations, ";
         cout << "boundary forces etc.             (";
-        printf("%10.4E",ds_cputime()-tcpu);
+        printf("%10.4E",Teuchos::Time::wallTime()-tcpu);
         cout << ")\n";
       }
 
@@ -613,7 +613,7 @@ namespace FLD
       // (all gausspoint-quantities)
       if(subgrid_dissipation_)
       {
-        tcpu=ds_cputime();
+        tcpu=Teuchos::Time::wallTime();
 
         switch(flow_)
         {
@@ -651,7 +651,7 @@ namespace FLD
         {
           cout << "                      residuals, dissipation rates etc, ";
           cout << "all gausspoint-quantities (";
-          printf("%10.4E",ds_cputime()-tcpu);
+          printf("%10.4E",Teuchos::Time::wallTime()-tcpu);
           cout << ")\n";
         }
       }

@@ -17,6 +17,8 @@ Maintainer: Ulrich Kuettler
 #ifndef FSI_PARTITIONED_H
 #define FSI_PARTITIONED_H
 
+#include "../drt_lib/standardtypes_cpp.H"
+
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
@@ -76,9 +78,9 @@ public:
   bool computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
 
   bool matchingnodes() {return matchingnodes_; }
-  
+
   virtual void Remeshing();
-  
+
 protected:
 
   //! @name Transfer helpers
@@ -138,7 +140,7 @@ protected:
 
   /// return coupsfm_
   ADAPTER::CouplingMortar& StructureFluidCouplingMortar() { return coupsfm_; }
-  
+
   /// return coupsfm_
   const ADAPTER::CouplingMortar& StructureFluidCouplingMortar() const { return coupsfm_; }
 

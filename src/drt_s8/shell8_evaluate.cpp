@@ -27,6 +27,8 @@ Maintainer: Michael Gee
 extern "C"
 {
 #include "../shell8/shell8.h"
+#include "../headers/am.h"
+#include "../pss_full/pss_prototypes.h"
 }
 
 /*----------------------------------------------------------------------*

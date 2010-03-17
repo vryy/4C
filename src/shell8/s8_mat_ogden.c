@@ -22,53 +22,50 @@ Maintainer: Michael Gee
  *----------------------------------------------------------------------*/
 void s8_mat_ogden_coupled(
     COMPOGDEN          *mat,
-    DOUBLE             *stress_cart,
-    DOUBLE              C_cart[3][3][3][3],
-    DOUBLE            **gkonr,
-    DOUBLE            **gmkovc
+    double             *stress_cart,
+    double              C_cart[3][3][3][3],
+    double            **gkonr,
+    double            **gmkovc
     )
 
 {
-      INT      i,j,k,l,p;
-      DOUBLE      mu;
-      DOUBLE      E;
-      DOUBLE      kappa;
-      DOUBLE      beta,mbeta;
-      DOUBLE      lame1;
-      DOUBLE      nue;
-      DOUBLE     *mup;
-      DOUBLE     *alfap;
-      DOUBLE      J;
-      DOUBLE      Jpowmbeta;
+      int      i,j,k,l,p;
+      double      mu;
+      double      E;
+      double      kappa;
+      double      beta,mbeta;
+      double      lame1;
+      double      nue;
+      double     *mup;
+      double     *alfap;
+      double      J;
+      double      Jpowmbeta;
 #if 0
-      DOUBLE      psi;
+      double      psi;
 #endif
 
-      DOUBLE      CG[3][3];
-      DOUBLE      N[3][3];
-      DOUBLE      lam2[3];
-      DOUBLE      lam[3];
-      DOUBLE      lampowalfap[3][3];
-      DOUBLE      PK2[3];
-      DOUBLE      PK2cart[3][3];
+      double      CG[3][3];
+      double      N[3][3];
+      double      lam2[3];
+      double      lam[3];
+      double      lampowalfap[3][3];
+      double      PK2[3];
+      double      PK2cart[3][3];
 
-      DOUBLE      C[3][3][3][3];
-      DOUBLE      C0000;
-      DOUBLE      C0011;
-      DOUBLE      C0022;
-      DOUBLE      C1111;
-      DOUBLE      C1122;
-      DOUBLE      C2222;
-      DOUBLE      C0101=0.0;
-      DOUBLE      C0202=0.0;
-      DOUBLE      C1212=0.0;
+      double      C[3][3][3][3];
+      double      C0000;
+      double      C0011;
+      double      C0022;
+      double      C1111;
+      double      C1122;
+      double      C2222;
+      double      C0101=0.0;
+      double      C0202=0.0;
+      double      C1212=0.0;
 
-      DOUBLE      scal;
-      DOUBLE      Ncross[3];
+      double      scal;
+      double      Ncross[3];
 
-#ifdef DEBUG
-dstrc_enter("s8_mat_ogden_coupled");
-#endif
 /*----------------------------------------------------------------------*/
 for (i=0; i<3; i++)
 for (j=0; j<3; j++)
@@ -242,9 +239,6 @@ C[2][1][2][1] = C[1][2][1][2] = C1212;
 /*--------------------------------- calculate C_cart in cartesian basis */
 s8_ogden_Ccart(C,C_cart,N);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of s8_mat_ogden_coupled */
 
@@ -253,12 +247,9 @@ return;
 /*----------------------------------------------------------------------*
  | transform C in cartesian bases                         PK2 m.gee 6/03|
  *----------------------------------------------------------------------*/
-void s8_ogden_Ccart(DOUBLE C[3][3][3][3], DOUBLE C_cart[3][3][3][3], DOUBLE N[3][3])
+void s8_ogden_Ccart(double C[3][3][3][3], double C_cart[3][3][3][3], double N[3][3])
 {
-INT i,j,k,l;
-#ifdef DEBUG
-dstrc_enter("s8_ogden_Ccart");
-#endif
+int i,j,k,l;
 /*----------------------------------------------------------------------*/
 for (i=0; i<3; i++)
 for (j=0; j<3; j++)
@@ -302,9 +293,6 @@ for (l=0; l<3; l++)
    C_cart[i][j][k][l] += C[2][1][2][1] * (N[i][2]*N[j][1]*N[k][2]*N[l][1] + N[i][2]*N[j][1]*N[k][1]*N[l][2]);
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of s8_ogden_Ccart */
 
@@ -313,13 +301,10 @@ return;
  | transform principal streeses PK2 in cartesian stresses PK2 m.gee 6/03|
  | PK2 = PK2main_a * N[][a] dyad N[][a] (sum over a)                    |
  *----------------------------------------------------------------------*/
-void s8_ogden_cartPK2(DOUBLE PK2[3][3], DOUBLE PK2main[3], DOUBLE N[3][3])
+void s8_ogden_cartPK2(double PK2[3][3], double PK2main[3], double N[3][3])
 {
-INT i,j;
-DOUBLE dyad0[3][3],dyad1[3][3],dyad2[3][3];
-#ifdef DEBUG
-dstrc_enter("s8_ogden_cartPK2");
-#endif
+int i,j;
+double dyad0[3][3],dyad1[3][3],dyad2[3][3];
 /*----------------------------------------------------------------------*/
 for (i=0; i<3; i++)
 for (j=0; j<3; j++)
@@ -398,9 +383,6 @@ PK2[2][1] = PK2[1][2];
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of s8_ogden_cartPK2 */
 
@@ -410,14 +392,11 @@ return;
 /*----------------------------------------------------------------------*
  | make eigenvalue decomposition of Cauchy-Green strains  m.gee 6/03    |
  *----------------------------------------------------------------------*/
-void s8_ogden_principal_CG(DOUBLE CG[3][3], DOUBLE lambda[3], DOUBLE N[3][3])
+void s8_ogden_principal_CG(double CG[3][3], double lambda[3], double N[3][3])
 {
-INT          i;
-DOUBLE       fstrain[9];
-DOUBLE       fn[9];
-#ifdef DEBUG
-dstrc_enter("s8_ogden_principal_CG");
-#endif
+int          i;
+double       fstrain[9];
+double       fn[9];
 /*----------------------------------------------------------------------*/
 for (i=0; i<9; i++)
    fn[i] = 0.0;
@@ -452,9 +431,6 @@ N[0][2] = fn[6];
 N[1][2] = fn[7];
 N[2][2] = fn[8];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of s8_ogden_principal_CG */
 
@@ -473,19 +449,16 @@ return;
 /*----------------------------------------------------------------------*
  | st.venant-kirchhoff-material                           m.gee 6/03    |
  *----------------------------------------------------------------------*/
-void s8_mat_lineltmp(DOUBLE E, DOUBLE nue, DOUBLE **g, DOUBLE **CC)
+void s8_mat_lineltmp(double E, double nue, double **g, double **CC)
 {
-INT i,j,k,l;
+int i,j,k,l;
 
 /*----- shear correction coefficient not yet introduced */
-/* DOUBLE xsi=1.0; */
+/* double xsi=1.0; */
 
-DOUBLE C[3][3][3][3]; /*--------------------------- constitutive tensor */
-DOUBLE l1,l2;/*----------------------------------------- lame constants */
-DOUBLE emod;/*--------------------------------------- mat constants */
-#ifdef DEBUG
-dstrc_enter("s8_mat_lineltmp");
-#endif
+double C[3][3][3][3]; /*--------------------------- constitutive tensor */
+double l1,l2;/*----------------------------------------- lame constants */
+double emod;/*--------------------------------------- mat constants */
 /*----------------------------------------------------------------------*/
 emod = E;
 l1 = (emod*nue) / ((1.0+nue)*(1.0-2.0*nue));
@@ -539,28 +512,22 @@ CC[5][3] = C[2][2][1][1];
 CC[5][4] = C[2][2][2][1];
 CC[5][5] = C[2][2][2][2];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of s8_mat_lineltmp */
 /*----------------------------------------------------------------------*
  |                                                        m.gee 5/03    |
  *----------------------------------------------------------------------*/
-void s8_mat_linel_carttmp(DOUBLE emod, DOUBLE nue,
-                         DOUBLE C[][3][3][3])
+void s8_mat_linel_carttmp(double emod, double nue,
+                         double C[][3][3][3])
 {
   /*
-INT i,j,k,l;
+int i,j,k,l;
 */
 
-DOUBLE l1,l2,ll2;
+double l1,l2,ll2;
 /*
-DOUBLE e[3][3];
+double e[3][3];
 */
-#ifdef DEBUG
-dstrc_enter("s8_mat_linel_cart");
-#endif
 /*----------------------------------------------------------------------*/
 l1   = (emod*nue) / ((1.0+nue)*(1.0-2.0*nue));
 l2   = emod/ (2.0*(1.0+nue));
@@ -614,9 +581,6 @@ C[0][2][2][0]= l2 ;         C[1][2][2][0]= 0.0;          C[2][2][2][0]= 0.0;
 C[0][2][2][1]= 0.0;         C[1][2][2][1]= l2 ;          C[2][2][2][1]= 0.0;
 C[0][2][2][2]= 0.0;         C[1][2][2][2]= 0.0;          C[2][2][2][2]= l1+ll2;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of s8_mat_linel_cart */
 
@@ -629,16 +593,13 @@ return;
  | Must be called with contravariant base vectors !                     |
  | Tensor must be symmetric!                                            |
  *----------------------------------------------------------------------*/
-void s8_kov_CGcuca(DOUBLE T[3][3], DOUBLE **gkon)
+void s8_kov_CGcuca(double T[3][3], double **gkon)
 {
-INT i,j;
-DOUBLE Tcart[3][3];
+int i,j;
+double Tcart[3][3];
 /*
-DOUBLE c[3][3];
+double c[3][3];
 */
-#ifdef DEBUG
-dstrc_enter("s8_kov_CGcuca");
-#endif
 /*----------------------------------------------------------------------*/
 /* theory:
 for (k=0; k<3; k++)
@@ -675,9 +636,6 @@ T[1][1] =           Tcart[1][1];
 T[2][1] = T[1][2] = Tcart[1][2];
 T[2][2] =           Tcart[2][2];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of s8_kov_CGcuca */
 

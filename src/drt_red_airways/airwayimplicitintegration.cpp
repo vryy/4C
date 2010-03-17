@@ -346,7 +346,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
   // -------------------------------------------------------------------
 
   // get cpu time
-  //  const double tcpuele = ds_cputime();
+  //  const double tcpuele = Teuchos::Time::wallTime();
 
   {
     // time measurement: element
@@ -451,7 +451,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
 
   //-------solve for total new velocities and pressures
   // get cpu time
-  const double tcpusolve = ds_cputime();
+  const double tcpusolve = Teuchos::Time::wallTime();
   {
     // time measurement: solver
     TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
@@ -478,7 +478,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
 
 
   // end time measurement for solver
-  dtsolve_ = ds_cputime() - tcpusolve;
+  dtsolve_ = Teuchos::Time::wallTime() - tcpusolve;
 
   if (myrank_ == 0)
     cout << "te=" << dtele_ << ", ts=" << dtsolve_ << "\n\n" ;
@@ -529,7 +529,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::AssembleMatAndRHS()
   TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
 
   // get cpu time
-  //  const double tcpu=ds_cputime();
+  //  const double tcpu=Teuchos::Time::wallTime();
 
 } // RedAirwayImplicitTimeInt::AssembleMatAndRHS
 

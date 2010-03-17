@@ -42,20 +42,21 @@ FLUID_VIS         No
 ALE_DISP          No
 FILESTEPS         1000
 ------------------------------------------------------------STATIC
-NONLINEAR
-KINTYP       Tot_Lagr
+//NONLINEAR
+//KINTYP       Tot_Lagr
 NEWTONRAPHSO Load_Control
 NUMSTEP      1
 MAXITER      1
-TOLRESID     1.0E-08
+//TOLRESID     1.0E-08
 TOLDISP      1.0E-08
 STEPSIZE     1.0
-IARC         No
-ARCSCL       1.0
-SIGNCHCSP    No
+//IARC         No
+//ARCSCL       1.0
+//SIGNCHCSP    No
 RESEVRYDISP  1
 RESEVRYSTRS  1
 RESTARTEVRY  20
+//
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Static

@@ -95,20 +95,21 @@ BETA                            0.2770
 KIND                            None
 -----------------------------------------------------THERMAL SOLVER
 ------------------------------------------------------------STATIC
-NONLINEAR
-KINTYP       Tot_Lagr
+//NONLINEAR
+//KINTYP       Tot_Lagr
 NEWTONRAPHSO Load_Control
 NUMSTEP      25
 MAXITER      50
-TOLRESID     1.0E-06
+//TOLRESID     1.0E-06
 TOLDISP      1.0E-07
 STEPSIZE     1.0
-IARC         No
-ARCSCL       1.0
-SIGNCHCSP    No
+//IARC         No
+//ARCSCL       1.0
+//SIGNCHCSP    No
 RESEVRYDISP  1
 RESEVRYSTRS  1
 RESTARTEVRY  200
+//
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 2.06E11 NUE 0.0 DENS 7.8E3
 -------------------------------------------------------LOAD CURVES

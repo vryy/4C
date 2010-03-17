@@ -57,9 +57,6 @@ DOUBLE              Ntest[3];
 DOUBLE              df[28],bpr[3],tautil[3],PK2tautil[3],atilp[6][6];
 DOUBLE              Ef;
 #endif
-#ifdef DEBUG
-dstrc_enter("s8_mat_ogden_uncoupled");
-#endif
 /*----------------------------------------------------------------------*/
 for (i=0; i<3; i++)
 for (j=0; j<3; j++)
@@ -383,9 +380,6 @@ for (k=0; k<3; k++)
 for (l=0; l<3; l++)
 C_cart[i][j][k][l] += C_cartvol[i][j][k][l];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of s8_mat_ogden_uncoupled */
 

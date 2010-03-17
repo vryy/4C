@@ -44,11 +44,9 @@ Maintainer: Ulrich Kuettler
 /* There are some global variables in ccarat that are needed by the
  * service functions. We need to specify them here and set them up
  * properly. */
-struct _FILES   allfiles;
+extern struct _FILES   allfiles;
 struct _PAR     par;
 struct _GENPROB genprob;
-//struct _MATERIAL *mat;
-struct _IO_FLAGS ioflags;
 
 // not actually used here, but referenced by global problem
 //struct _SOLVAR  *solv;
@@ -168,7 +166,6 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
     result_group_.push_back(symbol_map(symbol));
     symbol = symbol->next;
   }
-  genprob.numfld = 0;
 
   read_meshes();
 }
@@ -480,7 +477,7 @@ void PostProblem::read_meshes()
           DRT::Exporter exporter(*comm_);
 
           cond_pbcsline = Teuchos::rcp(new std::vector<char>());
-          
+
           if (comm_->MyPID()==0)
           {
             cond_pbcsline = reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "LinePeriodic");
@@ -493,12 +490,12 @@ void PostProblem::read_meshes()
               int         tag    =-1;
               int         frompid= 0;
               int         topid  =-1;
-              
+
               for(int np=1;np<comm_->NumProc();++np)
               {
                 tag   = np;
                 topid = np;
-                
+
                 exporter.ISend(frompid,topid,
                                &((*cond_pbcsline)[0]),
                                (*cond_pbcsline).size(),
@@ -513,7 +510,7 @@ void PostProblem::read_meshes()
             int length =-1;
             int frompid= 0;
             int mypid  =comm_->MyPID();
-            
+
             vector<char> rblock;
 
             exporter.ReceiveAny(frompid,mypid,rblock,length);
@@ -521,7 +518,7 @@ void PostProblem::read_meshes()
             *cond_pbcsline=rblock;
 #endif
           }
-          
+
           currfield.discretization()->UnPackCondition(cond_pbcsline, "LinePeriodic");
         }
         else if (string(condname)=="SurfacePeriodic")
@@ -529,7 +526,7 @@ void PostProblem::read_meshes()
           DRT::Exporter exporter(*comm_);
 
           cond_pbcssurf = Teuchos::rcp(new std::vector<char>());
-          
+
           if (comm_->MyPID()==0)
           {
             cond_pbcssurf = reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "SurfacePeriodic");
@@ -542,18 +539,18 @@ void PostProblem::read_meshes()
               int         tag    =-1;
               int         frompid= 0;
               int         topid  =-1;
-              
+
               for(int np=1;np<comm_->NumProc();++np)
               {
                 tag   = np;
                 topid = np;
-                
+
                 exporter.ISend(frompid,topid,
                                &((*cond_pbcssurf)[0]),
                                (*cond_pbcssurf).size(),
                                tag,request);
               }
-#endif            
+#endif
             }
           }
           else
@@ -562,13 +559,13 @@ void PostProblem::read_meshes()
             int length =-1;
             int frompid= 0;
             int mypid  =comm_->MyPID();
-            
+
             vector<char> rblock;
 
             exporter.ReceiveAny(frompid,mypid,rblock,length);
 
             *cond_pbcssurf=rblock;
-#endif          
+#endif
           }
           currfield.discretization()->UnPackCondition(cond_pbcssurf, "SurfacePeriodic");
         }

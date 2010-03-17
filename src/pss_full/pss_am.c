@@ -16,11 +16,10 @@ Maintainer: Malte Neumann
 /*!----------------------------------------------------------------------
 \brief the header of everything
 *----------------------------------------------------------------------*/
-#include "../headers/standardtypes.h"
-
-#ifdef CCADISCRET
+#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_dserror.H"
-#endif
+#include "../headers/am.h"
+#include "pss_prototypes.h"
 
 /*!----------------------------------------------------------------------
 \brief file pointers
@@ -32,17 +31,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
-
-/*!----------------------------------------------------------------------
-\brief the tracing variable
-
-<pre>                                                         m.gee 8/00
-defined in pss_ds.c, declared in tracing.h
-</pre>
-*----------------------------------------------------------------------*/
-#ifdef DEBUG
-extern struct _CCA_TRACE         trace;
-#endif
 
 
 /*!
@@ -87,60 +75,6 @@ This variable is used by the function ShiftPointer
 #define MYBYTE (sizeof(unsigned char))
 #endif
 
-/*!----------------------------------------------------------------------
-\brief shift a pointer by a certain distance
-
-<pre>                                                          m.gee 3/02
-This routine is usefull when data is moved in the memory (e.g.) by a
-call to CCAREALLOC, and there are pointers which used to point to this
-data. After moving the data these pointers do no longer point to the
-correct adresses, but they can be moved to the new location of the
-data by using this function.
-The correct functionality of this routine is dependent on the proper
-definition of the data type PTRSIZE defined in definitions.h:
-#ifdef SIXTYFOUR                a 64 bit pointer is of size long int
-typedef long int PTRSIZE;
-#else                           a 32 bit pointer is of size INT
-typedef INT PTRSIZE;
-#endif
- This function takes as argument
- -the adress of the pointer to be moved
- -the relative difference between the new and the old adress of the
-  data which was pointed to
-
-EXAMPLE:
-\code
- i=5;
- j=12;
- iptr = &i;
- now move iptr from i to j:
- ShiftPointer((void**)&iptr,(PTRSIZE)&j-(PTRSIZE)&i);
-\endcode
- result:
- *ptr = 12 now
-\warning
- This is an extremely power and helpfull little routine, but when using
- this you should be REALLY sure what you are doing, 'cause misuse
- leads to a very nasty type of error, which can be hardly detected by
- debugging!
-
- This routine appears courtesy of
- Dr. Ralf Diekmann, Hilti AG, Fuerstentum Liechtenstein
-</pre>
-\param ptr  (i/o) void**    ptr to be shifted
-\param diff (i)   PTRSIZE   offset the ptr shall be shifted
-
-----------------------------------------------------------------------*/
-void ShiftPointer(void **ptr, PTRSIZE diff)
-{
-PTRSIZE tmp;
-if (*ptr != NULL)
-{
-   tmp = (PTRSIZE)*ptr + diff;
-   *ptr = (void*)tmp;
-}
-return;
-}
 
 
 /*!----------------------------------------------------------------------
@@ -336,13 +270,6 @@ am-allocated 2D arrays therefore operate on the transpose of the array.
 void* amdef(char *namstr,ARRAY *a,INT fdim, INT sdim, char typstr[])
 {
 register INT i=0;
-#ifdef DEBUG
-dstrc_enter("amdef");
-#endif
-/*----------------------------------------------------------------------*/
-#ifdef PERF
-  perf_begin(95);
-#endif
 
   dsassert(fdim>0 && sdim>0,"no empty array allowed");
 
@@ -380,16 +307,6 @@ break;
 default:
 dserror("Unknown type of array given");
 }
-/*------------------- make report about new array to bugtraceing system */
-#ifdef DEBUG
-dsreportarray(a,1);
-
-dstrc_exit();
-#endif
-/*----------------------------------------------------------------------*/
-#ifdef PERF
-  perf_end(95);
-#endif
 return((void*)(a->a.iv));
 } /* end of amdef */
 
@@ -445,13 +362,6 @@ enum {amredefvoid, newIV, newIA, newDV, newDA} newtyp = amredefvoid;
 INT size1,size2;
 ARRAY copyarray;
 
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_enter("amredef");
-#endif
-#ifdef PERF
-  perf_begin(94);
-#endif
 /*--------------------------------------- find out the new typ of array */
 if (strncmp("IV",newtypstr,2)==0){ newtyp =  newIV; goto next; }
 if (strncmp("IA",newtypstr,2)==0){ newtyp =  newIA; goto next; }
@@ -624,12 +534,6 @@ goto end;
 }
 /*----------------------------------------------------------------------*/
 end:
-#ifdef DEBUG
-dstrc_exit();
-#endif
-#ifdef PERF
-  perf_end(94);
-#endif
 return((void*)(a->a.iv));
 } /* end of amredef */
 
@@ -658,13 +562,6 @@ void amdel(ARRAY *array)
 {
 INT size;
 
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_enter("amdel");
-#endif
-#ifdef PERF
-  perf_begin(93);
-#endif
 /*-------------------------------------------------delete name of array */
 strncpy(array->name,"DELETED",9);
 /*-------------------------------------------------------free the space */
@@ -695,16 +592,6 @@ array->fdim=0;
 array->sdim=0;
 /*----------------------------------------------------- delete the type */
 array->Typ = cca_XX;
-/*------------------------- delete the array from the bugtracing system */
-#ifdef DEBUG
-dsdeletearray(array,1);
-
-dstrc_exit();
-#endif
-/*----------------------------------------------------------------------*/
-#ifdef PERF
-  perf_end(93);
-#endif
 return;
 } /* end of amdel */
 
@@ -731,12 +618,6 @@ INT          dim;
 INT         *iptr;
 DOUBLE      *dptr;
 
-#ifdef DEBUG
-dstrc_enter("amzero");
-#endif
-#ifdef PERF
-  perf_begin(92);
-#endif
 /*----------------------------------------------------------------------*/
 dim = (array->fdim) * (array->sdim);
 switch (array->Typ)
@@ -760,13 +641,6 @@ case cca_IV:
 default:
    dserror("Unknown type of array given");
 }
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
-#ifdef PERF
-  perf_end(92);
-#endif
 return;
 } /* end of amzero */
 
@@ -799,9 +673,6 @@ INT             *ivalue;
 DOUBLE          *dvalue;
 INT             *iptr;
 DOUBLE          *dptr;
-#ifdef DEBUG
-dstrc_enter("amscal");
-#endif
 /*----------------------------------------------------------------------*/
 dim = (array->fdim) * (array->sdim);
 switch (array->Typ)
@@ -829,10 +700,6 @@ case cca_IV:
 default:
    dserror("Unknown type of array given");
 }
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of amscal */
 
@@ -862,9 +729,6 @@ INT             *ivalue;
 DOUBLE          *dvalue;
 INT             *iptr;
 DOUBLE          *dptr;
-#ifdef DEBUG
-dstrc_enter("aminit");
-#endif
 /*----------------------------------------------------------------------*/
 dim = (array->fdim) * (array->sdim);
 switch (array->Typ)
@@ -892,10 +756,6 @@ case cca_IV:
 default:
    dserror("Unknown type of array given");
 }
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of aminit */
 
@@ -921,9 +781,6 @@ register INT i;
 INT          dim;
 INT         *iptr_from, *iptr_to;
 DOUBLE      *dptr_from, *dptr_to;
-#ifdef DEBUG
-dstrc_enter("am_alloc_copy");
-#endif
 /*----------------------------------------------------------------------*/
 dim = array_from->fdim * array_from->sdim;
 switch (array_from->Typ)
@@ -955,10 +812,6 @@ case cca_IV:
 default:
   dserror("Unknown type of array given");
 }
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return((void*)(array_to->a.iv));
 } /* end of am_alloc_copy */
 
@@ -985,10 +838,6 @@ register INT i;
 INT          dim1, dim2;
 INT         *iptr_from, *iptr_to;
 DOUBLE      *dptr_from, *dptr_to;
-#ifdef DEBUG
-dstrc_enter("amcopy");
-#endif
-/*----------------------------------------------------------------------*/
 dim1 = array_from->fdim * array_from->sdim;
 dim2 = array_to->fdim   * array_to->sdim;
 if (dim1 != dim2)
@@ -1021,10 +870,6 @@ case cca_IV:
 default:
    dserror("Unknown type of array given");
 }
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return((void*)(array_to->a.iv));
 } /* end of amcopy */
 
@@ -1056,9 +901,6 @@ DOUBLE     **dafrom,**dato;
 DOUBLE      *dvfrom, *dvto;
 INT        **iafrom,**iato;
 INT         *ivfrom, *ivto;
-#ifdef DEBUG
-dstrc_enter("amadd");
-#endif
 /*----------------------------------------------------------------------*/
 if (array_to->Typ != array_from->Typ) dserror("Mismatch of Types");
 /*----------------------------------------------------------------------*/
@@ -1105,10 +947,6 @@ break;
 default:
    dserror("Unknown type of array given");
 }
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of amadd */
 
@@ -1164,10 +1002,6 @@ void* am4def(char    *namstr,
 {
 register INT i;
 INT          endloop;
-#ifdef DEBUG
-dstrc_enter("am4def");
-#endif
-/*----------------------------------------------------------------------*/
 strncpy(a->name,namstr,9);
 a->fdim =  fdim;
 a->sdim =  sdim;
@@ -1231,13 +1065,6 @@ break;
 default:
 dserror("Unknown type of array given");
 }
-/*------------------- make report about new array to bugtraceing system */
-#ifdef DEBUG
-dsreportarray(a,2);
-
-dstrc_exit();
-#endif
-/*----------------------------------------------------------------------*/
 return((void*)(a->a.d3));
 } /* end of am4def */
 
@@ -1261,10 +1088,6 @@ array->mytracer = NULL
 *----------------------------------------------------------------------*/
 void am4del(ARRAY4D *array)
 {
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_enter("am4del");
-#endif
 /*-------------------------------------------------delete name of array */
 strncpy(array->name,"DELETED",9);
 /*---------------------------------------------------deletes dimensions */
@@ -1302,13 +1125,6 @@ dserror("Unknown type of array given");
 }
 /*----------------------------------------------------- delete the type */
 array->Typ = cca_XX4D;
-/*------------------------- delete the array from the bugtracing system */
-#ifdef DEBUG
-dsdeletearray(array,2);
-
-dstrc_exit();
-#endif
-/*----------------------------------------------------------------------*/
 return;
 } /* end of am4del */
 
@@ -1332,10 +1148,6 @@ register INT i;
 INT          dim;
 INT         *iptr;
 DOUBLE      *dptr;
-#ifdef DEBUG
-dstrc_enter("am4zero");
-#endif
-/*----------------------------------------------------------------------*/
 switch (array->Typ)
 {
 case cca_D3:
@@ -1361,10 +1173,6 @@ break;
 default:
    dserror("Unknown type of array given");
 }
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of am4zero */
 
@@ -1396,10 +1204,6 @@ INT             *ivalue;
 DOUBLE          *dvalue;
 INT             *iptr;
 DOUBLE          *dptr;
-#ifdef DEBUG
-dstrc_enter("am4init");
-#endif
-/*----------------------------------------------------------------------*/
 switch (array->Typ)
 {
 case cca_D3:
@@ -1429,10 +1233,6 @@ break;
 default:
    dserror("Unknown type of array given");
 }
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of am4init */
 
@@ -1458,10 +1258,6 @@ register INT i;
 INT          dim;
 INT         *iptr_from, *iptr_to;
 DOUBLE      *dptr_from, *dptr_to;
-#ifdef DEBUG
-dstrc_enter("am4_alloc_copy");
-#endif
-/*----------------------------------------------------------------------*/
 switch (array_from->Typ)
 {
 case cca_D3:
@@ -1519,10 +1315,6 @@ break;
 default:
    dserror("Unknown type of array given");
 }
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return((void*)(array_to->a.d3));
 } /* end of am4_alloc_copy */
 
@@ -1548,10 +1340,6 @@ register INT i;
 INT          dim,dimnew;
 INT         *iptr_from, *iptr_to;
 DOUBLE      *dptr_from, *dptr_to;
-#ifdef DEBUG
-dstrc_enter("am4copy");
-#endif
-/*--------------------------------------------------------- check types */
 if (array_from->Typ != array_to->Typ)
    dserror("mismatching typ of ARRAY4Ds, cannot copy ARRAY4Ds");
 /*----------------------------------------------------------------------*/
@@ -1592,10 +1380,6 @@ break;
 default:
    dserror("Unknown type of array given");
 }
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return((void*)(array_to->a.d3));
 } /* end of am4copy */
 
@@ -1648,10 +1432,6 @@ void* am4redef(ARRAY4D *array,
 register INT i,j,k,l;
 INT          size1,size2,size3,size4;
 ARRAY4D copyarray;
-#ifdef DEBUG
-dstrc_enter("am4redef");
-#endif
-/*----------------------------------------------------------------------*/
 switch (array->Typ)
 {
 case cca_D3:
@@ -1718,10 +1498,6 @@ default:
    dserror("Unknown type of array given");
 break;
 }
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return((void*)(array->a.d3));
 } /* end of am4redef */
 
@@ -1731,11 +1507,6 @@ void amprint(FILE* err,ARRAY *a,INT fdim, INT sdim)
 INT i,j;
 /* FILE *err=allfiles.out_err; */
 
-#ifdef DEBUG
-dstrc_enter("amprint");
-#endif
-
-/*----------------------------------------------------------------------*/
 if (fdim>a->fdim)
 dserror("fdim for amprint too large!\n");
 if (sdim>a->sdim)
@@ -1789,13 +1560,6 @@ dserror("Unknown type of array given");
 }
 fprintf(err,"\n");
 
-/*------------------- make report about new array to bugtraceing system */
-#ifdef DEBUG
-dsreportarray(a,1);
-
-dstrc_exit();
-#endif
-/*----------------------------------------------------------------------*/
 return;
 } /* end of amdef */
 

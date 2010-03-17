@@ -19,6 +19,9 @@ Maintainer: Ulrich Kuettler
 #include <string>
 #include <vector>
 
+#include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/drt_dserror.H"
+
 #include "io.H"
 #include "io_control.H"
 #include "../drt_lib/linalg_utils.H"

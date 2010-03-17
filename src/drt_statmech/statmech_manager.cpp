@@ -12,6 +12,8 @@ Maintainer: Christian Cyron
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <Teuchos_Time.hpp>
+
 #include "statmech_manager.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_lib/drt_utils.H"
@@ -1295,7 +1297,7 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
   #ifdef D_BEAM3
 
 #ifdef MEASURETIME
-    const double t_start = ds_cputime();
+    const double t_start = Teuchos::Time::wallTime();
 #endif // #ifdef MEASURETIME
 
   /*first we modify the displacement vector so that current nodal position at the end of current time step compies with
@@ -1314,7 +1316,7 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
     const Epetra_Map nodecolmap = *discret_.NodeColMap();
 
     /*search neighbours for each row node on this processor within column nodes*/
-    const double t_search = ds_cputime();
+    const double t_search = Teuchos::Time::wallTime();
 
     /*in preparation for later decision whether a crosslink should be established between two nodes we first store the
      * current positions of all column map nodes in the map currentpositions; additionally we store the roational displacments
@@ -1356,11 +1358,11 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
     if(time_ - nsearch_*statmechparams_.get<double>("Delta_t_search",0.0) > statmechparams_.get<double>("Delta_t_search",0.0) )
       SearchNeighbours(currentpositions);
 
-    cout << "\n***\nsearch time: " << ds_cputime() - t_search<< " seconds\n***\n";
+    cout << "\n***\nsearch time: " << Teuchos::Time::wallTime() - t_search<< " seconds\n***\n";
 
 
 #ifdef MEASURETIME
-    const double t_admin = ds_cputime();
+    const double t_admin = Teuchos::Time::wallTime();
 #endif // #ifdef MEASURETIME
 
     //number of elements in this time step before adding or deleting any elements
@@ -1381,14 +1383,14 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
     stiff->Reset();
 
 #ifdef MEASURETIME
-    cout << "\n***\nadministration time: " << ds_cputime() - t_admin<< " seconds\n***\n";
+    cout << "\n***\nadministration time: " << Teuchos::Time::wallTime() - t_admin<< " seconds\n***\n";
 #endif // #ifdef MEASURETIME
 
 
   }//if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
 
 #ifdef MEASURETIME
-    const double Delta_t = ds_cputime()-t_start;
+    const double Delta_t = Teuchos::Time::wallTime()-t_start;
     cout << "\n***\ntotal time: " << Delta_t<< " seconds\n***\n";
 #endif // #ifdef MEASURETIME
 

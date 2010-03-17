@@ -45,6 +45,7 @@ THERM_TEMPERATURE      Yes
 THERM_TEMPGRAD         Initial              // None, Current, Initial
 FILESTEPS              1000
 ------------------------------------------------------------STATIC
+//
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------MESHTYING AND CONTACT

@@ -15,6 +15,7 @@ Maintainer: Thomas Kloeppel
 
 #ifdef CCADISCRET
 
+#include "../drt_lib/standardtypes_cpp.H"
 #include "fsi_structureale.H"
 #include "fsi_utils.H"
 

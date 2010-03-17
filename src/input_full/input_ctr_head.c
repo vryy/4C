@@ -24,16 +24,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
-/*!----------------------------------------------------------------------
-\brief the tracing variable
-
-<pre>                                                         m.gee 8/00
-defined in pss_ds.c, declared in tracing.h
-</pre>
-*----------------------------------------------------------------------*/
-#ifdef DEBUG
-extern struct _CCA_TRACE         trace;
-#endif
 
 /*----------------------------------------------------------------------*
  | input of problem title         m.gee 8/00    |

@@ -10,68 +10,13 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#include "../headers/standardtypes.h"
-#include "../fluid_full/fluid_prototypes.h"
-
-#ifdef D_WALLGE
-#include "../wallge/wallge.h"
-#include "../wallge/wallge_prototypes.h"
-#endif
-
-#ifdef D_FSI
-#include "../fsi_full/fsi_prototypes.h"
-#endif
-
-#ifdef D_SSI
-#include "../ssi_full/ssi_prototypes.h"
-#endif
-
-#ifdef D_TSI
-#include "../tsi_full/tsi_prototypes.h"
-#endif
-
-#ifdef CCADISCRET
+#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_dserror.H"
-#endif
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | structure of flags to control output                                 |
- | defined in out_global.c                                              |
- *----------------------------------------------------------------------*/
-extern struct _IO_FLAGS     ioflags;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
 extern struct _GENPROB      genprob;
-/*!----------------------------------------------------------------------
-\brief ranks and communicators
-
-<pre>                                                         m.gee 8/00
-This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h
-</pre>
-
-*----------------------------------------------------------------------*/
- extern struct _PAR   par;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of numfld FIELDs, defined in global_control.c                 |
- *----------------------------------------------------------------------*/
-extern struct _FIELD      *field;
-
-#ifdef D_MLSTRUCT
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of numfld submeshFIELDs, defined in global_control.c          |
- *----------------------------------------------------------------------*/
-extern struct _FIELD      *sm_field;
-#endif /* D_MLSTRUCT */
 
 /* header for DRT style input */
-#ifdef CCADISCRET
+#include "../drt_structure/stru_static_drt.H"
 #include "../drt_lib/global_inp_control2.H"
 #include "../drt_fluid/fluid_dyn_nln_drt.H"
 #include "../drt_scatra/scatra_dyn.H"
@@ -84,348 +29,110 @@ extern struct _FIELD      *sm_field;
 #include "../drt_tsi/tsi_dyn.H"
 #include "../drt_art_net/art_net_dyn_drt.H"
 #include "../drt_red_airways/red_airways_dyn_drt.H"
-#endif
 
 /*----------------------------------------------------------------------*
  |  routine to control execution phase                   m.gee 6/01     |
  *----------------------------------------------------------------------*/
 void ntacal()
 {
-#ifndef CCADISCRET
-INT i;
-FIELD *actfield;
-#endif
-#ifdef D_MLSTRUCT
-FIELD *actsmfield;
-#endif /* D_MLSTRUCT */
-
-#ifdef DEBUG
-dstrc_enter("ntacal");
-#endif
-/*----------------------------------------------------------------------*/
-/*------------------------do initial partitioning of nodes and elements */
-#ifdef PERF
-  perf_begin(12);
-#endif
-
-#ifndef CCADISCRET /* the 'old' ccarat style discretization management */
-  part_fields();
-#endif
-#ifdef PERF
-  perf_end(12);
-#endif
-
-#ifdef D_FLUID
-#ifndef CCADISCRET
-/*---------------------------------- set dofs for implicit free surface */
-if (genprob.numff>=0) fluid_freesurf_setdofs();
-/*----------------------------- modify coordinates for special problems */
-if (genprob.numff>=0) fluid_modcoor();
-#endif
-#endif
-/*-------------------------------- set dofs for gradient enhanced model */
-#ifdef D_WALLGE
-#ifndef CCADISCRET
-if (genprob.graderw>0) wge_setdof();
-#endif
-#endif
-
-/*------------------------------------------------ assign dofs to nodes */
-#ifdef PERF
-  perf_begin(13);
-#endif
-#ifndef CCADISCRET
-  for(i=0; i<genprob.numfld; i++)
+  switch (genprob.probtyp)
   {
-    actfield = &(field[i]);
-    if (actfield->ndis==1) assign_dof(actfield);
-    if (actfield->ndis>1) assign_dof_ndis(actfield);
-  }
-#endif
-#ifdef PERF
-  perf_end(13);
-#endif
-
-/*--------------------------------- assign dofs to nodes in the submesh */
-#ifndef CCADISCRET
-#ifdef D_MLSTRUCT
-if (genprob.multisc_struct == 1)
-{
-   actsmfield = &(sm_field[0]);
-   assign_dof(actsmfield);
-   if (actsmfield->dis[0].numeq >= 3000)
-      dserror(">3000 submesh-DOF's->size of fields ele.e.w1.fint_mi,..for static cond.have to be enlarged\n");
-}
-#endif /* D_MLSTRUCT */
-#endif
-/*--------make the procs know their own nodes and elements a bit better */
-#ifndef CCADISCRET
-#ifdef PERF
-  perf_begin(14);
-#endif
-part_assignfield();
-#ifdef PERF
-  perf_end(14);
-#endif
-#endif
-
-  /* divide fast elements into vectors */
-#ifndef CCADISCRET
-#ifdef D_FLUID3_F
-  divide_fast();
-#endif
-#endif
-
-  /* check the values of the defines for MAXNODE etc. */
-#ifndef CCADISCRET
-  if (par.myrank==0)
-    check_max_sizes();
-#endif
-
-
-/*-------------------calculate system matrices parallel storage formats */
-#ifndef CCADISCRET
-#ifdef PERF
-  perf_begin(15);
-#endif
-  mask_global_matrices();
-#ifdef PERF
-  perf_end(15);
-#endif
-#endif
-
-#ifndef CCADISCRET
-#ifdef D_MLSTRUCT
-if (genprob.multisc_struct == 1)
-{
-  mask_submesh_matrices();
-}
-#endif /* D_MLSTRUCT */
-#endif
-
-/*------------------- inherit local co-ordinate systems to the elements */
-#ifndef CCADISCRET
-locsys_inherit_to_node();
-#endif
-
-#ifndef CCADISCRET
-/*------------------------------------------------ write general output */
-out_general();
-#endif
-/*--------------------------------------------------- write mesh to gid */
-#ifndef CCADISCRET
-if (par.myrank==0 && ioflags.output_gid)
-{
-  out_gid_sol_init();
-  if (genprob.probtyp != prb_structure && genprob.probtyp != prb_fsi && genprob.probtyp != prb_pfsi && genprob.probtyp != prb_fsi_lung)
-    out_gid_msh();
-}
-#else
-#endif
-/*------------------------ program to control execution of optimization */
-/*------------------ call control programs of static or dynamic control */
-
-switch (genprob.probtyp)
-{
-case prb_structure:
-
-  switch (genprob.timetyp)
-  {
-  case time_static:
-    calsta();
-/*#ifndef CCADISCRET
-#else
-    dserror("calsta with DRT not yet impl.");
-#endif*/
-    break;
-  case time_dynamic:
-#ifndef CCADISCRET
-    caldyn();
-#else
-    caldyn_drt();
-#endif
-    break;
-  default:
-    dserror("Unspecified time handling");
-  }
-
-  break;
-
-#ifdef CCADISCRET
-  case prb_struct_multi:
-  {
-    switch (genprob.timetyp)
-    {
-    case time_dynamic:
-      caldyn_drt();
+    case prb_structure:
+      switch (genprob.timetyp)
+      {
+        case time_static:
+          /* nonlinear statics with new discretization */
+          stru_static_drt();
+          break;
+        case time_dynamic:
+          caldyn_drt();
+          break;
+        default:
+          dserror("Unspecified time handling");
+      }
       break;
-    case time_static:
-      dserror("structural multi-scale algorithm only implemented for dynamic problems");
-    default:
-      dserror("Unspecified time handling");
+
+    case prb_struct_multi:
+    {
+      switch (genprob.timetyp)
+      {
+        case time_dynamic:
+          caldyn_drt();
+          break;
+        case time_static:
+          dserror("structural multi-scale algorithm only implemented for dynamic problems");
+        default:
+          dserror("Unspecified time handling");
+      }
     }
-  }
-  break;
-#endif
+    break;
 
-#ifdef D_FLUID
-case prb_fluid_pm:
-case prb_fluid:
-#ifndef CCADISCRET
-  dyn_fluid();
-#else
-  dyn_fluid_drt();
-#endif
-  break;
-case prb_scatra:
-#ifndef CCADISCRET
-  dserror("dyn_scatra without DRT not implemented");
-#else
-  scatra_dyn(genprob.numff,genprob.numscatra,genprob.restart);
-#endif
-  break;
-case prb_fluid_xfem:
-#ifdef CCADISCRET
-  fluid_xfem_drt();
-#else
-  dserror("prb_fluid_xfem without DRT not implemented");
-#endif
-#endif
-  break;
+    case prb_fluid_pm:
+    case prb_fluid:
+      dyn_fluid_drt();
+      break;
+    case prb_scatra:
+      scatra_dyn(genprob.numff,genprob.numscatra,genprob.restart);
+      break;
+    case prb_fluid_xfem:
+      fluid_xfem_drt();
+      break;
 
-#ifdef CCADISCRET
-case prb_fluid_ale:
-  fluid_ale_drt();
-  break;
-case prb_freesurf:
-  fluid_freesurf_drt();
-  break;
-#endif
+    case prb_fluid_ale:
+      fluid_ale_drt();
+      break;
+    case prb_freesurf:
+      fluid_freesurf_drt();
+      break;
 
-#ifdef D_FSI
-case prb_fsi:
-case prb_pfsi:
-case prb_fsi_lung:
-#ifndef CCADISCRET
-  dyn_fsi(0);
-#else
-  fsi_ale_drt();
-#endif
-  break;
-case prb_fsi_xfem:
-#ifndef CCADISCRET
-  dserror("prb_xfsi without DRT not impl.");;
-#else
-  xfsi_drt();
-#endif
-  break;
-#endif
+    case prb_fsi:
+    case prb_pfsi:
+    case prb_fsi_lung:
+      fsi_ale_drt();
+      break;
+    case prb_fsi_xfem:
+      xfsi_drt();
+      break;
 
-#ifdef D_SSI
-case prb_ssi:
-  dyn_ssi();
-  break;
-#endif
+    case prb_ale:
+      dyn_ale_drt();
 
-#ifdef D_ALE
-case prb_ale:
-#ifndef CCADISCRET
-  dyn_ale();
-#else
-  dyn_ale_drt();
-#endif
-  break;
-#endif
+    case prb_thermo:
+      thr_dyn_drt();
+      break;
 
-#ifdef D_OPTIM
-case prb_opt:
-  caloptmain();
-  break;
-#endif
+    case prb_tsi:
+      tsi_dyn_drt();
+      break;
+      
+    case prb_loma:
+      loma_dyn(genprob.numff,genprob.numscatra,genprob.restart);
+      break;
 
-case prb_thermo:
-#ifndef CCADISCRET
-  dserror("(In)Stationary heat conduction is not available in CCARAT");
-#else
-  thr_dyn_drt();
-#endif
-  break;
+    case prb_elch:
+      elch_dyn(genprob.numff,genprob.numscatra,genprob.numaf,genprob.restart);
+      break;
 
-#if defined(CCADISCRET) || defined(D_TSI)
-case prb_tsi:
-#ifndef CCADISCRET
-  tsi_dyn();
-#else
-  tsi_dyn_drt();
-#endif
-  break;
-#endif
-
-case prb_loma:
-#ifndef CCADISCRET
-  dserror("Module for low-Mach-number flow not available in CCARAT");
-#else
-  loma_dyn(genprob.numff,genprob.numscatra,genprob.restart);
-#endif
-  break;
-
-case prb_elch:
-#ifndef CCADISCRET
-  dserror("Electrochemistry module not available in CCARAT");
-#else
-  elch_dyn(genprob.numff,genprob.numscatra,genprob.numaf,genprob.restart);
-#endif
-  break;
-
-case prb_combust:
-#ifndef CCADISCRET
-  dserror("combustion module not available in CCARAT");
-#else
-  combust_dyn();
-#endif
-  break;
+    case prb_combust:
+      combust_dyn();
+      break;
 
 #ifdef D_ARTNET
-case prb_art_net:
-#ifndef CCADISCRET
-  dserror("arterial network module not available in CCARAT");
-#else
-  dyn_art_net_drt();
-#endif
-  break;
+    case prb_art_net:
+      dyn_art_net_drt();
+      break;
 #endif /* D_ARTNET */
 
 #ifdef D_RED_AIRWAYS
-case prb_red_airways:
-#ifndef CCADISCRET
-  dserror("reduced dimensional airways module not available in CCARAT");
-#else
-  dyn_red_airways_drt();
-#endif
-  break;
+    case prb_red_airways:
+      dyn_red_airways_drt();
+      break;
 #endif /* D_RED_AIRWAYS */
 
-default:
-  dserror("solution of unknown problemtyp requested");
-break;
+    default:
+      dserror("solution of unknown problemtyp %d requested", genprob.probtyp);
+      break;
+  }
+
+  drt_problem_done();
 }
-
-#ifdef CCADISCRET
-drt_problem_done();
-#endif
-
-/*------------------------------------------------------- check results */
-#ifndef CCADISCRET
-#ifdef RESULTTEST
-global_result_test();
-#endif
-#endif
-
-/*--------------------------------------------------- write warnings ---*/
-dswarning(2,0);
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
-return;
-} /* end of ntacal */

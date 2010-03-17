@@ -41,17 +41,20 @@ Maintainer: Moritz Frenzel
 extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
- |                                                         maf 05/07    |
- | pointer to allocate static variables if needed                       |
- | defined in global_control.c                                          |
- *----------------------------------------------------------------------*/
-extern struct _STATIC_VAR  *statvar;
-
-/*----------------------------------------------------------------------*
   | structural nonlinear static solution routine             maf 05/07  |
  *----------------------------------------------------------------------*/
 void stru_static_drt()
 {
+  const Teuchos::ParameterList& params = DRT::Problem::Instance()->StaticParams();
+
+  double stepsize = params.get<double>("STEPSIZE");
+  double toldisp = params.get<double>("TOLDISP");
+  int maxiter = params.get<int>("MAXITER");
+  int nstep = params.get<int>("NUMSTEP");
+  int resevery_restart = params.get<int>("RESTARTEVRY");
+  int resevry_disp = params.get<int>("RESEVRYDISP");
+  int resevry_stress = params.get<int>("RESEVRYSTRS");
+
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -129,7 +132,7 @@ void stru_static_drt()
   // also known at out-of-balance-force
   RefCountPtr<Epetra_Vector> fresm = LINALG::CreateVector(*dofrowmap,false);
 
-  if (statvar->nr_controltyp != control_load) dserror("Only load control implemented");
+  //if (statvar->nr_controltyp != control_load) dserror("Only load control implemented");
 
   /*
   ** solution control parameters are inherited from dynamic routine:
@@ -138,7 +141,7 @@ void stru_static_drt()
   ** time   = redundant, equals istep*dt
   */
   //------------------------------------------ time integration parameters
-  const double dt = statvar->stepsize;
+  const double dt = stepsize;
   int istep = 0;
   double time = 0.0;  // we should add an input parameter
   double timen;
@@ -203,7 +206,7 @@ void stru_static_drt()
   output.WriteElementData();
 
   //---------------------------------------------- do "stress" calculation
-  int mod_stress = istep % statvar->resevry_stress;
+  int mod_stress = istep % resevry_stress;
   INPAR::STR::StressType iostress = Teuchos::getIntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
   INPAR::STR::StrainType iostrain = Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
 
@@ -261,7 +264,7 @@ void stru_static_drt()
   //---------------------------------------------end of output initial state
 
   //========================================== start of time/loadstep loop
-  while ( istep < statvar->nstep)
+  while ( istep < nstep)
   {
     //------------------------------------------------------- current time
     // we are at t_{n} == time; the new time is t_{n+1} == time+dt
@@ -320,7 +323,7 @@ void stru_static_drt()
     if (!myrank) cout << " Predictor residual forces " << norm << endl; fflush(stdout);
    //=================================================== equilibrium loop
     int numiter=0;
-    while ((norm > statvar->toldisp) && numiter < statvar->maxiter)
+    while ((norm > toldisp) && numiter < maxiter)
     {
       //----------------------- apply dirichlet BCs to system of equations
       fresm->Scale(-1.0);     // rhs = -R = -fresm
@@ -397,9 +400,9 @@ void stru_static_drt()
     //============================================= end equilibrium loop
 
     //-------------------------------- test whether max iterations was hit
-    if (statvar->maxiter == 1 && statvar->nstep == 1)
+    if (maxiter == 1 && nstep == 1)
       printf("computed 1 step with 1 iteration: STATIC LINEAR SOLUTION\n");
-    else if (numiter==statvar->maxiter)
+    else if (numiter==maxiter)
       dserror("Newton unconverged in %d iterations",numiter);
 
     //---------------------------- determine new end-quantities and update
@@ -425,7 +428,7 @@ void stru_static_drt()
 
     //------------------------------------------------- write restart step
     bool isdatawritten = false;
-    if (istep % statvar->resevery_restart==0)
+    if (istep % resevery_restart==0)
     {
       output.WriteMesh(istep,time);
       output.NewStep(istep, time);
@@ -443,7 +446,7 @@ void stru_static_drt()
     }
 
     //----------------------------------------------------- output results
-    int mod_disp   = istep % statvar->resevry_disp;
+    int mod_disp   = istep % resevry_disp;
     if (!mod_disp && Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP")==1 && !isdatawritten)
     {
       output.NewStep(istep, time);
@@ -453,7 +456,7 @@ void stru_static_drt()
     }
 
     //---------------------------------------------- do stress calculation
-    int mod_stress = istep % statvar->resevry_stress;
+    int mod_stress = istep % resevry_stress;
     INPAR::STR::StressType iostress = Teuchos::getIntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
     INPAR::STR::StrainType iostrain = Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
 
@@ -531,9 +534,9 @@ void stru_static_drt()
     if (!myrank)
     {
       printf("step %6d | nstep %6d | time %-14.8E | dt %-14.8E | numiter %3d\n",
-             istep,statvar->nstep,timen,dt,numiter);
+             istep,nstep,timen,dt,numiter);
       fprintf(errfile,"step %6d | nstep %6d | time %-14.8E | dt %-14.8E | numiter %3d\n",
-              istep,statvar->nstep,timen,dt,numiter);
+              istep,nstep,timen,dt,numiter);
       printf("----------------------------------------------------------------------------------\n");
       fprintf(errfile,"----------------------------------------------------------------------------------\n");
       fflush(stdout);

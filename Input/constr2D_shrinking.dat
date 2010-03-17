@@ -40,20 +40,21 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------------------STATIC
-NONLINEAR
-KINTYP                          Tot_Lagr
+//NONLINEAR
+//KINTYP                          Tot_Lagr
 NEWTONRAPHSO                    Load_Control
 NUMSTEP                         20
 MAXITER                         50
-TOLRESID                        1.0E-06
+//TOLRESID                        1.0E-06
 TOLDISP                         1.0E-05
 STEPSIZE                        0.5
-IARC                            Yes
-ARCSCL                          1.0
-SIGNCHCSP                       Yes
+//IARC                            Yes
+//ARCSCL                          1.0
+//SIGNCHCSP                       Yes
 RESEVRYDISP                     1
 RESEVRYSTRS                     1
 RESTARTEVRY                     1
+//
 ---------------------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa

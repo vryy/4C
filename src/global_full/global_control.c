@@ -1,119 +1,16 @@
-/*!----------------------------------------------------------------------
-\file
-\brief
 
-<pre>
-Maintainer: Malte Neumann
-            neumann@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/neumann/
-            0711 - 685-6121
-</pre>
+#include <unistd.h>
+#include <sys/times.h>
 
-*----------------------------------------------------------------------*/
-
-
-#include "../headers/standardtypes.h"
-#include "../io/io.h"
-
-#ifdef CCADISCRET
+#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_init_control.H"
-#endif
-
-#ifndef CCADISCRET
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of numfld FIELDs, defined in global_control.c                 |
- *----------------------------------------------------------------------*/
-struct _FIELD         *field;
-#endif
-
-
-#ifdef D_MLSTRUCT
-/*----------------------------------------------------------------------*
- |                                                                      |
- | vector of numfld submesh-FIELDs, defined in global_control.c         |
- *----------------------------------------------------------------------*/
-struct _FIELD         *sm_field;
-#endif /* D_MLSTRUCT */
-
-
+#include "../drt_lib/global_inp_control2.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
  *----------------------------------------------------------------------*/
 struct _GENPROB       genprob;
-
-
-/*!----------------------------------------------------------------------
-\brief one proc's info about his partition
-
-<pre>                                                         m.gee 8/00
--the partition of one proc (all discretizations)
--the type is in partition.h
-</pre>
-
-*----------------------------------------------------------------------*/
-struct _PARTITION    *partition;
-
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate design if needed                                 |
- | defined in global_control.c                                          |
- *----------------------------------------------------------------------*/
-struct _DESIGN       *design;
-
-
-#ifndef CCADISCRET
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate dynamic variables if needed                      |
- | dedfined in global_control.c                                         |
- | struct _ALLDYNA       *alldyn;                                       |
- *----------------------------------------------------------------------*/
-ALLDYNA             *alldyn;
-#endif
-
-
-/*----------------------------------------------------------------------*
- |                                                          al 08/02    |
- | pointer to allocate eigensolution variables                          |
- | dedfined in global_control.c                                         |
- | struct _ALLEIG       *alleig;                                        |
- *----------------------------------------------------------------------*/
-ALLEIG              *alleig;
-
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate static variables if needed                       |
- | defined in global_control.c                                          |
- *----------------------------------------------------------------------*/
-struct _STATIC_VAR   *statvar;
-
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of material laws                                              |
- | defined in global_control.c
- *----------------------------------------------------------------------*/
-#ifndef CCADISCRET
-struct _MATERIAL      *mat;
-struct _MULTIMAT      *multimat;
-#endif
-
-
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
 
 
 /*!----------------------------------------------------------------------
@@ -125,142 +22,56 @@ and the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
- extern struct _PAR   par;
+extern struct _PAR     par;
 
+
+static double cputime()
+{
+  double ret;
+  double clk_tck;
+  struct tms buf;
+
+  times(&buf);
+  clk_tck = (double)sysconf(_SC_CLK_TCK);
+  ret = (buf.tms_utime + buf.tms_stime)/clk_tck;
+  return ret;
+}
+
+void ntacal();
 
 /*----------------------------------------------------------------------*
  | main routine                                           m.gee 8/00    |
  *----------------------------------------------------------------------*/
 void ntam(
-    INT                 argc,
+    int                 argc,
     char               *argv[]
     )
-
 {
+  double   t0,ti,tc;
 
-  DOUBLE   t0,ti,tc;
-
-
-
-  /* init all time counters */
-#ifdef PERF
-  perf_init_all();
-  perf_begin(0);
-#endif
-
-
-
-  /* init devices, tracing, etc...*/
-#ifndef CCADISCRET
-  ntaini(argc,argv);
-#else
   ntaini_ccadiscret(argc,argv);
-#endif
 
   /* input phase, input of all information */
 
-  t0=ds_cputime();
-#ifdef PERF
-  perf_begin(1);
-#endif
+  t0=cputime();
 
-#ifndef CCADISCRET
-  ntainp();
-#else
   ntainp_ccadiscret();
-#endif
 
-#ifdef PERF
-  perf_end(1);
-#endif
-  ti=ds_cputime()-t0;
+  ti=cputime()-t0;
   if (par.myrank==0)
   {
-    printf("\n");
-    printf("Total CPU Time for INPUT:       %10.3E sec \n",ti);
-    printf("\n");
+    printf("\nTotal CPU Time for INPUT:       %10.3E sec \n\n",ti);
   }
-
-
-#ifndef CCADISCRET
-  /* close the input file, delete the copy */
-  /* -> You cannot read anything from input file beyond this point */
-  frend();
-#endif
-
-
-#ifndef CCADISCRET
-  /*-------------------------------------- check for visualisation mode */
-  if (genprob.visual!=0) goto visualisation;
-#endif
-
-  /*------------------------------- set up field-specific communicators */
-#ifndef CCADISCRET
-#ifdef PARALLEL
-  create_communicators();
-#endif
-#endif
-
-#ifndef CCADISCRET
-#ifdef BINIO
-
-  /* The functions to initialize binary io are quite complex. They make
-   * use of some standard ccarat facilities. In particular the error
-   * logs must already be available. The parallel version makes use of
-   * those communicators as well. */
-
-  if (genprob.restart) {
-    /* If we want to restart this we'll have to initialize our binary
-     * input. That is we need to read the control file. */
-    init_bin_in_main(allfiles.outputfile_kenner);
-  }
-
-  /* initialize module for binary output */
-  /* This can only be done after the (normal) input is read because
-   * here some values are already written. */
-  init_bin_out_main(allfiles.outputfile_kenner);
-
-#endif
-#endif
 
   /*--------------------------------------------------calculation phase */
-  t0=ds_cputime();
-#ifdef PERF
-  perf_begin(2);
-#endif
+  t0=cputime();
 
   ntacal();
 
-#ifdef PERF
-  perf_end(2);
-#endif
-  tc=ds_cputime()-t0;
+  tc=cputime()-t0;
   if (par.myrank==0)
   {
-    printf("\n");
-    printf("Total CPU Time for CALCULATION: %10.3E sec \n",tc);
-    printf("\n");
+    printf("\nTotal CPU Time for CALCULATION: %10.3E sec \n\n",tc);
   }
-
-#ifndef CCADISCRET
-#ifdef PERF
-  perf_end(0);
-  /* print out time counters */
-  perf_out();
-#endif
-
-  goto endcal;
-  /*----------------------------------------------------------------------*/
-visualisation:
-  if (genprob.visual==2 || genprob.visual==3)
-    ntavisual();
-  /*----------------------------------------------------------------------*/
-endcal:
-#endif
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-
-  return;
-} /* end of ntam */
+}
 

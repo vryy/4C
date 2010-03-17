@@ -90,7 +90,7 @@ void GEO::Intersection::computeIntersection(
 
   countMissedPoints_ = 0;
   facetMarkerOffset_ = 11;
-  const double t_start = ds_cputime();
+  const double t_start = Teuchos::Time::wallTime();
 
   // stop intersection if cutterdis is empty
   if(cutterdis->NumMyColElements()==0)
@@ -108,7 +108,7 @@ void GEO::Intersection::computeIntersection(
   {
     //printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!eleid = %d\n", k);
     DRT::Element* xfemElement = xfemdis->lColElement(k);
-    
+
     // for fluid-fluid-coupling consider just the elements of background fluid
 	if (cutterdis->Name() == "FluidFluidboundary"){
 	   	set<int>::const_iterator eleid = MovingFluideleGIDs.find(xfemElement->Id());
@@ -117,7 +117,7 @@ void GEO::Intersection::computeIntersection(
 			continue;
 		}
 	}
-    
+
     initializeXFEM(k, xfemElement);
     EleGeoType xfemGeoType = HIGHERORDER;
     checkGeoType(xfemElement, xyze_xfemElement_, xfemGeoType);
@@ -223,7 +223,7 @@ void GEO::Intersection::computeIntersection(
 
 
   //debugDomainIntCells(domainintcells,2);
-  const double t_end = ds_cputime()-t_start;
+  const double t_end = Teuchos::Time::wallTime()-t_start;
   if(countMissedPoints_ > 0)
     cout << endl << "Number of missed points during the recovery copy = " << countMissedPoints_ << endl;
 
@@ -538,7 +538,7 @@ bool GEO::Intersection::collectIntersectionPoints(
     const bool                                                        lines,
     const bool                                                        doSVD)
 {
-	
+
   if(!checkLineSurfaceXAABBs(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement))
       return false;
 
@@ -902,8 +902,8 @@ void GEO::Intersection::addIntersectionPoint(
  |          computation of all intersection points                      |
  *----------------------------------------------------------------------*/
 void GEO::Intersection::createInitialLimits(
-    const DRT::Element::DiscretizationType&   distype,	
-    LINALG::Matrix<3,1>&        				      xsi,	
+    const DRT::Element::DiscretizationType&   distype,
+    LINALG::Matrix<3,1>&        				      xsi,
     LINALG::Matrix<3,1>&        				      upLimit,
     LINALG::Matrix<3,1>&        				      loLimit) const
 {
@@ -1490,7 +1490,7 @@ void GEO::Intersection::roundOnXFEMTetSurface1(
     for(unsigned int j = 0; j < segmentList_[i].size(); j++ )
       pointsToRound.insert(segmentList_[i][j]);
 
-  for(std::set<int>::const_iterator id = pointsToRound.begin(); id != pointsToRound.end(); id++)	
+  for(std::set<int>::const_iterator id = pointsToRound.begin(); id != pointsToRound.end(); id++)
   {
     const int index = *id;
 
@@ -1525,7 +1525,7 @@ void GEO::Intersection::roundOnXFEMTetSurface1(
 
         for(int i  = 0; i < 3; i++)
           in.pointlist[index*3+i] 	= (REAL) coord[i];
-      }	
+      }
       else if(indexOneZero.size() == 0)
       {
         coord[0] = (int) in.pointlist[index*3];
@@ -2904,7 +2904,7 @@ void GEO::Intersection::liftSteinerPointOnEdge(
     //normalizeVectorInPLace(n2);
     n1.Scale(1.0/n1.Norm2());
     n2.Scale(1.0/n2.Norm2());
-	
+
     vector< LINALG::Matrix<3,1> > plane;
     LINALG::Matrix<3,1> planeNode(true);
     planeNode.Update(1.0, Steinerpoint, 1.0, n1);
@@ -4194,7 +4194,7 @@ void GEO::Intersection::debugTetgenDataStructure(
  |  Debug only                                               u.may 06/07|
  *----------------------------------------------------------------------*/
 #ifdef QHULL
-void GEO::Intersection::debugTetgenOutput( 	
+void GEO::Intersection::debugTetgenOutput(
     tetgenio& 				in,
     tetgenio& 				out,
     const DRT::Element*   	xfemElement,
@@ -4205,8 +4205,8 @@ void GEO::Intersection::debugTetgenOutput(
 	std::string tetgenOut = "tetgenMesh";
 	char tetgenInId[30];
 	char tetgenOutId[30];
-	
-	
+
+
 
 	for(unsigned int i = 0; i < elementIds.size(); i++)
 	{

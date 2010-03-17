@@ -42,13 +42,11 @@ table. This table can be queried for those values quite easily.
 
 */
 
-#include "../headers/standardtypes.h"
+#include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/drt_dserror.H"
 
 #include "pss_table.h"
-
-#ifdef CCADISCRET
-#include "../drt_lib/drt_dserror.H"
-#endif
+#include "pss_prototypes.h"
 
 /*!----------------------------------------------------------------------
 \brief ranks and communicators
@@ -72,10 +70,6 @@ extern struct _PAR   par;
 /*----------------------------------------------------------------------*/
 static void destroy_symbol(SYMBOL* symbol)
 {
-#ifdef DEBUG
-  dstrc_enter("destroy_symbol");
-#endif
-
   while (symbol != NULL) {
     SYMBOL* next;
 
@@ -90,10 +84,6 @@ static void destroy_symbol(SYMBOL* symbol)
     CCAFREE(symbol);
     symbol = next;
   }
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -107,10 +97,6 @@ static void destroy_symbol(SYMBOL* symbol)
 /*----------------------------------------------------------------------*/
 static void destroy_node(MAP_NODE* node)
 {
-#ifdef DEBUG
-  dstrc_enter("destroy_node");
-#endif
-
   if (node != NULL)
   {
     destroy_node(node->lhs);
@@ -128,10 +114,6 @@ static void destroy_node(MAP_NODE* node)
 
     CCAFREE(node);
   }
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -147,10 +129,6 @@ static void destroy_node(MAP_NODE* node)
 /*----------------------------------------------------------------------*/
 void init_map(MAP* map)
 {
-#ifdef DEBUG
-  dstrc_enter("init_map");
-#endif
-
   /* We have a dummy node at the root to make life easier. The empty
    * key is not legal. */
   map->root.key = "";
@@ -158,10 +136,6 @@ void init_map(MAP* map)
   map->root.lhs = NULL;
   map->root.rhs = NULL;
   map->count = 0;
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -175,17 +149,9 @@ void init_map(MAP* map)
 /*----------------------------------------------------------------------*/
 void destroy_map(MAP* map)
 {
-#ifdef DEBUG
-  dstrc_enter("destroy_map");
-#endif
-
   destroy_node(map->root.lhs);
   destroy_node(map->root.rhs);
   /*CCAFREE(map->root.symbol);*/
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -216,10 +182,6 @@ static INT map_cmp_nodes(const MAP_NODE* lhs, const CHAR* rhs_key)
 static MAP_NODE* map_find_node(MAP* map, const CHAR* key)
 {
   MAP_NODE* node;
-
-#ifdef DEBUG
-  dstrc_enter("map_find_node");
-#endif
 
   node = &(map->root);
 
@@ -253,9 +215,6 @@ static MAP_NODE* map_find_node(MAP* map, const CHAR* key)
   }
 
 end:
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return node;
 }
 
@@ -275,18 +234,11 @@ SYMBOL* map_find_symbol(MAP* map, const CHAR* key)
   MAP_NODE* node;
   SYMBOL* symbol = NULL;
 
-#ifdef DEBUG
-  dstrc_enter("map_find_symbol");
-#endif
-
   node = map_find_node(map, key);
   if (node != NULL) {
     symbol = node->symbol;
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return symbol;
 }
 
@@ -304,16 +256,9 @@ INT map_find_string(MAP* map, const CHAR* key, CHAR** string)
   SYMBOL* symbol;
   INT ret;
 
-#ifdef DEBUG
-  dstrc_enter("map_find_string");
-#endif
-
   symbol = map_find_symbol(map, key);
   ret = symbol_get_string(symbol, string);
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return ret;
 }
 
@@ -331,16 +276,9 @@ INT map_find_int(MAP* map, const CHAR* key, INT* integer)
   SYMBOL* symbol;
   INT ret;
 
-#ifdef DEBUG
-  dstrc_enter("map_find_int");
-#endif
-
   symbol = map_find_symbol(map, key);
   ret = symbol_get_int(symbol, integer);
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return ret;
 }
 
@@ -358,16 +296,9 @@ INT map_find_real(MAP* map, const CHAR* key, DOUBLE* real)
   SYMBOL* symbol;
   INT ret;
 
-#ifdef DEBUG
-  dstrc_enter("map_find_real");
-#endif
-
   symbol = map_find_symbol(map, key);
   ret = symbol_get_real(symbol, real);
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return ret;
 }
 
@@ -385,16 +316,9 @@ INT map_find_map(MAP* map, const CHAR* key, MAP** dir)
   SYMBOL* symbol;
   INT ret;
 
-#ifdef DEBUG
-  dstrc_enter("map_find_map");
-#endif
-
   symbol = map_find_symbol(map, key);
   ret = symbol_get_map(symbol, dir);
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return ret;
 }
 
@@ -412,17 +336,11 @@ INT map_find_map(MAP* map, const CHAR* key, MAP** dir)
 CHAR* map_read_string(MAP* map, const CHAR* key)
 {
   CHAR* string;
-#ifdef DEBUG
-  dstrc_enter("map_read_string");
-#endif
 
   if (!map_find_string(map, key, &string)) {
     dserror("no string attribute '%s' in map", key);
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return string;
 }
 
@@ -440,17 +358,11 @@ CHAR* map_read_string(MAP* map, const CHAR* key)
 INT map_read_int(MAP* map, const CHAR* key)
 {
   INT integer;
-#ifdef DEBUG
-  dstrc_enter("map_read_int");
-#endif
 
   if (!map_find_int(map, key, &integer)) {
     dserror("no int attribute '%s' in map", key);
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return integer;
 }
 
@@ -468,9 +380,6 @@ INT map_read_int(MAP* map, const CHAR* key)
 DOUBLE map_read_real(MAP* map, const CHAR* key)
 {
   DOUBLE real;
-#ifdef DEBUG
-  dstrc_enter("map_read_real");
-#endif
 
   if (!map_find_real(map, key, &real))
   {
@@ -480,9 +389,6 @@ DOUBLE map_read_real(MAP* map, const CHAR* key)
     real = value;
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return real;
 }
 
@@ -500,17 +406,11 @@ DOUBLE map_read_real(MAP* map, const CHAR* key)
 MAP* map_read_map(MAP* map, const CHAR* key)
 {
   MAP* dir;
-#ifdef DEBUG
-  dstrc_enter("map_read_map");
-#endif
 
   if (!map_find_map(map, key, &dir)) {
     dserror("no dir attribute '%s' in map", key);
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return dir;
 }
 
@@ -529,10 +429,6 @@ INT map_has_string(MAP* map, const CHAR* key, const CHAR* value)
   CHAR* string;
   INT ret;
 
-#ifdef DEBUG
-  dstrc_enter("map_has_string");
-#endif
-
   symbol = map_find_symbol(map, key);
   if (symbol != NULL) {
     ret = symbol_get_string(symbol, &string);
@@ -544,9 +440,6 @@ INT map_has_string(MAP* map, const CHAR* key, const CHAR* value)
     ret = 0;
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return ret;
 }
 
@@ -565,10 +458,6 @@ INT map_has_int(MAP* map, const CHAR* key, const INT value)
   INT integer;
   INT ret;
 
-#ifdef DEBUG
-  dstrc_enter("map_has_int");
-#endif
-
   symbol = map_find_symbol(map, key);
   if (symbol != NULL) {
     ret = symbol_get_int(symbol, &integer);
@@ -580,9 +469,6 @@ INT map_has_int(MAP* map, const CHAR* key, const INT value)
     ret = 0;
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return ret;
 }
 
@@ -601,10 +487,6 @@ INT map_has_real(MAP* map, const CHAR* key, const DOUBLE value)
   DOUBLE real;
   INT ret;
 
-#ifdef DEBUG
-  dstrc_enter("map_has_real");
-#endif
-
   symbol = map_find_symbol(map, key);
   if (symbol != NULL) {
     ret = symbol_get_real(symbol, &real);
@@ -616,9 +498,6 @@ INT map_has_real(MAP* map, const CHAR* key, const DOUBLE value)
     ret = 0;
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return ret;
 }
 
@@ -638,10 +517,6 @@ INT map_has_map(MAP* map, const CHAR* key)
   SYMBOL* symbol;
   INT ret;
 
-#ifdef DEBUG
-  dstrc_enter("map_has_map");
-#endif
-
   symbol = map_find_symbol(map, key);
   if (symbol != NULL) {
     ret = symbol_is_map(symbol);
@@ -650,9 +525,6 @@ INT map_has_map(MAP* map, const CHAR* key)
     ret = 0;
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return ret;
 }
 
@@ -673,10 +545,6 @@ INT map_has_map(MAP* map, const CHAR* key)
 static void map_insert_symbol(MAP* map, SYMBOL* symbol, CHAR* key)
 {
   MAP_NODE* node;
-
-#ifdef DEBUG
-  dstrc_enter("map_insert_symbol");
-#endif
 
   node = &(map->root);
   for (;;) {
@@ -726,9 +594,6 @@ static void map_insert_symbol(MAP* map, SYMBOL* symbol, CHAR* key)
   }
 
 end:
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return;
 }
 
@@ -745,19 +610,12 @@ void map_insert_string(MAP* map, CHAR* string, CHAR* key)
 {
   SYMBOL* symbol;
 
-#ifdef DEBUG
-  dstrc_enter("map_insert_string");
-#endif
-
   symbol = CCACALLOC(1, sizeof(SYMBOL));
   symbol->type = sym_string;
   symbol->s.string = string;
 
   map_insert_symbol(map, symbol, key);
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -773,19 +631,12 @@ void map_insert_int(MAP* map, INT integer, CHAR* key)
 {
   SYMBOL* symbol;
 
-#ifdef DEBUG
-  dstrc_enter("map_insert_int");
-#endif
-
   symbol = CCACALLOC(1, sizeof(SYMBOL));
   symbol->type = sym_int;
   symbol->s.integer = integer;
 
   map_insert_symbol(map, symbol, key);
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -801,19 +652,11 @@ void map_insert_real(MAP* map, DOUBLE real, CHAR* key)
 {
   SYMBOL* symbol;
 
-#ifdef DEBUG
-  dstrc_enter("map_insert_real");
-#endif
-
   symbol = CCACALLOC(1, sizeof(SYMBOL));
   symbol->type = sym_real;
   symbol->s.real = real;
 
   map_insert_symbol(map, symbol, key);
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -829,19 +672,11 @@ void map_insert_map(MAP* map, MAP* dir, CHAR* key)
 {
   SYMBOL* symbol;
 
-#ifdef DEBUG
-  dstrc_enter("map_insert_map");
-#endif
-
   symbol = CCACALLOC(1, sizeof(SYMBOL));
   symbol->type = sym_map;
   symbol->s.dir = dir;
 
   map_insert_symbol(map, symbol, key);
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -858,19 +693,11 @@ void map_insert_string_cpy(MAP* map, CHAR* string, CHAR* key)
   CHAR* string_cpy;
   CHAR* key_cpy;
 
-#ifdef DEBUG
-  dstrc_enter("map_insert_string_cpy");
-#endif
-
   string_cpy = (CHAR*)CCAMALLOC((strlen(string)+1)*sizeof(CHAR));
   strcpy(string_cpy, string);
   key_cpy = (CHAR*)CCAMALLOC((strlen(key)+1)*sizeof(CHAR));
   strcpy(key_cpy, key);
   map_insert_string(map, string_cpy, key_cpy);
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -886,17 +713,9 @@ void map_insert_int_cpy(MAP* map, INT integer, CHAR* key)
 {
   CHAR* key_cpy;
 
-#ifdef DEBUG
-  dstrc_enter("map_insert_int_cpy");
-#endif
-
   key_cpy = (CHAR*)CCAMALLOC((strlen(key)+1)*sizeof(CHAR));
   strcpy(key_cpy, key);
   map_insert_int(map, integer, key_cpy);
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -912,17 +731,9 @@ void map_insert_real_cpy(MAP* map, DOUBLE real, CHAR* key)
 {
   CHAR* key_cpy;
 
-#ifdef DEBUG
-  dstrc_enter("map_insert_real_cpy");
-#endif
-
   key_cpy = (CHAR*)CCAMALLOC((strlen(key)+1)*sizeof(CHAR));
   strcpy(key_cpy, key);
   map_insert_real(map, real, key_cpy);
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -942,17 +753,9 @@ void map_insert_map_cpy(MAP* map, MAP* dir, CHAR* key)
 {
   CHAR* key_cpy;
 
-#ifdef DEBUG
-  dstrc_enter("map_insert_map_cpy");
-#endif
-
   key_cpy = (CHAR*)CCAMALLOC((strlen(key)+1)*sizeof(CHAR));
   strcpy(key_cpy, key);
   map_insert_map(map, dir, key_cpy);
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -968,18 +771,11 @@ INT map_symbol_count(MAP* map, const CHAR* key)
 {
   INT count = 0;
 
-#ifdef DEBUG
-  dstrc_enter("map_symbol_count");
-#endif
-
   const MAP_NODE* node = map_find_node(map, key);
   if (node != NULL) {
     count = node->count;
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return count;
 }
 
@@ -999,20 +795,11 @@ INT map_symbol_count(MAP* map, const CHAR* key)
 /*----------------------------------------------------------------------*/
 void map_disconnect_symbols(MAP* map, const CHAR* key)
 {
-
-#ifdef DEBUG
-  dstrc_enter("map_disconnect_symbols");
-#endif
-
   MAP_NODE* node = map_find_node(map, key);
   if (node != NULL) {
     node->symbol = NULL;
     node->count = 0;
   }
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -1032,10 +819,6 @@ void map_disconnect_symbols(MAP* map, const CHAR* key)
 void map_prepend_symbols(MAP* map, const CHAR* key, SYMBOL* symbol, INT count)
 {
   MAP_NODE* node;
-
-#ifdef DEBUG
-  dstrc_enter("map_prepend_symbols");
-#endif
 
   node = map_find_node(map, key);
   if (node != NULL)
@@ -1064,10 +847,6 @@ void map_prepend_symbols(MAP* map, const CHAR* key, SYMBOL* symbol, INT count)
   {
     dserror("no node for key '%s'", key);
   }
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -1140,10 +919,6 @@ INT symbol_get_string(const SYMBOL* symbol, CHAR** string)
 {
   INT ret;
 
-#ifdef DEBUG
-  dstrc_enter("symbol_get_string");
-#endif
-
   if (symbol && (symbol->type == sym_string)) {
     *string = symbol->s.string;
     ret = 1;
@@ -1153,9 +928,6 @@ INT symbol_get_string(const SYMBOL* symbol, CHAR** string)
     ret = 0;
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return ret;
 }
 
@@ -1172,10 +944,6 @@ INT symbol_get_int(const SYMBOL* symbol, INT* integer)
 {
   INT ret;
 
-#ifdef DEBUG
-  dstrc_enter("symbol_get_int");
-#endif
-
   if (symbol && (symbol->type == sym_int)) {
     *integer = symbol->s.integer;
     ret = 1;
@@ -1185,9 +953,6 @@ INT symbol_get_int(const SYMBOL* symbol, INT* integer)
     ret = 0;
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return ret;
 }
 
@@ -1204,10 +969,6 @@ INT symbol_get_real(const SYMBOL* symbol, DOUBLE* real)
 {
   INT ret;
 
-#ifdef DEBUG
-  dstrc_enter("symbol_get_real");
-#endif
-
   if (symbol && (symbol->type == sym_real)) {
     *real = symbol->s.real;
     ret = 1;
@@ -1217,9 +978,6 @@ INT symbol_get_real(const SYMBOL* symbol, DOUBLE* real)
     ret = 0;
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return ret;
 }
 
@@ -1235,10 +993,6 @@ INT symbol_get_real_as_float(const SYMBOL* symbol, float* real)
 {
   INT ret;
 
-#ifdef DEBUG
-  dstrc_enter("symbol_get_real_as_float");
-#endif
-
   if (symbol && (symbol->type == sym_real)) {
     *real = (float)symbol->s.real;
     ret = 1;
@@ -1248,9 +1002,6 @@ INT symbol_get_real_as_float(const SYMBOL* symbol, float* real)
     ret = 0;
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return ret;
 }
 
@@ -1267,10 +1018,6 @@ INT symbol_get_map(const SYMBOL* symbol, MAP** map)
 {
   INT ret;
 
-#ifdef DEBUG
-  dstrc_enter("symbol_get_map");
-#endif
-
   if (symbol && (symbol->type == sym_map)) {
     *map = symbol->s.dir;
     ret = 1;
@@ -1280,9 +1027,6 @@ INT symbol_get_map(const SYMBOL* symbol, MAP** map)
     ret = 0;
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return ret;
 }
 
@@ -1298,9 +1042,6 @@ INT symbol_get_map(const SYMBOL* symbol, MAP** map)
 CHAR* symbol_string(const SYMBOL* symbol)
 {
   CHAR* ret=NULL;
-#ifdef DEBUG
-  dstrc_enter("symbol_string");
-#endif
 
   if (symbol->type == sym_string) {
     ret = symbol->s.string;
@@ -1309,9 +1050,6 @@ CHAR* symbol_string(const SYMBOL* symbol)
     dserror("Wrong symbol type %d", symbol->type);
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return ret;
 }
 
@@ -1327,9 +1065,6 @@ CHAR* symbol_string(const SYMBOL* symbol)
 INT symbol_int(const SYMBOL* symbol)
 {
   INT ret=0;
-#ifdef DEBUG
-  dstrc_enter("symbol_int");
-#endif
 
   if (symbol->type == sym_int) {
     ret = symbol->s.integer;
@@ -1338,9 +1073,6 @@ INT symbol_int(const SYMBOL* symbol)
     dserror("Wrong symbol type %d", symbol->type);
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return ret;
 }
 
@@ -1356,9 +1088,6 @@ INT symbol_int(const SYMBOL* symbol)
 DOUBLE symbol_real(const SYMBOL* symbol)
 {
   DOUBLE ret=0.0;
-#ifdef DEBUG
-  dstrc_enter("symbol_real");
-#endif
 
   if (symbol->type == sym_real) {
     ret = symbol->s.real;
@@ -1367,9 +1096,6 @@ DOUBLE symbol_real(const SYMBOL* symbol)
     dserror("Wrong symbol type %d", symbol->type);
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return ret;
 }
 
@@ -1385,9 +1111,6 @@ DOUBLE symbol_real(const SYMBOL* symbol)
 MAP* symbol_map(const SYMBOL* symbol)
 {
   MAP* ret=NULL;
-#ifdef DEBUG
-  dstrc_enter("symbol_map");
-#endif
 
   if (symbol->type == sym_map) {
     ret = symbol->s.dir;
@@ -1396,9 +1119,6 @@ MAP* symbol_map(const SYMBOL* symbol)
     dserror("Wrong symbol type %d", symbol->type);
   }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return ret;
 }
 
@@ -1422,10 +1142,6 @@ MAP* symbol_map(const SYMBOL* symbol)
 /*----------------------------------------------------------------------*/
 void symbol_print(FILE* f, CHAR* key, SYMBOL* symbol, INT indent)
 {
-#ifdef DEBUG
-  dstrc_enter("symbol_print");
-#endif
-
   dsassert(strstr(key, "\n")==NULL, "malformed key");
 
   if (symbol != NULL) {
@@ -1452,10 +1168,6 @@ void symbol_print(FILE* f, CHAR* key, SYMBOL* symbol, INT indent)
       dserror("Ups!");
     }
   }
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -1469,19 +1181,11 @@ void symbol_print(FILE* f, CHAR* key, SYMBOL* symbol, INT indent)
 /*----------------------------------------------------------------------*/
 void map_node_print(FILE* f, MAP_NODE* node, INT indent)
 {
-#ifdef DEBUG
-  dstrc_enter("map_node_print");
-#endif
-
   if (node != NULL) {
     map_node_print(f, node->lhs, indent);
     symbol_print(f, node->key, node->symbol, indent);
     map_node_print(f, node->rhs, indent);
   }
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -1496,16 +1200,8 @@ void map_node_print(FILE* f, MAP_NODE* node, INT indent)
 /*----------------------------------------------------------------------*/
 void map_print(FILE* f, MAP* map, INT indent)
 {
-#ifdef DEBUG
-  dstrc_enter("map_print");
-#endif
-
   map_node_print(f, map->root.rhs, indent);
   fprintf(f, "\n");
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -1575,10 +1271,6 @@ typedef struct _PARSER_DATA {
 /*----------------------------------------------------------------------*/
 static void init_parser_data(struct _PARSER_DATA* data, const CHAR* filename)
 {
-#ifdef DEBUG
-  dstrc_enter("init_parser_data");
-#endif
-
   data->tok = tok_none;
   data->lineno = 1;
   data->pos = 0;
@@ -1638,10 +1330,6 @@ static void init_parser_data(struct _PARSER_DATA* data, const CHAR* filename)
     }
   }
 #endif
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -1655,15 +1343,7 @@ static void init_parser_data(struct _PARSER_DATA* data, const CHAR* filename)
 /*----------------------------------------------------------------------*/
 static void destroy_parser_data(struct _PARSER_DATA* data)
 {
-#ifdef DEBUG
-  dstrc_enter("destroy_parser_data");
-#endif
-
   CCAFREE(data->file_buffer);
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -1764,10 +1444,6 @@ static void lexan(PARSER_DATA* data)
   INT line_begin = 0;
   INT t;
   INT indention = data->indent_level;
-
-#ifdef DEBUG
-  dstrc_enter("lexan");
-#endif
 
   for (;;) {
     t = getnext(data);
@@ -1948,9 +1624,6 @@ end:
   }
 #endif
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return;
 }
 
@@ -1965,10 +1638,6 @@ end:
 /*----------------------------------------------------------------------*/
 static void parse_definitions(PARSER_DATA* data, MAP* dir)
 {
-#ifdef DEBUG
-  dstrc_enter("parse_definitions");
-#endif
-
   lexan(data);
 
   while (data->tok != tok_done) {
@@ -2048,9 +1717,6 @@ static void parse_definitions(PARSER_DATA* data, MAP* dir)
   }
 
 end:
-#ifdef DEBUG
-  dstrc_exit();
-#endif
   return;
 }
 
@@ -2067,10 +1733,6 @@ end:
 void parse_control_file_serial(MAP* map, const CHAR* filename)
 {
   PARSER_DATA data;
-
-#ifdef DEBUG
-  dstrc_enter("parse_control_file_serial");
-#endif
 
   /*
    * So here we are. Before the symbol table can be filled with values
@@ -2110,10 +1772,6 @@ void parse_control_file_serial(MAP* map, const CHAR* filename)
     
   parse_definitions(&data, map);
   destroy_parser_data(&data);
-  
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }
 
 
@@ -2130,10 +1788,6 @@ void parse_control_file(MAP* map, const CHAR* filename)
 {
   PARSER_DATA data;
 
-#ifdef DEBUG
-  dstrc_enter("parse_control_file");
-#endif
-
   /*
    * So here we are. Before the symbol table can be filled with values
    * it has to be initialized. That is we expect to get an
@@ -2143,8 +1797,4 @@ void parse_control_file(MAP* map, const CHAR* filename)
   init_parser_data(&data, filename);
   parse_definitions(&data, map);
   destroy_parser_data(&data);
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
 }

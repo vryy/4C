@@ -79,9 +79,6 @@ const DOUBLE      ninth  =  0.1111111111111111111111111111;
 
       DOUBLE      C[3][3][3][3];
 
-#ifdef DEBUG
-dstrc_enter("s8_mat_ogden_uncoupled2");
-#endif
 /*----------------------------------------------------------------------*/
 /*-------------------------------------- init some local arrays to zero */
 for (i=0; i<3; i++)
@@ -310,9 +307,6 @@ C[2][1][2][1] = C[1][2][1][2] = Cdev1212+Cvol1212;
 s8_ogden_Ccart(C,C_cart,N);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of s8_mat_ogden_uncoupled2 */
 

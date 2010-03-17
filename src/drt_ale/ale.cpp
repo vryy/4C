@@ -30,6 +30,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_fluid/drt_periodicbc.H"
+#include "../headers/dynamic.h"
 
 using namespace std;
 using namespace Teuchos;

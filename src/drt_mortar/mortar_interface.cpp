@@ -807,7 +807,7 @@ void MORTAR::MortarInterface::Evaluate()
   // search algorithm
   //**********************************************************************
   //lComm()->Barrier();
-  //const double t_start = ds_cputime();
+  //const double t_start = Teuchos::Time::wallTime();
 
   if (SearchAlg()==INPAR::MORTAR::search_bfnode)          EvaluateSearch();
   else if (SearchAlg()==INPAR::MORTAR::search_bfele)      EvaluateSearchBruteForce(SearchParam());

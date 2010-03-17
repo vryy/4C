@@ -13,6 +13,7 @@ Maintainer: Michael Gee
 #ifdef D_SHELL8
 #include "../headers/standardtypes.h"
 #include "shell8.h"
+#include "../math/math_prototypes.h"
 /*----------------------------------------------------------------------*
  | st.venant-kirchhoff-material                           m.gee 6/01    |
  *----------------------------------------------------------------------*/
@@ -26,9 +27,6 @@ INT i,j,k,l;
 DOUBLE C[3][3][3][3]; /*--------------------------- constitutive tensor */
 DOUBLE l1,l2;/*----------------------------------------- lame constants */
 DOUBLE emod,nue;/*--------------------------------------- mat constants */
-#ifdef DEBUG
-dstrc_enter("s8_mat_linel");
-#endif
 /*----------------------------------------------------------------------*/
 emod = mat->youngs;
 nue  = mat->possionratio;
@@ -83,9 +81,6 @@ CC[5][3] = C[2][2][1][1];
 CC[5][4] = C[2][2][2][1];
 CC[5][5] = C[2][2][2][2];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of s8_mat_linel */
 /*----------------------------------------------------------------------*
@@ -94,9 +89,6 @@ return;
 void s8_mat_stress1(DOUBLE *stress, DOUBLE *strain, DOUBLE **C)
 {
 DOUBLE E[6];
-#ifdef DEBUG
-dstrc_enter("s8_mat_linel");
-#endif
 /*----------------------------------------------------------------------*/
 E[0] = strain[0];
 E[3] = strain[3];
@@ -106,9 +98,6 @@ E[2] = strain[2] * 2.0;
 E[4] = strain[4] * 2.0;
 math_matvecdense(stress,C,E,6,6,0,1.0);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of s8_mat_linel */
 /*----------------------------------------------------------------------*
@@ -133,9 +122,6 @@ DOUBLE l1,l2;/*----------------------------------------- lame constants */
 DOUBLE emod,nue;/*--------------------------------------- mat constants */
 DOUBLE xj;
 DOUBLE F1;
-#ifdef DEBUG
-dstrc_enter("s8_mat_neohooke");
-#endif
 /*----------------------------------------------------------------------*/
 emod = mat->youngs;
 nue  = mat->possionratio;
@@ -203,9 +189,6 @@ CC[5][3] = C[2][2][1][1];
 CC[5][4] = C[2][2][2][1];
 CC[5][5] = C[2][2][2][2];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of s8_mat_neohooke */
 

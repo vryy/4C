@@ -53,13 +53,6 @@ Maintainer: Ulrich Kuettler
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | structure of flags to control output                                 |
- | defined in out_global.c                                              |
- *----------------------------------------------------------------------*/
-extern struct _IO_FLAGS     ioflags;
-
 /*!----------------------------------------------------------------------
 \brief ranks and communicators
 
@@ -150,7 +143,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--PROBLEM TYP", *list);
   reader.ReadGidSection("--IO", *list);
   reader.ReadGidSection("--DESIGN DESCRIPTION", *list);
-  //reader.ReadGidSection("--STATIC", *list);
+  reader.ReadGidSection("--STATIC", *list);
   //reader.ReadGidSection("--EIGENVALUE ANALYSIS", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC/TIMEADAPTIVITY", *list);
@@ -227,13 +220,9 @@ void DRT::Problem::InputControl()
 
   const Teuchos::ParameterList& size = ProblemSizeParams();
 
-  genprob.nele  = size.get<int>("ELEMENTS");
-  genprob.nnode = size.get<int>("NODES");
   genprob.ndim  = size.get<int>("DIM");
-  genprob.nmat  = size.get<int>("MATERIALS");
-  genprob.numdf = size.get<int>("NUMDF");
 
-  if (genprob.nmat<=0)
+  if (size.get<int>("MATERIALS")<=0)
     dserror("No material defined!");
 
   const Teuchos::ParameterList& type = ProblemTypeParams();
@@ -244,9 +233,6 @@ void DRT::Problem::InputControl()
   // If there is a restart flag on the command line, ignore the input file.
   if ( genprob.restart==0 )
     genprob.restart        = type.get<int>("RESTART");
-
-  genprob.numfld         = type.get<int>("NUMFIELD");
-  genprob.multisc_struct = type.get<int>("MULTISC_STRUCT");
 
   // set field numbers depending on problem type and numfld
   switch (genprob.probtyp)
@@ -273,8 +259,7 @@ void DRT::Problem::InputControl()
   case prb_fluid:
   {
     genprob.numff=0;
-    if (genprob.numfld==2)
-      genprob.numaf=1;
+    genprob.numaf=1;
     break;
   }
   case prb_fluid_ale:
@@ -347,29 +332,6 @@ void DRT::Problem::InputControl()
   default:
     dserror("problem type %d unknown", genprob.probtyp);
   }
-
-  // input / output file choices
-
-  // anachronisms all around...
-  memset(&ioflags, 0, sizeof(ioflags));
-
-  const Teuchos::ParameterList& io = IOParams();
-
-  ioflags.output_out = Teuchos::getIntegralValue<int>(io,"OUTPUT_OUT");
-  ioflags.output_gid = Teuchos::getIntegralValue<int>(io,"OUTPUT_GID");
-  ioflags.output_bin = Teuchos::getIntegralValue<int>(io,"OUTPUT_BIN");
-  ioflags.struct_disp = Teuchos::getIntegralValue<int>(io,"STRUCT_DISP");
-//   ioflags.struct_stress = Teuchos::getIntegralValue<int>(io,"STRUCT_STRESS");
-  ioflags.struct_sm_disp = Teuchos::getIntegralValue<int>(io,"STRUCT_SM_DISP");
-  ioflags.fluid_sol = Teuchos::getIntegralValue<int>(io,"FLUID_SOL");
-  ioflags.fluid_stress = Teuchos::getIntegralValue<int>(io,"FLUID_STRESS");
-  ioflags.fluid_vis = Teuchos::getIntegralValue<int>(io,"FLUID_VIS");
-  ioflags.ale_disp = Teuchos::getIntegralValue<int>(io,"ALE_DISP");
-  ioflags.therm_temper = Teuchos::getIntegralValue<int>(io,"THERM_TEMPERATURE");
-//  ioflags.therm_heatflux = Teuchos::getIntegralValue<int>(io,"THERM_HEATFLUX");
-
-  ioflags.steps_per_file = io.get<int>("FILESTEPS");
-
 }
 
 
@@ -701,11 +663,6 @@ void DRT::Problem::WriteInputParameters()
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 {
-  genprob.create_dis = 0;
-  genprob.create_ale = 0;
-  genprob.maxnode    = 0;
-  genprob.nodeshift  = genprob.nnode;
-
   // read elements the first time to create graph object
   // row distribution of nodes
   // column distribution of nodes
@@ -735,8 +692,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   case prb_fsi_lung:
   {
     // allocate and input general old stuff....
-    if (genprob.numfld!=3) dserror("numfld != 3 for fsi problem");
-
     std::string distype = ptype.get<std::string>("SHAPEFCT");
 
     if(distype == "Nurbs")
@@ -808,8 +763,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   case prb_ale:
   {
     // allocate and input general old stuff....
-    if (genprob.numfld!=1) dserror("numfld != 1 for ale problem");
-
     std::string distype = ptype.get<std::string>("SHAPEFCT");
 
     if(distype == "Nurbs")
@@ -831,8 +784,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   case prb_fluid:
   {
     // allocate and input general old stuff....
-    if (genprob.numfld!=1) dserror("numfld != 1 for fluid problem");
-
     std::string distype = ptype.get<std::string>("SHAPEFCT");
 
     if(distype == "Nurbs")
@@ -883,8 +834,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   case prb_freesurf:
   {
     // allocate and input general old stuff....
-    if (genprob.numfld!=2) dserror("numfld != 2 for fluid problem on ale");
-
     std::string distype = ptype.get<std::string>("SHAPEFCT");
 
     if(distype == "Nurbs")
@@ -917,8 +866,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   case prb_tsi:
   {
     // allocate and input general old stuff....
-    if (genprob.numfld!=2) dserror("numfld != 2 for tsi problem");
-
   //std::string distype = ptype.get<std::string>("SHAPEFCT");
 
     structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
@@ -938,8 +885,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   {
     {
       // allocate and input general old stuff....
-      if (genprob.numfld!=1) dserror("numfld != 1 for thermal problem");
-
       //std::string distype = ptype.get<std::string>("SHAPEFCT");
 
       thermdis = Teuchos::rcp(new DRT::Discretization("thermo",reader.Comm()));
@@ -955,8 +900,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   case prb_structure:
   {
     // allocate and input general old stuff....
-    if (genprob.numfld!=1) dserror("numfld != 1 for structural problem");
-
     std::string distype = ptype.get<std::string>("SHAPEFCT");
 
     if(distype == "Nurbs")
@@ -978,8 +921,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   case prb_struct_multi:
   {
     // allocate and input general old stuff....
-
-    if (genprob.numfld!=1) dserror("numfld != 1 for structural multi-scale problem");
 
     // read macroscale fields from main inputfile
 
@@ -1080,8 +1021,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   case prb_loma:
   {
     // allocate and input general old stuff....
-    if (genprob.numfld!=2) dserror("numfld != 2 for low-Mach-number flow problem");
-
     // create empty discretizations
     fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
     AddDis(genprob.numff, fluiddis);
@@ -1100,8 +1039,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   case prb_elch:
   {
     // allocate and input general old stuff....
-    if (genprob.numfld>3) dserror("numfld != 2 for Electrochemistry problem");
-
     // create empty discretizations
     fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
     AddDis(genprob.numff, fluiddis);
@@ -1124,8 +1061,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   case prb_combust:
   {
     // allocate and input general old stuff....
-    if (genprob.numfld!=2) dserror("numfld != 2 for combustion problem");
-
     // create empty discretizations
     fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
     AddDis(genprob.numff, fluiddis);
@@ -1143,8 +1078,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   case prb_art_net: // _1D_ARTERY_
   {
     // allocate and input general old stuff....
-    if (genprob.numfld!=1) dserror("numfld != 1 for arterial network problem");
-
     // create empty discretizations
     arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
     AddDis(genprob.numartf, arterydis);
@@ -1159,8 +1092,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   case prb_red_airways: // _reduced D airways
   {
     // allocate and input general old stuff....
-    if (genprob.numfld!=1) dserror("numfld != 1 for reduced dimensional airways problem");
-
     // create empty discretizations
     airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
     AddDis(genprob.numawf, airwaydis);

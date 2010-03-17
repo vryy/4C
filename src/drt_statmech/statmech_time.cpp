@@ -12,6 +12,8 @@ Maintainer: Christian Cyron
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <Teuchos_Time.hpp>
+
 #include "statmech_time.H"
 #include "../drt_statmech/statmech_manager.H"
 #include "../drt_inpar/inpar_statmech.H"
@@ -166,7 +168,7 @@ void StatMechTime::Integrate()
       {
         //assuming that iterations will converge
         isconverged_ = 1;
-        
+
         /*multivector for stochastic forces evaluated by each element; the numbers of vectors in the multivector equals the maximal
          *number of random numbers required by any element in the discretization per time step; therefore this multivector is suitable
          *for synchrinisation of these random numbers in parallel computing*/
@@ -185,7 +187,7 @@ void StatMechTime::Integrate()
           PTC(randomnumbers);
         else
           FullNewton(randomnumbers);
-        
+
         /*if iterations have not converged a new trial requires setting all intern element variables to
          * status at the beginning of this time step*/
         if(isconverged_ == 0)
@@ -194,11 +196,11 @@ void StatMechTime::Integrate()
           p.set("action","calc_struct_reset_istep");
           discret_.Evaluate(p,null,null,null,null,null);
         }
-            
+
       }
       while(isconverged_ == 0);
 
-        const double t_admin = ds_cputime();
+        const double t_admin = Teuchos::Time::wallTime();
 
     UpdateandOutput();
 
@@ -209,7 +211,7 @@ void StatMechTime::Integrate()
     statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
 
     if(!discret_.Comm().MyPID())
-    cout << "\n***\ntotal administration time: " << ds_cputime() - t_admin<< " seconds\n***\n";
+    cout << "\n***\ntotal administration time: " << Teuchos::Time::wallTime() - t_admin<< " seconds\n***\n";
 
     if (time>=maxtime) break;
   }
@@ -705,7 +707,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
   double sumsolver     = 0;
   double sumevaluation = 0;
   double sumptc = 0;
-  const double tbegin = ds_cputime();
+  const double tbegin = Teuchos::Time::wallTime();
 
   if (!errfile) printerr = false;
   //------------------------------ turn adaptive solver tolerance on/off
@@ -754,7 +756,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
     //the following part was especially introduced for Brownian dynamics
     {
-      const double t_ptc = ds_cputime();
+      const double t_ptc = Teuchos::Time::wallTime();
 
       // create the parameters for the discretization
       ParameterList p;
@@ -780,8 +782,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
 
       discret_.Evaluate(p,stiff_,null,null,null,null);
-
-      sumptc += ds_cputime() - t_ptc;
+      sumptc += Teuchos::Time::wallTime() - t_ptc;
 
 
 
@@ -793,7 +794,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
 
     //--------------------------------------------------- solve for disi
-    const double t_solver = ds_cputime();
+    const double t_solver = Teuchos::Time::wallTime();
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (isadapttol && numiter)
     {
@@ -804,7 +805,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
     solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
 
-    sumsolver += ds_cputime() - t_solver;
+    sumsolver += Teuchos::Time::wallTime() - t_solver;
 
 
 
@@ -867,11 +868,11 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
       //discret_.SetState("velocity",velm_); // not used at the moment
       fint_->PutScalar(0.0);  // initialise internal force vector
 
-      const double t_evaluate = ds_cputime();
+      const double t_evaluate = Teuchos::Time::wallTime();
 
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
 
-      sumevaluation += ds_cputime() - t_evaluate;
+      sumevaluation += Teuchos::Time::wallTime() - t_evaluate;
 
       discret_.ClearState();
 
@@ -983,7 +984,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
   params_.set<int>("num iterations",numiter);
 
   if(!discret_.Comm().MyPID())
-  std::cout << "\n***\nevaluation time: " << sumevaluation<< " seconds\nptc time: "<< sumptc <<" seconds\nsolver time: "<< sumsolver <<" seconds\ntotal solution time: "<<ds_cputime() - tbegin<<" seconds\n***\n";
+  std::cout << "\n***\nevaluation time: " << sumevaluation<< " seconds\nptc time: "<< sumptc <<" seconds\nsolver time: "<< sumsolver <<" seconds\ntotal solution time: "<<Teuchos::Time::wallTime() - tbegin<<" seconds\n***\n";
 
   return;
 } // StatMechTime::PTC()

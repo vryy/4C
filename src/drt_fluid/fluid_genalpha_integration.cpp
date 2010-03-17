@@ -595,13 +595,13 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     tm5_ref_ = rcp(new TimeMonitor(*timesolver_));
 
     // get cpu time
-    tcpu=ds_cputime();
+    tcpu=Teuchos::Time::wallTime();
 
     this->GenAlphaCalcIncrement(badestnlnnorm);
 
     // end time measurement for application of dirichlet conditions
     tm5_ref_=null;
-    dtsolve_=ds_cputime()-tcpu;
+    dtsolve_=Teuchos::Time::wallTime()-tcpu;
 
     // start time measurement for nonlinear update
     tm9_ref_ = rcp(new TimeMonitor(*timenonlinup_));
@@ -1220,7 +1220,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   }
 
   // get cpu time
-  double tcpu=ds_cputime();
+  double tcpu=Teuchos::Time::wallTime();
 
   // -------------------------------------------------------------------
   // call elements to calculate residual and matrix
@@ -1656,7 +1656,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   tm4_ref_=null;
 
   // end measurement element call
-  dtele_=ds_cputime()-tcpu;
+  dtele_=Teuchos::Time::wallTime()-tcpu;
 
   return;
 } // FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix
@@ -2414,7 +2414,7 @@ void FLD::FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
   TEUCHOS_FUNC_TIME_MONITOR("FLD::FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs");
 
   // time measurement
-  double tcpu=ds_cputime();
+  double tcpu=Teuchos::Time::wallTime();
 
   // perform filtering and computation of Cs
   {
@@ -2422,7 +2422,7 @@ void FLD::FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
     DynSmag_->ApplyFilterForDynamicComputationOfCs(velaf_,dirichtoggle);
   }
 
-  dtfilter_=ds_cputime()-tcpu;
+  dtfilter_=Teuchos::Time::wallTime()-tcpu;
 
   return;
 }

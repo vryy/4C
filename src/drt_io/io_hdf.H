@@ -38,7 +38,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_lib/standardtypes_cpp.H"
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>
@@ -46,9 +46,9 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_SerialComm.h>
 
 
-#include "Epetra_Comm.h"
-#include "Epetra_Map.h"
-#include "Epetra_Vector.h"
+#include <Epetra_Comm.h>
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
 
 namespace IO
 {

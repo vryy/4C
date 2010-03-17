@@ -41,6 +41,7 @@ FLUID_VIS         No
 ALE_DISP          No
 FILESTEPS         1000
 ------------------------------------------------------------STATIC
+//
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa

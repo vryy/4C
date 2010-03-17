@@ -4,90 +4,14 @@
 OBJS_MAIN     = src/global_full/main_ccarat.o
 #               global_full
 OBJS_GLOBAL   = src/global_full/global_control.o \
-                src/global_full/global_inp_control.o \
-                src/global_full/global_cal_control.o \
-                src/global_full/global_init_control.o \
-                src/global_full/global_ass_dof.o \
-                src/global_full/global_ass_dof_ndis.o \
-                src/global_full/global_dyn_control.o \
-                src/global_full/global_timecurve.o \
-                src/global_full/global_node_find.o \
-                src/global_full/global_dofconnect.o \
-                src/global_full/global_monitoring.o \
-                src/global_full/global_locsys.o \
-                src/global_full/global_result_test.o \
-                src/global_full/global_calelm.o \
-                src/global_full/global_calelm_fast.o \
-                src/global_full/global_calrhs.o \
-                src/global_full/global_restart_control.o \
-                src/global_full/global_open_files.o \
-                src/global_full/global_check_max.o \
-                src/global_full/global_divide_fast.o \
-                src/global_full/global_subdivide.o \
-                src/global_full/global_subdivide_process.o
+                src/global_full/global_cal_control.o
 OBJS_GLOBAL_CPP =
 #               structure
-OBJS_STRUCTURE= src/structure/stru_dyn_nln.o \
-                src/structure/stru_dyn_nln_expl.o \
-                src/structure/stru_dyn_service.o \
-                src/structure/stru_gemm_nln.o \
-                src/structure/stru_static_lin.o \
-                src/structure/stru_static_nln.o \
-                src/structure/stru_static_service.o
+OBJS_STRUCTURE= 
 #               solver
-OBJS_SOLVER   = src/solver/solver_control.o \
-                src/solver/solver_service.o \
-                src/solver/solver_service2.o \
-                src/solver/solver_service3.o \
-                src/solver/solver_add_data.o \
-                src/solver/solver_add_data_fast.o \
-                src/solver/solver_add_mlib.o \
-                src/solver/solver_sparse_parcsr.o \
-                src/solver/solver_sparse_dense.o \
-                src/solver/solver_sparse_bdcsr.o \
-                src/solver/solver_sparse_ccf.o \
-                src/solver/solver_sparse_msr.o \
-                src/solver/solver_sparse_rcptr.o \
-                src/solver/solver_sparse_skyline.o \
-                src/solver/solver_sparse_spooles.o \
-                src/solver/solver_sparse_ucchb.o \
-                src/solver/solver_mlib.o \
-                src/solver/solver_aztec.o \
-                src/solver/solver_hypre.o \
-                src/solver/solver_superlu.o \
-                src/solver/solver_lapack.o \
-                src/solver/solver_mumps.o \
-                src/solver/solver_umfpack.o \
-                src/solver/solver_colsol.o \
-                src/solver/solver_copy_matrix.o \
-                src/solver/solver_spooles.o \
-                src/solver/solver_mlpcg.o \
-                src/solver/solver_mlpcg2.o \
-                src/solver/solver_mlpcg3.o \
-                src/solver/solver_mlpcg4.o \
-                src/solver/solver_mlpcg_smo.o \
-                src/solver/solver_mlpcg_spooles.o \
-                src/solver/solver_mlpcg_matmat.o \
-                src/solver/solver_mlpcg_agg.o \
-                src/solver/solver_mlpcg_csr.o \
-                src/solver/solver_mlpcg_overlap.o \
-                src/solver/solver_mlpcg_fish.o \
-                src/solver/solver_mlpcg_test.o \
-                src/solver/solver_oll.o \
-                src/solver/solver_oll_aztec.o \
-                src/solver/solver_oll_spooles.o \
-                src/solver/solver_oll_add.o \
-                src/solver/solver_oll_service.o \
-                src/solver/solver_oll_service2.o \
-                src/solver/solver_mask_matrices.o \
-                src/solver/solver_mask_mds.o \
-                src/solver/solver_mask_service.o \
-                src/solver/solver_sparse.o
+OBJS_SOLVER   = 
 #               solver (c++)
-OBJS_SOLVER_CPP = src/solver/solver_trilinos_service.o \
-                  src/solver/solver_trilinos_control.o \
-                  src/solver/solver_trilinos_ml.o \
-                  src/solver/solver_trilinos_spooles.o
+OBJS_SOLVER_CPP = 
 #               discretization (c++)
 OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_discret_fillcomplete.o \
@@ -439,36 +363,10 @@ OBJS_DRT_ADAPT= src/drt_adapter/adapter_algorithmbase.o \
                 src/drt_adapter/adapter_fluid_projection.o
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \
-                src/pss_full/pss_ds.o \
-                src/pss_full/pss_fr.o \
-                src/pss_full/pss_pss.o \
-                src/pss_full/pss_perf.o \
-                src/pss_full/pss_visual.o \
                 src/pss_full/pss_table.o \
-                src/pss_full/pss_table_iter.o \
-                src/pss_full/pss_set.o \
-                src/pss_full/pss_parser.o
+                src/pss_full/pss_table_iter.o
 #                input_full
-OBJS_INPUT    = src/input_full/input_control_global.o \
-                src/input_full/input_ctr_head.o \
-                src/input_full/input_sol.o \
-                src/input_full/input_design.o \
-                src/input_full/input_design_top.o \
-                src/input_full/input_mesh.o \
-                src/input_full/input_topology.o \
-                src/input_full/input_curves.o \
-                src/input_full/input_material.o \
-                src/input_full/input_surface_energy.o \
-                src/input_full/input_monitor.o \
-                src/input_full/input_locsys.o \
-                src/input_full/inherit_insidedesign.o \
-                src/input_full/inherit_design_dis.o \
-                src/input_full/inherit_design_ele.o \
-                src/input_full/input_conditions.o \
-                src/input_full/inp_cal_dirich_fac.o \
-                src/input_full/input_funct.o \
-                src/input_full/input_resultdescr.o \
-                src/input_full/input_submesh.o
+OBJS_INPUT    = 
 # c++ part of input
 OBJS_INPUT_CPP= src/input_full/input_parameterlist.o
 # -------------------------------------------------- drt version of fluid3
@@ -507,52 +405,11 @@ OBJS_DRT_F3_LIB = src/drt_f3/fluid3.o \
                   src/drt_fluid/time_integration_element.o
 OBJS_DRT_F3   =
 #------------------------------------------------------------------ fluid3
-OBJS_FLUID3   = src/fluid3/f3_calele.o \
-                src/fluid3/f3_calelesize.o \
-                src/fluid3/f3_calfuncderiv.o \
-                src/fluid3/f3_calgalmat.o \
-                src/fluid3/f3_calheightfunc_sep.o \
-                src/fluid3/f3_calint.o \
-                src/fluid3/f3_caliterrhs.o \
-                src/fluid3/f3_calmatvec_usfem.o \
-                src/fluid3/f3_calservice.o \
-                src/fluid3/f3_calstabmat.o \
-                src/fluid3/f3_calstabpar.o \
-                src/fluid3/f3_calstress.o \
-                src/fluid3/f3_caltau.o \
-                src/fluid3/f3_inpele.o \
-                src/fluid3/f3_int_usfem.o \
-                src/fluid3/f3_intg.o \
-                src/fluid3/f3_massrhs.o \
-                src/fluid3/f3_main.o \
-                src/fluid3/f3_liftdrag.o \
-                src/fluid3/f3_out.o \
-                src/fluid3/f3_restart.o \
-                src/fluid3/f3_calextrhs.o
+OBJS_FLUID3   = 
 #               fluid3_fast
-OBJS_F3F      = src/fluid3_fast/f3f_calele.o \
-                src/fluid3_fast/f3f_calint.o \
-                src/fluid3_fast/f3f_calinta.o \
-                src/fluid3_fast/f3f_calservice.o \
-                src/fluid3_fast/f3f_calstabpar.o \
-                src/fluid3_fast/f3f_caltau.o \
-                src/fluid3_fast/f3f_main.o \
-                src/fluid3_fast/f3f_restart.o \
-                src/fluid3_fast/f3f_calstress.o \
-                src/fluid3_fast/f3f_calerror.o \
-                src/fluid3_fast/f3f_int_usfem.o \
-                src/fluid3_fast/f3f_liftdrag.o \
-                src/fluid3_fast/f3f_out.o
+OBJS_F3F      = 
 #               fluid3_fast (fortran)
-OBJS_F3F_F    = src/fluid3_fast/f3f_calextrhs.o \
-                src/fluid3_fast/f3f_calfuncderiv.o \
-                src/fluid3_fast/f3f_calgalmat.o \
-                src/fluid3_fast/f3f_caliterrhs.o \
-                src/fluid3_fast/f3f_interror.o \
-                src/fluid3_fast/f3f_calservice_2.o \
-                src/fluid3_fast/f3f_calstabmat.o \
-                src/fluid3_fast/f3f_calmatvec_usfem.o \
-                src/fluid3_fast/f3f_massrhs.o
+OBJS_F3F_F    = 
 # -------------------------------------------------- drt version of shell8
 OBJS_DRT_S8_LIB = src/drt_s8/shell8.o \
                   src/drt_s8/shell8_line.o
@@ -595,74 +452,14 @@ OBJS_DRT_TO2_LIB   = src/drt_torsion2/torsion2.o \
                 src/drt_torsion2/torsion2_evaluate.o
 OBJS_DRT_TO2   =
 #-------------------------------------------------- old version of shell8
-OBJS_SHELL8   = src/shell8/s8_main.o \
-                src/shell8/s8_restart.o \
-                src/shell8/s8_inpele.o \
-                src/shell8/s8_intg.o \
-                src/shell8/s8_jaco.o \
-                src/shell8/s8_a3.o \
-                src/shell8/s8_loccoordnode.o \
-                src/shell8/s8_funcderiv.o \
-                src/shell8/s8_static_ke.o \
-                src/shell8/s8_static_keug.o \
-                src/shell8/s8_static_mass.o \
-                src/shell8/s8_cal_dyn.o \
-                src/shell8/s8_stress.o \
-                src/shell8/s8_tfte.o \
-                src/shell8/s8_tforce.o \
-                src/shell8/s8_tvkg.o \
-                src/shell8/s8_load1.o \
-                src/shell8/s8_tmtr.o \
-                src/shell8/s8_mtr.o \
-                src/shell8/s8_tvmr.o \
-                src/shell8/s8_tvbo.o \
-                src/shell8/s8_tvhe_linear.o \
-                src/shell8/s8_tvhe.o \
-                src/shell8/s8_tvma.o \
-                src/shell8/s8_tmat.o \
-                src/shell8/s8_eps.o \
-                src/shell8/s8_intforce.o \
-                src/shell8/s8_mat_linel.o \
-                src/shell8/s8_mat_ogden.o \
+OBJS_SHELL8   = src/shell8/s8_mat_ogden.o \
                 src/shell8/s8_mat_ogden2.o \
                 src/shell8/s8_mat_ogden3.o \
-                src/shell8/s8_mat_viscoushyper.o \
-                src/shell8/s8_btdb.o \
-                src/shell8/s8_eas.o \
-                src/shell8/s8_ans.o \
-                src/shell8/s8_vthv.o \
-                src/shell8/s8_xint.o \
-                src/shell8/s8_init.o \
+                src/shell8/s8_tmat.o \
                 src/shell8/s8_mattransform.o \
-                src/shell8/s8_contact1.o \
-                src/shell8/s8_contact2.o \
-                src/shell8/s8_contact_nearestnode.o \
-                src/shell8/s8_contact_project.o \
-                src/shell8/s8_contact_gap.o \
-                src/shell8/s8_contact_history.o \
-                src/shell8/s8_contact_init.o
+                src/shell8/s8_mat_linel.o
 #               ale
-OBJS_ALE      = src/ale3/ale_call_stiff.o \
-                src/ale3/ale_dirich.o \
-                src/ale3/ale_dyn_control.o \
-                src/ale3/ale_rhs.o \
-                src/ale3/ale_service.o \
-                src/ale2/ale2_call_stiff.o \
-                src/ale2/ale2_bop.o \
-                src/ale2/ale2_funcderiv.o \
-                src/ale2/ale2_hourglass.o \
-                src/ale2/ale2_inpele.o \
-                src/ale2/ale2_intg.o \
-                src/ale2/ale2_jaco.o \
-                src/ale2/ale2_elm_geometry.o \
-                src/ale2/ale2_mesh_quality.o \
-                src/ale2/ale2_main.o \
-                src/ale2/ale2_mat_linel.o \
-                src/ale2/ale2_static_ke.o \
-                src/ale3/ale3_service.o \
-                src/ale3/ale3_inpele.o \
-                src/ale3/ale3_main.o \
-                src/ale3/ale3_static_ke.o
+OBJS_ALE      = 
 OBJS_DRT_ALE_LIB = src/drt_ale3/ale3.o \
                 src/drt_ale3/ale3_nurbs.o \
                 src/drt_ale3/ale3_surface.o \
@@ -677,9 +474,7 @@ OBJS_DRT_ALE_LIB = src/drt_ale3/ale3.o \
                 src/drt_ale2/ale2_line_evaluate.o
 OBJS_DRT_ALE   =
 #               parallel
-OBJS_PAR      = src/parallel/par_initmetis.o \
-                src/parallel/par_make_comm.o \
-                src/parallel/par_assignmesh.o
+OBJS_PAR      = 
 #------------------------------------------------ drt solids
 OBJS_SOH8     =
 OBJS_SOH8_LIB = src/drt_so3/so_hex8.o \
@@ -745,55 +540,13 @@ OBJS_SOH8_LIB = src/drt_so3/so_hex8.o \
                 src/drt_so3/so_hex8p1j1_input.o \
                 src/drt_so3/so_hex8p1j1_evaluate.o
 #--------------------------------------------------------- brick1
-OBJS_BRICK1   = src/brick1/c1_out.o \
-                src/brick1/c1_gid.o \
-                src/brick1/c1_bop.o \
-                src/brick1/c1_call_mat.o \
-                src/brick1/c1_call_stiff.o \
-                src/brick1/c1_funcderiv.o \
-                src/brick1/c1_inpele.o \
-                src/brick1/c1_intg.o \
-                src/brick1/c1_jaco.o \
-                src/brick1/c1_main.o \
-                src/brick1/c1_mat_linel.o \
-                src/brick1/c1_cint.o \
-                src/brick1/c1_cal_deriv.o \
-                src/brick1/c1_mat_neohook.o \
-                src/brick1/c1_mat_plast_mises.o \
-                src/brick1/c1_mat_plast_mises_ls.o \
-                src/brick1/c1_mat_hyper_polyconvex.o \
-                src/brick1/c1_mat_ogden.o \
-                src/brick1/c1_mat_itskov.o \
-                src/brick1/c1_mat_viscoushyper.o \
-                src/brick1/c1_cal_eps.o \
-                src/brick1/c1_init.o \
-                src/brick1/c1_eas_service.o \
-                src/brick1/c1_cstr.o \
-                src/brick1/c1_load.o \
-                src/brick1/c1_tsi.o \
-                src/brick1/c1_surf.o \
-                src/brick1/c1_locsys.o
+OBJS_BRICK1   = 
 #               math
-OBJS_MATH     = src/math/sort_find.o \
-                src/math/math1.o \
-                src/math/geometry.o \
-                src/math/arcline.o
+OBJS_MATH     = src/math/math1.o
 #               output
-OBJS_OUTPUT   = src/output/out_global.o \
-                src/output/out_gid_msh.o \
-                src/output/out_gid_sol.o \
-                src/output/out_monitor.o \
-                src/output/out_gid_solfsi.o \
-                src/output/out_gid_solssi.o \
-                src/output/out_gid_soldyn.o \
-                src/output/out_checkfilesize.o \
-                src/output/out_plt.o
+OBJS_OUTPUT   = 
 #                io
-OBJS_IO       = src/io/io_singlefile.o \
-                src/io/io_restart.o \
-                src/io/io_result.o \
-                src/io/io_packing.o \
-                src/io/io_elements.o
+OBJS_IO       = 
 #
 OBJS_DRT_IO_LIB = src/drt_io/io.o \
                 src/drt_io/io_hdf.o \
@@ -812,67 +565,7 @@ OBJS_DRT_W1_LIB = src/drt_w1/wall1.o \
                 src/drt_w1/wall1_line_evaluate.o
 OBJS_DRT_W1   =
 #---------------------------------------------------------- wall1
-OBJS_WALL1    = src/wall1/w1_bop.o \
-                src/wall1/w1_b_barop.o \
-                src/wall1/w1_cal_deriv.o \
-                src/wall1/w1_cal_eps.o \
-                src/wall1/w1_cal_stress.o \
-                src/wall1/w1_call_mat.o \
-                src/wall1/w1_call_stiff.o \
-                src/wall1/w1_funcderiv.o \
-                src/wall1/w1_init.o \
-                src/wall1/w1_inpele.o \
-                src/wall1/w1_intg.o \
-                src/wall1/w1_final.o \
-                src/wall1/w1_jaco.o \
-                src/wall1/w1_main.o \
-                src/wall1/w1_mat_linel.o \
-                src/wall1/w1_mat_plast_dp.o \
-                src/wall1/w1_mat_plast_epc.o \
-                src/wall1/w1_mat_plast_epc_serv.o \
-                src/wall1/w1_mat_plast_epc3D.o \
-                src/wall1/w1_mat_plast_mises.o \
-                src/wall1/w1_mat_plast_mises3D.o \
-                src/wall1/w1_mat_plast_serv.o \
-                src/wall1/w1_mat_serv.o \
-                src/wall1/w1_static_ke.o \
-                src/wall1/w1_static_keug.o \
-                src/wall1/w1_boplin.o \
-                src/wall1/w1_defgrad.o \
-                src/wall1/w1_call_matgeononl.o \
-                src/wall1/w1_mat_linelgeonon.o \
-                src/wall1/w1_cal_kg.o \
-                src/wall1/w1_cal_keu.o \
-                src/wall1/w1_cal_fint.o \
-                src/wall1/w1_cal_fext.o \
-                src/wall1/w1_mat_trans.o \
-                src/wall1/w1_cal_trans.o \
-                src/wall1/w1_incompmode.o \
-                src/wall1/w1_locsys.o \
-                src/wall1/w1_math.o \
-                src/wall1/w1_restart.o \
-                src/wall1/wallcontact_init.o \
-                src/wall1/wall_contact_detection.o \
-                src/wall1/wall_contact_update.o \
-                src/wall1/wall_contact_set.o \
-                src/wall1/wall_contact_flag.o \
-                src/wall1/wall_contact_augmentation.o \
-                src/wall1/wall_contact_his_update.o \
-                src/wall1/wall_contact_detection_em.o \
-                src/wall1/wall_contact_mid.o \
-                src/wall1/wall_contact_augmentation_em.o\
-                src/wall1/wall_contact_update_em.o \
-                src/wall1/wall_contact_update_em_a.o \
-                src/wall1/wall_contact_his_update_em.o \
-                src/wall1/w1_history.o \
-                src/wall1/w1_kinetic_energy.o \
-                src/wall1/w1_strain_energy.o \
-                src/wall1/w1_update_history.o \
-                src/wall1/w1_mat_dam_mp.o \
-                src/wall1/w1_mat_damage.o \
-                src/wall1/w1_dam_service.o \
-                src/wall1/w1_tri_service.o \
-                src/wall1/w1_tsi.o
+OBJS_WALL1    = 
 #------------------------------------ fluid2 (drt version)
 OBJS_DRT_F2_LIB = src/drt_f2/fluid2_evaluate.o \
                 src/drt_f2/fluid2_input.o \
@@ -887,241 +580,31 @@ OBJS_DRT_F2_LIB = src/drt_f2/fluid2_evaluate.o \
                 src/drt_f2/fluid2_th.o
 OBJS_DRT_F2 =
 #------------------------------------------------- fluid2
-OBJS_FLUID2   = src/fluid2/f2_calcurvature.o \
-                src/fluid2/f2_calelesize.o \
-                src/fluid2/f2_calele.o \
-                src/fluid2/f2_calele_tu.o \
-                src/fluid2/f2_calele_tu_1.o \
-                src/fluid2/f2_calelesize_tu.o \
-                src/fluid2/f2_calelesize_tu_1.o \
-                src/fluid2/f2_calextrhs.o \
-                src/fluid2/f2_calfuncderiv.o \
-                src/fluid2/f2_calheightfunc_sep.o \
-                src/fluid2/f2_calheightfuncmat.o \
-                src/fluid2/f2_calheightfuncrhs.o \
-                src/fluid2/f2_calint.o \
-                src/fluid2/f2_calint_tu.o \
-                src/fluid2/f2_calint_tu_1.o \
-                src/fluid2/f2_caliterrhs.o \
-                src/fluid2/f2_caliterrhs_tu.o \
-                src/fluid2/f2_caliterrhs_tu_1.o \
-                src/fluid2/f2_calgalmat.o \
-                src/fluid2/f2_calgalmat_tu.o \
-                src/fluid2/f2_calgalmat_tu_1.o \
-                src/fluid2/f2_calmatvec_usfem.o \
-                src/fluid2/f2_calservice.o \
-                src/fluid2/f2_calservice_tu.o \
-                src/fluid2/f2_calservice_tu_1.o \
-                src/fluid2/f2_calstabpar.o \
-                src/fluid2/f2_calstabpar_tu.o \
-                src/fluid2/f2_calstabpar_tu_1.o \
-                src/fluid2/f2_calstabmat.o \
-                src/fluid2/f2_calstabmat_tu.o \
-                src/fluid2/f2_calstabmat_tu_1.o \
-                src/fluid2/f2_calstress.o \
-                src/fluid2/f2_calsurfrhs.o \
-                src/fluid2/f2_caltau.o \
-                src/fluid2/f2_caltimerhs_tu.o \
-                src/fluid2/f2_caltimerhs_tu_1.o \
-                src/fluid2/f2_caltimerhspro_tu.o \
-                src/fluid2/f2_caltimerhspro_tu_1.o \
-                src/fluid2/f2_caltuvisc.o \
-                src/fluid2/f2_calvort.o \
-                src/fluid2/f2_int_usfem.o \
-                src/fluid2/f2_inpele.o \
-                src/fluid2/f2_inpele_tu.o \
-                src/fluid2/f2_intg.o \
-                src/fluid2/f2_main.o \
-                src/fluid2/f2_main_tu.o \
-                src/fluid2/f2_massrhs.o \
-                src/fluid2/f2_calliftdrag.o \
-                src/fluid2/f2_calmat_gfs.o \
-                src/fluid2/f2_ass_dof_ndis_tu.o \
-                src/fluid2/f2_restart.o
+OBJS_FLUID2   = 
 #               fluid2_TDS
-OBJS_F2_TDS   = src/fluid2_TDS/f2_int_tds.o \
-                src/fluid2_TDS/f2_calmat_tds.o\
-                src/fluid2_TDS/f2_update_tds.o\
-                src/fluid2_TDS/f2_caltau_tds.o\
-                src/fluid2_TDS/f2_calmat_incr_acc_gen_alpha_tds.o\
-                src/fluid2_TDS/f2_calservice_for_TDS.o\
-                src/fluid2_TDS/f2_calrhs_incr_acc_gen_alpha_tds.o
+OBJS_F2_TDS   = 
 #               fluid_full
-OBJS_FLUID    = src/fluid_full/fluid_adapt_service.o \
-                src/fluid_full/fluid_curvature.o \
-                src/fluid_full/fluid_consistbf.o \
-                src/fluid_full/fluid_dyn.o \
-                src/fluid_full/fluid_dirich.o \
-                src/fluid_full/fluid_dirich_tu.o \
-                src/fluid_full/fluid_dirich_tu_1.o \
-                src/fluid_full/fluid_freesurf.o \
-                src/fluid_full/fluid_heightfunc.o \
-                src/fluid_full/fluid_imp_semimp.o \
-                src/fluid_full/fluid_liftdrag.o \
-                src/fluid_full/fluid_pm.o \
-                src/fluid_full/fluid_pm_cont.o \
-                src/fluid_full/fluid_pm_laplace.o \
-                src/fluid_full/fluid_incr_acc_gen_alpha.o \
-                src/fluid_full/fluid_imp_semimp_tu.o\
-                src/fluid_full/fluid_imp_semimp_tu_1.o\
-                src/fluid_full/fluid_mf.o \
-                src/fluid_full/fluid_mfcoupling.o \
-                src/fluid_full/fluid_mlservice.o \
-                src/fluid_full/fluid_pm_service.o \
-                src/fluid_full/fluid_pseudofsi.o \
-                src/fluid_full/fluid_stationary.o \
-                src/fluid_full/fluid_service.o \
-                src/fluid_full/fluid_normal.o \
-                src/fluid_full/fluid_locsys.o \
-                src/fluid_full/fluid_service_tu.o\
-                src/fluid_full/fluid_service_tu_1.o\
-                src/fluid_full/inp_fluid_start_data.o
+OBJS_FLUID    = 
 #               fsi_full
-OBJS_FSI      = src/fsi_full/fsi_aitken.o \
-                src/fsi_full/fsi_ale.o \
-                src/fsi_full/fsi_ale_lin.o \
-                src/fsi_full/fsi_ale_nln.o \
-                src/fsi_full/fsi_ale_2step.o \
-                src/fsi_full/fsi_ale_spring.o \
-                src/fsi_full/fsi_ale_laplace.o \
-                src/fsi_full/fsi_ale_LAS.o \
-                src/fsi_full/fsi_coupforce.o \
-                src/fsi_full/fsi_coupling.o \
-                src/fsi_full/fsi_coupling_oct.o \
-                src/fsi_full/fsi_dyn.o \
-                src/fsi_full/fsi_energy.o \
-                src/fsi_full/fsi_fluid.o \
-                src/fsi_full/fsi_fluid_imp.o \
-                src/fsi_full/fsi_fluid_pm_cont.o \
-                src/fsi_full/fsi_fluid_pm_discont.o \
-                src/fsi_full/fsi_fluid_pm_laplace.o \
-                src/fsi_full/fsi_gradient.o \
-                src/fsi_full/fsi_relax_intdisp.o \
-                src/fsi_full/fsi_service.o \
-                src/fsi_full/fsi_mortar.o \
-                src/fsi_full/fsi_struct.o \
-                src/fsi_full/fsi_newton.o
+OBJS_FSI      = 
 #
-OBJS_FSI_CPP  = src/fsi_full/fsi_dyn_nox.o
+OBJS_FSI_CPP  = 
 #                shell9
-OBJS_SHELL9   = src/shell9/s9_main.o \
-                src/shell9/s9_a3.o \
-                src/shell9/s9_ans.o \
-                src/shell9/s9_btdb.o \
-                src/shell9/s9_Ccacu_sym.o\
-                src/shell9/s9_Ccacu_unsym.o\
-                src/shell9/s9_cal_dyn.o\
-                src/shell9/s9_call_mat.o \
-                src/shell9/s9_cdia.o \
-                src/shell9/s9_eas.o \
-                src/shell9/s9_eps.o \
-                src/shell9/s9_EStrans.o \
-                src/shell9/s9_funcderiv.o \
-                src/shell9/s9_init.o   \
-                src/shell9/s9_inpele.o \
-                src/shell9/s9_intforce.o \
-                src/shell9/s9_intg.o \
-                src/shell9/s9_jaco.o \
-                src/shell9/s9_load1.o \
-                src/shell9/s9_load_surf.o \
-                src/shell9/s9_loccoordnode.o \
-                src/shell9/s9_mat_linel.o \
-                src/shell9/s9_mat_plast_hoff.o \
-                src/shell9/s9_mat_plast_mises.o \
-                src/shell9/s9_mat_plast_dp.o \
-                src/shell9/s9_mat_plast_epc.o \
-                src/shell9/s9_math.o\
-                src/shell9/s9_out.o\
-                src/shell9/s9_out_unsmo.o\
-                src/shell9/s9_restart.o \
-                src/shell9/s9_static_keug.o \
-                src/shell9/s9_stress.o \
-                src/shell9/s9_tforce.o \
-                src/shell9/s9_tfte.o \
-                src/shell9/s9_tmtr.o \
-                src/shell9/s9_tvbo.o \
-                src/shell9/s9_tvhe.o \
-                src/shell9/s9_tvkg.o \
-                src/shell9/s9_tvma.o \
-                src/shell9/s9_tvmr.o \
-                src/shell9/s9_vthv.o \
-                src/shell9/s9_xint.o
+OBJS_SHELL9   = 
 #               beam3
-OBJS_BEAM3    = src/beam3/b3_bop.o \
-                src/beam3/b3_cal_ele.o \
-                src/beam3/b3_cal_fext.o \
-                src/beam3/b3_cal_force.o \
-                src/beam3/b3_cal_stiff.o \
-                src/beam3/b3_call_mat.o \
-                src/beam3/b3_dirich.o \
-                src/beam3/b3_funcderiv.o \
-                src/beam3/b3_init.o \
-                src/beam3/b3_inpele.o \
-                src/beam3/b3_intg.o \
-                src/beam3/b3_jaco.o \
-                src/beam3/b3_main.o \
-                src/beam3/b3_mat_linel.o \
-                src/beam3/b3_mat_plast_mises.o \
-                src/beam3/b3_restart.o
+OBJS_BEAM3    = 
 #               fluid2 multilevel
-OBJS_F2ML     = src/fluid2ml/f2_mlbubmat.o \
-                src/fluid2ml/f2_mlele.o \
-                src/fluid2ml/f2_mlelesize.o \
-                src/fluid2ml/f2_mlgalmat.o \
-                src/fluid2ml/f2_mlint.o \
-                src/fluid2ml/f2_mlservice.o \
-                src/fluid2ml/f2_mlstabmat.o \
-                src/fluid2ml/f2_mlstabpar.o \
-                src/fluid2ml/f2_mlsubmesh.o \
-                src/fluid2ml/f2_mltimerhs.o \
-                src/fluid2ml/f2_mlvmmrhs.o
+OBJS_F2ML     = 
 #               fluid3 multilevel
-OBJS_F3ML     = src/fluid3ml/f3_mlbubmat.o \
-                src/fluid3ml/f3_mlele.o \
-                src/fluid3ml/f3_mlelesize.o \
-                src/fluid3ml/f3_mlgalmat.o \
-                src/fluid3ml/f3_mlint.o \
-                src/fluid3ml/f3_mlservice.o \
-                src/fluid3ml/f3_mlstabmat.o \
-                src/fluid3ml/f3_mlstabpar.o \
-                src/fluid3ml/f3_mlsubmesh.o \
-                src/fluid3ml/f3_mltimerhs.o \
-                src/fluid3ml/f3_mlvmmrhs.o
+OBJS_F3ML     = 
 #                stucture 2D ml
-OBJS_S2ML     = src/struct2_ml/s2ml_static_ke.o \
-                src/struct2_ml/s2ml_cal_smelm.o \
-                src/struct2_ml/s2ml_service.o \
-                src/struct2_ml/s2ml_stiff_wall.o \
-                src/struct2_ml/s2ml_strain.o \
-                src/struct2_ml/s2ml_stiff_interf.o
+OBJS_S2ML     = 
 #                optimization
-OBJS_OPT      = src/optimization/opt_cal_main.o \
-                src/optimization/input_optdata.o \
-                src/optimization/opt_init.o \
-                src/optimization/opt_cal_static_control.o \
-                src/optimization/opt_cal_nlnstatic_control.o \
-                src/optimization/opt_cal_eigfrq_struct.o \
-                src/optimization/opt_c1_cint.o \
-                src/optimization/opt_w1_cint.o \
-                src/optimization/opt_fsd.o \
-                src/optimization/opt_func.o \
-                src/optimization/opt_linking.o \
-                src/optimization/opt_vsa.o \
-                src/optimization/opt_smo.o \
-                src/optimization/opt_g_out.o
+OBJS_OPT      = 
 #                axishell
-OBJS_AXISHELL = src/axishell/saxi_service.o \
-                src/axishell/saxi_inpele.o \
-                src/axishell/saxi_main.o \
-                src/axishell/saxi_static_ke.o
+OBJS_AXISHELL = 
 #               materials
-OBJS_MAT      = src/materials/mat_el_iso.o \
-                src/materials/mat_el_orth.o \
-                src/materials/mat_pl_hoff.o \
-                src/materials/mat_pl_mises_lin.o \
-                src/materials/mat_pl_epc.o \
-                src/materials/mat_pl_dp_lin.o \
-                src/materials/mat_el_ogden.o
+OBJS_MAT      = 
 #               materials for new discretization
 OBJS_DRT_MAT_LIB = src/drt_mat/matpar_bundle.o \
                 src/drt_mat/matpar_material.o \
@@ -1201,166 +684,35 @@ OBJS_DRT_POTENTIAL =  src/drt_potential/drt_potential_container.o \
                       src/drt_potential/drt_potential_manager.o
                       
 #               structure-structure interaction
-OBJS_SSI      = src/ssi_full/ssi_dyn.o \
-                src/ssi_full/ssi_coupling.o \
-                src/ssi_full/ssi_aitken.o \
-                src/ssi_full/ssi_struct.o \
-                src/ssi_full/ssi_service.o
+OBJS_SSI      = 
 #
-OBJS_F2PRO    = src/fluid2_pro/f2pro_inpele.o \
-                src/fluid2_pro/f2pro_calele.o \
-                src/fluid2_pro/f2pro_calint.o \
-                src/fluid2_pro/f2pro_calservice.o \
-                src/fluid2_pro/f2pro_main.o
+OBJS_F2PRO    = 
 #
-OBJS_F3PRO    = src/fluid3_pro/f3pro_inpele.o \
-                src/fluid3_pro/f3pro_calele.o \
-                src/fluid3_pro/f3pro_calint.o \
-                src/fluid3_pro/f3pro_calservice.o \
-                src/fluid3_pro/f3pro_main.o
+OBJS_F3PRO    = 
 #
-OBJS_F2IS     = src/fluid2_is/f2is_main.o \
-                src/fluid2_is/f2is_calele.o \
-                src/fluid2_is/f2is_calint.o \
-                src/fluid2_is/f2is_service.o \
-                src/fluid2_is/f2is_inpele.o
+OBJS_F2IS     = 
 #
-OBJS_F3IS     = src/fluid3_is/f3is_main.o \
-                src/fluid3_is/f3is_calele.o \
-                src/fluid3_is/f3is_calint.o \
-                src/fluid3_is/f3is_service.o \
-                src/fluid3_is/f3is_inpele.o
+OBJS_F3IS     = 
 #               interf
-OBJS_IF       = src/interf/if_inpele.o \
-                src/interf/if_main.o \
-                src/interf/if_init.o \
-                src/interf/if_intg.o \
-                src/interf/if_static_ke.o \
-                src/interf/if_bop.o \
-                src/interf/if_mat.o \
-                src/interf/if_cal_deltau.o \
-                src/interf/if_stiff_fint.o \
-                src/interf/if_stress.o \
-                src/interf/if_mat_dyn.o \
-                src/interf/if_service.o \
-                src/interf/if_funcderiv.o \
-                src/interf/if_restart.o
+OBJS_IF       = 
 #               gradient enhanced wall
-OBJS_WALLGE   = src/wallge/wge_setdof.o \
-                src/wallge/wge_inpele.o \
-                src/wallge/wge_main.o \
-                src/wallge/wge_init.o \
-                src/wallge/wge_intg.o \
-                src/wallge/wge_static_ke.o \
-                src/wallge/wge_bope.o \
-                src/wallge/wge_call_mat.o \
-                src/wallge/wge_mat_damage.o \
-                src/wallge/wge_strain.o \
-                src/wallge/wge_damage_serv.o \
-                src/wallge/wge_stiff.o \
-                src/wallge/wge_stress.o \
-                src/wallge/wge_fext.o
+OBJS_WALLGE   = 
 #               thermal structure interaction
-OBJS_TSI      = src/tsi_full/tsi_coupling.o \
-                src/tsi_full/tsi_dyn.o \
-                src/tsi_full/tsi_fehlbg4.o \
-                src/tsi_full/tsi_init.o \
-                src/tsi_full/tsi_st_cendif.o \
-                src/tsi_full/tsi_st_fehlbg.o \
-                src/tsi_full/tsi_st_genalp.o \
-                src/tsi_full/tsi_st_genalp_sub.o \
-                src/tsi_full/tsi_th_ost_st_genalp.o \
-                src/tsi_full/tsi_th_ost_sub.o \
-                src/tsi_full/tsi_th_presc_st_genalp.o \
-                src/tsi_full/tsi_th_stat.o \
-                src/tsi_full/tsi_th_stat_sub.o
+OBJS_TSI      = 
 #               planar thermal
-OBJS_THERM2   = src/therm2/th2_bop.o \
-                src/therm2/th2_cfg.o \
-                src/therm2/th2_gid.o \
-                src/therm2/th2_hflux.o \
-                src/therm2/th2_inp.o \
-                src/therm2/th2_intg.o \
-                src/therm2/th2_jaco.o \
-                src/therm2/th2_lin.o \
-                src/therm2/th2_load.o \
-                src/therm2/th2_main.o \
-                src/therm2/th2_mat.o \
-                src/therm2/th2_matlin.o \
-                src/therm2/th2_shape.o \
-                src/therm2/th2_temper.o  \
-                src/therm2/th2_out.o
+OBJS_THERM2   = 
 #               spatial thermal
-OBJS_THERM3   = src/therm3/th3_bop.o \
-                src/therm3/th3_cfg.o \
-                src/therm3/th3_gid.o \
-                src/therm3/th3_hflux.o \
-                src/therm3/th3_inp.o \
-                src/therm3/th3_intg.o \
-                src/therm3/th3_lin.o \
-                src/therm3/th3_load.o \
-                src/therm3/th3_load_heatconv.o \
-                src/therm3/th3_main.o \
-                src/therm3/th3_mat.o \
-                src/therm3/th3_matlin.o \
-                src/therm3/th3_metr.o \
-                src/therm3/th3_out.o \
-                src/therm3/th3_shape.o \
-                src/therm3/th3_temper.o
+OBJS_THERM3   = 
 #               spatial structural
-OBJS_SOLID3   = src/solid3/so3_bop.o \
-                src/solid3/so3_cfg.o \
-                src/solid3/so3_def.o \
-                src/solid3/so3_gid.o \
-                src/solid3/so3_inp.o \
-                src/solid3/so3_int.o \
-                src/solid3/so3_intg.o \
-                src/solid3/so3_iv.o \
-                src/solid3/so3_locsys.o \
-                src/solid3/so3_load.o \
-                src/solid3/so3_load_line.o \
-                src/solid3/so3_load_surf.o \
-                src/solid3/so3_load_vol.o \
-                src/solid3/so3_main.o \
-                src/solid3/so3_mat.o \
-                src/solid3/so3_mat_robinson.o \
-                src/solid3/so3_mat_robinson_be.o \
-                src/solid3/so3_mat_robinson_fb4.o \
-                src/solid3/so3_mat_stvenant.o \
-                src/solid3/so3_mv6.o \
-                src/solid3/so3_metr.o \
-                src/solid3/so3_out.o \
-                src/solid3/so3_shape.o \
-                src/solid3/so3_strain.o \
-                src/solid3/so3_stress.o \
-                src/solid3/so3_tns3.o \
-                src/solid3/so3_tsi.o
+OBJS_SOLID3   = 
 #               visual
-OBJS_VISUAL   = src/visual/visual_global.o \
-                src/visual/visual_readflaviares.o \
-                src/visual/visual_vis2.o \
-                src/visual/visual_vis3.o
+OBJS_VISUAL   = 
 #               fortran parallel and sequentiell on HPUX10.20 / Linux / Sun
-OBJS_FORTRAN  = src/fortran/colsol.o \
-                src/fortran/mpcg_futils.o \
-                src/fortran/vis2_qat2v2.o \
-                src/fortran/hex_fserv.o \
-                src/fortran/s8_fserv.o \
-                src/fortran/opt_ffsd.o \
-                src/fortran/eigen_subspace.o \
-                src/solver/solver_add_msr_fast.o
+OBJS_FORTRAN  = src/fortran/s8_fserv.o \
+                src/fortran/hex_fserv.o
 #               fortran parallel on HPUX11.0
-#OBJS_FORTRAN   = src/fortran/mumps_interface.o \
-#                 src/fortran/bi_f77_get_constants.o \
-#                 src/fortran/colsol.o \
-#                 src/fortran/mpcg_futils.o \
-#                 src/fortran/hex_fserv.o \
-#                 src/fortran/s8_fserv.o \
-#                 src/fortran/opt_ffsd.o \
-#                 src/fortran/eigen_subspace.o
-#
 #               C PLUS PLUS
-OBJS_NURBS_CPP  = src/nurbs/nurbs_wrappers.o
+OBJS_NURBS_CPP  = 
 
 #                post_common
 OBJS_POST_COMMON = src/post_common/post_am.o \
@@ -1535,4 +887,3 @@ OBJS_DRT_BELE3_LIB = src/drt_bele3/bele3.o \
                   src/drt_bele3/vele3_surface.o \
                   src/drt_bele3/vele3_surface_evaluate.o \
                   src/drt_bele3/vele3_evaluate.o
-   

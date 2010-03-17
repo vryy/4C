@@ -592,7 +592,7 @@ void FLD::FluidProjectionMethod::ProjectionSolve()
 {
 #ifdef DEBUG
     // grobe Zeitmessung
-    const double tcpu=ds_cputime();
+    const double tcpu=Teuchos::Time::wallTime();
 #endif
 
     // Weiche ob semiimplicit oder implicit solve
@@ -603,7 +603,7 @@ void FLD::FluidProjectionMethod::ProjectionSolve()
         ProjectionSolveSemiImplicit();
 
 #ifdef DEBUG
-    const double tcpu2=ds_cputime();
+    const double tcpu2=Teuchos::Time::wallTime();
     //(*log_) << tcpu2-tcpu << endl;
     cout << "comput. time projection solve: " << tcpu2-tcpu << " s" << endl;
     //log_->flush();

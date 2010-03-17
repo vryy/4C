@@ -87,14 +87,6 @@ void ntainp_ccadiscret()
   /* input of fields */
   problem->ReadFields(reader);
 
-  // read dynamic control data
-  if (genprob.timetyp==time_dynamic)
-  {
-    // nothing to do! We do not use alldyn anymore!
-  }
-  // read static control data
-  else inpctrstat();
-
   // read all types of geometry related conditions (e.g. boundary conditions)
   // Also read time and space functions and local coord systems
   problem->ReadConditions(reader);
@@ -102,8 +94,6 @@ void ntainp_ccadiscret()
   // read all knot information for isogeometric analysis
   // and add it to the (derived) nurbs discretization
   problem->ReadKnots(reader);
-
-  // the one and only Fillcomplete should be here (reader.Complete()) gee 09/08
 
   // all reading is done at this point!
 

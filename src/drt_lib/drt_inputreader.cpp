@@ -33,7 +33,7 @@ Maintainer: Ulrich Kuettler
   It holds all file pointers and some variables needed for the FRSYSTEM
   </pre>
  *----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
+struct _FILES  allfiles;
 
 
 /*----------------------------------------------------------------------*/
@@ -115,18 +115,6 @@ ifstream::pos_type DatFileReader::ExcludedSectionPosition(string section) const
 /*----------------------------------------------------------------------*/
 void DatFileReader::Activate()
 {
-  // Publish (some) internal data to the old ccarat reading system
-  // Note that these links remain intact even when the reader goes
-  // away.
-
-  allfiles.numrows = numrows_;
-  allfiles.input_file_hook = &inputfile_[0];
-  allfiles.input_file = &lines_[0];
-  //allfiles.inputfile_name = const_cast<char*>(filename_.c_str());
-
-  // set fr-system to begin of input_file
-  allfiles.actrow = 0;
-  allfiles.actplace = &(allfiles.input_file[0][0]);
 }
 
 

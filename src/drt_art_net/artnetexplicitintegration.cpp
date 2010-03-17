@@ -362,7 +362,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<ParameterList> CouplingTo3DP
   // -------------------------------------------------------------------
 
   // get cpu time
-  //  const double tcpuele = ds_cputime();
+  //  const double tcpuele = Teuchos::Time::wallTime();
 
   {
     // time measurement: element
@@ -476,7 +476,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<ParameterList> CouplingTo3DP
 
   //-------solve for total new velocities and pressures
   // get cpu time
-  const double tcpusolve = ds_cputime();
+  const double tcpusolve = Teuchos::Time::wallTime();
   {
     // time measurement: solver
     TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
@@ -498,7 +498,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<ParameterList> CouplingTo3DP
 
 
   // end time measurement for solver
-  dtsolve_ = ds_cputime() - tcpusolve;
+  dtsolve_ = Teuchos::Time::wallTime() - tcpusolve;
 
   if (myrank_ == 0)
     cout << "te=" << dtele_ << ", ts=" << dtsolve_ << "\n\n" ;
@@ -527,7 +527,7 @@ void ART::ArtNetExplicitTimeInt::AssembleMatAndRHS()
   TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
 
   // get cpu time
-  //  const double tcpu=ds_cputime();
+  //  const double tcpu=Teuchos::Time::wallTime();
 
 } // ArtNetExplicitTimeInt::AssembleMatAndRHS
 

@@ -757,7 +757,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     //------------------------------------------------solve
     {
       // get cpu time
-      const double tcpusolve=ds_cputime();
+      const double tcpusolve=Teuchos::Time::wallTime();
 
       // time measurement: call linear solver
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + call linear solver");
@@ -794,7 +794,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       solver_->ResetTolerance();
 
       // end time measurement for solver
-      dtsolve_=ds_cputime()-tcpusolve;
+      dtsolve_=Teuchos::Time::wallTime()-tcpusolve;
     }
 
     //------------------------------------------------ update solution vector
@@ -1039,12 +1039,12 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + solver calls");
 
       // get cpu time
-      const double tcpusolve=ds_cputime();
+      const double tcpusolve=Teuchos::Time::wallTime();
 
       solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,true);
 
       // end time measurement for solver
-      dtsolve_=ds_cputime()-tcpusolve;
+      dtsolve_=Teuchos::Time::wallTime()-tcpusolve;
     }
 
     //------------------------------------------------ update solution vector
@@ -1083,12 +1083,12 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + solver calls");
 
       // get cpu time
-      const double tcpusolve=ds_cputime();
+      const double tcpusolve=Teuchos::Time::wallTime();
 
       solver_->Solve(sysmat_->EpetraOperator(),phinp_,residual_,true,true);
 
       // end time measurement for solver
-      dtsolve_=ds_cputime()-tcpusolve;
+      dtsolve_=Teuchos::Time::wallTime()-tcpusolve;
     }
 
     if (myrank_==0)
@@ -1108,7 +1108,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + element calls");
 
   // get cpu time
-  const double tcpuele = ds_cputime();
+  const double tcpuele = Teuchos::Time::wallTime();
 
   // zero out matrix entries
   sysmat_->Zero();
@@ -1172,7 +1172,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   sysmat_->Complete();
 
   // end time measurement for element
-  dtele_=ds_cputime()-tcpuele;
+  dtele_=Teuchos::Time::wallTime()-tcpuele;
 
   return;
 } // ScaTraTimIntImpl::AssembleMatAndRHS

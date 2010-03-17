@@ -882,7 +882,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
 
       // get cpu time
-      const double tcpu=ds_cputime();
+      const double tcpu=Teuchos::Time::wallTime();
 
       sysmat_->Zero();
 
@@ -894,7 +894,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
       // update impedance boundary condition
       impedancebc_->UpdateResidual(residual_);
-      
+
 #ifdef D_ARTNET
       // update the 3D-to-reduced_D coupling data
       coupled3D_redDbc_->UpdateResidual(residual_);
@@ -914,9 +914,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         if (dynamic_smagorinsky_)
         {
           // time measurement
-          const double tcpufilter=ds_cputime();
+          const double tcpufilter=Teuchos::Time::wallTime();
           this->ApplyFilterForDynamicComputationOfCs();
-          dtfilter_=ds_cputime()-tcpufilter;
+          dtfilter_=Teuchos::Time::wallTime()-tcpufilter;
         }
       }
 
@@ -1114,7 +1114,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       }
 
       // end time measurement for element
-      dtele_=ds_cputime()-tcpu;
+      dtele_=Teuchos::Time::wallTime()-tcpu;
     }
 
     // blank residual DOFs which are on Dirichlet BC
@@ -1265,7 +1265,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
 
       // get cpu time
-      const double tcpusolve=ds_cputime();
+      const double tcpusolve=Teuchos::Time::wallTime();
 
       // do adaptive linear solver tolerance (not in first solve)
       if (isadapttol && itnum>1)
@@ -1388,7 +1388,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       solver_.ResetTolerance();
 
       // end time measurement for solver
-      dtsolve_ = ds_cputime()-tcpusolve;
+      dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
     }
 
     // -------------------------------------------------------------------
@@ -1563,7 +1563,7 @@ void FLD::FluidImplicitTimeInt::LinearSolve()
   // -------------------------------------------------------------------
 
   // get cpu time
-  const double tcpuele = ds_cputime();
+  const double tcpuele = Teuchos::Time::wallTime();
   {
     // time measurement: element
     TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
@@ -1603,7 +1603,7 @@ void FLD::FluidImplicitTimeInt::LinearSolve()
     sysmat_->Complete();
   }
   // end time measurement for element
-  const double dtele_ = ds_cputime() - tcpuele;
+  const double dtele_ = Teuchos::Time::wallTime() - tcpuele;
 
   //--------- Apply dirichlet boundary conditions to system of equations
   //          residual velocities (and pressures) are supposed to be zero at
@@ -1619,7 +1619,7 @@ void FLD::FluidImplicitTimeInt::LinearSolve()
 
   //-------solve for total new velocities and pressures
   // get cpu time
-  const double tcpusolve = ds_cputime();
+  const double tcpusolve = Teuchos::Time::wallTime();
   {
     // time measurement: solver
     TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
@@ -1630,7 +1630,7 @@ void FLD::FluidImplicitTimeInt::LinearSolve()
     solver_.Solve(sysmat_->EpetraOperator(),velnp_,rhs_,true,true);
   }
   // end time measurement for solver
-  dtsolve_ = ds_cputime() - tcpusolve;
+  dtsolve_ = Teuchos::Time::wallTime() - tcpusolve;
 
   if (myrank_ == 0)
     cout << "te=" << dtele_ << ", ts=" << dtsolve_ << "\n\n" ;
@@ -1779,7 +1779,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
     {
       TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
 
-      const double tcpusolve=ds_cputime();
+      const double tcpusolve=Teuchos::Time::wallTime();
 
       if (isadapttol and itnum>1)
       {
@@ -1901,7 +1901,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
 
       solver_.ResetTolerance();
 
-      dtsolve_ = ds_cputime()-tcpusolve;
+      dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
     }
 
     // -------------------------------------------------------------------
@@ -2063,7 +2063,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
 
   // get cpu time
-  const double tcpu=ds_cputime();
+  const double tcpu=Teuchos::Time::wallTime();
 
   sysmat_->Zero();
 
@@ -2084,9 +2084,9 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   if (dynamic_smagorinsky_)
   {
     // time measurement
-    const double tcpufilter=ds_cputime();
+    const double tcpufilter=Teuchos::Time::wallTime();
     this->ApplyFilterForDynamicComputationOfCs();
-    dtfilter_=ds_cputime()-tcpufilter;
+    dtfilter_=Teuchos::Time::wallTime()-tcpufilter;
   }
 
   // set general element parameters
@@ -2204,7 +2204,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   sysmat_->Complete();
 
   // end time measurement for element
-  dtele_=ds_cputime()-tcpu;
+  dtele_=Teuchos::Time::wallTime()-tcpu;
 
 } // FluidImplicitTimeInt::AssembleMatAndRHS
 

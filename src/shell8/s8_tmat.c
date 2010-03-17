@@ -112,9 +112,6 @@ return;
  *----------------------------------------------------------------------*/
 void s8_getdensity(MATERIAL   *mat, DOUBLE *density)
 {
-#ifdef DEBUG
-dstrc_enter("s8_getdensity");
-#endif
 /*----------------------------------------------------------------------*/
 /*------------------------------------------------ switch material type */
 switch(mat->mattyp)
@@ -136,9 +133,6 @@ default:
 break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of s8_getdensity */
 #endif

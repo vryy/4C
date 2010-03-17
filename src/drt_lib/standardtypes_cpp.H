@@ -14,14 +14,17 @@
 #ifndef STANDARDTYPES_CPP_H
 #define STANDARDTYPES_CPP_H
 
-// This is just here to get the c++ mpi header, otherwise it would
-// use the c version included inside standardtypes.h
+/* This is just here to get the c++ mpi header, otherwise it would */
+/* use the c version included inside standardtypes.h */
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
+#ifdef __cplusplus
 extern "C" /* stuff which is c and is accessed from c++ */
 {
+#endif
 #include "../headers/standardtypes.h"
+#ifdef __cplusplus
 }
-
+#endif
 #endif

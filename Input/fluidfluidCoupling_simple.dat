@@ -43,7 +43,8 @@ THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  No
 ------------------------------------------------------------STATIC
-LINEAR
+//LINEAR
+//
 -----------------------------------------------EIGENVALUE ANALYSIS
 -------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No

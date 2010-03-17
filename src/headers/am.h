@@ -10,6 +10,9 @@ Maintainer: Malte Neumann
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef AM_H
+#define AM_H
+
 /*!
 \addtogroup AMSYSTEM
 *//*! @{ (documentation module open)*/
@@ -82,3 +85,5 @@ struct _TRACEARRAY  *mytracer;         /*!< bugtracing information */
 #endif
 } ARRAY4D;
 /*! @} (documentation module close)*/
+
+#endif

@@ -27,9 +27,6 @@ void math_matvecdense(DOUBLE  *r,
 {
 INT i,k;
 DOUBLE sum;
-#ifdef DEBUG
-dstrc_enter("math_matvecdense");
-#endif
 /*----------------------------------------------------------------------*/
 if (init==0)
 {
@@ -42,9 +39,6 @@ for (i=0; i<ni; i++)
    r[i] += sum*factor;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of math_matvecdense */
 

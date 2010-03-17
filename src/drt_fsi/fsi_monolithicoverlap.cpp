@@ -1,5 +1,7 @@
 #ifdef CCADISCRET
 
+#include "../drt_lib/standardtypes_cpp.H"
+
 #include "fsi_monolithicoverlap.H"
 #include "fsi_debugwriter.H"
 #include "fsi_statustest.H"

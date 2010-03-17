@@ -46,8 +46,6 @@ extern struct _GENPROB  genprob;
 /*----------------------------------------------------------------------*/
 void ntaini_ccadiscret(int argc, char** argv)
 {
-  ds_cputime_init();
-
   int myrank = 0;
 
 #ifdef PARALLEL
@@ -81,9 +79,8 @@ void ntaini_ccadiscret(int argc, char** argv)
     exit(1);
   }
 
-  allfiles.outlenght = strlen(argv[2]);
   allfiles.outputfile_kenner = argv[2];
-  if (allfiles.outlenght>=100)
+  if (strlen(argv[2])>=100)
   {
     if (myrank==0)
     {

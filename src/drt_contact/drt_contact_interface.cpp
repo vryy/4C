@@ -763,7 +763,7 @@ void CONTACT::Interface::Evaluate()
   // contact search algorithm
   //**********************************************************************
   //lComm()->Barrier();
-  //const double t_start = ds_cputime();
+  //const double t_start = Teuchos::Time::wallTime();
 
   if (SearchAlg()==INPAR::MORTAR::search_bfnode)          EvaluateContactSearch();
   else if (SearchAlg()==INPAR::MORTAR::search_bfele)      EvaluateContactSearchBruteForce(SearchParam());
@@ -771,7 +771,7 @@ void CONTACT::Interface::Evaluate()
   else                                                    dserror("ERROR: Invalid contact search algorithm");
 
   //lComm()->Barrier();
-  //const double t_end = ds_cputime()-t_start;
+  //const double t_end = Teuchos::Time::wallTime()-t_start;
   //if (lComm()->MyPID()==0)
   //  cout << "Search Time (overall): " << t_end << " seconds\n";
 
