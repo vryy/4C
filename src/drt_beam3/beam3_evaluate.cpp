@@ -1436,7 +1436,7 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
 
 
   double basisdamp   = (20e-2)*PI*3; // in Actin3D_XXX input files with(!) stochastic torsional moments:: (20e-2)*PI for A = 1.9e-8, (20e-2)*PI*3 for A = 1.9e-6; for input of Thomas Knyrim without(!) stochastic torsional moments: (20e-2)*PI*20
-  double anisofactor = 10; //10 for A = 1.9e-8 and A = 1.9e-6  
+  double anisofactor = 50; //10 for A = 1.9e-8 and A = 1.9e-6  
    
   
   //Get the applied integrationpoints for underintegration
@@ -1457,8 +1457,8 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
     
     //computing angle increment from current position in comparison with last converged position for damping
     LINALG::Matrix<4,1> deltaQ;
-    LINALG::Matrix<3,1> deltatheta;
     quaternionproduct(inversequaternion(Qconv_[gp]),Qnew_[gp],deltaQ);
+    LINALG::Matrix<3,1> deltatheta;  
     quaterniontoangle(deltaQ,deltatheta);
   
     //computing special matrix for anisotropic damping
@@ -1469,18 +1469,14 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
       for(int j = 0; j<3; j++)
         Theta(k,j) = Tconv(k,0)*Tconv(j,0);
 
-    //inverse exponential map
-    LINALG::Matrix<3,3> Hinverse;
-    Hinverse = Hinv(deltatheta);
-
     //isotropic artificial stiffness
     LINALG::Matrix<3,3> artstiff;
-    artstiff = Hinverse;
+    artstiff = Hinv(deltatheta);
     artstiff.Scale(basisdamp);
 
     //anisotropic artificial stiffness
     LINALG::Matrix<3,3> auxstiff;
-    auxstiff.Multiply(Theta,Hinverse);
+    auxstiff.Multiply(Theta,Hinv(deltatheta));
     auxstiff.Scale(anisofactor*basisdamp);
     artstiff += auxstiff;
 
@@ -1493,8 +1489,7 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
           for (int l=0; l<3; l++)
             elemat1(i*6+3+k,j*6+3+l) += artstiff(k,l)*funct(i)*funct(j)*wgt*jacobi_[gp];
   }
-  
-    
+ 
   return;
 } //DRT::ELEMENTS::Beam3::EvaluatePTC
 
@@ -1512,7 +1507,7 @@ inline void DRT::ELEMENTS::Beam3::MyDampingConstants(ParameterList& params,LINAL
   /*damping coefficient of rigid straight rod spinning around its own axis according to Howard, p. 107, table 6.2;
    *as this coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
   double rsquare = pow((4*Iyy_/PI),0.5);
-  double artificial = 60*16*2; 
+  double artificial = 1920;//1920;  //1920 not bad for standard Actin3D_10.dat files; for 40 elements also 1 seems to work really well
   gamma(2) = 4*PI*params.get<double>("ETA",0.0)*rsquare*artificial;
   
 
