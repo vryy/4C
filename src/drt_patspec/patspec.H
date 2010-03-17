@@ -22,6 +22,7 @@ namespace PATSPEC
 
   void PatientSpecificGeometry(DRT::Discretization& dis);
 
+  void ComputeEleNormalizedLumenDistance(DRT::Discretization& dis);
 
 
 }
