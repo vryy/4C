@@ -630,7 +630,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   p   |    0       0       0       1
   */
 
-  else if (ele->Type() == DRT::Element::element_fluid3 or ele->Type() == DRT::Element::element_xfluid3 or ele->Type() == DRT::Element::element_combust3 or ele->Type() == DRT::Element::element_sosh8p8)
+  else if (ele->Type() == DRT::Element::element_fluid3 || 
+           ele->Type() == DRT::Element::element_xfluid3 || 
+           ele->Type() == DRT::Element::element_combust3 || 
+           ele->Type() == DRT::Element::element_sosh8p8)
   {
     for (int i=0; i<NumMyRowNodes(); ++i)
     {
@@ -667,8 +670,32 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
           mode[2][lid] = 0.0;
           mode[3][lid] = 1.0;
         break;
+        case 4:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = 0.0;
+        break;
+        case 5:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = 0.0;
+        break;
+        case 6:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = 0.0;
+        break;
+        case 7:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = 0.0;
+        break;
         default:
-          dserror("Only dofs 0 - 3 supported");
+          dserror("Only dofs 0 - 7 supported");
         break;
         } // switch (j)
       } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
