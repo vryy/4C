@@ -57,6 +57,25 @@ public:
   //!\brief read restart information
   virtual void ReadRestart(int step);
 
+  /*!
+  \brief adjusted DBC evaluation for periodic case
+
+  \param params					 a parameter list
+  \date 03/10
+   */
+  void EvaluateDirichletPeriodic(ParameterList& params);
+
+  /*!
+  \brief Determine Dirichlet condition at given time and apply its
+         values to a system vector
+
+  \param usetime
+  \param time            Evaluation time
+  \date 03/10
+  */
+  void DoDirichletConditionPeriodic(const bool                  usetime,
+																		const double                time);
+
 
 protected:
 
@@ -66,16 +85,34 @@ protected:
 
   //! \brief manager for administration of statistical mechanics stuff
   RCP<StatMechManager> statmechmanager_;
-  
+
   //! \brief maximal number of random numbers to be generated in each time step per element
   int maxrandomnumbersperglobalelement_;
-  
+
   //! \brief zero if in current time step the iterative solution of the nonlinear system of equations has not converged
   int   isconverged_;
-  
+
   //! \brief how often a time step had to be restarted with new random numbers due to unconverged solution of nonlinear system of equations
   int   unconvergedsteps_;
-  
+
+private:
+	// variables needed for EvaluateDirichletPeriodic()
+	bool 												isinit_;
+	// a time curve
+	DRT::UTILS::TimeCurve&		 	timecurve_;
+	// vector used to signal when to store and when to delete a new reference position for DBC evaluation
+	RCP<Epetra_Vector> 					dbcswitch_;
+	// use of a vector of static size is okay as long as no nodes are added afterwards
+	RCP<Epetra_Vector> 					drefnew_;
+	// a Condition
+	DRT::Condition*							dirichlet_;
+	// direction of oscillation
+	int 												oscdir_;
+	// amplitude of oscillation
+	double											amp_;
+	// curve number
+	int 												curvenumber_;
+
 }; // class StatMechTime
 
 #endif  // #ifndef STATMECH_H
