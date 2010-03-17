@@ -172,7 +172,8 @@ public:
     Art3DToRedCouplingCond,
     WindkesselOptimCond,
     RedAirwayPrescribedCond,
-    RedLungAcinusCond
+    RedLungAcinusCond,
+    ILTthickness
   };
 
   /*!
