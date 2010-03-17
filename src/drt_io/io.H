@@ -21,6 +21,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_lib/drt_discret.H"
 #include "io_hdf.H"
+#include "../drt_lib/standardtypes_cpp.H"
 
 extern "C" {
 #include "../pss_full/pss_table.h"
