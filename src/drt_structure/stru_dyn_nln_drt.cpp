@@ -106,7 +106,7 @@ void caldyn_drt()
 void dyn_nlnstructural_drt()
 {
 
-#if 0
+#if 1
   // the adapter expects a couple of variables that do not exist in the StructuralDynamicParams()
   // list so rename them here to the expected name
   int upres = DRT::Problem::Instance()->StructuralDynamicParams().get<int>("RESEVRYDISP");
