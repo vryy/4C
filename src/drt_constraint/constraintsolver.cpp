@@ -17,10 +17,12 @@ Maintainer: Thomas Kloeppel
 #include "iostream"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
+#include "../drt_lib/linalg_blocksparsematrix.H"
 #include "Teuchos_ParameterList.hpp"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_inpar/inpar_structure.H"
-
+#include <stdio.h>
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 11/07|
@@ -83,28 +85,15 @@ void UTILS::ConstraintSolver::Setup
   // data.
   // Thus we need this exception handler to getting along.
 
-  // different setup for #algo_
-  INPAR::STR::ConSolveAlgo algochoice;
   try
   {
     // for StruGenAlpha
-    algochoice = params.get<INPAR::STR::ConSolveAlgo>("UZAWAALGO");
+    algochoice_ = params.get<INPAR::STR::ConSolveAlgo>("UZAWAALGO");
   }
   catch (const Teuchos::Exceptions::InvalidParameterType)
   {
     // for STR::TimIntImpl
-    algochoice = getIntegralValue<INPAR::STR::ConSolveAlgo>(params,"UZAWAALGO");
-  }
-  switch (algochoice)
-  {
-  case (INPAR::STR::consolve_iterative):
-    algo_ = UTILS::ConstraintSolver::iterative;
-  break;
-  case (INPAR::STR::consolve_direct):
-    algo_ = UTILS::ConstraintSolver::direct;
-  break;
-  default:
-    dserror("Unknown type of constraint solver algorithm. Can be 'iterative' or 'direct'!");
+    algochoice_ = getIntegralValue<INPAR::STR::ConSolveAlgo>(params,"UZAWAALGO");
   }
 
   // different setup for #adapttol_
@@ -122,9 +111,9 @@ void UTILS::ConstraintSolver::Setup
 
   // simple parameters
   adaptolbetter_ = params.get<double>("ADAPTCONV_BETTER", 0.01);
-  uzawaparam_ = params.get<double>("UZAWAPARAM", 1);
-  minparam_ = uzawaparam_*1E-3;
-  uzawatol_ = params.get<double>("UZAWATOL", 1E-8);
+  iterationparam_ = params.get<double>("UZAWAPARAM", 1);
+  minparam_ = iterationparam_*1E-3;
+  iterationtol_ = params.get<double>("UZAWATOL", 1E-8);
 
 
   counter_ = 0;
@@ -147,13 +136,16 @@ void UTILS::ConstraintSolver::Solve
   const RCP<Epetra_Vector> rhsconstr
 )
 {
-  switch (algo_)
+  switch (algochoice_)
   {
-    case iterative:
-      SolveIterative(stiff,constr,dispinc,lagrinc,rhsstand,rhsconstr);
+    case INPAR::STR::consolve_uzawa:
+      SolveUzawa(stiff,constr,dispinc,lagrinc,rhsstand,rhsconstr);
     break;
-    case direct:
+    case INPAR::STR::consolve_direct:
       SolveDirect(stiff,constr,dispinc,lagrinc,rhsstand,rhsconstr);
+    break;
+    case INPAR::STR::consolve_simple:
+      SolveSimple(stiff,constr,dispinc,lagrinc,rhsstand,rhsconstr);
     break;
     default :
       dserror("Unknown constraint solution technique!");
@@ -165,7 +157,7 @@ void UTILS::ConstraintSolver::Solve
 |(public)                                                               |
 |Solve linear constrained system by iterative Uzawa algorithm           |
 *-----------------------------------------------------------------------*/
-void UTILS::ConstraintSolver::SolveIterative
+void UTILS::ConstraintSolver::SolveUzawa
 (
   RCP<LINALG::SparseMatrix> stiff,
   RCP<LINALG::SparseOperator> constr,
@@ -192,6 +184,7 @@ void UTILS::ConstraintSolver::SolveIterative
 
   RCP<Epetra_Vector> constrTLagrInc = rcp(new Epetra_Vector(rhsstand->Map()));
   RCP<Epetra_Vector> constrTDispInc = rcp(new Epetra_Vector(rhsconstr->Map()));
+  LINALG::SparseMatrix constrT = *(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(constr));
 
   // ONLY compatability
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
@@ -218,10 +211,11 @@ void UTILS::ConstraintSolver::SolveIterative
   quotient =1;
   //Solve one iteration step with augmented lagrange
   //Since we calculate displacement norm as well, at least one step has to be taken
-  while (((norm_uzawa > uzawatol_ or norm_constr_uzawa > uzawatol_) and numiter_uzawa < maxIter_)
+  while (((norm_uzawa > iterationtol_ or norm_constr_uzawa > iterationtol_) and numiter_uzawa < maxIter_)
       or numiter_uzawa < minstep)
   {
     LINALG::ApplyDirichlettoSystem(stiff,dispinc,fresmcopy,zeros,*(dbcmaps_->CondMap()));
+    constr->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
 
 #if 0
     const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*stiff),Ifpack_GMRES, 1000);
@@ -245,8 +239,8 @@ void UTILS::ConstraintSolver::SolveIterative
 
     //compute Lagrange multiplier increment
     constrTDispInc->PutScalar(0.0);
-    constr->Multiply(true,*dispinc,*constrTDispInc) ;
-    lagrinc->Update(uzawaparam_,*constrTDispInc,uzawaparam_,*rhsconstr,1.0);
+    constrT.Multiply(true,*dispinc,*constrTDispInc) ;
+    lagrinc->Update(iterationparam_,*constrTDispInc,iterationparam_,*rhsconstr,1.0);
 
     //Compute residual of the uzawa algorithm
     constr->Multiply(false,*lagrinc,*constrTLagrInc);
@@ -255,6 +249,7 @@ void UTILS::ConstraintSolver::SolveIterative
     Epetra_Vector uzawa_res(*fresmcopy);
     (*stiff).Multiply(false,*dispinc,uzawa_res);
     uzawa_res.Update(1.0,*fresmcopy,-1.0);
+    
     // blank residual DOFs which are on Dirichlet BC
     dbcmaps_->InsertCondVector(dirichzeros, Teuchos::rcp(&uzawa_res,false));
     norm_uzawa_old=norm_uzawa;
@@ -274,8 +269,8 @@ void UTILS::ConstraintSolver::SolveIterative
       // In case of divergence the parameter must be too high
       if (quotient_new>(1.+computol))
       {
-        if (uzawaparam_>2.*minparam_)
-          uzawaparam_ = uzawaparam_/2.;
+        if (iterationparam_>2.*minparam_)
+          iterationparam_ = iterationparam_/2.;
         quotient=1;
       }
       else
@@ -284,24 +279,24 @@ void UTILS::ConstraintSolver::SolveIterative
         // previous parameter, the parameter is increased by a factor (1+quotient_new)
         if (quotient>=quotient_new)
         {
-          uzawaparam_=uzawaparam_*(1.+quotient_new);
+          iterationparam_=iterationparam_*(1.+quotient_new);
           quotient=quotient_new;
         }
         // In case the newly computed quotient is worse than the one obtained from the
         // previous parameter, the parameter is decreased by a factor 1/(1+quotient_new)
         else
         {
-          if (uzawaparam_>2.*minparam_)
-            uzawaparam_=uzawaparam_/(1.+quotient_new);
+          if (iterationparam_>2.*minparam_)
+            iterationparam_=iterationparam_/(1.+quotient_new);
           quotient=quotient_new;
         }
       }
 
-      if (uzawaparam_<=minparam_)
+      if (iterationparam_<=minparam_)
       {
         if (!myrank)
           cout<<"leaving uzawa loop since Uzawa parameter is too low"<<endl;
-        uzawaparam_*=1E2;
+        iterationparam_*=1E2;
         break;
       }
       count_paramadapt=0;
@@ -312,7 +307,7 @@ void UTILS::ConstraintSolver::SolveIterative
 
   if (!myrank)
   {
-     cout<<"Uzawa steps "<<numiter_uzawa<<", Uzawa parameter: "<< uzawaparam_;
+     cout<<"Uzawa steps "<<numiter_uzawa<<", Uzawa parameter: "<< iterationparam_;
      cout<<", residual norms for linear system: "<< norm_constr_uzawa<<" and "<<norm_uzawa<<endl;
   }
   counter_++;
@@ -381,7 +376,6 @@ void UTILS::ConstraintSolver::SolveDirect
   // solve
   solver_->Solve(mergedmatrix->EpetraMatrix(),mergedsol,mergedrhs,true,counter_==0);
   solver_->ResetTolerance();
-
   // store results in smaller vectors
   mapext.ExtractCondVector(mergedsol,dispinc);
   mapext.ExtractOtherVector(mergedsol,lagrinc);
@@ -389,5 +383,80 @@ void UTILS::ConstraintSolver::SolveDirect
   counter_++;
   return;
 }
+
+void UTILS::ConstraintSolver::SolveSimple
+(
+  RCP<LINALG::SparseMatrix> stiff,
+  RCP<LINALG::SparseOperator> constr,
+  RCP<Epetra_Vector> dispinc,
+  RCP<Epetra_Vector> lagrinc,
+  const RCP<Epetra_Vector> rhsstand,
+  const RCP<Epetra_Vector> rhsconstr
+)
+{
+  // row maps (assumed to equal to range map) and extractor
+  RCP<Epetra_Map> standrowmap = rcp(new Epetra_Map(stiff->RowMap()));
+  RCP<Epetra_Map> conrowmap = rcp(new Epetra_Map(constr->DomainMap()));
+  RCP<Epetra_Map> mergedrowmap = LINALG::MergeMap(standrowmap,conrowmap,false);
+  LINALG::MapExtractor rowmapext(*mergedrowmap,conrowmap,standrowmap);
+  
+  // domain maps and extractor
+  RCP<Epetra_Map> standdommap = rcp(new Epetra_Map(stiff->DomainMap()));
+  RCP<Epetra_Map> condommap = rcp(new Epetra_Map(constr->DomainMap()));
+  RCP<Epetra_Map> mergeddommap = LINALG::MergeMap(standdommap,condommap,false);
+  LINALG::MapExtractor dommapext(*mergeddommap,condommap,standdommap);
+  
+  // cast constraint operators to matrices and save transpose of constraint matrix
+  LINALG::SparseMatrix constrTrans (*conrowmap,81,false,true);
+  LINALG::SparseMatrix constrMatrix = *(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(constr));
+  constrTrans.Add(constrMatrix,true,1.0,0.0); 
+  constrTrans.Complete(constrMatrix.RangeMap(),constrMatrix.DomainMap());
+  
+  // ONLY compatability
+  // dirichtoggle_ changed and we need to rebuild associated DBC maps
+  if (dirichtoggle_ != Teuchos::null)
+    dbcmaps_ = LINALG::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
+
+  // stuff needed for Dirichlet BCs
+  RCP<Epetra_Vector> zeros = rcp(new Epetra_Vector(rhsstand->Map(),true));
+  RCP<Epetra_Vector> dirichzeros = dbcmaps_->ExtractCondVector(zeros);
+  RCP<Epetra_Vector> rhscopy=rcp(new Epetra_Vector(*rhsstand));
+  
+  LINALG::ApplyDirichlettoSystem(stiff,dispinc,rhscopy,zeros,*(dbcmaps_->CondMap()));
+  constrMatrix.ApplyDirichlet(*(dbcmaps_->CondMap()),false);
+  
+  //make solver SIMPLE-ready
+  solver_->PutSolverParamsToSubParams("SIMPLER",
+      DRT::Problem::Instance()->FluidPressureSolverParams());
+  
+  //build block matrix for SIMPLE
+  Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat=
+      rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
+  mat->Assign(0,0,View,*stiff);
+  mat->Assign(0,1,View,constrMatrix);
+  mat->Assign(1,0,View,constrTrans);
+  mat->Complete();
+  
+  // merged rhs using Export
+  RCP<Epetra_Vector> mergedrhs = rcp(new Epetra_Vector(*mergedrowmap));
+  LINALG::Export(*rhsconstr,*mergedrhs);
+  mergedrhs -> Scale(-1.0);
+  LINALG::Export(*rhsstand,*mergedrhs);
+  
+  // solution vector
+  RCP<Epetra_Vector> mergedsol = rcp(new Epetra_Vector(*mergedrowmap));
+
+  // solve
+  solver_->Solve(mat->EpetraOperator(),mergedsol,mergedrhs,true,counter_==0);
+  solver_->ResetTolerance();
+  
+  // store results in smaller vectors
+  rowmapext.ExtractCondVector(mergedsol,lagrinc);
+  rowmapext.ExtractOtherVector(mergedsol,dispinc);
+  
+  counter_++;
+  return;  
+}
+
 
 #endif

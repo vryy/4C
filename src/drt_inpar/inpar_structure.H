@@ -350,6 +350,46 @@ namespace INPAR
       bop_and         ///<  and
     };
 
+    /// STC scaling for thin shell structures
+    enum STC_Scale
+    {
+      stc_none=0, ///< no scaling
+      stc_curr, ///< scale with given factor in current config
+      stc_para, ///< scale with given factor in parameter space
+      stc_currsym,
+      stc_parasym
+    };
+    
+    /// map convergence check to enum term
+    static inline const std::string STCString
+    (
+      const enum STC_Scale name  ///< enum term
+    )
+    {
+      switch (name)
+      {
+      case stc_none :
+        return "stc_none";
+        break;
+      case stc_curr :
+        return "stc_curr";
+        break;
+      case stc_para :
+        return "stc_para";
+        break;
+      case stc_currsym :
+        return "stc_currsym";
+        break;
+      case stc_parasym :
+        return "stc_parasym";
+        break;
+
+      default :
+        dserror("Cannot make string for stc method %d", name);
+        return "";
+      }
+    }
+    
     //@}
 
     /// @name Constraints (global, geometric)
@@ -358,8 +398,9 @@ namespace INPAR
     /// possible constraint solvers
     enum ConSolveAlgo
     {
-      consolve_direct,  ///< build monolythic system for Lagrange multipliers
-      consolve_iterative  ///< solve linear system iteratively (partitioned)
+      consolve_direct, ///< build monolythic system for Lagrange multipliers
+      consolve_uzawa,  ///< solve linear system iteratively (partitioned)
+      consolve_simple  ///< use simple preconditioner for iterative solve
     };
 
     //@}

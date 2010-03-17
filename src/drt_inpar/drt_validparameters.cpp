@@ -628,34 +628,32 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::bop_or),
                                &sdyn);
 
-//  setStringToIntegralParameter<INPAR::STR::SDC_Scale>("SDC_SCALING","no",
-//      "Scaled director conditioning for thin shell structures",
-//      tuple<std::string>(
-//        "no",
-//        "No",
-//        "NO",
-//        "Current",
-//        "Parameter",
-//        "Rot",
-//        "CurrentSym",
-//        "ParameterSym",
-//        "RotSym"),
-//      tuple<INPAR::STR::SDC_Scale>(
-//        INPAR::STR::sdc_none,
-//        INPAR::STR::sdc_none,
-//        INPAR::STR::sdc_none,
-//        INPAR::STR::sdc_curr,
-//        INPAR::STR::sdc_para,
-//        INPAR::STR::sdc_rot,
-//        INPAR::STR::sdc_currsym,
-//        INPAR::STR::sdc_parasym,
-//        INPAR::STR::sdc_rotsym),
-//      &sdyn);
+  setStringToIntegralParameter<INPAR::STR::STC_Scale>("STC_SCALING","no",
+      "Scaled director conditioning for thin shell structures",
+      tuple<std::string>(
+        "no",
+        "No",
+        "NO",
+        "Current",
+        "Parameter",
+        "Rot",
+        "CurrentSym",
+        "ParameterSym",
+        "RotSym"),
+      tuple<INPAR::STR::STC_Scale>(
+        INPAR::STR::stc_none,
+        INPAR::STR::stc_none,
+        INPAR::STR::stc_none,
+        INPAR::STR::stc_curr,
+        INPAR::STR::stc_para,
+        INPAR::STR::stc_currsym,
+        INPAR::STR::stc_parasym),
+      &sdyn);
 
 
-//  DoubleParameter("SDC_FACTOR",1.0,
-//      "Scaled director conditioning factor",
-//      &sdyn);
+  DoubleParameter("STC_FACTOR",1.0,
+      "Scaled director conditioning factor",
+      &sdyn);
 
   DoubleParameter("TOLCONSTR",1.0E-08,
                   "tolerance in the constr error norm for the newton iteration",
@@ -766,12 +764,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("UZAWAPARAM",1.0,"Parameter for Uzawa algorithm dealing with lagrange multipliers",&sdyn);
   DoubleParameter("UZAWATOL",1.0E-8,"Tolerance for iterative solve with Uzawa algorithm",&sdyn);
   IntParameter("UZAWAMAXITER",50,"maximum number of iterations allowed for uzawa algorithm before failure going to next newton step",&sdyn);
-  setStringToIntegralParameter<INPAR::STR::ConSolveAlgo>("UZAWAALGO","iterative","",
+  setStringToIntegralParameter<INPAR::STR::ConSolveAlgo>("UZAWAALGO","direct","",
                                  tuple<std::string>(
-                                   "iterative",
+                                   "uzawa",
+                                   "simple",
                                    "direct"),
                                  tuple<INPAR::STR::ConSolveAlgo>(
-                                   INPAR::STR::consolve_iterative,
+                                   INPAR::STR::consolve_uzawa,
+                                   INPAR::STR::consolve_simple,
                                    INPAR::STR::consolve_direct),
                                  &sdyn);
 

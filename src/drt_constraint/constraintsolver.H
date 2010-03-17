@@ -26,6 +26,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_sparsematrix.H"
+#include "../drt_inpar/inpar_structure.H"
 
 
 using namespace std;
@@ -104,7 +105,7 @@ namespace UTILS
     */
     double GetUzawaParameter()
     {
-      return uzawaparam_;
+      return iterationparam_;
     }
 
     /*!
@@ -115,19 +116,12 @@ namespace UTILS
       double restartval ///< value to replace Uzawa Parameter with
     )
     {
-      uzawaparam_=restartval;
+      iterationparam_=restartval;
       counter_=1;
       return;
     }
 
 private:
-
-    /// possible solver strategies
-    enum algorithm
-    {
-      direct, ///< solve directly
-      iterative  ///< solve iteratively with Uzawa algorithm
-    };
 
     // do not want = operator, cctor
     ConstraintSolver operator = (const ConstraintSolver& old);
@@ -136,7 +130,7 @@ private:
     /*!
       \brief Solve linear system using uzawa algorithm to deal with zero entries on the diagonal;
     */
-    void SolveIterative
+    void SolveUzawa
     (
       RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
       RCP<LINALG::SparseOperator> constr, ///< constraint matrix
@@ -145,7 +139,20 @@ private:
       const RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
       const RCP<Epetra_Vector> rhsconstr     ///< constraint errors
     );
-
+    
+    /*!
+      \brief Solve linear system using uzawa algorithm to deal with zero entries on the diagonal;
+    */
+    void SolveSimple
+    (
+      RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
+      RCP<LINALG::SparseOperator> constr, ///< constraint matrix
+      RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
+      RCP<Epetra_Vector> displagr,     ///< lagrange multiplier increment to compute
+      const RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
+      const RCP<Epetra_Vector> rhsconstr     ///< constraint errors
+    );
+    
     /*!
       \brief Solve linear system directly by assembling everything into one big matrix
     */
@@ -161,9 +168,9 @@ private:
 
     RCP<DRT::Discretization> actdisc_; ///<standard discretization
     int maxIter_;  ///< number of maximal iterations
-    double uzawaparam_; ///< parameter for Uzawa algorithm
+    double iterationparam_; ///< parameter for Uzawa algorithm
     double minparam_; ///< minimal possible parameter for Uzawa algorithm
-    double uzawatol_;  ///< tolerance
+    double iterationtol_;  ///< tolerance
     double tolres_;  ///< tolerance for residual
     double tolconstr_;  ///< tolerance for constraint
     RCP<Epetra_Vector> dirichtoggle_;  ///< \b only for compatability: dirichlet toggle -- monitor its target change!
@@ -174,7 +181,7 @@ private:
     bool adaptolbetter_ ; ///< adaptive tolerance for solver useful?
     RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
     int counter_;  ///< counts how often #Solve is called
-    algorithm algo_;  ///< the algorithm to use
+    INPAR::STR::ConSolveAlgo algochoice_;
 
 
   }; //class
