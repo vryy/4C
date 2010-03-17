@@ -145,13 +145,6 @@ void StatMechTime::Integrate()
     }
 
 
-
-    /*multivector for stochastic forces evaluated by each element; the numbers of vectors in the multivector equals the maximal
-     *number of random numbers required by any element in the discretization per time step; therefore this multivector is suitable
-     *for synchrinisation of these random numbers in parallel computing*/
-    RCP<Epetra_MultiVector> randomnumbers = rcp( new Epetra_MultiVector(*(discret_.ElementColMap()),maxrandomnumbersperglobalelement_) );
-
-
     /*in the very first step and in case that special output for statistical mechanics is requested we have
      * to initialized the related output method*/
     if(i == 0)
@@ -173,6 +166,11 @@ void StatMechTime::Integrate()
       {
         //assuming that iterations will converge
         isconverged_ = 1;
+        
+        /*multivector for stochastic forces evaluated by each element; the numbers of vectors in the multivector equals the maximal
+         *number of random numbers required by any element in the discretization per time step; therefore this multivector is suitable
+         *for synchrinisation of these random numbers in parallel computing*/
+        RCP<Epetra_MultiVector> randomnumbers = rcp( new Epetra_MultiVector(*(discret_.ElementColMap()),maxrandomnumbersperglobalelement_) );
 
         //pay attention: for a constant predictor an incremental velocity update is necessary, which has
         //been deleted out of the code in oder to simplify it
@@ -187,7 +185,16 @@ void StatMechTime::Integrate()
           PTC(randomnumbers);
         else
           FullNewton(randomnumbers);
-
+        
+        /*if iterations have not converged a new trial requires setting all intern element variables to
+         * status at the beginning of this time step*/
+        if(isconverged_ == 0)
+        {
+          ParameterList p;
+          p.set("action","calc_struct_reset_istep");
+          discret_.Evaluate(p,null,null,null,null,null);
+        }
+            
       }
       while(isconverged_ == 0);
 
