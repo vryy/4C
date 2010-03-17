@@ -59,13 +59,16 @@ public:
 
   //! \brief generate gaussian randomnumbers with mean "meanvalue" and standarddeviation "standarddeviation" for parallel use
   void GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> randomnumbers,const double meanvalue, const double standarddeviation);
-      
+
   //! \brief Initializes beam3 elements in case of perioddic boundary conditions
   void PeriodicBoundaryBeam3Init(DRT::Element* element);
-  
+
+  //!\brief check whether element is "broken" due to periodic boundary conditions
+  void CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LINALG::SerialDenseMatrix& cut, bool *broken);
+
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
-  
+
   //! \brief current simulation time
   double time_;
 
@@ -80,18 +83,18 @@ protected:
 
   //! \brief Searches and saves in variable  crosslinkerneighbours_ neighbours for each row node
   void SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > currentpositions);
-  
+
   //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
   void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim);
-  
-  //! \brief Shifts current coordinate X+d (where X is constant reference coordinate by +/- period length until is lies within a box demanded by periodic boundary conditions 
+
+  //! \brief Shifts current coordinate X+d (where X is constant reference coordinate by +/- period length until is lies within a box demanded by periodic boundary conditions
   void CoordindateShift(const double& X, double& d);
-  
+
   //! \brief gmsh output in case of periodic boundary conditions
   void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent);
 
 
-  
+
   //! \brief how often SearchNeighbours() has already been called
   int nsearch_;
 
@@ -118,10 +121,10 @@ protected:
 
   //! \brief number of nodes which are part of the discretization already before starting adding crosslinkers
   int basisnodes_;
-  
+
   //! \brief number of elements which are part of the discretization already before starting adding crosslinkers
   int basiselements_;
-  
+
   //! \brief number of elements which are part of the discretization in the beginning of this time step
   int currentelements_;
 
@@ -142,14 +145,14 @@ protected:
 
   //! \brief storing for degree of freedom whether force has to be measured
   RCP<Epetra_Vector> forcesensor_;
-  
+
   //! \store accumulated disp
   double sumsquareincpar_;
   double sumsquareincort_;
   double sumrotmiddle_;
   double sumsquareincmid_;
   double sumsquareincrot_;
-  
+
   //store displacement of midpoint compared to initial state as a 3-vector
   LINALG::Matrix<3,1>sumdispmiddle_;
 
