@@ -52,7 +52,7 @@ ADAPTER::StructureGenAlpha::StructureGenAlpha(Teuchos::RCP<Teuchos::ParameterLis
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::InitialGuess()
 {
 #if defined(INVERSEDESIGNCREATE) || defined(PRESTRESS)
-  return Teuchos::rcp(new Epetra_Vector(structure_.Getdu().Map(),true));
+  return Teuchos::rcp(new Epetra_Vector(structure_->Getdu().Map(),true));
 #else
   return Teuchos::rcp(&structure_->Getdu(),false);
 #endif
