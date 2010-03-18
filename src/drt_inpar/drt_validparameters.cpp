@@ -654,10 +654,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
         "NO",
         "Current",
         "Parameter",
-        "Rot",
         "CurrentSym",
-        "ParameterSym",
-        "RotSym"),
+        "ParameterSym"),
       tuple<INPAR::STR::STC_Scale>(
         INPAR::STR::stc_none,
         INPAR::STR::stc_none,
