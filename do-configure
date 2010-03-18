@@ -10,7 +10,15 @@ EXTRA_ARGS=$@
     -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
     -D INCLUDE_INSTALL_DIR:FILEPATH="/lnm/lib/fc8/openmpi/include" \
     -D LIB_INSTALL_DIR:FILEPATH="/lnm/lib/fc8/openmpi/lib" \
-    -D D_ALE:BOOL=ON \
+    -D CMAKE_CXX_FLAGS:STRING="-Wall -march=i686 -Wconversion -msse3 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE" \
+        -D CMAKE_C_FLAGS:STRING="-Wall -march=i686 -Wconversion -msse3 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE" \
+            -D CMAKE_Fortran_FLAGS:STRING="-Wall -march=i686 -msse3 -mfpmath=sse -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE" \
+                -D CMAKE_EXE_LINKER_FLAGS:STRING="" \
+                    -D CMAKE_CXX_FLAGS_RELEASE:STRING="-O3" \
+                        -D CMAKE_C_FLAGS_RELEASE:STRING="-O3" \
+                            -D CMAKE_Fortran_FLAGS_RELEASE:STRING="-O5 -funroll-all-loops -malign-double" \
+                                -D CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING="-O2" \
+                                    -D D_ALE:BOOL=ON \
     -D D_BEAM2:BOOL=ON \
     -D D_BEAM2R:BOOL=ON \
     -D D_BEAM3:BOOL=ON \
