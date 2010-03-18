@@ -57,16 +57,17 @@ namespace GEO
 {
 	
     /*!
-    \brief tests if one entry is NaN according to IEEE NaN is not comparable to itself
+    \brief tests if one entry of a fixed size vector is NaN using std::isnan function
      */
-    template <int length>
-	  static inline bool isNaN(
+    template <unsigned length>
+	  bool isNaN(
 	      const LINALG::Matrix<length,1>&		xsi)
 	  {
-	    for(int i = 0; i < length; i++)
-	      if( !( xsi(i)==xsi(i)) ) // is NaN
+	    for(unsigned i = 0; i < length; i++)
+	    {
+	      if( std::isnan(xsi(i)) )
 	        return true;
-				
+	    }
 	    return false;
 	  }
 
