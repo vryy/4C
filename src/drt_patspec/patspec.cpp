@@ -97,6 +97,21 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis)
     for (int j=0; j<(int)nodes->size(); ++j)
       allnodes.insert((*nodes)[j]);
   }
+  
+/*
+  for (int i=0; i<dis.Comm().NumProc(); ++i)
+  {
+    if (i == dis.Comm().MyPID())
+    {
+      set<int>::iterator fool;
+      for (fool=allnodes.begin(); fool != allnodes.end(); ++fool)
+        cout << "Proc " << i << " Node " << *fool << endl;
+      cout << "Proc " << i << " sizeof allnodes " << (int)allnodes.size() << endl;
+      fflush(stdout);
+    }
+    dis.Comm().Barrier();
+  }
+*/
 
   // create coordinates for all these nodes
   const int nnodes = (int)allnodes.size();
@@ -106,9 +121,12 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis)
   int count=0;
   for (fool=allnodes.begin(); fool != allnodes.end(); ++fool)
   {
-    if (!dis.HaveGlobalNode(*fool)) continue;
+    if (!dis.NodeRowMap()->MyGID(*fool)) 
+    {
+      count++;
+      continue;
+    }
     DRT::Node* node = dis.gNode(*fool);
-    if (node->Owner() != dis.Comm().MyPID()) continue;
     lcoords[count*3]   = node->X()[0];
     lcoords[count*3+1] = node->X()[1];
     lcoords[count*3+2] = node->X()[2];
@@ -117,7 +135,20 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis)
   dis.Comm().SumAll(&lcoords[0],&gcoords[0],nnodes*3);
   lcoords.clear();
   allnodes.clear();
-  
+
+/*  
+  for (int i=0; i<dis.Comm().NumProc(); ++i)
+  {
+    if (i == dis.Comm().MyPID())
+    {
+      for (int j=0; j<gcoords.size(); ++j)
+        printf("Proc %d Coord %15.10e\n",i,gcoords[j]);
+      fflush(stdout);
+    }
+    dis.Comm().Barrier();
+  }
+*/
+
   // compute distance of all of my nodes to these nodes
   // create vector for nodal values of ilt thickness
   // WARNING: This is a brute force expensive minimum distance search!
@@ -171,7 +202,10 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis)
   // discretization
   Teuchos::RCP<DRT::Condition> cond = Teuchos::rcp(
     new DRT::Condition(0,DRT::Condition::ILTthickness,false,DRT::Condition::Volume));
-  
+  cond->Add("ilt thickness",*iltele);
+
+  //const Epetra_Vector* bla = cond->Get<Epetra_Vector>("ilt thickness");
+  //cout << *bla;
 
   // check whether discretization has been filled before putting ocndition to dis
   bool filled = dis.Filled();
@@ -181,16 +215,6 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis)
   
   if (!dis.Comm().MyPID())
     printf("Normalized ILT thickness computed in %10.5e sec\n",timer.ElapsedTime());
-
-
-  
-
-
-
-
-
-
-
   
   return;
 }
