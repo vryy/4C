@@ -50,6 +50,9 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     case DRT::Element::element_beam3:
       nv = 6;
     break;
+    case DRT::Element::element_smoothrod:
+      nv = 4;
+    break;
     case DRT::Element::element_shell8:
       nv = 6;
     break;
@@ -182,6 +185,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     case DRT::Element::element_sosh8p8:
     case DRT::Element::element_xfluid3:
     case DRT::Element::element_combust3:
+    case DRT::Element::element_smoothrod:
       numdf = 4;
       dimns = 4;
     break;
@@ -633,6 +637,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   else if (ele->Type() == DRT::Element::element_fluid3 || 
            ele->Type() == DRT::Element::element_xfluid3 || 
            ele->Type() == DRT::Element::element_combust3 || 
+           ele->Type() == DRT::Element::element_smoothrod ||
            ele->Type() == DRT::Element::element_sosh8p8)
   {
     for (int i=0; i<NumMyRowNodes(); ++i)
