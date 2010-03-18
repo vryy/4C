@@ -143,6 +143,7 @@ public:
     element_beam2,
     element_beam2r,
     element_beam3,
+    element_smoothrod,
     element_truss3,
     element_truss2,
     element_torsion3,

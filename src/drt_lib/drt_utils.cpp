@@ -75,6 +75,7 @@ extern "C"
 #include "../drt_beam2/beam2.H"
 #include "../drt_beam2r/beam2r.H"
 #include "../drt_beam3/beam3.H"
+#include "../drt_smoothrod/smoothrod.H"
 #include "../drt_truss3/truss3.H"
 #include "../drt_truss2/truss2.H"
 #include "../drt_torsion3/torsion3.H"
@@ -265,6 +266,23 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     {
       DRT::ELEMENTS::Beam3Register* object =
                       new DRT::ELEMENTS::Beam3Register(DRT::Element::element_beam3);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+#endif
+#ifdef D_SMOOTHROD
+    case ParObject_Smoothrod:
+    {
+      DRT::ELEMENTS::Smoothrod* object = new DRT::ELEMENTS::Smoothrod(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_SmoothrodRegister:
+    {
+      DRT::ELEMENTS::SmoothrodRegister* object =
+                      new DRT::ELEMENTS::SmoothrodRegister(DRT::Element::element_smoothrod);
       object->Unpack(data);
       return object;
     }

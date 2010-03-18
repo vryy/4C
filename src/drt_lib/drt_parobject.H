@@ -202,6 +202,8 @@ using namespace std;
 #define ParObject_RedAirway             (int)188
 #define ParObject_FriNode               (int)189
 #define ParObject_ThermoStVenantKirchhoff (int)190
+#define ParObject_Smoothrod             (int)191
+#define ParObject_SmoothrodRegister     (int)192
 namespace DRT
 {
 

@@ -49,6 +49,7 @@ namespace INPUT
     void SetupBeam2Lines();
     void SetupBeam2rLines();
     void SetupBeam3Lines();
+    void SetupSmoothrodLines();
     void SetupConstrele2Lines();
     void SetupConstrele3Lines();
     void SetupPtet4Lines();

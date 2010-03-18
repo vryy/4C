@@ -437,6 +437,11 @@ OBJS_DRT_T3_LIB   = src/drt_truss3/truss3.o \
                 src/drt_truss3/truss3_input.o \
                 src/drt_truss3/truss3_evaluate.o
 OBJS_DRT_T3   =
+# -------------------------------------------------- drt version of smoothrod
+OBJS_DRT_SR_LIB   = src/drt_smoothrod/smoothrod.o \
+                src/drt_smoothrod/smoothrod_input.o \
+                src/drt_smoothrod/smoothrod_evaluate.o
+OBJS_DRT_SR   =
 # -------------------------------------------------- drt version of truss2
 OBJS_DRT_T2_LIB   = src/drt_truss2/truss2.o \
                 src/drt_truss2/truss2_input.o \
