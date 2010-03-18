@@ -348,7 +348,7 @@ TIMESTEP                        0.05
 TOLCONSTR                       1e-07
 TOLDISP                         1e-07
 TOLRES                          1e-07
-UZAWAALGO                       iterative
+UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08

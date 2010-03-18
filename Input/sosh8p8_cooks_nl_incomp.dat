@@ -96,7 +96,7 @@ NORM_INCO                       Abs
 NORMCOMBI_RESFDISP              And
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFINCO              And
-UZAWAALGO                       iterative
+UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 
