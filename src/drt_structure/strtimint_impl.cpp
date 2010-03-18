@@ -74,7 +74,10 @@ STR::TimIntImpl::TimIntImpl
   timer_(actdis->Comm()),
   fres_(Teuchos::null),
   freact_(Teuchos::null),
-  fifc_(Teuchos::null)
+  fifc_(Teuchos::null),
+  stcscale_(Teuchos::getIntegralValue<INPAR::STR::STC_Scale>(sdynparams,"STC_SCALING")),
+  stcfact_(sdynparams.get<double>("STC_FACTOR"))
+
 {
 
   // verify: Old-style convergence check has to be 'vague' to
@@ -692,6 +695,10 @@ void STR::TimIntImpl::NewtonFull()
   // normdisi_ was already set in predictor; this is strictly >0
   timer_.ResetStartTime();
 
+  //prepare matrix for scaled thickness business of thin shell structures
+  Teuchos::RCP<LINALG::SparseMatrix> stcmat= 
+    Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
+  
   // equilibrium iteration loop
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
@@ -708,6 +715,8 @@ void STR::TimIntImpl::NewtonFull()
     LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
                                    GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
+    STCPreconditioning(stcmat);
+    
     // solve for disi_
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (solveradapttol_ and (iter_ > 1))
@@ -719,6 +728,9 @@ void STR::TimIntImpl::NewtonFull()
     solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_==1);
     solver_->ResetTolerance();
 
+    // recover standard displacements
+    RecoverSTCSolution(stcmat);
+    
     // recover contact Lagrange multipliers
     if (contactman_ != Teuchos::null)
       contactman_->GetStrategy().Recover(disi_);
@@ -1650,6 +1662,73 @@ void STR::TimIntImpl::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps
   // effects (basically managers).
   stiff_->Reset();
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::TimIntImpl::STCPreconditioning
+(
+    Teuchos::RCP<LINALG::SparseMatrix> stcmat /// STC preconditioning matrix
+)
+{
+  if(stcscale_!=INPAR::STR::stc_none)
+  {
+    // create the parameters for the discretization
+    Teuchos::ParameterList p;
+    // action for elements
+    const std::string action = "calc_stc_matrix";
+    p.set("action", action);
+    p.set("stc_scaling", stcscale_);
+    p.set("stc_factor", stcfact_);
+    discret_->  SetState("residual displacement", disi_);
+    discret_->  SetState("displacement", disn_);
+    Teuchos::RCP<Epetra_Vector> disisdc = LINALG::CreateVector(*dofrowmap_, true);
+    discret_-> Evaluate(p, stcmat, Teuchos::null,  Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_-> ClearState();
+    stcmat->Complete();
+//      stiff_ = MLMultiply(*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),*sdcmat,true);
+    stiff_ = Multiply(*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),false,*stcmat,false,true);
+    if(stcscale_==INPAR::STR::stc_parasym or stcscale_==INPAR::STR::stc_currsym)
+    {
+      stiff_ = Multiply(*stcmat,true,*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),false,true);
+      Teuchos::RCP<Epetra_Vector> fressdc = LINALG::CreateVector(*dofrowmap_, true);
+      
+      stcmat->Multiply(true,*fres_,*fressdc);
+      fres_->Update(1.0,*fressdc,0.0);
+    }
+  }
+  
+  // print first system matrix to file in matlab format (DEBUGGING)
+  #ifdef DEBUG
+  if (iter_==1&& step_==0)
+  {
+    const std::string fname = "sparsematrix.mtl";
+    if (myrank_ == 0)
+      cout<<"Printing system matrix to file"<<endl;
+      LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_))->EpetraMatrix()));
+  }
+  #endif
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::TimIntImpl::RecoverSTCSolution
+(
+    const Teuchos::RCP<LINALG::SparseMatrix> stcmat /// STC preconditioning matrix
+)
+{
+  if(stcscale_!=INPAR::STR::stc_none)
+  {
+    Teuchos::RCP<Epetra_Vector> disisdc = LINALG::CreateVector(*dofrowmap_, true);
+    
+    stcmat->Multiply(false,*disi_,*disisdc);
+    disi_->Update(1.0,*disisdc,0.0);
+  }
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

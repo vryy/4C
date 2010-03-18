@@ -250,6 +250,21 @@ namespace STR
 
     //@}
 
+    //! @name STC business
+    //@{
+    //! Precondition system and return operator
+    void STCPreconditioning
+    (
+        Teuchos::RCP<LINALG::SparseMatrix> stcmat /// STC preconditioning matrix
+    );
+
+    //! recover standard solution
+    void RecoverSTCSolution
+    (
+        const Teuchos::RCP<LINALG::SparseMatrix> stcmat /// STC preconditioning matrix
+    );
+    //@}
+    
     //! @name NOX solution
     //@{
 
@@ -674,6 +689,13 @@ namespace STR
     Teuchos::RCP<NOX::StatusTest::Combo> noxstatustest_;
     Teuchos::RCP<Teuchos::ParameterList> noxparams_;
     Teuchos::RCP<NOX::Utils> noxutils_;
+    //@}
+    
+    
+    //! @name SDC Scaling for thin shell structures
+    //@{
+    enum INPAR::STR::STC_Scale stcscale_; //< scale director of shells?
+    double stcfact_;  //!< scaling factor
     //@}
 
   };  // class TimIntImpl

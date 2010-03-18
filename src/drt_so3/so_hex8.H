@@ -374,7 +374,8 @@ protected:
     prestress_update,
     inversedesign_update,
     multi_readrestart,         //!< multi-scale: read restart on microscale
-    calc_potential_stiff       //!< volume interaction potential
+    calc_potential_stiff,       //!< volume interaction potential
+    calc_stc_matrix            //! calculate scaled director matrix for thin shell structures
   };
 
   //! kinematic types of so_hex8, but yet only total-lagrangian is implemented

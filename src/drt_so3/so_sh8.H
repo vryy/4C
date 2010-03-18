@@ -283,6 +283,8 @@ protected:
   //! Debug gmsh-plot to check thickness direction
   void sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8]);
 
+  const vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > sosh8_derivs_sdc();
+  
 }; // class So_sh8
 
 

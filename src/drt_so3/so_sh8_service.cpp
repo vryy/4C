@@ -357,5 +357,51 @@ void DRT::ELEMENTS::Sosh8Register::sosh8_gmshplotdis(const DRT::Discretization& 
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Evaluate Hex8 Shape fct derivs at all 8 Gauss Points       maf 05/08|
+ *----------------------------------------------------------------------*/
+const vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > DRT::ELEMENTS::So_sh8::sosh8_derivs_sdc()
+{
+  vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs(NUMGPT_SOH8);
+  // (r,s,t) gp-locations of fully integrated linear 8-node Hex
+  const double r[NUMNOD_SOH8] = {-1.0, 1.0, 1.0,-1.0,-1.0, 1.0, 1.0,-1.0};
+  const double s[NUMNOD_SOH8] = {-1.0,-1.0, 1.0, 1.0,-1.0,-1.0, 1.0, 1.0};
+  const double t[NUMNOD_SOH8] = {-1.0,-1.0,-1.0,-1.0, 1.0, 1.0, 1.0, 1.0};
+//  const double t[NUMNOD_SOH8] = {0.0,0.0,0.0,0.0, 0.0, 0.0, 0.0, 0.0};
+  // fill up df w.r.t. rst directions (NUMDIM) at each gp
+  for (int i=0; i<NUMGPT_SOH8; ++i) {
+    // df wrt to r for each node(0..7) at each gp [i]
+    (derivs[i])(0,0) = -(1.0-s[i])*(1.0-t[i])*0.125;
+    (derivs[i])(0,1) =  (1.0-s[i])*(1.0-t[i])*0.125;
+    (derivs[i])(0,2) =  (1.0+s[i])*(1.0-t[i])*0.125;
+    (derivs[i])(0,3) = -(1.0+s[i])*(1.0-t[i])*0.125;
+    (derivs[i])(0,4) = -(1.0-s[i])*(1.0+t[i])*0.125;
+    (derivs[i])(0,5) =  (1.0-s[i])*(1.0+t[i])*0.125;
+    (derivs[i])(0,6) =  (1.0+s[i])*(1.0+t[i])*0.125;
+    (derivs[i])(0,7) = -(1.0+s[i])*(1.0+t[i])*0.125;
+
+    // df wrt to s for each node(0..7) at each gp [i]
+    (derivs[i])(1,0) = -(1.0-r[i])*(1.0-t[i])*0.125;
+    (derivs[i])(1,1) = -(1.0+r[i])*(1.0-t[i])*0.125;
+    (derivs[i])(1,2) =  (1.0+r[i])*(1.0-t[i])*0.125;
+    (derivs[i])(1,3) =  (1.0-r[i])*(1.0-t[i])*0.125;
+    (derivs[i])(1,4) = -(1.0-r[i])*(1.0+t[i])*0.125;
+    (derivs[i])(1,5) = -(1.0+r[i])*(1.0+t[i])*0.125;
+    (derivs[i])(1,6) =  (1.0+r[i])*(1.0+t[i])*0.125;
+    (derivs[i])(1,7) =  (1.0-r[i])*(1.0+t[i])*0.125;
+
+    // df wrt to t for each node(0..7) at each gp [i]
+    (derivs[i])(2,0) = -(1.0-r[i])*(1.0-s[i])*0.125;
+    (derivs[i])(2,1) = -(1.0+r[i])*(1.0-s[i])*0.125;
+    (derivs[i])(2,2) = -(1.0+r[i])*(1.0+s[i])*0.125;
+    (derivs[i])(2,3) = -(1.0-r[i])*(1.0+s[i])*0.125;
+    (derivs[i])(2,4) =  (1.0-r[i])*(1.0-s[i])*0.125;
+    (derivs[i])(2,5) =  (1.0+r[i])*(1.0-s[i])*0.125;
+    (derivs[i])(2,6) =  (1.0+r[i])*(1.0+s[i])*0.125;
+    (derivs[i])(2,7) =  (1.0-r[i])*(1.0+s[i])*0.125;
+  }
+  return derivs;
+}
+
 #endif
 #endif
