@@ -44,6 +44,7 @@ Maintainer: Michael Gee
 
 #include "drt_container.H"
 #include "drt_dserror.H"
+#include "Epetra_Vector.h"
 
 
 
@@ -64,17 +65,29 @@ ParObject(old),
 stringdata_(old.stringdata_)
 {
   // we want a true deep copy of the data, not a reference
-  map<string,RefCountPtr<vector<int> > >::const_iterator ifool;
+  map<string,RCP<vector<int> > >::const_iterator ifool;
   for (ifool=old.intdata_.begin(); ifool!=old.intdata_.end(); ++ifool)
     intdata_[ifool->first] = rcp(new vector<int>(*(ifool->second)));
 
-  map<string,RefCountPtr<vector<double> > >::const_iterator dfool;
+  map<string,RCP<vector<double> > >::const_iterator dfool;
   for (dfool=old.doubledata_.begin(); dfool!=old.doubledata_.end(); ++dfool)
     doubledata_[dfool->first] = rcp(new vector<double>(*(dfool->second)));
 
-  map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::const_iterator curr;
+  map<string,RCP<Epetra_SerialDenseMatrix> >::const_iterator curr;
   for (curr=old.matdata_.begin();curr!=old.matdata_.end(); ++curr)
     matdata_[curr->first] = rcp(new Epetra_SerialDenseMatrix(*(curr->second)));
+
+  map<string,RCP<Epetra_MultiVector> >::const_iterator eveccurr;
+  for (eveccurr=old.evecdata_.begin();eveccurr!=old.evecdata_.end(); ++eveccurr)
+  {
+    // test for Epetra_Vector because there could be both
+    // native Epetra_Vector and native Epetra_MultiVector in this map
+    Epetra_Vector* tmp = dynamic_cast<Epetra_Vector*>(eveccurr->second.get());
+    if (tmp)
+      evecdata_[eveccurr->first] = rcp(new Epetra_Vector(*tmp));
+    else
+      evecdata_[eveccurr->first] = rcp(new Epetra_MultiVector(*(eveccurr->second)));
+  }
 
   return;
 }
@@ -123,14 +136,14 @@ void DRT::Container::Pack(vector<char>& data) const
   // matdatasize
   AddtoPack(data,matdatasize);
   // iterate through intdata_ and add to pack
-  map<string,RefCountPtr<vector<int> > >::const_iterator icurr;
+  map<string,RCP<vector<int> > >::const_iterator icurr;
   for (icurr = intdata_.begin(); icurr != intdata_.end(); ++icurr)
   {
     AddtoPack(data,icurr->first);
     AddtoPack(data,*(icurr->second));
   }
   // iterate though doubledata_ and add to pack
-  map<string,RefCountPtr<vector<double> > >::const_iterator dcurr;
+  map<string,RCP<vector<double> > >::const_iterator dcurr;
   for (dcurr = doubledata_.begin(); dcurr != doubledata_.end(); ++dcurr)
   {
     AddtoPack(data,dcurr->first);
@@ -144,12 +157,15 @@ void DRT::Container::Pack(vector<char>& data) const
     AddtoPack(data,scurr->second);
   }
   // iterate though matdata_ and add to pack
-  map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::const_iterator mcurr;
+  map<string,RCP<Epetra_SerialDenseMatrix> >::const_iterator mcurr;
   for (mcurr=matdata_.begin(); mcurr!=matdata_.end(); ++mcurr)
   {
     AddtoPack(data,mcurr->first);
     AddtoPack(data,*(mcurr->second));
   }
+
+  // on purpose the map<string,RCP<Epetra_MultiVector> > evecdata_
+  // is NOT included in the Pack/Unpack stuff
 
   return;
 }
@@ -217,6 +233,9 @@ void DRT::Container::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,value);
     Add(key,value);
   }
+  
+  // on purpose the map<string,RCP<Epetra_MultiVector> > evecdata_
+  // is NOT included in the Pack/Unpack stuff
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -229,7 +248,7 @@ void DRT::Container::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 void DRT::Container::Print(ostream& os) const
 {
-  map<string,RefCountPtr<vector<int> > >::const_iterator curr;
+  map<string,RCP<vector<int> > >::const_iterator curr;
   for (curr = intdata_.begin(); curr != intdata_.end(); ++curr)
   {
     vector<int>& data = *(curr->second);
@@ -238,7 +257,7 @@ void DRT::Container::Print(ostream& os) const
     //os << endl;
   }
 
-  map<string,RefCountPtr<vector<double> > >::const_iterator dcurr;
+  map<string,RCP<vector<double> > >::const_iterator dcurr;
   for (dcurr = doubledata_.begin(); dcurr != doubledata_.end(); ++dcurr)
   {
     vector<double>& data = *(dcurr->second);
@@ -251,9 +270,13 @@ void DRT::Container::Print(ostream& os) const
   for (scurr = stringdata_.begin(); scurr != stringdata_.end(); ++scurr)
     os << scurr->first << " : " << scurr->second << " ";
 
-  map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::const_iterator matcurr;
+  map<string,RCP<Epetra_SerialDenseMatrix> >::const_iterator matcurr;
   for (matcurr=matdata_.begin(); matcurr!=matdata_.end(); ++matcurr)
     os << endl << matcurr->first << " :\n" << *(matcurr->second);
+
+  map<string,RCP<Epetra_MultiVector> >::const_iterator eveccurr;
+  for (eveccurr=evecdata_.begin(); eveccurr!=evecdata_.end(); ++eveccurr)
+    os << endl << eveccurr->first << " (type Epetra_Vector or Epetra_MultiVector) \n";
 
   return;
 }
@@ -335,9 +358,29 @@ void DRT::Container::Add(const string& name, const Epetra_SerialDenseMatrix& mat
  |  Add stuff to the container                                 (public) |
  |                                                             lw 04/08 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Add(const string& name, RefCountPtr<Epetra_SerialDenseMatrix> matrix)
+void DRT::Container::Add(const string& name, RCP<Epetra_SerialDenseMatrix> matrix)
 {
   matdata_[name] = matrix;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add stuff to the container                                 (public) |
+ |                                                            gee 03/10 |
+ *----------------------------------------------------------------------*/
+void DRT::Container::Add(const string& name, Epetra_MultiVector& data)
+{
+  evecdata_[name] = rcp(new Epetra_MultiVector(data));
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add stuff to the container                                 (public) |
+ |                                                            gee 03/10 |
+ *----------------------------------------------------------------------*/
+void DRT::Container::Add(const string& name, Epetra_Vector& data)
+{
+  evecdata_[name] = rcp(new Epetra_Vector(data));
   return;
 }
 
@@ -347,14 +390,14 @@ void DRT::Container::Add(const string& name, RefCountPtr<Epetra_SerialDenseMatri
  *----------------------------------------------------------------------*/
 void DRT::Container::Delete(const string& name)
 {
-  map<string,RefCountPtr<vector<int> > >::iterator icurr = intdata_.find(name);
+  map<string,RCP<vector<int> > >::iterator icurr = intdata_.find(name);
   if (icurr != intdata_.end())
   {
     intdata_.erase(name);
     return;
   }
 
-  map<string,RefCountPtr<vector<double> > >::iterator dcurr = doubledata_.find(name);
+  map<string,RCP<vector<double> > >::iterator dcurr = doubledata_.find(name);
   if (dcurr != doubledata_.end())
   {
     doubledata_.erase(name);
@@ -368,13 +411,19 @@ void DRT::Container::Delete(const string& name)
     return;
   }
 
-  map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::iterator matcurr = matdata_.find(name);
+  map<string,RCP<Epetra_SerialDenseMatrix> >::iterator matcurr = matdata_.find(name);
   if (matcurr != matdata_.end())
   {
     matdata_.erase(name);
     return;
   }
 
+  map<string,RCP<Epetra_MultiVector> >::iterator eveccurr = evecdata_.find(name);
+  if (eveccurr != evecdata_.end())
+  {
+    evecdata_.erase(name);
+    return;
+  }
 
   return;
 }
@@ -382,6 +431,9 @@ void DRT::Container::Delete(const string& name)
 
 // specializations have to be in the same namespace as the template
 // compilers can be pedantic!
+// note that there exist no general implementation of this template, 
+// there are specializations only! This means that nothing else works other
+// than explicitly implemented here
 namespace DRT
 {
 /*----------------------------------------------------------------------*
@@ -429,6 +481,36 @@ namespace DRT
     else return NULL;
   }
 /*----------------------------------------------------------------------*
+ |  Get a Epetra_MultiVector specialization                    (public) |
+ |                                                            gee 03/10 |
+ *----------------------------------------------------------------------*/
+  template<> const Epetra_MultiVector* Container::Get(const string& name) const
+  {
+    map<string,RCP<Epetra_MultiVector> >::const_iterator curr = evecdata_.find(name);
+    if (curr != evecdata_.end())
+      return curr->second.get();
+    else return NULL;
+  }
+/*----------------------------------------------------------------------*
+ |  Get a Epetra_MultiVector specialization                    (public) |
+ |                                                            gee 03/10 |
+ *----------------------------------------------------------------------*/
+  template<> const Epetra_Vector* Container::Get(const string& name) const
+  {
+    map<string,RCP<Epetra_MultiVector> >::const_iterator curr = evecdata_.find(name);
+    if (curr != evecdata_.end())
+    {
+      Epetra_Vector* fool = dynamic_cast<Epetra_Vector*>(curr->second.get());
+      if (!fool) 
+      {
+        dserror("Object in container is NOT Epetra_Vector");
+        return NULL;
+      }
+      else       return fool;
+    }
+    else return NULL;
+  }
+/*----------------------------------------------------------------------*
  |  Get a vector<int> specialization                           (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
@@ -472,8 +554,33 @@ namespace DRT
       return mcurr->second.get();
     else return NULL;
   }
+/*----------------------------------------------------------------------*
+ |  Get a Epetra_MultiVector specialization                    (public) |
+ |                                                            gee 03/10 |
+ *----------------------------------------------------------------------*/
+  template<> Epetra_MultiVector* Container::GetMutable(const string& name)
+  {
+    map<string,RCP<Epetra_MultiVector> >::const_iterator curr = evecdata_.find(name);
+    if (curr != evecdata_.end())
+      return curr->second.get();
+    else return NULL;
+  }
+/*----------------------------------------------------------------------*
+ |  Get a Epetra_MultiVector specialization                    (public) |
+ |                                                            gee 03/10 |
+ *----------------------------------------------------------------------*/
+  template<> Epetra_Vector* Container::GetMutable(const string& name)
+  {
+    map<string,RCP<Epetra_MultiVector> >::const_iterator curr = evecdata_.find(name);
+    if (curr != evecdata_.end())
+    {
+      Epetra_Vector* fool = dynamic_cast<Epetra_Vector*>(curr->second.get());
+      if (!fool) dserror("Object in container is NOT Epetra_Vector");
+      else       return fool;
+    }
+    else return NULL;
+  }
 } // end of namespace DRT
-
 
 /*----------------------------------------------------------------------*
  |  just get an int back                                       (public) |
@@ -498,5 +605,8 @@ double DRT::Container::GetDouble(const string& name) const
   if( vecptr->size()!=1 ) dserror("Trying to read double from vector of wrong length.");
   return (*vecptr)[0];
 }
+
+
+
 
 #endif  // #ifdef CCADISCRET

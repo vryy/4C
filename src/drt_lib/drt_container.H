@@ -54,6 +54,9 @@ using namespace Teuchos;
 #include "drt_parobject.H"
 #include "drt_dserror.H"
 
+class Epetra_MultiVector;
+class Epetra_Vector;
+
 namespace DRT
 {
 
@@ -264,6 +267,34 @@ public:
   */
   void Add(const string& name, RefCountPtr<Epetra_SerialDenseMatrix> data);
 
+   /*!
+  \brief Add rcp to Epetra_MultiVector to the container
+
+  \param name : Name of data to store data with
+  \param data : rcp to Epetra_MultiVector to be added
+
+  \note If record with name name already exists, it will be overwritten
+  
+  \warning data stored in Epetra_MultiVector will not participate in
+           Pack/Unpack functionality of the container but is deep-copied in
+           the copy-constructor
+  */
+  void Add(const string& name, Epetra_MultiVector& data);
+
+   /*!
+  \brief Add rcp to Epetra_Vector to the container
+
+  \param name : Name of data to store data with
+  \param data : rcp to Epetra_Vector to be added
+
+  \note If record with name name already exists, it will be overwritten
+  
+  \warning data stored in Epetra_Vector will not participate in
+           Pack/Unpack functionality of the container but is deep-copied in
+           the copy-constructor
+  */
+  void Add(const string& name, Epetra_Vector& data);
+
   //@}
 
   //! @name Access methods
@@ -375,7 +406,7 @@ public:
 
   //@}
 
-  //! @name Erase methods
+  //! @name Erase methods 
 
   /*!
   \brief Delete a record from the container
@@ -389,8 +420,10 @@ public:
   \brief Delete everything in this container
   */
   void Clear()
-  { intdata_.clear(); doubledata_.clear(); stringdata_.clear(); matdata_.clear();
-    return;}
+  { 
+    intdata_.clear(); doubledata_.clear(); stringdata_.clear(); matdata_.clear();
+    return;
+  }
 
   //@}
 
@@ -402,16 +435,19 @@ private:  // these methods are for PURE internal use
 protected:
 
   //! a map to store integer data in
-  map<string,RefCountPtr<vector<int> > >             intdata_;
+  map<string,RCP<vector<int> > >             intdata_;
 
   //! a map to store double data in
-  map<string,RefCountPtr<vector<double> > >          doubledata_;
+  map<string,RCP<vector<double> > >          doubledata_;
 
   //! a map to store string data in
-  map<string,string>                                 stringdata_;
+  map<string,string>                         stringdata_;
 
   //! a map to store matrices in
-  map<string,RefCountPtr<Epetra_SerialDenseMatrix> > matdata_;
+  map<string,RCP<Epetra_SerialDenseMatrix> > matdata_;
+
+  //! a map to store epetra vectors in
+  map<string,RCP<Epetra_MultiVector> >       evecdata_;
 
 }; // class Container
 } // namespace DRT
