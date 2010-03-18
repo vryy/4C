@@ -707,6 +707,11 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/xfluidimplicitintegration.cpp
   src/drt_fluid/xfluidresulttest.cpp
 )
+set(OBJS_DRT_SR_LIB
+  src/drt_smoothrod/smoothrod.cpp
+  src/drt_smoothrod/smoothrod_evaluate.cpp
+  src/drt_smoothrod/smoothrod_input.cpp
+)
 set(OBJS_DRT_TO2_LIB
   src/drt_torsion2/torsion2.cpp
   src/drt_torsion2/torsion2_evaluate.cpp
@@ -1069,6 +1074,11 @@ if (D_BEAM3)
   add_definitions("-DD_BEAM3")
 endif(D_BEAM3)
 
+option (D_SMOOTHROD      "3D smooth rod element" ON)
+if (D_SMOOTHROD)
+  add_definitions("-DD_SMOOTHROD")
+endif(D_SMOOTHROD)
+
 option (D_TRUSS3      "3D truss element" ON)
 if (D_TRUSS3)
   add_definitions("-DD_TRUSS3")
@@ -1204,6 +1214,12 @@ endif(THROWELEMENTERRORS)
 
 ###------------------------------------------------------------------ Binaries
 
+# hide libraries
+
+if (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/src)
+endif (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+
 # Define the libraries. The link order is important!
 
 # algorithm libraries that depend on adapters
@@ -1302,6 +1318,7 @@ add_library(ele_bele3 ${OBJS_DRT_BELE3_LIB})
 add_library(ele_combust3 ${OBJS_DRT_COMBUST3_LIB})
 add_library(ele_f2 ${OBJS_DRT_F2_LIB})
 add_library(ele_f3 ${OBJS_DRT_F3_LIB})
+add_library(ele_sr ${OBJS_DRT_SR_LIB})
 add_library(ele_s8 ${OBJS_DRT_S8_LIB})
 add_library(ele_scatra ${OBJS_DRT_SCATRA_LIB})
 add_library(ele_so ${OBJS_SOH8_LIB})
@@ -1321,6 +1338,7 @@ set(ELEMENT_LIBRARIES
   ele_combust3
   ele_f2
   ele_f3
+  ele_sr
   ele_s8
   ele_scatra
   ele_so

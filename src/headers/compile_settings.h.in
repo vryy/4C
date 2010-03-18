@@ -56,6 +56,10 @@
 #cmakedefine D_BEAM3
 #endif
 
+#ifndef D_SMOOTHROD
+#cmakedefine D_SMOOTHROD
+#endif
+
 #ifndef D_TRUSS3
 #cmakedefine D_TRUSS3
 #endif
