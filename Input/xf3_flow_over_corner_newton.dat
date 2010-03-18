@@ -69,7 +69,7 @@ TOLCONSTR    1.0E-06
 MAXITER      50
 UZAWAPARAM   1.0
 UZAWAMAXITER 20
-UZAWAALGO    iterative
+UZAWAALGO    direct
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field

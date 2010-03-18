@@ -86,7 +86,7 @@ MINITER      50
 DIVERCONT    No
 UZAWAPARAM   1.0
 UZAWAMAXITER 20
-UZAWAALGO    iterative
+UZAWAALGO    direct
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 -----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 -------------------------------------------STRUCTURAL DYNAMIC/GEMM

@@ -68,7 +68,7 @@ TOLCONSTR    1.0E-05
 MAXITER      50
 UZAWAPARAM   1.0
 UZAWAMAXITER 20
-UZAWAALGO    iterative
+UZAWAALGO    direct
 -------------------------------------------------------MESHTYING AND CONTACT
 ---------------------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP                      Nlin_Time_Int
