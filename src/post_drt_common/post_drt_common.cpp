@@ -45,8 +45,8 @@ Maintainer: Ulrich Kuettler
  * service functions. We need to specify them here and set them up
  * properly. */
 extern struct _FILES   allfiles;
-struct _PAR     par;
-struct _GENPROB genprob;
+extern struct _PAR     par;
+extern struct _GENPROB genprob;
 
 // not actually used here, but referenced by global problem
 //struct _SOLVAR  *solv;

@@ -225,7 +225,6 @@ set(OBJS_DRT_B2_LIB
 set(OBJS_DRT_LIB
   src/drt_fluid/drt_pbcdofset.cpp
   src/drt_fluid/drt_periodicbc.cpp
-  src/drt_lib/distribute_grids.cpp
   src/drt_lib/drt_condition.cpp
   src/drt_lib/drt_conditiondefinition.cpp
   src/drt_lib/drt_container.cpp
@@ -238,28 +237,16 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_dofset.cpp
   src/drt_lib/drt_dofset_base.cpp
   src/drt_lib/drt_dofset_proxy.cpp
-  src/drt_lib/drt_dserror.cpp
   src/drt_lib/drt_element.cpp
-  src/drt_lib/drt_elementdefinition.cpp
-  src/drt_lib/drt_elementreader.cpp
   src/drt_lib/drt_elementregister.cpp
-  src/drt_lib/drt_exporter.cpp
   src/drt_lib/drt_function.cpp
   src/drt_lib/drt_globalproblem.cpp
-  src/drt_lib/drt_inputreader.cpp
-  src/drt_lib/drt_linedefinition.cpp
   src/drt_lib/drt_locsys.cpp
-  src/drt_lib/drt_materialdefinition.cpp
   src/drt_lib/drt_node.cpp
-  src/drt_lib/drt_nodereader.cpp
   src/drt_lib/drt_parobject.cpp
-  src/drt_lib/drt_parser.cpp
-  src/drt_lib/drt_resulttest.cpp
   src/drt_lib/drt_timecurve.cpp
   src/drt_lib/drt_utils.cpp
   src/drt_lib/drt_utils_createdis.cpp
-  src/drt_lib/drt_utils_metis.cpp
-  src/drt_lib/drt_utils_parmetis.cpp
   src/drt_mat/material.cpp
 )
 set(OBJS_DRT_MAT_LIB
@@ -403,6 +390,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/drt_validconditions.cpp
   src/drt_inpar/drt_validmaterials.cpp
   src/drt_inpar/drt_validparameters.cpp
+  src/drt_lib/drt_elementdefinition.cpp
 )
 set(OBJS_DRT_ARTNET
   src/drt_art_net/art_net_dyn_drt.cpp
@@ -441,6 +429,7 @@ set(OBJS_POST_DRT_Q9NECONVERT
 )
 set(OBJS_DRT_COMBUST
   src/drt_combust/combust_algorithm.cpp
+  src/drt_combust/combust_dyn.cpp
   src/drt_combust/combust_flamefront.cpp
   src/drt_combust/combust_fluidimplicitintegration.cpp
   src/drt_combust/combust_fluidresulttest.cpp
@@ -547,6 +536,7 @@ set(OBJS_POST_DRT_ENSIGHT
 )
 set(OBJS_DRT_ELCH
   src/drt_elch/elch_algorithm.cpp
+  src/drt_elch/elch_dyn.cpp
   src/drt_elch/elch_moving_boundary_algorithm.cpp
 )
 set(OBJS_DRT_BELE3_LIB
@@ -581,13 +571,20 @@ set(OBJS_DRT_UTILS
   src/drt_geometry/searchtree_nearestobject.cpp
   src/drt_lib/drt_condition_selector.cpp
   src/drt_lib/drt_condition_utils.cpp
+  src/drt_lib/drt_dserror.cpp
+  src/drt_lib/drt_exporter.cpp
   src/drt_lib/drt_nodematchingoctree.cpp
+  src/drt_lib/drt_parser.cpp
+  src/drt_lib/drt_resulttest.cpp
+  src/drt_lib/drt_utils_metis.cpp
+  src/drt_lib/drt_utils_parmetis.cpp
   src/pss_full/pss_am.c
   src/pss_full/pss_table.c
   src/pss_full/pss_table_iter.c
 )
 set(OBJS_DRT_SCATRA
   src/drt_scatra/passive_scatra_algorithm.cpp
+  src/drt_scatra/scatra_dyn.cpp
   src/drt_scatra/scatra_resulttest.cpp
   src/drt_scatra/scatra_timint_bdf2.cpp
   src/drt_scatra/scatra_timint_genalpha.cpp
@@ -599,6 +596,7 @@ set(OBJS_DRT_SCATRA
 )
 set(OBJS_DRT_TSI
   src/drt_tsi/tsi_algorithm.cpp
+  src/drt_tsi/tsi_dyn.cpp
   src/drt_tsi/tsi_utils.cpp
 )
 set(OBJS_DRT_S8_LIB
@@ -675,6 +673,7 @@ set(OBJS_DRT_COMBUST3_LIB
 )
 set(OBJS_DRT_THERMO
   src/drt_thermo/thr_aux.cpp
+  src/drt_thermo/thr_dyn.cpp
   src/drt_thermo/thr_resulttest.cpp
   src/drt_thermo/thrtimint.cpp
   src/drt_thermo/thrtimint_genalpha.cpp
@@ -740,6 +739,7 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
 )
 set(OBJS_DRT_LOMA
   src/drt_loma/loma_algorithm.cpp
+  src/drt_loma/loma_dyn.cpp
 )
 set(OBJS_POST_DRT_COMMON
   src/post_drt_common/post_drt_common.cpp
@@ -747,6 +747,7 @@ set(OBJS_POST_DRT_COMMON
 set(OBJS_INV_ANALYSIS
   src/drt_inv_analysis/gen_inv_analysis.cpp
   src/drt_inv_analysis/inv_analysis.cpp
+  src/drt_structure/str_invanalysis.cpp
 )
 set(OBJS_SHELL8
   src/fortran/s8_fserv.f
@@ -763,18 +764,8 @@ set(OBJS_DRT_MAT
   src/drt_mat/micromaterialgp_static.cpp
 )
 set(OBJS_BACI_MAIN
-  src/drt_ale/ale_dyn.cpp
-  src/drt_combust/combust_dyn.cpp
-  src/drt_elch/elch_dyn.cpp
-  src/drt_fsi/fsi_dyn.cpp
   src/drt_lib/drt_init_control.cpp
   src/drt_lib/global_inp_control2.cpp
-  src/drt_loma/loma_dyn.cpp
-  src/drt_scatra/scatra_dyn.cpp
-  src/drt_structure/stru_dyn_nln_drt.cpp
-  src/drt_structure/stru_static_drt.cpp
-  src/drt_thermo/thr_dyn.cpp
-  src/drt_tsi/tsi_dyn.cpp
   src/global_full/global_cal_control.c
   src/global_full/global_control.c
   src/global_full/main_ccarat.c
@@ -812,7 +803,6 @@ set(OBJS_DRT_MORTAR_LIB
 set(OBJS_DRT_STRUCTURE
   src/drt_patspec/patspec.cpp
   src/drt_structure/str_aux.cpp
-  src/drt_structure/str_invanalysis.cpp
   src/drt_structure/strtimada.cpp
   src/drt_structure/strtimada_create.cpp
   src/drt_structure/strtimada_zienxie.cpp
@@ -828,7 +818,9 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/strtimint_noxlinsys.cpp
   src/drt_structure/strtimint_ost.cpp
   src/drt_structure/strtimint_statics.cpp
+  src/drt_structure/stru_dyn_nln_drt.cpp
   src/drt_structure/stru_resulttest.cpp
+  src/drt_structure/stru_static_drt.cpp
   src/drt_structure/structure_utils_mapextractor.cpp
   src/drt_structure/strudyn_direct.cpp
   src/drt_structure/strugenalpha.cpp
@@ -875,6 +867,7 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_debugwriter.cpp
   src/drt_fsi/fsi_dirichletneumann.cpp
   src/drt_fsi/fsi_dirichletneumannslideale.cpp
+  src/drt_fsi/fsi_dyn.cpp
   src/drt_fsi/fsi_fluid_ale.cpp
   src/drt_fsi/fsi_fluid_xfem.cpp
   src/drt_fsi/fsi_lagrangeprec.cpp
@@ -926,6 +919,11 @@ set(OBJS_DRT_IO_LIB
   src/drt_io/io_gmsh.cpp
   src/drt_io/io_gmsh_xfem_extension.cpp
   src/drt_io/io_hdf.cpp
+  src/drt_lib/drt_elementreader.cpp
+  src/drt_lib/drt_inputreader.cpp
+  src/drt_lib/drt_linedefinition.cpp
+  src/drt_lib/drt_materialdefinition.cpp
+  src/drt_lib/drt_nodereader.cpp
 )
 set(OBJS_FORTRAN
   src/fortran/hex_fserv.f
@@ -993,6 +991,7 @@ set(OBJS_DRT_T3_LIB
 )
 set(OBJS_DRT_ALEALG
   src/drt_ale/ale.cpp
+  src/drt_ale/ale_dyn.cpp
   src/drt_ale/ale_laplace.cpp
   src/drt_ale/ale_lin.cpp
   src/drt_ale/ale_resulttest.cpp
@@ -1023,31 +1022,26 @@ set(OBJS_DRT_CONTACT
 option (D_ALE         "ale element (2D+3D)" ON)
 if (D_ALE)
   add_definitions("-DD_ALE")
-  #set(OBJECTS ${OBJECTS} ${OBJS_ALE} ${OBJS_DRT_ALE_LIB} ${OBJS_DRT_ALE})
 endif(D_ALE)
 
 option (D_FLUID2      "fluid2" ON)
 if (D_FLUID2)
   add_definitions("-DD_FLUID2")
-  #set(OBJECTS ${OBJECTS} ${OBJS_DRT_F2_LIB})
 endif(D_FLUID2)
 
 option (D_FLUID3      "fluid3" ON)
 if (D_FLUID3)
   add_definitions("-DD_FLUID3")
-  #set(OBJECTS ${OBJECTS} ${OBJS_DRT_F3_LIB} ${OBJS_DRT_COMBUST3_LIB})
 endif(D_FLUID3)
 
 option (D_SHELL8      "shell8" ON)
 if (D_SHELL8)
   add_definitions("-DD_SHELL8")
-  #set(OBJECTS ${OBJECTS} ${OBJS_SHELL8} ${OBJS_DRT_S8} ${OBJS_DRT_S8_LIB})
 endif(D_SHELL8)
 
 option (D_WALL1       "wall1" ON)
 if (D_WALL1)
   add_definitions("-DD_WALL1")
-  #set(OBJECTS ${OBJECTS} ${OBJS_DRT_W1_LIB})
 endif(D_WALL1)
 
 option (D_THERMO      "thermal elements" ON)
@@ -1058,70 +1052,52 @@ endif(D_THERMO)
 option (D_SOLID3      "spatial solid elements" ON)
 if (D_SOLID3)
   add_definitions("-DD_SOLID3")
-  #set(OBJECTS ${OBJECTS} ${OBJS_SOH8_LIB})
 endif(D_SOLID3)
 
 option (D_BEAM2       "2D Timoshenko beam element" ON)
 if (D_BEAM2)
   add_definitions("-DD_BEAM2")
-  #set(OBJECTS ${OBJECTS} ${OBJS_DRT_B2} ${OBJS_DRT_B2_LIB})
 endif(D_BEAM2)
 
 option (D_BEAM2R      "2D Reissner beam element" ON)
 if (D_BEAM2R)
   add_definitions("-DD_BEAM2R")
-  #set(OBJECTS ${OBJECTS} ${OBJS_DRT_B2R} ${OBJS_DRT_B2R_LIB})
 endif(D_BEAM2R)
 
 option (D_BEAM3       "3D Reissner beam element" ON)
 if (D_BEAM3)
   add_definitions("-DD_BEAM3")
-  #set(OBJECTS ${OBJECTS} ${OBJS_DRT_B3} ${OBJS_DRT_B3_LIB})
 endif(D_BEAM3)
 
 option (D_TRUSS3      "3D truss element" ON)
 if (D_TRUSS3)
   add_definitions("-DD_TRUSS3")
-  #set(OBJECTS ${OBJECTS} ${OBJS_DRT_T3} ${OBJS_DRT_T3_LIB})
 endif(D_TRUSS3)
 
 option (D_TRUSS2      "2D truss element" ON)
 if (D_TRUSS2)
   add_definitions("-DD_TRUSS2")
-  #set(OBJECTS ${OBJECTS} ${OBJS_DRT_T2} ${OBJS_DRT_T2_LIB})
 endif(D_TRUSS2)
 
 option (D_TORSION3    "3D torsion spring element" ON)
 if (D_TORSION3)
   add_definitions("-DD_TORSION3")
-  #set(OBJECTS ${OBJECTS} ${OBJS_DRT_TO3} ${OBJS_DRT_TO3_LIB})
 endif(D_TORSION3)
 
 option (D_TORSION2    "2D torsion spring element" ON)
 if (D_TORSION2)
   add_definitions("-DD_TORSION2")
-  #set(OBJECTS ${OBJECTS} ${OBJS_DRT_TO2} ${OBJS_DRT_TO2_LIB})
 endif(D_TORSION2)
 
 option (D_ARTNET      "1D Arterial network elements" OFF)
 if (D_ARTNET)
   add_definitions("-DD_ARTNET")
-  #set(OBJECTS ${OBJECTS} ${OBJS_DRT_ARTNET})
-  #set(COMMON_OBJECTS ${COMMON_OBJECTS} ${OBJS_DRT_ARTNET_LIB})
 endif(D_ARTNET)
 
 option (D_RED_AIRWAYS "reduced dimensional airways for calculating flow in lungs" OFF)
 if (D_RED_AIRWAYS)
   add_definitions("-DD_RED_AIRWAYS")
-  #set(OBJECTS ${OBJECTS} ${OBJS_DRT_RED_AIRWAYS})
-  #set(COMMON_OBJECTS ${COMMON_OBJECTS} ${OBJS_DRT_RED_AIRWAYS_LIB})
 endif(D_RED_AIRWAYS)
-
-#option (D_ALE_BFLOW "adds the effect of ALE defformation on the volumetric flow rate calculation on the boundaries" OFF)
-#if (D_ALE_BFLOW)
-#  add_definitions("-DD_ALE_BFLOW")
-#  #set(OBJECTS ${OBJECTS} ${OBJS_DRT_ALE_BFLOW})
-#endif (D_ALE_BFLOW)
 
 #   additional features
 
@@ -1228,34 +1204,57 @@ endif(THROWELEMENTERRORS)
 
 ###------------------------------------------------------------------ Binaries
 
+# Define the libraries. The link order is important!
+
 # algorithm libraries that depend on adapters
-add_library(drt_elch ${OBJS_DRT_ELCH})
-add_library(drt_fsi ${OBJS_DRT_FSI})
-add_library(drt_loma ${OBJS_DRT_LOMA})
-add_library(drt_scatra ${OBJS_DRT_SCATRA})
-add_library(drt_tsi ${OBJS_DRT_TSI})
+add_library(alg_elch ${OBJS_DRT_ELCH})
+add_library(alg_fsi ${OBJS_DRT_FSI})
+add_library(alg_loma ${OBJS_DRT_LOMA})
+add_library(alg_tsi ${OBJS_DRT_TSI})
+
+set(MULTIFIELD_LIBRARIES
+  alg_elch
+  alg_fsi
+  alg_loma
+  alg_tsi
+  )
 
 # the adapter layer
 add_library(drt_adapter ${OBJS_DRT_ADAPT})
 
 # algorithm libraries the adapters depend upon
-add_library(drt_ale ${OBJS_DRT_ALEALG})
-add_library(drt_combust ${OBJS_DRT_COMBUST})
-add_library(drt_constraint ${OBJS_DRT_CONSTRAINT})
-add_library(drt_contact ${OBJS_DRT_CONTACTNEW} ${OBJS_DRT_CONTACT})
-add_library(drt_fluid ${OBJS_DRT_FLUID})
-add_library(drt_invanalysis ${OBJS_INV_ANALYSIS})
-add_library(drt_mortar ${OBJS_DRT_MORTAR})
-add_library(drt_statmech ${OBJS_DRT_STATMECH})
-add_library(drt_structure ${OBJS_DRT_STRUCTURE})
-add_library(drt_thermo ${OBJS_DRT_THERMO})
-add_library(drt_artnet ${OBJS_DRT_ARTNET})
-add_library(drt_redairways ${OBJS_DRT_RED_AIRWAYS})
+add_library(alg_ale ${OBJS_DRT_ALEALG})
+add_library(alg_artnet ${OBJS_DRT_ARTNET})
+add_library(alg_combust ${OBJS_DRT_COMBUST})
+add_library(alg_contact ${OBJS_DRT_CONTACTNEW} ${OBJS_DRT_CONTACT})
+add_library(alg_fluid ${OBJS_DRT_FLUID})
+add_library(alg_invanalysis ${OBJS_INV_ANALYSIS})
+add_library(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
+add_library(alg_scatra ${OBJS_DRT_SCATRA})
+add_library(alg_statmech ${OBJS_DRT_STATMECH})
+add_library(alg_structure ${OBJS_DRT_STRUCTURE})
+add_library(alg_thermo ${OBJS_DRT_THERMO})
+
+set(SINGLEFIELD_LIBRARIES
+  alg_ale
+  alg_artnet
+  alg_combust
+  alg_contact
+  alg_fluid
+  alg_redairways
+  alg_scatra
+  alg_statmech
+  alg_structure
+  alg_invanalysis
+  alg_thermo
+  )
 
 # general framework
 add_library(drt_nurbs ${OBJS_DRT_NURBS_DISCRET})
+add_library(drt_constraint ${OBJS_DRT_CONSTRAINT})
+add_library(drt_mortar ${OBJS_DRT_MORTAR})
 
-# baci specific element definitions
+# specific shell8 element definitions
 add_library(drt_s8 ${OBJS_DRT_S8} ${OBJS_SHELL8})
 
 # material definitions
@@ -1263,7 +1262,8 @@ add_library(drt_mat ${OBJS_DRT_MAT_LIB})
 add_library(drt_micromat ${OBJS_DRT_MAT} ${OBJS_DRT_STRU_MULTI})
 
 # libraries that are used by baci and by filters
-add_library(drt_lib ${OBJS_DRT_LIB} ${OBJS_DRT_INPAR} ${OBJS_PSS})
+add_library(drt_lib ${OBJS_DRT_LIB})
+add_library(drt_lib_inpar ${OBJS_DRT_INPAR})
 add_library(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
 add_library(drt_lib_contact ${OBJS_DRT_CONTACT_LIB} ${OBJS_DRT_CONTACTNEW_LIB})
 add_library(drt_lib_intersection ${OBJS_INTERSECTION})
@@ -1278,24 +1278,61 @@ add_library(drt_lib_utils ${OBJS_DRT_UTILS})
 add_library(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
 add_library(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
 
-add_library(drt_lib_ale ${OBJS_DRT_ALE_LIB})
-add_library(drt_lib_b2 ${OBJS_DRT_B2_LIB})
-add_library(drt_lib_b2r ${OBJS_DRT_B2R_LIB})
-add_library(drt_lib_b3 ${OBJS_DRT_B3_LIB})
-add_library(drt_lib_bele3 ${OBJS_DRT_BELE3_LIB})
-add_library(drt_lib_combust3 ${OBJS_DRT_COMBUST3_LIB})
-add_library(drt_lib_f2 ${OBJS_DRT_F2_LIB})
-add_library(drt_lib_f3 ${OBJS_DRT_F3_LIB})
-add_library(drt_lib_s8 ${OBJS_DRT_S8_LIB})
-add_library(drt_lib_scatra ${OBJS_DRT_SCATRA_LIB})
-add_library(drt_lib_so ${OBJS_SOH8_LIB})
-add_library(drt_lib_t2 ${OBJS_DRT_T2_LIB})
-add_library(drt_lib_t3 ${OBJS_DRT_T3_LIB})
-add_library(drt_lib_thermo ${OBJS_DRT_THERMO_LIB})
-add_library(drt_lib_to2 ${OBJS_DRT_TO2_LIB})
-add_library(drt_lib_to3 ${OBJS_DRT_TO3_LIB})
-add_library(drt_lib_w1 ${OBJS_DRT_W1_LIB})
+set(SUPPORT_LIBRARIES
+  drt_lib_artnet 
+  drt_lib_redairways
+  drt_lib_mortar
+  drt_lib_statmech
+  drt_lib_constraint
+  drt_lib_contact
+  # Libraries needed by elements
+  drt_lib_surfstress
+  drt_lib_potential
+  drt_lib_intersection
+  drt_lib_io
+  drt_lib_inpar
+  drt_lib_nurbs 
+  )
 
+add_library(ele_ale ${OBJS_DRT_ALE_LIB})
+add_library(ele_b2 ${OBJS_DRT_B2_LIB})
+add_library(ele_b2r ${OBJS_DRT_B2R_LIB})
+add_library(ele_b3 ${OBJS_DRT_B3_LIB})
+add_library(ele_bele3 ${OBJS_DRT_BELE3_LIB})
+add_library(ele_combust3 ${OBJS_DRT_COMBUST3_LIB})
+add_library(ele_f2 ${OBJS_DRT_F2_LIB})
+add_library(ele_f3 ${OBJS_DRT_F3_LIB})
+add_library(ele_s8 ${OBJS_DRT_S8_LIB})
+add_library(ele_scatra ${OBJS_DRT_SCATRA_LIB})
+add_library(ele_so ${OBJS_SOH8_LIB})
+add_library(ele_t2 ${OBJS_DRT_T2_LIB})
+add_library(ele_t3 ${OBJS_DRT_T3_LIB})
+add_library(ele_thermo ${OBJS_DRT_THERMO_LIB})
+add_library(ele_to2 ${OBJS_DRT_TO2_LIB})
+add_library(ele_to3 ${OBJS_DRT_TO3_LIB})
+add_library(ele_w1 ${OBJS_DRT_W1_LIB})
+
+set(ELEMENT_LIBRARIES 
+  ele_ale
+  ele_b2
+  ele_b2r
+  ele_b3
+  ele_bele3
+  ele_combust3
+  ele_f2
+  ele_f3
+  ele_s8
+  ele_scatra
+  ele_so
+  ele_t2
+  ele_t3
+  ele_thermo
+  ele_to2
+  ele_to3
+  ele_w1
+  )
+
+# filter framework
 add_library(post_drt_common ${OBJS_POST_DRT_COMMON})
 add_library(filter_common ${OBJS_FILTER_COMMON})
 
@@ -1311,110 +1348,48 @@ add_executable (post_drt_monitor ${OBJS_POST_DRT_MONITOR})
 add_executable (post_drt_s8convert ${OBJS_POST_DRT_S8CONVERT})
 add_executable (post_drt_q9neconvert ${OBJS_POST_DRT_Q9NECONVERT})
 
-#add_executable (pre_curve ${OBJS_PRE_CURVE})
+add_executable (pre_curve ${OBJS_PRE_CURVE})
 
 target_link_libraries (baci 
-  drt_fsi drt_tsi drt_elch drt_loma 
+  ${MULTIFIELD_LIBRARIES} 
   drt_adapter 
-  drt_structure drt_fluid drt_ale drt_thermo drt_scatra 
-  drt_contact drt_mortar 
-  drt_constraint
-  drt_statmech
-  drt_invanalysis
-  drt_combust
+  ${SINGLEFIELD_LIBRARIES}
   drt_nurbs
-  drt_artnet drt_redairways
+  drt_mortar 
+  drt_constraint
   drt_lib
-  #drt_lib_fluid
-  drt_lib_surfstress
-  drt_lib_io
-  drt_lib_artnet drt_lib_redairways
-  drt_lib_potential
-  drt_lib_intersection
-  drt_lib_mortar
-  drt_lib_statmech
-  drt_lib_scatra drt_lib_constraint drt_lib_nurbs drt_lib_thermo drt_lib_contact
-  drt_lib_ale 
-  drt_lib_bele3
-  drt_lib_combust3
-  drt_lib_b2 drt_lib_b2r drt_lib_b3 
-  drt_lib_f2 drt_lib_f3
-  drt_lib_so
-  drt_lib_w1
-  drt_lib_t2 drt_lib_t3 drt_lib_to2 drt_lib_to3
-  drt_lib_s8 drt_s8
+  ${ELEMENT_LIBRARIES}
+  drt_s8
+  ${SUPPORT_LIBRARIES}
   drt_micromat drt_mat
   drt_lib_utils
   linalg
   ${LIBRARIES})
 
-#set(PRE_FILTER_LIBRARIES 
-#  post_drt_common
-#  drt_lib
-#  drt_lib_artnet drt_lib_redairways
-#  drt_lib_mortar
-#  drt_lib_statmech
-#  drt_lib_scatra drt_lib_constraint drt_lib_nurbs drt_lib_thermo drt_lib_contact
-#  drt_lib_ale 
-#  drt_lib_bele3
-#  drt_lib_combust3
-#  drt_lib_b2 drt_lib_b2r drt_lib_b3 
-#  drt_lib_f2 drt_lib_f3
-#  drt_lib_so
-#  drt_lib_w1
-#  drt_lib_t2 drt_lib_t3 drt_lib_to2 drt_lib_to3
-#  drt_lib_s8
-#  drt_lib_surfstress
-#  drt_mat
-#  drt_lib_potential
-#  drt_lib_intersection
-#  drt_lib_io
-#  #drt_lib_fluid
-#  drt_lib_utils
-#  linalg
-#  filter_common
-#  ${LIBRARIES})
-
-set(POST_FILTER_LIBRARIES 
+set(FILTER_LIBRARIES 
   post_drt_common
   drt_lib
-  drt_lib_artnet drt_lib_redairways
-  drt_lib_mortar
-  drt_lib_statmech
-  drt_lib_scatra drt_lib_constraint drt_lib_nurbs drt_lib_thermo drt_lib_contact
-  drt_lib_ale 
-  drt_lib_bele3
-  drt_lib_combust3
-  drt_lib_b2 drt_lib_b2r drt_lib_b3 
-  drt_lib_f2 drt_lib_f3
-  drt_lib_so
-  drt_lib_w1
-  drt_lib_t2 drt_lib_t3 drt_lib_to2 drt_lib_to3
-  drt_lib_s8
-  drt_lib_surfstress
+  ${ELEMENT_LIBRARIES}
+  ${SUPPORT_LIBRARIES}
   drt_mat
-  drt_lib_potential
-  drt_lib_intersection
-  drt_lib_io
-  #drt_lib_fluid
   drt_lib_utils
   linalg
   filter_common
   ${LIBRARIES})
 
-target_link_libraries (post_drt_gid ${POST_FILTER_LIBRARIES})
-target_link_libraries (post_drt_ensight ${POST_FILTER_LIBRARIES})
-target_link_libraries (post_drt_monitor ${POST_FILTER_LIBRARIES})
-target_link_libraries (post_drt_s8convert ${POST_FILTER_LIBRARIES})
-target_link_libraries (post_drt_q9neconvert ${POST_FILTER_LIBRARIES})
+target_link_libraries (post_drt_gid ${FILTER_LIBRARIES})
+target_link_libraries (post_drt_ensight ${FILTER_LIBRARIES})
+target_link_libraries (post_drt_monitor ${FILTER_LIBRARIES})
+target_link_libraries (post_drt_s8convert ${FILTER_LIBRARIES})
+target_link_libraries (post_drt_q9neconvert ${FILTER_LIBRARIES})
 
-#target_link_libraries (pre_curve ${PRE_FILTER_LIBRARIES})
+target_link_libraries (pre_curve ${FILTER_LIBRARIES})
 
 option (D_EXODUS "exodus filter" OFF)
 if (D_EXODUS)
   add_definitions("-DD_EXODUS")
   add_executable (pre_exodus ${OBJS_PRE_EXODUS})
-  target_link_libraries (pre_exodus ${PRE_FILTER_LIBRARIES})
+  target_link_libraries (pre_exodus ${FILTER_LIBRARIES})
 endif (D_EXODUS)
 
 ###------------------------------------------------------------------ Test definitions

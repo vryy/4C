@@ -24,6 +24,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_nodereader.o \
                 src/drt_lib/drt_element.o \
                 src/drt_lib/drt_elementregister.o \
+                #src/drt_lib/drt_element_factory.o \
                 src/drt_lib/drt_node.o \
                 src/drt_lib/drt_container.o \
                 src/drt_lib/drt_condition.o \
@@ -52,7 +53,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/linalg_utils.o \
                 src/drt_lib/linalg_serialdensematrix.o \
                 src/drt_lib/linalg_serialdensevector.o \
-                src/drt_lib/distribute_grids.o \
+                #src/drt_lib/distribute_grids.o \
                 src/drt_lib/drt_nodematchingoctree.o \
                 src/drt_lib/drt_parser.o \
                 src/drt_lib/drt_timecurve.o \
