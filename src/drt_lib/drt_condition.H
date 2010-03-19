@@ -173,7 +173,7 @@ public:
     WindkesselOptimCond,
     RedAirwayPrescribedCond,
     RedLungAcinusCond,
-    ILTthickness
+    PatientSpecificData
   };
 
   /*!
