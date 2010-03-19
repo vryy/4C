@@ -3036,6 +3036,13 @@ bool DRT::ELEMENTS::Fluid3::isHigherOrderElement(
   case tet4: case wedge6: case pyramid5: //!!!TODO:  wedge und pyramid have 2nd derivatives!!!!!!!!!!!!!!!!!!!!!!!!
     hoel = false;
     break;
+  // 2D
+  case quad4: case quad8: case quad9: case tri6: case nurbs4: case nurbs9:
+    hoel = true;
+    break;
+  case tri3:
+     hoel = false;
+     break;
   default:
     dserror("distype unknown!");
   }
