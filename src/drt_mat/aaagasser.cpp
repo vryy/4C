@@ -174,7 +174,7 @@ void MAT::AAAgasser::Evaluate(
 
   double detf = 0.0;
   if (iiinv < 0.0)
-    dserror("fatal failure in GASSER thrombus material");
+    dserror("fatal failure in GASSER thrombus material (detf<0)");
   else
     detf = sqrt(iiinv);   // determinate of deformation gradient -> J
 
@@ -214,15 +214,25 @@ void MAT::AAAgasser::Evaluate(
   // 2nd step: volumetric part (HOLZAPFEL S.230)
   //==========================
   double pres = -999.0;
+  double prestild = -999.0;
   
   // choose volumetric strain energy form
-  if (vol.compare("OgSiMi") == 0)
-	    pres = kappa*(1-pow(detf, -beta))/(detf*beta);
-	else if (vol.compare("SuBa") == 0) 
-	    pres = kappa*(detf-1);
-	else if (vol.compare("SiTa") == 0) 
-	    pres = kappa*(detf+(1/detf)*log(detf)-1)/2;
-	else dserror("Choose OgSiMi, SuBa or SiTa for the volumetric part! See reference...!");
+  if (vol.compare("OSM") == 0)
+  {
+    pres = kappa*(1-pow(detf, -beta))/(detf*beta);
+    prestild = kappa * pow(detf,-beta-1);
+  }
+  else if (vol.compare("SuBa") == 0) 
+  {
+    pres = kappa*(detf-1);
+    prestild = kappa*(2*detf-1);
+  }
+  else if (vol.compare("SiTa") == 0) 
+  {
+    pres = kappa*(detf+(1/detf)*log(detf)-1)/2;
+    prestild = kappa*(2*detf+(1/detf)-1)/2;
+  }
+  else dserror("Choose OSM, SuBa or SiTa for the volumetric part! See reference...!");
 
   stress.Update(pres*detf, invc, 1.0);
 
@@ -252,17 +262,6 @@ void MAT::AAAgasser::Evaluate(
 
   // 2nd step: volumetric part (HOLZAPFEL S.254f)
   //==========================
-  double prestild = -999.0;
-
-  // choose volumetric strain energy form
-  if (vol.compare("OgSiMi") == 0)
-	    prestild = kappa * pow(detf,-beta-1);
-	else if (vol.compare("SuBa") == 0) 
-	    prestild = kappa*(2*detf-1);
-	else if (vol.compare("SiTa") == 0) 
-	    prestild = kappa*(2*detf+(1/detf)-1)/2;
-	else dserror("Choose OgSiMi, SuBa or SiTa for the volumetric part! See reference...!");
-
   //contribution: J prestild Cinv \otimes Cinv
   cmat.MultiplyNT(detf*prestild,invc,invc,1.0);
   //contribution: -2 J*p Cinv \odot Cinv
