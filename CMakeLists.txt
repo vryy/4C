@@ -309,6 +309,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_vologden.cpp
   src/drt_matelast/elast_volpenalty.cpp
   src/drt_matelast/elast_volsussmanbathe.cpp
+  src/drt_patspec/patspec.cpp
 )
 set(OBJS_DRT_STATMECH
   src/drt_statmech/statmech_manager.cpp
@@ -463,7 +464,6 @@ set(OBJS_DRT_CONTACTNEW
   src/drt_contactnew/strugenalpha_cmt.cpp
 )
 set(OBJS_SOH8_LIB
-  src/drt_patspec/patspec.cpp
   src/drt_so3/inversedesign.cpp
   src/drt_so3/inversedesign_evaluate.cpp
   src/drt_so3/prestress.cpp
