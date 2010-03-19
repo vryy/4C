@@ -463,6 +463,7 @@ set(OBJS_DRT_CONTACTNEW
   src/drt_contactnew/strugenalpha_cmt.cpp
 )
 set(OBJS_SOH8_LIB
+  src/drt_patspec/patspec.cpp
   src/drt_so3/inversedesign.cpp
   src/drt_so3/inversedesign_evaluate.cpp
   src/drt_so3/prestress.cpp
@@ -806,7 +807,6 @@ set(OBJS_DRT_MORTAR_LIB
   src/drt_mortar/mortar_node.cpp
 )
 set(OBJS_DRT_STRUCTURE
-  src/drt_patspec/patspec.cpp
   src/drt_structure/str_aux.cpp
   src/drt_structure/strtimada.cpp
   src/drt_structure/strtimada_create.cpp
@@ -956,18 +956,17 @@ set(OBJS_DRT_B3_LIB
 )
 set(OBJS_DRT_F3_LIB
   src/drt_f3/fluid3.cpp
+  src/drt_f3/fluid3_boundary_impl.cpp
+  src/drt_f3/fluid3_element_boundary.cpp
+  src/drt_f3/fluid3_element_boundary_evaluate.cpp
   src/drt_f3/fluid3_evaluate.cpp
   src/drt_f3/fluid3_genalpha_resVMM.cpp
   src/drt_f3/fluid3_impl.cpp
   src/drt_f3/fluid3_input.cpp
   src/drt_f3/fluid3_lin_impl.cpp
-  src/drt_f3/fluid3_line.cpp
-  src/drt_f3/fluid3_line_evaluate.cpp
   src/drt_f3/fluid3_nurbs.cpp
   src/drt_f3/fluid3_stabilization.cpp
   src/drt_f3/fluid3_stationary.cpp
-  src/drt_f3/fluid3_surface.cpp
-  src/drt_f3/fluid3_surface_evaluate.cpp
   src/drt_f3/fluid3_weak_dbc.cpp
   src/drt_f3/xfluid3.cpp
   src/drt_f3/xfluid3_evaluate.cpp
@@ -1432,6 +1431,10 @@ macro (baci_test arg nproc restart)
 endmacro (baci_test)
 
 ###------------------------------------------------------------------ List of tests
+baci_test(artaneurysm_hex 1 "")
+baci_test(artaneurysm_hex 2 "")
+baci_test(artaneurysm_tet 1 "")
+baci_test(artaneurysm_tet 2 "")
 baci_test(beam2rcubic 1 "")
 baci_test(beam2rcubic 2 "")
 baci_test(beam2rlinear 1 "")
