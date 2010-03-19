@@ -34,7 +34,7 @@ DRT::Element(id,element_fluid3,owner),
 is_ale_(false),
 data_()
 {
-    // gaussrule_ = intrule3D_undefined;
+    distype_= dis_none;
 
     Cs_delta_sq_=0;
 
@@ -50,7 +50,7 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3::Fluid3(const DRT::ELEMENTS::Fluid3& old) :
 DRT::Element(old             ),
-//gaussrule_  (old.gaussrule_  ),
+distype_    (old.distype_    ),
 is_ale_     (old.is_ale_     ),
 data_       (old.data_       ),
 Cs_delta_sq_(old.Cs_delta_sq_),
@@ -72,31 +72,6 @@ DRT::Element* DRT::ELEMENTS::Fluid3::Clone() const
 }
 
 /*----------------------------------------------------------------------*
- |                                                             (public) |
- |                                                          u.kue 03/07 |
- *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Fluid3::Shape() const
-{
-	return distype_;
-/*  switch (NumNode())
-  {
-  // 3D
-  case  4: return tet4;
-  case  5: return pyramid5;
-  case  6: return wedge6;
-  case  8: return hex8;
-  case 10: return tet10;
-  case 15: return wedge15;
-  case 20: return hex20;
-  case 27: return hex27;
-  default:
-    dserror("unexpected number of nodes %d", NumNode());
-  }
-  return dis_none;
-  */
-}
-
-/*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
@@ -111,8 +86,6 @@ void DRT::ELEMENTS::Fluid3::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // Gaussrule
-  //AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   // is_ale_
   AddtoPack(data,is_ale_);
   // Cs_delta_sq_, the Smagorinsky constant for the dynamic Smagorinsky model
@@ -154,16 +127,12 @@ void DRT::ELEMENTS::Fluid3::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // Gaussrule
-  //int gausrule_integer;
-  //ExtractfromPack(position,data,gausrule_integer);
-  //gaussrule_ = GaussRule3D(gausrule_integer); //explicit conversion from integer to enum
   // is_ale_
   ExtractfromPack(position,data,is_ale_);
   // extract Cs_delta_sq_, the Smagorinsky constant for the dynamic
   // Smagorinsky model
   ExtractfromPack(position,data,Cs_delta_sq_);
-
+  // distype
   ExtractfromPack(position,data,distype_);
 
   // history variables (subscale velocities, accelerations and pressure)
@@ -227,7 +196,7 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Fluid3::ElementRegister() const
 
 
 /*----------------------------------------------------------------------*
- |  get vector of lines              (public)                  gjb 03/07|
+ |  get vector of lines              (public)                 ae  02/010|
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Lines()
 {
@@ -238,12 +207,28 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Lines()
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<Fluid3Line,Fluid3>(DRT::UTILS::buildLines,this);
+
+  if (NumLine()>1) // 1D boundary element and 2D/3D parent element
+  {
+    return DRT::UTILS::ElementBoundaryFactory<Fluid3Boundary,Fluid3>(DRT::UTILS::buildLines,this);
+  }
+  else if (NumLine()==1) // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
+  {
+    // 1D (we return the element itself)
+    vector<RCP<Element> > surfaces(1);
+    surfaces[0]= rcp(this, false);
+    return surfaces;
+  }
+  else
+  {
+    dserror("Lines() does not exist for points ");
+    return DRT::Element::Surfaces();
+  }
 }
 
 
 /*----------------------------------------------------------------------*
- |  get vector of surfaces (public)                            gjb 05/08|
+ |  get vector of surfaces (public)                          ehrl  02/10|
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Surfaces()
 {
@@ -254,18 +239,40 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Surfaces()
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<Fluid3Surface,Fluid3>(DRT::UTILS::buildSurfaces,this);
+
+  if (NumSurface() > 1)   // 2D boundary element and 3D parent element
+    return DRT::UTILS::ElementBoundaryFactory<Fluid3Boundary,Fluid3>(DRT::UTILS::buildSurfaces,this);
+  else if (NumSurface() == 1) // 2D boundary element and 2D parent element -> body load (calculated in evaluate)
+  {
+    // 2D (we return the element itself)
+    vector<RCP<Element> > surfaces(1);
+    surfaces[0]= rcp(this, false);
+    return surfaces;
+  }
+  else  // 1D elements
+  {
+    dserror("Surfaces() does not exist for 1D-element ");
+    return DRT::Element::Surfaces();
+  }
 }
 
 
 /*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)                g.bau 03/07|
+ |  get vector of volumes (length 1) (public)                 ehrl 02/10|
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Volumes()
 {
-  vector<RCP<Element> > volumes(1);
-  volumes[0]= rcp(this, false);
-  return volumes;
+  if (NumVolume()==1) // 3D boundary element and a 3D parent element -> body load (calculated in evaluate)
+  {
+    vector<RCP<Element> > volumes(1);
+    volumes[0]= rcp(this, false);
+    return volumes;
+  }
+  else //
+  {
+    dserror("Volumes() does not exist for 1D/2D-elements");
+    return DRT::Element::Surfaces();
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -536,10 +543,6 @@ void DRT::ELEMENTS::Fluid3Register::Print(ostream& os) const
   ElementRegister::Print(os);
   return;
 }
-
-
-
-
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_FLUID3

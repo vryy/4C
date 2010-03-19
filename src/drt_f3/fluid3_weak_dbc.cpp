@@ -16,7 +16,7 @@
 //   class for weak dirichlet condition and return pointer to it
 //-----------------------------------------------------------------
 DRT::ELEMENTS::Fluid3SurfaceWeakDBCInterface* DRT::ELEMENTS::Fluid3SurfaceWeakDBCInterface::Impl(
-  DRT::ELEMENTS::Fluid3Surface* f3surf
+  DRT::ELEMENTS::Fluid3Boundary* f3surf
   )
 {
   switch (f3surf->Shape())
@@ -25,7 +25,7 @@ DRT::ELEMENTS::Fluid3SurfaceWeakDBCInterface* DRT::ELEMENTS::Fluid3SurfaceWeakDB
   {
     static Fluid3SurfaceWeakDBC<DRT::Element::quad4,DRT::Element::hex8>* fsurfq4;
 
-    if(f3surf->parent_->Shape()==DRT::Element::hex8)
+    if(f3surf->ParentElement()->Shape()==DRT::Element::hex8)
     {
       if (fsurfq4==NULL)
         fsurfq4 = new Fluid3SurfaceWeakDBC<DRT::Element::quad4,DRT::Element::hex8>();
@@ -41,7 +41,7 @@ DRT::ELEMENTS::Fluid3SurfaceWeakDBCInterface* DRT::ELEMENTS::Fluid3SurfaceWeakDB
   {
     static Fluid3SurfaceWeakDBC<DRT::Element::nurbs9,DRT::Element::nurbs27>* fsurfn9;
 
-    if(f3surf->parent_->Shape()==DRT::Element::nurbs27)
+    if(f3surf->ParentElement()->Shape()==DRT::Element::nurbs27)
     {
       if (fsurfn9==NULL)
         fsurfn9 = new Fluid3SurfaceWeakDBC<DRT::Element::nurbs9,DRT::Element::nurbs27>();
@@ -85,7 +85,7 @@ DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::Fluid3SurfaceWeakDBC()
 template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype>
 int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
-  Fluid3Surface*             surfele       ,
+  Fluid3Boundary*             surfele       ,
   ParameterList&             params        ,
   DRT::Discretization&       discretization,
   vector<int>&               lm            ,
@@ -185,7 +185,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // Bazilevs Michler etal use 4.0 for quadratic nurbs as well
   // (in combination with a dynamic computation of tau, so lets
   // try it as well)
-  if(surfele->parent_->Shape()!=Fluid3::hex8 && surfele->parent_->Shape()!=Fluid3::nurbs27)
+  if(surfele->ParentElement()->Shape()!=Fluid3::hex8 && surfele->ParentElement()->Shape()!=Fluid3::nurbs27)
   {
     dserror("Cb up to now only implemented for trilinear orb nurbs elements");
   }
@@ -253,7 +253,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     =
     params.get<RefCountPtr<vector<int> > >("plmowner");
 
-  surfele->parent_->LocationVector(discretization,*plm,*plmowner);
+  surfele->ParentElement()->LocationVector(discretization,*plm,*plmowner);
 
   // --------------------------------------------------
   // Reshape element matrices and vectors and init to zero, construct views
@@ -294,7 +294,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   vector<double> myedispnp ((lm  ).size());
   vector<double> mypedispnp((*plm).size());
-  if (surfele->parent_->IsAle())
+  if (surfele->ParentElement()->IsAle())
   {
     // mesh displacements, new time step, n+1
     RefCountPtr<const Epetra_Vector> dispnp
@@ -335,7 +335,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     peprenp_(  i) = mypvelnp[3+fi];
   }
 
-  if (surfele->parent_->IsAle())
+  if (surfele->ParentElement()->IsAle())
   {
     for (int i=0;i<piel;++i)
     {
@@ -359,12 +359,12 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // extract node coords
   for(int i=0;i<piel;++i)
   {
-    pxyze_(0,i)=surfele->parent_->Nodes()[i]->X()[0];
-    pxyze_(1,i)=surfele->parent_->Nodes()[i]->X()[1];
-    pxyze_(2,i)=surfele->parent_->Nodes()[i]->X()[2];
+    pxyze_(0,i)=surfele->ParentElement()->Nodes()[i]->X()[0];
+    pxyze_(1,i)=surfele->ParentElement()->Nodes()[i]->X()[1];
+    pxyze_(2,i)=surfele->ParentElement()->Nodes()[i]->X()[2];
   }
 
-  if (surfele->parent_->IsAle())
+  if (surfele->ParentElement()->IsAle())
   {
     for (int i=0;i<piel;++i)
     {
@@ -376,7 +376,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   //--------------------------------------------------
   // get material of volume element this surface belongs to
-  RCP<MAT::Material> mat = surfele->parent_->Material();
+  RCP<MAT::Material> mat = surfele->ParentElement()->Material();
 
   if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
       && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
@@ -400,7 +400,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   //--------------------------------------------------
 
   // local surface id
-  int surfaceid =surfele->lsurface_;
+  int surfaceid =surfele->SurfaceNumber();
 
   // extract node coords
   for(int i=0;i<iel;++i)
@@ -410,7 +410,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     xyze_(2,i)=surfele->Nodes()[i]->X()[2];
   }
 
-  if (surfele->parent_->IsAle())
+  if (surfele->ParentElement()->IsAle())
   {
     for (int i=0;i<iel;++i)
     {
@@ -489,7 +489,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       =knots->GetBoundaryEleAndParentKnots(mypknots              ,
                                            myknots               ,
                                            normalfac             ,
-                                           surfele->parent_->Id(),
+                                           surfele->ParentElement()->Id(),
                                            surfaceid             );
 
     if(zero_sized_parent)
@@ -513,7 +513,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     {
       DRT::NURBS::ControlPoint* cp
         =
-        dynamic_cast<DRT::NURBS::ControlPoint* > (surfele->parent_->Nodes()[i]);
+        dynamic_cast<DRT::NURBS::ControlPoint* > (surfele->ParentElement()->Nodes()[i]);
 
       pweights(i) = cp->W();
     }
@@ -788,7 +788,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     if (pdet < 0.0)
     {
       dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f",
-              surfele->parent_->Id(),
+              surfele->ParentElement()->Id(),
               pdet);
     }
 

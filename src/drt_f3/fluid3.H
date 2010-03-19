@@ -49,16 +49,14 @@ class Discretization;
 namespace ELEMENTS
 {
 // forward declarations
-class Fluid3Surface;
 
-template<DRT::Element::DiscretizationType distype,DRT::Element::DiscretizationType pdistype> class Fluid3SurfaceWeakDBC;
-
-class Fluid3Line;
 template<DRT::Element::DiscretizationType distype> class Fluid3Impl;
 template<DRT::Element::DiscretizationType distype> class Fluid3StationaryImpl;
 template<DRT::Element::DiscretizationType distype> class Fluid3lin_Impl;
 template<DRT::Element::DiscretizationType distype> class Fluid3GenalphaResVMM;
 class Fluid3Register;
+
+class Fluid3Boundary;
 
 /*!
 \brief A C++ wrapper for the fluid3 element
@@ -71,77 +69,80 @@ public:
 
   //! @name Friends
   friend class Fluid3Register;
-  friend class Fluid3Surface;
-  friend class Fluid3Line;
+  friend class Fluid3Boundary;
 
   // All the template specializations that are used, new ones must be
   // added here.
   // 3D
-  friend class Fluid3Impl<DRT::Element::tet4>;
-  friend class Fluid3Impl<DRT::Element::pyramid5>;
-  friend class Fluid3Impl<DRT::Element::wedge6>;
   friend class Fluid3Impl<DRT::Element::hex8>;
-  friend class Fluid3Impl<DRT::Element::tet10>;
-  friend class Fluid3Impl<DRT::Element::wedge15>;
   friend class Fluid3Impl<DRT::Element::hex20>;
   friend class Fluid3Impl<DRT::Element::hex27>;
+  friend class Fluid3Impl<DRT::Element::tet4>;
+  friend class Fluid3Impl<DRT::Element::tet10>;
+  friend class Fluid3Impl<DRT::Element::wedge6>;
+  friend class Fluid3Impl<DRT::Element::wedge15>;
+  friend class Fluid3Impl<DRT::Element::pyramid5>;
   // 2D
   friend class Fluid3Impl<DRT::Element::quad4>;
   friend class Fluid3Impl<DRT::Element::quad8>;
   friend class Fluid3Impl<DRT::Element::quad9>;
   friend class Fluid3Impl<DRT::Element::tri3>;
   friend class Fluid3Impl<DRT::Element::tri6>;
+  // 1D
   friend class Fluid3Impl<DRT::Element::line2>;
   friend class Fluid3Impl<DRT::Element::line3>;
   friend class Fluid3StationaryImplInterface;
 
   // All the template specializations that are used, new ones must be
   // added here.
-  friend class Fluid3StationaryImpl<DRT::Element::tet4>;
-  friend class Fluid3StationaryImpl<DRT::Element::pyramid5>;
-  friend class Fluid3StationaryImpl<DRT::Element::wedge6>;
   friend class Fluid3StationaryImpl<DRT::Element::hex8>;
-  friend class Fluid3StationaryImpl<DRT::Element::tet10>;
-  friend class Fluid3StationaryImpl<DRT::Element::wedge15>;
   friend class Fluid3StationaryImpl<DRT::Element::hex20>;
   friend class Fluid3StationaryImpl<DRT::Element::hex27>;
+  friend class Fluid3StationaryImpl<DRT::Element::tet4>;
+  friend class Fluid3StationaryImpl<DRT::Element::tet10>;
+  friend class Fluid3StationaryImpl<DRT::Element::wedge6>;
+  friend class Fluid3StationaryImpl<DRT::Element::wedge15>;
+  friend class Fluid3StationaryImpl<DRT::Element::pyramid5>;
   // 2D
   friend class Fluid3StationaryImpl<DRT::Element::quad4>;
   friend class Fluid3StationaryImpl<DRT::Element::quad8>;
   friend class Fluid3StationaryImpl<DRT::Element::quad9>;
   friend class Fluid3StationaryImpl<DRT::Element::tri3>;
   friend class Fluid3StationaryImpl<DRT::Element::tri6>;
+  // 1D
   friend class Fluid3StationaryImpl<DRT::Element::line2>;
   friend class Fluid3StationaryImpl<DRT::Element::line3>;
   friend class Fluid3lin_ImplInterface;
   // All the template specializations that are used, new ones must be
   // added here.
-  friend class Fluid3lin_Impl<DRT::Element::tet4>;
-  friend class Fluid3lin_Impl<DRT::Element::pyramid5>;
-  friend class Fluid3lin_Impl<DRT::Element::wedge6>;
   friend class Fluid3lin_Impl<DRT::Element::hex8>;
-  friend class Fluid3lin_Impl<DRT::Element::tet10>;
-  friend class Fluid3lin_Impl<DRT::Element::wedge15>;
   friend class Fluid3lin_Impl<DRT::Element::hex20>;
   friend class Fluid3lin_Impl<DRT::Element::hex27>;
+  friend class Fluid3lin_Impl<DRT::Element::tet4>;
+  friend class Fluid3lin_Impl<DRT::Element::tet10>;
+  friend class Fluid3lin_Impl<DRT::Element::wedge6>;
+  friend class Fluid3lin_Impl<DRT::Element::wedge15>;
+  friend class Fluid3lin_Impl<DRT::Element::pyramid5>;
   // 2D
   friend class Fluid3lin_Impl<DRT::Element::quad4>;
   friend class Fluid3lin_Impl<DRT::Element::quad8>;
   friend class Fluid3lin_Impl<DRT::Element::quad9>;
   friend class Fluid3lin_Impl<DRT::Element::tri3>;
   friend class Fluid3lin_Impl<DRT::Element::tri6>;
+  // 1D
   friend class Fluid3lin_Impl<DRT::Element::line2>;
   friend class Fluid3lin_Impl<DRT::Element::line3>;
   friend class Fluid3ImplInterface;
-
-  friend class Fluid3GenalphaResVMM<DRT::Element::tet4>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::pyramid5>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::wedge6>;
+  // All the template specializations that are used, new ones must be
+  // added here.
   friend class Fluid3GenalphaResVMM<DRT::Element::hex8>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::tet10>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::wedge15>;
   friend class Fluid3GenalphaResVMM<DRT::Element::hex20>;
   friend class Fluid3GenalphaResVMM<DRT::Element::hex27>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::tet4>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::tet10>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::wedge6>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::wedge15>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::pyramid5>;
   friend class Fluid3GenalphaResVMM<DRT::Element::nurbs8>;
   friend class Fluid3GenalphaResVMM<DRT::Element::nurbs27>;
   // 2D
@@ -150,6 +151,7 @@ public:
   friend class Fluid3GenalphaResVMM<DRT::Element::quad9>;
   friend class Fluid3GenalphaResVMM<DRT::Element::tri3>;
   friend class Fluid3GenalphaResVMM<DRT::Element::tri6>;
+  // 1D
   friend class Fluid3GenalphaResVMM<DRT::Element::line2>;
   friend class Fluid3GenalphaResVMM<DRT::Element::line3>;
   friend class Fluid3GenalphaResVMMInterface;
@@ -187,7 +189,10 @@ public:
   /*!
   \brief Get shape type of element
   */
-  virtual DiscretizationType Shape() const;
+  virtual DiscretizationType Shape() const
+  {
+    return distype_;
+  };
 
   /*!
   \brief set discretization type of element
@@ -206,99 +211,21 @@ public:
     return DRT::UTILS::getNumberOfElementLines(distype_);
   }
 
-/*
-  {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 12;
-   else if (NumNode()==4 || NumNode()==10) return 6;
-   else {
-    dserror("Could not determine number of lines");
-    return -1;
-    }
-  }
-*/
-
   /*!
   \brief Return number of surfaces of this element
   */
   virtual int NumSurface() const
   {
-      switch(distype_)
-      {
-      case DRT::Element::hex8:
-      case DRT::Element::hex20:
-      case DRT::Element::hex27:
-      case DRT::Element::nurbs8:
-      case DRT::Element::nurbs27:
-        return 6; break;
-      case DRT::Element::tet4:
-      case DRT::Element::tet10:
-        return 4; break;
-      case DRT::Element::wedge6:
-      case DRT::Element::wedge15:
-      case DRT::Element::pyramid5:
-        return 5; break;
-      case DRT::Element::quad4:
-      case DRT::Element::quad8:
-      case DRT::Element::quad9:
-      case DRT::Element::nurbs4:
-      case DRT::Element::nurbs9:
-      case DRT::Element::tri3:
-      case DRT::Element::tri6:
-        return 1; break;
-      case DRT::Element::line2:
-      case DRT::Element::line3:
-        return 0; break;
-      default:
-        dserror("discretization type not yet implemented");
-      }
-      return 0;
-    }
-
-  /*
-  {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 6;
-    else if (NumNode()==4 || NumNode()==10) return 4;
-   else if (NumNode()==6 || NumNode()==15 || NumNode()==5) return 5;
-   else {
-   	dserror("Could not determine number of surfaces");
-   	return -1;
-	}
+      return DRT::UTILS::getNumberOfElementSurfaces(distype_);
   }
-*/
 
   /*!
   \brief Return number of volumes of this element (always 1)
   */
   virtual int NumVolume() const // {return 1;}
   {
-      switch(distype_)
-      {
-      case DRT::Element::hex8:
-      case DRT::Element::hex20:
-      case DRT::Element::hex27:
-      case DRT::Element::tet4:
-      case DRT::Element::tet10:
-      case DRT::Element::wedge6:
-      case DRT::Element::wedge15:
-      case DRT::Element::pyramid5:
-      case DRT::Element::nurbs8:
-      case DRT::Element::nurbs27:
-        return 1;
-        break;
-      case DRT::Element::quad4:
-      case DRT::Element::quad8:
-      case DRT::Element::quad9:
-      case DRT::Element::nurbs4:
-      case DRT::Element::nurbs9:
-      case DRT::Element::tri3:
-      case DRT::Element::tri6:
-      case DRT::Element::line2:
-      case DRT::Element::line3:
-        return 0;
-        break;
-      default:
-        dserror("discretization type not yet implemented");
-      }
-      return 0;
-    }
+      return DRT::UTILS::getNumberOfElementVolumes(distype_);
+  }
 
   /*!
   \brief Get vector of RefCountPtrs to the lines of this element
@@ -370,6 +297,7 @@ public:
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
   {
+    // number of Dof's is fluid specific. Therefore, it is not pushed into drt_utilis_local_connectivity
     switch(distype_)
     {
     case DRT::Element::hex8:
@@ -391,12 +319,13 @@ public:
     case DRT::Element::nurbs9:
     case DRT::Element::tri3:
     case DRT::Element::tri6:
-    case DRT::Element::line2:
-    case DRT::Element::line3:
       return 3;
       break;
+    case DRT::Element::line2:
+    case DRT::Element::line3:
+      dserror("1D Fluid elements are not supported");
     default:
-      dserror("discretization type not yet implemented");
+      dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype_)).c_str());
     }
     return 0;
   }
@@ -635,8 +564,6 @@ private:
   //! map that converts strings to actions (stabilisation)
   static map<string,StabilisationAction>          stabstrtoact_;
 
-  //! Gaussrule
-  // DRT::UTILS::GaussRule3D                         gaussrule_;
   //! flag for euler/ale net algorithm
   bool                                            is_ale_;
   //! container containing all kind of fluid3 thisandthat
@@ -1032,7 +959,7 @@ private:
 
 
 /*!
-\brief An element representing a surface of a fluid3 element
+\brief An element representing a boundary element of a fluid3 element
 
 \note This is a pure Neumann boundary condition element. It's only
       purpose is to evaluate surface Neumann boundary conditions that might be
@@ -1041,18 +968,17 @@ private:
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class Fluid3Surface : public DRT::Element
+
+
+// class Fluid3Boundary
+
+class Fluid3Boundary : public DRT::Element
 {
 public:
 
-  friend class Fluid3Line;
-
-  friend class Fluid3SurfaceWeakDBC<DRT::Element::quad4 ,DRT::Element::hex8   >;
-  friend class Fluid3SurfaceWeakDBC<DRT::Element::nurbs9,DRT::Element::nurbs27>;
-  friend class Fluid3SurfaceWeakDBCInterface;
-
   //! @name Constructors and destructors and related methods
 
+  //! number of space dimensions
   /*!
   \brief Standard Constructor
 
@@ -1064,7 +990,7 @@ public:
   \param parent: The parent fluid element of this surface
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
-  Fluid3Surface(int id, int owner, int nnode, const int* nodeids,
+  Fluid3Boundary(int id, int owner, int nnode, const int* nodeids,
              DRT::Node** nodes, DRT::ELEMENTS::Fluid3* parent, const int lsurface);
 
   /*!
@@ -1073,7 +999,7 @@ public:
   Makes a deep copy of a Element
 
   */
-  Fluid3Surface(const Fluid3Surface& old);
+  Fluid3Boundary(const Fluid3Boundary& old);
 
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
@@ -1093,13 +1019,16 @@ public:
   \brief Return number of lines of this element
   */
   virtual int NumLine() const
-  {if (NumNode()==4 || NumNode()==8 || NumNode()==9) return 4;
-    else if (NumNode()==3 || NumNode()==6) return 3;
-    else
-    {
-            dserror("Could not determine number of surfaces");
-        return -1;
-        }
+  {
+    return DRT::UTILS::getNumberOfElementLines(Shape());
+  }
+
+  /*!
+  \brief Return number of surfaces of this element
+  */
+  virtual int NumSurface() const
+  {
+    return DRT::UTILS::getNumberOfElementSurfaces(Shape());
   }
 
   /*!
@@ -1114,7 +1043,16 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Fluid3Surface;}
+
+  virtual vector<RCP<DRT::Element> > Surfaces();
+
+  /*!
+  \brief Return unique ParObject id
+
+  every class implementing ParObject needs a unique id defined at the
+  top of the drt_parobject.H file.
+  */
+  virtual int UniqueParObjectId() const { return ParObject_Fluid3Boundary;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -1136,7 +1074,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~Fluid3Surface();
+  virtual ~Fluid3Boundary();
 
   //@}
 
@@ -1153,7 +1091,9 @@ public:
   separately.
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
-  {return 4;}
+  {
+    return parent_->NumDofPerNode(node);
+  }
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -1244,17 +1184,27 @@ public:
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
+  virtual DRT::ELEMENTS::Fluid3* ParentElement()
+  {
+    return parent_;
+  }
+
+  virtual int SurfaceNumber()
+  {
+    return lsurface_;
+  }
+
   //@}
 
 private:
 
-  //! action parameters recognized by Fluid3Surface
   enum ActionType
   {
     none,
     integrate_Shapefunction,
     areacalc,
     flowratecalc,
+    calc_flowrate,
     flowratederiv,
     Outletimpedance,
     calc_node_normal,
@@ -1266,388 +1216,16 @@ private:
   };
 
   // don't want = operator
-  Fluid3Surface& operator = (const Fluid3Surface& old);
+  Fluid3Boundary& operator = (const Fluid3Boundary& old);
 
   //! The parent element of this surface
   DRT::ELEMENTS::Fluid3* parent_;
+
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
 
 
-  void CreateLinesTri(const int& nline,
-                      const int& nnode);
-
-  void CreateLinesQuad(const int& nline,
-                       const int& nnode);
-
-  /*!
-  \brief integrate shapefunction over surface element
-
-  \param params (in/out)    : ParameterList for communication between control routine
-                              and elements
-  \param discretization (in): A reference to the underlying discretization
-  \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
-  */
-
-  virtual void IntegrateShapeFunction(ParameterList& 		 params,
-                          	      DRT::Discretization&       discretization,
-                          	      vector<int>&               lm,
-                          	      Epetra_SerialDenseVector&  elevec1,
-                                      const std::vector<double>& edispnp);
-
-  /*!
-    \brief Calculate node normals
-
-    Acc. to Wall (7.13), surface integral.
-
-    \param elevec1 (out)      : Weighted element normal for assembly
-    \param edispnp (in)       : Displacement-vector
-  */
-  void ElementNodeNormal(ParameterList& 		 params,
-                       DRT::Discretization&       discretization,
-                       vector<int>&               lm,
-                       Epetra_SerialDenseVector&  elevec1,
-                       const std::vector<double>& edispnp);
-  /*!
-    \brief Calculate mean curvature H. Interpolate the results to achieve better
-    results in the surface tension algorithm (c0 field -> c1 field).
-
-    \param elevec1  (out)     : Nodal values of mean curvature
-    \param edispnp  (in)      : Displacement-vector
-    \param enormals (in)      : Node normals
-  */
-  void ElementMeanCurvature(ParameterList& params,
-                            DRT::Discretization& discretization,
-                            vector<int>& lm,
-                            Epetra_SerialDenseVector& elevec1,
-                            const std::vector<double>& edispnp,
-                            std::vector<double>& enormals);
-
-
-  /*!
-    \brief Integrate surface tension
-
-    \param elevec1   (out)    : RHS contribution of surface tension effect
-    \param edispnp   (in)     : Displacement-vector
-    \param enormals  (in)     : Node normals
-    \param curvature (in)     : Interpolated curvature
-  */
-  void ElementSurfaceTension(ParameterList& params,
-                             DRT::Discretization& discretization,
-                             vector<int>& lm,
-                             Epetra_SerialDenseVector& elevec1,
-                             const std::vector<double>& edispnp,
-                             std::vector<double>& enormals,
-                             std::vector<double>& ecurvature);
-
-  /*!
-  brief integrate elemental areas over a surface
-
-  \param params (in/out)    : ParameterList for communication between control routine
-                              and elements
-  */
-  void AreaCaculation(ParameterList& params,
-                      DRT::Discretization& discretization,
-                      vector<int>&               lm);
-
- /*!
-  brief integrate elemental flow rates over a surface
-
-  \param params (in/out)    : ParameterList for communication between control routine
-                              and elements
-  \param discretization (in): A reference to the underlying discretization
-  \param lm (in)            : location vector of this element
-  */
-  void FlowRateParameterCalculation(ParameterList& params,
-                  DRT::Discretization&       discretization,
-                  vector<int>&               lm);
-
-  /*!
-  \brief determine elemental flow rate and its derivatives wrt dofs
-
-  \param params (in/out)    : parameterList for communication between control routine
-                              and elements
-  \param discretization (in): reference to the underlying discretization
-  \param lm (in)            : location vector of this element
-  \param elemat1 (out)      : 2nd derivative of flowrates wrt
-                              velocities and displacements
-  \param elemat2 (out)      : 2nd derivative of flowrates wrt displacements
-  \param elevec1 (out)      : derivative of flowrates wrt velocities
-  \param elevec2 (out)      : derivative of flowrate wrt displacements
-  \param elevec3 (out)      : flowrate
-
-  */
-  void FlowRateDeriv(ParameterList& params,
-                     DRT::Discretization&       discretization,
-                     vector<int>&               lm,
-                     Epetra_SerialDenseMatrix& elemat1,
-                     Epetra_SerialDenseMatrix& elemat2,
-                     Epetra_SerialDenseVector& elevec1,
-                     Epetra_SerialDenseVector& elevec2,
-                     Epetra_SerialDenseVector& elevec3);
-
-
-  /*!
-  \brief apply impedance boundary condition (outlet pressures)
-
-  \param params (in/out)    : ParameterList for communication between control routine
-                              and elements
-  \param discretization (in): A reference to the underlying discretization
-  \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
-  */
-  void ImpedanceIntegration(ParameterList& params,
-          DRT::Discretization&       discretization,
-          vector<int>&               lm,
-          Epetra_SerialDenseVector&  elevec1);
-
-  /*!
-  \brief apply outflow boundary condition which is necessary for the conservative
-  element formulation (since the convective term was partially integrated)
-
-  \param params (in)        : ParameterList for communication between control routine
-  \param discretization (in): A reference to the underlying discretization
-  \param lm (in)            : location vector of this element
-  \param elemat1 (out)      : matrix to be filled by element.
-  \param elevec1 (out)      : vector to be filled by element.
-
-  */
-  void SurfaceConservativeOutflowConsistency(
-    ParameterList&             params,
-    DRT::Discretization&       discretization,
-    vector<int>&               lm,
-    Epetra_SerialDenseMatrix&  elemat1,
-    Epetra_SerialDenseVector&  elevec1);
-
-  /*!
-  \brief compute potential Neumann inflow
-
-  \param params (in)        : ParameterList for communication between control routine
-  \param discretization (in): A reference to the underlying discretization
-  \param lm (in)            : location vector of this element
-  \param elemat1 (out)      : matrix to be filled by element. If NULL on input,
-                              the controling method does not epxect the element to fill
-                              this matrix.                          and elements
-  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
-
-  */
-  void NeumannInflow(
-    ParameterList&             params,
-    DRT::Discretization&       discretization,
-    vector<int>&               lm,
-    Epetra_SerialDenseMatrix&  elemat1,
-    Epetra_SerialDenseVector&  elevec1);
-
-}; // class Fluid3Surface
-
-class Fluid3Line : public DRT::Element
-{
-public:
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  \param id : A unique global id
-  \param owner: Processor owning this line
-  \param nnode: Number of nodes attached to this element
-  \param nodeids: global ids of nodes attached to this element
-  \param nodes: the discretizations map of nodes to build ptrs to nodes from
-  \param parent: The parent fluid element of this line
-  \param lline: the local line number of this line w.r.t. the parent element
-  */
-
-  Fluid3Line(   int id,
-                int owner,
-                int nnode,
-                const int* nodeids,
-                DRT::Node** nodes,
-                DRT::Element* parent,
-                const int lline);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of a Element
-
-  */
-  Fluid3Line(const Fluid3Line& old);
-
-  /*!
-  \brief Deep copy this instance of an element and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::Element* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class implementing ParObject needs a unique id defined at the
-  top of the drt_parobject.H file.
-  */
-  virtual int UniqueParObjectId() const { return ParObject_Fluid3Line;}
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~Fluid3Line();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Get shape type of element
-  */
-  virtual DiscretizationType Shape() const;
-
-  /*!
-  \brief Get number of degrees of freedom of a certain node
-         (implements pure virtual DRT::Element)
-
-  The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of it's nodes
-  separately.
-  */
-  virtual int NumDofPerNode(const DRT::Node& node) const
-  {return 4;}
-
-  /*!
-  \brief Get number of degrees of freedom per element
-         (implements pure virtual DRT::Element)
-
-  The element decides how many element degrees of freedom it has.
-  It can redecide along the way of a simulation.
-
-  \note Element degrees of freedom mentioned here are dofs that are visible
-        at the level of the total system of equations. Purely internal
-        element dofs that are condensed internally should NOT be considered.
-  */
-  virtual int NumDofPerElement() const { return 0; }
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  /*!
-  \brief Allocate and return a ElementRegister class
-
-  Every implementation of DRT::Element must also implement
-  an DRT::ElementRegister. This method allocates and returns
-  an instance of a matching DRT::ElementRegister.
-  */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
-
-  //! @name Evaluation
-
-  /*!
-  \brief Evaluate an element
-
-  Evaluate fluid3 element stiffness, mass, internal forces etc
-
-  \param params (in/out): ParameterList for communication between control routine
-                          and elements
-  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \return 0 if successful, negative otherwise
-  */
-  virtual int Evaluate(ParameterList& params,
-               DRT::Discretization&      discretization,
-               vector<int>&              lm,
-               Epetra_SerialDenseMatrix& elemat1,
-               Epetra_SerialDenseMatrix& elemat2,
-               Epetra_SerialDenseVector& elevec1,
-               Epetra_SerialDenseVector& elevec2,
-               Epetra_SerialDenseVector& elevec3);
-
-
-  //@}
-
-  //! @name Evaluate methods
-
-  /*!
-  \brief Evaluate a Neumann boundary condition
-
-  this method evaluates a line Neumann condition on the shell element
-
-  \param params (in/out)    : ParameterList for communication between control routine
-                              and elements
-  \param discretization (in): A reference to the underlying discretization
-  \param condition (in)     : The condition to be evaluated
-  \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
-
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateNeumann(ParameterList& params,
-                              DRT::Discretization&      discretization,
-                              DRT::Condition&           condition,
-                              vector<int>&              lm,
-                              Epetra_SerialDenseVector& elevec1,
-                              Epetra_SerialDenseMatrix* elemat1 = NULL);
-
-  //@}
-
-private:
-
-  //! action parameters recognized by Fluid3Line
-  enum ActionType
-  {
-     none
-  };
-
-  // don't want = operator
-  Fluid3Line& operator = (const Fluid3Line& old);
-
-  //! The volume parent element of this line
-  DRT::Element* parent_;
-
-
-
-
-  //! The local line number of this line w.r.t to the parent_ element
-  int                    lline_;
-
-
-}; // class Fluid3Line
-
+}; // class Fluid3Boundary
 
 } // namespace ELEMENTS
 } // namespace DRT

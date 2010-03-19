@@ -99,7 +99,7 @@ namespace DRT
 
       */
       virtual int EvaluateWeakDBC(
-        Fluid3Surface*             surfele       ,
+        Fluid3Boundary*             surfele       ,
         ParameterList&             params        ,
         DRT::Discretization&       discretization,
         vector<int>&               lm            ,
@@ -116,7 +116,7 @@ namespace DRT
         \param f3surf (in): fluid surface element
 
       */
-      static Fluid3SurfaceWeakDBCInterface* Impl(DRT::ELEMENTS::Fluid3Surface* f3surf);
+      static Fluid3SurfaceWeakDBCInterface* Impl(DRT::ELEMENTS::Fluid3Boundary* f3surf);
 
     };
 
@@ -169,7 +169,7 @@ namespace DRT
 
       */
       virtual int EvaluateWeakDBC(
-        Fluid3Surface*             surfele       ,
+        Fluid3Boundary*             surfele       ,
         ParameterList&             params        ,
         DRT::Discretization&       discretization,
         vector<int>&               lm            ,

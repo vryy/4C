@@ -111,7 +111,7 @@ DRT::ELEMENTS::NURBS::Fluid3NurbsSurface::Fluid3NurbsSurface(
   const int              lsurface
   )
 :
-DRT::ELEMENTS::Fluid3Surface(id,owner,nnode,nodeids,nodes,parent,lsurface)
+DRT::ELEMENTS::Fluid3Boundary(id,owner,nnode,nodeids,nodes,parent,lsurface)
 {
   return;
 }
@@ -122,7 +122,7 @@ DRT::ELEMENTS::Fluid3Surface(id,owner,nnode,nodeids,nodes,parent,lsurface)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::NURBS::Fluid3NurbsSurface::Fluid3NurbsSurface
 (const DRT::ELEMENTS::NURBS::Fluid3NurbsSurface& old) :
-DRT::ELEMENTS::Fluid3Surface::Fluid3Surface(old)
+DRT::ELEMENTS::Fluid3Boundary::Fluid3Boundary(old)
 {
   return;
 }

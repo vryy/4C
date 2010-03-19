@@ -156,7 +156,7 @@ private:
   \author gammi (gamnitzer@lnm.mw.tum.de), 02/09
 
   ----------------------------------------------------------------------*/
-class Fluid3NurbsSurface : public DRT::ELEMENTS::Fluid3Surface
+class Fluid3NurbsSurface : public DRT::ELEMENTS::Fluid3Boundary
 {
 
 public:
