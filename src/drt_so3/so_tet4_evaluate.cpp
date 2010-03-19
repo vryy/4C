@@ -23,6 +23,7 @@ written by : Alexander Volf
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
+#include "../drt_patspec/patspec.H"
 #include "Epetra_SerialDenseSolver.h"
 
 // inverse design object
@@ -104,6 +105,9 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
   else if (action=="calc_struct_inversedesign_update") act = So_tet4::inversedesign_update;
 #endif
   else dserror("Unknown type of action for So_tet4");
+
+  // check for patient specific data
+  PATSPEC::GetILTDistance(Id(),params,discretization);
 
   // get the material law
   Teuchos::RCP<MAT::Material> actmat = Material();

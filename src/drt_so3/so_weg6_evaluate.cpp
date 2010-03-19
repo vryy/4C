@@ -24,6 +24,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_mat/viscoanisotropic.H"
+#include "../drt_patspec/patspec.H"
 
 //#include "Epetra_SerialDenseSolver.h"
 
@@ -76,6 +77,9 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
   else if (action=="calc_struct_inversedesign_update")            act = So_weg6::inversedesign_update;
 #endif
   else dserror("Unknown type of action for So_weg6");
+
+  // check for patient specific data
+  PATSPEC::GetILTDistance(Id(),params,discretization);
 
   // what should the element do
   switch(act)

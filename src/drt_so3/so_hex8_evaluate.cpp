@@ -26,6 +26,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_potential/drt_potential_manager.H"
+#include "../drt_patspec/patspec.H"
 
 // inverse design object
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
@@ -86,6 +87,10 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
   else if (action=="calc_struct_inversedesign_update")            act = So_hex8::inversedesign_update;
 #endif
   else dserror("Unknown type of action for So_hex8");
+  
+  // check for patient specific data
+  PATSPEC::GetILTDistance(Id(),params,discretization);
+  
   // what should the element do
   switch(act)
   {
