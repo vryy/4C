@@ -15,7 +15,17 @@ Maintainer: Michael Gee
 #ifndef PATSPEC_H
 #define PATSPEC_H
 
-#include "../drt_lib/drt_discret.H"
+//#include "../drt_lib/drt_discret.H"
+
+namespace DRT
+{
+  class Discretization;
+}
+
+namespace Teuchos
+{
+  class ParameterList;
+}
 
 namespace PATSPEC
 {
@@ -24,6 +34,9 @@ namespace PATSPEC
 
   void ComputeEleNormalizedLumenDistance(DRT::Discretization& dis);
 
+  void GetILTDistance(const int eleid, 
+                      Teuchos::ParameterList& params, 
+                      DRT::Discretization& dis);
 
 }
 #endif /* PATSPEC_H */

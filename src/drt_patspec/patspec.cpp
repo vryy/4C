@@ -30,6 +30,8 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
   }
 
 
+
+
   //------------- test discretization for presence of the Gasser ILT material
   int lfoundit = 0;
   for (int i=0; i<dis.ElementRowMap()->NumMyElements(); ++i)
@@ -49,8 +51,18 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
       cout << "Detected Gasser ILT material, computing distance function...\n";
     PATSPEC::ComputeEleNormalizedLumenDistance(dis);
   }
-
+  //-------------------------------------------------------------------------
   
+  
+  
+  
+  if (!dis.Comm().MyPID())
+  {
+    cout << "************************************************************\n";
+    cout << "Leaving patient specific structural preprocessing (PATSPEC)\n";
+    cout << "____________________________________________________________\n";
+  }
+
   return;
 }
 
@@ -201,15 +213,15 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis)
   // put this column vector of element ilt thickness in a condition and store in
   // discretization
   Teuchos::RCP<DRT::Condition> cond = Teuchos::rcp(
-    new DRT::Condition(0,DRT::Condition::ILTthickness,false,DRT::Condition::Volume));
-  cond->Add("ilt thickness",*iltele);
+    new DRT::Condition(0,DRT::Condition::PatientSpecificData,false,DRT::Condition::Volume));
+  cond->Add("normalized ilt thickness",*iltele);
 
   //const Epetra_Vector* bla = cond->Get<Epetra_Vector>("ilt thickness");
   //cout << *bla;
 
   // check whether discretization has been filled before putting ocndition to dis
   bool filled = dis.Filled();
-  dis.SetCondition("ILTThickness",cond);
+  dis.SetCondition("PatientSpecificData",cond);
   if (filled && !dis.Filled()) dis.FillComplete();
     
   
@@ -220,6 +232,26 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis)
 }
 
 
+/*----------------------------------------------------------------------*
+ |                                                             gee 03/10|
+ *----------------------------------------------------------------------*/
+void PATSPEC::GetILTDistance(const int eleid, 
+                             Teuchos::ParameterList& params, 
+                             DRT::Discretization& dis)
+{
+  DRT::Condition* patspec = dis.GetCondition("PatientSpecificData");
+  if (!patspec) return;
+
+  const Epetra_Vector* fool = patspec->Get<Epetra_Vector>("normalized ilt thickness");
+  if (!fool) return;
+  
+  if (!fool->Map().MyGID(eleid)) dserror("I do not have this element");
+  
+  double meaniltthick = (*fool)[fool->Map().LID(eleid)];
+  params.set("iltthick meanvalue",meaniltthick);
+
+  return;
+}
 
 
 
