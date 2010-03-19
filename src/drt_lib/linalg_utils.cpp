@@ -71,40 +71,65 @@ RefCountPtr<Epetra_Vector> LINALG::CreateVector(const Epetra_Map& rowmap, const 
  *----------------------------------------------------------------------*/
 void LINALG::Export(const Epetra_MultiVector& source, Epetra_MultiVector& target)
 {
-  const bool sourceunique = source.Map().UniqueGIDs();
-  const bool targetunique = target.Map().UniqueGIDs();
+  try 
+  {
+    const bool sourceunique = source.Map().UniqueGIDs();
+    const bool targetunique = target.Map().UniqueGIDs();
 
-  // both are unique, does not matter whether ex- or import
-  if (sourceunique && targetunique)
-  {
-    Epetra_Export exporter(source.Map(),target.Map());
-    int err = target.Export(source,exporter,Insert);
-    if (err) dserror("Export using exporter returned err=%d",err);
-    return;
+    // both are unique, does not matter whether ex- or import
+    if (sourceunique && targetunique && 
+        source.Comm().NumProc()==1   &&
+        target.Comm().NumProc()==1 )
+    {
+      if (source.NumVectors() != target.NumVectors())
+        dserror("number of vectors in source and target not the same!");
+      for (int k=0; k<source.NumVectors(); ++k)
+        for (int i=0; i<target.Map().NumMyElements(); ++i)
+        {
+          const int gid = target.Map().GID(i);
+          if (gid<0) dserror("No gid for i");
+          const int lid = source.Map().LID(gid);
+          if (lid<0) continue;
+            //dserror("No source for target");
+          (*target(k))[i] = (*source(k))[lid];
+        }
+      return;
+    }
+    else if (sourceunique && targetunique)
+    {
+      Epetra_Export exporter(source.Map(),target.Map());
+      int err = target.Export(source,exporter,Insert);
+      if (err) dserror("Export using exporter returned err=%d",err);
+      return;
+    }
+    else if (sourceunique && !targetunique)
+    {
+      Epetra_Import importer(target.Map(),source.Map());
+      int err = target.Import(source,importer,Insert);
+      if (err) dserror("Export using exporter returned err=%d",err);
+      return;
+    }
+    else if (!sourceunique && targetunique)
+    {
+      Epetra_Export exporter(source.Map(),target.Map());
+      int err = target.Export(source,exporter,Insert);
+      if (err) dserror("Export using exporter returned err=%d",err);
+      return;
+    }
+    else if (!sourceunique && !targetunique)
+    {
+      // Neither target nor source are unique - this is a problem.
+      // We need a unique in between stage which we have to create artificially.
+      // That's nasty.
+      // As it is unclear whether this will ever be needed - do it later.
+      dserror("Neither target nor source maps are unique - cannot export");
+    }
+    else dserror("VERY strange");
   }
-  else if (sourceunique && !targetunique)
+  catch(int error)
   {
-    Epetra_Import importer(target.Map(),source.Map());
-    int err = target.Import(source,importer,Insert);
-    if (err) dserror("Export using exporter returned err=%d",err);
-    return;
+    dserror("Caught an Epetra exception %d",error);
   }
-  else if (!sourceunique && targetunique)
-  {
-    Epetra_Export exporter(source.Map(),target.Map());
-    int err = target.Export(source,exporter,Insert);
-    if (err) dserror("Export using exporter returned err=%d",err);
-    return;
-  }
-  else if (!sourceunique && !targetunique)
-  {
-    // Neither target nor source are unique - this is a problem.
-    // We need a unique in between stage which we have to create artificially.
-    // That's nasty.
-    // As it is unclear whether this will ever be needed - do it later.
-    dserror("Neither target nor source maps are unique - cannot export");
-  }
-  else dserror("VERY strange");
 
   return;
 }
