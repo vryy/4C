@@ -298,6 +298,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     			(*drefnew_)[i] = 9e99;
     	}
     	EvaluateDirichletPeriodic(p);
+    	//cout<<*disn_<<endl;
     }
 		// "common" case without periodic boundary conditions
     else
@@ -1270,8 +1271,10 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	bool 											usetime = true;
 	// store node Id of previously handled node
   int tmpid=-1;
-  // store lids of element nodes
+  // store LIDs of element nodes
   vector<int>								lids;
+  // store LIDs of DOFs subjected to oscillation in order to identify force sensor locations
+  vector<int>								fsensorlids;
 	// An element used to browse through Column Elements
   DRT::Element* 						element;
   // positions of nodes of an element with n nodes
@@ -1339,28 +1342,22 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 			dserror("Exactly one DPOINT Dirichlet BC is needed. It has to hold direction, amplitude and time curve no. of oscillatory motion");
 		if(check!=1)
 			dserror("Incorrect DPOINT Dirichlet BC definition: it has to hold direction, amplitude and time curve no. of oscillatory motion on the same (single) DOF");
+		if(oscdir_==2)
+			dserror("Please choose another than the z-direction for the oscillatory motion");
 
 		isinit_=true;
 	} // init
 
-//------------------------------------- loop through elements
+//---------------------------------------------------------- loop through elements
 	for(int i=0;i<discret_.NumMyRowElements(); i++)
 	{
+//-------------------------------- obtain nodal coordinates of the current element
 		// get i-th Element
 	  element = discret_.lRowElement(i);
-
-	  for(int j=0; j<element->NumNode();j++)
-	  	for(int k = 0; k<3; k++)
-	  	{
-	  		double referenceposition = ((element->Nodes())[j])->X()[k];
-	  	  vector<int> dofnode = discret_.Dof((element->Nodes())[j]);
-	  	  double displacement = (*disn_)[discret_.DofRowMap()->LID( dofnode[k] )];
-	  	  coord(k,j) =  referenceposition + displacement;
-	  	  // store current lid(s) (3 translational DOFs per node)
-	  	  lids.push_back(discret_.DofRowMap()->LID( dofnode[k] ));
-	  	}
-
+	  // get nodal coordinates and LIDs of the nodal DOFs
+	  statmechmanager_->GetElementNodeCoords(element, disn_, coord, &lids);
 //-----------------------detect broken/fixed/free elements and fill position vector
+	  // determine existence and location of broken element
 	  statmechmanager_->CheckForBrokenElement(coord, cut, &broken);
 
 	  for(int n=0; n<cut.N(); n++)
@@ -1383,6 +1380,9 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 					for(int k=0; k<cut.M(); k++)
 						if((*drefnew_)[lids.at(3*j+k)] > statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0))
 							(*drefnew_)[lids.at(3*j+k)] = (*disn_)[lids.at(3*j+k)];
+				// add DOF LID where a force sensor is to be set
+				int lid = lids.at(3*(n+1)+oscdir_);
+				fsensorlids.push_back(lid);
 				// store gid of the "n+1"-node to avoid overwriting
 				tmpid = element->Nodes()[n+1]->Id();
 			}
@@ -1397,6 +1397,8 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 					for(int k=0; k<cut.M(); k++)
 						if((*drefnew_)[lids.at(3*j+k)] > statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0))
 							(*drefnew_)[lids.at(3*j+k)] = (*disn_)[lids.at(3*j+k)];
+				int lid = lids.at(3*n+oscdir_);
+				fsensorlids.push_back(lid);
 				tmpid = element->Nodes()[n+1]->Id();
 			}
 			// case: unbroken element or broken in another than z-direction
@@ -1412,10 +1414,11 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				tmpid=element->Nodes()[n+1]->Id();
 			}
 	  }
-	  // reset cut and lids for the next element
-	  cut.Zero();
-	  lids.clear();
 	}
+
+//---------check/set force sensors anew for each time step
+  if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
+  	statmechmanager_->UpdateForceSensors(fsensorlids);
 
 //------------------------------------set Dirichlet values
 	// preliminary
@@ -1441,6 +1444,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
   dirichlet_->Add("val",addval);
   // set switch in dir. of oscillation
   dirichlet_->Add("onoff",addonoff);
+  cout<<*dirichlet_<<endl;
   DoDirichletConditionPeriodic(usetime, time);
 
   // set condition for fixed nodes

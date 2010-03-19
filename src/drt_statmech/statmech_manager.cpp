@@ -95,7 +95,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
       stproc.push_back(discret_.Comm().MyPID());
 
 
-    //information how many processor work at all
+    //information how many processors work at all
     vector<int> allproc(discret_.Comm().NumProc());
 
     //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
@@ -158,6 +158,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
      * with any other processor; initialization with -1 indicates that so far no forcesensors have been set*/
     forcesensor_ = rcp( new Epetra_Vector(*(discret_.DofColMap())) );
     forcesensor_->PutScalar(-1);
+    cout<<"--Force Sensor vector initialized!--"<<endl;
 
 
     /*since crosslinkers should be established only between different filaments the number of the filament
@@ -165,7 +166,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
      * the default -1 value is upkept in filamentnumber_ and crosslinkers between nodes belonging to the same filament
      * are allowed*/
 
-    //gettin a vector consisting of pointers to all filament number conditions set
+    //getting a vector consisting of pointers to all filament number conditions set
     vector<DRT::Condition*> filamentnumberconditions(0);
     discret_.GetCondition("FilamentNumber",filamentnumberconditions);
 
@@ -175,7 +176,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
       //get filament number described by the current condition
       int filamentnumber = filamentnumberconditions[i]->GetInt("Filament Number") ;
 
-      //get a pointer to nodal cloud coverd by the current condition
+      //get a pointer to nodal cloud covered by the current condition
       const vector<int>* nodeids = filamentnumberconditions[i]->Nodes();
 
       //loop through all the nodes of the nodal cloud
@@ -194,9 +195,9 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
      }
 
     /*Young's modulus and loss modulus are to be measured by means of the reaction forces at certain sensor points; example: if for a
-     * an actin network between two rheometer plates the stiffness is to be deterimined this can be done by measuring the forces exerted
+     * an actin network between two rheometer plates the stiffness is to be determined this can be done by measuring the forces exerted
      * to the upper plate which is moving forwards and backwards for example; so for measurements of viscoelastic properties of materials
-     * whithin a system certain sensor points have to be specified and in order to handle this whithing BACI these points are marked by
+     * whithin a system certain sensor points have to be specified and in order to handle this within BACI these points are marked by
      * means of the condition sensorcondition*/
 
     //gettin a vector consisting of pointers to all filament number conditions set
@@ -209,7 +210,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
       //get number of nodal dof with respect to which force is to be measured; note: numbering starts with zero
       int nodedofnumber = forcesensorconditions[i]->GetInt("DOF Number") ;
 
-      //get a pointer to nodal cloud coverd by the current condition
+      //get a pointer to nodal cloud covered by the current condition
       const vector<int>* nodeids = forcesensorconditions[i]->Nodes();
 
       //loop through all the nodes of the nodal cloud
@@ -603,6 +604,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
 
           double f = 0;//mean value of force
           double d = 0;//Displacement
+
           for(int i = 0; i < forcesensor_->MyLength(); i++)//changed
           {
             if( (*forcesensor_)[i] == 1)
@@ -704,7 +706,6 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
         //preparing variable storing coordinates of all these nodes
         int nnodes = 2;
         LINALG::SerialDenseMatrix coord(3,nnodes);
-
         for(int id = 0; id<3; id++)
          for(int jd = 0; jd<nnodes; jd++)
          {
@@ -1913,7 +1914,7 @@ void StatMechManager::StatMechWriteRestart(IO::DiscretizationWriter& output)
    * However, not saving crosslinkerpartner_ makes a reasonable restart impossible*/
 
   return;
-} // StatMechManager::StatMechOutput()
+} // StatMechManager::StatMechWriteRestart()
 
 /*----------------------------------------------------------------------*
  |read restart information for statistical mechanics (public)cyron 12/08|
@@ -1931,10 +1932,12 @@ void StatMechManager::StatMechReadRestart(IO::DiscretizationReader& reader)
 }// StatMechManager::StatMechReadRestart()
 
 /*----------------------------------------------------------------------*
- |check for broken element                         (public) mueller 3/10|
+ | check for broken element                        (public) mueller 3/10|
  *----------------------------------------------------------------------*/
 void StatMechManager::CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LINALG::SerialDenseMatrix& cut, bool *broken)
 {
+	// empty cut just in case it was handed over non-empty
+	cut.Zero();
 	*broken = false;
 	int ndim = coord.M();
 	// flag "broken" signals a broken element, flag "cut" hints at location of nodes 0 and 1 (of the two-noded beam)
@@ -1955,5 +1958,52 @@ void StatMechManager::CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LI
 				cut(dof,n) = 2.0;
 			}
   	}
-}
+  return;
+}// StatMechManager::CheckForBrokenElement
+
+/*----------------------------------------------------------------------*
+ | get a matrix with node coordinates and their DOF LIDs                |
+ |																							   (public) mueller 3/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::GetElementNodeCoords(DRT::Element* element, RCP<Epetra_Vector> dis, LINALG::SerialDenseMatrix& coord, vector<int>* lids)
+{
+	// clear LID vector just in case it was handed over non-empty
+	lids->clear();
+	for(int j=0; j<element->NumNode();j++)
+		for(int k = 0; k<3; k++)
+	 	{
+			// obtain k-th spatial component of the reference position of the j-th node
+	 		double referenceposition = ((element->Nodes())[j])->X()[k];
+	 		// get the GIDs of the node's DOFs
+	 	  vector<int> dofnode = discret_.Dof((element->Nodes())[j]);
+	 	  // store the displacement of the k-th spatial component
+	 	  double displacement = (*dis)[discret_.DofRowMap()->LID( dofnode[k] )];
+	 	  // write updated components into coord
+	 	  coord(k,j) =  referenceposition + displacement;
+	 	  // store current lid(s) (3 translational DOFs per node)
+	 	  if(lids!=NULL)
+	 	  	lids->push_back(discret_.DofRowMap()->LID( dofnode[k] ));
+	 	}
+	return;
+} // StatMechManager::GetElementNodeCoords
+
+/*----------------------------------------------------------------------*
+ | update force sensor locations                   (public) mueller 3/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::UpdateForceSensors(vector<int>& fsensorlids)
+{
+	// loop over DOFs subjected to oscillation (by DBC)
+	for(int i=0; i<(int)fsensorlids.size(); i++)
+	{
+		// loop over forcesensor_
+		for(int j=0; j<forcesensor_->MyLength(); j++)
+		{
+			// turn on force sensors for all DOFs in fsensorlids and else turn off
+			if(j==fsensorlids.at(i))
+				(*forcesensor_)[j] = 1.0;
+			else
+				(*forcesensor_)[j] = -1.0;
+		}
+	}
+} // StatMechManager::UpdateForceSensors
 #endif  // #ifdef CCADISCRET

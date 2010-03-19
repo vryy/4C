@@ -63,8 +63,26 @@ public:
   //! \brief Initializes beam3 elements in case of perioddic boundary conditions
   void PeriodicBoundaryBeam3Init(DRT::Element* element);
 
-  //!\brief check whether element is "broken" due to periodic boundary conditions
+  /*!\brief check whether element is "broken" due to periodic boundary conditions
+    \param coord  (in/out)  set of nodal coordinates
+		\param cut    (in/out)  in case of a broken element, cut holds component and information about the location of the nodes of the element
+		\param broken (in/out)  continous==false, broken==true
+		\date 03/10
+  */
   void CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LINALG::SerialDenseMatrix& cut, bool *broken);
+
+  /*!\brief return the current coordinates and DOF LIDs of all nodes of given element
+		 \param element (in) 	   an element
+		 \param dis		  (in)	   current displacement vector
+		 \param coord	  (in/out) current node coordinates of element
+		 \param lids		(in/out) nodal DOF LIDs of the element
+  */
+  void GetElementNodeCoords(DRT::Element* element, RCP<Epetra_Vector> dis, LINALG::SerialDenseMatrix& coord, vector<int>* lids=NULL);
+
+  /*!\brief update locations of force sensors
+     \param fsensorlids   (in) vector holding the LIDs of force sensor DOFs
+   */
+  void UpdateForceSensors(vector<int>& fsensorlids);
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
