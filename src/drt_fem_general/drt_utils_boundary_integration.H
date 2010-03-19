@@ -179,7 +179,8 @@ void ComputeMetricTensorForBoundaryEle(
       (*normalvec)(1) = dxyzdrs(0,2)*dxyzdrs(1,0)-dxyzdrs(1,2)*dxyzdrs(0,0);
       (*normalvec)(2) = dxyzdrs(0,0)*dxyzdrs(1,1)-dxyzdrs(1,0)*dxyzdrs(0,1);
       // normalize normal
-      normalvec->Scale(normalvec->Norm2());
+      const double norm2 = normalvec->Norm2();
+      normalvec->Scale(1/norm2);
 
     }
     else if (DRT::UTILS::DisTypeToDim<DISTYPE>::dim == 1)
@@ -187,7 +188,8 @@ void ComputeMetricTensorForBoundaryEle(
       (*normalvec)(0) = dxyzdrs(0,1);
       (*normalvec)(1) = -dxyzdrs(0,0);
       // normalize normal
-      normalvec->Scale(normalvec->Norm2());
+      const double norm2 = normalvec->Norm2();
+      normalvec->Scale(1/norm2);
     }
     else
       dserror("There are only 2D and 1D boundary elements");
