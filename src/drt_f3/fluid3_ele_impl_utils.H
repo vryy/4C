@@ -29,7 +29,11 @@ namespace ELEMENTS
    *  to evaluate the laplacian operator for the residual-based stabilization.
    *  Hence, unlike to the Navier-Stokes equations, hex8, wedge6 and pyramid5
    *  return false although they have non-zero MIXED second derivatives.*/
-  template<DRT::Element::DiscretizationType distype>
+  /*
+
+// Scatra version: will be sorted out later
+
+template<DRT::Element::DiscretizationType distype>
   struct Use2ndDerivs {};
   template<> struct Use2ndDerivs<DRT::Element::hex8>    {static const bool use = false;};
   template<> struct Use2ndDerivs<DRT::Element::tet4>    {static const bool use = false;};
@@ -45,7 +49,7 @@ namespace ELEMENTS
   template<> struct Use2ndDerivs<DRT::Element::quad9>   {static const bool use = true; };
   template<> struct Use2ndDerivs<DRT::Element::tri6>    {static const bool use = true; };
   template<> struct Use2ndDerivs<DRT::Element::line3>   {static const bool use = true; };
-
+*/
 
   //! Template Meta Programming version of switch over discretization type
   template<DRT::Element::DiscretizationType distype>
@@ -69,6 +73,33 @@ namespace ELEMENTS
   template<> struct DisTypeToOptGaussRule<DRT::Element::nurbs9>   {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_9point; };
   template<> struct DisTypeToOptGaussRule<DRT::Element::line2>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_2point; };
   template<> struct DisTypeToOptGaussRule<DRT::Element::line3>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_3point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::nurbs2>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_2point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::nurbs3>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_3point; };
+
+  template<DRT::Element::DiscretizationType distype>
+  struct IsNurbs {};
+  template<> struct IsNurbs<DRT::Element::hex8>    {static const bool isnurbs = false; };
+  template<> struct IsNurbs<DRT::Element::hex20>   {static const bool isnurbs = false;};
+  template<> struct IsNurbs<DRT::Element::hex27>   {static const bool isnurbs = false;};
+  template<> struct IsNurbs<DRT::Element::tet4>    {static const bool isnurbs = false; };
+  template<> struct IsNurbs<DRT::Element::tet10>   {static const bool isnurbs = false; };
+  template<> struct IsNurbs<DRT::Element::wedge6>  {static const bool isnurbs = false;};
+  template<> struct IsNurbs<DRT::Element::wedge15>  {static const bool isnurbs = false;};
+  template<> struct IsNurbs<DRT::Element::pyramid5>{static const bool isnurbs = false;};
+  template<> struct IsNurbs<DRT::Element::quad4>   {static const bool isnurbs = false;};
+  template<> struct IsNurbs<DRT::Element::quad8>   {static const bool isnurbs = false;};
+  template<> struct IsNurbs<DRT::Element::quad9>   {static const bool isnurbs = false;};
+  template<> struct IsNurbs<DRT::Element::tri3>    {static const bool isnurbs = false; };
+  template<> struct IsNurbs<DRT::Element::tri6>    {static const bool isnurbs = false; };
+  template<> struct IsNurbs<DRT::Element::line2>   {static const bool isnurbs = false; };
+  template<> struct IsNurbs<DRT::Element::line3>   {static const bool isnurbs = false; };
+  template<> struct IsNurbs<DRT::Element::nurbs2>   {static const bool isnurbs = true; };
+  template<> struct IsNurbs<DRT::Element::nurbs3>   {static const bool isnurbs = true; };
+  template<> struct IsNurbs<DRT::Element::nurbs4>   {static const bool isnurbs = true; };
+  template<> struct IsNurbs<DRT::Element::nurbs9>   {static const bool isnurbs = true; };
+  template<> struct IsNurbs<DRT::Element::nurbs8>   {static const bool isnurbs = true; };
+  template<> struct IsNurbs<DRT::Element::nurbs27>   {static const bool isnurbs = true; };
+
 
   /*
   //! Template Meta Programming version of switch over discretization type
