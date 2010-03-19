@@ -127,8 +127,7 @@ OBJS_DRT_STRUCTURE      = \
                 src/drt_structure/stru_static_drt.o \
                 src/drt_structure/stru_resulttest.o \
                 src/drt_structure/str_invanalysis.o \
-                src/drt_structure/structure_utils_mapextractor.o \
-                src/drt_patspec/patspec.o
+                src/drt_structure/structure_utils_mapextractor.o
 #-------------------------------------------------------constraint drivers
 OBJS_DRT_CONSTRAINT      = \
                 src/drt_constraint/constraint_manager.o \
@@ -541,7 +540,8 @@ OBJS_SOH8_LIB = src/drt_so3/so_hex8.o \
                 src/drt_so3/so_hex20_multiscale.o \
                 src/drt_so3/so_hex8p1j1.o \
                 src/drt_so3/so_hex8p1j1_input.o \
-                src/drt_so3/so_hex8p1j1_evaluate.o
+                src/drt_so3/so_hex8p1j1_evaluate.o \
+                src/drt_patspec/patspec.o
 #--------------------------------------------------------- brick1
 OBJS_BRICK1   = 
 #               math
