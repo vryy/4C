@@ -555,6 +555,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
     }
   }
   } //end 3D Sysmat
+  else dserror("Genalpha solver does not supported Fluid2 elements yet");
 
   if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
   {

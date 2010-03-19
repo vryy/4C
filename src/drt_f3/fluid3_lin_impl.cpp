@@ -270,6 +270,8 @@ int DRT::ELEMENTS::Fluid3lin_Impl<distype>::Evaluate(
   const double timefac = params.get<double>("thsl",-1.0);
   if (timefac < 0.0) dserror("No thsl supplied");
 
+  if (nsd_ == 3)
+  {
   // calculate element coefficient matrix and rhs
   Sysmat(ele,
          evelnp,
@@ -283,6 +285,9 @@ int DRT::ELEMENTS::Fluid3lin_Impl<distype>::Evaluate(
          time,
          timefac,
          physicaltype);
+  }
+  else if(nsd_ == 2)
+    dserror("Linear Fluid3 solver does not support Fluid2 elements yet");
 
   return 0;
 }
