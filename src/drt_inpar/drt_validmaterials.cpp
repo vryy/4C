@@ -437,11 +437,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     
     AddNamedReal(m,"DENS","mass density");
     AddNamedString(m,"VOL","Type of volumetric Strain Energy Density (OSM,SuBa,SiTa)","OSM");
-    AddNamedReal(m,"NUE","Poisson's ratio");
-    AddNamedReal(m,"BETA","empiric constant for OSM");
-    AddNamedReal(m,"CLUM","luminal stiffness parameter");
-    AddNamedReal(m,"CMED","medial stiffness parameter");
-    AddNamedReal(m,"CABLUM","abluminal stiffness parameter");
+    AddNamedReal(m,"NUE","Poisson's ratio (0.49)");
+    AddNamedReal(m,"BETA","empiric constant for OSM (-2.0)");
+    AddNamedReal(m,"CLUM","luminal stiffness parameter (2.62e3)");
+    AddNamedReal(m,"CMED","medial stiffness parameter (2.62e3)");
+    AddNamedReal(m,"CABLUM","abluminal stiffness parameter (2.62e3)");
     
     /*   
     AddNamedReal(m,"DENS","mass density");
