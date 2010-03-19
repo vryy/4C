@@ -72,7 +72,11 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     case DRT::Element::element_truss3:
       nv = 3;
     break;
+    //TODO: Clean up after Fluid2 element died (ehrl)
     case DRT::Element::element_fluid3:
+      nv = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
+      np = 1;
+    break;
     case DRT::Element::element_sosh8p8:
       nv = 3;
       np = 1;
@@ -181,7 +185,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       numdf = 3;
       dimns = 6;
     break;
-    case DRT::Element::element_fluid3:
+    //case DRT::Element::element_fluid3:
     case DRT::Element::element_sosh8p8:
     case DRT::Element::element_xfluid3:
     case DRT::Element::element_combust3:
@@ -197,6 +201,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       numdf = 3;
       dimns = 3;
     break;
+    case DRT::Element::element_fluid3:
     case DRT::Element::element_transport:
       numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
       dimns = numdf;
@@ -634,9 +639,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   p   |    0       0       0       1
   */
 
-  else if (ele->Type() == DRT::Element::element_fluid3 || 
-           ele->Type() == DRT::Element::element_xfluid3 || 
-           ele->Type() == DRT::Element::element_combust3 || 
+  else if (ele->Type() == DRT::Element::element_xfluid3 ||
+           ele->Type() == DRT::Element::element_combust3 ||
            ele->Type() == DRT::Element::element_smoothrod ||
            ele->Type() == DRT::Element::element_sosh8p8)
   {
@@ -743,7 +747,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     } // for (int i=0; i<NumMyRowNodes(); ++i)
   } // else if (ele->Type() == DRT::Element::element_fluid2)
 
-  else if (ele->Type() == DRT::Element::element_transport)
+  else if (ele->Type() == DRT::Element::element_transport or
+      ele->Type() == DRT::Element::element_fluid3)
   {
     for (int i=0; i<NumMyRowNodes(); ++i)
     {
