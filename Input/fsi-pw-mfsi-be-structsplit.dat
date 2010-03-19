@@ -31,7 +31,7 @@ NUMTHERMDIS                     0
 //
 ---------------------------------------------------------EIGENVALUE ANALYSIS
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha
+DYNAMICTYP                      Gen_Alfa
 RESEVRYDISP                     1
 RESEVRYSTRS                     1
 RESTARTEVRY                     1
