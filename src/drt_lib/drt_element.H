@@ -91,6 +91,7 @@ public:
   \brief Type of element
 
   */
+  // TODO: Clean up
   enum ElementType
   {
     element_none,
@@ -160,7 +161,8 @@ public:
     element_thermoboundary,
     element_artery,             //_1D_ARTERY_
     element_so_hex8p1j1,
-    element_red_airway
+    element_red_airway,
+    element_fluid3boundary
   };
 
   /*!
