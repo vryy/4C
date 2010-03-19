@@ -405,15 +405,16 @@ private:
 
   //! evaluate shape functions and derivatives at int. point
   double EvalShapeFuncAndIntFac(
-      const DRT::UTILS::IntPointsAndWeights<bdrynsd_>& intpoints,  ///< integration points
-      const int                                    iquad,
-      const LINALG::Matrix<nsd_,iel>&           xyze,
-      const std::vector<Epetra_SerialDenseVector>*          myknots,
-      const Epetra_SerialDenseVector*         weights,
-      LINALG::Matrix<bdrynsd_,1>&                 xsi,
-      LINALG::Matrix<iel,1>&                  funct,
-      LINALG::Matrix<bdrynsd_,iel>&               deriv,
-      LINALG::Matrix<nsd_,1>*               normal = NULL
+      const DRT::UTILS::IntPointsAndWeights<bdrynsd_>&  intpoints,  ///< integration points
+      const int                                         iquad,
+      const LINALG::Matrix<nsd_,iel>&                   xyze,
+      const std::vector<Epetra_SerialDenseVector>*      myknots,
+      const Epetra_SerialDenseVector*                   weights,
+      LINALG::Matrix<bdrynsd_,1>&                       xsi,
+      LINALG::Matrix<iel,1>&                            funct,
+      LINALG::Matrix<bdrynsd_,iel>&                     deriv,
+      LINALG::Matrix<nsd_,1>*                           normal = NULL,
+      double*                                           drs = NULL
   );
 
   //! evaluate Nurbs specific stuff

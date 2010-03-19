@@ -1337,10 +1337,6 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementSurfaceTension(
     }
   }
 
-  // the metric tensor and its determinant
-  LINALG::Matrix<bdrynsd_, bdrynsd_> metrictensor(0.0);
-  double drs;
-
   /*----------------------------------------------------------------------*
    |               start loop over integration points                     |
    *----------------------------------------------------------------------*/
@@ -1350,7 +1346,9 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementSurfaceTension(
     // integration factor * Gauss weights & local Gauss point coordinates
     // shape function at the Gauss point & derivative of the shape function at the Gauss point
     // normalized normal vector
-    const double fac = EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv);
+
+    double drs;
+    const double fac = EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, NULL, &drs);
 
     // fac multiplied by the timefac
     const double fac_timefac = fac * timefac;
@@ -2104,14 +2102,15 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvalShapeFuncAndIntFac(
     const DRT::UTILS::IntPointsAndWeights<bdrynsd_>&  intpoints,
-    const int                                     gpid,
-    const LINALG::Matrix<nsd_,iel>&           xyze,
-    const std::vector<Epetra_SerialDenseVector>* myknots,
-    const Epetra_SerialDenseVector*          weights,
-    LINALG::Matrix<bdrynsd_,1>&                 xsi,
-    LINALG::Matrix<iel,1>&                  funct,
-    LINALG::Matrix<bdrynsd_,iel>&               deriv,
-    LINALG::Matrix<nsd_,1>*               normal)
+    const int                                         gpid,
+    const LINALG::Matrix<nsd_,iel>&                   xyze,
+    const std::vector<Epetra_SerialDenseVector>*      myknots,
+    const Epetra_SerialDenseVector*                   weights,
+    LINALG::Matrix<bdrynsd_,1>&                       xsi,
+    LINALG::Matrix<iel,1>&                            funct,
+    LINALG::Matrix<bdrynsd_,iel>&                     deriv,
+    LINALG::Matrix<nsd_,1>*                           normal,
+    double*                                           drs)
 {
   // local coordinates of the current integration point
   const double* gpcoord = (intpoints.IP().qxg)[gpid];
@@ -2155,12 +2154,16 @@ double DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvalShapeFuncAndIntFac(
 
   // compute measure tensor for surface element and the infinitesimal
   // area element drs for the integration
-  double drs(0.0);
+  double sqrtdetg(0.0);
   LINALG::Matrix<bdrynsd_,bdrynsd_> metrictensor(true);
 
-  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze,deriv,metrictensor,drs, normal);
+  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze,deriv,metrictensor, sqrtdetg, normal);
 
-  return intpoints.IP().qwgt[gpid]*drs;  // return integration factor
+  // return drs
+  if (drs != NULL)
+    (*drs)=sqrtdetg;
+
+  return intpoints.IP().qwgt[gpid]*sqrtdetg;  // return integration factor
 }
 
 template <DRT::Element::DiscretizationType distype>
