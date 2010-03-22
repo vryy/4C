@@ -370,49 +370,6 @@ public:
   */
   virtual int NumDof(unsigned nds, const Element* element) const
   { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); return dofsets_[nds]->NumDof(element); }
-
-  
-  virtual bool NodePointerBelongsToDiscretization(const Node* node) const
-  {
-    map<int,RCP<DRT::Node> >::const_iterator entry = node_.find(node->Id());
-    if (entry == node_.end())
-    {
-      cout << "node Gid not in node_ map!" << endl;
-      return false;
-    }
-    else
-    {
-      RCP<DRT::Node> disnode = entry->second;
-      if (node != disnode.getRawPtr())
-      {
-        cout << "node with Gid " << node->Id() << " does not belong to this discretization!";
-        return false;
-      }
-      else
-        return true;
-    }
-  }
-  
-  virtual bool ElementPointerBelongsToDiscretization(const Element* element) const
-  {
-    map<int,RCP<DRT::Element> >::const_iterator entry = element_.find(element->Id());
-    if (entry == element_.end())
-    {
-      cout << "element Gid not in node_ map!" << endl;
-      return false;
-    }
-    else
-    {
-      RCP<DRT::Element> diselement = entry->second;
-      if (element != diselement.getRawPtr())
-      {
-        cout << "element with Gid " << element->Id() << " does not belong to this discretization!";
-        return false;
-      }
-      else
-        return true;
-    }
-  }
   
   /*!
   \brief Get the gid of a dof for given node.
