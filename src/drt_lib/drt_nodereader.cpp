@@ -54,7 +54,7 @@ void NodeReader::Read()
   if (!myrank && !reader_.MyOutputFlag())
   {
     cout << "Read, create and partition nodes " << flush;
-#ifdef PARMETIS
+#if defined(PARALLEL) && defined(PARMETIS)
     cout << "block " << flush;
 #else
     cout << "        " << flush;
@@ -97,7 +97,7 @@ void NodeReader::Read()
   {
     if (0==myrank)
     {
-#ifdef PARMETIS
+#if defined(PARALLEL) && defined(PARMETIS)
       if (!reader_.MyOutputFlag())
       {
         printf("%d",block);

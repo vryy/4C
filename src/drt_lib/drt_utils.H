@@ -112,7 +112,7 @@ namespace UTILS
                                                    const Epetra_Vector& weights);
 
 
-#ifdef PARMETIS
+#if defined(PARALLEL) && defined(PARMETIS)
 
   /// redistribute a discretization using ParMetis
   /*!

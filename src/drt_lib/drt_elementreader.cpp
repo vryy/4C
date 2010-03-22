@@ -176,7 +176,7 @@ void ElementReader::Partition()
     bsize = maxblocksize;
   }
 
-#ifndef PARMETIS
+#if !defined(PARALLEL) || !defined(PARMETIS)
   // For simplicity we remember all node ids of all elements on
   // processor 0. This way we can create the graph on processor 0 and
   // use serial metis. If this turns out to be too memory consuming,
@@ -273,7 +273,7 @@ void ElementReader::Partition()
           // node ids --- it will be used later during reading of nodes
           // to add the node to one or more discretisations
           copy(nodeids, nodeids+numnode, inserter(nodes_, nodes_.begin()));
-#ifndef PARMETIS
+#if !defined(PARALLEL) || !defined(PARMETIS)
           elementnodes.push_back(vector<int>(nodeids, nodeids+numnode));
 #endif
 
@@ -316,7 +316,7 @@ void ElementReader::Partition()
   // just skip the partitioning.
   if (rownodes_->NumGlobalElements()>0)
   {
-#ifdef PARMETIS
+#if defined(PARALLEL) && defined(PARMETIS)
 
     // Simply allreduce the node ids --- the vector is ordered according
     // to the < operator from the set which was used to constuct it

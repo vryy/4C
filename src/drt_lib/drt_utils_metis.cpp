@@ -1,7 +1,7 @@
 
 #ifdef CCADISCRET
 
-#ifndef PARMETIS
+#if !defined(PARALLEL) || !defined(PARMETIS)
 
 #include "drt_inputreader.H"
 #include "drt_utils.H"
