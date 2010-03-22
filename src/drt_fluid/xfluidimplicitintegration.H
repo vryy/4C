@@ -571,7 +571,7 @@ protected:
   struct PhysProb
   {
     std::set<XFEM::PHYSICS::Field> fieldset_; ///< which physical fields are used in this problem
-    RCP<XFEM::ElementAnsatz> elementAnsatzp_; ///< element dofs for this problem
+    RCP<XFEM::ElementAnsatz> elementAnsatz_;  ///< element dofs for this problem
   } physprob_;
 
   /// this struct holds information about the fluid fluid coupling

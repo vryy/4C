@@ -198,7 +198,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   {
     cout0_ << endl<<endl << "Computing a diffusion problem!" << endl << endl;
     physprob_.fieldset_.insert(XFEM::PHYSICS::Temp);
-    physprob_.elementAnsatzp_ = rcp(new XDIFF::Diff3ElementAnsatz());
+    physprob_.elementAnsatz_ = rcp(new XDIFF::Diff3ElementAnsatz());
   }
   else
   {
@@ -209,10 +209,10 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     switch (xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"))
     {
     case INPAR::XFEM::BoundaryTypeSigma:
-      physprob_.elementAnsatzp_  = rcp<XFLUID::FluidElementAnsatz>(new XFLUID::FluidElementAnsatz());
+      physprob_.elementAnsatz_  = rcp<XFLUID::FluidElementAnsatz>(new XFLUID::FluidElementAnsatz());
       break;
     case INPAR::XFEM::BoundaryTypeTauPressure:
-      physprob_.elementAnsatzp_  = rcp<XFLUID::FluidElementAnsatzWithExtraElementPressure>(new XFLUID::FluidElementAnsatzWithExtraElementPressure());
+      physprob_.elementAnsatz_  = rcp<XFLUID::FluidElementAnsatzWithExtraElementPressure>(new XFLUID::FluidElementAnsatzWithExtraElementPressure());
       break;
     default:
       dserror("unknown boundary type");
@@ -675,7 +675,7 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
 
   // apply enrichments
   const Teuchos::RCP<XFEM::DofManager> dofmanager =
-      rcp(new XFEM::DofManager(ih_np_, physprob_.fieldset_, *physprob_.elementAnsatzp_, xparams_, fluidfluidstate_.MovingFluidNodeGIDs_));
+      rcp(new XFEM::DofManager(ih_np_, physprob_.fieldset_, *physprob_.elementAnsatz_, xparams_, fluidfluidstate_.MovingFluidNodeGIDs_));
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
@@ -1924,7 +1924,7 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
 
   // apply enrichments
   const Teuchos::RCP<XFEM::DofManager> dofmanager =
-      rcp(new XFEM::DofManager(ih_np_, physprob_.fieldset_, *physprob_.elementAnsatzp_, xparams_, fluidfluidstate_.MovingFluidNodeGIDs_));
+      rcp(new XFEM::DofManager(ih_np_, physprob_.fieldset_, *physprob_.elementAnsatz_, xparams_, fluidfluidstate_.MovingFluidNodeGIDs_));
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
@@ -2012,7 +2012,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
         const DRT::Element* actele = discret_->lColElement(i);
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -2059,7 +2059,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
         const DRT::Element* actele = discret_->lColElement(i);
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -2110,7 +2110,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
         const DRT::Element* actele = discret_->lColElement(i);
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -2218,7 +2218,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
         const DRT::Element* actele = discret_->lColElement(i);
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -2379,7 +2379,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         const DRT::Element* actele = discret_->lColElement(i);
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele, physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()), *dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele, physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()), *dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -3419,7 +3419,7 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
             const DRT::Element* actele = discret_->lColElement(i);
 
             // create local copy of information about dofs
-            const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+            const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
 
             vector<int> lm;
             vector<int> lmowner;
