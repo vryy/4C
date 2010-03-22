@@ -411,13 +411,6 @@ public:
   {
     dsassert(nds<dofsets_.size(),"undefined dof set");
     dsassert(havedof_,"no dofs assigned");
-#ifdef DEBUG
-    if (not NodePointerBelongsToDiscretization(node))
-    {
-      cout << "node with Gid " << node->Id() << " does not belong to this discretization!";
-      dserror("basic assumption violation!");
-    }
-#endif
     return dofsets_[nds]->Dof(node);
   }
 
@@ -435,13 +428,6 @@ public:
   { 
     dsassert(nds<dofsets_.size(),"undefined dof set");
     dsassert(havedof_,"no dofs assigned"); 
-#ifdef DEBUG
-    if (not ElementPointerBelongsToDiscretization(element))
-    {
-      cout << "element with Gid " << element->Id() << " does not belong to this discretization!";
-      dserror("basic assumption violation!");
-    }
-#endif
     return dofsets_[nds]->Dof(element); 
   }
 
