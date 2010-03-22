@@ -174,6 +174,9 @@ public:
   /// setup the discretizations
   void ReadFields(DRT::INPUT::DatFileReader& reader);
 
+  /// set up micro-scale discretizations in case of structure multi-scale simulations
+  void ReadMicroFields(DRT::INPUT::DatFileReader& reader);
+
   /// input of materials
   void ReadMaterials(const DRT::INPUT::DatFileReader& reader);
 

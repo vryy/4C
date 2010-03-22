@@ -74,7 +74,6 @@ void ntainp_ccadiscret()
 
   // and now the actual reading
   DRT::INPUT::DatFileReader reader(allfiles.inputfile_name, comm);
-  reader.Activate();
 
   problem->ReadParameter(reader);
 

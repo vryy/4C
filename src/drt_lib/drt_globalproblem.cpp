@@ -284,11 +284,6 @@ void DRT::Problem::InputControl()
   case prb_structure:
     genprob.numsf=0;
     break;
-  case prb_struct_multi:
-  {
-    genprob.numsf=0;
-    break;
-  }
   case prb_tsi:
   {
     genprob.numsf = 0;  /* structural field index */
@@ -740,6 +735,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
     nodereader.Read();
 
+    // read microscale fields from second, third, ... inputfile if necessary
+    // (in case of multi-scale material models in structure field)
+    ReadMicroFields(reader);
+
     break;
   }
   case prb_fsi_xfem:
@@ -823,6 +822,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
     AddDis(genprob.numff, fluiddis);
     AddDis(genprob.numscatra, scatradis);
+
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
@@ -916,107 +916,13 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.Read();
+
+    // read microscale fields from second, third, ... inputfile if necessary
+    // (in case of multi-scale material models)
+    ReadMicroFields(reader);
+
     break;
   } // end of else if (genprob.probtyp==prb_structure)
-  case prb_struct_multi:
-  {
-    // allocate and input general old stuff....
-
-    // read macroscale fields from main inputfile
-
-    structdis_macro = rcp(new DRT::Discretization("structure",reader.Comm()));
-    AddDis(genprob.numsf, structdis_macro);
-
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis_macro, reader, "--STRUCTURE ELEMENTS")));
-    nodereader.Read();
-
-    // read microscale fields from second, third, ... inputfile
-
-    for (std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator i=materials_->Map()->begin();
-         i!=materials_->Map()->end();
-         ++i)
-    {
-      int matid = i->first;
-      Teuchos::RCP<MAT::PAR::Material> material = i->second;
-      if (material->Type() == INPAR::MAT::m_struct_multiscale)
-      {
-        Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
-        MAT::MicroMaterial* micromat = static_cast<MAT::MicroMaterial*>(mat.get());
-        int microdisnum = micromat->MicroDisNum();
-
-        RCP<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
-#ifdef PARALLEL
-        RCP<Epetra_MpiComm> serialcomm = rcp(new Epetra_MpiComm(MPI_COMM_SELF));
-#else
-        RCP<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
-#endif
-
-        string micro_inputfile_name = micromat->MicroInputFileName();
-
-        if (micro_inputfile_name[0]!='/')
-        {
-          string filename = reader.MyInputfileName();
-          string::size_type pos = filename.rfind('/');
-          if (pos!=string::npos)
-          {
-            string path = filename.substr(0,pos+1);
-            micro_inputfile_name.insert(micro_inputfile_name.begin(), path.begin(), path.end());
-          }
-        }
-
-        if (!structdis_macro->Comm().MyPID())
-          cout << "input for microscale is read from        " << micro_inputfile_name << "\n";
-
-        DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, serialcomm, 1);
-        micro_reader.Activate();
-
-        structdis_micro = rcp(new DRT::Discretization("structure", micro_reader.Comm()));
-        micro_problem->AddDis(genprob.numsf, structdis_micro);
-
-        micro_problem->ReadParameter(micro_reader);
-
-        /* input of not mesh or time based problem data  */
-        micro_problem->InputControl();
-
-        // read materials of microscale
-        // CAUTION: materials for microscale can not be read until
-        // micro_reader is activated, since else materials will again be
-        // read from macroscale inputfile. Besides, materials MUST be read
-        // before elements are read since elements establish a connection
-        // to the corresponding material! Thus do not change position of
-        // function calls!
-        materials_->SetReadFromProblem(microdisnum);
-
-        micro_problem->ReadMaterials(micro_reader);
-
-        DRT::INPUT::NodeReader micronodereader(micro_reader, "--NODE COORDS");
-        micronodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
-        micronodereader.Read();
-
-        // read conditions of microscale
-        // -> note that no time curves and spatial functions can be read!
-
-        micro_problem->ReadConditions(micro_reader);
-
-        // At this point, everything for the microscale is read,
-        // subsequent reading is only for macroscale
-        structdis_micro->FillComplete();
-
-        // set the problem number from which to call materials again to zero
-        // (i.e. macro problem), cf. MAT::Material::Factory!
-        materials_->SetReadFromProblem(0);
-      }
-    }
-
-    // reactivate reader of macroscale as well as macroscale material
-
-    reader.Activate();
-//    ActivateMaterial();
-    materials_->ResetReadFromProblem();
-
-    break;
-  } // end of else if (genprob.probtyp==prb_struct_multi)
 
   case prb_loma:
   {
@@ -1107,6 +1013,88 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     dserror("Type of problem unknown");
   }
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
+{
+  for (std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator i=materials_->Map()->begin();
+       i!=materials_->Map()->end();
+       ++i)
+  {
+    int matid = i->first;
+    Teuchos::RCP<MAT::PAR::Material> material = i->second;
+    if (material->Type() == INPAR::MAT::m_struct_multiscale)
+    {
+      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
+      MAT::MicroMaterial* micromat = static_cast<MAT::MicroMaterial*>(mat.get());
+      int microdisnum = micromat->MicroDisNum();
+
+      RCP<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
+#ifdef PARALLEL
+      RCP<Epetra_MpiComm> serialcomm = rcp(new Epetra_MpiComm(MPI_COMM_SELF));
+#else
+      RCP<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
+#endif
+
+      string micro_inputfile_name = micromat->MicroInputFileName();
+      cout << "micro_inputfile_name = " << micro_inputfile_name << endl;
+
+      if (micro_inputfile_name[0]!='/')
+      {
+        string filename = reader.MyInputfileName();
+        string::size_type pos = filename.rfind('/');
+        if (pos!=string::npos)
+        {
+          string path = filename.substr(0,pos+1);
+          micro_inputfile_name.insert(micro_inputfile_name.begin(), path.begin(), path.end());
+        }
+      }
+
+      DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, serialcomm, 1);
+
+      RCP<DRT::Discretization> structdis_micro = rcp(new DRT::Discretization("structure", micro_reader.Comm()));
+      micro_problem->AddDis(genprob.numsf, structdis_micro);
+
+      micro_problem->ReadParameter(micro_reader);
+
+      /* input of not mesh or time based problem data  */
+      micro_problem->InputControl();
+
+      // read materials of microscale
+      // CAUTION: materials for microscale can not be read until
+      // micro_reader is activated, since else materials will again be
+      // read from macroscale inputfile. Besides, materials MUST be read
+      // before elements are read since elements establish a connection
+      // to the corresponding material! Thus do not change position of
+      // function calls!
+      materials_->SetReadFromProblem(microdisnum);
+
+      micro_problem->ReadMaterials(micro_reader);
+
+      DRT::INPUT::NodeReader micronodereader(micro_reader, "--NODE COORDS");
+      micronodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
+      micronodereader.Read();
+
+      // read conditions of microscale
+      // -> note that no time curves and spatial functions can be read!
+
+      micro_problem->ReadConditions(micro_reader);
+
+      // At this point, everything for the microscale is read,
+      // subsequent reading is only for macroscale
+      structdis_micro->FillComplete();
+
+      // set the problem number from which to call materials again to zero
+      // (i.e. macro problem), cf. MAT::Material::Factory!
+      materials_->SetReadFromProblem(0);
+    }
+  }
+
+  materials_->ResetReadFromProblem();
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

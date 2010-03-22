@@ -63,18 +63,10 @@ namespace INPUT
   everything is set up properly this instance goes away and the
   internal copy of the input file vanishes.
 
-  There are two more details to be considered: First we do not want to
+  There is one more details to be considered: we do not want to
   read all elements and nodes on each processor. So we skip reading
   these sections here. Elements and nodes are read in parallel by the
   ElementReader and NodeReader, respectively.
-
-  The second point is that the DatFileReader has to interact with the
-  old ccarat input system. That is once the input file is read you
-  have to Activate() the reader, which publishes some internal data of
-  the DatFileReader to the ccarat input system. After that the old fr*
-  functions can be used to read as long as the DatFileReader object is
-  alive. You must not read anymore once the active DatFileReader
-  object has been destroyed!
 
   The point of having this reader is to allow for special problem
   types that need to read more that one dat file. (Scary!) This can be
@@ -91,14 +83,6 @@ public:
 
   /// construct a reader for a given file
   DatFileReader(string filename, RefCountPtr<Epetra_Comm> comm, int outflag=0, bool dumpinput=true);
-
-  /// Publish (some) internal data to the old ccarat reading system
-  /*!
-    Note that these links remain intact even when the reader goes
-    away. So you have to be careful not to use the ccarat reading
-    functions any more once the active reader is gone.
-  */
-  void Activate();
 
   /// return my inputfile name
   string MyInputfileName() const;

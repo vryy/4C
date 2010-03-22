@@ -113,13 +113,6 @@ ifstream::pos_type DatFileReader::ExcludedSectionPosition(string section) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DatFileReader::Activate()
-{
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 bool DatFileReader::ReadSection(string name, Teuchos::ParameterList& list)
 {
   if (name.length() < 3 or name[0]!='-' or name[1]!='-')

@@ -304,8 +304,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& type = list->sublist("PROBLEM TYP",false,"");
 
   {
-  Teuchos::Tuple<std::string,18> name;
-  Teuchos::Tuple<PROBLEM_TYP,18> label;
+  Teuchos::Tuple<std::string,17> name;
+  Teuchos::Tuple<PROBLEM_TYP,17> label;
   name[ 0] = "Structure";                                   label[ 0] = prb_structure;
   name[ 1] = "Fluid";                                       label[ 1] = prb_fluid;
   name[ 2] = "Fluid_XFEM";                                  label[ 2] = prb_fluid_xfem;
@@ -317,13 +317,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   name[ 8] = "Ale";                                         label[ 8] = prb_ale;
   name[ 9] = "Thermo_Structure_Interaction";                label[ 9] = prb_tsi;
   name[10] = "Thermo";                                      label[10] = prb_thermo;
-  name[11] = "Structure_Multiscale";                        label[11] = prb_struct_multi;
-  name[12] = "Low_Mach_Number_Flow";                        label[12] = prb_loma;
-  name[13] = "Electrochemistry";                            label[13] = prb_elch;
-  name[14] = "Combustion";                                  label[14] = prb_combust;
-  name[15] = "ArterialNetwork";                             label[15] = prb_art_net;
-  name[16] = "Fluid_Structure_Interaction_Lung";            label[16] = prb_fsi_lung;
-  name[17] = "ReducedDimensionalAirWays";                   label[17] = prb_red_airways;
+  name[11] = "Low_Mach_Number_Flow";                        label[11] = prb_loma;
+  name[12] = "Electrochemistry";                            label[12] = prb_elch;
+  name[13] = "Combustion";                                  label[13] = prb_combust;
+  name[14] = "ArterialNetwork";                             label[14] = prb_art_net;
+  name[15] = "Fluid_Structure_Interaction_Lung";            label[15] = prb_fsi_lung;
+  name[16] = "ReducedDimensionalAirWays";                   label[16] = prb_red_airways;
   setStringToIntegralParameter<PROBLEM_TYP>(
                                "PROBLEMTYP",
                                "Fluid_Structure_Interaction",

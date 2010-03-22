@@ -40,7 +40,6 @@ void EXODUS::ValidateInputFile(const RCP<Epetra_Comm> comm, const string datfile
 
   // create a DatFileReader
   DRT::INPUT::DatFileReader reader(datfile,comm, 0,false);
-  reader.Activate();
 
   // read and validate dynamic and solver sections
   cout<<"...Read parameters"<<endl;

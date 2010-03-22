@@ -75,7 +75,6 @@ int main(int argc, char** argv)
 
   // and now the actual reading
   DRT::INPUT::DatFileReader reader(datfile.c_str(), comm);
-  reader.Activate();
 
   /*---------------------------------------------- input of time curves */
   DRT::UTILS::TimeCurveManager manager;
