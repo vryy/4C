@@ -1318,7 +1318,7 @@ RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Aorig,
   ML_Operator_WrapEpetraMatrix(const_cast<Epetra_CrsMatrix*>(&A),ml_As);
   ML_Operator_WrapEpetraMatrix(const_cast<Epetra_CrsMatrix*>(&B),ml_Bs);
   ML_Operator* ml_AtimesB = ML_Operator_Create(GetML_Comm());
-  ML_2matmult(ml_As,ml_Bs,ml_AtimesB,ML_CSR_MATRIX);
+  ML_2matmult(ml_As,ml_Bs,ml_AtimesB,ML_EpetraCRS_MATRIX); // ? better? ML_EpetraCRS_MATRIX / ML_CSR_MATRIX ??
   ML_Operator_Destroy(&ml_As);
   ML_Operator_Destroy(&ml_Bs);
   // For ml_AtimesB we have to reconstruct the column map in global indexing,
