@@ -153,7 +153,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle");
 
       // get access to global dofman
-      const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
+      const Teuchos::RCP<const XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
 
       Teuchos::RCP<XFEM::ElementAnsatz> elementAnsatz;
       switch (params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"))
@@ -174,6 +174,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       // problem: tight connectivity to xdofmapcreation
       if (params.get<bool>("DLM_condensation"))
       {
+//        globaldofman->  dserror check
         // assume no stress unknowns for the element
         eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz_empty, *globaldofman));
       }
@@ -184,7 +185,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       }
 
       // create an eledofman that has stress unknowns only for intersected elements
-      // Note: condensation for uncut elements is not handled, but also not needed
+      // Note: condensation for uncut elements is not possible/needed
       if (ih_->ElementIntersected(Id()))
       {
         std::set<XFEM::FieldEnr> enrfieldset;
@@ -196,29 +197,18 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             enrfieldset,
             skipped_elem_enr);
 
-        int nd_old = -1;
-        int na_old = -1;
-        if (eleDofManager_uncondensed_ != Teuchos::null)
-        {
-          nd_old = eleDofManager_uncondensed_->NumNodeDof();
-          na_old = eleDofManager_uncondensed_->NumElemDof();
-        }
-
         // nodal dofs for ele
         eleDofManager_uncondensed_ =
-          rcp(new XFEM::ElementDofManager(*this, eleDofManager_->getNodalDofSet(), enrfieldset, element_ansatz_filled));
+          rcp(new XFEM::ElementDofManager(
+              *this, eleDofManager_->getNodalDofSet(), enrfieldset, element_ansatz_filled
+              ));
 
-        const int nd = eleDofManager_uncondensed_->NumNodeDof();
-        const int na = eleDofManager_uncondensed_->NumElemDof();
-
-        if (nd != nd_old or na != na_old)
-        {
-          DLM_info_ = Teuchos::rcp(new DLMInfo(nd,na));
-        }
-        else
-        {
-          cout << "saved steps" << endl;
-        }
+        DLM_info_ = Teuchos::rcp(
+            new DLMInfo(
+                eleDofManager_uncondensed_->NumNodeDof(),
+                eleDofManager_uncondensed_->NumElemDof()
+                )
+            );
       }
       else
       {
