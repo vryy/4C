@@ -1039,7 +1039,6 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 #endif
 
       string micro_inputfile_name = micromat->MicroInputFileName();
-      cout << "micro_inputfile_name = " << micro_inputfile_name << endl;
 
       if (micro_inputfile_name[0]!='/')
       {
