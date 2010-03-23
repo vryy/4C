@@ -1679,16 +1679,17 @@ void STR::TimIntImpl::STCPreconditioning
     p.set("action", action);
     p.set("stc_scaling", stcscale_);
     p.set("stc_factor", stcfact_);
-    discret_->  SetState("residual displacement", disi_);
-    discret_->  SetState("displacement", disn_);
+    discret_->SetState("residual displacement", disi_);
+    discret_->SetState("displacement", disn_);
     Teuchos::RCP<Epetra_Vector> disisdc = LINALG::CreateVector(*dofrowmap_, true);
-    discret_-> Evaluate(p, stcmat, Teuchos::null,  Teuchos::null, Teuchos::null, Teuchos::null);
-    discret_-> ClearState();
+    discret_->Evaluate(p, stcmat, Teuchos::null,  Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->ClearState();
     stcmat->Complete();
-//      stiff_ = MLMultiply(*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),*sdcmat,true);
+    //stiff_ = MLMultiply(*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),*stcmat,false,false,true);
     stiff_ = Multiply(*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),false,*stcmat,false,true);
     if(stcscale_==INPAR::STR::stc_parasym or stcscale_==INPAR::STR::stc_currsym)
     {
+      //stiff_ = MLMultiply(*stcmat,*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),false,false,true);
       stiff_ = Multiply(*stcmat,true,*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),false,true);
       Teuchos::RCP<Epetra_Vector> fressdc = LINALG::CreateVector(*dofrowmap_, true);
       
