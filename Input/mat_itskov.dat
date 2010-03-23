@@ -63,9 +63,9 @@ RESEVRYDISP                     1
 RESEVRYERGY                     0
 RESEVRYSTRS                     1
 RESTARTEVRY                     10
-TOLCONSTR                       1e-04
-TOLDISP                         1e-06
-TOLRES                          1e-07
+TOLCONSTR                       1e-10
+TOLDISP                         1e-10
+TOLRES                          1e-10
 UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
@@ -681,9 +681,9 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 -----------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 5 POSITION dispx NAME dispx VALUE 0.5 TOLERANCE 1e-10
-STRUCTURE DIS 1 NODE 5 POSITION dispy NAME dispy VALUE -0.9195605900e-1 TOLERANCE 1e-10
-STRUCTURE DIS 1 NODE 5 POSITION dispz NAME dispz VALUE 0.9155353299e-1 TOLERANCE 1e-10
+STRUCTURE DIS 1 NODE 5 POSITION dispx NAME dispx VALUE 0.5 TOLERANCE 1e-9
+STRUCTURE DIS 1 NODE 5 POSITION dispy NAME dispy VALUE -9.175474616e-02 TOLERANCE 1e-9
+STRUCTURE DIS 1 NODE 5 POSITION dispz NAME dispz VALUE 9.175474660e-02 TOLERANCE 1e-9
 // FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
 // FLUID 1 - 0 0 0 0 0 0
 // STRUCTURE 2 - 0 0 0 0 0 0
