@@ -1506,13 +1506,12 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::AreaCaculation(
     }
 
     dsassert(mydispnp.size()!=0,"paranoid");
-    for (int i=0;i<iel;++i)
+    for (int inode=0;inode<iel;++inode)
     {
-      const int fi=4*i;
-
-      xyze(0,i)+=mydispnp[  fi];
-      xyze(1,i)+=mydispnp[1+fi];
-      xyze(2,i)+=mydispnp[2+fi];
+      for (int idim=0; idim<nsd_; ++idim)
+      {
+        xyze(idim,inode)+=mydispnp[numdofpernode_*inode+idim];
+      }
     }
   }
 
@@ -1601,13 +1600,12 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateParameterCalculation(
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
     }
     dsassert(mydispnp.size()!=0,"paranoid");
-    for (int i=0;i<iel;++i)
+    for (int inode=0;inode<iel;++inode)
     {
-      const int fi=4*i;
-
-      xyze(0,i)+=mydispnp[  fi];
-      xyze(1,i)+=mydispnp[1+fi];
-      xyze(2,i)+=mydispnp[2+fi];
+      for (int idim=0; idim<nsd_; ++idim)
+      {
+        xyze(idim,inode)+=mydispnp[numdofpernode_*inode+idim];
+      }
     }
   }
 #endif // D_ALE_BFLOW
@@ -1703,13 +1701,12 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeFlowRate(
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
     }
     dsassert(mydispnp.size()!=0,"paranoid");
-    for (int i=0;i<iel;++i)
+    for (int inode=0;inode<iel;++inode)
     {
-      const int fi=4*i;
-
-      xyze(0,i)+=mydispnp[  fi];
-      xyze(1,i)+=mydispnp[1+fi];
-      xyze(2,i)+=mydispnp[2+fi];
+      for (int idim=0; idim<nsd_; ++idim)
+      {
+        xyze(idim,inode)+=mydispnp[numdofpernode_*inode+idim];
+      }
     }
   }
 #endif // D_ALE_BFLOW
