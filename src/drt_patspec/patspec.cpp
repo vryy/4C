@@ -26,7 +26,7 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
   {
     cout << "____________________________________________________________\n";
     cout << "Entering patient specific structural preprocessing (PATSPEC)\n";
-    cout << "************************************************************\n";
+    cout << "\n";
   }
 
 
@@ -58,7 +58,7 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
   
   if (!dis.Comm().MyPID())
   {
-    cout << "************************************************************\n";
+    cout << "\n";
     cout << "Leaving patient specific structural preprocessing (PATSPEC)\n";
     cout << "____________________________________________________________\n";
   }
