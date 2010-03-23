@@ -1290,16 +1290,10 @@ RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Aorig,
                                              const Epetra_CrsMatrix& Borig,
                                              bool complete)
 {
-#if 1
   EpetraExt::CrsMatrix_SolverMap Atransform;
   EpetraExt::CrsMatrix_SolverMap Btransform;
   const Epetra_CrsMatrix& A = Atransform(const_cast<Epetra_CrsMatrix&>(Aorig));
   const Epetra_CrsMatrix& B = Btransform(const_cast<Epetra_CrsMatrix&>(Borig));
-#else
-  const Epetra_CrsMatrix& A = Aorig;
-  const Epetra_CrsMatrix& B = Borig;
-#endif
-
 
   // make sure FillComplete was called on the matrices
   if (!A.Filled()) dserror("A has to be FillComplete");
@@ -1318,7 +1312,7 @@ RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Aorig,
   ML_Operator_WrapEpetraMatrix(const_cast<Epetra_CrsMatrix*>(&A),ml_As);
   ML_Operator_WrapEpetraMatrix(const_cast<Epetra_CrsMatrix*>(&B),ml_Bs);
   ML_Operator* ml_AtimesB = ML_Operator_Create(GetML_Comm());
-  ML_2matmult(ml_As,ml_Bs,ml_AtimesB,ML_EpetraCRS_MATRIX); // ? better? ML_EpetraCRS_MATRIX / ML_CSR_MATRIX ??
+  ML_2matmult(ml_As,ml_Bs,ml_AtimesB,ML_CSR_MATRIX); // do NOT use ML_EpetraCRS_MATRIX !!
   ML_Operator_Destroy(&ml_As);
   ML_Operator_Destroy(&ml_Bs);
   // For ml_AtimesB we have to reconstruct the column map in global indexing,
@@ -1342,7 +1336,7 @@ RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Aorig,
   // For some unknown reason, ML likes to have stuff one larger than
   // neccessary...
   vector<double> dtemp(N_local+N_rcvd+1);
-  vector<int> cmap(N_local+N_rcvd+1);
+  vector<int>    cmap(N_local+N_rcvd+1);
   for (int i=0; i<N_local; ++i)
   {
     cmap[i] = B.DomainMap().GID(i);
@@ -1418,6 +1412,18 @@ RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Aorig,
   {
     int err = result->FillComplete(B.DomainMap(),A.RangeMap());
     if (err) dserror("Epetra_CrsMatrix::FillComplete returned err=%d",err);
+#if 0 // the current status is that we don't need this (mwgee)
+    EpetraExt::CrsMatrix_SolverMap ABtransform;
+    const Epetra_CrsMatrix& tmp = ABtransform(*result);
+    RCP<Epetra_CrsMatrix> finalresult = rcp(new Epetra_CrsMatrix(*result));
+    if (!finalresult->Filled()) 
+    {
+      finalresult->FillComplete(B.DomainMap(),A.RangeMap());
+      finalresult->OptimizeStorage();
+    }
+    result = null;
+    return rcp(new SparseMatrix(finalresult));
+#endif
   }
   return rcp(new SparseMatrix(result));
 }
