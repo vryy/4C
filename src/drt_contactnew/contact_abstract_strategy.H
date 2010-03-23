@@ -89,16 +89,16 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     //! @name Access methods
 
     /*!
-    \brief Return global slave dof row map
-
-    */
-    const RCP<Epetra_Map> SlaveRowDofs() { return gsdofrowmap_; }
-
-    /*!
     \brief Return global slave node row map
 
     */
     const RCP<Epetra_Map> SlaveRowNodes() { return gsnoderowmap_; }
+    
+    /*!
+    \brief Return global slave dof row map
+
+    */
+    const RCP<Epetra_Map> SlaveRowDofs() { return gsdofrowmap_; }
 
     /*!
     \brief Return convergence status of active set loop
@@ -430,6 +430,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     virtual void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
     virtual void Recover(RCP<Epetra_Vector> disi) = 0;
     virtual void ResetPenalty() = 0;
+    virtual void SaddlePointSolve(LINALG::Solver& solver, RCP<LINALG::SparseOperator> kdd, RCP<Epetra_Vector> fd, RCP<Epetra_Vector> sold, RCP<Epetra_Vector> dirichtoggle, int numiter) = 0;
     virtual void SaveReferenceState(const RCP<Epetra_Vector> dis) = 0;
     virtual void UpdateActiveSet() = 0;
     virtual void UpdateActiveSetSemiSmooth() = 0;
@@ -455,6 +456,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     vector<RCP<CONTACT::CoInterface> > interface_; // contact interfaces
 
+    RCP<Epetra_Map> glmdofrowmap_;  // global Lagrange mult. dof row map (of all interfaces)
     RCP<Epetra_Map> gsnoderowmap_;  // global slave node row map (of all interfaces)
     RCP<Epetra_Map> gsdofrowmap_;   // global slave dof row map (of all interfaces)
     RCP<Epetra_Map> gmdofrowmap_;   // global master dof row map (of all interfaces)

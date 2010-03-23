@@ -60,9 +60,9 @@ MORTAR::StrategyBase::StrategyBase(RCP<Epetra_Map> problemrowmap,
                                    int dim, RCP<Epetra_Comm> comm,
                                    double alphaf) :
 problemrowmap_(problemrowmap),
+comm_(comm),
 scontact_(params),
 dim_(dim),
-comm_(comm),
 alphaf_(alphaf)
 
 {

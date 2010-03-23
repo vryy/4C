@@ -3729,8 +3729,8 @@ void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele,
                                                   RCP<Epetra_SerialDenseVector> gseg)
 {
   // explicitely defined shapefunction type needed
-  if (shapefcn_ != INPAR::MORTAR::shape_standard)
-    dserror("ERROR: IntegrateKappaPenalty -> you should not be here!");
+  if (shapefcn_ == INPAR::MORTAR::shape_undefined)
+    dserror("ERROR: IntegrateKappaPenalty called without specific shape function defined!");
     
   //check input data
   if (!sele.IsSlave())

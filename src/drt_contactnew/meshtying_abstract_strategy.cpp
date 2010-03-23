@@ -64,6 +64,9 @@ interface_(interface)
   // merge interface maps to global maps
   for (int i=0; i<(int)interface_.size(); ++i)
   {
+    // merge interface Lagrange multiplier dof maps to global LM dof map
+    glmdofrowmap_ = LINALG::MergeMap(glmdofrowmap_, interface_[i]->LagMultDofs());
+        
     // merge interface master, slave maps to global master, slave map
     gsnoderowmap_ = LINALG::MergeMap(gsnoderowmap_, interface_[i]->SlaveRowNodes());
     gsdofrowmap_ = LINALG::MergeMap(gsdofrowmap_, interface_[i]->SlaveRowDofs());

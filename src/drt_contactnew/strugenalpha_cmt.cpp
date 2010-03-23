@@ -151,12 +151,18 @@ StruGenAlpha(params,dis,solver,output)
     INPAR::CONTACT::SolvingStrategy soltype =
     Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
     
+    // shape function type
+    INPAR::MORTAR::ShapeFcn shapefcn =
+    Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(cmtmanager_->GetStrategy().Params(),"SHAPEFCN");
+    
     // output
     if (discret_.Comm().MyPID() == 0)
     {
       cout << "===== DRT_NEWCONTACT ===========================================" << endl;  
-      if (soltype == INPAR::CONTACT::solution_lagmult)
-        cout << "===== Lagrange multiplier strategy =============================\n" << endl;
+      if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_standard)
+        cout << "===== Standard Lagrange multiplier strategy ====================\n" << endl;
+      else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_dual)
+        cout << "===== Dual Lagrange multiplier strategy ========================\n" << endl;
       else if (soltype == INPAR::CONTACT::solution_penalty)
         cout << "===== Penalty strategy =========================================\n" << endl;
       else if (soltype == INPAR::CONTACT::solution_auglag)
@@ -1109,10 +1115,6 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
   if (!errfile) printerr = false;
   bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
 
-  //------------------------------ turn adaptive solver tolerance on/off
-  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
-  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
-
   // check whether we have a stiffness matrix that is filled
   // and whether mass and damping are present
   // (here you can note the procedural change compared to standard
@@ -1155,16 +1157,8 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
     LINALG::PrintSparsityToPostscript( *(SystemMatrix()->EpetraMatrix()) );
 #endif // #ifdef CONTACTEIG
 
-    //--------------------------------------------------- solve for disi
-    // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-    if (isadapttol && numiter)
-    {
-      double worst = fresmnorm;
-      double wanted = tolres;
-      solver_.AdaptTolerance(wanted,worst,adaptolbetter);
-    }
-    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
-    solver_.ResetTolerance();  
+    //---------------------------------------------- solve linear system
+    LinearSolve(numiter,tolres,fresmnorm);
     
     //----------------------- transform back to global coordinate system
     if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(disi_);
@@ -1471,10 +1465,6 @@ void CONTACT::CmtStruGenAlpha::FullNewtonLineSearch()
   if (!errfile) printerr = false;
   bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
 
-  //------------------------------ turn adaptive solver tolerance on/off
-  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
-  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
-
   // check whether we have a stiffness matrix that is filled
   // and whether mass and damping are present
   // (here you can note the procedural change compared to Gen-alpha
@@ -1513,17 +1503,9 @@ void CONTACT::CmtStruGenAlpha::FullNewtonLineSearch()
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
 
-    //--------------------------------------------------- solve for disi
-    // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-    if (isadapttol && numiter)
-    {
-      double worst = fresmnorm;
-      double wanted = tolres;
-      solver_.AdaptTolerance(wanted,worst,adaptolbetter);
-    }
-    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
-    solver_.ResetTolerance();
-
+    //---------------------------------------------- solve linear system
+    LinearSolve(numiter,tolres,fresmnorm);
+    
     //------------------------------------ -- recover disi and Lag. Mult.
     cmtmanager_->GetStrategy().Recover(disi_);
 
@@ -2088,10 +2070,6 @@ void CONTACT::CmtStruGenAlpha::SemiSmoothNewton()
   if (!errfile) printerr = false;
   bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
 
-  //------------------------------ turn adaptive solver tolerance on/off
-  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
-  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
-
   // check whether we have a stiffness matrix that is filled
   // and whether mass and damping are present
   // (here you can note the procedural change compared to standard
@@ -2142,17 +2120,9 @@ void CONTACT::CmtStruGenAlpha::SemiSmoothNewton()
     LINALG::PrintSparsityToPostscript( *(SystemMatrix()->EpetraMatrix()) );
 #endif // #ifdef CONTACTEIG
 
-    //--------------------------------------------------- solve for disi
-    // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-    if (isadapttol && numiter)
-    {
-      double worst = fresmnorm;
-      double wanted = tolres;
-      solver_.AdaptTolerance(wanted,worst,adaptolbetter);
-    }
-    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
-    solver_.ResetTolerance();
-
+    //---------------------------------------------- solve linear system
+    LinearSolve(numiter,tolres,fresmnorm);
+    
     //----------------------- transform back to global coordinate system
     if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(disi_);
 #ifdef CONTACTTIME
@@ -2513,10 +2483,6 @@ void CONTACT::CmtStruGenAlpha::SemiSmoothNewtonLineSearch()
   if (!errfile) printerr = false;
   bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
 
-  //------------------------------ turn adaptive solver tolerance on/off
-  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
-  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
-
   // check whether we have a stiffness matrix that is filled
   // and whether mass and damping are present
   // (here you can note the procedural change compared to Gen-alpha
@@ -2559,18 +2525,10 @@ void CONTACT::CmtStruGenAlpha::SemiSmoothNewtonLineSearch()
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
 
-    //--------------------------------------------------- solve for disi
-    // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-    if (isadapttol && numiter)
-    {
-      double worst = fresmnorm;
-      double wanted = tolres;
-      solver_.AdaptTolerance(wanted,worst,adaptolbetter);
-    }
-    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
-    solver_.ResetTolerance();
-
-    //------------------------------------ -- recover disi and Lag. Mult.
+    //---------------------------------------------- solve linear system
+    LinearSolve(numiter,tolres,fresmnorm);
+    
+    //--------------------------------------- recover disi and Lag. Mult.
     cmtmanager_->GetStrategy().Recover(disi_);
 
     //----------------------------------------- store the current values
@@ -3151,10 +3109,6 @@ void CONTACT::CmtStruGenAlpha::PTC()
   if (!errfile) printerr = false;
   bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
 
-  //------------------------------ turn adaptive solver tolerance on/off
-  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
-  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
-
   /// check whether we have a stiffness matrix that is filled
   // and whether mass and damping are present
   // (here you can note the procedural change compared to standard
@@ -3205,17 +3159,9 @@ void CONTACT::CmtStruGenAlpha::PTC()
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
 
-    //--------------------------------------------------- solve for disi
-    // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-    if (isadapttol && numiter)
-    {
-      double worst = fresmnorm;
-      double wanted = tolres;
-      solver_.AdaptTolerance(wanted,worst,adaptolbetter);
-    }
-    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
-    solver_.ResetTolerance();
-
+    //---------------------------------------------- solve linear system
+    LinearSolve(numiter,tolres,fresmnorm);
+    
     //--------------------------------------- recover disi and Lag. Mult.
     cmtmanager_->GetStrategy().Recover(disi_);
 
@@ -4088,6 +4034,45 @@ void CONTACT::CmtStruGenAlpha::Integrate()
   
   return;
 } // void CmtStruGenAlpha::Integrate()
+
+
+/*----------------------------------------------------------------------*
+ |  linear solution in one iteration step                    popp  03/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::CmtStruGenAlpha::LinearSolve(int numiter, double wanted, double worst)
+{
+  // adapt solver tolerance
+  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
+  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
+  if (isadapttol && numiter) solver_.AdaptTolerance(wanted,worst,adaptolbetter);
+  
+  // shape function and strategy types
+  INPAR::MORTAR::ShapeFcn shapefcn        = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(cmtmanager_->GetStrategy().Params(),"SHAPEFCN");  
+  INPAR::CONTACT::SolvingStrategy soltype = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
+  
+  //**********************************************************************
+  // Solving strategy using standard Lagrange multipliers
+  //**********************************************************************
+  if (shapefcn == INPAR::MORTAR::shape_standard && soltype==INPAR::CONTACT::solution_lagmult)
+  {
+    // saddle point solver call
+    cmtmanager_->GetStrategy().SaddlePointSolve(solver_,stiff_,fresm_,disi_,dirichtoggle_,numiter);
+  }
+  
+  //**********************************************************************
+  // All other solving strategies (Dual LM, Penalty, Augmented)
+  //**********************************************************************
+  else
+  {
+    // standard solver call
+    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);  
+  }
+  
+  // reset solver tolerance
+  solver_.ResetTolerance();
+  
+  return;
+} // void CmtStruGeanAlpha::LinearSolve()
 
 
 /*----------------------------------------------------------------------*

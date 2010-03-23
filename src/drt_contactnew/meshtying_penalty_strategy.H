@@ -182,6 +182,7 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   // thus they are defined empty here in the case of Penalty meshtying.
   
   void Recover(RCP<Epetra_Vector> disi) {}
+  void SaddlePointSolve(LINALG::Solver& solver, RCP<LINALG::SparseOperator> kdd, RCP<Epetra_Vector> fd, RCP<Epetra_Vector> sold, RCP<Epetra_Vector> dirichtoggle, int numiter) {}
   
   //@}
   

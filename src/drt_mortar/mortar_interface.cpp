@@ -61,7 +61,8 @@ id_(id),
 comm_(comm),
 dim_(dim),
 icontact_(icontact),
-shapefcn_(INPAR::MORTAR::shape_undefined)
+shapefcn_(INPAR::MORTAR::shape_undefined),
+maxdofglobal_(-1)
 {
   RCP<Epetra_Comm> com = rcp(Comm().Clone());
   if (Dim()!=2 && Dim()!=3) dserror("ERROR: Mortar problem must be 2D or 3D");
@@ -107,8 +108,13 @@ void MORTAR::MortarInterface::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  finalize construction of interface (public)              mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::FillComplete()
+void MORTAR::MortarInterface::FillComplete(int maxdof)
 {
+  // store maximum global dof ID handed in
+  // this ID is later needed when setting up the Lagrange multiplier
+  // dof map, which of course must not overlap with existing dof ranges
+  maxdofglobal_ = maxdof;
+  
   // we'd like to call idiscret_.FillComplete(true,false,false) but this
   // will assign all nodes new degrees of freedom which we don't want.
   // We would like to use the degrees of freedom that were stored in the
@@ -633,6 +639,24 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
     mdoffullmap_ = rcp(new Epetra_Map(-1,(int)mcfull.size(),&mcfull[0],0,Comm()));
     mdofcolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
   }
+
+  //********************************************************************
+  // LAGRANGE MULTIPLIER DOFS
+  //********************************************************************
+  // temporary vector
+  vector<int> lmdof;
+  
+  // loop over all slave dofs
+  for (int i=0; i<sdofrowmap_->NumMyElements(); ++i)
+  {
+    int gid = sdofrowmap_->GID(i);
+    lmdof.push_back(gid + MaxDofGlobal() + 1);
+  }
+
+  // create interface LM map
+  // (if maxdofglobal_ == 0, we do not want / need this)
+  if (MaxDofGlobal()>0)
+    lmdofmap_ = rcp(new Epetra_Map(-1,(int)lmdof.size(),&lmdof[0],0,Comm()));
 
   return;
 }

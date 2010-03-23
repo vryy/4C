@@ -102,6 +102,11 @@ discret_(discret)
   vector<int> foundgroups(0);
   int numgroupsfound = 0;
 
+  // maximum dof number in discretization
+  // later we want to create NEW Lagrange multiplier degrees of
+  // freedom, which of course must not overlap with displacement dofs
+  int maxdof = Discret().DofRowMap()->MaxAllGID();
+  
   for (int i=0; i<(int)contactconditions.size(); ++i)
   {
     // initialize vector for current group of conditions and temp condition
@@ -274,7 +279,7 @@ discret_(discret)
     }
 
     //-------------------- finalize the meshtying interface construction
-    interface->FillComplete();
+    interface->FillComplete(maxdof);
     
     //---------------------------------------- create binary search tree
     interface->CreateSearchTree();
@@ -356,19 +361,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   
   // *********************************************************************
   // not (yet) implemented combinations
-  // *********************************************************************
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
-      Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual )
-    dserror("Lagrange multiplier strategy only implemented for dual shape fct.");
-  
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
-      Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_standard )
-    dserror("Penalty strategy only implemented for standard shape fct.");
-  
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
-      Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_standard )
-    dserror("Augmented Lagrange strategy only implemented for standard shape fct.");
-  
+  // *********************************************************************  
   if (Teuchos::getIntegralValue<int>(input,"CROSSPOINTS") == true && dim == 3)
     dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
   

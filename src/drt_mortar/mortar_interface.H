@@ -388,6 +388,27 @@ public:
     exit(EXIT_FAILURE); // calm down the compiler
   }
 
+  /*!
+  \brief Get map of Lagrange multiplier dofs (Filled()==true is prerequisite)
+
+  */
+  virtual const RCP<Epetra_Map> LagMultDofs() const
+  {
+    if (Filled()) return lmdofmap_;
+    else dserror("MORTAR::MortarInterface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+  
+  /*!
+  \brief Get maxmimum dof ID in global discretization
+
+  */
+  virtual const int& MaxDofGlobal()
+  {
+    if (maxdofglobal_ < 0) dserror("MaxDofGlobal not yet initialized");
+    return maxdofglobal_;
+  }
+  
   //@}
 
   //! @name Evlauation methods
@@ -421,14 +442,16 @@ public:
   It creates complete overlap ghosting of all elements and nodes
   on all processors that own at least one node or element on the interface.
   On return, row maps of nodes and elements are the same as on input but column maps
-  are redundant on all participating processors.
-  also creates row and column maps of slave and master nodes separately such that
-  these can be easily accessed.
+  are redundant on all participating processors. Also creates row and column maps
+  of slave and master nodes separately such that these can be easily accessed.
+
+  \param maxdof (in): maximum dof ID in global discretization
+                      (if default=0, then no lmdofrowmap is created)
 
   \return Filled()==true
 
   */
-  virtual void FillComplete();
+  virtual void FillComplete(int maxdof = 0);
   
   /*!
   \brief Create binary search tree
@@ -608,6 +631,9 @@ protected:
   RCP<Epetra_Map>             snodefullmapbound_;   // full map of slave nodes (+ boundary nodes)
   RCP<Epetra_Map>             mnodefullmapnobound_; // full map of master nodes (- boundary nodes)
 
+  RCP<Epetra_Map>             lmdofmap_;      // row map of all Lagrange multiplier dofs
+  int                         maxdofglobal_;  // maximum dof ID in global discretization
+  
   RCP<MORTAR::BinaryTree>     binarytree_;    // binary searchtree
 
 }; // class MortarInterface

@@ -206,8 +206,10 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   // thus they are defined empty here in the case of Penalty contact.
   
   void Recover(RCP<Epetra_Vector> disi) {}
+  void SaddlePointSolve(LINALG::Solver& solver, RCP<LINALG::SparseOperator> kdd, RCP<Epetra_Vector> fd, RCP<Epetra_Vector> sold, RCP<Epetra_Vector> dirichtoggle, int numiter) {}    
   void UpdateActiveSet() {}
   void UpdateActiveSetSemiSmooth() {}
+
   
   //@}
   

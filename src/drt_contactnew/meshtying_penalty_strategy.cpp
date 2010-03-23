@@ -131,7 +131,7 @@ void CONTACT::MtPenaltyStrategy::MeshInitialization()
   }
   
   //**********************************************************************
-  // (1) solve for modified slave positions on global level
+  // (2) solve for modified slave positions on global level
   //**********************************************************************
   // create linear problem
   RCP<Epetra_Vector> Xslavemod = LINALG::CreateVector(*gsdofrowmap_,true);

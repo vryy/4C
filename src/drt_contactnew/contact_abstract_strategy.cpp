@@ -72,7 +72,7 @@ friction_(false)
   
   // check for infeasible self contact combinations
   INPAR::CONTACT::FrictionType ftype = Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(params,"FRICTION");
-  if (selfcontact > 0 && ftype != INPAR::CONTACT::friction_none)
+  if (isselfcontact_ && ftype != INPAR::CONTACT::friction_none)
     dserror("ERROR: Self contact only implemented for frictionless contact!");
   
   // set frictional contact status
@@ -86,6 +86,9 @@ friction_(false)
   // merge interface maps to global maps
   for (int i=0; i<(int)interface_.size(); ++i)
   {
+    // merge interface Lagrange multiplier dof maps to global LM dof map
+    glmdofrowmap_ = LINALG::MergeMap(glmdofrowmap_, interface_[i]->LagMultDofs());
+        
     // merge interface master, slave maps to global master, slave map
     gsnoderowmap_ = LINALG::MergeMap(gsnoderowmap_, interface_[i]->SlaveRowNodes());
     gsdofrowmap_ = LINALG::MergeMap(gsdofrowmap_, interface_[i]->SlaveRowDofs());
@@ -323,19 +326,9 @@ void CONTACT::CoAbstractStrategy::EvaluateRelMov()
 void CONTACT::CoAbstractStrategy::Evaluate(RCP<LINALG::SparseOperator>& kteff,
                                            RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis)
 {
-  // check if friction should be applied
-  INPAR::CONTACT::FrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
-
-  // Frictional contact cases
-  if (ftype == INPAR::CONTACT::friction_tresca  ||
-      ftype == INPAR::CONTACT::friction_coulomb ||
-      ftype == INPAR::CONTACT::friction_stick )
-    EvaluateFriction(kteff,feff);
-  
-  // Frictionless contact case
-  else
-    EvaluateContact(kteff,feff);
+  // treat frictional and frictionless cases differently
+  if (friction_) EvaluateFriction(kteff,feff);
+  else           EvaluateContact(kteff,feff);
 
   return;
 }
@@ -439,7 +432,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
 #ifndef CONTACTPSEUDO2D
           // throw a dserror if node is Active and DBC
           if (cnode->IsDbc() && cnode->Active())
-            dserror("ERROR: Slave Node %i is active and at the same time carries D.B.C.s!", cnode->Id());
+            dserror("ERROR: Slave node %i is active AND carries D.B.C.s!", cnode->Id());
 
           // explicity set global Lag. Mult. to zero for D.B.C nodes
           if (cnode->IsDbc()) (*vectorinterface)[locindex[dof]] = 0.0;
@@ -456,18 +449,16 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
         }
         case MORTAR::StrategyBase::activeold:
         {
-          if(friction_==false)
-            dserror("Error in StoreNodealQuantities: This should not be "
-                     "called for contact without friction");
+          if (!friction_)
+            dserror("ERROR: This should not be called for contact without friction");
           CONTACT::FriNode* frinode = static_cast<FriNode*>(cnode);
           frinode->Data().ActiveOld() = frinode->Active();
           break;
         }
         case MORTAR::StrategyBase::jump:
         {
-          if(friction_==false)
-            dserror("Error in StoreNodealQuantities: This should not be "
-                     "called for contact without friction");
+          if(!friction_)
+            dserror("ERROR: This should not be called for contact without friction");
           FriNode* frinode = static_cast<FriNode*>(cnode);
           frinode->Data().jump()[dof] = (*vectorinterface)[locindex[dof]];
           break;

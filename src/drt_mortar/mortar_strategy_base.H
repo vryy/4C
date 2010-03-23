@@ -43,6 +43,7 @@ Maintainer: Alexander Popp
 #include "mortar_interface.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_sparsematrix.H"
+#include "../drt_lib/linalg_solver.H"
 #include "../drt_io/io.H"
 
 using namespace std;
@@ -153,6 +154,7 @@ class StrategyBase
     virtual void PrintActiveSet() = 0;
     virtual void Recover(RCP<Epetra_Vector> disi) = 0;
     virtual void ResetPenalty() = 0;
+    virtual void SaddlePointSolve(LINALG::Solver& solver, RCP<LINALG::SparseOperator> kdd, RCP<Epetra_Vector> fd, RCP<Epetra_Vector> sold, RCP<Epetra_Vector> dirichtoggle, int numiter) = 0; 
     virtual void SaveReferenceState(RCP<Epetra_Vector> dis) = 0;
     virtual void SetState(const string& statename, const RCP<Epetra_Vector> vec) = 0;
     virtual void StoreDirichletStatus(RCP<LINALG::MapExtractor> dbcmaps) = 0;
@@ -166,17 +168,16 @@ class StrategyBase
     virtual void EvaluateRelMov() = 0;
     virtual bool Friction() = 0;
     virtual void VisualizeGmsh(const int step, const int iter = 0) = 0;
-
-    
+ 
     //@}
 
   protected:
 
-    RCP<Epetra_Map> problemrowmap_;     // global problem dof row map (not only interfaces)
-    Teuchos::ParameterList scontact_;   // containing contact input parameters
-    int dim_;                           // dimension of problem (2D or 3D)
-    RCP<Epetra_Comm> comm_;             // communicator
-    double alphaf_;                     // Generalized-alpha parameter (0.0 for statics)
+    RCP<Epetra_Map>        problemrowmap_;  // global problem dof row map (not only interfaces)
+    RCP<Epetra_Comm>       comm_;           // communicator
+    Teuchos::ParameterList scontact_;       // containing contact input parameters
+    int                    dim_;            // dimension of problem (2D or 3D)
+    double                 alphaf_;         // Generalized-alpha parameter (0.0 for statics)
 
 }; // class StrategyBase
 } // namespace MORTAR

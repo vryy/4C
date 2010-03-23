@@ -189,6 +189,26 @@ public:
   void PTC();
 
   /*!
+  \brief linear solve for meshtying and contact
+  
+  In most cases, the final linear system can either be condensed to displacement
+  degrees of freedom (dual Lagrange strategy) only or contains only displacement
+  degrees of freedom anyway (Penalty / Augmented Lagrange strategy). Yet, if a
+  standard Lagrange strategy is applied, we obtain a saddle point system to be
+  solved for BOTH displacement and Lagrange multiplier degrees of freedom. Thus,
+  in that case, this function first builds the saddle point system from the
+  respective matrix and vector blocks, then solves the saddle point system and
+  finally extracts the displacement increments and the Lagrange multiplier solution.  
+  In all other cases this function only performs the standard solver call.
+  
+  \param numiter(in): current nonlinear iteration step
+  \param wanted(in): residual tolerance (for adapting solver tolerance)
+  \param worst(in): current fresmnorm (for adapting solver tolerance)
+  
+  */
+  virtual void LinearSolve(int numiter, double wanted, double worst);
+  
+  /*!
   \brief update configuration and output to file/screen
 
   */

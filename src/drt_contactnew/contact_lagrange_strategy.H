@@ -103,6 +103,24 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     void EvaluateFriction(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff);
 
     /*!
+    \brief Solve linear system of saddle point type
+   
+    \param solver (in): LINALG::Solver object
+    \param kdd (in): the displacement dof stiffness (upper left block)
+    \param fd (in): the displacement dof r.h.s. (upper block)
+    \param sold (in/out): the displacement dof solution increment
+    \param dirichtoggle (in): toggle vector for dirichlet conditions
+    \param numiter (in): current nonlinear iteration step
+    
+    */
+    void SaddlePointSolve(LINALG::Solver& solver,
+                          RCP<LINALG::SparseOperator> kdd,
+                          RCP<Epetra_Vector>          fd,
+                          RCP<Epetra_Vector>          sold,
+                          RCP<Epetra_Vector>          dirichtoggle,
+                          int numiter);
+    
+    /*!
     \brief Recovery method
 
     We only recover the Lagrange multipliers here, which had been
