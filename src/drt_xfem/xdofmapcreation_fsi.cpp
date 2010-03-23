@@ -478,10 +478,7 @@ static void processVoidFSIEnrichmentForElementNodes(
     bool&                                         skipped_node_enr
     )
 {
-
-  const int xele_gid = xfemele->Id();
-
-  if (ih.ElementIntersected(xele_gid))
+  if (ih.ElementIntersected(xfemele->Id()))
   {
     skipped_node_enr = ApplyNodalEnrichmentsVoidFSI(xfemele, ih, XFEM::Enrichment::typeVoidFSI, fieldset, volumeRatioLimit, nodalDofSet);
       //ApplyNodalEnrichmentsNodeWise(xfemele, ih, label, enrtype, fieldset, 2.0e-2, nodalDofSet);
