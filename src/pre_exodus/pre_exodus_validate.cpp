@@ -124,6 +124,7 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
   // go through all elements
   RCP<map<int,vector<int> > > eleconn = eb->GetEleConn();
   map<int,vector<int> >::iterator i_ele;
+  int numrewindedeles=0;
   for(i_ele=eleconn->begin();i_ele!=eleconn->end();++i_ele){
     int rewcount=0;
     for (int igp = 0; igp < intpoints.nquad; ++igp) {
@@ -138,6 +139,7 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
           FILE* errfile = DRT::Problem::Instance()->ErrorFile()->Handle();
           fprintf(errfile,"GAUSS POINT %d: REWINDED ELEMENT %d\n",igp, i_ele->first);
           fflush(errfile);
+          numrewindedeles++;
         }
         // double check
         if(!PositiveEle(i_ele->first,i_ele->second,mymesh,deriv))
@@ -146,6 +148,8 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
       }
     }
   }
+  if (numrewindedeles>0)
+    cout<<"...Successfully rewinded "<<numrewindedeles<<" elements. For details see *.err file"<<endl;
 
   return;
 }

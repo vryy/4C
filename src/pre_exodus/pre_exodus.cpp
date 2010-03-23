@@ -136,7 +136,9 @@ int main(
   problem->OpenErrorFile(*comm, datfile);
 
   // centerline related: transfer separate doubles into vector
-  cline_coordcorr[0] = clinedx; cline_coordcorr[1] = clinedy; cline_coordcorr[2] = clinedz;
+  cline_coordcorr[0] = clinedx;
+  cline_coordcorr[1] = clinedy;
+  cline_coordcorr[2] = clinedz;
 
   /**************************************************************************
    * Start with the preprocessing
@@ -293,9 +295,9 @@ int main(
       cout << "        in...." << timer->totalElapsedTime() <<" secs" << endl;
       timer->reset();
     }
-    
-    // in case of periodic boundary conditions : 
-    // ensure that the two coordinates of two matching nodes, 
+
+    // in case of periodic boundary conditions :
+    // ensure that the two coordinates of two matching nodes,
     // which should be the same are exactly the same
     // in order to keep the Krylov norm below 1e-6 :-)
     // only supported for angle 0.0
