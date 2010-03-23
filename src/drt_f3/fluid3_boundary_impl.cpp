@@ -1431,7 +1431,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementSurfaceTension(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::AreaCaculation(
-                                                  DRT::ELEMENTS::Fluid3Boundary*   ele,
+                                                  DRT::ELEMENTS::Fluid3Boundary*  ele,
                                                   ParameterList&                  params,
                                                   DRT::Discretization&            discretization,
                                                   vector<int>&                    lm)
@@ -1496,7 +1496,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::AreaCaculation(
   RCP<const Epetra_Vector>      dispnp;
   vector<double>                mydispnp;
 
-  if (parent_->IsAle())
+  if (ele->ParentElement()->IsAle())
   {
     dispnp = discretization.GetState("dispnp");
     if (dispnp!=null)
@@ -1592,7 +1592,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateParameterCalculation(
   RCP<const Epetra_Vector>      dispnp;
   vector<double>                mydispnp;
 
-  if (parent_->IsAle())
+  if (ele->ParentElement()->IsAle())
   {
     dispnp = discretization.GetState("dispnp");
     if (dispnp!=null)
@@ -1694,7 +1694,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeFlowRate(
   RCP<const Epetra_Vector>      dispnp;
   vector<double>                mydispnp;
 
-  if (parent_->IsAle())
+  if (ele->ParentElement()->IsAle())
   {
     dispnp = discretization.GetState("dispnp");
     if (dispnp!=null)
@@ -2099,6 +2099,8 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
 } //DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvalShapeFuncAndIntFac(
     const DRT::UTILS::IntPointsAndWeights<bdrynsd_>&  intpoints,
@@ -2166,6 +2168,8 @@ double DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvalShapeFuncAndIntFac(
   return intpoints.IP().qwgt[gpid]*sqrtdetg;  // return integration factor
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::GetKnotVectorAndWeightsForNurbs(
     DRT::ELEMENTS::Fluid3Boundary*              ele,
