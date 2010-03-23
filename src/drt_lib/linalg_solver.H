@@ -532,6 +532,20 @@ It uses ML instead of EpetraExt for the multiplication kernel.
 */
 RCP<SparseMatrix> MLMultiply(const Epetra_CrsMatrix& Aorig,
                              const Epetra_CrsMatrix& Borig,
+                             bool explicitdirichlet,
+                             bool savegraph,
+                             bool complete);
+
+/*!
+\brief Matrix-Matrix Multiply C = A*B using ML
+
+\sa MLMultiply(const Epetra_CrsMatrix& A,const Epetra_CrsMatrix& B,bool complete);
+
+*/
+RCP<SparseMatrix> MLMultiply(const SparseMatrix& A,
+                             const SparseMatrix& B,
+                             bool explicitdirichlet,
+                             bool savegraph,
                              bool complete);
 
 /*!

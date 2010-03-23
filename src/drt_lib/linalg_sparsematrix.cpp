@@ -40,6 +40,7 @@ Maintainer: Michael Gee
 
 #include "linalg_sparsematrix.H"
 #include "linalg_utils.H"
+#include "linalg_solver.H"
 #include "drt_dserror.H"
 
 #include <EpetraExt_Transpose_RowMatrix.h>
@@ -1672,21 +1673,20 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Multiply(const LINALG::SparseMatrix& 
   return C;
 }
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix>
-LINALG::Merge(const LINALG::SparseMatrix& Aii,
-              const LINALG::SparseMatrix& Aig,
-              const LINALG::SparseMatrix& Agi,
-              const LINALG::SparseMatrix& Agg)
+Teuchos::RCP<LINALG::SparseMatrix> LINALG::Merge(const LINALG::SparseMatrix& Aii,
+                                                 const LINALG::SparseMatrix& Aig,
+                                                 const LINALG::SparseMatrix& Agi,
+                                                 const LINALG::SparseMatrix& Agg)
 {
   if (not Aii.RowMap().SameAs(Aig.RowMap()) or
       not Agi.RowMap().SameAs(Agg.RowMap()))
     dserror("row maps mismatch");
 
   Teuchos::RCP<Epetra_Map> rowmap = MergeMap(Aii.RowMap(),Agi.RowMap(),false);
-  Teuchos::RCP<LINALG::SparseMatrix> mat = Teuchos::rcp(new SparseMatrix(*rowmap,max(Aii.MaxNumEntries()+Aig.MaxNumEntries(),
+  Teuchos::RCP<LINALG::SparseMatrix> mat = 
+    Teuchos::rcp(new SparseMatrix(*rowmap,max(Aii.MaxNumEntries()+Aig.MaxNumEntries(),
                                               Agi.MaxNumEntries()+Agg.MaxNumEntries())));
 
 

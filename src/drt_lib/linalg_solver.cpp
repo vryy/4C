@@ -28,6 +28,7 @@ Maintainer: Michael Gee
 #include "linalg_krylov_projector.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <EpetraExt_Transpose_RowMatrix.h>
 
 
 /*----------------------------------------------------------------------*
@@ -1279,7 +1280,54 @@ RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const LINALG::SparseMatrix& A,
                                              const LINALG::SparseMatrix& B,
                                              bool complete)
 {
-  return MLMultiply(*A.EpetraMatrix(),*B.EpetraMatrix(),complete);
+  return MLMultiply(*A.EpetraMatrix(),*B.EpetraMatrix(),
+                    A.explicitdirichlet_,A.savegraph_,complete);
+}
+
+/*----------------------------------------------------------------------*
+ | Multiply matrices A*B                                     mwgee 02/08|
+ *----------------------------------------------------------------------*/
+RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const LINALG::SparseMatrix& A,
+                                             const LINALG::SparseMatrix& B,
+                                             bool explicitdirichlet,
+                                             bool savegraph,
+                                             bool complete)
+{
+  return MLMultiply(*A.EpetraMatrix(),*B.EpetraMatrix(),
+                    explicitdirichlet,savegraph,complete);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const LINALG::SparseMatrix& A,
+                                                      bool transA,
+                                                      const LINALG::SparseMatrix& B,
+                                                      bool transB,
+                                                      bool explicitdirichlet,
+                                                      bool savegraph,
+                                                      bool completeoutput)
+{
+  // make sure FillComplete was called on the matrices
+  if (!A.Filled()) dserror("A has to be FillComplete");
+  if (!B.Filled()) dserror("B has to be FillComplete");
+
+  EpetraExt::RowMatrix_Transpose transposera(true,NULL,false);
+  EpetraExt::RowMatrix_Transpose transposerb(true,NULL,false);
+  Epetra_CrsMatrix* Atrans = NULL;
+  Epetra_CrsMatrix* Btrans = NULL;
+  if (transA)
+    Atrans = &(dynamic_cast<Epetra_CrsMatrix&>(transposera(*A.EpetraMatrix())));
+  else 
+    Atrans = A.EpetraMatrix().get();
+  if (transB)
+    Btrans = &(dynamic_cast<Epetra_CrsMatrix&>(transposerb(*B.EpetraMatrix())));
+  else 
+    Btrans = B.EpetraMatrix().get();
+  
+  Teuchos::RCP<LINALG::SparseMatrix> C;
+  C = LINALG::MLMultiply(*Atrans,*Btrans,explicitdirichlet,savegraph,completeoutput);
+
+  return C;
 }
 
 /*----------------------------------------------------------------------*
@@ -1288,6 +1336,8 @@ RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const LINALG::SparseMatrix& A,
 //static void CopySortDeleteZeros(const Epetra_CrsMatrix& A, Epetra_CrsMatrix& As);
 RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Aorig,
                                              const Epetra_CrsMatrix& Borig,
+                                             bool explicitdirichlet,
+                                             bool savegraph,
                                              bool complete)
 {
   EpetraExt::CrsMatrix_SolverMap Atransform;
@@ -1422,10 +1472,10 @@ RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Aorig,
       finalresult->OptimizeStorage();
     }
     result = null;
-    return rcp(new SparseMatrix(finalresult));
+    return rcp(new SparseMatrix(finalresult,explicitdirichlet,savegraph));
 #endif
   }
-  return rcp(new SparseMatrix(result));
+  return rcp(new SparseMatrix(result,explicitdirichlet,savegraph));
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
