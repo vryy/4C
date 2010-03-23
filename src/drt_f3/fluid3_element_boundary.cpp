@@ -109,7 +109,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Fluid3Boundary::Shape() const
 
   // Fluid3Boundary element: quad4
   case 4:
-    if(parent_->Shape() == hex8 || parent_->Shape() == pyramid5)
+    if(parent_->Shape() == hex8 || parent_->Shape() == wedge6 || parent_->Shape() == pyramid5 )
       return quad4;
     else if (parent_->Shape() == nurbs8)
       return nurbs4;
