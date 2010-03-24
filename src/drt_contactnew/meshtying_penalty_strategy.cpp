@@ -42,7 +42,6 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_solver.H"
 
 
 /*----------------------------------------------------------------------*
@@ -81,10 +80,10 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   dtd_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
   
   // build mortar matrix products
-  mtm_ = LINALG::Multiply(*mmatrix_,true,*mmatrix_,false,true);
-  mtd_ = LINALG::Multiply(*mmatrix_,true,*dmatrix_,false,true);
-  dtm_ = LINALG::Multiply(*dmatrix_,true,*mmatrix_,false,true);
-  dtd_ = LINALG::Multiply(*dmatrix_,true,*dmatrix_,false,true);
+  mtm_ = LINALG::MLMultiply(*mmatrix_,true,*mmatrix_,false,false,false,true);
+  mtd_ = LINALG::MLMultiply(*mmatrix_,true,*dmatrix_,false,false,false,true);
+  dtm_ = LINALG::MLMultiply(*dmatrix_,true,*mmatrix_,false,false,false,true);
+  dtd_ = LINALG::MLMultiply(*dmatrix_,true,*dmatrix_,false,false,false,true);
   
   // print message
   if(Comm().MyPID()==0) cout << "done!" << endl;
@@ -161,11 +160,6 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>& 
                                                    RCP<Epetra_Vector>& feff,
                                                    RCP<Epetra_Vector> dis)
 {
-
-  // FIXME: Currently only the old LINALG::Multiply method is used,
-  // because there are still problems with the transposed version of
-  // MLMultiply if a row has no entries! One day we should use ML...
-
   // since we will modify the graph of kteff by adding additional
   // meshtyong stiffness entries, we have to uncomplete it
   kteff->UnComplete();

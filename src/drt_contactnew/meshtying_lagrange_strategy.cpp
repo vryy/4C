@@ -99,7 +99,7 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   //if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
 
   // do the multiplication M^ = inv(D) * M
-  mhatmatrix_ = LINALG::Multiply(*invd_,false,*mmatrix_,false);
+  mhatmatrix_ = LINALG::MLMultiply(*invd_,false,*mmatrix_,false,false,false,true);
   
   // print message
   if(Comm().MyPID()==0) cout << "done!" << endl;
@@ -192,10 +192,6 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
                                                     RCP<Epetra_Vector>& feff,
                                                     RCP<Epetra_Vector> dis)
 {   
-  // FIXME: Currently only the old LINALG::Multiply method is used,
-  // because there are still problems with the transposed version of
-  // MLMultiply if a row has no entries! One day we should use ML...
-
   // shape function type
   INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
   
@@ -266,18 +262,24 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
     // kns: nothing to do
 
     // kmn: add T(mbar)*ksn
-    RCP<LINALG::SparseMatrix> kmnmod = LINALG::Multiply(*mhatmatrix_,true,*ksn,false,false);
+    RCP<LINALG::SparseMatrix> kmnmod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
     kmnmod->Add(*kmn,false,1.0,1.0);
+    RCP<LINALG::SparseMatrix> kmnadd = LINALG::MLMultiply(*mhatmatrix_,true,*ksn,false,false,false,true);
+    kmnmod->Add(*kmnadd,false,1.0,1.0);
     kmnmod->Complete(kmn->DomainMap(),kmn->RowMap());
 
     // kmm: add T(mbar)*ksm
-    RCP<LINALG::SparseMatrix> kmmmod = LINALG::Multiply(*mhatmatrix_,true,*ksm,false,false);
+    RCP<LINALG::SparseMatrix> kmmmod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
     kmmmod->Add(*kmm,false,1.0,1.0);
+    RCP<LINALG::SparseMatrix> kmmadd = LINALG::MLMultiply(*mhatmatrix_,true,*ksm,false,false,false,true);
+    kmmmod->Add(*kmmadd,false,1.0,1.0); 
     kmmmod->Complete(kmm->DomainMap(),kmm->RowMap());
 
     // kms: add T(mbar)*kss
-    RCP<LINALG::SparseMatrix> kmsmod = LINALG::Multiply(*mhatmatrix_,true,*kss,false,false);
+    RCP<LINALG::SparseMatrix> kmsmod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
     kmsmod->Add(*kms,false,1.0,1.0);
+    RCP<LINALG::SparseMatrix> kmsadd = LINALG::MLMultiply(*mhatmatrix_,true,*kss,false,false,false,true);
+    kmsmod->Add(*kmsadd,false,1.0,1.0);
     kmsmod->Complete(kms->DomainMap(),kms->RowMap());
 
     // fn: nothing to do

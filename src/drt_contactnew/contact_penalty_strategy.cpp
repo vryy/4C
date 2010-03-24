@@ -135,10 +135,6 @@ void CONTACT::CoPenaltyStrategy::Initialize()
 void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kteff,
                                                  RCP<Epetra_Vector>& feff)
 {
-  // FIXME: Currently only the old LINALG::Multiply method is used,
-  // because there are still problems with the transposed version of
-  // MLMultiply if a row has no entries! One day we should use ML...
-
   // in the beginning of this function, the regularized contact forces
   // in normal and tangential direction are evaluated from geometric
   // measures (gap and relative tangential velocity). Here, also active and
@@ -270,14 +266,9 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   // involving contributions of derivatives of lagrange multipliers:
   //  Kc,2= [ 0 -M(transpose) D] * deltaLM
 
-  // Multiply Mortar matrices D and M with LinZ
-  RCP<LINALG::SparseMatrix> dtilde = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
-  RCP<LINALG::SparseMatrix> mtilde = rcp(new LINALG::SparseMatrix(*gmdofrowmap_));
-
-  // do the multiplication dtile = D * LinZ
-  dtilde = LINALG::Multiply(*dmatrix_, true, *linzmatrix_, false);
-  // do the multiplication mtilde = -M(transpose) * LinZ
-  mtilde = LINALG::Multiply(*mmatrix_, true, *linzmatrix_, false);
+  // multiply Mortar matrices D and M with LinZ
+  RCP<LINALG::SparseMatrix> dtilde = LINALG::MLMultiply(*dmatrix_,true,*linzmatrix_,false,false,false,true);
+  RCP<LINALG::SparseMatrix> mtilde = LINALG::MLMultiply(*mmatrix_,true,*linzmatrix_,false,false,false,true);
 
   // add to kteff
   kteff->Add(*dtilde, false, 1.0-alphaf_, 1.0);
@@ -398,16 +389,14 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& kt
   // (FIXME: redundant code to EvaluateContact(), expect for minus sign)
 
   // since we will modify the graph of kteff by adding additional
-  // meshtyong stiffness entries, we have to uncomplete it
+  // meshtying stiffness entries, we have to uncomplete it
   kteff->UnComplete();
 
   kteff->Add(*lindmatrix_, false, -(1.0-alphaf_), 1.0);
   kteff->Add(*linmmatrix_, false, -(1.0-alphaf_), 1.0);
 
-  RCP<LINALG::SparseMatrix> dtilde = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
-  RCP<LINALG::SparseMatrix> mtilde = rcp(new LINALG::SparseMatrix(*gmdofrowmap_));
-  dtilde = LINALG::Multiply(*dmatrix_, true, *linzmatrix_, false);
-  mtilde = LINALG::Multiply(*mmatrix_, true, *linzmatrix_, false);
+  RCP<LINALG::SparseMatrix> dtilde = LINALG::MLMultiply(*dmatrix_, true, *linzmatrix_, false,false,false,true);
+  RCP<LINALG::SparseMatrix> mtilde = LINALG::MLMultiply(*mmatrix_, true, *linzmatrix_, false,false,false,true);
   kteff->Add(*dtilde, false, -(1.0-alphaf_), 1.0);
   kteff->Add(*mtilde, false, (1.0-alphaf_), 1.0);
 
