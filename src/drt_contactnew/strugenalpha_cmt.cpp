@@ -163,10 +163,14 @@ StruGenAlpha(params,dis,solver,output)
         cout << "===== Standard Lagrange multiplier strategy ====================\n" << endl;
       else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_dual)
         cout << "===== Dual Lagrange multiplier strategy ========================\n" << endl;
-      else if (soltype == INPAR::CONTACT::solution_penalty)
-        cout << "===== Penalty strategy =========================================\n" << endl;
-      else if (soltype == INPAR::CONTACT::solution_auglag)
-        cout << "===== Augmented Lagrange strategy ==============================\n" << endl;
+      else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_standard)
+        cout << "===== Standard Penalty strategy ================================\n" << endl;
+      else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_dual)
+        cout << "===== Dual Penalty strategy ====================================\n" << endl;
+      else if (soltype == INPAR::CONTACT::solution_auglag && shapefcn == INPAR::MORTAR::shape_standard)
+        cout << "===== Standard Augmented Lagrange strategy =====================\n" << endl;
+      else if (soltype == INPAR::CONTACT::solution_auglag && shapefcn == INPAR::MORTAR::shape_dual)
+        cout << "===== Dual Augmented Lagrange strategy =========================\n" << endl;
     }
   }
   
