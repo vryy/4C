@@ -3617,16 +3617,6 @@ void StruGenAlpha::ReadRestart(int step)
   if (surf_stress_man_->HaveSurfStress())
     surf_stress_man_->ReadRestart(rstep, DRT::Problem::Instance()->InputControlFile()->FileName());
 
-  if (DRT::Problem::Instance()->ProblemType()=="struct_multi")
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","multi_readrestart");
-    discret_.Evaluate(p,null,null,null,null,null);
-    discret_.ClearState();
-  }
-
   if (constrMan_->HaveConstraint())
   {
     double uzawatemp = reader.ReadDouble("uzawaparameter");
@@ -3639,7 +3629,35 @@ void StruGenAlpha::ReadRestart(int step)
     constrMan_->SetRefBaseValues(tempvec,time);
   }
 
+  // read restart for micro-structures in multi-scale simulations
+  ReadRestartMultiScale();
+
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | read restart for multi-scale simulations                   lw 03/10  |
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::ReadRestartMultiScale()
+{
+  Teuchos::RCP<MAT::PAR::Bundle> materials = DRT::Problem::Instance()->Materials();
+  for (std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator i=materials->Map()->begin();
+       i!=materials->Map()->end();
+       ++i)
+  {
+    Teuchos::RCP<MAT::PAR::Material> mat = i->second;
+    if (mat->Type() == INPAR::MAT::m_struct_multiscale)
+    {
+      // create the parameters for the discretization
+      ParameterList p;
+      // action for elements
+      p.set("action","multi_readrestart");
+      discret_.Evaluate(p,null,null,null,null,null);
+      discret_.ClearState();
+      break;
+    }
+  }
 }
 
 /*----------------------------------------------------------------------*

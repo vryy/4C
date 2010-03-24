@@ -160,13 +160,13 @@ public:
   Newton with line search if residual reduction fails.
   This implementation is from C.T.Kelly:Itertiave Methods for Linear and Nonlin. Eqs.,
   pages 138ff
-  
+
   */
   virtual void LineSearchNewton();
 
   /*!
   \brief test oppositely converging newton
-  
+
   */
   virtual void OppNewton();
 
@@ -210,7 +210,7 @@ public:
 
   */
   virtual void CmtNonlinearSolve() { dserror("Unexpected base class call!"); }
-  
+
   /*!
   \brief Compute the residual to a given state x
 
@@ -256,6 +256,12 @@ public:
 
   */
   virtual void ReadRestart(int step);
+
+  /*!
+  \brief restart calculation from a given step in case of multi-scale simulations
+
+  */
+  void ReadRestartMultiScale();
 
   /*!
   \brief return displacement increments at midpoint
@@ -415,10 +421,10 @@ public:
 
   double AlphaF() { return params_.get<double>("alpha f",0.459); }
   const Epetra_Map& DomainMap() { return mass_->DomainMap(); }
-  
+
   //! Return bool indicating if contact or meshtying are defined
   virtual bool HaveContactMeshtying() { return false; }
-    
+
   //! Return bool indicating if constraints are defined
   bool HaveConstraint() { return constrMan_->HaveConstraint(); }
 

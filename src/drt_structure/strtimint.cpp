@@ -555,15 +555,23 @@ void STR::TimInt::ReadRestartSurfstress()
 /* Read and set restart values for multi-scale */
 void STR::TimInt::ReadRestartMultiScale()
 {
-  if (DRT::Problem::Instance()->ProblemType() == "struct_multi")
+  Teuchos::RCP<MAT::PAR::Bundle> materials = DRT::Problem::Instance()->Materials();
+  for (std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator i=materials->Map()->begin();
+       i!=materials->Map()->end();
+       ++i)
   {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action", "multi_readrestart");
-    discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-                       Teuchos::null, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
+    Teuchos::RCP<MAT::PAR::Material> mat = i->second;
+    if (mat->Type() == INPAR::MAT::m_struct_multiscale)
+    {
+      // create the parameters for the discretization
+      ParameterList p;
+      // action for elements
+      p.set("action", "multi_readrestart");
+      discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+                         Teuchos::null, Teuchos::null, Teuchos::null);
+      discret_->ClearState();
+      break;
+    }
   }
 }
 
@@ -976,7 +984,7 @@ void STR::TimInt::Integrate()
 
     // write output
     OutputStep();
-    
+
     // update everything on the element level
     UpdateStepElement();
   }

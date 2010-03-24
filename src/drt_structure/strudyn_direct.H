@@ -40,6 +40,12 @@ namespace STR
   //! \author bborn \date 06/08
   void strudyn_direct();
 
+  /*====================================================================*/
+  //! Checks for multi-scale simulations
+  //!
+  //! \author lw \date 03/10
+  void MultiScaleCheck();
+
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/

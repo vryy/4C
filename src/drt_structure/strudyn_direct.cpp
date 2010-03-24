@@ -109,14 +109,8 @@ void STR::strudyn_direct()
                                       DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
-  // make sure we IMR-like generalised-alpha requested for Multi-magic
-  if (DRT::Problem::Instance()->ProblemType() == "struct_multi")
-  {
-    if (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") != INPAR::STR::dyna_genalpha)
-      dserror("For PROBLEMTYP=struct_multi you have to use DYNAMICTYP=GenAlpha");
-    else if (Teuchos::getIntegralValue<INPAR::STR::MidAverageEnum>(sdyn.sublist("GENALPHA"), "GENAVG") != INPAR::STR::midavg_imrlike)
-      dserror("For PROBLEMTYP=struct_multi you have to use DYNAMICTYP=GenAlpha with GENAVG=ImrLike");
-  }
+  // Checks in case of multi-scale simulations
+  STR::MultiScaleCheck();
 
   // create marching time integrator
   Teuchos::RCP<STR::TimInt> sti = Teuchos::null;
@@ -192,6 +186,32 @@ void STR::strudyn_direct()
   // done
   return;
 } // end strudyn_direct()
+
+
+/*======================================================================*/
+/* checks for multi-scale simulations */
+void STR::MultiScaleCheck()
+{
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
+  // make sure we IMR-like generalised-alpha requested for multi-scale
+  // simulations
+  Teuchos::RCP<MAT::PAR::Bundle> materials = DRT::Problem::Instance()->Materials();
+  for (std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator i=materials->Map()->begin();
+       i!=materials->Map()->end();
+       ++i)
+  {
+    Teuchos::RCP<MAT::PAR::Material> mat = i->second;
+    if (mat->Type() == INPAR::MAT::m_struct_multiscale)
+    {
+      if (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") != INPAR::STR::dyna_genalpha)
+        dserror("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha");
+      else if (Teuchos::getIntegralValue<INPAR::STR::MidAverageEnum>(sdyn.sublist("GENALPHA"), "GENAVG") != INPAR::STR::midavg_imrlike)
+        dserror("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha with GENAVG=ImrLike");
+      break;
+    }
+  }
+}
 
 
 /*----------------------------------------------------------------------*/

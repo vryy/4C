@@ -1206,16 +1206,6 @@ void StatMechTime::ReadRestart(int step)
   if (surf_stress_man_->HaveSurfStress())
     surf_stress_man_->ReadRestart(rstep, DRT::Problem::Instance()->InputControlFile()->FileName());
 
-  if (DRT::Problem::Instance()->ProblemType()=="struct_multi")
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","multi_readrestart");
-    discret_.Evaluate(p,null,null,null,null,null);
-    discret_.ClearState();
-  }
-
   if (constrMan_->HaveConstraint())
   {
     double uzawatemp = reader.ReadDouble("uzawaparameter");

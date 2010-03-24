@@ -95,15 +95,6 @@ void STR::invanalysis()
                                       DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
-  // make sure we IMR-like generalised-alpha requested for Multi-magic
-  if (DRT::Problem::Instance()->ProblemType() == "struct_multi")
-  {
-    if (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") != INPAR::STR::dyna_genalpha)
-      dserror("For PROBLEMTYP=struct_multi you have to use DYNAMICTYP=GenAlpha");
-    else if (Teuchos::getIntegralValue<INPAR::STR::MidAverageEnum>(sdyn.sublist("GENALPHA"), "GENAVG") != INPAR::STR::midavg_imrlike)
-      dserror("For PROBLEMTYP=struct_multi you have to use DYNAMICTYP=GenAlpha with GENAVG=ImrLike");
-  }
-
   switch(Teuchos::getIntegralValue<INPAR::STR::InvAnalysisType>(iap,"INV_ANALYSIS"))
   {
     case INPAR::STR::inv_lung:
@@ -122,7 +113,7 @@ void STR::invanalysis()
       dserror("Unknown type of inverse analysis");
     break;
   }
-  
+
   // done
   return;
 } // end str_invanalysis()
