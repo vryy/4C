@@ -38,7 +38,7 @@ Maintainer: Christian Cyron
 #endif  // #ifdef D_TRUSS2
 
 
-
+//#define MEASURETIME
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             cyron 08/08|
  *----------------------------------------------------------------------*/
@@ -1251,6 +1251,10 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
  * be added to the time curve value in DoDirichletConditionPeriodic().
  */
 {
+#ifdef MEASURETIME
+  const double t_start = Teuchos::Time::wallTime();
+#endif // #ifdef MEASURETIME
+
 	if (!(discret_.Filled())) dserror("FillComplete() was not called");
 	if (!(discret_.HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
 
@@ -1476,7 +1480,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
   dirichlet_->Add("val",addval);
   // set switch in dir. of oscillation
   dirichlet_->Add("onoff",addonoff);
-  cout<<"OSCILLATING NODES\n"<<*dirichlet_<<endl;
+  //cout<<"OSCILLATING NODES\n"<<*dirichlet_<<endl;
   // do not do anything if vector is empty
   if(!oscillnodes.empty())
   	DoDirichletConditionPeriodic(usetime, time);
@@ -1487,7 +1491,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	dirichlet_->Add("Node Ids",fixednodes);
 	dirichlet_->Add("curve",addcurve);
 	dirichlet_->Add("val",addval);
-	cout<<"FIXED NODES\n"<<*dirichlet_<<endl;
+	//cout<<"FIXED NODES\n"<<*dirichlet_<<endl;
 	if(!fixednodes.empty())
 		DoDirichletConditionPeriodic(usetime, time);
 
@@ -1497,10 +1501,14 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
   		addonoff.at(i) = 0;
   dirichlet_->Add("Node Ids",freenodes);
   dirichlet_->Add("onoff", addonoff);
-	cout<<"FREE NODES\n"<<*dirichlet_<<endl;
+	//cout<<"FREE NODES\n"<<*dirichlet_<<endl;
 	if(!freenodes.empty())
 		DoDirichletConditionPeriodic(usetime, time);
 
+#ifdef MEASURETIME
+  const double t_end = Teuchos::Time::wallTime();
+  cout<<"DBC Evaluation time: "<<t_end-tstart<<endl;
+#endif // #ifdef MEASURETIME
 	return;
 }
 
