@@ -1308,7 +1308,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     //------------------------------------- set parameters for AMGBS if used
     if (azprectyp == INPAR::SOLVER::azprec_AMGBS      )
     {
-      ParameterList& mllist = outparams.sublist("ML Parameters");   // dummy ML Parameter List for ComuteNullSpaceIfNecessary
+      //ParameterList& mllist = outparams.sublist("ML Parameters");   // dummy ML Parameter List for ComuteNullSpaceIfNecessary
       ParameterList& amglist = outparams.sublist("AMGBS Parameters");
       ML_Epetra::SetDefaults("SA",amglist);
       amglist.set("amgbs: smoother: pre or post"    ,"both");

@@ -101,13 +101,6 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
     void Setup(RCP<Epetra_Operator> A, const ParameterList& origlist, const ParameterList& origplist);
     int VCycle(const Epetra_MultiVector& Xvel, const Epetra_MultiVector& Xpre, Epetra_MultiVector& Yvel, Epetra_MultiVector& Ypre, const int level) const;
 
-#ifdef USE_MLAPI // for MLAPI only
-    int GetAggregates(MLAPI::Operator& A, ParameterList& List, const Epetra_MultiVector& ThisNS, Epetra_IntVector& aggrinfo);
-    int GetGlobalAggregates(MLAPI::Operator& A, ParameterList& List, const Epetra_MultiVector& ThisNS, Epetra_IntVector& aggrinfo, int& naggregates_local);
-    MLAPI::Operator GetPtent(const Epetra_Map& rowmap, const Epetra_IntVector aggvec, int naggs, ParameterList& List, const Epetra_MultiVector& ThisNS, RCP<Epetra_MultiVector>& NextNS, const int domainoffset);
-    void getRAP(MLAPI::Operator& RAP, const MLAPI::Operator& R, const MLAPI::Operator& A, const MLAPI::Operator& P);
-    void getRAPfine(MLAPI::Operator& RAP, const MLAPI::Operator& R, Teuchos::RCP<Epetra_CrsMatrix> A, const MLAPI::Operator& P);
-#else
     /*!
     \brief Call ML aggregation on A according to parameters supplied in List. Return
            aggregates in aggrinfo
@@ -179,7 +172,7 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
 
     double MaxEigCG(const SparseMatrix& A, const bool DiagonalScaling);
     void SA_AMG(const RCP<SparseMatrix>& A, const RCP<SparseMatrix>& P_tent, const RCP<SparseMatrix>& R_tent, RCP<SparseMatrix>& P_smoothed, RCP<SparseMatrix>& R_smoothed);
-#endif
+
     void GetPtent(const Epetra_Map& rowmap, const Epetra_IntVector aggvec, int naggs, ParameterList& List, const Epetra_MultiVector& ThisNS, RCP<Epetra_CrsMatrix>& Ptent, RCP<Epetra_MultiVector>& NextNS, const int domainoffset);
 
 
@@ -192,17 +185,6 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
 
     RCP<BlockSparseMatrixBase>                          Ainput_; // input matrix
 
-#ifdef USE_MLAPI
-    /* MLAPI Operator*/ /* passt irgendwie mit den maps nicht matrix-matrix-matrix multiplikation */
-    std::vector<RCP<MLAPI::Operator> >                 A11_;    // vector with splitted blocks of matrix
-    std::vector<RCP<MLAPI::Operator> >                 A12_;    // should be MLAPI Operator!
-    std::vector<RCP<MLAPI::Operator> >                 A21_;
-    std::vector<RCP<MLAPI::Operator> >                 A22_;
-    std::vector<MLAPI::Operator>                       Pvel_;
-    std::vector<MLAPI::Operator>                       Ppre_;
-    std::vector<MLAPI::Operator>                       Rvel_;
-    std::vector<MLAPI::Operator>                       Rpre_;
-#else /* SparseMatrix */
     std::vector<RCP<SparseMatrix> >                    A11_;    // vector with splitted blocks of matrix
     std::vector<RCP<SparseMatrix> >                    A12_;
     std::vector<RCP<SparseMatrix> >                    A21_;
@@ -211,7 +193,6 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
     std::vector<RCP<SparseMatrix> >                    Ppre_;
     std::vector<RCP<SparseMatrix> >                    Rvel_;
     std::vector<RCP<SparseMatrix> >                    Rpre_;
-#endif
 
     std::vector<RCP<BraessSarazin_Smoother> >          preS_; // presmoother (bad: we only support BraessSarazin, as we cannot use the standard ApplyInverse)
     std::vector<RCP<BraessSarazin_Smoother> >          postS_; // postsmoother
