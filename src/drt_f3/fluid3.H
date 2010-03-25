@@ -103,12 +103,16 @@ public:
   friend class Fluid3StationaryImpl<DRT::Element::wedge6>;
   friend class Fluid3StationaryImpl<DRT::Element::wedge15>;
   friend class Fluid3StationaryImpl<DRT::Element::pyramid5>;
+  //friend class Fluid3StationaryImpl<DRT::Element::nurbs8>;
+  //friend class Fluid3StationaryImpl<DRT::Element::nurbs27>;
   // 2D
   friend class Fluid3StationaryImpl<DRT::Element::quad4>;
   friend class Fluid3StationaryImpl<DRT::Element::quad8>;
   friend class Fluid3StationaryImpl<DRT::Element::quad9>;
   friend class Fluid3StationaryImpl<DRT::Element::tri3>;
   friend class Fluid3StationaryImpl<DRT::Element::tri6>;
+  //friend class Fluid3StationaryImpl<DRT::Element::nurbs4>;
+  //friend class Fluid3StationaryImpl<DRT::Element::nurbs9>;
   // 1D
   friend class Fluid3StationaryImpl<DRT::Element::line2>;
   friend class Fluid3StationaryImpl<DRT::Element::line3>;
@@ -151,6 +155,8 @@ public:
   friend class Fluid3GenalphaResVMM<DRT::Element::quad9>;
   friend class Fluid3GenalphaResVMM<DRT::Element::tri3>;
   friend class Fluid3GenalphaResVMM<DRT::Element::tri6>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::nurbs4>;
+  friend class Fluid3GenalphaResVMM<DRT::Element::nurbs9>;
   // 1D
   friend class Fluid3GenalphaResVMM<DRT::Element::line2>;
   friend class Fluid3GenalphaResVMM<DRT::Element::line3>;
