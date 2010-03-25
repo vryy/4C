@@ -89,9 +89,19 @@ namespace INPAR
       azprec_MLfluid,            ///< ML for Fluids
       azprec_MLfluid2,           ///< energy optimal unsymmetric ML for Fluids
       azprec_MLAPI,              ///< experimental mlapi preconditioner
-      azprec_ML                  ///< standard ML for structures
+      azprec_ML,                 ///< standard ML for structures
+      azprec_AMGBS               ///< AMG(Braess-Sarazin) preconditioner for Fluids
     };
 
+    /// Different prolongation smoothing strategies for AMGBS preconditioner
+    ///
+    /// \author tw
+    /// \date 03/10
+    enum ProlongatorSmoothingStrategy
+    {
+        PA_AMG,         ///< plain aggregation: no smoothing
+        SA_AMG          ///< SA-AMG (smoothed aggregation)
+    };
   }  // namespace SOLVER
 
 }  // namespace INPAR

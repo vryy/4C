@@ -12,6 +12,11 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#undef WRITEOUTSTATISTICS
+#ifdef WRITEOUTSTATISTICS
+#include "Teuchos_Time.hpp"
+#endif
+
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
 #else
@@ -30,6 +35,7 @@ Maintainer: Michael Gee
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <EpetraExt_Transpose_RowMatrix.h>
 
+#include "saddlepointpreconditioner.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 02/07|
@@ -358,6 +364,14 @@ void LINALG::Solver::Solve_aztec(
   const Teuchos::RCP<LINALG::KrylovProjector> projector
   )
 {
+
+#ifdef WRITEOUTSTATISTICS
+  double dtimeprecondsetup = 0.;
+  Epetra_Time ttt(Comm());       // time measurement for whole Solve_aztec routine
+  Epetra_Time tttcreate(Comm()); // time measurement for creation of preconditioner
+  ttt.ResetStartTime();
+#endif
+
   if (!Params().isSublist("Aztec Parameters"))
     dserror("Do not have aztec parameter list");
   ParameterList& azlist = Params().sublist("Aztec Parameters");
@@ -455,7 +469,9 @@ void LINALG::Solver::Solve_aztec(
   bool   doml      = Params().isSublist("ML Parameters");
   bool   dwind     = azlist.get<bool>("downwinding",false);
   bool   dosimpler = Params().isSublist("SIMPLER");
-  if (!A || dosimpler)
+  bool   doamgbs   = Params().isSublist("AMGBS"); // TODO: check  AZPREC directly
+
+  if (!A || dosimpler || doamgbs)
   {
     doifpack = false;
     doml     = false;
@@ -505,6 +521,10 @@ void LINALG::Solver::Solve_aztec(
   // create preconditioner if necessary
   if(create)
   {
+#ifdef WRITEOUTSTATISTICS
+  tttcreate.ResetStartTime();
+#endif
+
     // dump old preconditioner
     P_ = Teuchos::null;
 
@@ -582,10 +602,26 @@ void LINALG::Solver::Solve_aztec(
 
       Pmatrix_ = null;
     }
+
+    if(doamgbs)
+    {
+      if(!Params().isSublist("AMGBS Parameters")) dserror("set AZPREC to ML for AMG(Braess-Sarazin) in FLUID SOLVER block");
+
+      // Params().sublist("AMGBS") just contains the Fluid Pressure Solver block from the dat file
+      Teuchos::RCP<LINALG::SaddlePointPreconditioner> SaddlePointPrec
+        = rcp(new LINALG::SaddlePointPreconditioner(A_->UnprojectedOperator(),Params(),Params().sublist("AMGBS"),outfile_));
+
+      P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(SaddlePointPrec,project,projector));
+      Pmatrix_ = null;
+    }
+
+#ifdef WRITEOUTSTATISTICS
+    dtimeprecondsetup = tttcreate.ElapsedTime();
+#endif
   }
 
   // set the preconditioner
-  if (doifpack || doml || dosimpler)
+  if (doifpack || doml || dosimpler || doamgbs)
   {
     aztec_->SetPrecOperator(P_.get());
   }
@@ -694,6 +730,14 @@ void LINALG::Solver::Solve_aztec(
     diag = null;
   }
 
+#ifdef WRITEOUTSTATISTICS
+    if(outfile_)
+    {
+      fprintf(outfile_,"LinIter %i\tNumGlobalElements %i\tAZ_solve_time %f\tAztecSolveTime %f\tAztecPrecondSetup %f\t\n",(int)status[AZ_its],A_->OperatorRangeMap().NumGlobalElements(),status[AZ_solve_time],ttt.ElapsedTime(),dtimeprecondsetup);
+      fflush(outfile_);
+    }
+#endif
+
   // print some output if desired
   if (Comm().MyPID()==0 && outfile_)
   {
@@ -701,6 +745,7 @@ void LINALG::Solver::Solve_aztec(
             A_->OperatorRangeMap().NumGlobalElements(),(int)status[AZ_its],status[AZ_solve_time]);
     fflush(outfile_);
   }
+
   return;
 }
 
@@ -962,6 +1007,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     case INPAR::SOLVER::azprec_MLfluid:
     case INPAR::SOLVER::azprec_MLAPI:
     case INPAR::SOLVER::azprec_MLfluid2:
+    case INPAR::SOLVER::azprec_AMGBS:
       azlist.set("AZ_precond",AZ_user_precond);
     break;
     default:
@@ -1037,7 +1083,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     if (azprectyp == INPAR::SOLVER::azprec_ML       ||
         azprectyp == INPAR::SOLVER::azprec_MLfluid  ||
         azprectyp == INPAR::SOLVER::azprec_MLfluid2 ||
-        azprectyp == INPAR::SOLVER::azprec_MLAPI       )
+        azprectyp == INPAR::SOLVER::azprec_MLAPI )
     {
       ParameterList& mllist = outparams.sublist("ML Parameters");
       ML_Epetra::SetDefaults("SA",mllist);
@@ -1056,6 +1102,11 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
         mllist.set("energy minimization: type",3); // 1,2,3 cheap -> expensive
         mllist.set("aggregation: block scaling",false);
       break;
+      case INPAR::SOLVER::azprec_AMGBS:
+        mllist.set("braess-sarazin: damping factors",inparams.get<string>("AMGBS_BS_DAMPING"));    // fix me
+        mllist.set("amgbs: prolongator smoother (vel)",inparams.get<string>("AMGBS_PSMOOTHER_VEL"));
+        mllist.set("amgbs: prolongator smoother (pre)",inparams.get<string>("AMGBS_PSMOOTHER_PRE"));
+        break;
       default: dserror("Unknown type of ml preconditioner");
       }
       mllist.set("output"                          ,inparams.get<int>("ML_PRINT"));
@@ -1254,6 +1305,84 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
 #endif
       //cout << mllist << endl << endl << endl; fflush(stdout);
     } // if ml preconditioner
+    //------------------------------------- set parameters for AMGBS if used
+    if (azprectyp == INPAR::SOLVER::azprec_AMGBS      )
+    {
+      ParameterList& mllist = outparams.sublist("ML Parameters");   // dummy ML Parameter List for ComuteNullSpaceIfNecessary
+      ParameterList& amglist = outparams.sublist("AMGBS Parameters");
+      ML_Epetra::SetDefaults("SA",amglist);
+      amglist.set("amgbs: smoother: pre or post"    ,"both");
+      //amglist.set("braess-sarazin: damping factors",inparams.get<string>("AMGBS_BS_DAMPING"));    // fix me
+      amglist.set("amgbs: prolongator smoother (vel)",inparams.get<string>("AMGBS_PSMOOTHER_VEL"));
+      amglist.set("amgbs: prolongator smoother (pre)",inparams.get<string>("AMGBS_PSMOOTHER_PRE"));
+
+      amglist.set("output"                          ,inparams.get<int>("ML_PRINT"));
+      amglist.set("coarse: max size"                ,inparams.get<int>("ML_MAXCOARSESIZE"));
+      amglist.set("max levels"                      ,inparams.get<int>("ML_MAXLEVEL"));
+      amglist.set("aggregation: threshold"          ,inparams.get<double>("ML_PROLONG_THRES"));
+      amglist.set("aggregation: damping factor"     ,inparams.get<double>("ML_PROLONG_SMO"));
+      amglist.set("aggregation: nodes per aggregate",inparams.get<int>("ML_AGG_SIZE"));
+      // override the default sweeps=2 with a default sweeps=1
+      // individual level sweeps are set below
+      amglist.set("smoother: sweeps",1);
+      switch (Teuchos::getIntegralValue<int>(inparams,"ML_COARSEN"))
+      {
+        case 0:  amglist.set("aggregation: type","Uncoupled");  break;
+        case 1:  amglist.set("aggregation: type","METIS");      break;
+        case 2:  amglist.set("aggregation: type","VBMETIS");    break;
+        case 3:  amglist.set("aggregation: type","MIS");        break;
+        default: dserror("Unknown type of coarsening for ML"); break;
+      }
+
+      //////////////////// set braess-sarazin smoothers
+      const int mlmaxlevel = inparams.get<int>("ML_MAXLEVEL");
+      // create vector of integers containing smoothing steps/polynomial order of level
+      std::vector<int> mlsmotimessteps;
+      {
+        std::istringstream mlsmotimes(Teuchos::getNumericStringParameter(inparams,"ML_SMOTIMES"));
+        std::string word;
+        while (mlsmotimes >> word)
+          mlsmotimessteps.push_back(std::atoi(word.c_str()));
+      }
+
+      if ((int)mlsmotimessteps.size() < mlmaxlevel)
+        dserror("Not enough smoothing steps ML_SMOTIMES=%d, must be larger/equal than ML_MAXLEVEL=%d\n",
+                mlsmotimessteps.size(),mlmaxlevel);
+
+      //////////////////// read in damping parameters for Braess Sarazin
+      std::vector<double> bsdamping;   // damping parameters for Braess-Sarazin
+      {
+        double word;
+        std::istringstream bsdampingstream(Teuchos::getNumericStringParameter(inparams,"AMGBS_BS_DAMPING"));
+        while (bsdampingstream >> word)
+          bsdamping.push_back(word);
+      }
+      if ((int)bsdamping.size() < mlmaxlevel)
+        dserror("Not enough damping factors AMGBS_BS_DAMPING=%d, must be larger/equal than ML_MAXLEVEL=%d\n",
+                bsdamping.size(),mlmaxlevel);
+
+
+      for (int i=0; i<mlmaxlevel; ++i)
+      {
+        char levelstr[11];
+        sprintf(levelstr,"(level %d)",i);
+        ParameterList& smolevelsublist = amglist.sublist("braess-sarazin: list "+(string)levelstr);
+
+          smolevelsublist.set("braess-sarazin: sweeps"                      ,mlsmotimessteps[i]);
+          smolevelsublist.set("braess-sarazin: damping factor"              ,bsdamping[i]);
+          smolevelsublist.set("pressure correction approx: type"      ,"IFPACK");   // TODO choose IFPACK or ML
+      } // for (int i=0; i<azvar->mlmaxlevel-1; ++i)
+
+
+
+      amglist.set("PDE equations",1);
+      amglist.set("null space: dimension",1);
+      amglist.set("null space: type","pre-computed");
+      amglist.set("null space: add default vectors",false);
+      amglist.set<double*>("null space: vectors",NULL);
+
+      cout << amglist << endl;
+    } // if AMGBS preconditioner
   }
   break;
 #ifdef PARALLEL
@@ -1462,6 +1591,7 @@ RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Aorig,
   {
     int err = result->FillComplete(B.DomainMap(),A.RangeMap());
     if (err) dserror("Epetra_CrsMatrix::FillComplete returned err=%d",err);
+
 #if 0 // the current status is that we don't need this (mwgee)
     EpetraExt::CrsMatrix_SolverMap ABtransform;
     const Epetra_CrsMatrix& tmp = ABtransform(*result);

@@ -862,6 +862,8 @@ set(OBJS_LINALG
   src/drt_lib/linalg_sparsematrix.cpp
   src/drt_lib/linalg_utils.cpp
   src/drt_lib/simpler_operator.cpp
+  src/drt_lib/braesssarazin_smoother.cpp
+  src/drt_lib/saddlepointpreconditioner.cpp
 )
 set(OBJS_DRT_FSI
   src/drt_fsi/fs_monolithic.cpp

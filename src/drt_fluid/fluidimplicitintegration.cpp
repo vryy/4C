@@ -21,6 +21,9 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+
+#undef WRITEOUTSTATISTICS
+
 #include <stdio.h>
 
 #include "fluidimplicitintegration.H"
@@ -39,6 +42,9 @@ Maintainer: Peter Gamnitzer
 #include "fluidimpedancecondition.H"
 #include "fluid_coupling_red_models.H"
 
+#ifdef WRITEOUTSTATISTICS
+#include "../drt_io/io_control.H"
+#endif
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -181,7 +187,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
 
-  if (not params_.get<int>("Simple Preconditioner",0))
+  if (not params_.get<int>("Simple Preconditioner",0) && not params_.get<int>("AMG BS Preconditioner",0))
   {
     // initialize standard (stabilized) system matrix
     sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
@@ -593,6 +599,7 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
     /* additionally it remains to mention that for the linearised
        fluid the stbilisation is hard coded to be SUPG/PSPG */
   }
+
 
   while (step_<stepmax_ and time_<maxtime_)
   {
@@ -1383,6 +1390,14 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           dserror("unknown definition of weight vector w for restriction of Krylov space");
         }
       }
+
+#ifdef WRITEOUTSTATISTICS
+    FILE* errfile = params_.get<FILE*>("err file",NULL);
+    if(errfile!=NULL)
+    {
+      fprintf(errfile, "TOBI: Proc %i/%i\tTimeStep %i\tNonlinIter %i\t",myrank_,discret_->Comm().NumProc(),step_,itnum);
+    }
+#endif
 
       solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
       solver_.ResetTolerance();

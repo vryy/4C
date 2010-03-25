@@ -1470,6 +1470,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Switch on SIMPLE family of solvers, needs additional FLUID PRESSURE SOLVER block!",
                                yesnotuple,yesnovalue,&fdyn);
 
+  setStringToIntegralParameter<int>("AMGBS","no",
+                                "Switch on AMG preconditioner with Braess-Sarazin smoother for saddle-point problems (e.g. Navier-Stokes equations), needs additional FLUID PRESSURE SOLVER block!",
+                                yesnotuple,yesnovalue,&fdyn);
+
   setStringToIntegralParameter<int>("ADAPTCONV","yes",
                                "Switch on adaptive control of linear solver tolerance for nonlinear solution",
                                yesnotuple,yesnovalue,&fdyn);
@@ -2708,8 +2712,8 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   {
     // this one is longer than 15 and the tuple<> function does not support this,
     // so build the Tuple class directly (which can be any size)
-    Teuchos::Tuple<std::string,17> name;
-    Teuchos::Tuple<INPAR::SOLVER::AzPrecType,17>  number;
+    Teuchos::Tuple<std::string,18> name;
+    Teuchos::Tuple<INPAR::SOLVER::AzPrecType,18>  number;
 
     name[0] = "none";                         number[0] = INPAR::SOLVER::azprec_none;
     name[1] = "ILU";                          number[1] = INPAR::SOLVER::azprec_ILU;
@@ -2728,6 +2732,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     name[14] = "MLAPI";                       number[14] = INPAR::SOLVER::azprec_MLAPI;
     name[15] = "GaussSeidel";                 number[15] = INPAR::SOLVER::azprec_GaussSeidel;
     name[16] = "DownwindGaussSeidel";         number[16] = INPAR::SOLVER::azprec_DownwindGaussSeidel;
+    name[17] = "AMG(Braess-Sarazin)";         number[17] = INPAR::SOLVER::azprec_AMGBS;
 
     setStringToIntegralParameter<INPAR::SOLVER::AzPrecType>(
       "AZPREC", "ILU",
@@ -2892,6 +2897,23 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS","Umfpack"),
     tuple<int>(0,1,2,3,4,5,6,7,8,9),
     &list);
+
+  // parameters for AMG(BS)
+  setNumericStringParameter("AMGBS_BS_DAMPING","1.3 1.3 1.3",
+                            "Relaxation factor for Braess-Sarazin smoother within AMGBS method",
+                            &list);
+
+  setStringToIntegralParameter<int>(
+    "AMGBS_PSMOOTHER_VEL","PA-AMG","Prolongation/Restriction smoothing strategy (velocity part in AMGBS preconditioner)",
+    tuple<std::string>("PA-AMG","SA-AMG"),
+    tuple<int>(INPAR::SOLVER::PA_AMG,INPAR::SOLVER::SA_AMG),
+    &list);
+  setStringToIntegralParameter<int>(
+    "AMGBS_PSMOOTHER_PRE","PA-AMG","Prolongation/Restriction smoothing strategy (pressure part in AMGBS preconditioner)",
+    tuple<std::string>("PA-AMG","SA-AMG"),
+    tuple<int>(INPAR::SOLVER::PA_AMG,INPAR::SOLVER::SA_AMG),
+    &list);
+
 
   // unused
   setStringToIntegralParameter<int>("PARTITION","Cut_Elements","unused",

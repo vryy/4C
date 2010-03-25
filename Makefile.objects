@@ -101,6 +101,8 @@ OBJS_DRT      = \
                 src/drt_lib/linalg_krylov_projector.o \
                 src/drt_lib/linalg_mlapi_operator.o \
                 src/drt_lib/simpler_operator.o \
+                src/drt_lib/saddlepointpreconditioner.o \
+                src/drt_lib/braesssarazin_smoother.o \
                 src/drt_lib/linalg_downwindmatrix.o
 #-------------------------------------------------------structural drivers
 OBJS_DRT_STRUCTURE      = \

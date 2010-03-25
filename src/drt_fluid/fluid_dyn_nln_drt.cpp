@@ -110,12 +110,23 @@ void dyn_fluid_drt()
 				DRT::Problem::Instance()->FluidPressureSolverParams());
 	}
 
+  // -------------------------------------------------------------------
+  // create a second solver for AMGBS preconditioner if chosen from input
+  // -------------------------------------------------------------------
+  if (getIntegralValue<int>(fdyn,"AMGBS"))
+  {
+    if(getIntegralValue<int>(fdyn,"SIMPLER")) dserror("you can either use SIMPLER or AMGBS preconditioner but not both the same time. \nFor using AMGBS preconditioner set SIMPLER to no.");
+    solver.PutSolverParamsToSubParams("AMGBS",
+        DRT::Problem::Instance()->FluidPressureSolverParams());
+  }
+
 	// -------------------------------------------------------------------
 	// set parameters in list required for all schemes
 	// -------------------------------------------------------------------
 	ParameterList fluidtimeparams;
 
 	fluidtimeparams.set<int>("Simple Preconditioner",Teuchos::getIntegralValue<int>(fdyn,"SIMPLER"));
+	fluidtimeparams.set<int>("AMG BS Preconditioner",Teuchos::getIntegralValue<int>(fdyn,"AMGBS"));
 
 	// -------------------------------------- number of degrees of freedom
 	// number of degrees of freedom
