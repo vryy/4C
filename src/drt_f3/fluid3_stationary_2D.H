@@ -144,7 +144,7 @@ void DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Sysmat_2D(
 
     if (det < 0.0) dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
 
-    const double fac = intpoints.qwgt[iquad]*det;
+    const double fac = intpoints.IP().qwgt[iquad]*det;
 
     //--------------------------------------------------------------
     //             compute global first derivates

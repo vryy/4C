@@ -401,7 +401,7 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
 
   else if(nsd_==2)
   {
-    Sysmat(ele,
+    Sysmat_2D(ele,
            evelnp,
            fsevelnp,
            eprenp,
