@@ -279,7 +279,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     // predicted dirichlet values
     // disn then also holds prescribed new dirichlet displacements
     // in case of activated periodic boundary conditions
-    if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
+    /*if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
     {
     	// Reinitialize disn_ and dirichtoggle_ once.
     	// Now, why is this done? For t==0, disn_ and dirichtoggle_ are initialized in strugenalpha.cpp.
@@ -301,7 +301,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     	//cout<<*disn_<<endl;
     }
 		// "common" case without periodic boundary conditions
-    else
+    else*/
     	discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
 
     discret_.ClearState();
