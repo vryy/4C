@@ -1259,8 +1259,10 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	bool 											broken;
 	// time trigger
 	bool 											usetime = true;
+	// to avoid redundant or wrong actions when filling vectors or deleting the last element of the free nodes vector
+	bool											alreadydone = false;
 	// store node Id of previously handled node
-  int tmpid=-1;
+  int 											tmpid = -1;
   // store LIDs of element nodes
   vector<int>								lids;
   // store LIDs of DOFs subjected to oscillation in order to identify force sensor locations
@@ -1268,7 +1270,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	// An element used to browse through Column Elements
   DRT::Element* 						element;
   // positions of nodes of an element with n nodes
-  LINALG::SerialDenseMatrix coord(3,(int)discret_.lColElement(0)->NumNode());
+  LINALG::SerialDenseMatrix coord(3,(int)discret_.lColElement(0)->NumNode(), true);
   // indicates location, direction and component of a broken element with n nodes->n-1 possible cuts
   LINALG::SerialDenseMatrix cut(3,(int)discret_.lColElement(0)->NumNode()-1,true);
   // vectors to manipulate DBC properties
@@ -1289,9 +1291,9 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 		int dbccount = 0;
 		// check correct syntax for DBC
 		int check=0;
-		const vector<int>* onoff;
-		const vector<int>* curve;
-		const vector<double>* val;
+		const vector<int>* onoff=NULL;
+		const vector<int>* curve=NULL;
+		const vector<double>* val=NULL;
 
 		// Get DBC
 		discret_.GetCondition("Dirichlet", conditions);
@@ -1353,46 +1355,84 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	  for(int n=0; n<cut.N(); n++)
 	  {
 			// case: broken element (in z-dir); node_n+1 oscillates, node_n is fixed in dir. of oscillation
-			if(broken == true && cut(2,n)==1.0)
+			if(broken && cut(2,n)==1.0)
 			{
-				// delete last Id of freenodes since it's not free as it turns out...
-				if(element->Nodes()[n]->Id()==tmpid)
-					freenodes.pop_back();
-				// add gid of fixed node to fixed-nodes-vector (to be added to condition later)
-				fixednodes.push_back(element->Nodes()[n]->Id());
-				// add gid of oscillating node to osc.-nodes-vector
+				// indicates beginning of a new filament (in the very special case that this is needed)
+				bool newfilament = false;
+				// check for case: last element of filament I as well as first element of filament I+1 broken
+				if(tmpid!=element->Nodes()[n]->Id() && alreadydone)
+				{
+					// in this case, reset alreadydone...
+					alreadydone = false;
+					// ...and set newfilament to true. Otherwise the last free nodes vector element will be deleted
+					newfilament = true;
+				}
+
+				// add GID of fixed node to fixed-nodes-vector (to be added to condition later)
+				if(!alreadydone)
+					fixednodes.push_back(element->Nodes()[n]->Id());
+				// add GID of oscillating node to osc.-nodes-vector
 				oscillnodes.push_back(element->Nodes()[n+1]->Id());
 				// add displacement of the node to drefnew_
 				// (at this stage, this is not the displacement of the new reference position for oscillating nodes yet:
 				// drefnew_ is set to current displacement (without Dirichlet) if its lid-th entry is set (or reset) to its initial value (9e99),
-				// e.g the element in question was not broken in the preceding timestep.)
+				// i.e. the element in question was not broken in the preceding timestep.)
 				for(int j = n; j < n+2; j++)
 					for(int k=0; k<cut.M(); k++)
 						if((*drefnew_)[lids.at(3*j+k)] > statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0))
 							(*drefnew_)[lids.at(3*j+k)] = (*disn_)[lids.at(3*j+k)];
+
 				// add DOF LID where a force sensor is to be set
-				int lid = lids.at(3*(n+1)+oscdir_);
-				fsensorlids.push_back(lid);
-				// store gid of the "n+1"-node to avoid overwriting
+				if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
+				{
+					int lid = lids.at(3*(n+1)+oscdir_);
+					fsensorlids.push_back(lid);
+				}
+
+				// delete last Id of freenodes if it was previously and falsely added
+				if(element->Nodes()[n]->Id()==tmpid && !alreadydone && !newfilament)
+					freenodes.pop_back();
+				// store gid of the "n+1"-node to avoid overwriting during the following iteration,
+				// e.g. oscillating node becomes free if the following CheckForBrokenElement() call yields "!broken".
 				tmpid = element->Nodes()[n+1]->Id();
+				// Set to true to initiate certain actions if the following element is also broken.
+				// If the following element isn't broken, alreadydone will be reset to false (see case: !broken)
+				alreadydone=true;
 			}
 			// case: broken element (in z-dir); node_n oscillates, node_n+1 is fixed in dir. of oscillation
-			else if(broken == true && cut(2,n)==2.0)
+			else if(broken && cut(2,n)==2.0)
 			{
-				if(element->Nodes()[n]->Id()==tmpid)
-									freenodes.pop_back();
+				bool newfilament = false;
+
+				if(tmpid!=element->Nodes()[n]->Id() && alreadydone)
+				{
+					alreadydone = false;
+					newfilament = true;
+				}
+
+				if(!alreadydone)
+					oscillnodes.push_back(element->Nodes()[n]->Id());
 				fixednodes.push_back(element->Nodes()[n+1]->Id());
-				oscillnodes.push_back(element->Nodes()[n]->Id());
+
 				for(int j=n; j<n+2; j++)
 					for(int k=0; k<cut.M(); k++)
 						if((*drefnew_)[lids.at(3*j+k)] > statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0))
 							(*drefnew_)[lids.at(3*j+k)] = (*disn_)[lids.at(3*j+k)];
-				int lid = lids.at(3*n+oscdir_);
-				fsensorlids.push_back(lid);
+
+				if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
+				{
+					int lid = lids.at(3*n+oscdir_);
+					fsensorlids.push_back(lid);
+				}
+
+				if(element->Nodes()[n]->Id()==tmpid && !alreadydone && !newfilament)
+					freenodes.pop_back();
+
 				tmpid = element->Nodes()[n+1]->Id();
+				alreadydone = true;
 			}
 			// case: unbroken element or broken in another than z-direction
-			else
+			else if(cut(2,n)!=2)
 			{
 				if(element->Nodes()[n]->Id()!=tmpid)
 				{
@@ -1402,6 +1442,8 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				else
 					freenodes.push_back(element->Nodes()[n+1]->Id());
 				tmpid=element->Nodes()[n+1]->Id();
+				// set to false to handle annoying special cases
+				alreadydone = false;
 			}
 	  }
 	}
@@ -1434,8 +1476,10 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
   dirichlet_->Add("val",addval);
   // set switch in dir. of oscillation
   dirichlet_->Add("onoff",addonoff);
-  cout<<*dirichlet_<<endl;
-  DoDirichletConditionPeriodic(usetime, time);
+  cout<<"OSCILLATING NODES\n"<<*dirichlet_<<endl;
+  // do not do anything if vector is empty
+  if(!oscillnodes.empty())
+  	DoDirichletConditionPeriodic(usetime, time);
 
   // set condition for fixed nodes
 	addcurve.at(oscdir_) = -1;
@@ -1443,7 +1487,9 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	dirichlet_->Add("Node Ids",fixednodes);
 	dirichlet_->Add("curve",addcurve);
 	dirichlet_->Add("val",addval);
-  DoDirichletConditionPeriodic(usetime, time);
+	cout<<"FIXED NODES\n"<<*dirichlet_<<endl;
+	if(!fixednodes.empty())
+		DoDirichletConditionPeriodic(usetime, time);
 
   // set condition for free or recently set free nodes
   for(int i=0; i<3; i++)
@@ -1451,7 +1497,9 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
   		addonoff.at(i) = 0;
   dirichlet_->Add("Node Ids",freenodes);
   dirichlet_->Add("onoff", addonoff);
-  DoDirichletConditionPeriodic(usetime, time);
+	cout<<"FREE NODES\n"<<*dirichlet_<<endl;
+	if(!freenodes.empty())
+		DoDirichletConditionPeriodic(usetime, time);
 
 	return;
 }
