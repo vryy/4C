@@ -94,6 +94,18 @@ drefnew_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
         break;
       }
 #endif  // #ifdef D_BEAM2R
+#ifdef D_TRUSS3
+      case DRT::Element::element_truss3:
+      {
+        //see whether current element needs more random numbers per time step than any other before
+        randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Truss3*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
+        
+        //in case of periodic boundary conditions truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
+        if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
+          statmechmanager_->PeriodicBoundaryTruss3Init(dis.lColElement(i));
+        break;
+      }
+#endif  // #ifdef D_BEAM2
       default:
         continue;
     }

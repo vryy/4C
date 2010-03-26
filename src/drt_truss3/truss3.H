@@ -63,6 +63,8 @@ public:
   friend class StatMechManager;
   friend void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
   friend void StatMechTime::Integrate();
+  friend void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element);
+  friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
 
 
   //! @name Constructors and destructors and related methods
@@ -356,7 +358,7 @@ private:
   //! @name methods for initilization of the element
 
   //!sets reference coordinates X_ and refenrence length lrefe_ for elements added to the discretization after simulation start
-  void SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe);
+  void SetUpReferenceGeometry(const vector<double>& xrefe, const bool secondinit = false);
 
   //@}
 
@@ -435,6 +437,11 @@ private:
                              const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
                              LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
                              LINALG::Matrix<ndim,ndim>& velbackgroundgrad); //!<gradient of velocity of background fluid
+
+   //!shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
+   template<int nnode, int ndim> //number of nodes, number of dimensions
+   void NodeShift(ParameterList& params,  //!<parameter list
+                 vector<double>&           disp); //!<element disp vector
 
    //@}
 

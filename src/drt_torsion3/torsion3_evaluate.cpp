@@ -99,13 +99,13 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
 
       // for engineering strains instead of total lagrange use t3_nlnstiffmass2
       if (act == Torsion3::calc_struct_nlnstiffmass)
-        t3_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1);
+        t3_nlnstiffmass(params,mydisp,&elemat1,&elemat2,&elevec1);
       else if (act == Torsion3::calc_struct_nlnstifflmass)
-        t3_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1);
+        t3_nlnstiffmass(params,mydisp,&elemat1,&elemat2,&elevec1);
       else if (act == Torsion3::calc_struct_nlnstiff)
-        t3_nlnstiffmass(mydisp,&elemat1,NULL,&elevec1);
+        t3_nlnstiffmass(params,mydisp,&elemat1,NULL,&elevec1);
       else if (act == Torsion3::calc_struct_internalforce)
-        t3_nlnstiffmass(mydisp,NULL,NULL,&elevec1);   
+        t3_nlnstiffmass(params,mydisp,NULL,NULL,&elevec1);   
     }
     break;  
     case calc_struct_update_istep:
@@ -143,13 +143,18 @@ int DRT::ELEMENTS::Torsion3::EvaluateNeumann(ParameterList& params,
 }
 
 /*--------------------------------------------------------------------------------------*
- | evaluate nonlinear stiffness matrix and internal forces                      tk 11/08|
+ | evaluate nonlinear stiffness matrix and internal forces                    cyron 03/10|
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass( vector<double>& disp,
-    Epetra_SerialDenseMatrix* stiffmatrix,
-    Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector* force)
+void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(ParameterList&            params,
+                                              vector<double>&           disp,
+                                              Epetra_SerialDenseMatrix* stiffmatrix,
+                                              Epetra_SerialDenseMatrix* massmatrix,
+                                              Epetra_SerialDenseVector* force)
 {
+  /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
+   *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
+  NodeShift<3,3>(params,disp);
+  
   //current node position (first entries 0,1,2 for first node, 3,4,5 for second node , 6,7,8 for third node)
   LINALG::Matrix<9,1> xcurr;
     
@@ -172,7 +177,6 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass( vector<double>& disp,
   
   //computing the change of angle theta (equation 3.3)
   double deltatheta=0.0;
-  double thetacurr=0.0;
   double dotprod=0.0;
   double s=0.0;
   
@@ -180,9 +184,8 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass( vector<double>& disp,
     dotprod +=  aux(j) * aux(3+j);
 
   s = dotprod/lcurr(0)/lcurr(1);
-  thetacurr=acos(s);
+  deltatheta=acos(s);
   
-  deltatheta=thetacurr-theta_;
 
   //variation of theta (equation 3.4)
   LINALG::Matrix<9,1> grtheta;
@@ -282,5 +285,44 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass( vector<double>& disp,
 
 
 }//stiffmatrix
+
+/*-----------------------------------------------------------------------------------------------------------*
+ | shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions; if two   |
+ | nodes within one element are separated by a periodic boundary, one of them is shifted such that the final |
+ | distance in R^3 is the same as the initial distance in the periodic space; the shift affects computation  |
+ | on element level within that very iteration step, only (no change in global variables performed)          |                                 |
+ |                                                                                       (public) cyron 10/09|
+ *----------------------------------------------------------------------------------------------------------*/
+template<int nnode, int ndim> //number of nodes, number of dimensions
+inline void DRT::ELEMENTS::Torsion3::NodeShift(ParameterList& params,  //!<parameter list
+                                            vector<double>& disp) //!<element disp vector
+{    
+  /*get number of degrees of freedom per node; note: the following function assumes the same number of degrees
+   *of freedom for each element node*/
+  int numdof = NumDofPerNode(*(Nodes()[0]));
+  
+  /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0) > 0.0, this
+   * method has to change the displacement variables*/
+  if(params.get<double>("PeriodLength",0.0) > 0.0)
+    //loop through all nodes except for the first node which remains fixed as reference node
+    for(int i=1;i<nnode;i++)
+    {    
+      for(int dof=0; dof<ndim; dof++)
+      {   
+        /*if the distance in some coordinate direction between some node and the first node becomes smaller by adding or subtracting
+         * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
+         * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
+         * is smaller than half the periodic length*/
+        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) + params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
+          disp[numdof*i+dof] += params.get<double>("PeriodLength",0.0);
+          
+        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
+          disp[numdof*i+dof] -= params.get<double>("PeriodLength",0.0);
+      }
+    }
+return;
+
+}//DRT::ELEMENTS::Torsion3::NodeShift
+
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_TORSION3

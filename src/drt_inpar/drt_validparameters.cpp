@@ -1097,6 +1097,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Edge length of cube for periodic boundary conditions problem
   DoubleParameter("PeriodLength",0.0,"Edge length of cube for periodic boundary conditions problem",&statmech);
   //Number of time steps between two special outputs written
+  DoubleParameter("ILINK",0.0,"Moment of inertia of area of crosslinkers",&statmech);
+  //Number of time steps between two special outputs written
+  DoubleParameter("ALINK",0.0,"Cross section of crosslinkers",&statmech);
+  //Number of time steps between two special outputs written
   IntParameter("OUTPUTINTERVALS",1,"Number of time steps between two special outputs written",&statmech);
   //Reading whether fixed seed for random numbers should be applied
   setStringToIntegralParameter<int>("FIXEDSEED","No","If chosen fixed seed for random numbers in each time step is applied",

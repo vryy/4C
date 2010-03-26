@@ -322,6 +322,11 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(ParameterList& params,
     Epetra_SerialDenseMatrix* massmatrix,
     Epetra_SerialDenseVector* force)
 {
+  
+  /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
+   *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
+  NodeShift<2,3>(params,disp);
+  
   switch(kintype_)
   {
   case tr3_totlag:
@@ -860,6 +865,44 @@ inline void DRT::ELEMENTS::Truss3::CalcBrownian(ParameterList& params,
 return;
 
 }//DRT::ELEMENTS::Truss3::CalcBrownian(.)
+
+/*-----------------------------------------------------------------------------------------------------------*
+ | shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions; if two   |
+ | nodes within one element are separated by a periodic boundary, one of them is shifted such that the final |
+ | distance in R^3 is the same as the initial distance in the periodic space; the shift affects computation  |
+ | on element level within that very iteration step, only (no change in global variables performed)          |                                 |
+ |                                                                                       (public) cyron 10/09|
+ *----------------------------------------------------------------------------------------------------------*/
+template<int nnode, int ndim> //number of nodes, number of dimensions
+inline void DRT::ELEMENTS::Truss3::NodeShift(ParameterList& params,  //!<parameter list
+                                            vector<double>& disp) //!<element disp vector
+{    
+  /*get number of degrees of freedom per node; note: the following function assumes the same number of degrees
+   *of freedom for each element node*/
+  int numdof = NumDofPerNode(*(Nodes()[0]));
+  
+  /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0) > 0.0, this
+   * method has to change the displacement variables*/
+  if(params.get<double>("PeriodLength",0.0) > 0.0)
+    //loop through all nodes except for the first node which remains fixed as reference node
+    for(int i=1;i<nnode;i++)
+    {    
+      for(int dof=0; dof<ndim; dof++)
+      {   
+        /*if the distance in some coordinate direction between some node and the first node becomes smaller by adding or subtracting
+         * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
+         * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
+         * is smaller than half the periodic length*/
+        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) + params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
+          disp[numdof*i+dof] += params.get<double>("PeriodLength",0.0);
+          
+        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
+          disp[numdof*i+dof] -= params.get<double>("PeriodLength",0.0);
+      }
+    }
+return;
+
+}//DRT::ELEMENTS::Truss3::NodeShift
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_TRUSS3

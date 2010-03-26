@@ -1295,7 +1295,6 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
  *----------------------------------------------------------------------*/
 void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP<LINALG::SparseOperator>& stiff, int ndim)
 {
-  #ifdef D_BEAM3
 
 #ifdef MEASURETIME
     const double t_start = Teuchos::Time::wallTime();
@@ -1346,11 +1345,15 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
       LINALG::Matrix<3,1> currrot;
 
       currpos(0) = node->X()[0] + discol[discret_.DofColMap()->LID(dofnode[0])];
-      currpos(1) = node->X()[1] + discol[discret_.DofColMap()->LID(dofnode[1])];;
+      currpos(1) = node->X()[1] + discol[discret_.DofColMap()->LID(dofnode[1])];
       currpos(2) = node->X()[2] + discol[discret_.DofColMap()->LID(dofnode[2])];
-      currrot(0) =                discol[discret_.DofColMap()->LID(dofnode[3])];
-      currrot(1) =                discol[discret_.DofColMap()->LID(dofnode[4])];
-      currrot(2) =                discol[discret_.DofColMap()->LID(dofnode[5])];
+      //if node has also rotational degrees of freedom
+      if(discret_.NumDof(node) == 6)
+      {
+        currrot(0) =                discol[discret_.DofColMap()->LID(dofnode[3])];
+        currrot(1) =                discol[discret_.DofColMap()->LID(dofnode[4])];
+        currrot(2) =                discol[discret_.DofColMap()->LID(dofnode[5])];
+      }
       currentpositions[node->LID()] = currpos;
       currentrotations[node->LID()] = currrot;
     }
@@ -1395,7 +1398,6 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
     cout << "\n***\ntotal time: " << Delta_t<< " seconds\n***\n";
 #endif // #ifdef MEASURETIME
 
-  #endif
 
   return;
 } // StatMechManager::StatMechUpdate()
@@ -1449,7 +1451,7 @@ void StatMechManager::CoordindateShift(const double& X, double& d)
 
 /*------------------------------------------------------------------------*
  | This function loops through all the elements of the discretization and |
- | tests whether they are broken by periodic boundary conditions in the   |
+ | tests whether beam3 are broken by periodic boundary conditions in the  |
  | reference configuration; if yes initial values of curvature and jacobi |
  | determinants are adapted in a proper way                    cyron 02/10|
  *-----------------------------------------------------------------------*/
@@ -1523,6 +1525,51 @@ void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
     default:
       dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
   }
+
+#endif
+}
+
+/*------------------------------------------------------------------------*
+ | This function loops through all the elements of the discretization and |
+ | tests whether truss3 are broken by periodic boundary conditions in the |
+ | reference configuration; if yes initial values of curvature and jacobi |
+ | determinants are adapted in a proper way                    cyron 03/10|
+ *-----------------------------------------------------------------------*/
+void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
+{
+
+#ifdef D_TRUSS3
+
+  DRT::ELEMENTS::Truss3* truss = dynamic_cast<DRT::ELEMENTS::Truss3*>(element);
+
+  //3D beam elements are embeddet into R^3:
+  const int ndim = 3;
+
+  /*get reference configuration of truss3 element in proper format for later call of SetUpReferenceGeometry*/
+  vector<double> xrefe(truss->NumNode()*ndim,0);
+
+
+  /*loop through all nodes except for the first node which remains fixed as reference node; all other nodes are
+   * shifted due to periodic boundary conditions if required*/
+  for(int i=1;i<truss->NumNode();i++)
+  {
+    for(int dof=0; dof<ndim; dof++)
+    {
+      /*if the distance in some coordinate direction between some node and the first node becomes smaller by adding or subtracting
+       * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
+       * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
+       * is smaller than half the periodic length*/
+      if( fabs( (truss->Nodes()[i]->X()[dof]) + statmechparams_.get<double>("PeriodLength",0.0) - (truss->Nodes()[0]->X()[dof]) ) < fabs( (truss->Nodes()[i]->X()[dof]) - (truss->Nodes()[0]->X()[dof]) ) )
+        xrefe[3*i+dof] += statmechparams_.get<double>("PeriodLength",0.0);
+
+      if( fabs( (truss->Nodes()[i]->X()[dof]) - statmechparams_.get<double>("PeriodLength",0.0) - (truss->Nodes()[0]->X()[dof]) ) < fabs( (truss->Nodes()[i]->X()[dof]) - (truss->Nodes()[0]->X()[dof]) ) )
+        xrefe[3*i+dof] -= statmechparams_.get<double>("PeriodLength",0.0);
+    }
+  }
+
+  /*note that the third argument "true" is necessary as all truss elements have already been initialized once upon reading input file*/
+  truss->SetUpReferenceGeometry(xrefe,true);
+
 
 #endif
 }
@@ -1727,35 +1774,61 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
          * first node of the crosslinker element. Then we add GID2 (note: GID2 < basisnodes_), which is the GID of the second node of the
          * crosslinker element. Hence basisnodes_ + GID1*basisnodes_ + GID2 always gives a GID which cannot be
          * used by any other element*/
-
+ #ifdef D_TRUSS3
  #ifdef D_BEAM3
-        RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3((nodecolmap.GID(i) + 1)*basisnodes_ + (int)crosslinkerstobeaddedglobalcol[j][i], (discret_.gNode(nodecolmap.GID(i)))->Owner() ) );
+        
+        if(statmechparams_.get<double>("ILINK",0.0) > 0.0)
+        {     
+          RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3((nodecolmap.GID(i) + 1)*basisnodes_ + (int)crosslinkerstobeaddedglobalcol[j][i], (discret_.gNode(nodecolmap.GID(i)))->Owner() ) );
+  
+          //setting up crosslinker element parameters
+          newcrosslinker ->crosssec_ = statmechparams_.get<double>("ALINK",0.0);
+          newcrosslinker ->crosssecshear_ = 1.1*statmechparams_.get<double>("ALINK",0.0);
+          newcrosslinker ->Iyy_ = statmechparams_.get<double>("ILINK",0.0);
+          newcrosslinker ->Izz_ = statmechparams_.get<double>("ILINK",0.0);
+          newcrosslinker ->Irr_ = 2*statmechparams_.get<double>("ILINK",0.0);
+          
+          //correct reference configuration data is computed for the new crosslinker element;
+          //function SetUpReferenceGeometry is template and here only linear beam elements can be applied as crosslinkers
+          newcrosslinker->SetUpReferenceGeometry<2>(xrefe,rotrefe);
+  
+          //set material for new element
+          newcrosslinker->SetMaterial(2);
+          
+          //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
+          int globalnodeids[2] = {nodecolmap.GID(i),(int)crosslinkerstobeaddedglobalcol[j][i]};
 
-        //setting up crosslinker element parameters
-        newcrosslinker ->crosssec_ = 2.375829e-05;
-        newcrosslinker ->crosssecshear_ = 1.1*2.375829e-05;
-        newcrosslinker ->Iyy_ = 4.49180e-11;
-        newcrosslinker ->Izz_ = 4.49180e-11;
-        newcrosslinker ->Irr_ = 8.9836e-11;
+          newcrosslinker->SetNodeIds(2,globalnodeids);
+          DRT::Node *nodes[] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
+          newcrosslinker->BuildNodalPointers(&nodes[0]);
 
+          //add new element to discretization
+          discret_.AddElement(newcrosslinker);
+        }
+        else
+        {
+          RCP<DRT::ELEMENTS::Truss3> newcrosslinker = rcp(new DRT::ELEMENTS::Truss3((nodecolmap.GID(i) + 1)*basisnodes_ + (int)crosslinkerstobeaddedglobalcol[j][i], (discret_.gNode(nodecolmap.GID(i)))->Owner() ) );
+  
+          //setting up crosslinker element parameters
+          newcrosslinker ->crosssec_ = statmechparams_.get<double>("ALINK",0.0);
+          
+          //correct reference configuration data is computed for the new crosslinker element;
+          newcrosslinker->SetUpReferenceGeometry(xrefe);
+  
+          //set material for new element
+          newcrosslinker->SetMaterial(2);
+          
+          //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
+          int globalnodeids[2] = {nodecolmap.GID(i),(int)crosslinkerstobeaddedglobalcol[j][i]};
 
-        //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
-        int globalnodeids[2] = {nodecolmap.GID(i),(int)crosslinkerstobeaddedglobalcol[j][i]};
+          newcrosslinker->SetNodeIds(2,globalnodeids);
+          DRT::Node *nodes[] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
+          newcrosslinker->BuildNodalPointers(&nodes[0]);
 
-        newcrosslinker->SetNodeIds(2,globalnodeids);
-        DRT::Node *nodes[] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
-        newcrosslinker->BuildNodalPointers(&nodes[0]);
-
-        //correct reference configuration data is computed for the new crosslinker element;
-        //function SetUpReferenceGeometry is template and here only linear beam elements can be applied as crosslinkers
-        newcrosslinker->SetUpReferenceGeometry<2>(xrefe,rotrefe);
-
-        //set material for new element
-        newcrosslinker->SetMaterial(2);
-
-        //add new element to discretization
-        discret_.AddElement(newcrosslinker);
-
+          //add new element to discretization
+          discret_.AddElement(newcrosslinker);
+        }
+ #endif
  #endif
 
       }

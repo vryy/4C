@@ -1965,6 +1965,10 @@ template<int nnode, int ndim> //number of nodes, number of dimensions
 inline void DRT::ELEMENTS::Beam3::NodeShift(ParameterList& params,  //!<parameter list
                                             vector<double>& disp) //!<element disp vector
 {    
+  /*get number of degrees of freedom per node; note: the following function assumes the same number of degrees
+   *of freedom for each element node*/
+  int numdof = NumDofPerNode(*(Nodes()[0]));
+  
   /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0) > 0.0, this
    * method has to change the displacement variables*/
   if(params.get<double>("PeriodLength",0.0) > 0.0)
@@ -1977,11 +1981,11 @@ inline void DRT::ELEMENTS::Beam3::NodeShift(ParameterList& params,  //!<paramete
          * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
          * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
          * is smaller than half the periodic length*/
-        if( fabs( (Nodes()[i]->X()[dof]+disp[6*i+dof]) + params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[6*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[6*i+dof]) - (Nodes()[0]->X()[dof]+disp[6*0+dof]) ) )
-          disp[6*i+dof] += params.get<double>("PeriodLength",0.0);
+        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) + params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
+          disp[numdof*i+dof] += params.get<double>("PeriodLength",0.0);
           
-        if( fabs( (Nodes()[i]->X()[dof]+disp[6*i+dof]) - params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[6*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[6*i+dof]) - (Nodes()[0]->X()[dof]+disp[6*0+dof]) ) )
-          disp[6*i+dof] -= params.get<double>("PeriodLength",0.0);
+        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
+          disp[numdof*i+dof] -= params.get<double>("PeriodLength",0.0);
       }
     }
 return;

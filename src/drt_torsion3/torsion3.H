@@ -286,12 +286,6 @@ private:
   //container containing all kind of Torsion3 thisandthat
   DRT::Container data_; 
   
-  // variable saving whether element has already been initialized (then isinit_ == true)
-  bool isinit_;
-  
-  //reference angle
-  double theta_;
-  
   //springconstant
   double springconstant_;
   
@@ -305,13 +299,24 @@ private:
   //! @name Internal calculation methods
               
   //!calculation of nonlinear stiffness and mass matrix
-  void t3_nlnstiffmass(vector<double>&           disp, 
+  void t3_nlnstiffmass(ParameterList&            params,
+                       vector<double>&           disp, 
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
                        Epetra_SerialDenseVector* force);
 
 
   //@}
+  
+  
+  //! @name Methods for Brownian dynamics simulations
+
+   //!shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
+   template<int nnode, int ndim> //number of nodes, number of dimensions
+   void NodeShift(ParameterList& params,  //!<parameter list
+                 vector<double>&           disp); //!<element disp vector
+
+   //@}
           
   // don't want = operator
   Torsion3& operator = (const Torsion3& old);

@@ -62,6 +62,9 @@ public:
 
   //! \brief Initializes beam3 elements in case of perioddic boundary conditions
   void PeriodicBoundaryBeam3Init(DRT::Element* element);
+  
+  //! \brief Initializes truss3 elements in case of perioddic boundary conditions
+  void PeriodicBoundaryTruss3Init(DRT::Element* element);
 
   /*!\brief check whether element is "broken" due to periodic boundary conditions
     \param coord  (in/out)  set of nodal coordinates
