@@ -112,7 +112,7 @@ protected:
   void CoordindateShift(const double& X, double& d);
 
   //! \brief gmsh output in case of periodic boundary conditions
-  void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent);
+  void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid);
 
 
 

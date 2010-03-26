@@ -38,7 +38,7 @@ Maintainer: Christian Cyron
 #endif  // #ifdef D_TRUSS2
 
 
-//#define MEASURETIME
+#define MEASURETIME
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             cyron 08/08|
  *----------------------------------------------------------------------*/
@@ -99,7 +99,7 @@ drefnew_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
       {
         //see whether current element needs more random numbers per time step than any other before
         randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Truss3*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
-        
+
         //in case of periodic boundary conditions truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
         if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
           statmechmanager_->PeriodicBoundaryTruss3Init(dis.lColElement(i));
@@ -291,7 +291,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     // predicted dirichlet values
     // disn then also holds prescribed new dirichlet displacements
     // in case of activated periodic boundary conditions
-    if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
+    /*if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
     {
     	// Reinitialize disn_ and dirichtoggle_ once.
     	// Now, why is this done? For t==0, disn_ and dirichtoggle_ are initialized in strugenalpha.cpp.
@@ -313,7 +313,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     	//cout<<*disn_<<endl;
     }
 		// "common" case without periodic boundary conditions
-    else
+    else*/
     	discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
 
     discret_.ClearState();
@@ -1519,7 +1519,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 
 #ifdef MEASURETIME
   const double t_end = Teuchos::Time::wallTime();
-  cout<<"DBC Evaluation time: "<<t_end-tstart<<endl;
+  cout<<"DBC Evaluation time: "<<t_end-t_start<<endl;
 #endif // #ifdef MEASURETIME
 	return;
 }

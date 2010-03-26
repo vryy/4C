@@ -722,7 +722,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
         if (element->Id() < basisnodes_)
           color = 1.0;
         else
-          color = 0.0;
+          color = 0.5;
 
       //if no periodic boundary conditions are to be applied, we just plot the current element
       if(statmechparams_.get<double>("PeriodLength",0.0) == 0)
@@ -737,7 +737,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
       }
       //in case of periodic boundary conditions we have to take care to plot correctly an element broken at some boundary plane
       else
-        GmshOutputPeriodicBoundary(coord, color, gmshfilecontent);
+        GmshOutputPeriodicBoundary(coord, color, gmshfilecontent, element->Id());
 
     }
 
@@ -746,69 +746,69 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
     {
     	// get current period length
     	double pl = statmechparams_.get<double>("PeriodLength",0.0);
-    	// an rgb color vector
-    	vector<double> color(2,0.0);
+
+			double boundarycolor=0.0;
 
     	// define boundary lines (causes eye cancer!)
     	gmshfilecontent << "SL(" << scientific;
     	gmshfilecontent << 0.0 << "," << 0.0 << "," << 0.0 << ","
 											<< pl << "," << 0.0 << "," << 0.0 ;
-    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 2
     	gmshfilecontent << "SL(" << scientific;
     	gmshfilecontent << pl << "," << 0.0 << "," << 0.0 << ","
     									<< pl << "," << pl << "," << 0.0 ;
-    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 3
     	gmshfilecontent << "SL(" << scientific;
     	gmshfilecontent << pl << "," << pl << "," << 0.0 << ","
     									<< pl << "," << pl << "," << pl ;
-    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 4
     	gmshfilecontent << "SL(" << scientific;
     	gmshfilecontent << pl << "," << pl << "," << pl << ","
     									<< 0.0 << "," << pl << "," << pl ;
-    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 5
     	gmshfilecontent << "SL(" << scientific;
     	gmshfilecontent << 0.0 << "," << pl << "," << pl << ","
     									<< 0.0 << "," << 0.0 << "," << pl ;
-    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 6
     	gmshfilecontent << "SL(" << scientific;
     	gmshfilecontent << 0.0 << "," << 0.0 << "," << pl << ","
 											<< 0.0 << "," << 0.0 << "," << 0.0 ;
-    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 7
     	gmshfilecontent << "SL(" << scientific;
     	gmshfilecontent << 0.0 << "," << 0.0 << "," << 0.0 << ","
     									<< 0.0 << "," << pl << "," << 0.0 ;
-    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 8
     	gmshfilecontent << "SL(" << scientific;
     	gmshfilecontent << 0.0 << "," << pl << "," << 0.0 << ","
     									<< pl << "," << pl << "," << 0.0 ;
-    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 9
     	gmshfilecontent << "SL(" << scientific;
     	gmshfilecontent << 0.0 << "," << pl << "," << 0.0 << ","
     									<< 0.0 << "," << pl << "," << pl ;
-    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 10
     	gmshfilecontent << "SL(" << scientific;
     	gmshfilecontent << pl << "," << 0.0 << "," << 0.0 << ","
     									<< pl << "," << 0.0 << "," << pl ;
-    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 11
     	gmshfilecontent << "SL(" << scientific;
     	gmshfilecontent << pl << "," << 0.0 << "," << pl << ","
     									<< pl << "," << pl << "," << pl ;
-    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 12
     	gmshfilecontent << "SL(" << scientific;
     	gmshfilecontent << pl << "," << 0.0 << "," << pl << ","
     									<< 0.0 << "," << 0.0 << "," << pl ;
-    	gmshfilecontent << ")" << "{" << scientific << color.at(0) << "," << color.at(1) << "};" << endl;
+    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     }
 
     //finish data section of this view by closing curley brackets
@@ -829,7 +829,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
  | gmsh output data in case of periodic boundary conditions             |
  |                                                    public)cyron 02/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent)
+void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid)
 {
   //number of spatial dimensions
   const int ndim = 3;
@@ -859,7 +859,32 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
       unshift(dof,1) += statmechparams_.get<double>("PeriodLength",0.0);
     }
   }
+  // color especially long and therefore potentially incorrect crosslinkers differently
+  double abscoord = sqrt((coord(0,1)-coord(0,0))*(coord(0,1)-coord(0,0))+
+												 (coord(1,1)-coord(1,0))*(coord(1,1)-coord(1,0))+
+												 (coord(2,1)-coord(2,0))*(coord(2,1)-coord(2,0)));
+  if(abscoord>1.5*statmechparams_.get<double>("R_LINK",0.0) && eleid>basiselements_ && cut(0) + cut(1) + cut(2) == 0)
+  {
+  	cout<<"long Crosslinker detected"<<endl;
+    //writing element by nodal coordinates as a scalar line
+    gmshfilecontent << "SL(" << scientific;
+    gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << ","
+                   << coord(0,1) << "," << coord(1,1) << "," << coord(2,1) ;
+    /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
+     * interpolating these two colors between the nodes*/
+    gmshfilecontent << ")" << "{" << scientific << 0.75 << "," << 0.75 << "};" << endl;
+    gmshfilecontent << "SP(" << scientific;
+    gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0);
+    gmshfilecontent << ")" << "{" << scientific << 0.75 << "," << 0.75 << "};" << endl;
+    gmshfilecontent << "SP(" << scientific;
+    gmshfilecontent<< coord(0,1) << "," << coord(1,1) << "," << coord(2,1);
+    gmshfilecontent << ")" << "{" << scientific << 0.75 << "," << 0.75 << "};" << endl;
 
+    //cout<<"Element-Id: "<<eleid<<endl;
+    //cout<<"Node-Ids: "<<discret_;
+
+    return;
+  }
   if(cut(0) + cut(1) + cut(2) > 0)
   {
       //compute direction vector between first and second node of element (normed):
@@ -919,6 +944,12 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
       /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
        * interpolating these two colors between the nodes*/
       gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+      /*gmshfilecontent << "SP(" << scientific;
+      gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0);
+      gmshfilecontent << ")" << "{" << scientific << 0.75 << "," << 0.75 << "};" << endl;
+      gmshfilecontent << "SP(" << scientific;
+      gmshfilecontent<< coord(0,1) << "," << coord(1,1) << "," << coord(2,1);
+      gmshfilecontent << ")" << "{" << scientific << 0.75 << "," << 0.75 << "};" << endl;*/
   }
   else
   {
@@ -1776,31 +1807,32 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
          * used by any other element*/
  #ifdef D_TRUSS3
  #ifdef D_BEAM3
-        
+
         if(statmechparams_.get<double>("ILINK",0.0) > 0.0)
-        {     
+        {
           RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3((nodecolmap.GID(i) + 1)*basisnodes_ + (int)crosslinkerstobeaddedglobalcol[j][i], (discret_.gNode(nodecolmap.GID(i)))->Owner() ) );
-  
-          //setting up crosslinker element parameters
-          newcrosslinker ->crosssec_ = statmechparams_.get<double>("ALINK",0.0);
-          newcrosslinker ->crosssecshear_ = 1.1*statmechparams_.get<double>("ALINK",0.0);
-          newcrosslinker ->Iyy_ = statmechparams_.get<double>("ILINK",0.0);
-          newcrosslinker ->Izz_ = statmechparams_.get<double>("ILINK",0.0);
-          newcrosslinker ->Irr_ = 2*statmechparams_.get<double>("ILINK",0.0);
-          
-          //correct reference configuration data is computed for the new crosslinker element;
-          //function SetUpReferenceGeometry is template and here only linear beam elements can be applied as crosslinkers
-          newcrosslinker->SetUpReferenceGeometry<2>(xrefe,rotrefe);
-  
-          //set material for new element
-          newcrosslinker->SetMaterial(2);
-          
+
+
           //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
           int globalnodeids[2] = {nodecolmap.GID(i),(int)crosslinkerstobeaddedglobalcol[j][i]};
 
           newcrosslinker->SetNodeIds(2,globalnodeids);
           DRT::Node *nodes[] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
           newcrosslinker->BuildNodalPointers(&nodes[0]);
+
+          //setting up crosslinker element parameters
+          newcrosslinker ->crosssec_ = statmechparams_.get<double>("ALINK",0.0);
+          newcrosslinker ->crosssecshear_ = 1.1*statmechparams_.get<double>("ALINK",0.0);
+          newcrosslinker ->Iyy_ = statmechparams_.get<double>("ILINK",0.0);
+          newcrosslinker ->Izz_ = statmechparams_.get<double>("ILINK",0.0);
+          newcrosslinker ->Irr_ = 2*statmechparams_.get<double>("ILINK",0.0);
+
+          //correct reference configuration data is computed for the new crosslinker element;
+          //function SetUpReferenceGeometry is template and here only linear beam elements can be applied as crosslinkers
+          newcrosslinker->SetUpReferenceGeometry<2>(xrefe,rotrefe);
+
+          //set material for new element
+          newcrosslinker->SetMaterial(2);
 
           //add new element to discretization
           discret_.AddElement(newcrosslinker);
@@ -1808,22 +1840,22 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
         else
         {
           RCP<DRT::ELEMENTS::Truss3> newcrosslinker = rcp(new DRT::ELEMENTS::Truss3((nodecolmap.GID(i) + 1)*basisnodes_ + (int)crosslinkerstobeaddedglobalcol[j][i], (discret_.gNode(nodecolmap.GID(i)))->Owner() ) );
-  
-          //setting up crosslinker element parameters
-          newcrosslinker ->crosssec_ = statmechparams_.get<double>("ALINK",0.0);
-          
-          //correct reference configuration data is computed for the new crosslinker element;
-          newcrosslinker->SetUpReferenceGeometry(xrefe);
-  
-          //set material for new element
-          newcrosslinker->SetMaterial(2);
-          
+
           //nodes are assigned to the new crosslinker element by first assigning global node Ids and then assigning nodal pointers
           int globalnodeids[2] = {nodecolmap.GID(i),(int)crosslinkerstobeaddedglobalcol[j][i]};
 
           newcrosslinker->SetNodeIds(2,globalnodeids);
           DRT::Node *nodes[] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
           newcrosslinker->BuildNodalPointers(&nodes[0]);
+
+          //setting up crosslinker element parameters
+          newcrosslinker ->crosssec_ = statmechparams_.get<double>("ALINK",0.0);
+
+          //correct reference configuration data is computed for the new crosslinker element;
+          newcrosslinker->SetUpReferenceGeometry(xrefe);
+
+          //set material for new element
+          newcrosslinker->SetMaterial(2);
 
           //add new element to discretization
           discret_.AddElement(newcrosslinker);
