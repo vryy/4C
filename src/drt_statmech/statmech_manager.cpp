@@ -41,7 +41,7 @@ Maintainer: Christian Cyron
 #include <math.h>
 
 //MEASURETIME activates measurement of computation time for certain parts of the code
-//#define MEASURETIME
+#define MEASURETIME
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             cyron 09/08|
@@ -865,7 +865,6 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 												 (coord(2,1)-coord(2,0))*(coord(2,1)-coord(2,0)));
   if(abscoord>1.5*statmechparams_.get<double>("R_LINK",0.0) && eleid>basiselements_ && cut(0) + cut(1) + cut(2) == 0)
   {
-  	cout<<"long Crosslinker detected"<<endl;
     //writing element by nodal coordinates as a scalar line
     gmshfilecontent << "SL(" << scientific;
     gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << ","
@@ -880,8 +879,13 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
     gmshfilecontent<< coord(0,1) << "," << coord(1,1) << "," << coord(2,1);
     gmshfilecontent << ")" << "{" << scientific << 0.75 << "," << 0.75 << "};" << endl;
 
-    //cout<<"Element-Id: "<<eleid<<endl;
-    //cout<<"Node-Ids: "<<discret_;
+    // temporary output of Crosslinker properties
+    cout<<"long Crosslinker detected: ";
+    cout<<"El.Id: "<<eleid;
+    cout<<" Node-Ids: ";
+    for(int i=0; i<2;i++)
+    	cout<<discret_.gElement(eleid)->Nodes()[i]->Id()<<" ";
+    cout<<"current length: "<<abscoord<<endl;
 
     return;
   }
@@ -944,12 +948,6 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
       /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
        * interpolating these two colors between the nodes*/
       gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
-      /*gmshfilecontent << "SP(" << scientific;
-      gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0);
-      gmshfilecontent << ")" << "{" << scientific << 0.75 << "," << 0.75 << "};" << endl;
-      gmshfilecontent << "SP(" << scientific;
-      gmshfilecontent<< coord(0,1) << "," << coord(1,1) << "," << coord(2,1);
-      gmshfilecontent << ")" << "{" << scientific << 0.75 << "," << 0.75 << "};" << endl;*/
   }
   else
   {
@@ -1390,7 +1388,7 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
     }
 
     //new search for neighbour nodes after average time specified in input file
-    if(time_ - nsearch_*statmechparams_.get<double>("Delta_t_search",0.0) > statmechparams_.get<double>("Delta_t_search",0.0) )
+    //if(time_ - nsearch_*statmechparams_.get<double>("Delta_t_search",0.0) > statmechparams_.get<double>("Delta_t_search",0.0) )(for now, call for each time step)
       SearchNeighbours(currentpositions);
 
     cout << "\n***\nsearch time: " << Teuchos::Time::wallTime() - t_search<< " seconds\n***\n";
