@@ -403,6 +403,8 @@ protected:
       const std::string filestr,
       const std::string name_in_gmsh
       ) const;
+  
+  void MovingFluidOutput();
 
   //! @name general algorithm parameters
   //! fluid discretization
@@ -594,6 +596,8 @@ protected:
 	  Teuchos::RCP<Epetra_Vector>            fiaccnp_;    ///< fluid interface acceleration  n+1
 	  Teuchos::RCP<Epetra_Vector>            fiaccn_;     ///< fluid interface acceleration  n
 	  //@}	  
+	  
+	  Teuchos::RCP<Epetra_Vector>    mfvelnp_; 
   }fluidfluidstate_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
