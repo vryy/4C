@@ -140,7 +140,7 @@ public:
 
     \param disp new guess at displacement
   */
-  void Evaluate(Teuchos::RCP<const Epetra_Vector> disp);
+  virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disp);
 
   /*!
   \brief do full Newton iteration

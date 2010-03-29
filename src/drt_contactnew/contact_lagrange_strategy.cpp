@@ -2172,6 +2172,10 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
 {
   // FIXME: Here we do not consider zig-zagging yet!
 
+  // get out gof here if not in the semi-smooth Newton case
+  bool semismooth = Teuchos::getIntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
+  if (!semismooth) return;
+  
   // get input parameter ftype
   INPAR::CONTACT::FrictionType ftype =
     Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
