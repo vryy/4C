@@ -290,13 +290,23 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     discret_.SetState("velocity",veln_);
     // predicted dirichlet values
     // disn then also holds prescribed new dirichlet displacements
+    // determine evaluation mode (only once at the beginning)
+    if(!isinit_)
+    {
+    	vector<DRT::Condition*> dbc;
+    	discret_.GetCondition("Dirichlet",dbc);
+    	if(!dbc.size())
+    		dbcsize_=false;
+    	else
+    		dbcsize_=true;
+    }
     // in case of activated periodic boundary conditions
-    /*if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
+    if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0 && dbcsize_)
     {
     	// Reinitialize disn_ and dirichtoggle_ once.
     	// Now, why is this done? For t==0, disn_ and dirichtoggle_ are initialized in strugenalpha.cpp.
     	// Especially dirichtoggle_ and invtoggle_ contain information that is incorrect if DBC DOFs are
-    	// selected anew for each timestep and periodic boudary conditions are to be applied.
+    	// selected anew for each timestep and periodic boundary conditions are to be applied.
     	// Also, initialize drefnew_ with large abs. values
     	if(!isinit_)
     	{
@@ -313,7 +323,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     	//cout<<*disn_<<endl;
     }
 		// "common" case without periodic boundary conditions
-    else*/
+    else
     	discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
 
     discret_.ClearState();

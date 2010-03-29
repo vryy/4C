@@ -98,19 +98,21 @@ protected:
 private:
 	// variables needed for EvaluateDirichletPeriodic()
 	bool 												isinit_;
-	// a time curve
+	// \brief switch between EvaluateDirichletPeriodic() (in case of periodic BCs) and EvaluateDirichlet() (normal case)
+	bool 												dbcsize_;
+	// \brief time curve to obtain DBC values
 	DRT::UTILS::TimeCurve&		 	timecurve_;
-	// vector used to signal when to store and when to delete a new reference position for DBC evaluation
+	// \brief vector used to signal when to store and when to delete a new reference position for DBC evaluation
 	RCP<Epetra_Vector> 					dbcswitch_;
-	// use of a vector of static size is okay as long as no nodes are added afterwards
+	// \brief use of a vector of static size is okay as long as no nodes are added afterwards
 	RCP<Epetra_Vector> 					drefnew_;
-	// a Condition
+	// \brief to obtain Dirichlet BCs, extracted from discretization
 	DRT::Condition*							dirichlet_;
-	// direction of oscillation
+	// \brief direction of oscillation, extracted from discretization
 	int 												oscdir_;
-	// amplitude of oscillation
+	// \brief amplitude of oscillation, extracted from discretization
 	double											amp_;
-	// curve number
+	// \brief curve number, extracted from discretization
 	int 												curvenumber_;
 
 }; // class StatMechTime
