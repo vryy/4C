@@ -48,7 +48,9 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/drt_locsys.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_potential/drt_potential_manager.H"
-#include "../drt_contact/drt_contact_manager.H"
+#include "../drt_mortar/mortar_manager_base.H"
+#include "../drt_contactnew/meshtying_manager.H"
+#include "../drt_contactnew/contact_manager.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_fluid/drt_periodicbc.H"
 
@@ -562,7 +564,7 @@ namespace STR
     Teuchos::RCP<POTENTIAL::PotentialManager>   potman_;
 
     //! contact
-    Teuchos::RCP<CONTACT::Manager>   contactman_;
+    Teuchos::RCP<MORTAR::ManagerBase>   contactman_;
 
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;

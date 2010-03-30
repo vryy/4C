@@ -220,7 +220,7 @@ STR::TimInt::TimInt
         alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
 
       // create contact manager
-      contactman_ = Teuchos::rcp(new CONTACT::Manager(*discret_,alphaf));
+      contactman_ = Teuchos::rcp(new CONTACT::CoManager(*discret_,alphaf));
 
       // store DBC status in contact nodes
       contactman_->GetStrategy().StoreDirichletStatus(dbcmaps_);

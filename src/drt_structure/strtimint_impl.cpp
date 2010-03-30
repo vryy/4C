@@ -501,10 +501,10 @@ void STR::TimIntImpl::ApplyForceStiffContact
     contactman_->GetStrategy().InitEvalMortar();
     contactman_->GetStrategy().UpdateActiveSetSemiSmooth();
     contactman_->GetStrategy().Initialize();
-    contactman_->GetStrategy().Evaluate(stiff,fres_);
+    contactman_->GetStrategy().Evaluate(stiff,fres_,disn_);
 
     // evaluate contact forces
-    contactman_->GetStrategy().ContactForces(frescopy);
+    contactman_->GetStrategy().InterfaceForces(frescopy);
 
     // scaling back
     fres_->Scale(-1.0);

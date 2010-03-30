@@ -26,7 +26,6 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_io/io.H"
-#include "../drt_contact/drt_contact_manager.H"
 
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"

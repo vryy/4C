@@ -28,7 +28,6 @@ Maintainer: Burkhard Bornemann
 #endif
 
 #include "strudyn_direct.H"
-#include "../drt_contact/contactstrugenalpha.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"

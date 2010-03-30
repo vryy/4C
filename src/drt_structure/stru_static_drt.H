@@ -29,7 +29,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_solver.H"
-#include "../drt_contact/contactdefines.H"
 
 using namespace std;
 

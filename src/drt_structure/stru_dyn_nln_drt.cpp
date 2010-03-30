@@ -27,8 +27,7 @@ Maintainer: Michael Gee
 #include "stru_dyn_nln_drt.H"
 #include "strugenalpha.H"
 #include "strudyn_direct.H"
-#include "../drt_contact/contactstrugenalpha.H"
-#include "../drt_contact/beam3contactstrugenalpha.H"
+#include "../drt_beamcontact/beam3contactstrugenalpha.H"
 #include "../drt_contactnew/strugenalpha_cmt.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
@@ -312,7 +311,6 @@ void dyn_nlnstructural_drt()
       bool mortarcontact = false;
       bool mortarmeshtying = false;
       bool beamcontact = false;
-      bool oldcontact = false;
       INPAR::CONTACT::ApplicationType ctype =
         Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
       switch (ctype)
@@ -354,7 +352,7 @@ void dyn_nlnstructural_drt()
       // create the time integrator
       bool inv_analysis = genalphaparams.get("inv_analysis",false);
       RCP<StruGenAlpha> tintegrator;
-      if (!mortarcontact && !mortarmeshtying && !beamcontact && !oldcontact && !inv_analysis && !thermalbath)
+      if (!mortarcontact && !mortarmeshtying && !beamcontact && !inv_analysis && !thermalbath)
         tintegrator = rcp(new StruGenAlpha(genalphaparams,*actdis,solver,output));
       else
       {
@@ -364,8 +362,6 @@ void dyn_nlnstructural_drt()
           tintegrator = rcp (new CONTACT::CmtStruGenAlpha(genalphaparams,*actdis,solver,output,ctype));
         if (beamcontact)
           tintegrator = rcp(new CONTACT::Beam3ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
-        if (oldcontact)
-          tintegrator = rcp(new CONTACT::ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
         if (thermalbath)
           tintegrator = rcp(new StatMechTime(genalphaparams,*actdis,solver,output));
       }
