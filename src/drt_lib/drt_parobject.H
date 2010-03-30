@@ -86,8 +86,7 @@ using namespace std;
 #define ParObject_So_sh8p8              (int)67
 #define ParObject_Sosh8p8Register       (int)68
 // missing ints result from removed So_ctet element
-#define ParObject_CNode                 (int)71
-#define ParObject_CElement              (int)72
+// missing ints result from removed CNode / CElement
 #define ParObject_XFluid3               (int)73
 #define ParObject_XFluid3Register       (int)74
 #define ParObject_XFluid3Surface        (int)75

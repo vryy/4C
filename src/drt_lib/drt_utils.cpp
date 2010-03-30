@@ -153,8 +153,6 @@ extern "C"
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_mortar/mortar_element.H"
-#include "../drt_contact/drt_cnode.H"
-#include "../drt_contact/drt_celement.H"
 #include "../drt_contactnew/contact_node.H"
 #include "../drt_contactnew/friction_node.H"
 #include "../drt_contactnew/contact_element.H"
@@ -1028,23 +1026,6 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     {
       MORTAR::MortarElement* ele = new MORTAR::MortarElement(0,
                                                      DRT::Element::element_mortar,
-                                                     0,DRT::Element::dis_none,
-                                                     0,NULL,false);
-      ele->Unpack(data);
-      return ele;
-    }
-    case ParObject_CNode:
-    {
-      double x[3];
-      vector<int> dofs(0);
-      CONTACT::CNode* node = new CONTACT::CNode(0,x,0,0,dofs,false,false);
-      node->Unpack(data);
-      return node;
-    }
-    case ParObject_CElement:
-    {
-      CONTACT::CElement* ele = new CONTACT::CElement(0,
-                                                     DRT::Element::element_contact,
                                                      0,DRT::Element::dis_none,
                                                      0,NULL,false);
       ele->Unpack(data);

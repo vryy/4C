@@ -42,9 +42,9 @@ Maintainer: Alexander Popp
 #include "contact_node.H"
 #include "friction_node.H"
 #include "contact_element.H"
-#include "../drt_mortar/mortar_interface.H"
+#include "selfcontact_binarytree.H"
 
-#include "../drt_contactnew/selfcontact_binarytree.H"
+#include "../drt_mortar/mortar_interface.H"
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
 

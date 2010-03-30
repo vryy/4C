@@ -13,7 +13,13 @@ Maintainer: Alexander Popp
 #ifndef BEAM3CONTACTSTRUGENALPHA_H
 #define BEAM3CONTACTSTRUGENALPHA_H
 
-#include "drt_contact_manager.H"
+#include "Teuchos_RefCountPtr.hpp"
+#include "../drt_inpar/inpar_mortar.H"
+#include "../drt_inpar/inpar_contact.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/linalg_sparsematrix.H"
+#include "../drt_lib/linalg_ana.H"
+#include "../drt_io/io.H"
 #include "../drt_structure/strugenalpha.H"
 
 #ifdef D_BEAM3

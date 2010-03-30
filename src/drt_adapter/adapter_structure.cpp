@@ -34,8 +34,7 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_Time.hpp>
 
 #include "../drt_structure/strugenalpha.H"
-#include "../drt_contact/contactstrugenalpha.H"
-#include "../drt_contact/beam3contactstrugenalpha.H"
+#include "../drt_beamcontact/beam3contactstrugenalpha.H"
 #include "../drt_contactnew/strugenalpha_cmt.H"
 #include "../drt_statmech/statmech_time.H"
 #include "../drt_patspec/patspec.H"
@@ -322,7 +321,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   bool mortarcontact = false;
   bool mortarmeshtying = false;
   bool beamcontact = false;
-  bool oldcontact = false;
   INPAR::CONTACT::ApplicationType apptype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
   switch (apptype)
@@ -363,8 +361,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   }
 
   Teuchos::RCP<StruGenAlpha> tintegrator = null;
-  if (!mortarcontact && !mortarmeshtying && !beamcontact && 
-      !oldcontact && !thermalbath)
+  if (!mortarcontact && !mortarmeshtying && !beamcontact && !thermalbath)
     tintegrator = rcp(new StruGenAlpha(*genalphaparams,*actdis,*solver,*output));
   else
   {
