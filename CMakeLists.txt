@@ -356,29 +356,9 @@ set(OBJS_DRT_F2_LIB
   src/drt_f2/fluid2_weak_dbc.cpp
 )
 set(OBJS_DRT_CONTACT_LIB
-  src/drt_contact/beam3contact.cpp
-  src/drt_contact/beam3contact_manager.cpp
-  src/drt_contact/drt_cdofset.cpp
-  src/drt_contact/drt_celement.cpp
-  src/drt_contact/drt_celement_shapefct.cpp
-  src/drt_contact/drt_cnode.cpp
-  src/drt_contact/drt_cnodedatacontainer.cpp
-  src/drt_contact/drt_contact_abstract_strategy.cpp
-  src/drt_contact/drt_contact_binarytree.cpp
-  src/drt_contact/drt_contact_binarytree_self.cpp
-  src/drt_contact/drt_contact_coupling2d.cpp
-  src/drt_contact/drt_contact_coupling3d.cpp
-  src/drt_contact/drt_contact_coupling3d_classes.cpp
-  src/drt_contact/drt_contact_coupling3d_tools.cpp
-  src/drt_contact/drt_contact_integrator.cpp
-  src/drt_contact/drt_contact_integrator_tools.cpp
-  src/drt_contact/drt_contact_interface.cpp
-  src/drt_contact/drt_contact_interface_tools.cpp
-  src/drt_contact/drt_contact_lagrange_strategy.cpp
-  src/drt_contact/drt_contact_manager.cpp
-  src/drt_contact/drt_contact_manager_base.cpp
-  src/drt_contact/drt_contact_penalty_strategy.cpp
-  src/drt_contact/drt_contact_projector.cpp
+  src/drt_contact/contact_element.cpp
+  src/drt_contact/contact_node.cpp
+  src/drt_contact/friction_node.cpp
 )
 set(OBJS_DRT_RED_AIRWAYS_LIB
   src/drt_red_airways/airway_evaluate.cpp
@@ -439,29 +419,19 @@ set(OBJS_DRT_COMBUST
   src/drt_combust/combust_reinitializer.cpp
   src/drt_combust/combust_utils.cpp
 )
+set(OBJS_DRT_BEAMCONTACT
+  src/drt_beamcontact/beam3contactstrugenalpha.cpp
+)
 set(OBJS_FILTER_COMMON
   src/filter_common/filter_evaluation.cpp
+)
+set(OBJS_DRT_BEAMCONTACT_LIB
+  src/drt_beamcontact/beam3contact.cpp
+  src/drt_beamcontact/beam3contact_manager.cpp
 )
 set(OBJS_DRT_STRU_MULTI
   src/drt_stru_multi/convert_mat.cpp
   src/drt_stru_multi/microstatic.cpp
-)
-set(OBJS_DRT_CONTACTNEW
-  src/drt_contactnew/contact_abstract_strategy.cpp
-  src/drt_contactnew/contact_coupling2d.cpp
-  src/drt_contactnew/contact_coupling3d.cpp
-  src/drt_contactnew/contact_integrator.cpp
-  src/drt_contactnew/contact_interface.cpp
-  src/drt_contactnew/contact_interface_tools.cpp
-  src/drt_contactnew/contact_lagrange_strategy.cpp
-  src/drt_contactnew/contact_manager.cpp
-  src/drt_contactnew/contact_penalty_strategy.cpp
-  src/drt_contactnew/meshtying_abstract_strategy.cpp
-  src/drt_contactnew/meshtying_lagrange_strategy.cpp
-  src/drt_contactnew/meshtying_manager.cpp
-  src/drt_contactnew/meshtying_penalty_strategy.cpp
-  src/drt_contactnew/selfcontact_binarytree.cpp
-  src/drt_contactnew/strugenalpha_cmt.cpp
 )
 set(OBJS_SOH8_LIB
   src/drt_so3/inversedesign.cpp
@@ -743,6 +713,10 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
   src/drt_nurbs_discret/drt_knotvector.cpp
   src/drt_nurbs_discret/drt_nurbs_discret.cpp
 )
+set(OBJS_DRT
+  src/drt_lib/braesssarazin_smoother.cpp
+  src/drt_lib/saddlepointpreconditioner.cpp
+)
 set(OBJS_DRT_LOMA
   src/drt_loma/loma_algorithm.cpp
   src/drt_loma/loma_dyn.cpp
@@ -839,11 +813,6 @@ set(OBJS_DRT_S8
 set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
 )
-set(OBJS_DRT_CONTACTNEW_LIB
-  src/drt_contactnew/contact_element.cpp
-  src/drt_contactnew/contact_node.cpp
-  src/drt_contactnew/friction_node.cpp
-)
 set(OBJS_LINALG
   src/drt_lib/linalg_ana.cpp
   src/drt_lib/linalg_blocksparsematrix.cpp
@@ -862,8 +831,6 @@ set(OBJS_LINALG
   src/drt_lib/linalg_sparsematrix.cpp
   src/drt_lib/linalg_utils.cpp
   src/drt_lib/simpler_operator.cpp
-  src/drt_lib/braesssarazin_smoother.cpp
-  src/drt_lib/saddlepointpreconditioner.cpp
 )
 set(OBJS_DRT_FSI
   src/drt_fsi/fs_monolithic.cpp
@@ -1017,9 +984,27 @@ set(OBJS_DRT_W1_LIB
   src/drt_w1/wall1_nurbs.cpp
 )
 set(OBJS_DRT_CONTACT
-  src/drt_contact/beam3contactstrugenalpha.cpp
-  src/drt_contact/contactstrugenalpha.cpp
-  src/drt_contact/contactstrugenalpha_lsnewton.cpp
+  src/drt_contact/contact_abstract_strategy.cpp
+  src/drt_contact/contact_coupling2d.cpp
+  src/drt_contact/contact_coupling3d.cpp
+  src/drt_contact/contact_integrator.cpp
+  src/drt_contact/contact_interface.cpp
+  src/drt_contact/contact_interface_tools.cpp
+  src/drt_contact/contact_lagrange_strategy.cpp
+  src/drt_contact/contact_manager.cpp
+  src/drt_contact/contact_penalty_strategy.cpp
+  src/drt_contact/meshtying_abstract_strategy.cpp
+  src/drt_contact/meshtying_lagrange_strategy.cpp
+  src/drt_contact/meshtying_manager.cpp
+  src/drt_contact/meshtying_penalty_strategy.cpp
+  src/drt_contact/selfcontact_binarytree.cpp
+  src/drt_contact/strugenalpha_cmt.cpp
+)
+set(OBJECTS
+  ${OBJS_DRT_BEAMCONTACT}
+)
+set(COMMON_OBJECTS
+  ${OBJS_DRT_BEAMCONTACT_LIB}
 )
 ###------------------------------------------------------------------ Element flags
 
