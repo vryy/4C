@@ -952,7 +952,9 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
       if (monolithic_FSI)
       {
         const std::set<int> begids = ih_->GetIntersectingBoundaryElementsGID(this->Id());
-        const int numnode_b = 4;
+        set<int>::const_iterator begid = begids.begin();
+        const int numnode_b = ih_->cutterdis()->gElement(*begid)->NumNode();
+
         const size_t nd = 3*numnode_b*begids.size();
 
         Epetra_SerialDenseMatrix Gds(nd, ns);
