@@ -713,10 +713,6 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
   src/drt_nurbs_discret/drt_knotvector.cpp
   src/drt_nurbs_discret/drt_nurbs_discret.cpp
 )
-set(OBJS_DRT
-  src/drt_lib/braesssarazin_smoother.cpp
-  src/drt_lib/saddlepointpreconditioner.cpp
-)
 set(OBJS_DRT_LOMA
   src/drt_loma/loma_algorithm.cpp
   src/drt_loma/loma_dyn.cpp
@@ -814,6 +810,7 @@ set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
 )
 set(OBJS_LINALG
+  src/drt_lib/braesssarazin_smoother.cpp
   src/drt_lib/linalg_ana.cpp
   src/drt_lib/linalg_blocksparsematrix.cpp
   src/drt_lib/linalg_condest.cpp
@@ -830,6 +827,7 @@ set(OBJS_LINALG
   src/drt_lib/linalg_solver_spooles.cpp
   src/drt_lib/linalg_sparsematrix.cpp
   src/drt_lib/linalg_utils.cpp
+  src/drt_lib/saddlepointpreconditioner.cpp
   src/drt_lib/simpler_operator.cpp
 )
 set(OBJS_DRT_FSI
@@ -999,12 +997,6 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/meshtying_penalty_strategy.cpp
   src/drt_contact/selfcontact_binarytree.cpp
   src/drt_contact/strugenalpha_cmt.cpp
-)
-set(OBJECTS
-  ${OBJS_DRT_BEAMCONTACT}
-)
-set(COMMON_OBJECTS
-  ${OBJS_DRT_BEAMCONTACT_LIB}
 )
 ###------------------------------------------------------------------ Element flags
 
@@ -1228,7 +1220,7 @@ add_library(drt_adapter ${OBJS_DRT_ADAPT})
 add_library(alg_ale ${OBJS_DRT_ALEALG})
 add_library(alg_artnet ${OBJS_DRT_ARTNET})
 add_library(alg_combust ${OBJS_DRT_COMBUST})
-add_library(alg_contact ${OBJS_DRT_CONTACTNEW} ${OBJS_DRT_CONTACT})
+add_library(alg_contact ${OBJS_DRT_CONTACT} ${OBJS_DRT_BEAMCONTACT})
 add_library(alg_fluid ${OBJS_DRT_FLUID})
 add_library(alg_invanalysis ${OBJS_INV_ANALYSIS})
 add_library(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
@@ -1267,7 +1259,7 @@ add_library(drt_micromat ${OBJS_DRT_MAT} ${OBJS_DRT_STRU_MULTI})
 add_library(drt_lib ${OBJS_DRT_LIB})
 add_library(drt_lib_inpar ${OBJS_DRT_INPAR})
 add_library(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
-add_library(drt_lib_contact ${OBJS_DRT_CONTACT_LIB} ${OBJS_DRT_CONTACTNEW_LIB})
+add_library(drt_lib_contact ${OBJS_DRT_CONTACT_LIB} ${OBJS_DRT_BEAMCONTACT_LIB})
 add_library(drt_lib_intersection ${OBJS_INTERSECTION})
 add_library(drt_lib_io ${OBJS_DRT_IO_LIB})
 #add_library(drt_lib_fluid ${OBJS_DRT_FLUID_LIB})
