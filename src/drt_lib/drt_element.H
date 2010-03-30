@@ -139,7 +139,6 @@ public:
     element_structuralline,
     element_mortar,
     element_contact,
-    element_newcontact,
     element_so_shw6,
     element_beam2,
     element_beam2r,

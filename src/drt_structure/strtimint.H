@@ -49,8 +49,8 @@ Maintainer: Burkhard Bornemann
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_mortar/mortar_manager_base.H"
-#include "../drt_contactnew/meshtying_manager.H"
-#include "../drt_contactnew/contact_manager.H"
+#include "../drt_contact/meshtying_manager.H"
+#include "../drt_contact/contact_manager.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_fluid/drt_periodicbc.H"
 

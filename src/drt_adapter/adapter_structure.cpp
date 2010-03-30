@@ -35,7 +35,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_structure/strugenalpha.H"
 #include "../drt_beamcontact/beam3contactstrugenalpha.H"
-#include "../drt_contactnew/strugenalpha_cmt.H"
+#include "../drt_contact/strugenalpha_cmt.H"
 #include "../drt_statmech/statmech_time.H"
 #include "../drt_patspec/patspec.H"
 

@@ -158,7 +158,6 @@ StruGenAlpha(params,dis,solver,output)
     // output
     if (discret_.Comm().MyPID() == 0)
     {
-      cout << "===== DRT_NEWCONTACT ===========================================" << endl;  
       if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_standard)
         cout << "===== Standard Lagrange multiplier strategy ====================\n" << endl;
       else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_dual)

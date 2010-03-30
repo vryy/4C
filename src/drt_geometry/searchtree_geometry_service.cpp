@@ -13,7 +13,7 @@ Maintainer: Ursula Mayer
 #ifdef CCADISCRET
 #include "searchtree_geometry_service.H"
 #include "intersection_service.H"
-#include "../drt_contactnew/contact_element.H"
+#include "../drt_contact/contact_element.H"
 
 
 /*----------------------------------------------------------------------*

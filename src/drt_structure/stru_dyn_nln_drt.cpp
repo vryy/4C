@@ -28,7 +28,7 @@ Maintainer: Michael Gee
 #include "strugenalpha.H"
 #include "strudyn_direct.H"
 #include "../drt_beamcontact/beam3contactstrugenalpha.H"
-#include "../drt_contactnew/strugenalpha_cmt.H"
+#include "../drt_contact/strugenalpha_cmt.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"

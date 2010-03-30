@@ -153,9 +153,9 @@ extern "C"
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_mortar/mortar_element.H"
-#include "../drt_contactnew/contact_node.H"
-#include "../drt_contactnew/friction_node.H"
-#include "../drt_contactnew/contact_element.H"
+#include "../drt_contact/contact_node.H"
+#include "../drt_contact/friction_node.H"
+#include "../drt_contact/contact_element.H"
 #include "../drt_art_net/artery.H"
 #include "../drt_red_airways/red_airway.H"
 #include "drt_dserror.H"
@@ -1050,7 +1050,7 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     case ParObject_CoElement:
     {
       CONTACT::CoElement* ele = new CONTACT::CoElement(0,
-                                                       DRT::Element::element_newcontact,
+                                                       DRT::Element::element_contact,
                                                        0,DRT::Element::dis_none,
                                                        0,NULL,false);
       ele->Unpack(data);
