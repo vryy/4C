@@ -863,7 +863,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
   double abscoord = sqrt((coord(0,1)-coord(0,0))*(coord(0,1)-coord(0,0))+
 												 (coord(1,1)-coord(1,0))*(coord(1,1)-coord(1,0))+
 												 (coord(2,1)-coord(2,0))*(coord(2,1)-coord(2,0)));
-  if(abscoord>1.5*statmechparams_.get<double>("R_LINK",0.0) && eleid>basiselements_ && cut(0) + cut(1) + cut(2) == 0)
+  if(abscoord>1.5*statmechparams_.get<double>("R_LINK",0.0) && eleid>basisnodes_ && cut(0) + cut(1) + cut(2) == 0)
   {
     //writing element by nodal coordinates as a scalar line
     gmshfilecontent << "SL(" << scientific;
