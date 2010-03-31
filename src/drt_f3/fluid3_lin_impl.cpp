@@ -39,6 +39,7 @@ DRT::ELEMENTS::Fluid3lin_ImplInterface* DRT::ELEMENTS::Fluid3lin_ImplInterface::
 
   switch (f3->Shape())
   {
+  //3D
   case DRT::Element::hex8:
   {
     static Fluid3lin_Impl<DRT::Element::hex8>* fh8;
@@ -95,6 +96,7 @@ DRT::ELEMENTS::Fluid3lin_ImplInterface* DRT::ELEMENTS::Fluid3lin_ImplInterface::
       fp5 = new Fluid3lin_Impl<DRT::Element::pyramid5>(numdofpernode);
     return fp5;
   }
+  //2D:
   case DRT::Element::quad4:
   {
     static Fluid3lin_Impl<DRT::Element::quad4>* cp4;
@@ -130,6 +132,8 @@ DRT::ELEMENTS::Fluid3lin_ImplInterface* DRT::ELEMENTS::Fluid3lin_ImplInterface::
       cp6 = new Fluid3lin_Impl<DRT::Element::tri6>(numdofpernode);
     return cp6;
   }
+  //1D
+  /*
   case DRT::Element::line2:
   {
     static Fluid3lin_Impl<DRT::Element::line2>* cl2;
@@ -144,7 +148,7 @@ DRT::ELEMENTS::Fluid3lin_ImplInterface* DRT::ELEMENTS::Fluid3lin_ImplInterface::
       cl3 = new Fluid3lin_Impl<DRT::Element::line3>(numdofpernode);
     return cl3;
   }
-
+ */
   default:
     dserror("shape %d (%d nodes) not supported", f3->Shape(), f3->NumNode());
   }
@@ -346,7 +350,8 @@ void DRT::ELEMENTS::Fluid3lin_Impl<distype>::Sysmat(
   Caltau(ele,evelnp,edensnp,visc,timefac);
 
   // flag for higher order elements
-  const bool higher_order_ele = ele->isHigherOrderElement(distype);
+  //const bool higher_order_ele = ele->isHigherOrderElement(distype);
+  const bool higher_order_ele = IsHigherOrder<distype>::ishigherorder;
 
   // gaussian points
   // const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
