@@ -144,7 +144,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--IO", *list);
   reader.ReadGidSection("--DESIGN DESCRIPTION", *list);
   reader.ReadGidSection("--STATIC", *list);
-  //reader.ReadGidSection("--EIGENVALUE ANALYSIS", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC/TIMEADAPTIVITY", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC/GENALPHA", *list);

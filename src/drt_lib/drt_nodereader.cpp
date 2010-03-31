@@ -2,6 +2,7 @@
 #ifdef CCADISCRET
 
 #include "drt_nodereader.H"
+#include "drt_globalproblem.H"
 
 #include <Epetra_Time.h>
 
@@ -42,12 +43,20 @@ void NodeReader::Read()
   const int numproc = comm_->NumProc();
   string inputfile_name = reader_.MyInputfileName();
 
-  int numnodes = 0;
+  int numnodes = reader_.ExcludedSectionLength("--NODE COORDS");
+
   for (unsigned i=0; i<ereader_.size(); ++i)
   {
     ereader_[i]->Partition();
-    numnodes += ereader_[i]->rownodes_->NumGlobalElements();
   }
+
+  // Debug
+#if 0
+  if (numnodes!=DRT::Problem::Instance()->ProblemSizeParams().get<int>("NODES"))
+    dserror("expect %d nodes but got %d",
+            DRT::Problem::Instance()->ProblemSizeParams().get<int>("NODES"),
+            numnodes);
+#endif
 
   Epetra_Time time(*comm_);
 

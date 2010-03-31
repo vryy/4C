@@ -26,7 +26,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_mat/matpar_bundle.H"
 #include "drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "drt_inputreader.H"
+//#include "drt_inputreader.H"
 #include "drt_function.H"
 #include "drt_timecurve.H"
 #include "drt_resulttest.H"

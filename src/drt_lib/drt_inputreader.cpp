@@ -101,13 +101,27 @@ int DatFileReader::MyOutputFlag() const
 /*----------------------------------------------------------------------*/
 ifstream::pos_type DatFileReader::ExcludedSectionPosition(string section) const
 {
-  map<string,ifstream::pos_type>::const_iterator i = excludepositions_.find(section);
+  map<string,std::pair<ifstream::pos_type,unsigned> >::const_iterator i = excludepositions_.find(section);
   if (i==excludepositions_.end())
   {
     //dserror("unknown section '%s'",section.c_str());
     return -1;
   }
-  return i->second;
+  return i->second.first;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+unsigned DatFileReader::ExcludedSectionLength(string section) const
+{
+  map<string,std::pair<ifstream::pos_type,unsigned> >::const_iterator i = excludepositions_.find(section);
+  if (i==excludepositions_.end())
+  {
+    //dserror("unknown section '%s'",section.c_str());
+    return 0;
+  }
+  return i->second.second;
 }
 
 
@@ -774,6 +788,7 @@ void DatFileReader::ReadDat()
     list<string> content;
     bool ignoreline = false;
     string line;
+    unsigned * linecount = NULL;
 
     // loop all input lines
     while (getline(file, line))
@@ -796,6 +811,11 @@ void DatFileReader::ReadDat()
         if (line.find("--")==0)
         {
           ignoreline = false;
+          linecount = NULL;
+        }
+        else
+        {
+          *linecount += 1;
         }
       }
 
@@ -813,7 +833,10 @@ void DatFileReader::ReadDat()
             {
               if (excludepositions_.find(exclude[i])!=excludepositions_.end())
                 dserror("section '%s' defined more than once", exclude[i].c_str());
-              excludepositions_[exclude[i]] = file.tellg();
+              std::pair<ifstream::pos_type,unsigned> & p = excludepositions_[exclude[i]];
+              p.first = file.tellg();
+              p.second = 0;
+              linecount = &p.second;
               ignoreline = true;
               break;
             }
@@ -910,10 +933,10 @@ void DatFileReader::ReadDat()
     {
       if (comm_->MyPID()==0)
       {
-        map<string,ifstream::pos_type>::iterator ep = excludepositions_.find(exclude[i]);
+        map<string,std::pair<ifstream::pos_type,unsigned> >::iterator ep = excludepositions_.find(exclude[i]);
         if (ep==excludepositions_.end())
         {
-          excludepositions_[exclude[i]] = -1;
+          excludepositions_[exclude[i]] = std::pair<ifstream::pos_type,unsigned>(-1,0);
         }
       }
       //comm_->Broadcast(&excludepositions_[exclude[i]],1,0);

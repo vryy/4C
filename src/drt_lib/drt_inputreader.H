@@ -98,6 +98,9 @@ public:
    */
   ifstream::pos_type ExcludedSectionPosition(string section) const;
 
+  /// get number of lines of excluded section
+  unsigned ExcludedSectionLength(string section) const;
+
   /// return my communicator
   Teuchos::RCP<Epetra_Comm> Comm() const { return comm_; }
 
@@ -160,7 +163,7 @@ private:
   vector<char*> lines_;
 
   /// file positions of skipped sections
-  map<string,ifstream::pos_type> excludepositions_;
+  map<string,std::pair<ifstream::pos_type,unsigned> > excludepositions_;
 
   /// section positions of all sections
   map<string,unsigned> positions_;
