@@ -281,12 +281,6 @@ public:
 
   //! @name Geometry related methods
 
-  /*!
-   * \brief calculate volume of current element
-   * @return volume of current element (out double)
-   */
-  double CalculateVolume(ParameterList& params, DRT::Discretization& discretization,vector<int>& lm) const;
-
   //@}
 
   //! @name Acess methods
@@ -808,9 +802,6 @@ void f3_calc_smag_const_LijMij_and_MijMij(
    \brief get optimal gaussrule for given discretization type
    \return enum with optimal gausrule for this element
    */
-  DRT::UTILS::GaussRule3D getOptimalGaussrule(
-    const DiscretizationType&  distype  ///< switch gausrule based on this discretization type
-    );
 
   /*!
     \brief integrate shape functions over volume element
@@ -821,7 +812,7 @@ void f3_calc_smag_const_LijMij_and_MijMij(
 
     \return
    */
-  template<int iel>
+  template<DRT::Element::DiscretizationType DISTYPE>
   void integrateShapefunction(
     DRT::Discretization&      discretization,
     vector<int>&              lm            ,
@@ -837,7 +828,7 @@ void f3_calc_smag_const_LijMij_and_MijMij(
     \param elevec1 (out)      : grad(N) integrated over Element
     \param edispnp (in)       : Displacement-vector
   */
-  template<int iel>
+  template<DRT::Element::DiscretizationType DISTYPE>
   void ElementNodeNormal(ParameterList& 		 params,
                          DRT::Discretization&       discretization,
                          vector<int>&               lm,
@@ -847,9 +838,6 @@ void f3_calc_smag_const_LijMij_and_MijMij(
    * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
    * \return boolean indicating higher order status
    */
-  bool isHigherOrderElement(
-    const DRT::Element::DiscretizationType  distype  ///< discretization type
-    ) const;
 
   ActionType convertStringToActionType(const string& action) const;
 

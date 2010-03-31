@@ -51,6 +51,31 @@ template<DRT::Element::DiscretizationType distype>
   template<> struct Use2ndDerivs<DRT::Element::line3>   {static const bool use = true; };
 */
 
+template<DRT::Element::DiscretizationType distype>
+  struct IsHigherOrder {};
+  template<> struct IsHigherOrder<DRT::Element::hex8>    {static const bool ishigherorder = true; };
+  template<> struct IsHigherOrder<DRT::Element::hex20>   {static const bool ishigherorder = true;};
+  template<> struct IsHigherOrder<DRT::Element::hex27>   {static const bool ishigherorder = true;};
+  template<> struct IsHigherOrder<DRT::Element::tet4>    {static const bool ishigherorder = false; };  //TODO: wedge und pyramid have 2nd derivatives!!
+  template<> struct IsHigherOrder<DRT::Element::tet10>   {static const bool ishigherorder = true; };
+  template<> struct IsHigherOrder<DRT::Element::wedge6>  {static const bool ishigherorder = false;};  //TODO: wedge und pyramid have 2nd derivatives!!
+  template<> struct IsHigherOrder<DRT::Element::wedge15>  {static const bool ishigherorder = true;};
+  template<> struct IsHigherOrder<DRT::Element::pyramid5>{static const bool ishigherorder = false;};  //TODO: wedge und pyramid have 2nd derivatives!!
+  template<> struct IsHigherOrder<DRT::Element::quad4>   {static const bool ishigherorder = true;};
+  template<> struct IsHigherOrder<DRT::Element::quad8>   {static const bool ishigherorder = true;};
+  template<> struct IsHigherOrder<DRT::Element::quad9>   {static const bool ishigherorder = true;};
+  template<> struct IsHigherOrder<DRT::Element::tri3>    {static const bool ishigherorder = false; };
+  template<> struct IsHigherOrder<DRT::Element::tri6>    {static const bool ishigherorder = true; };
+  //template<> struct IsHigherOrder<DRT::Element::line2>   {static const bool ishigherorder = false; };
+  //template<> struct IsHigherOrder<DRT::Element::line3>   {static const bool ishigherorder = false; };
+  //template<> struct IsHigherOrder<DRT::Element::nurbs2>   {static const bool ishigherorder = true; };
+  //template<> struct IsHigherOrder<DRT::Element::nurbs3>   {static const bool ishigherorder = true; };
+  template<> struct IsHigherOrder<DRT::Element::nurbs4>   {static const bool ishigherorder = true; };
+  template<> struct IsHigherOrder<DRT::Element::nurbs9>   {static const bool ishigherorder = true; };
+  template<> struct IsHigherOrder<DRT::Element::nurbs8>   {static const bool ishigherorder = true; };
+  template<> struct IsHigherOrder<DRT::Element::nurbs27>   {static const bool ishigherorder = true; };
+
+
   //! Template Meta Programming version of switch over discretization type
   template<DRT::Element::DiscretizationType distype>
   struct DisTypeToOptGaussRule {};
