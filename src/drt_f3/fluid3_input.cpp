@@ -29,8 +29,9 @@ bool DRT::ELEMENTS::Fluid3::ReadElement(const std::string& eletype,
                                         const std::string& distype,
                                         DRT::INPUT::LineDefinition* linedef)
 {
-  if (genprob.ndim!=3)
-    dserror("Problem defined as %dd, but Fluid3 does not support 2D elements yet",genprob.ndim);
+  // Only Fluid3 elements are allowed -> the support for Fluid2 elements is under dvelopment
+  // if (genprob.ndim!=3)
+  //   dserror("Problem defined as %dd, but Fluid3 does not support 2D elements yet",genprob.ndim);
 
   // read number of material model
   int material = 0;

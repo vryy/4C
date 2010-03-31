@@ -31,6 +31,8 @@ Maintainer: Peter Gamnitzer
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_condition_utils.H"
 
+#include "fluid3_genalpha_resVMM_2D.H"
+
 #include <Epetra_SerialDenseSolver.h>
 #include <Epetra_LAPACK.h>
 
@@ -98,13 +100,14 @@ DRT::ELEMENTS::Fluid3GenalphaResVMMInterface* DRT::ELEMENTS::Fluid3GenalphaResVM
       fw6 = new Fluid3GenalphaResVMM<DRT::Element::wedge6>(numdofpernode);
     return fw6;
   }
+  /*
   case DRT::Element::wedge15:
   {
     static Fluid3GenalphaResVMM<DRT::Element::wedge15>* fw15;
     if (fw15==NULL)
       fw15 = new Fluid3GenalphaResVMM<DRT::Element::wedge15>(numdofpernode);
     return fw15;
-  }
+  }*/
   case DRT::Element::pyramid5:
   {
     static Fluid3GenalphaResVMM<DRT::Element::pyramid5>* fp5;
@@ -147,6 +150,20 @@ DRT::ELEMENTS::Fluid3GenalphaResVMMInterface* DRT::ELEMENTS::Fluid3GenalphaResVM
       cp6 = new Fluid3GenalphaResVMM<DRT::Element::tri6>(numdofpernode);
     return cp6;
   }
+  case DRT::Element::nurbs4:
+  {
+    static Fluid3GenalphaResVMM<DRT::Element::nurbs4>* fn4;
+    if (fn4==NULL)
+      fn4 = new Fluid3GenalphaResVMM<DRT::Element::nurbs4>(numdofpernode);
+    return fn4;
+  }
+  case DRT::Element::nurbs9:
+  {
+    static Fluid3GenalphaResVMM<DRT::Element::nurbs9>* fn9;
+    if (fn9==NULL)
+      fn9 = new Fluid3GenalphaResVMM<DRT::Element::nurbs9>(numdofpernode);
+    return fn9;
+  }
   default:
     dserror("shape %d (%d nodes) not supported", f3->Shape(), f3->NumNode());
   }
@@ -183,7 +200,6 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec3_epetra,
   RefCountPtr<MAT::Material> mat)
 {
-
   // --------------------------------------------------
   // construct views
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel> elemat1(elemat1_epetra.A(),true);
@@ -292,7 +308,8 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   }
 
   // flag for higher order elements
-  bool higher_order_ele = ele->isHigherOrderElement(ele->Shape());
+  //bool higher_order_ele = ele->isHigherOrderElement(ele->Shape());
+  bool higher_order_ele = IsHigherOrder<distype>::ishigherorder;
 
   // overrule higher_order_ele if input-parameter is set
   // this might be interesting for fast (but slightly
@@ -331,15 +348,17 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   // to compute averaged viscosity etc
   int    nlayer        = 0;
 
-  SetParametersForTurbulenceModel(
-    ele            ,
-    turbmodelparams,
-    fssgv          ,
-    turb_mod_action,
-    Cs             ,
-    Cs_delta_sq    ,
-    l_tau          ,
-    nlayer         );
+  // turbulence model is only implemented for 3D flows
+  if(nsd_ == 3)
+    SetParametersForTurbulenceModel(
+      ele            ,
+      turbmodelparams,
+      fssgv          ,
+      turb_mod_action,
+      Cs             ,
+      Cs_delta_sq    ,
+      l_tau          ,
+      nlayer         );
 
   // --------------------------------------------------
   // specify whether to compute the element matrix or not
@@ -348,26 +367,41 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   // --------------------------------------------------
   // extract velocities, pressure and accelerations from the
   // global distributed vectors
-  ExtractValuesFromGlobalVectors(
-        fssgv         ,
-        ele->is_ale_  ,
-        discretization,
-        lm,
-        eprenp        ,
-        evelnp        ,
-        evelaf        ,
-        eaccam        ,
-        edispnp       ,
-        egridvelaf    ,
-        fsevelaf
-    );
+  if (nsd_ == 3)
+    ExtractValuesFromGlobalVectors(
+          fssgv         ,
+          ele->is_ale_  ,
+          discretization,
+          lm,
+          eprenp        ,
+          evelnp        ,
+          evelaf        ,
+          eaccam        ,
+          edispnp       ,
+          egridvelaf    ,
+          fsevelaf
+      );
+  else if (nsd_==2)
+    ExtractValuesFromGlobalVectors_2D(
+          ele->is_ale_  ,
+          discretization,
+          lm,
+          eprenp        ,
+          evelnp        ,
+          evelaf        ,
+          eaccam        ,
+          edispnp       ,
+          egridvelaf
+      );
+  else dserror("Only 2D and 3D fluid supported");
 
   // --------------------------------------------------
   // Now do the nurbs specific stuff
   std::vector<Epetra_SerialDenseVector> myknots(nsd_);
 
   // for isogeometric elements
-  if(ele->Shape()==Fluid3::nurbs8 || ele->Shape()==Fluid3::nurbs27)
+  //if(ele->Shape()==Fluid3::nurbs8 || ele->Shape()==Fluid3::nurbs27)
+  if(IsNurbs<distype>::isnurbs)
   {
     DRT::NURBS::NurbsDiscretization* nurbsdis
       =
@@ -555,7 +589,148 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
     }
   }
   } //end 3D Sysmat
-  else dserror("Genalpha solver does not supported Fluid2 elements yet");
+  // call 2D Sysmat
+  else if (nsd_ == 2)
+  {
+    if(!conservative)
+    {
+      if(tds!=Fluid3::subscales_time_dependent)
+      {
+        Sysmat_adv_qs_2D(
+          ele,
+          myknots,
+          elemat1,
+          elevec1,
+          edispnp,
+          egridvelaf,
+          evelnp,
+          eprenp,
+          eaccam,
+          evelaf,
+          mat,
+          alphaM,
+          alphaF,
+          gamma,
+          dt,
+          time,
+          newton,
+          higher_order_ele,
+          inertia,
+          pspg,
+          supg,
+          vstab,
+          cstab,
+          cross,
+          reynolds,
+          whichtau,
+          visceff,
+          compute_elemat
+          );
+      }
+      else
+      {
+        Sysmat_adv_td_2D(
+          ele,
+          myknots,
+          elemat1,
+          elevec1,
+          edispnp,
+          egridvelaf,
+          evelnp,
+          eprenp,
+          eaccam,
+          evelaf,
+          mat,
+          alphaM,
+          alphaF,
+          gamma,
+          dt,
+          time,
+          newton,
+          higher_order_ele,
+          inertia,
+          pspg,
+          supg,
+          vstab,
+          cstab,
+          cross,
+          reynolds,
+          whichtau,
+          visceff,
+          compute_elemat
+          );
+      }
+    }
+    else
+    {
+      if(tds!=Fluid3::subscales_time_dependent)
+      {
+        Sysmat_cons_qs_2D(
+    ele,
+    myknots,
+    elemat1,
+    elevec1,
+    edispnp,
+    egridvelaf,
+    evelnp,
+    eprenp,
+    eaccam,
+    evelaf,
+    mat,
+    alphaM,
+    alphaF,
+    gamma,
+    dt,
+    time,
+    newton,
+    higher_order_ele,
+    pspg,
+    supg,
+    vstab,
+    cstab,
+    cross,
+    reynolds,
+    whichtau,
+    visceff,
+    compute_elemat
+    );
+      }
+      else
+      {
+        Sysmat_cons_td_2D(
+          ele             ,
+          myknots         ,
+          elemat1         ,
+          elevec1         ,
+          edispnp         ,
+          egridvelaf      ,
+          evelnp          ,
+          eprenp          ,
+          eaccam          ,
+          evelaf          ,
+          mat             ,
+          alphaM          ,
+          alphaF          ,
+          gamma           ,
+          dt              ,
+          time            ,
+          newton          ,
+          higher_order_ele,
+          inertia         ,
+          pspg            ,
+          supg            ,
+          vstab           ,
+          cstab           ,
+          cross           ,
+          reynolds        ,
+          whichtau        ,
+          visceff         ,
+          compute_elemat
+          );
+      }
+    }
+  } //end 2D Sysmat
+  else dserror("Genalpha solver does supported only Fluid2 and FLUID3 elements");
 
   if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
   {
@@ -9785,7 +9960,8 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   }
 
   // flag for higher order elements
-  bool higher_order_ele = ele->isHigherOrderElement(ele->Shape());
+  //bool higher_order_ele = ele->isHigherOrderElement(ele->Shape());
+  bool higher_order_ele = IsHigherOrder<distype>::ishigherorder;
 
   // overrule higher_order_ele if input-parameter is set
   // this might be interesting for fast (but slightly
@@ -9858,6 +10034,10 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     {
       return(0);
     }
+  }
+  else if (ele->Shape()==Fluid3::nurbs4 || ele->Shape()==Fluid3::nurbs9)
+  {
+    dserror("%s is not a 3D Nurbs element",(DRT::DistypeToString(ele->Shape())).c_str());
   }
 
   // visceff will contain the computed effective viscosity
@@ -10714,7 +10894,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   RefCountPtr<vector<double> > incrreystress     = params.get<RefCountPtr<vector<double> > >("incrreystress"    );
 
 
-  if(!(distype == DRT::Element::nurbs8
+  if(not (distype == DRT::Element::nurbs8
        ||
        distype == DRT::Element::nurbs27))
   {
@@ -10751,7 +10931,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       dserror("could not determine element layer");
     }
   }
-  else
+  else if((distype == DRT::Element::nurbs8
+       ||
+       distype == DRT::Element::nurbs27))
   {
     DRT::NURBS::NurbsDiscretization* nurbsdis
       =
@@ -10775,6 +10957,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
     nlayer=ele_cart_id[1];
   }
+  else dserror("%s is not a 3D Nurbs element",(DRT::DistypeToString(ele->Shape())).c_str());
 
   // collect layer volume
   (*incrvol      )[nlayer] += vol;
@@ -12238,7 +12421,8 @@ double DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ShapeFunctionsFirstAndSecon
     //gp(1)=intpoints.IP().qxg[iquad][1];
     //gp(2)=intpoints.IP().qxg[iquad][2];
 
-    if(!(distype == DRT::Element::nurbs8
+    // TODO: 2D & 3D
+    if(not (distype == DRT::Element::nurbs8
          ||
          distype == DRT::Element::nurbs27
          ||
@@ -12262,7 +12446,7 @@ double DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ShapeFunctionsFirstAndSecon
     else
     {
       if (distype == DRT::Element::nurbs4 or distype == DRT::Element::nurbs9)
-        dserror("2D Nurbs are not available in the 3D framework");
+        dserror("%s is not a 3D Nurbs element",(DRT::DistypeToString(ele->Shape())).c_str());
       else if (higher_order_ele)
       {
         DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2
@@ -12825,6 +13009,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
       weights_(inode) = cp->W();
     }
   }
+  else if (ele->Shape()==Fluid3::nurbs4 || ele->Shape()==Fluid3::nurbs9)
+    dserror("%s is not a 3D Nurbs element",(DRT::DistypeToString(ele->Shape())).c_str());
+
 
   // add displacement, when fluid nodes move in the ALE case
   if (ele->is_ale_)
@@ -12925,6 +13112,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
        weights_,
        distype );
   }
+  else if (distype == DRT::Element::nurbs4
+     ||
+     distype == DRT::Element::nurbs9)
+   {
+     dserror("%s is not a 3D Nurbs element",(DRT::DistypeToString(ele->Shape())).c_str());
+   }
   else
   {
     DRT::UTILS::shape_function_3D       (funct_,gp(0),gp(1),gp(2),distype);

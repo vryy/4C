@@ -670,6 +670,227 @@ namespace DRT
         );
 
 
+      void Sysmat_adv_qs_2D(
+        Fluid3*                                ele,
+        std::vector<Epetra_SerialDenseVector>& myknots,
+        LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
+        LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
+        const LINALG::Matrix<nsd_,iel>&           edispnp,
+        const LINALG::Matrix<nsd_,iel>&           egridvaf,
+        const LINALG::Matrix<nsd_,iel>&           evelnp,
+        const LINALG::Matrix<iel,1>&           eprenp,
+        const LINALG::Matrix<nsd_,iel>&           eaccam,
+        const LINALG::Matrix<nsd_,iel>&           evelaf,
+        Teuchos::RCP<const MAT::Material>      material,
+        const double                           alphaM,
+        const double                           alphaF,
+        const double                           gamma,
+        const double                           dt,
+        const double                           time,
+        const enum Fluid3::LinearisationAction newton,
+        const bool                             higher_order_ele,
+        const enum Fluid3::StabilisationAction inertia,
+        const enum Fluid3::StabilisationAction pspg,
+        const enum Fluid3::StabilisationAction supg,
+        const enum Fluid3::StabilisationAction vstab,
+        const enum Fluid3::StabilisationAction cstab,
+        const enum Fluid3::StabilisationAction cross,
+        const enum Fluid3::StabilisationAction reynolds,
+        const enum Fluid3::TauType             whichtau,
+        double&                                visceff,
+        const bool                             compute_elemat
+        );
+
+    /*!
+      Calculate matrix and rhs in advective form using time-dependent subgrid scales
+
+        \param ele                (i) the element those matrix is calculated
+      \param myknots            (i) the elements knot vector for nurbs elements
+        \param elemat             (o) element matrix to calculate
+        \param elevec             (o) element rhs to calculate
+        \param edispnp            (i) mesh displacement (ALE formulation)
+        \param egridvaf           (i) intermedoate grid velocity (ALE formulation)
+        \param evelnp             (i) nodal velocities at n+1
+        \param eprenp             (i) nodal pressure, time n+1
+        \param eaccam             (i) nodal accelerations at n+alphaM
+        \param evelaf             (i) nodal velocities at n+alphaF
+        \param material           (i) fluid material
+        \param alphaM             (i) evaluate accelerations at this intermediate level
+        \param alphaF             (i) evaluate velocities at this intermediate level
+        \param gamma              (i) one step theta based parameter
+        \param dt                 (i) time step size
+        \param time               (i) current simulation time
+        \param newton             (i) flag for use of full linearisation of reactive terms
+        \param higher_order_ele   (i) include second derivatives in residual for stabilization
+        \param inertia            (i) flag for use of subscale accelerations for stabilisation (only for tds==true)
+        \param pspg               (i) flag for use of nabla q testfunctions
+        \param supg               (i) flag for use of (u o nabla) v testfunctions
+        \param vstab              (i) flag for use of 2 * nu * grad o eps(v) testfunctions
+        \param cross              (i) flag to add (u,(u_sub o nabla) v) to right hand side
+        \param reynolds           (i) flag to add (u_sub,(u_sub o nabla) v) to right hand side
+        \param whichtau           (i) flag choosing the tau version used for stabilization
+        \param visceff            (o) effective viscosity computed for non Newtonian fluid etc.
+        \param compute_elemat     (i) if false, element matrices are not computed
+
+      */
+      void Sysmat_adv_td_2D(
+        Fluid3*                                ele,
+        std::vector<Epetra_SerialDenseVector>& myknots,
+        LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
+        LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
+        const LINALG::Matrix<nsd_,iel>&           edispnp,
+        const LINALG::Matrix<nsd_,iel>&           egridvaf,
+        const LINALG::Matrix<nsd_,iel>&           evelnp,
+        const LINALG::Matrix<iel,1>&           eprenp,
+        const LINALG::Matrix<nsd_,iel>&           eaccam,
+        const LINALG::Matrix<nsd_,iel>&           evelaf,
+        Teuchos::RCP<const MAT::Material>      material,
+        const double                           alphaM,
+        const double                           alphaF,
+        const double                           gamma,
+        const double                           dt,
+        const double                           time,
+        const enum Fluid3::LinearisationAction newton,
+        const bool                             higher_order_ele,
+        const enum Fluid3::StabilisationAction inertia,
+        const enum Fluid3::StabilisationAction pspg,
+        const enum Fluid3::StabilisationAction supg,
+        const enum Fluid3::StabilisationAction vstab,
+        const enum Fluid3::StabilisationAction cstab,
+        const enum Fluid3::StabilisationAction cross,
+        const enum Fluid3::StabilisationAction reynolds,
+        const enum Fluid3::TauType             whichtau,
+        double&                                visceff,
+        const bool                             compute_elemat
+        );
+
+      /*!
+        Calculate matrix and rhs. Here the whole thing is hidden.
+        Conservative, quasistatic version
+
+        \param ele                (i) the element those matrix is calculated
+      \param myknots            (i) the elements knot vector for nurbs elements
+        \param elemat             (o) element matrix to calculate
+        \param elevec             (o) element rhs to calculate
+        \param edispnp            (i) mesh displacement (ALE formulation)
+        \param egridvaf           (i) intermedoate grid velocity (ALE formulation)
+        \param evelnp             (i) nodal velocities at n+1
+        \param eprenp             (i) nodal pressure, time n+1
+        \param eaccam             (i) nodal accelerations at n+alphaM
+        \param evelaf             (i) nodal velocities at n+alphaF
+        \param material           (i) fluid material
+        \param alphaM             (i) evaluate accelerations at this intermediate level
+        \param alphaF             (i) evaluate velocities at this intermediate level
+        \param gamma              (i) one step theta based parameter
+        \param dt                 (i) time step size
+        \param time               (i) current simulation time
+        \param newton             (i) flag for use of full linearisation of reactive terms
+        \param higher_order_ele   (i) include second derivatives in residual for stabilization
+        \param pspg               (i) flag for use of nabla q testfunctions
+        \param supg               (i) flag for use of (u o nabla) v testfunctions
+        \param vstab              (i) flag for use of 2 * nu * grad o eps(v) testfunctions
+        \param cross              (i) flag to add (u,(u_sub o nabla) v) to right hand side
+        \param reynolds           (i) flag to add (u_sub,(u_sub o nabla) v) to right hand side
+        \param whichtau           (i) flag choosing the tau version used for stabilization
+        \param visceff            (o) effective viscosity computed for non Newtonian fluid etc.
+        \param compute_elemat     (i) if false, element matrices are not computed
+
+      */
+      void Sysmat_cons_qs_2D(
+        Fluid3*                                ele,
+        std::vector<Epetra_SerialDenseVector>& myknots,
+        LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
+        LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
+        const LINALG::Matrix<nsd_,iel>&           edispnp,
+        const LINALG::Matrix<nsd_,iel>&           egridvaf,
+        const LINALG::Matrix<nsd_,iel>&           evelnp,
+        const LINALG::Matrix<iel,1>&           eprenp,
+        const LINALG::Matrix<nsd_,iel>&           eaccam,
+        const LINALG::Matrix<nsd_,iel>&           evelaf,
+        Teuchos::RCP<const MAT::Material>      material,
+        const double                           alphaM,
+        const double                           alphaF,
+        const double                           gamma,
+        const double                           dt,
+        const double                           time,
+        const enum Fluid3::LinearisationAction newton,
+        const bool                             higher_order_ele,
+        const enum Fluid3::StabilisationAction pspg,
+        const enum Fluid3::StabilisationAction supg,
+        const enum Fluid3::StabilisationAction vstab,
+        const enum Fluid3::StabilisationAction cstab,
+        const enum Fluid3::StabilisationAction cross,
+        const enum Fluid3::StabilisationAction reynolds,
+        const enum Fluid3::TauType             whichtau,
+        double&                                visceff,
+        const bool                             compute_elemat
+        );
+
+      /*!
+        Calculate matrix and rhs. Here the whole thing is hidden.
+        Conservative, time-dependent version
+
+        \param ele                (i) the element those matrix is calculated
+      \param myknots            (i) the elements knot vector for nurbs elements
+        \param elemat             (o) element matrix to calculate
+        \param elevec             (o) element rhs to calculate
+        \param edispnp            (i) mesh displacement (ALE formulation)
+        \param egridvaf           (i) intermedoate grid velocity (ALE formulation)
+        \param evelnp             (i) nodal velocities at n+1
+        \param eprenp             (i) nodal pressure, time n+1
+        \param eaccam             (i) nodal accelerations at n+alphaM
+        \param evelaf             (i) nodal velocities at n+alphaF
+        \param material           (i) fluid material
+        \param alphaM             (i) evaluate accelerations at this intermediate level
+        \param alphaF             (i) evaluate velocities at this intermediate level
+        \param gamma              (i) one step theta based parameter
+        \param dt                 (i) time step size
+        \param time               (i) current simulation time
+        \param newton             (i) flag for use of full linearisation of reactive terms
+        \param higher_order_ele   (i) include second derivatives in residual for stabilization
+        \param inertia            (i) flag for use of subscale accelerations for stabilisation (only for tds==true)
+        \param pspg               (i) flag for use of nabla q testfunctions
+        \param supg               (i) flag for use of (u o nabla) v testfunctions
+        \param vstab              (i) flag for use of 2 * nu * grad o eps(v) testfunctions
+        \param cross              (i) flag to add (u,(u_sub o nabla) v) to right hand side
+        \param reynolds           (i) flag to add (u_sub,(u_sub o nabla) v) to right hand side
+        \param whichtau           (i) flag choosing the tau version used for stabilization
+        \param visceff            (o) effective viscosity computed for non Newtonian fluid etc.
+        \param compute_elemat     (i) if false, element matrices are not computed
+
+      */
+      void Sysmat_cons_td_2D(
+        Fluid3*                                ele,
+        std::vector<Epetra_SerialDenseVector>& myknots,
+        LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
+        LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
+        const LINALG::Matrix<nsd_,iel>&           edispnp,
+        const LINALG::Matrix<nsd_,iel>&           egridvaf,
+        const LINALG::Matrix<nsd_,iel>&           evelnp,
+        const LINALG::Matrix<iel,1>&           eprenp,
+        const LINALG::Matrix<nsd_,iel>&           eaccam,
+        const LINALG::Matrix<nsd_,iel>&           evelaf,
+        Teuchos::RCP<const MAT::Material>      material,
+        const double                           alphaM,
+        const double                           alphaF,
+        const double                           gamma,
+        const double                           dt,
+        const double                           time,
+        const enum Fluid3::LinearisationAction newton,
+        const bool                             higher_order_ele,
+        const enum Fluid3::StabilisationAction inertia,
+        const enum Fluid3::StabilisationAction pspg,
+        const enum Fluid3::StabilisationAction supg,
+        const enum Fluid3::StabilisationAction vstab,
+        const enum Fluid3::StabilisationAction cstab,
+        const enum Fluid3::StabilisationAction cross,
+        const enum Fluid3::StabilisationAction reynolds,
+        const enum Fluid3::TauType             whichtau,
+        double&                                visceff,
+        const bool                             compute_elemat
+        );
+
+
       //@}
 
     private:
@@ -965,6 +1186,243 @@ namespace DRT
         const enum Fluid3::FineSubgridVisc          fssgv           ,
         const bool                                  higher_order_ele);
 
+
+      //! @name service methods
+
+      ///  extract velocities, pressure and accelerations etc from the global distributed vectors
+
+      //
+      //  \param is_ale         (i) Control parameter: get mesh/displacement
+      //  \param discretization (i) discretization containing the global vectors
+      //  \param lm             (i) location vector for element dofs in global vector
+      //  \param eprenp         (o) nodal pressure values, t_{n+1}
+      //  \param evelnp         (o) nodal velocities, t_{n+1}
+      //  \param evelaf         (o) nodal velocities, t_{n+alpha_F}
+      //  \param eaccam         (o) nodal accelerations, t_{n+alpha_M}
+      //  \param edispnp        (o) nodal mesh displacements, t_{n+1} (for ALE)
+      //  \param egridvelaf     (o) nodal mesh velocities, t_{n+alpha_F} (for ALE)
+
+      void ExtractValuesFromGlobalVectors_2D(
+        const bool                        is_ale        ,
+        const DRT::Discretization&        discretization,
+        const vector<int>&                lm            ,
+        LINALG::Matrix<iel,1>&            eprenp        ,
+        LINALG::Matrix<nsd_,iel>&            evelnp        ,
+        LINALG::Matrix<nsd_,iel>&            evelaf        ,
+        LINALG::Matrix<nsd_,iel>&            eaccam        ,
+        LINALG::Matrix<nsd_,iel>&            edispnp       ,
+        LINALG::Matrix<nsd_,iel>&            egridvelaf
+        );
+
+
+      ///  Get the nodal values of the bodyforce. The values are stored in edeadnf
+      //
+      //  \param ele         (i) element pointer for access to the neumann condition
+      //  \param time        (i) time when the condition is evaluated
+      void GetNodalBodyForce_2D(const Fluid3* ele ,
+                             const double  time);
+
+      /*!  Compute the rate of strain of a (fine-scale) velocity
+
+      //  \param evel       (i) nodal velocity values
+      //  \param derxy      (i) shape function derivatives
+      //  \param velderxy   (o) velocity derivatives
+      //
+      //  \return computed rate of strain
+
+      */
+      double GetStrainRate_2D(
+        const LINALG::Matrix<nsd_,iel>& evel     ,
+        const LINALG::Matrix<nsd_,iel>& derxy    ,
+        LINALG::Matrix<nsd_,nsd_>        & velderxy
+        )
+        {
+          double rateofstrain=0;
+
+          // get velocity derivatives at integration point
+          //
+          //              +-----  dN (x)
+          //   dvel (x)    \        k
+          //   -------- =   +     ------ * vel
+          //      dx       /        dx        k
+          //        j     +-----      j
+          //              node k
+          //
+          // j : direction of derivative x/y
+          //
+          for(int rr=0;rr<2;++rr)
+          {
+            for(int mm=0;mm<2;++mm)
+            {
+              velderxy(rr,mm)=derxy(mm,0)*evel(rr,0);
+              for(int nn=1;nn<iel;++nn)
+              {
+                velderxy(rr,mm)+=derxy(mm,nn)*evel(rr,nn);
+              }
+            }
+          }
+
+          // compute (resolved) rate of strain
+          //
+          //          +-                                 -+ 1
+          //          |          /   \           /   \    | -
+          //          | 2 * eps | vel |   * eps | vel |   | 2
+          //          |          \   / ij        \   / ij |
+          //          +-                                 -+
+          //
+          LINALG::Matrix<2,2> two_epsilon;
+
+          for(int rr=0;rr<2;++rr)
+          {
+            for(int mm=0;mm<2;++mm)
+            {
+              two_epsilon(rr,mm) = velderxy(rr,mm) + velderxy(mm,rr);
+            }
+          }
+
+          for(int rr=0;rr<2;rr++)
+          {
+            for(int mm=0;mm<2;mm++)
+            {
+              rateofstrain += two_epsilon(rr,mm)*two_epsilon(rr,mm);
+            }
+          }
+          // sqrt(two_epsilon(rr,mm)*two_epsilon(rr,mm)/4.0*2.0)
+
+          return(sqrt(rateofstrain/2.0));
+        }
+
+      /*!
+        \brief Get all global shape functions, first and eventually second
+               derivatives in a gausspoint
+
+      \param ele       (i) pointer to element for debug io
+      \param iquad     (i) number of gausspoint
+      \param intpoints (i) array with gausspoints and weights
+      \param myknots   (i) knotvector for NURBS elements
+      \param hoel      (i) flag for the evaluation of second derivatives
+
+        \return integration factor (weight)
+
+       */
+      double ShapeFunctionsFirstAndSecondDerivatives_2D(
+        const Fluid3*                                 ele      ,
+        const int                                  &  iquad    ,
+        const DRT::UTILS::IntPointsAndWeights<nsd_>&  intpoints,
+        const std::vector<Epetra_SerialDenseVector>&  myknots  ,
+        const bool                                    hoel
+        );
+
+
+      /*!
+        \brief calculates viscosity at a given point (element center or Gaussian point)
+
+      \param material     (i) material
+        \param visc           (o) kinematic material viscosity
+      \param rateofshear    (i) shear rate
+       */
+      void CalVisc_2D(Teuchos::RCP<const MAT::Material> material,
+                   double&                           visc,
+                   const double &                    rateofshear);
+
+      /*!
+        \brief calculation of stabilisation parameter (element center or Gaussian point)
+
+      \param whichtau   (i) select tau definition
+      \param tds        (i) tau definitions differ for time dependent subscales
+        \param gamma      (i) time integration dependent parameter
+        \param dt         (i) time step size
+        \param hk         (i) an element size required for all stabpars except the Bazilevs parameter
+      \param mk         (i) element dependent constant
+        \param visceff    (i) effective viscosity
+       */
+      void CalcTau_2D(const enum Fluid3::TauType             whichtau ,
+                   const enum Fluid3::StabilisationAction tds      ,
+                   const double &                         gamma    ,
+                   const double &                         dt       ,
+                   const double &                         hk       ,
+                   const double &                         mk       ,
+                   const double &                         visceff  );
+
+
+      /*!
+        \brief calculates all quantities which are defined at the element center
+               or for the whole element
+                        o element geometry (xyze_ etc)
+                        o element volume vol_
+                        o element size hk, constant mk from inverse estimate
+                        o dead load
+                        o viscosity, effective viscosity
+
+
+      \param ele                      (i) pointer to element
+        \param edispnp                  (i) nodal mesh displacements, t_{n+1} (for ALE)
+        \param evelaf                   (i) nodal velocities, t_{n+alpha_F}
+      \param myknots                  (i) knotvector for NURBS elements
+        \param timealphaF               (i) alphaF*t_{n+1}+(1-alphaF)*t_{n}
+        \param hk                       (o) element length for stabilisation parameter
+        \param mk                       (o) element type constant mk for tau and the fssgv_artificial approach
+      \param material     (i) material
+        \param visc                     (o) kinematicmaterial viscosity
+        \param visceff            (o) effective material viscosity
+
+       */
+      void SetElementData_2D
+      (
+        Fluid3*                                      ele            ,
+        const LINALG::Matrix<nsd_,iel>                & edispnp        ,
+        const LINALG::Matrix<nsd_,iel>                & evelaf         ,
+        const std::vector<Epetra_SerialDenseVector>& myknots        ,
+        const double                               & timealphaF     ,
+        double                                     & hk             ,
+        double                                     & mk             ,
+        Teuchos::RCP<const MAT::Material>            material       ,
+        double                                     & visc           ,
+        double                                     & visceff        );
+
+
+      /*!
+        \brief Interpolates standard quantities to gausspoint, including
+
+        o accintam_
+        o velintaf_
+        o velintnp_
+        o bodyforce_
+        o prenp_
+        o pderxynp_
+        o vderxyaf_
+        o vderxynp_
+        o divunp_
+        o u_G_af
+        o aleconvintaf_
+        o conv_af_old_
+        o resM_
+        o conv_c_af_
+        o viscs2_ (if hoel)
+        o viscaf_old_ (if hoel)
+
+
+      \param ele               (i) pointer to element
+        \param egridvelaf        (i) nodal mesh velocities, t_{n+alpha_F} (for ALE)
+        \param evelnp            (i) nodal velocities, t_{n+1}
+        \param eprenp            (i) nodal pressure values, t_{n+1}
+        \param eaccam            (i) nodal accelerations, t_{n+alpha_M}
+        \param evelaf            (i) nodal velocities, t_{n+alpha_F}
+        \param visceff           (i) effective material viscosity
+        \param higher_order_ele  (i) include second derivatives in residual for stabilization
+
+       */
+      void InterpolateToGausspoint_2D(
+        Fluid3*                                     ele             ,
+        const LINALG::Matrix<nsd_,iel>               & egridvaf        ,
+        const LINALG::Matrix<nsd_,iel>               & evelnp          ,
+        const LINALG::Matrix<iel,1>               & eprenp          ,
+        const LINALG::Matrix<nsd_,iel>               & eaccam          ,
+        const LINALG::Matrix<nsd_,iel>               & evelaf          ,
+        const double                              & visceff         ,
+        const bool                                  higher_order_ele);
+
+
       //@}
 
       const int numdofpernode_;
@@ -1052,7 +1510,7 @@ namespace DRT
       // element data
       // ------------
       //! the stabilisation parameters tauM,tauMp and tauC
-      LINALG::Matrix<nsd_,1>   tau_;
+      LINALG::Matrix<3,1>   tau_;
       //! matrix of subscale velocities in gausspoints of this element, time n+alphaF
       LINALG::Matrix<nsd_,1>   svelaf_;
       //! Convective term, most recent iteration value
