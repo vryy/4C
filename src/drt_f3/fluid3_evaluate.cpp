@@ -34,6 +34,8 @@ Maintainer: Georg Bauer
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 
+#include "../drt_geometry/position_array.H"
+
 #include <Epetra_SerialDenseSolver.h>
 
 using namespace DRT::UTILS;
@@ -142,6 +144,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 
   // get the material
   RCP<MAT::Material> mat = Material();
+
+  // get space dimensions
+  const int nsd = getDimension(Shape());
 
   switch(act)
   {
@@ -286,274 +291,294 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       break;
       case calc_fluid_beltrami_error:
       {
-        // add error only for elements which are not ghosted
-        if(this->Owner() == discretization.Comm().MyPID())
+        if (nsd == 3)
         {
-
-          // need current velocity and history vector
-          RCP<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
-          if (vel_pre_np==null) dserror("Cannot get state vectors 'velnp'");
-
-          // extract local values from the global vectors
-          vector<double> my_vel_pre_np(lm.size());
-          DRT::UTILS::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
-
-          // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
-          const int numnode = NumNode();
-          vector<double> myprenp(numnode);
-          vector<double> myvelnp(3*numnode);
-
-          for (int i=0;i<numnode;++i)
+          // add error only for elements which are not ghosted
+          if(this->Owner() == discretization.Comm().MyPID())
           {
-            myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
-            myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
-            myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
 
-            myprenp[i]=my_vel_pre_np[3+(i*4)];
+            // need current velocity and history vector
+            RCP<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
+            if (vel_pre_np==null) dserror("Cannot get state vectors 'velnp'");
+
+            // extract local values from the global vectors
+            vector<double> my_vel_pre_np(lm.size());
+            DRT::UTILS::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
+
+            // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
+            const int numnode = NumNode();
+            vector<double> myprenp(numnode);
+            vector<double> myvelnp(3*numnode);
+
+            for (int i=0;i<numnode;++i)
+            {
+              myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
+              myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
+              myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
+
+              myprenp[i]=my_vel_pre_np[3+(i*4)];
+            }
+
+            // integrate beltrami error
+            f3_int_beltrami_err(myvelnp,myprenp,mat,params);
           }
-
-          // integrate beltrami error
-          f3_int_beltrami_err(myvelnp,myprenp,mat,params);
         }
+        else dserror("action 'calc_fluid_beltrami_error' is a 3D specific action");
       }
       break;
       case calc_turbulence_statistics:
       {
-        // do nothing if you do not own this element
-        if(this->Owner() == discretization.Comm().MyPID())
+        if (nsd == 3)
         {
-          // --------------------------------------------------
-          // extract velocities and pressure from the global distributed vectors
-
-          // velocity and pressure values (n+1)
-          RCP<const Epetra_Vector> velnp
-            = discretization.GetState("u and p (n+1,converged)");
-          if (velnp==null) dserror("Cannot get state vector 'velnp'");
-
-          // extract local values from the global vectors
-          vector<double> mysol  (lm.size());
-          DRT::UTILS::ExtractMyValues(*velnp,mysol,lm);
-
-          vector<double> mydisp(lm.size());
-          if(is_ale_)
+          // do nothing if you do not own this element
+          if(this->Owner() == discretization.Comm().MyPID())
           {
-            // get most recent displacements
-            RCP<const Epetra_Vector> dispnp
-              =
-              discretization.GetState("dispnp");
+            // --------------------------------------------------
+            // extract velocities and pressure from the global distributed vectors
 
-            if (dispnp==null)
+            // velocity and pressure values (n+1)
+            RCP<const Epetra_Vector> velnp
+              = discretization.GetState("u and p (n+1,converged)");
+            if (velnp==null) dserror("Cannot get state vector 'velnp'");
+
+            // extract local values from the global vectors
+            vector<double> mysol  (lm.size());
+            DRT::UTILS::ExtractMyValues(*velnp,mysol,lm);
+
+            vector<double> mydisp(lm.size());
+            if(is_ale_)
             {
-              dserror("Cannot get state vectors 'dispnp'");
+              // get most recent displacements
+              RCP<const Epetra_Vector> dispnp
+                =
+                discretization.GetState("dispnp");
+
+              if (dispnp==null)
+              {
+                dserror("Cannot get state vectors 'dispnp'");
+              }
+
+              DRT::UTILS::ExtractMyValues(*dispnp,mydisp,lm);
             }
 
-            DRT::UTILS::ExtractMyValues(*dispnp,mydisp,lm);
-          }
+            // integrate mean values
+            const DiscretizationType distype = this->Shape();
 
-          // integrate mean values
-          const DiscretizationType distype = this->Shape();
-
-          switch (distype)
-          {
-          case DRT::Element::hex8:
-          {
-            f3_calc_means<8>(discretization,mysol,mydisp,params);
-            break;
-          }
-          case DRT::Element::hex20:
-          {
-            f3_calc_means<20>(discretization,mysol,mydisp,params);
-            break;
-          }
-          case DRT::Element::hex27:
-          {
-            f3_calc_means<27>(discretization,mysol,mydisp,params);
-            break;
-          }
-          case DRT::Element::nurbs8:
-          {
-            f3_calc_means<8>(discretization,mysol,mydisp,params);
-            break;
-          }
-          case DRT::Element::nurbs27:
-          {
-            f3_calc_means<27>(discretization,mysol,mydisp,params);
-            break;
-          }
-          default:
-          {
-            dserror("Unknown element type for mean value evaluation\n");
-          }
-          }
+            switch (distype)
+            {
+            case DRT::Element::hex8:
+            {
+              f3_calc_means<8>(discretization,mysol,mydisp,params);
+              break;
+            }
+            case DRT::Element::hex20:
+            {
+              f3_calc_means<20>(discretization,mysol,mydisp,params);
+              break;
+            }
+            case DRT::Element::hex27:
+            {
+              f3_calc_means<27>(discretization,mysol,mydisp,params);
+              break;
+            }
+            case DRT::Element::nurbs8:
+            {
+              f3_calc_means<8>(discretization,mysol,mydisp,params);
+              break;
+            }
+            case DRT::Element::nurbs27:
+            {
+              f3_calc_means<27>(discretization,mysol,mydisp,params);
+              break;
+            }
+            default:
+            {
+              dserror("Unknown element type for mean value evaluation\n");
+            }
+            }
+          } // end if (nsd == 3)
+          else dserror("action 'calc_turbulence_statistics' is a 3D specific action");
         }
       }
       break;
       case calc_loma_statistics:
       {
-        // do nothing if you do not own this element
-        if(this->Owner() == discretization.Comm().MyPID())
+        if(nsd == 3)
         {
-          // --------------------------------------------------
-          // extract velocities and pressure as well as densities
-          // from the global distributed vectors
-
-          // velocity/pressure and scalar values (n+1)
-          RCP<const Epetra_Vector> velnp
-            = discretization.GetState("u and p (n+1,converged)");
-          RCP<const Epetra_Vector> scanp
-            = discretization.GetState("scalar (n+1,converged)");
-          if (velnp==null || scanp==null)
-            dserror("Cannot get state vectors 'velnp' and/or 'scanp'");
-
-          // extract local values from the global vectors
-          vector<double> myvelpre(lm.size());
-          vector<double> mysca(lm.size());
-          DRT::UTILS::ExtractMyValues(*velnp,myvelpre,lm);
-          DRT::UTILS::ExtractMyValues(*scanp,mysca,lm);
-
-          // get factor for equation of state
-          const double eosfac = params.get<double>("eos factor",100000.0/287.0);
-
-          // integrate mean values
-          const DiscretizationType distype = this->Shape();
-
-          switch (distype)
+          // do nothing if you do not own this element
+          if(this->Owner() == discretization.Comm().MyPID())
           {
-          case DRT::Element::hex8:
-          {
-            f3_calc_loma_means<8>(discretization,myvelpre,mysca,params,eosfac);
-            break;
+            // --------------------------------------------------
+            // extract velocities and pressure as well as densities
+            // from the global distributed vectors
+
+            // velocity/pressure and scalar values (n+1)
+            RCP<const Epetra_Vector> velnp
+              = discretization.GetState("u and p (n+1,converged)");
+            RCP<const Epetra_Vector> scanp
+              = discretization.GetState("scalar (n+1,converged)");
+            if (velnp==null || scanp==null)
+              dserror("Cannot get state vectors 'velnp' and/or 'scanp'");
+
+            // extract local values from the global vectors
+            vector<double> myvelpre(lm.size());
+            vector<double> mysca(lm.size());
+            DRT::UTILS::ExtractMyValues(*velnp,myvelpre,lm);
+            DRT::UTILS::ExtractMyValues(*scanp,mysca,lm);
+
+            // get factor for equation of state
+            const double eosfac = params.get<double>("eos factor",100000.0/287.0);
+
+            // integrate mean values
+            const DiscretizationType distype = this->Shape();
+
+            switch (distype)
+            {
+            case DRT::Element::hex8:
+            {
+              f3_calc_loma_means<8>(discretization,myvelpre,mysca,params,eosfac);
+              break;
+            }
+            case DRT::Element::hex20:
+            {
+              f3_calc_loma_means<20>(discretization,myvelpre,mysca,params,eosfac);
+              break;
+            }
+            case DRT::Element::hex27:
+            {
+              f3_calc_loma_means<27>(discretization,myvelpre,mysca,params,eosfac);
+              break;
+            }
+            default:
+            {
+              dserror("Unknown element type for low-Mach-number mean value evaluation\n");
+            }
+            }
           }
-          case DRT::Element::hex20:
-          {
-            f3_calc_loma_means<20>(discretization,myvelpre,mysca,params,eosfac);
-            break;
-          }
-          case DRT::Element::hex27:
-          {
-            f3_calc_loma_means<27>(discretization,myvelpre,mysca,params,eosfac);
-            break;
-          }
-          default:
-          {
-            dserror("Unknown element type for low-Mach-number mean value evaluation\n");
-          }
-          }
-        }
+        } // end if (nsd == 3)
+        else dserror("action 'calc_loma_statistics' is a 3D specific action");
       }
       break;
       case calc_fluid_box_filter:
       {
-        // --------------------------------------------------
-        // extract velocities from the global distributed vectors
-
-        // velocity and pressure values (most recent
-        // intermediate solution, i.e. n+alphaF for genalpha
-        // and n+1 for one-step-theta)
-        RCP<const Epetra_Vector> vel =
-          discretization.GetState("u and p (trial)");
-
-        if (vel==null)
+        if (nsd == 3)
         {
-          dserror("Cannot get state vectors 'vel'");
-        }
+          // --------------------------------------------------
+          // extract velocities from the global distributed vectors
 
-        // extract local values from the global vectors
-        vector<double> myvel(lm.size());
-        DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+          // velocity and pressure values (most recent
+          // intermediate solution, i.e. n+alphaF for genalpha
+          // and n+1 for one-step-theta)
+          RCP<const Epetra_Vector> vel =
+            discretization.GetState("u and p (trial)");
 
-        // initialise the contribution of this element to the patch volume to zero
-        double volume_contribution = 0;
+          if (vel==null)
+          {
+            dserror("Cannot get state vectors 'vel'");
+          }
 
-        // integrate the convolution with the box filter function for this element
-        // the results are assembled onto the *_hat arrays
+          // extract local values from the global vectors
+          vector<double> myvel(lm.size());
+          DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
 
-        const DiscretizationType distype = this->Shape();
-        switch (distype)
-        {
-        case DRT::Element::hex8:
-        {
-          this->f3_apply_box_filter<8>(myvel,
-                                       elevec1.Values(),
-                                       elemat1.A(),
-                                       elemat2.A(),
-                                       volume_contribution);
-          break;
-        }
-        case DRT::Element::tet4:
-        {
-          this->f3_apply_box_filter<4>(myvel,
-                                       elevec1.Values(),
-                                       elemat1.A(),
-                                       elemat2.A(),
-                                       volume_contribution);
-          break;
-        }
-        default:
-        {
-          dserror("Unknown element type for box filter application\n");
-        }
-        }
+          // initialise the contribution of this element to the patch volume to zero
+          double volume_contribution = 0;
 
-        // hand down the volume contribution to the time integration algorithm
-        params.set<double>("volume_contribution",volume_contribution);
+          // integrate the convolution with the box filter function for this element
+          // the results are assembled onto the *_hat arrays
+
+          const DiscretizationType distype = this->Shape();
+          switch (distype)
+          {
+          case DRT::Element::hex8:
+          {
+            this->f3_apply_box_filter<8>(myvel,
+                                         elevec1.Values(),
+                                         elemat1.A(),
+                                         elemat2.A(),
+                                         volume_contribution);
+            break;
+          }
+          case DRT::Element::tet4:
+          {
+            this->f3_apply_box_filter<4>(myvel,
+                                         elevec1.Values(),
+                                         elemat1.A(),
+                                         elemat2.A(),
+                                         volume_contribution);
+            break;
+          }
+          default:
+          {
+            dserror("Unknown element type for box filter application\n");
+          }
+          }
+
+          // hand down the volume contribution to the time integration algorithm
+          params.set<double>("volume_contribution",volume_contribution);
+        } // end if (nsd == 3)
+        else dserror("action 'calc_fluid_box_filter' is 3D specific action");
       }
       break;
       case calc_smagorinsky_const:
       {
-        RCP<Epetra_MultiVector> filtered_vel                        =
-          params.get<RCP<Epetra_MultiVector> >("col_filtered_vel");
-        RCP<Epetra_MultiVector> col_filtered_reynoldsstress         =
-          params.get<RCP<Epetra_MultiVector> >("col_filtered_reynoldsstress");
-        RCP<Epetra_MultiVector> col_filtered_modeled_subgrid_stress =
-          params.get<RCP<Epetra_MultiVector> >("col_filtered_modeled_subgrid_stress");
+        if(nsd == 3)
+        {
+          RCP<Epetra_MultiVector> filtered_vel                        =
+            params.get<RCP<Epetra_MultiVector> >("col_filtered_vel");
+          RCP<Epetra_MultiVector> col_filtered_reynoldsstress         =
+            params.get<RCP<Epetra_MultiVector> >("col_filtered_reynoldsstress");
+          RCP<Epetra_MultiVector> col_filtered_modeled_subgrid_stress =
+            params.get<RCP<Epetra_MultiVector> >("col_filtered_modeled_subgrid_stress");
 
-        double LijMij   = 0;
-        double MijMij   = 0;
-        double center   = 0;
+          double LijMij   = 0;
+          double MijMij   = 0;
+          double center   = 0;
 
-        const DiscretizationType distype = this->Shape();
-        switch (distype)
-        {
-        case DRT::Element::hex8:
-        {
-          this->f3_calc_smag_const_LijMij_and_MijMij<8>(
-            filtered_vel                       ,
-            col_filtered_reynoldsstress        ,
-            col_filtered_modeled_subgrid_stress,
-            LijMij                             ,
-            MijMij                             ,
-            center                             );
-          break;
-        }
-        case DRT::Element::tet4:
-        {
-          this->f3_calc_smag_const_LijMij_and_MijMij<4>(
-            filtered_vel                       ,
-            col_filtered_reynoldsstress        ,
-            col_filtered_modeled_subgrid_stress,
-            LijMij                             ,
-            MijMij                             ,
-            center                             );
-          break;
-        }
-        default:
-        {
-          dserror("Unknown element type for box filter application\n");
-        }
-        }
+          const DiscretizationType distype = this->Shape();
+          switch (distype)
+          {
+          case DRT::Element::hex8:
+          {
+            this->f3_calc_smag_const_LijMij_and_MijMij<8>(
+              filtered_vel                       ,
+              col_filtered_reynoldsstress        ,
+              col_filtered_modeled_subgrid_stress,
+              LijMij                             ,
+              MijMij                             ,
+              center                             );
+            break;
+          }
+          case DRT::Element::tet4:
+          {
+            this->f3_calc_smag_const_LijMij_and_MijMij<4>(
+              filtered_vel                       ,
+              col_filtered_reynoldsstress        ,
+              col_filtered_modeled_subgrid_stress,
+              LijMij                             ,
+              MijMij                             ,
+              center                             );
+            break;
+          }
+          default:
+          {
+            dserror("Unknown element type for box filter application\n");
+          }
+          }
 
-        // set Cs_delta_sq without averaging (only clipping)
-        if (abs(MijMij) < 1E-16) Cs_delta_sq_= 0.0;
-        else  Cs_delta_sq_ = 0.5 * LijMij / MijMij;
-        if (Cs_delta_sq_<0.0)
-        {
-          Cs_delta_sq_= 0.0;
-        }
+          // set Cs_delta_sq without averaging (only clipping)
+          if (abs(MijMij) < 1E-16) Cs_delta_sq_= 0.0;
+          else  Cs_delta_sq_ = 0.5 * LijMij / MijMij;
+          if (Cs_delta_sq_<0.0)
+          {
+            Cs_delta_sq_= 0.0;
+          }
 
-        params.set<double>("LijMij",LijMij);
-        params.set<double>("MijMij",MijMij);
-        params.set<double>("center",center);
+          params.set<double>("LijMij",LijMij);
+          params.set<double>("MijMij",MijMij);
+          params.set<double>("center",center);
+        } // end if(nsd == 3)
+        else dserror("action 'calc_smagorinsky_const' is a 3D specific action");
       }
       break;
       case calc_fluid_genalpha_update_for_subscales:
@@ -570,7 +595,8 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         const double dt     = params.get<double>("dt");
         const double gamma  = params.get<double>("gamma");
 
-        for(int rr=0;rr<3;++rr)
+        // variable in space dimensions
+        for(int rr=0;rr<nsd;++rr)
         {
           for(int mm=0;mm<svelnp_.N();++mm)
           {
@@ -587,7 +613,8 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         //  ~n   ~n+1
         //  u <- u
         //
-        for(int rr=0;rr<3;++rr)
+        // variable in space dimensions
+        for(int rr=0;rr<nsd;++rr)
         {
           for(int mm=0;mm<svelnp_.N();++mm)
           {
@@ -598,16 +625,20 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       break;
       case calc_fluid_genalpha_average_for_subscales_and_residual:
       {
-        if(this->Owner() == discretization.Comm().MyPID())
+        if (nsd == 3)
         {
+          if(this->Owner() == discretization.Comm().MyPID())
+          {
 
-          return DRT::ELEMENTS::Fluid3GenalphaResVMMInterface::Impl(this)->CalcResAvgs(
-            this,
-            params,
-            discretization,
-            lm,
-            mat);
+            return DRT::ELEMENTS::Fluid3GenalphaResVMMInterface::Impl(this)->CalcResAvgs(
+              this,
+              params,
+              discretization,
+              lm,
+              mat);
+          }
         }
+        else dserror("%i D elements does not support any averaging for subscales and residuals", nsd);
       }
       break;
       case get_density:
@@ -643,39 +674,44 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       break;
       case calc_node_normal:
       {
-        const DiscretizationType distype = this->Shape();
-        switch (distype)
+        if (nsd == 3)
         {
-        case DRT::Element::hex27:
-        {
-          this->ElementNodeNormal<27>(params,discretization,lm,elevec1);
-          break;
+          const DiscretizationType distype = this->Shape();
+          switch (distype)
+          {
+          case DRT::Element::hex27:
+          {
+            this->ElementNodeNormal<DRT::Element::hex27>(params,discretization,lm,elevec1);
+            break;
+          }
+          case DRT::Element::hex20:
+          {
+            this->ElementNodeNormal<DRT::Element::hex20>(params,discretization,lm,elevec1);
+            break;
+          }
+          case DRT::Element::hex8:
+          {
+            this->ElementNodeNormal<DRT::Element::hex8>(params,discretization,lm,elevec1);
+            break;
+          }
+          case DRT::Element::tet4:
+          {
+            this->ElementNodeNormal<DRT::Element::tet4>(params,discretization,lm,elevec1);
+            break;
+          }
+          case DRT::Element::tet10:
+          {
+            this->ElementNodeNormal<DRT::Element::tet10>(params,discretization,lm,elevec1);
+            break;
+          }
+          default:
+          {
+            dserror("Unknown element type for shape function integration\n");
+          }
+          }
         }
-        case DRT::Element::hex20:
-        {
-          this->ElementNodeNormal<20>(params,discretization,lm,elevec1);
-          break;
-        }
-        case DRT::Element::hex8:
-        {
-          this->ElementNodeNormal<8>(params,discretization,lm,elevec1);
-          break;
-        }
-        case DRT::Element::tet4:
-        {
-          this->ElementNodeNormal<4>(params,discretization,lm,elevec1);
-          break;
-        }
-        case DRT::Element::tet10:
-        {
-          this->ElementNodeNormal<10>(params,discretization,lm,elevec1);
-          break;
-        }
-        default:
-        {
-          dserror("Unknown element type for shape function integration\n");
-        }
-        }
+        else dserror("action 'calculate node normal' should also work in 2D, but 2D elements are not"
+                     " added to the template yet. Also it is not tested");
         break;
       }
       case integrate_shape:
@@ -688,25 +724,33 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         switch (distype)
         {
         case DRT::Element::hex27:
+        {
+          this->integrateShapefunction<DRT::Element::hex27>(discretization, lm, elevec1);
+          break;
+        }
         case DRT::Element::nurbs27:
         {
-          this->integrateShapefunction<27>(discretization, lm, elevec1);
+          this->integrateShapefunction<DRT::Element::nurbs27>(discretization, lm, elevec1);
           break;
         }
         case DRT::Element::hex20:
         {
-          this->integrateShapefunction<20>(discretization, lm, elevec1);
+          this->integrateShapefunction<DRT::Element::hex20>(discretization, lm, elevec1);
           break;
         }
         case DRT::Element::hex8:
+        {
+          this->integrateShapefunction<DRT::Element::hex8>(discretization, lm, elevec1);
+          break;
+        }
         case DRT::Element::nurbs8:
         {
-          this->integrateShapefunction<8>(discretization, lm, elevec1);
+          this->integrateShapefunction<DRT::Element::nurbs8>(discretization, lm, elevec1);
           break;
         }
         case DRT::Element::tet4:
         {
-          this->integrateShapefunction<4>(discretization, lm, elevec1);
+          this->integrateShapefunction<DRT::Element::tet4>(discretization, lm, elevec1);
           break;
         }
         default:
@@ -714,13 +758,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           dserror("Unknown element type for shape function integration\n");
         }
         }
-        break;
-      }
-      case calc_fluid_elementvolume:
-      {
-        // calculate volume of current fluid element
-        double surf = this->CalculateVolume(params,discretization,lm);
-        elevec1[0] = surf;  // return "volume" of 2d fluid element
         break;
       }
       default:
@@ -749,6 +786,7 @@ int DRT::ELEMENTS::Fluid3::EvaluateNeumann(ParameterList& params,
 }
 
 // get optimal gaussrule for discretization type
+/*
 GaussRule3D DRT::ELEMENTS::Fluid3::getOptimalGaussrule(const DiscretizationType& distype)
 {
     GaussRule3D rule = intrule3D_undefined;
@@ -780,6 +818,7 @@ GaussRule3D DRT::ELEMENTS::Fluid3::getOptimalGaussrule(const DiscretizationType&
   }
   return rule;
 }
+*/
 
 /*---------------------------------------------------------------------*
  |  calculate error for beltrami test problem               gammi 04/07|
@@ -838,7 +877,37 @@ void DRT::ELEMENTS::Fluid3::f3_int_beltrami_err(
   vector<double> deltavel(3);
 
   // gaussian points
-  const GaussRule3D gaussrule = getOptimalGaussrule(distype);
+  // const GaussRule3D gaussrule = getOptimalGaussrule(distype);
+
+  // TODO: Think about template version / Gauss rule for tet10
+  GaussRule3D gaussrule = intrule3D_undefined;
+  switch (distype)
+  {
+  case hex8: case nurbs8:
+      gaussrule = intrule_hex_8point;
+      break;
+  case hex20: case hex27: case nurbs27:
+      gaussrule = intrule_hex_27point;
+      break;
+  case tet4:
+      gaussrule = intrule_tet_4point;
+      break;
+  case tet10:
+      gaussrule = intrule_tet_5point;
+      break;
+  case wedge6:
+    gaussrule = intrule_wedge_6point;
+    break;
+  case wedge15:
+    gaussrule = intrule_wedge_9point;
+    break;
+  case pyramid5:
+    gaussrule = intrule_pyramid_8point;
+    break;
+  default:
+      dserror("unknown number of nodes for gaussrule initialization");
+  }
+
   const IntegrationPoints3D  intpoints(gaussrule);
 
   // start loop over integration points
@@ -2653,22 +2722,61 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-template<int iel>
+//template<int iel>
+template<DRT::Element::DiscretizationType DISTYPE>
 void DRT::ELEMENTS::Fluid3::integrateShapefunction(
     DRT::Discretization&      discretization,
     vector<int>&              lm            ,
     Epetra_SerialDenseVector& elevec1       )
 {
-  // --------------------------------------------------
-  // construct views
-  LINALG::Matrix<4*iel,    1> w(elevec1.A(),true);
+  // get number of nodes
+  const int iel = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+  // get number of dimensions
+  const int nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+
+  // get number of dof's
+  const int numdofpernode = nsd +1;
 
   // --------------------------------------------------
-  // create matrix objects for nodal values
-  LINALG::Matrix<3,iel>       edispnp;
+  // construct views
+  LINALG::Matrix<numdofpernode*iel,    1> w(elevec1.A(),true);
+
+  // set element data
+  //const DiscretizationType distype = this->Shape();
+
+  // gaussian points
+  //const GaussRule3D          gaussrule = getOptimalGaussrule(distype);
+  //const IntegrationPoints3D  intpoints(gaussrule);
+
+  // get Gaussrule
+    const DRT::UTILS::IntPointsAndWeights<nsd> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<DISTYPE>::rule);
+
+  //----------------------------------------------------------------------------
+  //                         ELEMENT GEOMETRY
+  //----------------------------------------------------------------------------
+  LINALG::Matrix<nsd,iel>  xyze(true);
+
+  // get node coordinates
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  GEO::fillInitialPositionArray<DISTYPE,nsd, LINALG::Matrix<nsd,iel> >(this,xyze);
+
+  // get node coordinates
+  /*DRT::Node** nodes = Nodes();
+  for (int inode=0; inode<iel; inode++)
+  {
+    const double* x = nodes[inode]->X();
+    xyze(0,inode) = x[0];
+    xyze(1,inode) = x[1];
+    xyze(2,inode) = x[2];
+  }*/
 
   if(is_ale_)
   {
+    // --------------------------------------------------
+    // create matrix objects for nodal values
+    LINALG::Matrix<nsd,iel>       edispnp(true);
+
     // get most recent displacements
     RCP<const Epetra_Vector> dispnp
       =
@@ -2684,40 +2792,25 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
 
     // extract velocity part from "mygridvelaf" and get
     // set element displacements
-    for (int i=0;i<iel;++i)
+    for (int inode=0; inode<iel; ++inode)
     {
-      int fi    =4*i;
-      int fip   =fi+1;
-      int fipp  =fip+1;
-      edispnp(0,i)    = mydispnp   [fi  ];
-      edispnp(1,i)    = mydispnp   [fip ];
-      edispnp(2,i)    = mydispnp   [fipp];
+      for(int idim=0; idim < nsd; ++idim)
+      {
+        edispnp(idim,inode)    = mydispnp   [numdofpernode*inode+idim ];
+      }
+      //int fi    =4*i;
+      //int fip   =fi+1;
+      //int fipp  =fip+1;
+      //edispnp(0,i)    = mydispnp   [fi  ];
+      //edispnp(1,i)    = mydispnp   [fip ];
+      //edispnp(2,i)    = mydispnp   [fipp];
     }
-  }
-
-  // set element data
-  const DiscretizationType distype = this->Shape();
-
-  // gaussian points
-  const GaussRule3D          gaussrule = getOptimalGaussrule(distype);
-  const IntegrationPoints3D  intpoints(gaussrule);
-
-  //----------------------------------------------------------------------------
-  //                         ELEMENT GEOMETRY
-  //----------------------------------------------------------------------------
-  LINALG::Matrix<3,iel>  xyze;
-
-  // get node coordinates
-  DRT::Node** nodes = Nodes();
-  for (int inode=0; inode<iel; inode++)
-  {
-    const double* x = nodes[inode]->X();
-    xyze(0,inode) = x[0];
-    xyze(1,inode) = x[1];
-    xyze(2,inode) = x[2];
+    // get new node positions for isale
+    xyze += edispnp;
   }
 
   // add displacement, when fluid nodes move in the ALE case
+  /*
   if (is_ale_)
   {
     for (int inode=0; inode<iel; inode++)
@@ -2727,14 +2820,17 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
       xyze(2,inode) += edispnp(2,inode);
     }
   }
-
+*/
   // --------------------------------------------------
   // Now do the nurbs specific stuff
-  std::vector<Epetra_SerialDenseVector> myknots(3);
+  std::vector<Epetra_SerialDenseVector> myknots(nsd);
   LINALG::Matrix<iel,1>  weights;
 
+  DRT::Node** nodes = Nodes();
+
   // for isogeometric elements
-  if(Shape()==Fluid3::nurbs8 || Shape()==Fluid3::nurbs27)
+  //if(Shape()==Fluid3::nurbs8 || Shape()==Fluid3::nurbs27)
+  if(IsNurbs<DISTYPE>::isnurbs)
   {
     DRT::NURBS::NurbsDiscretization* nurbsdis
       =
@@ -2751,7 +2847,7 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
     }
 
     // get node weights for nurbs elements
-    for (int inode=0; inode<iel; inode++)
+    for (int inode=0; inode<iel; ++inode)
     {
       DRT::NURBS::ControlPoint* cp
         =
@@ -2765,37 +2861,82 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
-  Epetra_SerialDenseVector  funct(iel);
-  Epetra_SerialDenseMatrix  xjm(3,3);
-  Epetra_SerialDenseMatrix  deriv(3,iel);
-  Epetra_SerialDenseMatrix  bm(6,6);
+  //Epetra_SerialDenseVector  funct(iel);
+  //Epetra_SerialDenseMatrix  xjm(3,3);
+  //Epetra_SerialDenseMatrix  deriv(3,iel);
+  //Epetra_SerialDenseMatrix  bm(6,6);
 
-  for (int iquad=0;iquad<intpoints.nquad;++iquad)
+  LINALG::Matrix<iel,1>   funct(true);
+  LINALG::Matrix<nsd,iel>   deriv(true);
+  // LINALG::Matrix<6,6>   bm(true);
+
+
+  for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
   {
+    // local Gauss point coordinates
+    LINALG::Matrix<nsd,1>   xsi(true);
+
+    // local coordinates of the current integration point
+    const double* gpcoord = (intpoints.IP().qxg)[iquad];
+    for (int idim=0;idim<nsd;++idim)
+    {
+      xsi(idim) = gpcoord[idim];
+    }
+
     // set gauss point coordinates
-    LINALG::Matrix<3,1> gp;
+    /*LINALG::Matrix<3,1> gp;
 
     gp(0)=intpoints.qxg[iquad][0];
     gp(1)=intpoints.qxg[iquad][1];
     gp(2)=intpoints.qxg[iquad][2];
-
-    if(!(distype == DRT::Element::nurbs8
-         ||
-         distype == DRT::Element::nurbs27))
+*/
+    //if(!(distype == DRT::Element::nurbs8
+    //     ||
+    //     distype == DRT::Element::nurbs27))
+    if(not IsNurbs<DISTYPE>::isnurbs)
     {
       // get values of shape functions and derivatives in the gausspoint
-      DRT::UTILS::shape_function_3D       (funct,gp(0),gp(1),gp(2),distype);
-      DRT::UTILS::shape_function_3D_deriv1(deriv,gp(0),gp(1),gp(2),distype);
+      //DRT::UTILS::shape_function_3D       (funct,gp(0),gp(1),gp(2),distype);
+      //DRT::UTILS::shape_function_3D_deriv1(deriv,gp(0),gp(1),gp(2),distype);
+
+      // shape function derivs of boundary element at gausspoint
+      DRT::UTILS::shape_function<DISTYPE>(xsi,funct);
+      DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi,deriv);
     }
     else
     {
-      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
-	(funct  ,
-	 deriv  ,
-	 gp     ,
-	 myknots,
-	 weights,
-	 distype);
+      if(nsd == 3)
+      {
+        // this is just a temporary work-around
+        Epetra_SerialDenseVector gp(3);
+        gp(0)=xsi(0);
+        gp(1)=xsi(1);
+        gp(2)=xsi(2);
+
+        DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+                                                  (funct  ,
+                                                   deriv  ,
+                                                   gp     ,
+                                                   myknots,
+                                                   weights,
+                                                   DISTYPE);
+      }
+      else if (nsd == 2)
+      {
+        // this is just a temporary work-around
+        Epetra_SerialDenseVector gp(2);
+        gp(0)=xsi(0);
+        gp(1)=xsi(1);
+
+        DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+                                                (funct  ,
+                                                 deriv  ,
+                                                 gp     ,
+                                                 myknots,
+                                                 weights,
+                                                 DISTYPE);
+      }
+      else dserror("%i D is not supported", nsd);
     }
 
     // get transposed Jacobian matrix and determinant
@@ -2828,6 +2969,15 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
     //                           component of
     //                          node coordinate
     //
+
+    LINALG::Matrix<nsd,nsd>   xji(true);
+    LINALG::Matrix<nsd,nsd>   xjm(true);
+
+    // get Jacobian matrix and determinant
+    xjm.MultiplyNT(deriv,xyze);
+    const double det = xji.Invert(xjm);
+
+    /*
     for(int rr=0;rr<3;++rr)
     {
       for(int mm=0;mm<3;++mm)
@@ -2861,6 +3011,7 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
                        xjm(0,2)*(bm(5,3)-xjm(2,0)*xjm(1,1))-
                        xjm(2,1)*bm(3,4)-
                        xjm(0,1)*bm(5,4);
+*/
 
     // check for degenerated elements
     if (det < 0.0)
@@ -2869,12 +3020,12 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
     }
 
     // set total integration factor
-    double fac = intpoints.qwgt[iquad]*det;
+    const double fac = intpoints.IP().qwgt[iquad]*det;
 
     for (int ui=0; ui<iel; ++ui) // loop rows  (test functions)
     {
-      int fuippp=4*ui+3;
-
+      // written to the pressure dof (nsd = 3 or 2)
+      int fuippp=numdofpernode*ui+nsd;
 
       w(fuippp)+=fac*funct(ui);
     }
@@ -2886,7 +3037,7 @@ void DRT::ELEMENTS::Fluid3::integrateShapefunction(
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-template<int iel>
+template<DRT::Element::DiscretizationType DISTYPE>
 void DRT::ELEMENTS::Fluid3::ElementNodeNormal(ParameterList& 		 params,
                                               DRT::Discretization&       discretization,
                                               vector<int>&               lm,
@@ -2897,6 +3048,17 @@ void DRT::ELEMENTS::Fluid3::ElementNodeNormal(ParameterList& 		 params,
   // free surfaces. This causes difficulties because the free surface normals
   // point outwards on nodes at the rim of a basin (e.g. channel-flow).
 
+  // get number of nodes
+  const int iel = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+  // get number of dimensions
+  const int nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+
+  // get number of dof's
+  const int numdofpernode = nsd +1;
+
+
+  /*
   // create matrix objects for nodal values
   LINALG::Matrix<3,iel>       edispnp;
 
@@ -2930,12 +3092,18 @@ void DRT::ELEMENTS::Fluid3::ElementNodeNormal(ParameterList& 		 params,
 
   // set element data
   const DiscretizationType distype = this->Shape();
-
+*/
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
-  LINALG::Matrix<3,iel>  xyze;
+  //LINALG::Matrix<3,iel>  xyze;
+  LINALG::Matrix<nsd,iel>  xyze;
 
+  // get node coordinates
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  GEO::fillInitialPositionArray<DISTYPE,nsd, LINALG::Matrix<nsd,iel> >(this,xyze);
+
+  /*
   // get node coordinates
   DRT::Node** nodes = Nodes();
   for (int inode=0; inode<iel; inode++)
@@ -2945,7 +3113,40 @@ void DRT::ELEMENTS::Fluid3::ElementNodeNormal(ParameterList& 		 params,
     xyze(1,inode) = x[1];
     xyze(2,inode) = x[2];
   }
+*/
+  if(is_ale_)
+  {
+    // --------------------------------------------------
+    // create matrix objects for nodal values
+    LINALG::Matrix<nsd,iel>       edispnp(true);
 
+    // get most recent displacements
+    RCP<const Epetra_Vector> dispnp
+      =
+      discretization.GetState("dispnp");
+
+    if (dispnp==null)
+    {
+      dserror("Cannot get state vector 'dispnp'");
+    }
+
+    vector<double> mydispnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+
+    // extract velocity part from "mygridvelaf" and get
+    // set element displacements
+    for (int inode=0; inode<iel; ++inode)
+    {
+      for(int idim=0; idim < nsd; ++idim)
+      {
+        edispnp(idim,inode)    = mydispnp   [numdofpernode*inode+idim ];
+      }
+    }
+    // get new node positions for isale
+    xyze += edispnp;
+  }
+
+  /*
   // add displacement, when fluid nodes move in the ALE case
   if (is_ale_)
   {
@@ -2956,21 +3157,38 @@ void DRT::ELEMENTS::Fluid3::ElementNodeNormal(ParameterList& 		 params,
       xyze(2,inode) += edispnp(2,inode);
     }
   }
-
+*/
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
-  LINALG::Matrix<iel,1  > funct;
-  LINALG::Matrix<3,  iel> deriv;
-  LINALG::Matrix<3,  3  > xjm;
-  LINALG::Matrix<3,  3  > xji;
+  //LINALG::Matrix<iel,1  > funct;
+  //LINALG::Matrix<3,  iel> deriv;
+  //LINALG::Matrix<3,  3  > xjm;
+  //LINALG::Matrix<3,  3  > xji;
+
+  LINALG::Matrix<iel,1>   funct(true);
+  LINALG::Matrix<nsd,iel>   deriv(true);
+  //LINALG::Matrix<6,6>   bm(true);
+
+  // get Gaussrule
+    const DRT::UTILS::IntPointsAndWeights<nsd> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<DISTYPE>::rule);
 
   // gaussian points
-  const GaussRule3D          gaussrule = getOptimalGaussrule(distype);
-  const IntegrationPoints3D  intpoints(gaussrule);
+  //const GaussRule3D          gaussrule = getOptimalGaussrule(distype);
+  //const IntegrationPoints3D  intpoints(gaussrule);
 
-  for (int iquad=0;iquad<intpoints.nquad;++iquad)
+  for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
   {
+    // local Gauss point coordinates
+    LINALG::Matrix<nsd,1>   xsi(true);
+
+    // local coordinates of the current integration point
+    const double* gpcoord = (intpoints.IP().qxg)[iquad];
+    for (int idim=0;idim<nsd;++idim)
+    {
+      xsi(idim) = gpcoord[idim];
+    }
+/*
     // set gauss point coordinates
     LINALG::Matrix<3,1> gp;
 
@@ -2990,6 +3208,22 @@ void DRT::ELEMENTS::Fluid3::ElementNodeNormal(ParameterList& 		 params,
     {
       dserror("not implemented");
     }
+*/
+
+    if(not IsNurbs<DISTYPE>::isnurbs)
+    {
+      // get values of shape functions and derivatives in the gausspoint
+      //DRT::UTILS::shape_function_3D       (funct,gp(0),gp(1),gp(2),distype);
+      //DRT::UTILS::shape_function_3D_deriv1(deriv,gp(0),gp(1),gp(2),distype);
+
+      // shape function derivs of boundary element at gausspoint
+      DRT::UTILS::shape_function<DISTYPE>(xsi,funct);
+      DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi,deriv);
+    }
+    else dserror("Nurbs are not implemented yet");
+
+    LINALG::Matrix<nsd,nsd>   xjm(true);
+    LINALG::Matrix<nsd,nsd>   xji(true);
 
     // compute jacobian matrix
     // determine jacobian at point r,s,t
@@ -3005,7 +3239,7 @@ void DRT::ELEMENTS::Fluid3::ElementNodeNormal(ParameterList& 		 params,
     }
 
     // set total integration factor
-    const double fac = intpoints.qwgt[iquad] * det;
+    const double fac = intpoints.IP().qwgt[iquad] * det;
 
     // integrate shapefunction gradient over element
     for (int dim = 0; dim < 3; dim++)
@@ -3024,6 +3258,7 @@ void DRT::ELEMENTS::Fluid3::ElementNodeNormal(ParameterList& 		 params,
 //
 // check for higher order derivatives for shape functions
 //
+/*
 bool DRT::ELEMENTS::Fluid3::isHigherOrderElement(
   const DRT::Element::DiscretizationType  distype) const
 {
@@ -3048,7 +3283,7 @@ bool DRT::ELEMENTS::Fluid3::isHigherOrderElement(
   }
   return hoel;
 }
-
+*/
 //=======================================================================
 //=======================================================================
 //=======================================================================
