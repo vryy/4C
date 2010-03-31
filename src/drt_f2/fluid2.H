@@ -187,15 +187,6 @@ public:
 
   //! @name Geometry related methods
 
-  /*!
-   * \brief calculate volume (=surface) of current element
-   * @return surface of current element (out double)
-   */
-  double CalculateSurface(  ParameterList&             params,
-                            DRT::Discretization&       discretization,
-                            vector<int>&               lm) const;
-  //}
-
   //! @name Acess methods
 
 
@@ -931,8 +922,8 @@ private:
     vector<int>&               lm,
     Epetra_SerialDenseMatrix&  elemat1,
     Epetra_SerialDenseVector&  elevec1);
-  
-  
+
+
   /*!
     \brief compute flow rate through line element
            inflow is positive outflow is negative
