@@ -76,34 +76,6 @@ public:
                               Epetra_SerialDenseMatrix*  elemat1
                               ) = 0;
 
-  /*!
-    \brief Evaluate the surface elements weak Dirichlet boundary
-           conditions
-
-    This class does not provide a definition for this function, it
-    is defined in the implementation.
-
-    \author gammi (gamnitzer@lnm.mw.tum.de), 11/09
-
-    \param surfele             (in): surface element in geometry
-                                     associated with weak dbc
-    \param params              (in): parameters (time integration
-                                     parent lms, condition)
-    \param discretization      (in): the discretization
-    \param lm                  (in): the location vector of surfele
-    \param elemat_epetra   (in/out): element matrix (due to wdbc)
-    \param elevec_epetra   (in/out): element force vector (due to wdbc)
-
-  */
-  /*
-  virtual int EvaluateWeakDBC(
-    Fluid3Boundary*             surfele       ,
-    ParameterList&             params        ,
-    DRT::Discretization&       discretization,
-    vector<int>&               lm            ,
-    Epetra_SerialDenseMatrix&  elemat_epetra ,
-    Epetra_SerialDenseVector&  elevec_epetra ) = 0;
-*/
   /// Internal implementation class for Fluid3Boundary elements
   static Fluid3BoundaryImplInterface* Impl(const DRT::Element* ele);
 
@@ -158,6 +130,7 @@ public:
   //! number of space dimensions of the Fluid3Boundary element
   static const int bdrynsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
+  //! number of space dimensions of the parent element
   static const int nsd_ = bdrynsd_+1;
 
   //! Evaluate
@@ -186,8 +159,6 @@ private:
 
     //! number of dof's per node
     const int numdofpernode_;
-
-    //! number of space dimensions of the parent element
 
     void CreateLinesTri(const int& nline,
                         const int& nnode);
@@ -403,29 +374,30 @@ private:
       calc_Neumann_inflow
     };
 
-  //! evaluate shape functions and derivatives at int. point
+  //! evaluate shape functions/derivatives, metric tensor and
+  //! optionally, the infinitesimal area element and the normalized normal vector the at integration point
   double EvalShapeFuncAndIntFac(
-      const DRT::UTILS::IntPointsAndWeights<bdrynsd_>&  intpoints,  ///< integration points
-      const int                                         iquad,
-      const LINALG::Matrix<nsd_,iel>&                   xyze,
-      const std::vector<Epetra_SerialDenseVector>*      myknots,
-      const Epetra_SerialDenseVector*                   weights,
-      LINALG::Matrix<bdrynsd_,1>&                       xsi,
-      LINALG::Matrix<iel,1>&                            funct,
-      LINALG::Matrix<bdrynsd_,iel>&                     deriv,
-      LINALG::Matrix<nsd_,1>*                           normal = NULL,
-      double*                                           drs = NULL
+      const DRT::UTILS::IntPointsAndWeights<bdrynsd_>&  intpoints,  ///< integration points (in)
+      const int                                         iquad,      ///< actual Gauss point (in)
+      const LINALG::Matrix<nsd_,iel>&                   xyze,       ///< global coordinates of the element nodes (in)
+      const std::vector<Epetra_SerialDenseVector>*      myknots,    ///< nurbs specific knotes (in)
+      const Epetra_SerialDenseVector*                   weights,    ///< nurbs specific weights (in)
+      LINALG::Matrix<bdrynsd_,1>&                       xsi,        ///< local coordinates of the gauss points (in)
+      LINALG::Matrix<iel,1>&                            funct,      ///< shape functions (in)
+      LINALG::Matrix<bdrynsd_,iel>&                     deriv,      ///< derivative of the shape functions (in)
+      LINALG::Matrix<nsd_,1>*                           normal = NULL,  ///< normalized normal vector (out)
+      double*                                           drs = NULL      ///< infinitesimal area element
   );
 
-  //! evaluate Nurbs specific stuff
+  //! evaluate Nurbs specific knots and weights
   bool GetKnotVectorAndWeightsForNurbs(
-      DRT::ELEMENTS::Fluid3Boundary*              ele,
-      DRT::Discretization&                        discretization,
-      std::vector<Epetra_SerialDenseVector>&      mypknots,
-      std::vector<Epetra_SerialDenseVector>&      myknots,
-      Epetra_SerialDenseVector&                   weights,
-      double&                                     normalfac);
-
+      DRT::ELEMENTS::Fluid3Boundary*              ele,              ///< pointer to the boundary element
+      DRT::Discretization&                        discretization,   ///< A reference to the underlying discretization
+      std::vector<Epetra_SerialDenseVector>&      mypknots,         ///< nurbs specific knots
+      std::vector<Epetra_SerialDenseVector>&      myknots,          ///< nurbs specific ...
+      Epetra_SerialDenseVector&                   weights,          ///< nurbs specific weights
+      double&                                     normalfac       ///< nurbs specific factor for normal
+  );
   };  // end class fluid3boundaryImpl
 
 }

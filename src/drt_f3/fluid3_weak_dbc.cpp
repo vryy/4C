@@ -15,17 +15,18 @@
 //   Allocate one static instance of the internal implementation
 //   class for weak dirichlet condition and return pointer to it
 //-----------------------------------------------------------------
-DRT::ELEMENTS::Fluid3SurfaceWeakDBCInterface* DRT::ELEMENTS::Fluid3SurfaceWeakDBCInterface::Impl(
-  DRT::ELEMENTS::Fluid3Boundary* f3surf
+DRT::ELEMENTS::Fluid3BoundaryWeakDBCInterface* DRT::ELEMENTS::Fluid3BoundaryWeakDBCInterface::Impl(
+  DRT::ELEMENTS::Fluid3Boundary* f3bdry
   )
 {
-  switch (f3surf->Shape())
+  switch (f3bdry->Shape())
   {
+  // 3D:
   case DRT::Element::quad4:
   {
     static Fluid3SurfaceWeakDBC<DRT::Element::quad4,DRT::Element::hex8>* fsurfq4;
 
-    if(f3surf->ParentElement()->Shape()==DRT::Element::hex8)
+    if(f3bdry->ParentElement()->Shape()==DRT::Element::hex8)
     {
       if (fsurfq4==NULL)
         fsurfq4 = new Fluid3SurfaceWeakDBC<DRT::Element::quad4,DRT::Element::hex8>();
@@ -34,14 +35,13 @@ DRT::ELEMENTS::Fluid3SurfaceWeakDBCInterface* DRT::ELEMENTS::Fluid3SurfaceWeakDB
     {
       dserror("expected combination quad4/hex8 for surface/parent pair");
     }
-
     return fsurfq4;
   }
   case DRT::Element::nurbs9:
   {
     static Fluid3SurfaceWeakDBC<DRT::Element::nurbs9,DRT::Element::nurbs27>* fsurfn9;
 
-    if(f3surf->ParentElement()->Shape()==DRT::Element::nurbs27)
+    if(f3bdry->ParentElement()->Shape()==DRT::Element::nurbs27)
     {
       if (fsurfn9==NULL)
         fsurfn9 = new Fluid3SurfaceWeakDBC<DRT::Element::nurbs9,DRT::Element::nurbs27>();
@@ -50,11 +50,47 @@ DRT::ELEMENTS::Fluid3SurfaceWeakDBCInterface* DRT::ELEMENTS::Fluid3SurfaceWeakDB
     {
       dserror("expected combination quad4/hex8 for surface/parent pair");
     }
-
     return fsurfn9;
   }
+  // 2D:
+  case DRT::Element::line2:
+  {
+    static Fluid2LineWeakDBC<DRT::Element::line2,DRT::Element::quad4>* fline2;
+
+    if(f3bdry->ParentElement()->Shape()==DRT::Element::quad4)
+    {
+      if (fline2==NULL)
+      {
+        fline2 = new Fluid2LineWeakDBC<DRT::Element::line2,DRT::Element::quad4>();
+      }
+    }
+    else
+    {
+      dserror("expected combination line2/quad4 for line/parent pair");
+    }
+
+    return fline2;
+  }
+  case DRT::Element::nurbs3:
+  {
+    static Fluid2LineWeakDBC<DRT::Element::nurbs3,DRT::Element::nurbs9>* flinen3;
+
+    if(f3bdry->ParentElement()->Shape()==DRT::Element::nurbs9)
+    {
+      if (flinen3==NULL)
+      {
+        flinen3 = new Fluid2LineWeakDBC<DRT::Element::nurbs3,DRT::Element::nurbs9>();
+      }
+    }
+    else
+    {
+      dserror("expected combination nurbs3/nurbs9 for line/parent pair");
+    }
+
+    return flinen3;
+  }
   default:
-    dserror("shape %d (%d nodes) not supported by weak DBC", f3surf->Shape(), f3surf->NumNode());
+    dserror("shape %d (%d nodes) not supported by weak DBC", f3bdry->Shape(), f3bdry->NumNode());
   }
 
   return NULL;

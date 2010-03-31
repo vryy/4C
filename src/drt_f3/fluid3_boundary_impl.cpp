@@ -290,18 +290,14 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
     }
     case enforce_weak_dbc:
     {
-      if (bdrynsd_ == 2)
-      {
-        return DRT::ELEMENTS::Fluid3SurfaceWeakDBCInterface::Impl(ele)->EvaluateWeakDBC(
-          ele,
-          params,
-          discretization,
-          lm,
-          elemat1,
-          elevec1);
-        break;
-      }
-      else dserror("In Fluid3 2D Weak Boundary Conditions are not supported yet ");
+      return DRT::ELEMENTS::Fluid3BoundaryWeakDBCInterface::Impl(ele)->EvaluateWeakDBC(
+        ele,
+        params,
+        discretization,
+        lm,
+        elemat1,
+        elevec1);
+      break;
     }
     case conservative_outflow_bc:
     {
@@ -449,6 +445,15 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
   *----------------------------------------------------------------------*/
   for (int gpid=0; gpid<intpoints.IP().nquad; ++gpid)
   {
+    // values are multiplied by the product from inf. area element,
+    // the gauss weight, the timecurve factor, the constant
+    // belonging to the time integration algorithm (theta*dt for
+    // one step theta, 2/3 for bdf with dt const.) and density
+
+    // integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // normalized normal vector
+    const double fac = EvalShapeFuncAndIntFac(intpoints, gpid, xyze, &myknots, &weights, xsi, funct, deriv);
+
     // compute temperature and density at the gauss point for low-Mach-number flow
     double dens = 1.0;
     if (physicaltype == INPAR::FLUID::loma)
@@ -468,15 +473,6 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
     {
       dens = funct.Dot(escanp);
     }
-
-    // values are multiplied by the product from inf. area element,
-    // the gauss weight, the timecurve factor, the constant
-    // belonging to the time integration algorithm (theta*dt for
-    // one step theta, 2/3 for bdf with dt const.) and density
-
-    // integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // normalized normal vector
-    const double fac = EvalShapeFuncAndIntFac(intpoints, gpid, xyze, &myknots, &weights, xsi, funct, deriv);
 
     const double fac_curvefac_thsl_dens =  fac *(curvefac * thsl * dens);
 

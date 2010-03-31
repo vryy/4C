@@ -71,13 +71,13 @@ namespace DRT
     \author gammi (gamnitzer@lnm.mw.tum.de), 11/09
 
     -----------------------------------------------------------------*/
-    class Fluid3SurfaceWeakDBCInterface
+    class Fluid3BoundaryWeakDBCInterface
     {
     public:
       //! Empty constructor
-      Fluid3SurfaceWeakDBCInterface() {}
+      Fluid3BoundaryWeakDBCInterface() {}
       //! Empty destructor
-      virtual ~Fluid3SurfaceWeakDBCInterface() {}
+      virtual ~Fluid3BoundaryWeakDBCInterface() {}
 
       /*!
         \brief Evaluate the surface elements weak Dirichlet boundary
@@ -116,7 +116,7 @@ namespace DRT
         \param f3surf (in): fluid surface element
 
       */
-      static Fluid3SurfaceWeakDBCInterface* Impl(DRT::ELEMENTS::Fluid3Boundary* f3surf);
+      static Fluid3BoundaryWeakDBCInterface* Impl(DRT::ELEMENTS::Fluid3Boundary* f3surf);
 
     };
 
@@ -139,7 +139,7 @@ namespace DRT
     //-----------------------------------------------------------------
     template<DRT::Element::DiscretizationType distype ,
              DRT::Element::DiscretizationType pdistype>
-    class Fluid3SurfaceWeakDBC: public Fluid3SurfaceWeakDBCInterface
+    class Fluid3SurfaceWeakDBC: public Fluid3BoundaryWeakDBCInterface
     {
     public:
       /// Constructor with number of nodes
@@ -239,6 +239,115 @@ namespace DRT
       double                 prenp_;
 
     };
+
+    /*!
+     \brief Internal Fluid2Line weak Dirichlet implementation
+            (line and parent element specific)
+     */
+
+     //-----------------------------------------------------------------
+     ///
+     //-----------------------------------------------------------------
+     template<DRT::Element::DiscretizationType distype ,
+              DRT::Element::DiscretizationType pdistype>
+     class Fluid2LineWeakDBC: public Fluid3BoundaryWeakDBCInterface
+     {
+     public:
+       /// Constructor with number of nodes
+       Fluid2LineWeakDBC();
+
+       /// empty destructor
+       ~Fluid2LineWeakDBC(){return;};
+
+       /// number of nodes
+       static const int iel  = DRT::UTILS::DisTypeToNumNodePerEle<distype >::numNodePerElement;
+
+       /// number of parentnodes
+       static const int piel = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+
+
+       /*!
+         \brief Evaluate weakly imposed Dirichlet conditions
+
+         This method calculates the contributions to rhs and matrix of
+         weak Dirichlet boundary conditions for a generalized alpha
+         system.
+
+         Literature:
+         Weak imposition of Dirichlet boundary conditions in fluid mechanics
+         Y. Bazilevs, T.J.R. Hughes
+         Computers & Fluids 36 (2007) 12–26
+
+       */
+       virtual int EvaluateWeakDBC(
+         Fluid3Boundary*                lineele       ,
+         ParameterList&             params        ,
+         DRT::Discretization&       discretization,
+         vector<int>&               lm            ,
+         Epetra_SerialDenseMatrix&  elemat_epetra ,
+         Epetra_SerialDenseVector&  elevec_epetra );
+
+     private:
+
+       // nodal arrays
+       // ------------
+       //! node coordinates of parent element
+       LINALG::Matrix<2,piel> pxyze_;
+       //! array of nodal velocities, intermediate time level
+       LINALG::Matrix<2,piel> pevelaf_;
+       //! array of nodal velocities, new time level
+       LINALG::Matrix<2,piel> pevelnp_;
+       //! array of nodal pressure, new time level
+       LINALG::Matrix<piel,1> peprenp_;
+       //! array of nodal grid displacements, parent element, new time level
+       LINALG::Matrix<2,piel> pedispnp_;
+       //! array of nodal grid displacements, surface element, new time level
+       LINALG::Matrix<2,piel> edispnp_;
+       //! node coordinates of boundary element
+       LINALG::Matrix<2, iel> xyze_;
+
+
+
+       // shape functions and derivatives, mapping from reference element to actual geometry
+       // ----------------------------------------------------------------------------------
+       //! transpose of the jacobian matrix of the mapping (r,s,t)->(x,y,z)
+       LINALG::Matrix<2,2>    pxjm_;
+       //! its inverse
+       LINALG::Matrix<2,2>    pxji_;
+       //! vector of shape functions, parent element
+       LINALG::Matrix<piel,1> pfunct_;
+       //! vector of shape function derivatives in reference coordinate system, parent element
+       LINALG::Matrix<2,piel> pderiv_;
+       //! vector of shape function derivatives in global coordinate system
+       LINALG::Matrix<2,piel> pderxy_;
+
+
+       //! vector of shape functions, boundary element
+       LINALG::Matrix<iel ,1> funct_;
+       //! vector of shape function derivatives in reference coordinate system, boundary element
+       LINALG::Matrix<iel, 1> deriv_;
+       //! vector for outward normal, boundary element
+       LINALG::Matrix<2,   1> n_;
+       //! derivatives of surface in reference direction
+       LINALG::Matrix<2,   1> dxydr_;
+       //! the length of an infintesimal line element
+       double                 dr_;
+
+
+
+       // values of non geometrical quantities in gausspoints
+       // ---------------------------------------------------
+
+       //! velocity in gausspoint, time n+af
+       LINALG::Matrix<2,1>    velintaf_;
+       //! velocity in gausspoint, time n+1
+       LINALG::Matrix<2,1>    velintnp_;
+       //! velocity derivatives in gausspoint, time n+af
+       LINALG::Matrix<2,2>    vderxyaf_;
+       //! pressure in gausspoint, time n+1
+       double                 prenp_;
+
+     };
 
 
     //-----------------------------------------------------------------
