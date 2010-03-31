@@ -66,6 +66,7 @@ DRT::ELEMENTS::Fluid3StationaryImplInterface* DRT::ELEMENTS::Fluid3StationaryImp
   const int numdofpernode = f3->NumDofPerNode(*(f3->Nodes()[0]));
   switch (f3->Shape())
   {
+  //3D
   case DRT::Element::hex8:
   {
     static Fluid3StationaryImpl<DRT::Element::hex8>* fh8;
@@ -122,6 +123,7 @@ DRT::ELEMENTS::Fluid3StationaryImplInterface* DRT::ELEMENTS::Fluid3StationaryImp
       fp5 = new Fluid3StationaryImpl<DRT::Element::pyramid5>(numdofpernode);
     return fp5;
   }
+  //2D
   case DRT::Element::quad4:
   {
     static Fluid3StationaryImpl<DRT::Element::quad4>* cp4;
@@ -157,6 +159,8 @@ DRT::ELEMENTS::Fluid3StationaryImplInterface* DRT::ELEMENTS::Fluid3StationaryImp
       cp6 = new Fluid3StationaryImpl<DRT::Element::tri6>(numdofpernode);
     return cp6;
   }
+  //1D
+  /*
   case DRT::Element::line2:
   {
     static Fluid3StationaryImpl<DRT::Element::line2>* cl2;
@@ -171,6 +175,7 @@ DRT::ELEMENTS::Fluid3StationaryImplInterface* DRT::ELEMENTS::Fluid3StationaryImp
       cl3 = new Fluid3StationaryImpl<DRT::Element::line3>(numdofpernode);
     return cl3;
   }
+  */
   default:
     dserror("shape %d (%d nodes) not supported", f3->Shape(), f3->NumNode());
   }
@@ -311,7 +316,8 @@ int DRT::ELEMENTS::Fluid3StationaryImpl<distype>::Evaluate(
   }
 
   // flag for higher order elements
-  bool higher_order_ele = ele->isHigherOrderElement(ele->Shape());
+  //bool higher_order_ele = ele->isHigherOrderElement(ele->Shape());
+  const bool higher_order_ele = IsHigherOrder<distype>::ishigherorder;
 
   // get fine-scale velocity
   RCP<const Epetra_Vector> fsvelnp;
