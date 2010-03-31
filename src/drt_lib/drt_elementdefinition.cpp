@@ -1221,14 +1221,6 @@ void DRT::INPUT::ElementDefinition::SetupFluid3Lines()
     .AddNamedString("NA")
     ;
 
-  // TODO
-  // Early stage: Integration of Fluid2 in Fluid3
-  defs["QUAD4"]
-    .AddIntVector("QUAD4",4)
-    .AddNamedInt("MAT")
-    .AddNamedString("NA")
-    ;
-
   defs["NURBS8"]
     .AddIntVector("NURBS8",8)
     .AddNamedInt("MAT")
@@ -1237,6 +1229,49 @@ void DRT::INPUT::ElementDefinition::SetupFluid3Lines()
 
   defs["NURBS27"]
     .AddIntVector("NURBS27",27)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  // 2D elements
+  defs["QUAD4"]
+    .AddIntVector("QUAD4",4)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["QUAD8"]
+    .AddIntVector("QUAD8",8)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["QUAD9"]
+    .AddIntVector("QUAD9",9)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["TRI3"]
+    .AddIntVector("TRI3",3)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["TRI6"]
+    .AddIntVector("TRI6",6)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["NURBS4"]
+    .AddIntVector("NURBS4",4)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["NURBS9"]
+    .AddIntVector("NURBS9",9)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
