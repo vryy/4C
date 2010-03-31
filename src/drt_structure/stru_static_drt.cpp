@@ -26,7 +26,6 @@ Maintainer: Moritz Frenzel
 #include "stru_static_drt.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "stru_resulttest.H"
 #include "Teuchos_TimeMonitor.hpp"

@@ -56,8 +56,7 @@ Maintainer: Alexander Popp
 CONTACT::CmtStruGenAlpha::CmtStruGenAlpha(ParameterList& params,
                                           DRT::Discretization& dis,
                                           LINALG::Solver& solver,
-                                          IO::DiscretizationWriter& output,
-                                          INPAR::CONTACT::ApplicationType apptype) :
+                                          IO::DiscretizationWriter& output) :
 StruGenAlpha(params,dis,solver,output)
 {
   //**********************************************************************
@@ -74,6 +73,8 @@ StruGenAlpha(params,dis,solver,output)
     double alphaf = params_.get<double>("alpha f",0.459);
     
     // decide whether this is meshtying or contact
+    const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
+    INPAR::CONTACT::ApplicationType apptype = Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION"); 
     if (apptype==INPAR::CONTACT::app_mortarmeshtying)
       cmtmanager_ = rcp(new CONTACT::MtManager(discret_,alphaf));
     else if (apptype==INPAR::CONTACT::app_mortarcontact)
@@ -126,21 +127,14 @@ StruGenAlpha(params,dis,solver,output)
   //**********************************************************************
   {
     // FOR MESHTYING (ONLY ONCE), NO FUNCTIONALITY FOR CONTACT CASES
-    // (1) Do mortar coupling in reference configuration
-    //     (for restart this has already been done in Strategy object)
-    // (2) Perform mesh intialization by relocating slave nodes such
-    //     that rotational invariance is satisfied.
-    if (params_.get<int>("step") == 0)
-    {
-     cmtmanager_->GetStrategy().MortarCoupling(zeros_);
-     cmtmanager_->GetStrategy().MeshInitialization();
-    }
-    
+    // (1) Do mortar coupling in reference configuration  
+    // (2) Perform mesh intialization for rotational invariance
+    cmtmanager_->GetStrategy().MortarCoupling(zeros_);
+    cmtmanager_->GetStrategy().MeshInitialization();
+
     // FOR PENALTY CONTACT (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
     // (1) Explicitly store gap-scaling factor kappa
-    //     (for restart this need not be done)
-    if (params_.get<int>("step") == 0)
-     cmtmanager_->GetStrategy().SaveReferenceState(disn_);
+    cmtmanager_->GetStrategy().SaveReferenceState(zeros_);
   }
 
   //**********************************************************************

@@ -64,8 +64,7 @@ public:
   CmtStruGenAlpha(ParameterList& params,
                   DRT::Discretization& dis,
                   LINALG::Solver& solver,
-                  IO::DiscretizationWriter& output,
-                  INPAR::CONTACT::ApplicationType apptype);
+                  IO::DiscretizationWriter& output);
 
   /*!
   \brief Destructor

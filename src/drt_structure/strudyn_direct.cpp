@@ -81,8 +81,6 @@ void STR::strudyn_direct()
     = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& sdyn
     = DRT::Problem::Instance()->StructuralDynamicParams();
-  //const Teuchos::ParameterList& scontact
-  //  = DRT::Problem::Instance()->StructuralContactParams();
   const Teuchos::ParameterList& tap
     = sdyn.sublist("TIMEADAPTIVITY");
   const Teuchos::ParameterList& snox

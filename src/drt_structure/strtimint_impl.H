@@ -168,11 +168,12 @@ namespace STR
       const int                         step
     );
 
-    //! Evaluate forces / stiffness due to contact
-    void ApplyForceStiffContact
+    //! Evaluate forces and stiffness due to contact / meshtying
+    void ApplyForceStiffContactMeshtying
     (
       Teuchos::RCP<LINALG::SparseOperator>& stiff,  //!< stiffness is modified
-      Teuchos::RCP<Epetra_Vector>& fres  //!< residual forces are modified
+      Teuchos::RCP<Epetra_Vector>& fres,  //!< residual forces are modified
+      Teuchos::RCP<Epetra_Vector>& dis   //!< current displacement state
     );
 
     //@}
@@ -248,6 +249,21 @@ namespace STR
     //! \author mwgee (originally) \date 03/07
     void PTC() { dserror("Not impl."); }
 
+    //! Do nonlinear iteration for contact / meshtying
+    //!
+    //! \author popp (originally) \date 03/10
+    void CmtNonlinearSolve();
+    
+    //! Call linear solver for contact / meshtying
+    //!
+    //! The point is that of course we usually just want to perform a
+    //! standard solver call, except for the standard Lagrange strategy
+    //! where we explicitly have to set up the saddle point system blocks
+    //! and then solve this extended system.
+    //!
+    //! \author popp (originally) \date 03/10
+    void CmtLinearSolve();
+    
     //@}
 
     //! @name STC business
@@ -428,10 +444,10 @@ namespace STR
       if (conman_ -> HaveConstraint()) conman_->Update();
     }
 
-    //! Update step for contact
-    void UpdateStepContact()
+    //! Update step for contact / meshtying
+    void UpdateStepContactMeshtying()
     {
-      if (contactman_ != Teuchos::null) contactman_->GetStrategy().Update(stepn_,disn_);
+      if (cmtman_ != Teuchos::null) cmtman_->GetStrategy().Update(stepn_,disn_);
     }
 
     //! @name Output
@@ -624,8 +640,8 @@ namespace STR
     //! @name FSI stuff
     //@{
     const UTILS::MapExtractor* fsisurface_;  //!< surface of structural
-                                                  //!< which is in contact
-                                                  //!< with fluid
+                                             //!< which is in contact
+                                             //!< with fluid
     //@}
 
     //! @name General purpose algorithm parameters

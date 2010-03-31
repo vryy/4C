@@ -3555,7 +3555,6 @@ void StruGenAlpha::SetDefaults(ParameterList& params)
   params.set<bool>  ("io surfactant",false);
   params.set<int>   ("restart"                ,0);
   params.set<int>   ("write restart every"    ,0);
-  params.set<bool>  ("contact"                ,false);
   // takes values "constant" consistent"
   params.set<string>("predictor"              ,"constant");
   // takes values "full newton" , "modified newton" , "nonlinear cg", "ptc"

@@ -366,9 +366,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   else
   {
     if (mortarcontact)
-      tintegrator = rcp(new CONTACT::CmtStruGenAlpha(*genalphaparams,*actdis,*solver,*output,apptype));
+      tintegrator = rcp(new CONTACT::CmtStruGenAlpha(*genalphaparams,*actdis,*solver,*output));
     if (mortarmeshtying)
-      tintegrator = rcp (new CONTACT::CmtStruGenAlpha(*genalphaparams,*actdis,*solver,*output,apptype));
+      tintegrator = rcp (new CONTACT::CmtStruGenAlpha(*genalphaparams,*actdis,*solver,*output));
     if (beamcontact)
       tintegrator = rcp(new CONTACT::Beam3ContactStruGenAlpha(*genalphaparams,*actdis,*solver,*output));
     if (thermalbath)

@@ -79,7 +79,6 @@ STR::TimIntImpl::TimIntImpl
   stcfact_(sdynparams.get<double>("STC_FACTOR"))
 
 {
-
   // verify: Old-style convergence check has to be 'vague' to
   if (Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK") != INPAR::STR::convcheck_vague)
   {
@@ -480,34 +479,35 @@ void STR::TimIntImpl::ApplyForceStiffConstraint
 }
 
 /*----------------------------------------------------------------------*/
-/* evaluate forces / stiffness due to contact */
-void STR::TimIntImpl::ApplyForceStiffContact
+/* evaluate forces and stiffness due to contact / meshtying */
+void STR::TimIntImpl::ApplyForceStiffContactMeshtying
 (
   Teuchos::RCP<LINALG::SparseOperator>& stiff,
-  Teuchos::RCP<Epetra_Vector>& fint
+  Teuchos::RCP<Epetra_Vector>& fresm,
+  Teuchos::RCP<Epetra_Vector>& dis
 )
 {
-  if (contactman_ != Teuchos::null)
+  if (cmtman_ != Teuchos::null)
   {
-    // contact modifications need -fres
-    fres_->Scale(-1.0);
+    // contact / meshtying modifications need -fres
+    fresm->Scale(-1.0);
 
-    // keep a copy of fresm for contact forces / equilibrium check
+    // keep a copy of fresm for interface forces / equilibrium check
     Teuchos::RCP<Epetra_Vector> frescopy = Teuchos::rcp(new Epetra_Vector(*fres_));
 
-    // make contact modifications to lhs and rhs
-    contactman_->GetStrategy().SetState("displacement",disn_);
-    contactman_->GetStrategy().InitEvalInterface();
-    contactman_->GetStrategy().InitEvalMortar();
-    contactman_->GetStrategy().UpdateActiveSetSemiSmooth();
-    contactman_->GetStrategy().Initialize();
-    contactman_->GetStrategy().Evaluate(stiff,fres_,disn_);
+    // make contact / meshtying modifications to lhs and rhs
+    cmtman_->GetStrategy().SetState("displacement",dis);
+    cmtman_->GetStrategy().InitEvalInterface();
+    cmtman_->GetStrategy().InitEvalMortar();
+    cmtman_->GetStrategy().UpdateActiveSetSemiSmooth();
+    cmtman_->GetStrategy().Initialize();
+    cmtman_->GetStrategy().Evaluate(stiff,fresm,dis);
 
-    // evaluate contact forces
-    contactman_->GetStrategy().InterfaceForces(frescopy);
+    // evaluate interface forces
+    cmtman_->GetStrategy().InterfaceForces(frescopy);
 
     // scaling back
-    fres_->Scale(-1.0);
+    fresm->Scale(-1.0);
   }
 
   // wotcha
@@ -576,13 +576,18 @@ bool STR::TimIntImpl::Converged()
 
   // check contact (active set)
   bool ccontact = true;
-  if (contactman_!=Teuchos::null)
+  if (cmtman_!=Teuchos::null)
   {
-    // do this only for Lagrange multiplier strategy
+    // check which case (application, strategy) we are in 
+    INPAR::CONTACT::ApplicationType apptype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(cmtman_->GetStrategy().Params(),"APPLICATION");
     INPAR::CONTACT::SolvingStrategy stype =
-      Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(contactman_->GetStrategy().Params(),"STRATEGY");
-    if (stype == INPAR::CONTACT::solution_lagmult)
-      ccontact = contactman_->GetStrategy().ActiveSetConverged();
+      Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
+    bool semismooth = Teuchos::getIntegralValue<int>(cmtman_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
+    
+    // only do this convergence check for semi-smooth Lagrange multiplier contact
+    if (apptype == INPAR::CONTACT::app_mortarcontact && stype == INPAR::CONTACT::solution_lagmult && semismooth)
+      ccontact = cmtman_->GetStrategy().ActiveSetConverged();
   }
 
   //pressure related stuff
@@ -647,27 +652,38 @@ bool STR::TimIntImpl::Converged()
 /* solve equilibrium */
 void STR::TimIntImpl::Solve()
 {
-  // choose solution technique in accordance with user's will
-  switch (itertype_)
+  // special nonlinear iterations for contact / meshtying
+  if (cmtman_ != Teuchos::null)
   {
-  case INPAR::STR::soltech_newtonfull :
-    NewtonFull();
-    break;
-  case INPAR::STR::soltech_newtonuzawanonlin :
-    UzawaNonLinearNewtonFull();
-    break;
-  case INPAR::STR::soltech_newtonuzawalin :
-    UzawaLinearNewtonFull();
-    break;
-  case INPAR::STR::soltech_noxnewtonlinesearch :
-  case INPAR::STR::soltech_noxgeneral :
-    NoxSolve();
-    break;
-  // catch problems
-  default :
-    dserror("Solution technique \"%s\" is not implemented",
-            INPAR::STR::NonlinSolTechString(itertype_).c_str());
-    break;
+    // choose solution technique in accordance with user's will
+    CmtNonlinearSolve();
+  }
+  
+  // all other cases
+  else
+  {
+    // choose solution technique in accordance with user's will
+    switch (itertype_)
+    {
+    case INPAR::STR::soltech_newtonfull :
+      NewtonFull();
+      break;
+    case INPAR::STR::soltech_newtonuzawanonlin :
+      UzawaNonLinearNewtonFull();
+      break;
+    case INPAR::STR::soltech_newtonuzawalin :
+      UzawaLinearNewtonFull();
+      break;
+    case INPAR::STR::soltech_noxnewtonlinesearch :
+    case INPAR::STR::soltech_noxgeneral :
+      NoxSolve();
+      break;
+    // catch problems
+    default :
+      dserror("Solution technique \"%s\" is not implemented",
+              INPAR::STR::NonlinSolTechString(itertype_).c_str());
+      break;
+    }
   }
 
   // see you
@@ -725,15 +741,19 @@ void STR::TimIntImpl::NewtonFull()
       double wanted = tolfres_;
       solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
     }
-    solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_==1);
+    // linear solver call (contact / meshtying case or default)
+    if (cmtman_ != Teuchos::null)
+      CmtLinearSolve();
+    else
+      solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_==1);
     solver_->ResetTolerance();
 
     // recover standard displacements
     RecoverSTCSolution(stcmat);
     
-    // recover contact Lagrange multipliers
-    if (contactman_ != Teuchos::null)
-      contactman_->GetStrategy().Recover(disi_);
+    // recover contact / meshtying Lagrange multipliers
+    if (cmtman_ != Teuchos::null)
+      cmtman_->GetStrategy().Recover(disi_);
 
     // update end-point displacements etc
     UpdateIter(iter_);
@@ -1038,6 +1058,174 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
 }
 
 /*----------------------------------------------------------------------*/
+/* solution with nonlinear iteration for contact / meshtying */
+void STR::TimIntImpl::CmtNonlinearSolve()
+{
+  //********************************************************************
+  // get some parameters
+  //********************************************************************
+  // application type
+  INPAR::CONTACT::ApplicationType apptype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(cmtman_->GetStrategy().Params(),"APPLICATION");
+  
+  // strategy type
+  INPAR::CONTACT::SolvingStrategy soltype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
+  
+  // semi-smooth Newton type
+  bool semismooth = Teuchos::getIntegralValue<int>(cmtman_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
+  
+  // iteration type
+  if (itertype_ != INPAR::STR::soltech_newtonfull)
+    dserror("Unknown type of equilibrium iteration");
+
+  //********************************************************************
+  // Solving Strategy using Lagrangian Multipliers
+  //********************************************************************
+  if (soltype == INPAR::CONTACT::solution_lagmult)
+  {
+    //********************************************************************
+    // 1) SEMI-SMOOTH NEWTON FOR CONTACT
+    // The search for the correct active set (=contact nonlinearity) and
+    // the large deformstion linearization (=geometrical nonlinearity) are
+    // merged into one semi-smooth Newton method and solved within ONE
+    // iteration loop (which is then basically a standard Newton).
+    //********************************************************************
+    if (apptype == INPAR::CONTACT::app_mortarcontact && semismooth)
+    { 
+      // nonlinear iteration
+      NewtonFull();
+    }
+    
+    //********************************************************************
+    // 2) FIXED-POINT APPROACH FOR CONTACT
+    // The search for the correct active set (=contact nonlinearity) is
+    // represented by a fixed-point approach, whereas the large deformation
+    // linearization (=geometrical nonlinearity) is treated by a standard
+    // Newton scheme. This yields TWO nested iteration loops
+    //********************************************************************
+    else if (apptype == INPAR::CONTACT::app_mortarcontact && !semismooth)
+    {
+      // active set strategy
+      int activeiter = 0;
+      while (cmtman_->GetStrategy().ActiveSetConverged()==false)
+      {
+        // increase active set iteration index
+        ++activeiter;
+        
+        // predictor step (except for first active set step)
+        if (activeiter > 1) Predict();
+        
+        // nonlinear iteration
+        NewtonFull();
+
+        // update of active set (fixed-point)
+        cmtman_->GetStrategy().UpdateActiveSet();
+      }
+    }
+    
+    //********************************************************************
+    // 3) STANDARD NEWTON APPROACH FOR MESHTYING
+    // No search for the correct active set has to be resolved for mortar
+    // meshtying and mortar coupling is linear in this case. Thus, only
+    // the large deformation FE problem remains to be solved as nonlinearity
+    // Here, a standard Newton scheme is applied and we have ONLY ONE loop.
+    //********************************************************************
+    else
+    {
+      // nonlinear iteration
+      NewtonFull();
+    }
+  }
+
+  //********************************************************************
+  // Solving Strategy using Regularization Techniques (Penalty Method)
+  //********************************************************************
+  else if (soltype == INPAR::CONTACT::solution_penalty)
+  {
+    // nonlinear iteration
+    NewtonFull();
+
+    // update constraint norm
+    cmtman_->GetStrategy().UpdateConstraintNorm();
+  }
+
+  //********************************************************************
+  // Solving Strategy using Augmented Lagrange Techniques (with Uzawa)
+  //********************************************************************
+  else if (soltype == INPAR::CONTACT::solution_auglag)
+  {
+    // get tolerance and maximum Uzawa steps
+    double eps = cmtman_->GetStrategy().Params().get<double>("UZAWACONSTRTOL");
+    int maxuzawaiter = cmtman_->GetStrategy().Params().get<int>("UZAWAMAXSTEPS");
+
+    // Augmented Lagrangian loop (Uzawa)
+    int uzawaiter=0;
+    do
+    {
+      // increase iteration index
+      ++uzawaiter;
+      if (uzawaiter > maxuzawaiter) dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
+      if (!myrank_) cout << "Starting Uzawa step No. " << uzawaiter << endl;
+
+      // for second, third,... Uzawa step: out-of-balance force
+      if (uzawaiter>1)
+      {
+        fres_->Scale(-1.0);
+        cmtman_->GetStrategy().InitializeUzawa(stiff_,fres_);
+        fres_->Scale(-1.0);
+      }
+
+      // nonlinear iteration
+      NewtonFull();
+
+      // update constraint norm and penalty parameter
+      cmtman_->GetStrategy().UpdateConstraintNorm(uzawaiter);
+
+      // store Lagrange multipliers for next Uzawa step
+      cmtman_->GetStrategy().UpdateAugmentedLagrange();
+      cmtman_->GetStrategy().StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
+
+    } while (cmtman_->GetStrategy().ConstraintNorm() >= eps);
+          
+    // reset penalty parameter
+    cmtman_->GetStrategy().ResetPenalty();
+  }
+    
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* linear solver call for contact / meshtying */
+void STR::TimIntImpl::CmtLinearSolve()
+{
+  // shape function and strategy types
+  INPAR::MORTAR::ShapeFcn shapefcn        = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(cmtman_->GetStrategy().Params(),"SHAPEFCN");  
+  INPAR::CONTACT::SolvingStrategy soltype = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
+  
+  //**********************************************************************
+  // Solving strategy using standard Lagrange multipliers
+  //**********************************************************************
+  if (shapefcn == INPAR::MORTAR::shape_standard && soltype==INPAR::CONTACT::solution_lagmult)
+  {
+    // saddle point solver call
+    // (iter_-1 to be consistent with old time integration)
+    cmtman_->GetStrategy().SaddlePointSolve(*solver_,stiff_,fres_,disi_,dirichtoggle_,iter_-1);
+  }
+  
+  //**********************************************************************
+  // All other solving strategies (Dual Lagrange, Penalty, Augmented)
+  //**********************************************************************
+  else
+  {
+    // standard solver call
+    solver_->Solve(stiff_->EpetraOperator(),disi_,fres_,true,iter_==1);  
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 /* Update iteration */
 void STR::TimIntImpl::UpdateIter
 (
@@ -1075,6 +1263,10 @@ void STR::TimIntImpl::UpdateIterIncrementally
   else
     disi_->PutScalar(0.0);
 
+  // recover contact / meshtying Lagrange multipliers (monolithic FSI)
+  if (cmtman_ != Teuchos::null && disi != Teuchos::null)
+    cmtman_->GetStrategy().Recover(disi_);
+  
   // Update using #disi_
   UpdateIterIncrementally();
 
@@ -1350,10 +1542,6 @@ void STR::TimIntImpl::PrintNewtonConv()
 /* print step summary */
 void STR::TimIntImpl::PrintStep()
 {
-  // print active contact set
-  if (contactman_ != Teuchos::null)
-    contactman_->GetStrategy().PrintActiveSet();
-
   // print out (only on master CPU)
   if ( (myrank_ == 0) and printscreen_ )
   {

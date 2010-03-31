@@ -134,11 +134,13 @@ void STR::TimIntStatics::EvaluateForceStiffResidual()
   // build tangent matrix : effective dynamic stiffness matrix
   //    K_{Teffdyn} = K_{T}
   // i.e. do nothing here
-  stiff_->Complete();  // close stiffness matrix
 
-  // apply forces and stiffness due to contact
-  ApplyForceStiffContact(stiff_,fres_);
+  // apply forces and stiffness due to contact / meshtying
+  ApplyForceStiffContactMeshtying(stiff_,fres_,disn_);
 
+  // close stiffness matrix
+  stiff_->Complete();
+  
   // hallelujah
   return;
 }
@@ -259,8 +261,8 @@ void STR::TimIntStatics::UpdateStepState()
   // update constraints
   UpdateStepConstraint();
 
-  // update contact
-  UpdateStepContact();
+  // update contact / meshtying
+  UpdateStepContactMeshtying();
 
   // look out
   return;

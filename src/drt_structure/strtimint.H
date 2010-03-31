@@ -51,7 +51,6 @@ Maintainer: Burkhard Bornemann
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_contact/meshtying_manager.H"
 #include "../drt_contact/contact_manager.H"
-#include "../drt_inpar/inpar_contact.H"
 #include "../drt_fluid/drt_periodicbc.H"
 
 #include "strtimint_mstep.H"
@@ -161,6 +160,10 @@ namespace STR
     //! @name Actions
     //@{
 
+    //! Check if contact / meshtying conditions are present and
+    //! create manager object + initialize all relevant stuff if so
+    void PrepareContactMeshtying(const Teuchos::ParameterList& sdynparams); 
+    
     //! Equilibrate the initial state by identifying the consistent
     //! initial accelerations and (if applicable) internal variables
     //! Make damping and mass matrix
@@ -425,8 +428,8 @@ namespace STR
     //! Read and set restart values for constraints
     void ReadRestartConstraint();
 
-    //! Read and set restart values for contact
-    void ReadRestartContact();
+    //! Read and set restart values for contact / meshtying
+    void ReadRestartContactMeshtying();
 
     //! Read and set restart values for surface stresses
     void ReadRestartSurfstress();
@@ -519,6 +522,9 @@ namespace STR
                                                   //!< containing non-overlapping
                                                   //!< map of global DOFs on Dirichlet
                                                   //!< boundary conditions
+    Teuchos::RCP<Epetra_Vector> dirichtoggle_;    //!< old style dirichtoggle vector
+                                                  //!< (only used for contact and supposed
+                                                  //!< to go away sonner or later)
     //@}
 
     //! @name Printing and output
@@ -563,8 +569,8 @@ namespace STR
     //! potential conditions
     Teuchos::RCP<POTENTIAL::PotentialManager>   potman_;
 
-    //! contact
-    Teuchos::RCP<MORTAR::ManagerBase>   contactman_;
+    //! contact / meshtying
+    Teuchos::RCP<MORTAR::ManagerBase>   cmtman_;
 
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;

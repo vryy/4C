@@ -460,10 +460,9 @@ void CONTACT::MtAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
 void CONTACT::MtAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
                                                 RCP<Epetra_Vector> dis)
 {
-  // set restart displacement state
-  // evaluate interface and restart mortar quantities
-  MortarCoupling(dis);
- 
+  // set displacement state
+  SetState("displacement",dis);
+    
   // read restart information on Lagrange multipliers
   z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   reader.ReadVector(LagrMult(),"lagrmultold");

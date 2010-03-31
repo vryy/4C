@@ -210,10 +210,12 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual()
   {
     stiff_->Add(*damp_, false, 1.0/(*dt_)[0], 1.0);
   }
-  stiff_->Complete();  // close stiffness matrix
 
-  // apply forces and stiffness due to contact
-  ApplyForceStiffContact(stiff_,fres_);
+  // apply forces and stiffness due to contact / meshtying
+  ApplyForceStiffContactMeshtying(stiff_,fres_,disn_);
+  
+  // close stiffness matrix
+  stiff_->Complete();
 
   // hallelujah
   return;
@@ -398,8 +400,8 @@ void STR::TimIntOneStepTheta::UpdateStepState()
   // update constraints
   UpdateStepConstraint();
 
-  // update contact
-  UpdateStepContact();
+  // update contact / meshtying
+  UpdateStepContactMeshtying();
 
   // look out
   return;

@@ -357,9 +357,9 @@ void dyn_nlnstructural_drt()
       else
       {
         if (mortarcontact)
-          tintegrator = rcp(new CONTACT::CmtStruGenAlpha(genalphaparams,*actdis,solver,output,ctype));
+          tintegrator = rcp(new CONTACT::CmtStruGenAlpha(genalphaparams,*actdis,solver,output));
         if (mortarmeshtying)
-          tintegrator = rcp (new CONTACT::CmtStruGenAlpha(genalphaparams,*actdis,solver,output,ctype));
+          tintegrator = rcp (new CONTACT::CmtStruGenAlpha(genalphaparams,*actdis,solver,output));
         if (beamcontact)
           tintegrator = rcp(new CONTACT::Beam3ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
         if (thermalbath)

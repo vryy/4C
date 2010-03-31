@@ -47,9 +47,9 @@ STR::TimIntExpl:: TimIntExpl
   if (conman_->HaveConstraint())
     dserror("Explicit TIS cannot handle constraints");
 
-  // explicit time integrators cannot handle contact
-  if (contactman_ != Teuchos::null)
-    dserror("Explicit TIS cannot handle contact");
+  // explicit time integrators cannot handle contact / meshtying
+  if (cmtman_ != Teuchos::null)
+    dserror("Explicit TIS cannot handle contact / meshtying");
 
   // cannot handle rotated DOFs
   if (locsysman_ != Teuchos::null)
