@@ -397,7 +397,8 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   }
 
   // flag for higher order elements
-  bool higher_order_ele = ele->isHigherOrderElement(ele->Shape());
+  //bool higher_order_ele = ele->isHigherOrderElement(ele->Shape());
+  bool higher_order_ele = IsHigherOrder<distype>::ishigherorder;
 
   // overrule higher_order_ele if input-parameter is set
   // this might be interesting for fast (but slightly
