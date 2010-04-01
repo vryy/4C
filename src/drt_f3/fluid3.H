@@ -206,6 +206,13 @@ public:
   virtual void SetDisType(DRT::Element::DiscretizationType shape)
   {
     distype_ = shape;
+
+    if (distype_ == DRT::Element::tet10)
+    {
+      cout << endl;
+      cout << "Warning:The integration rule of a tet10 element was changed from tet-5-point to tet-11-point integration rule, "
+      " since the deg. of precision 3 is to small as a standard"<< endl << endl;
+    }
     return;
   };
 
