@@ -1,4 +1,4 @@
-#ifdef D_FLUID2
+#ifdef D_FLUID3
 #ifdef CCADISCRET
 
 #include "fluid3_weak_dbc.H"
@@ -16,8 +16,6 @@ int DRT::ELEMENTS::Fluid2LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   Epetra_SerialDenseMatrix&  elemat_epetra ,
   Epetra_SerialDenseVector&  elevec_epetra )
 {
-  cout<<"Test"<<endl;
-
   //--------------------------------------------------
   // get the condition information
   RefCountPtr<DRT::Condition> wdbc_cond
