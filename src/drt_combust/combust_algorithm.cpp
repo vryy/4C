@@ -57,9 +57,9 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
 //  fggfuncnormL2_(?),
 /* hier müssen noch mehr Parameter eingelesen werden, nämlich genau die, die für die FGI-Schleife
    nötig sind. Die für die Schleifen über die Einzelfelder existieren in den Zeitintegrationsschemata. */
-//  reinitializationaction_(combustdyn.sublist("COMBUSTION GFUNCTION").get<INPAR::COMBUST::ReInitialActionGfunc>("REINITIALIZATION")),
   combusttype_(Teuchos::getIntegralValue<INPAR::COMBUST::CombustionType>(combustdyn.sublist("COMBUSTION FLUID"),"COMBUSTTYPE")),
-  reinitializationaction_(Teuchos::getIntegralValue<INPAR::COMBUST::ReInitialActionGfunc>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINITIALIZATION")),
+  reinitaction_(Teuchos::getIntegralValue<INPAR::COMBUST::ReInitialActionGfunc>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINITIALIZATION")),
+//  reinitaction_(combustdyn.sublist("COMBUSTION GFUNCTION").get<INPAR::COMBUST::ReInitialActionGfunc>("REINITIALIZATION")),
   reinitinterval_(combustdyn.sublist("COMBUSTION GFUNCTION").get<int>("REINITINTERVAL")),
   reinitband_(Teuchos::getIntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINITBAND")),
   reinitbandwidth_(combustdyn.sublist("COMBUSTION GFUNCTION").get<double>("REINITBANDWIDTH")),
@@ -81,10 +81,10 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
    * class. InterfaceHandle only accepts "const Teuchos::RCP<DRT::Dis...>"            henke 01/09 */
   const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
   const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
-  
+
   velnpip_ = rcp(new Epetra_Vector(*fluiddis->DofRowMap()),true);
   velnpi_ = rcp(new Epetra_Vector(*fluiddis->DofRowMap()),true);
-  
+
   phinpip_ = rcp(new Epetra_Vector(*gfuncdis->DofRowMap()),true);
   phinpi_ = rcp(new Epetra_Vector(*gfuncdis->DofRowMap()),true);
 
@@ -98,22 +98,24 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   // construct initial flame front
   flamefront_ = rcp(new COMBUST::FlameFront(fluiddis,gfuncdis));
   flamefront_->ProcessFlameFront(combustdyn_,ScaTraField().Phinp());
-  
+
   // construct interfacehandle using initial flame front
   interfacehandle_ = rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefront_));
   // get integration cells according to initial flame front
   interfacehandle_->UpdateInterfaceHandle();
-  
-//  std::cout << "No initialization of LevelSet for stationary problem" << std::endl;
-  stepreinit_ = true;
-  ReinitializeGfunc();
-  if (Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn,"TIMEINT") != INPAR::FLUID::timeint_stationary)
+
+  if (reinitaction_ != INPAR::COMBUST::reinitaction_none)
   {
-    // reset phin vector in ScaTra time integration scheme to phinp vector
-    *ScaTraField().Phin() = *ScaTraField().Phinp();
+    stepreinit_ = true;
+    ReinitializeGfunc();
+    if (Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn,"TIMEINT") != INPAR::FLUID::timeint_stationary)
+    {
+      // reset phin vector in ScaTra time integration scheme to phinp vector
+      *ScaTraField().Phin() = *ScaTraField().Phinp();
+    }
+    // pointer not needed any more
+    stepreinit_ = false;
   }
-  // pointer not needed any more
-  stepreinit_ = false;
 
   // export interface information to the fluid time integration
   // remark: this is essential here, if DoFluidField() is not called in Timeloop() (e.g. for pure Scatra problems)
@@ -141,21 +143,23 @@ void COMBUST::Algorithm::TimeLoop()
     // prepare next time step; update field vectors
     PrepareTimeStep();
 
-//    // solve G-function first
-//    if (combusttype_ == INPAR::COMBUST::combusttype_twophaseflow)
-//    {
-//    // solve linear G-function equation
-//    DoGfuncField();
-//    
-//    phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
-//    
-//    // update interface geometry
-//    UpdateFGIteration();
-//    }
+    // solve G-function first
+    // TODO generalize or remove
+    if (combusttype_ == INPAR::COMBUST::combusttype_twophaseflow)
+    {
+      std::cout << "G-function is solved first" << std::endl;
+      // solve linear G-function equation
+      DoGfuncField();
+
+      phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
+
+      // update interface geometry
+      UpdateFGIteration();
+    }
 
     // Fluid-G-function-Interaction loop
     while (NotConvergedFGI())
-    {  
+    {
       // prepare Fluid-G-function iteration
       PrepareFGIteration();
 
@@ -191,7 +195,7 @@ void COMBUST::Algorithm::TimeLoop()
 
     // write output to screen and files
     Output();
-    
+
   // compute current volume of minus domain
   const double volume_current = ComputeVolume();
   // print mass conservation check on screen
@@ -252,8 +256,8 @@ void COMBUST::Algorithm::SolveStationaryProblem()
     DoFluidField();
 
     // solve (non)linear G-function equation
-    //std::cout << "! WARNING: No DoGfuncField() in SolveStationaryProblem()" << std::endl;
     DoGfuncField();
+    //std::cout << "! WARNING: No DoGfuncField() in SolveStationaryProblem()" << std::endl;
 
     //reinitialize G-function
     //if (fgiter_ % reinitinterval_ == 0)
@@ -343,7 +347,6 @@ void COMBUST::Algorithm::ReinitializeGfunc()
   // reinitialize what will later be 'phinp'
   if (stepreinit_)
   {
-    cout << "reinitializing phinp_" << endl;
     // reinitialize G-function (level set) field
     COMBUST::Reinitializer reinitializer(
         combustdyn_,
@@ -663,7 +666,7 @@ bool COMBUST::Algorithm::NotConvergedFGI()
 //          dserror("vectors must have the same length 1");
 //        velnpip_->Update(1.0,*(FluidField().ExtractInterfaceVeln()),0.0);
 //        phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
-//        
+//
 //          if (fgiter_ == fgitermax_)
 //          notconverged = false;
 //
@@ -728,10 +731,18 @@ bool COMBUST::Algorithm::NotConvergedFGI()
 //    notconverged = false;
 //  }
   }
-  else
+  else // INPAR::COMBUST::combusttype_premixedcombustion
   {
-    notconverged = false;
+    if (fgiter_ < fgitermax_)
+    {
+    }
+    else
+    {
+      // added by me 21/10/09
+      notconverged = false;
+    }
   }
+
   return notconverged;
 }
 
@@ -750,7 +761,7 @@ void COMBUST::Algorithm::PrepareTimeStep()
 //  stepbeforereinit_ = false;
 //  if (Step()>0 and Step() % reinitinterval_ == 0) stepbeforereinit_ = true;
   stepreinit_ = false;
-  if (Step() % reinitinterval_ == 0) stepreinit_ = true; //Step()>1 and 
+  if (Step() % reinitinterval_ == 0) stepreinit_ = true; //Step()>1 and
 
   if (Comm().MyPID()==0)
   {
@@ -837,8 +848,8 @@ void COMBUST::Algorithm::DoGfuncField()
       FluidField().DofSet(),
       FluidField().Discretization()
     );
-    
-    // Transfer history vector only for subgrid-velocity  
+
+    // Transfer history vector only for subgrid-velocity
 //    ScaTraField().SetVelocityField(
 //      FluidField().ExtractInterfaceVeln(),
 //      FluidField().Hist(),
@@ -876,9 +887,9 @@ void COMBUST::Algorithm::DoGfuncField()
 #endif
 
     ScaTraField().SetVelocityField(
-      //OverwriteFluidVel(),
+      OverwriteFluidVel(),
       //FluidField().ExtractInterfaceVeln(),
-      ComputeFlameVel(convel,FluidField().DofSet()),
+      //ComputeFlameVel(convel,FluidField().DofSet()),
       Teuchos::null,
       FluidField().DofSet(),
       FluidField().Discretization()
@@ -981,7 +992,7 @@ void COMBUST::Algorithm::printMassConservationCheck(const double volume_start, c
     // compute mass loss
     if (volume_start == 0.0)
       dserror(" there is no 'minus domain'! -> division by zero checking mass conservation");
-    double massloss = fabs(volume_start - volume_end) / volume_start *100;
+    double massloss = -(volume_start - volume_end) / volume_start *100;
     // TODO seems not to work reliably; error occurs in line above
     if (std::isnan(massloss))
       dserror("NaN detected in mass conservation check");

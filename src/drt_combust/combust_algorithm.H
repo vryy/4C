@@ -142,7 +142,7 @@ namespace COMBUST
     /// switch for type of combustion problem
     INPAR::COMBUST::CombustionType combusttype_;
     /// options for reinitialization of G-function;
-    INPAR::COMBUST::ReInitialActionGfunc reinitializationaction_;
+    INPAR::COMBUST::ReInitialActionGfunc reinitaction_;
     /// interval for reinitialization (every 'reinitinterval_' time steps)
     int reinitinterval_;
     /// switch for reinitialization only within a band around the interface
