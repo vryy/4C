@@ -204,6 +204,18 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Volumes()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::Combust3::DLMInfo::DLMInfo(const int nd, const int na)
+: oldKaainv_(LINALG::SerialDenseMatrix(na,na,true)),
+  oldKad_(LINALG::SerialDenseMatrix(na,nd,true)),
+  oldfa_(LINALG::SerialDenseVector(na,true)),
+  stressdofs_(LINALG::SerialDenseVector(na,true))
+{
+  return;
+}
+
+
 //=======================================================================
 //=======================================================================
 //=======================================================================
@@ -296,6 +308,7 @@ void DRT::ELEMENTS::Combust3Register::Print(ostream& os) const
   ElementRegister::Print(os);
   return;
 }
+
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_FLUID3

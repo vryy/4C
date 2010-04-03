@@ -51,8 +51,9 @@ XFEM::DofManager::DofManager(
  *------------------------------------------------------------------------------------------------*/
 XFEM::DofManager::DofManager(
     const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle,
-    const std::set<XFEM::PHYSICS::Field>&      fieldset,
-    const Teuchos::ParameterList&              params
+    const std::set<XFEM::PHYSICS::Field>&                fieldset,
+    const XFEM::ElementAnsatz&                           element_ansatz,
+    const Teuchos::ParameterList&                        params
     ) :
   ih_(interfacehandle)
 {
@@ -63,7 +64,7 @@ XFEM::DofManager::DofManager(
   std::map<int, std::set<XFEM::FieldEnr> >    elementDofMap;
 
   // build a DofMap holding dofs for all nodes including additional dofs of enriched nodes
-  XFEM::createDofMapCombust(*interfacehandle, nodeDofMap, elementDofMap, fieldset, params);
+  XFEM::createDofMapCombust(*interfacehandle, nodeDofMap, elementDofMap, fieldset, element_ansatz, params);
 
   //------------------------------------------------------------------------------------------------
   // copy non-const dof maps to const dof maps
@@ -80,6 +81,7 @@ XFEM::DofManager::DofManager(
   };
   for ( std::map<int, std::set<XFEM::FieldEnr> >::const_iterator oneset = elementDofMap.begin(); oneset != elementDofMap.end(); ++oneset )
   {
+    cout << "element in map" << endl;
     elementalDofs_.insert( make_pair(oneset->first, oneset->second));
   };
 

@@ -88,7 +88,7 @@ namespace COMBUST
         distype = StressInterpolation3D<DRT::Element::hex27>::distype;
         break;
       default:
-        dserror("no stressdistype defined for velocity distype");
+        dserror("no stress distype defined for velocity distype");
     }
     return distype;
   }
@@ -120,22 +120,22 @@ namespace COMBUST
         distype = DiscPressureInterpolation3D<DRT::Element::hex27>::distype;
         break;
       default:
-        dserror("no discpressuredistype defined for velocity distype");
+        dserror("no discpressure distype defined for velocity distype");
     }
     return distype;
   }
 
   //! implementation for combust3 element
-  class CombustElementAnsatz : public XFEM::ElementAnsatz
+  class CauchyStressAnsatz : public XFEM::ElementAnsatz
   {
   public:
     //! default constructor
-    explicit CombustElementAnsatz()
+    explicit CauchyStressAnsatz()
     :XFEM::ElementAnsatz()
     {
     };
     //! destructor
-    virtual ~CombustElementAnsatz(){};
+    virtual ~CauchyStressAnsatz(){};
     //! for a given velocity interpolation, a map is produced which has the number of element unknowns per physical field
     virtual map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype) const
     {
@@ -149,8 +149,33 @@ namespace COMBUST
       return element_ansatz;
     }
   };
-}
 
+  //! implementation for xfluid3 element with extra element pressure
+  class TauPressureAnsatz : public XFEM::ElementAnsatz
+  {
+  public:
+    //! default constructor
+    explicit TauPressureAnsatz()
+    :XFEM::ElementAnsatz()
+    {
+    };
+    //! destructor
+    virtual ~TauPressureAnsatz(){};
+    //! for a given velocity interpolation, a map is produced which has the number of element unknowns per physical field
+    virtual map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype) const
+    {
+      map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::Tauxx   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::Tauyy   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::Tauzz   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::Tauxy   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::Tauxz   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::Tauyz   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::DiscPres,COMBUST::getDiscPressureInterpolationType3D(eledistype)));
+      return element_ansatz;
+    }
+  };
+}
 
 #endif /*COMBUST3_INTERPOLATION_H*/
 #endif

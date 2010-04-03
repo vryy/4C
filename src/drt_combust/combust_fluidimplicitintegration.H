@@ -75,7 +75,7 @@ public:
 
   /// get convection velocity vector for transfer to scalar transport field
   const Teuchos::RCP<Epetra_Vector> ConVelnp();
- 
+
   /// get history vector for transfer to scalar transport field
   const Teuchos::RCP<Epetra_Vector> Hist();
 
@@ -454,8 +454,8 @@ protected:
   /// this struct holds information about degrees of freedom for the problem
   struct PhysProb
   {
-    std::set<XFEM::PHYSICS::Field> xfemfieldset_; ///< which physical fields are used in this problem
-    RCP<XFEM::ElementAnsatz> elementAnsatzp_;     ///< element dofs for this problem
+    std::set<XFEM::PHYSICS::Field> xfemfieldset_;     ///< physical XFEM fields used in this problem
+    Teuchos::RCP<XFEM::ElementAnsatz> elementAnsatz_; ///< element dofs for this problem
   } physprob_;
 
   //! Extractor used for convergence check

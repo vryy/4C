@@ -27,7 +27,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_utils.H"
-
+#include "../drt_combust/combust_defines.H"
 
 /*------------------------------------------------------------------------------------------------*
  | original function: XFEM::ApplyNodalEnrichments                                     henke 03/09 |
@@ -179,68 +179,66 @@ bool XFEM::ApplyKinkEnrichment(
 }
 
 
-
 /*------------------------------------------------------------------------------------------------*
- | create a DofMap: used for combustion problems only; derived from createDofMap()    henke 03/09 |
+ | create a DofMap: used for combustion problems only                                 henke 03/09 |
  *------------------------------------------------------------------------------------------------*/
 void XFEM::createDofMapCombust(
   const COMBUST::InterfaceHandleCombust&    ih,
   std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap,
   std::map<int, std::set<XFEM::FieldEnr> >& elementDofMap,
   const std::set<XFEM::PHYSICS::Field>&     fieldset,
+  const XFEM::ElementAnsatz&                elementAnsatz,
   const Teuchos::ParameterList&             params
   )
 {
-  //if (fluiddis->Comm().MyPID() == 0)
-  //  std::cout << "Creating DofMap for combustion problem" << std::endl;
-
   const double volumeRatioLimit = params.get<double>("volumeRatioLimit");
+  const double boundaryRatioLimit = params.get<double>("boundaryRatioLimit");
 
-  bool skipped_node_enr = false;
+  int skipped_node_enr_count = 0;
+  int skipped_elem_enr_count = 0;
 
   // loop my column elements and add enrichments to nodes of each element
   for (int i=0; i < ih.xfemdis()->NumMyColElements(); ++i)
   {
     const DRT::Element* xfemele = ih.xfemdis()->lColElement(i);
 
-    /* the following procedure can be abbreviated as soon as the interfacehandle holds domain
-     * integration cells. Then the following line will do the job:
-     *
-     * if (ih.ElementIntersected(xfemele->Id()))
-     *
-     * Since ElementIntersected() is a member function of the base class InterfaceHandle, then not
-     * the specific InterfaceHandleCombust will have to be given to createDofMap(), but a base class
-     * instance will do. The following "if" statement is the only reason a InterfaceHandleCombust is
-     * needed in here!
-     *
-     * henke 03/09 */
+    bool skipped_node_enr = false;
+    bool skipped_elem_enr = false;
 
-    // initialization call of DofManager in CombustFluidImplicitTimeInt constructor will end up here
-    if (ih.FlameFront() == Teuchos::null)
+    // create an empty element ansatz map
+    map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
+
+#ifdef COMBUST_STRESS_BASED
+    // add discontinuous stress unknowns for this element, if DLM condensation is turned off
+    if (not params.get<bool>("DLM_condensation"))
     {
-      // std::cout << "dof initialization: element "<< xfemele->Id() << " gets standard enrichments (= 4 dofs)" << std::endl;
-      ApplyStandardEnrichmentCombust(xfemele, fieldset, nodeDofMap);
+      // ask for appropriate element ansatz (shape functions) for this type of element
+      element_ansatz = elementAnsatz.getElementAnsatz(xfemele->Shape());
     }
-    // any regular call of DofManager (existing flame front) will end up here
-    else
-    {
-      // apply standard enrichment to every node
-      ApplyStandardEnrichmentCombust(xfemele, fieldset, nodeDofMap);
+#endif
 
-/*
-  Check der FlameFrontPatches für das Element ist nur vorübergehende Lösung
-  // get the refinement cell belonging to a fluid element
-  std::map<int,const Teuchos::RCP<const COMBUST::RefinementCell> >::const_iterator iter = ih.FlameFront()->FlameFrontPatches().find(xfemele->Id());
-  if (iter->second->Intersected())
-*/
-      //---------------------------------------------------
-      // find out whether an element is intersected or not
-      // by looking at number of integration cells
-      //---------------------------------------------------
+    //-------------------------------------------------------
+    // apply standard enrichments to every node in every call
+    //-------------------------------------------------------
+    ApplyStandardEnrichmentCombust(xfemele, fieldset, nodeDofMap);
+    //std::cout << "dof initialization: element "<< xfemele->Id() << " gets standard enrichments (= 4 dofs)" << std::endl;
+
+    //--------------------------------------------------------------------
+    // apply non-standard enrichments to every node, in every regular call
+    //--------------------------------------------------------------------
+    // remark: - for any regular call of DofManager the flame front exists (ih.FlameFront() != Teuchos::null),
+    //         - for the initialization call of DofManager in CombustFluidImplicitTimeInt constructor the
+    //           flame front does not exist yet (ih.FlameFront() == Teuchos::null)
+    if (ih.FlameFront() != Teuchos::null)
+    {
+      //--------------------------------------------------------------------------------------------
+      // find out whether an element is intersected or not by looking at number of integration cells
+      //--------------------------------------------------------------------------------------------
       // get vector of integration cells for this element
       std::size_t numcells= ih.GetNumDomainIntCells(xfemele);
       if (numcells > 1) // element intersected
       {
+        //std::cout << "Element "<< xfemele->Id() << " ist geschnitten und Knoten werden angereichert" << std::endl;
         const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
         // build a DofMap holding dofs for all nodes including additional dofs of enriched nodes
         switch(combusttype)
@@ -249,8 +247,11 @@ void XFEM::createDofMapCombust(
           {
             // apply jump enrichments to all nodes of an intersected element
             skipped_node_enr = ApplyJumpEnrichment(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
-            // remark: Brauche ich hier tatsächlich einen Rückgabewert, nur um zu checken, ob die
-            //         Anreicherung funktioniert hat?
+
+#ifdef COMBUST_STRESS_BASED
+            // apply element stress enrichments to an intersected element
+            skipped_elem_enr = ApplyElementEnrichmentCombust(xfemele, element_ansatz, elementDofMap, ih, boundaryRatioLimit);
+#endif
           }
           break;
           case INPAR::COMBUST::combusttype_twophaseflow:
@@ -262,7 +263,8 @@ void XFEM::createDofMapCombust(
           default:
             dserror("unknown type of combustion problem");
         }
-//        std::cout << "Element "<< xfemele->Id() << " ist geschnitten und Knoten werden angereichert" << std::endl;
+        if (skipped_node_enr) skipped_node_enr_count++;
+        if (skipped_node_enr) skipped_node_enr_count++;
 /*
         std::cout << "Enrichments des Elements" << std::endl;
         const int numnodes = xfemele->NumNode();
@@ -275,20 +277,11 @@ void XFEM::createDofMapCombust(
           std::cout << "Angereichertes Feld " << physVarToString(nodeenr->getField()) << "Anreicherungstyp " << nodeenr->getEnrichment().toString() <<  std::endl;
         }
 */
-        // in case there are enriched element dofs they have to be applied now   henke 04/09
-//        ApplyElementEnrichments();
       }
       else if (numcells == 1) // element not intersected
       {
-/*
-        std::cout << "Element "<< xfemele->Id() << " ist nicht geschnitten" << std::endl;
-        // apply standard enrichments to all nodes of an intersected element
-        ApplyStandardEnrichmentCombust(xfemele, fieldset, nodeDofMap);
-        //
-        //  Funktion sollte checken, ob schon JumpEnrichments (andere Enrichments) vorliegen. Sollen
-        //  diese überschrieben werden? Kläre die Theorie dazu!
-        //
-*/
+        // nothing to do
+        //std::cout << "Element "<< xfemele->Id() << " ist nicht geschnitten" << std::endl;
       }
       else // numcells == 0 or negative number
       {
@@ -302,17 +295,20 @@ void XFEM::createDofMapCombust(
   syncNodalDofs(ih, nodeDofMap);
 #endif
 
+  cout << " skipped "<< skipped_node_enr_count << " node unknowns (volumeratio limit:   " << std::scientific << volumeRatioLimit   << ")" << endl;
+  cout << " skipped "<< skipped_elem_enr_count << " element unknowns (boundaryratio limit: " << std::scientific << boundaryRatioLimit << ")" << endl;
 }
 
 /*------------------------------------------------------------------------------------------------*
  | original function: XFEM::ApplyStandardEnrichment                                   henke 03/09 |
  *------------------------------------------------------------------------------------------------*/
 void XFEM::ApplyStandardEnrichmentCombust(
-    const DRT::Element*                           xfemele,
-    const std::set<XFEM::PHYSICS::Field>&         fieldset,
-    std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet)
+    const DRT::Element*                       xfemele,
+    const std::set<XFEM::PHYSICS::Field>&     fieldset,
+    std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
+    )
 {
-  // type of enrichment determined by name of function; label (first argument) = 0
+  // type of enrichment corresponds to name of function; label (second argument) = 0
   const XFEM::Enrichment stdenr(XFEM::Enrichment::typeStandard, 0);
 
   // standard enrichments for all nodes of element
@@ -323,16 +319,81 @@ void XFEM::ApplyStandardEnrichmentCombust(
   for (int inode = 0; inode<numnodes; ++inode)
   {
     const int nodeid = nodeidptrs[inode];
-//    std::cout << "element " << xfemele->Id() << " node ID: " << nodeid << endl;
-    for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
+    //std::cout << "element " << xfemele->Id() << " node ID: " << nodeid << endl;
+    for (std::set<XFEM::PHYSICS::Field>::const_iterator fields = fieldset.begin();fields != fieldset.end();++fields)
     {
-      nodalDofSet[nodeid].insert(XFEM::FieldEnr(*field, stdenr));
-//      std::cout << "Standard Enrichment applied for node " << nodeid << std::endl;
+      nodeDofMap[nodeid].insert(XFEM::FieldEnr(*fields, stdenr));
+      //std::cout << "Standard Enrichment applied for node " << nodeid << std::endl;
     }
   };
 }
 
 
+bool XFEM::ApplyElementEnrichmentCombust(
+    const DRT::Element*                                                xfemele,
+    const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,
+    std::map<int, std::set<XFEM::FieldEnr> >&                          elementDofMap,
+    const COMBUST::InterfaceHandleCombust&                             ih,
+    const double                                                       boundaryRatioLimit
+)
+{
+  // check, how much area for integration we have (from BoundaryIntcells)
+  const double boundarysize = XFEM::BoundaryCoverageRatio(*xfemele,ih.GetBoundaryIntCells(xfemele->Id()),ih);
+  const bool almost_zero_surface = (fabs(boundarysize) < boundaryRatioLimit);
+
+  bool skipped_element = false;
+
+  // type of enrichment corresponds to name of function; label (second argument) = 0
+  const XFEM::Enrichment elementenr(XFEM::Enrichment::typeVoid, 0);
+
+  //if (not almost_zero_surface)
+  //{
+      map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
+      for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
+      {
+        elementDofMap[xfemele->Id()].insert(XFEM::FieldEnr(fielditer->first, elementenr));
+      }
+  //}
+  //else
+  //{
+  //  skipped_element = true;
+    //cout << "skipped stress unknowns for element: "<< xfemele->Id() << ", boundary size: " << boundarysize << endl;
+  //}
+  return skipped_element;
+}
+
+bool XFEM::ApplyElementEnrichmentCombust(
+    const DRT::Element*                                                xfemele,
+    const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,
+    std::set<XFEM::FieldEnr>&                                          elementFieldEnrSet,
+    const COMBUST::InterfaceHandleCombust&                             ih,
+    const double                                                       boundaryRatioLimit
+)
+{
+  // check, how much area for integration we have (from BoundaryIntcells)
+  const double boundarysize = XFEM::BoundaryCoverageRatio(*xfemele,ih.GetBoundaryIntCells(xfemele->Id()),ih);
+  const bool almost_zero_surface = (fabs(boundarysize) < boundaryRatioLimit);
+
+  bool skipped_element = false;
+
+  // type of enrichment corresponds to name of function; label (second argument) = 0
+  const XFEM::Enrichment elementenr(XFEM::Enrichment::typeVoid, 0);
+
+  //if (not almost_zero_surface)
+  //{
+      map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
+      for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
+      {
+        elementFieldEnrSet.insert(XFEM::FieldEnr(fielditer->first, elementenr));
+      }
+  //}
+  //else
+  //{
+  //  skipped_element = true;
+    //cout << "skipped stress unknowns for element: "<< xfemele->Id() << ", boundary size: " << boundarysize << endl;
+  //}
+  return skipped_element;
+}
 
 
-#endif  // #ifdef CCADISCRET
+#endif // #ifdef CCADISCRET

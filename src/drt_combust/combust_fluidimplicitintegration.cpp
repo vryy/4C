@@ -99,24 +99,25 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     cout0_ << "parameters 'theta' and 'time step size' have been set to 1.0 for stationary problem " << endl;
   }
   //------------------------------------------------------------------------------------------------
-  // future: connect degrees of freedom for periodic boundary conditions                 henke 01/09
+  // future development: connect degrees of freedom for periodic boundary conditions     henke 01/09
   //------------------------------------------------------------------------------------------------
 
   //------------------------------------------------------------------------------------------------
   // prepare XFEM (initial degree of freedom management)
   //------------------------------------------------------------------------------------------------
   physprob_.xfemfieldset_.clear();
-  // declare physical fields to be enriched (XFEM fields)
+  // declare physical fields to be enriched (discontinuous XFEM fields)
   physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Velx);
   physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Vely);
   physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Velz);
   physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Pres);
-  physprob_.elementAnsatzp_ = rcp(new COMBUST::CombustElementAnsatz());
+  // define approach for extra stress field (stress-based Lagrange Multiplier approach)
+  physprob_.elementAnsatz_ = rcp(new COMBUST::TauPressureAnsatz());
 
   // create dummy instance of interfacehandle holding no flamefront and hence no integration cells
   Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null,Teuchos::null));
   // create dummy instance of dof manager assigning standard enrichments to all nodes
-  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = rcp(new XFEM::DofManager(ihdummy,physprob_.xfemfieldset_,xparams_));
+  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = rcp(new XFEM::DofManager(ihdummy,physprob_.xfemfieldset_,*physprob_.elementAnsatz_,xparams_));
 
   // pass dof information to elements (no enrichments yet, standard FEM!)
   TransferDofInformationToElements(ihdummy, dofmanagerdummy);
@@ -397,7 +398,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
   // build instance of DofManager with information about the interface from the interfacehandle
   // remark: DofManager is rebuilt in every inter-field iteration step, because number and position
   // of enriched degrees of freedom change constantly.
-  const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(interfacehandle,physprob_.xfemfieldset_,xparams_));
+  const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(interfacehandle,physprob_.xfemfieldset_,*physprob_.elementAnsatz_,xparams_));
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
@@ -563,23 +564,23 @@ const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::Hist()
   Teuchos::RCP<Epetra_Vector> accn = dofmanagerForOutput_->transformXFEMtoStandardVector(
                                          *state_.accn_, *standarddofset_,
                                          state_.nodalDofDistributionMap_, outputfields);
-  
+
   if (veln->MyLength() != accn->MyLength())
     dserror("vectors must have the same length");
-  
+
   // history vector (OST: linaer combination of veln and accn)
   Teuchos::RCP<Epetra_Vector> hist = LINALG::CreateVector(*standarddofset_->DofRowMap(),true);
-  
+
   if (hist->MyLength() != accn->MyLength())
     dserror("vectors must have the same length");
-  
-  //TODO 
+
+  //TODO
   //stationary case (timealgo_== timeint_stationary))
   if (timealgo_==timeint_one_step_theta)
     FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(veln,Teuchos::null, accn,timealgo_, dta_, theta_, hist);
   else
     dserror("time integration scheme not supported");
-  
+
   return hist;
 }
 
@@ -1040,7 +1041,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   }
 
 //  if (discret_->Comm().NumProc() == 1)
-  if (step_ % 5 == 0) //write every 5th time step only
+  if (step_ % 1 == 0) // (step_ % 5 == 0) write every 5th time step only
   {
     OutputToGmsh(step_, time_);
   }
@@ -1172,7 +1173,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
   if (gmshdebugout and (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.xfemfieldset_.end()))
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure", step, 50, screen_out, discret_->Comm().MyPID());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure", step, 500, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
@@ -1183,7 +1184,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         const DRT::Element* actele = discret_->lRowElement(i);
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -1272,7 +1273,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         const DRT::Element* actele = discret_->lRowElement(i);
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -1448,7 +1449,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         const DRT::Element* actele = discret_->lRowElement(i);
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatzp_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -1579,7 +1580,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 50, screen_out, discret_->Comm().MyPID());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 500, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
     {
@@ -1589,7 +1590,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         const DRT::Element* actele = discret_->lRowElement(i);
 
         // create local copy of information about dofs
-        const COMBUST::CombustElementAnsatz elementAnsatz;
+        const COMBUST::TauPressureAnsatz elementAnsatz;
         const XFEM::ElementDofManager eledofman(*actele,elementAnsatz.getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;

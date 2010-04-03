@@ -17,11 +17,13 @@ Maintainer: Florian Henke
 #include "combust3.H"
 #include "combust3_sysmat.H"
 #include "combust3_interpolation.H"
+#include "combust_defines.H"
 
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/dof_management.H"
+#include "../drt_xfem/xdofmapcreation_combust.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_f3/fluid3_stabilization.H"
@@ -109,25 +111,135 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
     {
       std::cout << "Warning! The density is set to 1.0!" << std::endl;
       params.set("density", 1.0);
-      break;
     }
+    break;
     case reset:
     {
-      // reset all information and make element unusable (e.g. it can't answer the numdof question anymore)
-      // this way, one can see, if all information are generated correctly or whether something is left
-      // from the last nonlinear iteration
+      // Reset all information and make element unusable (e.g. it can't answer the numdof question
+      // anymore). This way, one can see, if all information is generated correctly or whether
+      // something was left from the last nonlinear iteration.
       eleDofManager_ = Teuchos::null;
+      eleDofManager_uncondensed_ = Teuchos::null;
       ih_ = Teuchos::null;
-      break;
+      DLM_info_ = Teuchos::null;
     }
+    break;
     case set_output_mode:
     {
       output_mode_ = true;
-      // reset dof managers if present
+      // reset element dof manager is present
       eleDofManager_ = Teuchos::null;
       ih_ = Teuchos::null;
-      break;
     }
+    break;
+    case store_xfem_info:
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("COMBUST3 - evaluate - store_xfem_info");
+
+      // now the element can answer how many (XFEM) dofs it has
+      output_mode_ = false;
+
+      // store pointer to interface handle
+      ih_ = params.get< Teuchos::RCP< COMBUST::InterfaceHandleCombust > >("interfacehandle",Teuchos::null);
+
+      //---------------------------------------------------
+      // find out whether an element is intersected or not
+      //---------------------------------------------------
+      // remark: initialization call of fluid time integration scheme will end up here: The initial
+      //         flame front has not been incorporated into the fluid field -> no XFEM dofs, yet!
+      if (ih_->FlameFront() == Teuchos::null)
+      {
+        this->intersected_ = false;
+      }
+      else // regular call
+      {
+        // get vector of integration cells for this element
+        std::size_t numcells= ih_->GetNumDomainIntCells(this);
+        if (numcells > 1)
+        {
+          // more than one integration cell -> element intersected
+          this->intersected_ = true;
+        }
+        else if (numcells == 1)
+        {
+          // only one integration cell -> element not intersected
+          this->intersected_ = false;
+        }
+        else // numcells = 0 or negative number
+        {
+          // no integration cell -> impossible, something went wrong!
+          dserror ("There are no DomainIntCells for element %d ", this->Id());
+        }
+      }
+
+      //----------------------------------
+      // hand over global dofs to elements
+      //----------------------------------
+      // get access to global dofman
+      const Teuchos::RCP<const XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
+
+      Teuchos::RCP<XFEM::ElementAnsatz> elementAnsatz = rcp(new COMBUST::TauPressureAnsatz());
+      // create an empty element ansatz map to be filled later
+      map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_filled;
+      // create an empty element ansatz map
+      const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty;
+#ifdef COMBUST_STRESS_BASED
+      // ask for appropriate element ansatz (shape functions) for this type of element and fill the map
+      element_ansatz_filled = elementAnsatz->getElementAnsatz(this->Shape());
+#endif
+      //-------------------------------------------------------------------------
+      // build element dof manager according to global dof manager
+      // remark: - this procedure is closely related to XFEM::createDofMapCombust()
+      //-------------------------------------------------------------------------
+#ifdef COMBUST_STRESS_BASED
+      if (params.get<bool>("DLM_condensation")) // DLM condensation turned on
+      {
+        // add node dofs, but no element dofs (stress unknowns) for this element
+        eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz_empty, *globaldofman));
+      }
+      else // DLM condensation turned off
+      {
+        // add node dofs and element dofs (stress unknowns) for this element
+        eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz_filled, *globaldofman));
+      }
+#else
+      // add node dofs, but no element dofs (stress unknowns) for this element
+      eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz_empty, *globaldofman));
+#endif
+
+      //----------------------------------------------------------------------------
+      // build element dof manager holding element unknowns for intersected elements
+      // remark: this procedure is closely related to XFEM::createDofMapCombust()
+      //         condensation for uncut elements is not possible and unneccessary
+      //----------------------------------------------------------------------------
+      if (this->intersected_)
+      {
+        // create empty set of enrichment fields
+        std::set<XFEM::FieldEnr> elementFieldEnrSet;
+
+#ifdef COMBUST_STRESS_BASED
+        // control boolean not used here
+        bool skipped_elem_enr = false;
+        // apply element enrichments (fill elementFieldEnrSet)
+        skipped_elem_enr = ApplyElementEnrichmentCombust(this, element_ansatz_filled,
+                                                         elementFieldEnrSet, *ih_,
+                                                         params.get<double>("boundaryRatioLimit"));
+
+        // add node dofs and element dofs (stress unknowns) for this element
+        eleDofManager_uncondensed_ = rcp(new XFEM::ElementDofManager(*this, eleDofManager_->getNodalDofSet(), elementFieldEnrSet, element_ansatz_filled));
+#else
+        // add node dofs and element dofs (stress unknowns) for this element
+        eleDofManager_uncondensed_ = rcp(new XFEM::ElementDofManager(*this, eleDofManager_->getNodalDofSet(), elementFieldEnrSet, element_ansatz_empty));
+#endif
+        DLM_info_ = rcp(new DLMInfo(eleDofManager_uncondensed_->NumNodeDof(), eleDofManager_uncondensed_->NumElemDof()));
+      }
+      else // element not intersected
+      {
+        eleDofManager_uncondensed_ = Teuchos::null;
+        DLM_info_ = Teuchos::null;
+      }
+    }
+    break;
     case calc_fluid_systemmat_and_residual:
     {
       TEUCHOS_FUNC_TIME_MONITOR("COMBUST3 - evaluate - calc_fluid_systemmat_and_residual");
@@ -357,56 +469,6 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
           }
           else
 #endif
-    }
-    break;
-    case store_xfem_info:
-    {
-      TEUCHOS_FUNC_TIME_MONITOR("COMBUST3 - evaluate - store_xfem_info");
-
-      // now the element can answer how many (XFEM) dofs it has
-      output_mode_ = false;
-
-      // store pointer to interface handle
-      ih_ = params.get< Teuchos::RCP< COMBUST::InterfaceHandleCombust > >("interfacehandle",Teuchos::null);
-
-      //---------------------------------------------------
-      // find out whether an element is intersected or not
-      //---------------------------------------------------
-      // initialization call of fluid time integration scheme will end up here:
-      // The initial flame front has not been incorporated into the fluid field -> no XFEM dofs, yet!
-      if (ih_->FlameFront() == Teuchos::null)
-      {
-        this->intersected_ = false;
-      }
-      else // regular call
-      {
-        // get vector of integration cells for this element
-        std::size_t numcells= ih_->GetNumDomainIntCells(this);
-        if (numcells > 1)
-        {
-          // more than one integration cell -> element intersected
-          this->intersected_ = true;
-          // std::cout << "Mehrere DomainIntCells für Element "<<  this->Id() << " gefunden " << std::endl;
-        }
-        else if (numcells == 1)
-        {
-          // only one integration cell -> element not intersected
-          this->intersected_ = false;
-          // std::cout << "Eine DomainIntCell für Element "<<  this->Id() << " gefunden " << std::endl;
-        }
-        else // numcells = 0 or negative number
-        {
-          // no integration cell -> impossible, something went wrong!
-          dserror ("There are no DomainIntCells for element %d ", this->Id());
-        }
-      }
-
-      // get access to global dofman
-      const Teuchos::RCP<XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
-
-      // create local copy of information about dofs
-      const COMBUST::CombustElementAnsatz elementAnsatz;
-      eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, elementAnsatz.getElementAnsatz(Shape()), *globaldofman));
     }
     break;
     default:

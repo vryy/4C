@@ -23,8 +23,22 @@ Maintainer: Florian Henke
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_xfem/xfem_enums.H"
 
+
 namespace COMBUST
 {
+
+  //! size factor to allow fixed size arrays
+  ///
+  /// to allow fixed size arrays for a unknown number of unknowns, we make them bigger than necessary
+  /// this factor is multiplied times numnode(distype) to get the size of many arrays
+ template<XFEM::AssemblyType ASSTYPE>
+  struct SizeFac {};
+  /// specialization of SizeFac for XFEM::standard_assembly
+  template<> struct SizeFac<XFEM::standard_assembly> {static const std::size_t fac = 1;};
+  /// specialization of SizeFac for XFEM::xfem_assembly
+  template<> struct SizeFac<XFEM::xfem_assembly>     {static const std::size_t fac = 2;};
+
+
   /*!
    * \brief entry point for Sysmat call
    * at one point, one has to call specific template instantiations of Sysmat using the current Shape() of the element.
@@ -32,10 +46,10 @@ namespace COMBUST
    */
   void callSysmat(
           const XFEM::AssemblyType          assembly_type,
-          const DRT::ELEMENTS::Combust3*     ele,
-          const Teuchos::RCP<COMBUST::InterfaceHandleCombust>&  ih,
+          const DRT::ELEMENTS::Combust3*    ele,
+          const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& ih,
           const XFEM::ElementDofManager&    eleDofManager,
-          const DRT::ELEMENTS::Combust3::MyState&  mystate,   ///< element state variables
+          const DRT::ELEMENTS::Combust3::MyState& mystate,   ///< element state variables
           Epetra_SerialDenseMatrix&         estif,
           Epetra_SerialDenseVector&         eforce,
           Teuchos::RCP<const MAT::Material> material,
@@ -49,11 +63,12 @@ namespace COMBUST
           const INPAR::FLUID::TauType       tautype,       ///< stabilization parameter definition
           const bool                        instationary,
           const INPAR::COMBUST::CombustionType combusttype,
-          const double                       flamespeed,
-          const double                       nitschevel,
-          const double                       nitschepres
+          const double                      flamespeed,
+          const double                      nitschevel,
+          const double                      nitschepres
           );
 }
+
 
 #endif
 #endif

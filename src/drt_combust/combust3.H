@@ -270,7 +270,14 @@ namespace DRT
         //! store information about the unknowns of this element
         //!
         //! this dofman will answer to the outside world, how many dofs this element has
-        Teuchos::RCP<XFEM::ElementDofManager>                         eleDofManager_;
+        Teuchos::RCP<XFEM::ElementDofManager> eleDofManager_;
+
+        //! store information about the unknowns of this element - only for intersected elements
+        //!
+        //! this dofman contains also element dofs, that are not part of the global dofs
+        //! it is used for integration only. After integration, condensation on the element level
+        //! will remove all dofs that are not in eleDofManager_
+        Teuchos::RCP<XFEM::ElementDofManager> eleDofManager_uncondensed_;
 
         //! for postprocessing in the filters
         //! then element has always 4 unknowns per node
@@ -283,6 +290,31 @@ namespace DRT
 
         //! boolean indicating whether element is intersected by the interface
         bool intersected_;
+
+        //! store element stress info and corresponding matrices used during condensation
+        class DLMInfo
+        {
+        public:
+          //! Kaa inv of old iteration step
+          LINALG::SerialDenseMatrix      oldKaainv_;
+          //! Kad of old iteration step
+          LINALG::SerialDenseMatrix      oldKad_;
+          //! fa inv of old iteration step
+          LINALG::SerialDenseVector      oldfa_;
+
+          //! this map stores all element stresses (independent of the xfem label)
+          LINALG::SerialDenseVector      stressdofs_;
+
+          //! constructor
+          explicit DLMInfo(const int nd, const int na);
+        private:
+          //! disabled standard constructor
+          DLMInfo();
+          //! disabled copy constructor
+          DLMInfo(const DLMInfo&);
+        };
+
+        Teuchos::RCP<DLMInfo>            DLM_info_;
 
         // internal calculation methods
 

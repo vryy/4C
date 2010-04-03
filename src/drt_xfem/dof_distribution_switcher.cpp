@@ -127,7 +127,30 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
         // do nothing, this case was handled in step 1
       }
     }
+
 #if 1
+    // remark: Only if DLM condensation is turned off, there will be element dofs visible in the global
+    //         DofManager. Of course, irrespective of the DLM condensation setting, there will be
+    //         element dofs on the element level (ElementDofManager), if a stress-based approach is
+    //         chosen to handle the boundary terms.
+    //         So, if there are element dofs, they are not known here, since 'elementalDofs_' in
+    //         fillDofDistributionMaps() only knows the different field enrichments for a specific
+    //         element, that is
+    //
+    //         e.g.
+    //         element 103 has 28 element dofs ((6 x stess + 1 x disc pressure) x element ansatz (e.g. quad4))
+    //
+    //         but 'elementalDofs_' contains only 7 "dof-type entries"
+    //         <ele 103, Tauxx + quad4>
+    //         <ele 103, Tauxy + quad4>
+    //         ...
+    //         <ele 103, DiscPres + quad4>
+    //
+    //         That is, element dofs cannot be switched correctly here, since not all element dofs
+    //         are known. They only exist on the element level. They are generated in
+    //         ElementDofManager::ComputeDependentInfo()
+    //                                                                                   henke 03/10
+    dserror("This will not work properly! Read comment above!");
 
     // step 3: find predecessor of new elemental dofkey
     for (map<DofKey<onElem>, DofGID>::const_iterator newdof = newElementalDofDistrib_.begin();
@@ -541,7 +564,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
         const int olddofpos = olddof->second;
         //cout << newdofkey.toString() << " -> init to old value" << endl;
         (*newVector)[newdofrowmap_.LID(newdofpos)] = (*oldVector)[olddofrowmap_.LID(olddofpos)];
-        
+
 //        std::cout << "-------------Warning: enriched dofs reset to zero------------" << std::endl;
         if (newdofkey.getFieldEnr().getEnrichment().Type() != XFEM::Enrichment::typeStandard)
           (*newVector)[newdofrowmap_.LID(newdofpos)] = 0.0;
@@ -609,7 +632,29 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
 //        // do nothing, this case was handled in step 1
 //      }
 //    }
-#if 1
+
+#if 0
+    // remark: Only if DLM condensation is turned off, there will be element dofs visible in the global
+    //         DofManager. Of course, irrespective of the DLM condensation setting, there will be
+    //         element dofs on the element level (ElementDofManager), if a stress-based approach is
+    //         chosen to handle the boundary terms.
+    //         So, if there are element dofs, they are not known here, since 'elementalDofs_' in
+    //         fillDofDistributionMaps() only knows the different field enrichments for a specific
+    //         element, that is
+    //
+    //         e.g.
+    //         element 103 has 28 element dofs ((6 x stess + 1 x disc pressure) x element ansatz (e.g. quad4))
+    //
+    //         but 'elementalDofs_' contains only 7 "dof-type entries"
+    //         <ele 103, Tauxx + quad4>
+    //         <ele 103, Tauxy + quad4>
+    //         ...
+    //         <ele 103, DiscPres + quad4>
+    //
+    //         That is, element dofs cannot be switched correctly here, since not all element dofs
+    //         are known. They only exist on the element level. They are generated in
+    //         ElementDofManager::ComputeDependentInfo()
+    dserror("This will not work properly! Read comment above!");
 
     // step 3: find predecessor of new elemental dofkey
     for (map<DofKey<onElem>, DofGID>::const_iterator newdof = newElementalDofDistrib_.begin();

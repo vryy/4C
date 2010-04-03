@@ -47,8 +47,9 @@ namespace XFEM
       //! constructor (for combustion problems)
       explicit DofManager(
           const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle, ///< geometrical interface information
-          const std::set<XFEM::PHYSICS::Field>&      fieldset,        ///< physical fields to be enriched
-          const Teuchos::ParameterList&              params           ///< XFEM parameters
+          const std::set<XFEM::PHYSICS::Field>&                fieldset,        ///< physical fields to be enriched
+          const XFEM::ElementAnsatz&                           element_ansatz,  ///< element dofs
+          const Teuchos::ParameterList&                        params           ///< XFEM parameters
           );
 
       //! copy constructor
@@ -132,7 +133,7 @@ namespace XFEM
 
        This function writes the value of the XFEM standard enrichment for every physical field to
        the corresponding standard FEM dof in the output vector.
-       
+
        \author henke 07/09
       */
       Teuchos::RCP<Epetra_Vector> transformXFEMtoStandardVector(
