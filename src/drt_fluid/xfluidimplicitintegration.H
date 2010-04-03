@@ -403,7 +403,7 @@ protected:
       const std::string filestr,
       const std::string name_in_gmsh
       ) const;
-  
+
   void MovingFluidOutput();
 
   //! @name general algorithm parameters
@@ -582,10 +582,10 @@ protected:
 	  set<int> MovingFluideleGIDs_;  ///< this set contains the element ids of the moving Fluid
 	  set<int> MovingFluidNodeGIDs_;  ///< this set contains the node GIDs of the moving fluid
 	  /// this a map between the dofs of fluid-fluid-boundary (first entry) and the dofs of fluid (second entry)
-	  std::map<int,int>  fluidboundarymap_; 
+	  std::map<int,int>  fluidboundarymap_;
 	  /// this a map between the owners of fluid-fluid-boundary and the owners of fluid
 	  std::map<int,int>  fluidDofsOwnermap_;
-	  
+
 	  //! @name state vectors using the boundary parallel distribution (row vectors)
 	  Teuchos::RCP<Epetra_Vector>            fidispnp_;   ///< fluid interface displacement  n+1
 	  Teuchos::RCP<Epetra_Vector>            fivelnp_;    ///< fluid interface velocity      n+1
@@ -595,9 +595,9 @@ protected:
 	  Teuchos::RCP<Epetra_Vector>            fivelnm_;    ///< fluid interface velocity      n-1
 	  Teuchos::RCP<Epetra_Vector>            fiaccnp_;    ///< fluid interface acceleration  n+1
 	  Teuchos::RCP<Epetra_Vector>            fiaccn_;     ///< fluid interface acceleration  n
-	  //@}	  
-	  
-	  Teuchos::RCP<Epetra_Vector>    mfvelnp_; 
+	  //@}
+
+	  Teuchos::RCP<Epetra_Vector>    mfvelnp_;
   }fluidfluidstate_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
