@@ -939,7 +939,7 @@ void DoDirichletConditionXFEM(DRT::Condition&             cond,
         dsassert((*onoff)[truncj]!=0,"there is no Dirichlet condition assigned to this dof!");
         if (j%2!=0) // if XFEM dof
         {
-          cout << "/!\\ warning === Dirichlet value of enriched dof " << j << " is set to 0.0 for node " << actnode->Id() << endl;
+          //cout << "/!\\ warning === Dirichlet value of enriched dof " << j << " is set to 0.0 for node " << actnode->Id() << endl;
           for (unsigned i=0; i<deg+1; ++i)
           {
             value[i] = 0.0; // previously assigned DBC value is overwritten by 0.0
