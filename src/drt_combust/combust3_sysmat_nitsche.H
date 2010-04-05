@@ -46,13 +46,12 @@ namespace COMBUST
 
 
 /*!
-  \brief build domain integral entries for combustion problem
+  \brief build standard domain integral entries for combustion problem
 
   some remarks on the following sysmat entries:
   - this is an incremental formulation (details see e.g. Diss. Wall and BACI guide)
   - in comparison to standard fluid sysmat entries, here entries are scaled by the density
   - scaling has to be performed with quantities (density, dynvisc) from corresponding time step (n, n+1)
-  -
  */
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
@@ -60,30 +59,27 @@ template <DRT::Element::DiscretizationType DISTYPE,
           size_t shpVecSize,
           size_t shpVecSizeStress>
 void BuildDomainIntegrals(
-    LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>&           assembler,
-    const XFEM::ApproxFunc<shpVecSize>& shp,         // shape functions and derivatives
-    const LINALG::Matrix<shpVecSizeStress,1>& shp_tau, // not used
+    LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>& assembler,
+    const XFEM::ApproxFunc<shpVecSize>& shp,           // shape functions and their derivatives
     const double& fac,                                 // factor for integration in space
     const double& timefac,                             // factor for integration in time
     const double& timefacfac,                          // overall integration factor
     const double& densnp,                              // density at n+1
     const double& dynvisc,                             // dynamic viscosity at n+1
-    const LINALG::Matrix<3,1>& gpvelnp,                // velocity at Gaussian point (GP) at n+1
-    const double& pres,                                // pressure at GP at n+1
+    const LINALG::Matrix<3,1>& velnp,                  // velocity at Gaussian point (GP) at n+1
+    const double&              pres,                   // pressure at GP at n+1
     const LINALG::Matrix<3,1>& gradp,                  // pressure gradient at GP at n+1
     const LINALG::Matrix<3,3>& vderxy,                 // velocity derivative at GP at n+1
     const LINALG::Matrix<3,1>& rhsint,                 // time RHS (at n) and body force (at n+1) at GP
     const LINALG::Matrix<3,1>& res_old,                // residual at GP at n
     const LINALG::Matrix<3,1>& visc_old,               // viscous term at GP at n
-    const LINALG::Matrix<3,3>& tau,                    // element unknowns (not used)
     const LINALG::Matrix<shpVecSize,1>& enr_conv_c,    // convective term at GP at n
-    const COMBUST::EnrViscs2<shpVecSize>& enr_viscs2,   // viscous term (second derivatves) at GP at n
-    const bool tauele_unknowns_present,                // flag: element unknowns (not used)
-    const bool instationary,                           // flag: instationary problem
-    const bool newton,                                 // flag: linearization of convective term
-    const bool pstab,                                  // flag: PSPG stabilization
-    const bool supg,                                   // flag: SUPG stabilization
-    const bool cstab,                                  // flag: BV   stabilization
+    const COMBUST::EnrViscs2<shpVecSize>& enr_viscs2,  // viscous term (second derivatves) at GP at n
+    const bool instationary,                           // turn on/off instationary problem
+    const bool newton,                                 // turn on/off linearization of convective term
+    const bool pstab,                                  // turn on/off PSPG stabilization
+    const bool supg,                                   // turn on/off SUPG stabilization
+    const bool cstab,                                  // turn on/off BV   stabilization
     const double& tau_stab_Mu,                         // SUPG stabilization parameter
     const double& tau_stab_Mp,                         // PSPG stabilization parameter
     const double& tau_stab_C                           // BV   stabilization parameter
@@ -108,9 +104,9 @@ void BuildDomainIntegrals(
     assembler.template Matrix<Vely,Vely>(shp.d0, densfac, shp.d0);
     assembler.template Matrix<Velz,Velz>(shp.d0, densfac, shp.d0);
 
-    assembler.template Vector<Velx>(shp.d0, -densfac*gpvelnp(0));
-    assembler.template Vector<Vely>(shp.d0, -densfac*gpvelnp(1));
-    assembler.template Vector<Velz>(shp.d0, -densfac*gpvelnp(2));
+    assembler.template Vector<Velx>(shp.d0, -densfac*velnp(0));
+    assembler.template Vector<Vely>(shp.d0, -densfac*velnp(1));
+    assembler.template Vector<Velz>(shp.d0, -densfac*velnp(2));
   }
 #endif
 
@@ -128,15 +124,15 @@ void BuildDomainIntegrals(
   assembler.template Matrix<Vely,Vely>(shp.d0, denstimefacfac, enr_conv_c);
   assembler.template Matrix<Velz,Velz>(shp.d0, denstimefacfac, enr_conv_c);
 
-  assembler.template Vector<Velx>(shp.d0, -denstimefacfac*(gpvelnp(0)*vderxy(0,0)
-      +gpvelnp(1)*vderxy(0,1)
-      +gpvelnp(2)*vderxy(0,2)));
-  assembler.template Vector<Vely>(shp.d0, -denstimefacfac*(gpvelnp(0)*vderxy(1,0)
-      +gpvelnp(1)*vderxy(1,1)
-      +gpvelnp(2)*vderxy(1,2)));
-  assembler.template Vector<Velz>(shp.d0, -denstimefacfac*(gpvelnp(0)*vderxy(2,0)
-      +gpvelnp(1)*vderxy(2,1)
-      +gpvelnp(2)*vderxy(2,2)));
+  assembler.template Vector<Velx>(shp.d0, -denstimefacfac*(velnp(0)*vderxy(0,0)
+      +velnp(1)*vderxy(0,1)
+      +velnp(2)*vderxy(0,2)));
+  assembler.template Vector<Vely>(shp.d0, -denstimefacfac*(velnp(0)*vderxy(1,0)
+      +velnp(1)*vderxy(1,1)
+      +velnp(2)*vderxy(1,2)));
+  assembler.template Vector<Velz>(shp.d0, -denstimefacfac*(velnp(0)*vderxy(2,0)
+      +velnp(1)*vderxy(2,1)
+      +velnp(2)*vderxy(2,2)));
 
   if (newton)
   {
@@ -386,17 +382,16 @@ void BuildDomainIntegrals(
                         |  u      , | Du o nabla | v  |
                         |   (i)      \          /     |
                          \                           /
-
          */
-        assembler.template Matrix<Velx,Velx>(shp.dx, densdenstauMu*gpvelnp(0), shp.d0);
-        assembler.template Matrix<Velx,Vely>(shp.dy, densdenstauMu*gpvelnp(0), shp.d0);
-        assembler.template Matrix<Velx,Velz>(shp.dz, densdenstauMu*gpvelnp(0), shp.d0);
-        assembler.template Matrix<Vely,Velx>(shp.dx, densdenstauMu*gpvelnp(1), shp.d0);
-        assembler.template Matrix<Vely,Vely>(shp.dy, densdenstauMu*gpvelnp(1), shp.d0);
-        assembler.template Matrix<Vely,Velz>(shp.dz, densdenstauMu*gpvelnp(1), shp.d0);
-        assembler.template Matrix<Velz,Velx>(shp.dx, densdenstauMu*gpvelnp(2), shp.d0);
-        assembler.template Matrix<Velz,Vely>(shp.dy, densdenstauMu*gpvelnp(2), shp.d0);
-        assembler.template Matrix<Velz,Velz>(shp.dz, densdenstauMu*gpvelnp(2), shp.d0);
+        assembler.template Matrix<Velx,Velx>(shp.dx, densdenstauMu*velnp(0), shp.d0);
+        assembler.template Matrix<Velx,Vely>(shp.dy, densdenstauMu*velnp(0), shp.d0);
+        assembler.template Matrix<Velx,Velz>(shp.dz, densdenstauMu*velnp(0), shp.d0);
+        assembler.template Matrix<Vely,Velx>(shp.dx, densdenstauMu*velnp(1), shp.d0);
+        assembler.template Matrix<Vely,Vely>(shp.dy, densdenstauMu*velnp(1), shp.d0);
+        assembler.template Matrix<Vely,Velz>(shp.dz, densdenstauMu*velnp(1), shp.d0);
+        assembler.template Matrix<Velz,Velx>(shp.dx, densdenstauMu*velnp(2), shp.d0);
+        assembler.template Matrix<Velz,Vely>(shp.dy, densdenstauMu*velnp(2), shp.d0);
+        assembler.template Matrix<Velz,Velz>(shp.dz, densdenstauMu*velnp(2), shp.d0);
       }
     }
 #endif
@@ -483,17 +478,17 @@ void BuildDomainIntegrals(
                   |    \ (i)        /   (i)    \          /     |
                    \                                           /
        */
-      const double con0 = densdenstimetauMu*(gpvelnp(0)*vderxy(0,0) + gpvelnp(1)*vderxy(0,1) + gpvelnp(2)*vderxy(0,2));
+      const double con0 = densdenstimetauMu*(velnp(0)*vderxy(0,0) + velnp(1)*vderxy(0,1) + velnp(2)*vderxy(0,2));
       assembler.template Matrix<Velx,Velx>(shp.dx, con0, shp.d0);
       assembler.template Matrix<Velx,Vely>(shp.dy, con0, shp.d0);
       assembler.template Matrix<Velx,Velz>(shp.dz, con0, shp.d0);
 
-      const double con1 = densdenstimetauMu*(gpvelnp(0)*vderxy(1,0) + gpvelnp(1)*vderxy(1,1) + gpvelnp(2)*vderxy(1,2));
+      const double con1 = densdenstimetauMu*(velnp(0)*vderxy(1,0) + velnp(1)*vderxy(1,1) + velnp(2)*vderxy(1,2));
       assembler.template Matrix<Vely,Velx>(shp.dx, con1, shp.d0);
       assembler.template Matrix<Vely,Vely>(shp.dy, con1, shp.d0);
       assembler.template Matrix<Vely,Velz>(shp.dz, con1, shp.d0);
 
-      const double con2 = densdenstimetauMu*(gpvelnp(0)*vderxy(2,0) + gpvelnp(1)*vderxy(2,1) + gpvelnp(2)*vderxy(2,2));
+      const double con2 = densdenstimetauMu*(velnp(0)*vderxy(2,0) + velnp(1)*vderxy(2,1) + velnp(2)*vderxy(2,2));
       assembler.template Matrix<Velz,Velx>(shp.dx, con2, shp.d0);
       assembler.template Matrix<Velz,Vely>(shp.dy, con2, shp.d0);
       assembler.template Matrix<Velz,Velz>(shp.dz, con2, shp.d0);
@@ -612,34 +607,34 @@ void BuildDomainIntegrals(
 
 
 /*!
-  Calculate domain integrals in matrix and rhs for stationary combustion problem formulation
+  Calculate domain integrals in matrix and rhs for combustion problem formulation
  */
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
           int NUMDOF,
           class M1, class V1, class M2, class V2>
 void SysmatDomainNitsche(
-    const DRT::ELEMENTS::Combust3*      ele,          ///< element whose matrix is calculated
+    const DRT::ELEMENTS::Combust3* ele,          ///< element whose matrix is calculated
     const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih, ///< information about the interface
-    const XFEM::ElementDofManager&      dofman,       ///< dofmanager of this element
-    const M1&                           evelnp,       ///< nodal velocity n+1 values for this element
-    const M1&                           eveln,        ///< nodal velocity n   values for this element
-    const M1&                           evelnm,       ///< nodal velocity n-1 values for this element
-    const M1&                           eaccn,        ///< nodal acceleration n values for this element
-    const V1&                           eprenp,       ///< nodal pressure n+1 values for this element
-    const V2&                           ephi,         ///< nodal G-function values for this element
-    const M2&                           etau,         ///< element stresses (?) not used in combustion
-    Teuchos::RCP<const MAT::Material>   material,     ///< fluid material
-    const FLUID_TIMEINTTYPE             timealgo,     ///< time discretization scheme
-    const double                        dt,           ///< delta t (time step size)
-    const double                        theta,        ///< parameter for one step theta scheme
-    const bool                          newton,       ///< full Newton or fixed-point-like
-    const bool                          pstab,        ///< flag for stabilization
-    const bool                          supg,         ///< flag for stabilization
-    const bool                          cstab,        ///< flag for stabilization
-    const INPAR::FLUID::TauType         tautype,      ///< stabilization parameter definition
-    const bool                          instationary, ///< switch between stationary and instationary formulation
-    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler
+    const XFEM::ElementDofManager& dofman,       ///< dofmanager of this element
+    const M1&                      evelnp,       ///< nodal velocity n+1 values for this element
+    const M1&                      eveln,        ///< nodal velocity n   values for this element
+    const M1&                      evelnm,       ///< nodal velocity n-1 values for this element
+    const M1&                      eaccn,        ///< nodal acceleration n values for this element
+    const V1&                      eprenp,       ///< nodal pressure n+1 values for this element
+    const V2&                      ephi,         ///< nodal G-function values for this element
+    const M2&                      etau,         ///< element stresses (?) not used in combustion
+    Teuchos::RCP<const MAT::Material> material,  ///< fluid material
+    const FLUID_TIMEINTTYPE        timealgo,     ///< time discretization scheme
+    const double                   dt,           ///< delta t (time step size)
+    const double                   theta,        ///< parameter for one step theta scheme
+    const bool                     newton,       ///< full Newton or fixed-point-like
+    const bool                     pstab,        ///< turn on/off PSPG stabilization
+    const bool                     supg,         ///< turn on/off SUPG stabilization
+    const bool                     cstab,        ///< turn on/off BV   stabilization
+    const INPAR::FLUID::TauType    tautype,      //< stabilization parameter definition
+    const bool                     instationary, ///< switch between stationary and instationary formulation
+    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion sysmat - domain");
@@ -677,8 +672,6 @@ void SysmatDomainNitsche(
   //    const bool velocity_unknowns_present = (getNumParam<ASSTYPE>(dofman, Velx, 1) > 0);
   //    const bool pressure_unknowns_present = (getNumParam<ASSTYPE>(dofman, Pres, 1) > 0);
 #endif
-  // TODO remove as soon as precompiler flag above is turned off
-  const bool tauele_unknowns_present = false;
 
   // get number of parameters (dofs) for each field
   // remark: it is assumed that all fields are enriched -> equal for all velocity components and pressure
@@ -837,8 +830,10 @@ void SysmatDomainNitsche(
 
       // (enriched) shape functions = approximation functions (P = N * \Psi)
       static XFEM::ApproxFunc<shpVecSize> shp;
+#if 0
       // comment missing
       static LINALG::Matrix<shpVecSizeStress,1> shp_tau;
+#endif
       if (ASSTYPE == XFEM::xfem_assembly)
       {
         //cout << "this is a fully or partially enriched element" << endl;
@@ -895,10 +890,10 @@ void SysmatDomainNitsche(
           }
         }
         else
-#endif
         {
           shp_tau.Clear();
         }
+#endif
 
       }
       else // not xfem_assembly i.e. standard assembly
@@ -995,18 +990,18 @@ void SysmatDomainNitsche(
         gradp(2) += eprenp(iparam) * shp.dz(iparam);
       }
 
+#if 0
       // get viscous stress unknowns
       static LINALG::Matrix<nsd,nsd> tau;
-#if 0
       if (tauele_unknowns_present)
       {
         XFLUID::fill_tau(numparamtauxx, shp_tau, etau, tau);
       }
       else
-#endif
       {
         tau.Clear();
       }
+#endif
 
       //--------------------------------------------------------------------------------------
       // compute stabilization parameters (3 taus)
@@ -1141,11 +1136,11 @@ void SysmatDomainNitsche(
       // build single stiffness matrix entries
       //--------------------------------------------------------------------------------------
       COMBUST::BuildDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize,shpVecSizeStress>(
-          assembler, shp, shp_tau, fac, timefac, timefacfac, densnp, dynvisc,
-          gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, tau,
-          enr_conv_c, enr_viscs2,
-          tauele_unknowns_present, instationary, newton, pstab, supg, cstab,
+          assembler, shp, fac, timefac, timefacfac, densnp, dynvisc,
+          gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_viscs2,
+          instationary, newton, pstab, supg, cstab,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
+
     } // end loop over gauss points
   } // end loop over integration cells
 
@@ -1560,42 +1555,6 @@ void SysmatBoundaryNitsche(
         pmean += shp_mean.d0(iparam)*eprenp(iparam);
       //cout << "pmean: " << pmean << endl;
 
-      //            Epetra_SerialDenseVector shp_iface(numnode_boundary*begids.size());
-      //            int pos = 0;
-      //            for (std::set<int>::const_iterator begid = begids.begin(); begid != begids.end();++begid)
-      //            {
-      //              if (*begid == boundaryele->Id())
-      //              {
-      //                for (std::size_t inode=0; inode < numnode_boundary; ++inode)
-      //                {
-      //                  shp_iface(pos+inode) = funct_boundary(inode);
-      //                }
-      //                break;
-      //              }
-      //              pos += numnode_boundary;
-      //            }
-      //
-      //            // get velocities (n+g,i) at integration point
-      //            // gpvelnp = evelnp(i,j)*shp(j);
-      //            LINALG::Matrix<nsd,1> gpvelnp;
-      //            gpvelnp.Clear();
-      //            for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
-      //                for (std::size_t isd = 0; isd < nsd; ++isd)
-      //                    gpvelnp(isd) += evelnp(isd,iparam)*shp(iparam);
-      //
-      //            // get interface velocity
-      //            LINALG::Matrix<nsd,1> interface_gpvelnp;
-      //            interface_gpvelnp.Clear();
-      //            for (std::size_t inode = 0; inode < numnode_boundary; ++inode)
-      //                for (std::size_t isd = 0; isd < nsd; ++isd)
-      //                    interface_gpvelnp(isd) += vel_boundary(isd,inode)*funct_boundary(inode);
-      //
-      //            // get viscous stress unknowns
-      //            static LINALG::Matrix<nsd,nsd> tau;
-      //            XFLUID::fill_tau(numparamtauxx, shp_tau, etau, tau);
-
-
-
       //--------------------------------------------------------------------------------------------
       // build single boundary integral stiffness terms
       //
@@ -1862,6 +1821,8 @@ void SysmatBoundaryNitsche(
 
   return;
 }
+
+
 } // namespace COMBUST
 
 

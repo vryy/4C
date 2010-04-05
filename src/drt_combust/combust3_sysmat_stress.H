@@ -51,7 +51,6 @@ namespace COMBUST
   - this is an incremental formulation (details see e.g. Diss. Wall and BACI guide)
   - in comparison to standard fluid sysmat entries, here entries are scaled by the density
   - scaling has to be performed with quantities (density, dynvisc) from corresponding time step (n, n+1)
-  -
  */
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
@@ -59,38 +58,27 @@ template <DRT::Element::DiscretizationType DISTYPE,
           size_t shpVecSize,
           size_t shpVecSizeStress>
 void BuildDomainIntegralsStress(
-    LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>&           assembler,
-    const XFEM::ApproxFunc<shpVecSize>& shp,         // shape functions and derivatives
-    const LINALG::Matrix<shpVecSizeStress,1>& shp_tau, // not used
+    LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>& assembler,
+    const XFEM::ApproxFunc<shpVecSize>& shp,           // shape functions and derivatives
+    const LINALG::Matrix<shpVecSizeStress,1>& shp_tau, //
     const double& fac,                                 // factor for integration in space
     const double& timefac,                             // factor for integration in time
     const double& timefacfac,                          // overall integration factor
     const double& densnp,                              // density at n+1
     const double& dynvisc,                             // dynamic viscosity at n+1
-    const LINALG::Matrix<3,1>& gpvelnp,                // velocity at Gaussian point (GP) at n+1
-    const double& pres,                                // pressure at GP at n+1
+    const LINALG::Matrix<3,1>& velnp,                  // velocity at Gaussian point (GP) at n+1
+    const double&              pres,                   // pressure at GP at n+1
     const LINALG::Matrix<3,1>& gradp,                  // pressure gradient at GP at n+1
     const LINALG::Matrix<3,3>& vderxy,                 // velocity derivative at GP at n+1
     const LINALG::Matrix<3,1>& rhsint,                 // time RHS (at n) and body force (at n+1) at GP
     const LINALG::Matrix<3,1>& res_old,                // residual at GP at n
     const LINALG::Matrix<3,1>& visc_old,               // viscous term at GP at n
-    const LINALG::Matrix<3,3>& tau,                    // element unknowns (not used)
+    const LINALG::Matrix<3,3>& tau,                    // element stress unknowns
     const LINALG::Matrix<shpVecSize,1>& enr_conv_c,    // convective term at GP at n
-    const COMBUST::EnrViscs2<shpVecSize>& enr_viscs2,   // viscous term (second derivatves) at GP at n
-    const bool tauele_unknowns_present,                // flag: element unknowns (not used)
-    const bool instationary,                           // flag: instationary problem
-    const bool newton,                                 // flag: linearization of convective term
-    const bool pstab,                                  // flag: PSPG stabilization
-    const bool supg,                                   // flag: SUPG stabilization
-    const bool cstab,                                  // flag: BV   stabilization
-    const double& tau_stab_Mu,                         // SUPG stabilization parameter
-    const double& tau_stab_Mp,                         // PSPG stabilization parameter
-    const double& tau_stab_C                           // BV   stabilization parameter
+    const COMBUST::EnrViscs2<shpVecSize>& enr_viscs2,  // viscous term (second derivatves) at GP at n
+    const bool newton                                  // turn on/off linearization of convective term
 )
 {
-  // Hellinger-Reissner terms
-  if (tauele_unknowns_present)
-  {
 //    /*
 //                       /                      \
 //                    - |  virt tau , eps(Dtau)  |
@@ -149,11 +137,10 @@ void BuildDomainIntegralsStress(
 //    assembler.template Vector<Sigmaxx>(shp_tau, 1.0/(2.0*visc)*timefacfac*pres);
 //    assembler.template Vector<Sigmayy>(shp_tau, 1.0/(2.0*visc)*timefacfac*pres);
 //    assembler.template Vector<Sigmazz>(shp_tau, 1.0/(2.0*visc)*timefacfac*pres);
-  }
 }
 
 /*!
-  Calculate domain integrals in matrix and rhs for stationary combustion problem formulation
+  Calculate domain integrals in matrix and rhs for combustion problem formulation
  */
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
@@ -212,25 +199,23 @@ void SysmatDomainStress(
   const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
 
   const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
-#if 0
+
   // figure out whether we have stress unknowns at all
   const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
+  dsassert(tauele_unknowns_present == true, "there are no element stress unknowns!");
   //    const bool velocity_unknowns_present = (getNumParam<ASSTYPE>(dofman, Velx, 1) > 0);
-  //    const bool pressure_unknowns_present = (getNumParam<ASSTYPE>(dofman, Pres, 1) > 0);
-#endif
-  // TODO remove as soon as precompiler flag above is turned off
-  const bool tauele_unknowns_present = false;
+  const bool pressure_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Pres, 1) > 0);
+  dsassert(pressure_unknowns_present == true, "there is no element pressure unknown!");
 
   // get number of parameters (dofs) for each field
   // remark: it is assumed that all fields are enriched -> equal for all velocity components and pressure
   const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
   const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
   dsassert(numparamvelx == numparampres, "assumption violation");
-#if 0
+
   // put one here to create arrays of size 1, since they are not needed anyway
   // in the xfem assembly, numparam is determined by the dofmanager
   const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
-#endif
 
   // stabilization parameter
   const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
@@ -313,7 +298,6 @@ void SysmatDomainStress(
       DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
 
-#if 0
       // discontinuous stress shape functions
       static LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement,1> funct_stress;
       if (ASSTYPE == XFEM::xfem_assembly)
@@ -327,7 +311,6 @@ void SysmatDomainStress(
           funct_stress.Clear();
         }
       }
-#endif
 
 //--------------------------------------------------------------------------------------
       // procedures involving Jacobian matrix
@@ -419,7 +402,6 @@ void SysmatDomainStress(
           shp.dzdz(iparam) = enr_derxy2(2,iparam);
         }
 
-#if 0
         if (tauele_unknowns_present)
         {
           LINALG::Matrix<shpVecSizeStress,1> enr_funct_stress;
@@ -436,7 +418,6 @@ void SysmatDomainStress(
           }
         }
         else
-#endif
         {
           shp_tau.Clear();
         }
@@ -462,12 +443,10 @@ void SysmatDomainStress(
           shp.dzdy(iparam) = shp.dydz(iparam);
           shp.dzdz(iparam) = derxy2(2,iparam);
         }
-#if 0
-if (tauele_unknowns_present)
-{
-  dserror("no stress enrichments without xfem assembly");
-}
-#endif
+        if (tauele_unknowns_present)
+        {
+          dserror("no stress enrichments without xfem assembly");
+        }
       }
 
       //--------------------------------------------------------------------------------------
@@ -538,16 +517,14 @@ if (tauele_unknowns_present)
 
       // get viscous stress unknowns
       static LINALG::Matrix<nsd,nsd> tau;
-#if 0
       if (tauele_unknowns_present)
       {
         XFLUID::fill_tau(numparamtauxx, shp_tau, etau, tau);
       }
       else
-#endif
-{
+      {
         tau.Clear();
-}
+      }
 
       //--------------------------------------------------------------------------------------
       // compute stabilization parameters (3 taus)
@@ -682,18 +659,15 @@ if (tauele_unknowns_present)
       // build single stiffness matrix entries
       //--------------------------------------------------------------------------------------
       COMBUST::BuildDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize,shpVecSizeStress>(
-          assembler, shp, shp_tau, fac, timefac, timefacfac, densnp, dynvisc,
-          gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, tau,
-          enr_conv_c, enr_viscs2,
-          tauele_unknowns_present, instationary, newton, pstab, supg, cstab,
+          assembler, shp, fac, timefac, timefacfac, densnp, dynvisc,
+          gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_viscs2,
+          instationary, newton, pstab, supg, cstab,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 
       COMBUST::BuildDomainIntegralsStress<DISTYPE,ASSTYPE,NUMDOF,shpVecSize,shpVecSizeStress>(
           assembler, shp, shp_tau, fac, timefac, timefacfac, densnp, dynvisc,
           gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, tau,
-          enr_conv_c, enr_viscs2,
-          tauele_unknowns_present, instationary, newton, pstab, supg, cstab,
-          tau_stab_Mu, tau_stab_Mp, tau_stab_C);
+          enr_conv_c, enr_viscs2, newton);
 
     } // end loop over gauss points
   } // end loop over integration cells
@@ -728,6 +702,7 @@ void SysmatBoundaryStress(
     const double                      nitschepres
 )
 {
+#if 0
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion sysmat - boundary");
 
 #ifdef DEBUG
@@ -1409,10 +1384,12 @@ void SysmatBoundaryStress(
 
     } // loop Gaussian points
   } // loop boundary integration cells
-
+#endif
   return;
 }
-}
+
+
+} // namespace COMBUST
 
 #endif
 #endif
