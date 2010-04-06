@@ -60,6 +60,15 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis, std::strin
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis, std::string condname, map<int, DRT::Node*>& nodes)
+{
+  std::vector<DRT::Condition*> conds;
+  dis.GetCondition(condname, conds);
+  FindConditionedNodes(dis,conds,nodes);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
                                       const std::vector<DRT::Condition*>& conds,
                                       std::vector<int>& nodes)
