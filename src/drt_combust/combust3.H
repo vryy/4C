@@ -47,17 +47,25 @@ namespace DRT
 //        friend class Combust3Register;
 //        friend class Combust3Surface;
 //        friend class Combust3Line;
-
         //@}
 
-        struct MyState
+        class MyState
         {
-          bool instationary;
-          std::vector<double> velnp;
-          std::vector<double> veln;
-          std::vector<double> velnm;
-          std::vector<double> accn;
-          std::vector<double> phinp;
+        public:
+          MyState(
+              const DRT::Discretization&                                 discretization,
+              const std::vector<int>&                                    lm,
+              const bool                                                 instationary,
+              const DRT::ELEMENTS::Combust3*                             ele,
+              const Teuchos::RCP<const COMBUST::InterfaceHandleCombust>& ih
+              );
+
+          const bool instationary_;
+          std::vector<double> velnp_; ///< velocity/pressure unknowns at n+1
+          std::vector<double> veln_;  ///< velocity/pressure unknowns at n
+          std::vector<double> velnm_; ///< velocity/pressure unknowns at n-1
+          std::vector<double> accn_;  ///< time derivative of unknowns at n
+          std::vector<double> phinp_; ///< G-function unknowns at n+1
         };
 
         //! @name Constructors and destructors and related methods
@@ -283,10 +291,10 @@ namespace DRT
         //! then element has always 4 unknowns per node
         //! so if element is in output mode, it will answer without
         //! the elementdofmanager
-        bool                             output_mode_;
+        bool output_mode_;
 
-        //! store information about the intersection handle
-        Teuchos::RCP<COMBUST::InterfaceHandleCombust>                       ih_;
+        //! store information about the interface handle
+        Teuchos::RCP<COMBUST::InterfaceHandleCombust> ih_;
 
         //! boolean indicating whether element is intersected by the interface
         bool intersected_;
@@ -328,6 +336,21 @@ namespace DRT
             Teuchos::RCP<const MAT::Material> material,
             ParameterList&             params
         );
+
+        //! compute stresses from previous newton iteration and store them in dlm_info_
+        void UpdateOldDLMAndDLMRHS(
+            const DRT::Discretization& discretization,
+            const std::vector<int>&    lm,
+            MyState&                   mystate
+        ) const;
+
+        //! condense (u,p,sigma) matrix to (u,p) matrix and store this iterations sub-matrices
+        void CondenseElementStressAndStoreOldIterationStep(
+            const Epetra_SerialDenseMatrix& elemat1_uncond,
+            const Epetra_SerialDenseVector& elevec1_uncond,
+            Epetra_SerialDenseMatrix&       elemat1,
+            Epetra_SerialDenseVector&       elevec1
+        ) const;
 
         /*!
          * \brief get optimal gaussrule for given discretization type

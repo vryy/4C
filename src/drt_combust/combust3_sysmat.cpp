@@ -83,36 +83,36 @@ void fillElementUnknownsArrays(
 
   for (size_t iparam=0; iparam<numparamvelx; ++iparam)
   {
-    evelnp(0,iparam) = mystate.velnp[velxdof[iparam]];
-    if (mystate.instationary)
+    evelnp(0,iparam) = mystate.velnp_[velxdof[iparam]];
+    if (mystate.instationary_)
     {
-      eveln( 0,iparam) = mystate.veln[ velxdof[iparam]];
-      evelnm(0,iparam) = mystate.velnm[velxdof[iparam]];
-      eaccn( 0,iparam) = mystate.accn[ velxdof[iparam]];
+      eveln( 0,iparam) = mystate.veln_[ velxdof[iparam]];
+      evelnm(0,iparam) = mystate.velnm_[velxdof[iparam]];
+      eaccn( 0,iparam) = mystate.accn_[ velxdof[iparam]];
     }
   }
   for (size_t iparam=0; iparam<numparamvely; ++iparam)
   {
-    evelnp(1,iparam) = mystate.velnp[velydof[iparam]];
-    if (mystate.instationary)
+    evelnp(1,iparam) = mystate.velnp_[velydof[iparam]];
+    if (mystate.instationary_)
     {
-      eveln( 1,iparam) = mystate.veln[ velydof[iparam]];
-      evelnm(1,iparam) = mystate.velnm[velydof[iparam]];
-      eaccn( 1,iparam) = mystate.accn[ velydof[iparam]];
+      eveln( 1,iparam) = mystate.veln_[ velydof[iparam]];
+      evelnm(1,iparam) = mystate.velnm_[velydof[iparam]];
+      eaccn( 1,iparam) = mystate.accn_[ velydof[iparam]];
     }
   }
   for (size_t iparam=0; iparam<numparamvelz; ++iparam)
   {
-    evelnp(2,iparam) = mystate.velnp[velzdof[iparam]];
-    if (mystate.instationary)
+    evelnp(2,iparam) = mystate.velnp_[velzdof[iparam]];
+    if (mystate.instationary_)
     {
-      eveln( 2,iparam) = mystate.veln[ velzdof[iparam]];
-      evelnm(2,iparam) = mystate.velnm[velzdof[iparam]];
-      eaccn( 2,iparam) = mystate.accn[ velzdof[iparam]];
+      eveln( 2,iparam) = mystate.veln_[ velzdof[iparam]];
+      evelnm(2,iparam) = mystate.velnm_[velzdof[iparam]];
+      eaccn( 2,iparam) = mystate.accn_[ velzdof[iparam]];
     }
   }
   for (size_t iparam=0; iparam<numparampres; ++iparam)
-    eprenp(iparam) = mystate.velnp[presdof[iparam]];
+    eprenp(iparam) = mystate.velnp_[presdof[iparam]];
   const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxx, 0) > 0);
   if (tauele_unknowns_present)
   {
@@ -136,17 +136,17 @@ void fillElementUnknownsArrays(
     const std::vector<int>& tauxydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxy>());
     const std::vector<int>& tauxzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxz>());
     const std::vector<int>& tauyzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmayz>());
-    for (size_t iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = mystate.velnp[tauxxdof[iparam]];
-    for (size_t iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = mystate.velnp[tauyydof[iparam]];
-    for (size_t iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = mystate.velnp[tauzzdof[iparam]];
-    for (size_t iparam=0; iparam<numparamtauxy; ++iparam)   etau(3,iparam) = mystate.velnp[tauxydof[iparam]];
-    for (size_t iparam=0; iparam<numparamtauxz; ++iparam)   etau(4,iparam) = mystate.velnp[tauxzdof[iparam]];
-    for (size_t iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = mystate.velnp[tauyzdof[iparam]];
+    for (size_t iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = mystate.velnp_[tauxxdof[iparam]];
+    for (size_t iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = mystate.velnp_[tauyydof[iparam]];
+    for (size_t iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = mystate.velnp_[tauzzdof[iparam]];
+    for (size_t iparam=0; iparam<numparamtauxy; ++iparam)   etau(3,iparam) = mystate.velnp_[tauxydof[iparam]];
+    for (size_t iparam=0; iparam<numparamtauxz; ++iparam)   etau(4,iparam) = mystate.velnp_[tauxzdof[iparam]];
+    for (size_t iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = mystate.velnp_[tauyzdof[iparam]];
   }
   // copy element phi vector from std::vector (mystate) to LINALG::Matrix (ephi)
   // TODO: this is inefficient, but it is nice to have only fixed size matrices afterwards!
   for (size_t iparam=0; iparam<numnode; ++iparam)
-    ephi(iparam) = mystate.phinp[iparam];
+    ephi(iparam) = mystate.phinp_[iparam];
 }
 
 

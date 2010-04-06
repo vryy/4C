@@ -21,13 +21,13 @@ Maintainer: Florian Henke
 
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
-#include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/xdofmapcreation_combust.H"
 #include "../drt_xfem/enrichment_utils.H"
+#include "../drt_inpar/inpar_fluid.H"
+#include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_f3/fluid3_stabilization.H"
-#include "../drt_inpar/inpar_fluid.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 
@@ -127,7 +127,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
     case set_output_mode:
     {
       output_mode_ = true;
-      // reset element dof manager is present
+      // reset element dof manager if present
       eleDofManager_ = Teuchos::null;
       ih_ = Teuchos::null;
     }
@@ -179,7 +179,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const Teuchos::RCP<const XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
 
       Teuchos::RCP<XFEM::ElementAnsatz> elementAnsatz = rcp(new COMBUST::TauPressureAnsatz());
-      // create an empty element ansatz map to be filled later
+      // create an empty element ansatz map to be filled in the following
       map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_filled;
       // create an empty element ansatz map
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty;
@@ -248,33 +248,11 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       if (lm.empty())
         break;
 
-      DRT::ELEMENTS::Combust3::MyState mystate;
-      mystate.instationary = true;
-      DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
-      DRT::UTILS::ExtractMyValues(*discretization.GetState("veln") ,mystate.veln ,lm);
-      DRT::UTILS::ExtractMyValues(*discretization.GetState("velnm"),mystate.velnm,lm);
-      DRT::UTILS::ExtractMyValues(*discretization.GetState("accn") ,mystate.accn ,lm);
+      // instationary formulation
+      const bool instationary = true;
 
-      // get pointer to vector holding G-function values at the fluid nodes
-      const Teuchos::RCP<Epetra_Vector> phinp = ih_->FlameFront()->Phinp();
-#ifdef DEBUG
-      // check if this element is the first element on this processor
-      // remark:
-      // The SameAs-operation requires MPI communication between processors. Therefore it can only
-      // be performed once (at the beginning) on each processor. Otherwise some processors would
-      // wait to receive MPI information, but would never get it, because some processores are
-      // already done with their element loop. This will cause a mean parallel bug!   henke 11.08.09
-      if(this->Id() == discretization.lRowElement(0)->Id())
-      {
-        // get map of this vector
-        const Epetra_BlockMap& phimap = phinp->Map();
-        // check, whether this map is still identical with the current node map in the discretization
-        if (not phimap.SameAs(*discretization.NodeColMap())) dserror("node column map has changed!");
-      }
-#endif
-
-      // extract G-function values to element level
-      DRT::UTILS::ExtractMyNodeBasedValues(this, mystate.phinp, *phinp);
+      // extract local (element level) vectors from global state vectors
+      DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, this, ih_);
 
       const bool newton = params.get<bool>("include reactive terms for linearisation",false);
 
@@ -291,7 +269,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const INPAR::FLUID::TauType tautype = Teuchos::getIntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"TAUTYPE");
       // check if stabilization parameter definition can be handled by combust3 element
       if (!(tautype == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall or
-          tautype == INPAR::FLUID::tautype_bazilevs))
+            tautype == INPAR::FLUID::tautype_bazilevs))
         dserror("unknown type of stabilization parameter definition");
 
       // time integration parameters
@@ -299,14 +277,57 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const double            dt       = params.get<double>("dt");
       const double            theta    = params.get<double>("theta");
 
+#ifdef COMBUST_STRESS_BASED
+      // integrate and assemble all unknowns
+      if (not ih_->ElementIntersected(Id()) or
+          not params.get<bool>("DLM_condensation"))
+      {
+        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
+            *eleDofManager_, NumNode(), NodeIds());
+
+        // calculate element coefficient matrix and rhs
+        COMBUST::callSysmat(assembly_type,
+            this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
+            material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+            combusttype, flamespeed, nitschevel, nitschepres);
+      }
+      // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
+      else
+      {
+        UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
+
+        // create uncondensed element matrix and vector
+        const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
+        Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
+        Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
+
+        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
+            *eleDofManager_uncondensed_, NumNode(), NodeIds());
+
+        // calculate element coefficient matrix and rhs
+        COMBUST::callSysmat(assembly_type,
+            this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
+            material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+            combusttype, flamespeed, nitschevel, nitschepres);
+
+        // condensation
+        CondenseElementStressAndStoreOldIterationStep(
+            elemat1_uncond, elevec1_uncond,
+            elemat1, elevec1
+        );
+      }
+#else
       const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
-              *eleDofManager_, NumNode(), NodeIds());
+          *eleDofManager_, NumNode(), NodeIds());
 
       // calculate element coefficient matrix and rhs
       COMBUST::callSysmat(assembly_type,
-        this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, mystate.instationary,
-        combusttype, flamespeed, nitschevel, nitschepres);
+          this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
+          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+          combusttype, flamespeed, nitschevel, nitschepres);
+#endif
+
+
     }
     break;
     case calc_fluid_beltrami_error:
@@ -349,31 +370,11 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       if (lm.empty())
         break;
 
-      // extract local values from the global vector
-      DRT::ELEMENTS::Combust3::MyState mystate;
-      mystate.instationary = false;
-      DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),mystate.velnp,lm);
+      // stationary formulation
+      const bool instationary = false;
 
-      // get pointer to vector holding G-function values at the fluid nodes
-      const Teuchos::RCP<Epetra_Vector> phinp = ih_->FlameFront()->Phinp();
-#ifdef DEBUG
-      // check if this element is the first element on this processor
-      // remark:
-      // The SameAs-operation requires MPI communication between processors. Therefore it can only
-      // be performed once (at the beginning) on each processor. Otherwise some processors would
-      // wait to receive MPI information, but would never get it, because some processores are
-      // already done with their element loop. This will cause a mean parallel bug!   henke 11.08.09
-      if(this->Id() == discretization.lRowElement(0)->Id())
-      {
-        // get map of this vector
-        const Epetra_BlockMap& phimap = phinp->Map();
-        // check, whether this map is still identical with the current node map in the discretization
-        if (not phimap.SameAs(*discretization.NodeColMap())) dserror("node column map has changed!");
-      }
-#endif
-
-      // extract G-function values to element level (used kink enrichment)
-      DRT::UTILS::ExtractMyNodeBasedValues(this, mystate.phinp, *phinp);
+      // extract local (element level) vectors from global state vectors
+      DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, this, ih_);
 
       const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
       const double flamespeed = params.get<double>("flamespeed");
@@ -403,7 +404,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         COMBUST::callSysmat(assembly_type,
                  this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
-                 material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, mystate.instationary,
+                 material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
                  combusttype, flamespeed, nitschevel, nitschepres);
       }
 #if 0
@@ -712,6 +713,132 @@ void DRT::ELEMENTS::Combust3::f3_int_beltrami_err(
   params.set<double>("L2 integrated pressure error",preerr);
 
   return;
+}
+
+
+/*---------------------------------------------------------------------*
+ *---------------------------------------------------------------------*/
+void DRT::ELEMENTS::Combust3::UpdateOldDLMAndDLMRHS(
+    const DRT::Discretization&      discretization,
+    const std::vector<int>&         lm,
+    MyState&                        mystate
+    ) const
+{
+  const int nu = eleDofManager_uncondensed_->NumNodeDof();
+  const int ns = eleDofManager_uncondensed_->NumElemDof();
+
+  if (ns > 0)
+  {
+    // add Kda . inc_velnp to feas
+    // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
+
+    vector<double> inc_velnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*discretization.GetState("nodal increment"),inc_velnp,lm);
+
+    static const Epetra_BLAS blas;
+
+    // update old iteration residual of the stresses
+    // DLM_info_->oldfa_(i) += DLM_info_->oldKad_(i,j)*inc_velnp[j];
+    blas.GEMV('N', ns, nu,-1.0, DLM_info_->oldKad_.A(), DLM_info_->oldKad_.LDA(), &inc_velnp[0], 1.0, DLM_info_->oldfa_.A());
+
+    // compute element stresses
+    // DLM_info_->stressdofs_(i) -= DLM_info_->oldKaainv_(i,j)*DLM_info_->oldfa_(j);
+    blas.GEMV('N', ns, ns,1.0, DLM_info_->oldKaainv_.A(), DLM_info_->oldKaainv_.LDA(), DLM_info_->oldfa_.A(), 1.0, DLM_info_->stressdofs_.A());
+
+    // increase size of element vector (old values stay and zeros are added)
+    const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
+    mystate.velnp_.resize(numdof_uncond,0.0);
+    mystate.veln_ .resize(numdof_uncond,0.0);
+    mystate.velnm_.resize(numdof_uncond,0.0);
+    mystate.accn_ .resize(numdof_uncond,0.0);
+    for (int i=0;i<ns;i++)
+    {
+      mystate.velnp_[nu+i] = DLM_info_->stressdofs_(i);
+    }
+  }
+}
+
+
+/*---------------------------------------------------------------------*
+ *---------------------------------------------------------------------*/
+void DRT::ELEMENTS::Combust3::CondenseElementStressAndStoreOldIterationStep(
+    const Epetra_SerialDenseMatrix& elemat1_uncond,
+    const Epetra_SerialDenseVector& elevec1_uncond,
+    Epetra_SerialDenseMatrix& elemat1,
+    Epetra_SerialDenseVector& elevec1
+) const
+{
+
+  const size_t nu = eleDofManager_uncondensed_->NumNodeDof();
+  const size_t ns = eleDofManager_uncondensed_->NumElemDof();
+
+  // copy nodal dof entries
+  for (size_t i = 0; i < nu; ++i)
+  {
+    elevec1(i) = elevec1_uncond(i);
+    for (size_t j = 0; j < nu; ++j)
+    {
+      elemat1(i,j) = elemat1_uncond(i,j);
+    }
+  }
+
+  if (ns > 0)
+  {
+    // note: the full (u,p,sigma) matrix is asymmetric,
+    // hence we need both rectangular matrices Kda and Kad
+    LINALG::SerialDenseMatrix Gus(nu,ns);
+    LINALG::SerialDenseMatrix Kssinv(ns,ns);
+    LINALG::SerialDenseMatrix KGsu(ns,nu);
+    LINALG::SerialDenseVector fs(ns);
+
+//    cout << elemat1_uncond << endl;
+
+    // copy data of uncondensed matrix into submatrices
+    for (size_t i=0;i<nu;i++)
+      for (size_t j=0;j<ns;j++)
+        Gus(i,j) = elemat1_uncond(   i,nu+j);
+
+    for (size_t i=0;i<ns;i++)
+      for (size_t j=0;j<ns;j++)
+        Kssinv(i,j) = elemat1_uncond(nu+i,nu+j);
+
+    for (size_t i=0;i<ns;i++)
+      for (size_t j=0;j<nu;j++)
+        KGsu(i,j) = elemat1_uncond(nu+i,   j);
+
+    for (size_t i=0;i<ns;i++)
+      fs(i) = elevec1_uncond(nu+i);
+
+    // DLM-stiffness matrix is: Kdd - Kda . Kaa^-1 . Kad
+    // DLM-internal force is: fint - Kda . Kaa^-1 . feas
+
+    // we need the inverse of Kaa
+    Epetra_SerialDenseSolver solve_for_inverseKaa;
+    solve_for_inverseKaa.SetMatrix(Kssinv);
+    solve_for_inverseKaa.Invert();
+
+    static const Epetra_BLAS blas;
+    {
+      LINALG::SerialDenseMatrix GusKssinv(nu,ns); // temporary Gus.Kss^{-1}
+
+      // GusKssinv(i,j) = Gus(i,k)*Kssinv(k,j);
+      blas.GEMM('N','N',nu,ns,ns,1.0,Gus.A(),Gus.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,GusKssinv.A(),GusKssinv.LDA());
+
+      // elemat1(i,j) += - GusKssinv(i,k)*KGsu(k,j);   // note that elemat1 = Cuu below
+      blas.GEMM('N','N',nu,nu,ns,-1.0,GusKssinv.A(),GusKssinv.LDA(),KGsu.A(),KGsu.LDA(),1.0,elemat1.A(),elemat1.LDA());
+
+      // elevec1(i) += - GusKssinv(i,j)*fs(j);
+      blas.GEMV('N', nu, ns,-1.0, GusKssinv.A(), GusKssinv.LDA(), fs.A(), 1.0, elevec1.A());
+    }
+
+    // store current DLM data in iteration history
+    //DLM_info_->oldKaainv_.Update(1.0,Kaa,0.0);
+    blas.COPY(DLM_info_->oldKaainv_.M()*DLM_info_->oldKaainv_.N(), Kssinv.A(), DLM_info_->oldKaainv_.A());
+    //DLM_info_->oldKad_.Update(1.0,Kad,0.0);
+    blas.COPY(DLM_info_->oldKad_.M()*DLM_info_->oldKad_.N(), KGsu.A(), DLM_info_->oldKad_.A());
+    //DLM_info_->oldfa_.Update(1.0,fa,0.0);
+    blas.COPY(DLM_info_->oldfa_.M()*DLM_info_->oldfa_.N(), fs.A(), DLM_info_->oldfa_.A());
+  }
 }
 
 
