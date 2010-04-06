@@ -250,14 +250,14 @@ namespace DRT
      //-----------------------------------------------------------------
      template<DRT::Element::DiscretizationType distype ,
               DRT::Element::DiscretizationType pdistype>
-     class Fluid2LineWeakDBC: public Fluid3BoundaryWeakDBCInterface
+     class Fluid3LineWeakDBC: public Fluid3BoundaryWeakDBCInterface
      {
      public:
-       /// Constructor with number of nodes
-       Fluid2LineWeakDBC();
+       /// empty constructor
+       Fluid3LineWeakDBC();
 
        /// empty destructor
-       ~Fluid2LineWeakDBC(){return;};
+       ~Fluid3LineWeakDBC(){return;};
 
        /// number of nodes
        static const int iel  = DRT::UTILS::DisTypeToNumNodePerEle<distype >::numNodePerElement;
