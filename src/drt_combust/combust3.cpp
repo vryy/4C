@@ -233,7 +233,7 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
       // be performed once (at the beginning) on each processor. Otherwise some processors would
       // wait to receive MPI information, but would never get it, because some processores are
       // already done with their element loop. This will cause a mean parallel bug!   henke 11.08.09
-      if(this->Id() == discretization.lRowElement(0)->Id())
+      if(ele->Id() == discretization.lRowElement(0)->Id())
       {
         // get map of this vector
         const Epetra_BlockMap& phimap = phinp->Map();
