@@ -304,11 +304,6 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(ParameterList& params,
 int DRT::ELEMENTS::Truss3::EvaluatePTC(ParameterList& params,
                                       Epetra_SerialDenseMatrix& elemat1)
 {
-  double dti = params.get<double>("dti",0.0);
-
-  for(int i= 0; i<6; i++)
-    elemat1(i,i) += dti;
-
   return 0;
 } //DRT::ELEMENTS::Truss3::EvaluatePTC
 
