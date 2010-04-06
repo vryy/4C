@@ -64,8 +64,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D(
   const bool                              conservative,
   const bool                              is_genalpha,
   const bool                              higher_order_ele,
-  const bool                              tau_gp,
-  const bool                              mat_gp,
   const enum Fluid3::FineSubgridVisc      fssgv,
   const enum Fluid3::StabilisationAction  pspg,
   const enum Fluid3::StabilisationAction  supg,

@@ -387,14 +387,13 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   }
 
   // set flags for potential evaluation of tau and material law at int. point
-  bool tau_gp = false; //default
-  bool mat_gp = false; //default
-  {
-    const string tauloc = stablist.get<string>("EVALUATION_TAU");
-    if (tauloc == "integration_point") tau_gp = true;
-    const string matloc = stablist.get<string>("EVALUATION_MAT");
-    if (matloc == "integration_point") mat_gp = true;
-  }
+  // default value: evaluation at element center
+  const string tauloc = stablist.get<string>("EVALUATION_TAU");
+  if (tauloc == "integration_point") tau_gp_ = true;
+  else                               tau_gp_ = false;
+  const string matloc = stablist.get<string>("EVALUATION_MAT");
+  if (matloc == "integration_point") mat_gp_ = true;
+  else                               mat_gp_ = false;
 
   // flag for higher order elements
   //bool higher_order_ele = ele->isHigherOrderElement(ele->Shape());
@@ -768,8 +767,6 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
          conservative,
          is_genalpha,
          higher_order_ele,
-         tau_gp,
-         mat_gp,
          fssgv,
          pspg,
          supg,
@@ -809,8 +806,6 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
            conservative,
            is_genalpha,
            higher_order_ele,
-           tau_gp,
-           mat_gp,
            fssgv,
            pspg,
            supg,
@@ -887,8 +882,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   const bool                              conservative,
   const bool                              is_genalpha,
   const bool                              higher_order_ele,
-  const bool                              tau_gp,
-  const bool                              mat_gp,
   const enum Fluid3::FineSubgridVisc      fssgv,
   const enum Fluid3::StabilisationAction  pspg,
   const enum Fluid3::StabilisationAction  supg,
