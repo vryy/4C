@@ -53,6 +53,9 @@ public:
 
   //! \brief write output for Gmsh postprocessing
   void GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step);
+  
+  //! \brief gmsh output in case of periodic boundary conditions
+  void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid);
 
   //! \brief set crosslinker if two nodes are close enough and probability check is passed
   void SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
@@ -110,9 +113,6 @@ protected:
 
   //! \brief Shifts current coordinate X+d (where X is constant reference coordinate by +/- period length until is lies within a box demanded by periodic boundary conditions
   void CoordindateShift(const double& X, double& d);
-
-  //! \brief gmsh output in case of periodic boundary conditions
-  void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid);
 
 
 
