@@ -935,7 +935,6 @@ set(OBJS_DRT_F3_LIB
   src/drt_f3/fluid3_stabilization.cpp
   src/drt_f3/fluid3_stationary.cpp
   src/drt_f3/fluid3_weak_dbc.cpp
-  src/drt_f3/fluid3_weak_dbc_2D.cpp
   src/drt_f3/xfluid3.cpp
   src/drt_f3/xfluid3_evaluate.cpp
   src/drt_f3/xfluid3_input.cpp
@@ -1640,7 +1639,7 @@ baci_test(fsi_ow32x32_sti_mtr_drt 2 "")
 baci_test(fsi_ow3D_mtr_drt 1 "")
 baci_test(fsi_ow3D_mtr_drt 2 "")
 baci_test(fsi_potential_LJ 1 "")
-baci_test(fsi_potential_LJ_par 2 4)
+baci_test(fsi_potential_LJ_par 2 "")
 baci_test(fsi_ring2D_sliding_tot 1 "")
 baci_test(fsi_ring2D_sliding_tot 2 "")
 baci_test(fsi_ring2D_sliding_up 1 "")
