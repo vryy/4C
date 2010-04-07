@@ -38,7 +38,9 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
   }
   else
   {
+#ifdef DEBUG
     bool completely_unchanged = true;
+#endif
     const RCP<Epetra_Vector> oldVector = vector;
     const Epetra_BlockMap& oldmap = oldVector->Map();
 //    std::cout << "olddofrowmap_" << endl;
@@ -113,7 +115,9 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
           // add old value to already existing values
           //(*newVector)[newdofrowmap_.LID(newdofpos)] += enrval*(*oldVector)[olddofrowmap_.LID(olddofpos)];
           (*newVector)[newdofrowmap_.LID(newdofpos)] += (*oldVector)[olddofrowmap_.LID(olddofpos)];
+#ifdef DEBUG
           completely_unchanged = false;
+#endif
         }
         else // if not alternative is found
         {
@@ -128,7 +132,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
       }
     }
 
-#if 1
+#if 0
     // remark: Only if DLM condensation is turned off, there will be element dofs visible in the global
     //         DofManager. Of course, irrespective of the DLM condensation setting, there will be
     //         element dofs on the element level (ElementDofManager), if a stress-based approach is
