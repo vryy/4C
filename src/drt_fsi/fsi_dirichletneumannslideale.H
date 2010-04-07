@@ -114,6 +114,30 @@ protected:
   ///predictor
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
   
+  /// compute Displacement of structural center of gravity
+  vector<double> Centerdisp
+  (
+      Teuchos::RCP<Epetra_Vector> idisptotal,
+      Teuchos::RCP<Epetra_Vector>idispstep
+  );
+  
+  std::map<int,LINALG::Matrix<3,1> > CurrentMasterPos
+  (
+      Teuchos::RCP<Epetra_Vector> idisptotal,
+      Teuchos::RCP<Epetra_Vector> reddisp,
+      DRT::Discretization& interfacedis,
+      RCP<Epetra_Map> msfullelemap
+  );
+  
+  void SlideProjection
+  (
+      Teuchos::RCP<Epetra_Vector> islavestep,
+      DRT::Discretization& interfacedis,
+      vector<double> centerdisp,
+      std::map<int, RCP<DRT::Element> > masterreduelements,
+      std::map<int,LINALG::Matrix<3,1> > currentpositions
+  );
+  
 private:
 
   //! we couple based on displacements
@@ -125,7 +149,8 @@ private:
   
   map<int, DRT::Node*> imastergnodes_;	      ///< masternodes in the interface including ghosts
   map<int, RCP<DRT::Element> > imastereles_;	///< masterlelements in the interface
-  map<int, DRT::Node*> islavenodes_;	        ///< slavenodes (= fluid) in the interface
+  map<int, DRT::Node*> islaveslidnodes_;          ///< sliding slavenodes (= fluid) in the interface
+  map<int, DRT::Node*> islaveconfnodes_;          ///< non-sliding slavenodes (= fluid) in the interface
   
 };
 
