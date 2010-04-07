@@ -79,64 +79,66 @@ void BuildDomainIntegralsStress(
     const bool newton                                  // turn on/off linearization of convective term
 )
 {
-//    /*
-//                       /                      \
-//                    - |  virt tau , eps(Dtau)  |
-//                       \                      /
-//     */
-//
-//    const double reciproke_viscfac = 1.0/(2.0*visc);
-//    assembler.template Matrix<Sigmaxx,Sigmaxx>(shp_tau, -reciproke_viscfac*timefacfac, shp_tau);
-//    assembler.template Matrix<Sigmaxy,Sigmaxy>(shp_tau, -reciproke_viscfac*timefacfac*2.0, shp_tau);
-//    assembler.template Matrix<Sigmaxz,Sigmaxz>(shp_tau, -reciproke_viscfac*timefacfac*2.0, shp_tau);
-//    assembler.template Matrix<Sigmayy,Sigmayy>(shp_tau, -reciproke_viscfac*timefacfac, shp_tau);
-//    assembler.template Matrix<Sigmayz,Sigmayz>(shp_tau, -reciproke_viscfac*timefacfac*2.0, shp_tau);
-//    assembler.template Matrix<Sigmazz,Sigmazz>(shp_tau, -reciproke_viscfac*timefacfac, shp_tau);
-//
-//    assembler.template Vector<Sigmaxx>(shp_tau,  reciproke_viscfac*timefacfac*tau(0,0));
-//    assembler.template Vector<Sigmaxy>(shp_tau,  reciproke_viscfac*timefacfac*tau(0,1)*2.0);
-//    assembler.template Vector<Sigmaxz>(shp_tau,  reciproke_viscfac*timefacfac*tau(0,2)*2.0);
-//    assembler.template Vector<Sigmayy>(shp_tau,  reciproke_viscfac*timefacfac*tau(1,1));
-//    assembler.template Vector<Sigmayz>(shp_tau,  reciproke_viscfac*timefacfac*tau(1,2)*2.0);
-//    assembler.template Vector<Sigmazz>(shp_tau,  reciproke_viscfac*timefacfac*tau(2,2));
-//
-//    /*             /                  \
-//                    | virt tau , eps(Du) |
-//                     \                  /
-//     */
-//    assembler.template Matrix<Sigmaxx,Velx>(shp_tau,     timefacfac    , shp.dx);
-//    assembler.template Matrix<Sigmaxy,Velx>(shp_tau,     timefacfac    , shp.dy);
-//    assembler.template Matrix<Sigmaxy,Vely>(shp_tau,     timefacfac    , shp.dx);
-//    assembler.template Matrix<Sigmaxz,Velx>(shp_tau,     timefacfac    , shp.dz);
-//    assembler.template Matrix<Sigmaxz,Velz>(shp_tau,     timefacfac    , shp.dx);
-//    assembler.template Matrix<Sigmayy,Vely>(shp_tau,     timefacfac    , shp.dy);
-//    assembler.template Matrix<Sigmayz,Vely>(shp_tau,     timefacfac    , shp.dz);
-//    assembler.template Matrix<Sigmayz,Velz>(shp_tau,     timefacfac    , shp.dy);
-//    assembler.template Matrix<Sigmazz,Velz>(shp_tau,     timefacfac    , shp.dz);
-//
-//    assembler.template Vector<Sigmaxx>(shp_tau,    - timefacfac*vderxy(0, 0));
-//    assembler.template Vector<Sigmaxy>(shp_tau,    - timefacfac*(vderxy(0, 1) + vderxy(1, 0)));
-//    assembler.template Vector<Sigmaxz>(shp_tau,    - timefacfac*(vderxy(0, 2) + vderxy(2, 0)));
-//    assembler.template Vector<Sigmayy>(shp_tau,    - timefacfac*vderxy(1, 1));
-//    assembler.template Vector<Sigmayz>(shp_tau,    - timefacfac*(vderxy(1, 2) + vderxy(2, 1)));
-//    assembler.template Vector<Sigmazz>(shp_tau,    - timefacfac*vderxy(2, 2));
-//
-//
-//    /* pressure-pressure coupling, rectangular part */
-//    /*
-//                     /                    \
-//                    |                      |
-//                  - | tr(virt tau^e) , p I |
-//                    |                      |
-//                     \                    /
-//     */
-//    assembler.template Matrix<Sigmaxx,Pres>(shp_tau, -1.0/(2.0*visc)*timefacfac, shp.d0);
-//    assembler.template Matrix<Sigmayy,Pres>(shp_tau, -1.0/(2.0*visc)*timefacfac, shp.d0);
-//    assembler.template Matrix<Sigmazz,Pres>(shp_tau, -1.0/(2.0*visc)*timefacfac, shp.d0);
-//
-//    assembler.template Vector<Sigmaxx>(shp_tau, 1.0/(2.0*visc)*timefacfac*pres);
-//    assembler.template Vector<Sigmayy>(shp_tau, 1.0/(2.0*visc)*timefacfac*pres);
-//    assembler.template Vector<Sigmazz>(shp_tau, 1.0/(2.0*visc)*timefacfac*pres);
+#if 0
+    /*
+                       /                      \
+                    - |  virt tau , eps(Dtau)  |
+                       \                      /
+     */
+
+    const double reciproke_viscfac = 1.0/(2.0*visc);
+    assembler.template Matrix<Sigmaxx,Sigmaxx>(shp_tau, -reciproke_viscfac*timefacfac, shp_tau);
+    assembler.template Matrix<Sigmaxy,Sigmaxy>(shp_tau, -reciproke_viscfac*timefacfac*2.0, shp_tau);
+    assembler.template Matrix<Sigmaxz,Sigmaxz>(shp_tau, -reciproke_viscfac*timefacfac*2.0, shp_tau);
+    assembler.template Matrix<Sigmayy,Sigmayy>(shp_tau, -reciproke_viscfac*timefacfac, shp_tau);
+    assembler.template Matrix<Sigmayz,Sigmayz>(shp_tau, -reciproke_viscfac*timefacfac*2.0, shp_tau);
+    assembler.template Matrix<Sigmazz,Sigmazz>(shp_tau, -reciproke_viscfac*timefacfac, shp_tau);
+
+    assembler.template Vector<Sigmaxx>(shp_tau,  reciproke_viscfac*timefacfac*tau(0,0));
+    assembler.template Vector<Sigmaxy>(shp_tau,  reciproke_viscfac*timefacfac*tau(0,1)*2.0);
+    assembler.template Vector<Sigmaxz>(shp_tau,  reciproke_viscfac*timefacfac*tau(0,2)*2.0);
+    assembler.template Vector<Sigmayy>(shp_tau,  reciproke_viscfac*timefacfac*tau(1,1));
+    assembler.template Vector<Sigmayz>(shp_tau,  reciproke_viscfac*timefacfac*tau(1,2)*2.0);
+    assembler.template Vector<Sigmazz>(shp_tau,  reciproke_viscfac*timefacfac*tau(2,2));
+
+    /*               /                  \
+                    | virt tau , eps(Du) |
+                     \                  /
+     */
+    assembler.template Matrix<Sigmaxx,Velx>(shp_tau,     timefacfac    , shp.dx);
+    assembler.template Matrix<Sigmaxy,Velx>(shp_tau,     timefacfac    , shp.dy);
+    assembler.template Matrix<Sigmaxy,Vely>(shp_tau,     timefacfac    , shp.dx);
+    assembler.template Matrix<Sigmaxz,Velx>(shp_tau,     timefacfac    , shp.dz);
+    assembler.template Matrix<Sigmaxz,Velz>(shp_tau,     timefacfac    , shp.dx);
+    assembler.template Matrix<Sigmayy,Vely>(shp_tau,     timefacfac    , shp.dy);
+    assembler.template Matrix<Sigmayz,Vely>(shp_tau,     timefacfac    , shp.dz);
+    assembler.template Matrix<Sigmayz,Velz>(shp_tau,     timefacfac    , shp.dy);
+    assembler.template Matrix<Sigmazz,Velz>(shp_tau,     timefacfac    , shp.dz);
+
+    assembler.template Vector<Sigmaxx>(shp_tau,    - timefacfac*vderxy(0, 0));
+    assembler.template Vector<Sigmaxy>(shp_tau,    - timefacfac*(vderxy(0, 1) + vderxy(1, 0)));
+    assembler.template Vector<Sigmaxz>(shp_tau,    - timefacfac*(vderxy(0, 2) + vderxy(2, 0)));
+    assembler.template Vector<Sigmayy>(shp_tau,    - timefacfac*vderxy(1, 1));
+    assembler.template Vector<Sigmayz>(shp_tau,    - timefacfac*(vderxy(1, 2) + vderxy(2, 1)));
+    assembler.template Vector<Sigmazz>(shp_tau,    - timefacfac*vderxy(2, 2));
+
+
+    /* pressure-pressure coupling, rectangular part */
+    /*
+                     /                    \
+                    |                      |
+                  - | tr(virt tau^e) , p I |
+                    |                      |
+                     \                    /
+     */
+    assembler.template Matrix<Sigmaxx,Pres>(shp_tau, -1.0/(2.0*visc)*timefacfac, shp.d0);
+    assembler.template Matrix<Sigmayy,Pres>(shp_tau, -1.0/(2.0*visc)*timefacfac, shp.d0);
+    assembler.template Matrix<Sigmazz,Pres>(shp_tau, -1.0/(2.0*visc)*timefacfac, shp.d0);
+
+    assembler.template Vector<Sigmaxx>(shp_tau, 1.0/(2.0*visc)*timefacfac*pres);
+    assembler.template Vector<Sigmayy>(shp_tau, 1.0/(2.0*visc)*timefacfac*pres);
+    assembler.template Vector<Sigmazz>(shp_tau, 1.0/(2.0*visc)*timefacfac*pres);
+#endif
 }
 
 /*!
