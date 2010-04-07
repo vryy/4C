@@ -305,10 +305,12 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const vector<double>& xrefe, 
     lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5);
     
     //set jacobi determinants for integration of mass matrix and at nodes
-    jacobimass_.resize(1);
+    jacobimass_.resize(2);
     jacobimass_[0] = lrefe_ / 2.0;
-    jacobinode_.resize(1);
+    jacobimass_[1] = lrefe_ / 2.0;
+    jacobinode_.resize(2);
     jacobinode_[0] = lrefe_ / 2.0;
+    jacobinode_[1] = lrefe_ / 2.0;
   }
 
   return;

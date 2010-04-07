@@ -54,7 +54,6 @@ int DRT::ELEMENTS::Truss2::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_imrlike") act = Truss2::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep") act = Truss2::calc_struct_reset_istep;
   else if (action=="postprocess_stress") act = Truss2::postprocess_stress;
-  else if (action=="calc_stat_force_damp") act = Truss2::calc_stat_force_damp;
   else if (action=="calc_struct_ptcstiff") act = Truss2::calc_struct_ptcstiff;
   else 
     {
@@ -71,13 +70,6 @@ int DRT::ELEMENTS::Truss2::Evaluate(ParameterList& params,
     case Truss2::calc_struct_ptcstiff:
     {
       EvaluatePTC(params, elemat1,ActNumDof0);
-    }
-    break;
-    //action type for evaluating statistical forces
-    case Truss2::calc_stat_force_damp:
-    {
-
-  
     }
     break;
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and 
@@ -279,12 +271,15 @@ void DRT::ELEMENTS::Truss2::t2_nlnstiffmass( vector<double>& disp,
   {
   case tr2_totlag:
     t2_nlnstiffmass_totlag(disp,stiffmatrix,massmatrix,force);
-    return;
+  break;
   case tr2_engstrain:
     t2_nlnstiffmass_engstr(disp,stiffmatrix,massmatrix,force);
-    return;
+  break;
+  default:
+    dserror("Unknown type kintype_ for Truss2");
   }
-  
+
+  return;
 }
 
 

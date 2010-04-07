@@ -54,7 +54,6 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_imrlike") act = Truss3::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep") act = Truss3::calc_struct_reset_istep;
   else if (action=="postprocess_stress") act = Truss3::postprocess_stress;
-  else if (action=="calc_brownian")        act = Truss3::calc_brownian;
   else if (action=="calc_struct_ptcstiff") act = Truss3::calc_struct_ptcstiff;
   else
     {
@@ -67,63 +66,6 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
     case Truss3::calc_struct_ptcstiff:
     {
       EvaluatePTC(params, elemat1);
-    }
-    break;
-    //action type for evaluating statistical forces
-    case Truss3::calc_brownian:
-    {
-      /*in order to understand the way how in the following parallel computing is handled one has to
-       * be aware of what usually happens: each processor evaluates forces on each of its elements no
-       * matter whether it's a real element or only a ghost element; later on in the assembly of the
-       * evaluation method each processor adds the thereby gained DOF forces only for the DOF of
-       * which it is the row map owner; if one used this way for random forces the following problem
-       * would arise: if two processors evaluate both the same element (one time as a real element, one time
-       * as a ghost element) and assemble later only the random forces of their own DOF the assembly for
-       * different DOF of the same element might take place by means of random forces evaluated during different
-       * element calls (one time the real element was called, one time only the ghost element); as a consequence
-       * prescribing any correlation function between random forces of different DOF is in general
-       * impossible since the random forces of two different DOF may have been evaluated during different
-       * element calls; the only solution to this problem is obviously to allow element evaluation
-       * to one processor only (the row map owner processor) and to allow this processor to assemble the
-       * thereby gained random forces later on also to DOF of which it is not the row map owner; so fist
-       * we check in this method whether the current processor is the owner of the element (if not
-       * evaluation is cancelled) and finally this processor assembles the evaluated forces for degrees of
-       * freedom right no matter whether its the row map owner of these DOF (outside the element routine
-       * in the evaluation method of the discretization this would be not possible by default*/
-
-      /*
-      //test whether current processor is row map owner of the element
-      if(this->Owner() != discretization.Comm().MyPID()) return 0;
-
-      // get element displacements (for use in shear flow fields)
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get state vector 'displacement'");
-      vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-
-      //evaluation of statistical forces with the local statistical forces vector fstat
-      Epetra_SerialDenseVector fstat(lm.size());
-      EvaluateStatForceDamp(params,mydisp,fstat,elemat1);
-
-      //all the above evaluated forces are used in assembly of the column map force vector no matter if the current processor if
-      //the row map owner of these DOF
-      //note carefully: a space between the two subsequal ">" signs is mandatory for the C++ parser in order to avoid confusion with ">>" for streams
-      RCP<Epetra_Vector>    fstatcol = params.get<  RCP<Epetra_Vector> >("statistical force vector",Teuchos::null);
-
-      for(unsigned int i = 0; i < lm.size(); i++)
-      {
-        //note: lm contains the global Ids of the degrees of freedom of this element
-        //testing whether the fstatcol vector has really an element related with the i-th element of fstat by the i-the entry of lm
-        if (!(fstatcol->Map()).MyGID(lm[i])) dserror("Sparse vector fstatcol does not have global row %d",lm[i]);
-
-        //get local Id of the fstatcol vector related with a certain element of fstat
-        int lid = (fstatcol->Map()).LID(lm[i]);
-
-        //add to the related element of fstatcol the contribution of fstat
-        (*fstatcol)[lid] += fstat[i];
-      }
-      */
-
     }
     break;
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and
@@ -324,12 +266,14 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(ParameterList& params,
   
   switch(kintype_)
   {
-  case tr3_totlag:
-    t3_nlnstiffmass_totlag(disp,stiffmatrix,massmatrix,force);
-    return;
-  case tr3_engstrain:
-    t3_nlnstiffmass_engstr(disp,stiffmatrix,massmatrix,force);
-    return;
+    case tr3_totlag:
+      t3_nlnstiffmass_totlag(disp,stiffmatrix,massmatrix,force);
+    break;
+    case tr3_engstrain:
+      t3_nlnstiffmass_engstr(disp,stiffmatrix,massmatrix,force);
+    break;
+    default:
+      dserror("Unknown type kintype_ for Truss3");
   }
   
   /*the following function call applies statistical forces and damping matrix according to the fluctuation dissipation theorem;
@@ -338,7 +282,8 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(ParameterList& params,
    * the element does not attach this special vector to params the following method is just doing nothing, which means that for
    * any ordinary problem of structural mechanics it may be ignored*/
    CalcBrownian<2,3,3,3>(params,vel,disp,stiffmatrix,force);
-  
+   
+   return; 
 }
 
 
@@ -850,7 +795,7 @@ inline void DRT::ELEMENTS::Truss3::CalcBrownian(ParameterList& params,
   //if no random numbers for generation of stochastic forces are passed to the element no Brownian dynamics calculations are conducted
   if( params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) == Teuchos::null)
     return;
-  
+
   //add stiffness and forces due to translational damping effects
   MyTranslationalDamping<nnode,ndim,dof>(params,vel,disp,stiffmatrix,force); 
 

@@ -302,7 +302,6 @@ private:
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                              //!< during iteration to last converged state
     postprocess_stress,
-    calc_stat_force_damp, //calculate statistical forces and damping for Brownian dynamics
     calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
   };
 
