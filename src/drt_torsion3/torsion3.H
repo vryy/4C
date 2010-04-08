@@ -289,13 +289,6 @@ private:
   //springconstant
   double springconstant_;
   
-  //! @name methods for initilization of the element
-  
-  //!sets reference coordinates X_ and refenrence length lrefe_ for elements added to the discretization after simulation start
-  void SetUpReferenceGeometry(const LINALG::Matrix<9,1>& xrefe);
-  
-  //@}
-
   //! @name Internal calculation methods
               
   //!calculation of nonlinear stiffness and mass matrix

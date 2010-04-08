@@ -159,10 +159,11 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(ParameterList&            params,
   LINALG::Matrix<9,1> xcurr;
     
   //current nodal position
-  for (int j=0; j<3; ++j){
+  for (int j=0; j<3; ++j)
+  {
     xcurr(j  )   = Nodes()[0]->X()[j] + disp[    j];  //first node
-      xcurr(j+3)   = Nodes()[1]->X()[j] + disp[3 + j];  //second node
-      xcurr(j+6)   = Nodes()[2]->X()[j] + disp[6 + j];  //third node
+    xcurr(j+3)   = Nodes()[1]->X()[j] + disp[3 + j];  //second node
+    xcurr(j+6)   = Nodes()[2]->X()[j] + disp[6 + j];  //third node
   }
     
   //auxiliary vector for both internal force and stiffness matrix

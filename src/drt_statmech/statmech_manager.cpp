@@ -1581,8 +1581,8 @@ void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
 /*------------------------------------------------------------------------*
  | This function loops through all the elements of the discretization and |
  | tests whether truss3 are broken by periodic boundary conditions in the |
- | reference configuration; if yes initial values of curvature and jacobi |
- | determinants are adapted in a proper way                    cyron 03/10|
+ | reference configuration; if yes initial values of jacobi determinants  |
+ | are adapted in a proper way                                 cyron 03/10|
  *-----------------------------------------------------------------------*/
 void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
 {
@@ -1622,7 +1622,6 @@ void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
 
 #endif
 }
-
 
 /*----------------------------------------------------------------------*
  | Searches and saves in variable  crosslinkerneighbours_ neighbours for|
