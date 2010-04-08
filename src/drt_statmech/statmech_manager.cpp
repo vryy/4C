@@ -1596,6 +1596,10 @@ void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
 
   /*get reference configuration of truss3 element in proper format for later call of SetUpReferenceGeometry*/
   vector<double> xrefe(truss->NumNode()*ndim,0);
+  
+  for(int i=0;i<truss->NumNode();i++)
+    for(int dof=0; dof<ndim; dof++)
+      xrefe[3*i+dof] = truss->Nodes()[i]->X()[dof];
 
 
   /*loop through all nodes except for the first node which remains fixed as reference node; all other nodes are
