@@ -698,16 +698,15 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
       DRT::Element* element = discret_.lColElement(i);
 
       //getting number of nodes of current element
-      if( element->NumNode() > 2)
-        dserror("Gmsh output for two noded elements only");
+      //if( element->NumNode() > 2)
+        //dserror("Gmsh output for two noded elements only");
 
 
 
         //preparing variable storing coordinates of all these nodes
-        int nnodes = 2;
-        LINALG::SerialDenseMatrix coord(3,nnodes);
+        LINALG::SerialDenseMatrix coord(3,element->NumNode());
         for(int id = 0; id<3; id++)
-         for(int jd = 0; jd<nnodes; jd++)
+         for(int jd = 0; jd<element->NumNode(); jd++)
          {
            double referenceposition = ((element->Nodes())[jd])->X()[id];
            vector<int> dofnode = discret_.Dof((element->Nodes())[jd]);
@@ -971,13 +970,13 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
   else if(element->Type()==DRT::Element::element_torsion3)
   {
   	double beadcolor = 0.75;
-  	for(int i=0; i<element->NumNode(); i++)
-  	{
-			//writing element by nodal coordinates as a scalar line
-			gmshfilecontent << "SP(" << scientific;
-			gmshfilecontent<< element->Nodes()[i]->X()[0] << "," << element->Nodes()[i]->X()[1] << "," << element->Nodes()[i]->X()[2];
-			gmshfilecontent << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << endl;
-  	}
+  		for(int i=0; i<element->NumNode(); i++)
+  		{
+				//writing element by nodal coordinates as a scalar line
+				gmshfilecontent << "SP(" << scientific;
+				gmshfilecontent<< coord(0,i) << "," << coord(1,i) << "," << coord(2,i);
+				gmshfilecontent << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << endl;
+  		}
   }
   return;
 } // StatMechManager::GmshOutputPeriodicBoundary()
@@ -1596,7 +1595,7 @@ void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
 
   /*get reference configuration of truss3 element in proper format for later call of SetUpReferenceGeometry*/
   vector<double> xrefe(truss->NumNode()*ndim,0);
-  
+
   for(int i=0;i<truss->NumNode();i++)
     for(int dof=0; dof<ndim; dof++)
       xrefe[3*i+dof] = truss->Nodes()[i]->X()[dof];
