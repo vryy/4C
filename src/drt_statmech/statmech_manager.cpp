@@ -41,7 +41,7 @@ Maintainer: Christian Cyron
 #include <math.h>
 
 //MEASURETIME activates measurement of computation time for certain parts of the code
-#define MEASURETIME
+//#define MEASURETIME
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             cyron 09/08|
@@ -731,8 +731,10 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
         gmshfilecontent << "SL(" << scientific;
         gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << ","
                        << coord(0,1) << "," << coord(1,1) << "," << coord(2,1) ;
-        /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
-         * interpolating these two colors between the nodes*/
+        /*note: colors are chosen by values between 0.0 and 1.0. These values refer to a color vector which
+         * is given in a .geo-setup-file. If, for example, 5 colors are given(either in X11 color expressions or RGB),
+         * possible values are 0.0, 0.25, 0.5, 0.75, 1.0.
+         */
         gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
       }
       //in case of periodic boundary conditions we have to take care to plot correctly an element broken at some boundary plane
@@ -749,7 +751,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 
 			double boundarycolor=0.0;
 
-    	// define boundary lines (causes eye cancer!)
+    	// define boundary lines
     	gmshfilecontent << "SL(" << scientific;
     	gmshfilecontent << 0.0 << "," << 0.0 << "," << 0.0 << ","
 											<< pl << "," << 0.0 << "," << 0.0 ;
@@ -834,130 +836,148 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
   //number of spatial dimensions
   const int ndim = 3;
 
-  /*detect and save in vector "cut", at which boundaries the element is broken due to periodic boundary conditions;
-   * the entries of cut have the following meaning: 0: element not broken in respective coordinate direction, 1:
-   * element broken in respective coordinate direction (node 0 close to zero boundary and node 1 close to boundary
-   * at PeriodLength);  2: element broken in respective coordinate direction (node 1 close to zero boundary and node
-   * 0 close to boundary at PeriodLength);*/
-  LINALG::Matrix<3,1> cut(true);
+  // get Element Type of the first Element to determine the graphics output
+  DRT::Element* element = discret_.gElement(eleid);
 
-  /* "coord" currently holds the shifted set of coordinates.
-   * In order to determine the correct vector "dir" of the visualization at the boundaries,
-   * a copy of "coord" with adjustments in the proper places is introduced*/
-  LINALG::SerialDenseMatrix unshift = coord;
-
-  for(int dof=0; dof<ndim; dof++)
+  // draw colored lines between two nodes of a beam3 or truss3 element (meant for filaments/crosslinks/springs)
+  if(element->Type()==DRT::Element::element_beam3 || element->Type()==DRT::Element::element_truss3)
   {
-    if( fabs(coord(dof,1) - statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0))  < fabs(coord(dof,1) - coord(dof,0)) )
-    {
-      cut(dof) = 1;
-      unshift(dof,1) -= statmechparams_.get<double>("PeriodLength",0.0);
-    }
-    if( fabs(coord(dof,1) + statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0))  < fabs(coord(dof,1) - coord(dof,0)) )
-    {
-      cut(dof) = 2;
-      unshift(dof,1) += statmechparams_.get<double>("PeriodLength",0.0);
-    }
+		/*detect and save in vector "cut", at which boundaries the element is broken due to periodic boundary conditions;
+		 * the entries of cut have the following meaning: 0: element not broken in respective coordinate direction, 1:
+		 * element broken in respective coordinate direction (node 0 close to zero boundary and node 1 close to boundary
+		 * at PeriodLength);  2: element broken in respective coordinate direction (node 1 close to zero boundary and node
+		 * 0 close to boundary at PeriodLength);*/
+		LINALG::Matrix<3,1> cut(true);
+
+		/* "coord" currently holds the shifted set of coordinates.
+		 * In order to determine the correct vector "dir" of the visualization at the boundaries,
+		 * a copy of "coord" with adjustments in the proper places is introduced*/
+		LINALG::SerialDenseMatrix unshift = coord;
+
+		for(int dof=0; dof<ndim; dof++)
+		{
+			if( fabs(coord(dof,1) - statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0))  < fabs(coord(dof,1) - coord(dof,0)) )
+			{
+				cut(dof) = 1;
+				unshift(dof,1) -= statmechparams_.get<double>("PeriodLength",0.0);
+			}
+			if( fabs(coord(dof,1) + statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0))  < fabs(coord(dof,1) - coord(dof,0)) )
+			{
+				cut(dof) = 2;
+				unshift(dof,1) += statmechparams_.get<double>("PeriodLength",0.0);
+			}
+		}
+		/*/ color especially long and therefore potentially incorrect crosslinkers differently
+		double abscoord = sqrt((coord(0,1)-coord(0,0))*(coord(0,1)-coord(0,0))+
+													 (coord(1,1)-coord(1,0))*(coord(1,1)-coord(1,0))+
+													 (coord(2,1)-coord(2,0))*(coord(2,1)-coord(2,0)));
+		if(abscoord>1.5*statmechparams_.get<double>("R_LINK",0.0) && eleid>basisnodes_ && cut(0) + cut(1) + cut(2) == 0)
+		{
+			//writing element by nodal coordinates as a scalar line
+			gmshfilecontent << "SL(" << scientific;
+			gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << ","
+										 << coord(0,1) << "," << coord(1,1) << "," << coord(2,1) ;
+			gmshfilecontent << ")" << "{" << scientific << 0.75 << "," << 0.75 << "};" << endl;
+			gmshfilecontent << "SP(" << scientific;
+			gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0);
+			gmshfilecontent << ")" << "{" << scientific << 0.75 << "," << 0.75 << "};" << endl;
+			gmshfilecontent << "SP(" << scientific;
+			gmshfilecontent<< coord(0,1) << "," << coord(1,1) << "," << coord(2,1);
+			gmshfilecontent << ")" << "{" << scientific << 0.75 << "," << 0.75 << "};" << endl;
+
+			// temporary output of Crosslinker properties
+			cout<<"long Crosslinker detected: ";
+			cout<<"El.Id: "<<eleid;
+			cout<<" Node-Ids: ";
+			for(int i=0; i<2;i++)
+				cout<<discret_.gElement(eleid)->Nodes()[i]->Id()<<" ";
+			cout<<"current length: "<<abscoord<<endl;
+
+			return;
+		}*/
+		// write special output for broken elements
+		if(cut(0) + cut(1) + cut(2) > 0)
+		{
+				//compute direction vector between first and second node of element (normed):
+				LINALG::Matrix<3,1> dir;
+				double mod=0.0;
+				for(int dof=0; dof<ndim; dof++)
+				{
+					dir(dof) = unshift(dof,1) - unshift(dof,0);
+					mod += dir(dof)*dir(dof);
+				}
+				for(int dof=0; dof<ndim; dof++)
+					dir(dof) /= mod;
+
+				//from node 0 to nearest boundary where element is broken you get by vector X + lambda0*dir
+				double lambda0 = dir.Norm2();
+				for(int dof=0; dof<ndim; dof++)
+				{
+					if(cut(dof) == 1)
+					{
+						if(fabs( - coord(dof,0) / dir(dof)) < fabs(lambda0))
+							lambda0 = - coord(dof,0) / dir(dof);
+					}
+					else if(cut(dof) == 2)
+					{
+						if( fabs( (statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0)) / dir(dof) ) < fabs(lambda0) )
+							lambda0 = ( statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0)) / dir(dof);
+					}
+				}
+
+				//from node 1 to nearest boundary where element is broken you get by vector X + lambda1*dir
+				double lambda1 = dir.Norm2();
+				for(int dof=0; dof<ndim; dof++)
+				{
+					if(cut(dof) == 2)
+					{
+						if(fabs( - coord(dof,1) / dir(dof) ) < fabs(lambda1))
+							lambda1 = - coord(dof,1) / dir(dof);
+					}
+					else if(cut(dof) == 1)
+					{
+						if(fabs((statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,1)) / dir(dof)) < fabs(lambda1))
+							lambda1 = (statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,1)) / dir(dof);
+					}
+				}
+
+				//writing element by nodal coordinates as a scalar line
+				gmshfilecontent << "SL(" << scientific;
+				gmshfilecontent<< coord(0,0)  << "," << coord(1,0) << "," << coord(2,0) << ","
+											 << coord(0,0) + lambda0*dir(0)  << "," << coord(1,0) + lambda0*dir(1)  << "," << coord(2,0) + lambda0*dir(2)  ;
+				/*note: for each node there is one color variable for gmsh and gmsh finally plots the line
+				 * interpolating these two colors between the nodes*/
+				gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+				//writing element by nodal coordinates as a scalar line
+				gmshfilecontent << "SL(" << scientific;
+				gmshfilecontent<< coord(0,1)  << "," << coord(1,1) << "," << coord(2,1) << ","
+											 << coord(0,1) + lambda1*dir(0)  << "," << coord(1,1) + lambda1*dir(1)  << "," << coord(2,1) + lambda1*dir(2)  ;
+				/*note: for each node there is one color variable for gmsh and gmsh finally plots the line
+				 * interpolating these two colors between the nodes*/
+				gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+		}
+		else	// output for continuous elements
+		{
+				//writing element by nodal coordinates as a scalar line
+				gmshfilecontent << "SL(" << scientific;
+				gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << ","
+											 << coord(0,1) << "," << coord(1,1) << "," << coord(2,1) ;
+				/*note: for each node there is one color variable for gmsh and gmsh finally plots the line
+				 * interpolating these two colors between the nodes*/
+				gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+		}
   }
-  // color especially long and therefore potentially incorrect crosslinkers differently
-  double abscoord = sqrt((coord(0,1)-coord(0,0))*(coord(0,1)-coord(0,0))+
-												 (coord(1,1)-coord(1,0))*(coord(1,1)-coord(1,0))+
-												 (coord(2,1)-coord(2,0))*(coord(2,1)-coord(2,0)));
-  if(abscoord>1.5*statmechparams_.get<double>("R_LINK",0.0) && eleid>basisnodes_ && cut(0) + cut(1) + cut(2) == 0)
+  // draw spheres at node positions ("beads" of the bead spring model)
+  else if(element->Type()==DRT::Element::element_torsion3)
   {
-    //writing element by nodal coordinates as a scalar line
-    gmshfilecontent << "SL(" << scientific;
-    gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << ","
-                   << coord(0,1) << "," << coord(1,1) << "," << coord(2,1) ;
-    /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
-     * interpolating these two colors between the nodes*/
-    gmshfilecontent << ")" << "{" << scientific << 0.75 << "," << 0.75 << "};" << endl;
-    gmshfilecontent << "SP(" << scientific;
-    gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0);
-    gmshfilecontent << ")" << "{" << scientific << 0.75 << "," << 0.75 << "};" << endl;
-    gmshfilecontent << "SP(" << scientific;
-    gmshfilecontent<< coord(0,1) << "," << coord(1,1) << "," << coord(2,1);
-    gmshfilecontent << ")" << "{" << scientific << 0.75 << "," << 0.75 << "};" << endl;
-
-    // temporary output of Crosslinker properties
-    cout<<"long Crosslinker detected: ";
-    cout<<"El.Id: "<<eleid;
-    cout<<" Node-Ids: ";
-    for(int i=0; i<2;i++)
-    	cout<<discret_.gElement(eleid)->Nodes()[i]->Id()<<" ";
-    cout<<"current length: "<<abscoord<<endl;
-
-    return;
-  }
-  if(cut(0) + cut(1) + cut(2) > 0)
-  {
-      //compute direction vector between first and second node of element (normed):
-      LINALG::Matrix<3,1> dir;
-      double mod=0.0;
-      for(int dof=0; dof<ndim; dof++)
-      {
-        dir(dof) = unshift(dof,1) - unshift(dof,0);
-      	mod += dir(dof)*dir(dof);
-      }
-      for(int dof=0; dof<ndim; dof++)
-      	dir(dof) /= mod;
-
-      //from node 0 to nearest boundary where element is broken you get by vector X + lambda0*dir
-      double lambda0 = dir.Norm2();
-      for(int dof=0; dof<ndim; dof++)
-      {
-        if(cut(dof) == 1)
-        {
-          if(fabs( - coord(dof,0) / dir(dof)) < fabs(lambda0))
-            lambda0 = - coord(dof,0) / dir(dof);
-        }
-        else if(cut(dof) == 2)
-        {
-          if( fabs( (statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0)) / dir(dof) ) < fabs(lambda0) )
-            lambda0 = ( statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,0)) / dir(dof);
-        }
-      }
-
-      //from node 1 to nearest boundary where element is broken you get by vector X + lambda1*dir
-      double lambda1 = dir.Norm2();
-      for(int dof=0; dof<ndim; dof++)
-      {
-        if(cut(dof) == 2)
-        {
-          if(fabs( - coord(dof,1) / dir(dof) ) < fabs(lambda1))
-            lambda1 = - coord(dof,1) / dir(dof);
-        }
-        else if(cut(dof) == 1)
-        {
-          if(fabs((statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,1)) / dir(dof)) < fabs(lambda1))
-            lambda1 = (statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,1)) / dir(dof);
-        }
-      }
-
-      //writing element by nodal coordinates as a scalar line
-      gmshfilecontent << "SL(" << scientific;
-      gmshfilecontent<< coord(0,0)  << "," << coord(1,0) << "," << coord(2,0) << ","
-                     << coord(0,0) + lambda0*dir(0)  << "," << coord(1,0) + lambda0*dir(1)  << "," << coord(2,0) + lambda0*dir(2)  ;
-      /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
-       * interpolating these two colors between the nodes*/
-      gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
-      //writing element by nodal coordinates as a scalar line
-      gmshfilecontent << "SL(" << scientific;
-      gmshfilecontent<< coord(0,1)  << "," << coord(1,1) << "," << coord(2,1) << ","
-                     << coord(0,1) + lambda1*dir(0)  << "," << coord(1,1) + lambda1*dir(1)  << "," << coord(2,1) + lambda1*dir(2)  ;
-      /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
-       * interpolating these two colors between the nodes*/
-      gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
-  }
-  else
-  {
-      //writing element by nodal coordinates as a scalar line
-      gmshfilecontent << "SL(" << scientific;
-      gmshfilecontent<< coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << ","
-                     << coord(0,1) << "," << coord(1,1) << "," << coord(2,1) ;
-      /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
-       * interpolating these two colors between the nodes*/
-      gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+  	double beadcolor = 0.75;
+  	for(int i=0; i<element->NumNode(); i++)
+  	{
+			//writing element by nodal coordinates as a scalar line
+			gmshfilecontent << "SP(" << scientific;
+			gmshfilecontent<< element->Nodes()[i]->X()[0] << "," << element->Nodes()[i]->X()[1] << "," << element->Nodes()[i]->X()[2];
+			gmshfilecontent << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << endl;
+  	}
   }
   return;
 } // StatMechManager::GmshOutputPeriodicBoundary()
