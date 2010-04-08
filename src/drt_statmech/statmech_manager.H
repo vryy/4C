@@ -53,7 +53,7 @@ public:
 
   //! \brief write output for Gmsh postprocessing
   void GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step);
-  
+
   //! \brief gmsh output in case of periodic boundary conditions
   void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid);
 
@@ -65,14 +65,17 @@ public:
 
   //! \brief Initializes beam3 elements in case of perioddic boundary conditions
   void PeriodicBoundaryBeam3Init(DRT::Element* element);
-  
+
   //! \brief Initializes truss3 elements in case of perioddic boundary conditions
   void PeriodicBoundaryTruss3Init(DRT::Element* element);
+
+  //! \brief return parameters for statistical mechanics
+  virtual inline Teuchos::ParameterList StatmechParams() const {return statmechparams_;}
 
   /*!\brief check whether element is "broken" due to periodic boundary conditions
     \param coord  (in/out)  set of nodal coordinates
 		\param cut    (in/out)  in case of a broken element, cut holds component and information about the location of the nodes of the element
-		\param broken (in/out)  continous==false, broken==true
+		\param broken (in/out)  continuous==false, broken==true
 		\date 03/10
   */
   void CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LINALG::SerialDenseMatrix& cut, bool *broken);
