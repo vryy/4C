@@ -4,7 +4,7 @@
 //             http://www.lnm.mw.tum.de
 //             089 - 289-25239
 //
-// necessary defines: CCADISCRET D_SOLID3 BINIO PRESTRESS
+// necessary defines: CCADISCRET D_SOLID3 BINIO
 //
 -----------------------------------------------------------------------TITLE
 Default_title
@@ -43,6 +43,12 @@ FILESTEPS                       1000
 //LINEAR
 //
 ---------------------------------------------------------EIGENVALUE ANALYSIS
+----------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE -1.5531158172916930e+01 TOLERANCE 1e-5
+------------------------------------------------------------PATIENT SPECIFIC
+PATSPEC                         no
+PRESTRESS                       mulf                // mulf id none
+PRESTRESSTIME                   0.02
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Static // Gen_Alfa Static
 EIGEN        0
@@ -50,8 +56,8 @@ RESEVRYDISP  1
 RESEVRYSTRS  1
 RESTARTEVRY  1
 NLNSOL       fullnewton // fullnewton lsnewton modnewton matfreenewton nlncg ptc
-TIMESTEP     0.0025
-NUMSTEP      30
+TIMESTEP     0.001
+NUMSTEP      40
 MAXTIME      0.75   // prestress bis 0.3
 //MAXTIME      0.5   // poststress 0.3 bis 1.05
 BETA         0.25
@@ -4485,9 +4491,6 @@ NODE 1056 COORD 5.11197128013 -1.0 4.8299866628
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid VISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_NeoHooke  YOUNG 1000000 NUE 0.45 DENS 0.001
-------------------------------------------------RESULT DESCRIPTION
-// with NUMSTEP=30
-STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE  0.0 TOLERANCE 1e-5
 --------------------------------------------------------MULTILAYER MATERIALS
 ----------------------------------------------------------------CONTROL NODE
 -----------------------------------------------------------------LOAD CURVES

@@ -10,7 +10,7 @@
                         General Data File CCARAT
 ==================================================================
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 1800 POSITION dispx NAME ux VALUE  6.300594329129309e-01 TOLERANCE 1e-5
+STRUCTURE DIS 1 NODE 1800 POSITION dispx NAME ux VALUE 2.9579747242752213e-01 TOLERANCE 1e-5
 -----------------------------------------------------------------------TITLE
 cylinder with aneurysm material and ilt according to Gasser
 ----------------------------------------------------------------PROBLEM SIZE
@@ -21,7 +21,6 @@ MATERIALS                       3
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-PATSPEC                         yes
 NUMFIELD                        1
 TIMETYP                         Dynamic
 RESTART                         0
@@ -44,6 +43,10 @@ ALE_DISP                        Yes
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
+------------------------------------------------------------PATIENT SPECIFIC
+PATSPEC                         yes
+PRESTRESS                       mulf                // mulf id none
+PRESTRESSTIME                   0.05
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      Static                          // Gen_Alfa Static
 EIGEN                           0
@@ -63,8 +66,8 @@ M_DAMP                          0.001
 K_DAMP                          0.0001
 PREDICT                         ConstDisVelAcc                  // ConstDis ConstDisVelAcc
 CONV_CHECK                      AbsRes_And_AbsDis               // AbsRes_And_AbsDis AbsRes_Or_AbsDis RelRes_And_AbsDis RelRes_Or_AbsDis RelRes_And_RelDis RelRes_Or_RelDis
-TOLDISP                         1.0E-05
-TOLRES                          1.0E-05
+TOLDISP                         1.0E-02
+TOLRES                          1.0E-02
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.01
 MAXITER                         100

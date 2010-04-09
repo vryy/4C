@@ -10,7 +10,7 @@
                         General Data File CCARAT
 ==================================================================
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 1800 POSITION dispx NAME ux VALUE  1.338794982e+00 TOLERANCE 1e-7
+STRUCTURE DIS 1 NODE 1800 POSITION dispx NAME ux VALUE 2.7011839139587746e-01 TOLERANCE 1e-5
 -----------------------------------------------------------------------TITLE
 Default_title
 ----------------------------------------------------------------PROBLEM SIZE
@@ -21,7 +21,6 @@ MATERIALS                       3
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-PATSPEC                         yes
 NUMFIELD                        1
 TIMETYP                         Dynamic
 RESTART                         0
@@ -44,16 +43,20 @@ ALE_DISP                        Yes
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
+------------------------------------------------------------PATIENT SPECIFIC
+PATSPEC                         yes
+PRESTRESS                       mulf                // mulf id none
+PRESTRESSTIME                   0.05
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      Static                          // Gen_Alfa Static
 EIGEN                           0
 RESEVRYDISP                     1
 RESEVRYSTRS                     1
-RESTARTEVRY                     5
+RESTARTEVRY                     1
 NLNSOL                          fullnewton                      // ptc fullnewton lsnewton modnewton matfreenewton nlncg
 TIMESTEP                        0.01
-NUMSTEP                         50000
-MAXTIME                         0.3                             // prestress 0.0 bis 0.3
+NUMSTEP                         10
+MAXTIME                         0.1                             // prestress 0.0 bis 0.3
 BETA                            0.25
 GAMMA                           0.5
 ALPHA_M                         0.0
