@@ -71,12 +71,22 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
   {
     DRT::Node* node = nodeiter->second;
-
-    RCP<MORTAR::MortarNode> mrtrnode = rcp(
+    if (masterdis.NumDof(node)<4)
+    {
+      RCP<MORTAR::MortarNode> mrtrnode = rcp(
                 new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
-                    masterdis.NumDof(node), masterdis.Dof(node), false));
+                   masterdis.NumDof(node), masterdis.Dof(node), false));
+      interface->AddMortarNode(mrtrnode);
+    }
+    else
+    {
+      RCP<MORTAR::MortarNode> mrtrnode = rcp(
+                new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
+                    masterdis.NumDof(node)-1, masterdis.Dof(node), false));
+      interface->AddMortarNode(mrtrnode);
+    }     
 
-    interface->AddMortarNode(mrtrnode);
+    
   }
 
   // build master dof row map
@@ -84,7 +94,13 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   {
     DRT::Node* node = nodeiter->second;
     vector<int> dofs = masterdis.Dof(node);
-    masterdofs.insert(masterdofs.end(), dofs.begin(), dofs.end());
+    if (dofs.size()<4)
+      masterdofs.insert(masterdofs.end(), dofs.begin(), dofs.end());
+    else
+    {
+      dofs.resize(dofs.size()-1);
+      masterdofs.insert(masterdofs.end(), dofs.begin(), dofs.end());
+    }
 
   }
 
@@ -313,13 +329,13 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave(RefCountPtr<
   if (M_->Multiply(false, *mv, tmp))
     dserror( "M*mv multiplication failed" );
 
-    RefCountPtr<Epetra_Vector> sv = rcp( new Epetra_Vector( *slavedofrowmap_ ) );
+  RefCountPtr<Epetra_Vector> sv = rcp( new Epetra_Vector( *slavedofrowmap_ ) );
 
-    if ( Dinv_->Multiply( false, tmp, *sv ) )
+  if ( Dinv_->Multiply( false, tmp, *sv ) )
     dserror( "D^{-1}*v multiplication failed" );
 
-    return sv;
-  }
+  return sv;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -333,7 +349,7 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster(RefCountPtr<
   if (M_->Multiply(true, tmp, *mv))
     dserror( "M^{T}*sv multiplication failed" );
 
-    return mv;
-  }
+  return mv;
+}
 
 #endif // CCADISCRET
