@@ -34,21 +34,6 @@ output_(output),
 myrank_(discret_.Comm().MyPID()),
 fsisurface_(NULL)
 {
-#ifdef PRESTRESS
-#ifdef POSTSTRESS
-  dserror("Cannot use PRESTRESS && POSTSTRESS");
-#endif
-#ifdef STRUGENALPHA_BE
-  dserror("Cannot use STRUGENALPHA_BE with prestressing");
-#endif
-#ifdef STRUGENALPHA_FINTLIKETR
-  dserror("Cannot use STRUGENALPHA_FINTLIKETR with prestressing");
-#endif
-#ifdef STRUGENALPHA_STRONGDBC
-  dserror("Cannot do STRUGENALPHA_STRONGDBC with prestressing");
-#endif
-#endif
-
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -65,6 +50,22 @@ fsisurface_(NULL)
   if (!errfile) outerr = false;
   bool   loadlin = params_.get<bool>("LOADLIN",false);
 
+  // check for prestressing compatibility
+  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+  INPAR::STR::PreStress pstype = getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  if (pstype==INPAR::STR::prestress_mulf || pstype==INPAR::STR::prestress_id)
+  {
+#ifdef STRUGENALPHA_BE
+    dserror("Cannot use STRUGENALPHA_BE with prestressing");
+#endif
+#ifdef STRUGENALPHA_FINTLIKETR
+    dserror("Cannot use STRUGENALPHA_FINTLIKETR with prestressing");
+#endif
+#ifdef STRUGENALPHA_STRONGDBC
+    dserror("Cannot do STRUGENALPHA_STRONGDBC with prestressing");
+#endif
+  }
+  
   // -------------------------------------------------------------------
   // check sanity of static analysis set-up
   // -------------------------------------------------------------------
@@ -2952,6 +2953,10 @@ void StruGenAlpha::Update()
   FILE*  errfile       = params_.get<FILE*> ("err file"               ,NULL);
   if (!errfile) printerr = false;
 
+  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+  INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  double pstime = pslist.get<double>("PRESTRESSTIME");
+
   //----------------------------------------------- update time and step
   params_.set<double>("total time", timen);
   params_.set<int>("step", istep);
@@ -2992,33 +2997,35 @@ void StruGenAlpha::Update()
 #endif
 
 
-#ifdef PRESTRESS
-  //----------- save the current green-lagrange strains in the material
+  if (pstype==INPAR::STR::prestress_mulf && timen <= pstime)
   {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_prestress_update");
-    // other parameters that might be needed by the elements
-    p.set("total time",timen);
-    p.set("delta time",dt);
-    p.set("alpha f",alphaf);
-    discret_.SetState("displacement",dis_);
-    discret_.SetState("velocity",vel_);
-    discret_.SetState("residual displacement",zeros_);
-    discret_.Evaluate(p,null,null,null,null,null);
-  }
+    if (!discret_.Comm().MyPID()) cout << "====== Entering PRESTRESS update\n"; fflush(stdout);
+    //----------- save the current green-lagrange strains in the material
+    {
+      // create the parameters for the discretization
+      ParameterList p;
+      // action for elements
+      p.set("action","calc_struct_prestress_update");
+      // other parameters that might be needed by the elements
+      p.set("total time",timen);
+      p.set("delta time",dt);
+      p.set("alpha f",alphaf);
+      discret_.SetState("displacement",dis_);
+      discret_.SetState("velocity",vel_);
+      discret_.SetState("residual displacement",zeros_);
+      discret_.Evaluate(p,null,null,null,null,null);
+    }
 
-  //----------------------------- reset the current disp/vel/acc to zero
-  // (the structure does not move while prestraining it )
-  // (prestraining with DBCs != 0 not allowed!)
-  //dis_->Update(1.0,disold,0.0);
-  //vel_->Update(1.0,velold,0.0);
-  //acc_->Update(1.0,accold,0.0);
-  dis_->Scale(0.0);
-  vel_->Scale(0.0);
-  acc_->Scale(0.0);
-#endif
+    //----------------------------- reset the current disp/vel/acc to zero
+    // (the structure does not move while prestraining it )
+    // (prestraining with DBCs != 0 not allowed!)
+    //dis_->Update(1.0,disold,0.0);
+    //vel_->Update(1.0,velold,0.0);
+    //acc_->Update(1.0,accold,0.0);
+    dis_->Scale(0.0);
+    vel_->Scale(0.0);
+    acc_->Scale(0.0);
+  }
 
 
 #ifdef INVERSEDESIGNCREATE
