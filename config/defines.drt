@@ -43,12 +43,11 @@ CCADISCRET           # use new baci discretization subsystem DRT
 # BINIO               # binary io
 # QHULL               # needed for XFEM simulations
 # D_EXODUS            # Pre_exodus (exodusII, netcdf)
-# PRESTRESS           # prestress a structure with Neumann loads only
-# POSTSTRESS          # restart with a prestressed structure
 # INVERSEDESIGNCREATE # run an inverse design problem
 # INVERSEDESIGNUSE    # use a previously created inverse design
 # PARMETIS            # use parmetis for parallel setup of node graph
 # D_ALE_BFLOW         # adds the effect of ALE defformation on the volumetric flow rate calculation on the boundaries
+# EXTENDEDPARALLELOVERLAP # use overlap of 3 instead of overlap of one in parallel (needed for nstet elements))
 
 #   tools
 #  =======
