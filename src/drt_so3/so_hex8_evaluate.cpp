@@ -28,6 +28,8 @@ Maintainer: Moritz Frenzel
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_patspec/patspec.H"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 // inverse design object
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 #include "inversedesign.H"
@@ -80,9 +82,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
   else if (action=="postprocess_stress")                          act = So_hex8::postprocess_stress;
   else if (action=="multi_readrestart")                           act = So_hex8::multi_readrestart;
   else if (action=="calc_potential_stiff")                        act = So_hex8::calc_potential_stiff;
-#ifdef PRESTRESS
+//#ifdef PRESTRESS
   else if (action=="calc_struct_prestress_update")                act = So_hex8::prestress_update;
-#endif
+//#endif
 #ifdef INVERSEDESIGNCREATE
   else if (action=="calc_struct_inversedesign_update")            act = So_hex8::inversedesign_update;
 #endif
@@ -111,8 +113,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     case calc_struct_nlnstiff:
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -120,7 +122,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
       if (elemat1.IsInitialized()) matptr = &elemat1;
-
 #ifndef INVERSEDESIGNCREATE
       soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -135,8 +136,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     case calc_struct_internalforce:
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -159,8 +160,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     case calc_struct_nlnstifflmass:
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -180,8 +181,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     // evaluate stresses and strains at gauss points
     case calc_struct_stress:
     {
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
       RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
@@ -357,7 +358,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         }
       }
       // Update of history for visco material
-      RefCountPtr<MAT::Material> mat = Material();
+      RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
       {
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
@@ -397,7 +398,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         }
       }
       // Reset of history for visco material
-      RefCountPtr<MAT::Material> mat = Material();
+      RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
       {
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
@@ -456,8 +457,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     // read restart of microscale
     case multi_readrestart:
     {
-      RefCountPtr<MAT::Material> mat = Material();
-
+      RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
         soh8_read_restart_multi(params);
     }
@@ -466,12 +466,12 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     // compute additional stresses due to intermolecular potential forces
     case calc_potential_stiff:
     {
-      RefCountPtr<PotentialManager> potentialmanager =
-        params.get<RefCountPtr<PotentialManager> >("pot_man", null);
+      RCP<PotentialManager> potentialmanager =
+        params.get<RCP<PotentialManager> >("pot_man", null);
       if (potentialmanager==null)
         dserror("No PotentialManager in Solid3 Surface available");
 
-      RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+      RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
       if (cond==null)
         dserror("Condition not available in Solid3 Surface");
 
@@ -489,9 +489,10 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     }
     break;
 
-#ifdef PRESTRESS
+//#ifdef PRESTRESS
     case prestress_update:
     {
+      time_ = params.get<double>("total time");
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get displacement state");
       vector<double> mydisp(lm.size());
@@ -517,7 +518,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       UpdateJacobianMapping(mydisp,*prestress_);
     }
     break;
-#endif
+//#endif
 
 #ifdef INVERSEDESIGNCREATE
     case inversedesign_update:
@@ -662,10 +663,11 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
     //invJ_[gp].Shape(NUMDIM_SOH8,NUMDIM_SOH8);
     invJ_[gp].Multiply(derivs[gp],xrefe);
     detJ_[gp] = invJ_[gp].Invert();
-#ifdef PRESTRESS
-    if (!(prestress_->IsInit()))
-      prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
-#endif
+//#ifdef PRESTRESS
+    if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
+      if (!(prestress_->IsInit()))
+        prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
+//#endif
 #ifdef INVERSEDESIGNUSE
     if (!(invdesign_->IsInit()))
     {
@@ -674,9 +676,10 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
     }
 #endif
   }
-#ifdef PRESTRESS
-  prestress_->IsInit() = true;
-#endif
+//#ifdef PRESTRESS
+  if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
+    prestress_->IsInit() = true;
+//#endif
 #ifdef INVERSEDESIGNUSE
   invdesign_->IsInit() = true;
 #endif
@@ -707,12 +710,16 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
   const static vector<double> gpweights = soh8_weights();
 /* ============================================================================*/
 
+  // check for prestressing
+  if (pstype_ == INPAR::STR::prestress_mulf && eastype_ != soh8_easnone)
+    dserror("No way you can do prestressing with EAS turned on!");
+
   // update element geometry
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
-#if defined(PRESTRESS) || defined(POSTSTRESS)
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xdisp;
-#endif
+//#endif
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_SOH8; ++i)
   {
@@ -725,11 +732,14 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH8+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH8+2];
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-    xdisp(i,0) = disp[i*NODDOF_SOH8+0];
-    xdisp(i,1) = disp[i*NODDOF_SOH8+1];
-    xdisp(i,2) = disp[i*NODDOF_SOH8+2];
-#endif
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
+    if (pstype_==INPAR::STR::prestress_mulf)
+    {
+      xdisp(i,0) = disp[i*NODDOF_SOH8+0];
+      xdisp(i,1) = disp[i*NODDOF_SOH8+1];
+      xdisp(i,2) = disp[i*NODDOF_SOH8+2];
+    }
+//#endif
   }
 
   /*
@@ -833,7 +843,8 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     N_XYZ.Multiply(invJ_[gp],derivs[gp]);
     double detJ = detJ_[gp];
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
+    if (pstype_==INPAR::STR::prestress_mulf)
     {
       // get Jacobian mapping wrt to the stored configuration
       LINALG::Matrix<3,3> invJdef;
@@ -857,10 +868,11 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       Fnew.Multiply(defgrd,Fhist);
       defgrd = Fnew;
     }
-#else
-    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    defgrd.MultiplyTT(xcurr,N_XYZ);
-#endif
+    else
+//#else
+      // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+      defgrd.MultiplyTT(xcurr,N_XYZ);
+//#endif
 
 #ifdef INVERSEDESIGNUSE
     {
@@ -1423,7 +1435,7 @@ int DRT::ELEMENTS::Soh8Register::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
@@ -1508,7 +1520,7 @@ void DRT::ELEMENTS::So_hex8::UpdateJacobianMapping(
 
   return;
 }
-#endif // #if defined(PRESTRESS) || defined(POSTSTRESS)
+//#endif // #if defined(PRESTRESS) || defined(POSTSTRESS)
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

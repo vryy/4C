@@ -25,6 +25,8 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 // inverse design object
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 #include "inversedesign.H"
@@ -36,7 +38,10 @@ Maintainer: Moritz Frenzel
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner) :
 DRT::Element(id,element_so_hex8,owner),
-data_()
+data_(),
+pstype_(INPAR::STR::prestress_none),
+pstime_(0.0),
+time_(0.0)
 {
   kintype_ = soh8_totlag;
   eastype_ = soh8_easnone;
@@ -44,9 +49,17 @@ data_()
   invJ_.resize(NUMGPT_SOH8, LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>(true));
   detJ_.resize(NUMGPT_SOH8, 0.0);
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-  prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8,NUMGPT_SOH8));
-#endif
+  if (DRT::Problem::NumInstances() > 0)
+  {
+    const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+    pstype_ = getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+    pstime_ = pslist.get<double>("PRESTRESSTIME");
+  }
+  
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
+  if (pstype_==INPAR::STR::prestress_mulf)
+    prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8,NUMGPT_SOH8));
+//#endif
 
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOH8,NUMGPT_SOH8));
@@ -65,7 +78,10 @@ kintype_(old.kintype_),
 eastype_(old.eastype_),
 neas_(old.neas_),
 data_(old.data_),
-detJ_(old.detJ_)
+detJ_(old.detJ_),
+pstype_(old.pstype_),
+pstime_(old.pstime_),
+time_(old.time_)
 {
   invJ_.resize(old.invJ_.size());
   for (int i=0; i<(int)invJ_.size(); ++i)
@@ -75,9 +91,10 @@ detJ_(old.detJ_)
     invJ_[i] = old.invJ_[i];
   }
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-  prestress_ = rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
-#endif
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
+  if (pstype_==INPAR::STR::prestress_mulf)
+    prestress_ = rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
+//#endif
 
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
@@ -131,12 +148,18 @@ void DRT::ELEMENTS::So_hex8::Pack(vector<char>& data) const
   data_.Pack(tmp);
   AddtoPack(data,tmp);
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
   // prestress_
-  vector<char> tmpprestress(0);
-  prestress_->Pack(tmpprestress);
-  AddtoPack(data,tmpprestress);
-#endif
+  AddtoPack(data,pstype_);
+  AddtoPack(data,pstime_);
+  AddtoPack(data,time_);
+  if (pstype_==INPAR::STR::prestress_mulf)
+  {
+    vector<char> tmpprestress(0);
+    prestress_->Pack(tmpprestress);
+    AddtoPack(data,tmpprestress);
+  }
+//#endif
 
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   // invdesign_
@@ -184,12 +207,20 @@ void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
   // prestress_
-  vector<char> tmpprestress(0);
-  ExtractfromPack(position,data,tmpprestress);
-  prestress_->Unpack(tmpprestress);
-#endif
+  ExtractfromPack(position,data,pstype_);
+  ExtractfromPack(position,data,pstime_);
+  ExtractfromPack(position,data,time_);
+  if (pstype_==INPAR::STR::prestress_mulf)
+  {  
+    vector<char> tmpprestress(0);
+    ExtractfromPack(position,data,tmpprestress);
+    if (prestress_ == Teuchos::null)
+      prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8,NUMGPT_SOH8));
+    prestress_->Unpack(tmpprestress);
+  }
+//#endif
 
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   // invdesign_
