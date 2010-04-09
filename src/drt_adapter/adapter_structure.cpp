@@ -133,6 +133,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
   const Teuchos::ParameterList& statmech = DRT::Problem::Instance()->StatisticalMechanicsParams();
+  const Teuchos::ParameterList& patspec  = DRT::Problem::Instance()->PatSpecParams();
 
   //const Teuchos::ParameterList& size     = DRT::Problem::Instance()->ProblemSizeParams();
 
@@ -278,8 +279,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   }
 
   // test for patient specific needs
-  if (Teuchos::getIntegralValue<int>(probtype,"PATSPEC"))
+  if (Teuchos::getIntegralValue<int>(patspec,"PATSPEC"))
+  {
     PATSPEC::PatientSpecificGeometry(*actdis);
+  }
 
   // sanity checks and default flags
   if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
