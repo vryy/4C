@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef D_SOLID3
 #ifdef CCADISCRET
-#if defined(PRESTRESS) || defined(POSTSTRESS)
 
 #include "prestress.H"
 #include "../drt_lib/drt_dserror.H"
@@ -118,6 +117,5 @@ void DRT::ELEMENTS::PreStress::Unpack(const vector<char>& data)
 
 
 
-#endif  // #if defined(PRESTRESS) || defined(POSTSTRESS)
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3
