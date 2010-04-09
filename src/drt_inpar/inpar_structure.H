@@ -350,6 +350,14 @@ namespace INPAR
       bop_and         ///<  and
     };
 
+    /// type of norm to check for convergence
+    enum PreStress
+    {
+      prestress_none, ///<  none
+      prestress_mulf, ///<  mulf
+      prestress_id    ///<  id
+    };
+
     /// STC scaling for thin shell structures
     enum STC_Scale
     {

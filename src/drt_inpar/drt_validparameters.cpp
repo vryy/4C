@@ -135,7 +135,7 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream,
           if (values!=Teuchos::null)
           {
             unsigned len = 0;
-            for (int i=0; i<values->size(); ++i)
+            for (int i=0; i<(int)values->size(); ++i)
             {
               len += (*values)[i].length()+1;
             }
@@ -150,7 +150,7 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream,
             }
             else
             {
-              for (int i=0; i<values->size(); ++i)
+              for (int i=0; i<(int)values->size(); ++i)
               {
                 stream << blue2light << "//     " << magentalight << (*values)[i] << endcolor << '\n';
               }
@@ -349,7 +349,24 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(1,0),
                                &type);
 
-  setStringToIntegralParameter<int>("PATSPEC","No","Triggers application of patient specific tools in discretization construction",yesnotuple,yesnovalue,&type);
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& ps = list->sublist("PATIENT SPECIFIC",false,"");
+
+  setStringToIntegralParameter<int>("PATSPEC","No",
+                                    "Triggers application of patient specific tools in discretization construction",
+                                    yesnotuple,yesnovalue,&ps);
+
+  setStringToIntegralParameter<INPAR::STR::PreStress>("PRESTRESS","none","prestressing takes values none mulf id",
+                               tuple<std::string>("none","None","NONE",
+                                                  "mulf","Mulf","MULF",
+                                                  "id","Id","ID"),
+                               tuple<INPAR::STR::PreStress>(INPAR::STR::prestress_none,INPAR::STR::prestress_none,INPAR::STR::prestress_none,
+                                                            INPAR::STR::prestress_mulf,INPAR::STR::prestress_mulf,INPAR::STR::prestress_mulf,
+                                                            INPAR::STR::prestress_id,INPAR::STR::prestress_id,INPAR::STR::prestress_id),
+                               &ps);
+
+  DoubleParameter("PRESTRESSTIME",0.0,"time to switch from pre to post stressing",&ps);
+
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& io = list->sublist("IO",false,"");
