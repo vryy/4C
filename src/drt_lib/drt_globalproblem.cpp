@@ -144,6 +144,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--IO", *list);
   reader.ReadGidSection("--DESIGN DESCRIPTION", *list);
   reader.ReadGidSection("--STATIC", *list);
+  reader.ReadGidSection("--PATIENT SPECIFIC", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC/TIMEADAPTIVITY", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC/GENALPHA", *list);
@@ -681,7 +682,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   // decide which kind of spatial representation is required
   const Teuchos::ParameterList& ptype = ProblemTypeParams();
 
-  switch (genprob.probtyp){
+  switch (genprob.probtyp)
+  {
   case prb_fsi:
   case prb_fsi_lung:
   {
@@ -733,7 +735,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 #endif
 
     nodereader.Read();
-
+#ifdef EXTENDEDPARALLELOVERLAP
+    structdis->CreateExtendedOverlap(false,false,false);
+#endif
     // read microscale fields from second, third, ... inputfile if necessary
     // (in case of multi-scale material models in structure field)
     ReadMicroFields(reader);
@@ -755,8 +759,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
 
     nodereader.Read();
+#ifdef EXTENDEDPARALLELOVERLAP
+    structdis->CreateExtendedOverlap(false,false,false);
+#endif
     break;
-
   }
   case prb_ale:
   {
@@ -915,6 +921,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.Read();
+#ifdef EXTENDEDPARALLELOVERLAP
+    structdis->CreateExtendedOverlap(false,false,false);
+#endif
 
     // read microscale fields from second, third, ... inputfile if necessary
     // (in case of multi-scale material models)
