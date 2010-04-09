@@ -114,6 +114,7 @@ private:
 	double											amp_;
 	// \brief curve number, extracted from discretization
 	int 												curvenumber_;
+	RCP<Epetra_Vector>					dirichtogglem_;
 
 }; // class StatMechTime
 

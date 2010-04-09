@@ -52,7 +52,8 @@ unconvergedsteps_(0),
 isinit_(false),
 timecurve_(DRT::Problem::Instance()->Curve(0)),
 dbcswitch_(LINALG::CreateVector(*(discret_.DofRowMap()),true)),
-drefnew_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
+drefnew_(LINALG::CreateVector(*(discret_.DofRowMap()),true)),
+dirichtogglem_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
 {
   Teuchos::RCP<LINALG::SparseMatrix> stiff = SystemMatrix();
   statmechmanager_ = rcp(new StatMechManager(params,dis));
@@ -303,6 +304,9 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     // in case of activated periodic boundary conditions
     if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0 && dbcsize_)
     {
+    	/*/ store information of previous time step
+    	for(int i=0; i<dirichtogglem_->MyLength(); i++)
+    		(*dirichtogglem_)[i] = (*dirichtoggle_)[i];*/
     	// Reinitialize disn_ and dirichtoggle_ once.
     	// Now, why is this done? For t==0, disn_ and dirichtoggle_ are initialized in strugenalpha.cpp.
     	// Especially dirichtoggle_ and invtoggle_ contain information that is incorrect if DBC DOFs are
@@ -320,11 +324,19 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     			(*drefnew_)[i] = 9e99;
     	}
     	EvaluateDirichletPeriodic(p);
-    	//cout<<*disn_<<endl;
     }
 		// "common" case without periodic boundary conditions
     else
     	discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
+
+    /*/output of dirichtoggle_ changes
+    for(int i=0; i<dirichtogglem_->MyLength(); i++)
+    {
+    	if((*dirichtogglem_)[i]!=(*dirichtoggle_)[i] && (*dirichtoggle_)[i]==1)
+    		cout<<"DBC on Node "<<(int)floor((double)i/6.0)<<" has been turned ON!"<<endl;
+    	if((*dirichtogglem_)[i]!=(*dirichtoggle_)[i] && (*dirichtoggle_)[i]==0)
+				cout<<"DBC on Node "<<(int)floor((double)i/6.0)<<" has been turned OFF!"<<endl;
+    }*/
 
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
@@ -483,6 +495,79 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
 
   if (printscreen)
     fresm_->Norm2(&fresmnorm);
+			//test output to determine source of divergence
+      // Test 1: Check residuals (show only those that surpass a certain treshold)
+      /*if(fresmnorm>10)
+      {
+      	vector<int> dbcnodes;
+      	for(int i=0; i<dirichtoggle_->MyLength(); i++)
+      	{
+      		if((*fresm_)[i]>0.5)
+      		{
+      			cout<<"Node "<<(int)floor((double)i/6.0)<<" DOFabs "<<i<<" DOF "<<i%6<<" : fresm@"<<i<<": "<<(*fresm_)[i]<<" DBC-DOF: ";
+      			if((*dirichtoggle_)[i]==1)
+      				cout<<" Yes"<<endl;
+      			else
+      				cout<<" No"<<endl;
+      		}
+    			if((*dirichtoggle_)[i]==1)
+    			{
+    				if(!dbcnodes.empty() && dbcnodes.back()==(int)floor((double)i/6.0))
+    					continue;
+    				bool dirichlet;
+    				int tmpid = (int)floor((double)i/6.0);
+    				for(int j=0; j<6; j++)
+    				{
+    					if((*fresm_)[6*tmpid+j]>0.5)
+    					{
+    						dirichlet=true;
+    						break;
+    					}
+    					else
+    						dirichlet=false;
+    				}
+
+    				if(dirichlet==true)
+    					dbcnodes.push_back(tmpid);
+    			}
+      	}
+      	cout<<"DBC-Nodes with high non-DBC DOF residuals: "<<endl;
+      	for(int i=0; i<(int)dbcnodes.size(); i++)
+      	{
+      		bool done=false;
+      		cout<<dbcnodes.at(i)<<" ";
+      		DRT::Node* tmpnode = discret_.gNode(dbcnodes.at(i));
+      		for(int j=0; j<tmpnode->NumElement(); j++)
+      		{
+      			DRT::Element* tmpelement = tmpnode->Elements()[j];
+      			LINALG::SerialDenseMatrix coord(3,(int)discret_.lColElement(0)->NumNode(), true);
+      		  LINALG::SerialDenseMatrix cut(3,(int)discret_.lColElement(0)->NumNode()-1,true);
+      			bool broken;
+      			vector<int> lids;
+      			statmechmanager_->GetElementNodeCoords(tmpelement,disn_,coord, &lids);
+      			statmechmanager_->CheckForBrokenElement(coord, cut, &broken);
+      			if(cut(2,0)==0)
+      				continue;
+      			else if(cut(2,0)!=0 && !done)
+      			{
+      				for(int k=0; k<coord.N(); k++)
+      					if((int)floor((double)lids.at(3*k)/6.0)==tmpnode->LID())
+      					{
+      						if(coord(2,k)>(statmechmanager_->StatmechParams().get<double>("PeriodLength", 0.0))/2.0)
+      							cout<<"oscillating node  ";
+      						else
+      							cout<<"fixed node  ";
+      					}
+      				done=true;
+      			}
+      		}
+
+      		if(i+1<(int)dbcnodes.size())
+      			if(dbcnodes.at(i+1)-dbcnodes.at(i)>1)
+      				cout<<"\n"<<endl;
+      	}
+      	cout<<"\n"<<endl;
+      }*/
   if (!myrank_ and printscreen)
   {
     PrintPredictor(convcheck, fresmnorm);
@@ -930,6 +1015,79 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
     fresm_->Norm2(&fresmnorm);
     // a short message
+    //test output to determine source of divergence
+    // Test 1: Check residuals (show only those that surpass a certain treshold)
+    /*if(fresmnorm>10)
+    {
+    	vector<int> dbcnodes;
+    	for(int i=0; i<dirichtoggle_->MyLength(); i++)
+    	{
+    		if((*fresm_)[i]>0.5)
+    		{
+    			cout<<"Node "<<(int)floor((double)i/6.0)<<" DOFabs "<<i<<" DOF "<<i%6<<" : fresm@"<<i<<": "<<(*fresm_)[i]<<" DBC-DOF: ";
+    			if((*dirichtoggle_)[i]==1)
+    				cout<<" Yes"<<endl;
+    			else
+    				cout<<" No"<<endl;
+    		}
+  			if((*dirichtoggle_)[i]==1)
+  			{
+  				if(!dbcnodes.empty() && dbcnodes.back()==(int)floor((double)i/6.0))
+  					continue;
+  				bool dirichlet;
+  				int tmpid = (int)floor((double)i/6.0);
+  				for(int j=0; j<6; j++)
+  				{
+  					if((*fresm_)[6*tmpid+j]>0.5)
+  					{
+  						dirichlet=true;
+  						break;
+  					}
+  					else
+  						dirichlet=false;
+  				}
+
+  				if(dirichlet==true)
+  					dbcnodes.push_back(tmpid);
+  			}
+    	}
+    	cout<<"DBC-Nodes with high non-DBC DOF residuals: "<<endl;
+    	for(int i=0; i<(int)dbcnodes.size(); i++)
+    	{
+    		bool done=false;
+    		cout<<dbcnodes.at(i)<<" ";
+    		DRT::Node* tmpnode = discret_.gNode(dbcnodes.at(i));
+    		for(int j=0; j<tmpnode->NumElement(); j++)
+    		{
+    			DRT::Element* tmpelement = tmpnode->Elements()[j];
+    			LINALG::SerialDenseMatrix coord(3,(int)discret_.lColElement(0)->NumNode(), true);
+    		  LINALG::SerialDenseMatrix cut(3,(int)discret_.lColElement(0)->NumNode()-1,true);
+    			bool broken;
+    			vector<int> lids;
+    			statmechmanager_->GetElementNodeCoords(tmpelement,disn_,coord, &lids);
+    			statmechmanager_->CheckForBrokenElement(coord, cut, &broken);
+    			if(cut(2,0)==0)
+    				continue;
+    			else if(cut(2,0)!=0 && !done)
+    			{
+    				for(int k=0; k<coord.N(); k++)
+    					if((int)floor((double)lids.at(3*k)/6.0)==tmpnode->LID())
+    					{
+    						if(coord(2,k)>(statmechmanager_->StatmechParams().get<double>("PeriodLength", 0.0))/2.0)
+    							cout<<"oscillating node  ";
+    						else
+    							cout<<"fixed node  ";
+    					}
+    				done=true;
+    			}
+    		}
+
+    		if(i+1<(int)dbcnodes.size())
+    			if(dbcnodes.at(i+1)-dbcnodes.at(i)>1)
+    				cout<<"\n"<<endl;
+    	}
+    	cout<<"\n"<<endl;
+    }*/
     if (!myrank_ and (printscreen or printerr))
     {
       PrintPTC(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
@@ -1293,12 +1451,6 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
   vector<int>								lids;
   // store LIDs of DOFs subjected to oscillation in order to identify force sensor locations
   vector<int>								fsensorlids;
-	// An element used to browse through Column Elements
-  DRT::Element* 						element;
-  // positions of nodes of an element with n nodes
-  LINALG::SerialDenseMatrix coord(3,(int)discret_.lColElement(0)->NumNode(), true);
-  // indicates location, direction and component of a broken element with n nodes->n-1 possible cuts
-  LINALG::SerialDenseMatrix cut(3,(int)discret_.lColElement(0)->NumNode()-1,true);
   // vectors to manipulate DBC properties
   vector<int> 							oscillnodes;
   vector<int> 							fixednodes;
@@ -1369,9 +1521,13 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 //---------------------------------------------------------- loop through elements
 	for(int i=0;i<discret_.NumMyRowElements(); i++)
 	{
+		// An element used to browse through Row Elements
+	  DRT::Element* 						element = discret_.lRowElement(i);
+	  // positions of nodes of an element with n nodes
+	  LINALG::SerialDenseMatrix coord(3,(int)discret_.lRowElement(i)->NumNode(), true);
+	  // indicates location, direction and component of a broken element with n nodes->n-1 possible cuts
+	  LINALG::SerialDenseMatrix cut(3,(int)discret_.lRowElement(i)->NumNode()-1,true);
 //-------------------------------- obtain nodal coordinates of the current element
-		// get i-th Element
-	  element = discret_.lRowElement(i);
 	  // get nodal coordinates and LIDs of the nodal DOFs
 	  statmechmanager_->GetElementNodeCoords(element, disn_, coord, &lids);
 //-----------------------detect broken/fixed/free elements and fill position vector
@@ -1552,7 +1708,7 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
 	const vector<int>* nodeids = dirichlet_->Nodes();
 	// some checks for errors
 	if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
-	if(disn_==Teuchos::null) dserror("System vector must be unequal to null");
+	if(disn_==Teuchos::null) dserror("Displacement vector must be unequal to null");
 	if(dbcswitch_==Teuchos::null || drefnew_==Teuchos::null || dirichtoggle_==Teuchos::null)
 		dserror("dbcwitch_, drefnew_ and dirichtoggle_ must be non-empty");
 
