@@ -26,9 +26,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_node.H"
 
 // prestressing object
-#if defined(PRESTRESS) || defined(POSTSTRESS)
 #include "prestress.H"
-#endif
 
 #include "../drt_mat/material.H"
 
@@ -370,8 +368,6 @@ protected:
 
   //! kinematic type
   KinematicType                                                            kintype_;
-  //! no. gaussian points in each spatial dimension
-  int                                                                      ngp_[3];
   //! number of the material law
   int                                                                      material_;
 
@@ -384,19 +380,21 @@ protected:
   //! vector of partial derivatives in material frame
   vector<LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> > nxyz_;
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
+  /// prestressing switch & time
+  INPAR::STR::PreStress                                                    pstype_;
+  double                                                                   pstime_;
+  double                                                                   time_;
   /// Prestressing object
   RCP<DRT::ELEMENTS::PreStress>                                            prestress_;
-
-  // compute Jacobian mapping wrt to deformed configuration
+  /// compute Jacobian mapping wrt to deformed configuration
   void UpdateJacobianMapping(const vector<double>& disp,
                              DRT::ELEMENTS::PreStress& prestress);
-
-  // compute defgrd in all gp for given disp
+  /// compute defgrd in all gp for given disp
   void DefGradient(const vector<double>& disp,
                    Epetra_SerialDenseMatrix& gpdefgrd,
                    DRT::ELEMENTS::PreStress& prestress);
-#endif
+//#endif
 
   friend class DRT::ELEMENTS::InvDesign;
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)

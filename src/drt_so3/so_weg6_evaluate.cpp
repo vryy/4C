@@ -26,7 +26,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_patspec/patspec.H"
 
-//#include "Epetra_SerialDenseSolver.h"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // inverse design object
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
@@ -70,9 +70,9 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_imrlike") act = So_weg6::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")   act = So_weg6::calc_struct_reset_istep;
   else if (action=="postprocess_stress")        act = So_weg6::postprocess_stress;
-#ifdef PRESTRESS
+//#ifdef PRESTRESS
   else if (action=="calc_struct_prestress_update") act = So_weg6::prestress_update;
-#endif
+//#endif
 #ifdef INVERSEDESIGNCREATE
   else if (action=="calc_struct_inversedesign_update")            act = So_weg6::inversedesign_update;
 #endif
@@ -289,7 +289,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
     }
     break;
 
-#ifdef PRESTRESS
+//#ifdef PRESTRESS
     // in case of prestressing, make a snapshot of the current green-Lagrange strains and add them to
     // the previously stored GL strains in an incremental manner
     case prestress_update:
@@ -319,7 +319,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       UpdateJacobianMapping(mydisp,*prestress_);
     }
     break;
-#endif
+//#endif
 
 #ifdef INVERSEDESIGNCREATE
     case inversedesign_update:
@@ -391,10 +391,11 @@ void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
     invJ_[gp].Multiply(deriv_gp,xrefe);
     detJ_[gp] = invJ_[gp].Invert();
 
-#ifdef PRESTRESS
-    if (!(prestress_->IsInit()))
-      prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
-#endif
+//#ifdef PRESTRESS
+    if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
+      if (!(prestress_->IsInit()))
+        prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
+//#endif
 #ifdef INVERSEDESIGNUSE
     if (!(invdesign_->IsInit()))
     {
@@ -403,9 +404,10 @@ void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
     }
 #endif
   }
-#ifdef PRESTRESS
-  prestress_->IsInit() = true;
-#endif
+//#ifdef PRESTRESS
+  if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
+    prestress_->IsInit() = true;
+//#endif
 #ifdef INVERSEDESIGNUSE
   invdesign_->IsInit() = true;
 #endif
@@ -440,9 +442,9 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
   // update element geometry
   LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xrefe;  // material coord. of element
   LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xcurr;  // current  coord. of element
-#if defined(PRESTRESS) || defined(POSTSTRESS)
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
   LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xdisp;
-#endif
+//#endif
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_WEG6; ++i)
   {
@@ -455,11 +457,14 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_WEG6+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_WEG6+2];
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-    xdisp(i,0) = disp[i*NODDOF_WEG6+0];
-    xdisp(i,1) = disp[i*NODDOF_WEG6+1];
-    xdisp(i,2) = disp[i*NODDOF_WEG6+2];
-#endif
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
+    if (pstype_==INPAR::STR::prestress_mulf)
+    {
+      xdisp(i,0) = disp[i*NODDOF_WEG6+0];
+      xdisp(i,1) = disp[i*NODDOF_WEG6+1];
+      xdisp(i,2) = disp[i*NODDOF_WEG6+2];
+    }
+//#endif
   }
 
   /* =========================================================================*/
@@ -480,7 +485,8 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     double detJ = detJ_[gp];
 
     LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> defgrd(false);
-#if defined(PRESTRESS) || defined(POSTSTRESS)
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
+    if (pstype_==INPAR::STR::prestress_mulf)
     {
       // get Jacobian mapping wrt to the stored configuration
       LINALG::Matrix<3,3> invJdef;
@@ -504,10 +510,11 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       Fnew.Multiply(defgrd,Fhist);
       defgrd = Fnew;
     }
-#else
-    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    defgrd.MultiplyTT(xcurr,N_XYZ);
-#endif
+    else
+//#else
+      // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+      defgrd.MultiplyTT(xcurr,N_XYZ);
+//#endif
 
 #ifdef INVERSEDESIGNUSE
     {
@@ -896,7 +903,7 @@ int DRT::ELEMENTS::Sow6Register::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
@@ -918,14 +925,6 @@ void DRT::ELEMENTS::So_weg6::DefGradient(const vector<double>& disp,
 
   for (int gp=0; gp<NUMGPT_WEG6; ++gp)
   {
-#if 0
-    // get submatrix of deriv at actual gp
-    LINALG::SerialDenseMatrix deriv_gp(NUMDIM_WEG6,NUMGPT_WEG6);
-    for (int m=0; m<NUMDIM_WEG6; ++m)
-      for (int n=0; n<NUMGPT_WEG6; ++n)
-        deriv_gp(m,n)=(*deriv)(NUMDIM_WEG6*gp+m,n);
-#endif
-
     // get Jacobian mapping wrt to the stored deformed configuration
     LINALG::Matrix<3,3> invJdef;
     prestress.StoragetoMatrix(gp,invJdef,prestress.JHistory());
@@ -991,7 +990,7 @@ void DRT::ELEMENTS::So_weg6::UpdateJacobianMapping(
 
   return;
 }
-#endif // #if defined(PRESTRESS) || defined(POSTSTRESS)
+//#endif // #if defined(PRESTRESS) || defined(POSTSTRESS)
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_WEG6

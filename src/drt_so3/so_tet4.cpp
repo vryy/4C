@@ -22,6 +22,8 @@ writen by : Alexander Volf
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 // inverse design object
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 #include "inversedesign.H"
@@ -36,13 +38,23 @@ DRT::ELEMENTS::So_tet4::So_tet4(int id, int owner) :
 DRT::Element(id,element_so_tet4,owner),
 material_(0),
 data_(),
-V_(-1.0)
+V_(-1.0),
+pstype_(INPAR::STR::prestress_none),
+pstime_(0.0),
+time_(0.0)
 {
-  ngp_[0] = ngp_[1] = ngp_[2] = 0;  //whatis ngp_ ???????
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-  prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
-#endif
+  if (DRT::Problem::NumInstances() > 0)
+  {
+    const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+    pstype_ = getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+    pstime_ = pslist.get<double>("PRESTRESSTIME");
+  }
+
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
+  if (pstype_==INPAR::STR::prestress_mulf)
+    prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
+//#endif
 
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
@@ -59,13 +71,16 @@ DRT::ELEMENTS::So_tet4::So_tet4(const DRT::ELEMENTS::So_tet4& old) :
 DRT::Element(old),
 material_(old.material_),
 data_(old.data_),
-V_(old.V_)
+V_(old.V_),
+pstype_(old.pstype_),
+pstime_(old.pstime_),
+time_(old.time_)
 {
-  for (int i=0; i<3; ++i) ngp_[i] = old.ngp_[i];
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-  prestress_ = rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
-#endif
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
+  if (pstype_==INPAR::STR::prestress_mulf)
+    prestress_ = rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
+//#endif
 
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
@@ -122,12 +137,18 @@ void DRT::ELEMENTS::So_tet4::Pack(vector<char>& data) const
   // V_
   AddtoPack(data,V_);
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
   // prestress_
-  vector<char> tmpprestress(0);
-  prestress_->Pack(tmpprestress);
-  AddtoPack(data,tmpprestress);
-#endif
+  AddtoPack(data,pstype_);
+  AddtoPack(data,pstime_);
+  AddtoPack(data,time_);
+  if (pstype_==INPAR::STR::prestress_mulf)
+  {
+    vector<char> tmpprestress(0);
+    prestress_->Pack(tmpprestress);
+    AddtoPack(data,tmpprestress);
+  }
+//#endif
 
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   // invdesign_
@@ -168,12 +189,20 @@ void DRT::ELEMENTS::So_tet4::Unpack(const vector<char>& data)
   // V_
   ExtractfromPack(position,data,V_);
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
   // prestress_
-  vector<char> tmpprestress(0);
-  ExtractfromPack(position,data,tmpprestress);
-  prestress_->Unpack(tmpprestress);
-#endif
+  ExtractfromPack(position,data,pstype_);
+  ExtractfromPack(position,data,pstime_);
+  ExtractfromPack(position,data,time_);
+  if (pstype_==INPAR::STR::prestress_mulf)
+  {  
+    vector<char> tmpprestress(0);
+    ExtractfromPack(position,data,tmpprestress);
+    if (prestress_ == Teuchos::null)
+      prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
+    prestress_->Unpack(tmpprestress);
+  }
+//#endif
 
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   // invdesign_

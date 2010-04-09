@@ -26,13 +26,14 @@ written by : Alexander Volf
 #include "../drt_patspec/patspec.H"
 #include "Epetra_SerialDenseSolver.h"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 // inverse design object
 #if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 #include "inversedesign.H"
 #endif
 
 //#define PRINT_DEBUG
-
 #ifdef PRINT_DEBUG
 #include <string>
 #include <sstream>
@@ -56,7 +57,7 @@ void writeComment(const std::string v)
   std::cerr.write(reinterpret_cast<const char*>(&s),sizeof(unsigned int));
   std::cerr << 'C' << v;
 }
-#endif // PB
+#endif // PRINT_DEBUG
 
 
 using namespace std; // cout etc.
@@ -98,9 +99,9 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
   else if (action=="calc_struct_update_istep")         act = So_tet4::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike")       act = So_tet4::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")          act = So_tet4::calc_struct_reset_istep;
-#ifdef PRESTRESS
+//#ifdef PRESTRESS
   else if (action=="calc_struct_prestress_update")     act = So_tet4::prestress_update;
-#endif
+//#endif
 #ifdef INVERSEDESIGNCREATE
   else if (action=="calc_struct_inversedesign_update") act = So_tet4::inversedesign_update;
 #endif
@@ -282,9 +283,10 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
     }
     break;
 
-#ifdef PRESTRESS
+//#ifdef PRESTRESS
     case prestress_update:
     {
+      time_ = params.get<double>("total time");
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get displacement state");
       vector<double> mydisp(lm.size());
@@ -310,7 +312,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       UpdateJacobianMapping(mydisp,*prestress_);
     }
     break;
-#endif
+//#endif
 
 #ifdef INVERSEDESIGNCREATE
     case inversedesign_update:
@@ -357,7 +359,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
     break;
 
     default:
-      dserror("Unknown type of action for Solid3");
+      dserror("Unknown type of action for so_tet4");
   }
 
   return 0;
@@ -375,6 +377,7 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(ParameterList& params,
                                            Epetra_SerialDenseMatrix* elemat1)
 {
   dserror("DRT::ELEMENTS::So_tet4::EvaluateNeumann not implemented");
+#if 0
   // get values and switches from the condition
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
   const vector<double>* val   = condition.Get<vector<double> >("val"  );
@@ -440,6 +443,7 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(ParameterList& params,
       }
     }
   }/* ==================================================== end of Loop over GP */
+#endif
   return 0;
 } // DRT::ELEMENTS::So_tet4::EvaluateNeumann
 
@@ -515,10 +519,11 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
     **             [    dX       dY       dZ    ]
     */
 
-#ifdef PRESTRESS
-    if (!(prestress_->IsInit()))
-      prestress_->MatrixtoStorage(gp,nxyz_[gp],prestress_->JHistory());
-#endif
+//#ifdef PRESTRESS
+    if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
+      if (!(prestress_->IsInit()))
+        prestress_->MatrixtoStorage(gp,nxyz_[gp],prestress_->JHistory());
+//#endif
 #ifdef INVERSEDESIGNUSE
     if (!(invdesign_->IsInit()))
     {
@@ -528,9 +533,10 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
 #endif
 
   } // for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
-#ifdef PRESTRESS
-  prestress_->IsInit() = true;
-#endif
+//#ifdef PRESTRESS
+  if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
+    prestress_->IsInit() = true;
+//#endif
 #ifdef INVERSEDESIGNUSE
   invdesign_->IsInit() = true;
 #endif
@@ -618,7 +624,8 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
 
     // size is 3x3
     LINALG::Matrix<3,3> defgrd(false);
-#if defined(PRESTRESS) || defined(POSTSTRESS)
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
+    if (pstype_==INPAR::STR::prestress_mulf)
     {
       // get derivatives wrt to last spatial configuration
       LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> N_xyz;
@@ -640,12 +647,15 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
       Fnew.Multiply(defgrd,Fhist);
       defgrd = Fnew;
     }
-#else
-    defgrd.MultiplyTN(xdisp,nxyz);
-    defgrd(0,0)+=1;
-    defgrd(1,1)+=1;
-    defgrd(2,2)+=1;
-#endif
+    else
+//#else
+    {
+      defgrd.MultiplyTN(xdisp,nxyz);
+      defgrd(0,0)+=1;
+      defgrd(1,1)+=1;
+      defgrd(2,2)+=1;
+    }
+//#endif
 
 #ifdef INVERSEDESIGNUSE
     {
@@ -1077,7 +1087,7 @@ const vector<double> DRT::ELEMENTS::So_tet4::so_tet4_4gp_weights()
 }
 
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)
+//#if defined(PRESTRESS) || defined(POSTSTRESS)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
@@ -1149,11 +1159,11 @@ void DRT::ELEMENTS::So_tet4::UpdateJacobianMapping(
     // store new reference configuration
     prestress.MatrixtoStorage(gp,nxyznew,prestress.JHistory());
 
-  } // for (int gp=0; gp<NUMGPT_WEG6; ++gp)
+  } // for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
 
   return;
 }
-#endif // #if defined(PRESTRESS) || defined(POSTSTRESS)
+//#endif // #if defined(PRESTRESS) || defined(POSTSTRESS)
 
 
 #endif  // #ifdef CCADISCRET
