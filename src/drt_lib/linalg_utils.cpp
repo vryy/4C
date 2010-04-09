@@ -1540,24 +1540,19 @@ RCP<Epetra_Map> LINALG::CreateMap(const std::set<int>& gids, const Epetra_Comm& 
 /*----------------------------------------------------------------------*
  | split a vector into 2 pieces with given submaps            popp 02/08|
  *----------------------------------------------------------------------*/
-bool LINALG::SplitVector(const Epetra_Vector& x,
-                         const Epetra_Map& x1map,
+bool LINALG::SplitVector(const Epetra_Map& xmap,
+                         const Epetra_Vector& x,
+                         RCP<Epetra_Map>& x1map,
                          RCP<Epetra_Vector>&   x1,
-                         const Epetra_Map& x2map,
+                         RCP<Epetra_Map>& x2map,
                          RCP<Epetra_Vector>&   x2)
 {
-  x1 = rcp(new Epetra_Vector(x1map,false));
-  x2 = rcp(new Epetra_Vector(x2map,false));
-
-  //use an exporter or importer object
-  Epetra_Export exporter_x1(x.Map(),x1map);
-  Epetra_Export exporter_x2(x.Map(),x2map);
-
-  int err = x1->Export(x,exporter_x1,Insert);
-  if (err) dserror("ERROR: SplitVector: Export returned error &i", err);
-
-  err = x2->Export(x,exporter_x2,Insert);
-  if (err) dserror("ERROR: SplitVector: Export returned error &i", err);
+  // map extractor with fullmap(xmap) and two other maps (x1map and x2map)
+  LINALG::MapExtractor extractor (xmap,x1map,x2map);
+  
+  // ectract subvectors from fullvector
+  x1 = extractor.ExtractVector(x,1);
+  x2 = extractor.ExtractVector(x,0);
 
   return true;
 }

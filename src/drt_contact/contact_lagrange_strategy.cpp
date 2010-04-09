@@ -224,8 +224,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     RCP<Epetra_Vector> fsm;
 
     // do the vector splitting smn -> sm+n -> s+m+n
-    LINALG::SplitVector(*feff,*gsmdofs,fsm,*gndofrowmap_,fn);
-    LINALG::SplitVector(*fsm,*gsdofrowmap_,fs,*gmdofrowmap_,fm);
+    LINALG::SplitVector(*problemrowmap_,*feff,gsmdofs,fsm,gndofrowmap_,fn);
+    LINALG::SplitVector(*gsmdofs,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
     
     // abbreviations for slave set
     int sset = gsdofrowmap_->NumGlobalElements();
@@ -323,14 +323,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     RCP<Epetra_Vector> fi = rcp(new Epetra_Vector(*gidofs));
 
     // do the vector splitting s -> a+i
-    if (!iset)
-      *fa = *fs;
-    else if (!aset)
-      *fi = *fs;
-    else
-    {
-      LINALG::SplitVector(*fs,*gactivedofs_,fa,*gidofs,fi);
-    }
+    LINALG::SplitVector(*gsdofrowmap_,*fs,gactivedofs_,fa,gidofs,fi);
 
     /**********************************************************************/
     /* Isolate active and slip part from mhat, invd and dold              */
@@ -557,16 +550,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
 
     // do the vector splitting a -> sl+st
     if(aset)
-    {
-      if (!stickset)
-        fsl = rcp(new Epetra_Vector(*fa));
-      else if (!slipset)
-        fst = rcp(new Epetra_Vector(*fa));
-      else
-      {
-        LINALG::SplitVector(*fa,*gslipdofs_,fsl,*gstdofs,fst);
-      }
-    }
+      LINALG::SplitVector(*gactivedofs_,*fa,gslipdofs_,fsl,gstdofs,fst);
 
     // fm: add alphaf * old contact forces (t_n)
     RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
@@ -943,7 +927,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     RCP<Epetra_Vector> fsm;
 
     // do the vector splitting smn -> sm+n
-    LINALG::SplitVector(*feff,*gsmdofs,fsm,*gndofrowmap_,fn);
+    LINALG::SplitVector(*problemrowmap_,*feff,gsmdofs,fsm,gndofrowmap_,fn);
 
     // abbreviations for slave  and master set
     int sset = gsdofrowmap_->NumGlobalElements();
@@ -954,9 +938,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     fm = rcp(new Epetra_Vector(*gmdofrowmap_));
 
     // do the vector splitting sm -> s+m
-    if      (!sset) *fm = *fsm;
-    else if (!mset) *fs = *fsm;
-    else            LINALG::SplitVector(*fsm,*gsdofrowmap_,fs,*gmdofrowmap_,fm);
+    LINALG::SplitVector(*gsmdofs,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
 
     // store some stuff for static condensation of LM
     fs_   = fs;
@@ -992,9 +974,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     RCP<Epetra_Vector> fi = rcp(new Epetra_Vector(*gidofs));
 
     // do the vector splitting s -> a+i
-    if      (!iset) *fa = *fs;
-    else if (!aset) *fi = *fs;
-    else            LINALG::SplitVector(*fs,*gactivedofs_,fa,*gidofs,fi);
+    LINALG::SplitVector(*gsdofrowmap_,*fs,gactivedofs_,fa,gidofs,fi);
 
     /**********************************************************************/
     /* Isolate active part from mhat, invd and dold                       */

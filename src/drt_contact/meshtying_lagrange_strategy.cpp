@@ -237,14 +237,14 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
     RCP<Epetra_Vector> fsm;
 
     // do the vector splitting smn -> sm+n
-    LINALG::SplitVector(*feff,*gsmdofs_,fsm,*gndofrowmap_,fn);
+    LINALG::SplitVector(*problemrowmap_,*feff,gsmdofs_,fsm,gndofrowmap_,fn);
 
     // we want to split fsm into 2 groups s,m
     fs = rcp(new Epetra_Vector(*gsdofrowmap_));
     fm = rcp(new Epetra_Vector(*gmdofrowmap_));
     
     // do the vector splitting sm -> s+m
-    LINALG::SplitVector(*fsm,*gsdofrowmap_,fs,*gmdofrowmap_,fm);
+    LINALG::SplitVector(*gsmdofs_,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
 
     // store some stuff for static condensation of LM
     fs_   = fs;

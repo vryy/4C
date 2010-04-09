@@ -809,12 +809,21 @@ namespace LINALG
 
   /*!
   \brief split a vector into 2 non-overlapping pieces (RCP version)
+  
+  \param xmap    : map of vector to be split
+  \param x       : vector to be split
+  \param x1map   : map of first vector to be extracted
+  \param x1      : first vector to be extracted
+  \param x2map   : map of second vector to be extracted
+  \param x2      : second vector to be extracted
+    
   */
-  bool SplitVector(const Epetra_Vector& x,
-                   const Epetra_Map& x1map,
-                   RCP<Epetra_Vector>&   x1,
-                   const Epetra_Map& x2map,
-                   RCP<Epetra_Vector>&   x2);
+  bool SplitVector(const Epetra_Map& xmap,
+                   const Epetra_Vector& x,
+                   RCP<Epetra_Map>& x1map,
+                   RCP<Epetra_Vector>& x1,
+                   RCP<Epetra_Map>& x2map,
+                   RCP<Epetra_Vector>& x2);
 
   /*!
   \brief Print sparsity pattern of a matrix to postscript file
