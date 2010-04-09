@@ -100,7 +100,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
     
       //only if random numbers for Brownian dynamics are passed to element, get element velocities
       vector<double> myvel(lm.size());
-      if( params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) == Teuchos::null)
+      if( params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) != Teuchos::null)
       {
         RefCountPtr<const Epetra_Vector> vel  = discretization.GetState("velocity");      
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
