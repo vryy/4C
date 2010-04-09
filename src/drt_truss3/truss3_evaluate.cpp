@@ -97,12 +97,14 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
       if (res==null) dserror("Cannot get state vectors 'residual displacement'");
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-
-      // get element velocities
-      RefCountPtr<const Epetra_Vector> vel  = discretization.GetState("velocity");
-      if (vel==null) dserror("Cannot get state vectors 'velocity'");
+    
+      //only if random numbers for Brownian dynamics are passed to element, get element velocities
       vector<double> myvel(lm.size());
-      DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+      if( params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) == Teuchos::null)
+      {
+        RefCountPtr<const Epetra_Vector> vel  = discretization.GetState("velocity");      
+        DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+      }
 
       // for engineering strains instead of total lagrange use t3_nlnstiffmass2
       if (act == Truss3::calc_struct_nlnstiffmass)
