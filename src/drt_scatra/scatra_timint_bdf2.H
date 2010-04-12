@@ -136,6 +136,9 @@ protected:
   /// update time-dependent electrode state variables at the end of an time step
   void ElectrodeKineticsTimeUpdate(const bool init = false);
 
+  /// set old part of RHS for galvanostatic equation
+  void ElectrodeKineticsSetOldPartOfRHS();
+
 private:
 
   /// solution vector phi at time n-1

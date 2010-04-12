@@ -36,6 +36,9 @@ public:
   /// Destructor
   virtual ~TimIntOneStepTheta();
 
+  /// verify if given coefficients are in the admissable range;
+  void VerifyCoeff();
+
   /// Print information about current time step to screen (reimplementation for OST)
   virtual void PrintTimeStepInfo()
   {
@@ -135,6 +138,9 @@ protected:
 
   /// update time-dependent electrode state variables at the end of an time step
   void ElectrodeKineticsTimeUpdate(const bool init = false);
+
+  /// set old part of RHS for galvanostatic equation
+  void ElectrodeKineticsSetOldPartOfRHS();
 
   /// routine to reset phi vector due to reinitialization for OST scheme
   void SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn);

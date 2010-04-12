@@ -183,8 +183,8 @@ public:
     void ElectrodeStatus(
         const DRT::Element*        ele,  ///< the actual boundary element
         ParameterList&          params,  ///< the parameter list
-        const vector<double>&   ephinp,  ///< actual conc. and pot. values
-        const vector<double>&    ehist,  ///< history term for electric potential
+        const vector<double>&   ephinp,  ///< current conc. and potential values
+        const vector<double>& ephidtnp,  ///< time derivative vector evaluated at t_{n+1}
         const std::string     kinetics,  ///< desired electrode kinetics model
         const int            speciesid,  ///< id of reactive species (1,2,...)
         const double              pot0,  ///< actual electrode potential on metal side at t_{n+1}

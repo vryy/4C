@@ -309,11 +309,11 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       if(ele->Owner() == discretization.Comm().MyPID())
       {
         // get actual values of transported scalars
-        RefCountPtr<const Epetra_Vector> hist = discretization.GetState("hist");
-        if (hist==null) dserror("Cannot get state vector 'hist'");
+        RefCountPtr<const Epetra_Vector> phidtnp = discretization.GetState("timederivative");
+        if (phidtnp==null) dserror("Cannot get state vector 'ephidtnp'");
         // extract local values from the global vector
-        vector<double> ehist(lm.size());
-        DRT::UTILS::ExtractMyValues(*hist,ehist,lm);
+        vector<double> ephidtnp(lm.size());
+        DRT::UTILS::ExtractMyValues(*phidtnp,ephidtnp,lm);
 
         double pot0hist(0.0);
         if (not is_stationary)
@@ -326,15 +326,17 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
           timefac *= alphaF;
           if (timefac < 0.0) dserror("time factor is negative.");
           // access history of electrode potential
-          if (dlcapacitance > EPS14)
+          if (dlcapacitance > EPS12)
+          {
             pot0hist = cond->GetDouble("pothist");
+          }
         }
 
         ElectrodeStatus(
             ele,
             params,
             ephinp,
-            ehist,
+            ephidtnp,
             *kinetics,
             speciesid,
             pot0,
@@ -1104,7 +1106,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
     const DRT::Element*        ele,
     ParameterList&          params,
     const vector<double>&   ephinp,
-    const vector<double>&    ehist,
+    const vector<double>& ephidtnp,
     const std::string     kinetics,
     const int            speciesid,
     const double              pot0,
@@ -1142,14 +1144,14 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
 
   // el. potential values at element nodes
   LINALG::Matrix<iel,1> pot(true);
-  LINALG::Matrix<iel,1> pothist(true);
+  LINALG::Matrix<iel,1> potdtnp(true);
   if(iselch)
   {
     for (int inode=0; inode< iel;++inode)
     {
       conreact(inode) = ephinp[inode*numdofpernode_+(speciesid-1)];
       pot(inode) = ephinp[inode*numdofpernode_+numscal_];
-      pothist(inode) = ehist[inode*numdofpernode_+numscal_];
+      potdtnp(inode) = ephidtnp[inode*numdofpernode_+numscal_];
     }
   }
   else
@@ -1158,7 +1160,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
     {
       conreact(inode) = 1.0;
       pot(inode) = ephinp[inode*numdofpernode_];
-      pothist(inode) = ehist[inode*numdofpernode_];
+      potdtnp(inode) = ephidtnp[inode*numdofpernode_];
     }
   }
 
@@ -1167,7 +1169,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
   // el. potential at integration point
   double potint;
   // history term of el. potential at integration point
-  double pothistint;
+  double potdtnpint;
 
   // loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
@@ -1177,7 +1179,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
     // elch-specific values at integration point:
     conint = funct_.Dot(conreact);
     potint = funct_.Dot(pot);
-    pothistint = funct_.Dot(pothist);
+    potdtnpint = funct_.Dot(potdtnp);
 
     // surface overpotential eta at integration point
     const double eta = (pot0 - potint);
@@ -1221,16 +1223,19 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
       boundaryint += fac;
       concentrationint += conint*fac;
 
-      // tangent and rhs for galvanostatic problems
+      // tangent and rhs (= negative residual) for galvanostatic equation
       currderiv += i0*linea*timefac*fac;
       currentresidual += (-i0) * expterm * timefac *fac;
 
       if (dlcapacitance > EPS12)
       {
-      // add contributions due to double-layer capacitance
-        currderiv -= dlcapacitance*fac;
-        currentresidual += dlcapacitance*(pot0-pot0hist)*fac;
-        currentresidual += fac*dlcapacitance*(-potint+pothistint);
+        // add contributions due to double-layer capacitance
+        currderiv -= fac*dlcapacitance;
+        currentresidual += fac*dlcapacitance*(pot0-pot0hist-(timefac*potdtnpint));
+#if 0
+        cout<<"pot0-pot0hist = "<<pot0 << " - "<<pot0hist<<endl;
+        cout<<"- timefac*potdtnpint = -"<<timefac<<" * "<<potdtnpint<<endl;
+#endif
       }
 
     }
@@ -1368,7 +1373,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::IntegrateShapeFunctions(
       boundaryint += fac;
     }
 
-  } //loop ove r integration points
+  } //loop over integration points
 
   // add contribution to the global value
   params.set<double>("boundaryint",boundaryint);

@@ -955,7 +955,7 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo(
         sum,
         currtangent,
         currresidual,
-   	electrodesurface);
+        electrodesurface);
   } // loop over condid
 
   if ((myrank_==0) and printtoscreen)
@@ -988,7 +988,7 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
-  discret_->SetState("hist",hist_);
+  discret_->SetState("timederivative",phidtnp_); // needed for double-layer capacity!
 
   // set action for elements
   ParameterList eleparams;
@@ -1240,7 +1240,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   // QUANTITIES IN THERMAL AND/OR FLUIDS PROBLEMS",
   // INTERNATIONAL JOURNAL FOR NUMERICAL METHODS IN FLUIDS, VOL. 7, 371-394 (1987)
   // For the moment, we are lumping the 'boundary mass matrix' instead of solving
-  // a smal linear system!
+  // a small linear system!
 
 
   // get a vector layout from the discretization to construct matching
@@ -1705,6 +1705,12 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
       const double tol = extraparams_->sublist("ELCH CONTROL").get<double>("GSTATCONVTOL");
       const double effective_length = extraparams_->sublist("ELCH CONTROL").get<double>("LENGTH_CURRENT_PATH");
 
+      // for all time integration schemes, compute the current value for phidtnp
+      // this is needed for evaluating charging currents due to double-layer capacity
+      // This may only be called here and not inside OutputSingleElectrodeInfo!!!!
+      // Otherwise you modify your output to file called during Output()
+      ComputeTimeDerivative();
+
       // loop over all BV
       // degenerated to a loop over 2 BV conditions
       for (unsigned int icond = 0; icond < cond.size(); icond++)
@@ -1713,23 +1719,22 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
         currtangent = 0.0;
         currresidual = 0.0;
 
-      	// note: only the potential at the boundary with id 0 will be adjusted up to now!!
-      	OutputSingleElectrodeInfo(cond[icond],icond,false,false,actualcurrent,currtangent,currresidual,electrodesurface);
+        // note: only the potential at the boundary with id 0 will be adjusted up to now!!
+        OutputSingleElectrodeInfo(cond[icond],icond,false,false,actualcurrent,currtangent,currresidual,electrodesurface);
 
-      	// DEBUG: (write intermediated steps also to file and screen)
-      	// OutputSingleElectrodeInfo(cond[0],0,true,true,actualcurrent,pottangent);
+        // DEBUG: (write intermediated steps also to file and screen)
+        // OutputSingleElectrodeInfo(cond[0],0,true,true,actualcurrent,pottangent);
 
         double targetcurrent = DRT::Problem::Instance()->Curve(curvenum-1).f(time_);
         double timefac = 1.0/ResidualScaling();
 
         if (icond > 1)
-	  dserror("More than 2 Butler-Volmer conditions. All Butler-Volmer conditions cannot be connected in series anymore and therefore the procedure is not anymore correct.");
-
-	else if (icond==0)
+          dserror("More than 2 Butler-Volmer conditions. All these conditions cannot be connected in series anymore!");
+        else if (icond==0)
         {
           //Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first residual is calculated
-	  // newtonrhs = -(I_soll - I)
-	  newtonrhs = currresidual - (timefac*targetcurrent);
+          // newtonrhs = -residual, with the definition:  residual := timefac*(-I + I_target)
+          newtonrhs = + currresidual - (timefac*targetcurrent);
           if (myrank_==0)
           {
             cout<<"\nGALVANOSTATIC MODE:\n";
@@ -1737,9 +1742,9 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
             cout<<"  actual reaction current = "<<actualcurrent<<endl;
             cout<<"  required total current  = "<<targetcurrent<<endl;
             cout<<"  negative residual (rhs) = "<<newtonrhs<<endl<<endl;
-	  }
+          }
 
-	  if (gstatnumite_ > gstatitemax)
+          if (gstatnumite_ > gstatitemax)
           {
             if (myrank_==0) cout<< endl <<"  --> maximum number iterations reached. Not yet converged!"<<endl<<endl;
             return true; // we proceed to next time step
@@ -1760,46 +1765,46 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
           // potential drop ButlerVolmer conditions (surface ovepotential) and in the electrolyte (ohmic overpotential) are conected in parallel:
           //
           // I_0 = I_BV1 = I_ohmic = I_BV2
-          // R(I_soll, I) = R_BV1(I_soll, I) = R_ohmic(I_soll, I) = -R_BV2(I_soll, I)
+          // R(I_target, I) = R_BV1(I_target, I) = R_ohmic(I_target, I) = -R_BV2(I_target, I)
           // delta E_0 = delta U_BV1 + delta U_ohmic - (delta U_BV2)
-          // => delta E_0 = (R_BV1(I_soll, I)/J) + (R_ohmic(I_soll, I)/J) - (-R_BV2(I_soll, I)/J)
+          // => delta E_0 = (R_BV1(I_target, I)/J) + (R_ohmic(I_target, I)/J) - (-R_BV2(I_target, I)/J)
 
           // Newton step:  Delta pot = - Residual / (-Jacobian)
           potnew += (-1.0*effective_length*newtonrhs)/(sigma_(numscal_)*timefac*electrodesurface);
 
-	  // print additional information
-	  if (myrank_==0)
-	  {
-	    cout<< "  area                          =" << electrodesurface << endl;
-	    cout<< "  actualcurrent - targetcurrent =" << (targetcurrent - actualcurrent) << endl;
-	    cout<< "  conductivity                  =" << sigma_(numscal_) << endl;
-	    cout<< "  ohmic overpotential           =" << (-1.0*effective_length*newtonrhs)/(sigma_(numscal_)*timefac*electrodesurface) << endl;
-	  }
+          // print additional information
+          if (myrank_==0)
+          {
+            cout<< "  area                          =" << electrodesurface << endl;
+            cout<< "  actualcurrent - targetcurrent =" << (targetcurrent - actualcurrent) << endl;
+            cout<< "  conductivity                  =" << sigma_(numscal_) << endl;
+            cout<< "  ohmic overpotential           =" << (-1.0*effective_length*newtonrhs)/(sigma_(numscal_)*timefac*electrodesurface) << endl;
+          }
         }
 
         // Newton step:  Jacobian * \Delta pot = - Residual
         gstatincrement_ = newtonrhs/currtangent;
         // update electric potential
         potnew += gstatincrement_;
-	// print potential drop due to surface overpotential
-	if (myrank_==0) cout<< "  surface overpotential BV" << icond <<"     =" << gstatincrement_ << endl;
-    }
-    // end loop over electrode kinetics
+        // print potential drop due to surface overpotential
+        if (myrank_==0) cout<< "  surface overpotential BV" << icond <<"     =" << gstatincrement_ << endl;
+      }
+      // end loop over electrode kinetics
 
-    // Apply new electrode potential
-    if (abs(currtangent)<EPS12)
-      dserror("Tangent in galvanostatic control is near zero: %f",currtangent);
+      // Apply new electrode potential
+      if (abs(currtangent)<EPS12)
+        dserror("Tangent in galvanostatic control is near zero: %f",currtangent);
 
-    if (myrank_==0)
-    {
-      cout<< endl;
-      cout<< "  old electrode potential = "<<potold<<endl;
-      cout<< "  new electrode potential = "<<potnew<<endl<<endl;
-    }
-    // replace potential value of the boundary condition (on all processors)
-    cond[0]->Add("pot",potnew);
-    gstatnumite_++;
-    return false; // not yet converged -> continue Newton iteration with updated potential
+      if (myrank_==0)
+      {
+        cout<< endl;
+        cout<< "  old electrode potential = "<<potold<<endl;
+        cout<< "  new electrode potential = "<<potnew<<endl<<endl;
+      }
+      // replace potential value of the boundary condition (on all processors)
+      cond[0]->Add("pot",potnew);
+      gstatnumite_++;
+      return false; // not yet converged -> continue Newton iteration with updated potential
     }
   }
   return true;

@@ -111,6 +111,9 @@ void SCATRA::TimIntBDF2::SetOldPartOfRighthandside()
     theta_=1.0;
   }
 
+  // for electrochemical applications
+  ElectrodeKineticsSetOldPartOfRHS();
+
   return;
 }
 
@@ -423,34 +426,30 @@ void SCATRA::TimIntBDF2::OutputRestart()
   // write electrode potential of the first, galvanostatic electro kinetic condition
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
-  if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
-  {
-    // define a vector with all electro kinetic BC 
-    vector<DRT::Condition*> cond;
-    discret_->GetCondition("ElectrodeKinetics",cond);
-    if (!cond.empty())
+    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
-      // electrode potential of the first electro kinetic BC
-      double potnp = cond[0]->GetDouble("pot");
-      // write electrode potential to the .case file	
-      output_->WriteDouble("pot",potnp);
+      // define a vector with all electro kinetic BC
+      vector<DRT::Condition*> cond;
+      discret_->GetCondition("ElectrodeKinetics",cond);
+      if (!cond.empty())
+      {
+        // electrode potential of the first electrode kinetics BC at time n+1
+        double pot = cond[0]->GetDouble("pot");
+        output_->WriteDouble("pot",pot);
 
-      // electrode potential of the first electro kinetic BC at time n
-      double potn = cond[0]->GetDouble("potn");
-      // write electrode potential to the .case file	
-      output_->WriteDouble("potn",potn);
+        // electrode potential of the first electrode kinetics BC at time n
+        double potn = cond[0]->GetDouble("potn");
+        output_->WriteDouble("potn",potn);
 
-      // electrode potential of the first electro kinetic BC at time n -1
-      double potnm = cond[0]->GetDouble("potnm");
-      // write electrode potential to the .case file	
-      output_->WriteDouble("potnm",potnm);
+        // electrode potential of the first electrode kinetics BC at time n -1
+        double potnm = cond[0]->GetDouble("potnm");
+        output_->WriteDouble("potnm",potnm);
 
-      // history electrode potential of the first electro kinetic BC 
-      double pothist = cond[0]->GetDouble("pothist");
-      // write electrode potential to the .case file	
-      output_->WriteDouble("pothist",pothist);
+        // history of electrode potential of the first electrode kinetics BC
+        double pothist = cond[0]->GetDouble("pothist");
+        output_->WriteDouble("pothist",pothist);
+      }
     }
-  }
   }
 
   return;
@@ -458,7 +457,7 @@ void SCATRA::TimIntBDF2::OutputRestart()
 
 
 /*----------------------------------------------------------------------*
- |                                                            gjb 08/0 |
+ |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::ReadRestart(int step)
 {
@@ -471,37 +470,28 @@ void SCATRA::TimIntBDF2::ReadRestart(int step)
   reader.ReadVector(phin_, "phin");
   reader.ReadVector(phinm_,"phinm");
 
-  // get electrode potential of the first, galvanostatic ButlerVolmer condition
+  // restart for galvanostatic applications
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
-  if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
-  {
-    // define a vector with all electro kinetic BC 
-    vector<DRT::Condition*> cond;
-    discret_->GetCondition("ElectrodeKinetics",cond);
-    if (!cond.empty())
+    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
-      // read electrode potential from the .case file
-      double pot = reader.ReadDouble("pot");
-      // adapt electrode potential of the first electro kinetic condition
-      cond[0]->Add("pot",pot);
-
-      // read electrode potential from the .case file
-      double potn = reader.ReadDouble("potn");
-      // adapt electrode potential of the first electro kinetic condition
-      cond[0]->Add("potn",potn);
-
-      // read electrode potential from the .case file
-      double potnm = reader.ReadDouble("potnm");
-      // adapt electrode potential of the first electro kinetic condition
-      cond[0]->Add("potnm",potnm);
-
-      // read electrode potential from the .case file
-      double pothist = reader.ReadDouble("pothist");
-      // adapt electrode potential of the first electro kinetic condition
-      cond[0]->Add("pothist",pothist);
+      // define a vector with all electrode kinetics BCs
+      vector<DRT::Condition*> cond;
+      discret_->GetCondition("ElectrodeKinetics",cond);
+      if (!cond.empty())
+      {
+        // read desired values from the .control file and add/set the value to
+        // the first(!) electrode kinetics boundary condition
+        double pot = reader.ReadDouble("pot");
+        cond[0]->Add("pot",pot);
+        double potn = reader.ReadDouble("potn");
+        cond[0]->Add("potn",potn);
+        double potnm = reader.ReadDouble("potnm");
+        cond[0]->Add("potnm",potnm);
+        double pothist = reader.ReadDouble("pothist");
+        cond[0]->Add("pothist",pothist);
+      }
     }
-  }
   }
 
   return;
@@ -542,20 +532,41 @@ void SCATRA::TimIntBDF2::ElectrodeKineticsTimeUpdate(const bool init)
         // shift status variables
         cond[i]->Add("potnm",potn);
         cond[i]->Add("potn",potnp);
+      }
+    }
+  }
+  return;
+}
 
-        // prepare old part of rhs for galvanostatic mode
+
+/*----------------------------------------------------------------------*
+ | set old part of RHS for galvanostatic equation             gjb 04/10 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntBDF2::ElectrodeKineticsSetOldPartOfRHS()
+{
+  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
+  {
+    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+    {
+      vector<DRT::Condition*> cond;
+      discret_->GetCondition("ElectrodeKinetics",cond);
+      for (size_t i=0; i < cond.size(); i++) // we update simply every condition!
+        // prepare "old part of rhs" for galvanostatic equation (to be used at next time step)
+      {
         double pothist(0.0);
+        double potn = cond[i]->GetDouble("potn");
+        double potnm = cond[i]->GetDouble("potnm");
         if (step_>1)
         {
           double omega = dta_/dtp_;
           double fact1 = (1.0 + omega)*(1.0 + omega)/(1.0 + (2.0*omega));
           double fact2 = -(omega*omega)/(1+ (2.0*omega));
-          pothist= fact1*potnp + fact2*potn; // potnp is the potn of the next time step, etc.
+          pothist= fact1*potn + fact2*potnm;
         }
         else
         {
           // for start-up of BDF2 we do one step with backward Euler
-          pothist=potnp;
+          pothist=potn;
         }
         cond[i]->Add("pothist",pothist);
       }
@@ -563,6 +574,5 @@ void SCATRA::TimIntBDF2::ElectrodeKineticsTimeUpdate(const bool init)
   }
   return;
 }
-
 
 #endif /* CCADISCRET */
