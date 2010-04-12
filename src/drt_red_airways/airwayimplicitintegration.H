@@ -263,11 +263,6 @@ protected:
   /// rhs: right hand side vector
   RefCountPtr<Epetra_Vector>  rhs_;
 
-  //! @name volumetric flow rate at time n+1, n and n-1
-  RCP<Epetra_Vector>          qcnp_;
-  RCP<Epetra_Vector>          qcn_;
-  RCP<Epetra_Vector>          qcnm_;
-  //@}
 
   //! @name pressures at time n+1, n and n-1
   RCP<Epetra_Vector>          pnp_;

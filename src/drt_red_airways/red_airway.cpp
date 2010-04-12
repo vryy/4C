@@ -63,6 +63,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::RedAirway::Shape() const
   switch (NumNode())
   {
   case  2: return line2;
+  case  3: return line3;
   default:
     dserror("unexpected number of nodes %d", NumNode());
   }
@@ -85,15 +86,22 @@ void DRT::ELEMENTS::RedAirway::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // Cross-sectional Area
+
   AddtoPack(data,elemType_);
-  AddtoPack(data,A_);
-  AddtoPack(data,Ew_);
-  AddtoPack(data,Ea_);
-  AddtoPack(data,tw_);
-  AddtoPack(data,A_);
-  AddtoPack(data,qin_);
-  AddtoPack(data,qout_);
+
+  map<std::string,double>::const_iterator it;
+  AddtoPack(data,elemVars_.size());
+  for (it = elemVars_.begin(); it!= elemVars_.end(); it++)
+  {
+    AddtoPack(data,it->first);
+    AddtoPack(data,it->second);
+  }
+  AddtoPack(data,elemParams_.size());
+  for (it = elemParams_.begin(); it!= elemParams_.end(); it++)
+  {
+    AddtoPack(data,it->first);
+    AddtoPack(data,it->second);
+  }
 
   return;
 }
@@ -117,14 +125,30 @@ void DRT::ELEMENTS::RedAirway::Unpack(const vector<char>& data)
   Element::Unpack(basedata);
   
   ExtractfromPack(position,data,elemType_);
-  ExtractfromPack(position,data,A_);
-  ExtractfromPack(position,data,Ew_);
-  ExtractfromPack(position,data,Ea_);
-  ExtractfromPack(position,data,tw_);
-  ExtractfromPack(position,data,A_);
-  ExtractfromPack(position,data,qin_);
-  ExtractfromPack(position,data,qout_);
 
+  map<std::string,double> it;
+  int n = 0;
+  ExtractfromPack(position,data,n);
+  for (int i = 0; i<n; i++)
+  {
+    std::string name;
+    double val;
+    ExtractfromPack(position,data,name);
+    ExtractfromPack(position,data,val);
+    elemVars_[name] = val;
+  }
+
+  ExtractfromPack(position,data,n);
+  for (int i = 0; i<n; i++)
+  {
+    std::string name;
+    double val;
+    ExtractfromPack(position,data,name);
+    ExtractfromPack(position,data,val);
+    elemParams_[name] = val;
+  }
+
+  //  cout<<"Var size: "<<elemVars_.size();
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
@@ -284,14 +308,14 @@ bool DRT::ELEMENTS::RedAirway::VisData(const string& name, vector<double>& data)
   if ( (name == "flow_in") )
   {
     if ((int)data.size()!=1) dserror("size mismatch");
-    const double value = qin_;
+    const double value = elemVars_[name];
     data[0] = value;
     return true;
   }
   else if ( (name == "flow_out") )
   {
     if ((int)data.size()!=1) dserror("size mismatch");
-    const double value = qout_;
+    const double value = elemVars_[name];
     data[0] = value;
     return true;
   }
@@ -301,5 +325,58 @@ bool DRT::ELEMENTS::RedAirway::VisData(const string& name, vector<double>& data)
   }
 }
 
+/*----------------------------------------------------------------------*
+ |  Get element variable  (public)                         ismail 04/10 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::RedAirway::getVars(std::string name, double & var)
+{
+  
+  map<std::string,double>::iterator it;
+  it = elemVars_.find(name);
+  if (it == elemVars_.end())
+  {
+    dserror ("[%s] is not found with in the element variables",name.c_str());
+    exit(1);
+  }
+  var = elemVars_[name];
+  
+}
+
+/*----------------------------------------------------------------------*
+ |  Set element variable  (public)                         ismail 04/10 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::RedAirway::setVars(std::string name, double var)
+{
+  
+  map<std::string,double>::iterator it;
+  it = elemVars_.find(name);
+  if (it == elemVars_.end())
+  {
+    dserror ("[%s] is not found with in the element variables",name.c_str());
+    exit(1);
+  }
+  elemVars_[name] = var;
+  
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Get element parameters (public)                        ismail 04/10 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::RedAirway::getParams(std::string name, double & var)
+{
+
+  map<std::string,double>::iterator it;
+  it = elemParams_.find(name);
+  if (it == elemParams_.end())
+  {
+    cout<<"Error"<<endl;
+    dserror ("[%s] is not found with in the element variables",name.c_str());
+    exit(1);
+  }
+  var = elemParams_[name];
+  
+}
+           
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_RED_AIRWAYS

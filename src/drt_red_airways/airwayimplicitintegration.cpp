@@ -109,9 +109,9 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   pnm_          = LINALG::CreateVector(*dofrowmap,true);
 
   // Volumetric flow rates at time n+1, n and n-1
-  qcnp_          = LINALG::CreateVector(*elementrowmap,true);
-  qcn_           = LINALG::CreateVector(*elementrowmap,true);
-  qcnm_          = LINALG::CreateVector(*elementrowmap,true);
+  //  qcnp_          = LINALG::CreateVector(*elementrowmap,true);
+  //  qcn_           = LINALG::CreateVector(*elementrowmap,true);
+  //  qcnm_          = LINALG::CreateVector(*elementrowmap,true);
 
   // vectors for postprocessing, Element Node Ids and raduis 
   nodeIds_      = LINALG::CreateVector(*dofrowmap,true);
@@ -143,9 +143,9 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   eleparams.set("p0n",pn_);
   eleparams.set("p0nm",pnm_);
   
-  eleparams.set("qc0np",qcnp_);
-  eleparams.set("qc0n",qcn_);
-  eleparams.set("qc0nm",qcnm_);
+  //  eleparams.set("qc0np",qcnp_);
+  //  eleparams.set("qc0n",qcn_);
+  //  eleparams.set("qc0nm",qcnm_);
   eleparams.set("radii",radii_);
 
 
@@ -372,9 +372,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     discret_->SetState("pnp",pnp_);
     discret_->SetState("pn" ,pn_ );
     discret_->SetState("pnm",pnm_);
-    discret_->SetState("qcnp",qcnp_);
-    discret_->SetState("qcn" ,qcn_ );
-    discret_->SetState("qcnm",qcnm_);
+    //    discret_->SetState("qcnp",qcnp_);
+    //    discret_->SetState("qcn" ,qcn_ );
+    //    discret_->SetState("qcnm",qcnm_);
 
 
     // call standard loop over all elements
@@ -423,9 +423,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     discret_->SetState("pnp",pnp_);
     discret_->SetState("pn" ,pn_ );
     discret_->SetState("pnm",pnm_);
-    discret_->SetState("qcnp",qcnp_);
-    discret_->SetState("qcn" ,qcn_ );
-    discret_->SetState("qcnm",qcnm_);
+    //    discret_->SetState("qcnp",qcnp_);
+    //    discret_->SetState("qcn" ,qcn_ );
+    //    discret_->SetState("qcnm",qcnm_);
 
     eleparams.set("time step size",dta_);
     eleparams.set("total time",time_);
@@ -495,9 +495,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     discret_->ClearState();
     discret_->SetState("pnp",pnp_);
     discret_->SetState("pn" ,pn_ );
-    discret_->SetState("qcn" ,qcn_ );
+    //    discret_->SetState("qcn" ,qcn_ );
 
-    eleparams.set("qcnp",qcnp_);
+    //    eleparams.set("qcnp",qcnp_);
     eleparams.set("time step size",dta_);
     eleparams.set("total time",time_);
 
@@ -573,8 +573,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeUpdate()
   pnm_->Update(1.0,*pn_ ,0.0);
   pn_ ->Update(1.0,*pnp_,0.0);
 
-  qcnm_->Update(1.0,*qcn_ ,0.0);
-  qcn_ ->Update(1.0,*qcnp_,0.0);
+  //  qcnm_->Update(1.0,*qcn_ ,0.0);
+  //  qcn_ ->Update(1.0,*qcnp_,0.0);
 
   return;
 }// RedAirwayImplicitTimeInt::TimeUpdate
@@ -598,9 +598,14 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output()
     output_.NewStep(step_,time_);
 
     // "pressure" vectors
-    //    output_.WriteVector("pnm",pnm_);
-    //    output_.WriteVector("pn",pn_);
+    output_.WriteVector("pnm",pnm_);
+    output_.WriteVector("pn",pn_);
     output_.WriteVector("pnp",pnp_);
+
+    // "flow" vectors for capacitances
+    //    output_.WriteVector("qcnm",qcnm_);
+    //    output_.WriteVector("qcn",qcn_);
+    //    output_.WriteVector("qcnp",qcnp_);
 
     // write domain decomposition for visualization
     output_.WriteElementData();
@@ -611,6 +616,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output()
       output_.WriteVector("radii",radii_);
       //      output_.WriteVector("abc",abc_);
     }
+
+    // write mesh in each restart step --- the elements are required since
+    // they contain history variables (the time dependent subscales)
+    output_.WriteMesh(step_,time_);
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ != 0 && step_%uprestart_ == 0)
@@ -624,13 +633,17 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output()
     output_.WriteVector("pnp",pnp_);
 
     // "flow" vectors for capacitances
-    output_.WriteVector("qcnm",qcnm_);
-    output_.WriteVector("qcn",qcn_);
-    output_.WriteVector("qcnp",qcnp_);
+    //    output_.WriteVector("qcnm",qcnm_);
+    //    output_.WriteVector("qcn",qcn_);
+    //  output_.WriteVector("qcnp",qcnp_);
 
 
     // write domain decomposition for visualization
     output_.WriteElementData();
+
+    // write mesh in each restart step --- the elements are required since
+    // they contain history variables (the time dependent subscales)
+    output_.WriteMesh(step_,time_);
   }
 
   return;
@@ -649,15 +662,18 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output()
 void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step)
 {
 
+  cout<<"Reading Restart"<<endl;
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
   reader.ReadVector(pnp_,"pnp");
   reader.ReadVector(pn_,"pn");
   reader.ReadVector(pnm_,"pnm");
-  reader.ReadVector(qcnp_,"qcnp");
-  reader.ReadVector(qcn_,"qcn");
-  reader.ReadVector(qcnm_,"qcnm");
+  //reader.ReadVector(qcnp_,"qcnp");
+  //reader.ReadVector(qcn_,"qcn");
+  //reader.ReadVector(qcnm_,"qcnm");
+  // read the previously written elements including the history data
+  reader.ReadMesh(step_);
 
 }//RedAirwayImplicitTimeInt::ReadRestart
 

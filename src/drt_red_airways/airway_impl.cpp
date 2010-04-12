@@ -44,7 +44,16 @@ DRT::ELEMENTS::RedAirwayImplInterface* DRT::ELEMENTS::RedAirwayImplInterface::Im
     }
     return airway;
   }
+  case DRT::Element::line3:
   default:
+  {
+    static AirwayImpl<DRT::Element::line3>* airway;
+    if (airway==NULL)
+    {
+      airway = new AirwayImpl<DRT::Element::line3>;
+    }
+    return airway;
+  }
     dserror("shape %d (%d nodes) not supported", red_airway->Shape(), red_airway->NumNode());
   }
   return NULL;
@@ -123,9 +132,9 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
     epnp(i)    = mypnp[i];
   }
 
-  RefCountPtr<const Epetra_Vector> qcn  = discretization.GetState("qcn");
+  //  RefCountPtr<const Epetra_Vector> qcn  = discretization.GetState("qcn");
   LINALG::Matrix<numnode,1> eqn;
-  eqn(0) = (*qcn)[ele->LID()];
+  //  eqn(0) = (*qcn)[ele->LID()];
   
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
@@ -162,9 +171,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
   RCP<Epetra_Vector> p0nm    = params.get<RCP<Epetra_Vector> >("p0nm");
   //  RCP<Epetra_Vector> abc     = params.get<RCP<Epetra_Vector> >("abc");
 
-  RCP<Epetra_Vector> qc0np   = params.get<RCP<Epetra_Vector> >("qc0np");
-  RCP<Epetra_Vector> qc0n    = params.get<RCP<Epetra_Vector> >("qc0n");
-  RCP<Epetra_Vector> qc0nm   = params.get<RCP<Epetra_Vector> >("qc0nm");
+  //  RCP<Epetra_Vector> qc0np   = params.get<RCP<Epetra_Vector> >("qc0np");
+  //  RCP<Epetra_Vector> qc0n    = params.get<RCP<Epetra_Vector> >("qc0n");
+  //  RCP<Epetra_Vector> qc0nm   = params.get<RCP<Epetra_Vector> >("qc0nm");
   RCP<Epetra_Vector> radii   = params.get<RCP<Epetra_Vector> >("radii");
 
   vector<int>::iterator it = lm.begin();
@@ -193,8 +202,11 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
     p0np->ReplaceGlobalValues(1,&val,&gid);
     p0n ->ReplaceGlobalValues(1,&val,&gid);
     p0nm->ReplaceGlobalValues(1,&val,&gid);
-    
-    val = sqrt(ele->getA()/M_PI);
+
+    double A;
+    ele->getParams("Area",A);
+
+    val = sqrt(A/M_PI);
     radii->ReplaceGlobalValues(1,&val,&gid);
     //    abc->ReplaceGlobalValues(1,&val,&gid);
   }
@@ -206,9 +218,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
   {
     int    gid = ele->Id();
     double val = 0.0;
-    qc0np->ReplaceGlobalValues(1,&val,&gid);
-    qc0n ->ReplaceGlobalValues(1,&val,&gid);
-    qc0nm->ReplaceGlobalValues(1,&val,&gid);  
+    //    qc0np->ReplaceGlobalValues(1,&val,&gid);
+    //    qc0n ->ReplaceGlobalValues(1,&val,&gid);
+    //    qc0nm->ReplaceGlobalValues(1,&val,&gid);  
   }
 
 }//AirwayImpl::Initial
@@ -228,6 +240,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   double                                   dt)
 {
 
+  //  cout<<">>>>>>>>>>>>>>>>>Hello Sysmat"<<endl;
   double dens = 0.0;
   double visc = 0.0;
 
@@ -280,12 +293,17 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
           + pow(xyze(2,0) - xyze(2,1),2));
 
   double q_out = 0.0;
+  //  cout<<"hello Element type"<<endl;
   if(ele->type() == "PoiseuilleResistive")
   {
+    // get element information
+    double A;
+    ele->getParams("Area",A);
+
     //------------------------------------------------------------
     //               Calculate the System Matrix
     //------------------------------------------------------------
-    const double R = 8.0*PI*visc*dens*L/(pow(ele->getA(),2));
+    const double R = 8.0*PI*visc*dens*L/(pow(A,2));
     sysmat(0,0) = -1.0/R  ; sysmat(0,1) =  1.0/R ;
     sysmat(1,0) =  1.0/R  ; sysmat(1,1) = -1.0/R ;
     
@@ -297,14 +315,22 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   }
   else if(ele->type() == "InductoResistive")
   {
+
   }
   else if(ele->type() == "ComplientResistive")
   {
+    //    cout<<"Hello ComplientRes"<<endl;
+    // get element information
+    double A, Ew, tw;
+    ele->getParams("Area",A);
+    ele->getParams("WallCompliance",Ew);
+    ele->getParams("WallThickness",tw);
+
     // find Resistance 
-    const double R = 8.0*PI*visc*dens*L/(pow(ele->getA(),2));
+    const double R = 8.0*PI*visc*dens*L/(pow(A,2));
 
     // find Capacitance C
-    const double C    = 2.0*pow(ele->getA(),2)*L/(ele->getEw()*ele->gettw()*sqrt(M_PI));
+    const double C = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
 
 
     //------------------------------------------------------------
@@ -313,13 +339,60 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     sysmat(0,0) = -1.0/R -2.0*C/dt ; sysmat(0,1) =  1.0/R ;
     sysmat(1,0) =  1.0/R           ; sysmat(1,1) = -1.0/R ;
 
-    rhs(0) = -epnp(0)*2.0*C/dt - eqn(0);
+    // get element information from the previous time step
+    double qcn;
+    ele->getVars("capacitor_flow",qcn);
+
+    //------------------------------------------------------------
+    //               Calculate the right hand side
+    //------------------------------------------------------------
+    rhs(0) = -epnp(0)*2.0*C/dt - qcn;
     rhs(1) = 0.0;
 
+    // calculate out flow at the current time step
     q_out = (epnp(0)-epnp(1))/R;
+    
+    //    cout<<"bye bye RC"<<endl;
   }
   else if(ele->type() == "RLC")
   {
+    // get element information
+    double A, Ew, tw;
+    ele->getParams("Area",A);
+    ele->getParams("WallCompliance",Ew);
+    ele->getParams("WallThickness",tw);
+
+    // find Resistance 
+    const double R = 8.0*PI*visc*dens*L/(pow(A,2));
+
+    // find Capacitance C
+    const double C = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
+
+    // find Inductance L
+    const double L = dens*L/A;
+
+    //------------------------------------------------------------
+    //               Calculate the System Matrix
+    //------------------------------------------------------------
+    sysmat(0,0) = -2.0*C/dt -dt/(2.0*L); sysmat(0,1) =  dt/(2.0*L)       ; sysmat(0,2) =  0.0   ;
+    sysmat(1,0) =  dt/(2.0*L)          ; sysmat(1,1) = -dt/(2.0*L)-1.0/R ; sysmat(1,2) =  1.0/R ;
+    sysmat(2,0) =  0.0                 ; sysmat(2,1) =  1.0/R            ; sysmat(2,2) = -1.0/R ;
+
+
+    // get element information from the previous time step
+    double qcn, qln;
+    ele->getVars("capacitor_flow",qcn);
+    ele->getVars("inductor_flow",qln);
+
+    //------------------------------------------------------------
+    //               Calculate the right hand side
+    //------------------------------------------------------------
+    rhs(0) = -qcn - epnp(0)*2.0*C/dt + qln + L/(2.0*dt)*epnp(1);
+    rhs(1) = -qln - L/(2.0*dt)*epnp(1);
+    rhs(2) = 0.0;
+
+    // calculate out flow at the current time step
+    q_out = (epnp(1)-epnp(2))/R;
   }
   else if(ele->type() == "SUKI")
   {
@@ -354,8 +427,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         const double K = condition->GetDouble("Stiffness");
         
         
-        sysmat(i,i) += pow(-1.0,i)*(2.0/(K*dt));
-        rhs(i)      += pow(-1.0,i)*(q_out + 2.0/(K*dt)*epnp(i));
+        sysmat(i,i) += pow(-1.0,i)*(2.0*K/(dt));
+        rhs(i)      += pow(-1.0,i)*(q_out + 2.0*K/(dt)*epnp(i));
       }
       else
       {
@@ -363,9 +436,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         exit(1);
       }
     }
-    
   }
-
+  //  cout<<"bye bye sysmat"<<endl;
 }
 
 /*----------------------------------------------------------------------*
@@ -679,27 +751,46 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   double qout= 0.0;
   if(ele->type() == "PoiseuilleResistive")
   {
-    const double R = 8.0*PI*visc*dens*L/(pow(ele->getA(),2));
+    // get element information
+    double A;
+    ele->getParams("Area",A);
+
+    const double R = 8.0*PI*visc*dens*L/(pow(A,2));
 
     qin = (epnp(0)-epnp(1))/R;
     qout= qin;
   }
   else if(ele->type() == "InductoResistive")
   {
+    // get element information
+    double A, Ew, tw;
+    ele->getParams("Area",A);
+    ele->getParams("WallCompliance",Ew);
+    ele->getParams("WallThickness",tw);
 
   }
   else if(ele->type() == "ComplientResistive")
   {
+    // get element information
+    double A, Ew, tw;
+    ele->getParams("Area",A);
+    ele->getParams("WallCompliance",Ew);
+    ele->getParams("WallThickness",tw);
+
     // find Resistance 
-    const double R    = 8.0*PI*visc*dens*L/(pow(ele->getA(),2));
+    const double R    = 8.0*PI*visc*dens*L/(pow(A,2));
  
     // find Capacitance C
-    const double C    = 2.0*pow(ele->getA(),2)*L/(ele->getEw()*ele->gettw()*sqrt(M_PI));
+    const double C    = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
 
+
+    // get element information from the previous time step
+    double qcn;
+    ele->getVars("capacitor_flow",qcn);
 
     RefCountPtr<const Epetra_Vector> pn   = discretization.GetState("pn");
-    RefCountPtr<const Epetra_Vector> qcn  = discretization.GetState("qcn");
-    RCP<Epetra_Vector>               qcnp = params.get<RCP<Epetra_Vector> >("qcnp");
+    //    RefCountPtr<const Epetra_Vector> qcn  = discretization.GetState("qcn");
+    //    RCP<Epetra_Vector>               qcnp = params.get<RCP<Epetra_Vector> >("qcnp");
 
 
     // extract local values from the global vectors
@@ -713,10 +804,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
       // split area and volumetric flow rate, insert into element arrays
       epn(i)    = mypn[i];
     }
-    
-    int    gid = ele->LID();
-    double qcnp_val = (2.0*C/dt)*(epnp(0)-epn(0)) - (*qcn)[gid];
-    qcnp->ReplaceGlobalValues(1,&qcnp_val,&gid);
+
+    // -----------------------------------------------------------
+    // calculate capacitance flow at time step n+1
+    // -----------------------------------------------------------
+    double qcnp_val = (2.0*C/dt)*(epnp(0)-epn(0)) - qcn;
+    ele->setVars("capacitor_flow",qcnp_val);
+    //    int    gid = ele->LID();
+    //    double qcnp_val = (2.0*C/dt)*(epnp(0)-epn(0)) - (*qcn)[gid];
+    //    qcnp->ReplaceGlobalValues(1,&qcnp_val,&gid);
 
 
     qout = (epnp(0)-epnp(1))/R;
@@ -725,6 +821,61 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   }
   else if(ele->type() == "RLC")
   {
+    // get element information
+    double A, Ew, tw;
+    ele->getParams("Area",A);
+    ele->getParams("WallCompliance",Ew);
+    ele->getParams("WallThickness",tw);
+
+    // find Resistance 
+    const double R    = 8.0*PI*visc*dens*L/(pow(A,2));
+ 
+    // find Capacitance C
+    const double C    = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
+
+
+    // get element information from the previous time step
+    double qcn,qln;
+    ele->getVars("capacitor_flow",qcn);
+    
+
+    // get pressure values at n+1
+    RefCountPtr<const Epetra_Vector> pn   = discretization.GetState("pn");
+
+    // extract local values from the global vectors
+    vector<double> mypn(lm.size());
+    DRT::UTILS::ExtractMyValues(*pn,mypn,lm);
+    
+    // create objects for element arrays
+    LINALG::Matrix<numnode,1> epn;
+    for (int i=0;i<numnode;++i)
+    {
+      // split area and volumetric flow rate, insert into element arrays
+      epn(i)    = mypn[i];
+    }
+
+    // -----------------------------------------------------------
+    // calculate the inductance flow at time step n and n+1
+    // qln = qRn (qRn: flow in resistor at n)
+    // -----------------------------------------------------------
+    double qlnp = 0.0;
+    qln  = (epn(1) - epn(2))/R;
+    qlnp = ((epnp(0) - epnp(1))-(epn(0) - epn(1)))*dt/(2.0*L) + qln;
+    ele->setVars("inductor_flow",qlnp);    
+
+    // -----------------------------------------------------------
+    // calculate capacitance flow at time step n+1
+    // -----------------------------------------------------------
+    double qcnp_val = (2.0*C/dt)*(epnp(0)-epn(0)) - qcn;
+    ele->setVars("capacitor_flow",qcnp_val);
+    //    int    gid = ele->LID();
+    //    double qcnp_val = (2.0*C/dt)*(epnp(0)-epn(0)) - (*qcn)[gid];
+    //    qcnp->ReplaceGlobalValues(1,&qcnp_val,&gid);
+
+
+    qout = qlnp;
+    qin  = qout + qcnp_val;
+    
   }
   else if(ele->type() == "SUKI")
   {
@@ -736,8 +887,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     exit(1);
   }
 
-  ele->setqin(qin);
-  ele->setqout(qout);
+  ele->setVars("flow_in",qin);
+  ele->setVars("flow_out",qout);
 
 }
 

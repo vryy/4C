@@ -324,22 +324,31 @@ public:
   //@}
 
   //! get cross-sectional area
-  double         getA(){ return A_;}
+  //  double         getA(){ return A_;}
 
   //! get youngs modulus of the wall
-  double         getEw(){ return Ew_;}
+  //  double         getEw(){ return Ew_;}
 
   //! get youngs modulus of the air
-  double         getEa(){ return Ea_;}
+  //  double         getEa(){ return Ea_;}
 
   //! get wall thickness
-  double         gettw(){ return tw_;}
+  //  double         gettw(){ return tw_;}
 
   //! set qin
   void           setqin (double Qin ){ qin_ = Qin;}
 
   //! set qout
   void           setqout(double Qout){ qout_ = Qout;}
+
+  //! get element variables
+  void           getVars(std::string name, double & var);
+
+  //! get element variables
+  void           setVars(std::string name, double var);
+
+  //! get element parameters
+  void           getParams(std::string name, double & var);
 
 private:
 
@@ -377,6 +386,12 @@ private:
   
   //! flow out
   double                                          qout_;
+
+  // data
+  map<std::string, double>                        elemParams_;
+
+  // data
+  map<std::string, double>                        elemVars_;
 
   // internal calculation methods
 
