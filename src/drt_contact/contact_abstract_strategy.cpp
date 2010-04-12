@@ -740,6 +740,7 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
 {
   // set restart displacement state
   SetState("displacement", dis);
+  SetState("olddisplacement", dis);
 
   // evaluate interface and restart mortar quantities
   // in the case of SELF CONTACT, also re-setup master/slave maps
