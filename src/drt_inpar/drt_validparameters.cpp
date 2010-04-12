@@ -862,10 +862,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "none",
                                  "lung",
+                                 "airways",
                                  "gen"),
                                tuple<INPAR::STR::InvAnalysisType>(
                                  INPAR::STR::inv_none,
                                  INPAR::STR::inv_lung,
+                                 INPAR::STR::inv_airways,
                                  INPAR::STR::inv_generalized),
                                &iap);
 
