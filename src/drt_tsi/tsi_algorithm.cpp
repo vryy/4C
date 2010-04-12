@@ -45,13 +45,13 @@ TSI::Algorithm::Algorithm(
 {
   // build the proxy dofsets
   // build a proxy of the temperature discretization for the structure field
-  Teuchos::RCP<DRT::DofSet> thermodofset =
-    ThermoField().Discretization()->GetDofSetProxy();
+  Teuchos::RCP<DRT::DofSet> thermodofset
+    = ThermoField().Discretization()->GetDofSetProxy();
   if (StructureField().Discretization()->AddDofSet(thermodofset)!=1)
     dserror("unexpected dof sets in structure field");
   // build a proxy of the structure discretization for the temperature field
-  Teuchos::RCP<DRT::DofSet> structdofset =
-    StructureField().Discretization()->GetDofSetProxy();
+  Teuchos::RCP<DRT::DofSet> structdofset
+    = StructureField().Discretization()->GetDofSetProxy();
   if (ThermoField().Discretization()->AddDofSet(structdofset)!=1)
     dserror("unexpected dof sets in thermo field");
 
@@ -65,7 +65,12 @@ TSI::Algorithm::Algorithm(
 //  cout << "structure dofmap" << endl;
 //  cout << *ThermoField().DofRowMap(1) << endl;
 //  exit(0);
+
+  // now build the matrices again and consider the temperature dependence
+  StructureField().TSIMatrix();
+
 }
+
 
 /*----------------------------------------------------------------------*
  | destructor (public)                                      dano 12/09 |
@@ -73,6 +78,7 @@ TSI::Algorithm::Algorithm(
 TSI::Algorithm::~Algorithm()
 {
 }
+
 
 /*----------------------------------------------------------------------*
  | (public)                                                  dano 12/09 |
@@ -109,6 +115,9 @@ void TSI::Algorithm::TimeLoop()
   itmax_ = tsidyn.get<int>("ITEMAX"); // default: = 1
   ittol_ = tsidyn.get<double>("CONVTOL"); // default: =1e-6
 
+  // get an idea of the temperatures (like in partitioned FSI)
+  itempn_ = ThermoField().ExtractTemperatures();
+
   // time loop
   while (NotFinished())
   {
@@ -123,12 +132,14 @@ void TSI::Algorithm::TimeLoop()
 
       // store temperature from first solution for convergence check
       tempincnp_->Update(1.0,*ThermoField().Tempnp(),0.0);
-
+ 
       // prepare next time step
       PrepareTimeStep();
 
+      const Teuchos::RCP<Epetra_Vector> itemp = DoThermoStep();
+
       // solve structure system
-      DoStructureStep();
+      DoStructureStep(itemp);
 
       // solve thermo system
       DoThermoStep();
@@ -136,15 +147,20 @@ void TSI::Algorithm::TimeLoop()
       // update all single field solvers
       Update();
 
+      // extract final temperatures,
+      // since we did update, this is very easy to extract
+      itempn_ = ThermoField().ExtractTemperatures();
+
       // write output to screen and files
       Output();
 
-      // check convergence of temperature field for "partitioned scheme" 10.02
+      // check convergence of temperature field for "partitioned scheme"
       stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
     } // end OUTER ITERATION
 
   } // time loop
 }
+
 
 /*----------------------------------------------------------------------*
  | (protected)                                               dano 12/09 |
@@ -159,10 +175,11 @@ void TSI::Algorithm::PrepareTimeStep()
   ThermoField().PrepareTimeStep();
 }
 
+
 /*----------------------------------------------------------------------*
- | (protected)                                               dano 12/09 |
+ | Solve the structure system (protected)                    dano 03/10 |
  *----------------------------------------------------------------------*/
-void TSI::Algorithm::DoStructureStep()
+void TSI::Algorithm::DoStructureStep(Teuchos::RCP<Epetra_Vector> itemp)
 {
   if (Comm().MyPID()==0)
   {
@@ -171,7 +188,8 @@ void TSI::Algorithm::DoStructureStep()
     cout<<"    STRUCTURE SOLVER    \n";
     cout<<"************************\n";
   }
-
+  // call the current temperatures
+  StructureField().ApplyTemperatures(itemp);
   // solve structure system
   /// Do the nonlinear solve for the time step. All boundary conditions have
   /// been set.
@@ -181,9 +199,11 @@ void TSI::Algorithm::DoStructureStep()
 
 
 /*----------------------------------------------------------------------*
- | (protected)                                               dano 12/09 |
+ | Solve the thermo system (protected)                       dano 03/10 |
  *----------------------------------------------------------------------*/
-void TSI::Algorithm::DoThermoStep()
+Teuchos::RCP<Epetra_Vector> TSI::Algorithm::DoThermoStep(
+  //Teuchos::RCP<Epetra_Vector> idisp // 25.3.10 necessary if coupling displacemnents to temperature
+  )
 {
   if (Comm().MyPID()==0)
   {
@@ -197,7 +217,8 @@ void TSI::Algorithm::DoThermoStep()
   /// Do the nonlinear solve for the time step. All boundary conditions have
   /// been set.
   ThermoField().Solve();
-  return;
+  // now extract the current temperatures and pass it to the structure
+  return ThermoField().ExtractTemperatures();
 }
 
 
@@ -211,6 +232,7 @@ void TSI::Algorithm::Update()
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  | (protected)                                               dano 12/09 |
  *----------------------------------------------------------------------*/
@@ -223,6 +245,7 @@ void TSI::Algorithm::Output()
   StructureField().Output();
   ThermoField().Output();
 }
+
 
 /*----------------------------------------------------------------------*
  | convergence check for the temperature field               dano 02/10 |
@@ -302,6 +325,7 @@ bool TSI::Algorithm::ConvergenceCheck(
 
   return stopnonliniter;
 }  // TSI::Algorithm::ConvergenceCheck
+
 
 /*----------------------------------------------------------------------*/
 #endif  // CCADISCRET

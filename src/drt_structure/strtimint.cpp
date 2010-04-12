@@ -407,6 +407,11 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     discret_->SetState(0,"residual displacement", zeros_);
     discret_->SetState(0,"displacement", (*dis_)(0));
     if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", (*vel_)(0));
+    // set the temperature for the coupled problem
+    if(tempn_!=Teuchos::null)
+    {
+      discret_->SetState(1,"temperature",tempn_);
+    }
     discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -976,11 +981,10 @@ void STR::TimInt::ApplyForceExternal
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("displacement", dis);
+  discret_->SetState(0,"displacement", dis);
   if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", vel);
   // get load vector
   discret_->EvaluateNeumann(p, *fext);
-  discret_->ClearState();
 
   // go away
   return;
@@ -1015,6 +1019,11 @@ void STR::TimInt::ApplyForceStiffInternal
   discret_->SetState(0,"displacement", dis);
   if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
+  // set the temperature for the coupled problem
+  if(tempn_!=Teuchos::null)
+  {
+    discret_->SetState(1,"temperature",tempn_);
+  }
   discret_->Evaluate(p, stiff, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
@@ -1102,7 +1111,16 @@ void STR::TimInt::Integrate()
   return;
 }
 
-
+/*----------------------------------------------------------------------*/
+/* get the temperature from the temperature discretization   dano 03/10 */
+void STR::TimInt::ApplyTemperatures(
+  Teuchos::RCP<Epetra_Vector> itemp  ///< the current temperature
+  )
+{
+  tempn_ = itemp;
+  // where the fun starts
+  return;
+}
 
 
 /*----------------------------------------------------------------------*/

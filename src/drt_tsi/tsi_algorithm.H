@@ -66,12 +66,6 @@ namespace TSI
     /// create using a Epetra_Comm
     explicit Algorithm(Epetra_Comm& comm);
 
-//    /// constructor using a Epetra_Comm
-//    explicit Algorithm(
-//      Epetra_Comm& comm,  ///< communicator
-//      const Teuchos::ParameterList& prbdyn  ///< problem-specific parameters
-//      );
-
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
 
@@ -91,10 +85,10 @@ namespace TSI
     virtual void PrepareTimeStep();
 
     /// solve structure equations for current time step
-    void DoStructureStep();
+    void DoStructureStep(Teuchos::RCP<Epetra_Vector> itemp);
 
     /// solve tempterature equations for current time step
-    void DoThermoStep();
+    Teuchos::RCP<Epetra_Vector> DoThermoStep();
 
     /// take current results for converged and save for next time step
     virtual void Update();
@@ -123,16 +117,15 @@ namespace TSI
 //
   private:
 
-    // 10.02.10
-    /// (preliminary) maximum number of iterations and tolerance for outer iteration
-//    const int itmax_;
     int itmax_;
     /// temperature tolerance
-    //   const double ittol_;
     double ittol_;
 
     /// temperature increment of the outer loop
     Teuchos::RCP<Epetra_Vector> tempincnp_;
+
+    /// temperature from time step begin (t_n)
+    Teuchos::RCP<Epetra_Vector> itempn_;
 
 //    // 14.12.09 not yet used!
 //    /// coupling of structure and temperature

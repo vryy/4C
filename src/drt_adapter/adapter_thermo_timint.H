@@ -155,6 +155,12 @@ namespace ADAPTER
 
     //@}
 
+    //! @name Extract current temperature values needed for TSI
+    //@{
+    /// extract fluid forces at the interface
+    virtual Teuchos::RCP<Epetra_Vector> ExtractTemperatures();
+    //@}
+
     /// create result test for encapsulated thermo algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 

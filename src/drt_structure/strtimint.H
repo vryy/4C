@@ -198,7 +198,7 @@ namespace STR
     //! becomes impossible. We are ready and keen awating the next
     //! time step.
     virtual void UpdateStepState() = 0;
-    
+
     //! Update everything on element level after time step and after output
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
@@ -334,6 +334,15 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> fint  //!< internal force
     );
 
+    //@}
+
+    //! @name Thermo-structure-interaction specific methods
+    //@{
+    //! Apply the current temperatures to the structure problem
+    void ApplyTemperatures
+    (
+      Teuchos::RCP<Epetra_Vector> itemp  //!< the current temperature
+    );
     //@}
 
     //! @name Attributes
@@ -590,8 +599,6 @@ namespace STR
     int step_;  //!< time step index \f$n\f$
     int stepn_;  //!< time step index \f$n+1\f$
     //@}
-    
-
 
     //! @name Global vectors
     //@{
@@ -617,7 +624,10 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> accn_;  //!< global accelerations
                                         //!< \f${A}_{n+1}\f$
                                         //!< at \f$t_{n+1}\f$
-
+    // call the current temperatures for TSI
+    Teuchos::RCP<Epetra_Vector> tempn_; //!< global temperatures
+                                        //!< \f${T}_{n+1}\f$
+                                        //!< at \f$t_{n+1}\f$
     //@}
 
     //! @name System matrices

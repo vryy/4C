@@ -262,44 +262,7 @@ void MAT::ThermoStVenantKirchhoff::SetupCthermo2d(
   Epetra_SerialDenseMatrix* ctemp
   )
 {
-  // initialize the parameters for the lame constants
-  const double ym  = params_->youngs_;
-  const double pv  = params_->poissonratio_;
-
-  // initialize the thermal expansion coefficient
-  const double thermexpans = params_->thermexpans_;
-
-  // plane strain, rotational symmetry
-  // E / (1+nu)
-  const double c1 = ym/(1.0+pv);
-  // (E*nu) / ((1+nu)(1-2nu))
-  const double b1 = c1*pv/(1.0-2.0*pv);
-
-  // build the lame constants
-  //            E
-  //   mu = --------
-  //        2*(1+nu)
-  //                  E*nu
-  //   lambda = ----------------
-  //            (1+nu)*(1-2*nu)
-  //
-  //  \f \mu =  \frac{E}{2(1+\nu)} \f
-//  const double mu=ym/(2*(1.0+pv));
-  const double mu = 0.5*c1;
-  // lambda
-  // \f \frac{E\,\nu}{(1-2\nu)(1+\nu)} \f
-//  const double lambda = (ym * pv)/((1.0 + pv )(1.0 - 2.0 * pv));
-  const double lambda = b1;
-
-  // stress-temperature modulus
-  // \f m\, = \, -(2\,\cdot \nu \, +\, 3\cdot\lambda)\cdot\varalpha_T \f
-  const double m = (-1)*(2*mu + 3*lambda)*thermexpans;
-
-//  // initialize the constant initial temperature
-//  const double thetainit = params_->thetainit_;
-//  // the product of the 2 constant is needed for the term on the rhs
-//  // 15.02.10
-//  const double mthetainit = m * thetainit_;
+  double m = STModulus();
 
   // add the temperature part for the stress 10.02.10
   (*ctemp)(0,0) = m;
@@ -313,7 +276,106 @@ void MAT::ThermoStVenantKirchhoff::SetupCthermo2d(
  | computes temperature dependent isotropic                  dano 02/10 |
  | elasticity tensor in matrix notion for 3d, second(!) order tensor    |
  *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::SetupCthermo(LINALG::Matrix<6,1>& ctemp)
+void MAT::ThermoStVenantKirchhoff::SetupCthermo(
+  LINALG::Matrix<6,8>& ctemp
+  )
+{
+  double m = STModulus();
+
+  // isotropic elasticity tensor C_temp in Voigt matrix notation C_temp = m I
+  // (Identity second order tensor)
+  //                       [ m   m   m   m   m   m  m  m ]  [N_1]
+  //                       [ m   m   m   m   m   m  m  m ]  [N_2]
+  //   C_temp * N_i =      [ m   m   m   m   m   m  m  m ]  [N_3]
+  //                       [ 0   0   0   0   0   0  0  0 ]  [N_4]
+  //                       [ 0   0   0   0   0   0  0  0 ]  [N_5]
+  //                       [ 0   0   0   0   0   0  0  0 ]  [N_6]
+  //                                                        [N_7]
+  //                                                        [N_8]
+  //
+  // Matrix-notation for 3D case
+  //              [ m      0      0 ]
+  //   C_temp =   [ 0      m      0 ]
+  //              [ 0      0      m ]
+  //  in Vector notation
+  //   C_temp =   [m, m, m, 0, 0, 0]^T
+  //
+  // write non-zero components
+
+  // clear the material tangent
+  ctemp.Clear();
+
+  // loop over the element nodes
+  for (int i=0; i<8; ++i)
+  {
+    // non-zero entries only in main directions
+    ctemp(0,i) = m;
+    ctemp(1,i) = m;
+    ctemp(2,i) = m;
+    ctemp(3,i) = 0;
+    ctemp(4,i) = 0;
+    ctemp(5,i) = 0;
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ | calculates stresses evaluate the temperature tangent      dano 02/10 |
+ *----------------------------------------------------------------------*/
+void MAT::ThermoStVenantKirchhoff::Evaluate(
+  const LINALG::Matrix<8,1>& etemp,  // temperature of element
+  LINALG::Matrix<6,8>& ctemp,
+  LINALG::Matrix<6,1>& stresstemp
+  )
+{
+//  // this is temporary as long as the material does not have a
+//  // Matrix-type interface
+//  const LINALG::Matrix<1,1> etemp(etemp_e->A(),true);
+//        LINALG::Matrix<6,1> ctemp(ctemp_e->A(),true);
+//        LINALG::Matrix<6,1> stresstemp(stress_e->A(),true);
+  SetupCthermo(ctemp);
+  // temperature dependent stress
+  // sigma = C_theta * theta = (m*I) * theta
+  stresstemp.MultiplyNN(ctemp,etemp);
+
+  // done
+  return;
+
+} // Evaluate
+
+/*----------------------------------------------------------------------*
+ | calculates the constant temperature fraction              dano 03/10 |
+ *----------------------------------------------------------------------*/
+void MAT::ThermoStVenantKirchhoff::Ctempconst(
+  LINALG::Matrix<6,1>& ctempconst
+  )
+{
+
+  // get the stress-temperature modulus
+  double m = STModulus();
+  // SetupCthermo(ctemp);
+  const double inittemp = params_->thetainit_;
+  // rhs = C_theta * theta_init = const
+  // loop over the element nodes
+  for (int i=0; i<2; ++i)
+  {
+    // non-zero entries only in main directions
+    ctempconst(i,0) = m * inittemp;
+  }
+  for (int i=3; i<5; ++i)
+  {
+    ctempconst(i,0) = 0;
+  }
+
+  // done
+  return;
+} // Ctempconst()
+
+
+/*----------------------------------------------------------------------*
+ | calculates stress-temperature modulus                     dano 04/10 |
+ *----------------------------------------------------------------------*/
+double MAT::ThermoStVenantKirchhoff::STModulus()
 {
   // initialize the parameters for the lame constants
   const double ym  = params_->youngs_;
@@ -339,61 +401,19 @@ void MAT::ThermoStVenantKirchhoff::SetupCthermo(LINALG::Matrix<6,1>& ctemp)
   //            (1+nu)*(1-2*nu)
   //
   //  \f \mu =  \frac{E}{2(1+\nu)} \f
-//  const double mu=ym/(2*(1.0+pv));
   const double mu = 0.5*c1;
   // lambda
   // \f \frac{E\,\nu}{(1-2\nu)(1+\nu)} \f
-//  const double lambda = (ym * pv)/((1.0 + pv )(1.0 - 2.0 * pv));
   const double lambda = b1;
 
   // stress-temperature modulus
   // \f m\, = \, -(2\,\cdot \nu \, +\, 3\cdot\lambda)\cdot\varalpha_T \f
-  const double m = (-1)*(2*mu + 3*lambda)*thermexpans;
+  const double stmodulus = (-1)*(2*mu + 3*lambda)*thermexpans;
 
-  // isotropic elasticity tensor C_temp in Voigt matrix notation C_temp = m I
-  // (Identity second order tensor)
-  //              [ m      0      0 ]
-  //   C_temp =   [ 0      m      0 ]
-  //              [ 0      0      m ]
-  //  in Vector notation
-  //   C_temp =   [m, m, m, 0, 0, 0]^T
-  //
-  // write non-zero components
+  return stmodulus;
 
-  // clear the material tangent
-  ctemp.Clear();
- // for (int i=0; i<3; ++i) ctemp(i,i) = m;
-  ctemp(0,0) = m;
-  ctemp(1,0) = m;
-  ctemp(2,0) = m;
-  ctemp(3,0) = 0.0;
-  ctemp(4,0) = 0.0;
-  ctemp(5,0) = 0.0;
-}
+} // STModulus()
 
-
-/*----------------------------------------------------------------------*
- | calculates stresses evaluate the temperature tangent      dano 02/10 |
- *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::Evaluate(
-  const LINALG::Matrix<1,1>& etemp,
-  LINALG::Matrix<6,1>& ctemp,
-  LINALG::Matrix<6,1>& stresstemp
-  )  // const
-{
-//  // this is temporary as long as the material does not have a
-//  // Matrix-type interface
-//  const LINALG::Matrix<1,1> etemp(etemp_e->A(),true);
-//        LINALG::Matrix<6,1> ctemp(ctemp_e->A(),true);
-//        LINALG::Matrix<6,1> stresstemp(stress_e->A(),true);
-  SetupCthermo(ctemp);
-  // temperature dependent stress
-  // sigma = C_theta * theta = (m*I) * theta
-  stresstemp.MultiplyNN(ctemp,etemp);
-
-  // done
-  return;
-}
 
 /*----------------------------------------------------------------------*/
 #endif  // CCADISCRET

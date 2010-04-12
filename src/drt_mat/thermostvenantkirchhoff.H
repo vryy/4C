@@ -134,10 +134,10 @@ namespace PAR
     /// Main 3D material call to determine stress and constitutive tensor ctemp
     //  originally method of fourieriso with const!!!
     void Evaluate(
-      const LINALG::Matrix<1,1>& etemp,  ///< current temperature
-      LINALG::Matrix<6,1>& ctemp,  ///< constitutive matrix
-      LINALG::Matrix<6,1>& stresstemp  ///< 3D temperature stress (2nd PK stress)
-      );
+      const LINALG::Matrix<8,1>& etemp,  // temperature of element
+      LINALG::Matrix<6,8>& ctemp,
+      LINALG::Matrix<6,1>& stresstemp
+    );
 
     // computes isotropic elasticity tensor in matrix notion for 3d
     void SetupCmat(LINALG::Matrix<6,6>& cmat);
@@ -147,12 +147,20 @@ namespace PAR
     void SetupCmat2d(Epetra_SerialDenseMatrix* cmat);
 
     // computes temperature dependent isotropic elasticity tensor in matrix
-    // notion for 2d plane strain, rotational symmetry
-    void SetupCthermo(LINALG::Matrix<6,1>& ctemp);
+    // notion for 3d
+    void SetupCthermo(LINALG::Matrix<6,8>& ctemp);
 
     // computes temperature dependent isotropic elasticity tensor in matrix
-    // notion for 3d
+    // notion for 2d plane strain, rotational symmetry
     void SetupCthermo2d(Epetra_SerialDenseMatrix* ctemp);
+
+    // computes the constant temperature fraction
+    void Ctempconst(
+      LINALG::Matrix<6,1>& ctempconst
+      );
+
+    // calculates stress-temperature modulus
+    double STModulus();
 
     /// Young's modulus
     double Youngs() const { return params_->youngs_; }

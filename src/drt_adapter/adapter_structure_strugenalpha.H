@@ -58,6 +58,7 @@ namespace ADAPTER {
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
     void UseBlockMatrix();
+    void TSIMatrix();
     Teuchos::RCP<DRT::Discretization> Discretization();
     Teuchos::RCP<const Epetra_Vector> FExtn();
     Teuchos::RCP<const Epetra_Vector> FRobin();
@@ -73,10 +74,10 @@ namespace ADAPTER {
     virtual void Integrate() { structure_->Integrate(); }
 
     /// Get the current time
-    virtual double GetTime() const 
-    { 
+    virtual double GetTime() const
+    {
       cout << *params_;
-      dserror("Not implemented 1"); return -1.0; 
+      dserror("Not implemented 1"); return -1.0;
     }
 
     /// Get upper limit of time range of interest
@@ -89,9 +90,9 @@ namespace ADAPTER {
     virtual int GetTimeStep() const { dserror("Not impl."); return -1; }
 
     /// Get number of time steps
-    virtual int GetTimeNumStep() const 
-    { 
-      dserror("Not impl."); return -1; 
+    virtual int GetTimeNumStep() const
+    {
+      dserror("Not impl."); return -1;
     }
 
     void PrepareTimeStep();
@@ -181,6 +182,18 @@ namespace ADAPTER {
                                           Teuchos::RCP<Epetra_Vector> ifluidvel);
 
     //@}
+
+    //! @name Apply temperatures
+
+     /// apply temperatures to structural solver
+     ///
+     /// This prepares a new solve of the structural field within one time
+     /// step. The middle values are newly created. (like in FSI)
+     ///
+     /// \note This is not yet the most efficient implementation.
+     virtual void ApplyTemperatures(Teuchos::RCP<Epetra_Vector> itemp);
+
+     //@}
 
     /// create result test for encapulated structure algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();

@@ -69,6 +69,7 @@ ADAPTER::ThermoTimInt::ThermoTimInt(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  | create implicit marching time integrator                 bborn 08/09 |
  | originally included in the file strtimint_create.cpp                 |
@@ -124,6 +125,7 @@ Teuchos::RCP<THR::TimIntImpl> ADAPTER::ThermoTimInt::Create(
   return tti;
 }
 
+
 /*----------------------------------------------------------------------*
  |                                                          bborn 08/09 |
  *----------------------------------------------------------------------*/
@@ -131,6 +133,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::ThermoTimInt::InitialGuess()
 {
   return thermo_->TempRes();
 }
+
 
 /*----------------------------------------------------------------------*
  | right-hand side alias the dynamic force residual         bborn 08/09 |
@@ -142,6 +145,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::ThermoTimInt::RHS()
   return thermo_->ForceRes();
 }
 
+
 /*----------------------------------------------------------------------*
  | get current temperature T_{n+1}                          bborn 08/09 |
  *----------------------------------------------------------------------*/
@@ -150,6 +154,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::ThermoTimInt::Tempnp()
   return thermo_->TempNew();
 }
 
+
 /*----------------------------------------------------------------------*
  | get last converged temperature T_{n}                     bborn 08/09 |
  *----------------------------------------------------------------------*/
@@ -157,6 +162,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::ThermoTimInt::Tempn()
 {
   return thermo_->Temp();
 }
+
 
 /*----------------------------------------------------------------------*
  | non-overlapping DOF map for multiple dofsets              dano 02/10 |
@@ -167,6 +173,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::ThermoTimInt::DofRowMap(unsigned nds)
   return Teuchos::rcp(new Epetra_Map(*dofrowmap));
 }
 
+
 /*----------------------------------------------------------------------*
  | non-overlapping DOF map                                  bborn 08/09 |
  *----------------------------------------------------------------------*/
@@ -175,6 +182,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::ThermoTimInt::DofRowMap()
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   return Teuchos::rcp(new Epetra_Map(*dofrowmap));
 }
+
 
 /*----------------------------------------------------------------------*
  | tangent, i.e. force residual R_{n+1} differentiated      bborn 08/09 |
@@ -185,6 +193,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::ThermoTimInt::SystemMatrix()
   return thermo_->Tang();
 }
 
+
 /*----------------------------------------------------------------------*
  | get discretisation                                       bborn 08/09 |
  *----------------------------------------------------------------------*/
@@ -193,6 +202,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::ThermoTimInt::Discretization()
   return thermo_->Discretization();
 }
 
+
 /*----------------------------------------------------------------------*
  | External force F_{ext,n+1}                               bborn 08/09 |
  *----------------------------------------------------------------------*/
@@ -200,6 +210,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::ThermoTimInt::FExtnp()
 {
   return thermo_->FextNew();
 }
+
 
 /*----------------------------------------------------------------------*
  | prepare time step                                        bborn 08/09 |
@@ -216,6 +227,7 @@ void ADAPTER::ThermoTimInt::PrepareTimeStep()
   tempinc_->PutScalar(0.0);
 
 }
+
 
 /*----------------------------------------------------------------------*
  | build linear system tangent matrix and rhs/force residual bborn 08/09 |
@@ -252,6 +264,7 @@ void ADAPTER::ThermoTimInt::Evaluate(Teuchos::RCP<const Epetra_Vector> temp)
   thermo_->PrepareSystemForNewtonSolve();
 }
 
+
 /*----------------------------------------------------------------------*
  | update time step                                         bborn 08/09 |
  *----------------------------------------------------------------------*/
@@ -264,6 +277,7 @@ void ADAPTER::ThermoTimInt::Update()
   thermo_->UpdateStepTime();
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  | print step summary                                        dano 01/10 |
@@ -283,6 +297,7 @@ void ADAPTER::ThermoTimInt::Output()
   thermo_->OutputStep();
 }
 
+
 /*----------------------------------------------------------------------*
  | domain map                                               bborn 08/09 |
  *----------------------------------------------------------------------*/
@@ -290,6 +305,7 @@ const Epetra_Map& ADAPTER::ThermoTimInt::DomainMap()
 {
   return thermo_->GetDomainMap();
 }
+
 
 /*----------------------------------------------------------------------*
  | read restart                                             bborn 08/09 |
@@ -299,6 +315,7 @@ void ADAPTER::ThermoTimInt::ReadRestart(const int step)
   thermo_->ReadRestart(step);
 }
 
+
 /*----------------------------------------------------------------------*
  | find iteratively solution                                bborn 08/09 |
  *----------------------------------------------------------------------*/
@@ -307,6 +324,17 @@ void ADAPTER::ThermoTimInt::Solve()
   thermo_->Solve();
 }
 
+
+/*----------------------------------------------------------------------*
+ | extract current temperature values for TSI                dano 03/10 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::ThermoTimInt::ExtractTemperatures()
+{
+  // call the time integrator and get current temperature T_{n+1}
+  return thermo_->TempNew();
+}
+
+
 /*----------------------------------------------------------------------*
  | thermal result test                                      bborn 08/09 |
  *----------------------------------------------------------------------*/
@@ -314,6 +342,7 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::ThermoTimInt::CreateFieldTest()
 {
   return Teuchos::rcp(new THR::ResultTest(*thermo_));
 }
+
 
 /*----------------------------------------------------------------------*/
 #endif  // CCADISCRET

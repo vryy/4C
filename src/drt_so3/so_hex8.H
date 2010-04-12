@@ -191,6 +191,25 @@ public:
   virtual int NumDofPerNode(const DRT::Node& node) const {return 3;}
 
   /*!
+  \brief Get number of degrees of freedom of a certain node in case of multiple
+         dofsets (implements pure virtual DRT::Element)
+
+  The element decides how many degrees of freedom its nodes must have.
+  As this may vary along a simulation, the element can redecide the
+  number of degrees of freedom per node along the way for each of it's nodes
+  separately.
+  */
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  {
+    // in case of TSI: nds=1 (second discretization) temperature: 1Dof/Node
+    if (nds==1){return 1;}
+    // structure, 3D: 3 Dofs per node
+//    return 3;
+    return NumDofPerNode(node);
+  };
+
+
+  /*!
   \brief Get number of degrees of freedom per element
          (implements pure virtual DRT::Element)
 
@@ -318,6 +337,40 @@ public:
                Epetra_SerialDenseVector& elevec2,
                Epetra_SerialDenseVector& elevec3);
 
+  /*!
+  \brief Evaluate an element
+
+  Evaluate so_hex8 element stiffness, mass, internal forces, etc.
+
+  \param params (in/out): ParameterList for communication between control routine
+                          and elements
+  \param discretization : pointer to discretization for de-assembly
+  \param la (in)        : location array for de-assembly
+  \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If NULL on input,
+                          the controling method does not expect the element to fill
+                          this matrix.
+  \param elemat2 (out)  : (mass-)matrix to be filled by element. If NULL on input,
+                          the controling method does not expect the element to fill
+                          this matrix.
+  \param elevec1 (out)  : (internal force-)vector to be filled by element. If NULL on input,
+                          the controlling method does not expect the element
+                          to fill this vector
+  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not expect the element
+                          to fill this vector
+  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not expect the element
+                          to fill this vector
+  \return 0 if successful, negative otherwise
+  */
+  int Evaluate(Teuchos::ParameterList& params,
+               DRT::Discretization& discretization,
+               DRT::Element::LocationArray& la,
+               Epetra_SerialDenseMatrix& elemat1,
+               Epetra_SerialDenseMatrix& elemat2,
+               Epetra_SerialDenseVector& elevec1,
+               Epetra_SerialDenseVector& elevec2,
+               Epetra_SerialDenseVector& elevec3);
 
   /*!
   \brief Evaluate a Neumann boundary condition
@@ -514,6 +567,59 @@ protected:
                     const int gp,
                     ParameterList&  params);
 
+  //! @name TSI related stuff
+
+  // for so_hex8_thermo_evaluate.cpp
+  //! Calculate nonlinear stiffness and mass matrix with temperature fraction
+  virtual void soh8_nlnstiffmasstemp(
+    DRT::Element::LocationArray& la,  // location array
+    vector<double>& disp,  // current displacements
+    vector<double>& residual,  // current residual displ
+    vector<double>& temp, // current temperature
+    LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8>* tempstiffmatrix, // coupling stiffness matrix
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  // element mass matrix
+    LINALG::Matrix<NUMDOF_SOH8,1>* force,  // element internal force vector
+    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  // stresses at GP
+    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  // strains at GP
+    Teuchos::ParameterList& params,  // algorithmic parameters e.g. time
+    const INPAR::STR::StressType iostress,  // stress output option
+    const INPAR::STR::StrainType iostrain  // strain output option
+    );
+
+
+  /*!
+   * \brief Interface to the material law (Thermo St.Venant Kirchoff) working with soh8.
+   *
+   * Here the interface to the first solid material with temperature takes place.
+   * Stress and material tangent must be retrieved whereas all necessary data
+   * is passed.
+   * Add whatever your material needs, but make sure that exchange is not
+   * overdone performance-wise.
+   *
+   * \param *stress (out): Voigt-Vector of stresses at current gp
+   * \param *ctheta (out): temperature dependent tangent matrix at current gp
+   * \param *density (out): density of material
+   * \param *etemp (out): temperature at current gp
+   * \param *defgrd (in): F at current gp, CAUTION! only for disp-based soh8
+   * \param gp (in): current gp
+   * \param params (in): parameterlist to access time, etc. in materials
+   * */
+  void soh8_mat_temp(
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stresstemp,
+    LINALG::Matrix<MAT::NUM_STRESS_3D,8>* ctemp,
+    double* density,
+    LINALG::Matrix<8,1>* etemp,  // temperature of element
+    LINALG::Matrix<3,3>* defgrd,
+    const int gp,
+    Teuchos::ParameterList& params);
+
+  /// Retrieve the temperature dependent material tangent for the rhs
+  void Ctempconst(
+    LINALG::Matrix<6,1>* ctempconst
+    );
+
+  //@}
+
   //! EAS technology, init
   void soh8_easinit();
 
@@ -564,6 +670,8 @@ protected:
 
   /// temporary method for compatibility with solidshell, needs clarification
   vector<double> getthicknessvector() const {dserror("not implemented"); return vector<double>(3);};
+
+private:
 
 
 }; // class So_hex8

@@ -153,8 +153,8 @@ namespace STR
       Teuchos::RCP<Epetra_Vector>& fint,  //!< internal force vector
       Teuchos::RCP<LINALG::SparseOperator>& stiff  //!< stiffness
     );
-    
-    
+
+
     //! evaluate certain potential forces and its stiffness
     //! and computes an anayltical solution
     //!
@@ -280,7 +280,7 @@ namespace STR
         const Teuchos::RCP<LINALG::SparseMatrix> stcmat /// STC preconditioning matrix
     );
     //@}
-    
+
     //! @name NOX solution
     //@{
 
@@ -428,7 +428,7 @@ namespace STR
     //! of the time step becomes impossible.
     //! We are ready and keen awating the next time step.
     virtual void UpdateStepState() = 0;
-    
+
     //! Update Element
     virtual void UpdateStepElement() = 0;
 
@@ -546,7 +546,7 @@ namespace STR
     void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
                         const LINALG::MultiMapExtractor& rangemaps);
 
-    
+
     //! introduce (robin) fsi surface extractor object
     //!
     //! Introduce the FSI surface to the fluid algorithm. This way special case
@@ -583,6 +583,13 @@ namespace STR
     //! - blank residual on Dirichlet DOFs
     //! - apply Dirichlet boundary conditions on system
     void PrepareSystemForNewtonSolve();
+
+    //@}
+
+    //! @name Thermo-structure-interaction specific methods
+    //@{
+    //! recalculate the structural matrices for tsi simulations
+    void TSIMatrix();
 
     //@}
 
@@ -706,8 +713,8 @@ namespace STR
     Teuchos::RCP<Teuchos::ParameterList> noxparams_;
     Teuchos::RCP<NOX::Utils> noxutils_;
     //@}
-    
-    
+
+
     //! @name SDC Scaling for thin shell structures
     //@{
     enum INPAR::STR::STC_Scale stcscale_; //< scale director of shells?

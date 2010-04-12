@@ -88,6 +88,9 @@ namespace ADAPTER {
     /// switch structure field to block matrix
     void UseBlockMatrix();
 
+    /// recalculate structural matrices for tsi simulations
+    void TSIMatrix();
+
     /// direct access to discretization
     Teuchos::RCP<DRT::Discretization> Discretization();
 
@@ -102,7 +105,7 @@ namespace ADAPTER {
 
     /// Integrate from t1 to t2
     virtual void Integrate();
-    
+
     /// Get the current time
     virtual double GetTime() const { return structure_->GetTime(); }
 
@@ -241,6 +244,20 @@ namespace ADAPTER {
     );
 
     //@}
+
+    /// @name Apply temperatures
+
+    /// apply temperatures to structural solver
+    ///
+    /// This prepares a new solve of the structural field within one time
+    /// step. The middle values are newly created.
+    ///
+    /// \note This is not yet the most efficient implementation.
+    virtual void ApplyTemperatures(
+      Teuchos::RCP<Epetra_Vector> itemp
+      );
+    //@}
+
 
     /// create result test for encapsulated structure algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();

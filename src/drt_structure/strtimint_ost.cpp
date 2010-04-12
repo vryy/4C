@@ -199,6 +199,9 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual()
   }
   fres_->Update(1.0, *finertt_, 1.0);
 
+  // 12.04.10
+//  cout << "fres_\n" << fres_ << "\n"<<  *fres_ << endl;
+
   //cout << STR::AUX::CalculateVectorNorm(vectornorm_l2, fextn_) << endl;
 
   // build tangent matrix : effective dynamic stiffness matrix
@@ -213,7 +216,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual()
 
   // apply forces and stiffness due to contact / meshtying
   ApplyForceStiffContactMeshtying(stiff_,fres_,disn_);
-  
+
   // close stiffness matrix
   stiff_->Complete();
 

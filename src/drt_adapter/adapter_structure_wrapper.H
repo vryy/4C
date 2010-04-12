@@ -37,6 +37,8 @@ namespace ADAPTER
     { return structure_->BlockSystemMatrix(); }
     virtual void UseBlockMatrix()
     { return structure_->UseBlockMatrix(); }
+    virtual void TSIMatrix()
+    { return structure_->TSIMatrix(); }
     virtual Teuchos::RCP<DRT::Discretization> Discretization()
     { return structure_->Discretization(); }
     virtual bool HaveConstraint()
@@ -95,6 +97,9 @@ namespace ADAPTER
     virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> iforce,
                                           Teuchos::RCP<Epetra_Vector> ifluidvel)
     {  structure_->ApplyInterfaceRobinValue(iforce,ifluidvel); }
+
+    virtual void ApplyTemperatures(Teuchos::RCP<Epetra_Vector> itemp)
+    { structure_->ApplyTemperatures(itemp); }
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest()
     { return structure_->CreateFieldTest(); }
 

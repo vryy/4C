@@ -509,14 +509,12 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   // disassemble temperature
   if (discretization.HasState(0, "temperature"))
   {
-    // std::vector<double> mytempnp(lm.size());
-    //  lm.size == la.Size or la[0].lm_.size()??? 03.02.10
-    // std::vector<double> mytempnp(la.Size());
     std::vector<double> mytempnp((la[0].lm_).size());
     Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(0,"temperature");
     if (tempnp == Teuchos::null)
       dserror("Cannot get state vector 'tempnp'");
     DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[0].lm_);
+    // build the element temperature
     LINALG::Matrix<iel*numdofpernode_,1> etemp(&(mytempnp[0]),true);  // view only!
     etemp_.Update(etemp);  // copy
   }
@@ -626,7 +624,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       = params.get<Teuchos::RCP<std::vector<char> > >("tempgrad");
     // working arrays
     LINALG::Matrix<nquad_,nsd_> eheatflux;
-    LINALG::Matrix<nquad_,nsd_> etempgrad;
+    LINALG::Matrix<nquad_,nsd_> etempgrad; // (n_GPx DIM)
     // specific choice of heat flux / temperature gradient
     //const INPAR::THR::HeatFluxType ioheatflux
     //   = params.get<INPAR::THR::HeatFluxType>("ioheatflux");
@@ -688,6 +686,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         {
           //double& s = ; // resolve pointer for faster access
           double s = 0.0;
+          // nquad_: number of Gauss points
           for (int jquad=0; jquad<nquad_; ++jquad)
             s += gpheatflux(jquad,idim);
           s /= nquad_;

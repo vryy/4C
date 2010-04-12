@@ -4240,5 +4240,38 @@ void StruGenAlpha::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::TSIMatrix()
+{
+  // -------------------------------------------------------------------
+  // call elements to fill mass matrix again
+  // -------------------------------------------------------------------
+  {
+    double time    = params_.get<double>("total time"      ,0.0);
+    double dt      = params_.get<double>("delta time"      ,0.01);
+    double alphaf  = params_.get<double>("alpha f"         ,0.459);
+
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_nlnstiffmass");
+    // other parameters that might be needed by the elements
+    p.set("total time",time);
+    p.set("delta time",dt);
+    p.set("alpha f",alphaf);
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState(0,"residual displacement",zeros_);
+    discret_.SetState(0,"displacement",dis_);
+    discret_.SetState(0,"velocity",vel_);
+    discret_.Evaluate(p,stiff_,mass_,fint_,null,null);
+    discret_.ClearState();
+  }
+
+  // close mass and stiffness matrix
+  mass_->Complete();
+  stiff_->Complete();
+}
 
 #endif  // #ifdef CCADISCRET

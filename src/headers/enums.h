@@ -71,7 +71,7 @@ typedef enum _FIELDTYP
                        artery,      /* artery field*/
                        thermo,      /* thermal field */
                        fluidfluidboundary,  /*fluidfluidboundary field*/
-                       red_airway  /* reduced dimensional airways */ 
+                       red_airway  /* reduced dimensional airways */
 } FIELDTYP;
 /* Mapping from fieldtyp numbers to printable names. To be used to
  * initialize static variables. Keep in sync! */
@@ -263,6 +263,7 @@ typedef enum _NODE_ARRAY {
 typedef enum _MATERIAL_TYP
 {
                        m_stvenant,    /* St.Venant Kirchhoff material */
+                       m_thermostvenant,    /* St.Venant Kirchhoff material with temperature */
                        m_pl_mises_3D, /* Stefans Mises*/
                        m_pl_mises,    /* von Mises material */
                        m_pl_hoff,     /* anisotropic plastic material based on hoffman criterion */
@@ -654,9 +655,9 @@ typedef enum _FSI_COUPLING
   fsi_iter_monolithiclagrange,
   fsi_iter_monolithicstructuresplit,
   fsi_iter_lung_monolithicstructuresplit,
-  fsi_iter_lung_monolithicfluidsplit, 
+  fsi_iter_lung_monolithicfluidsplit,
   fsi_iter_constr_monolithicstructuresplit,
-  fsi_iter_constr_monolithicfluidsplit, 
+  fsi_iter_constr_monolithicfluidsplit,
   fsi_iter_monolithicxfem,
   fsi_iter_stagg_NLCG,
   fsi_iter_stagg_MFNK_FD,

@@ -148,6 +148,13 @@ void ADAPTER::StructureGenAlpha::UseBlockMatrix()
   structure_->UseBlockMatrix(Interface(),Interface());
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::StructureGenAlpha::TSIMatrix()
+{
+ // structure_->TSIMatrix();
+  dserror("no application here");
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -476,6 +483,21 @@ void ADAPTER::StructureGenAlpha::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Ve
 
   interface_.InsertFSICondVector(frobin,structure_->FRobin());
   structure_->ApplyExternalForce(interface_,iforce);
+}
+
+
+/*----------------------------------------------------------------------*
+ | Apply current temperature                                 dano 03/10 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::StructureGenAlpha::ApplyTemperatures(Teuchos::RCP<Epetra_Vector> iforce)
+{
+  // Play it save. In the first iteration everything is already set up
+  // properly. However, all following iterations need to calculate the
+  // stiffness matrix here. Furthermore we are bound to reset fextm_
+  // before we add our special contribution.
+  // So we calculate the stiffness anyway (and waste the available
+  // stiffness in the first iteration).
+  dserror("no application here");
 }
 
 

@@ -437,24 +437,24 @@ void STR::TimIntImpl::TestForceStiffPotential
 {
   // potential force loads (but on internal force vector side)
   if (potman_ != Teuchos::null)
-  {     
+  {
     if(potman_->ComputeAnalyticalSolution())
     {
       ParameterList p; // create the parameters for manager
       p.set("pot_man", potman_);
-      p.set("total time", time);    
-      
+      p.set("total time", time);
+
       Teuchos::RefCountPtr<LINALG::SparseMatrix> stiff_test=Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_,81,true,false, LINALG::SparseMatrix::FE_MATRIX));
       Teuchos::RefCountPtr<Epetra_Vector> fint_test=LINALG::CreateVector(*dofrowmap_, true);
-      fint_test->PutScalar(0.0);        
-      stiff_test->Zero();   
-      
+      fint_test->PutScalar(0.0);
+      stiff_test->Zero();
+
       potman_->TestEvaluatePotential(p, dis, fint_test, stiff_test, time, step);
     }
   }
   // wooop
   return;
-} 
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -712,9 +712,9 @@ void STR::TimIntImpl::NewtonFull()
   timer_.ResetStartTime();
 
   //prepare matrix for scaled thickness business of thin shell structures
-  Teuchos::RCP<LINALG::SparseMatrix> stcmat= 
+  Teuchos::RCP<LINALG::SparseMatrix> stcmat=
     Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
-  
+
   // equilibrium iteration loop
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
@@ -732,7 +732,7 @@ void STR::TimIntImpl::NewtonFull()
                                    GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
     STCPreconditioning(stcmat);
-    
+
     // solve for disi_
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (solveradapttol_ and (iter_ > 1))
@@ -750,7 +750,7 @@ void STR::TimIntImpl::NewtonFull()
 
     // recover standard displacements
     RecoverSTCSolution(stcmat);
-    
+
     // recover contact / meshtying Lagrange multipliers
     if (cmtman_ != Teuchos::null)
       cmtman_->GetStrategy().Recover(disi_);
@@ -1880,12 +1880,12 @@ void STR::TimIntImpl::STCPreconditioning
       //stiff_ = MLMultiply(*stcmat,*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),false,false,true);
       stiff_ = Multiply(*stcmat,true,*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),false,true);
       Teuchos::RCP<Epetra_Vector> fressdc = LINALG::CreateVector(*dofrowmap_, true);
-      
+
       stcmat->Multiply(true,*fres_,*fressdc);
       fres_->Update(1.0,*fressdc,0.0);
     }
   }
-  
+
   // print first system matrix to file in matlab format (DEBUGGING)
   #ifdef DEBUG
   if (iter_==1&& step_==0)
@@ -1896,7 +1896,7 @@ void STR::TimIntImpl::STCPreconditioning
       LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_))->EpetraMatrix()));
   }
   #endif
-  
+
   return;
 }
 
@@ -1910,13 +1910,77 @@ void STR::TimIntImpl::RecoverSTCSolution
   if(stcscale_!=INPAR::STR::stc_none)
   {
     Teuchos::RCP<Epetra_Vector> disisdc = LINALG::CreateVector(*dofrowmap_, true);
-    
+
     stcmat->Multiply(false,*disi_,*disisdc);
     disi_->Update(1.0,*disisdc,0.0);
   }
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ | recalculate the structural matrices for coupled problems  dano 03/10 |
+ *----------------------------------------------------------------------*/
+void STR::TimIntImpl::TSIMatrix()
+{
+  // recalculate mass and damping matrices
+
+  Teuchos::RCP<Epetra_Vector> fint
+    = LINALG::CreateVector(*dofrowmap_, true); // internal force
+
+  stiff_->Zero();
+  mass_->Zero();
+
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action", "calc_struct_nlnstiffmass");
+    // other parameters that might be needed by the elements
+    p.set("total time", (*time_)[0]);
+    p.set("delta time", (*dt_)[0]);
+    if (pressure_ != Teuchos::null) p.set("volume", 0.0);
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState(0,"residual displacement", zeros_);
+    discret_->SetState(0,"displacement", (*dis_)(0));
+    if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", (*vel_)(0));
+    // 29.03.10
+    if(tempn_!=Teuchos::null)
+    {
+      cout << "yeah calc_struct_nlnstiffmass in TSIMatrix" << endl;
+      discret_->SetState(1,"temperature",tempn_);
+    }
+    discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
+    discret_->ClearState();
+  }
+
+  // finish mass matrix
+  mass_->Complete();
+
+  // close stiffness matrix
+  stiff_->Complete();
+
+  // build Rayleigh damping matrix if desired
+  if (damping_ == INPAR::STR::damp_rayleigh)
+  {
+    damp_->Add(*stiff_, false, dampk_, 0.0);
+    damp_->Add(*mass_, false, dampm_, 1.0);
+    damp_->Complete();
+  }
+
+  // in case of C0 pressure field, we need to get rid of
+  // pressure equations
+  if (pressure_ != Teuchos::null)
+  {
+    mass_->ApplyDirichlet(*(pressure_->CondMap()));
+  }
+
+  // We need to reset the stiffness matrix because its graph (topology)
+  // is not finished yet in case of constraints and posssibly other side
+  // effects (basically managers).
+  stiff_->Reset();
+} // TSIMatrix
 
 
 /*----------------------------------------------------------------------*/

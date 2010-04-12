@@ -464,6 +464,10 @@ public:
   void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
                       const LINALG::MultiMapExtractor& rangemaps);
 
+  /// recalculate structural matrices for tsi simulations
+  void TSIMatrix();
+
+
   //@}
 
 protected:

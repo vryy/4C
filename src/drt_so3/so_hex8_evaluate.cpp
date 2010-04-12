@@ -89,10 +89,10 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
   else if (action=="calc_struct_inversedesign_update")            act = So_hex8::inversedesign_update;
 #endif
   else dserror("Unknown type of action for So_hex8");
-  
+
   // check for patient specific data
   PATSPEC::GetILTDistance(Id(),params,discretization);
-  
+
   // what should the element do
   switch(act)
   {
@@ -462,7 +462,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         soh8_read_restart_multi(params);
     }
     break;
-    
+
     // compute additional stresses due to intermolecular potential forces
     case calc_potential_stiff:
     {
@@ -581,7 +581,7 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(ParameterList&            params,
     for (int dim=0; dim<NUMDIM_SOH8; dim++)
       if ((*funct)[dim] > 0)
         havefunct = havefunct or true;
-  
+
 
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
