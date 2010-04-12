@@ -186,6 +186,21 @@ public:
   \brief Print this element
   */
   virtual void Print(ostream& os) const;
+  
+  /*!
+  \brief Get moment of inertia of area Iyy_ of this element
+  */
+  const double& Iyy() const { return Iyy_;};
+  
+  /*!
+  \brief Get moment of inertia of area Izz_ of this element
+  */
+  const double& Izz() const { return Izz_;}
+  
+  /*!
+  \brief Get polar moment of inertia of area Irr_ of this element
+  */
+  const double& Irr() const { return Irr_;}
 
 
   //@}
