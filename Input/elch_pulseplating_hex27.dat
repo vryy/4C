@@ -13,11 +13,11 @@
 pulse plating on RDE (reference: Tsai et al., 
 Journal of the Electrochemical Society, 149, C229 - C236, 2002)
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS 	50
-NODES    	909
-DIM      	3
-MATERIALS	5
-NUMDF    	6
+ELEMENTS    50
+NODES       909
+DIM         3
+MATERIALS   5
+NUMDF       6
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Electrochemistry
 NUMFIELD     2
@@ -45,7 +45,6 @@ THERM_TEMPERATURE      No
 THERM_HEATFLUX         No
 FILESTEPS              1000
 ------------------------------------------------------------STATIC
-//
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------MESHTYING AND CONTACT
@@ -59,10 +58,10 @@ INITIALFIELD                    field_by_function
 ITEMAX                          10
 MAXTIME                         1000
 NUMSTEP                         10
-RESTARTEVRY                     10
-THETA                           0.5
+RESTARTEVRY                     1000
+THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        0.1
+TIMESTEP                        0.0002
 VELFUNCNO                       1
 VELOCITYFIELD                   function 
 WRITEFLUX                       totalflux_boundary
@@ -82,7 +81,7 @@ ITEMAX                          10
 MAXTIME                         0.02
 NUMSTEP                         17
 RESTARTEVRY                     1000
-TIMESTEP                        0.0002 
+TIMESTEP                        0.0002
 UPRES                           1
 TEMPERATURE                     300.0 
 GALVANOSTATIC                   Yes
@@ -208,16 +207,16 @@ FUNCT3 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
 --------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS 1 NODE 1 POSITION fluxx   NAME fluxx    VALUE  0.000000000e+00 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 1 POSITION fluxy   NAME fluxy    VALUE -4.682516443e-04 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 1 POSITION fluxy   NAME fluxy    VALUE -1.676669349e-04 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 1 POSITION fluxz   NAME fluxz    VALUE  0.0000000000000 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 1 POSITION phi1    NAME phi1     VALUE  3.435380926e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 1 POSITION phi2    NAME phi2     VALUE  2.405503060e+00 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 1 POSITION phi3    NAME phi3     VALUE  4.123929935e+00 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 1 POSITION phi4    NAME phi4     VALUE -6.922491405e-05 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 3 POSITION phi1    NAME phi1     VALUE  3.459502910e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 3 POSITION phi4    NAME phi4     VALUE -6.130505426e-05 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 28 POSITION phi1   NAME phi1     VALUE  3.475149040e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 28 POSITION phi4   NAME phi4     VALUE -5.457500727e-05 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 1 POSITION phi1    NAME phi1     VALUE  3.436408222e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 1 POSITION phi2    NAME phi2     VALUE  2.405557768e+00 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 1 POSITION phi3    NAME phi3     VALUE  4.123833891e+00 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 1 POSITION phi4    NAME phi4     VALUE -3.715974415e-05 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 3 POSITION phi1    NAME phi1     VALUE  3.458722256e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 3 POSITION phi4    NAME phi4     VALUE -3.023820556e-05 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 28 POSITION phi1   NAME phi1     VALUE  3.474593669e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 28 POSITION phi4   NAME phi4     VALUE -2.391813507e-05 TOLERANCE 1e-9
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
