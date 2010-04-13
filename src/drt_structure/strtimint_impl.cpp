@@ -140,6 +140,9 @@ void STR::TimIntImpl::IntegrateStep()
 void STR::TimIntImpl::Predict()
 {
 
+  // set iteration step to -1 (predictor)
+  iter_ = -1;
+  
   // choose predictor
   if ( (pred_ == INPAR::STR::pred_constdis)
        or (pred_ == INPAR::STR::pred_constdispres) )
@@ -499,6 +502,21 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying
     cmtman_->GetStrategy().SetState("displacement",dis);
     cmtman_->GetStrategy().InitEvalInterface();
     cmtman_->GetStrategy().InitEvalMortar();
+ 
+    // friction
+    // here the relative movement of the contact bodies is evaluated
+    // therefore the current configuration and the according mortar
+    // matrices are needed
+    // it is only evaluated (resetted) for penalty strategy and
+    // augmented lagrange strategy
+    INPAR::CONTACT::SolvingStrategy strattype =
+        Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
+
+    if (iter_== -1 and strattype == INPAR::CONTACT::solution_lagmult)
+    {}
+    else
+      cmtman_->GetStrategy().EvaluateRelMov();
+    
     cmtman_->GetStrategy().UpdateActiveSetSemiSmooth();
     cmtman_->GetStrategy().Initialize();
     cmtman_->GetStrategy().Evaluate(stiff,fresm,dis);

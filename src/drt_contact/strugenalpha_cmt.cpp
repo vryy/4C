@@ -131,7 +131,14 @@ StruGenAlpha(params,dis,solver,output)
     // (2) Perform mesh intialization for rotational invariance
     cmtmanager_->GetStrategy().MortarCoupling(zeros_);
     cmtmanager_->GetStrategy().MeshInitialization();
-
+    
+    // FOR FRICTIONAL CONTACT
+    // (1) Mortar coupling in reference configuration 
+    // for frictional contact we need history values (relative velocity) and
+    // therefore we store the nodal entries of mortar matrices (reference
+    // configuration) before the first time step
+    cmtmanager_->GetStrategy().EvaluateReferenceState(disn_);
+    
     // FOR PENALTY CONTACT (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
     // (1) Explicitly store gap-scaling factor kappa
     cmtmanager_->GetStrategy().SaveReferenceState(zeros_);
@@ -202,13 +209,6 @@ void CONTACT::CmtStruGenAlpha::ConsistentPredictor()
     CalcRefNorms();
   }
   
-  // FRICTIONAL CONTACT - evaluate reference state 
-  // for frictional contact we need history values (relative velocity) and
-  // therefore we store the nodal entries of mortar matrices (reference
-  // configuration) before the first time step
-  if (params_.get<int>("step") == 0)
-    cmtmanager_->GetStrategy().EvaluateReferenceState(disn_);
-
   // increment time and step
   double timen = time + dt;  // t_{n+1}
   //int istep = step + 1;  // n+1
@@ -552,13 +552,6 @@ void CONTACT::CmtStruGenAlpha::ConstantPredictor()
   {
     CalcRefNorms();
   }
-  
-  // FRICTIONAL CONTACT - evaluate reference state 
-  // for frictional contact we need history values (relative velocity) and
-  // therefore we store the nodal entries of mortar matrices (reference
-  // configuration) before the first time step
-  if (params_.get<int>("step") == 0)
-    cmtmanager_->GetStrategy().EvaluateReferenceState(disn_);
   
   // increment time and step
   double timen = time + dt;

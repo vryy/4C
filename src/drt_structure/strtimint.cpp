@@ -263,7 +263,6 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   INPAR::CONTACT::ApplicationType apptype  = Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION"); 
   INPAR::MORTAR::ShapeFcn         shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(scontact,"SHAPEFCN");  
   INPAR::CONTACT::SolvingStrategy soltype  = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact,"STRATEGY");
-  INPAR::CONTACT::FrictionType    ftype    = Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(scontact,"FRICTION");
   bool semismooth = Teuchos::getIntegralValue<int>(scontact,"SEMI_SMOOTH_NEWTON");
   
   // check contact conditions
@@ -298,10 +297,6 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     temp->PutScalar(1.0);
     LINALG::Export(*temp,*dirichtoggle_);
     
-    // friction not yet implemented in new STI
-    if (ftype != INPAR::CONTACT::friction_none)
-      dserror("ERROR: Contact in new STI not yet implemented for frictional case");
-        
     // contact and constraints together not yet implemented
     if (conman_->HaveConstraint())
       dserror("ERROR: Constraints and contact cannot be treated at the same time yet");
@@ -340,6 +335,13 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       // (2) Perform mesh intialization for rotational invariance
       cmtman_->GetStrategy().MortarCoupling(zeros_);
       cmtman_->GetStrategy().MeshInitialization();
+      
+      // FOR FRICTIONAL CONTACT
+      // (1) Mortar coupling in reference configuration 
+      // for frictional contact we need history values (relative velocity) and
+      // therefore we store the nodal entries of mortar matrices (reference
+      // configuration) before the first time step
+      cmtman_->GetStrategy().EvaluateReferenceState(disn_);
       
       // FOR PENALTY CONTACT (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
       // (1) Explicitly store gap-scaling factor kappa
