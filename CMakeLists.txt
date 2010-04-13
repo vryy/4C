@@ -456,6 +456,7 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_hex8_input.cpp
   src/drt_so3/so_hex8_multiscale.cpp
   src/drt_so3/so_hex8_service.cpp
+  src/drt_so3/so_hex8_thermo_evaluate.cpp
   src/drt_so3/so_hex8p1j1.cpp
   src/drt_so3/so_hex8p1j1_evaluate.cpp
   src/drt_so3/so_hex8p1j1_input.cpp
@@ -721,6 +722,7 @@ set(OBJS_POST_DRT_COMMON
   src/post_drt_common/post_drt_common.cpp
 )
 set(OBJS_INV_ANALYSIS
+  src/drt_inv_analysis/airways_inv_analysis.cpp
   src/drt_inv_analysis/gen_inv_analysis.cpp
   src/drt_inv_analysis/inv_analysis.cpp
   src/drt_structure/str_invanalysis.cpp
@@ -1703,6 +1705,12 @@ baci_test(potential_vol_LJ_2D 1 "")
 baci_test(potential_vol_LJ_2D 2 "")
 baci_test(potential_vol_LJ_3D 1 "")
 baci_test(potential_vol_LJ_3D 2 "")
+baci_test(prestress_hex8 1 "")
+baci_test(prestress_hex8 2 "")
+baci_test(prestress_tet4 1 "")
+baci_test(prestress_tet4 2 "")
+baci_test(prestress_weg6 1 "")
+baci_test(prestress_weg6 2 "")
 baci_test(scatra_gaussian_hill_pbc 1 "")
 baci_test(scatra_gaussian_hill_pbc 2 "")
 baci_test(scatra_gaussian_hill_pbc_gena_cons 1 "")
@@ -1824,15 +1832,6 @@ if (INVERSEDESIGNCREATE)
   baci_test(inversedesign_wedge6 1 "")
   baci_test(inversedesign_wedge6 2 "")
 endif (INVERSEDESIGNCREATE)
-
-if (PRESTRESS)
-  baci_test(prestress_hex8 1 "")
-  baci_test(prestress_hex8 2 "")
-  baci_test(prestress_tet4 1 "")
-  baci_test(prestress_tet4 2 "")
-  baci_test(prestress_weg6 1 "")
-  baci_test(prestress_weg6 2 "")
-endif (PRESTRESS)
 
 if (QHULL)
   baci_test(fluidfluidCoupling_mIter 1 "")
