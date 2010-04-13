@@ -67,8 +67,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat2(elemat2_epetra.A(),true);
   // internal force vector
   LINALG::Matrix<NUMDOF_SOH8,1> elevec1(elevec1_epetra.A(),true);
-
   LINALG::Matrix<NUMDOF_SOH8,1> elevec2(elevec2_epetra.A(),true);
+  // elevec3 is not used anyway
 
   // start with "none"
   DRT::ELEMENTS::So_hex8::ActionType act = So_hex8::none;
