@@ -2507,6 +2507,11 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   statisticsmanager_->DoTimeSample(step_,time_,eosfac);
 
   // -------------------------------------------------------------------
+  //                        compute flow rates
+  // -------------------------------------------------------------------
+  ComputeFlowRates();
+
+  // -------------------------------------------------------------------
   //                         output of solution
   // -------------------------------------------------------------------
   Output();
@@ -2551,8 +2556,8 @@ void FLD::FluidImplicitTimeInt::Output()
 
     if (physicaltype_ == INPAR::FLUID::varying_density or physicaltype_ == INPAR::FLUID::boussinesq)
     {
-    	Teuchos::RCP<Epetra_Vector> scalar_field = velpressplitter_.ExtractCondVector(scaaf_);
-    	output_.WriteVector("scalar_field", scalar_field);
+      Teuchos::RCP<Epetra_Vector> scalar_field = velpressplitter_.ExtractCondVector(scaaf_);
+      output_.WriteVector("scalar_field", scalar_field);
     }
 
     //only perform stress calculation when output is needed
