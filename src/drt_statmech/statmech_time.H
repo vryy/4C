@@ -71,10 +71,20 @@ public:
 
   \param usetime
   \param time            Evaluation time
+  \param nodeids				 vector containing DBC Node IDs
+  \param curve					 vector containing curve values for DOFs
+  \param funct					 vector containing funct values for DOFs
+  \param onoff					 vector containing onoff values for DOFs
+  \param val						 vector containing double multiplicator values for DOFs (amplitude)
   \date 03/10
   */
   void DoDirichletConditionPeriodic(const bool                  usetime,
-																		const double                time);
+																		const double                time,
+																		vector<int>*								nodeids,
+																		vector<int>*								curve,
+																		vector<int>*								funct,
+																		vector<int>*								onoff,
+																		vector<double>*							val);
 
 
 protected:
@@ -106,15 +116,12 @@ private:
 	RCP<Epetra_Vector> 					dbcswitch_;
 	// \brief use of a vector of static size is okay as long as no nodes are added afterwards
 	RCP<Epetra_Vector> 					drefnew_;
-	// \brief to obtain Dirichlet BCs, extracted from discretization
-	DRT::Condition*							dirichlet_;
 	// \brief direction of oscillation, extracted from discretization
 	int 												oscdir_;
 	// \brief amplitude of oscillation, extracted from discretization
 	double											amp_;
 	// \brief curve number, extracted from discretization
 	int 												curvenumber_;
-	RCP<Epetra_Vector>					dirichtogglem_;
 
 }; // class StatMechTime
 

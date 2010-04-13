@@ -52,8 +52,7 @@ unconvergedsteps_(0),
 isinit_(false),
 timecurve_(DRT::Problem::Instance()->Curve(0)),
 dbcswitch_(LINALG::CreateVector(*(discret_.DofRowMap()),true)),
-drefnew_(LINALG::CreateVector(*(discret_.DofRowMap()),true)),
-dirichtogglem_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
+drefnew_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
 {
   Teuchos::RCP<LINALG::SparseMatrix> stiff = SystemMatrix();
   statmechmanager_ = rcp(new StatMechManager(params,dis));
@@ -291,27 +290,26 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     discret_.SetState("velocity",veln_);
     // predicted dirichlet values
     // disn then also holds prescribed new dirichlet displacements
-    // determine evaluation mode (only once at the beginning)
-    if(!isinit_)
-    {
-    	vector<DRT::Condition*> dbc;
-    	discret_.GetCondition("Dirichlet",dbc);
-    	if(!dbc.size())
-    		dbcsize_=false;
-    	else
-    		dbcsize_=true;
-    }
+
+    // determine evaluation mode
+    if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) <= 0.0 &&
+    	 Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC"))
+    	dserror("Proper PeriodLength is required if periodic DBCs are to be applied");
+
     // in case of activated periodic boundary conditions
-    if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0 && dbcsize_)
+    if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0 &&
+			 Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC"))
     {
-    	/*/ store information of previous time step
-    	for(int i=0; i<dirichtogglem_->MyLength(); i++)
-    		(*dirichtogglem_)[i] = (*dirichtoggle_)[i];*/
-    	// Reinitialize disn_ and dirichtoggle_ once.
-    	// Now, why is this done? For t==0, disn_ and dirichtoggle_ are initialized in strugenalpha.cpp.
-    	// Especially dirichtoggle_ and invtoggle_ contain information that is incorrect if DBC DOFs are
-    	// selected anew for each timestep and periodic boundary conditions are to be applied.
-    	// Also, initialize drefnew_ with large abs. values
+    	/* Reinitialize disn_ and dirichtoggle_ once.
+    	 * Now, why is this done? For t==0, disn_ and dirichtoggle_ are initialized in strugenalpha.cpp.
+    	 * Especially dirichtoggle_ and invtoggle_ contain information that is incorrect if DBC DOFs are
+    	 * selected anew for each timestep and periodic boundary conditions are to be applied.
+    	 * Also, initialize drefnew_ with large abs. values
+    	 * The "incorrect" initialization occurs due to DBCs defined in the input file.
+    	 * One may interject, that they've been defined for a reason, so why cancel them here?
+    	 * answer: reasons of flexibility.
+    	 * If those conventional DBCs are really needed they can be readded later.
+    	 */
     	if(!isinit_)
     	{
     		for(int i=0;i<disn_->MyLength();i++)
@@ -324,19 +322,14 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     			(*drefnew_)[i] = 9e99;
     	}
     	EvaluateDirichletPeriodic(p);
+    	//cout<<"Periodic: "<<*disn_<<endl;
     }
 		// "common" case without periodic boundary conditions
-    else
-    	discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
-
-    /*/output of dirichtoggle_ changes
-    for(int i=0; i<dirichtogglem_->MyLength(); i++)
+    if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"CONVENTIONALDBC"))
     {
-    	if((*dirichtogglem_)[i]!=(*dirichtoggle_)[i] && (*dirichtoggle_)[i]==1)
-    		cout<<"DBC on Node "<<(int)floor((double)i/6.0)<<" has been turned ON!"<<endl;
-    	if((*dirichtogglem_)[i]!=(*dirichtoggle_)[i] && (*dirichtoggle_)[i]==0)
-				cout<<"DBC on Node "<<(int)floor((double)i/6.0)<<" has been turned OFF!"<<endl;
-    }*/
+    	discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
+			//cout<<"Conventional: "<<*disn_<<endl;
+    }
 
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
@@ -553,7 +546,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
       				for(int k=0; k<coord.N(); k++)
       					if((int)floor((double)lids.at(3*k)/6.0)==tmpnode->LID())
       					{
-      						if(coord(2,k)>(statmechmanager_->StatmechParams().get<double>("PeriodLength", 0.0))/2.0)
+      						if(coord(2,k)>(statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0))/2.0)
       							cout<<"oscillating node  ";
       						else
       							cout<<"fixed node  ";
@@ -1014,80 +1007,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
     disi_->Norm2(&disinorm);
 
     fresm_->Norm2(&fresmnorm);
-    // a short message
-    //test output to determine source of divergence
-    // Test 1: Check residuals (show only those that surpass a certain treshold)
-    /*if(fresmnorm>10)
-    {
-    	vector<int> dbcnodes;
-    	for(int i=0; i<dirichtoggle_->MyLength(); i++)
-    	{
-    		if((*fresm_)[i]>0.5)
-    		{
-    			cout<<"Node "<<(int)floor((double)i/6.0)<<" DOFabs "<<i<<" DOF "<<i%6<<" : fresm@"<<i<<": "<<(*fresm_)[i]<<" DBC-DOF: ";
-    			if((*dirichtoggle_)[i]==1)
-    				cout<<" Yes"<<endl;
-    			else
-    				cout<<" No"<<endl;
-    		}
-  			if((*dirichtoggle_)[i]==1)
-  			{
-  				if(!dbcnodes.empty() && dbcnodes.back()==(int)floor((double)i/6.0))
-  					continue;
-  				bool dirichlet;
-  				int tmpid = (int)floor((double)i/6.0);
-  				for(int j=0; j<6; j++)
-  				{
-  					if((*fresm_)[6*tmpid+j]>0.5)
-  					{
-  						dirichlet=true;
-  						break;
-  					}
-  					else
-  						dirichlet=false;
-  				}
 
-  				if(dirichlet==true)
-  					dbcnodes.push_back(tmpid);
-  			}
-    	}
-    	cout<<"DBC-Nodes with high non-DBC DOF residuals: "<<endl;
-    	for(int i=0; i<(int)dbcnodes.size(); i++)
-    	{
-    		bool done=false;
-    		cout<<dbcnodes.at(i)<<" ";
-    		DRT::Node* tmpnode = discret_.gNode(dbcnodes.at(i));
-    		for(int j=0; j<tmpnode->NumElement(); j++)
-    		{
-    			DRT::Element* tmpelement = tmpnode->Elements()[j];
-    			LINALG::SerialDenseMatrix coord(3,(int)discret_.lColElement(0)->NumNode(), true);
-    		  LINALG::SerialDenseMatrix cut(3,(int)discret_.lColElement(0)->NumNode()-1,true);
-    			bool broken;
-    			vector<int> lids;
-    			statmechmanager_->GetElementNodeCoords(tmpelement,disn_,coord, &lids);
-    			statmechmanager_->CheckForBrokenElement(coord, cut, &broken);
-    			if(cut(2,0)==0)
-    				continue;
-    			else if(cut(2,0)!=0 && !done)
-    			{
-    				for(int k=0; k<coord.N(); k++)
-    					if((int)floor((double)lids.at(3*k)/6.0)==tmpnode->LID())
-    					{
-    						if(coord(2,k)>(statmechmanager_->StatmechParams().get<double>("PeriodLength", 0.0))/2.0)
-    							cout<<"oscillating node  ";
-    						else
-    							cout<<"fixed node  ";
-    					}
-    				done=true;
-    			}
-    		}
-
-    		if(i+1<(int)dbcnodes.size())
-    			if(dbcnodes.at(i+1)-dbcnodes.at(i)>1)
-    				cout<<"\n"<<endl;
-    	}
-    	cout<<"\n"<<endl;
-    }*/
     if (!myrank_ and (printscreen or printerr))
     {
       PrintPTC(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
@@ -1463,57 +1383,13 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
   // init
   if(!isinit_)
   {
-  	// a pointer to Conditions
-  	vector<DRT::Condition*> conditions;
-		// DPOINT DBC counter
-		int dbccount = 0;
-		// check correct syntax for DBC
-		int check=0;
-		const vector<int>* onoff=NULL;
-		const vector<int>* curve=NULL;
-		const vector<double>* val=NULL;
-
-		// Get DBC
-		discret_.GetCondition("Dirichlet", conditions);
-		if(!conditions.size())
-			dserror("No Dirichlet boundary conditions in discretization");
-
-		for(int idir=0; idir<(int)conditions.size(); idir++)
-		{
-			if(conditions.at(idir)->Type() == 1)
-			{
-				dirichlet_ = conditions.at(idir);
-
-				onoff = dirichlet_->Get<vector<int> >("onoff");
-				curve  = dirichlet_->Get<vector<int> >("curve");
-				val = dirichlet_->Get<vector<double> >("val");
-
-				//store amplitude of oscillation and time curve number for later use
-				for(int iamp=0; iamp<(int)val->size(); iamp++)
-					if(val->at(iamp)!=0.0)
-					{
-						amp_ = val->at(iamp);
-						oscdir_=iamp;
-					}
-				for(int ic=0; ic < (int)curve->size(); ic++)
-					if(curve->at(ic)!=-1)
-						curvenumber_ = curve->at(ic);
-
-				dbccount++;
-			}
-		}
-		// some checks for syntax and setup errors
-		for(int i=0; i<(int)val->size(); i++)
-		{
-			if(onoff->at(i)==1 && val->at(i) != 0.0 && curve->at(i)!=-1 )
-				check++;
-		}
-		if(dbccount!=1)
-			dserror("Exactly one DPOINT Dirichlet BC is needed. It has to hold direction, amplitude and time curve no. of oscillatory motion");
-		if(check!=1)
-			dserror("Incorrect DPOINT Dirichlet BC definition: it has to hold direction, amplitude and time curve no. of oscillatory motion on the same (single) DOF");
-		if(oscdir_==2)
-			dserror("Please choose another than the z-direction for the oscillatory motion");
+  	// get the apmlitude of the oscillation
+  	amp_= statmechmanager_->statmechparams_.get<double>("SHEARAMPLITUDE",0.0)*
+					statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0);
+		// retrieve direction of oscillatory motion
+		oscdir_ = statmechmanager_->statmechparams_.get<int>("OSCILLDIR",0)-1;
+		// retrieve number of time curve that is to be applied
+		curvenumber_ = statmechmanager_->statmechparams_.get<int>("CURVENUMBER",0)-1;
 
 		isinit_=true;
 	} // init
@@ -1639,8 +1515,9 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	DRT::Node* node = discret_.gNode(discret_.NodeRowMap()->GID(0));
 	int numdof = (int)discret_.Dof(node).size();
 
-	vector<int> addcurve(numdof, -1);
-	vector<int> addonoff(numdof, 0);
+	vector<int> 	 addcurve(numdof, -1);
+	vector<int> 	 addfunct(numdof, 0);
+	vector<int>  	 addonoff(numdof, 0);
 	vector<double> addval(numdof, 0.0);
 
   // set condition for oscillating nodes
@@ -1650,38 +1527,25 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	for(int i=0; i<3; i++)
 		if(i==oscdir_ || i!=2)
 			addonoff.at(i) = 1;
-	// Update effected Nodes
-  dirichlet_->Add("Node Ids",oscillnodes);
-  // set curve number in direction of oscillation
-  dirichlet_->Add("curve",addcurve);
-  // set value/amplitude in dir. of oscillation
-  dirichlet_->Add("val",addval);
-  // set switch in dir. of oscillation
-  dirichlet_->Add("onoff",addonoff);
-  //cout<<"OSCILLATING NODES\n"<<*dirichlet_<<endl;
+
   // do not do anything if vector is empty
   if(!oscillnodes.empty())
-  	DoDirichletConditionPeriodic(usetime, time);
+  	DoDirichletConditionPeriodic(usetime, time, &oscillnodes, &addcurve, &addfunct, &addonoff, &addval);
 
   // set condition for fixed nodes
 	addcurve.at(oscdir_) = -1;
 	addval.at(oscdir_) = 0.0;
-	dirichlet_->Add("Node Ids",fixednodes);
-	dirichlet_->Add("curve",addcurve);
-	dirichlet_->Add("val",addval);
-	//cout<<"FIXED NODES\n"<<*dirichlet_<<endl;
+
 	if(!fixednodes.empty())
-		DoDirichletConditionPeriodic(usetime, time);
+  	DoDirichletConditionPeriodic(usetime, time, &fixednodes, &addcurve, &addfunct, &addonoff, &addval);
 
   // set condition for free or recently set free nodes
   for(int i=0; i<3; i++)
   	if(i==oscdir_ || i!=2)
   		addonoff.at(i) = 0;
-  dirichlet_->Add("Node Ids",freenodes);
-  dirichlet_->Add("onoff", addonoff);
-	//cout<<"FREE NODES\n"<<*dirichlet_<<endl;
+
 	if(!freenodes.empty())
-		DoDirichletConditionPeriodic(usetime, time);
+  	DoDirichletConditionPeriodic(usetime, time, &freenodes, &addcurve, &addfunct, &addonoff, &addval);
 
 #ifdef MEASURETIME
   const double t_end = Teuchos::Time::wallTime();
@@ -1694,7 +1558,12 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
  |  fill system vector and toggle vector (public)          mueller  3/10|
  *----------------------------------------------------------------------*/
 void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
-                                                const double time)
+                                                const double time,
+																								vector<int>* nodeids,
+																								vector<int>* curve,
+																								vector<int>* funct,
+																								vector<int>* onoff,
+																								vector<double>* val)
 /*
  * This basically does the same thing as DoDirichletCondition() (to be found in drt_discret_evaluate.cpp),
  * but with the slight difference of taking current displacements into account.
@@ -1703,29 +1572,46 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
  * vector holding the latest node positions.
  */
 {
+	/*/ test output
+	cout<<"NODES: ";
+	for(int i=0; i<(int)nodeids->size(); i++)
+		cout<<nodeids->at(i)<<" ";
+	cout<<endl;
+	cout<<"curve: "<<endl;
+	for(int i=0; i<6; i++)
+		cout<<curve->at(i)<<" ";
+	cout<<endl;
+	cout<<"funct: "<<endl;
+	for(int i=0; i<6; i++)
+		cout<<funct->at(i)<<" ";
+	cout<<endl;
+	cout<<"onoff: "<<endl;
+	for(int i=0; i<6; i++)
+		cout<<onoff->at(i)<<" ";
+	cout<<endl;
+	cout<<"val: "<<endl;
+	for(int i=0; i<6; i++)
+		cout<<val->at(i)<<" ";
+	cout<<endl;*/
 	// highest degree of requested time derivative (may be needed in the future(?))
 	unsigned deg = 0;
-	const vector<int>* nodeids = dirichlet_->Nodes();
 	// some checks for errors
-	if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
+	if (!nodeids) dserror("No Node IDs were handed over!");
 	if(disn_==Teuchos::null) dserror("Displacement vector must be unequal to null");
 	if(dbcswitch_==Teuchos::null || drefnew_==Teuchos::null || dirichtoggle_==Teuchos::null)
 		dserror("dbcwitch_, drefnew_ and dirichtoggle_ must be non-empty");
 
 	// get the condition properties
-	const int nnode = (*nodeids).size();
-	const vector<int>*    curve  = dirichlet_->Get<vector<int> >("curve");
-	const vector<int>*    funct  = dirichlet_->Get<vector<int> >("funct");
-	const vector<int>*    onoff  = dirichlet_->Get<vector<int> >("onoff");
-	const vector<double>* val    = dirichlet_->Get<vector<double> >("val");
+	const int nnode = nodeids->size();
+
 
 	// loop over all nodes in condition
 	for (int i=0; i<nnode; ++i)
 	{
 		// do only nodes in my row map
-		if (!discret_.NodeRowMap()->MyGID((*nodeids)[i])) continue;
-		DRT::Node* actnode = discret_.gNode((*nodeids)[i]);
-		if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
+		if (!discret_.NodeRowMap()->MyGID(nodeids->at(i))) continue;
+		DRT::Node* actnode = discret_.gNode(nodeids->at(i));
+		if (!actnode) dserror("Cannot find global node %d",nodeids->at(i));
 		// call explicitly the main dofset, i.e. the first column
 		vector<int> dofs = discret_.Dof(0,actnode);
 		const unsigned numdf = dofs.size();
@@ -1738,7 +1624,7 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
       const int gid = dofs[j];
 
 			// if DOF in question is not subject to DBCs (anymore)
-      if ((*onoff)[j]==0)
+      if (onoff->at(j)==0)
       {
         if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
         if (dirichtoggle_!=Teuchos::null)
@@ -1762,7 +1648,7 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
       // factor given by spatial function
       double functfac = 1.0;
       int funct_num = -1;
-      if (funct) funct_num = (*funct)[j];
+      if (funct) funct_num = funct->at(j);
       {
          if (funct_num>0)
            functfac =
@@ -1775,7 +1661,7 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
       // factor given by time curve
       std::vector<double> curvefac(deg+1, 1.0);
       int curvenum = -1;
-      if (curve) curvenum = (*curve)[j];
+      if (curve) curvenum = curve->at(j);
       if (curvenum>=0 && usetime)
         curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
       else
@@ -1783,12 +1669,12 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
 
       // Calculate displacement of new reference position.
       // Especially important when node is added to condition afterwards
-			if((*dbcswitch_)[lid]==0.0 && (*val)[j]!=0.0)
+			if((*dbcswitch_)[lid]==0.0 && val->at(j)!=0.0)
 			{
 				double dt = params_.get<double>("delta time" ,0.01);
 				// calculate the new reference value for this DOF ("-dt" because the value preceding the current one is needed)
 				double drefnm = DRT::Problem::Instance()->Curve(curvenum).f(time-dt);
-				drefnm *= (*val)[j]*functfac;
+				drefnm *= val->at(j)*functfac;
 				// calculate new displacement d_ref,new,j = d_node,j - d_dbc,j of j-th DOF
 				(*drefnew_)[lid] -= drefnm;
 				// turn dbcswitch_ "on" to make sure this offset value is not changed until the the node,
@@ -1796,7 +1682,7 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
 				(*dbcswitch_)[lid] = 1.0;
 			}
 
-			vector<double> value(deg+1,(*val)[j]);
+			vector<double> value(deg+1,val->at(j));
 
       // apply factors to Dirichlet value
       for (unsigned i=0; i<deg+1; ++i)

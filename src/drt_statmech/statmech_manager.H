@@ -69,9 +69,6 @@ public:
   //! \brief Initializes truss3 elements in case of perioddic boundary conditions
   void PeriodicBoundaryTruss3Init(DRT::Element* element);
 
-  //! \brief return parameters for statistical mechanics
-  virtual inline Teuchos::ParameterList StatmechParams() const {return statmechparams_;}
-
   /*!\brief check whether element is "broken" due to periodic boundary conditions
     \param coord  (in/out)  set of nodal coordinates
 		\param cut    (in/out)  in case of a broken element, cut holds component and information about the location of the nodes of the element

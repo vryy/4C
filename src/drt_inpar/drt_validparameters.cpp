@@ -1121,6 +1121,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("ALINK",0.0,"Cross section of crosslinkers",&statmech);
   //Number of time steps between two special outputs written
   IntParameter("OUTPUTINTERVALS",1,"Number of time steps between two special outputs written",&statmech);
+  //Reading direction of oscillatory motion that DBC nodes are subjected to (we need this when using periodic BCs)
+  IntParameter("OSCILLDIR",0,"Global spatial direction of oscillatory motion by Dirichlet BCs",&statmech);
+  //Reading time curve number for oscillatory motion
+  IntParameter("CURVENUMBER",-1,"Specifies Time Curve number of oscillatory motion",&statmech);
+  //Reading whether DBCs shall be applied to broken elements
+  setStringToIntegralParameter<int>("PERIODICDBC","No","If chosen, Point DBCs are applied to the nodes of discontinuous elements",
+                               yesnotuple,yesnovalue,&statmech);
+  //Reading whether initial DBC declarations from the input file are kept valid during simulation
+  setStringToIntegralParameter<int>("CONVENTIONALDBC","No","If chosen, Point DBCs conventionally defined by input file are taken into account",
+                               yesnotuple,yesnovalue,&statmech);
   //Reading whether fixed seed for random numbers should be applied
   setStringToIntegralParameter<int>("FIXEDSEED","No","If chosen fixed seed for random numbers in each time step is applied",
                                yesnotuple,yesnovalue,&statmech);
