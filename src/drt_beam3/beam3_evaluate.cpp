@@ -1559,14 +1559,24 @@ void DRT::ELEMENTS::Beam3::MyBackgroundVelocity(ParameterList& params,  //!<para
 {
   
   /*note: this function is not yet a general one, but always assumes a shear flow, where the velocity of the
-   * background fluid is always directed in x-direction. In 3D the velocity increases linearly in z and equals zero for z = 0.
+   * background fluid is always directed in direction params.get<int>("OSCILLDIR",0) and orthogonal to z-axis.
+   * In 3D the velocity increases linearly in z and equals zero for z = 0.
    * In 2D the velocity increases linearly in y and equals zero for y = 0. */
   
-  velbackground.PutScalar(0);
-  velbackground(0) = evaluationpoint(ndim-1) * params.get<double>("CURRENTSHEAR",0.0);
+  //velocity at upper boundary of domain
+  double uppervel = 0.0;
   
+  //oscillations start only at params.get<double>("max time",0.0)*("START_FACTOR",0.0)
+  if(params.get<double>("total time",0.0) > params.get<double>("STARTTIME",0.0))
+    //uppervel = (params.get<double>("SHEARAMPLITUDE",0.0)) * (DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)).FctDer(params.get<double>("total time",0.0),1));
+   
+  //compute background velocity
+  velbackground.PutScalar(0);
+  velbackground(params.get<int>("OSCILLDIR",0)) = (evaluationpoint(ndim-1) / params.get<double>("PeriodLength",0.0)) * uppervel; 
+
+  //compute gradient of background velocity
   velbackgroundgrad.PutScalar(0);
-  velbackgroundgrad(0,ndim-1) = params.get<double>("CURRENTSHEAR",0.0);
+  velbackgroundgrad(params.get<int>("OSCILLDIR",0),ndim-1) = uppervel / params.get<double>("PeriodLength",0.0);
 
 }
 /*-----------------------------------------------------------------------------------------------------------*
@@ -1984,10 +1994,26 @@ inline void DRT::ELEMENTS::Beam3::NodeShift(ParameterList& params,  //!<paramete
          * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
          * is smaller than half the periodic length*/
         if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) + params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
+        {
           disp[numdof*i+dof] += params.get<double>("PeriodLength",0.0);
           
+          /*the upper domain surface orthogonal to the z-direction is subject to shear Dirichlet boundary condition; the lower surface 
+           *is fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
+           *z-surface, the shear has to be substracted from nodal coordinates in that case */
+          if(dof == 2)
+            disp[numdof*i+params.get<int>("OSCILLDIR",-1)] -= params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)).f(params.get<double>("total time",0.0));           
+        }
+          
         if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
+        {
           disp[numdof*i+dof] -= params.get<double>("PeriodLength",0.0);
+          
+          /*the upper domain surface orthogonal to the z-direction is subject to shear Dirichlet boundary condition; the lower surface 
+           *is fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
+           *z-surface, the shear has to be added to nodal coordinates in that case */
+          if(dof == 2)
+            disp[numdof*i+params.get<int>("OSCILLDIR",-1)] += params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)).f(params.get<double>("total time",0.0));
+        }
       }
     }
 return;
