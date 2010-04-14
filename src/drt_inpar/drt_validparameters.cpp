@@ -1085,8 +1085,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                                     INPAR::STATMECH::frictionmodel_isotropicconsistent,
                                                                     INPAR::STATMECH::frictionmodel_anisotropicconsistent),
                                                                     &statmech);
-  //percentage of total simulation time after which writing of statistical output is started
-  DoubleParameter("START_FACTOR",0.0,"Percentage of total simulation time after which writing of statistical output is started",&statmech);
+  //time after which writing of statistical output is started
+  DoubleParameter("STARTTIME",0.0,"Time after which writing of statistical output is started (identical to time curve start value)",&statmech);
   //Reading whether dynamics remodelling of cross linker distribution takes place
   setStringToIntegralParameter<int>("DYN_CROSSLINKERS","No","If chosen cross linker proteins are added and removed in each time step",
                                yesnotuple,yesnovalue,&statmech);
