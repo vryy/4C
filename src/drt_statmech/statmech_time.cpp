@@ -322,10 +322,14 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     			(*drefnew_)[i] = 9e99;
     	}
     	EvaluateDirichletPeriodic(p);
+    	//cout<<"Periodic: "<<*disn_<<endl;
     }
 		// "common" case without periodic boundary conditions
     if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"CONVENTIONALDBC"))
+    {
     	discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
+			//cout<<"Conventional: "<<*disn_<<endl;
+    }
 
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
@@ -399,24 +403,13 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
 
     //passing statistical mechanics parameters to elements
     p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
-    p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
     p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
     p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
     p.set("RandomNumbers",randomnumbers);
-
-    //computing current gradient in z-direction of shear flow (assuming sine shear load with maximal amplitude SHEARAMPLITUDE and frequency SHEARFREQUENCY)
-    double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
-    double currentshear = cos(omegashear*timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*omegashear;
-
-    //osciallations start only after equilibration; set shear rate to zero before
-    if( timen < (statmechmanager_->statmechparams_).get<double>("STARTTIME",0.0) )
-      currentshear = 0;
-
-
-    p.set("CURRENTSHEAR",currentshear);
-
-
-
+    p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
+    p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
+    p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
+    p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
 
 
     // set vector values needed by elements
@@ -667,18 +660,14 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
 
       //passing statistical mechanics parameters to elements
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
-      p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
       p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
       p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
       p.set("RandomNumbers",randomnumbers);
-
-      //computing current gradient in z-direction of shear flow (assuming sine shear load with maximal amplitude SHEARAMPLITUDE and frequency SHEARFREQUENCY)
-      double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
-      double currentshear = cos(omegashear*timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*omegashear;
-      //osciallations start only after equilibration; set shear rate to zero before
-      if( timen < (statmechmanager_->statmechparams_).get<double>("STARTTIME",0.0) )
-        currentshear = 0;
-      p.set("CURRENTSHEAR",currentshear);
+      p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
+      p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
+      p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
+      p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
+      
 
       // set vector values needed by elements
       discret_.ClearState();
@@ -864,16 +853,12 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
       //add statistical vector to parameter list for statistical forces and damping matrix computation
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
-      p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
       p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
-      //computing current gradient in z-direction of shear flow (assuming sine shear load with maximal amplitude SHEARAMPLITUDE and frequency SHEARFREQUENCY)
-      double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
-      double currentshear = cos(omegashear*timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*omegashear;
-      //osciallations start only after equilibration; set shear rate to zero before
-      if( timen < (statmechmanager_->statmechparams_).get<double>("STARTTIME",0.0) )
-        currentshear = 0;
-      p.set("CURRENTSHEAR",currentshear);
-      p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
+      p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));     
+      p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
+      p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
+      p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
+      p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
 
       //evaluate ptc stiffness contribution in all the elements
 
@@ -939,18 +924,13 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
       //passing statistical mechanics parameters to elements
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
-      p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
       p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
       p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
       p.set("RandomNumbers",randomnumbers);
-
-      //computing current gradient in z-direction of shear flow (assuming sine shear load with maximal amplitude SHEARAMPLITUDE and frequency SHEARFREQUENCY)
-      double omegashear = 2*PI*(statmechmanager_->statmechparams_).get<double>("SHEARFREQUENCY",0.0);
-      double currentshear = cos(omegashear*timen)*(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0)*omegashear;
-      //osciallations start only after equilibration; set shear rate to zero before
-      if( timen < (statmechmanager_->statmechparams_).get<double>("STARTTIME",0.0) )
-        currentshear = 0;
-      p.set("CURRENTSHEAR",currentshear);
+      p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
+      p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
+      p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
+      p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
 
       // set vector values needed by elements
       discret_.ClearState();
@@ -1347,10 +1327,6 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
  * be added to the time curve value in DoDirichletConditionPeriodic().
  */
 {
-	// check if start time for DBC evaluation has been reached. If not, do nothing and just return!
-	if(statmechmanager_->statmechparams_.get<double>("STARTTIME", 0.0) > params.get("total time",-1.0))
-		return;
-
 #ifdef MEASURETIME
   const double t_start = Teuchos::Time::wallTime();
 #endif // #ifdef MEASURETIME
@@ -1358,7 +1334,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	if (!(discret_.Filled())) dserror("FillComplete() was not called");
 	if (!(discret_.HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
 
-//------------------------------------------------------------------ some variables
+  //----------------------------------- some variables
 	// indicates broken element
 	bool 											broken;
 	// time trigger
@@ -1376,7 +1352,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
   vector<int> 							fixednodes;
   vector<int> 							freenodes;
 
-  // check if time>0.0
+  // get the current time
 	const double time = params.get("total time",-1.0);
 	if (time<0.0) usetime = false;
 
@@ -1386,14 +1362,15 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
   	// get the apmlitude of the oscillation
   	amp_= statmechmanager_->statmechparams_.get<double>("SHEARAMPLITUDE",0.0)*
 					statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0);
-		// retrieve direction of oscillatory motion ('-1' because of c++ convention)
+		// retrieve direction of oscillatory motion
 		oscdir_ = statmechmanager_->statmechparams_.get<int>("OSCILLDIR",0)-1;
-		// retrieve number of time curve that is to be applied ('-1' because of c++ convention)
+		// retrieve number of time curve that is to be applied
 		curvenumber_ = statmechmanager_->statmechparams_.get<int>("CURVENUMBER",0)-1;
+
 		isinit_=true;
 	} // init
 
-//----------------------------------------------------------- loop through elements
+//---------------------------------------------------------- loop through elements
 	for(int i=0;i<discret_.NumMyRowElements(); i++)
 	{
 		// An element used to browse through Row Elements
@@ -1402,7 +1379,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	  LINALG::SerialDenseMatrix coord(3,(int)discret_.lRowElement(i)->NumNode(), true);
 	  // indicates location, direction and component of a broken element with n nodes->n-1 possible cuts
 	  LINALG::SerialDenseMatrix cut(3,(int)discret_.lRowElement(i)->NumNode()-1,true);
-//--------------------------------- obtain nodal coordinates of the current element
+//-------------------------------- obtain nodal coordinates of the current element
 	  // get nodal coordinates and LIDs of the nodal DOFs
 	  statmechmanager_->GetElementNodeCoords(element, disn_, coord, &lids);
 //-----------------------detect broken/fixed/free elements and fill position vector
@@ -1505,11 +1482,11 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	  }
 	}
 
-//--------------------------------- check/set force sensors anew for each time step
+//---------check/set force sensors anew for each time step
   if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
   	statmechmanager_->UpdateForceSensors(fsensorlids);
 
-//------------------------------------------------------------ set Dirichlet values
+//------------------------------------set Dirichlet values
 	// preliminary
 	DRT::Node* node = discret_.gNode(discret_.NodeRowMap()->GID(0));
 	int numdof = (int)discret_.Dof(node).size();
@@ -1642,7 +1619,7 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
         continue;
       }
 
-//------------------------------------------------------ Dirichlet Value Assignment
+//---------------------------------------------Dirichlet Value Assignment
 
       // factor given by spatial function
       double functfac = 1.0;
