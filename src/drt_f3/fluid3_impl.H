@@ -284,6 +284,18 @@ namespace ELEMENTS
                            const enum INPAR::FLUID::PhysicalType  physicaltype);
 
     /*!
+       \brief get material parameters
+     */
+    void GetTurbulenceParams(Fluid3*                    ele,
+                             Fluid3::FineSubgridVisc&   fssgv,
+                             ParameterList&             turbmodelparams,
+                             Fluid3::TurbModelAction&   turb_mod_action,
+                             double&                    Cs,
+                             double&                    Cs_delta_sq,
+                             double&                    l_tau,
+                             int&                       nlayer);
+
+    /*!
       \brief calculate (all-scale) subgrid viscosity
     */
     void CalcSubgrVisc(const LINALG::Matrix<nsd_,iel>&     evelaf,
