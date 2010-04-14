@@ -1090,9 +1090,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Reading whether dynamics remodelling of cross linker distribution takes place
   setStringToIntegralParameter<int>("DYN_CROSSLINKERS","No","If chosen cross linker proteins are added and removed in each time step",
                                yesnotuple,yesnovalue,&statmech);
-  //Reading double parameters for shear flow field
+  //Reading double parameter for shear flow field
   DoubleParameter("SHEARAMPLITUDE",0.0,"Shear amplitude of flow in z-direction; note: not amplitude of displacement, but of shear strain!",&statmech);
-  DoubleParameter("SHEARFREQUENCY",0.0,"Shear frequency of flow in z-direction",&statmech);
   //Reading double parameter for viscosity of background fluid
   DoubleParameter("ETA",0.0,"viscosity",&statmech);
   //Reading double parameter for thermal energy in background fluid (temperature * Boltzmann constant)
