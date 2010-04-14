@@ -1019,20 +1019,20 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   vector<DRT::Condition*> KSPcond;
   discret_->GetCondition("KrylovSpaceProjection",KSPcond);
   const std::size_t numcond = KSPcond.size();
-  std::size_t numfluid = 0;
+  std::size_t numfluid_with_krylov_condition = 0;
   for(std::size_t icond = 0; icond < numcond; icond++)
   {
     const std::string* name = KSPcond[icond]->Get<std::string>("discretization");
-    if (*name == "fluid") numfluid++;
+    if (*name == "fluid") numfluid_with_krylov_condition++;
   }
-  if (numfluid == 1)
+  if (numfluid_with_krylov_condition == 1)
   {
     cout0_ << "Krylov projection active..." << endl;
     project_ = true;
     w_       = LINALG::CreateVector(*discret_->DofRowMap(),true);
     c_       = LINALG::CreateVector(*discret_->DofRowMap(),true);
   }
-  else if (numfluid == 0)
+  else if (numfluid_with_krylov_condition == 0)
   {
     project_ = false;
     w_       = Teuchos::null;
