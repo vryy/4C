@@ -19,6 +19,7 @@
 
 #include "Ifpack.h"
 #include "Ifpack_AdditiveSchwarz.h"
+#include "Ifpack_Amesos.h"
 
 #include "ml_MultiLevelPreconditioner.h"
 
@@ -150,21 +151,57 @@ bool LINALG::BraessSarazin_Smoother::Setup()
   /////////////////////// allocate preconditioner/solver for pressure correction equation
 
   // standard: IFPACK ILU
-  //if(params_.get("pressure correction approx: type","IFPACK")=="IFPACK")
-  if(params_.isSublist("IFPACK Parameters"))
+  if(params_.get("pressure correction approx: type","IFPACK")=="IFPACK")
   {
+    ParameterList ifpackParams;
+    if(params_.isSublist("IFPACK Parameters"))
+      ifpackParams = params_.sublist("IFPACK Parameters");
+    else
+    {
+      ifpackParams.set("amesos: solver type", "Amesos_Klu");
+      ifpackParams.set("fact: drop tolerance",0);
+      ifpackParams.set("fact: level-of-fill",0);
+      ifpackParams.set("relaxation: damping factor",0);
+      ifpackParams.set("schwarz: combine mode","Add");
+      ifpackParams.set("schwarz: reordering type","rcm");
+    }
+
     string type = params_.get("pressure correction approx: ifpack type","ILU");
     Ifpack factory;
     Ifpack_Preconditioner* prec = factory.Create(type,S_->EpetraMatrix().get(),params_.sublist("IFPACK Parameters").get("overlap",0));
-    prec->SetParameters(params_.sublist("IFPACK Parameters"));
+    prec->SetParameters(ifpackParams);
     prec->Initialize();
     prec->Compute();
     Pp_ = rcp(prec);
   }
-  //else if(params_.get("pressure correction approx: type","ML")=="ML")
-  else if(params_.isSublist("ML Parameters"))
+  else if(params_.get("pressure correction approx: type","IFPACK")=="KLU")
   {
-    Pp_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*S_->EpetraMatrix(),params_.sublist("ML Paramters")));
+    ParameterList amesosParams;
+    amesosParams.set("amesos: solver type","Amesos_Klu");
+    RCP<Ifpack_Amesos> prec = rcp(new Ifpack_Amesos(S_->EpetraMatrix().get()));
+    prec->SetParameters(amesosParams);
+    prec->Initialize();
+    prec->Compute();
+    Pp_ = prec;
+  }
+  else if(params_.get("pressure correction approx: type","IFPACK")=="Umfpack")
+  {
+    ParameterList amesosParams;
+    amesosParams.set("amesos: solver type","Amesos_Umfpack");
+    RCP<Ifpack_Amesos> prec = rcp(new Ifpack_Amesos(S_->EpetraMatrix().get()));
+    prec->SetParameters(amesosParams);
+    prec->Initialize();
+    prec->Compute();
+    Pp_ = prec;
+  }
+  else if(params_.get("pressure correction approx: type","IFPACK")=="ML")
+  {
+    if(params_.isSublist("ML Parameters"))
+    {
+      Pp_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*S_->EpetraMatrix(),params_.sublist("ML Paramters")));
+    }
+    else
+      dserror("ML parameters for pressure correction missing! set AZPREC in Fluid Pressure Solver to ML or MLFLUID2 or somewhat similar!");
   }
   else
     //dserror("pressure correction approx: type has to be IFPACK");

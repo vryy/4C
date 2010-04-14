@@ -37,10 +37,13 @@
 #include "MLAPI_Aggregation.h"
 #include "MLAPI.h"
 
+#include "float.h" // for DBL_MAX and DBL_MIN
+
 LINALG::SaddlePointPreconditioner::SaddlePointPreconditioner(RCP<Epetra_Operator> A, const ParameterList& params, const ParameterList& pressurelist, FILE* outfile)
 : params_(params),
 pressureparams_(pressurelist),
-outfile_(outfile)
+outfile_(outfile),
+nVerbose_(0)
 {
   Setup(A,params,pressurelist);
 }
@@ -162,11 +165,11 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
 
   // SETUP with SparseMatrix base class
   //////////////////// define some variables
-  const int myrank = A->Comm().MyPID();
+  //const int myrank = A->Comm().MyPID();
   Epetra_Time time(A->Comm());
   const Epetra_Map& fullmap = A->OperatorRangeMap();
   const int         length  = fullmap.NumMyElements();
-  int nVerbose = 0;   // level of verbosity
+  nVerbose_ = 0;      // level of verbosity
   int ndofpernode = 0;// number of dofs per node
   int nv = 0;         // number of velocity dofs per node
   int np = 0;         // number of pressure dofs per node (1)
@@ -220,7 +223,7 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
   postS_.resize(nmaxlevels_);
 
   int nmaxcoarsedim = spparams->sublist("AMGBS Parameters").get("max coarse dimension",20);
-  nVerbose = spparams->sublist("AMGBS Parameters").get("ML output",0);
+  nVerbose_ = spparams->sublist("AMGBS Parameters").get("ML output",0);
   ndofpernode = spparams->sublist("AMGBS Parameters").get<int>("PDE equations",0);
   if(ndofpernode == 0) dserror("dof per node is zero -> error");
 
@@ -337,13 +340,21 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
     GetPtent(A22_[curlevel]->RowMap(),*preaggs,naggregates_local,preparams->sublist("AMGBS Parameters"),*curpreNS,pre_Ptent,nextpreNS,naggregates*nv);
 
 #ifdef WRITEOUTAGGREGATES
-/*    std::ofstream fileout;
-    std::stringstream fileoutstream;
-    fileoutstream << "/home/wiesner/aggregates" << curlevel << ".vel";
-    fileout.open(fileoutstream.str().c_str(),ios_base::out);
-    velaggs->Print(fileout);
-    fileout.flush();
-    fileout.close();*/
+//    std::ofstream fileout;
+//    std::stringstream fileoutstream;
+//    fileoutstream << "/home/wiesner/fluid/cubits/dc/aggregates/dc/aggregates" << curlevel << ".vel";
+//    fileout.open(fileoutstream.str().c_str(),ios_base::out);
+//    velaggs->Print(fileout);
+//    fileout.flush();
+//    fileout.close();
+//
+//    std::stringstream fileoutstreamp;
+//    fileoutstreamp << "/home/wiesner/fluid/cubits/dc/aggregates/dc/aggregates" << curlevel << ".pre";
+//    fileout.open(fileoutstreamp.str().c_str(),ios_base::out);
+//    preaggs->Print(fileout);
+//    fileout.flush();
+//    fileout.close();
+
 
  /*   std::ofstream fileout2;
     std::stringstream fileoutstream2;
@@ -378,6 +389,13 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
       Pvel_[curlevel] = vel_Psmoothed;
       Rvel_[curlevel] = vel_Rsmoothed;
     }
+    else if(velProlongSmoother == "PG-AMG") // PETROV GALERKIN
+    {
+      PG_AMG(A11_[curlevel],vel_Ptent,vel_Rtent,vel_Psmoothed,vel_Rsmoothed);
+
+      Pvel_[curlevel] = vel_Psmoothed;
+      Rvel_[curlevel] = vel_Rsmoothed;
+    }
     else                              // PLAIN AGGREGATION
     {
       Pvel_[curlevel] = vel_Ptent;
@@ -393,6 +411,13 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
       Ppre_[curlevel] = pre_Psmoothed;
       Rpre_[curlevel] = pre_Rsmoothed;
     }
+    else if(preProlongSmoother == "PG-AMG") // PETROV-GALERKIN
+    {
+      PG_AMG(A22_[curlevel],pre_Ptent,pre_Rtent,pre_Psmoothed,pre_Rsmoothed);
+
+      Ppre_[curlevel] = pre_Psmoothed;
+      Rpre_[curlevel] = pre_Rsmoothed;
+    }
     else                                // PLAIN AGGREGATION
     {
       Ppre_[curlevel] = pre_Ptent;
@@ -400,7 +425,7 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
     }
 
 
-    if(nVerbose > 4) // be verbose
+    if(nVerbose_ > 4) // be verbose
     {
       cout << "Pvel[" << curlevel << "]: " << Pvel_[curlevel]->EpetraMatrix()->NumGlobalRows() << " x " << Pvel_[curlevel]->EpetraMatrix()->NumGlobalCols() << " (" << Pvel_[curlevel]->EpetraMatrix()->NumGlobalNonzeros() << ")" << endl;
       cout << "Ppre[" << curlevel << "]: " << Ppre_[curlevel]->EpetraMatrix()->NumGlobalRows() << " x " << Ppre_[curlevel]->EpetraMatrix()->NumGlobalCols() << " (" << Ppre_[curlevel]->EpetraMatrix()->NumGlobalNonzeros() << ")" << endl;
@@ -409,14 +434,13 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
       cout << "Rpre[" << curlevel << "]: " << Rpre_[curlevel]->EpetraMatrix()->NumGlobalRows() << " x " << Rpre_[curlevel]->EpetraMatrix()->NumGlobalCols() << " (" << Rpre_[curlevel]->EpetraMatrix()->NumGlobalNonzeros() << ")" << endl;
     }
 
-
     /////////////////////////// calc RAP product for next level
     A11_[curlevel+1] = Multiply(*Rvel_[curlevel],*A11_[curlevel],*Pvel_[curlevel]);
     A12_[curlevel+1] = Multiply(*Rvel_[curlevel],*A12_[curlevel],*Ppre_[curlevel]);
     A21_[curlevel+1] = Multiply(*Rpre_[curlevel],*A21_[curlevel],*Pvel_[curlevel]);
     A22_[curlevel+1] = Multiply(*Rpre_[curlevel],*A22_[curlevel],*Ppre_[curlevel]);
 
-    if(nVerbose > 4) // be verbose
+    if(nVerbose_ > 4) // be verbose
     {
       cout << "A11[" << curlevel+1 << "]: " << A11_[curlevel+1]->EpetraMatrix()->NumGlobalRows() << " x " << A11_[curlevel+1]->EpetraMatrix()->NumGlobalCols() << " (" << A11_[curlevel+1]->EpetraMatrix()->NumGlobalNonzeros() << ")" << endl;
       cout << "A12[" << curlevel+1 << "]: " << A12_[curlevel+1]->EpetraMatrix()->NumGlobalRows() << " x " << A12_[curlevel+1]->EpetraMatrix()->NumGlobalCols() << " (" << A12_[curlevel+1]->EpetraMatrix()->NumGlobalNonzeros() << ")" << endl;
@@ -437,7 +461,22 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
     else
       dserror("SaddlePointPreconditioner::Setup: no IFPACK or ML ParameterList found in FLUD PRESSURE SOLVER block -> cannot be!");
 
-    if(nVerbose > 8)
+    if(curlevel==0)
+    {
+      subparams.set("pressure correction approx: type",subparams.get("fine: type","IFPACK"));
+      if(subparams.isParameter("fine: ifpack type"))  subparams.set("pressure correction approx: ifpack type",subparams.get("fine: ifpack type","ILU"));
+      subparams.remove("fine: type",false);
+      subparams.remove("fine: ifpack type",false);
+    }
+    else
+    {
+      subparams.set("pressure correction approx: type",subparams.get("medium: type","IFPACK"));
+      if(subparams.isParameter("medium: ifpack type"))  subparams.set("pressure correction approx: ifpack type",subparams.get("medium: ifpack type","ILU"));
+      subparams.remove("medium: type",false);
+      subparams.remove("medium: ifpack type",false);
+    }
+
+    if(nVerbose_ > 8)
     {
       cout << "Braess-Sarazin smoother (level " << curlevel << ")" << endl << "parameters:" << endl << subparams << endl << endl;
     }
@@ -454,7 +493,7 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
     //////////////////// check if aggregation is complete
     if ((A11_[curlevel+1]->EpetraMatrix()->NumGlobalRows() + A22_[curlevel+1]->EpetraMatrix()->NumGlobalRows()) < nmaxcoarsedim)
     {
-      if(nVerbose > 4) cout << "dim A[" << curlevel+1 << "] < " << nmaxcoarsedim << ". -> end aggregation process" << endl;
+      if(nVerbose_ > 4) cout << "dim A[" << curlevel+1 << "] < " << nmaxcoarsedim << ". -> end aggregation process" << endl;
       break;
     }
   }
@@ -472,14 +511,19 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
   else
     dserror("SaddlePointPreconditioner::Setup: no IFPACK or ML ParameterList found in FLUD PRESSURE SOLVER block -> cannot be!");
 
-  if(nVerbose > 8)
+  subparams.set("pressure correction approx: type",subparams.get("coarse: type","IFPACK"));
+  if(subparams.isParameter("coarse: ifpack type"))  subparams.set("pressure correction approx: ifpack type",subparams.get("coarse: ifpack type","ILU"));
+  subparams.remove("coarse: type",false);
+  subparams.remove("coarse: ifpack type",false);
+
+  if(nVerbose_ > 8)
   {
     cout << "Braess-Sarazin smoother (level " << nlevels_ << ")" << endl << "parameters:" << endl << subparams << endl << endl;
   }
 
   coarsestSmoother_ = rcp(new BraessSarazin_Smoother(A11_[nlevels_],A12_[nlevels_],A21_[nlevels_],A22_[nlevels_],subparams));
 
-  if(nVerbose>2)
+  if(nVerbose_ > 2)
   {
     cout << "setup phase complete:" << endl;
     cout << "nlevels/maxlevels: " << nlevels_+1 << "/" << nmaxlevels_+1 << endl;
@@ -916,6 +960,7 @@ double LINALG::SaddlePointPreconditioner::MaxEigCG(const SparseMatrix& A, const 
 
     dserror(str);
   }
+  return -1.0;
 }
 
 // smoothed aggregation (SA-AMG)
@@ -1002,6 +1047,582 @@ void LINALG::SaddlePointPreconditioner::SA_AMG(const RCP<SparseMatrix>& A, const
   R_smoothed = P_smoothed->Transpose();
 
 }
+
+void LINALG::SaddlePointPreconditioner::PG_AMG(const RCP<SparseMatrix>& A, const RCP<SparseMatrix>& P_tent, const RCP<SparseMatrix>& R_tent, RCP<SparseMatrix>& P_smoothed, RCP<SparseMatrix>& R_smoothed)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("SaddlePoint_Preconditioner::PG_AMG");
+
+
+  ////////////////// extract diagonal of A
+  RCP<Epetra_Vector> diagA = rcp(new Epetra_Vector(A->RowMap(),true));
+  A->ExtractDiagonalCopy(*diagA);
+  int err = diagA->Reciprocal(*diagA);
+  if(err) dserror("SaddlePointPreconditioner::PG_AMG: diagonal entries of A are 0");
+
+
+  ///////////////// compute D^{-1}*A
+  RCP<SparseMatrix> DinvA = rcp(new SparseMatrix(*A,Copy)); // ok, not the best but just works
+  DinvA->LeftScale(*diagA);
+
+  ///////////////// calculate D^{-1}*A*P0
+  RCP<SparseMatrix> DinvAP0 = LINALG::MLMultiply(*DinvA,*P_tent,true);
+
+  // TODO: drop values in DinvAP0
+
+  // TODO: compress DinvAP0 -> DinvAP0_subset
+
+  ///////////////// prepare variables for column-based omegas
+  int NComputedOmegas = P_tent->EpetraMatrix()->DomainMap().NumGlobalElements();  // number of col-based omegas to be computed (depends on DinvAP0_subset)
+
+  ///////////////// compute D^{-1} * A * D^{-1} * A * P0
+  RCP<SparseMatrix> DinvADinvAP0 = LINALG::MLMultiply(*DinvA,*DinvAP0,true);
+
+  // TODO: drop small values in DinvADinvAP0
+
+  ///////////////// define variables for column-based omegas
+  std::vector<double> Numerator(NComputedOmegas, 0.0);
+  std::vector<double> Denominator(NComputedOmegas, 0.0);
+  std::vector<double> ColBasedOmegas(NComputedOmegas, -666.0);
+
+  ///////////////// minimize with respect to the (D^{-1} A)' D^{-1} A norm.
+  //
+  //               diag( P0' (A' D^{-1}' D^{-1} A) D^{-1} A P0 )
+  //  omega = ---------------------------------------------------------
+  //           diag( P0' A' D^{-1} (A' D^{-1}' D^{-1} A) D^{-1} A P0 )
+
+  MultiplyAll(DinvAP0,DinvADinvAP0,Numerator);  // -> DinvAP0_subset
+  MultiplySelfAll(DinvADinvAP0,Denominator);
+
+  ///////////////// compute col-based omegas
+  int zero_local = 0;   // number of local zeros
+  double min_local = DBL_MAX;
+  double max_local = DBL_MIN;
+
+  for(int i=0; i<NComputedOmegas; i++)
+  {
+#ifdef DEBUG
+    if(Denominator[i]==0) cout << "WARNING: Denominator[" << i << "] is zero!!!\n\n" << endl;
+#endif
+    ColBasedOmegas[i] = Numerator[i]/Denominator[i];  // calculate omegas
+    double& val = ColBasedOmegas[i];
+    if(val < 0.0)
+    {
+      val = 0.0;    // zero out negative omegas;
+      ++zero_local;
+    }
+    if(nVerbose_ > 6)
+    {
+      if(val < min_local) min_local = val;
+      if(val > max_local) max_local = val;
+    }
+  }
+
+  // be verbose
+  if(nVerbose_ > 6)
+  {
+    double min_global = DBL_MAX;
+    double max_global = DBL_MIN;
+    int zeros_global = 0;
+    Comm().MinAll(&min_local,&min_global,1);
+    Comm().MaxAll(&max_local,&max_global,1);
+    Comm().SumAll(&zero_local,&zeros_global,1);
+    cout << "-------------------------------------" << endl;
+    cout << "PG-AMG: damping parameters: min="<< min_global << " mx=" << max_global << endl;
+    cout << zeros_global << " out of " << NComputedOmegas << endl;
+    cout << "-------------------------------------" << endl;
+  }
+
+  //////////////////// convert column based omegas to row-based omegas
+  std::vector<double> RowOmega_local(DinvAP0->RowMap().NumMyElements(), -666.0);  // contains local row omegas of current proc (if not defined -666.0)
+  std::vector<int> RowOmegaGrids_local(DinvAP0->RowMap().NumMyElements(), -1);    // contains grids for row omegas of current proc
+
+  ////////////////// calculate max eigenvalue of diagFinvA (this is a MLAPI call)
+  double maxeig = MaxEigCG(*A,true); // this is for dirichlet bc's and only for test
+
+  // number of row omegas
+  int NRowOmegaSet = 0;
+
+  // loop over processors matrix rows
+  for(int row=0; row<DinvAP0->EpetraMatrix()->NumMyRows(); row++)
+  {
+    // extract local row information for DinvAP0
+    int nnz = DinvAP0->EpetraMatrix()->NumMyEntries(row);
+    int indices[nnz];
+    double vals[nnz];
+    int numEntries;
+    DinvAP0->EpetraMatrix()->ExtractMyRowCopy(row,nnz,numEntries,&vals[0],&indices[0]);
+
+    bool bAtLeastOneDefined = false;
+
+    if(DinvAP0->EpetraMatrix()->GRID(row) != DinvAP0->EpetraMatrix()->IndexBase()-1)
+      RowOmegaGrids_local[row] = DinvAP0->EpetraMatrix()->GRID(row); // store grid to local row omega
+    else
+      cout << "WARNING: there's a row that belongs not to the current proc?? " << endl;
+
+    // execption: DinvAP0 has zero rows
+    // should not be, but sometimes may happen if P_tent has zero rows (due to lost nodes in funny MIS aggregation?)
+    if(nnz == 0)
+    {
+      // check if the reason is an empty row in P_tent
+      if(P_tent->EpetraMatrix()->NumMyEntries(row) == 0)
+      {
+        // ok, that is the bad -1 aggregate thing
+        //NRowOmegaSet++;
+        //RowOmega_local[row] = 0.0;  // per default no damping for this
+
+        // folgende 3 Zeilen bringen nix
+        double dampingFactor = 1.3333333; // these are the -1 aggregate dirichlet bc nodes
+        bAtLeastOneDefined = true;
+        RowOmega_local[row] = dampingFactor/maxeig;
+      }
+      else
+      {
+        // very bad :-(
+        if(nVerbose_>6) cout << "WARNING: DinvAP0 has a spurious zero row, even though P_tent has nonzero entries! (row lid=" << row << " grid=" << DinvAP0->EpetraMatrix()->GRID(row) << "); RowOmega=0.0" << endl;
+#if DEBUG
+        // check A
+        if(A->EpetraMatrix()->NumMyEntries(row) == 0)
+          cout << "A seems to be the bad guy and has a zero row." << endl;
+#endif
+        //NRowOmegaSet++;
+        //RowOmega_local[row] = 0.0;  // per default no damping for this
+
+        double dampingFactor = 1.3333333; // these are the -1 aggregate dirichlet bc nodes
+        bAtLeastOneDefined = true;
+        RowOmega_local[row] = dampingFactor/maxeig;
+      }
+    }
+    else if(nnz == 1) // 12.04.2010 this is new stuff: special treatment of dirichlet bc's
+    {
+      // this seems to be a dirichlet bc node
+      // the loop below would set RowOmega_local to 1.0, but then
+      // we obtain more zero rows in the smoothed prolongator
+
+      // here we set RowOmega_local to the values of SA-AMG???
+      double dampingFactor = 1.3333333; // TODO parameter....
+
+      bAtLeastOneDefined = true;
+      RowOmega_local[row] = dampingFactor/maxeig;
+    }
+    else
+    {
+      // loop over all local column entries of current local row
+      for(int j=0; j<nnz; j++)
+      {
+        // find corresponding col-based omega
+        double omega = ColBasedOmegas[indices[j]];
+        if(omega != -666.0)
+        {
+          // col based omega is set
+          bAtLeastOneDefined = true;
+
+          if(RowOmega_local[row] == -666.0) RowOmega_local[row] = omega;
+          else if(omega < RowOmega_local[row]) RowOmega_local[row] = omega;
+
+          /*double dampingFactor = 1.3333333; // TODO parameter....
+
+          bAtLeastOneDefined = true;
+          RowOmega_local[row] = dampingFactor/maxeig;*/
+          //bAtLeastOneDefined = true;
+          //RowOmega_local[row] = 23.0;
+
+        }
+        else
+        {
+          cout << "WARNING: col-based omega is not set!!!" << endl;
+        }
+      }
+    }
+
+    // check new row omega
+    if(bAtLeastOneDefined == true)
+    {
+      NRowOmegaSet++;
+      if(RowOmega_local[row] < 0.) RowOmega_local[row] = 0.;
+      //cout << RowOmega_local[row] << endl;
+    }
+  }
+
+
+  //////////////// fill RowOmega Epetra vector with local RowOmega_local information
+  RCP<Epetra_Vector> RowOmega = rcp(new Epetra_Vector(DinvAP0->RowMap(),true));
+  RowOmega->PutScalar(-666.0);
+
+  err = RowOmega->ReplaceGlobalValues(RowOmega_local.size(),&RowOmega_local[0],&RowOmegaGrids_local[0]);
+  if(err!=0) dserror("ReplaceGlobalValues returned error %i, one or more indices are not associated with calling proc?",err);
+
+#ifdef DEBUG
+  // check if RowOmega has -666. entries -> must not be!
+  for(int i=0; i<RowOmega->Map().NumMyElements(); i++)
+  {
+    if((*RowOmega)[i] == -666.0)
+    {
+      cout << "proc: " << Comm().MyPID() << " RowOmega LID=" << i << " GID=" << RowOmega->Map().GID(i) << endl;
+      dserror("RowOmega still has -666. entires -> must not be!");
+    }
+  }
+
+  // check if all RowOmega's are set
+  if(NRowOmegaSet != RowOmega->Map().NumGlobalElements())
+    dserror("NRowOmegaSet and length of RowOmega doesn't match");
+
+#ifdef WRITEOUTSTATISTICS
+  if(outfile_)
+  {
+    double minVal = 0.0; double maxVal = 0.0;
+    RowOmega->MinValue(&minVal); RowOmega->MaxValue(&maxVal);
+    fprintf(outfile_,"minRowOmega_%i %f\tmaxRowOmega_%i %f\t",RowOmega->Map().NumGlobalElements(), minVal, RowOmega->Map().NumGlobalElements(), maxVal);
+  }
+#endif
+
+#endif
+
+  //////////////// compute new prolongator
+  /*P_smoothed = LINALG::MLMultiply(*A,*P_tent,false);
+  P_smoothed->LeftScale(*diagA);
+  P_smoothed->LeftScale(*RowOmega);
+  P_smoothed->Add(*P_tent,false,1.0,-0.99);  // TODO -1.0 -> sehr viele nullzeilen wegen Dirichleträndern?
+  P_smoothed->Complete(P_tent->DomainMap(),P_tent->RangeMap());*/
+
+  RCP<SparseMatrix> OmegaDinvA = rcp(new SparseMatrix(*A,Copy));
+  RCP<Epetra_Vector> diagScaling = rcp(new Epetra_Vector(diagA->Map(),true));
+  diagScaling->Multiply(1.0,*RowOmega,*diagA,0.0);
+  OmegaDinvA->LeftScale(*diagScaling);
+  P_smoothed = LINALG::MLMultiply(*OmegaDinvA,*P_tent,false);
+  P_smoothed->Add(*P_tent,false,1.0,-1.0);
+  P_smoothed->Complete(P_tent->DomainMap(),P_tent->RangeMap());
+
+#if DEBUG
+  vector<int> smoothedzerosgids;
+  int smoothedzeros = 0;
+  int tentzeros = 0;
+  for(int i=0; i<P_smoothed->EpetraMatrix()->NumMyRows(); i++)
+  {
+    int nnz = P_smoothed->EpetraMatrix()->NumMyEntries(i);
+    int indices[nnz];
+    double vals[nnz];
+    int numEntries;
+    P_smoothed->EpetraMatrix()->ExtractMyRowCopy(i,nnz,numEntries,&vals[0],&indices[0]);
+
+    if (nnz==0) // zeros from -1 aggregate
+    {
+      smoothedzeros++;
+      //smoothedzerosgids.push_back(i);
+    }
+    else
+    {
+      bool bNonzero = false;
+      for(int j=0;j<nnz;j++)
+        if(vals[j]!=0.0) bNonzero=true;
+
+      if(bNonzero==false)
+      {
+        //smoothedzerosgids.push_back(i); // zeros from dirichlet bc's
+        smoothedzeros++;
+      }
+    }
+
+    int nnz2 = P_tent->EpetraMatrix()->NumMyEntries(i);
+    int indices2[nnz2];
+    double vals2[nnz2];
+    P_tent->EpetraMatrix()->ExtractMyRowCopy(i,nnz2,numEntries,&vals2[0],&indices2[0]);
+
+    if (nnz2==0) tentzeros++;
+    else
+    {
+      bool bNonzero = false;
+      for(int j=0;j<nnz2;j++)
+        if(vals2[j]!=0.0) bNonzero=true;
+
+      if(bNonzero==false) tentzeros++;
+    }
+  }
+
+  cout << "Psmoothed: " << smoothedzeros << " Ptent: " << tentzeros << endl;
+
+//      std::ofstream fileout;
+//      std::stringstream fileoutstream;
+//      fileoutstream << "/home/wiesner/fluid/cubits/dc/aggregates/dc/smoothedzeros.txt";
+//      fileout.open(fileoutstream.str().c_str(),ios_base::out);
+//      for(int i=0; i<smoothedzerosgids.size(); i++)
+//        fileout << i << "\t" << smoothedzerosgids[i] << endl;
+//      fileout.flush();
+//      fileout.close();
+
+#endif
+
+
+
+  //////////////// compute restrictor
+
+  //R_smoothed = R_tent;
+  //R_smoothed = P_smoothed->Transpose(); // geht aber wird im unsymmetrischen Teil ausgebremst
+
+  // manche werden gar nicht geglättet :-( -> verwende SA-AMG omegas dafür?
+
+  // R = R - R * A * Dinv * omegarfine
+  /*R_smoothed = LINALG::MLMultiply(*R_tent,*A,false);
+  R_smoothed->RightScale(*RowOmega);
+  R_smoothed->RightScale(*diagA);
+  R_smoothed->Add(*R_tent,false,1.0,-0.99);
+  R_smoothed->Complete(R_tent->DomainMap(),R_tent->RangeMap());*/
+
+  RCP<SparseMatrix> ADinvOmega = rcp(new SparseMatrix(*A,Copy));
+  ADinvOmega->RightScale(*diagScaling);
+  R_smoothed = LINALG::MLMultiply(*R_tent,*ADinvOmega,false);
+  R_smoothed->Add(*R_tent,false,1.0,-1.0);
+  R_smoothed->Complete(R_tent->DomainMap(),R_tent->RangeMap());
+
+
+
+#if 0
+  ///////////////// compute D^{-1}*A^T
+  RCP<SparseMatrix> DinvAT = A->Transpose(); // ok, not the best but just works
+  DinvAT->LeftScale(*diagA);
+
+  ///////////////// calculate D^{-1}*A^T*P0
+  RCP<SparseMatrix> DinvATP0 = LINALG::MLMultiply(*DinvAT,*P_tent,true);
+
+  // TODO: drop values in DinvAP0
+
+  // TODO: compress DinvAP0 -> DinvAP0_subset
+
+  ///////////////// prepare variables for column-based omegas
+  int NComputedOmegas_restrictor = P_tent->EpetraMatrix()->DomainMap().NumGlobalElements();  // number of col-based omegas to be computed (depends on DinvAP0_subset)
+
+  ///////////////// compute D^{-1} * A^T * D^{-1} * A^T * P0
+  RCP<SparseMatrix> DinvATDinvATP0 = LINALG::MLMultiply(*DinvAT,*DinvATP0,true);
+
+  // TODO: drop small values in DinvADinvAP0
+
+  ///////////////// define variables for column-based omegas
+  std::vector<double> Numerator_restrictor(NComputedOmegas_restrictor, 0.0);
+  std::vector<double> Denominator_restrictor(NComputedOmegas_restrictor, 0.0);
+  std::vector<double> ColBasedOmegas_restrictor(NComputedOmegas_restrictor, -666.0);
+
+  ///////////////// minimize with respect to the (D^{-1} A)' D^{-1} A norm.
+  //
+  //               diag( R0 (A D^{-1}' D^{-1} A' D^{-1} A' R0' )
+  //  omega = ---------------------------------------------------------
+  //           diag( R0 A D^{-1} A D^{-1} D^{-1} A' D^{-1} A' R0' )
+
+  MultiplyAll(DinvATP0,DinvATDinvATP0,Numerator_restrictor);  // -> DinvAP0_subset
+  MultiplySelfAll(DinvATDinvATP0,Denominator_restrictor);
+
+  ///////////////// compute col-based omegas
+  zero_local = 0;   // number of local zeros
+  min_local = DBL_MAX;
+  max_local = DBL_MIN;
+
+  for(int i=0; i<NComputedOmegas_restrictor; i++)
+  {
+#ifdef DEBUG
+    if(Denominator_restrictor[i]==0) cout << "WARNING: Denominator[" << i << "] is zero!!!\n\n" << endl;
+#endif
+    ColBasedOmegas_restrictor[i] = Numerator_restrictor[i]/Denominator_restrictor[i];  // calculate omegas
+    double& val = ColBasedOmegas_restrictor[i];
+    if(val < 0.0)
+    {
+      val = 0.0;    // zero out negative omegas;
+      ++zero_local;
+    }
+    if(nVerbose_ > 6)
+    {
+      if(val < min_local) min_local = val;
+      if(val > max_local) max_local = val;
+    }
+  }
+
+  // be verbose
+  if(nVerbose_ > 6)
+  {
+    double min_global = DBL_MAX;
+    double max_global = DBL_MIN;
+    int zeros_global = 0;
+    Comm().MinAll(&min_local,&min_global,1);
+    Comm().MaxAll(&max_local,&max_global,1);
+    Comm().SumAll(&zero_local,&zeros_global,1);
+    cout << "-------------------------------------" << endl;
+    cout << "PG-AMG: damping parameters: min="<< min_global << " mx=" << max_global << endl;
+    cout << zeros_global << " out of " << NComputedOmegas_restrictor << endl;
+    cout << "-------------------------------------" << endl;
+  }
+
+  //////////////////// convert column based omegas to row-based omegas
+  std::vector<double> RowOmega_restrictor_local(DinvATP0->RowMap().NumMyElements(), -666.0);  // contains local row omegas of current proc (if not defined -666.0)
+  std::vector<int> RowOmegaGrids_restrictor_local(DinvATP0->RowMap().NumMyElements(), -1);    // contains grids for row omegas of current proc
+
+  // number of row omegas
+  int NRowOmegaSet_restrictor = 0;
+
+  // loop over processors matrix rows
+  for(int row=0; row<DinvATP0->EpetraMatrix()->NumMyRows(); row++)
+  {
+    // extract local row information for DinvAP0
+    int nnz = DinvATP0->EpetraMatrix()->NumMyEntries(row);
+    int indices[nnz];
+    double vals[nnz];
+    int numEntries;
+    DinvATP0->EpetraMatrix()->ExtractMyRowCopy(row,nnz,numEntries,&vals[0],&indices[0]);
+
+    bool bAtLeastOneDefined = false;
+
+    if(DinvATP0->EpetraMatrix()->GRID(row) != DinvATP0->EpetraMatrix()->IndexBase()-1)
+      RowOmegaGrids_restrictor_local[row] = DinvATP0->EpetraMatrix()->GRID(row); // store grid to local row omega
+    else
+      cout << "WARNING: there's a row that belongs not to the current proc?? " << endl;
+
+    // loop over all local column entries of current local row
+    for(int j=0; j<nnz; j++)
+    {
+      // find corresponding col-based omega
+      double omega = ColBasedOmegas_restrictor[indices[j]];
+      if(omega != -666.0)
+      {
+        // col based omega is set
+        bAtLeastOneDefined = true;
+
+        if(RowOmega_restrictor_local[row] == -666.0) RowOmega_restrictor_local[row] = omega;
+        else if(omega < RowOmega_restrictor_local[row]) RowOmega_restrictor_local[row] = omega;
+      }
+      else
+      {
+        cout << "WARNING: col-based omega is not set!!!" << endl;
+      }
+    }
+
+    // execption: DinvAP0 has zero rows
+    // should not be, but sometimes may happen if P_tent has zero rows (due to lost nodes in funny MIS aggregation?)
+    if(nnz == 0)
+    {
+      // check if the reason is an empty row in P_tent
+      if(P_tent->EpetraMatrix()->NumMyEntries(row) == 0)
+      {
+        NRowOmegaSet_restrictor++;
+        RowOmega_restrictor_local[row] = 0.0;  // per default no damping for this
+      }
+      else
+      {
+        // very bad :-(
+        if(nVerbose_>6) cout << "WARNING: DinvATP0 has a spurious zero row, even though P_tent has nonzero entries! (row lid=" << row << " grid=" << DinvAP0->EpetraMatrix()->GRID(row) << "); RowOmega=0.0" << endl;
+#if DEBUG
+        // check A
+        if(A->EpetraMatrix()->NumMyEntries(row) == 0)
+          cout << "A seems to be the bad guy and has a zero row." << endl;
+#endif
+        NRowOmegaSet_restrictor++;
+        RowOmega_restrictor_local[row] = 0.0;  // per default no damping for this
+      }
+    }
+
+    // check new row omega
+    if(bAtLeastOneDefined == true)
+    {
+      NRowOmegaSet_restrictor++;
+      if(RowOmega_restrictor_local[row] < 0.) RowOmega_restrictor_local[row] = 0.;
+    }
+  }
+
+
+  //////////////// fill RowOmega Epetra vector with local RowOmega_local information
+  RCP<Epetra_Vector> RowOmega_restrictor = rcp(new Epetra_Vector(DinvATP0->RowMap(),true));
+  RowOmega_restrictor->PutScalar(-666.0);
+
+  err = RowOmega_restrictor->ReplaceGlobalValues(RowOmega_restrictor_local.size(),&RowOmega_restrictor_local[0],&RowOmegaGrids_restrictor_local[0]);
+  if(err!=0) dserror("ReplaceGlobalValues returned error %i, one or more indices are not associated with calling proc?",err);
+
+#ifdef DEBUG
+  // check if RowOmega has -666. entries -> must not be!
+  for(int i=0; i<RowOmega_restrictor->Map().NumMyElements(); i++)
+  {
+    if((*RowOmega_restrictor)[i] == -666.0)
+    {
+      cout << "proc: " << Comm().MyPID() << " RowOmega LID=" << i << " GID=" << RowOmega_restrictor->Map().GID(i) << endl;
+      //dserror("RowOmega still has -666. entires -> must not be!");
+    }
+  }
+#endif
+
+  RCP<SparseMatrix> Ascaled = rcp(new SparseMatrix(*A,Copy));
+  Ascaled->RightScale(*RowOmega_restrictor);
+  Ascaled->RightScale(*diagA);
+  R_smoothed = LINALG::MLMultiply(*R_tent,*Ascaled,false);
+  R_smoothed->Add(*R_tent,false,1.0,-0.99);
+  R_smoothed->Complete(R_tent->DomainMap(),R_tent->RangeMap());
+#endif
+}
+
+
+
+void LINALG::SaddlePointPreconditioner::MultiplySelfAll(const RCP<SparseMatrix>& Op,std::vector<double>& Column2Norm)
+{
+  //if(Column2Norm.size()>0)  dserror("please make sure, that Column2Norm vector is empty");
+  int nCols = Op->DomainMap().NumGlobalElements();
+  if((int)Column2Norm.capacity() != nCols)
+    Column2Norm.resize(nCols,0.0);
+
+  std::vector<double> Column2Norm_local(nCols,0.0);
+
+  for(int n=0; n<Op->EpetraMatrix()->NumMyRows(); n++)
+  {
+    int nnz = Op->EpetraMatrix()->NumMyEntries(n);
+    int indices[nnz];
+    double vals[nnz];
+    int numEntries;
+    Op->EpetraMatrix()->ExtractMyRowCopy(n,nnz,numEntries,&vals[0],&indices[0]);
+
+    for(int i=0; i<nnz; i++)
+    {
+      Column2Norm_local[indices[i]] += (vals[i]*vals[i]);
+    }
+  }
+
+  Op->Comm().SumAll(&Column2Norm_local[0],&Column2Norm[0],nCols);
+}
+
+
+
+void LINALG::SaddlePointPreconditioner::MultiplyAll(const RCP<SparseMatrix>& left, const RCP<SparseMatrix>& right, std::vector<double>& InnerProd)
+{
+  //if(InnerProd.size()>0)  dserror("please make sure, that InnerProd vector is empty");
+  if(!left->DomainMap().SameAs(right->DomainMap())) dserror("domain map of left and right does not match");
+  if(!left->RowMap().SameAs(right->RowMap())) dserror("row map of left and right does not match");
+
+  int nCols = left->EpetraMatrix()->DomainMap().NumGlobalElements();
+
+  if((int)InnerProd.capacity() != nCols)
+    InnerProd.resize(nCols,0.0);
+
+  std::vector<double> InnerProd_local(nCols,0.0);
+
+  for(int n=0; n<left->EpetraMatrix()->NumMyRows(); n++)
+  {
+    int nnzl = left->EpetraMatrix()->NumMyEntries(n);
+    int indicesl[nnzl];
+    double valsl[nnzl];
+    int numEntries;
+    left->EpetraMatrix()->ExtractMyRowCopy(n,nnzl,numEntries,&valsl[0],&indicesl[0]);
+
+    int nnzr = right->EpetraMatrix()->NumMyEntries(n);
+    int indicesr[nnzr];
+    double valsr[nnzr];
+    right->EpetraMatrix()->ExtractMyRowCopy(n,nnzr,numEntries,&valsr[0],&indicesr[0]);
+
+    for(int i=0; i<nnzl; i++)
+    {
+      for(int j=0;j<nnzr; j++)
+      {
+        if(indicesl[i]==indicesr[j])
+        {
+          InnerProd_local[indicesl[i]] += (valsl[i]*valsr[j]);
+        }
+      }
+    }
+  }
+
+  left->Comm().SumAll(&InnerProd_local[0],&InnerProd[0],nCols);
+}
+
 
 ///////////////////////////////////////////////////////////////////
 RCP<LINALG::SparseMatrix> LINALG::SaddlePointPreconditioner::Multiply(const SparseMatrix& A, const SparseMatrix& B, const SparseMatrix& C, bool bComplete)

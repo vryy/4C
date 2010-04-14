@@ -100,7 +100,8 @@ namespace INPAR
     enum ProlongatorSmoothingStrategy
     {
         PA_AMG,         ///< plain aggregation: no smoothing
-        SA_AMG          ///< SA-AMG (smoothed aggregation)
+        SA_AMG,         ///< SA-AMG (smoothed aggregation)
+        PG_AMG          ///< PG-AMG (Petrov Galerkin energy minimization)
     };
   }  // namespace SOLVER
 

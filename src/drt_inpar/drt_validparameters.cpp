@@ -2938,15 +2938,32 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
 
   setStringToIntegralParameter<int>(
     "AMGBS_PSMOOTHER_VEL","PA-AMG","Prolongation/Restriction smoothing strategy (velocity part in AMGBS preconditioner)",
-    tuple<std::string>("PA-AMG","SA-AMG"),
-    tuple<int>(INPAR::SOLVER::PA_AMG,INPAR::SOLVER::SA_AMG),
+    tuple<std::string>("PA-AMG","SA-AMG","PG-AMG"),
+    tuple<int>(INPAR::SOLVER::PA_AMG,INPAR::SOLVER::SA_AMG,INPAR::SOLVER::PG_AMG),
     &list);
   setStringToIntegralParameter<int>(
     "AMGBS_PSMOOTHER_PRE","PA-AMG","Prolongation/Restriction smoothing strategy (pressure part in AMGBS preconditioner)",
-    tuple<std::string>("PA-AMG","SA-AMG"),
-    tuple<int>(INPAR::SOLVER::PA_AMG,INPAR::SOLVER::SA_AMG),
+    tuple<std::string>("PA-AMG","SA-AMG","PG-AMG"),
+    tuple<int>(INPAR::SOLVER::PA_AMG,INPAR::SOLVER::SA_AMG,INPAR::SOLVER::PG_AMG),
     &list);
 
+  setStringToIntegralParameter<int>(
+    "AMGBS_BS_PCCOARSE","Umfpack","approximation algorithm for solving pressure correction equation (coarsest level)",
+    tuple<std::string>("Umfpack","KLU","ILU","ML"),
+    tuple<int>(0,1,2,3),
+    &list);
+
+  setStringToIntegralParameter<int>(
+    "AMGBS_BS_PCMEDIUM","Umfpack","approximation algorithm for solving pressure correction equation (medium level)",
+    tuple<std::string>("Umfpack","KLU","ILU","ML"),
+    tuple<int>(0,1,2,3),
+    &list);
+
+  setStringToIntegralParameter<int>(
+    "AMGBS_BS_PCFINE","Umfpack","approximation algorithm for solving pressure correction equation (finest level)",
+    tuple<std::string>("Umfpack","KLU","ILU","ML"),
+    tuple<int>(0,1,2,3),
+    &list);
 
   // unused
   setStringToIntegralParameter<int>("PARTITION","Cut_Elements","unused",

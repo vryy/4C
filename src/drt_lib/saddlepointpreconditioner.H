@@ -172,8 +172,15 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
 
     double MaxEigCG(const SparseMatrix& A, const bool DiagonalScaling);
     void SA_AMG(const RCP<SparseMatrix>& A, const RCP<SparseMatrix>& P_tent, const RCP<SparseMatrix>& R_tent, RCP<SparseMatrix>& P_smoothed, RCP<SparseMatrix>& R_smoothed);
+    void PG_AMG(const RCP<SparseMatrix>& A, const RCP<SparseMatrix>& P_tent, const RCP<SparseMatrix>& R_tent, RCP<SparseMatrix>& P_smoothed, RCP<SparseMatrix>& R_smoothed);
 
     void GetPtent(const Epetra_Map& rowmap, const Epetra_IntVector aggvec, int naggs, ParameterList& List, const Epetra_MultiVector& ThisNS, RCP<Epetra_CrsMatrix>& Ptent, RCP<Epetra_MultiVector>& NextNS, const int domainoffset);
+
+    void MultiplyAll(const RCP<SparseMatrix>& left, const RCP<SparseMatrix>& right, std::vector<double>& InnerProd);
+    void MultiplySelfAll(const RCP<SparseMatrix>& Op,std::vector<double>& Column2Norm);
+
+    //void MultiplySelfAll(const RCP<SparseMatrix>& Op,RCP<Epetra_Vector>& Column2Norm);
+    //void MultiplyAll(const RCP<SparseMatrix>& left, const RCP<SparseMatrix>& right, RCP<Epetra_Vector>& InnerProd);
 
 
     ParameterList                                       params_;   // list for velocity solver
@@ -201,6 +208,8 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
 
 
     MultiMapExtractor                                  mmex_;    // a  multimapetxractor to handle extracts
+
+    int                                                nVerbose_; // verbosity level (set in Setup)
 
     bool                                               bPresmoothing_;        // presmoothing in V-Cycle
     bool                                               bPostsmoothing_;       // postsmoothing in V-Cycle

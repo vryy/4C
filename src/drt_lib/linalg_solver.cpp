@@ -12,7 +12,7 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#undef WRITEOUTSTATISTICS
+#define WRITEOUTSTATISTICS
 #ifdef WRITEOUTSTATISTICS
 #include "Teuchos_Time.hpp"
 #endif
@@ -1102,11 +1102,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
         mllist.set("energy minimization: type",3); // 1,2,3 cheap -> expensive
         mllist.set("aggregation: block scaling",false);
       break;
-      case INPAR::SOLVER::azprec_AMGBS:
-        mllist.set("braess-sarazin: damping factors",inparams.get<string>("AMGBS_BS_DAMPING"));    // fix me
-        mllist.set("amgbs: prolongator smoother (vel)",inparams.get<string>("AMGBS_PSMOOTHER_VEL"));
-        mllist.set("amgbs: prolongator smoother (pre)",inparams.get<string>("AMGBS_PSMOOTHER_PRE"));
-        break;
       default: dserror("Unknown type of ml preconditioner");
       }
       mllist.set("output"                          ,inparams.get<int>("ML_PRINT"));
@@ -1312,7 +1307,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       ParameterList& amglist = outparams.sublist("AMGBS Parameters");
       ML_Epetra::SetDefaults("SA",amglist);
       amglist.set("amgbs: smoother: pre or post"    ,"both");
-      //amglist.set("braess-sarazin: damping factors",inparams.get<string>("AMGBS_BS_DAMPING"));    // fix me
       amglist.set("amgbs: prolongator smoother (vel)",inparams.get<string>("AMGBS_PSMOOTHER_VEL"));
       amglist.set("amgbs: prolongator smoother (pre)",inparams.get<string>("AMGBS_PSMOOTHER_PRE"));
 
@@ -1370,7 +1364,86 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
 
           smolevelsublist.set("braess-sarazin: sweeps"                      ,mlsmotimessteps[i]);
           smolevelsublist.set("braess-sarazin: damping factor"              ,bsdamping[i]);
-          smolevelsublist.set("pressure correction approx: type"      ,"IFPACK");   // TODO choose IFPACK or ML
+          smolevelsublist.set("pressure correction approx: type"      ,"IFPACK");   // TODO choose IFPACK or ML or UMFPACK
+
+          switch (Teuchos::getIntegralValue<int>(inparams,"AMGBS_BS_PCCOARSE"))
+          {
+            case 0:
+            {
+              smolevelsublist.set("coarse: type","Umfpack");
+            }
+            break;
+            case 1:
+            {
+              smolevelsublist.set("coarse: type","KLU");
+            }
+            break;
+            case 2:
+            {
+              smolevelsublist.set("coarse: type"          ,"IFPACK");
+              smolevelsublist.set("coarse: ifpack type"   ,"ILU");
+              //smolevelsublist.set("coarse: ifpack overlap",0);
+              //smolevelsublist.set<double>("coarse: ifpack level-of-fill",(double)mlsmotimessteps[coarse]);
+              //ParameterList& ifpacklist = smolevelsublist.sublist("coarse: ifpack list");
+              //ifpacklist.set<int>("fact: level-of-fill",mlsmotimessteps[coarse]);
+              //ifpacklist.set("schwarz: reordering type","rcm");
+            }
+            break;
+            case 3:
+              smolevelsublist.set("coarse: type","ML");
+              break;
+            default: dserror("Unknown type of coarse solver for pressure correction equation"); break;
+          } // switch (azvar->mlsmotype_coarse)
+
+          switch (Teuchos::getIntegralValue<int>(inparams,"AMGBS_BS_PCMEDIUM"))
+          {
+            case 0:
+            {
+              smolevelsublist.set("medium: type","Umfpack");
+            }
+            break;
+            case 1:
+            {
+              smolevelsublist.set("medium: type","KLU");
+            }
+            break;
+            case 2:
+            {
+              smolevelsublist.set("medium: type"          ,"IFPACK");
+              smolevelsublist.set("medium: ifpack type"   ,"ILU");
+            }
+            break;
+            case 3:
+              smolevelsublist.set("medium: type","ML");
+              break;
+            default: dserror("Unknown type of medium level solver for pressure correction equation"); break;
+          }
+
+          switch (Teuchos::getIntegralValue<int>(inparams,"AMGBS_BS_PCFINE"))
+          {
+            case 0:
+            {
+              smolevelsublist.set("fine: type","Umfpack");
+            }
+            break;
+            case 1:
+            {
+              smolevelsublist.set("fine: type","KLU");
+            }
+            break;
+            case 2:
+            {
+              smolevelsublist.set("fine: type"          ,"IFPACK");
+              smolevelsublist.set("fine: ifpack type"   ,"ILU");
+            }
+            break;
+            case 3:
+              smolevelsublist.set("fine: type","ML");
+              break;
+            default: dserror("Unknown type of coarse solver for pressure correction equation"); break;
+          } // switch (azvar->mlsmotype_coarse)
+
+
       } // for (int i=0; i<azvar->mlmaxlevel-1; ++i)
 
 
@@ -1380,6 +1453,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       amglist.set("null space: type","pre-computed");
       amglist.set("null space: add default vectors",false);
       amglist.set<double*>("null space: vectors",NULL);
+
+
 
       cout << amglist << endl;
     } // if AMGBS preconditioner
