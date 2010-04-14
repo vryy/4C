@@ -65,7 +65,13 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
   {
     case Truss3::calc_struct_ptcstiff:
     {
-      EvaluatePTC(params, elemat1);
+      // get element displcements
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get state vectors 'displacement'");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      
+      EvaluatePTC<2,3,3>(params,mydisp,elemat1);
     }
     break;
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and
@@ -242,12 +248,38 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(ParameterList& params,
 
 
 /*-----------------------------------------------------------------------------------------------------------*
- | Evaluate PTC damping (public)                                                                  cyron 01/09|
+ | Evaluate PTC damping (public)                                                                  cyron 04/10|
  *----------------------------------------------------------------------------------------------------------*/
-
+template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
 int DRT::ELEMENTS::Truss3::EvaluatePTC(ParameterList& params,
+                                      vector<double>& disp,
                                       Epetra_SerialDenseMatrix& elemat1)
 {
+  //factor to regulate artificial ptc stiffness;
+  double ptcfactor = 0.0;
+  
+  //get friction model according to which forces and damping are applied
+  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  
+  //damping coefficients for translational and rotatinal degrees of freedom
+  LINALG::Matrix<3,1> gamma(true);
+  MyDampingConstants(params,gamma,frictionmodel);
+  
+  double artgam = gamma(1)*ptcfactor;
+  
+  //diagonal elements
+  for(int i=0; i<6; i++) 
+    elemat1(i,i) += artgam;
+  
+  //off-diagonal elements
+  elemat1(0,3) -= artgam;
+  elemat1(1,4) -= artgam;
+  elemat1(2,5) -= artgam;
+  elemat1(3,0) -= artgam;
+  elemat1(4,1) -= artgam;
+  elemat1(5,2) -= artgam;
+  
+  
   return 0;
 } //DRT::ELEMENTS::Truss3::EvaluatePTC
 

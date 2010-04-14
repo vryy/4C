@@ -280,10 +280,11 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluatePTC(ParameterList& params,
-                          Epetra_SerialDenseMatrix& elemat1);
+  template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
+  int EvaluatePTC(ParameterList&            params,
+                  vector<double>&           disp,
+                  Epetra_SerialDenseMatrix& elemat1);
   //@}
-
 
 private:
 
