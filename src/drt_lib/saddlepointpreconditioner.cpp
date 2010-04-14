@@ -1090,8 +1090,21 @@ void LINALG::SaddlePointPreconditioner::PG_AMG(const RCP<SparseMatrix>& A, const
   //  omega = ---------------------------------------------------------
   //           diag( P0' A' D^{-1} (A' D^{-1}' D^{-1} A) D^{-1} A P0 )
 
+#if 1
+
+  // runs only in serial!
   MultiplyAll(DinvAP0,DinvADinvAP0,Numerator);  // -> DinvAP0_subset
   MultiplySelfAll(DinvADinvAP0,Denominator);
+
+  int count_local_zero_denoms = 0;
+  for(int i=0; i<Denominator.size(); i++)
+    if(Denominator[i]==0.0)
+      count_local_zero_denoms++;
+  int count_global_zero_denoms = 0;
+  count_global_zero_denoms = count_local_zero_denoms;
+  //Comm().SumAll(&count_local_zero_denoms,&count_global_zero_denoms,1);
+  cout << "zeros: " << count_global_zero_denoms << " out of " << Denominator.size() << endl;
+
 
   ///////////////// compute col-based omegas
   int zero_local = 0;   // number of local zeros
@@ -1101,7 +1114,7 @@ void LINALG::SaddlePointPreconditioner::PG_AMG(const RCP<SparseMatrix>& A, const
   for(int i=0; i<NComputedOmegas; i++)
   {
 #ifdef DEBUG
-    if(Denominator[i]==0) cout << "WARNING: Denominator[" << i << "] is zero!!!\n\n" << endl;
+    //if(Denominator[i]==0) cout << "WARNING: Denominator[" << i << "] is zero!!!\n\n" << endl;
 #endif
     ColBasedOmegas[i] = Numerator[i]/Denominator[i];  // calculate omegas
     double& val = ColBasedOmegas[i];
@@ -1131,6 +1144,91 @@ void LINALG::SaddlePointPreconditioner::PG_AMG(const RCP<SparseMatrix>& A, const
     cout << zeros_global << " out of " << NComputedOmegas << endl;
     cout << "-------------------------------------" << endl;
   }
+#else
+
+  // new routine for calculating col omega?
+
+  // first: calculate Denominator
+  RCP<Epetra_Vector> global_NumeratorVec = rcp(new Epetra_Vector(DinvADinvAP0->DomainMap(),true));
+  RCP<Epetra_Vector> global_DenominatorVec = rcp(new Epetra_Vector(DinvADinvAP0->DomainMap(),true));
+
+  // build denominator
+  for(int n=0; n<DinvADinvAP0->EpetraMatrix()->NumMyRows(); n++)
+  {
+    int nnz = DinvADinvAP0->EpetraMatrix()->NumMyEntries(n);
+    int indices[nnz];
+    double vals[nnz];
+    int numEntries;
+    DinvADinvAP0->EpetraMatrix()->ExtractMyRowCopy(n,nnz,numEntries,&vals[0],&indices[0]);
+
+    vector<double> resvals(nnz,0.0);
+    for(int i=0; i<nnz; i++)
+    {
+      resvals[i] = (vals[i]*vals[i]);
+    }
+    global_DenominatorVec->SumIntoMyValues(nnz,&resvals[0],&indices[0]);
+  }
+
+  for(int n=0; n<global_DenominatorVec->MyLength(); n++)
+    if((*global_DenominatorVec)[n]==0.0)
+      cout << "entry is zero" << endl;
+
+  // build numerator
+  for(int n=0; n<DinvAP0->EpetraMatrix()->NumMyRows(); n++)
+  {
+    int nnzl = DinvAP0->EpetraMatrix()->NumMyEntries(n);
+    int indicesl[nnzl];
+    double valsl[nnzl];
+    int numEntries;
+    DinvAP0->EpetraMatrix()->ExtractMyRowCopy(n,nnzl,numEntries,&valsl[0],&indicesl[0]);
+
+    int nnzr = DinvADinvAP0->EpetraMatrix()->NumMyEntries(n);
+    int indicesr[nnzr];
+    double valsr[nnzr];
+    DinvADinvAP0->EpetraMatrix()->ExtractMyRowCopy(n,nnzr,numEntries,&valsr[0],&indicesr[0]);
+
+    vector<double> resvals(nnzl,0.0);
+    for(int i=0; i<nnzl; i++)
+    {
+      for(int j=0;j<nnzr; j++)
+      {
+        if(indicesl[i]==indicesr[j])
+        {
+          resvals[i] += (valsl[i]*valsr[j]);
+        }
+      }
+    }
+    global_NumeratorVec->SumIntoMyValues(nnzl,&resvals[0],&indicesl[0]);
+  }
+
+  for(int n=0; n<global_DenominatorVec->MyLength(); n++)
+    if((*global_DenominatorVec)[n]==0.0)
+      cout << "numerator entry is zero?" << endl;
+
+  if(global_DenominatorVec->MyLength() != global_NumeratorVec->MyLength())
+      dserror("vector lengths doesn't match");
+
+  RCP<Epetra_Vector> global_ColBasedOmegaVec = rcp(new Epetra_Vector(global_DenominatorVec->Map(),true));
+
+  // build column based omega
+  for(int i=0; i<global_DenominatorVec->MyLength(); i++)
+  {
+#ifdef DEBUG
+    if((*global_DenominatorVec)[i]==0.0) cout << "WARNING: Denominator[" << i << "] is zero!!!\n\n" << endl;
+#endif
+    (*global_ColBasedOmegaVec)[i] = (*global_NumeratorVec)[i]/(*global_DenominatorVec)[i];
+    //if((*global_ColBasedOmegaVec)[i] < 0.0) (*global_ColBasedOmegaVec)[i] = 0.0;
+  }
+
+  // build std::vector<double> ColBasedOmegas(NComputedOmegas, -666.0); list
+  if(global_ColBasedOmegaVec->ExtractCopy(&ColBasedOmegas[0])!=0) dserror("ExtractCopy failed");
+  for(int i=0; i<ColBasedOmegas.size(); i++)
+    if(ColBasedOmegas[i]==0.0)
+      dserror("ColBasedOmegas is zero");
+
+#endif
+
+
 
   //////////////////// convert column based omegas to row-based omegas
   std::vector<double> RowOmega_local(DinvAP0->RowMap().NumMyElements(), -666.0);  // contains local row omegas of current proc (if not defined -666.0)
@@ -1147,8 +1245,8 @@ void LINALG::SaddlePointPreconditioner::PG_AMG(const RCP<SparseMatrix>& A, const
   {
     // extract local row information for DinvAP0
     int nnz = DinvAP0->EpetraMatrix()->NumMyEntries(row);
-    int indices[nnz];
-    double vals[nnz];
+    std::vector<int> indices(nnz);   //int indices[nnz];
+    std::vector<double> vals(nnz);   //double vals[nnz];
     int numEntries;
     DinvAP0->EpetraMatrix()->ExtractMyRowCopy(row,nnz,numEntries,&vals[0],&indices[0]);
 
@@ -1179,7 +1277,7 @@ void LINALG::SaddlePointPreconditioner::PG_AMG(const RCP<SparseMatrix>& A, const
       {
         // very bad :-(
         if(nVerbose_>6) cout << "WARNING: DinvAP0 has a spurious zero row, even though P_tent has nonzero entries! (row lid=" << row << " grid=" << DinvAP0->EpetraMatrix()->GRID(row) << "); RowOmega=0.0" << endl;
-#if DEBUG
+#ifdef DEBUG
         // check A
         if(A->EpetraMatrix()->NumMyEntries(row) == 0)
           cout << "A seems to be the bad guy and has a zero row." << endl;
@@ -1263,7 +1361,7 @@ void LINALG::SaddlePointPreconditioner::PG_AMG(const RCP<SparseMatrix>& A, const
   }
 
   // check if all RowOmega's are set
-  if(NRowOmegaSet != RowOmega->Map().NumGlobalElements())
+  if(NRowOmegaSet != RowOmega->Map().NumMyElements())
     dserror("NRowOmegaSet and length of RowOmega doesn't match");
 
 #ifdef WRITEOUTSTATISTICS
@@ -1292,7 +1390,7 @@ void LINALG::SaddlePointPreconditioner::PG_AMG(const RCP<SparseMatrix>& A, const
   P_smoothed->Add(*P_tent,false,1.0,-1.0);
   P_smoothed->Complete(P_tent->DomainMap(),P_tent->RangeMap());
 
-#if DEBUG
+#ifdef DEBUG
   vector<int> smoothedzerosgids;
   int smoothedzeros = 0;
   int tentzeros = 0;
@@ -1350,8 +1448,6 @@ void LINALG::SaddlePointPreconditioner::PG_AMG(const RCP<SparseMatrix>& A, const
 //      fileout.close();
 
 #endif
-
-
 
   //////////////// compute restrictor
 
@@ -1566,8 +1662,8 @@ void LINALG::SaddlePointPreconditioner::MultiplySelfAll(const RCP<SparseMatrix>&
   for(int n=0; n<Op->EpetraMatrix()->NumMyRows(); n++)
   {
     int nnz = Op->EpetraMatrix()->NumMyEntries(n);
-    int indices[nnz];
-    double vals[nnz];
+    std::vector<int> indices(nnz); //int indices[nnz];
+    std::vector<double> vals(nnz); //double vals[nnz];
     int numEntries;
     Op->EpetraMatrix()->ExtractMyRowCopy(n,nnz,numEntries,&vals[0],&indices[0]);
 
@@ -1598,14 +1694,14 @@ void LINALG::SaddlePointPreconditioner::MultiplyAll(const RCP<SparseMatrix>& lef
   for(int n=0; n<left->EpetraMatrix()->NumMyRows(); n++)
   {
     int nnzl = left->EpetraMatrix()->NumMyEntries(n);
-    int indicesl[nnzl];
-    double valsl[nnzl];
+    std::vector<int> indicesl(nnzl); //int indicesl[nnzl];
+    std::vector<double> valsl(nnzl); //double valsl[nnzl];
     int numEntries;
     left->EpetraMatrix()->ExtractMyRowCopy(n,nnzl,numEntries,&valsl[0],&indicesl[0]);
 
     int nnzr = right->EpetraMatrix()->NumMyEntries(n);
-    int indicesr[nnzr];
-    double valsr[nnzr];
+    std::vector<int> indicesr(nnzr); //int indicesr[nnzr];
+    std::vector<double> valsr(nnzr); //double valsr[nnzr];
     right->EpetraMatrix()->ExtractMyRowCopy(n,nnzr,numEntries,&valsr[0],&indicesr[0]);
 
     for(int i=0; i<nnzl; i++)
