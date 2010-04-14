@@ -1085,7 +1085,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                                     INPAR::STATMECH::frictionmodel_isotropicconsistent,
                                                                     INPAR::STATMECH::frictionmodel_anisotropicconsistent),
                                                                     &statmech);
-  //time after which writing of statistical output is started
+  //time after which writing of statistical output is started/ DBCs are applied
   DoubleParameter("STARTTIME",0.0,"Time after which writing of statistical output is started (identical to time curve start value)",&statmech);
   //Reading whether dynamics remodelling of cross linker distribution takes place
   setStringToIntegralParameter<int>("DYN_CROSSLINKERS","No","If chosen cross linker proteins are added and removed in each time step",
