@@ -145,8 +145,8 @@ void STR::TimIntImpl::IntegrateStep()
 void STR::TimIntImpl::Predict()
 {
 
-  // set iteration step to -1 (predictor)
-  iter_ = -1;
+  // set iteration step to 0 (predictor)
+  iter_ = 0;
   
   // choose predictor
   if ( (pred_ == INPAR::STR::pred_constdis)
@@ -517,7 +517,7 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying
     INPAR::CONTACT::SolvingStrategy strattype =
         Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
 
-    if (iter_== -1 and strattype == INPAR::CONTACT::solution_lagmult)
+    if (iter_== 0 and strattype == INPAR::CONTACT::solution_lagmult)
     {}
     else
       cmtman_->GetStrategy().EvaluateRelMov();
