@@ -49,7 +49,6 @@ Maintainer: Christian Cyron
 StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& discret):
   statmechparams_( DRT::Problem::Instance()->StatisticalMechanicsParams() ),
   nsearch_(0),
-  maxtime_(params.get<double>("max time",0.0)),
   starttimeoutput_(-1.0),
   endtoendref_(0.0),
   istart_(0),
@@ -305,8 +304,8 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       double endtoend = 0; //end to end length at a certain time step in single filament dynamics
       double DeltaR2 = 0;
 
-      //as soon as system is equilibrated (after time START_FACTOR*maxtime_) a new file for storing output is generated
-      if ( (time >= maxtime_ * statmechparams_.get<double>("START_FACTOR",0.0))  && (starttimeoutput_ == -1.0) )
+      //as soon as system is equilibrated (after time STARTTIME) a new file for storing output is generated
+      if ( (time >= statmechparams_.get<double>("STARTTIME",0.0))  && (starttimeoutput_ == -1.0) )
       {
          endtoendref_ = pow ( pow((dis)[num_dof-3]+10 - (dis)[0],2) + pow((dis)[num_dof-2] - (dis)[1],2) , 0.5);
          starttimeoutput_ = time;
@@ -360,8 +359,8 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
 
       double endtoend = 0.0; //end to end length at a certain time step in single filament dynamics
 
-      //as soon as system is equilibrated (after time START_FACTOR*maxtime_) a new file for storing output is generated
-      if ( (time >= maxtime_ * statmechparams_.get<double>("START_FACTOR",0.0))  && (starttimeoutput_ == -1.0) )
+      //as soon as system is equilibrated (after time STARTTIME) a new file for storing output is generated
+      if ( (time >= statmechparams_.get<double>("STARTTIME",0.0))  && (starttimeoutput_ == -1.0) )
       {
        starttimeoutput_ = time;
        istart_ = istep;
@@ -411,7 +410,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
 
       //after initilization time write output cosdiffer in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps,
       //when discret_.NumMyRowNodes()-1 = 0,cosdiffer is always equil to 1!!
-      if((time >= maxtime_ * statmechparams_.get<double>("START_FACTOR",0.0)) && (istep % statmechparams_.get<int>("OUTPUTINTERVALS",1)  == 0) )
+      if((time >= statmechparams_.get<double>("STARTTIME",0.0)) && (istep % statmechparams_.get<int>("OUTPUTINTERVALS",1)  == 0) )
       {
 
         Epetra_SerialDenseMatrix coord;
@@ -457,7 +456,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
     case INPAR::STATMECH::statout_anisotropic:
     {
       //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
-      if((time >= maxtime_ * statmechparams_.get<double>("START_FACTOR",0.0)) && (istep % statmechparams_.get<int>("OUTPUTINTERVALS",1)  == 0) )
+      if((time >= statmechparams_.get<double>("STARTTIME",0.0)) && (istep % statmechparams_.get<int>("OUTPUTINTERVALS",1)  == 0) )
       {
         FILE* fp = NULL; //file pointer for statistical output file
 

@@ -119,9 +119,6 @@ protected:
   //! \brief how often SearchNeighbours() has already been called
   int nsearch_;
 
-  //! \brief maximal simulation time
-  double maxtime_;
-
   //! \brief point of time at which writing special statistical output is started
   double starttimeoutput_;
 
