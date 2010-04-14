@@ -1086,10 +1086,6 @@ void CONTACT::CmtStruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   if (soltype == INPAR::CONTACT::solution_auglag)
     dserror("ERROR: Monolithic FSI with AL strategy for meshtying/contact not yet implemented");
   
-  // TODO: check of active set convergence for semi-smooth Newton case
-  if (soltype == INPAR::CONTACT::solution_lagmult && semismooth && !myrank_)
-    cout << YELLOW << "WARNING: Convergence check for active set not yet implemented!" << END_COLOR << endl;
-  
   // On the first call in a time step we have to have
   // disp==Teuchos::null. Then we just finished one of our predictors,
   // that contains the element loop, so we can fast forward and finish

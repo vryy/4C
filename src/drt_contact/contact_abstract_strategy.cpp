@@ -671,9 +671,21 @@ void CONTACT::CoAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
   VisualizeGmsh(istep);
 #endif // #ifdef CONTACTGMSH1
 
-  // reset active set status for next time step
-  activesetconv_ = false;
-  activesetsteps_ = 1;
+  // double-check if active set is really converged
+  // (necessary e.g. for monolithic FSI with Lagrange multiplier contact,
+  // because usually active set convergence check has been integrated into
+  // structure Newton scheme, but now the monolithic FSI Newton scheme decides)
+  // TODO: this should be moved to contact_lagrange_strategy
+  INPAR::CONTACT::SolvingStrategy st = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
+  if (st == INPAR::CONTACT::solution_lagmult)
+  {
+    // error
+    if (!activesetconv_) dserror("ERROR: Active set not fully converged!");
+    
+    // reset active set status for next time step
+    activesetconv_ = false;
+    activesetsteps_ = 1;
+  }
 
   //----------------------------------------friction: store history values
   // in the case of frictional contact we have to store several
