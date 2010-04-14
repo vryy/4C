@@ -269,16 +269,10 @@ namespace STR
     //! @name STC business
     //@{
     //! Precondition system and return operator
-    void STCPreconditioning
-    (
-        Teuchos::RCP<LINALG::SparseMatrix> stcmat /// STC preconditioning matrix
-    );
+    void STCPreconditioning();
 
     //! recover standard solution
-    void RecoverSTCSolution
-    (
-        const Teuchos::RCP<LINALG::SparseMatrix> stcmat /// STC preconditioning matrix
-    );
+    void RecoverSTCSolution();
     //@}
 
     //! @name NOX solution
@@ -719,6 +713,7 @@ namespace STR
     //@{
     enum INPAR::STR::STC_Scale stcscale_; //< scale director of shells?
     double stcfact_;  //!< scaling factor
+    Teuchos::RCP<LINALG::SparseMatrix> stcmat_;
     //@}
 
   };  // class TimIntImpl

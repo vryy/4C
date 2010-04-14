@@ -115,6 +115,11 @@ STR::TimIntImpl::TimIntImpl
   // iterative displacement increments IncD_{n+1}
   // also known as residual displacements
   disi_ = LINALG::CreateVector(*dofrowmap_, true);
+  
+  //prepare matrix for scaled thickness business of thin shell structures
+  stcmat_= 
+    Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
+
 
   // setup NOX parameter lists
   if (itertype_ == INPAR::STR::soltech_noxnewtonlinesearch)
@@ -729,10 +734,6 @@ void STR::TimIntImpl::NewtonFull()
   // normdisi_ was already set in predictor; this is strictly >0
   timer_.ResetStartTime();
 
-  //prepare matrix for scaled thickness business of thin shell structures
-  Teuchos::RCP<LINALG::SparseMatrix> stcmat=
-    Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
-
   // equilibrium iteration loop
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
@@ -749,7 +750,7 @@ void STR::TimIntImpl::NewtonFull()
     LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
                                    GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
-    STCPreconditioning(stcmat);
+    STCPreconditioning();
 
     // solve for disi_
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
@@ -767,7 +768,7 @@ void STR::TimIntImpl::NewtonFull()
     solver_->ResetTolerance();
 
     // recover standard displacements
-    RecoverSTCSolution(stcmat);
+    RecoverSTCSolution();
 
     // recover contact / meshtying Lagrange multipliers
     if (cmtman_ != Teuchos::null)
@@ -1871,65 +1872,62 @@ void STR::TimIntImpl::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::TimIntImpl::STCPreconditioning
-(
-    Teuchos::RCP<LINALG::SparseMatrix> stcmat /// STC preconditioning matrix
-)
+void STR::TimIntImpl::STCPreconditioning()
 {
   if(stcscale_!=INPAR::STR::stc_none)
   {
-    // create the parameters for the discretization
-    Teuchos::ParameterList p;
-    // action for elements
-    const std::string action = "calc_stc_matrix";
-    p.set("action", action);
-    p.set("stc_scaling", stcscale_);
-    p.set("stc_factor", stcfact_);
-    discret_->SetState("residual displacement", disi_);
-    discret_->SetState("displacement", disn_);
-    Teuchos::RCP<Epetra_Vector> disisdc = LINALG::CreateVector(*dofrowmap_, true);
-    discret_->Evaluate(p, stcmat, Teuchos::null,  Teuchos::null, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
-    stcmat->Complete();
-    //stiff_ = MLMultiply(*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),*stcmat,false,false,true);
-    stiff_ = Multiply(*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),false,*stcmat,false,true);
+    if (iter_==1 and step_==0 and  
+        (stcscale_==INPAR::STR::stc_curr or stcscale_==INPAR::STR::stc_currsym))
+    { 
+      stcmat_->Zero();
+      // create the parameters for the discretization
+      Teuchos::ParameterList p;
+      // action for elements
+      const std::string action = "calc_stc_matrix";
+      p.set("action", action);
+      p.set("stc_scaling", stcscale_);
+      p.set("stc_factor", stcfact_);
+      discret_->  SetState("residual displacement", disi_);
+      discret_->  SetState("displacement", disn_);
+      discret_-> Evaluate(p, stcmat_, Teuchos::null,  Teuchos::null, Teuchos::null, Teuchos::null);
+      discret_-> ClearState();
+      stcmat_->Complete();
+    }
+    
+    stiff_ = MLMultiply(*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),*stcmat_,false,false,true);
     if(stcscale_==INPAR::STR::stc_parasym or stcscale_==INPAR::STR::stc_currsym)
     {
-      //stiff_ = MLMultiply(*stcmat,*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),false,false,true);
-      stiff_ = Multiply(*stcmat,true,*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),false,true);
+      stiff_ = MLMultiply(*stcmat_,*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),false,false,true);
       Teuchos::RCP<Epetra_Vector> fressdc = LINALG::CreateVector(*dofrowmap_, true);
+      stcmat_->Multiply(false,*fres_,*fressdc);
 
-      stcmat->Multiply(true,*fres_,*fressdc);
       fres_->Update(1.0,*fressdc,0.0);
     }
   }
 
   // print first system matrix to file in matlab format (DEBUGGING)
-  #ifdef DEBUG
-  if (iter_==1&& step_==0)
-  {
-    const std::string fname = "sparsematrix.mtl";
-    if (myrank_ == 0)
-      cout<<"Printing system matrix to file"<<endl;
-      LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_))->EpetraMatrix()));
-  }
-  #endif
+//  #ifdef DEBUG
+//  if (iter_==1&& step_==0)
+//  {
+//    const std::string fname = "sparsematrix.mtl";
+//    if (myrank_ == 0)
+//      cout<<"Printing system matrix to file"<<endl;
+//      LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_))->EpetraMatrix()));
+//  }
+//  #endif
 
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::TimIntImpl::RecoverSTCSolution
-(
-    const Teuchos::RCP<LINALG::SparseMatrix> stcmat /// STC preconditioning matrix
-)
+void STR::TimIntImpl::RecoverSTCSolution()
 {
   if(stcscale_!=INPAR::STR::stc_none)
   {
     Teuchos::RCP<Epetra_Vector> disisdc = LINALG::CreateVector(*dofrowmap_, true);
 
-    stcmat->Multiply(false,*disi_,*disisdc);
+    stcmat_->Multiply(false,*disi_,*disisdc);
     disi_->Update(1.0,*disisdc,0.0);
   }
 
