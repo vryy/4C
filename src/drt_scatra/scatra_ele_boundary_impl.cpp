@@ -176,7 +176,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
 
     // get node coordinates (we have a nsd_+1 dimensional domain!)
-    GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+    GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
 
     // in the ALE case add nodal displacements
     if (isale_) xyze_ += edispnp_;
@@ -185,7 +185,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     GetConstNormal(normal_,xyze_);
 
     // loop over the element nodes
-    for (int j=0;j<iel;j++)
+    for (int j=0;j<nen_;j++)
     {
       const int nodegid = (ele->Nodes()[j])->Id();
       if (normals->Map().MyGID(nodegid) )
@@ -355,15 +355,15 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   else if (action =="calc_therm_press")
   {
     // we dont know the parent element's lm vector; so we have to build it here
-    const int ielparent = parentele->NumNode();
-    vector<int> lmparent(ielparent);
+    const int nenparent = parentele->NumNode();
+    vector<int> lmparent(nenparent);
     vector<int> lmparentowner;
     parentele->LocationVector(discretization, lmparent, lmparentowner);
 
     // get velocity values at nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
     // we deal with a (nsd_+1)-dimensional flow field
-    Epetra_SerialDenseVector evel((nsd_+1)*ielparent);
+    Epetra_SerialDenseVector evel((nsd_+1)*nenparent);
     DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
 
     // get values of scalar
@@ -379,7 +379,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     vector<double> mydivu(lm.size());
 
     // get node coordinates (we have a nsd_+1 dimensional domain!)
-    GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+    GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
 
     // in the ALE case add nodal displacements
     if (isale_) xyze_ += edispnp_;
@@ -388,7 +388,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     GetConstNormal(normal_,xyze_);
 
     // compute fluxes on each node of the parent element
-    LINALG::SerialDenseMatrix eflux(3,ielparent);
+    LINALG::SerialDenseMatrix eflux(3,nenparent);
     DRT::Element* peleptr = (DRT::Element*) parentele;
 
     // set some parameters (temperature is always last degree of freedom in vector)
@@ -406,9 +406,9 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
         fluxtypestring,
         j);
 
-    for (int i=0; i<iel; ++i)
+    for (int i=0; i<nen_; ++i)
     {
-      for(int k = 0; k<ielparent;++k)
+      for(int k = 0; k<nenparent;++k)
       {
         // calculate normal diffusive flux and velocity div. at present node
         mydiffflux[i] = 0.0;
@@ -465,15 +465,15 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       thermpress_ = params.get<double>("thermodynamic pressure");
 
     // we dont know the parent element's lm vector; so we have to build it here
-    const int ielparent = parentele->NumNode();
-    vector<int> lmparent(ielparent);
+    const int nenparent = parentele->NumNode();
+    vector<int> lmparent(nenparent);
     vector<int> lmparentowner;
     parentele->LocationVector(discretization, lmparent, lmparentowner);
 
     // get velocity values at nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
     // we deal with a (nsd_+1)-dimensional flow field
-    Epetra_SerialDenseVector evel((nsd_+1)*ielparent);
+    Epetra_SerialDenseVector evel((nsd_+1)*nenparent);
     DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
 
     // get values of scalar
@@ -485,11 +485,11 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
 
     // create object for density and solution array
-    vector<LINALG::Matrix<iel,1> > ephinp(numscal_);
-    LINALG::Matrix<nsd_+1,iel>     evelnp;
+    vector<LINALG::Matrix<nen_,1> > ephinp(numscal_);
+    LINALG::Matrix<nsd_+1,nen_>     evelnp;
 
     // insert into element arrays
-    for (int i=0;i<iel;++i)
+    for (int i=0;i<nen_;++i)
     {
       for (int k = 0; k< numscal_; ++k)
       {
@@ -533,7 +533,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
     Epetra_SerialDenseVector& elevec1)
 {
   // get node coordinates (we have a nsd_+1 dimensional domain!)
-  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
 
   // in the ALE case add nodal displacements
   if (isale_) xyze_ += edispnp_;
@@ -575,7 +575,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
     for (int i = 0; i< nsd_; i++)
     {
       coordgp[i] = 0.0;
-      for (int j = 0; j < iel; j++)
+      for (int j = 0; j < nen_; j++)
       {
         coordgp[i] += xyze_(i,j) * funct_(j);
       }
@@ -603,7 +603,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
 
         const double val_fac_functfac = (*val)[dof]*fac*functfac;
 
-        for (int node=0;node<iel;++node)
+        for (int node=0;node<nen_;++node)
         {
           elevec1[node*numdofpernode_+dof] += funct_(node)*val_fac_functfac;
         }
@@ -622,15 +622,15 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
     const DRT::Element*                   ele,
     Teuchos::RCP<const MAT::Material>     material,
-    const vector<LINALG::Matrix<iel,1> >& ephinp,
-    const LINALG::Matrix<nsd_+1,iel>&     evelnp,
+    const vector<LINALG::Matrix<nen_,1> >& ephinp,
+    const LINALG::Matrix<nsd_+1,nen_>&     evelnp,
     Epetra_SerialDenseMatrix&             emat,
     Epetra_SerialDenseVector&             erhs,
     const double                          timefac,
     const double                          alphaF)
 {
   // get node coordinates (we have a nsd_+1 dimensional domain!)
-  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
 
   // in the ALE case add nodal displacements
   if (isale_) xyze_ += edispnp_;
@@ -737,13 +737,13 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
         }
 
         // matrix
-        for (int vi=0; vi<iel; ++vi)
+        for (int vi=0; vi<nen_; ++vi)
         {
           const double vlhs = lhsfac*funct_(vi);
 
           const int fvi = vi*numdofpernode_+k;
 
-          for (int ui=0; ui<iel; ++ui)
+          for (int ui=0; ui<nen_; ++ui)
           {
             const int fui = ui*numdofpernode_+k;
 
@@ -756,7 +756,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
 
         // rhs
         const double vrhs = rhsfac*phi;
-        for (int vi=0; vi<iel; ++vi)
+        for (int vi=0; vi<nen_; ++vi)
         {
           const int fvi = vi*numdofpernode_+k;
 
@@ -825,7 +825,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
   double fz = 1.0/96485.3399; // unit of F: C/mol or mC/mmol or muC / mumol
 
   // get node coordinates (we have a nsd_+1 dimensional domain!)
-  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
 
   // in the ALE case add nodal displacements
   if (isale_) xyze_ += edispnp_;
@@ -858,13 +858,13 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // concentration values of reactive species at element nodes
-  LINALG::Matrix<iel,1> conreact(true);
+  LINALG::Matrix<nen_,1> conreact(true);
 
   // el. potential values at element nodes
-  LINALG::Matrix<iel,1> pot(true);
+  LINALG::Matrix<nen_,1> pot(true);
   if(iselch)
   {
-    for (int inode=0; inode< iel;++inode)
+    for (int inode=0; inode< nen_;++inode)
     {
       conreact(inode) = ephinp[inode*numdofpernode_+k];
       pot(inode) = ephinp[inode*numdofpernode_+numscal_];
@@ -872,7 +872,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
   }
   else
   {
-    for (int inode=0; inode< iel;++inode)
+    for (int inode=0; inode< nen_;++inode)
     {
       conreact(inode) = 1.0;
       pot(inode) = ephinp[inode*numdofpernode_];
@@ -938,11 +938,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
         else
           concterm = gamma*pow(EPS13,(gamma-1.0))/pow(refcon,gamma);
 
-        for (int vi=0; vi<iel; ++vi)
+        for (int vi=0; vi<nen_; ++vi)
         {
           fac_fz_i0_funct_vi = fac*fz*i0*funct_(vi);
           // ---------------------matrix
-          for (int ui=0; ui<iel; ++ui)
+          for (int ui=0; ui<nen_; ++ui)
           {
             emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += fac_fz_i0_funct_vi*concterm*funct_(ui)*expterm;
             emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*pow_conint_gamma_k*(((-alphaa)*frt*exp(alphaa*frt*eta))+((-alphac)*frt*exp((-alphac)*frt*eta)))*funct_(ui);
@@ -960,11 +960,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
           else
             concterm = gamma*pow(EPS13,(gamma-1.0))/pow(refcon,gamma);
 
-          for (int vi=0; vi<iel; ++vi)
+          for (int vi=0; vi<nen_; ++vi)
           {
             fac_fz_i0_funct_vi = fac*fz*i0*funct_(vi);
             // ---------------------matrix
-            for (int ui=0; ui<iel; ++ui)
+            for (int ui=0; ui<nen_; ++ui)
             {
               emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += fac_fz_i0_funct_vi*funct_(ui)*(-(concterm*exp((-alphac)*frt*eta)));
               emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*(((-alphaa)*frt*exp(alphaa*frt*eta))+(pow_conint_gamma_k*(-alphac)*frt*exp((-alphac)*frt*eta)))*funct_(ui);
@@ -1005,11 +1005,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
           else
             concterm = gamma*pow(EPS13,(gamma-1.0))/pow(refcon,gamma);
 
-          for (int vi=0; vi<iel; ++vi)
+          for (int vi=0; vi<nen_; ++vi)
           {
             fac_fz_i0_funct_vi = fac*fz*i0*funct_(vi);
             // ---------------------matrix
-            for (int ui=0; ui<iel; ++ui)
+            for (int ui=0; ui<nen_; ++ui)
             {
               emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += fac_fz_i0_funct_vi*concterm*funct_(ui)*expterm;
               emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*pow_conint_gamma_k*(-alphac)*frt*exp((-alphac)*frt*eta)*funct_(ui);
@@ -1020,11 +1020,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
       }
       else if(kinetics=="linear") // linear law:  i_n = i_0*(alphaa*frt*(V_M - phi) + 1.0)
       {
-        for (int vi=0; vi<iel; ++vi)
+        for (int vi=0; vi<nen_; ++vi)
         {
           fac_fz_i0_funct_vi = fac*fz*i0*funct_(vi);
           // ---------------------matrix
-          for (int ui=0; ui<iel; ++ui)
+          for (int ui=0; ui<nen_; ++ui)
           {
             emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*(-alphaa)*frt*funct_(ui);
           }
@@ -1052,11 +1052,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
         const double expterm = exp(alphaa*eta)-exp((-alphac)*eta);
         const double exptermderiv = (((-alphaa)*exp(alphaa*eta))+((-alphac)*exp((-alphac)*eta)));
 
-        for (int vi=0; vi<iel; ++vi)
+        for (int vi=0; vi<nen_; ++vi)
         {
           const double fac_i0_funct_vi = fac*i0*funct_(vi);
           // ---------------------matrix
-          for (int ui=0; ui<iel; ++ui)
+          for (int ui=0; ui<nen_; ++ui)
           {
             emat(vi*numdofpernode_,ui*numdofpernode_) += fac_i0_funct_vi*exptermderiv*funct_(ui);
           }
@@ -1075,11 +1075,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
         const double expterm = -exp((-alphac)*eta);
         const double exptermderiv = alphac*expterm; // do not forget the (-1) from differentiation of eta!
 
-        for (int vi=0; vi<iel; ++vi)
+        for (int vi=0; vi<nen_; ++vi)
         {
           const double fac_i0_funct_vi = fac*i0*funct_(vi);
           // ---------------------matrix
-          for (int ui=0; ui<iel; ++ui)
+          for (int ui=0; ui<nen_; ++ui)
           {
             emat(vi*numdofpernode_,ui*numdofpernode_) += fac_i0_funct_vi*exptermderiv*funct_(ui);
           }
@@ -1123,7 +1123,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
 )
 {
   // get node coordinates (we have a nsd_+1 dimensional domain!)
-  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
 
   // in the ALE case add nodal displacements
   if (isale_) xyze_ += edispnp_;
@@ -1140,14 +1140,14 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // concentration values of reactive species at element nodes
-  LINALG::Matrix<iel,1> conreact(true);
+  LINALG::Matrix<nen_,1> conreact(true);
 
   // el. potential values at element nodes
-  LINALG::Matrix<iel,1> pot(true);
-  LINALG::Matrix<iel,1> potdtnp(true);
+  LINALG::Matrix<nen_,1> pot(true);
+  LINALG::Matrix<nen_,1> potdtnp(true);
   if(iselch)
   {
-    for (int inode=0; inode< iel;++inode)
+    for (int inode=0; inode< nen_;++inode)
     {
       conreact(inode) = ephinp[inode*numdofpernode_+(speciesid-1)];
       pot(inode) = ephinp[inode*numdofpernode_+numscal_];
@@ -1156,7 +1156,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
   }
   else
   {
-    for (int inode=0; inode< iel;++inode)
+    for (int inode=0; inode< nen_;++inode)
     {
       conreact(inode) = 1.0;
       pot(inode) = ephinp[inode*numdofpernode_];
@@ -1291,7 +1291,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::GetConstNormal(
     LINALG::Matrix<nsd_+1,1>&          normal,
-    const LINALG::Matrix<nsd_+1,iel>&  xyze
+    const LINALG::Matrix<nsd_+1,nen_>&  xyze
     )
 {
   // determine normal to this element
@@ -1345,7 +1345,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::IntegrateShapeFunctions(
   double boundaryint = params.get<double>("boundaryint");
 
   // get node coordinates (we have a nsd_+1 dimensional domain!)
-  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
 
   // in the ALE case add nodal displacements
   if (isale_) xyze_ += edispnp_;
@@ -1359,7 +1359,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::IntegrateShapeFunctions(
     const double fac = EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
 
     // compute integral of shape functions
-    for (int node=0;node<iel;++node)
+    for (int node=0;node<nen_;++node)
     {
       for (int k=0; k< numscal_; k++)
       {
@@ -1407,7 +1407,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::DifffluxAndDivuIntegral(
     const double fac = EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
 
     // compute integral of normal flux
-    for (int node=0;node<iel;++node)
+    for (int node=0;node<nen_;++node)
     {
       difffluxintegral += funct_(node) * ediffflux[node] * fac;
       divuintegral     += funct_(node) * edivu[node] * fac;

@@ -120,8 +120,8 @@ public:
   /// Constructor
   ScaTraImpl(int numdofpernode, int numscal);
 
-  //! number of nodes
-  static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  //! number of element nodes (nomenclature: T. Hughes, The finite element method)
+  static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
   //! number of space dimensions
   static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -191,7 +191,7 @@ public:
         const bool                            reinitswitch,
         const double                          frt ///< factor F/RT needed for ELCH calculations
     );
-    
+
     //! calculate mass matrix and rhs for determining initial time derivative
     virtual void TimeDerivativeReinit(
         DRT::Element*                         ele, ///< the element
@@ -308,7 +308,7 @@ public:
 
     //! calculate flux vector for actual solution
     virtual void CalculateFlux(
-        LINALG::Matrix<3,iel>&          flux,
+        LINALG::Matrix<3,nen_>&         flux,
         const DRT::Element*             ele,
         const vector<double>&           ephinp,
         const double                    frt,
@@ -349,13 +349,13 @@ public:
     //! calculate the Laplacian for all shape functions(strong form)
     inline void GetLaplacianStrongForm
     (
-      LINALG::Matrix<iel,1>& diff,
-      const LINALG::Matrix<numderiv2_,iel>& deriv2
+      LINALG::Matrix<nen_,1>& diff,
+      const LINALG::Matrix<numderiv2_,nen_>& deriv2
      )
     {
       diff.Clear();
       // compute N,xx  +  N,yy +  N,zz for each shape function at integration point
-      for (int i=0; i<iel; ++i)
+      for (int i=0; i<nen_; ++i)
       {
         for (int j = 0; j<nsd_; ++j)
         {
@@ -368,7 +368,7 @@ public:
     //! calculate the Laplacian (weak form)
     inline void GetLaplacianWeakForm(
         double& val,
-        const LINALG::Matrix<nsd_,iel>& derxy,
+        const LINALG::Matrix<nsd_,nen_>& derxy,
         const int vi,
         const int ui)
     {
@@ -383,7 +383,7 @@ public:
     //! calculate the Laplacian (weak form)
     inline void GetLaplacianWeakFormRHS(
         double& val,
-        const LINALG::Matrix<nsd_,iel>& derxy,
+        const LINALG::Matrix<nsd_,nen_>& derxy,
         const LINALG::Matrix<nsd_,1>&   gradphi,
         const int vi)
     {
@@ -397,8 +397,8 @@ public:
 
     //! calculate velocity divergence
     inline void GetVelocityDivergence(double&                               vdiv,
-                                      const LINALG::Matrix<nsd_,iel>&       evel,
-                                      const LINALG::Matrix<nsd_,iel>&       derxy)
+                                      const LINALG::Matrix<nsd_,nen_>&       evel,
+                                      const LINALG::Matrix<nsd_,nen_>&       derxy)
     {
       LINALG::Matrix<nsd_,nsd_> vderxy;
       vderxy.MultiplyNT(evel,derxy);
@@ -413,8 +413,8 @@ public:
     };
 
     //! calculate rate of strain of (fine-scale) velocity
-    inline double GetStrainRate(const LINALG::Matrix<nsd_,iel>& evel,
-                                const LINALG::Matrix<nsd_,iel>& derxy,
+    inline double GetStrainRate(const LINALG::Matrix<nsd_,nen_>& evel,
+                                const LINALG::Matrix<nsd_,nen_>& derxy,
                                 LINALG::Matrix<nsd_,nsd_>     & velderxy)
     {
       double rateofstrain=0;
@@ -492,34 +492,34 @@ public:
     bool tau_gp_;
 
     //! nodal velocity values at t_(n+1) or t_(n+alpha_F)
-    LINALG::Matrix<nsd_,iel> evelnp_;
+    LINALG::Matrix<nsd_,nen_> evelnp_;
     //! nodal acceleration values at t_(n+1) or t_(n+alpha_F)
-    LINALG::Matrix<nsd_,iel> eaccnp_;
+    LINALG::Matrix<nsd_,nen_> eaccnp_;
     //! nodal pressure values at t_(n+1) or t_(n+alpha_F)
-    LINALG::Matrix<iel,1> eprenp_;
+    LINALG::Matrix<nen_,1> eprenp_;
     //! scalar at t_(n)
-    vector<LINALG::Matrix<iel,1> > ephin_;
+    vector<LINALG::Matrix<nen_,1> > ephin_;
     //! scalar at t_(n+1) or t_(n+alpha_F)
-    vector<LINALG::Matrix<iel,1> > ephinp_;
+    vector<LINALG::Matrix<nen_,1> > ephinp_;
     //! scalar at t_(n+alpha_M)
-    vector<LINALG::Matrix<iel,1> > ephiam_;
+    vector<LINALG::Matrix<nen_,1> > ephiam_;
     //! history vector of transported scalars
-    vector<LINALG::Matrix<iel,1> > ehist_;
+    vector<LINALG::Matrix<nen_,1> > ehist_;
     //! actual electric potential (ELCH)
-    LINALG::Matrix<iel,1> epotnp_;
+    LINALG::Matrix<nen_,1> epotnp_;
     //! fine-scale solution
-    vector<LINALG::Matrix<iel,1> > fsphinp_;
+    vector<LINALG::Matrix<nen_,1> > fsphinp_;
     //! nodal displacement values for ALE
-    LINALG::Matrix<nsd_,iel> edispnp_;
+    LINALG::Matrix<nsd_,nen_> edispnp_;
 
     //! node coordinates
-    LINALG::Matrix<nsd_,iel> xyze_;
+    LINALG::Matrix<nsd_,nen_> xyze_;
     //! weights for nurbs elements
-    LINALG::Matrix<iel,1> weights_;
+    LINALG::Matrix<nen_,1> weights_;
     //! knot vector for nurbs elements
     std::vector<Epetra_SerialDenseVector> myknots_;
     //! bodyforce in element nodes
-    vector<LINALG::Matrix<iel,1> > bodyforce_;
+    vector<LINALG::Matrix<nen_,1> > bodyforce_;
     //! density at t_(n)
     vector<double> densn_;
     //! density at t_(n+1) or t_(n+alpha_F)
@@ -543,19 +543,19 @@ public:
     //! coordinates of current integration point in reference coordinates
     LINALG::Matrix<nsd_,1> xsi_;
     //! array for shape functions
-    LINALG::Matrix<iel,1> funct_;
+    LINALG::Matrix<nen_,1> funct_;
     //! array for shape function derivatives w.r.t r,s,t
-    LINALG::Matrix<nsd_,iel> deriv_;
+    LINALG::Matrix<nsd_,nen_> deriv_;
     //! array for second derivatives of shape function w.r.t r,s,t
-    LINALG::Matrix<numderiv2_,iel> deriv2_;
+    LINALG::Matrix<numderiv2_,nen_> deriv2_;
     //! transposed jacobian "dx/ds"
     LINALG::Matrix<nsd_,nsd_> xjm_;
     //! inverse of transposed jacobian "ds/dx"
     LINALG::Matrix<nsd_,nsd_> xij_;
     //! global derivatives of shape functions w.r.t x,y,z
-    LINALG::Matrix<nsd_,iel> derxy_;
+    LINALG::Matrix<nsd_,nen_> derxy_;
     //! global second derivatives of shape functions w.r.t x,y,z
-    LINALG::Matrix<numderiv2_,iel> derxy2_;
+    LINALG::Matrix<numderiv2_,nen_> derxy2_;
     //! global velocity derivatives in gausspoint w.r.t x,y,z
     LINALG::Matrix<nsd_,nsd_> vderxy_;
     //! rhs force in Gauss point
@@ -579,15 +579,15 @@ public:
     //! 2nd derivatives of coord.-functions w.r.t r,s,t
     LINALG::Matrix<numderiv2_,nsd_> xder2_;
     //! convective term
-    LINALG::Matrix<iel,1> conv_;
+    LINALG::Matrix<nen_,1> conv_;
     //! subgrid-scale convective term
-    LINALG::Matrix<iel,1> sgconv_;
+    LINALG::Matrix<nen_,1> sgconv_;
     //! diffusive part used in stabilization terms
-    LINALG::Matrix<iel,1> diff_;
+    LINALG::Matrix<nen_,1> diff_;
     //! convective part of migration term (divided by D_k*z_k) used in stabilization terms (ELCH)
-    LINALG::Matrix<iel,1> migconv_;
+    LINALG::Matrix<nen_,1> migconv_;
     // reactive part of migration term used in stabilization terms
-    LINALG::Matrix<iel,1> migrea_;
+    LINALG::Matrix<nen_,1> migrea_;
     //! (global) gradient of el. potential at integration point (ELCH)
     LINALG::Matrix<nsd_,1> gradpot_;
     //! values of all transported scalars in gausspoint (ELCH)
@@ -597,7 +597,7 @@ public:
     //! (global) gradient of fine-scale part of scalar at integration point
     LINALG::Matrix<nsd_,1> fsgradphi_;
     //! (global) Laplacian of shape functions at integration point
-    LINALG::Matrix<iel,1> laplace_;
+    LINALG::Matrix<nen_,1> laplace_;
 
     //! thermodynamic pressure at t_(n+1) or t_(n+alpha_F) (LOMA specific)
     double thermpressnp_;

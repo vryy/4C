@@ -124,8 +124,8 @@ public:
   /// Constructor
   ScaTraBoundaryImpl(int numdofpernode, int numscal);
 
-  //! number of nodes
-  static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  //! number of element nodes (nomenclature: T. Hughes, The finite element method)
+  static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
   //! number of space dimensions
   static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -218,15 +218,15 @@ public:
     //! Compute a constant normal vector for a boundary element
     void GetConstNormal(
         LINALG::Matrix<nsd_+1,1>&            normal, ///< the constant normal vector
-        const LINALG::Matrix<nsd_+1,iel>&    xyze    ///< element node coordinates
+        const LINALG::Matrix<nsd_+1,nen_>&    xyze    ///< element node coordinates
         );
 
     //! calculate potential Neumann inflow terms
     void NeumannInflow(
         const DRT::Element*                   ele,
         Teuchos::RCP<const MAT::Material>     material,
-        const vector<LINALG::Matrix<iel,1> >& ephinp,
-        const LINALG::Matrix<nsd_+1,iel>&     evelnp,
+        const vector<LINALG::Matrix<nen_,1> >& ephinp,
+        const LINALG::Matrix<nsd_+1,nen_>&     evelnp,
         Epetra_SerialDenseMatrix&             emat,
         Epetra_SerialDenseVector&             erhs,
         const double                          timefac,
@@ -247,9 +247,9 @@ public:
     bool is_incremental_;
 
     //! node coordinates
-    LINALG::Matrix<nsd_+1,iel> xyze_;
+    LINALG::Matrix<nsd_+1,nen_> xyze_;
     //! nodal displacement values for ALE
-    LINALG::Matrix<nsd_+1,iel> edispnp_;
+    LINALG::Matrix<nsd_+1,nen_> edispnp_;
     //! diffusivity / diffusivities (in case of systems) / thermal conductivity
     vector<double> diffus_;
     //! charge numbers of all ion species (ELCH specific)
@@ -259,11 +259,11 @@ public:
     //! coordinates of current integration point in reference coordinates
     LINALG::Matrix<nsd_,1> xsi_;
     //! array for shape functions
-    LINALG::Matrix<iel,1> funct_;
+    LINALG::Matrix<nen_,1> funct_;
     //! array for shape function derivatives w.r.t r,s,t
-    LINALG::Matrix<nsd_,iel> deriv_;
+    LINALG::Matrix<nsd_,nen_> deriv_;
     //! global derivatives of shape functions w.r.t x,y,z
-    LINALG::Matrix<nsd_,iel> derxy_;
+    LINALG::Matrix<nsd_,nen_> derxy_;
     //! unit normal vector at integration point
     LINALG::Matrix<nsd_+1,1> normal_;
     //! velocity vector in gausspoint

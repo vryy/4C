@@ -427,11 +427,11 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     if (sgvel_)
     {
       const RCP<Epetra_MultiVector> accpre = params.get< RCP<Epetra_MultiVector> >("acceleration/pressure field",null);
-      LINALG::Matrix<nsd_+1,iel> eaccprenp;
+      LINALG::Matrix<nsd_+1,nen_> eaccprenp;
       DRT::UTILS::ExtractMyNodeBasedValues(ele,eaccprenp,accpre,nsd_+1);
 
       // split acceleration and pressure values
-      for (int i=0;i<iel;++i)
+      for (int i=0;i<nen_;++i)
       {
         for (int j=0;j<nsd_;++j)
         {
@@ -452,7 +452,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
     // fill all element arrays
-    for (int i=0;i<iel;++i)
+    for (int i=0;i<nen_;++i)
     {
       for (int k = 0; k< numscal_; ++k)
       {
@@ -475,7 +475,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       DRT::UTILS::ExtractMyValues(*phiam,myphiam,lm);
 
       // fill element array
-      for (int i=0;i<iel;++i)
+      for (int i=0;i<nen_;++i)
       {
         for (int k = 0; k< numscal_; ++k)
         {
@@ -494,7 +494,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       DRT::UTILS::ExtractMyValues(*phin,myphin,lm);
 
       // fill element array
-      for (int i=0;i<iel;++i)
+      for (int i=0;i<nen_;++i)
       {
         for (int k = 0; k< numscal_; ++k)
         {
@@ -508,7 +508,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     if (iselch_)
     {
       // get values for el. potential at element nodes
-      for (int i=0;i<iel;++i)
+      for (int i=0;i<nen_;++i)
       {
         epotnp_(i) = myphinp[i*numdofpernode_+numscal_];
       }
@@ -534,7 +534,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         vector<double> myfsphinp(lm.size());
         DRT::UTILS::ExtractMyValues(*gfsphinp,myfsphinp,lm);
 
-        for (int i=0;i<iel;++i)
+        for (int i=0;i<nen_;++i)
         {
           for (int k = 0; k< numscal_; ++k)
           {
@@ -613,7 +613,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
 
     // fill element arrays
-    for (int i=0;i<iel;++i)
+    for (int i=0;i<nen_;++i)
     {
       for (int k = 0; k< numscal_; ++k)
       {
@@ -642,7 +642,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     double frt(0.0);
     if(scatratype ==INPAR::SCATRA::scatratype_elch_enc)
     {
-      for (int i=0;i<iel;++i)
+      for (int i=0;i<nen_;++i)
       {
         // get values for el. potential at element nodes
         epotnp_(i) = myphi0[i*numdofpernode_+numscal_];
@@ -694,7 +694,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   {
     // get velocity values at the nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
-    Epetra_SerialDenseVector evel(nsd_*iel);
+    Epetra_SerialDenseVector evel(nsd_*nen_);
     DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity,nsd_);
 
     // need current values of transported scalar
@@ -705,7 +705,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
     // assure, that the values are in the same order as the element nodes
-    for(int k=0;k<iel;++k)
+    for(int k=0;k<nen_;++k)
     {
       Node* node = (ele->Nodes())[k];
       vector<int> dof = discretization.Dof(node);
@@ -735,7 +735,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     }
 
     // we always get an 3D flux vector for each node
-    LINALG::Matrix<3,iel> eflux(true);
+    LINALG::Matrix<3,nen_> eflux(true);
 
     // do a loop for systems of transported scalars
     for (int i = 0; i<numscal; ++i)
@@ -745,7 +745,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       CalculateFlux(eflux,ele,myphinp,frt,evel,fluxtype,i);
 
       // assembly
-      for (int k=0;k<iel;k++)
+      for (int k=0;k<nen_;k++)
       { // form arithmetic mean of assembled nodal flux vectors
         // => factor is the number of adjacent elements for each node
         double factor = ((ele->Nodes())[k])->NumElement();
@@ -804,7 +804,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       dserror("Numscal_ != 2 for error calculation of Kwok & Wu example");
 
     // fill element arrays
-    for (int i=0;i<iel;++i)
+    for (int i=0;i<nen_;++i)
     {
       // split for each transported scalar, insert into element arrays
       for (int k = 0; k< numscal_; ++k)
@@ -836,7 +836,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
     // fill element arrays
-    for (int i=0;i<iel;++i)
+    for (int i=0;i<nen_;++i)
     {
       for (int k = 0; k< numscal_; ++k)
       {
@@ -882,7 +882,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
 
     // fill element arrays
-    for (int i=0;i<iel;++i)
+    for (int i=0;i<nen_;++i)
     {
       for (int k = 0; k< numscal_; ++k)
       {
@@ -961,9 +961,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFluxSerialDense(
   else                                        fluxtype = INPAR::SCATRA::flux_no;
 
   // we always get an 3D flux vector for each node
-  LINALG::Matrix<3,iel> eflux(true); //initialize!
+  LINALG::Matrix<3,nen_> eflux(true); //initialize!
   CalculateFlux(eflux,ele,ephinp,frt,evel,fluxtype,dofindex);
-  for (int j = 0; j< iel; j++)
+  for (int j = 0; j< nen_; j++)
   {
     flux(0,j) = eflux(0,j);
     flux(1,j) = eflux(1,j);
@@ -1001,12 +1001,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 )
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
   // get node weights for nurbs elements
   if(SCATRA::IsNurbs(distype))
   {
-    for (int inode=0; inode<iel; inode++)
+    for (int inode=0; inode<nen_; inode++)
     {
       DRT::Node** nodes = ele->Nodes();
       DRT::NURBS::ControlPoint* cp
@@ -1252,7 +1252,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 //
 // 		  const int* nodeids = ele->NodeIds();
 // 		  //loop over all nodes of current element
-// 		  for (int lnodeid=0; lnodeid < iel; lnodeid++)
+// 		  for (int lnodeid=0; lnodeid < nen_; lnodeid++)
 // 		  {
 // 			  //get current node
 // 			  DRT::Node* actnode = discretization.lRowNode(nodeids[lnodeid]);
@@ -1273,30 +1273,30 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 // 				   const DRT::Element* ele_cur = elements[elecur];
 //
 // 				  // create vector "ephinp" holding scalar phi values for this element
-// 				  Epetra_SerialDenseMatrix ephinp(iel,1);
+// 				  Epetra_SerialDenseMatrix ephinp(nen_,1);
 //
 // 				  //temporal vector necessary just for function ExtractMyValues...
 // 				  //that is requiring vectors and not matrices
-// 				  vector<double> etemp(iel);
+// 				  vector<double> etemp(nen_);
 //
 // 				  // remark: vector "lm" is neccessary, because ExtractMyValues() only accepts "vector<int>"
 // 				  // arguments, but ele->NodeIds delivers an "int*" argument
-// 				  vector<int> lm(iel);
+// 				  vector<int> lm(nen_);
 //
 // 				  // get vector of node GIDs for this element
 // 				  const int* nodeids_cur = ele_cur->NodeIds();
-// 				  for (int inode=0; inode < iel; inode++)
+// 				  for (int inode=0; inode < nen_; inode++)
 // 					  lm[inode] = nodeids_cur[inode];
 //
 // 				  // get entries in "gfuncvalues" corresponding to node GIDs "lm" and store them in "ephinp"
 // 				  DRT::UTILS::ExtractMyValues(*phinp, etemp, lm);
 //
-// 				  for (int k=0; k<iel; k++)
+// 				  for (int k=0; k<nen_; k++)
 // 					  ephinp(k,0) = etemp[k];
 //
 // 				  //current node is number iquadcur of current element
 // 				  int iquadcur = 0;
-// 				  for (int k=0; k<iel; k++)
+// 				  for (int k=0; k<nen_; k++)
 // 				  {
 // 					  if (actnode->Id()==nodeids_cur[k])
 // 						  iquadcur = k;
@@ -1306,12 +1306,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 // 				  LINALG::SerialDenseMatrix eleCoordMatrix=DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
 // 				  for (int k=0; k<3; k++)
 // 					  xsi(k,0)=eleCoordMatrix(k,iquadcur);
-// 				  Epetra_SerialDenseMatrix deriv(3,iel);
+// 				  Epetra_SerialDenseMatrix deriv(3,nen_);
 // 				  DRT::UTILS::shape_function_3D_deriv1(deriv,xsi(0,0),xsi(1,0),xsi(2,0),distype);
 // 				  //xyze are the positions of the nodes in the global coordinate system
-// 				  Epetra_SerialDenseMatrix xyze(3,iel);
+// 				  Epetra_SerialDenseMatrix xyze(3,nen_);
 // 				  const DRT::Node*const* nodes = ele->Nodes();
-// 				  for (int inode=0; inode<iel; inode++)
+// 				  for (int inode=0; inode<nen_; inode++)
 // 				  {
 // 					  const double* x = nodes[inode]->X();
 // 					  xyze(0,inode) = x[0];
@@ -1338,7 +1338,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 // 					  for (int i2=0; i2<3; i2++)
 // 						  xji(i1,i2) = xji_temp(i1,i2);
 //
-// 				  Epetra_SerialDenseMatrix derxy(3,iel);
+// 				  Epetra_SerialDenseMatrix derxy(3,nen_);
 // 				  //compute global derivatives
 // 				  derxy.Multiply('N','N',1.0,xji,deriv,0.0);
 //
@@ -1600,7 +1600,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::BodyForce(
     // set this condition to the bodyforce array
     for(int idof=0;idof<numdofpernode_;idof++)
     {
-      for (int jnode=0; jnode<iel; jnode++)
+      for (int jnode=0; jnode<nen_; jnode++)
       {
         (bodyforce_[idof])(jnode) = (*onoff)[idof]*(*val)[idof]*curvefac;
       }
@@ -1640,7 +1640,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::BodyForceReinit(
 
   for(int idof=0;idof<numdofpernode_;idof++)
   {
-    for (int jnode=0; jnode<iel; jnode++) //loop over all nodes of this element
+    for (int jnode=0; jnode<nen_; jnode++) //loop over all nodes of this element
     {
       if (ephinp_[idof](jnode,0)<-epsilon)
         signum = -1.0;
@@ -2299,7 +2299,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcFineScaleSubgrDiff(
     sgdiff_[k] = (DSQR(h)*mk*DSQR(vel_norm)*DSQR(densnp_[k]))/(2.0*diffus_[k]*xi);
 
     // compute entries of (fine-scale) subgrid-diffusivity-scaling vector
-    for (int vi=0; vi<iel; ++vi)
+    for (int vi=0; vi<nen_; ++vi)
     {
       subgrdiff(vi) = sgdiff_[k]/ele->Nodes()[vi]->NumElement();
     }
@@ -2509,7 +2509,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
         velino(0,0) = 1;
       }
       // get streamlength using the normed velocity at element centre
-      LINALG::Matrix<iel,1> tmp;
+      LINALG::Matrix<nen_,1> tmp;
       tmp.MultiplyTN(derxy_,velino);
       const double val = tmp.Norm1();
       const double h = 2.0/val; // h=streamlength
@@ -2652,7 +2652,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
   LINALG::Matrix<nsd_,1> gradp;
   LINALG::Matrix<nsd_,1> visc;
   LINALG::Matrix<nsd_,1> bodyforce;
-  LINALG::Matrix<nsd_,iel> nodebodyforce;
+  LINALG::Matrix<nsd_,nen_> nodebodyforce;
 
   // get acceleration or momentum history data
   acc.Multiply(eaccnp_,funct_);
@@ -2720,7 +2720,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
     // set this condition to the body force array
     for(int isd=0;isd<nsd_;isd++)
     {
-      for (int jnode=0; jnode<iel; jnode++)
+      for (int jnode=0; jnode<nen_; jnode++)
       {
         nodebodyforce(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac;
       }
@@ -2761,7 +2761,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
     double prefac = 1.0/3.0;
     derxy2_.Scale(prefac);
 
-    for (int i=0; i<iel; ++i)
+    for (int i=0; i<nen_; ++i)
     {
       double sum = (derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i))/prefac;
 
@@ -2948,12 +2948,12 @@ const double fac_diffus = timefacfac*diffus_[dofindex];
 //----------------------------------------------------------------
 // convective term in convective form
 const double densfac = timefacfac*densnp_[dofindex];
-for (int vi=0; vi<iel; ++vi)
+for (int vi=0; vi<nen_; ++vi)
 {
   const double v = densfac*funct_(vi);
   const int fvi = vi*numdofpernode_+dofindex;
 
-  for (int ui=0; ui<iel; ++ui)
+  for (int ui=0; ui<nen_; ++ui)
   {
     const int fui = ui*numdofpernode_+dofindex;
 
@@ -2971,12 +2971,12 @@ if (conservative_)
   const double cons_conv_phi = velint_.Dot(gradphi_);
 
   const double consfac = timefacfac*(densnp_[dofindex]*vdiv_+densgradfac_[dofindex]*cons_conv_phi);
-  for (int vi=0; vi<iel; ++vi)
+  for (int vi=0; vi<nen_; ++vi)
   {
     const double v = consfac*funct_(vi);
     const int fvi = vi*numdofpernode_+dofindex;
 
-    for (int ui=0; ui<iel; ++ui)
+    for (int ui=0; ui<nen_; ++ui)
     {
       const int fui = ui*numdofpernode_+dofindex;
 
@@ -2986,11 +2986,11 @@ if (conservative_)
 }
 
 // diffusive term
-for (int vi=0; vi<iel; ++vi)
+for (int vi=0; vi<nen_; ++vi)
 {
   const int fvi = vi*numdofpernode_+dofindex;
 
-  for (int ui=0; ui<iel; ++ui)
+  for (int ui=0; ui<nen_; ++ui)
   {
     const int fui = ui*numdofpernode_+dofindex;
     double laplawf(0.0);
@@ -3004,12 +3004,12 @@ for (int vi=0; vi<iel; ++vi)
 //----------------------------------------------------------------
 // convective stabilization of convective term (in convective form)
 const double dens2taufac = timetaufac*densnp_[dofindex]*densnp_[dofindex];
-for (int vi=0; vi<iel; ++vi)
+for (int vi=0; vi<nen_; ++vi)
 {
   const double v = dens2taufac*(conv_(vi)+sgconv_(vi));
   const int fvi = vi*numdofpernode_+dofindex;
 
-  for (int ui=0; ui<iel; ++ui)
+  for (int ui=0; ui<nen_; ++ui)
   {
     const int fui = ui*numdofpernode_+dofindex;
 
@@ -3028,12 +3028,12 @@ if (use2ndderiv_)
 
   const double denstaufac = timetaufac*densnp_[dofindex];
   // convective stabilization of diffusive term (in convective form)
-  for (int vi=0; vi<iel; ++vi)
+  for (int vi=0; vi<nen_; ++vi)
   {
     const double v = denstaufac*(conv_(vi)+sgconv_(vi));
     const int fvi = vi*numdofpernode_+dofindex;
 
-    for (int ui=0; ui<iel; ++ui)
+    for (int ui=0; ui<nen_; ++ui)
     {
       const int fui = ui*numdofpernode_+dofindex;
 
@@ -3043,12 +3043,12 @@ if (use2ndderiv_)
 
   const double densdifftaufac = diffreastafac_*denstaufac;
   // diffusive stabilization of convective term (in convective form)
-  for (int vi=0; vi<iel; ++vi)
+  for (int vi=0; vi<nen_; ++vi)
   {
     const double v = densdifftaufac*diff_(vi);
     const int fvi = vi*numdofpernode_+dofindex;
 
-    for (int ui=0; ui<iel; ++ui)
+    for (int ui=0; ui<nen_; ++ui)
     {
       const int fui = ui*numdofpernode_+dofindex;
 
@@ -3058,12 +3058,12 @@ if (use2ndderiv_)
 
   const double difftaufac = diffreastafac_*timetaufac;
   // diffusive stabilization of diffusive term
-  for (int vi=0; vi<iel; ++vi)
+  for (int vi=0; vi<nen_; ++vi)
   {
     const double v = difftaufac*diff_(vi);
     const int fvi = vi*numdofpernode_+dofindex;
 
-    for (int ui=0; ui<iel; ++ui)
+    for (int ui=0; ui<nen_; ++ui)
     {
       const int fui = ui*numdofpernode_+dofindex;
 
@@ -3082,12 +3082,12 @@ if (not is_stationary_)
   // standard Galerkin transient term
   //----------------------------------------------------------------
   // transient term
-  for (int vi=0; vi<iel; ++vi)
+  for (int vi=0; vi<nen_; ++vi)
   {
     const double v = densamfac*funct_(vi);
     const int fvi = vi*numdofpernode_+dofindex;
 
-    for (int ui=0; ui<iel; ++ui)
+    for (int ui=0; ui<nen_; ++ui)
     {
       const int fui = ui*numdofpernode_+dofindex;
 
@@ -3100,12 +3100,12 @@ if (not is_stationary_)
   // stabilization of transient term
   //----------------------------------------------------------------
   // convective stabilization of transient term (in convective form)
-  for (int vi=0; vi<iel; ++vi)
+  for (int vi=0; vi<nen_; ++vi)
   {
     const double v = densamnptaufac*(conv_(vi)+sgconv_(vi));
     const int fvi = vi*numdofpernode_+dofindex;
 
-    for (int ui=0; ui<iel; ++ui)
+    for (int ui=0; ui<nen_; ++ui)
     {
       const int fui = ui*numdofpernode_+dofindex;
 
@@ -3117,12 +3117,12 @@ if (not is_stationary_)
   {
     const double densamreataufac = diffreastafac_*taufac*densam_[dofindex];
     // diffusive stabilization of transient term
-    for (int vi=0; vi<iel; ++vi)
+    for (int vi=0; vi<nen_; ++vi)
     {
       const double v = densamreataufac*diff_(vi);
       const int fvi = vi*numdofpernode_+dofindex;
 
-      for (int ui=0; ui<iel; ++ui)
+      for (int ui=0; ui<nen_; ++ui)
       {
         const int fui = ui*numdofpernode_+dofindex;
 
@@ -3142,12 +3142,12 @@ if (reaction_)
   //----------------------------------------------------------------
   // standard Galerkin reactive term
   //----------------------------------------------------------------
-  for (int vi=0; vi<iel; ++vi)
+  for (int vi=0; vi<nen_; ++vi)
   {
     const double v = fac_reac*funct_(vi);
     const int fvi = vi*numdofpernode_+dofindex;
 
-    for (int ui=0; ui<iel; ++ui)
+    for (int ui=0; ui<nen_; ++ui)
     {
       const int fui = ui*numdofpernode_+dofindex;
 
@@ -3160,12 +3160,12 @@ if (reaction_)
   //----------------------------------------------------------------
   double densreataufac = timetaufac_reac*densnp_[dofindex];
   // convective stabilization of reactive term (in convective form)
-  for (int vi=0; vi<iel; ++vi)
+  for (int vi=0; vi<nen_; ++vi)
   {
     const double v = densreataufac*(conv_(vi)+sgconv_(vi));
     const int fvi = vi*numdofpernode_+dofindex;
 
-    for (int ui=0; ui<iel; ++ui)
+    for (int ui=0; ui<nen_; ++ui)
     {
       const int fui = ui*numdofpernode_+dofindex;
 
@@ -3176,12 +3176,12 @@ if (reaction_)
   if (use2ndderiv_)
   {
     // diffusive stabilization of reactive term
-    for (int vi=0; vi<iel; ++vi)
+    for (int vi=0; vi<nen_; ++vi)
     {
       const double v = diffreastafac_*timetaufac_reac*diff_(vi);
       const int fvi = vi*numdofpernode_+dofindex;
 
-      for (int ui=0; ui<iel; ++ui)
+      for (int ui=0; ui<nen_; ++ui)
       {
         const int fui = ui*numdofpernode_+dofindex;
 
@@ -3195,12 +3195,12 @@ if (reaction_)
   //----------------------------------------------------------------
   densreataufac = diffreastafac_*timetaufac_reac*densnp_[dofindex];
   // reactive stabilization of convective (in convective form) and reactive term
-  for (int vi=0; vi<iel; ++vi)
+  for (int vi=0; vi<nen_; ++vi)
   {
     const double v = densreataufac*funct_(vi);
     const int fvi = vi*numdofpernode_+dofindex;
 
-    for (int ui=0; ui<iel; ++ui)
+    for (int ui=0; ui<nen_; ++ui)
     {
       const int fui = ui*numdofpernode_+dofindex;
 
@@ -3211,12 +3211,12 @@ if (reaction_)
   if (use2ndderiv_)
   {
     // reactive stabilization of diffusive term
-    for (int vi=0; vi<iel; ++vi)
+    for (int vi=0; vi<nen_; ++vi)
     {
       const double v = diffreastafac_*timetaufac_reac*funct_(vi);
       const int fvi = vi*numdofpernode_+dofindex;
 
-      for (int ui=0; ui<iel; ++ui)
+      for (int ui=0; ui<nen_; ++ui)
       {
         const int fui = ui*numdofpernode_+dofindex;
 
@@ -3269,7 +3269,7 @@ if (is_incremental_ and is_genalpha_)
   rhsint   *= (timefac/alphaF);
 
   const double vtrans = rhsfac*densam_[dofindex]*hist_[dofindex];
-  for (int vi=0; vi<iel; ++vi)
+  for (int vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+dofindex;
 
@@ -3373,7 +3373,7 @@ else if (is_incremental_ and not is_genalpha_)
     rhsfac   = timefacfac;
 
     const double vtrans = fac*densnp_[dofindex]*dens_phi;
-    for (int vi=0; vi<iel; ++vi)
+    for (int vi=0; vi<nen_; ++vi)
     {
       const int fvi = vi*numdofpernode_+dofindex;
 
@@ -3421,7 +3421,7 @@ else
 // standard Galerkin bodyforce term
 //----------------------------------------------------------------
 double vrhs = fac*rhsint;
-for (int vi=0; vi<iel; ++vi)
+for (int vi=0; vi<nen_; ++vi)
 {
   const int fvi = vi*numdofpernode_+dofindex;
 
@@ -3433,7 +3433,7 @@ for (int vi=0; vi<iel; ++vi)
 //----------------------------------------------------------------
 // convective term
 vrhs = rhsfac*conv_phi;
-for (int vi=0; vi<iel; ++vi)
+for (int vi=0; vi<nen_; ++vi)
 {
   const int fvi = vi*numdofpernode_+dofindex;
 
@@ -3442,7 +3442,7 @@ for (int vi=0; vi<iel; ++vi)
 
 // diffusive term
 vrhs = rhsfac*diffus_[dofindex];
-for (int vi=0; vi<iel; ++vi)
+for (int vi=0; vi<nen_; ++vi)
 {
   const int fvi = vi*numdofpernode_+dofindex;
 
@@ -3456,7 +3456,7 @@ for (int vi=0; vi<iel; ++vi)
 //----------------------------------------------------------------
 // convective rhs stabilization (in convective form)
 vrhs = rhstaufac*residual*densnp_[dofindex];
-for (int vi=0; vi<iel; ++vi)
+for (int vi=0; vi<nen_; ++vi)
 {
   const int fvi = vi*numdofpernode_+dofindex;
 
@@ -3468,7 +3468,7 @@ if (use2ndderiv_)
 {
   vrhs = rhstaufac*residual;
   // diffusive stabilization of convective temporal rhs term (in convective form)
-  for (int vi=0; vi<iel; ++vi)
+  for (int vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+dofindex;
 
@@ -3483,7 +3483,7 @@ if (use2ndderiv_)
 if (reaction_)
 {
   vrhs = rhsfac*rea_phi;
-  for (int vi=0; vi<iel; ++vi)
+  for (int vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+dofindex;
 
@@ -3492,7 +3492,7 @@ if (reaction_)
 
   // reactive rhs stabilization
   vrhs = diffreastafac_*rhstaufac*densnp_[dofindex]*reacoeff_[dofindex]*residual;
-  for (int vi=0; vi<iel; ++vi)
+  for (int vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+dofindex;
 
@@ -3506,7 +3506,7 @@ if (reaction_)
 if (is_incremental_ and fssgd)
 {
   vrhs = rhsfac*sgdiff_[dofindex];
-  for (int vi=0; vi<iel; ++vi)
+  for (int vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+dofindex;
 
@@ -3533,7 +3533,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
 )
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
   // in the ALE case add nodal displacements
   if (isale_) xyze_ += edispnp_;
@@ -3622,12 +3622,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
       // element matrix: transient term
       //----------------------------------------------------------------
       // transient term
-      for (int vi=0; vi<iel; ++vi)
+      for (int vi=0; vi<nen_; ++vi)
       {
         const double v = fac*funct_(vi)*densnp_[k];
         const int fvi = vi*numdofpernode_+k;
 
-        for (int ui=0; ui<iel; ++ui)
+        for (int ui=0; ui<nen_; ++ui)
         {
           const int fui = ui*numdofpernode_+k;
 
@@ -3639,7 +3639,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
       // element right hand side: convective term in convective form
       //----------------------------------------------------------------
       double vrhs = fac*densnp_[k]*conv_ephi0_k;
-      for (int vi=0; vi<iel; ++vi)
+      for (int vi=0; vi<nen_; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
 
@@ -3650,7 +3650,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
       // element right hand side: diffusive term
       //----------------------------------------------------------------
       vrhs = fac_diffus;
-      for (int vi=0; vi<iel; ++vi)
+      for (int vi=0; vi<nen_; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
 
@@ -3663,7 +3663,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
       // element right hand side: nonlinear migration term
       //----------------------------------------------------------------
       vrhs = fac_diffus*conint_[k]*valence_[k];
-      for (int vi=0; vi<iel; ++vi)
+      for (int vi=0; vi<nen_; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
 
@@ -3676,7 +3676,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
       if (reaction_)
       {
         vrhs = fac*densnp_[k]*reacoeff_[k]*conint_[k];
-        for (int vi=0; vi<iel; ++vi)
+        for (int vi=0; vi<nen_; ++vi)
         {
           const int fvi = vi*numdofpernode_+k;
 
@@ -3688,7 +3688,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
       // element right hand side: bodyforce term
       //----------------------------------------------------------------
       vrhs = fac*rhs_[k];
-      for (int vi=0; vi<iel; ++vi)
+      for (int vi=0; vi<nen_; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
 
@@ -3702,12 +3702,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
       // matrix in the lower right block of the whole system-matrix
       // A identity matrix would cause problems with ML solver in the SIMPLE
       // schemes since ML needs to have off-diagonal entries for the aggregation!
-      for (int vi=0; vi<iel; ++vi)
+      for (int vi=0; vi<nen_; ++vi)
       {
         const double v = fac*funct_(vi); // density assumed to be 1.0 here
         const int fvi = vi*numdofpernode_+numscal_;
 
-        for (int ui=0; ui<iel; ++ui)
+        for (int ui=0; ui<nen_; ++ui)
         {
           const int fui = ui*numdofpernode_+numscal_;
 
@@ -3736,7 +3736,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
 )
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
@@ -3839,12 +3839,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
       // element matrix: transient term
       //----------------------------------------------------------------
       // transient term
-      for (int vi=0; vi<iel; ++vi)
+      for (int vi=0; vi<nen_; ++vi)
       {
         const double v = fac*funct_(vi)*densnp_[k];
         const int fvi = vi*numdofpernode_+k;
 
-        for (int ui=0; ui<iel; ++ui)
+        for (int ui=0; ui<nen_; ++ui)
         {
           const int fui = ui*numdofpernode_+k;
 
@@ -3856,12 +3856,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
       // element matrix: stabilization of transient term
       //----------------------------------------------------------------
       // convective stabilization of transient term (in convective form)
-      for (int vi=0; vi<iel; ++vi)
+      for (int vi=0; vi<nen_; ++vi)
       {
         const double v = fac_tau*conv_(vi)*densnp_[k];//v = densamnptaufac*(conv_(vi)+sgconv_(vi));
         const int fvi = vi*numdofpernode_+k;
 
-        for (int ui=0; ui<iel; ++ui)
+        for (int ui=0; ui<nen_; ++ui)
         {
           const int fui = ui*numdofpernode_+k;
 
@@ -3873,7 +3873,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
       // element right hand side: convective term in convective form
       //----------------------------------------------------------------
       double vrhs = fac*densnp_[k]*conv_ephi0_k;
-      for (int vi=0; vi<iel; ++vi)
+      for (int vi=0; vi<nen_; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
 
@@ -3885,7 +3885,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
       //----------------------------------------------------------------
       // convective stabilization of convective term (in convective form)
       vrhs = fac_tau*densnp_[k]*conv_ephi0_k*densnp_[k];
-      for (int vi=0; vi<iel; ++vi)
+      for (int vi=0; vi<nen_; ++vi)
       {
          const int fvi = vi*numdofpernode_+k;
 
@@ -3901,7 +3901,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
       // element right hand side: diffusive term
       //----------------------------------------------------------------
       vrhs = fac_diffus;
-      for (int vi=0; vi<iel; ++vi)
+      for (int vi=0; vi<nen_; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
 
@@ -3916,7 +3916,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
       if (reaction_)
       {
         vrhs = fac*densnp_[k]*reacoeff_[k]*conint_[k];
-        for (int vi=0; vi<iel; ++vi)
+        for (int vi=0; vi<nen_; ++vi)
         {
           const int fvi = vi*numdofpernode_+k;
 
@@ -3928,7 +3928,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
       // element right hand side: bodyforce term
       //----------------------------------------------------------------
       vrhs = fac*rhs_[k];
-      for (int vi=0; vi<iel; ++vi)
+      for (int vi=0; vi<nen_; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
 
@@ -3952,7 +3952,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgridDiffMatrix(
     )
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
   // in the ALE case add nodal displacements
   if (isale_) xyze_ += edispnp_;
@@ -3974,11 +3974,11 @@ for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     double kartfac = fac;
     if (not is_stationary_) kartfac *= timefac;
 
-    for (int vi=0; vi<iel; ++vi)
+    for (int vi=0; vi<nen_; ++vi)
     {
       const int fvi = vi*numdofpernode_+k;
 
-      for (int ui=0; ui<iel; ++ui)
+      for (int ui=0; ui<nen_; ++ui)
       {
         const int fui = ui*numdofpernode_+k;
         double laplawf(0.0);
@@ -4085,7 +4085,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     const double frt_timefacfac_diffus_valence_k_conint_k = frt*timefacfac*diffus_valence_k*conint_[k];
 
     // ----------------------------------------matrix entries
-    for (int vi=0; vi<iel; ++vi)
+    for (int vi=0; vi<nen_; ++vi)
     {
       const int    fvi = vi*numdofpernode_+k;
       double timetaufac_conv_eff_vi = timetaufac*conv_(vi);
@@ -4096,7 +4096,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       const double timefacfac_diffus_valence_k_mig_vi = timefacfac*diffus_valence_k*migconv_(vi);
       const double valence_k_fac_funct_vi = valence_[k]*fac*funct_(vi);
 
-      for (int ui=0; ui<iel; ++ui)
+      for (int ui=0; ui<nen_; ++ui)
       {
         const int fui = ui*numdofpernode_+k;
 
@@ -4149,11 +4149,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
     if (use2ndderiv_)
     {
-      for (int vi=0; vi<iel; ++vi)
+      for (int vi=0; vi<nen_; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
         const double timetaufac_conv_eff_vi = timetaufac*(conv_(vi)+diffus_valence_k*migconv_(vi));
-        for (int ui=0; ui<iel; ++ui)
+        for (int ui=0; ui<nen_; ++ui)
         {
           const int fui = ui*numdofpernode_+k;
 
@@ -4224,7 +4224,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 #endif
 
     //------------residual formulation (Newton iteration)
-    for (int vi=0; vi<iel; ++vi)
+    for (int vi=0; vi<nen_; ++vi)
     {
       const int fvi = vi*numdofpernode_+k;
 
@@ -4269,7 +4269,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
     if (use2ndderiv_)
     {
-      for (int vi=0; vi<iel; ++vi)
+      for (int vi=0; vi<nen_; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
 
@@ -4284,11 +4284,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     // -----------------------------------INSTATIONARY TERMS
     if (!is_stationary_)
     {
-      for (int vi=0; vi<iel; ++vi)
+      for (int vi=0; vi<nen_; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
         const double fac_funct_vi = fac*funct_(vi);
-        for (int ui=0; ui<iel; ++ui)
+        for (int ui=0; ui<nen_; ++ui)
         {
          const int fui = ui*numdofpernode_+k;
 
@@ -4348,7 +4348,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   //   1995, Vol 11, 389-397
 
   // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
   // in the ALE case add nodal displacements
   if (isale_) dserror("No ALE for Kwok & Wu error calculation allowed.");
@@ -4449,7 +4449,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
-    LINALG::Matrix<3,iel>&          flux,
+    LINALG::Matrix<3,nen_>&          flux,
     const DRT::Element*             ele,
     const vector<double>&           ephinp,
     const double                    frt,
@@ -4459,7 +4459,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
 )
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
   // in the ALE case add nodal displacements
   if (isale_) xyze_ += edispnp_;
@@ -4510,7 +4510,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
 
       // compute temperature
       double temp = 0.0;
-      for (int i=0; i<iel; ++i)
+      for (int i=0; i<nen_; ++i)
       {
         temp += funct_(i)*ephinp[i];
       }
@@ -4527,7 +4527,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
 
       // compute temperature
       double temp = 0.0;
-      for (int i=0; i<iel; ++i)
+      for (int i=0; i<nen_; ++i)
       {
         temp += funct_(i)*ephinp[i];
       }
@@ -4566,7 +4566,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
 
     // compute mixture fraction
     double mixfrac = 0.0;
-    for (int i=0; i<iel; ++i)
+    for (int i=0; i<nen_; ++i)
     {
       mixfrac += funct_(i)*ephinp[i];
     }
@@ -4586,7 +4586,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
 
     // compute temperature
     double temp = 0.0;
-    for (int i=0; i<iel; ++i)
+    for (int i=0; i<nen_; ++i)
     {
       temp += funct_(i)*ephinp[i];
     }
@@ -4603,7 +4603,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
 
     // compute progress variable
     double provar = 0.0;
-    for (int i=0; i<iel; ++i)
+    for (int i=0; i<nen_; ++i)
     {
       provar += funct_(i)*ephinp[i];
     }
@@ -4625,7 +4625,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
 
     // compute progress variable
     double provar = 0.0;
-    for (int i=0; i<iel; ++i)
+    for (int i=0; i<nen_; ++i)
     {
       provar += funct_(i)*ephinp[i];
     }
@@ -4647,10 +4647,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
   LINALG::SerialDenseMatrix nodecoords;
   nodecoords = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
 
-  if ((int) nodecoords.N() != iel) dserror("number of nodes does not match");
+  if ((int) nodecoords.N() != nen_) dserror("number of nodes does not match");
 
   // loop over all nodes
-  for (int iquad=0; iquad<iel; ++iquad)
+  for (int iquad=0; iquad<nen_; ++iquad)
   {
     // reference coordinates of the current node
     for (int idim=0;idim<nsd_;idim++)
@@ -4674,7 +4674,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
     gradpot_.Clear();
     if (frt > 0.0) // ELCH
     {
-      for (int k=0;k<iel;k++)
+      for (int k=0;k<nen_;k++)
       {
         for (int idim=0; idim<nsd_ ;idim++)
         {
@@ -4704,7 +4704,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
         // no break statement here!
       case INPAR::SCATRA::flux_diffusive_domain:
         //diffusive flux terms
-        for (int k=0;k<iel;k++)
+        for (int k=0;k<nen_;k++)
         {
           for (int idim=0; idim<nsd_ ;idim++)
           {
@@ -4740,7 +4740,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateScalars(
 {
   /*------------------------------------------------- set element data */
   // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
   // in the ALE case add nodal displacements
   if (isale_) xyze_ += edispnp_;
@@ -4756,7 +4756,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateScalars(
     // calculate integrals of (inverted) scalar(s) and domain
     if (inverting)
     {
-      for (int i=0; i<iel; i++)
+      for (int i=0; i<nen_; i++)
       {
         const double fac_funct_i = fac*funct_(i);
         for (int k = 0; k < numscal_; k++)
@@ -4768,7 +4768,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateScalars(
     }
     else
     {
-      for (int i=0; i<iel; i++)
+      for (int i=0; i<nen_; i++)
       {
         const double fac_funct_i = fac*funct_(i);
         for (int k = 0; k < numscal_; k++)
@@ -4809,7 +4809,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateDomainAndBodyforce(
 
   /*------------------------------------------------- set element data */
   // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
   // in the ALE case add nodal displacements
   if (isale_) xyze_ += edispnp_;
@@ -4826,7 +4826,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateDomainAndBodyforce(
     rhs_[0] = bodyforce_[0].Dot(funct_);
 
     // calculate integrals of domain and bodyforce
-    for (int i=0; i<iel; i++)
+    for (int i=0; i<nen_; i++)
     {
       scalars[0] += fac*funct_(i);
     }
@@ -4849,7 +4849,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::IntegrateShapeFunctions(
 )
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
   // in the ALE case add nodal displacements
   if (isale_) xyze_ += edispnp_;
@@ -4867,7 +4867,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::IntegrateShapeFunctions(
     {
       if (dofids[k] >= 0)
       {
-        for (int node=0;node<iel;node++)
+        for (int node=0;node<nen_;node++)
         {
           elevec1[node*numdofpernode_+k] += funct_(node) * fac;
         }
@@ -4892,7 +4892,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
 )
 {
   // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
   // in the ALE case add nodal displacements
   if (isale_) xyze_ += edispnp_;
@@ -4907,7 +4907,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
 
   // compute the conductivity (1/(\Omega m) = 1 Siemens / m)
   double sigma_all(0.0);
-  const double factor = frt*96485.34;
+  const double factor = frt*96485.34; // = F^2/RT
   for(int k=0; k < numscal_; k++)
   {
     // concentration of ionic species k at element center
