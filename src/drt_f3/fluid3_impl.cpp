@@ -330,6 +330,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   //----------------------------------------------------------------------
   // get control parameters for time integration
   //----------------------------------------------------------------------
+
   // check whether we have a generalized-alpha time-integration scheme
   const bool is_genalpha = params.get<bool>("using generalized-alpha time integration");
 
@@ -373,7 +374,9 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   Fluid3::StabilisationAction cross    = ele->ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
   Fluid3::StabilisationAction reynolds = ele->ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
-  // select tau definition
+  //-------------------------------
+  // get tau definition
+  //-------------------------------
   Fluid3::TauType whichtau = Fluid3::tau_not_defined;
   {
     const string taudef = stablist.get<string>("DEFINITION_TAU");
@@ -550,6 +553,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   // values are at time n+alpha_F for generalized-alpha scheme and at
   // time n+1 for all other schemes
   // ---------------------------------------------------------------------
+
   // get flag for fine-scale subgrid-viscosity approach
   Fluid3::FineSubgridVisc fssgv = Fluid3::no_fssgv;
   {
@@ -594,150 +598,20 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   double l_tau         = 0.0;
   visceff_  = 0.0;
 
-  // get Smagorinsky model parameter for fine-scale subgrid viscosity
-  // (Since either all-scale Smagorinsky model (i.e., classical LES model
-  // as will be inititalized below) or fine-scale Smagorinsky model is
-  // used (and never both), the same input parameter can be exploited.)
-  if (fssgv != Fluid3::no_fssgv) Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
-
   // the default action is no model
   Fluid3::TurbModelAction turb_mod_action = Fluid3::no_model;
 
   // remember the layer of averaging for the dynamic Smagorinsky model
   int  nlayer=0;
 
-  if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
-  {
-    string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
-
-    // --------------------------------------------------
-    // standard constant coefficient Smagorinsky model
-    if (physical_turbulence_model == "Smagorinsky")
-    {
-      // the classic Smagorinsky model only requires one constant parameter
-      turb_mod_action = Fluid3::smagorinsky;
-      Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
-    }
-    // --------------------------------------------------
-    // Smagorinsky model with van Driest damping
-    else if (physical_turbulence_model == "Smagorinsky_with_van_Driest_damping")
-    {
-      // that's only implemented for turbulent channel flow
-      if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
-          !=
-          "channel_flow_of_height_2")
-      {
-        dserror("van_Driest_damping only for channel_flow_of_height_2\n");
-      }
-
-      // for the Smagorinsky model with van Driest damping, we need
-      // a viscous length to determine the y+ (heigth in wall units)
-      turb_mod_action = Fluid3::smagorinsky_with_wall_damping;
-
-      // get parameters of model
-      Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
-      l_tau           = turbmodelparams.get<double>("CHANNEL_L_TAU");
-
-      // this will be the y-coordinate of a point in the element interior
-      // we will determine the element layer in which he is contained to
-      // be able to do the output of visceff etc.
-      double center = 0;
-
-      DRT::Node** nodes = ele->Nodes();
-      for(int inode=0;inode<numnode;inode++)
-      {
-        center+=nodes[inode]->X()[1];
-      }
-      center/=numnode;
-
-      // node coordinates of plane to the element layer
-      RefCountPtr<vector<double> > planecoords
-        =
-        turbmodelparams.get<RefCountPtr<vector<double> > >("planecoords_");
-
-      bool found = false;
-      for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
-      {
-        if(center<(*planecoords)[nlayer+1])
-        {
-          found = true;
-          break;
-        }
-        nlayer++;
-      }
-      if (found ==false)
-      {
-        dserror("could not determine element layer");
-      }
-    }
-    // --------------------------------------------------
-    // Smagorinsky model with dynamic Computation of Cs
-    else if (physical_turbulence_model == "Dynamic_Smagorinsky")
-    {
-      turb_mod_action = Fluid3::dynamic_smagorinsky;
-
-      // for turbulent channel flow, use averaged quantities
-      if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
-          ==
-          "channel_flow_of_height_2")
-      {
-        RCP<vector<double> > averaged_LijMij
-          =
-          turbmodelparams.get<RCP<vector<double> > >("averaged_LijMij_");
-        RCP<vector<double> > averaged_MijMij
-          =
-          turbmodelparams.get<RCP<vector<double> > >("averaged_MijMij_");
-
-        //this will be the y-coordinate of a point in the element interior
-        // here, the layer is determined in order to get the correct
-        // averaged value from the vector of averaged (M/L)ijMij
-        double center = 0;
-        DRT::Node** nodes = ele->Nodes();
-        for(int inode=0;inode<numnode;inode++)
-        {
-          center+=nodes[inode]->X()[1];
-        }
-        center/=numnode;
-
-        RCP<vector<double> > planecoords
-          =
-          turbmodelparams.get<RCP<vector<double> > >("planecoords_");
-
-        bool found = false;
-        for (nlayer=0;nlayer < static_cast<int>((*planecoords).size()-1);)
-        {
-          if(center<(*planecoords)[nlayer+1])
-          {
-            found = true;
-            break;
-          }
-          nlayer++;
-        }
-        if (found ==false)
-        {
-          dserror("could not determine element layer");
-        }
-
-        // Cs_delta_sq is set by the averaged quantities
-        Cs_delta_sq = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
-
-        // clipping to get algorithm stable
-        if (Cs_delta_sq<0)
-        {
-          Cs_delta_sq=0;
-        }
-      }
-      else
-      {
-        // when no averaging was done, we just keep the calculated (clipped) value
-        Cs_delta_sq = ele->Cs_delta_sq_;
-      }
-    }
-    else
-    {
-      dserror("Up to now, only Smagorinsky (constant coefficient with and without wall function as well as dynamic) is available");
-    }
-  }
+  GetTurbulenceParams(ele,
+                      fssgv,
+                      turbmodelparams,
+                      turb_mod_action,
+                      Cs,
+                      Cs_delta_sq,
+                      l_tau,
+                      nlayer);
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
@@ -820,6 +694,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   }
 
   else dserror("Dimension is not working");
+
   // ---------------------------------------------------------------------
   // output values of Cs, visceff and Cs_delta_sq
   // ---------------------------------------------------------------------
@@ -3611,6 +3486,164 @@ if (visc_ < EPS15) dserror("zero or negative (physical) diffusivity");
 return;
 } // Fluid3Impl::GetMaterialParams
 
+
+/*----------------------------------------------------------------------*
+ |  compute turbulence parameters                            ehrl 04/10 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3Impl<distype>::GetTurbulenceParams(
+                               Fluid3*                    ele,
+                               Fluid3::FineSubgridVisc&   fssgv,
+                               ParameterList&             turbmodelparams,
+                               Fluid3::TurbModelAction&   turb_mod_action,
+                               double&                    Cs,
+                               double&                    Cs_delta_sq,
+                               double&                    l_tau,
+                               int&                       nlayer)
+{
+  const int numnode = iel;
+
+  // get Smagorinsky model parameter for fine-scale subgrid viscosity
+  // (Since either all-scale Smagorinsky model (i.e., classical LES model
+  // as will be inititalized below) or fine-scale Smagorinsky model is
+  // used (and never both), the same input parameter can be exploited.)
+  if (fssgv != Fluid3::no_fssgv) Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
+
+  if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
+  {
+    string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
+
+    // --------------------------------------------------
+    // standard constant coefficient Smagorinsky model
+    if (physical_turbulence_model == "Smagorinsky")
+    {
+      // the classic Smagorinsky model only requires one constant parameter
+      turb_mod_action = Fluid3::smagorinsky;
+      Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
+    }
+    // --------------------------------------------------
+    // Smagorinsky model with van Driest damping
+    else if (physical_turbulence_model == "Smagorinsky_with_van_Driest_damping")
+    {
+      // that's only implemented for turbulent channel flow
+      if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
+          !=
+          "channel_flow_of_height_2")
+      {
+        dserror("van_Driest_damping only for channel_flow_of_height_2\n");
+      }
+
+      // for the Smagorinsky model with van Driest damping, we need
+      // a viscous length to determine the y+ (heigth in wall units)
+      turb_mod_action = Fluid3::smagorinsky_with_wall_damping;
+
+      // get parameters of model
+      Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
+      l_tau           = turbmodelparams.get<double>("CHANNEL_L_TAU");
+
+      // this will be the y-coordinate of a point in the element interior
+      // we will determine the element layer in which he is contained to
+      // be able to do the output of visceff etc.
+      double center = 0;
+
+      DRT::Node** nodes = ele->Nodes();
+      for(int inode=0;inode<numnode;inode++)
+      {
+        center+=nodes[inode]->X()[1];
+      }
+      center/=numnode;
+
+      // node coordinates of plane to the element layer
+      RefCountPtr<vector<double> > planecoords
+        =
+        turbmodelparams.get<RefCountPtr<vector<double> > >("planecoords_");
+
+      bool found = false;
+      for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
+      {
+        if(center<(*planecoords)[nlayer+1])
+        {
+          found = true;
+          break;
+        }
+        nlayer++;
+      }
+      if (found ==false)
+      {
+        dserror("could not determine element layer");
+      }
+    }
+    // --------------------------------------------------
+    // Smagorinsky model with dynamic Computation of Cs
+    else if (physical_turbulence_model == "Dynamic_Smagorinsky")
+    {
+      turb_mod_action = Fluid3::dynamic_smagorinsky;
+
+      // for turbulent channel flow, use averaged quantities
+      if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
+          ==
+          "channel_flow_of_height_2")
+      {
+        RCP<vector<double> > averaged_LijMij
+          =
+          turbmodelparams.get<RCP<vector<double> > >("averaged_LijMij_");
+        RCP<vector<double> > averaged_MijMij
+          =
+          turbmodelparams.get<RCP<vector<double> > >("averaged_MijMij_");
+
+        //this will be the y-coordinate of a point in the element interior
+        // here, the layer is determined in order to get the correct
+        // averaged value from the vector of averaged (M/L)ijMij
+        double center = 0;
+        DRT::Node** nodes = ele->Nodes();
+        for(int inode=0;inode<numnode;inode++)
+        {
+          center+=nodes[inode]->X()[1];
+        }
+        center/=numnode;
+
+        RCP<vector<double> > planecoords
+          =
+          turbmodelparams.get<RCP<vector<double> > >("planecoords_");
+
+        bool found = false;
+        for (nlayer=0;nlayer < static_cast<int>((*planecoords).size()-1);)
+        {
+          if(center<(*planecoords)[nlayer+1])
+          {
+            found = true;
+            break;
+          }
+          nlayer++;
+        }
+        if (found ==false)
+        {
+          dserror("could not determine element layer");
+        }
+
+        // Cs_delta_sq is set by the averaged quantities
+        Cs_delta_sq = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
+
+        // clipping to get algorithm stable
+        if (Cs_delta_sq<0)
+        {
+          Cs_delta_sq=0;
+        }
+      }
+      else
+      {
+        // when no averaging was done, we just keep the calculated (clipped) value
+        Cs_delta_sq = ele->Cs_delta_sq_;
+      }
+    }
+    else
+    {
+      dserror("Up to now, only Smagorinsky (constant coefficient with and without wall function as well as dynamic) is available");
+    }
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  calculation of (all-scale) subgrid viscosity               vg 09/09 |
