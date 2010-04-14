@@ -5,6 +5,8 @@
  *      Author: wiesner
  */
 
+#ifdef CCADISCRET
+
 #include "braesssarazin_smoother.H"
 
 #include "drt_globalproblem.H"
@@ -226,3 +228,4 @@ RCP<LINALG::SparseMatrix> LINALG::BraessSarazin_Smoother::Multiply(const SparseM
 #endif
 }
 
+#endif
