@@ -25,6 +25,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_lib/drt_utils.H"
 
 #include "../drt_inpar/inpar_fluid.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -111,8 +112,8 @@ namespace ELEMENTS
     /// Constructor
     Fluid3Impl(int numdofpernode);
 
-    //! number of nodes
-    static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    //! nen_: number of element nodes (P. Hughes: The Finite Element Method)
+    static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     //! number of space dimensions
     static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -174,74 +175,50 @@ namespace ELEMENTS
       \param l_tau            (i) viscous length scale, required for van driest
                                   damping function and defined on input
       */
-    void Sysmat(Fluid3*                                     ele,
-                const LINALG::Matrix<nsd_,iel>&             evelaf,
-                const LINALG::Matrix<nsd_,iel>&             eveln,
-                const LINALG::Matrix<nsd_,iel>&             fsevelaf,
-                const LINALG::Matrix<iel,1>&                epreaf,
-                const LINALG::Matrix<nsd_,iel>&             eaccam,
-                const LINALG::Matrix<iel,1>&                escaaf,
-                const LINALG::Matrix<iel,1>&                escaam,
-                const LINALG::Matrix<iel,1>&                escadtam,
-                const LINALG::Matrix<nsd_,iel>&             emhist,
-                const LINALG::Matrix<nsd_,iel>&             edispnp,
-                const LINALG::Matrix<nsd_,iel>&             egridv,
-                LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&             estif,
-                LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&             emesh,
-                LINALG::Matrix<(nsd_+1)*iel,    1>&             eforce,
-                Teuchos::RCP<const MAT::Material>        material,
-                double                                   time,
-                double                                   timefac,
-                const bool                               newton,
-                const bool                               conservative,
-                const bool                               is_genalpha,
-                const bool                               higher_order_ele,
-                const enum Fluid3::FineSubgridVisc       fssgv,
-                const enum Fluid3::StabilisationAction   pspg,
-                const enum Fluid3::StabilisationAction   supg,
-                const enum Fluid3::StabilisationAction   vstab,
-                const enum Fluid3::StabilisationAction   cstab,
-                const enum Fluid3::StabilisationAction   cross,
-                const enum Fluid3::StabilisationAction   reynolds,
-                const enum Fluid3::TauType               whichtau,
-                const enum Fluid3::TurbModelAction       turb_mod_action,
-                const enum INPAR::FLUID::PhysicalType	 physicaltype,
-                double&                                  Cs,
-                double&                                  Cs_delta_sq,
-                double&                                  l_tau);
+    void Sysmat(Fluid3*                                       ele,
+                const LINALG::Matrix<nsd_,nen_>&               evelaf,
+                const LINALG::Matrix<nsd_,nen_>&               eveln,
+                const LINALG::Matrix<nsd_,nen_>&               fsevelaf,
+                const LINALG::Matrix<nen_,1>&                  epreaf,
+                const LINALG::Matrix<nsd_,nen_>&               eaccam,
+                const LINALG::Matrix<nen_,1>&                  escaaf,
+                const LINALG::Matrix<nen_,1>&                  escaam,
+                const LINALG::Matrix<nen_,1>&                  escadtam,
+                const LINALG::Matrix<nsd_,nen_>&               emhist,
+                const LINALG::Matrix<nsd_,nen_>&               edispnp,
+                const LINALG::Matrix<nsd_,nen_>&               egridv,
+                LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&    estif,
+                LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&    emesh,
+                LINALG::Matrix<(nsd_+1)*nen_,    1>&           eforce,
+                const double                                   thermpressaf,
+                const double                                   thermpressam,
+                const double                                   thermpressdtam,
+                Teuchos::RCP<const MAT::Material>             material,
+                const double                                  timefac,
+                double&                                       Cs,
+                double&                                       Cs_delta_sq,
+                double&                                       l_tau);
 
     void Sysmat2D(Fluid3*                                  ele,
-                const LINALG::Matrix<nsd_,iel>&             evelaf,
-                const LINALG::Matrix<nsd_,iel>&             eveln,
-                const LINALG::Matrix<nsd_,iel>&             fsevelaf,
-                const LINALG::Matrix<iel,1>&             epreaf,
-                const LINALG::Matrix<nsd_,iel>&             ,
-                const LINALG::Matrix<iel,1>&             escaaf,
-                const LINALG::Matrix<iel,1>&             escaam,
-                const LINALG::Matrix<iel,1>&             escadtam,
-                const LINALG::Matrix<nsd_,iel>&             emhist,
-                const LINALG::Matrix<nsd_,iel>&             edispnp,
-                const LINALG::Matrix<nsd_,iel>&             egridv,
-                LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&             estif,
-                LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&             emesh,
-                LINALG::Matrix<(nsd_+1)*iel,    1>&             eforce,
+                const LINALG::Matrix<nsd_,nen_>&             evelaf,
+                const LINALG::Matrix<nsd_,nen_>&             eveln,
+                const LINALG::Matrix<nsd_,nen_>&             fsevelaf,
+                const LINALG::Matrix<nen_,1>&             epreaf,
+                const LINALG::Matrix<nsd_,nen_>&             ,
+                const LINALG::Matrix<nen_,1>&             escaaf,
+                const LINALG::Matrix<nen_,1>&             escaam,
+                const LINALG::Matrix<nen_,1>&             escadtam,
+                const LINALG::Matrix<nsd_,nen_>&             emhist,
+                const LINALG::Matrix<nsd_,nen_>&             edispnp,
+                const LINALG::Matrix<nsd_,nen_>&             egridv,
+                LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&             estif,
+                LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&             emesh,
+                LINALG::Matrix<(nsd_+1)*nen_,    1>&             eforce,
+                const double                                   thermpressaf,
+                const double                                   thermpressam,
+                const double                                   thermpressdtam,
                 Teuchos::RCP<const MAT::Material>        material,
-                double                                   time,
-                double                                   timefac,
-                const bool                               newton,
-                const bool                               conservative,
-                const bool                               is_genalpha,
-                const bool                               higher_order_ele,
-                const enum Fluid3::FineSubgridVisc       fssgv,
-                const enum Fluid3::StabilisationAction   pspg,
-                const enum Fluid3::StabilisationAction   supg,
-                const enum Fluid3::StabilisationAction   vstab,
-                const enum Fluid3::StabilisationAction   cstab,
-                const enum Fluid3::StabilisationAction   cross,
-                const enum Fluid3::StabilisationAction   reynolds,
-                const enum Fluid3::TauType               whichtau,
-                const enum Fluid3::TurbModelAction       turb_mod_action,
-                const enum INPAR::FLUID::PhysicalType    physicaltype,
+                const double                             timefac,
                 double&                                  Cs);
 
   private:
@@ -249,8 +226,7 @@ namespace ELEMENTS
     /*!
      * \brief calculate body force from node condition
      */
-    void BodyForce(Fluid3*      ele,
-                   const double time);
+    void BodyForce(Fluid3*      ele);
 
     //! number of components necessary to store second derivatives
     // 1 component  for nsd=1:  (N,xx)
@@ -261,8 +237,7 @@ namespace ELEMENTS
     /*!
      * \brief evaluate shape functions and their derivatives at element center
      */
-    void EvalShapeFuncAndDerivsAtEleCenter(const int  eleid,
-                                           const bool higher_order_ele);
+    void EvalShapeFuncAndDerivsAtEleCenter(const int  eleid);
 
     /*!
      * \brief evaluate shape functions and their derivatives at integration point
@@ -270,26 +245,66 @@ namespace ELEMENTS
     void EvalShapeFuncAndDerivsAtIntPoint(
         const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,
         const int                              iquad,
-        const int                              eleid,
-        const bool                             higher_order_ele);
+        const int                              eleid);
+
+    /*!
+       \brief set solution flags and parameters
+     */
+    const double SetSolutionParameter(Fluid3*                    ele,
+                              ParameterList&             params);
+
+    /*
+    void FillElementVector( DRT::Discretization&          discretization,
+                            vector<int>&                  lm,
+                            LINALG::MATRIX<nsd_,nen_>&    matrixtofill,
+                            LINALG::MATRIX<nen,1>&        vectortofill,
+                            string                        state)
+    {
+       const int row = matrixtofill.Rows();
+       const int col = matrixtofill.Columns();
+
+       RefCountPtr<const Epetra_Vector> matrix_state = discretization.GetState(state);
+       if(matrix_state == null)
+         dserror("Cannot get state vector");
+
+       vector<double> mymatrix(lm.size());
+       DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
+
+       for (int i=0; i<row; ++i) //number of rows
+       {
+         if (col == nen_)
+         {
+           for(int j=0; j<col; ++j) // number of colomns
+           {
+             matrixtofill(i,j) = mymatrix[j+(i*numdofpernode_)];
+           }  // end number of columns
+         }
+         else if (col == 1)
+           matrixtofill(i,0) = mymatrix[nsd_+(i*numdofpernode_)];
+         else
+           dserror("number of columns does not correspond to the number of nodes");
+       } // end number of rows
+
+       return;
+   }  // End FillElementVector
+*/
 
     /*!
        \brief get material parameters
      */
     void GetMaterialParams(Teuchos::RCP<const MAT::Material>  material,
-                           const LINALG::Matrix<nsd_,iel>&        evelaf,
-                           const LINALG::Matrix<iel,1>&           escaaf,
-                           const LINALG::Matrix<iel,1>&           escaam,
-                           const bool                             is_genalpha,
-                           const enum INPAR::FLUID::PhysicalType  physicaltype);
+                           const LINALG::Matrix<nsd_,nen_>&        evelaf,
+                           const LINALG::Matrix<nen_,1>&           escaaf,
+                           const LINALG::Matrix<nen_,1>&           escaam,
+                           const double                            thermpressaf,
+                           const double                            thermpressam,
+                           const double                            thermpressdtam);
 
     /*!
        \brief get material parameters
      */
     void GetTurbulenceParams(Fluid3*                    ele,
-                             Fluid3::FineSubgridVisc&   fssgv,
                              ParameterList&             turbmodelparams,
-                             Fluid3::TurbModelAction&   turb_mod_action,
                              double&                    Cs,
                              double&                    Cs_delta_sq,
                              double&                    l_tau,
@@ -298,9 +313,8 @@ namespace ELEMENTS
     /*!
       \brief calculate (all-scale) subgrid viscosity
     */
-    void CalcSubgrVisc(const LINALG::Matrix<nsd_,iel>&     evelaf,
+    void CalcSubgrVisc(const LINALG::Matrix<nsd_,nen_>&     evelaf,
                        const double                        vol,
-                       const enum Fluid3::TurbModelAction  turb_mod_action,
                        double&                             Cs,
                        double&                             Cs_delta_sq,
                        double&                             l_tau);
@@ -308,24 +322,21 @@ namespace ELEMENTS
     /*!
       \brief calculate (all-scale) subgrid viscosity
     */
-    void CalcSubgrVisc_2D(const LINALG::Matrix<nsd_,iel>&  evelaf,
+    void CalcSubgrVisc_2D(const LINALG::Matrix<nsd_,nen_>&  evelaf,
                        const double                        area,
-                       const enum Fluid3::TurbModelAction  turb_mod_action,
                        double&                             Cs);
 
     /*!
       \brief calculate fine-scale subgrid viscosity
     */
-    void CalcFineScaleSubgrVisc(const LINALG::Matrix<nsd_,iel>&     evelaf,
-                                const LINALG::Matrix<nsd_,iel>&     fsevelaf,
+    void CalcFineScaleSubgrVisc(const LINALG::Matrix<nsd_,nen_>&     evelaf,
+                                const LINALG::Matrix<nsd_,nen_>&     fsevelaf,
                                 const double                        vol,
-                                const enum Fluid3::FineSubgridVisc  fssgv,
                                 double&                             Cs);
 
-    void CalcFineScaleSubgrVisc_2D(const LINALG::Matrix<nsd_,iel>&  evelaf,
-                                const LINALG::Matrix<nsd_,iel>&     fsevelaf,
+    void CalcFineScaleSubgrVisc_2D(const LINALG::Matrix<nsd_,nen_>&  evelaf,
+                                const LINALG::Matrix<nsd_,nen_>&     fsevelaf,
                                 const double                        area,
-                                const enum Fluid3::FineSubgridVisc  fssgv,
                                 double&                             Cs);
 
     /*!
@@ -348,12 +359,10 @@ namespace ELEMENTS
            tauC : Codina
     */
     void CalcStabParameter(const double               timefac,
-                           const double               vol,
-                           const enum Fluid3::TauType whichtau);
+                           const double               vol);
 
     void CalcStabParameter_2D(const double               timefac,
-                           const double               vol,
-                           const enum Fluid3::TauType whichtau);
+                           const double               vol);
 
     /*!
       \brief calculate rate of strain of (fine-scale) velocity
@@ -364,8 +373,8 @@ namespace ELEMENTS
 
       \return computed rate of strain
      */
-    double GetStrainRate(const LINALG::Matrix<nsd_,iel>& evel,
-                         const LINALG::Matrix<nsd_,iel>& derxy,
+    double GetStrainRate(const LINALG::Matrix<nsd_,nen_>& evel,
+                         const LINALG::Matrix<nsd_,nen_>& derxy,
                          LINALG::Matrix<nsd_,nsd_>        & velderxy)
     {
       double rateofstrain=0;
@@ -418,15 +427,15 @@ namespace ELEMENTS
     //! DOF's per node
     const int numdofpernode_;
     //! node coordinates
-    LINALG::Matrix<nsd_,iel> xyze_;
+    LINALG::Matrix<nsd_,nen_> xyze_;
     //! dead load in nodes at n+alpha_F/n+1
-    LINALG::Matrix<nsd_,iel> edeadaf_;
+    LINALG::Matrix<nsd_,nen_> edeadaf_;
     //! array for shape functions
-    LINALG::Matrix<iel,1> funct_;
+    LINALG::Matrix<nen_,1> funct_;
     //! array for shape function derivatives w.r.t r,s,t
-    LINALG::Matrix<nsd_,iel> deriv_;
+    LINALG::Matrix<nsd_,nen_> deriv_;
     //! array for second derivatives of shape function w.r.t r,s,t
-    LINALG::Matrix<numderiv2_,iel> deriv2_;
+    LINALG::Matrix<numderiv2_,nen_> deriv2_;
     //! transposed jacobian "dx/ds"
     LINALG::Matrix<nsd_,nsd_> xjm_;
     //! inverse of transposed jacobian "ds/dx"
@@ -436,9 +445,9 @@ namespace ELEMENTS
     //! fine-scale global velocity derivatives in gausspoint w.r.t x,y,z
     LINALG::Matrix<nsd_,nsd_> fsvderxy_;
     //! global derivatives of shape functions w.r.t x,y,z
-    LINALG::Matrix<nsd_,iel> derxy_;
+    LINALG::Matrix<nsd_,nen_> derxy_;
     //! global second derivatives of shape functions w.r.t x,y,z
-    LINALG::Matrix<numderiv2_,iel> derxy2_;
+    LINALG::Matrix<numderiv2_,nen_> derxy2_;
     //! bodyforce in gausspoint
     LINALG::Matrix<nsd_,1> bodyforce_;
     //! vector containing all values from previous timelevel n for momentum equation
@@ -461,11 +470,11 @@ namespace ELEMENTS
     LINALG::Matrix<3,1> tau_;
     //! viscous term including 2nd derivatives
     //! (This array once had three dimensions, now the first two are combined to one.)
-    LINALG::Matrix<nsd_*nsd_,iel> viscs2_;
+    LINALG::Matrix<nsd_*nsd_,nen_> viscs2_;
     //! linearisation of convection, convective part
-    LINALG::Matrix<iel,1> conv_c_;
+    LINALG::Matrix<nen_,1> conv_c_;
     //! linearisation of subgrid-scale convection, convective part
-    LINALG::Matrix<iel,1> sgconv_c_;
+    LINALG::Matrix<nen_,1> sgconv_c_;
     //! velocity divergence
     double vdiv_;
     //! total right hand side terms at int.-point for momentum equation
@@ -537,13 +546,49 @@ namespace ELEMENTS
     //! convective scalar term at t_(n)
     double conv_scan_;
     //! thermodynamic pressure at t_(n+alpha_F) or t_(n+1)
-    double thermpressaf_;
+    //double thermpressaf_;
     //! thermodynamic pressure at t_(n+alpha_M) or t_(n)
-    double thermpressam_;
+    //double thermpressam_;
     //! time derivative of thermodynamic pressure at t_(n+alpha_M) or t_(n+1)
-    double thermpressdtam_;
+    //double thermpressdtam_;
     //! for the handling of rotationally symmetric periodic boundary conditions
     FLD::RotationallySymmetricPeriodicBC<distype>* rotsymmpbc_;
+
+    // flags
+
+    //! actual time to evaluate the body BC
+    double time_;
+    //! flag for generalized-alpha time-integration scheme
+    bool is_genalpha_;
+    //! flag for conservative formulation
+    bool is_conservative_;
+    //! flag for Newton linearization
+    bool is_newton_;
+    //! Flag to (de)activate higher order elements
+    //! elements with only mixed second order derivatives are not counted as higher order elements
+    //! (see definition of higher order elements in fluid3_ele_impl_utils.cpp)
+    bool is_higher_order_ele_;
+    //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
+    INPAR::FLUID::PhysicalType physicaltype_;
+    //! Flag to (de)activate PSPG stabilization
+    Fluid3::StabilisationAction pspg_;
+    //! Flag to (de)activate SUPG stabilization
+    Fluid3::StabilisationAction supg_;
+    //! Flag to (de)activate viscous term in residual-based stabilization
+    Fluid3::StabilisationAction vstab_;
+    //! Flag to (de)activate least-squares stabilization of continuity equation
+    Fluid3::StabilisationAction cstab_;
+    //! Flag to (de)activate cross-stress term -> residual-based VMM
+    Fluid3::StabilisationAction cross_;
+    //! Flag to (de)activate Reynolds-stress term -> residual-based VMM
+    Fluid3::StabilisationAction reynolds_;
+    //! Flag to define tau
+    Fluid3::TauType whichtau_;
+    //! flag to (de)activate fine-scale subgrid viscosity
+    Fluid3::FineSubgridVisc fssgv_;
+    //! flag to define turbulence model
+    Fluid3::TurbModelAction turb_mod_action_;
+
   };
 }
 }
