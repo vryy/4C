@@ -429,6 +429,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
           fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), numifacepatchdof));
           fluidfluidmatrices_.rhuis_uncond = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
+          Cdd = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, numifacepatchdof));
         }
             
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
@@ -440,10 +441,11 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices_);
         
         if (ih_->ElementIntersected(Id()))
-        {
-           params.set("Guis_uncond",fluidfluidmatrices_.Guis_uncond);
-           params.set("Gsui_uncond",fluidfluidmatrices_.Gsui_uncond);
-           params.set("rhuis_uncond",fluidfluidmatrices_.rhuis_uncond);
+        {          
+           params.set("Mdulm",fluidfluidmatrices_.Guis_uncond);
+           params.set("Mudlm",fluidfluidmatrices_.Gsui_uncond);
+           params.set("Cddlm",Cdd);
+           params.set("rhslm",fluidfluidmatrices_.rhuis_uncond);
         }
       }
       
@@ -468,6 +470,10 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
           fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), numifacepatchdof));
           fluidfluidmatrices_.rhuis_uncond = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
+          Mud = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumNodeDof(), numifacepatchdof));
+          Mdu = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumNodeDof()));
+          Cdd = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, numifacepatchdof));
+          rhsd = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
         }
 
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
@@ -478,19 +484,6 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond, *Gds_uncond, *rhsd_uncond,
             mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices_);
         
-        if (ih_->ElementIntersected(Id()))
-        {
-          params.set("Guis_uncond",fluidfluidmatrices_.Guis_uncond);
-          params.set("Gsui_uncond",fluidfluidmatrices_.Gsui_uncond);
-          params.set("rhuis_uncond",fluidfluidmatrices_.rhuis_uncond);
-          
-          Cuu  = params.get<RCP<Epetra_SerialDenseMatrix> >("Cuu");
-          Mud  = params.get<RCP<Epetra_SerialDenseMatrix> >("Mud");
-          Mdu  = params.get<RCP<Epetra_SerialDenseMatrix> >("Mdu");
-          Cdd  = params.get<RCP<Epetra_SerialDenseMatrix> >("Cdd");
-          rhsd = params.get<RCP<Epetra_SerialDenseVector> >("rhsd");
-        }
-        
         // condensation
         CondenseElementStressAndStoreOldIterationStep(
             elemat1_uncond, elevec1_uncond,
@@ -499,6 +492,14 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             *Cuu, *Mud, *Mdu, *Cdd, *rhsd,
             true
         );
+       
+        if (ih_->ElementIntersected(Id()))
+        {
+          params.set("Mdulm",Mdu);
+          params.set("Mudlm",Mud);
+          params.set("Cddlm",Cdd);
+          params.set("rhslm",rhsd);
+        }
        }
 
       params.set<double>("L2",L2);

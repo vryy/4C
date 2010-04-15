@@ -654,7 +654,7 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
 
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("Fluid_Fluid_Coupling", 1, 0, false);
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("Fluid_Fluid_Coupling", 1, 0, false, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     IO::GMSH::disToStream("FluidFluid", 0.0, FluidFluidboundarydis_,gmshfilecontent);
     IO::GMSH::disToStream("Fluid", 0.0, discret_, gmshfilecontent);
@@ -3502,9 +3502,7 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
      )
 {
   params.set("action","fluidfluidCoupling");
-  const bool DLM_condensation = xparams_.get<bool>("DLM_condensation");
 
-  fluiddiscret->FillComplete(true,false, false);
 
   if (!fluiddiscret->Filled()) dserror("fluiddis->FillComplete() was not called");
   if (!fluiddiscret->HaveDofs()) dserror("fluiddis->AssignDegreesOfFreedom() was not called");
@@ -3513,16 +3511,11 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
   if (!boundarydiscret->HaveDofs()) dserror("fluiddis->AssignDegreesOfFreedom() was not called");
 
   const Epetra_Map& fluiddofrowmap = *fluiddiscret->DofRowMap();
-
-  GuisUncond_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
-  GsuiUncond_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
-  RHSui_ = LINALG::CreateVector(fluiddofrowmap,true);
-
-  Cuu_   = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
-  Mud_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
-  Mdu_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
-  Cdd_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
-  RHSd_ = LINALG::CreateVector(fluiddofrowmap,true);
+  
+  Mdulm_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
+  Mudlm_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
+  Cddlm_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
+  RHSlm_ = LINALG::CreateVector(fluiddofrowmap,true);
 
   TEUCHOS_FUNC_TIME_MONITOR("DRT::XFluidImplicitTimeInt::FluidFluidCouplingEvaluate");
 
@@ -3542,25 +3535,19 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
   Epetra_SerialDenseMatrix elematrix2 = Teuchos::null;
   Epetra_SerialDenseVector elevector2 = Teuchos::null;
   Epetra_SerialDenseVector elevector3 = Teuchos::null;
-  RCP<Epetra_SerialDenseMatrix> elematrixGuis = rcp(new Epetra_SerialDenseMatrix());
-  RCP<Epetra_SerialDenseMatrix> elematrixGsui = rcp(new Epetra_SerialDenseMatrix());
-  RCP<Epetra_SerialDenseVector> elevectorRHSui = rcp(new Epetra_SerialDenseVector());
+  
+  // define element matrices and vectors
+  RCP<Epetra_SerialDenseMatrix> elematrixMdulm = rcp(new Epetra_SerialDenseMatrix());
+  RCP<Epetra_SerialDenseMatrix> elematrixMudlm = rcp(new Epetra_SerialDenseMatrix());
+  RCP<Epetra_SerialDenseMatrix> elematrixCddlm = rcp(new Epetra_SerialDenseMatrix());
+  RCP<Epetra_SerialDenseVector> elevectorRHSlm = rcp(new Epetra_SerialDenseVector());
 
-  // define element matrices and vectors (for condensation)
-  RCP<Epetra_SerialDenseMatrix> elematrixCuu = rcp(new Epetra_SerialDenseMatrix());
-  RCP<Epetra_SerialDenseMatrix> elematrixMud = rcp(new Epetra_SerialDenseMatrix());
-  RCP<Epetra_SerialDenseMatrix> elematrixMdu = rcp(new Epetra_SerialDenseMatrix());
-  RCP<Epetra_SerialDenseMatrix> elematrixCdd = rcp(new Epetra_SerialDenseMatrix());
-  RCP<Epetra_SerialDenseVector> elevectorRHSd = rcp(new Epetra_SerialDenseVector());
 
   vector<int> fluidlm;
   vector<int> fluidlmowner;
 
   vector<int> ifaceboundarylm;
   vector<int> ifaceboundarylmowner;
-
-  // loop over column elements
-  const int numcolele = fluiddiscret->NumMyColElements();
 
   // Map für Dof-GIDs
   // loop over boundarydiscret elements
@@ -3584,6 +3571,8 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
       }
     }
   }
+  // loop over column elements
+  const int numcolele = fluiddiscret->NumMyColElements();
 
   for (int i=0; i<numcolele; ++i)
   {
@@ -3655,22 +3644,14 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
     const std::size_t ifaceboundarydim = ifaceboundarylm.size();
 
     if (intersected)
-    {
-      AdaptElementMatrix(ifaceboundarydim, fluideledim, *elematrixGuis);
-      AdaptElementMatrix(fluideledim, ifaceboundarydim, *elematrixGsui);
-      if (elevectorRHSui->Length()!=(int)ifaceboundarydim)
-        elevectorRHSui->Size(ifaceboundarydim);
+    {  
+      AdaptElementMatrix(fluideledim,   ifaceboundarydim, *elematrixMudlm);
+      AdaptElementMatrix(ifaceboundarydim, fluideledim,   *elematrixMdulm);
+      AdaptElementMatrix(ifaceboundarydim, ifaceboundarydim, *elematrixCddlm);
+      if (elevectorRHSlm->Length()!=(int)ifaceboundarydim)
+              elevectorRHSlm->Size(ifaceboundarydim);
       else
-        memset(elevectorRHSui->Values(),0,ifaceboundarydim*sizeof(double));
-
-      AdaptElementMatrix(fluideledim,   fluideledim,   *elematrixCuu);
-      AdaptElementMatrix(fluideledim,   ifaceboundarydim, *elematrixMud);
-      AdaptElementMatrix(ifaceboundarydim, fluideledim,   *elematrixMdu);
-      AdaptElementMatrix(ifaceboundarydim, ifaceboundarydim, *elematrixCdd);
-      if (elevectorRHSd->Length()!=(int)ifaceboundarydim)
-        elevectorRHSd->Size(ifaceboundarydim);
-      else
-        memset(elevectorRHSd->Values(),0,ifaceboundarydim*sizeof(double));
+        memset(elevectorRHSlm->Values(),0,ifaceboundarydim*sizeof(double));
     }
 
     AdaptElementMatrix(fluideledim,  fluideledim,   elematrix1);
@@ -3683,14 +3664,6 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate elements");
 
-      if (intersected)
-      {
-        params.set("Cuu",elematrixCuu);
-        params.set("Mud",elematrixMud);
-        params.set("Mdu",elematrixMdu);
-        params.set("Cdd",elematrixCdd);
-        params.set("rhsd",elevectorRHSd);
-      }
 
       // call the element evaluate method
       int err = actele->Evaluate(params,*fluiddiscret,fluidlm,elematrix1,elematrix2,
@@ -3698,9 +3671,10 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
 
       if (intersected)
       {
-        elematrixGuis = params.get<RCP<Epetra_SerialDenseMatrix> >("Guis_uncond");
-        elematrixGsui = params.get<RCP<Epetra_SerialDenseMatrix> >("Gsui_uncond");
-        elevectorRHSui = params.get<RCP<Epetra_SerialDenseVector> >("rhuis_uncond");
+        elematrixMdulm = params.get<RCP<Epetra_SerialDenseMatrix> >("Mdulm");
+        elematrixMudlm = params.get<RCP<Epetra_SerialDenseMatrix> >("Mudlm");
+        elematrixCddlm = params.get<RCP<Epetra_SerialDenseMatrix> >("Cddlm");
+        elevectorRHSlm = params.get<RCP<Epetra_SerialDenseVector> >("rhslm");
       }
 
       if (err) dserror("Proc %d: Element %d returned err=%d",fluiddiscret->Comm().MyPID(),actele->Id(),err);
@@ -3713,45 +3687,23 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
       LINALG::Assemble(*systemvector,elevector1,fluidlm,fluidlmowner);
 
       if (intersected)
-      {
-        GuisUncond_->Assemble(eid, *elematrixGuis, ifaceboundarylm, ifaceboundarylmowner, fluidlm);
-        GsuiUncond_->Assemble(eid, *elematrixGsui, fluidlm, fluidlmowner, ifaceboundarylm);
-        LINALG::Assemble(*RHSui_,*elevectorRHSui,ifaceboundarylm,ifaceboundarylmowner);
+      {       
+        Cddlm_->Assemble(eid, *elematrixCddlm, ifaceboundarylm, ifaceboundarylmowner, ifaceboundarylm);
+        Mdulm_->Assemble(eid, *elematrixMdulm, ifaceboundarylm, ifaceboundarylmowner, fluidlm);
+        Mudlm_->Assemble(eid, *elematrixMudlm, fluidlm     , fluidlmowner     , ifaceboundarylm);
+        LINALG::Assemble(*RHSlm_,*elevectorRHSlm,ifaceboundarylm,ifaceboundarylmowner);
       }
-
-      if (intersected and DLM_condensation)
-      {
-        Cdd_->Assemble(-1, *elematrixCdd, ifaceboundarylm, ifaceboundarylmowner, ifaceboundarylm);
-        Mdu_->Assemble(-1, *elematrixMdu, ifaceboundarylm, ifaceboundarylmowner, fluidlm);
-        Mud_->Assemble(-1, *elematrixMud, fluidlm     , fluidlmowner     , ifaceboundarylm);
-        Cuu_->Assemble(-1, *elematrixCuu, fluidlm     , fluidlmowner     , fluidlm);
-        LINALG::Assemble(*RHSd_,*elevectorRHSd,ifaceboundarylm,ifaceboundarylmowner);
-      }
-
     }
   } //end loop over Fluid elements
 
-  if (DLM_condensation == false)
-  {
-    GuisUncond_->Complete(fluiddofrowmap, fluiddofrowmap);
-    GsuiUncond_->Complete(fluiddofrowmap, fluiddofrowmap);
-    systemmatrix->Add(*GuisUncond_,false,1.0,1.0);
-    systemmatrix->Add(*GsuiUncond_,false,1.0,1.0);
-    systemvector->Update(1.0,*RHSui_,1.0);
-  }
-
-  if (DLM_condensation)
-  {
-    Mud_->Complete(fluiddofrowmap, fluiddofrowmap);
-    Mdu_->Complete(fluiddofrowmap, fluiddofrowmap);
-    Cdd_->Complete(fluiddofrowmap, fluiddofrowmap);
-
-    systemmatrix->Add(*Mud_,false,1.0,1.0);
-    systemmatrix->Add(*Mdu_,false,1.0,1.0);
-    systemmatrix->Add(*Cdd_,false,1.0,1.0);
-    systemvector->Update(1.0,*RHSd_,1.0);
-  }
-
+  Mudlm_->Complete(fluiddofrowmap, fluiddofrowmap);
+  Mdulm_->Complete(fluiddofrowmap, fluiddofrowmap);
+  Cddlm_->Complete(fluiddofrowmap, fluiddofrowmap);
+  systemmatrix->Add(*Mudlm_,false,1.0,1.0);
+  systemmatrix->Add(*Mdulm_,false,1.0,1.0);
+  systemmatrix->Add(*Cddlm_,false,1.0,1.0);
+  systemvector->Update(1.0,*RHSlm_,1.0);
+  
   //string GuisUncond = "/home/shahmiri/work_tmp/GuisUncond";
   //string GsuiUncond = "/home/shahmiri/work_tmp/GsuiUncond";
   //string sysmat = "/home/shahmiri/work_tmp/sysmat";

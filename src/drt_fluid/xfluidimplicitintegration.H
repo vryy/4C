@@ -498,9 +498,11 @@ protected:
   Teuchos::RCP<LINALG::SparseMatrix> Cdd_;
   Teuchos::RCP<Epetra_Vector>        RHSd_;
 
-  Teuchos::RCP<LINALG::SparseMatrix> GuisUncond_;
-  Teuchos::RCP<LINALG::SparseMatrix> GsuiUncond_;
-  Teuchos::RCP<Epetra_Vector>        RHSui_;
+  
+  Teuchos::RCP<LINALG::SparseMatrix> Mdulm_;
+  Teuchos::RCP<LINALG::SparseMatrix> Mudlm_;
+  Teuchos::RCP<LINALG::SparseMatrix> Cddlm_;
+  Teuchos::RCP<Epetra_Vector>        RHSlm_;
 
   Teuchos::RCP<Epetra_Vector> oldinc_;
 
