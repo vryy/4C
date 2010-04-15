@@ -1732,10 +1732,11 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
       //probability check whether crosslinker should be established:
       if(UniformGen.random() < plink)
       {
-        //check whether a crosslinker has already been established to the same node
+        /*check whether a crosslinker has already been established to the same node or whether node node from which
+         *crosslinker is to be established has already established N_CROSSMAX crosslinkers*/
         bool notyet = true;
         for(int k = 0; k < (int)crosslinkerpartner_[i].size(); k++)
-          if((crosslinkerpartner_[i])[k] == (crosslinkerneighbours_[i])[j] )
+          if((crosslinkerpartner_[i])[k] == (crosslinkerneighbours_[i])[j] ||  ((int)crosslinkerpartner_[i].size() >= statmechparams_.get<int>("N_CROSSMAX",0)) )
             notyet = false;
 
         //only if no crosslinker has  been established to the same node, yet, the crosslinker is established
@@ -1751,7 +1752,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
           maxaddcrosslinkslocal = max(maxaddcrosslinkslocal,(int)crosslinkerstobeaddedlocal[i].size());
         }
       }
-    }
+    }  
   }
 
   //get the maximal number of crosslinks to be added at any node on any processor in this time step
