@@ -1556,7 +1556,7 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
  * vector holding the latest node positions.
  */
 {
-	// test output
+	/*/ test output
 	cout<<"NODES: ";
 	for(int i=0; i<(int)nodeids->size(); i++)
 		cout<<nodeids->at(i)<<" ";
@@ -1576,7 +1576,7 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
 	cout<<"val: ";
 	for(int i=0; i<6; i++)
 		cout<<val->at(i)<<" ";
-	cout<<endl;
+	cout<<endl;*/
 	// highest degree of requested time derivative (may be needed in the future(?))
 	unsigned deg = 0;
 	// some checks for errors
