@@ -1397,8 +1397,8 @@ void LINALG::SaddlePointPreconditioner::PG_AMG(const RCP<SparseMatrix>& A, const
   for(int i=0; i<P_smoothed->EpetraMatrix()->NumMyRows(); i++)
   {
     int nnz = P_smoothed->EpetraMatrix()->NumMyEntries(i);
-    int indices[nnz];
-    double vals[nnz];
+    std::vector<int> indices(nnz); //int indices[nnz];
+    std::vector<double> vals(nnz); //double vals[nnz];
     int numEntries;
     P_smoothed->EpetraMatrix()->ExtractMyRowCopy(i,nnz,numEntries,&vals[0],&indices[0]);
 
@@ -1421,8 +1421,8 @@ void LINALG::SaddlePointPreconditioner::PG_AMG(const RCP<SparseMatrix>& A, const
     }
 
     int nnz2 = P_tent->EpetraMatrix()->NumMyEntries(i);
-    int indices2[nnz2];
-    double vals2[nnz2];
+    std::vector<int> indices2(nnz2); //int indices2[nnz2];
+    std::vector<double> vals2(nnz2); //double vals2[nnz2];
     P_tent->EpetraMatrix()->ExtractMyRowCopy(i,nnz2,numEntries,&vals2[0],&indices2[0]);
 
     if (nnz2==0) tentzeros++;
