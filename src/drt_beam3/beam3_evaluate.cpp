@@ -61,13 +61,13 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
     case Beam3::calc_struct_ptcstiff:
     {
       const int nnode = NumNode();
-      
+
     	switch(nnode)
    	  {
    	  		case 2:EvaluatePTC<2>(params, elemat1); break;
    	  		case 3:EvaluatePTC<3>(params, elemat1); break;
-   	  		case 4:EvaluatePTC<4>(params, elemat1); break;  		
-   	  		case 5:EvaluatePTC<5>(params, elemat1); break;  		
+   	  		case 4:EvaluatePTC<4>(params, elemat1); break;
+   	  		case 5:EvaluatePTC<5>(params, elemat1); break;
    	  		default:dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
    	  }
     }
@@ -107,7 +107,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       vector<double> myvel(lm.size());
       if( params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) != Teuchos::null)
       {
-        RefCountPtr<const Epetra_Vector> vel  = discretization.GetState("velocity");      
+        RefCountPtr<const Epetra_Vector> vel  = discretization.GetState("velocity");
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
       }
 
@@ -278,13 +278,13 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       		//modifying displacement artificially (for numerical derivative of internal forces):
       		disp_aux[6*k + i] += h_rel;
       		vel_aux[6*k + i] += h_rel / params.get<double>("delta time",0.01);
-      		
+
 		  //b3_nlnstiffmass is a templated function. therefore we need to point out the number of nodes in advance
         	  switch(nnode)
         	  {
         	  		case 2:
         	  		{
-        	  			b3_nlnstiffmass<2>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);       	  			
+        	  			b3_nlnstiffmass<2>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
         	  			break;
         	  		}
         	  		case 3:
@@ -313,7 +313,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       	} //for(int k=0; k<nnode; k++)//for all nodes
 
       } //for(int i=0; i<3; i++) //for all dof
-      
+
 
       for(int line=0; line<6*nnode; line++)
       {
@@ -389,7 +389,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
                                         vector<int>& lm,
                                         Epetra_SerialDenseVector& elevec1,
                                         Epetra_SerialDenseMatrix* elemat1)
-{  
+{
   // get element displacements
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
@@ -554,7 +554,7 @@ inline void DRT::ELEMENTS::Beam3::computestiffbasis(const LINALG::Matrix<3,3>& T
     	}
     }
   }
- 
+
   return;
 } // DRT::ELEMENTS::Beam3::computestiffbasis
 
@@ -1092,10 +1092,10 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
     default:
     dserror("unknown or improper type of material law");
   }
-  
+
 
   //"new" variables have to be adopted to current discplacement
-  
+
   /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
    *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
   NodeShift<nnode,3>(params,disp);
@@ -1130,7 +1130,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 		{
 			for (int node=0; node<nnode; ++node)
 			{
-				 dxdxi_gp(dof) += (Nodes()[node]->X()[dof]+disp[6*node+dof])*deriv(node); 
+				 dxdxi_gp(dof) += (Nodes()[node]->X()[dof]+disp[6*node+dof])*deriv(node);
 
 				/*compute interpolated angle displacemnt at specific Gauss point; angle displacement is
 				 * taken from discretization and interpolated with the according shapefunctions*/
@@ -1146,7 +1146,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 		//update theta and thetaprime
 		thetanew_[numgp]= thetanew_gp;
 		thetaprimenew_[numgp]= thetaprimenew_gp;
-		
+
 
 
 		/*to perform a curvature update at a specific Gauss point we need to know the angle deltatheta by which the triad at that
@@ -1246,7 +1246,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 
 	    //adding nonlinear (stress dependent) parts to tangent stiffness matrix, Crisfield, Vol. 2 equs. (17.106), (17.107) and (17.107b)
 	    computeKsig1<nnode>(Ksig1_gp,stressn,stressm,funct,deriv);
-	    computeKsig2<nnode>(Ksig2_gp,stressn,S_gp,funct,deriv);	
+	    computeKsig2<nnode>(Ksig2_gp,stressn,S_gp,funct,deriv);
 
 	    Ksig1_gp.Scale(wgt);
 	    Ksig2_gp.Scale(wgt);
@@ -1323,7 +1323,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 	  }//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
 
   }//if (massmatrix != NULL)
-  
+
 
   /*the following function call applied statistical forces and damping matrix according to the fluctuation dissipation theorem;
    * it is dedicated to the application of beam2 elements in the frame of statistical mechanics problems; for these problems a
@@ -1331,7 +1331,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
    * the element does not attach this special vector to params the following method is just doing nothing, which means that for
    * any ordinary problem of structural mechanics it may be ignored*/
    CalcBrownian<nnode,3,6,4>(params,vel,disp,stiffmatrix,force);
-
 
   return;
 
@@ -1438,35 +1437,35 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
 
 
   double basisdamp   = (20e-2)*PI*3; // in Actin3D_XXX input files with(!) stochastic torsional moments:: (20e-2)*PI for A = 1.9e-8, (20e-2)*PI*3 for A = 1.9e-6; for input of Thomas Knyrim without(!) stochastic torsional moments: (20e-2)*PI*20
-  double anisofactor = 50; //10 for A = 1.9e-8 and A = 1.9e-6  
-   
-  
+  double anisofactor = 50; //10 for A = 1.9e-8 and A = 1.9e-6
+
+
   //Get the applied integrationpoints for underintegration
   DRT::UTILS::IntegrationPoints1D gausspointsptc(MyGaussRule(nnode,gaussunderintegration));
   //Get discretization typ
-  const DRT::Element::DiscretizationType distype = Shape();  
+  const DRT::Element::DiscretizationType distype = Shape();
   //matrix to store Ansatzfunktionen
   LINALG::Matrix<1,nnode> funct;
-  
+
   for (int gp=0; gp<gausspointsptc.nquad; gp++)
   {
-    
-    //Get location and weight of GP in parameter space  
+
+    //Get location and weight of GP in parameter space
     const double xi = gausspointsptc.qxg[gp][0];
     const double wgt = gausspointsptc.qwgt[gp];
-    
+
     DRT::UTILS::shape_function_1D(funct,xi,distype);
-    
+
     //computing angle increment from current position in comparison with last converged position for damping
     LINALG::Matrix<4,1> deltaQ;
     quaternionproduct(inversequaternion(Qconv_[gp]),Qnew_[gp],deltaQ);
-    LINALG::Matrix<3,1> deltatheta;  
+    LINALG::Matrix<3,1> deltatheta;
     quaterniontoangle(deltaQ,deltatheta);
-  
+
     //computing special matrix for anisotropic damping
     LINALG::Matrix<3,3> Tconv;
     LINALG::Matrix<3,3> Theta;
-    quaterniontotriad(Qconv_[gp],Tconv);    
+    quaterniontotriad(Qconv_[gp],Tconv);
     for(int k=0; k<3; k++)
       for(int j = 0; j<3; j++)
         Theta(k,j) = Tconv(k,0)*Tconv(j,0);
@@ -1491,7 +1490,7 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
           for (int l=0; l<3; l++)
             elemat1(i*6+3+k,j*6+3+l) += artstiff(k,l)*funct(i)*funct(j)*wgt*jacobi_[gp];
   }
- 
+
   return;
 } //DRT::ELEMENTS::Beam3::EvaluatePTC
 
@@ -1501,38 +1500,38 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
  | rotation around filament axis                                             (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 inline void DRT::ELEMENTS::Beam3::MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel)
-{  
+{
   //translational damping coefficients according to Howard, p. 107, table 6.2;
   gamma(0) = 2*PI*params.get<double>("ETA",0.0);
   gamma(1) = 4*PI*params.get<double>("ETA",0.0);
-  
+
   /*damping coefficient of rigid straight rod spinning around its own axis according to Howard, p. 107, table 6.2;
    *as this coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
   double rsquare = pow((4*Iyy_/PI),0.5);
   double artificial = 1920;//1920;  //1920 not bad for standard Actin3D_10.dat files; for 40 elements also 1 seems to work really well
   gamma(2) = 4*PI*params.get<double>("ETA",0.0)*rsquare*artificial;
-  
+
 
   //in case of an isotropic friction model the same damping coefficients are applied parallel to the polymer axis as perpendicular to it
   if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropicconsistent || frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
     gamma(0) = gamma(1);
 
 
-   /* in the following section damping coefficients are replaced by those suggested in Ortega2003, which allows for a 
+   /* in the following section damping coefficients are replaced by those suggested in Ortega2003, which allows for a
     * comparison of the finite element simulation with the results of that article; note that we assume that the element
     * length is equivalent to the particle length in the following when computing the length to diameter ratio p*/
    /*
    double lrefe=0;
    for (int gp=0; gp<nnode-1; gp++)
      lrefe += gausspointsdamping.qwgt[gp]*jacobi_[gp];
-   
+
    double p=lrefe/(pow(crosssec_*4.0/PI,0.5));
    double Ct=0.312+0.565/p-0.100/pow(p,2.0);
    double Cr=-0.662+0.917/p-0.05/pow(p,2.0);
    gamma(0) = 2.0*PI*params.get<double>("ETA",0.0)/(log(p) + 2*Ct - Cr);
    gamma(1) = 4.0*PI*params.get<double>("ETA",0.0)/(log(p)+Cr);
    gamma(3) = 4.0*PI*params.get<double>("ETA",0.0)*rsquare*artificial*(0.96 + 0.64992/p - 0.17568/p^2);
-   */    
+   */
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -1557,22 +1556,22 @@ void DRT::ELEMENTS::Beam3::MyBackgroundVelocity(ParameterList& params,  //!<para
                                                 LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
                                                 LINALG::Matrix<ndim,ndim>& velbackgroundgrad) //!<gradient of velocity of background fluid
 {
-  
+
   /*note: this function is not yet a general one, but always assumes a shear flow, where the velocity of the
    * background fluid is always directed in direction params.get<int>("OSCILLDIR",0) and orthogonal to z-axis.
    * In 3D the velocity increases linearly in z and equals zero for z = 0.
    * In 2D the velocity increases linearly in y and equals zero for y = 0. */
-  
+
   //velocity at upper boundary of domain
   double uppervel = 0.0;
-  
+
   //oscillations start only at params.get<double>("STARTTIME",0.0)
   if(params.get<double>("total time",0.0) > params.get<double>("STARTTIME",0.0))
     uppervel = (params.get<double>("SHEARAMPLITUDE",0.0)) * (DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).FctDer(params.get<double>("total time",0.0),1))[1];
-                                                             
+
   //compute background velocity
   velbackground.PutScalar(0);
-  velbackground(params.get<int>("OSCILLDIR",0)) = (evaluationpoint(ndim-1) / params.get<double>("PeriodLength",0.0)) * uppervel; 
+  velbackground(params.get<int>("OSCILLDIR",0)) = (evaluationpoint(ndim-1) / params.get<double>("PeriodLength",0.0)) * uppervel;
 
   //compute gradient of background velocity
   velbackgroundgrad.PutScalar(0);
@@ -1591,84 +1590,84 @@ inline void DRT::ELEMENTS::Beam3::MyRotationalDamping(ParameterList& params,  //
 {
   //get time step size
   double dt = params.get<double>("delta time",0.0);
-  
+
   //integration points for underintegration
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
-  
+
   //get friction model according to which forces and damping are applied
   INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
 
   //damping coefficients for translational and rotatinal degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
   MyDampingConstants(params,gamma,frictionmodel);
-  
+
 
   //matrix to store basis functions evaluated at a certain Gauss point
   LINALG::Matrix<1,nnode> funct;
-  
+
   for (int gp=0; gp<gausspoints.nquad; gp++)//loop through Gauss points
-  {    
+  {
     //get evaluated basis functions at current Gauss point
     DRT::UTILS::shape_function_1D(funct,gausspoints.qxg[gp][0],Shape());
-    
+
     //rotation between last converged position and current position expressend as a quaternion
     LINALG::Matrix<4,1>  deltaQ;
     quaternionproduct(inversequaternion(Qconv_[gp]),Qnew_[gp],deltaQ);
-    
+
     //rotation between last converged position and current position expressed as a three element rotation vector
     LINALG::Matrix<3,1> deltatheta;
     quaterniontoangle(deltaQ,deltatheta);
-    
+
     //angular velocity at this Gauss point
     LINALG::Matrix<3,1> omega(true);
     omega += deltatheta;
     omega.Scale(1/dt);
-    
+
     //compute matrix T*W*T^t
     LINALG::Matrix<3,3> Tnew;
     LINALG::Matrix<3,3> TWTt;
-    quaterniontotriad(Qnew_[gp],Tnew);    
+    quaterniontotriad(Qnew_[gp],Tnew);
     for(int k=0; k<3; k++)
       for(int j = 0; j<3; j++)
         TWTt(k,j) = Tnew(k,0)*Tnew(j,0);
-    
-    //compute vector T*W*T^t*\omega 
+
+    //compute vector T*W*T^t*\omega
     LINALG::Matrix<3,1> TWTtomega;
     TWTtomega.Multiply(TWTt,omega);
-    
+
     //compute matrix T*W*T^t*H^(-1)
     LINALG::Matrix<3,3> TWTtHinv;
     TWTtHinv.Multiply(TWTt,Hinv(deltatheta));
-    
+
     //compute spin matrix S(\omega)
     LINALG::Matrix<3,3> Sofomega;
     computespin(Sofomega,omega,1);
-    
+
     //compute matrix T*W*T^t*S(\omega)
     LINALG::Matrix<3,3> TWTtSofomega;
     TWTtSofomega.Multiply(TWTt,Sofomega);
-    
-    //compute spin matrix S(T*W*T^t*\omega) 
+
+    //compute spin matrix S(T*W*T^t*\omega)
     LINALG::Matrix<3,3> SofTWTtomega;
     computespin(SofTWTtomega,TWTtomega,1);
-         
+
     //loop over all line nodes
     for(int i=0; i<nnode; i++)
       //loop over three dimensions in line direction
       for(int k=0; k<3; k++)
       {
         if(force != NULL)
-          (*force)(i*6+3+k) += gamma(2)*TWTtomega(k)*funct(i)*gausspoints.qwgt[gp]*jacobi_[gp]; 
-        
+          (*force)(i*6+3+k) += gamma(2)*TWTtomega(k)*funct(i)*gausspoints.qwgt[gp]*jacobi_[gp];
+
         if(stiffmatrix != NULL)
           //loop over all column nodes
           for (int j=0; j<nnode; j++)
             //loop over three dimensions in column direction
             for (int l=0; l<3; l++)
-              (*stiffmatrix)(i*6+3+k,j*6+3+l) += gamma(2)*( TWTtHinv(k,l) / dt + TWTtSofomega(k,l) - SofTWTtomega(k,l) )*funct(i)*funct(j)*gausspoints.qwgt[gp]*jacobi_[gp]; 
-      }     
+              (*stiffmatrix)(i*6+3+k,j*6+3+l) += gamma(2)*( TWTtHinv(k,l) / dt + TWTtSofomega(k,l) - SofTWTtomega(k,l) )*funct(i)*funct(j)*gausspoints.qwgt[gp]*jacobi_[gp];
+      }
   }
-  
+
 
   return;
 }//DRT::ELEMENTS::Beam3::MyRotationalDamping(.)
@@ -1682,27 +1681,27 @@ inline void DRT::ELEMENTS::Beam3::MyTranslationalDamping(ParameterList& params, 
                                                   const vector<double>&     disp, //!<element disp vector
                                                   Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                                   Epetra_SerialDenseVector* force)//!< element internal force vector
-{  
+{
   //get time step size
   double dt = params.get<double>("delta time",0.0);
-  
+
   //velocity and gradient of background velocity field
   LINALG::Matrix<ndim,1> velbackground;
   LINALG::Matrix<ndim,ndim> velbackgroundgrad;
-  
+
   //evaluation point in physical space corresponding to a certain Gauss point in parameter space
   LINALG::Matrix<ndim,1> evaluationpoint;
-  
+
   //get friction model according to which forces and damping are applied
   INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
 
   //damping coefficients for translational and rotatinal degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
   MyDampingConstants(params,gamma,frictionmodel);
-  
+
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
   vector<double> jacobi(jacobimass_);
-  
+
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
   if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
@@ -1710,20 +1709,20 @@ inline void DRT::ELEMENTS::Beam3::MyTranslationalDamping(ParameterList& params, 
     integrationtype = lobattointegration;
     jacobi = jacobinode_;
   }
-  
+
   //get Gauss points and weights for evaluation of damping matrix
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,integrationtype));
-  
+
   //matrix to store basis functions and their derivatives evaluated at a certain Gauss point
   LINALG::Matrix<1,nnode> funct;
   LINALG::Matrix<1,nnode> deriv;
 
   for(int gp=0; gp < gausspoints.nquad; gp++)
-  {    
+  {
     //evaluate basis functions and their derivatives at current Gauss point
     DRT::UTILS::shape_function_1D(funct,gausspoints.qxg[gp][0],Shape());
     DRT::UTILS::shape_function_1D_deriv1(deriv,gausspoints.qxg[gp][0],Shape());
-     
+
     //compute point in phyiscal space corresponding to Gauss point
     evaluationpoint.PutScalar(0);
     //loop over all line nodes
@@ -1731,52 +1730,52 @@ inline void DRT::ELEMENTS::Beam3::MyTranslationalDamping(ParameterList& params, 
       //loop over all dimensions
       for(int j=0; j<ndim; j++)
         evaluationpoint(j) += funct(i)*(Nodes()[i]->X()[j]+disp[dof*i+j]);
-    
+
     //compute velocity and gradient of background flow field at evaluationpoint
     MyBackgroundVelocity<ndim>(params,evaluationpoint,velbackground,velbackgroundgrad);
 
- 
+
     //compute tangent vector t_{\par} at current Gauss point
     LINALG::Matrix<ndim,1> tpar(true);
     for(int i=0; i<nnode; i++)
       for(int k=0; k<ndim; k++)
         tpar(k) += deriv(i)*(Nodes()[i]->X()[k]+disp[dof*i+k]) / jacobi[gp];
-    
+
     //compute velocity vector at this Gauss point
     LINALG::Matrix<ndim,1> velgp(true);
     for(int i=0; i<nnode; i++)
       for(int l=0; l<ndim; l++)
-        velgp(l) += funct(i)*vel[dof*i+l]; 
-    
+        velgp(l) += funct(i)*vel[dof*i+l];
+
     //compute matrix product (t_{\par} \otimes t_{\par}) \cdot velbackgroundgrad
     LINALG::Matrix<ndim,ndim> tpartparvelbackgroundgrad(true);
     for(int i=0; i<ndim; i++)
       for(int j=0; j<ndim; j++)
         for(int k=0; k<ndim; k++)
           tpartparvelbackgroundgrad(i,j) += tpar(i)*tpar(k)*velbackgroundgrad(k,j);
-        
+
     //loop over all line nodes
-    for(int i=0; i<nnode; i++)            
+    for(int i=0; i<nnode; i++)
       //loop over lines of matrix t_{\par} \otimes t_{\par}
       for(int k=0; k<ndim; k++)
         //loop over columns of matrix t_{\par} \otimes t_{\par}
-        for(int l=0; l<ndim; l++)           
-        {               
+        for(int l=0; l<ndim; l++)
+        {
           if(force != NULL)
             (*force)(i*dof+k)+= funct(i)*jacobi[gp]*gausspoints.qwgt[gp]*( (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) *(velgp(l)- velbackground(l));
-          
+
           if(stiffmatrix != NULL)
             //loop over all column nodes
-            for (int j=0; j<nnode; j++) 
+            for (int j=0; j<nnode; j++)
             {
               (*stiffmatrix)(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*funct(j)*jacobi[gp]*(                 (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) / dt;
-              (*stiffmatrix)(i*dof+k,j*dof+l) -= gausspoints.qwgt[gp]*funct(i)*funct(j)*jacobi[gp]*( velbackgroundgrad(k,l)*gamma(1) + (gamma(0) - gamma(1))*tpartparvelbackgroundgrad(k,l) ) ;             
+              (*stiffmatrix)(i*dof+k,j*dof+l) -= gausspoints.qwgt[gp]*funct(i)*funct(j)*jacobi[gp]*( velbackgroundgrad(k,l)*gamma(1) + (gamma(0) - gamma(1))*tpartparvelbackgroundgrad(k,l) ) ;
               (*stiffmatrix)(i*dof+k,j*dof+k) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                                   (gamma(0) - gamma(1))*tpar(l)*(velgp(l) - velbackground(l));
               (*stiffmatrix)(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                                   (gamma(0) - gamma(1))*tpar(k)*(velgp(l) - velbackground(l));
-            }    
-        }   
+            }
+        }
   }
- 
+
   return;
 }//DRT::ELEMENTS::Beam3::MyTranslationalDamping(.)
 
@@ -1792,15 +1791,15 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticForces(ParameterList& params,  //!
 {
   //get friction model according to which forces and damping are applied
   INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
-  
+
   //damping coefficients for three translational and one rotatinal degree of freedom
   LINALG::Matrix<3,1> gamma(true);
   MyDampingConstants(params,gamma,frictionmodel);
-  
+
 
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
   vector<double> jacobi(jacobimass_);
-  
+
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
   if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
@@ -1808,20 +1807,20 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticForces(ParameterList& params,  //!
     integrationtype = lobattointegration;
     jacobi = jacobinode_;
   }
-  
+
   //get Gauss points and weights for evaluation of damping matrix
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,integrationtype));
-  
+
   //matrix to store basis functions and their derivatives evaluated at a certain Gauss point
   LINALG::Matrix<1,nnode> funct;
   LINALG::Matrix<1,nnode> deriv;
-  
-  
+
+
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
    * and standard deviation (2*kT / dt)^0.5; note carefully: a space between the two subsequal ">" signs is mandatory
    * for the C++ parser in order to avoid confusion with ">>" for streams*/
    RCP<Epetra_MultiVector> randomnumbers = params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null);
-   
+
 
 
   for(int gp=0; gp < gausspoints.nquad; gp++)
@@ -1829,36 +1828,36 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticForces(ParameterList& params,  //!
     //evaluate basis functions and their derivatives at current Gauss point
     DRT::UTILS::shape_function_1D(funct,gausspoints.qxg[gp][0],Shape());
     DRT::UTILS::shape_function_1D_deriv1(deriv,gausspoints.qxg[gp][0],Shape());
-    
+
     //compute tangent vector t_{\par} at current Gauss point
     LINALG::Matrix<ndim,1> tpar(true);
     for(int i=0; i<nnode; i++)
       for(int k=0; k<ndim; k++)
         tpar(k) += deriv(i)*(Nodes()[i]->X()[k]+disp[dof*i+k]) / jacobi[gp];
-     
-    
+
+
     //loop over all line nodes
-    for(int i=0; i<nnode; i++)             
+    for(int i=0; i<nnode; i++)
       //loop dimensions with respect to lines
       for(int k=0; k<ndim; k++)
         //loop dimensions with respect to columns
-        for(int l=0; l<ndim; l++)           
+        for(int l=0; l<ndim; l++)
         {
           if(force != NULL)
-            (*force)(i*dof+k) -= funct(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*tpar(k)*tpar(l))*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(jacobi[gp]*gausspoints.qwgt[gp]);          
+            (*force)(i*dof+k) -= funct(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*tpar(k)*tpar(l))*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(jacobi[gp]*gausspoints.qwgt[gp]);
 
           if(stiffmatrix != NULL)
             //loop over all column nodes
-            for (int j=0; j<nnode; j++) 
-            {            
-              (*stiffmatrix)(i*dof+k,j*dof+k) -= funct(i)*deriv(j)*tpar(l)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));   
-              (*stiffmatrix)(i*dof+k,j*dof+l) -= funct(i)*deriv(j)*tpar(k)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));  
+            for (int j=0; j<nnode; j++)
+            {
+              (*stiffmatrix)(i*dof+k,j*dof+k) -= funct(i)*deriv(j)*tpar(l)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));
+              (*stiffmatrix)(i*dof+k,j*dof+l) -= funct(i)*deriv(j)*tpar(k)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));
             }
-        }  
+        }
   }
-  
-  
-  
+
+
+
   return;
 }//DRT::ELEMENTS::Beam3::MyStochasticForces(.)
 
@@ -1875,20 +1874,20 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticMoments(ParameterList& params,  //
 
   //get friction model according to which forces and damping are applied
   INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
-  
+
   //damping coefficients for three translational and one rotatinal degree of freedom
   LINALG::Matrix<3,1> gamma(true);
   MyDampingConstants(params,gamma,frictionmodel);
-  
+
   //determine type of numerical integration performed (note: underintegration applied as for related points triads already known from elasticity)
   IntegrationType integrationtype = gaussunderintegration;
 
   //get Gauss points and weights for evaluation of damping matrix
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,integrationtype));
-  
+
   //matrix to store basis functions and their derivatives evaluated at a certain Gauss point
   LINALG::Matrix<1,nnode> funct;
-   
+
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
    * and standard deviation (2*kT / dt)^0.5; note carefully: a space between the two subsequal ">" signs is mandatory
    * for the C++ parser in order to avoid confusion with ">>" for streams*/
@@ -1898,36 +1897,36 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticMoments(ParameterList& params,  //
   {
     //evaluate basis functions and their derivatives at current Gauss point
     DRT::UTILS::shape_function_1D(funct,gausspoints.qxg[gp][0],Shape());
-    
+
     //get current triad at this Gauss point:
     LINALG::Matrix<3,3> Tnew;
-    quaterniontotriad(Qnew_[gp],Tnew); 
-    
-    //get first column out of Tnew 
+    quaterniontotriad(Qnew_[gp],Tnew);
+
+    //get first column out of Tnew
     LINALG::Matrix<3,1> t1;
     for(int i=0; i<3; i++)
       t1(i) = Tnew(i,0);
-    
+
     //compute spin matrix from first column of Tnew times random number
     LINALG::Matrix<3,3> S;
     computespin(S,t1,(*randomnumbers)[gp*randompergauss+3][LID()]);
-    
-    
+
+
     //loop over all line nodes
-    for(int i=0; i<nnode; i++)             
+    for(int i=0; i<nnode; i++)
       //loop over lines of matrix t_{\par} \otimes t_{\par}
       for(int k=0; k<3; k++)
       {
         if(force != NULL)
           (*force)(i*6+3+k) -= funct(i)*t1(k)*(*randomnumbers)[gp*randompergauss+3][LID()]*sqrt(jacobi_[gp]*gausspoints.qwgt[gp]*gamma(2));
-      
+
         if(stiffmatrix != NULL)
           //loop over all column nodes
-          for (int j=0; j<nnode; j++) 
+          for (int j=0; j<nnode; j++)
             //loop over three dimensions with respect to columns
-            for(int l=0; l<3; l++)           
-              (*stiffmatrix)(i*6+3+k,j*6+3+l) += funct(i)*funct(j)*S(k,l)*sqrt(jacobi_[gp]*gausspoints.qwgt[gp]*gamma(2)); 
-               
+            for(int l=0; l<3; l++)
+              (*stiffmatrix)(i*6+3+k,j*6+3+l) += funct(i)*funct(j)*S(k,l)*sqrt(jacobi_[gp]*gausspoints.qwgt[gp]*gamma(2));
+
     }
   }
   return;
@@ -1943,20 +1942,20 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
                                               const vector<double>&           disp, //!< element displacement vector
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                               Epetra_SerialDenseVector* force) //!< element internal force vector
-{   
+{
   //if no random numbers for generation of stochastic forces are passed to the element no Brownian dynamics calculations are conducted
   if( params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) == Teuchos::null)
     return;
-  
+
   //add stiffness and forces due to translational damping effects
-  MyTranslationalDamping<nnode,ndim,dof>(params,vel,disp,stiffmatrix,force); 
+  MyTranslationalDamping<nnode,ndim,dof>(params,vel,disp,stiffmatrix,force);
 
   //add stiffness and forces (i.e. moments) due to rotational damping effects
   MyRotationalDamping<nnode>(params,vel,disp,stiffmatrix,force);
 
   //add stochastic forces and (if required) resulting stiffness
   MyStochasticForces<nnode,ndim,dof,randompergauss>(params,vel,disp,stiffmatrix,force);
-  
+
   //add stochastic moments and resulting stiffness
   //MyStochasticMoments<nnode,randompergauss>(params,vel,disp,stiffmatrix,force);
 
@@ -1976,19 +1975,21 @@ return;
 template<int nnode, int ndim> //number of nodes, number of dimensions
 inline void DRT::ELEMENTS::Beam3::NodeShift(ParameterList& params,  //!<parameter list
                                             vector<double>& disp) //!<element disp vector
-{    
+{
   /*get number of degrees of freedom per node; note: the following function assumes the same number of degrees
    *of freedom for each element node*/
   int numdof = NumDofPerNode(*(Nodes()[0]));
-  
+
+
+
   /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0) > 0.0, this
    * method has to change the displacement variables*/
   if(params.get<double>("PeriodLength",0.0) > 0.0)
     //loop through all nodes except for the first node which remains fixed as reference node
     for(int i=1;i<nnode;i++)
-    {    
+    {
       for(int dof=0; dof<ndim; dof++)
-      {   
+      {
         /*if the distance in some coordinate direction between some node and the first node becomes smaller by adding or subtracting
          * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
          * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
@@ -1996,26 +1997,27 @@ inline void DRT::ELEMENTS::Beam3::NodeShift(ParameterList& params,  //!<paramete
         if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) + params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
         {
           disp[numdof*i+dof] += params.get<double>("PeriodLength",0.0);
-          
-          /*the upper domain surface orthogonal to the z-direction is subject to shear Dirichlet boundary condition; the lower surface 
+
+          /*the upper domain surface orthogonal to the z-direction is subject to shear Dirichlet boundary condition; the lower surface
            *is fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
            *z-surface, the shear has to be substracted from nodal coordinates in that case */
           if(dof == 2)
-            disp[numdof*i+params.get<int>("OSCILLDIR",-1)] -= params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));           
+            disp[numdof*i+params.get<int>("OSCILLDIR",-1)] += params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
         }
-          
+
         if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
         {
           disp[numdof*i+dof] -= params.get<double>("PeriodLength",0.0);
-          
-          /*the upper domain surface orthogonal to the z-direction is subject to shear Dirichlet boundary condition; the lower surface 
+
+          /*the upper domain surface orthogonal to the z-direction is subject to shear Dirichlet boundary condition; the lower surface
            *is fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
            *z-surface, the shear has to be added to nodal coordinates in that case */
           if(dof == 2)
-            disp[numdof*i+params.get<int>("OSCILLDIR",-1)] += params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
+            disp[numdof*i+params.get<int>("OSCILLDIR",-1)] -= params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
         }
       }
     }
+
 return;
 
 }//DRT::ELEMENTS::Beam3::NodeShift

@@ -207,11 +207,13 @@ void StatMechTime::Integrate()
           ParameterList p;
           p.set("action","calc_struct_reset_istep");
           discret_.Evaluate(p,null,null,null,null,null);
+
+          dserror("not converged");
         }
 
       }
       while(isconverged_ == 0);
-
+      //cout<<"Post-Integration: \n"<<*disn_<<endl;
         const double t_admin = Teuchos::Time::wallTime();
 
     UpdateandOutput();
@@ -322,7 +324,8 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     			(*drefnew_)[i] = 9e99;
     	}
     	EvaluateDirichletPeriodic(p);
-    	//cout<<"Periodic: \n"<<*dirichtoggle_<<endl;
+    	cout<<"t = "<<p.get("total time", -1.0)<<endl;
+    	//cout<<"Predictor: \n"<<*disn_<<endl;
     }
 		// "common" case without periodic boundary conditions
     if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"CONVENTIONALDBC"))
@@ -477,7 +480,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
 
   if (printscreen)
     fresm_->Norm2(&fresmnorm);
-
+  //cout<<"Fresm_Predictor:\n"<<*fresm_<<endl;
 			//test output to determine source of divergence
       // Test 1: Check residuals (show only those that surpass a certain treshold)
       /*if(fresmnorm>10)
@@ -1366,10 +1369,9 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
   if(!isinit_)
   {
   	// get the apmlitude of the oscillation
-  	amp_= statmechmanager_->statmechparams_.get<double>("SHEARAMPLITUDE",0.0)*
-					statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0);
+  	amp_= statmechmanager_->statmechparams_.get<double>("SHEARAMPLITUDE",0.0);
 		// retrieve direction of oscillatory motion
-		oscdir_ = statmechmanager_->statmechparams_.get<int>("OSCILLDIR",0)-1;
+		oscdir_ = statmechmanager_->statmechparams_.get<int>("OSCILLDIR",0);
 		// retrieve number of time curve that is to be applied
 		curvenumber_ = statmechmanager_->statmechparams_.get<int>("CURVENUMBER",0)-1;
 
@@ -1397,7 +1399,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 			// case: broken element (in z-dir); node_n+1 oscillates, node_n is fixed in dir. of oscillation
 			if(broken && cut(2,n)==1.0)
 			{
-				cout<<"DOWN->UP"<<endl;
+				//cout<<"DOWN->UP"<<endl;
 				// indicates beginning of a new filament (in the very special case that this is needed)
 				bool newfilament = false;
 				// check for case: last element of filament I as well as first element of filament I+1 broken
@@ -1441,9 +1443,9 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				alreadydone=true;
 			}
 			// case: broken element (in z-dir); node_n oscillates, node_n+1 is fixed in dir. of oscillation
-			else if(broken && cut(2,n)==2.0)
+			if(broken && cut(2,n)==2.0)
 			{
-				cout<<"UP->DOWN"<<endl;
+				//cout<<"UP->DOWN"<<endl;
 				bool newfilament = false;
 
 				if(tmpid!=element->Nodes()[n]->Id() && alreadydone)
@@ -1556,7 +1558,7 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
  * vector holding the latest node positions.
  */
 {
-	/*/ test output
+	// test output
 	cout<<"NODES: ";
 	for(int i=0; i<(int)nodeids->size(); i++)
 		cout<<nodeids->at(i)<<" ";
@@ -1576,7 +1578,7 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
 	cout<<"val: ";
 	for(int i=0; i<6; i++)
 		cout<<val->at(i)<<" ";
-	cout<<endl;*/
+	cout<<endl;
 	// highest degree of requested time derivative (may be needed in the future(?))
 	unsigned deg = 0;
 	// some checks for errors
