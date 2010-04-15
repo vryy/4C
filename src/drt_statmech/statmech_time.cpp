@@ -322,13 +322,13 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     			(*drefnew_)[i] = 9e99;
     	}
     	EvaluateDirichletPeriodic(p);
-    	//cout<<"Periodic: "<<*disn_<<endl;
+    	//cout<<"Periodic: \n"<<*dirichtoggle_<<endl;
     }
 		// "common" case without periodic boundary conditions
     if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"CONVENTIONALDBC"))
     {
     	discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
-			//cout<<"Conventional: "<<*disn_<<endl;
+			//cout<<"Conventional: \n"<<*dirichtoggle_<<endl;
     }
 
     discret_.ClearState();
@@ -477,6 +477,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
 
   if (printscreen)
     fresm_->Norm2(&fresmnorm);
+
 			//test output to determine source of divergence
       // Test 1: Check residuals (show only those that surpass a certain treshold)
       /*if(fresmnorm>10)
@@ -550,6 +551,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
       	}
       	cout<<"\n"<<endl;
       }*/
+
   if (!myrank_ and printscreen)
   {
     PrintPredictor(convcheck, fresmnorm);
@@ -1327,6 +1329,10 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
  * be added to the time curve value in DoDirichletConditionPeriodic().
  */
 {
+	// check if start time for DBC evaluation has been reached. If not, do nothing and just return!
+	if(statmechmanager_->statmechparams_.get<double>("STARTTIME",-1.0) > params.get("total time", 1.0))
+		return;
+
 #ifdef MEASURETIME
   const double t_start = Teuchos::Time::wallTime();
 #endif // #ifdef MEASURETIME
@@ -1391,6 +1397,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 			// case: broken element (in z-dir); node_n+1 oscillates, node_n is fixed in dir. of oscillation
 			if(broken && cut(2,n)==1.0)
 			{
+				cout<<"DOWN->UP"<<endl;
 				// indicates beginning of a new filament (in the very special case that this is needed)
 				bool newfilament = false;
 				// check for case: last element of filament I as well as first element of filament I+1 broken
@@ -1434,8 +1441,9 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				alreadydone=true;
 			}
 			// case: broken element (in z-dir); node_n oscillates, node_n+1 is fixed in dir. of oscillation
-			if(broken && cut(2,n)==2.0)
+			else if(broken && cut(2,n)==2.0)
 			{
+				cout<<"UP->DOWN"<<endl;
 				bool newfilament = false;
 
 				if(tmpid!=element->Nodes()[n]->Id() && alreadydone)
@@ -1466,7 +1474,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				alreadydone = true;
 			}
 			// case: unbroken element or broken in another than z-direction
-			if(cut(2,n)!=2)
+			if(cut(2,n)==0.0)
 			{
 				if(element->Nodes()[n]->Id()!=tmpid)
 				{
@@ -1548,27 +1556,27 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
  * vector holding the latest node positions.
  */
 {
-	/*/ test output
+	// test output
 	cout<<"NODES: ";
 	for(int i=0; i<(int)nodeids->size(); i++)
 		cout<<nodeids->at(i)<<" ";
 	cout<<endl;
-	cout<<"curve: "<<endl;
+	cout<<"curve: ";
 	for(int i=0; i<6; i++)
 		cout<<curve->at(i)<<" ";
 	cout<<endl;
-	cout<<"funct: "<<endl;
+	cout<<"funct: ";
 	for(int i=0; i<6; i++)
 		cout<<funct->at(i)<<" ";
 	cout<<endl;
-	cout<<"onoff: "<<endl;
+	cout<<"onoff: ";
 	for(int i=0; i<6; i++)
 		cout<<onoff->at(i)<<" ";
 	cout<<endl;
-	cout<<"val: "<<endl;
+	cout<<"val: ";
 	for(int i=0; i<6; i++)
 		cout<<val->at(i)<<" ";
-	cout<<endl;*/
+	cout<<endl;
 	// highest degree of requested time derivative (may be needed in the future(?))
 	unsigned deg = 0;
 	// some checks for errors
@@ -1671,7 +1679,7 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
 	    // assign value
 	    if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
 	    if (disn_ != Teuchos::null)
-	      (*disn_)[lid] = value[0];
+	    	(*disn_)[lid] = value[0];
 	    // set toggle vector and the inverse vector
 	    if (dirichtoggle_ != Teuchos::null)
 	    {
