@@ -667,7 +667,7 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
       p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
       p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
       p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
-      
+
 
       // set vector values needed by elements
       discret_.ClearState();
@@ -854,7 +854,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
       //add statistical vector to parameter list for statistical forces and damping matrix computation
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
       p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
-      p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));     
+      p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
       p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
       p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
       p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
@@ -1434,7 +1434,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				alreadydone=true;
 			}
 			// case: broken element (in z-dir); node_n oscillates, node_n+1 is fixed in dir. of oscillation
-			else if(broken && cut(2,n)==2.0)
+			if(broken && cut(2,n)==2.0)
 			{
 				bool newfilament = false;
 
@@ -1466,7 +1466,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				alreadydone = true;
 			}
 			// case: unbroken element or broken in another than z-direction
-			else if(cut(2,n)!=2)
+			if(cut(2,n)!=2)
 			{
 				if(element->Nodes()[n]->Id()!=tmpid)
 				{
