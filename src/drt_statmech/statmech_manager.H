@@ -111,10 +111,6 @@ protected:
   //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
   void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim);
 
-  //! \brief Shifts current coordinate X+d (where X is constant reference coordinate by +/- period length until is lies within a box demanded by periodic boundary conditions
-  void CoordindateShift(const double& X, double& d);
-
-
 
   //! \brief how often SearchNeighbours() has already been called
   int nsearch_;

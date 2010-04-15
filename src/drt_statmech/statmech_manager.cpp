@@ -668,7 +668,9 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
   /*the following method writes output data for Gmsh into file with name "filename"; all line elements are written;
    * the nodal displacements are handed over in the variable "dis"; note: in case of parallel computing only
    * processor 0 writes; it is assumed to have a fully overlapping column map and hence all the information about
-   * all the nodal position*/
+   * all the nodal position; note that no parallel operations have to be carried out in the following block as it
+   * is processed by only one processor; note that one could get also a parallel gmsh output if all processors write
+   * their output after each other into the gmsh output file as it is realized for example for solid contact problems*/
   if(discret_.Comm().MyPID() == 0)
   {
 
@@ -1459,37 +1461,38 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
 
       //get GIDs of this node's degrees of freedom
       std::vector<int> dofnode = discret_.Dof(node);
-
-      //loop through the first ndim degrees of freedom of this node and enforce periodic boundary conditions
-      for(int j = 0; j<ndim; j++)
-        CoordindateShift( node->X()[j],disrow[discret_.DofRowMap()->LID(dofnode[j])]);
+      
+      for(int j=0; j<ndim; j++)
+      {   
+        /*if node currently has coordinate value greater than statmechparams_.get<double>("PeriodLength",0.0),
+         *it is shifted by -statmechparams_.get<double>("PeriodLength",0.0) to lie again in the domain*/
+        if(node->X()[j] + disrow[discret_.DofRowMap()->LID(dofnode[j])] > statmechparams_.get<double>("PeriodLength",0.0))
+        {
+          disrow[discret_.DofRowMap()->LID(dofnode[j])] -= statmechparams_.get<double>("PeriodLength",0.0);
+          
+          /*the upper domain surface orthogonal to the z-direction is subject to shear Dirichlet boundary condition; the lower surface 
+           *is fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
+           *z-surface, the shear has to be substracted from nodal coordinates in that case */
+          if(j == 2)
+            disrow[discret_.DofRowMap()->LID(dofnode[statmechparams_.get<int>("OSCILLDIR",-1)])] -= statmechparams_.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(statmechparams_.get<int>("CURVENUMBER",-1)-1).f(time_);           
+        }
+        /*if node currently has coordinate value smaller than zero, it is shifted by statmechparams_.get<double>("PeriodLength",0.0)
+         *to lie again in the domain*/ 
+        if(node->X()[j] + disrow[discret_.DofRowMap()->LID(dofnode[j])]< 0)
+        {
+          disrow[discret_.DofRowMap()->LID(dofnode[j])] += statmechparams_.get<double>("PeriodLength",0.0);
+          
+          /*the upper domain surface orthogonal to the z-direction is subject to shear Dirichlet boundary condition; the lower surface 
+           *is fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
+           *z-surface, the shear has to be added to nodal coordinates in that case */
+          if(j == 2)
+            disrow[discret_.DofRowMap()->LID(dofnode[statmechparams_.get<int>("OSCILLDIR",-1)])] += statmechparams_.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(statmechparams_.get<int>("CURVENUMBER",-1)-1).f(time_); 
+        }
+      }
     }
+ 
 }
 
-/*------------------------------------------------------------------------*
- | Shifts current coordinate X+d (where X is constant reference coordinate|
- | by +/- period length until is lies within a box demanded by periodic   |
- | boundary conditions                                         cyron 02/10|
- *-----------------------------------------------------------------------*/
-void StatMechManager::CoordindateShift(const double& X, double& d)
-{
-  if(X+d > statmechparams_.get<double>("PeriodLength",0.0))
-  {
-    d -= statmechparams_.get<double>("PeriodLength",0.0);
-    /*Recursion repeats above shift until current coordinate lies within desired domain;
-     *the following code line only matters if the current position lies at first outside
-     *the desired domain by more than one period length*/
-    CoordindateShift(X,d);
-  }
-  if(X+d < 0)
-  {
-    d += statmechparams_.get<double>("PeriodLength",0.0);
-    /*Recursion repeats above shift until current coordinate lies within desired domain;
-     *the following code line only matters if the current position lies at first outside
-     *the desired domain by more than one period length*/
-    CoordindateShift(X,d);
-  }
-}
 
 /*------------------------------------------------------------------------*
  | This function loops through all the elements of the discretization and |
