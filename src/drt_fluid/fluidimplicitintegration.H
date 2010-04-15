@@ -598,6 +598,9 @@ protected:
 
   /// row dof map extractor
   const UTILS::MapExtractor* surfacesplitter_;
+  
+  /// Krylov space projection map extractor
+  FLD::UTILS::KSPMapExtractor kspsplitter_;
 
   /// Periodic Boundary Conditions. Guess what.
   RCP<PeriodicBoundaryConditions> pbc_;

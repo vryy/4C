@@ -217,6 +217,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     project_ = true;
     w_       = LINALG::CreateVector(*dofrowmap,true);
     c_       = LINALG::CreateVector(*dofrowmap,true);
+    kspsplitter_.Setup(*discret_);
   }
   else if (numfluid == 0)
   {
@@ -1310,7 +1311,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           int predof = numdim_;
 
           Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
-
+          
           presmode->PutScalar((*mode)[predof]);
 
           /* export to vector to normalize against
@@ -1324,11 +1325,17 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           //     /
           //    +---+
           */
-          LINALG::Export(*presmode,*w_);
+          Teuchos::RCP<Epetra_Vector> tmpw = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+          LINALG::Export(*presmode,*tmpw);
+          Teuchos::RCP<Epetra_Vector> tmpkspw = kspsplitter_.ExtractKSPCondVector(*tmpw);
+          LINALG::Export(*tmpkspw,*w_);
 
           // export to vector of ones
           presmode->PutScalar(1.0);
-          LINALG::Export(*presmode,*c_);
+          Teuchos::RCP<Epetra_Vector> tmpc = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+          LINALG::Export(*presmode,*tmpc);
+          Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*tmpc);
+          LINALG::Export(*tmpkspc,*c_);
         }
         else if(*definition == "integration")
         {
@@ -1358,7 +1365,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           //                   /              /                      /
           */
 
-
           discret_->EvaluateCondition
           (mode_params        ,
            Teuchos::null      ,
@@ -1383,7 +1389,11 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
           // export to vector of ones
           presmode->PutScalar(1.0);
-          LINALG::Export(*presmode,*c_);
+          Teuchos::RCP<Epetra_Vector> tmpc = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+          LINALG::Export(*presmode,*tmpc);
+          Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*tmpc);
+          LINALG::Export(*tmpkspc,*c_);
+          
         }
         else
         {
@@ -1831,7 +1841,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
           int predof = numdim_;
 
           Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
-
+          
           presmode->PutScalar((*mode)[predof]);
 
           /* export to vector to normalize against
@@ -1845,11 +1855,17 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
           //     /
           //    +---+
           */
-          LINALG::Export(*presmode,*w_);
+          Teuchos::RCP<Epetra_Vector> tmpw = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+          LINALG::Export(*presmode,*tmpw);
+          Teuchos::RCP<Epetra_Vector> tmpkspw = kspsplitter_.ExtractKSPCondVector(*tmpw);
+          LINALG::Export(*tmpkspw,*w_);
 
           // export to vector of ones
           presmode->PutScalar(1.0);
-          LINALG::Export(*presmode,*c_);
+          Teuchos::RCP<Epetra_Vector> tmpc = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+          LINALG::Export(*presmode,*tmpc);
+          Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*tmpc);
+          LINALG::Export(*tmpkspc,*c_);
         }
         else if(*definition == "integration")
         {
@@ -1884,7 +1900,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
           (mode_params        ,
            Teuchos::null      ,
            Teuchos::null      ,
-           w_                 ,
+           w_               ,
            Teuchos::null      ,
            Teuchos::null      ,
            "KrylovSpaceProjection");
@@ -1904,7 +1920,10 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
 
           // export to vector of ones
           presmode->PutScalar(1.0);
-          LINALG::Export(*presmode,*c_);
+          Teuchos::RCP<Epetra_Vector> tmpc = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+          LINALG::Export(*presmode,*tmpc);
+          Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*tmpc);
+          LINALG::Export(*tmpkspc,*c_);
         }
         else
         {

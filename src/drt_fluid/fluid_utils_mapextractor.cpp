@@ -42,4 +42,22 @@ Teuchos::RCP<std::set<int> > FLD::UTILS::MapExtractor::ConditionedElementMap(con
   return condelements;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FLD::UTILS::KSPMapExtractor::Setup(const DRT::Discretization& dis)
+{
+  DRT::UTILS::MultiConditionSelector mcs;
+  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"KrylovSpaceProjection",0,genprob.ndim+1)));
+  mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<std::set<int> > FLD::UTILS::KSPMapExtractor::ConditionedElementMap(const DRT::Discretization& dis) const
+{
+  Teuchos::RCP<std::set<int> > condelements = DRT::UTILS::ConditionedElementMap(dis,"KrylovSpaceProjection");
+  return condelements;
+}
+
 #endif
