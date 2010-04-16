@@ -51,7 +51,7 @@ isconverged_(0),
 unconvergedsteps_(0),
 isinit_(false),
 timecurve_(DRT::Problem::Instance()->Curve(0)),
-dbcswitch_(LINALG::CreateVector(*(discret_.DofRowMap()),true)),
+dbctype_(LINALG::CreateVector(*(discret_.DofRowMap()),true)),
 drefnew_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
 {
   Teuchos::RCP<LINALG::SparseMatrix> stiff = SystemMatrix();
@@ -320,11 +320,8 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     		  (*dirichtoggle_)[i] = 0.0;
     		for(int i=0;i<invtoggle_->MyLength();i++)
     		    		  (*invtoggle_)[i] = 1.0;
-    		for(int i=0;i<drefnew_->MyLength();i++)
-    			(*drefnew_)[i] = 9e99;
     	}
     	EvaluateDirichletPeriodic(p);
-    	cout<<"t = "<<p.get("total time", -1.0)<<endl;
     	//cout<<"Predictor: \n"<<*disn_<<endl;
     }
 		// "common" case without periodic boundary conditions
@@ -480,7 +477,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
 
   if (printscreen)
     fresm_->Norm2(&fresmnorm);
-  //cout<<"Fresm_Predictor:\n"<<*fresm_<<endl;
+  cout<<"Fresm_Predictor:\n"<<*fresm_<<endl;
 			//test output to determine source of divergence
       // Test 1: Check residuals (show only those that surpass a certain treshold)
       /*if(fresmnorm>10)
@@ -1374,7 +1371,9 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 		oscdir_ = statmechmanager_->statmechparams_.get<int>("OSCILLDIR",0);
 		// retrieve number of time curve that is to be applied
 		curvenumber_ = statmechmanager_->statmechparams_.get<int>("CURVENUMBER",0)-1;
-
+		// initialize drefnew_ (reference displacement vector) with high values.
+		for(int i=0;i<drefnew_->MyLength();i++)
+			(*drefnew_)[i] = 9e99;
 		isinit_=true;
 	} // init
 
@@ -1394,9 +1393,10 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	  // determine existence and location of broken element
 	  statmechmanager_->CheckForBrokenElement(coord, cut, &broken);
 
+	  // loop over number of cuts (columns)
 	  for(int n=0; n<cut.N(); n++)
 	  {
-			// case: broken element (in z-dir); node_n+1 oscillates, node_n is fixed in dir. of oscillation
+		// case: broken element (in z-dir); node_n+1 oscillates, node_n is fixed in dir. of oscillation
 			if(broken && cut(2,n)==1.0)
 			{
 				//cout<<"DOWN->UP"<<endl;
@@ -1416,14 +1416,66 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 					fixednodes.push_back(element->Nodes()[n]->Id());
 				// add GID of oscillating node to osc.-nodes-vector
 				oscillnodes.push_back(element->Nodes()[n+1]->Id());
-				// add displacement of the node to drefnew_
-				// (at this stage, this is not the displacement of the new reference position for oscillating nodes yet:
-				// drefnew_ is set to current displacement (without Dirichlet) if its lid-th entry is set (or reset) to its initial value (9e99),
-				// i.e. the element in question was not broken in the preceding timestep.)
-				for(int j = n; j < n+2; j++)
-					for(int k=0; k<cut.M(); k++)
-						if((*drefnew_)[lids.at(3*j+k)] > statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0))
-							(*drefnew_)[lids.at(3*j+k)] = (*disn_)[lids.at(3*j+k)];
+				// create sort of an element DOF-Map with type entries (0-free;1-oscill;2-fixed)
+				vector<int> type;
+				// get the number of DOFs per node
+				int numdof = (int)discret_.Dof(0, element->Nodes()[0]).size();
+				// initialize the vector
+				type.assign(element->NumNode()*numdof,0);
+
+				/* When cut, there are always two nodes involved: one that is subjected to a fixed displacement
+				 * in one particular direction (oscdir_), another which oscillates in the same direction.
+				 * The following code section handles two things:
+				 * 	1. it checks for any changes concerning the mode of DBC application [none, fixed, oscillating]
+				 *  2. if a change is detected for a certain node, an updated reference displacement is calculated.
+				 *  	 This displacement is used later on to determine the correct Dirichlet displacement for this
+				 *  	 node.
+				 */
+				bool latternode = false;
+				for(int j=n; j<n+2; j++)
+					for(int k=0; k<numdof; k++)
+						if(k==oscdir_)
+						{
+							// for the first (fixed) node
+							if(!latternode)
+								type.at(numdof*j+k) = 2;
+							// for the latter (oscillating) node
+							else
+								type.at(numdof*j+k) = 1;
+							// if the type has not changed, continue
+							if((*dbctype_)[lids.at(3*j+k)]==(double)type.at(numdof*j+k))
+								continue;
+							// else, change the type and calculate a new reference displacement
+							else
+							{
+								// change type of lid-th entry of the dbctype_ vector
+								if(!latternode)
+									(*dbctype_)[lids.at(3*j+k)] = 2.0;
+								else
+									(*dbctype_)[lids.at(3*j+k)] = 1.0;
+
+						// the new reference displacement
+							// calculate DBC-displacement of the last time step
+								// time step size
+								double dt = params_.get<double>("delta time" ,-1.0);
+								// factor from function declared in the input file (set to 1.0 here, since
+								double functfac = 1.0;
+								// value of timecurve at t-dt
+								double curvefac = DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
+								// displacement by DBC
+								double ddbcinit;
+								// for a fixed node...
+								if((*dbctype_)[lids.at(3*j+k)] == 1.0)
+									ddbcinit = 0.0;
+								// for an oscillating node...
+								else if((*dbctype_)[lids.at(3*j+k)] == 2.0)
+									ddbcinit = amp_*functfac*curvefac;
+								// new reference displacement
+								(*drefnew_)[lids.at(3*j+k)] = (*disn_)[lids.at(3*j+k)] - ddbcinit;
+							}
+							// switch to latter (oscillating) node
+							latternode=true;
+						}
 
 				// add DOF LID where a force sensor is to be set
 				if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
@@ -1458,10 +1510,44 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 					oscillnodes.push_back(element->Nodes()[n]->Id());
 				fixednodes.push_back(element->Nodes()[n+1]->Id());
 
+				// basically the same as above, just with switched nodes
+				vector<int> type;
+				int numdof = (int)discret_.Dof(0, element->Nodes()[0]).size();
+				type.assign(element->NumNode()*numdof,0);
+
+				bool latternode = false;
 				for(int j=n; j<n+2; j++)
-					for(int k=0; k<cut.M(); k++)
-						if((*drefnew_)[lids.at(3*j+k)] > statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0))
-							(*drefnew_)[lids.at(3*j+k)] = (*disn_)[lids.at(3*j+k)];
+					for(int k=0; k<numdof; k++)
+						if(k==oscdir_)
+						{
+							if(!latternode)
+								type.at(numdof*j+k) = 1;
+							else
+								type.at(numdof*j+k) = 2;
+
+							if((*dbctype_)[lids.at(3*j+k)]==(double)type.at(numdof*j+k))
+								continue;
+							else
+							{
+								if(!latternode)
+									(*dbctype_)[lids.at(3*j+k)] = 1.0;
+								else
+									(*dbctype_)[lids.at(3*j+k)] = 2.0;
+
+								double dt = params_.get<double>("delta time" ,-1.0);
+								double functfac = 1.0;
+								double curvefac = DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
+								double ddbcinit;
+
+								if((*dbctype_)[lids.at(3*j+k)] == 1.0)
+									ddbcinit = 0.0;
+								else if((*dbctype_)[lids.at(3*j+k)] == 2.0)
+									ddbcinit = amp_*functfac*curvefac;
+
+								(*drefnew_)[lids.at(3*j+k)] = (*disn_)[lids.at(3*j+k)] - ddbcinit;
+							}
+							latternode=true;
+						}
 
 				if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
 				{
@@ -1511,27 +1597,36 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	addval.at(oscdir_) = amp_;
 	// inhibit planar DOFs, leave free only z-direction (for now, inhibiting only oscdir_ seems to cause instabilities)
 	for(int i=0; i<3; i++)
-		if(i==oscdir_ || i!=2)
+		if(i==oscdir_)
 			addonoff.at(i) = 1;
 
   // do not do anything if vector is empty
   if(!oscillnodes.empty())
+  {
+  	cout<<"OSCILLATING NODES"<<endl;
   	DoDirichletConditionPeriodic(usetime, time, &oscillnodes, &addcurve, &addfunct, &addonoff, &addval);
+  }
 
   // set condition for fixed nodes
 	addcurve.at(oscdir_) = -1;
 	addval.at(oscdir_) = 0.0;
 
 	if(!fixednodes.empty())
+	{
+		cout<<"FIXED NODES"<<endl;
   	DoDirichletConditionPeriodic(usetime, time, &fixednodes, &addcurve, &addfunct, &addonoff, &addval);
+	}
 
   // set condition for free or recently set free nodes
   for(int i=0; i<3; i++)
-  	if(i==oscdir_ || i!=2)
+  	if(i==oscdir_)
   		addonoff.at(i) = 0;
 
 	if(!freenodes.empty())
+	{
+		cout<<"FREE NODES"<<endl;
   	DoDirichletConditionPeriodic(usetime, time, &freenodes, &addcurve, &addfunct, &addonoff, &addval);
+	}
 
 #ifdef MEASURETIME
   const double t_end = Teuchos::Time::wallTime();
@@ -1559,7 +1654,7 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
  */
 {
 	// test output
-	cout<<"NODES: ";
+	cout<<"IDs: ";
 	for(int i=0; i<(int)nodeids->size(); i++)
 		cout<<nodeids->at(i)<<" ";
 	cout<<endl;
@@ -1584,7 +1679,7 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
 	// some checks for errors
 	if (!nodeids) dserror("No Node IDs were handed over!");
 	if(disn_==Teuchos::null) dserror("Displacement vector must be unequal to null");
-	if(dbcswitch_==Teuchos::null || drefnew_==Teuchos::null || dirichtoggle_==Teuchos::null)
+	if(dbctype_==Teuchos::null || drefnew_==Teuchos::null || dirichtoggle_==Teuchos::null)
 		dserror("dbcwitch_, drefnew_ and dirichtoggle_ must be non-empty");
 
 	// get the condition properties
@@ -1620,12 +1715,12 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
           // in addition, modify the inverse vector (needed for manipulation of the residual vector)
           (*invtoggle_)[lid] = 1.0;
         }
-        // if formerly subject to Dirichlet values, turn dbcswitch_ off for this LID
-        if((*dbcswitch_)[lid]!=0.0)
-        	(*dbcswitch_)[lid] = 0.0;
-        // reset reference position if lid bleongs to node formerly subjected to a DBC
-        if((*drefnew_)[lid] <= statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0))
+        // if formerly subject to Dirichlet values, reset dbctype_ and drefnew_ for this lid
+        if((*dbctype_)[lid]!=0.0)
+        {
+        	(*dbctype_)[lid] = 0.0;
         	(*drefnew_)[lid] = 9e99;
+        }
         continue;
       }
 
@@ -1653,28 +1748,13 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
       else
         for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
 
-      // Calculate displacement of new reference position.
-      // Especially important when node is added to condition afterwards
-			if((*dbcswitch_)[lid]==0.0 && val->at(j)!=0.0)
-			{
-				double dt = params_.get<double>("delta time" ,0.01);
-				// calculate the new reference value for this DOF ("-dt" because the value preceding the current one is needed)
-				double drefnm = DRT::Problem::Instance()->Curve(curvenum).f(time-dt);
-				drefnm *= val->at(j)*functfac;
-				// calculate new displacement d_ref,new,j = d_node,j - d_dbc,j of j-th DOF
-				(*drefnew_)[lid] -= drefnm;
-				// turn dbcswitch_ "on" to make sure this offset value is not changed until the the node,
-				// to which the DOF belongs, is set free and then by chance is subjected to a DBC again.
-				(*dbcswitch_)[lid] = 1.0;
-			}
-
 			vector<double> value(deg+1,val->at(j));
 
       // apply factors to Dirichlet value
       for (unsigned i=0; i<deg+1; ++i)
       {
         value[i] *= functfac * curvefac[i];
-        // add offset to Dirichlet value
+        // add offset to Dirichlet value:
         value[i] += (*drefnew_)[lid];
       }
 

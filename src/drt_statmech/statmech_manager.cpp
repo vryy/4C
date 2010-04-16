@@ -1452,7 +1452,10 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
  *----------------------------------------------------------------------*/
 void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
 {
-  //only if period length >0 has been defined periodic boundary conditions are swithced on
+
+	//std::cout<<"\ndisrow vorher = \n"<<disrow<<"\n";
+
+	//only if period length >0 has been defined periodic boundary conditions are swithced on
   if(statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
     for(int i = 0; i < discret_.NumMyRowNodes(); i++)
     {
@@ -1461,36 +1464,38 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
 
       //get GIDs of this node's degrees of freedom
       std::vector<int> dofnode = discret_.Dof(node);
-      
+
       for(int j=0; j<ndim; j++)
-      {   
+      {
         /*if node currently has coordinate value greater than statmechparams_.get<double>("PeriodLength",0.0),
          *it is shifted by -statmechparams_.get<double>("PeriodLength",0.0) to lie again in the domain*/
         if(node->X()[j] + disrow[discret_.DofRowMap()->LID(dofnode[j])] > statmechparams_.get<double>("PeriodLength",0.0))
         {
           disrow[discret_.DofRowMap()->LID(dofnode[j])] -= statmechparams_.get<double>("PeriodLength",0.0);
-          
-          /*the upper domain surface orthogonal to the z-direction is subject to shear Dirichlet boundary condition; the lower surface 
+
+          /*the upper domain surface orthogonal to the z-direction is subject to shear Dirichlet boundary condition; the lower surface
            *is fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
            *z-surface, the shear has to be substracted from nodal coordinates in that case */
           if(j == 2)
-            disrow[discret_.DofRowMap()->LID(dofnode[statmechparams_.get<int>("OSCILLDIR",-1)])] -= statmechparams_.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(statmechparams_.get<int>("CURVENUMBER",-1)-1).f(time_);           
+            disrow[discret_.DofRowMap()->LID(dofnode[statmechparams_.get<int>("OSCILLDIR",-1)])] -= statmechparams_.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(statmechparams_.get<int>("CURVENUMBER",-1)-1).f(time_);
         }
         /*if node currently has coordinate value smaller than zero, it is shifted by statmechparams_.get<double>("PeriodLength",0.0)
-         *to lie again in the domain*/ 
+         *to lie again in the domain*/
         if(node->X()[j] + disrow[discret_.DofRowMap()->LID(dofnode[j])]< 0)
         {
           disrow[discret_.DofRowMap()->LID(dofnode[j])] += statmechparams_.get<double>("PeriodLength",0.0);
-          
-          /*the upper domain surface orthogonal to the z-direction is subject to shear Dirichlet boundary condition; the lower surface 
+
+          /*the upper domain surface orthogonal to the z-direction is subject to shear Dirichlet boundary condition; the lower surface
            *is fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
            *z-surface, the shear has to be added to nodal coordinates in that case */
           if(j == 2)
-            disrow[discret_.DofRowMap()->LID(dofnode[statmechparams_.get<int>("OSCILLDIR",-1)])] += statmechparams_.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(statmechparams_.get<int>("CURVENUMBER",-1)-1).f(time_); 
+            disrow[discret_.DofRowMap()->LID(dofnode[statmechparams_.get<int>("OSCILLDIR",-1)])] += statmechparams_.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(statmechparams_.get<int>("CURVENUMBER",-1)-1).f(time_);
         }
       }
     }
- 
+
+  //std::cout<<"\ndisrow nachher = \n"<<disrow<<"\n";
+
 }
 
 
@@ -1752,7 +1757,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
           maxaddcrosslinkslocal = max(maxaddcrosslinkslocal,(int)crosslinkerstobeaddedlocal[i].size());
         }
       }
-    }  
+    }
   }
 
   //get the maximal number of crosslinks to be added at any node on any processor in this time step
