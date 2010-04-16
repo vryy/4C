@@ -965,7 +965,7 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(const int uzawaiter)
     cout << endl << "*********************************************"<<endl;
     cout << "Global Constraint Norm = "<<globnorm<<endl;
     if (updatepp) cout << "Updated penalty parameter = " << currentpp_ << endl;
-    cout<<"*********************************************"<<endl<<endl;
+    cout<<"*********************************************"<<endl;
   }
 	  
 	// update class variable
@@ -1022,7 +1022,7 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
 {
   // begin output
   if (Comm().MyPID()==0)
-    cout << "Active contact set--------------------------------------------------------------\n";
+    cout << "\nActive contact set--------------------------------------------------------------\n";
   Comm().Barrier();
     
   // loop over all pairs
