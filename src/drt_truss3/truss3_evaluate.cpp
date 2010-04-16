@@ -850,19 +850,21 @@ return;
 template<int nnode, int ndim> //number of nodes, number of dimensions
 inline void DRT::ELEMENTS::Truss3::NodeShift(ParameterList& params,  //!<parameter list
                                             vector<double>& disp) //!<element disp vector
-{    
+{
   /*get number of degrees of freedom per node; note: the following function assumes the same number of degrees
    *of freedom for each element node*/
   int numdof = NumDofPerNode(*(Nodes()[0]));
-  
+
+
+
   /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0) > 0.0, this
    * method has to change the displacement variables*/
   if(params.get<double>("PeriodLength",0.0) > 0.0)
     //loop through all nodes except for the first node which remains fixed as reference node
     for(int i=1;i<nnode;i++)
-    {    
-      for(int dof=0; dof<ndim; dof++)
-      {   
+    {
+      for(int dof= ndim - 1; dof = 0; dof--)
+      {
         /*if the distance in some coordinate direction between some node and the first node becomes smaller by adding or subtracting
          * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
          * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
@@ -870,26 +872,27 @@ inline void DRT::ELEMENTS::Truss3::NodeShift(ParameterList& params,  //!<paramet
         if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) + params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
         {
           disp[numdof*i+dof] += params.get<double>("PeriodLength",0.0);
-          
-          /*the upper domain surface orthogonal to the z-direction is subject to shear Dirichlet boundary condition; the lower surface 
+
+          /*the upper domain surface orthogonal to the z-direction is subject to shear Dirichlet boundary condition; the lower surface
            *is fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
            *z-surface, the shear has to be substracted from nodal coordinates in that case */
           if(dof == 2)
-            disp[numdof*i+params.get<int>("OSCILLDIR",-1)] -= params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));           
+            disp[numdof*i+params.get<int>("OSCILLDIR",-1)] += params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
         }
-          
+
         if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
         {
           disp[numdof*i+dof] -= params.get<double>("PeriodLength",0.0);
-          
-          /*the upper domain surface orthogonal to the z-direction is subject to shear Dirichlet boundary condition; the lower surface 
+
+          /*the upper domain surface orthogonal to the z-direction is subject to shear Dirichlet boundary condition; the lower surface
            *is fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
            *z-surface, the shear has to be added to nodal coordinates in that case */
           if(dof == 2)
-            disp[numdof*i+params.get<int>("OSCILLDIR",-1)] += params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
+            disp[numdof*i+params.get<int>("OSCILLDIR",-1)] -= params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
         }
       }
     }
+
 return;
 
 }//DRT::ELEMENTS::Truss3::NodeShift
