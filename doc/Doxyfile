@@ -506,7 +506,7 @@ INPUT                  = index.doc \
                          ../src/drt_thermo \
                          ../src/drt_geometry \
                          ../src/drt_mortar \
-                         ../src/drt_contactnew
+                         ../src/drt_beamcontact
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 
