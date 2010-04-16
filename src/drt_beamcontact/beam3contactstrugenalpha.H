@@ -1,15 +1,14 @@
 /*!----------------------------------------------------------------------
-\file contactstrugenalpha.H
+\file beam3contactstrugenalpha.H
 
 <pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
+Maintainer: Alexander Popp, Christian Cyron
+            {popp,cyron}@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15264
 </pre>
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-
 #ifndef BEAM3CONTACTSTRUGENALPHA_H
 #define BEAM3CONTACTSTRUGENALPHA_H
 
@@ -34,7 +33,7 @@ namespace CONTACT
 /*!
 \brief Generalized Alpha time integration for structural problems with 3D beam contact
 
-\author popp (popp@lnm.mw.tum.de)
+\author popp (popp@lnm.mw.tum.de), cyron (cyron@lnm.mw.tum.de)
 */
 class Beam3ContactStruGenAlpha : public virtual StruGenAlpha
 {
@@ -45,15 +44,45 @@ public:
 
   */
   explicit Beam3ContactStruGenAlpha(ParameterList& params,
-                               DRT::Discretization& dis,
-                               LINALG::Solver& solver,
-                               IO::DiscretizationWriter& output);
+                                    DRT::Discretization& dis,
+                                    LINALG::Solver& solver,
+                                    IO::DiscretizationWriter& output);
 
   /*!
   \brief Destructor
 
   */
   virtual ~Beam3ContactStruGenAlpha() {};
+  
+  /*!
+  \brief do constant predictor step
+	
+  */
+  void ConstantPredictor();
+  
+  /*!
+  \brief do consistent constant predictor step
+
+  */
+  void ConsistentPredictor();
+  
+  /*!
+  \brief do full Newton iteration
+
+  */
+  void FullNewton(); 
+  
+  /*!
+  \brief integration control routine
+	
+  */
+  void Integrate();
+  
+  /*!
+  \brief do update at the end of time step
+
+  */
+  void Update();
 
 protected:
 
@@ -61,9 +90,12 @@ protected:
   Beam3ContactStruGenAlpha operator = (const Beam3ContactStruGenAlpha& old);
   Beam3ContactStruGenAlpha(const Beam3ContactStruGenAlpha& old);
 
-  // only possible to do this if D_BEAM3 activated
+  // uzawa iteration counter
+  int uzawaiter_;
+  
+  // beam contact manager
 #ifdef D_BEAM3
-  RCP<CONTACT::Beam3cmanager>    beamcmanager_;
+  RCP<CONTACT::Beam3cmanager> beamcmanager_;
 #endif // #ifdef D_BEAM3
   
 }; // class Beam3ContactStruGenAlpha
