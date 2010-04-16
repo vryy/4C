@@ -477,7 +477,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
 
   if (printscreen)
     fresm_->Norm2(&fresmnorm);
-  cout<<"Fresm_Predictor:\n"<<*fresm_<<endl;
+  //cout<<"Fresm_Predictor:\n"<<*fresm_<<endl;
 			//test output to determine source of divergence
       // Test 1: Check residuals (show only those that surpass a certain treshold)
       /*if(fresmnorm>10)
@@ -1396,10 +1396,9 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	  // loop over number of cuts (columns)
 	  for(int n=0; n<cut.N(); n++)
 	  {
-		// case: broken element (in z-dir); node_n+1 oscillates, node_n is fixed in dir. of oscillation
+	  	// case 1: broken element (in z-dir); node_n+1 oscillates, node_n is fixed in dir. of oscillation
 			if(broken && cut(2,n)==1.0)
 			{
-				//cout<<"DOWN->UP"<<endl;
 				// indicates beginning of a new filament (in the very special case that this is needed)
 				bool newfilament = false;
 				// check for case: last element of filament I as well as first element of filament I+1 broken
@@ -1416,6 +1415,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 					fixednodes.push_back(element->Nodes()[n]->Id());
 				// add GID of oscillating node to osc.-nodes-vector
 				oscillnodes.push_back(element->Nodes()[n+1]->Id());
+
 				// create sort of an element DOF-Map with type entries (0-free;1-oscill;2-fixed)
 				vector<int> type;
 				// get the number of DOFs per node
@@ -1423,59 +1423,54 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				// initialize the vector
 				type.assign(element->NumNode()*numdof,0);
 
-				/* When cut, there are always two nodes involved: one that is subjected to a fixed displacement
-				 * in one particular direction (oscdir_), another which oscillates in the same direction.
+				/* When an element is cut, there are always two nodes involved: one that is subjected to a fixed
+				 * displacement in one particular direction (oscdir_), another which oscillates in the same direction.
 				 * The following code section handles two things:
 				 * 	1. it checks for any changes concerning the mode of DBC application [none, fixed, oscillating]
 				 *  2. if a change is detected for a certain node, an updated reference displacement is calculated.
 				 *  	 This displacement is used later on to determine the correct Dirichlet displacement for this
 				 *  	 node.
+				 *  type==0 -> free DOF ; type==1 -> osc. DOF ; type==2 -> fixed DOF
 				 */
-				bool latternode = false;
-				for(int j=n; j<n+2; j++)
-					for(int k=0; k<numdof; k++)
-						if(k==oscdir_)
-						{
-							// for the first (fixed) node
-							if(!latternode)
-								type.at(numdof*j+k) = 2;
-							// for the latter (oscillating) node
-							else
-								type.at(numdof*j+k) = 1;
-							// if the type has not changed, continue
-							if((*dbctype_)[lids.at(3*j+k)]==(double)type.at(numdof*j+k))
-								continue;
-							// else, change the type and calculate a new reference displacement
-							else
-							{
-								// change type of lid-th entry of the dbctype_ vector
-								if(!latternode)
-									(*dbctype_)[lids.at(3*j+k)] = 2.0;
-								else
-									(*dbctype_)[lids.at(3*j+k)] = 1.0;
+				int counter = 0;
+				bool skipit = false;
+				// check the types
+				// type: fixed node
+				type.at(numdof*n+oscdir_) = 2;
+				if((*dbctype_)[lids.at(3*n+oscdir_)]==(double)type.at(numdof*n+oscdir_))
+					counter++;
+				// type: oscillating node
+				type.at(numdof*(n+1)+oscdir_) = 1;
+				if((*dbctype_)[lids.at(3*(n+1)+oscdir_)]==(double)type.at(numdof*(n+1)+oscdir_))
+					counter++;
+				// continue, if statement below is true since nothing has changed
+				if(counter==2)
+					skipit = true;
+				// skip the rest if both dbctype_ entries have not been changed
+				if(!skipit)
+				{
+					// change the type and calculate a new reference displacement
+					// change type of fixed DOF
+					(*dbctype_)[lids.at(3*n+oscdir_)] = 2.0;
+					// change type of oscillating DOF
+					(*dbctype_)[lids.at(3*(n+1)+oscdir_)] = 1.0;
 
-						// the new reference displacement
-							// calculate DBC-displacement of the last time step
-								// time step size
-								double dt = params_.get<double>("delta time" ,-1.0);
-								// factor from function declared in the input file (set to 1.0 here, since
-								double functfac = 1.0;
-								// value of timecurve at t-dt
-								double curvefac = DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
-								// displacement by DBC
-								double ddbcinit;
-								// for a fixed node...
-								if((*dbctype_)[lids.at(3*j+k)] == 1.0)
-									ddbcinit = 0.0;
-								// for an oscillating node...
-								else if((*dbctype_)[lids.at(3*j+k)] == 2.0)
-									ddbcinit = amp_*functfac*curvefac;
-								// new reference displacement
-								(*drefnew_)[lids.at(3*j+k)] = (*disn_)[lids.at(3*j+k)] - ddbcinit;
-							}
-							// switch to latter (oscillating) node
-							latternode=true;
-						}
+					// the new reference displacement
+					// calculate DBC-displacement of the last time step
+					// time step size
+					double dt = params_.get<double>("delta time" ,-1.0);
+					// factor from function declared in the input file (set to 1.0 here, since no funct is used at this moment)
+					double functfac = 1.0;
+					// value of timecurve at t-dt
+					double curvefac = DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
+					// new reference displacement for a fixed node...
+					(*drefnew_)[lids.at(3*n+oscdir_)] = (*disn_)[lids.at(3*n+oscdir_)];
+					// for an oscillating node...
+					// displacement by DBC
+					double ddbcinit = amp_*functfac*curvefac;
+					// new reference displacement
+					(*drefnew_)[lids.at(3*(n+1)+oscdir_)] = (*disn_)[lids.at(3*(n+1)+oscdir_)] - ddbcinit;
+				}
 
 				// add DOF LID where a force sensor is to be set
 				if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
@@ -1493,11 +1488,11 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				// Set to true to initiate certain actions if the following element is also broken.
 				// If the following element isn't broken, alreadydone will be reset to false (see case: !broken)
 				alreadydone=true;
-			}
-			// case: broken element (in z-dir); node_n oscillates, node_n+1 is fixed in dir. of oscillation
+			}// end of case 1
+
+			// case 2: broken element (in z-dir); node_n oscillates, node_n+1 is fixed in dir. of oscillation
 			if(broken && cut(2,n)==2.0)
 			{
-				//cout<<"UP->DOWN"<<endl;
 				bool newfilament = false;
 
 				if(tmpid!=element->Nodes()[n]->Id() && alreadydone)
@@ -1515,39 +1510,33 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				int numdof = (int)discret_.Dof(0, element->Nodes()[0]).size();
 				type.assign(element->NumNode()*numdof,0);
 
-				bool latternode = false;
-				for(int j=n; j<n+2; j++)
-					for(int k=0; k<numdof; k++)
-						if(k==oscdir_)
-						{
-							if(!latternode)
-								type.at(numdof*j+k) = 1;
-							else
-								type.at(numdof*j+k) = 2;
+				int counter = 0;
+				bool skipit = false;
+				type.at(numdof*n+oscdir_) = 1;
+				if((*dbctype_)[lids.at(3*n+oscdir_)]==(double)type.at(numdof*n+oscdir_))
+					counter++;
+				type.at(numdof*(n+1)+oscdir_) = 2;
+				if((*dbctype_)[lids.at(3*(n+1)+oscdir_)]==(double)type.at(numdof*(n+1)+oscdir_))
+					counter++;
+				if(counter==2)
+					skipit = true;
 
-							if((*dbctype_)[lids.at(3*j+k)]==(double)type.at(numdof*j+k))
-								continue;
-							else
-							{
-								if(!latternode)
-									(*dbctype_)[lids.at(3*j+k)] = 1.0;
-								else
-									(*dbctype_)[lids.at(3*j+k)] = 2.0;
+				if(!skipit)
+				{
+					// oscillating node
+					(*dbctype_)[lids.at(3*n+oscdir_)] = 1.0;
+					// fixed node
+					(*dbctype_)[lids.at(3*(n+1)+oscdir_)] = 2.0;
 
-								double dt = params_.get<double>("delta time" ,-1.0);
-								double functfac = 1.0;
-								double curvefac = DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
-								double ddbcinit;
-
-								if((*dbctype_)[lids.at(3*j+k)] == 1.0)
-									ddbcinit = 0.0;
-								else if((*dbctype_)[lids.at(3*j+k)] == 2.0)
-									ddbcinit = amp_*functfac*curvefac;
-
-								(*drefnew_)[lids.at(3*j+k)] = (*disn_)[lids.at(3*j+k)] - ddbcinit;
-							}
-							latternode=true;
-						}
+					double dt = params_.get<double>("delta time" ,-1.0);
+					double functfac = 1.0;
+					double curvefac = DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
+					// oscillating node
+					double ddbcinit = amp_*functfac*curvefac;
+					(*drefnew_)[lids.at(3*n+oscdir_)] = (*disn_)[lids.at(3*n+oscdir_)] - ddbcinit;
+					// fixed node
+					(*drefnew_)[lids.at(3*(n+1)+oscdir_)] = (*disn_)[lids.at(3*(n+1)+oscdir_)];
+				}
 
 				if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
 				{
@@ -1560,8 +1549,9 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 
 				tmpid = element->Nodes()[n+1]->Id();
 				alreadydone = true;
-			}
-			// case: unbroken element or broken in another than z-direction
+			} // end of case 2
+
+			// case 3: unbroken element or broken in another than z-direction
 			if(cut(2,n)==0.0)
 			{
 				if(element->Nodes()[n]->Id()!=tmpid)
@@ -1627,6 +1617,8 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 		cout<<"FREE NODES"<<endl;
   	DoDirichletConditionPeriodic(usetime, time, &freenodes, &addcurve, &addfunct, &addonoff, &addval);
 	}
+	//cout<<"dbctype:\n"<<*dbctype_<<endl;
+	//cout<<"drefnew_:\n"<<*drefnew_<<endl;
 
 #ifdef MEASURETIME
   const double t_end = Teuchos::Time::wallTime();

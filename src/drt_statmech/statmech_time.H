@@ -113,7 +113,6 @@ private:
 	// \brief time curve to obtain DBC values
 	DRT::UTILS::TimeCurve&		 	timecurve_;
 	// \brief vector used to signal when to store, change or delete a new/given reference position for DBC evaluation
-	// 				"0" - free node, "1"- oscillating node, "2" - fixed node
 	RCP<Epetra_Vector> 					dbctype_;
 	// \brief use of a vector of static size is okay as long as no nodes are added afterwards
 	RCP<Epetra_Vector> 					drefnew_;
