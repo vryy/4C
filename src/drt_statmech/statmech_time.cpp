@@ -171,9 +171,9 @@ void StatMechTime::Integrate()
       std::cout<<"\nNumber of unconverged steps "<<unconvergedsteps_<<"\n";
     }
 
-
+			//time_ is time at the end of this time step
       double time = params_.get<double>("total time",0.0);
-      statmechmanager_->time_ = time;
+      statmechmanager_->time_ = time + dt;
 
 
       do
@@ -297,7 +297,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) <= 0.0 &&
     	 Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC"))
     	dserror("Proper PeriodLength is required if periodic DBCs are to be applied");
-
+    cout<<"blub"<<endl;
     // in case of activated periodic boundary conditions
     if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0 &&
 			 Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC"))
@@ -314,6 +314,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     	 */
     	if(!isinit_)
     	{
+    		cout<<"bla"<<endl;
     		for(int i=0;i<disn_->MyLength();i++)
     		  (*disn_)[i] = 0.0;
     		for(int i=0;i<dirichtoggle_->MyLength();i++)
@@ -321,8 +322,9 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     		for(int i=0;i<invtoggle_->MyLength();i++)
     		    		  (*invtoggle_)[i] = 1.0;
     	}
+    	cout<<"bli"<<endl;
     	EvaluateDirichletPeriodic(p);
-    	//cout<<"Predictor: \n"<<*disn_<<endl;
+    	cout<<"Predictor: \n"<<*disn_<<endl;
     }
 		// "common" case without periodic boundary conditions
     if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"CONVENTIONALDBC"))
@@ -477,7 +479,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
 
   if (printscreen)
     fresm_->Norm2(&fresmnorm);
-  //cout<<"Fresm_Predictor:\n"<<*fresm_<<endl;
+  cout<<"\nFRESM PREDICTOR:\n"<<*fresm_<<endl;
 			//test output to determine source of divergence
       // Test 1: Check residuals (show only those that surpass a certain treshold)
       /*if(fresmnorm>10)
@@ -1359,7 +1361,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
   vector<int> 							freenodes;
 
   // get the current time
-	const double time = params.get("total time",-1.0);
+	const double time = statmechmanager_->time_;//params.get("total time",-1.0);
 	if (time<0.0) usetime = false;
 
   // init
@@ -1426,7 +1428,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				/* When an element is cut, there are always two nodes involved: one that is subjected to a fixed
 				 * displacement in one particular direction (oscdir_), another which oscillates in the same direction.
 				 * The following code section handles two things:
-				 * 	1. it checks for any changes concerning the mode of DBC application [none, fixed, oscillating]
+				 * 	1. it checks for any changes concerning the mode of DBC application [no DBC, fixed, oscillating]
 				 *  2. if a change is detected for a certain node, an updated reference displacement is calculated.
 				 *  	 This displacement is used later on to determine the correct Dirichlet displacement for this
 				 *  	 node.
@@ -1443,7 +1445,6 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				type.at(numdof*(n+1)+oscdir_) = 1;
 				if((*dbctype_)[lids.at(3*(n+1)+oscdir_)]==(double)type.at(numdof*(n+1)+oscdir_))
 					counter++;
-				// continue, if statement below is true since nothing has changed
 				if(counter==2)
 					skipit = true;
 				// skip the rest if both dbctype_ entries have not been changed
@@ -1462,14 +1463,16 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 					// factor from function declared in the input file (set to 1.0 here, since no funct is used at this moment)
 					double functfac = 1.0;
 					// value of timecurve at t-dt
-					double curvefac = DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
+					double curvefaci = DRT::Problem::Instance()->Curve(curvenumber_).f(time);
+					double curvefacim = DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
 					// new reference displacement for a fixed node...
-					(*drefnew_)[lids.at(3*n+oscdir_)] = (*disn_)[lids.at(3*n+oscdir_)];
+					(*drefnew_)[lids.at(3*n+oscdir_)] = 0.0;
 					// for an oscillating node...
 					// displacement by DBC
-					double ddbcinit = amp_*functfac*curvefac;
+					double ddbci = amp_*functfac*curvefaci;
+					double ddbcim = amp_*functfac*curvefacim;
 					// new reference displacement
-					(*drefnew_)[lids.at(3*(n+1)+oscdir_)] = (*disn_)[lids.at(3*(n+1)+oscdir_)] - ddbcinit;
+					(*drefnew_)[lids.at(3*(n+1)+oscdir_)] = ddbci/*(*disn_)[lids.at(3*(n+1)+oscdir_)]*/ - ddbcim;
 				}
 
 				// add DOF LID where a force sensor is to be set
@@ -1529,13 +1532,14 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 					(*dbctype_)[lids.at(3*(n+1)+oscdir_)] = 2.0;
 
 					double dt = params_.get<double>("delta time" ,-1.0);
-					double functfac = 1.0;
-					double curvefac = DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
+					double curvefaci = DRT::Problem::Instance()->Curve(curvenumber_).f(time);
+					double curvefacim = DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
 					// oscillating node
-					double ddbcinit = amp_*functfac*curvefac;
-					(*drefnew_)[lids.at(3*n+oscdir_)] = (*disn_)[lids.at(3*n+oscdir_)] - ddbcinit;
+					double ddbci = amp_*curvefaci;
+					double ddbcim = amp_*curvefacim;
+					(*drefnew_)[lids.at(3*n+oscdir_)] = ddbci - ddbcim;
 					// fixed node
-					(*drefnew_)[lids.at(3*(n+1)+oscdir_)] = (*disn_)[lids.at(3*(n+1)+oscdir_)];
+					(*drefnew_)[lids.at(3*(n+1)+oscdir_)] = 0.0;
 				}
 
 				if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
@@ -1650,22 +1654,22 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
 	for(int i=0; i<(int)nodeids->size(); i++)
 		cout<<nodeids->at(i)<<" ";
 	cout<<endl;
-	cout<<"curve: ";
-	for(int i=0; i<6; i++)
+	/*cout<<"curve: ";
+	for(int i=0; i<(int)discret_.Dof(0,discret_.gNode(nodeids->at(0))).size(); i++)
 		cout<<curve->at(i)<<" ";
 	cout<<endl;
 	cout<<"funct: ";
-	for(int i=0; i<6; i++)
+	for(int i=0; i<(int)discret_.Dof(0,discret_.gNode(nodeids->at(0))).size(); i++)
 		cout<<funct->at(i)<<" ";
 	cout<<endl;
 	cout<<"onoff: ";
-	for(int i=0; i<6; i++)
+	for(int i=0; i<(int)discret_.Dof(0,discret_.gNode(nodeids->at(0))).size(); i++)
 		cout<<onoff->at(i)<<" ";
 	cout<<endl;
 	cout<<"val: ";
-	for(int i=0; i<6; i++)
+	for(int i=0; i<(int)discret_.Dof(0,discret_.gNode(nodeids->at(0))).size(); i++)
 		cout<<val->at(i)<<" ";
-	cout<<endl;
+	cout<<endl;*/
 	// highest degree of requested time derivative (may be needed in the future(?))
 	unsigned deg = 0;
 	// some checks for errors
@@ -1753,7 +1757,7 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
 	    // assign value
 	    if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
 	    if (disn_ != Teuchos::null)
-	    	(*disn_)[lid] = value[0];
+	    	(*disn_)[lid] += (*drefnew_)[lid];
 	    // set toggle vector and the inverse vector
 	    if (dirichtoggle_ != Teuchos::null)
 	    {
