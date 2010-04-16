@@ -310,7 +310,7 @@ inline void DRT::ELEMENTS::Torsion3::NodeShift(ParameterList& params,  //!<param
     //loop through all nodes except for the first node which remains fixed as reference node
     for(int i=1;i<nnode;i++)
     {
-      for(int dof= ndim - 1; dof = 0; dof--)
+      for(int dof= ndim - 1; dof > -1; dof--)
       {
         /*if the distance in some coordinate direction between some node and the first node becomes smaller by adding or subtracting
          * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted

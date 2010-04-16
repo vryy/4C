@@ -1462,7 +1462,7 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
       //get GIDs of this node's degrees of freedom
       std::vector<int> dofnode = discret_.Dof(node);
 
-      for(int j = ndim - 1; j = 0; j--)
+      for(int j = ndim - 1; j > -1; j--)
       {
         /*if node currently has coordinate value greater than statmechparams_.get<double>("PeriodLength",0.0),
          *it is shifted by -statmechparams_.get<double>("PeriodLength",0.0) to lie again in the domain*/
