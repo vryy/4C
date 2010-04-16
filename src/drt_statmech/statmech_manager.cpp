@@ -1448,13 +1448,10 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
 
 /*----------------------------------------------------------------------*
  | Shifts current position of nodes so that they comply with periodic   |
- | boundary conditions                                       cyron 02/10|
+ | boundary conditions                                       cyron 04/10|
  *----------------------------------------------------------------------*/
 void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
 {
-
-	//std::cout<<"\ndisrow vorher = \n"<<disrow<<"\n";
-
 	//only if period length >0 has been defined periodic boundary conditions are swithced on
   if(statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
     for(int i = 0; i < discret_.NumMyRowNodes(); i++)
@@ -1465,7 +1462,7 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
       //get GIDs of this node's degrees of freedom
       std::vector<int> dofnode = discret_.Dof(node);
 
-      for(int j=0; j<ndim; j++)
+      for(int j = ndim - 1; j = 0; j--)
       {
         /*if node currently has coordinate value greater than statmechparams_.get<double>("PeriodLength",0.0),
          *it is shifted by -statmechparams_.get<double>("PeriodLength",0.0) to lie again in the domain*/
@@ -1493,8 +1490,6 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
         }
       }
     }
-
-  //std::cout<<"\ndisrow nachher = \n"<<disrow<<"\n";
 
 }
 
