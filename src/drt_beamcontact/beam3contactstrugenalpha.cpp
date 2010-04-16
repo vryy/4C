@@ -244,6 +244,7 @@ void CONTACT::Beam3ContactStruGenAlpha::ConstantPredictor()
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 #endif
 
+#ifdef D_BEAM3
   //**********************************************************************
   //**********************************************************************
   // evaluate beam contact
@@ -258,6 +259,7 @@ void CONTACT::Beam3ContactStruGenAlpha::ConstantPredictor()
 #endif
   //**********************************************************************
   //**********************************************************************
+#endif
   
   // blank residual DOFs that are on Dirichlet BC
   // in the case of local systems we have to rotate forth and back
@@ -552,6 +554,7 @@ void CONTACT::Beam3ContactStruGenAlpha::ConsistentPredictor()
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 #endif
 
+#ifdef D_BEAM3
   //**********************************************************************
   //**********************************************************************
   // evaluate beam contact
@@ -566,6 +569,7 @@ void CONTACT::Beam3ContactStruGenAlpha::ConsistentPredictor()
 #endif
   //**********************************************************************
   //**********************************************************************
+#endif
       
   // blank residual DOFs that are on Dirichlet BC
   // in the case of local systems we have to rotate forth and back
@@ -905,6 +909,7 @@ void CONTACT::Beam3ContactStruGenAlpha::FullNewton()
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 #endif
     
+#ifdef D_BEAM3
     //**********************************************************************
     //**********************************************************************
     // evaluate beam contact
@@ -920,6 +925,7 @@ void CONTACT::Beam3ContactStruGenAlpha::FullNewton()
 #endif
     //**********************************************************************
     //**********************************************************************
+#endif
     
     // blank residual DOFs that are on Dirichlet BC
     // in the case of local systems we have to rotate forth and back
@@ -978,6 +984,7 @@ void CONTACT::Beam3ContactStruGenAlpha::FullNewton()
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3ContactStruGenAlpha::Integrate()
 {
+#ifdef D_BEAM3
   // some paramaters
   int    step    = params_.get<int>   ("step" ,0);
   int    nstep   = params_.get<int>   ("nstep",5);
@@ -1088,6 +1095,7 @@ void CONTACT::Beam3ContactStruGenAlpha::Integrate()
     }
   }
   //**********************************************************************
+#endif
 
   return;
 } // void beam3contactstrugenalpha::Integrate()
@@ -1154,6 +1162,7 @@ void CONTACT::Beam3ContactStruGenAlpha::Update()
   fint_->Update(1.0,*fintn_,0.0);
 #endif
   
+#ifdef D_BEAM3
   //**********************************************************************
   //**********************************************************************
   // update beam contact-specific quantities
@@ -1169,6 +1178,7 @@ void CONTACT::Beam3ContactStruGenAlpha::Update()
 #endif
   //**********************************************************************
    //**********************************************************************
+#endif
 }
 
 #endif  // #ifdef CCADISCRET
