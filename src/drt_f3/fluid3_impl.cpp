@@ -38,8 +38,6 @@ Maintainer: Ulrich Kuettler
 #ifdef DEBUG
 #endif
 
-//#define F2_F3
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3ImplInterface* DRT::ELEMENTS::Fluid3ImplInterface::Impl(DRT::ELEMENTS::Fluid3* f3)
@@ -673,7 +671,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   // evaluate shape functions and derivatives at element center
   EvalShapeFuncAndDerivsAtEleCenter(ele->Id());
 
-  // element volume
+  // element aera or volume
   const double vol = fac_;
 
   // in case of viscous stabilization decide whether to use GLS or USFEM
@@ -3471,6 +3469,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetTurbulenceParams(
                                double&                    l_tau,
                                int&                       nlayer)
 {
+  //TODO: Check parameter for 2D and 3D case
+
   // get Smagorinsky model parameter for fine-scale subgrid viscosity
   // (Since either all-scale Smagorinsky model (i.e., classical LES model
   // as will be inititalized below) or fine-scale Smagorinsky model is
@@ -3619,12 +3619,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetTurbulenceParams(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::CalcSubgrVisc(
   const LINALG::Matrix<nsd_,nen_>&        evelaf,
-  const double                        vol,
-  double&                             Cs,
-  double&                             Cs_delta_sq,
-  double&                             l_tau
+  const double                            vol,
+  double&                                 Cs,
+  double&                                 Cs_delta_sq,
+  double&                                 l_tau
   )
 {
+  // cast dimension to a double varibale -> pow()
+  const double dim = double (nsd_);
   //
   // SMAGORINSKY MODEL
   // -----------------
@@ -3648,6 +3650,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcSubgrVisc(
 
   // compute (all-scale) rate of strain
   double rateofstrain = -1.0e30;
+  // TODO: calculation of vderxy_ is realized two times!!
   rateofstrain = GetStrainRate(evelaf,derxy_,vderxy_);
 
   if (turb_mod_action_ == Fluid3::dynamic_smagorinsky)
@@ -3658,6 +3661,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcSubgrVisc(
     // for evaluation of statistics: remember the 'real' Cs
     Cs = sqrt(Cs_delta_sq)/pow((vol),(1.0/3.0));
   }
+  else if (turb_mod_action_ == Fluid3::dynamic_smagorinsky and nsd_==2)
+    dserror("dynamic smagorinsky is not implemented in 2D");
   else
   {
     if (turb_mod_action_ == Fluid3::smagorinsky_with_wall_damping)
@@ -3684,9 +3689,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcSubgrVisc(
                   +-----
                   node j
       */
-      //blitz::Array<double,1> centernodecoord(3);
+
       LINALG::Matrix<nsd_,1> centernodecoord;
-      //centernodecoord = blitz::sum(funct_(j)*xyze_(i,j),j);
       centernodecoord.Multiply(xyze_,funct_);
 
       if (centernodecoord(1,0)>0) y_plus=(1.0-centernodecoord(1,0))/l_tau;
@@ -3696,9 +3700,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcSubgrVisc(
       // multiply with van Driest damping function
       Cs *= (1.0-exp(-y_plus/A_plus));
     }
+    // TODO: Is it good to check it each time??
+    else if (turb_mod_action_ == Fluid3::smagorinsky_with_wall_damping and nsd_==2)
+      dserror("smagorinsky with wall damping is not implemented in 2D");
 
-    // get characteristic element length for Smagorinsky model
-    const double hk = pow(vol,(1.0/3.0));
+    // get characteristic element length for Smagorinsky model for 2D and 3D
+    // 3D: hk = V^1/3
+    // 2D: hk = A^1/2
+    const double hk = pow(vol,(1.0/dim));
 
     // mixing length set proportional to grid witdh: lmix = Cs * hk
     double lmix = Cs * hk;
@@ -3718,14 +3727,19 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcSubgrVisc(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::CalcFineScaleSubgrVisc(
-  const LINALG::Matrix<nsd_,nen_>&       evelaf,
-  const LINALG::Matrix<nsd_,nen_>&       fsevelaf,
-  const double                       vol,
-  double&                            Cs
+  const LINALG::Matrix<nsd_,nen_>&        evelaf,
+  const LINALG::Matrix<nsd_,nen_>&        fsevelaf,
+  const double                            vol,
+  double&                                 Cs
   )
 {
-  // get characteristic element length for Smagorinsky model
-  const double hk = pow(vol,(1.0/3.0));
+  // cast dimension to a double varibale -> pow()
+  const double dim = double (nsd_);
+
+  //     // get characteristic element length for Smagorinsky model for 2D and 3D
+  // 3D: hk = V^1/3
+  // 2D: hk = A^1/2
+  const double hk = pow(vol,(1.0/dim));
 
   if (fssgv_ == Fluid3::smagorinsky_all)
   {
@@ -3783,43 +3797,97 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
   const double               vol
   )
 {
+  // cast dimension to a double varibale -> pow()
+  const double dim = double (nsd_);
 
   // get element-type constant for tau
-  double mk = MK<distype>();
-  /*
-  switch (distype)
-  {
-  case DRT::Element::tet4:
-  case DRT::Element::pyramid5:
-  case DRT::Element::hex8:
-  case DRT::Element::wedge6:
-    mk = 0.333333333333333333333;
-    break;
-  case DRT::Element::hex20:
-  case DRT::Element::hex27:
-  case DRT::Element::tet10:
-  case DRT::Element::wedge15:
-    mk = 0.083333333333333333333;
-    break;
-  default:
-    dserror("type unknown!\n");
-  }
-*/
+  const double mk = DRT::ELEMENTS::MK<distype>();
+
   // get velocity norm
   const double vel_norm = velint_.Norm2();
-
-  // normed velocity at element centre
-  if (vel_norm>=1e-6) velino_.Update(1.0/vel_norm,velint_);
-  else
-  {
-    velino_.Clear();
-    velino_(0,0) = 1;
-  }
 
   // ---------------------------------------------------------------
   // computation of stabilization parameter tau
   // ---------------------------------------------------------------
-  if (whichtau_ == Fluid3::franca_barrenechea_valentin_wall)
+  //a)  Franca, Barrenechea, Valentin, Wall
+  //b)  Bazilevs
+  //c)  Codina
+
+  // TODO: different element length calculations for 2D and 3D flow is
+  // just a temporary work around (not to change the results of the test cases)
+
+  //----------------------------------------------------------------
+  // definiton of element size 'strle' for tau_Mu
+  //----------------------------------------------------------------
+
+  double strle = 0.0;
+// a) streamlength (based on velocity vector at element centre) -> default
+
+    if(nsd_==3)
+    {
+      // normed velocity at element centre
+      if (vel_norm>=1e-6) velino_.Update(1.0/vel_norm,velint_);
+      else
+      {
+        velino_.Clear();
+        velino_(0,0) = 1;
+      }
+
+      LINALG::Matrix<nen_,1> tmp;
+      tmp.MultiplyTN(derxy_, velino_);
+      const double val = tmp.Norm1();
+      strle = 2.0/val;
+      // const double strle = 2.0/val;
+    }
+
+//  b) volume-equival. diameter -> not default
+      // warning: 3D formula
+      // const double strle = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+
+//  c) cubic/square root of the element volume/area  -> not default
+    else if(nsd_==2)
+      strle = pow(vol,1/dim);
+      //const double strle = pow(vol,1/dim);
+
+    else dserror("elment length calculation is not implemented for 1D flow");
+
+
+  //----------------------------------------------------------------
+  // definiton of element size 'hk' for tau_Mp and tau_C
+  //----------------------------------------------------------------
+
+    double hk = 0.0;
+// a) streamlength (based on velocity vector at element centre) -> default
+
+      // normed velocity at element centre
+ /*     if (vel_norm>=1e-6) velino_.Update(1.0/vel_norm,velint_);
+      else
+      {
+        velino_.Clear();
+        velino_(0,0) = 1;
+      }
+
+      LINALG::Matrix<nen_,1> tmp;
+      tmp.MultiplyTN(derxy_, velino_);
+      const double val = tmp.Norm1();
+      const double hk = 2.0/val;*/
+
+//  b) volume-equival. diameter -> not default
+      // warning: 3D formula
+      if (nsd_==3)
+        hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+        //const double hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+
+//  c) cubic/square root of the element volume/area  -> not default
+      else if (nsd_==2)
+        hk = pow(vol,1/dim);
+        //const double hk = pow(vol,1/dim);
+
+      else dserror("elment length calculation is not implemented for 1D flow");
+
+  switch (whichtau_)
+  {
+  case Fluid3::franca_barrenechea_valentin_wall:
   {
     /*----------------------------------------------------- compute tau_Mu ---*/
     /* stability parameter definition according to
@@ -3837,12 +3905,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
     Vol. 190, pp. 1785-1800, 2000.
     http://www.lncc.br/~valentin/publication.htm                   */
 
-    // get streamlength
-    LINALG::Matrix<nen_,1> tmp;
-    tmp.MultiplyTN(derxy_,velino_);
-    const double val = tmp.Norm1();
-    const double strle = 2.0/val;
-
     /* viscous : reactive forces */
     const double re01 = 4.0 * timefac * visceff_ / (mk * densaf_ * DSQR(strle));
 
@@ -3854,36 +3916,39 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
 
     tau_(0) = timefac*DSQR(strle)/(DSQR(strle)*densaf_*xi01+(4.0*timefac*visceff_/mk)*xi02);
 
-    // compute tau_Mp
-    //    stability parameter definition according to Franca and Valentin (2000)
-    //                                       and Barrenechea and Valentin (2002)
+    if (nsd_ == 2)
+      tau_(1)= tau_(0);
+    else if (nsd_ == 3)
+    {
+      // compute tau_Mp
+      //    stability parameter definition according to Franca and Valentin (2000)
+      //                                       and Barrenechea and Valentin (2002)
 
-    // get characteristic element length for tau_Mp/tau_C:
-    // volume-equival. diameter/sqrt(3)
-    const double hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+      /* viscous : reactive forces */
+      const double re11 = 4.0 * timefac * visceff_ / (mk * densaf_ * DSQR(hk));
 
-    /* viscous : reactive forces */
-    const double re11 = 4.0 * timefac * visceff_ / (mk * densaf_ * DSQR(hk));
+      /* convective : viscous forces */
+      const double re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
 
-    /* convective : viscous forces */
-    const double re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
+      const double xi11 = DMAX(re11,1.0);
+      const double xi12 = DMAX(re12,1.0);
 
-    const double xi11 = DMAX(re11,1.0);
-    const double xi12 = DMAX(re12,1.0);
-
-    /*
-                  xi1,xi2 ^
-                          |      /
-                          |     /
-                          |    /
-                        1 +---+
-                          |
-                          |
-                          |
-                          +--------------> re1,re2
-                              1
-    */
-    tau_(1) = timefac*DSQR(hk)/(DSQR(hk)*densaf_*xi11+(4.0*timefac*visceff_/mk)*xi12);
+      /*
+                    xi1,xi2 ^
+                            |      /
+                            |     /
+                            |    /
+                          1 +---+
+                            |
+                            |
+                            |
+                            +--------------> re1,re2
+                                1
+      */
+      tau_(1) = timefac*DSQR(hk)/(DSQR(hk)*densaf_*xi11+(4.0*timefac*visceff_/mk)*xi12);
+    }
+    else
+      dserror("stabilization 'franca_barrenechea_valentin_wall' is not implemented for 1D flow");
 
     /*------------------------------------------------------ compute tau_C ---*/
     // PhD thesis Wall (1999)
@@ -3900,11 +3965,15 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
     const double xi_tau_c = DMIN(re02,1.0);
     tau_(2) = densaf_ * vel_norm * hk * 0.5 * xi_tau_c;
   }
-  else if(whichtau_ == Fluid3::bazilevs)
+  break; // end franca_barrenechea_valentin_wall
+
+  case Fluid3::bazilevs:
   {
     /*
 
     tau_M: Bazilevs et al. (2007)
+    e.g.: Variational multiscale residual-based turbulence modeling for
+          large eddy simulation of incompressible flows
                                                                               1.0
                  +-                                                      -+ - ---
                  |        2                                               |   2.0
@@ -3937,18 +4006,24 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
                       -               +----        -
                                         i,j
     */
+
     double G;
     double normG = 0;
     double Gnormu = 0;
 
     const double dens_sqr = densaf_*densaf_;
-    for (int nn=0;nn<3;++nn)
+    for (int nn=0;nn<nsd_;++nn)
     {
-      for (int rr=0;rr<3;++rr)
+      const double dens_sqr_velint_nn = dens_sqr*velint_(nn);
+      for (int rr=0;rr<nsd_;++rr)
       {
-        G = xji_(nn,0)*xji_(rr,0) + xji_(nn,1)*xji_(rr,1) + xji_(nn,2)*xji_(rr,2);
+        G = xji_(nn,0)*xji_(rr,0);
+        for (int mm=1; mm<nsd_; ++mm)
+        {
+          G += xji_(nn,mm)*xji_(rr,mm);
+        }
         normG+=G*G;
-        Gnormu+=dens_sqr*velint_(nn,0)*G*velint_(rr,0);
+        Gnormu+=dens_sqr_velint_nn*G*velint_(rr);
       }
     }
 
@@ -3987,15 +4062,21 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
     */
     double g;
     double normgsq = 0;
-    for (int rr=0;rr<3;++rr)
+    for (int rr=0;rr<nsd_;++rr)
     {
-      g = xji_(rr,0) + xji_(rr,1) + xji_(rr,2);
+      g = xji_(rr,0);
+      for(int mm=1;mm<nsd_;++mm)
+      {
+        g += xji_(rr,mm);
+      }
       normgsq += g*g;
     }
 
     tau_(2) = 1.0/(tau_(0)*normgsq);
   }
-  else if(whichtau_ == Fluid3::codina)
+  break;  // end Bazilev
+
+  case Fluid3::codina:
   {
     /*----------------------------------------------------- compute tau_Mu ---*/
     /* stability parameter definition according to
@@ -4013,12 +4094,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
     Vol. 190, pp. 1785-1800, 2000.
     http://www.lncc.br/~valentin/publication.htm                   */
 
-    // get streamlength
-    LINALG::Matrix<nen_,1> tmp;
-    tmp.MultiplyTN(derxy_,velino_);
-    const double val = tmp.Norm1();
-    const double strle = 2.0/val;
-
     /* viscous : reactive forces */
     const double re01 = 4.0 * timefac * visceff_ / (mk * densaf_ * DSQR(strle));
 
@@ -4030,36 +4105,41 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
 
     tau_(0) = timefac*DSQR(strle)/(DSQR(strle)*densaf_*xi01+(4.0*timefac*visceff_/mk)*xi02);
 
-    // compute tau_Mp
-    //    stability parameter definition according to Franca and Valentin (2000)
-    //                                       and Barrenechea and Valentin (2002)
+    if(nsd_==2)
+      tau_(1) = tau_(0);
 
-    // get characteristic element length for tau_Mp/tau_C:
-    // volume-equival. diameter/sqrt(3)
-    const double hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+    else if(nsd_==3)
+    {
 
-    /* viscous : reactive forces */
-    const double re11 = 4.0 * timefac * visceff_ / (mk * densaf_ * DSQR(hk));
+      // compute tau_Mp
+      //    stability parameter definition according to Franca and Valentin (2000)
+      //                                       and Barrenechea and Valentin (2002)
 
-    /* convective : viscous forces */
-    const double re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
+      /* viscous : reactive forces */
+      const double re11 = 4.0 * timefac * visceff_ / (mk * densaf_ * DSQR(hk));
 
-    const double xi11 = DMAX(re11,1.0);
-    const double xi12 = DMAX(re12,1.0);
+      /* convective : viscous forces */
+      const double re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
 
-    /*
-                  xi1,xi2 ^
-                          |      /
-                          |     /
-                          |    /
-                        1 +---+
-                          |dens
-                          |
-                          |
-                          +--------------> re1,re2
-                              1
-    */
-    tau_(1) = timefac*DSQR(hk)/(DSQR(hk)*densaf_*xi11+(4.0*timefac*visceff_/mk)*xi12);
+      const double xi11 = DMAX(re11,1.0);
+      const double xi12 = DMAX(re12,1.0);
+
+      /*
+                    xi1,xi2 ^
+                            |      /
+                            |     /
+                            |    /
+                          1 +---+
+                            |dens
+                            |
+                            |
+                            +--------------> re1,re2
+                                1
+      */
+      tau_(1) = timefac*DSQR(hk)/(DSQR(hk)*densaf_*xi11+(4.0*timefac*visceff_/mk)*xi12);
+    }
+    else
+      dserror("stabilization 'codina' is not implemented for 1D flow");
 
     /*------------------------------------------------------ compute tau_C ---*/
     /*-- stability parameter definition according to Codina (2002), CMAME 191
@@ -4071,7 +4151,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
      * */
     tau_(2) = sqrt(DSQR(visceff_)+DSQR(0.5*densaf_*vel_norm*hk));
   }
-  else dserror("unknown definition of tau\n");
+  break; // end Codina
+
+  default: dserror("unknown definition of tau\n");
+  }  // end switch
 
   return;
 }

@@ -175,6 +175,7 @@ namespace ELEMENTS
       \param l_tau            (i) viscous length scale, required for van driest
                                   damping function and defined on input
       */
+    // 3D sysmat
     void Sysmat(Fluid3*                                       ele,
                 const LINALG::Matrix<nsd_,nen_>&               evelaf,
                 const LINALG::Matrix<nsd_,nen_>&               eveln,
@@ -199,6 +200,7 @@ namespace ELEMENTS
                 double&                                       Cs_delta_sq,
                 double&                                       l_tau);
 
+    // 2D sysmat
     void Sysmat2D(Fluid3*                                  ele,
                 const LINALG::Matrix<nsd_,nen_>&             evelaf,
                 const LINALG::Matrix<nsd_,nen_>&             eveln,
@@ -253,6 +255,7 @@ namespace ELEMENTS
     const double SetSolutionParameter(Fluid3*                    ele,
                               ParameterList&             params);
 
+    //TODO: filling of element matrix
     /*
     void FillElementVector( DRT::Discretization&          discretization,
                             vector<int>&                  lm,
@@ -320,23 +323,11 @@ namespace ELEMENTS
                        double&                             l_tau);
 
     /*!
-      \brief calculate (all-scale) subgrid viscosity
-    */
-    void CalcSubgrVisc_2D(const LINALG::Matrix<nsd_,nen_>&  evelaf,
-                       const double                        area,
-                       double&                             Cs);
-
-    /*!
       \brief calculate fine-scale subgrid viscosity
     */
     void CalcFineScaleSubgrVisc(const LINALG::Matrix<nsd_,nen_>&     evelaf,
                                 const LINALG::Matrix<nsd_,nen_>&     fsevelaf,
                                 const double                        vol,
-                                double&                             Cs);
-
-    void CalcFineScaleSubgrVisc_2D(const LINALG::Matrix<nsd_,nen_>&  evelaf,
-                                const LINALG::Matrix<nsd_,nen_>&     fsevelaf,
-                                const double                        area,
                                 double&                             Cs);
 
     /*!
@@ -361,9 +352,6 @@ namespace ELEMENTS
     void CalcStabParameter(const double               timefac,
                            const double               vol);
 
-    void CalcStabParameter_2D(const double               timefac,
-                           const double               vol);
-
     /*!
       \brief calculate rate of strain of (fine-scale) velocity
 
@@ -379,6 +367,7 @@ namespace ELEMENTS
     {
       double rateofstrain=0;
 
+      // TODO: velderxy is calculated two times, probably ;)
       // get velocity derivatives at integration point
       //
       //              +-----  dN (x)
@@ -409,9 +398,9 @@ namespace ELEMENTS
         }
       }
 
-      for(int rr=0;rr<nsd_;rr++)
+      for(int rr=0;rr<nsd_;++rr)
       {
-        for(int mm=0;mm<nsd_;mm++)
+        for(int mm=0;mm<nsd_;++mm)
         {
           rateofstrain += two_epsilon(rr,mm)*two_epsilon(mm,rr);
         }
