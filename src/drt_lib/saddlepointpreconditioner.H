@@ -177,7 +177,9 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
     void GetPtent(const Epetra_Map& rowmap, const Epetra_IntVector aggvec, int naggs, ParameterList& List, const Epetra_MultiVector& ThisNS, RCP<Epetra_CrsMatrix>& Ptent, RCP<Epetra_MultiVector>& NextNS, const int domainoffset);
 
     void MultiplyAll(const RCP<SparseMatrix>& left, const RCP<SparseMatrix>& right, std::vector<double>& InnerProd);
+    void MultiplyAll(const RCP<SparseMatrix>& left, const RCP<SparseMatrix>& right, RCP<Epetra_Vector>& InnerProd);
     void MultiplySelfAll(const RCP<SparseMatrix>& Op,std::vector<double>& Column2Norm);
+    void MultiplySelfAll(const RCP<SparseMatrix>& Op,RCP<Epetra_Vector>& Column2Norm);
 
     //void MultiplySelfAll(const RCP<SparseMatrix>& Op,RCP<Epetra_Vector>& Column2Norm);
     //void MultiplyAll(const RCP<SparseMatrix>& left, const RCP<SparseMatrix>& right, RCP<Epetra_Vector>& InnerProd);
