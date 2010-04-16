@@ -652,6 +652,9 @@ void CONTACT::Beam3ContactStruGenAlpha::FullNewton()
   timer.ResetStartTime();
   bool print_unconv = true;
 
+  // create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
+  InitializeNewtonUzawa();
+  
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
@@ -978,6 +981,198 @@ void CONTACT::Beam3ContactStruGenAlpha::FullNewton()
 
   return;
 } // StruGenAlpha::FullNewton()
+
+/*----------------------------------------------------------------------*
+ |  initialize Newton for 2nd, 3rd, ... Uzawa iteration       popp 04/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3ContactStruGenAlpha::InitializeNewtonUzawa()
+{
+  // -------------------------------------------------------------------
+  // get some parameters from parameter list
+  // -------------------------------------------------------------------
+  double time      = params_.get<double>("total time"             ,0.0);
+  double dt        = params_.get<double>("delta time"             ,0.01);
+  double timen     = time + dt;
+  bool   damping   = params_.get<bool>  ("damping"                ,false);
+  double alphaf    = params_.get<double>("alpha f"                ,0.459);
+  string convcheck = params_.get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
+  bool printerr    = params_.get<bool>  ("print to err",false);
+  FILE* errfile    = params_.get<FILE*> ("err file",NULL);
+  bool structrobin = params_.get<bool>  ("structrobin"            ,false);
+  if (!errfile) printerr = false;
+  bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
+  bool  loadlin    = params_.get<bool>("LOADLIN",false);
+
+  // create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
+  if (uzawaiter_>1)
+  {
+    //--------------------------- recompute external forces if nonlinear
+    // at state n, the external forces and linearization are interpolated at
+    // time 1-alphaf in a TR fashion
+    if (loadlin)
+    {
+      ParameterList p;
+      // action for elements
+      p.set("action","calc_struct_eleload");
+      // other parameters needed by the elements
+      p.set("total time",timen);
+      p.set("delta time",dt);
+      p.set("alpha f",alphaf);
+      // set vector values needed by elements
+      discret_.ClearState();
+      discret_.SetState("displacement",disn_);
+      discret_.SetState("velocity",veln_);
+//      discret_.SetState("displacement",dism_); // mid point
+//      discret_.SetState("velocity",velm_);
+      fextn_->PutScalar(0.0); // TR
+//      fextm_->PutScalar(0.0);
+      fextlin_->Zero();
+//      discret_.EvaluateNeumann(p,fextm_,fextlin_);
+      discret_.EvaluateNeumann(p,fextn_,fextlin_);
+      fextlin_->Complete();
+      discret_.ClearState();
+      fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
+    }
+
+    //---------------------------- compute internal forces and stiffness
+    {
+      // zero out stiffness
+      stiff_->Zero();
+
+      // create the parameters for the discretization
+      ParameterList p;
+      // action for elements
+      p.set("action","calc_struct_nlnstiff");
+      // other parameters that might be needed by the elements
+      p.set("total time",timen);
+      p.set("delta time",dt);
+      p.set("alpha f",alphaf);
+      // set vector values needed by elements
+      discret_.ClearState();
+#ifdef STRUGENALPHA_FINTLIKETR
+#else
+      // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
+      disi_->Scale(1.-alphaf);
+#endif
+      discret_.SetState("residual displacement",disi_);
+#ifdef STRUGENALPHA_FINTLIKETR
+      discret_.SetState("displacement",disn_);
+      discret_.SetState("velocity",veln_);
+#else
+      discret_.SetState("displacement",dism_);
+      discret_.SetState("velocity",velm_);
+#endif
+      //discret_.SetState("velocity",velm_); // not used at the moment
+#ifdef STRUGENALPHA_FINTLIKETR
+      fintn_->PutScalar(0.0);  // initialise internal force vector
+      discret_.Evaluate(p,stiff_,null,fintn_,null,null);
+#else
+      fint_->PutScalar(0.0);  // initialise internal force vector
+      discret_.Evaluate(p,stiff_,null,fint_,null,null);
+#endif
+      discret_.ClearState();
+
+      if (surf_stress_man_->HaveSurfStress())
+      {
+        p.set("surfstr_man", surf_stress_man_);
+        surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fint_,SystemMatrix());
+      }
+
+      if (pot_man_!=null)
+      {
+        p.set("pot_man", pot_man_);
+        pot_man_->EvaluatePotential(p,dism_,fint_,SystemMatrix());
+      }
+
+      if (constrMan_->HaveConstraint())
+      {
+        ParameterList pcon;
+        pcon.set("scaleStiffEntries",1.0/(1.0-alphaf));
+        constrMan_->StiffnessAndInternalForces(time+dt,dis_,disn_,fint_,SystemMatrix(),pcon);
+      }
+
+      // do NOT finalize the stiffness matrix to add masses to it later
+      // If we have a robin condition we need to modify both the rhs and the
+      // matrix diagonal corresponding to the dofs at the robin interface.
+      if (structrobin)
+      {
+        double alphas = params_.get<double>("alpha s",-1.);
+
+        // Add structural part of Robin force
+        fsisurface_->AddFSICondVector(alphas/dt,
+                                      fsisurface_->ExtractFSICondVector(dism_),
+                                      fint_);
+
+        double scale = alphas*(1.-alphaf)/dt;
+        const Epetra_Map& robinmap = *fsisurface_->FSICondMap();
+        int numrdofs = robinmap.NumMyElements();
+        int* rdofs = robinmap.MyGlobalElements();
+        for (int lid=0; lid<numrdofs; ++lid)
+        {
+          int gid = rdofs[lid];
+          // Note: This assemble might fail if we have a block matrix here.
+          stiff_->Assemble(scale,gid,gid);
+        }
+      }
+    }
+
+    //------------------------------------------ compute residual forces
+    if (dynkindstat)
+    {
+      // static residual
+      // Res = F_int - F_ext
+      fresm_->PutScalar(0.0);
+    }
+    else
+    {
+      // dynamic residual
+      // Res = M . A_{n+1-alpha_m}
+      //     + C . V_{n+1-alpha_f}
+      //     + F_int(D_{n+1-alpha_f})
+      //     - F_{ext;n+1-alpha_f}
+      // add mid-inertial force
+      mass_->Multiply(false,*accm_,*finert_);
+      fresm_->Update(1.0,*finert_,0.0);
+      // add mid-viscous damping force
+      if (damping)
+      {
+        //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+        damp_->Multiply(false,*velm_,*fvisc_);
+        fresm_->Update(1.0,*fvisc_,1.0);
+      }
+    }
+    // add static mid-balance
+#ifdef STRUGENALPHA_FINTLIKETR
+    fresm_->Update(1.0,*fextm_,-1.0);
+    fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
+#else
+    fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+#endif
+    
+#ifdef D_BEAM3
+    //**********************************************************************
+    //**********************************************************************
+    // evaluate beam contact
+    // Res = Res + (1-alpha_f) * F_c(D_{n+1}) + alpha_f * F_c(D_{n})
+    beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
+    //**********************************************************************
+    //**********************************************************************
+#endif
+    
+    // blank residual DOFs that are on Dirichlet BC
+    // in the case of local systems we have to rotate forth and back
+    {
+      if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(fresm_);
+      Epetra_Vector fresmcopy(*fresm_);
+
+      fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+
+      if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(fresm_);
+    }
+  }
+  
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  integrate in time                                        popp  04/10|
