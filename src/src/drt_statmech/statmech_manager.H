@@ -1,0 +1,180 @@
+/*!----------------------------------------------------------------------
+\file statmech_manager.H
+
+<pre>
+Maintainer: Christian Cyron
+            cyron@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15234
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifdef CCADISCRET
+#ifndef STATMECH_MANAGER_H
+#define STATMECH_MANAGER_H
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "../drt_geometry/searchtree.H"
+#include "../drt_geometry/intersection_service.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
+
+
+/*!
+\brief management and auxiliary functions for statistical mechanics
+\author cyron (cyron@lnm.mw.tum.de)
+*/
+
+class StatMechManager
+{
+public:
+
+  //! \brief Standard Constructor
+  explicit StatMechManager(ParameterList& params, DRT::Discretization& discret);
+
+  //! \brief Destructor
+  virtual ~StatMechManager() {};
+
+  //! \brief write special output for statistical mechanics into files
+  void StatMechOutput(ParameterList& params, const int ndim, const double& time,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint);
+
+  //! \brief saving all necessary class variables for restart
+  void StatMechWriteRestart(IO::DiscretizationWriter& output);
+
+  //! \brief reading all necessary information after a restart
+  void StatMechReadRestart(IO::DiscretizationReader& reader);
+
+  //! \brief special update for statistical mechanics including setting and deleting crosslinkers in the discretization
+  void StatMechUpdate(const double dt, Epetra_Vector& disrow,RCP<LINALG::SparseOperator>& stiff, int ndim);
+
+  //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
+  void StatMechInitOutput(const int ndim, const double& dt);
+
+  //! \brief write output for Gmsh postprocessing
+  void GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step);
+
+  //! \brief gmsh output in case of periodic boundary conditions
+  void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid);
+
+  //! \brief set crosslinker if two nodes are close enough and probability check is passed
+  void SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
+
+  //! \brief generate gaussian randomnumbers with mean "meanvalue" and standarddeviation "standarddeviation" for parallel use
+  void GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> randomnumbers,const double meanvalue, const double standarddeviation);
+
+  //! \brief Initializes beam3 elements in case of perioddic boundary conditions
+  void PeriodicBoundaryBeam3Init(DRT::Element* element);
+
+  //! \brief Initializes truss3 elements in case of perioddic boundary conditions
+  void PeriodicBoundaryTruss3Init(DRT::Element* element);
+
+  /*!\brief check whether element is "broken" due to periodic boundary conditions
+    \param coord  (in/out)  set of nodal coordinates
+		\param cut    (in/out)  in case of a broken element, cut holds component and information about the location of the nodes of the element
+		\param broken (in/out)  continuous==false, broken==true
+		\date 03/10
+  */
+  void CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LINALG::SerialDenseMatrix& cut, bool *broken);
+
+  /*!\brief return the current coordinates and DOF LIDs of all nodes of given element
+		 \param element (in) 	   an element
+		 \param dis		  (in)	   current displacement vector
+		 \param coord	  (in/out) current node coordinates of element
+		 \param lids		(in/out) nodal DOF LIDs of the element
+  */
+  void GetElementNodeCoords(DRT::Element* element, RCP<Epetra_Vector> dis, LINALG::SerialDenseMatrix& coord, vector<int>* lids=NULL);
+
+  /*!\brief update locations of force sensors
+     \param fsensorlids   (in) vector holding the LIDs of force sensor DOFs
+   */
+  void UpdateForceSensors(vector<int>& fsensorlids);
+
+  //! \brief containing statistical mechanics input parameters
+  Teuchos::ParameterList statmechparams_;
+
+  //! \brief current simulation time
+  double time_;
+
+protected:
+
+  // don't want = operator and cctor
+  StatMechManager operator = (const StatMechManager& old);
+  StatMechManager(const StatMechManager& old);
+
+  //! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
+  void DelCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap);
+
+  //! \brief Searches and saves in variable  crosslinkerneighbours_ neighbours for each row node
+  void SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > currentpositions);
+
+  //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
+  void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim);
+
+
+  //! \brief how often SearchNeighbours() has already been called
+  int nsearch_;
+
+  //! \brief point of time at which writing special statistical output is started
+  double starttimeoutput_;
+
+  //! \brief end to end distance of a single filament at the beginning of statistical output
+  double endtoendref_;
+
+  //! \brief time step number at the beginning of statistical output
+  int istart_;
+
+  //! \brief position of first node in last time step
+  LINALG::Matrix<3,1> beginold_;
+
+  //! \brief position of last nodein last time step
+  LINALG::Matrix<3,1> endold_;
+
+  //! \brief maximal radius within which crosslinkers are established
+  double rlink_;
+
+  //! \brief number of nodes which are part of the discretization already before starting adding crosslinkers
+  int basisnodes_;
+
+  //! \brief number of elements which are part of the discretization already before starting adding crosslinkers
+  int basiselements_;
+
+  //! \brief number of elements which are part of the discretization in the beginning of this time step
+  int currentelements_;
+
+  //! \brief number of file into which output is written (only important for single filament dynamics)
+  int outputfilenumber_;
+
+  //! \brief reference to current discretization
+  DRT::Discretization& discret_;
+
+  //! \brief storing for each row map node the column map LIDs of all proper neighbour nodes
+  std::vector< std::vector<int> >  crosslinkerneighbours_;
+
+  //! \brief storing for each row map node the column map LIDs of nodes to which a crosslinker has been established
+  std::vector< std::vector<int> >  crosslinkerpartner_;
+
+  //! \brief storing for each node column map LID number of filament to which it belongs
+  RCP<Epetra_Vector> filamentnumber_;
+
+  //! \brief storing for degree of freedom whether force has to be measured
+  RCP<Epetra_Vector> forcesensor_;
+
+  //! \store accumulated disp
+  double sumsquareincpar_;
+  double sumsquareincort_;
+  double sumrotmiddle_;
+  double sumsquareincmid_;
+  double sumsquareincrot_;
+
+  //store displacement of midpoint compared to initial state as a 3-vector
+  LINALG::Matrix<3,1>sumdispmiddle_;
+
+  //! SearchTree which allows accelerated search for neighbouring nodes in case of dynamic crosslinkers
+  Teuchos::RCP<GEO::SearchTree>  octTree_;
+
+
+}; // class StatMechManager
+
+#endif /*STATMECH_MANAGER_H*/
+#endif  // #ifdef CCADISCRET

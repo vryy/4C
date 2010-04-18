@@ -1,0 +1,247 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file adapter_xfluid_impl.H
+
+\brief Fluid field adapter
+
+<pre>
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+#ifdef CCADISCRET
+
+#ifndef ADAPTER_XFLUID_IMPL_H
+#define ADAPTER_XFLUID_IMPL_H
+
+#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_ParameterList.hpp>
+
+#include <Epetra_Vector.h>
+#include <Epetra_Map.h>
+#include <Epetra_Operator.h>
+
+#include "../drt_fluid/xfluidimplicitintegration.H"
+
+#include "adapter_fluid.H"
+
+
+// Algorithm adapter classes for use in multi-field problems
+namespace ADAPTER {
+
+  /// adapter to normal fluid algorithm
+  /*!
+    <h3>Scaling factors in monolithic FSI</h3>
+
+    For monolithic FSI we need to build one block system with overlapping
+    equations at the interface. In order to do so we have to scale all blocks
+    such that we the terms we add are of the same units. We go for real forces
+    and displacement increments at the interface.
+
+    It is the duty of the adapter to provide the necessary scaling
+    factors.
+
+    We assume a very simple velocity -- displacement relation at the interface
+    \f$ \mathbf{u}^{n+1}_{i+1} = \frac{1}{\Delta t} \Delta
+    \mathbf{d}^{n+1}_{i+1} \f$
+
+    The fluid interface equations have to be scaled with \f$
+    \frac{\rho}{\theta\Delta t} \f$ to be physical forces. The matrix columns
+    that go with \f$ \mathbf{u}^{n+1}_{\Gamma,i+1} \f$ have to be scaled with
+    \f$ \frac{1}{\Delta t} \f$. This results in the scaled blocks:
+
+    - \f$ \frac{\rho}{\theta\Delta t^2} \mathbf{F}_{\Gamma\Gamma} \f$
+
+    - \f$ \frac{1}{\Delta t} \mathbf{F}_{I\Gamma} \f$
+
+    - \f$ \frac{\rho}{\theta\Delta t} \mathbf{F}_{\Gamma I} \f$
+
+    \note As we couple a generalized-\f$\alpha\f$ structure to a
+    one-step-\f$\theta\f$ fluid here all we can do is backward Euler time
+    discretization on both fields.
+
+    \author u.kue
+    \date 02/08
+   */
+  class XFluidImpl : public Fluid
+  {
+  public:
+    //! constructor
+    explicit XFluidImpl(
+            Teuchos::RCP<DRT::Discretization> dis,
+            const Teuchos::RCP<DRT::Discretization> soliddis,
+            Teuchos::RCP<ParameterList> params);
+
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
+    virtual Teuchos::RCP<const Epetra_Vector> RHS();
+    virtual Teuchos::RCP<const Epetra_Vector> TrueResidual();
+    virtual Teuchos::RCP<const Epetra_Vector> Velnp();
+    virtual Teuchos::RCP<const Epetra_Vector> Velaf();
+    virtual Teuchos::RCP<const Epetra_Vector> Veln();
+    virtual Teuchos::RCP<const Epetra_Vector> Accam();
+    virtual Teuchos::RCP<const Epetra_Vector> Hist();
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnp();
+    virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel();
+    virtual Teuchos::RCP<const Epetra_Map>    DofRowMap();
+    virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix();
+    virtual map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > CouplingMatrices();
+    virtual map<std::string, Teuchos::RCP<Epetra_Vector> > CouplingVectors();
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives();
+    virtual Teuchos::RCP<DRT::Discretization> Discretization();
+    virtual Teuchos::RCP<const DRT::DofSet> DofSet() { dserror("not implemented"); return Teuchos::null; };
+    virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
+
+    //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const;
+
+    virtual void PrepareTimeStep();
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
+    virtual void Update();
+    virtual void StatisticsAndOutput();
+    virtual void Output();
+    virtual IO::DiscretizationWriter& DiscWriter() { return fluid_.DiscWriter();}
+
+    virtual void NonlinearSolve();
+    virtual void Predictor();
+    virtual void MultiCorrector();
+
+
+    /// get the linear solver object used for this field
+    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return fluid_.LinearSolver(); }
+
+    virtual Teuchos::RCP<const Epetra_Map>    InnerVelocityRowMap();
+    virtual Teuchos::RCP<const Epetra_Map>    VelocityRowMap();
+    virtual Teuchos::RCP<const Epetra_Map>    PressureRowMap();
+
+    /// the mesh map contains all velocity dofs that are covered by an ALE node
+    virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
+
+    /// scaling factor needed to convert the residual to real forces
+    virtual double ResidualScaling() const;
+
+    virtual double TimeScaling() const;
+
+    /// communication object at the interface
+    virtual const FLD::UTILS::MapExtractor& Interface() const { return interface_; }
+
+    virtual void ReadRestart(int step);
+    virtual double Time() const;
+    virtual int Step() const;
+    virtual double Dt() const;
+    virtual void LiftDrag();
+
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForcesRobin();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln()  { dserror("not implemented!"); return Teuchos::null; };
+    virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
+    virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<Epetra_Vector> iforce);
+    virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp);
+    virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel);
+
+    virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
+    virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx);
+
+    virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)  { dserror("not implemented!"); return; };
+    virtual void FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)  { dserror("not implemented!"); return; };
+
+    virtual int  Itemax() const;
+    virtual void SetItemax(int itemax);
+
+    /*!
+    \brief return type of time integration scheme
+
+    */
+    const FLUID_TIMEINTTYPE TimIntScheme() const {return fluid_.TimIntScheme();}
+
+    virtual Teuchos::RCP<Epetra_Vector>   IntegrateInterfaceShape();
+
+    virtual void UseBlockMatrix(bool splitmatrix)  { dserror("not implemented!"); return; };
+
+    /// linear fluid solve with just a interface load
+    /*!
+      The very special solve done in steepest descent relaxation
+      calculation (and matrix free Newton Krylov).
+
+      \note Can only be called after a valid fluid solve.
+    */
+    virtual Teuchos::RCP<Epetra_Vector>    RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel);
+
+    virtual Teuchos::RCP<DRT::ResultTest>  CreateFieldTest();
+
+    virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres);
+
+    /// set initial flow field
+    virtual void SetInitialFlowField(int whichinitialfield,int startfuncno);
+
+    ///  set fields for low-Mach-number flow within outer iteration loop
+    virtual void SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,
+                                   RCP<const Epetra_Vector> scalaram,
+                                   RCP<const Epetra_Vector> scalardtam,
+                                   const double             thermpressaf,
+                                   const double             thermpressam,
+                                   const double             thermpressdtam,
+                                   Teuchos::RCP<DRT::Discretization> scatradis);
+
+    /// set fields for low-Mach-number flow at end of time step
+    virtual void SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,
+                                   const double             thermpressnp,
+                                   RCP<const Epetra_Vector> scatraresidual,
+                                   Teuchos::RCP<DRT::Discretization> scatradis);
+
+  private:
+
+    void PrepareBoundaryDis();
+
+    virtual void ComputeInterfaceAccelerationsAndVelocities();
+
+    void PrintInterfaceVectorField(
+        const Teuchos::RCP<const Epetra_Vector>   displacementfield,
+        const Teuchos::RCP<const Epetra_Vector>   vectorfield,
+        const std::string& filestr,
+        const std::string& name_in_gmsh
+        ) const;
+
+    void RemoveInternalSurfElements(
+        Teuchos::RCP<DRT::Discretization> soliddis
+        );
+
+    /// the actual fluid algorithm
+    FLD::XFluidImplicitTimeInt             fluid_;
+
+    /// the interface map setup for fsi interface, free surface, interior translation
+    FLD::UTILS::MapExtractor               interface_;
+
+    /// ALE dof map
+    //LINALG::MapExtractor                   meshmap_;
+
+    //! @name local copies of input parameters
+//    Teuchos::RCP<DRT::Discretization>      dis_;
+    Teuchos::RCP<DRT::Discretization>      boundarydis_;
+    Teuchos::RCP<Teuchos::ParameterList>   params_;
+    Teuchos::RCP<IO::DiscretizationWriter> boundaryoutput_;
+    //@}
+
+    //! @name state vectors using the solid boundary parallel distribution (row vectors)
+    Teuchos::RCP<Epetra_Vector>            idispnp_;   ///< interface displacement  n+1
+    Teuchos::RCP<Epetra_Vector>            ivelnp_;    ///< interface velocity      n+1
+    Teuchos::RCP<Epetra_Vector>            itrueresnp_;///< interface residual      n+1
+    Teuchos::RCP<Epetra_Vector>            idispn_;    ///< interface displacement  n
+    Teuchos::RCP<Epetra_Vector>            iveln_;     ///< interface velocity      n
+    Teuchos::RCP<Epetra_Vector>            ivelnm_;    ///< interface velocity      n-1
+    Teuchos::RCP<Epetra_Vector>            iaccnp_;    ///< interface acceleration  n+1
+    Teuchos::RCP<Epetra_Vector>            iaccn_;     ///< interface acceleration  n
+    //@}
+
+    /// all velocity dofs not at the interface
+    Teuchos::RefCountPtr<Epetra_Map>       innervelmap_;
+  };
+
+}
+
+#endif
+#endif

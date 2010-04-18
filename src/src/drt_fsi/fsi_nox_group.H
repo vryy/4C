@@ -1,0 +1,42 @@
+#ifdef CCADISCRET
+
+#ifndef FSI_NOX_GROUP_H
+#define FSI_NOX_GROUP_H
+
+#include <NOX_Epetra_Group.H>
+#include "fsi_monolithicinterface.H"
+
+namespace NOX
+{
+namespace FSI
+{
+
+  /// Special NOX group that always sets Jacobian and RHS at the same time.
+  class Group : public NOX::Epetra::Group
+  {
+  public:
+
+    Group(::FSI::MonolithicInterface& mfsi,
+          Teuchos::ParameterList& printParams,
+          const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
+          const NOX::Epetra::Vector& x,
+          const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys);
+
+    /// fetch the known Jacobian and RHS from the field solvers
+    void CaptureSystemState();
+
+    virtual NOX::Abstract::Group::ReturnType computeF();
+
+    virtual NOX::Abstract::Group::ReturnType computeJacobian();
+
+    NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& p);
+
+  private:
+
+    ::FSI::MonolithicInterface& mfsi_;
+  };
+}
+}
+
+#endif
+#endif

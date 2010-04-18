@@ -1,0 +1,75 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file elast_isoquad.cpp
+\brief
+
+
+the input line should read
+  MAT 1 ELAST_IsoQuad C 1
+
+<pre>
+Maintainer: Sophie Rausch
+            rausch@lnm.mw.tum.de
+            089/289 15255
+</pre>
+*/
+
+/*----------------------------------------------------------------------*/
+/* macros */
+#ifdef CCADISCRET
+
+/*----------------------------------------------------------------------*/
+/* headers */
+#include "elast_isoquad.H"
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+MAT::ELASTIC::PAR::IsoQuad::IsoQuad(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  c_(matdata->GetDouble("C"))
+{
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+MAT::ELASTIC::IsoQuad::IsoQuad()
+  : Summand(),
+    params_(NULL)
+{
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+MAT::ELASTIC::IsoQuad::IsoQuad(MAT::ELASTIC::PAR::IsoQuad* params)
+  : params_(params)
+{
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::IsoQuad::AddCoefficientsModified(
+  bool& havecoefficients,
+  LINALG::Matrix<3,1>& gamma,
+  LINALG::Matrix<5,1>& delta,
+  const LINALG::Matrix<3,1>& modinv
+  )
+{
+  havecoefficients = havecoefficients or true;
+
+  const double c = params_ -> c_;
+
+  //
+  gamma(0) += 4*c*(modinv(0)-3);
+
+  delta(0) += 8*c;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+#endif // CCADISCRET

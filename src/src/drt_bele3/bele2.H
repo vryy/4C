@@ -1,0 +1,254 @@
+/*!----------------------------------------------------------------------
+\file bele2.H
+
+\brief  2D boundary elment
+
+<pre>
+Maintainer: Ursula Mayer
+            mayer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15257
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifdef CCADISCRET
+#ifndef BELE2_H
+#define BELE2_H
+
+
+#include "Teuchos_RefCountPtr.hpp"
+#include "Epetra_Vector.h"
+
+#include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_node.H"
+
+
+
+namespace DRT
+{
+// forward declarations
+class Discretization;
+
+
+namespace ELEMENTS
+{
+
+/*!
+ * A 2D boundary element 
+ *
+ * It can be used to have a boundary discretization
+ * of surface/boundary elements. They can be of any 1d shape (line2,line3)
+ *
+ * The number of dof per node is set to 2, so we can define displacement vectors by
+ * using FillComplete on the boundary discretization.
+ *
+ * \author mayer (mayer@lnm.mw.tum.de)
+ */
+class Bele2 : public DRT::Element
+{
+public:
+
+  //@}
+  //! @name Constructors and destructors and related methods
+
+  /*!
+  \brief Standard Constructor
+  */
+  explicit Bele2(
+      int id,     ///< A unique global id
+      int owner   ///< proc num that owns this element
+      );
+
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a Element
+
+  */
+  explicit Bele2(const Bele2& old);
+
+  DRT::Element* Clone() const;
+  virtual DiscretizationType Shape() const;
+  virtual int NumLine() const {return 1;}
+  virtual int NumSurface() const {return -1;}
+  virtual int NumVolume() const {return -1;}
+  virtual vector<RCP<DRT::Element> > Lines();
+  virtual vector<RCP<DRT::Element> > Surfaces();
+  virtual int UniqueParObjectId() const { return ParObject_Bele2;}
+  virtual void Pack(vector<char>& data) const;
+  virtual void Unpack(const vector<char>& data);
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~Bele2();
+
+  //@}
+
+  //! @name Access methods
+
+  virtual int NumDofPerNode(const DRT::Node&) const {return 2;}
+  virtual int NumDofPerElement() const { return 0; }
+  void Print(ostream& os) const;
+  virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const;
+
+  //@}
+
+  //! @name Input and Creation
+
+  /*!
+   * \brief Read input for this element
+   * \note Bele3 will be created on the fly for various tasks and no read in is planned
+  */
+  bool ReadElement()
+  {
+      dserror("No reading for this element! Will be created on the fly, not from a .dat file.");
+      return false;
+  }
+
+  //@}
+
+  //! @name Evaluation
+
+  int Evaluate(ParameterList& params,
+               DRT::Discretization&      discretization,
+               vector<int>&              lm,
+               Epetra_SerialDenseMatrix& elemat1,
+               Epetra_SerialDenseMatrix& elemat2,
+               Epetra_SerialDenseVector& elevec1,
+               Epetra_SerialDenseVector& elevec2,
+               Epetra_SerialDenseVector& elevec3);
+
+  virtual int EvaluateNeumann(ParameterList& params,
+                              DRT::Discretization&      discretization,
+                              DRT::Condition&           condition,
+                              vector<int>&              lm,
+                              Epetra_SerialDenseVector& elevec1,
+                              Epetra_SerialDenseMatrix* elemat1 = NULL);
+
+
+  //@}
+
+  //! @name Other
+  //! does this element have non-zero displacements or not
+//  bool IsMoving() const { return is_moving_; }
+
+  //@}
+
+
+private:
+
+  //! action parameters recognized by bele3
+  enum ActionType
+  {
+    none
+  };
+
+  /*!
+   * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
+   * \return boolean indicating higher order status
+   */
+  bool isHigherOrderElement(
+    const DRT::Element::DiscretizationType  distype
+    ) const
+    {
+      bool hoel = true;
+      switch (distype)
+      {
+          case line3:
+            hoel = true;
+            break;
+          case line2:
+            hoel = false;
+            break;
+          default:
+            dserror("distype unknown!");
+      }
+      return hoel;
+    };
+
+  //! don't want = operator
+  Bele2& operator = (const Bele2& old);
+
+
+}; // class Bele2
+
+
+//=======================================================================
+//=======================================================================
+//=======================================================================
+//=======================================================================
+
+
+/*!
+\brief A register for bele2 element
+
+\author mayer (mayer@lnm.mw.tum.de)
+*/
+class Bele2Register : public DRT::ElementRegister
+{
+public:
+
+  //! @name Constructors and destructors and related methods
+
+  /*!
+  \brief Standard Constructor
+
+  */
+  explicit Bele2Register(DRT::Element::ElementType etype);
+
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of an Bele3Register
+
+  */
+  Bele2Register(const DRT::ELEMENTS::Bele2Register& old);
+
+  /*!
+  \brief Deep copy this instance of Bele2Register and return pointer to the copy
+
+  The Clone() method is used from the virtual base class Element in cases
+  where the type of the derived class is unknown and a copy-ctor is needed
+
+  */
+  DRT::ELEMENTS::Bele2Register* Clone() const;
+
+  virtual int UniqueParObjectId() const { return ParObject_Bele2Register;}
+  virtual void Pack(vector<char>& data) const;
+  virtual void Unpack(const vector<char>& data);
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~Bele2Register();
+
+  //@}
+
+  //! @name Access methods
+
+  void Print(ostream& os) const;
+
+  //@}
+
+  //! @name Construction
+
+  int Initialize(DRT::Discretization& dis);
+
+  //@}
+
+private:
+
+
+}; // class Bele2Register
+
+
+} // namespace ELEMENTS
+} // namespace DRT
+
+
+#endif
+#endif

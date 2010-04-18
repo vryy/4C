@@ -1,0 +1,50 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file pre_exodus.H
+
+\brief preprocessor for exodusII format
+
+<pre>
+Maintainer: Moritz & Georg
+            frenzel@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/frenzel
+            089 - 289-15240
+</pre>
+
+Pre_exodus contains classes to open and preprocess exodusII files into the
+drt of Baci. It uses the "valid-parameters"-list defined in Baci for preparing
+a up-to-date Baci header and another file specifying element and boundary
+specifications. As result either a preliminary input file set is suggestioned,
+or the well-known .dat file is created.
+
+*/
+/*----------------------------------------------------------------------*/
+#ifdef D_EXODUS
+
+#ifndef PRE_EXODUS_H_
+#define PRE_EXODUS_H_
+
+#ifdef CCADISCRET
+
+#include <string>
+#include <iostream>
+#include <vector>
+#include "pre_exodus_reader.H"
+
+extern "C" /* stuff which is c and is accessed from c++ */
+{
+#include <exodusII.h>
+}
+using namespace std;
+
+//! \namespace EXODUS namespace of the ExodusII-to-BACI preprocessing tool
+namespace EXODUS
+{
+//! create default bc file
+int CreateDefaultBCFile(EXODUS::Mesh& mesh);
+
+} // of namespace EXODUS
+
+#endif /* of CCADISCRET */
+#endif /*PRE_EXODUS_H_*/
+#endif
