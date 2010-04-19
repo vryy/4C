@@ -75,7 +75,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D(
   }
 
   // add displacement when fluid nodes move in the ALE case
-  if (ele->is_ale_) xyze_ += edispnp;
+  if (ele->IsAle()) xyze_ += edispnp;
 
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes
@@ -91,10 +91,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D(
 
   // in case of viscous stabilization decide whether to use GLS or USFEM
   double vstabfac= 0.0;
-  if (vstab_ == Fluid3::viscous_stab_usfem or
-      vstab_ == Fluid3::viscous_stab_usfem_only_rhs)   vstabfac =  1.0;
-  else if(vstab_ == Fluid3::viscous_stab_gls or
-          vstab_ == Fluid3::viscous_stab_gls_only_rhs) vstabfac = -1.0;
+  if (vstab_ == INPAR::FLUID::viscous_stab_usfem or
+      vstab_ == INPAR::FLUID::viscous_stab_usfem_only_rhs)   vstabfac =  1.0;
+  else if(vstab_ == INPAR::FLUID::viscous_stab_gls or
+          vstab_ == INPAR::FLUID::viscous_stab_gls_only_rhs) vstabfac = -1.0;
 
   //----------------------------------------------------------------------
   // get material parameters at element center
@@ -194,7 +194,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D(
     // movement dependent) convective velocity. This avoids a lot of ale terms
     // we used to calculate.
     convvelint_.Update(velint_);
-    if (ele->is_ale_) convvelint_.Multiply(-1.0, egridv, funct_, 1.0);
+    if (ele->IsAle()) convvelint_.Multiply(-1.0, egridv, funct_, 1.0);
 
     // get pressure gradient at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -330,8 +330,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D(
         momres_old_(rr) = densam_*accint_(rr)+densaf_*conv_old_(rr)+gradp_(rr)-2*visceff_*visc_old_(rr)-densaf_*bodyforce_(rr);
       }
 
-      if (cross_    != Fluid3::cross_stress_stab_none or
-          reynolds_ != Fluid3::reynolds_stress_stab_none)
+      if (cross_    != INPAR::FLUID::cross_stress_stab_none or
+          reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
       {
         // compute subgrid-scale velocity
         sgvelint_.Update(-tau_(1),momres_old_,0.0);
@@ -395,8 +395,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D(
         momres_old_(rr) = densaf_*velint_(rr)+timefac*(densaf_*conv_old_(rr)+gradp_(rr)-2*visceff_*visc_old_(rr))-rhsmom_(rr);
       }
 
-      if (cross_    != Fluid3::cross_stress_stab_none or
-          reynolds_ != Fluid3::reynolds_stress_stab_none)
+      if (cross_    != INPAR::FLUID::cross_stress_stab_none or
+          reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
       {
         // compute subgrid-scale velocity
         sgvelint_.Update(-(tau_(1)/dt_),momres_old_,0.0);
@@ -888,7 +888,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D(
       //----------------------------------------------------------------------
       //                 PRESSURE STABILISATION PART
 
-      if (pspg_ == Fluid3::pstab_use_pspg)
+      if (pspg_ == INPAR::FLUID::pstab_use_pspg)
       {
         for (int ui=0; ui<nen_; ++ui)
         {
@@ -1018,7 +1018,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D(
       //----------------------------------------------------------------------
       //                     SUPG STABILISATION PART
 
-      if(supg_ == Fluid3::convective_stab_supg)
+      if(supg_ == INPAR::FLUID::convective_stab_supg)
       {
 #if 1
         for (int ui=0; ui<nen_; ++ui)
@@ -1287,11 +1287,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D(
 
       if (is_higher_order_ele_)
       {
-        if(vstab_ != Fluid3::viscous_stab_none)
+        if(vstab_ != INPAR::FLUID::viscous_stab_none)
         {
           const double two_visc_tauMp = vstabfac*2.0*visc_*tau_Mp;
           // viscous stabilization either on left hand side or on right hand side
-          if (vstab_ == Fluid3::viscous_stab_gls || vstab_ == Fluid3::viscous_stab_usfem)
+          if (vstab_ == INPAR::FLUID::viscous_stab_gls || vstab_ == INPAR::FLUID::viscous_stab_usfem)
           {
             const double two_visc_timetauMp   = vstabfac*2.0*visc_*timetauMp;
             const double four_visc2_timetauMp = vstabfac*4.0*visceff_*visc_*timetauMp;
@@ -1424,7 +1424,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D(
       //----------------------------------------------------------------------
       //                     STABILISATION, CONTINUITY PART
 
-      if (cstab_ == Fluid3::continuity_stab_yes)
+      if (cstab_ == INPAR::FLUID::continuity_stab_yes)
       {
         const double timetauC = timefac*tau_C;
         for (int ui=0; ui<nen_; ++ui)

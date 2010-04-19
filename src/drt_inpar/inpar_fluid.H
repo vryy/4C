@@ -22,20 +22,69 @@ namespace INPAR
 
   namespace FLUID
   {
-	/// physical type of the fluid flow (incompressible, Boussinesq approximation, varying density, loma)
-	enum PhysicalType
-	{
-	  incompressible,
-	  boussinesq,
-	  varying_density,
+    //! physical type of the fluid flow (incompressible, Boussinesq approximation, varying density, loma)
+    enum PhysicalType
+    {
+      incompressible,
+      boussinesq,
+      varying_density,
       loma
-	};
+    };
+    //! flag to (de)activate PSPG stabilization
+    enum PSPG
+    {
+      pstab_assume_inf_sup_stable,  // no pspg stabilization
+      pstab_use_pspg                // use pspg stabilization
+    };
+    //! flag to (de)activate SUPG stabilization
+    enum SUPG
+    {
+      convective_stab_none,
+      convective_stab_supg
+    };
+    //! flag to select the type of viscosity stabilization
+    enum VStab
+    {
+      viscous_stab_none,
+      viscous_stab_gls,
+      viscous_stab_gls_only_rhs,
+      viscous_stab_usfem,
+      viscous_stab_usfem_only_rhs
+    };
+    //! flag to (de)activate continuity stabilization
+    enum CStab
+    {
+      continuity_stab_none,
+      continuity_stab_yes
+    };
+    //! flag to select the type of cross stress stabilization
+    enum CrossStress
+    {
+      cross_stress_stab_none,
+      cross_stress_stab,
+      cross_stress_stab_only_rhs
+    };
+    //! flag to select the type of Reynolds stress stabilization
+    enum ReynoldsStress
+    {
+      reynolds_stress_stab_none,
+      reynolds_stress_stab,
+      reynolds_stress_stab_only_rhs
+    };
 
     /// type of stabilization parameter definition
     enum TauType
     {
       tautype_franca_barrenechea_valentin_wall,
-      tautype_bazilevs
+      tautype_bazilevs,
+      smoothed_franca_barrenechea_valentin_wall,
+      franca_barrenechea_valentin_wall         ,
+      franca_barrenechea_valentin_codina       ,
+      fbvw_gradient_based_hk                   ,
+      codina                                   ,
+      bazilevs                                 ,
+      fbvw_wo_dt                               ,
+      tau_not_defined
     };
 
     /// time integration scheme

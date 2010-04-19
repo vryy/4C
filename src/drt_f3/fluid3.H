@@ -74,6 +74,7 @@ public:
   // All the template specializations that are used, new ones must be
   // added here.
   // 3D
+  /*
   friend class Fluid3Impl<DRT::Element::hex8>;
   friend class Fluid3Impl<DRT::Element::hex20>;
   friend class Fluid3Impl<DRT::Element::hex27>;
@@ -91,8 +92,8 @@ public:
   // 1D
   friend class Fluid3Impl<DRT::Element::line2>;
   friend class Fluid3Impl<DRT::Element::line3>;
+  */
   friend class Fluid3StationaryImplInterface;
-
   // All the template specializations that are used, new ones must be
   // added here.
   friend class Fluid3StationaryImpl<DRT::Element::hex8>;
@@ -469,6 +470,8 @@ public:
 
   bool IsAle() const { return is_ale_; }
 
+  double CsDeltaSq() const {return Cs_delta_sq_; }
+
   //@}
 
 
@@ -506,6 +509,7 @@ private:
     inertia_stab_drop,
     inertia_stab_keep,
     inertia_stab_keep_complete,
+    //
     pstab_assume_inf_sup_stable,
     pstab_use_pspg,
     convective_stab_none,
@@ -576,7 +580,6 @@ private:
   //! container containing all kind of fluid3 thisandthat
   DRT::Container                                  data_;
 
-private:
   //! factor including Smagorinsky's constant
   double                                          Cs_delta_sq_;
 

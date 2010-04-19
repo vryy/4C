@@ -1614,7 +1614,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2),
                                &fdyn_stab);
 
-  setStringToIntegralParameter<int>("PSPG",
+  setStringToIntegralParameter<INPAR::FLUID::PSPG>("PSPG",
                                "yes_pspg",
                                "Flag to (de)activate PSPG.",
                                tuple<std::string>(
@@ -1623,10 +1623,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "No PSPG -> inf-sup-stable elements mandatory",
                                  "Use PSPG -> allowing for equal-order interpolation"),
-                               tuple<int>(0,1),
+                               tuple<INPAR::FLUID::PSPG>(
+                                 INPAR::FLUID::pstab_assume_inf_sup_stable,   //No PSPG -> inf-sup-stable elements mandatory
+                                 INPAR::FLUID::pstab_use_pspg),               // Use PSPG -> allowing for equal-order interpolation
                                &fdyn_stab);
 
-  setStringToIntegralParameter<int>("SUPG",
+
+
+  setStringToIntegralParameter<INPAR::FLUID::SUPG>("SUPG",
                                "yes_supg",
                                "Flag to (de)activate SUPG.",
                                tuple<std::string>(
@@ -1635,10 +1639,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "No SUPG",
                                  "Use SUPG."),
-                               tuple<int>(0,1),
+                               tuple<INPAR::FLUID::SUPG>(
+                                 INPAR::FLUID::convective_stab_none,  // no SUPG stabilization
+                                 INPAR::FLUID::convective_stab_supg), // use SUPG stabilization
                                &fdyn_stab);
 
-  setStringToIntegralParameter<int>("VSTAB",
+  setStringToIntegralParameter<INPAR::FLUID::VStab>("VSTAB",
                                "no_vstab",
                                "Flag to (de)activate viscous term in residual-based stabilization.",
                                tuple<std::string>(
@@ -1655,10 +1661,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Viscous stabilization of USFEM type",
                                  "Viscous stabilization of USFEM type, included only on the right hand side"
                                  ),
-                               tuple<int>(0,1,2,3,4),
+                                 tuple<INPAR::FLUID::VStab>(
+                                     INPAR::FLUID::viscous_stab_none,
+                                     INPAR::FLUID::viscous_stab_gls,
+                                     INPAR::FLUID::viscous_stab_gls_only_rhs,
+                                     INPAR::FLUID::viscous_stab_usfem,
+                                     INPAR::FLUID::viscous_stab_usfem_only_rhs
+                                   ),
                                &fdyn_stab);
 
-  setStringToIntegralParameter<int>("CSTAB",
+  setStringToIntegralParameter<INPAR::FLUID::CStab>("CSTAB",
                                "cstab_qs",
                                "Flag to (de)activate least-squares stabilization of continuity equation.",
                                tuple<std::string>(
@@ -1667,10 +1679,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "No continuity stabilization",
                                  "Quasistatic continuity stabilization"),
-                               tuple<int>(0,1),
+                               tuple<INPAR::FLUID::CStab>(
+                                   INPAR::FLUID::continuity_stab_none,
+                                   INPAR::FLUID::continuity_stab_yes
+                                 ),
                                &fdyn_stab);
 
-  setStringToIntegralParameter<int>("CROSS-STRESS",
+  setStringToIntegralParameter<INPAR::FLUID::CrossStress>("CROSS-STRESS",
                                "no_cross",
                                "Flag to (de)activate cross-stress term -> residual-based VMM.",
                                tuple<std::string>(
@@ -1685,10 +1700,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Include cross-stress term, but only explicitly on right hand side",
                                  ""
                                  ),
-                               tuple<int>(0,1,2,3),
+                               tuple<INPAR::FLUID::CrossStress>(
+                                   INPAR::FLUID::cross_stress_stab_none,
+                                   INPAR::FLUID::cross_stress_stab,
+                                   INPAR::FLUID::cross_stress_stab_only_rhs
+                                ),
                                &fdyn_stab);
 
-  setStringToIntegralParameter<int>("REYNOLDS-STRESS",
+  setStringToIntegralParameter<INPAR::FLUID::ReynoldsStress>("REYNOLDS-STRESS",
                                "no_reynolds",
                                "Flag to (de)activate Reynolds-stress term -> residual-based VMM.",
                                tuple<std::string>(
@@ -1703,11 +1722,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Include Reynolds-stress term with linearisation",
                                  ""
                                  ),
-                               tuple<int>(0,1,2,3),
+                               tuple<INPAR::FLUID::ReynoldsStress>(
+                                   INPAR::FLUID::reynolds_stress_stab_none,
+                                   INPAR::FLUID::reynolds_stress_stab,
+                                   INPAR::FLUID::reynolds_stress_stab_only_rhs
+                               ),
                                &fdyn_stab);
 
   // this parameter selects the tau definition applied
-  setStringToIntegralParameter<int>("DEFINITION_TAU",
+  setStringToIntegralParameter<INPAR::FLUID::TauType>("DEFINITION_TAU",
                                "Barrenechea_Franca_Valentin_Wall",
                                "Definition of tau_M,C",
                                tuple<std::string>(
@@ -1726,7 +1749,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea; tau_C: Codina"  ,
                                  "tau_M and tau_C (Bazilevs, based on G_ij and g_i)",
                                  "tau_M and tau_C: Codina")  ,
-                                    tuple<int>(0,1,2,3,4,5,6),
+                               tuple<INPAR::FLUID::TauType>(
+                                   INPAR::FLUID::franca_barrenechea_valentin_wall,
+                                   INPAR::FLUID::fbvw_gradient_based_hk,
+                                   INPAR::FLUID::smoothed_franca_barrenechea_valentin_wall,
+                                   INPAR::FLUID::fbvw_wo_dt,
+                                   INPAR::FLUID::franca_barrenechea_valentin_codina       ,
+                                   INPAR::FLUID::bazilevs,
+                                   INPAR::FLUID::codina
+                                    ),
                                &fdyn_stab);
 
   setStringToIntegralParameter<INPAR::FLUID::TauType>("TAUTYPE","Franca_Barrenechea_Valentin_Wall",

@@ -223,6 +223,31 @@ namespace ELEMENTS
                 const double                             timefac,
                 double&                                  Cs);
 
+    // 2D/3D mixed sysmat
+    void Sysmat2D3D(Fluid3*                                       ele,
+                const LINALG::Matrix<nsd_,nen_>&               evelaf,
+                const LINALG::Matrix<nsd_,nen_>&               eveln,
+                const LINALG::Matrix<nsd_,nen_>&               fsevelaf,
+                const LINALG::Matrix<nen_,1>&                  epreaf,
+                const LINALG::Matrix<nsd_,nen_>&               eaccam,
+                const LINALG::Matrix<nen_,1>&                  escaaf,
+                const LINALG::Matrix<nen_,1>&                  escaam,
+                const LINALG::Matrix<nen_,1>&                  escadtam,
+                const LINALG::Matrix<nsd_,nen_>&               emhist,
+                const LINALG::Matrix<nsd_,nen_>&               edispnp,
+                const LINALG::Matrix<nsd_,nen_>&               egridv,
+                LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&    estif,
+                LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&    emesh,
+                LINALG::Matrix<(nsd_+1)*nen_,    1>&           eforce,
+                const double                                   thermpressaf,
+                const double                                   thermpressam,
+                const double                                   thermpressdtam,
+                Teuchos::RCP<const MAT::Material>             material,
+                const double                                  timefac,
+                double&                                       Cs,
+                double&                                       Cs_delta_sq,
+                double&                                       l_tau);
+
   private:
 
     /*!
@@ -547,11 +572,13 @@ namespace ELEMENTS
 
     //! actual time to evaluate the body BC
     double time_;
-    //! flag for generalized-alpha time-integration scheme
+    //! flag to (de)activate generalized-alpha time-integration scheme
     bool is_genalpha_;
-    //! flag for conservative formulation
+    //! flag to (de)activate conservative formulation
     bool is_conservative_;
-    //! flag for Newton linearization
+    //! flag to (de)activate stationary formulation
+    bool is_stationary_;
+    //! flag to (de)activate Newton linearization
     bool is_newton_;
     //! Flag to (de)activate higher order elements
     //! elements with only mixed second order derivatives are not counted as higher order elements
@@ -560,24 +587,23 @@ namespace ELEMENTS
     //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
     INPAR::FLUID::PhysicalType physicaltype_;
     //! Flag to (de)activate PSPG stabilization
-    Fluid3::StabilisationAction pspg_;
+    INPAR::FLUID::PSPG pspg_;
     //! Flag to (de)activate SUPG stabilization
-    Fluid3::StabilisationAction supg_;
+    INPAR::FLUID::SUPG supg_;
     //! Flag to (de)activate viscous term in residual-based stabilization
-    Fluid3::StabilisationAction vstab_;
+    INPAR::FLUID::VStab vstab_;
     //! Flag to (de)activate least-squares stabilization of continuity equation
-    Fluid3::StabilisationAction cstab_;
+    INPAR::FLUID::CStab cstab_;
     //! Flag to (de)activate cross-stress term -> residual-based VMM
-    Fluid3::StabilisationAction cross_;
+    INPAR::FLUID::CrossStress cross_;
     //! Flag to (de)activate Reynolds-stress term -> residual-based VMM
-    Fluid3::StabilisationAction reynolds_;
+    INPAR::FLUID::ReynoldsStress reynolds_;
     //! Flag to define tau
-    Fluid3::TauType whichtau_;
+    INPAR::FLUID::TauType whichtau_;
     //! flag to (de)activate fine-scale subgrid viscosity
     Fluid3::FineSubgridVisc fssgv_;
     //! flag to define turbulence model
     Fluid3::TurbModelAction turb_mod_action_;
-
   };
 }
 }
