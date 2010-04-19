@@ -297,6 +297,13 @@ private:
     postprocess_stress,
     calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
   };
+  
+  //! possible bending potentials
+  enum BendingPotential
+  {
+    quadratic,
+    cosine
+  };
 
   
   //! container containing all kind of Torsion2 thisandthat
@@ -310,6 +317,9 @@ private:
   
   //! springconstant
   double springconstant_;
+  
+  //! Bending potential
+  BendingPotential bendingpotential_;
 
   
   //! @name methods for initilization of the element

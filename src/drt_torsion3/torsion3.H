@@ -283,11 +283,21 @@ private:
     calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
   };
   
+  //! possible bending potentials
+  enum BendingPotential
+  {
+    quadratic,
+    cosine
+  };
+  
   //container containing all kind of Torsion3 thisandthat
   DRT::Container data_; 
   
   //springconstant
   double springconstant_;
+  
+  //! Bending potential
+  BendingPotential bendingpotential_;
   
   //! @name Internal calculation methods
               

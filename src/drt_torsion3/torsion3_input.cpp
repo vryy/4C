@@ -25,6 +25,18 @@ bool DRT::ELEMENTS::Torsion3::ReadElement(const std::string& eletype,
 {
   //read constant of torsion spring
   linedef->ExtractDouble("SPRING",springconstant_);
+
+  std::string buffer;
+  linedef->ExtractString("BENDINGPOTENTIAL",buffer);
+  
+  //bending potential E_bend = 0.5*SPRING*\theta^2
+  if (buffer=="quadratic")
+    bendingpotential_ = quadratic;
+
+  //bending potential E_bend = SPRING*(1 - \cos(\theta^2) )
+  else if (buffer=="cosine")
+    bendingpotential_ = cosine;
+  
   return true;
 }
 

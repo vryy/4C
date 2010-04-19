@@ -885,11 +885,13 @@ void DRT::INPUT::ElementDefinition::SetupTorsion2Lines()
   defs["LINE3"]
     .AddIntVector("LINE3",3)
     .AddNamedDouble("SPRING")
+    .AddNamedString("BENDINGPOTENTIAL")
     ;
 
   defs["LIN3"]
     .AddIntVector("LIN3",3)
     .AddNamedDouble("SPRING")
+    .AddNamedString("BENDINGPOTENTIAL")
     ;
 }
 
@@ -903,11 +905,13 @@ void DRT::INPUT::ElementDefinition::SetupTorsion3Lines()
   defs["LINE3"]
     .AddIntVector("LINE3",3)
     .AddNamedDouble("SPRING")
+    .AddNamedString("BENDINGPOTENTIAL")
     ;
 
   defs["LIN3"]
     .AddIntVector("LIN3",3)
     .AddNamedDouble("SPRING")
+    .AddNamedString("BENDINGPOTENTIAL")
     ;
 }
 
