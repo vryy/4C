@@ -74,7 +74,7 @@ MAXITER      15
 THERMALBATH         uniform
 SPECIAL_OUTPUT	    none
 FRICTION_MODEL	    isotropiclumped
-START_FACTOR	    0.0
+STARTTIME			0.0
 SHEARAMPLITUDE      0.0 
 ETA		    1e-3
 KT                  0.0

@@ -64,14 +64,8 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
   switch(act)
   {
     case Truss3::calc_struct_ptcstiff:
-    {
-      // get element displcements
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get state vectors 'displacement'");
-      vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      
-      EvaluatePTC<2,3,3>(params,mydisp,elemat1);
+    {     
+      //EvaluatePTC<2,3,3>(params,elemat1);
     }
     break;
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and
@@ -252,7 +246,6 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(ParameterList& params,
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
 int DRT::ELEMENTS::Truss3::EvaluatePTC(ParameterList& params,
-                                      vector<double>& disp,
                                       Epetra_SerialDenseMatrix& elemat1)
 {
   //factor to regulate artificial ptc stiffness;
