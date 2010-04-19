@@ -302,8 +302,7 @@ private:
   //! @name Internal calculation methods
               
   //!calculation of nonlinear stiffness and mass matrix
-  void t3_nlnstiffmass(ParameterList&            params,
-                       vector<double>&           disp, 
+  void t3_nlnstiffmass(vector<double>&           disp, 
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
                        Epetra_SerialDenseVector* force);

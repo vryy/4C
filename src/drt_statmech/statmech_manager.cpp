@@ -1473,10 +1473,10 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
         {
           disrow[discret_.DofRowMap()->LID(dofnode[j])] -= statmechparams_.get<double>("PeriodLength",0.0);
 
-          /*the upper domain surface orthogonal to the z-direction is subject to shear Dirichlet boundary condition; the lower surface
-           *is fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
+          /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
+           *may fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
            *z-surface, the shear has to be substracted from nodal coordinates in that case */
-          if(j == 2)
+          if(j == 2 && statmechparams_.get<int>("CURVENUMBER",-1) != -1)
             disrow[discret_.DofRowMap()->LID(dofnode[statmechparams_.get<int>("OSCILLDIR",-1)])] -= statmechparams_.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(statmechparams_.get<int>("CURVENUMBER",-1)-1).f(time_);
         }
         /*if node currently has coordinate value smaller than zero, it is shifted by statmechparams_.get<double>("PeriodLength",0.0)
@@ -1485,10 +1485,10 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
         {
           disrow[discret_.DofRowMap()->LID(dofnode[j])] += statmechparams_.get<double>("PeriodLength",0.0);
 
-          /*the upper domain surface orthogonal to the z-direction is subject to shear Dirichlet boundary condition; the lower surface
-           *is fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
+          /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
+           *may be fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
            *z-surface, the shear has to be added to nodal coordinates in that case */
-          if(j == 2)
+          if(j == 2 && statmechparams_.get<int>("CURVENUMBER",-1) != -1)
             disrow[discret_.DofRowMap()->LID(dofnode[statmechparams_.get<int>("OSCILLDIR",-1)])] += statmechparams_.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(statmechparams_.get<int>("CURVENUMBER",-1)-1).f(time_);
         }
       }
