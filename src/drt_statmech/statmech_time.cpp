@@ -1536,6 +1536,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 					(*dbctype_)[lids.at(3*(n+1)+oscdir_)] = 2.0;
 
 					// oscillating node
+					double dt = params_.get<double>("delta time" ,-1.0);
 					double tcincrement = 0.0;
 					if(curvenumber_>-1)
 						tcincrement = DRT::Problem::Instance()->Curve(curvenumber_).f(time) -
