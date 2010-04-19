@@ -161,15 +161,15 @@ NODE           11     COORD  60 0 0
       8 TRUSS2   LIN2       8      9 MAT       1 CROSS 19e-6 KINEM engstr
       9 TRUSS2   LIN2       9     10 MAT       1 CROSS 19e-6 KINEM engstr
      10 TRUSS2   LIN2      10     11 MAT       1 CROSS 19e-6 KINEM engstr
-     11 TORSION2 LIN3     1    2    3   SPRING 1.2454e-2
-     12 TORSION2 LIN3     2    3    4   SPRING 1.2454e-2
-     13 TORSION2 LIN3     3    4    5   SPRING 1.2454e-2
-     14 TORSION2 LIN3     4    5    6   SPRING 1.2454e-2
-     15 TORSION2 LIN3     5    6    7   SPRING 1.2454e-2
-     16 TORSION2 LIN3     6    7    8   SPRING 1.2454e-2
-     17 TORSION2 LIN3     7    8    9   SPRING 1.2454e-2
-     18 TORSION2 LIN3     8    9   10   SPRING 1.2454e-2
-     19 TORSION2 LIN3     9   10   11   SPRING 1.2454e-2 
+     11 TORSION2 LIN3     1    2    3   SPRING 1.2454e-2 BENDINGPOTENTIAL quadratic
+     12 TORSION2 LIN3     2    3    4   SPRING 1.2454e-2 BENDINGPOTENTIAL quadratic
+     13 TORSION2 LIN3     3    4    5   SPRING 1.2454e-2 BENDINGPOTENTIAL quadratic
+     14 TORSION2 LIN3     4    5    6   SPRING 1.2454e-2 BENDINGPOTENTIAL quadratic
+     15 TORSION2 LIN3     5    6    7   SPRING 1.2454e-2 BENDINGPOTENTIAL quadratic
+     16 TORSION2 LIN3     6    7    8   SPRING 1.2454e-2 BENDINGPOTENTIAL quadratic 
+     17 TORSION2 LIN3     7    8    9   SPRING 1.2454e-2 BENDINGPOTENTIAL quadratic
+     18 TORSION2 LIN3     8    9   10   SPRING 1.2454e-2 BENDINGPOTENTIAL quadratic
+     19 TORSION2 LIN3     9   10   11   SPRING 1.2454e-2 BENDINGPOTENTIAL quadratic
 ---------------------------------------------------------MATERIALS
 // MAT_Struct_StVenantKirchhoff
 MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 1.3e9 NUE 0.3 DENS 1.384e-9 THEXPANS 0.0
