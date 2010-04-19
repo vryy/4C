@@ -1675,15 +1675,6 @@ void DRT::INPUT::ElementDefinition::SetupRedAirwayLines()
     .AddNamedDouble("Area")
     ;
 
-  defs["LINE3"]
-    .AddIntVector("LINE3",3)
-    .AddNamedInt("MAT")
-    .AddNamedString("TYPE")
-    .AddNamedDouble("WallCompliance")
-    .AddNamedDouble("AirCompliance")
-    .AddNamedDouble("WallThickness")
-    .AddNamedDouble("Area")
-    ;
 }
 
 #endif

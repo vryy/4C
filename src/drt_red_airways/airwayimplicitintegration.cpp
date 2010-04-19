@@ -349,6 +349,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
   //  const double tcpuele = Teuchos::Time::wallTime();
 
   {
+    //    cout<<"get sysmat_"<<endl;
     // time measurement: element
     TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
 
@@ -376,13 +377,15 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     //    discret_->SetState("qcn" ,qcn_ );
     //    discret_->SetState("qcnm",qcnm_);
 
-
+    //    cout<<"eval sysmat"<<endl;
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
+    //    cout<<"clr state"<<endl;
     discret_->ClearState();
 
     // finalize the complete matrix
     sysmat_->Complete();
+    //    cout<<"compl sysmat"<<endl;
 
 
 #if 0  // Exporting some values for debugging purposes
@@ -412,6 +415,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
   dbctog_->PutScalar(0.0);
   // Solve terminal BCs
   {
+    //    cout<<"Solve BC"<<endl;
     // create the parameters for the discretization
     ParameterList eleparams;
 
@@ -436,6 +440,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
 
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
+    //    cout<<"BC evaluated"<<endl;
   }
 
 
@@ -447,6 +452,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
 
     LINALG::ApplyDirichlettoSystem(sysmat_,pnp_,rhs_,bcval_,dbctog_);
+    //    cout<<"Dirich applied"<<endl;
   }
 
   //-------solve for total new velocities and pressures
@@ -474,6 +480,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
 #endif 
     // call solver
     solver_.Solve(sysmat_->EpetraOperator(),pnp_,rhs_,true,true);
+    //    cout<<"Solved"<<endl;
   }
 
 

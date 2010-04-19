@@ -166,7 +166,17 @@ public:
         at the level of the total system of equations. Purely internal
         element dofs that are condensed internally should NOT be considered.
   */
-  virtual int NumDofPerElement() const { return 0; }
+  virtual int NumDofPerElement() const
+    { 
+      if (elemType_ == "RLC")
+      {
+        return 1;
+      }
+      else
+      {
+        return 0;
+      }
+    }
 
   /*!
   \brief Print this element
@@ -336,10 +346,10 @@ public:
   //  double         gettw(){ return tw_;}
 
   //! set qin
-  void           setqin (double Qin ){ qin_ = Qin;}
+  //  void           setqin (double Qin ){ qin_ = Qin;}
 
   //! set qout
-  void           setqout(double Qout){ qout_ = Qout;}
+  //  void           setqout(double Qout){ qout_ = Qout;}
 
   //! get element variables
   void           getVars(std::string name, double & var);
@@ -370,22 +380,22 @@ private:
   DRT::Container                                  data_;
 
   //! Wall Compliance
-  double                                          Ew_;
+  //  double                                          Ew_;
 
   //! Air Compliance
-  double                                          Ea_;
+  //  double                                          Ea_;
 
   //! Wall Thickness
-  double                                          tw_;
+  //  double                                          tw_;
 
   //! cross-sectional area
-  double                                          A_;
+  //  double                                          A_;
 
   //! flow in
-  double                                          qin_;
+  //  double                                          qin_;
   
   //! flow out
-  double                                          qout_;
+  //  double                                          qout_;
 
   // data
   map<std::string, double>                        elemParams_;

@@ -100,6 +100,7 @@ namespace ELEMENTS
 
     //! number of nodes
     static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    
 
     /// Evaluate
     /*!
@@ -131,10 +132,10 @@ namespace ELEMENTS
       \param dt               (i) timestep
       */
     void Sysmat(RedAirway*                               ele,
-                const LINALG::Matrix<iel,1>&             eqnp,
-                const LINALG::Matrix<iel,1>&             eareanp,
-                LINALG::Matrix<1*iel,1*iel>&             estif,
-                LINALG::Matrix<1*iel,    1>&             eforce,
+                Epetra_SerialDenseVector&                eqnp,
+                Epetra_SerialDenseVector&                eareanp,
+                Epetra_SerialDenseMatrix&                estif,
+                Epetra_SerialDenseVector&                eforce,
                 Teuchos::RCP<const MAT::Material>        material,
                 double                                   dt);
 
@@ -174,10 +175,6 @@ namespace ELEMENTS
                                vector<int>&                  lm,
                                RefCountPtr<MAT::Material>    mat);
   private:
-    //! nodal volumetric flow rate at time step "n"
-    LINALG::Matrix<iel,1> qn_;
-    //! nodal pressures at time step "n"
-    LINALG::Matrix<iel,1> pn_;
   };
 
 }
