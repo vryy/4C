@@ -97,6 +97,10 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
       if (res==null) dserror("Cannot get state vectors 'residual displacement'");
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      
+      /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
+       *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
+      NodeShift<2,3>(params,mydisp);
     
       //only if random numbers for Brownian dynamics are passed to element, get element velocities
       vector<double> myvel(lm.size());
@@ -108,18 +112,93 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
 
       // for engineering strains instead of total lagrange use t3_nlnstiffmass2
       if (act == Truss3::calc_struct_nlnstiffmass)
-      t3_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-      else if (act == Truss3::calc_struct_nlnstifflmass)
-      {
         t3_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-        // lump mass matrix (bborn 07/08)
-        // the mass matrix is lumped anyway, cf #b3_nlnstiffmass
-        //b3_lumpmass(&elemat2);
-      }
+      else if (act == Truss3::calc_struct_nlnstifflmass)
+        t3_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
       else if (act == Truss3::calc_struct_nlnstiff)
-      t3_nlnstiffmass(params,myvel,mydisp,&elemat1,NULL,&elevec1);
+        t3_nlnstiffmass(params,myvel,mydisp,&elemat1,NULL,&elevec1);
       else if (act == Truss3::calc_struct_internalforce)
-      t3_nlnstiffmass(params,myvel,mydisp,NULL,NULL,&elevec1);
+        t3_nlnstiffmass(params,myvel,mydisp,NULL,NULL,&elevec1);
+      
+      
+      /*
+      //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
+      //correctly or not by means of a numerically approximated stiffness matrix
+      //The code block will work for all higher order elements.
+      //if(Id() == 3) //limiting the following tests to certain element numbers
+      {
+        //assuming the same number of DOF for all nodes
+        int numdof = NumDofPerNode(*(Nodes()[0]));
+        int nnode  = NumNode();
+        
+        //variable to store numerically approximated stiffness matrix
+        Epetra_SerialDenseMatrix stiff_approx;
+        stiff_approx.Shape(numdof*nnode,numdof*nnode);
+
+
+        //relative error of numerically approximated stiffness matrix
+        Epetra_SerialDenseMatrix stiff_relerr;
+        stiff_relerr.Shape(numdof*nnode,numdof*nnode);
+
+        //characteristic length for numerical approximation of stiffness
+        double h_rel = 1e-6;
+
+        //flag indicating whether approximation leads to significant relative error
+        int outputflag = 0;
+
+        //calculating strains in new configuration
+        for(int i=0; i<numdof; i++) //for all dof
+        {
+          for(int k=0; k<nnode; k++)//for all nodes
+          {
+
+            Epetra_SerialDenseVector force_aux;
+            force_aux.Size(numdof*nnode);
+
+            //create new displacement and velocity vectors in order to store artificially modified displacements
+            vector<double> vel_aux(myvel);
+            vector<double> disp_aux(mydisp);
+
+            //modifying displacement artificially (for numerical derivative of internal forces):
+            disp_aux[numdof*k + i] += h_rel;
+            vel_aux[numdof*k + i]  += h_rel / params.get<double>("delta time",0.01);
+
+            t3_nlnstiffmass(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
+            
+            //computing derivative d(fint)/du numerically by finite difference
+            for(int u = 0 ; u < numdof*nnode ; u++ )
+              stiff_approx(u,k*numdof+i) = ( pow(force_aux[u],2) - pow(elevec1(u),2) )/ (h_rel * (force_aux[u] + elevec1(u) ) );
+
+          } //for(int k=0; k<nnode; k++)//for all nodes
+        } //for(int i=0; i<numdof; i++) //for all dof
+
+
+        for(int line=0; line<numdof*nnode; line++)
+        {
+          for(int col=0; col<numdof*nnode; col++)
+          {
+            stiff_relerr(line,col)= fabs( ( pow(elemat1(line,col),2) - pow(stiff_approx(line,col),2) )/ ( (elemat1(line,col) + stiff_approx(line,col)) * elemat1(line,col) ));
+
+            //suppressing small entries whose effect is only confusing and NaN entires (which arise due to zero entries)
+            if ( fabs( stiff_relerr(line,col) ) < h_rel*500 || isnan( stiff_relerr(line,col)) || elemat1(line,col) == 0) //isnan = is not a number
+              stiff_relerr(line,col) = 0;
+
+            if ( stiff_relerr(line,col) > 0)
+              outputflag = 1;
+              
+          } //for(int col=0; col<numdof*nnode; col++)
+        } //for(int line=0; line<numdof*nnode; line++)
+
+        if(outputflag ==1)
+        {
+          std::cout<<"\n\n acutally calculated stiffness matrix in Element "<<Id()<<": "<< elemat1;
+          std::cout<<"\n\n approximated stiffness matrix in Element "<<Id()<<": "<< stiff_approx;
+          std::cout<<"\n\n rel error stiffness matrix in Element "<<Id()<<": "<< stiff_relerr;
+        }
+
+      } //end of section in which numerical approximation for stiffness matrix is computed
+      */
+      
 
     }
     break;
@@ -285,12 +364,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(ParameterList& params,
     Epetra_SerialDenseMatrix* stiffmatrix,
     Epetra_SerialDenseMatrix* massmatrix,
     Epetra_SerialDenseVector* force)
-{
-  
-  /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
-   *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
-  NodeShift<2,3>(params,disp);
-  
+{  
   switch(kintype_)
   {
     case tr3_totlag:

@@ -1452,9 +1452,6 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
  *----------------------------------------------------------------------*/
 void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
 {
-
-	std::cout<<"\ndisrow vor Boundary Shift\n"<<disrow;
-
 	//only if period length >0 has been defined periodic boundary conditions are swithced on
   if(statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
     for(int i = 0; i < discret_.NumMyRowNodes(); i++)
@@ -1493,9 +1490,6 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
         }
       }
     }
-
-  std::cout<<"\ndisrow nach Boundary Shift\n"<<disrow;
-
 }
 
 

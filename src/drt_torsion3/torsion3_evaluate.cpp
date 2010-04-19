@@ -112,11 +112,11 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
         t3_nlnstiffmass(mydisp,NULL,NULL,&elevec1);   
       
       
-/*
+
       //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
       //correctly or not by means of a numerically approximated stiffness matrix
       //The code block will work for all higher order elements.
-      if(Id() == 3) //limiting the following tests to certain element numbers
+      //if(Id() == 3) //limiting the following tests to certain element numbers
       {
         //assuming the same number of DOF for all nodes
         int numdof = NumDofPerNode(*(Nodes()[0]));
@@ -132,7 +132,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
         stiff_relerr.Shape(numdof*nnode,numdof*nnode);
 
         //characteristic length for numerical approximation of stiffness
-        double h_rel = 1e-8;
+        double h_rel = 1e-6;
 
         //flag indicating whether approximation leads to significant relative error
         int outputflag = 0;
@@ -147,25 +147,20 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
             force_aux.Size(numdof*nnode);
 
             //create new displacement and velocity vectors in order to store artificially modified displacements
-            vector<double> vel_aux(numdof*nnode);
-            vector<double> disp_aux(numdof*nnode);
-
-            DRT::UTILS::ExtractMyValues(*disp,disp_aux,lm);
-            DRT::UTILS::ExtractMyValues(*vel,vel_aux,lm);
+            //vector<double> vel_aux(myvel);
+            vector<double> disp_aux(mydisp);
 
             //modifying displacement artificially (for numerical derivative of internal forces):
             disp_aux[numdof*k + i] += h_rel;
-            vel_aux[numdof*k + i]  += h_rel / params.get<double>("delta time",0.01);
+            //vel_aux[numdof*k + i]  += h_rel / params.get<double>("delta time",0.01);
 
-            //b3_nlnstiffmass is a templated function. therefore we need to point out the number of nodes in advance
-            t3_nlnstiffmass(disp_aux,NULL,NULL,&elevec1);  
+            t3_nlnstiffmass(disp_aux,NULL,NULL,&force_aux);  
 
             //computing derivative d(fint)/du numerically by finite difference
             for(int u = 0 ; u < numdof*nnode ; u++ )
-              stiff_approx(u,k*numdof+i)= ( pow(force_aux[u],2) - pow(elevec1(u),2) )/ (h_rel * (force_aux[u] + elevec1(u) ) );
+              stiff_approx(u,k*numdof+i) = ( pow(force_aux[u],2) - pow(elevec1(u),2) )/ (h_rel * (force_aux[u] + elevec1(u) ) );
 
           } //for(int k=0; k<nnode; k++)//for all nodes
-
         } //for(int i=0; i<numdof; i++) //for all dof
 
 
@@ -179,22 +174,22 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
             if ( fabs( stiff_relerr(line,col) ) < h_rel*500 || isnan( stiff_relerr(line,col)) || elemat1(line,col) == 0) //isnan = is not a number
               stiff_relerr(line,col) = 0;
 
-            //if ( stiff_relerr(line,col) > 0)
+            if ( stiff_relerr(line,col) > 0)
               outputflag = 1;
+              
           } //for(int col=0; col<numdof*nnode; col++)
-
         } //for(int line=0; line<numdof*nnode; line++)
 
         if(outputflag ==1)
         {
-          std::cout<<"\n\n acutally calculated stiffness matrix"<< elemat1;
-          std::cout<<"\n\n approximated stiffness matrix"<< stiff_approx;
-          std::cout<<"\n\n rel error stiffness matrix"<< stiff_relerr;
+          std::cout<<"\n\n acutally calculated stiffness matrix in Element "<<Id()<<": "<< elemat1;
+          std::cout<<"\n\n approximated stiffness matrix in Element "<<Id()<<": "<< stiff_approx;
+          std::cout<<"\n\n rel error stiffness matrix in Element "<<Id()<<": "<< stiff_relerr;
         }
 
       } //end of section in which numerical approximation for stiffness matrix is computed
-*/
-      
+
+    
       
       
     }
