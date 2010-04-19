@@ -444,12 +444,14 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         double Qeq_n, Qeq_nm;
         double pnm = epn(i);
 
-        Qeq_nm = -(pnm*B/pow(dt,2))*q_out/K;
-        Qeq_n  = (E2*epnp(i)/dt +2.0*epnp(i)/pow(dt,2) + E1*E2/2.0*q_out - (E2*B-B*E1)*q_out)/K;
+        Qeq_nm = -(pnm*B/pow(dt,2))/K;
+        Qeq_n  = (E2*epnp(i)/dt +2.0*B*epnp(i)/pow(dt,2) + E1*E2/2.0*q_out - (E2*B-B*E1)*q_out/dt)/K;
         
         sysmat(i,i) += pow(-1.0,i)*(Kp/K);
         rhs(i)      += pow(-1.0,i)*(Qeq_n + Qeq_nm);
         
+        cout<<"Qout("<<i<<"): "<<q_out<<endl;
+        cout<<"Pout("<<i<<"): "<<epnp(i)<<endl;
       }
       else
       {
