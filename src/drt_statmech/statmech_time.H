@@ -108,14 +108,10 @@ protected:
 private:
 	// variables needed for EvaluateDirichletPeriodic()
 	bool 												isinit_;
-	// \brief switch between EvaluateDirichletPeriodic() (in case of periodic BCs) and EvaluateDirichlet() (normal case)
-	bool 												dbcsize_;
-	// \brief time curve to obtain DBC values
-	DRT::UTILS::TimeCurve&		 	timecurve_;
 	// \brief vector used to signal when to store, change or delete a new/given reference position for DBC evaluation
 	RCP<Epetra_Vector> 					dbctype_;
-	// \brief use of a vector of static size is okay as long as no nodes are added afterwards
-	RCP<Epetra_Vector> 					drefnew_;
+	// \brief incremental displacement which is to be added to the displacement in DoDirichletConditionPeriodic()
+	RCP<Epetra_Vector> 					deltadbc_;
 	// \brief direction of oscillation, extracted from discretization
 	int 												oscdir_;
 	// \brief amplitude of oscillation, extracted from discretization
