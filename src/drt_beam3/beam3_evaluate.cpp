@@ -96,6 +96,10 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      
+      /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
+       *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
+      NodeShift<nnode,3>(params,mydisp);
 
       // get residual displacements
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
@@ -269,11 +273,8 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       		force_aux.Size(6*nnode);
 
       		//create new displacement and velocity vectors in order to store artificially modified displacements
-      		vector<double> vel_aux(6*nnode);
-      		vector<double> disp_aux(6*nnode);
-
-      			DRT::UTILS::ExtractMyValues(*disp,disp_aux,lm);
-      			DRT::UTILS::ExtractMyValues(*vel,vel_aux,lm);
+      		vector<double> vel_aux(myvel);
+      		vector<double> disp_aux(mydisp);
 
       		//modifying displacement artificially (for numerical derivative of internal forces):
       		disp_aux[6*k + i] += h_rel;
@@ -1095,10 +1096,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 
 
   //"new" variables have to be adopted to current discplacement
-
-  /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
-   *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
-  NodeShift<nnode,3>(params,disp);
 
   //Get integrationpoints for underintegration
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
