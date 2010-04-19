@@ -96,10 +96,6 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      
-      /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
-       *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
-      NodeShift<nnode,3>(params,mydisp);
 
       // get residual displacements
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
@@ -1096,6 +1092,10 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 
 
   //"new" variables have to be adopted to current discplacement
+
+  /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
+   *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
+  NodeShift<nnode,3>(params,disp);
 
   //Get integrationpoints for underintegration
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
