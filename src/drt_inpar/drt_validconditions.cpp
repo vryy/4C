@@ -1914,12 +1914,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Point));
 
   acinus_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("materialType", "NeoHookean",
-    Teuchos::tuple<std::string>("NeoHookean"),
-    Teuchos::tuple<std::string>("NeoHookean"),
+                                                                    Teuchos::tuple<std::string>("NeoHookean","ViscoElastic_2dof"),
+                                                                    Teuchos::tuple<std::string>("NeoHookean","ViscoElastic_2dof"),
     true)));
 
   AddNamedReal(acinus_bc,"Area");
-  AddNamedReal(acinus_bc,"Stiffness");
+  AddNamedReal(acinus_bc,"Stiffness1");
+  AddNamedReal(acinus_bc,"Stiffness2");
+  AddNamedReal(acinus_bc,"Viscosity");
 
   condlist.push_back(acinus_bc);
 

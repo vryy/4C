@@ -107,6 +107,7 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   // ---------------------------------------------------------------------
 
   RefCountPtr<const Epetra_Vector> pnp  = discretization.GetState("pnp");
+  RefCountPtr<const Epetra_Vector> pn   = discretization.GetState("pn");
 
   if (pnp==null)
     dserror("Cannot get state vectors 'pnp'");
@@ -123,15 +124,24 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
     epnp(i)    = mypnp[i];
   }
 
-  //  RefCountPtr<const Epetra_Vector> qcn  = discretization.GetState("qcn");
-  //  Epetra_SerialDenseVector eqn(elemVecdim);
-  
+  // extract local values from the global vectors
+  vector<double> mypn(lm.size());
+  DRT::UTILS::ExtractMyValues(*pn,mypn,lm);
+
+  // create objects for element arrays
+  Epetra_SerialDenseVector epn(elemVecdim);
+  for (int i=0;i<elemVecdim;++i)
+  {
+    // split area and volumetric flow rate, insert into element arrays
+    epn(i)    = mypn[i];
+  }
+
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
   Sysmat(ele,
          epnp,
-         epnp,
+         epn,
          elemat1_epetra,
          elevec1_epetra,
          mat,
@@ -214,7 +224,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   RedAirway*                               ele,
   Epetra_SerialDenseVector&                epnp,
-  Epetra_SerialDenseVector&                eqnp,
+  Epetra_SerialDenseVector&                epn,
   Epetra_SerialDenseMatrix&                sysmat,
   Epetra_SerialDenseVector&                rhs,
   Teuchos::RCP<const MAT::Material>        material,
@@ -418,10 +428,28 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
 
       if (MatType == "NeoHookean")
       {
-        const double K = condition->GetDouble("Stiffness");
+        const double K = condition->GetDouble("Stiffness1");
         
         sysmat(i,i) += pow(-1.0,i)*(2.0*K/(dt));
         rhs(i)      += pow(-1.0,i)*(q_out + 2.0*K/(dt)*epnp(i));
+      }
+      else if (MatType == "ViscoElastic_2dof")
+      {
+        const double E1 = condition->GetDouble("Stiffness1");
+        const double E2 = condition->GetDouble("Stiffness2");
+        const double B  = condition->GetDouble("Viscosity");
+
+        const double K = E1*E2/2.0 + (E2*B-B*E1)/dt;
+        const double Kp= E2/dt + B/pow(dt,2);
+        double Qeq_n, Qeq_nm;
+        double pnm = epn(i);
+
+        Qeq_nm = -(pnm*B/pow(dt,2))*q_out/K;
+        Qeq_n  = (E2*epnp(i)/dt +2.0*epnp(i)/pow(dt,2) + E1*E2/2.0*q_out - (E2*B-B*E1)*q_out)/K;
+        
+        sysmat(i,i) += pow(-1.0,i)*(Kp/K);
+        rhs(i)      += pow(-1.0,i)*(Qeq_n + Qeq_nm);
+        
       }
       else
       {
