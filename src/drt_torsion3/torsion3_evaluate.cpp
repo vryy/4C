@@ -112,7 +112,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
         t3_nlnstiffmass(mydisp,NULL,NULL,&elevec1);   
       
       
-
+      /*
       //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
       //correctly or not by means of a numerically approximated stiffness matrix
       //The code block will work for all higher order elements.
@@ -188,7 +188,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
         }
 
       } //end of section in which numerical approximation for stiffness matrix is computed
-
+      */
     
       
       
