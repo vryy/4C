@@ -246,16 +246,16 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*/
 void IO::OutputControl::NewResultFile(int numb_run)
 {
-  if (numb_run > 1)
+  if (filename_.rfind("_run_")!=string::npos)
   {
-    size_t pos = filename_.rfind("_");
+    size_t pos = filename_.rfind("_run_");
     if (pos==string::npos)
       dserror("inconsistent file name");
     filename_ = filename_.substr(0, pos);
   }
 
   std::stringstream name;
-  name << filename_ << "_"<< numb_run;
+  name << filename_ << "_run_"<< numb_run;
   filename_ = name.str();
   name << ".control";
   controlfile_.close();
