@@ -1068,7 +1068,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
   //triad at GP, Crisfiel Vol. 2, equation (17.73)
   LINALG::Matrix<3,3> Tnew;
 
-
   //first of all we get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
   double ym = 0;
@@ -1321,7 +1320,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 
   }//if (massmatrix != NULL)
 
-
   /*the following function call applied statistical forces and damping matrix according to the fluctuation dissipation theorem;
    * it is dedicated to the application of beam2 elements in the frame of statistical mechanics problems; for these problems a
    * special vector has to be passed to the element packed in the params parameter list; in case that the control routine calling
@@ -1561,18 +1559,22 @@ void DRT::ELEMENTS::Beam3::MyBackgroundVelocity(ParameterList& params,  //!<para
 
   //velocity at upper boundary of domain
   double uppervel = 0.0;
+  
+  //default values for background velocity and its gradient
+  velbackground.PutScalar(0);
+  velbackgroundgrad.PutScalar(0);
 
   //oscillations start only at params.get<double>("STARTTIME",0.0)
-  if(params.get<double>("total time",0.0) > params.get<double>("STARTTIME",0.0) && params.get<int>("CURVENUMBER",-1) < 1)
+  if(params.get<double>("total time",0.0) > params.get<double>("STARTTIME",0.0) && params.get<int>("CURVENUMBER",-1) >=  1 && params.get<int>("OSCILLDIR",-1) >= 0 )
+  {
     uppervel = (params.get<double>("SHEARAMPLITUDE",0.0)) * (DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).FctDer(params.get<double>("total time",0.0),1))[1];
-
-  //compute background velocity
-  velbackground.PutScalar(0);
-  velbackground(params.get<int>("OSCILLDIR",0)) = (evaluationpoint(ndim-1) / params.get<double>("PeriodLength",0.0)) * uppervel;
-
-  //compute gradient of background velocity
-  velbackgroundgrad.PutScalar(0);
-  velbackgroundgrad(params.get<int>("OSCILLDIR",0),ndim-1) = uppervel / params.get<double>("PeriodLength",0.0);
+  
+    //compute background velocity
+    velbackground(params.get<int>("OSCILLDIR",-1)) = (evaluationpoint(ndim-1) / params.get<double>("PeriodLength",0.0)) * uppervel;
+  
+    //compute gradient of background velocity
+    velbackgroundgrad(params.get<int>("OSCILLDIR",-1),ndim-1) = uppervel / params.get<double>("PeriodLength",0.0);
+  }
 
 }
 /*-----------------------------------------------------------------------------------------------------------*
@@ -1977,8 +1979,6 @@ inline void DRT::ELEMENTS::Beam3::NodeShift(ParameterList& params,  //!<paramete
    *of freedom for each element node*/
   int numdof = NumDofPerNode(*(Nodes()[0]));
 
-
-
   /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0) > 0.0, this
    * method has to change the displacement variables*/
   if(params.get<double>("PeriodLength",0.0) > 0.0)
@@ -1998,7 +1998,7 @@ inline void DRT::ELEMENTS::Beam3::NodeShift(ParameterList& params,  //!<paramete
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
            *z-surface, the shear has to be substracted from nodal coordinates in that case */
-          if(dof == 2 && params.get<int>("CURVENUMBER",-1) < 1)
+          if(dof == 2 && params.get<int>("CURVENUMBER",-1) >=  1)
             disp[numdof*i+params.get<int>("OSCILLDIR",-1)] += params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
         }
 
@@ -2009,7 +2009,7 @@ inline void DRT::ELEMENTS::Beam3::NodeShift(ParameterList& params,  //!<paramete
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
            *z-surface, the shear has to be added to nodal coordinates in that case */
-          if(dof == 2 && params.get<int>("CURVENUMBER",-1) < 1)
+          if(dof == 2 && params.get<int>("CURVENUMBER",-1) >=  1)
             disp[numdof*i+params.get<int>("OSCILLDIR",-1)] -= params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
         }
       }
