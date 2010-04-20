@@ -424,7 +424,6 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
 
     p.set("action","calc_struct_nlnstiff");
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
-
     discret_.ClearState();
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
@@ -475,7 +474,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
 
   if (printscreen)
     fresm_->Norm2(&fresmnorm);
-  cout<<"\nFRESM PREDICTOR:\n"<<*fresm_<<endl;
+  //cout<<"\nFRESM PREDICTOR:\n"<<*fresm_<<endl;
 			//test output to determine source of divergence
       // Test 1: Check residuals (show only those that surpass a certain treshold)
       /*if(fresmnorm>10)
@@ -1371,6 +1370,10 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 		for(int i=0; i<deltadbc_->MyLength(); i++)
 			(*deltadbc_)[i] = 9e99;
 
+		//error message
+		if(oscdir_!=0 && oscdir_!=1 && oscdir_!=2)
+			dserror("Please define the StatMech Parameter OSCILLDIR correctly");
+
 		isinit_=true;
 	} // init
 
@@ -1654,7 +1657,7 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
  * at the end of the preceding time step.
  */
 {
-	/*/ "condition output"
+	// "condition output"
 	cout<<"Node Ids: ";
 	for(int i=0; i<(int)nodeids->size(); i++)
 		cout<<nodeids->at(i)<<" ";
@@ -1670,7 +1673,7 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
 	cout<<"val: ";
 	for(int i=0; i<(int)discret_.Dof(0,discret_.gNode(nodeids->at(0))).size(); i++)
 		cout<<val->at(i)<<" ";
-	cout<<endl;*/
+	cout<<endl;
 
 	// some checks for errors
 	if (!nodeids) dserror("No Node IDs were handed over!");
