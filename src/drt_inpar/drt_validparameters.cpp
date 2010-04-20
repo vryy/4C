@@ -1133,7 +1133,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("PERIODICDBC","No","If chosen, Point DBCs are applied to the nodes of discontinuous elements",
                                yesnotuple,yesnovalue,&statmech);
   //Reading whether initial DBC declarations from the input file are kept valid during simulation
-  setStringToIntegralParameter<int>("CONVENTIONALDBC","No","If chosen, Point DBCs conventionally defined by input file are taken into account",
+  setStringToIntegralParameter<int>("CONVENTIONALDBC","Yes","If chosen, Point DBCs conventionally defined by input file are taken into account",
                                yesnotuple,yesnovalue,&statmech);
   //Reading whether fixed seed for random numbers should be applied
   setStringToIntegralParameter<int>("FIXEDSEED","No","If chosen fixed seed for random numbers in each time step is applied",
