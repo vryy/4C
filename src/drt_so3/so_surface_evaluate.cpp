@@ -41,6 +41,10 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
                                                       Epetra_SerialDenseVector& elevec1,
                                                       Epetra_SerialDenseMatrix* elemat1)
 {
+  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+  INPAR::STR::PreStress pstype = getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  double pstime = pslist.get<double>("PRESTRESSTIME");
+
   // get type of condition
   enum LoadType
   {
@@ -114,18 +118,24 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   case config_spatial:
   {
     xc.LightShape(numnode,numdf);
-#ifndef INVERSEDESIGNCREATE
-    RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-    if (disp==null) dserror("Cannot get state vector 'displacement'");
-    vector<double> mydisp(lm.size());
-    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-    SpatialConfiguration(xc,mydisp);
-//    MaterialConfiguration(xc);
-#else
-    // in inverse design analysis, the current configuration is the reference
-    MaterialConfiguration(xc);
-    loadlin = false; // follower load is with respect to known current config in inverse design
-#endif
+//#ifndef INVERSEDESIGNCREATE
+//#else
+    if (pstype==INPAR::STR::prestress_id && time <= pstime) 
+    {
+      // in inverse design analysis, the current configuration is the reference
+      MaterialConfiguration(xc);
+      loadlin = false; // follower load is with respect to known current config in inverse design
+    }
+    else // standard case
+    {
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get state vector 'displacement'");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      SpatialConfiguration(xc,mydisp);
+//      MaterialConfiguration(xc);
+    }
+//#endif
   }
   break;
   case config_both:

@@ -203,7 +203,7 @@ public:
   an DRT::ElementRegister. This method allocates and returns
   an instance of a matching DRT::ElementRegister.
   */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+  virtual RCP<DRT::ElementRegister> ElementRegister() const;
 
   //@}
 
@@ -352,7 +352,8 @@ protected:
                               //!< during iteration to last converged state
     postprocess_stress,
     prestress_update,
-    inversedesign_update
+    inversedesign_update,
+    inversedesign_switch
   };
 
   //! kinematic types of so_weg6
@@ -388,9 +389,9 @@ protected:
 //#endif
 
   friend class DRT::ELEMENTS::InvDesign;
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   RCP<DRT::ELEMENTS::InvDesign>                            invdesign_;
-#endif
+//#endif
 
 
 

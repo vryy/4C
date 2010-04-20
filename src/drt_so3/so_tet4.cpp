@@ -25,9 +25,9 @@ writen by : Alexander Volf
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // inverse design object
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 #include "inversedesign.H"
-#endif
+//#endif
 
 
 /*----------------------------------------------------------------------***
@@ -56,9 +56,10 @@ time_(0.0)
     prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
 //#endif
 
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
-  invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
-#endif
+//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+  if (pstype_==INPAR::STR::prestress_id)
+    invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
+//#endif
 
   return;
 }
@@ -82,9 +83,10 @@ time_(old.time_)
     prestress_ = rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 //#endif
 
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
-  invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
-#endif
+//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+  if (pstype_==INPAR::STR::prestress_id)
+    invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
+//#endif
 
   return;
 }
@@ -150,12 +152,15 @@ void DRT::ELEMENTS::So_tet4::Pack(vector<char>& data) const
   }
 //#endif
 
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   // invdesign_
-  vector<char> tmpinvdesign(0);
-  invdesign_->Pack(tmpinvdesign);
-  AddtoPack(data,tmpinvdesign);
-#endif
+  if (pstype_==INPAR::STR::prestress_id)
+  {
+    vector<char> tmpinvdesign(0);
+    invdesign_->Pack(tmpinvdesign);
+    AddtoPack(data,tmpinvdesign);
+  }
+//#endif
 
   return;
 }
@@ -204,12 +209,17 @@ void DRT::ELEMENTS::So_tet4::Unpack(const vector<char>& data)
   }
 //#endif
 
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   // invdesign_
-  vector<char> tmpinvdesign(0);
-  ExtractfromPack(position,data,tmpinvdesign);
-  invdesign_->Unpack(tmpinvdesign);
-#endif
+  if (pstype_==INPAR::STR::prestress_id)
+  {
+    vector<char> tmpinvdesign(0);
+    ExtractfromPack(position,data,tmpinvdesign);
+    if (invdesign_ == Teuchos::null)
+      invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
+    invdesign_->Unpack(tmpinvdesign);
+  }
+//#endif
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

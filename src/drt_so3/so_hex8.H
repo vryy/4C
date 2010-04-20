@@ -424,6 +424,7 @@ protected:
     postprocess_stress,       //!< postprocess stresses
     prestress_update,
     inversedesign_update,
+    inversedesign_switch,
     multi_readrestart,         //!< multi-scale: read restart on microscale
     calc_potential_stiff,       //!< volume interaction potential
     calc_stc_matrix            //! calculate scaled director matrix for thin shell structures
@@ -487,10 +488,10 @@ protected:
                    DRT::ELEMENTS::PreStress& prestress);
 //#endif
 
+//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   friend class DRT::ELEMENTS::InvDesign;
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   RCP<DRT::ELEMENTS::InvDesign>                                         invdesign_;
-#endif
+//#endif
 
 
   // internal calculation methods

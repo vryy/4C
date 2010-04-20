@@ -31,9 +31,9 @@ Maintainer: Moritz Frenzel
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // inverse design object
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 #include "inversedesign.H"
-#endif
+//#endif
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -85,9 +85,10 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
 //#ifdef PRESTRESS
   else if (action=="calc_struct_prestress_update")                act = So_hex8::prestress_update;
 //#endif
-#ifdef INVERSEDESIGNCREATE
+//#ifdef INVERSEDESIGNCREATE
   else if (action=="calc_struct_inversedesign_update")            act = So_hex8::inversedesign_update;
-#endif
+  else if (action=="calc_struct_inversedesign_switch")            act = So_hex8::inversedesign_switch;
+//#endif
   else dserror("Unknown type of action for So_hex8");
 
   // check for patient specific data
@@ -96,6 +97,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
   // what should the element do
   switch(act)
   {
+    //==================================================================================
     // linear stiffness
     case calc_struct_linstiff:
     {
@@ -109,6 +111,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     }
     break;
 
+    //==================================================================================
     // nonlinear stiffness and internal force vector
     case calc_struct_nlnstiff:
     {
@@ -122,16 +125,19 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
       if (elemat1.IsInitialized()) matptr = &elemat1;
-#ifndef INVERSEDESIGNCREATE
-      soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
-                        INPAR::STR::stress_none,INPAR::STR::strain_none);
-#else
-      invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
-                                    INPAR::STR::stress_none,INPAR::STR::strain_none);
-#endif
+//#ifndef INVERSEDESIGNCREATE
+//#else
+      if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
+        invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
+                                      INPAR::STR::stress_none,INPAR::STR::strain_none);
+      else // standard analysis
+        soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none);
+//#endif
     }
     break;
 
+    //==================================================================================
     // internal force vector only
     case calc_struct_internalforce:
     {
@@ -150,11 +156,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     }
     break;
 
+    //==================================================================================
     // linear stiffness and consistent mass matrix
     case calc_struct_linstiffmass:
       dserror("Case 'calc_struct_linstiffmass' not yet implemented");
     break;
 
+    //==================================================================================
     // nonlinear stiffness, internal force vector, and consistent mass matrix
     case calc_struct_nlnstiffmass:
     case calc_struct_nlnstifflmass:
@@ -167,17 +175,20 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-#ifndef INVERSEDESIGNCREATE
+//#ifndef INVERSEDESIGNCREATE
+//#else
+      if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
+        invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+                                      INPAR::STR::stress_none,INPAR::STR::strain_none);
+      else // standard analysis
       soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
-#else
-      invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
-                                    INPAR::STR::stress_none,INPAR::STR::strain_none);
-#endif
+//#endif
       if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
     }
     break;
 
+    //==================================================================================
     // evaluate stresses and strains at gauss points
     case calc_struct_stress:
     {
@@ -196,18 +207,20 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
       INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
       INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
-#ifndef INVERSEDESIGNCREATE
-      soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
-#else
-      invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
-#endif
+//#ifndef INVERSEDESIGNCREATE
+//#else
+      if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
+        invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+      else // standard analysis
+        soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+//#endif
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
     break;
 
+    //==================================================================================
     // postprocess stresses/strains at gauss points
-
     // note that in the following, quantities are always referred to as
     // "stresses" etc. although they might also apply to strains
     // (depending on what this routine is called for from the post filter)
@@ -278,14 +291,17 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     }
     break;
 
+    //==================================================================================
     case calc_struct_eleload:
       dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
     break;
 
+    //==================================================================================
     case calc_struct_fsiload:
       dserror("Case not yet implemented");
     break;
 
+    //==================================================================================
     case calc_struct_update_istep:
     {
       // do something with internal EAS, etc parameters
@@ -327,6 +343,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     }
     break;
 
+    //==================================================================================
     case calc_struct_update_imrlike:
     {
       // do something with internal EAS, etc parameters
@@ -382,6 +399,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     }
     break;
 
+    //==================================================================================
     case calc_struct_reset_istep:
     {
       // do something with internal EAS, etc parameters
@@ -422,12 +440,14 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     }
     break;
 
+    //==================================================================================
     case calc_homog_dens:
     {
       soh8_homog(params);
     }
     break;
 
+    //==================================================================================
     // in case of multi-scale problems, possible EAS internal data on microscale
     // have to be stored in every macroscopic Gauss point
     // allocation and initializiation of these data arrays can only be
@@ -441,6 +461,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     }
     break;
 
+    //==================================================================================
     // in case of multi-scale problems, possible EAS internal data on microscale
     // have to be stored in every macroscopic Gauss point
     // before any microscale simulation, EAS internal data has to be
@@ -454,6 +475,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     }
     break;
 
+    //==================================================================================
     // read restart of microscale
     case multi_readrestart:
     {
@@ -463,6 +485,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     }
     break;
 
+    //==================================================================================
     // compute additional stresses due to intermolecular potential forces
     case calc_potential_stiff:
     {
@@ -490,6 +513,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     break;
 
 //#ifdef PRESTRESS
+    //==================================================================================
     case prestress_update:
     {
       time_ = params.get<double>("total time");
@@ -520,9 +544,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     break;
 //#endif
 
-#ifdef INVERSEDESIGNCREATE
+//#ifdef INVERSEDESIGNCREATE
+    //==================================================================================
     case inversedesign_update:
     {
+      time_ = params.get<double>("total time");
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get displacement state");
       vector<double> mydisp(lm.size());
@@ -531,7 +557,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       invdesign_->IsInit() = true; // this is to make the restart work
     }
     break;
-#endif
+    //==================================================================================
+    case inversedesign_switch:
+    {
+      time_ = params.get<double>("total time");
+    }
+    break;
+//#endif
 
 
     default:
@@ -668,21 +700,24 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
 //#endif
-#ifdef INVERSEDESIGNUSE
-    if (!(invdesign_->IsInit()))
-    {
-      invdesign_->MatrixtoStorage(gp,invJ_[gp],invdesign_->JHistory());
-      invdesign_->DetJHistory()[gp] = detJ_[gp];
-    }
-#endif
+//#ifdef INVERSEDESIGNUSE
+    if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
+      if (!(invdesign_->IsInit()))
+      {
+        //printf("Ele %d id use InitJacobianMapping pstime < time %10.5e < %10.5e\n",Id(),pstime_,time_);
+        invdesign_->MatrixtoStorage(gp,invJ_[gp],invdesign_->JHistory());
+        invdesign_->DetJHistory()[gp] = detJ_[gp];
+      }
+//#endif
   }
 //#ifdef PRESTRESS
   if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
     prestress_->IsInit() = true;
 //#endif
-#ifdef INVERSEDESIGNUSE
-  invdesign_->IsInit() = true;
-#endif
+//#ifdef INVERSEDESIGNUSE
+  if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
+    invdesign_->IsInit() = true;
+//#endif
   return;
 }
 
@@ -711,8 +746,8 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
 /* ============================================================================*/
 
   // check for prestressing
-  if (pstype_ == INPAR::STR::prestress_mulf && eastype_ != soh8_easnone)
-    dserror("No way you can do prestressing with EAS turned on!");
+  if (pstype_ != INPAR::STR::prestress_none && eastype_ != soh8_easnone)
+    dserror("No way you can do mulf or id prestressing with EAS turned on!");
 
   // update element geometry
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
@@ -874,8 +909,10 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       defgrd.MultiplyTT(xcurr,N_XYZ);
 //#endif
 
-#ifdef INVERSEDESIGNUSE
+//#ifdef INVERSEDESIGNUSE
+    if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
     {
+      //printf("Ele %d entering id poststress\n",Id());
       // make the multiplicative update so that defgrd refers to
       // the reference configuration that resulted from the inverse
       // design analysis
@@ -891,7 +928,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       invdesign_->StoragetoMatrix(gp,tmp3x3,invdesign_->JHistory());
       N_XYZ.Multiply(tmp3x3,derivs[gp]);
     }
-#endif
+//#endif
 
     // Right Cauchy-Green tensor = F^T * F
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreen;

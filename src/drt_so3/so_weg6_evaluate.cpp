@@ -29,9 +29,9 @@ Maintainer: Moritz Frenzel
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // inverse design object
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 #include "inversedesign.H"
-#endif
+//#endif
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -73,9 +73,10 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
 //#ifdef PRESTRESS
   else if (action=="calc_struct_prestress_update") act = So_weg6::prestress_update;
 //#endif
-#ifdef INVERSEDESIGNCREATE
-  else if (action=="calc_struct_inversedesign_update")            act = So_weg6::inversedesign_update;
-#endif
+//#ifdef INVERSEDESIGNCREATE
+  else if (action=="calc_struct_inversedesign_update") act = So_weg6::inversedesign_update;
+  else if (action=="calc_struct_inversedesign_switch") act = So_weg6::inversedesign_switch;
+//#endif
   else dserror("Unknown type of action for So_weg6");
 
   // check for patient specific data
@@ -108,13 +109,15 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-#ifndef INVERSEDESIGNCREATE
-      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
-                        INPAR::STR::stress_none,INPAR::STR::strain_none);
-#else
-      invdesign_->sow6_nlnstiffmass(this,lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
-                                    INPAR::STR::stress_none,INPAR::STR::strain_none);
-#endif
+//#ifndef INVERSEDESIGNCREATE
+//#else
+      if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
+        invdesign_->sow6_nlnstiffmass(this,lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
+                                      INPAR::STR::stress_none,INPAR::STR::strain_none);
+      else
+        sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none);
+//#endif
     }
     break;
 
@@ -152,13 +155,15 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-#ifndef INVERSEDESIGNCREATE
-      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
-                        INPAR::STR::stress_none,INPAR::STR::strain_none);
-#else
-      invdesign_->sow6_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
-                                    INPAR::STR::stress_none,INPAR::STR::strain_none);
-#endif
+//#ifndef INVERSEDESIGNCREATE
+//#else
+      if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
+        invdesign_->sow6_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+                                      INPAR::STR::stress_none,INPAR::STR::strain_none);
+      else
+        sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none);
+//#endif
     }
     break;
 
@@ -180,11 +185,13 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6> strain;
       INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
       INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
-#ifndef INVERSEDESIGNCREATE
-      sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
-#else
-      invdesign_->sow6_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
-#endif
+//#ifndef INVERSEDESIGNCREATE
+//#else
+      if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
+        invdesign_->sow6_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+      else
+        sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+//#endif
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
@@ -321,7 +328,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
     break;
 //#endif
 
-#ifdef INVERSEDESIGNCREATE
+//#ifdef INVERSEDESIGNCREATE
     case inversedesign_update:
     {
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -332,7 +339,12 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       invdesign_->IsInit() = true; // this is to make the restart work
     }
     break;
-#endif
+    case inversedesign_switch:
+    {
+      time_ = params.get<double>("total time");
+    }
+    break;
+//#endif
 
     default:
       dserror("Unknown type of action for Solid3");
@@ -396,21 +408,23 @@ void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
 //#endif
-#ifdef INVERSEDESIGNUSE
-    if (!(invdesign_->IsInit()))
-    {
-      invdesign_->MatrixtoStorage(gp,invJ_[gp],invdesign_->JHistory());
-      invdesign_->DetJHistory()[gp] = detJ_[gp];
-    }
-#endif
+//#ifdef INVERSEDESIGNUSE
+    if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
+      if (!(invdesign_->IsInit()))
+      {
+        invdesign_->MatrixtoStorage(gp,invJ_[gp],invdesign_->JHistory());
+        invdesign_->DetJHistory()[gp] = detJ_[gp];
+      }
+//#endif
   }
 //#ifdef PRESTRESS
   if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
     prestress_->IsInit() = true;
 //#endif
-#ifdef INVERSEDESIGNUSE
-  invdesign_->IsInit() = true;
-#endif
+//#ifdef INVERSEDESIGNUSE
+  if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
+    invdesign_->IsInit() = true;
+//#endif
   return;
 }
 
@@ -516,7 +530,8 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       defgrd.MultiplyTT(xcurr,N_XYZ);
 //#endif
 
-#ifdef INVERSEDESIGNUSE
+//#ifdef INVERSEDESIGNUSE
+    if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
     {
       // make the multiplicative update so that defgrd refers to
       // the reference configuration that resulted from the inverse
@@ -533,7 +548,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       invdesign_->StoragetoMatrix(gp,tmp3x3,invdesign_->JHistory());
       N_XYZ.Multiply(tmp3x3,derivs[gp]);
     }
-#endif
+//#endif
 
     // Right Cauchy-Green tensor = F^T * F
     LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> cauchygreen;

@@ -205,7 +205,7 @@ public:
   an DRT::ElementRegister. This method allocates and returns
   an instance of a matching DRT::ElementRegister.
   */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+  virtual RCP<DRT::ElementRegister> ElementRegister() const;
 
   //@}
 
@@ -355,7 +355,8 @@ protected:
     calc_struct_reset_istep, //!< reset elementwise internal variables
                              //!< during iteration to last converged state
     prestress_update,
-    inversedesign_update
+    inversedesign_update,
+    inversedesign_switch
   };
 
   //! kinematic types of so_tet10
@@ -374,7 +375,7 @@ protected:
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                                           data_;
   //! vector of history variables for each Gauss point
-  vector<RefCountPtr<MAT::Material> >                                      mat_;
+  vector<RCP<MAT::Material> >                                              mat_;
   //! volume of the element
   double                                                                   V_;
   //! vector of partial derivatives in material frame
@@ -396,10 +397,10 @@ protected:
                    DRT::ELEMENTS::PreStress& prestress);
 //#endif
 
+//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   friend class DRT::ELEMENTS::InvDesign;
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   RCP<DRT::ELEMENTS::InvDesign>                                            invdesign_;
-#endif
+//#endif
 
   // internal calculation methods
 

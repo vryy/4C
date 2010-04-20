@@ -25,9 +25,9 @@ Maintainer: Moritz Frenzel
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // inverse design object
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 #include "inversedesign.H"
-#endif
+//#endif
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
@@ -61,9 +61,10 @@ time_(0.0)
     prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_WEG6,NUMGPT_WEG6));
 //#endif
 
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
-  invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_WEG6,NUMGPT_WEG6));
-#endif
+//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+  if (pstype_==INPAR::STR::prestress_id)
+    invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_WEG6,NUMGPT_WEG6));
+//#endif
 
   return;
 }
@@ -92,9 +93,10 @@ time_(old.time_)
     prestress_ = rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 //#endif
 
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
-  invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
-#endif
+//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+  if (pstype_==INPAR::STR::prestress_id)
+    invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
+//#endif
 
   return;
 }
@@ -153,12 +155,15 @@ void DRT::ELEMENTS::So_weg6::Pack(vector<char>& data) const
   }
 //#endif
 
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   // invdesign_
-  vector<char> tmpinvdesign(0);
-  invdesign_->Pack(tmpinvdesign);
-  AddtoPack(data,tmpinvdesign);
-#endif
+  if (pstype_==INPAR::STR::prestress_id)
+  {
+    vector<char> tmpinvdesign(0);
+    invdesign_->Pack(tmpinvdesign);
+    AddtoPack(data,tmpinvdesign);
+  }
+//#endif
 
   // detJ_
   AddtoPack(data,detJ_);
@@ -210,12 +215,17 @@ void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
   }
 //#endif
 
-#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   // invdesign_
-  vector<char> tmpinvdesign(0);
-  ExtractfromPack(position,data,tmpinvdesign);
-  invdesign_->Unpack(tmpinvdesign);
-#endif
+  if (pstype_==INPAR::STR::prestress_id)
+  {
+    vector<char> tmpinvdesign(0);
+    ExtractfromPack(position,data,tmpinvdesign);
+    if (invdesign_ == Teuchos::null)
+      invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_WEG6,NUMGPT_WEG6));
+    invdesign_->Unpack(tmpinvdesign);
+  }
+//#endif
 
   // detJ_
   ExtractfromPack(position,data,detJ_);
