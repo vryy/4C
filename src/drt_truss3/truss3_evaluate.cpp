@@ -508,7 +508,17 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
     }
   }
   
-
+  /*
+  if(Id() == 6)
+  {
+    std::cout<<"\nnodes of Element "<<Id()<<" :"<<Nodes()[0]->Id()<<"  "<<Nodes()[1]->Id(); 
+    std::cout<<"\nforce in Element "<<Id()<<" :"<<(*force);
+    std::cout<<"disp in evaluation of Element "<<Id()<<" :";
+    for(int b=0;b<6;b++)
+      std::cout<<" "<<disp[b];
+    std::cout<<"\n";
+  }
+  */
 
   return;
 } // DRT::ELEMENTS::Truss3::t3_nlnstiffmass
@@ -923,12 +933,15 @@ inline void DRT::ELEMENTS::Truss3::NodeShift(ParameterList& params,  //!<paramet
    *of freedom for each element node*/
   int numdof = NumDofPerNode(*(Nodes()[0]));
 
-  if(Id() == 10 || Id() == 11 || Id() == 12)
+  /*
+  if(Id() == 6 || Id() == 7)
   {
     std::cout<<"\ndisp before shift in Element "<<Id()<<" at time "<<params.get<double>("total time",0.0)<<" :";
     for(int b=0;b<6;b++)
       std::cout<<" "<<disp[b];
   }
+  */
+
 
 
   /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0) > 0.0, this
@@ -946,33 +959,38 @@ inline void DRT::ELEMENTS::Truss3::NodeShift(ParameterList& params,  //!<paramet
         if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) + params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
         {
           disp[numdof*i+dof] += params.get<double>("PeriodLength",0.0);
-
+          
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
            *z-surface, the shear has to be substracted from nodal coordinates in that case */
-          if(dof == 2 && params.get<int>("CURVENUMBER",-1) < 1)
+          if(dof == 2 && params.get<int>("CURVENUMBER",-1) >= 1)
             disp[numdof*i+params.get<int>("OSCILLDIR",-1)] += params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
         }
 
         if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - params.get<double>("PeriodLength",0.0) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
         {
           disp[numdof*i+dof] -= params.get<double>("PeriodLength",0.0);
+          
+          std::cout<<"\nshift below";
 
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
            *z-surface, the shear has to be added to nodal coordinates in that case */
-          if(dof == 2 && params.get<int>("CURVENUMBER",-1) < 1)
+          if(dof == 2 && params.get<int>("CURVENUMBER",-1) >= 1)
             disp[numdof*i+params.get<int>("OSCILLDIR",-1)] -= params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
         }
       }
     }
   
-  if(Id() == 10 || Id() == 11 || Id() == 12)
+  /*
+  if(Id() == 6)
   {
     std::cout<<"\ndisp after shift in Element "<<Id()<<" at time "<<params.get<double>("total time",0.0)<<" :";
     for(int b=0;b<6;b++)
       std::cout<<" "<<disp[b];
   }
+  */
+
 
 return;
 
