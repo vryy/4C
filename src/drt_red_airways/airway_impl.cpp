@@ -107,10 +107,10 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   // ---------------------------------------------------------------------
 
   RefCountPtr<const Epetra_Vector> pnp  = discretization.GetState("pnp");
-  RefCountPtr<const Epetra_Vector> pn   = discretization.GetState("pn");
+  RefCountPtr<const Epetra_Vector> pn   = discretization.GetState("pnm");
 
-  if (pnp==null)
-    dserror("Cannot get state vectors 'pnp'");
+  if (pnp==null || pn==null )
+    dserror("Cannot get state vectors 'pnp' or 'pnm'");
 
   // extract local values from the global vectors
   vector<double> mypnp(lm.size());
@@ -430,8 +430,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       {
         const double K = condition->GetDouble("Stiffness1");
         
-        sysmat(i,i) += pow(-1.0,i)*(2.0*K/(dt));
-        rhs(i)      += pow(-1.0,i)*(q_out + 2.0*K/(dt)*epnp(i));
+        sysmat(i,i) += pow(-1.0,i)*(2.0/(K*dt));
+        rhs(i)      += pow(-1.0,i)*(q_out + 2.0/(K*dt)*epnp(i));
       }
       else if (MatType == "ViscoElastic_2dof")
       {
@@ -439,19 +439,17 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         const double E2 = condition->GetDouble("Stiffness2");
         const double B  = condition->GetDouble("Viscosity");
 
-        const double K = E1*E2/2.0 + (E2*B-B*E1)/dt;
+        const double K = E1*E2/2.0 + (E2*B+B*E1)/dt;
         const double Kp= E2/dt + B/pow(dt,2);
         double Qeq_n, Qeq_nm;
         double pnm = epn(i);
 
         Qeq_nm = -(pnm*B/pow(dt,2))/K;
-        Qeq_n  = (E2*epnp(i)/dt +2.0*B*epnp(i)/pow(dt,2) + E1*E2/2.0*q_out - (E2*B-B*E1)*q_out/dt)/K;
+        Qeq_n  = (E2*epnp(i)/dt +2.0*B*epnp(i)/pow(dt,2) + E1*E2/2.0*q_out - (E2*B+B*E1)*q_out/dt)/K;
         
         sysmat(i,i) += pow(-1.0,i)*(Kp/K);
         rhs(i)      += pow(-1.0,i)*(Qeq_n + Qeq_nm);
         
-        cout<<"Qout("<<i<<"): "<<q_out<<endl;
-        cout<<"Pout("<<i<<"): "<<epnp(i)<<endl;
       }
       else
       {
