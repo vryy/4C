@@ -212,7 +212,7 @@ void StatMechTime::Integrate()
 
       }
       while(isconverged_ == 0);
-      //cout<<"Post-Integration: \n"<<*disn_<<endl;
+
         const double t_admin = Teuchos::Time::wallTime();
 
     UpdateandOutput();
@@ -1460,8 +1460,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				if(counter==2)
 					skipit = true;
 				// skip the rest if both dbctype_ entries have not been changed
-				if(!skipit)
-				{
+
 					// change the type and calculate a new reference displacement
 					// change type of fixed DOF
 					(*dbctype_)[lids.at(3*n+oscdir_)] = 2.0;
@@ -1476,11 +1475,11 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 					double dt = params_.get<double>("delta time" ,-1.0);
 					// time curve increment
 					double tcincrement = 0.0;
+					cout<<"        TIME/TIME-dt:"<<time<<" / "<<time - dt<<endl;
 					if(curvenumber_>-1)
 						tcincrement = DRT::Problem::Instance()->Curve(curvenumber_).f(time) -
 													DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
 					(*deltadbc_)[lids.at(3*(n+1)+oscdir_)] = amp_*tcincrement;
-				}
 
 				// add DOF LID where a force sensor is to be set
 				if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
@@ -1531,8 +1530,6 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				if(counter==2)
 					skipit = true;
 
-				if(!skipit)
-				{
 					// oscillating node
 					(*dbctype_)[lids.at(3*n+oscdir_)] = 1.0;
 					// fixed node
@@ -1541,13 +1538,13 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 					// oscillating node
 					double dt = params_.get<double>("delta time" ,-1.0);
 					double tcincrement = 0.0;
+					cout<<"        TIME/TIME-dt:"<<time<<" / "<<time - dt<<endl;
 					if(curvenumber_>-1)
 						tcincrement = DRT::Problem::Instance()->Curve(curvenumber_).f(time) -
 													DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
 					(*deltadbc_)[lids.at(3*n+oscdir_)] = amp_*tcincrement;
 					// fixed node
 					(*deltadbc_)[lids.at(3*(n+1)+oscdir_)] = 0.0;
-				}
 
 				if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
 				{
