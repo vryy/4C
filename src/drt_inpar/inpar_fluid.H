@@ -73,17 +73,18 @@ namespace INPAR
     };
 
     /// type of stabilization parameter definition
+    //TODO:
     enum TauType
     {
-      tautype_franca_barrenechea_valentin_wall,
-      tautype_bazilevs,
-      smoothed_franca_barrenechea_valentin_wall,
-      franca_barrenechea_valentin_wall         ,
-      franca_barrenechea_valentin_codina       ,
-      fbvw_gradient_based_hk                   ,
-      codina                                   ,
-      bazilevs                                 ,
-      fbvw_wo_dt                               ,
+      tautype_franca_barrenechea_valentin_wall,   // combustion
+      tautype_bazilevs,                           // combustion
+      smoothed_franca_barrenechea_valentin_wall,  // Fluid3
+      franca_barrenechea_valentin_wall         ,  // Fluid3
+      franca_barrenechea_valentin_codina       ,  // Fluid3
+      fbvw_gradient_based_hk                   ,  // Fluid3
+      codina                                   ,  // Fluid3
+      bazilevs                                 ,  // Fluid3
+      fbvw_wo_dt                               ,  // Fluid3
       tau_not_defined
     };
 
