@@ -1563,7 +1563,7 @@ void DRT::ELEMENTS::Beam3::MyBackgroundVelocity(ParameterList& params,  //!<para
   double uppervel = 0.0;
 
   //oscillations start only at params.get<double>("STARTTIME",0.0)
-  if(params.get<double>("total time",0.0) > params.get<double>("STARTTIME",0.0))
+  if(params.get<double>("total time",0.0) > params.get<double>("STARTTIME",0.0) && params.get<int>("CURVENUMBER",-1) < 1)
     uppervel = (params.get<double>("SHEARAMPLITUDE",0.0)) * (DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).FctDer(params.get<double>("total time",0.0),1))[1];
 
   //compute background velocity
