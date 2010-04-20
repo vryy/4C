@@ -74,18 +74,15 @@ private:
   Teuchos::RCP<STR::TimInt> sti_;
 
   ///  number of measurment points the
-  double tstep_;                          // timestep
+  double tstep_;                        // timestep
 
-  int problem_type_;		        // Neumann or Dirichlet Problem
-  int np_;                                // number of fitted parameters (default 3, 4 with kappa)
-  int nmp_;                                // number of fitted parameters (default 3, 4 with kappa)
+  int np_;                              // number of fitted parameters (default 3, 4 with kappa)
+  int nmp_;                             // number of fitted parameters (default 3, 4 with kappa)
 
   Epetra_SerialDenseVector mcurve_;	// measured displacment of the experiments (target value)
 
   double mu_;
   double tol_mu_;
-  double mup_;
-  double mum_;
 
   double error_;
   double error_o_;
@@ -97,7 +94,11 @@ private:
 
   int numb_run_;
 
-  Epetra_SerialDenseVector p_;	      // parameter vector
+  int calc_proc_;                 //
+                                  // processor on which the inverse analysis s calculated
+  int mat_ele_num_;
+
+  Epetra_SerialDenseVector p_;	        // parameter vector
 
   /// @name Storage
   //@{
@@ -118,9 +119,9 @@ public:
 
   /// standard constructor
   AirwaysInvAnalysis(
-    Teuchos::RCP<DRT::Discretization> dis,  ///< the discretisation
-    Teuchos::RCP<LINALG::Solver> solver,  ///< algebraic solver
-    Teuchos::RCP<IO::DiscretizationWriter> output  ///< outputer
+    Teuchos::RCP<DRT::Discretization> dis,            ///< the discretisation
+    Teuchos::RCP<LINALG::Solver> solver,              ///< algebraic solver
+    Teuchos::RCP<IO::DiscretizationWriter> output     ///< outputer
     );
 
   /// Read in routine for the material parameters
@@ -141,6 +142,10 @@ public:
 
   ///
   Epetra_SerialDenseVector CalcCvector();
+
+
+  /// Checks which processor has elements with the to be fited material
+  void DefineWorkingProc();
 
   ///
   void Integrate();
