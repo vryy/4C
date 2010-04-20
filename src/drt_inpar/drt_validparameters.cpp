@@ -1123,7 +1123,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Number of time steps between two special outputs written
   IntParameter("OUTPUTINTERVALS",1,"Number of time steps between two special outputs written",&statmech);
   //Reading direction of oscillatory motion that DBC nodes are subjected to (we need this when using periodic BCs)
-  IntParameter("OSCILLDIR",0,"Global spatial direction of oscillatory motion by Dirichlet BCs",&statmech);
+  IntParameter("OSCILLDIR",-1,"Global spatial direction of oscillatory motion by Dirichlet BCs",&statmech);
   //Reading time curve number for oscillatory motion
   IntParameter("CURVENUMBER",0,"Specifies Time Curve number of oscillatory motion",&statmech);
   //Reading number of elements that are taken into account when applying Dirichlet Conditions (useful to avoid redundant evaluation)
