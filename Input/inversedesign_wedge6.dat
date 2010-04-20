@@ -43,6 +43,12 @@ FILESTEPS                       1000
 //LINEAR
 //
 ---------------------------------------------------------EIGENVALUE ANALYSIS
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE  -1.5486250267285490e+01 TOLERANCE 1e-5
+------------------------------------------------------------PATIENT SPECIFIC
+PATSPEC                         no
+PRESTRESS                       id                // mulf id none
+PRESTRESSTIME                   0.0501
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Static // Gen_Alfa Static
 EIGEN        0
@@ -52,7 +58,7 @@ RESTARTEVRY  10
 NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP     0.001
 NUMSTEP      10000
-MAXTIME      0.05    // prestress until 0.05, run until 0.1
+MAXTIME      0.1    // prestress until 0.05, run until 0.1
 BETA         0.25
 GAMMA        0.5
 ALPHA_M      0.0
@@ -4483,8 +4489,6 @@ NODE 1056 COORD    5.038998562016503   -1.317874407435426    4.829190890769729
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid VISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_NeoHooke  YOUNG 1000000 NUE 0.45 DENS 0.001
-------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE  5.815001376299208857e+01 TOLERANCE 1e-4
 --------------------------------------------------------MULTILAYER MATERIALS
 ----------------------------------------------------------------CONTROL NODE
 -----------------------------------------------------------------LOAD CURVES

@@ -4,13 +4,13 @@
 //             http://www.lnm.mw.tum.de
 //             089 - 289-15239
 //
-// necessary defines: CCADISCRET D_SOLID3 BINIO INVERSEDESIGNCREATE
+// necessary defines: CCADISCRET D_SOLID3 BINIO
 //
 ==================================================================
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-Default_title
+inverse design problem with tet4 element
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS        1909
 NODES            762
@@ -47,31 +47,37 @@ FILESTEPS              1000
 //LINEAR
 //
 -----------------------------------------------EIGENVALUE ANALYSIS
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE  -7.6564475997798223e+00  TOLERANCE 1e-5
+--------------------------------------------------PATIENT SPECIFIC
+PATSPEC                         no
+PRESTRESS                       id                // mulf id none
+PRESTRESSTIME                   0.0501
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Static // Gen_Alfa Static
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
-RESTARTEVRY  10
-NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
+RESTARTEVRY  1
+NLNSOL       fullnewton // fullnewton lsnewton modnewton nlncg ptc
 TIMESTEP     0.001
-NUMSTEP      10000
-MAXTIME      0.05    // prestress until 0.05, run until 0.1
+NUMSTEP      100
+MAXTIME      0.1   // total time 0.35, prestressed until 0.1
 BETA         0.25
 GAMMA        0.5
 ALPHA_M      0.0
 ALPHA_F      0.0
 DAMPING      No
-M_DAMP       0.0
-K_DAMP       0.0
+M_DAMP       0.5
+K_DAMP       0.5
 PREDICT      ConstDisVelAcc
 CONV_CHECK   AbsRes_And_AbsDis
-TOLDISP      1.0E-03
-TOLRES       1.0E-03
-TOLCONSTR    1.0E-03
+TOLDISP      1.0E-5
+TOLRES       1.0E-5
+TOLCONSTR    1.0E-2
 ADAPTCONV        No
 ADAPTCONV_BETTER 0.1
-MAXITER      50
+MAXITER      150
 UZAWAPARAM   1.0
 UZAWAMAXITER 20
 UZAWAALGO    direct
@@ -4705,17 +4711,15 @@ NODE 762 COORD    0.000000000000000    0.000000000000000   10.000000000000000
 MAT       1 MAT_Struct_NeoHooke  YOUNG 1000000.0 NUE 0.45 DENS 0.001
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
-------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE  1.107443533633053079e+01  TOLERANCE 1e-8
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 4.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.1 0.11 FACTOR 4.0 0.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.11 1.0 FACTOR 0.0 0.0
+CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.1 0.2 FACTOR 4.0 8.0
+CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.11 1.0 FACTOR 4.0 4.0
 ------------------------------------------------------------CURVE2
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 12.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.1 0.11 FACTOR 12.0 0.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.11 1.0 FACTOR 0.0 0.0
+CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.1 0.2 FACTOR 12.0 24.0
+CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.11 1.0 FACTOR 12.0 12.0
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
