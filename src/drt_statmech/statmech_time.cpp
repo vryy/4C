@@ -50,7 +50,6 @@ StruGenAlpha(params,dis,solver,output),
 isconverged_(0),
 unconvergedsteps_(0),
 isinit_(false),
-dbctype_(LINALG::CreateVector(*(discret_.DofRowMap()),true)),
 deltadbc_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
 {
   Teuchos::RCP<LINALG::SparseMatrix> stiff = SystemMatrix();
@@ -304,7 +303,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     	 * Now, why is this done? For t==0, disn_ and dirichtoggle_ are initialized in strugenalpha.cpp.
     	 * Especially dirichtoggle_ and invtoggle_ contain information that is incorrect if DBC DOFs are
     	 * selected anew for each timestep and periodic boundary conditions are to be applied.
-    	 * Also, initialize drefnew_ with large abs. values
+    	 * Also, initialize deltadbc_ with large abs. values
     	 * The "incorrect" initialization occurs due to DBCs defined in the input file.
     	 * One may interject, that they've been defined for a reason, so why cancel them here?
     	 * answer: reasons of flexibility.
@@ -1319,7 +1318,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
  * vector component to 1.0. In case of an element which was broken the step before
  * and is now whole again,just the toggle vector components in question are
  * reset to 0.0.
- * A position vector drefnew_ is needed in order to calculate the correct Dirichlet
+ * A position vector deltadbc_ is needed in order to calculate the correct Dirichlet
  * values to be imposed on nodes of an element which has drifted over the boundaries
  * and thus has been broken.
  * These positions are used to calculate the zero position of the oscillation which then can
@@ -1430,56 +1429,27 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				// add GID of oscillating node to osc.-nodes-vector
 				oscillnodes.push_back(element->Nodes()[n+1]->Id());
 
-				// create sort of an element DOF-Map with type entries (0-free;1-oscill;2-fixed)
-				vector<int> type;
 				// get the number of DOFs per node
 				int numdof = (int)discret_.Dof(0, element->Nodes()[0]).size();
-				// initialize the vector
-				type.assign(element->NumNode()*numdof,0);
 
 				/* When an element is cut, there are always two nodes involved: one that is subjected to a fixed
 				 * displacement in one particular direction (oscdir_), another which oscillates in the same direction.
-				 * The following code section handles two things:
-				 * 	1. it checks for any changes concerning the mode of DBC application [no DBC, fixed, oscillating]
-				 *  2. if a change is detected for a certain node, an updated reference displacement is calculated.
-				 *  	 This displacement is used later on to determine the correct Dirichlet displacement for this
-				 *  	 node.
-				 *  type==0 -> free DOF ; type==1 -> osc. DOF ; type==2 -> fixed DOF
+				 * The following code section calculates increments for both node types and stores this increment in
+				 * a vector deltadbc_. This increment is later added to the nodes' displacement of the preceding time step.
 				 */
-				int counter = 0;
-				bool skipit = false;
-				// check the types
-				// type: fixed node
-				type.at(numdof*n+oscdir_) = 2;
-				if((*dbctype_)[lids.at(3*n+oscdir_)]==(double)type.at(numdof*n+oscdir_))
-					counter++;
-				// type: oscillating node
-				type.at(numdof*(n+1)+oscdir_) = 1;
-				if((*dbctype_)[lids.at(3*(n+1)+oscdir_)]==(double)type.at(numdof*(n+1)+oscdir_))
-					counter++;
-				if(counter==2)
-					skipit = true;
-				// skip the rest if both dbctype_ entries have not been changed
-
-					// change the type and calculate a new reference displacement
-					// change type of fixed DOF
-					(*dbctype_)[lids.at(3*n+oscdir_)] = 2.0;
-					// change type of oscillating DOF
-					(*dbctype_)[lids.at(3*(n+1)+oscdir_)] = 1.0;
-
-					// the new incremental displacement
-					// incremental displacement for a fixed node...
-					(*deltadbc_)[lids.at(3*n+oscdir_)] = 0.0;
-					// incremental Dirichlet displacement for an oscillating node
-					// time step size
-					double dt = params_.get<double>("delta time" ,-1.0);
-					// time curve increment
-					double tcincrement = 0.0;
-					cout<<"        TIME/TIME-dt:"<<time<<" / "<<time - dt<<endl;
-					if(curvenumber_>-1)
-						tcincrement = DRT::Problem::Instance()->Curve(curvenumber_).f(time) -
-													DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
-					(*deltadbc_)[lids.at(3*(n+1)+oscdir_)] = amp_*tcincrement;
+				// the new displacement increments
+				// incremental displacement for a fixed node...
+				(*deltadbc_)[lids.at(3*n+oscdir_)] = 0.0;
+				// incremental Dirichlet displacement for an oscillating node
+				// time step size
+				double dt = params_.get<double>("delta time" ,-1.0);
+				// time curve increment
+				double tcincrement = 0.0;
+				//cout<<"        TIME/TIME-dt:"<<time<<" / "<<time - dt<<endl;
+				if(curvenumber_>-1)
+					tcincrement = DRT::Problem::Instance()->Curve(curvenumber_).f(time) -
+												DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
+				(*deltadbc_)[lids.at(3*(n+1)+oscdir_)] = amp_*tcincrement;
 
 				// add DOF LID where a force sensor is to be set
 				if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
@@ -1514,37 +1484,16 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 					oscillnodes.push_back(element->Nodes()[n]->Id());
 				fixednodes.push_back(element->Nodes()[n+1]->Id());
 
-				// basically the same as above, just with switched nodes
-				vector<int> type;
-				int numdof = (int)discret_.Dof(0, element->Nodes()[0]).size();
-				type.assign(element->NumNode()*numdof,0);
-
-				int counter = 0;
-				bool skipit = false;
-				type.at(numdof*n+oscdir_) = 1;
-				if((*dbctype_)[lids.at(3*n+oscdir_)]==(double)type.at(numdof*n+oscdir_))
-					counter++;
-				type.at(numdof*(n+1)+oscdir_) = 2;
-				if((*dbctype_)[lids.at(3*(n+1)+oscdir_)]==(double)type.at(numdof*(n+1)+oscdir_))
-					counter++;
-				if(counter==2)
-					skipit = true;
-
-					// oscillating node
-					(*dbctype_)[lids.at(3*n+oscdir_)] = 1.0;
-					// fixed node
-					(*dbctype_)[lids.at(3*(n+1)+oscdir_)] = 2.0;
-
-					// oscillating node
-					double dt = params_.get<double>("delta time" ,-1.0);
-					double tcincrement = 0.0;
-					cout<<"        TIME/TIME-dt:"<<time<<" / "<<time - dt<<endl;
-					if(curvenumber_>-1)
-						tcincrement = DRT::Problem::Instance()->Curve(curvenumber_).f(time) -
-													DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
-					(*deltadbc_)[lids.at(3*n+oscdir_)] = amp_*tcincrement;
-					// fixed node
-					(*deltadbc_)[lids.at(3*(n+1)+oscdir_)] = 0.0;
+				// oscillating node
+				double dt = params_.get<double>("delta time" ,-1.0);
+				double tcincrement = 0.0;
+				//cout<<"        TIME/TIME-dt:"<<time<<" / "<<time - dt<<endl;
+				if(curvenumber_>-1)
+					tcincrement = DRT::Problem::Instance()->Curve(curvenumber_).f(time) -
+												DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
+				(*deltadbc_)[lids.at(3*n+oscdir_)] = amp_*tcincrement;
+				// fixed node
+				(*deltadbc_)[lids.at(3*(n+1)+oscdir_)] = 0.0;
 
 				if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
 				{
@@ -1625,7 +1574,6 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 		cout<<"FREE NODES"<<endl;
   	DoDirichletConditionPeriodic(usetime, time, &freenodes, &addcurve, &addfunct, &addonoff, &addval);
 	}
-	//cout<<"dbctype:\n"<<*dbctype_<<endl;
 	//cout<<"deltadbc_:\n"<<*deltadbc_<<endl;
 
 #ifdef MEASURETIME
@@ -1709,12 +1657,9 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
           // in addition, modify the inverse vector (needed for manipulation of the residual vector)
           (*invtoggle_)[lid] = 1.0;
         }
-        // if formerly subject to Dirichlet values, reset dbctype_ and drefnew_ for this lid
-        if((*dbctype_)[lid]!=0.0)
-        {
-        	(*dbctype_)[lid] = 0.0;
+        // if formerly subject to Dirichlet values, reset deltadbc_ for this lid
+        if((*deltadbc_)[lid]!= 9e99)
         	(*deltadbc_)[lid] = 9e99;
-        }
         continue;
       }
 //---------------------------------------------Dirichlet Value Assignment

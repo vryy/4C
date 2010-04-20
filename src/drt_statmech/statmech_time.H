@@ -108,8 +108,6 @@ protected:
 private:
 	// variables needed for EvaluateDirichletPeriodic()
 	bool 												isinit_;
-	// \brief vector used to signal when to store, change or delete a new/given reference position for DBC evaluation
-	RCP<Epetra_Vector> 					dbctype_;
 	// \brief incremental displacement which is to be added to the displacement in DoDirichletConditionPeriodic()
 	RCP<Epetra_Vector> 					deltadbc_;
 	// \brief direction of oscillation, extracted from discretization
