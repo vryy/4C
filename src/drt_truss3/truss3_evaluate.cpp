@@ -141,7 +141,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
         stiff_relerr.Shape(numdof*nnode,numdof*nnode);
 
         //characteristic length for numerical approximation of stiffness
-        double h_rel = 1e-6;
+        double h_rel = 1e-9;
 
         //flag indicating whether approximation leads to significant relative error
         int outputflag = 0;
@@ -180,7 +180,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
             stiff_relerr(line,col)= fabs( ( pow(elemat1(line,col),2) - pow(stiff_approx(line,col),2) )/ ( (elemat1(line,col) + stiff_approx(line,col)) * elemat1(line,col) ));
 
             //suppressing small entries whose effect is only confusing and NaN entires (which arise due to zero entries)
-            if ( fabs( stiff_relerr(line,col) ) < h_rel*500 || isnan( stiff_relerr(line,col)) || elemat1(line,col) == 0) //isnan = is not a number
+            if ( fabs( stiff_relerr(line,col) ) < h_rel*1000 || isnan( stiff_relerr(line,col)) || elemat1(line,col) == 0) //isnan = is not a number
               stiff_relerr(line,col) = 0;
 
             if ( stiff_relerr(line,col) > 0)
@@ -198,7 +198,6 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
 
       } //end of section in which numerical approximation for stiffness matrix is computed
       */
-      
 
     }
     break;
@@ -508,6 +507,8 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
       (*massmatrix)(i+3,i) = density*lrefe_*crosssec_ / 6;
     }
   }
+  
+
 
   return;
 } // DRT::ELEMENTS::Truss3::t3_nlnstiffmass
@@ -922,6 +923,12 @@ inline void DRT::ELEMENTS::Truss3::NodeShift(ParameterList& params,  //!<paramet
    *of freedom for each element node*/
   int numdof = NumDofPerNode(*(Nodes()[0]));
 
+  if(Id() == 10 || Id() == 11 || Id() == 12)
+  {
+    std::cout<<"\ndisp before shift in Element "<<Id()<<" at time "<<params.get<double>("total time",0.0)<<" :";
+    for(int b=0;b<6;b++)
+      std::cout<<" "<<disp[b];
+  }
 
 
   /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0) > 0.0, this
@@ -943,7 +950,7 @@ inline void DRT::ELEMENTS::Truss3::NodeShift(ParameterList& params,  //!<paramet
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
            *z-surface, the shear has to be substracted from nodal coordinates in that case */
-          if(dof == 2 && params.get<int>("CURVENUMBER",-1) != -1)
+          if(dof == 2 && params.get<int>("CURVENUMBER",-1) < 1)
             disp[numdof*i+params.get<int>("OSCILLDIR",-1)] += params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
         }
 
@@ -954,11 +961,18 @@ inline void DRT::ELEMENTS::Truss3::NodeShift(ParameterList& params,  //!<paramet
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
            *z-surface, the shear has to be added to nodal coordinates in that case */
-          if(dof == 2 && params.get<int>("CURVENUMBER",-1) != -1)
+          if(dof == 2 && params.get<int>("CURVENUMBER",-1) < 1)
             disp[numdof*i+params.get<int>("OSCILLDIR",-1)] -= params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
         }
       }
     }
+  
+  if(Id() == 10 || Id() == 11 || Id() == 12)
+  {
+    std::cout<<"\ndisp after shift in Element "<<Id()<<" at time "<<params.get<double>("total time",0.0)<<" :";
+    for(int b=0;b<6;b++)
+      std::cout<<" "<<disp[b];
+  }
 
 return;
 
