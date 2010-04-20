@@ -3028,22 +3028,25 @@ void StruGenAlpha::Update()
   }
 
 
-#ifdef INVERSEDESIGNCREATE
-  //----------- save the current material configuration at the element level
+//#ifdef INVERSEDESIGNCREATE
+  if (pstype==INPAR::STR::prestress_id && timen <= pstime)
   {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_inversedesign_update");
-    // other parameters that might be needed by the elements
-    p.set("total time",timen);
-    p.set("delta time",dt);
-    p.set("alpha f",alphaf);
-    discret_.SetState("displacement",dis_);
-    discret_.Evaluate(p,null,null,null,null,null);
+    if (!discret_.Comm().MyPID()) cout << "====== Entering INVERSEDESIGN update\n"; fflush(stdout);
+    //----------- save the current material configuration at the element level
+    {
+      // create the parameters for the discretization
+      ParameterList p;
+      // action for elements
+      p.set("action","calc_struct_inversedesign_update");
+      // other parameters that might be needed by the elements
+      p.set("total time",timen);
+      p.set("delta time",dt);
+      p.set("alpha f",alphaf);
+      discret_.SetState("displacement",dis_);
+      discret_.Evaluate(p,null,null,null,null,null);
+    }
   }
-#endif
-
+//#endif
 
   //----------------- update surface stress history variables if present
   if (surf_stress_man_->HaveSurfStress())
@@ -3100,6 +3103,34 @@ void StruGenAlpha::UpdateElement()
     discret_.ClearState();
   }
 #endif
+
+  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+  INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  double pstime = pslist.get<double>("PRESTRESSTIME");
+
+  // if this is the first step of poststress using id tell the elements
+  // to switch to poststress mode. To do so, we'll lie to the elements
+  // that the time is actually dt later than it currently is :-)
+  // This transforms them to poststress mode.
+  if (pstype==INPAR::STR::prestress_id && timen <= pstime && timen+dt > pstime)
+  {
+    if (!discret_.Comm().MyPID()) cout << "XXXXXX Entering INVERSEDESIGN SWITCH\n"; fflush(stdout);
+    //--------------------------init the element to new material configuration
+    dis_->PutScalar(0.0);
+    vel_->PutScalar(0.0);
+    acc_->PutScalar(0.0);
+    {
+      // create the parameters for the discretization
+      ParameterList p;
+      // action for elements
+      p.set("action","calc_struct_inversedesign_switch");
+      // other parameters that might be needed by the elements
+      p.set("total time",timen+dt);
+      discret_.Evaluate(p,null,null,null,null,null);
+    }
+  }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -3135,6 +3166,12 @@ void StruGenAlpha::Output()
   INPAR::STR::ControlType controltype = params_.get<INPAR::STR::ControlType>("CONTROLTYPE",INPAR::STR::control_load);
   if (controltype!=INPAR::STR::control_load) control=true;
 
+/*
+  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+  INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  double pstime = pslist.get<double>("PRESTRESSTIME");
+*/
+
   bool isdatawritten = false;
 
   //------------------------------------------------- write restart step
@@ -3148,11 +3185,19 @@ void StruGenAlpha::Output()
     output_.WriteVector("fexternal",fext_);
     output_.WriteElementData();
 
-#ifdef INVERSEDESIGNCREATE // indicate that this restart is from INVERSEDESIGCREATE phase
-    output_.WriteInt("InverseDesignRestartFlag",0);
-#endif
-#ifdef INVERSEDESIGNUSE // indicate that this restart is from INVERSEDESIGNUSE phase
-    output_.WriteInt("InverseDesignRestartFlag",1);
+#if 0 // no longer necessary
+//#ifdef INVERSEDESIGNCREATE 
+    if (pstype==INPAR::STR::prestress_id && timen <= pstime) // indicate that this restart is from id create phase
+    {
+      output_.WriteInt("InverseDesignRestartFlag",0);
+    }
+//#endif
+//#ifdef INVERSEDESIGNUSE 
+    else if (pstype==INPAR::STR::prestress_id && timen > pstime) // indicate that this restart is from id use phase
+    {
+      output_.WriteInt("InverseDesignRestartFlag",1);
+    }
+//#endif
 #endif
 
     if (control) // disp or arclength control together with dynkindstat
@@ -3579,11 +3624,16 @@ void StruGenAlpha::SetDefaults(ParameterList& params)
  *----------------------------------------------------------------------*/
 void StruGenAlpha::ReadRestart(int step)
 {
+  double dt = params_.get<double>("delta time",0.01);
   RCP<DRT::Discretization> rcpdiscret = rcp(&discret_,false);
   IO::DiscretizationReader reader(rcpdiscret,step);
   double time  = reader.ReadDouble("time");
   int    rstep = reader.ReadInt("step");
   if (rstep != step) dserror("Time step on file not equal to given step");
+
+  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+  INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  double pstime = pslist.get<double>("PRESTRESSTIME");
 
   bool control = false;
   INPAR::STR::ControlType controltype = params_.get<INPAR::STR::ControlType>("CONTROLTYPE",INPAR::STR::control_load);
@@ -3595,20 +3645,28 @@ void StruGenAlpha::ReadRestart(int step)
   reader.ReadVector(fext_,"fexternal");
   reader.ReadMesh(step);
 
-#ifdef INVERSEDESIGNUSE
-  int idrestart = -1;
-  idrestart = reader.ReadInt("InverseDesignRestartFlag");
-  if (idrestart==-1) dserror("expected inverse design restart flag not on file");
-  // if idrestart==0 then the file is from a INVERSEDESIGCREATE phase
-  // and we have to zero out the inverse design displacements.
-  // The stored reference configuration is on record at the element level
-  if (!idrestart)
+  // if this is the first step of poststress using id tell the elements
+  // to switch to poststress mode. To do so, we'll lie to the elements
+  // that the time is actually dt later than it currently is :-)
+  // This transforms them to poststress mode.
+  printf("time  %10.5e pstime %10.5e\n",time,pstime);
+  if (pstype==INPAR::STR::prestress_id && time <= pstime && time+dt > pstime)
   {
+    if (!discret_.Comm().MyPID()) cout << "XXXXXX Entering INVERSEDESIGN SWITCH\n"; fflush(stdout);
+    //--------------------------init the element to new material configuration
     dis_->PutScalar(0.0);
     vel_->PutScalar(0.0);
     acc_->PutScalar(0.0);
+    {
+      // create the parameters for the discretization
+      ParameterList p;
+      // action for elements
+      p.set("action","calc_struct_inversedesign_switch");
+      // other parameters that might be needed by the elements
+      p.set("total time",time+dt);
+      discret_.Evaluate(p,null,null,null,null,null);
+    }
   }
-#endif
 
   if (control) // disp or arclength control together with dynkindstat
   {
