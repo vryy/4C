@@ -1368,7 +1368,12 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
       =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
 
-    (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
+    bool zero_size=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
+
+    if(zero_size)
+    {
+      return;
+    }
 
     for (int inode=0; inode<iel; ++inode)
     {
