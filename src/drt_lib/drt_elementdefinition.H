@@ -71,7 +71,7 @@ namespace INPUT
     void SetupTruss2Lines();
     void SetupTruss3Lines();
     void SetupWallLines();
-
+    void SetupSoNurbs27Lines();
     void SetupCombust3Lines();
     void SetupCondif2Lines();
     void SetupCondif3Lines();
