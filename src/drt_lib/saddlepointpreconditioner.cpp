@@ -17,13 +17,16 @@
 #include "linalg_sparsematrix.H"
 
 #include "saddlepointpreconditioner.H"
+#include "transfer_operator.H"
+#include "transfer_operator_tentative.H"
+#include "transfer_operator_saamg.H"
+#include "transfer_operator_pgamg.H"
 #include "braesssarazin_smoother.H"
 
 #include "Teuchos_ParameterList.hpp"
 #include "Teuchos_StandardParameterEntryValidators.hpp"
 #include "Teuchos_TimeMonitor.hpp"
 
-#include "MLAPI_Aggregation.h"
 
 // includes for MLAPI functions
 #include "ml_common.h"
@@ -120,10 +123,17 @@ int LINALG::SaddlePointPreconditioner::VCycle(const Epetra_MultiVector& Xvel, co
   preres->Update(1.0,Xpre,-1.0); // preres = Xpre - D Zvel - Z Zpre
 
   // calculate coarse residual
+#if 0 // old stuff
   RCP<Epetra_Vector> velres_coarse = rcp(new Epetra_Vector(Rvel_[level]->RowMap(),true));
   RCP<Epetra_Vector> preres_coarse = rcp(new Epetra_Vector(Rpre_[level]->RowMap(),true));
   Rvel_[level]->Apply(*velres,*velres_coarse);
   Rpre_[level]->Apply(*preres,*preres_coarse);
+#else
+  RCP<Epetra_Vector> velres_coarse = rcp(new Epetra_Vector(Tvel_[level]->R().RowMap(),true));
+  RCP<Epetra_Vector> preres_coarse = rcp(new Epetra_Vector(Tpre_[level]->R().RowMap(),true));
+  Tvel_[level]->R().Apply(*velres,*velres_coarse);
+  Tpre_[level]->R().Apply(*preres,*preres_coarse);
+#endif
 
   // define vector for coarse level solution
   RCP<Epetra_Vector> velsol_coarse = rcp(new Epetra_Vector(A11_[level+1]->RowMap(),true));
@@ -137,8 +147,13 @@ int LINALG::SaddlePointPreconditioner::VCycle(const Epetra_MultiVector& Xvel, co
   RCP<Epetra_Vector> presol_prolongated = rcp(new Epetra_Vector(A22_[level]->RowMap(),true));
 
   // prolongate solution
+#if 0 // old stuff
   Pvel_[level]->Apply(*velsol_coarse,*velsol_prolongated);
   Ppre_[level]->Apply(*presol_coarse,*presol_prolongated);
+#else
+  Tvel_[level]->P().Apply(*velsol_coarse,*velsol_prolongated);
+  Tpre_[level]->P().Apply(*presol_coarse,*presol_prolongated);
+#endif
 
   // update solution Zvel and Zpre for postsmoother
   Zvel->Update(1.0,*velsol_prolongated,1.0);
@@ -223,6 +238,8 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
   Rpre_.resize(nmaxlevels_);
   preS_.resize(nmaxlevels_);
   postS_.resize(nmaxlevels_);
+  Tvel_.resize(nmaxlevels_);
+  Tpre_.resize(nmaxlevels_);
 
   int nmaxcoarsedim = spparams->sublist("AMGBS Parameters").get("max coarse dimension",20);
   nVerbose_ = spparams->sublist("AMGBS Parameters").get("ML output",0);
@@ -317,29 +334,49 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
   for (curlevel = 0; curlevel < nmaxlevels_; ++curlevel)
   {
     /////////////////////////////////////////////////////////
-    /////////////////////// CALCULATE PTENT
+    /////////////////////// AGGREGATION PROCESS
     RCP<Epetra_IntVector> velaggs = rcp(new Epetra_IntVector(A11_[curlevel]->RowMap(),true));
     RCP<Epetra_IntVector> preaggs = rcp(new Epetra_IntVector(A22_[curlevel]->RowMap(),true));
 
-    RCP<SparseMatrix> vel_Ptent   = null;  // these variables are filled by GetPtent
-    RCP<SparseMatrix> pre_Ptent   = null;
-
-    // determine aggregates using the velocity block matrix A11_[curlevel]
+    ////////////// determine aggregates using the velocity block matrix A11_[curlevel]
     int naggregates_local = 0;
     int naggregates = GetGlobalAggregates(*A11_[curlevel],velparams->sublist("AMGBS Parameters"),*curvelNS,*velaggs,naggregates_local);
 
-    // transform tmp_velPtent to MLAPI Operator
-    GetPtent(A11_[curlevel]->RowMap(),*velaggs,naggregates_local,velparams->sublist("AMGBS Parameters"),*curvelNS,vel_Ptent,nextvelNS,0);
-
-    // transform vector with velocity aggregates to pressure block
+    ////////////// transform vector with velocity aggregates to pressure block
     for(int i=0; i < preaggs->MyLength(); i++)
     {
       (*preaggs)[i] = (*velaggs)[i*nv];
     }
 
-    // calculating Ptent for pressure block
+#if 1 // new stuff
+    string velProlongSmoother = velparams->sublist("AMGBS Parameters").get("amgbs: prolongator smoother (vel)","PA-AMG");
+    Tvel_[curlevel] = TransferOperatorFactory::Create(velProlongSmoother,A11_[curlevel],NULL); /* outfile */
+    nextvelNS = Tvel_[curlevel]->buildTransferOperators(velaggs,naggregates_local,velparams->sublist("AMGBS Parameters"),curvelNS,0);
+#else
+    RCP<SparseMatrix> vel_Ptent   = null;  // these variables are filled by GetPtent
+    GetPtent(A11_[curlevel]->RowMap(),*velaggs,naggregates_local,velparams->sublist("AMGBS Parameters"),*curvelNS,vel_Ptent,nextvelNS,0);
+#endif
 
+
+
+    // calculating Ptent for pressure block
+#if 1 // new stuff
+    string preProlongSmoother = preparams->sublist("AMGBS Parameters").get("amgbs: prolongator smoother (pre)","PA-AMG");
+    Tpre_[curlevel] = TransferOperatorFactory::Create(preProlongSmoother,A22_[curlevel],NULL); /* outfile */
+    nextpreNS = Tpre_[curlevel]->buildTransferOperators(preaggs,naggregates_local,preparams->sublist("AMGBS Parameters"),curpreNS,naggregates*nv);
+#else
+    RCP<SparseMatrix> pre_Ptent   = null;
     GetPtent(A22_[curlevel]->RowMap(),*preaggs,naggregates_local,preparams->sublist("AMGBS Parameters"),*curpreNS,pre_Ptent,nextpreNS,naggregates*nv);
+#endif
+
+    if(nVerbose_ > 4) // be verbose
+    {
+      cout << "Pvel[" << curlevel << "]: " << Tvel_[curlevel]->Prolongator()->EpetraMatrix()->NumGlobalRows() << " x " << Tvel_[curlevel]->Prolongator()->EpetraMatrix()->NumGlobalCols() << " (" << Tvel_[curlevel]->Prolongator()->EpetraMatrix()->NumGlobalNonzeros() << ")" << endl;
+      cout << "Ppre[" << curlevel << "]: " << Tpre_[curlevel]->Prolongator()->EpetraMatrix()->NumGlobalRows() << " x " << Tpre_[curlevel]->Prolongator()->EpetraMatrix()->NumGlobalCols() << " (" << Tpre_[curlevel]->Prolongator()->EpetraMatrix()->NumGlobalNonzeros() << ")" << endl;
+
+      cout << "Rvel[" << curlevel << "]: " << Tvel_[curlevel]->Restrictor()->EpetraMatrix()->NumGlobalRows() << " x " << Tvel_[curlevel]->Restrictor()->EpetraMatrix()->NumGlobalCols() << " (" << Tvel_[curlevel]->Restrictor()->EpetraMatrix()->NumGlobalNonzeros() << ")" << endl;
+      cout << "Rpre[" << curlevel << "]: " << Tpre_[curlevel]->Restrictor()->EpetraMatrix()->NumGlobalRows() << " x " << Tpre_[curlevel]->Restrictor()->EpetraMatrix()->NumGlobalCols() << " (" << Tpre_[curlevel]->Restrictor()->EpetraMatrix()->NumGlobalNonzeros() << ")" << endl;
+    }
 
 #ifdef WRITEOUTAGGREGATES
 //    std::ofstream fileout;
@@ -367,6 +404,7 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
     fileout2.close();*/
 #endif
 
+#if 0 // old stuff
     ////////////////////////////////////////////////
     /////////////////// CALCULATE RTENT
 
@@ -435,12 +473,20 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
       cout << "Rvel[" << curlevel << "]: " << Rvel_[curlevel]->EpetraMatrix()->NumGlobalRows() << " x " << Rvel_[curlevel]->EpetraMatrix()->NumGlobalCols() << " (" << Rvel_[curlevel]->EpetraMatrix()->NumGlobalNonzeros() << ")" << endl;
       cout << "Rpre[" << curlevel << "]: " << Rpre_[curlevel]->EpetraMatrix()->NumGlobalRows() << " x " << Rpre_[curlevel]->EpetraMatrix()->NumGlobalCols() << " (" << Rpre_[curlevel]->EpetraMatrix()->NumGlobalNonzeros() << ")" << endl;
     }
+#endif // old stuff
 
     /////////////////////////// calc RAP product for next level
+#if 1 // new stuff
+    A11_[curlevel+1] = Multiply(Tvel_[curlevel]->R(),*A11_[curlevel],Tvel_[curlevel]->P());
+    A12_[curlevel+1] = Multiply(Tvel_[curlevel]->R(),*A12_[curlevel],Tpre_[curlevel]->P());
+    A21_[curlevel+1] = Multiply(Tpre_[curlevel]->R(),*A21_[curlevel],Tvel_[curlevel]->P());
+    A22_[curlevel+1] = Multiply(Tpre_[curlevel]->R(),*A22_[curlevel],Tpre_[curlevel]->P());
+#else
     A11_[curlevel+1] = Multiply(*Rvel_[curlevel],*A11_[curlevel],*Pvel_[curlevel]);
     A12_[curlevel+1] = Multiply(*Rvel_[curlevel],*A12_[curlevel],*Ppre_[curlevel]);
     A21_[curlevel+1] = Multiply(*Rpre_[curlevel],*A21_[curlevel],*Pvel_[curlevel]);
     A22_[curlevel+1] = Multiply(*Rpre_[curlevel],*A22_[curlevel],*Ppre_[curlevel]);
+#endif
 
     if(nVerbose_ > 4) // be verbose
     {
@@ -1074,7 +1120,7 @@ void LINALG::SaddlePointPreconditioner::PG_AMG(const RCP<SparseMatrix>& A, const
   // TODO: compress DinvAP0 -> DinvAP0_subset
 
   ///////////////// prepare variables for column-based omegas
-  int NComputedOmegas = P_tent->EpetraMatrix()->DomainMap().NumGlobalElements();  // number of col-based omegas to be computed (depends on DinvAP0_subset)
+  //int NComputedOmegas = P_tent->EpetraMatrix()->DomainMap().NumGlobalElements();  // number of col-based omegas to be computed (depends on DinvAP0_subset)
 
   ///////////////// compute D^{-1} * A * D^{-1} * A * P0
   RCP<SparseMatrix> DinvADinvAP0 = LINALG::MLMultiply(*DinvA,*DinvAP0,true);

@@ -830,6 +830,10 @@ set(OBJS_LINALG
   src/drt_lib/linalg_sparsematrix.cpp
   src/drt_lib/linalg_utils.cpp
   src/drt_lib/saddlepointpreconditioner.cpp
+  src/drt_lib/transfer_operator.cpp
+  src/drt_lib/transfer_operator_tentative.cpp
+  src/drt_lib/transfer_operator_saamg.cpp
+  src/drt_lib/transfer_operator_pgamg.cpp
   src/drt_lib/simpler_operator.cpp
 )
 set(OBJS_DRT_FSI
@@ -1155,7 +1159,7 @@ if (INVERSEDESIGNUSE)
   add_definitions("-DINVERSEDESIGNUSE")
 endif(INVERSEDESIGNUSE)
 
-option (PARMETIS "use parmetis for parallel setup of node graph" ON)
+option (PARMETIS "use parmetis for parallel setup of node graph" OFF)
 if (PARMETIS)
   add_definitions("-DPARMETIS")
 endif(PARMETIS)

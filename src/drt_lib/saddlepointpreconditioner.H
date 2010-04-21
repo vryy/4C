@@ -42,6 +42,7 @@
 #include "MLAPI_Eig.h"
 
 #include "braesssarazin_smoother.H"
+#include "transfer_operator.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -181,8 +182,6 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
     void MultiplySelfAll(const RCP<SparseMatrix>& Op,std::vector<double>& Column2Norm);
     void MultiplySelfAll(const RCP<SparseMatrix>& Op,RCP<Epetra_Vector>& Column2Norm);
 
-    //void MultiplySelfAll(const RCP<SparseMatrix>& Op,RCP<Epetra_Vector>& Column2Norm);
-    //void MultiplyAll(const RCP<SparseMatrix>& left, const RCP<SparseMatrix>& right, RCP<Epetra_Vector>& InnerProd);
 
 
     ParameterList                                       params_;   // list for velocity solver
@@ -202,6 +201,9 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
     std::vector<RCP<SparseMatrix> >                    Ppre_;
     std::vector<RCP<SparseMatrix> >                    Rvel_;
     std::vector<RCP<SparseMatrix> >                    Rpre_;
+
+    std::vector<RCP<TransferOperator> >                Tvel_;
+    std::vector<RCP<TransferOperator> >                Tpre_;
 
     std::vector<RCP<BraessSarazin_Smoother> >          preS_; // presmoother (bad: we only support BraessSarazin, as we cannot use the standard ApplyInverse)
     std::vector<RCP<BraessSarazin_Smoother> >          postS_; // postsmoother
