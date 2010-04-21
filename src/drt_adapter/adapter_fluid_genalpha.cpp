@@ -136,7 +136,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::FluidGenAlpha::BlockSystemM
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::FluidGenAlpha::ShapeDerivatives()
 {
-  return Teuchos::null;
+  return fluid_.ShapeDerivatives();
 }
 
 

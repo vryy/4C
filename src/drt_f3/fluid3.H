@@ -37,10 +37,6 @@ using namespace Teuchos;
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
-
-// forward declarations
-//struct _MATERIAL;
-
 namespace DRT
 {
 // forward declarations
@@ -73,26 +69,6 @@ public:
 
   // All the template specializations that are used, new ones must be
   // added here.
-  // 3D
-  /*
-  friend class Fluid3Impl<DRT::Element::hex8>;
-  friend class Fluid3Impl<DRT::Element::hex20>;
-  friend class Fluid3Impl<DRT::Element::hex27>;
-  friend class Fluid3Impl<DRT::Element::tet4>;
-  friend class Fluid3Impl<DRT::Element::tet10>;
-  friend class Fluid3Impl<DRT::Element::wedge6>;
-  friend class Fluid3Impl<DRT::Element::wedge15>;
-  friend class Fluid3Impl<DRT::Element::pyramid5>;
-  // 2D
-  friend class Fluid3Impl<DRT::Element::quad4>;
-  friend class Fluid3Impl<DRT::Element::quad8>;
-  friend class Fluid3Impl<DRT::Element::quad9>;
-  friend class Fluid3Impl<DRT::Element::tri3>;
-  friend class Fluid3Impl<DRT::Element::tri6>;
-  // 1D
-  friend class Fluid3Impl<DRT::Element::line2>;
-  friend class Fluid3Impl<DRT::Element::line3>;
-  */
   friend class Fluid3StationaryImplInterface;
   // All the template specializations that are used, new ones must be
   // added here.
@@ -230,15 +206,15 @@ public:
   */
   virtual int NumSurface() const
   {
-      return DRT::UTILS::getNumberOfElementSurfaces(distype_);
+    return DRT::UTILS::getNumberOfElementSurfaces(distype_);
   }
 
   /*!
   \brief Return number of volumes of this element (always 1)
   */
-  virtual int NumVolume() const // {return 1;}
+  virtual int NumVolume() const
   {
-      return DRT::UTILS::getNumberOfElementVolumes(distype_);
+    return DRT::UTILS::getNumberOfElementVolumes(distype_);
   }
 
   /*!
@@ -305,7 +281,8 @@ public:
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
   {
-    // number of Dof's is fluid specific. Therefore, it is not pushed into drt_utilis_local_connectivity
+    // number of Dof's is fluid specific. 
+    // Therefore, it is not pushed into drt_utilis_local_connectivity
     switch(distype_)
     {
     case DRT::Element::hex8:
@@ -368,11 +345,6 @@ public:
   //@}
 
   //! @name Input and Creation
-
-  /*!
-  \brief Read input for this element
-  */
-  //bool ReadElement();
 
   /*!
   \brief Read input for this element
@@ -468,8 +440,14 @@ public:
 
   //! @name Other
 
+  /*!
+  \brief Flag for ALE form of equations
+  */
   bool IsAle() const { return is_ale_; }
 
+  /*!
+  \brief Returns the quantity Cs*h^2 from the dynamic Smagorinsky model
+  */
   double CsDeltaSq() const {return Cs_delta_sq_; }
 
   //@}
@@ -866,7 +844,6 @@ void f3_calc_smag_const_LijMij_and_MijMij(
 /*!
 \brief A register for fluid3 element
 
-\author gee (gee@lnm.mw.tum.de)
 */
 class Fluid3Register : public DRT::ElementRegister
 {
@@ -970,7 +947,6 @@ private:
       adjacent to a parent fluid3 element. It therefore does not implement
       the DRT::Element::Evaluate method and does not have its own ElementRegister class.
 
-\author gee (gee@lnm.mw.tum.de)
 */
 
 

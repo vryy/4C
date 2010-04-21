@@ -1,3 +1,4 @@
+
 /*----------------------------------------------------------------------*/
 /*!
 \file fluid3_genalpha_resVMM.H
@@ -47,6 +48,7 @@ namespace DRT
   {
 
     /// Interface base class for Fluid3GenalphaResVMM
+
     /*!
       This class exists to provide a common interface for all template
       versions of Fluid3GenalphaResVMM. The only function
@@ -365,6 +367,7 @@ namespace DRT
         \param ele                (i) the element those matrix is calculated
     	\param myknots            (i) the elements knot vector for nurbs elements
         \param elemat             (o) element matrix to calculate
+        \param elemat             (o) linearisations wrt ale motion (for monolithic fsi)
         \param elevec             (o) element rhs to calculate
         \param edispnp            (i) mesh displacement (ALE formulation)
         \param egridvaf           (i) intermedoate grid velocity (ALE formulation)
@@ -401,40 +404,41 @@ namespace DRT
         \param compute_elemat     (i) if false, element matrices are not computed
 
       */
-      void Sysmat_adv_qs(Fluid3*                                ele,
-                         std::vector<Epetra_SerialDenseVector>& myknots,
-                         LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
-                         LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
-                         const LINALG::Matrix<nsd_,iel>&           edispnp,
-                         const LINALG::Matrix<nsd_,iel>&           egridvaf,
-                         const LINALG::Matrix<nsd_,iel>&           evelnp,
-                         const LINALG::Matrix<iel,1>&           eprenp,
-                         const LINALG::Matrix<nsd_,iel>&           eaccam,
-                         const LINALG::Matrix<nsd_,iel>&           evelaf,
-                         const LINALG::Matrix<nsd_,iel>&           fsevelaf,
-                         Teuchos::RCP<const MAT::Material>      material,
-                         const double                           alphaM,
-                         const double                           alphaF,
-                         const double                           gamma,
-                         const double                           dt,
-                         const double                           time,
-                         const enum Fluid3::LinearisationAction newton,
-                         const bool                             higher_order_ele,
-                         const enum Fluid3::FineSubgridVisc     fssgv,
-                         const enum Fluid3::StabilisationAction inertia,
-                         const enum Fluid3::StabilisationAction pspg,
-                         const enum Fluid3::StabilisationAction supg,
-                         const enum Fluid3::StabilisationAction vstab,
-                         const enum Fluid3::StabilisationAction cstab,
-                         const enum Fluid3::StabilisationAction cross,
-                         const enum Fluid3::StabilisationAction reynolds,
-                         const enum Fluid3::TauType             whichtau,
-                         const enum Fluid3::TurbModelAction     turb_mod_action,
-                         double&                                Cs,
-                         double&                                Cs_delta_sq,
-                         double&                                visceff,
-                         const double                           l_tau,
-                         const bool                             compute_elemat
+      void Sysmat_adv_qs(Fluid3*                                    ele,
+                         std::vector<Epetra_SerialDenseVector>&     myknots,
+                         LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>& elemat,
+                         LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>& meshmat,
+                         LINALG::Matrix<(nsd_+1)*iel,    1>&        elevec,
+                         const LINALG::Matrix<nsd_,iel>&            edispnp,
+                         const LINALG::Matrix<nsd_,iel>&            egridvaf,
+                         const LINALG::Matrix<nsd_,iel>&            evelnp,
+                         const LINALG::Matrix<iel,1>&               eprenp,
+                         const LINALG::Matrix<nsd_,iel>&            eaccam,
+                         const LINALG::Matrix<nsd_,iel>&            evelaf,
+                         const LINALG::Matrix<nsd_,iel>&            fsevelaf,
+                         Teuchos::RCP<const MAT::Material>          material,
+                         const double                               alphaM,
+                         const double                               alphaF,
+                         const double                               gamma,
+                         const double                               dt,
+                         const double                               time,
+                         const enum Fluid3::LinearisationAction     newton,
+                         const bool                                 higher_order_ele,
+                         const enum Fluid3::FineSubgridVisc         fssgv,
+                         const enum Fluid3::StabilisationAction     inertia,
+                         const enum Fluid3::StabilisationAction     pspg,
+                         const enum Fluid3::StabilisationAction     supg,
+                         const enum Fluid3::StabilisationAction     vstab,
+                         const enum Fluid3::StabilisationAction     cstab,
+                         const enum Fluid3::StabilisationAction     cross,
+                         const enum Fluid3::StabilisationAction     reynolds,
+                         const enum Fluid3::TauType                 whichtau,
+                         const enum Fluid3::TurbModelAction         turb_mod_action,
+                         double&                                    Cs,
+                         double&                                    Cs_delta_sq,
+                         double&                                    visceff,
+                         const double                               l_tau,
+                         const bool                                 compute_elemat
         );
 
       /*!
@@ -479,40 +483,40 @@ namespace DRT
         \param compute_elemat     (i) if false, element matrices are not computed
 
       */
-      void Sysmat_adv_td(Fluid3*                                ele,
-                         std::vector<Epetra_SerialDenseVector>& myknots,
-                         LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
-                         LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
-                         const LINALG::Matrix<nsd_,iel>&           edispnp,
-                         const LINALG::Matrix<nsd_,iel>&           egridvaf,
-                         const LINALG::Matrix<nsd_,iel>&           evelnp,
-                         const LINALG::Matrix<iel,1>&           eprenp,
-                         const LINALG::Matrix<nsd_,iel>&           eaccam,
-                         const LINALG::Matrix<nsd_,iel>&           evelaf,
-                         const LINALG::Matrix<nsd_,iel>&           fsevelaf,
-                         Teuchos::RCP<const MAT::Material>      material,
-                         const double                           alphaM,
-                         const double                           alphaF,
-                         const double                           gamma,
-                         const double                           dt,
-                         const double                           time,
-                         const enum Fluid3::LinearisationAction newton,
-                         const bool                             higher_order_ele,
-                         const enum Fluid3::FineSubgridVisc     fssgv,
-                         const enum Fluid3::StabilisationAction inertia,
-                         const enum Fluid3::StabilisationAction pspg,
-                         const enum Fluid3::StabilisationAction supg,
-                         const enum Fluid3::StabilisationAction vstab,
-                         const enum Fluid3::StabilisationAction cstab,
-                         const enum Fluid3::StabilisationAction cross,
-                         const enum Fluid3::StabilisationAction reynolds,
-                         const enum Fluid3::TauType             whichtau,
-                         const enum Fluid3::TurbModelAction     turb_mod_action,
-                         double&                                Cs,
-                         double&                                Cs_delta_sq,
-                         double&                                visceff,
-                         const double                           l_tau,
-                         const bool                             compute_elemat
+      void Sysmat_adv_td(Fluid3*                                    ele,
+                         std::vector<Epetra_SerialDenseVector>&     myknots,
+                         LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>& elemat,
+                         LINALG::Matrix<(nsd_+1)*iel,    1>&        elevec,
+                         const LINALG::Matrix<nsd_,iel>&            edispnp,
+                         const LINALG::Matrix<nsd_,iel>&            egridvaf,
+                         const LINALG::Matrix<nsd_,iel>&            evelnp,
+                         const LINALG::Matrix<iel,1>&               eprenp,
+                         const LINALG::Matrix<nsd_,iel>&            eaccam,
+                         const LINALG::Matrix<nsd_,iel>&            evelaf,
+                         const LINALG::Matrix<nsd_,iel>&            fsevelaf,
+                         Teuchos::RCP<const MAT::Material>          material,
+                         const double                               alphaM,
+                         const double                               alphaF,
+                         const double                               gamma,
+                         const double                               dt,
+                         const double                               time,
+                         const enum Fluid3::LinearisationAction     newton,
+                         const bool                                 higher_order_ele,
+                         const enum Fluid3::FineSubgridVisc         fssgv,
+                         const enum Fluid3::StabilisationAction     inertia,
+                         const enum Fluid3::StabilisationAction     pspg,
+                         const enum Fluid3::StabilisationAction     supg,
+                         const enum Fluid3::StabilisationAction     vstab,
+                         const enum Fluid3::StabilisationAction     cstab,
+                         const enum Fluid3::StabilisationAction     cross,
+                         const enum Fluid3::StabilisationAction     reynolds,
+                         const enum Fluid3::TauType                 whichtau,
+                         const enum Fluid3::TurbModelAction         turb_mod_action,
+                         double&                                    Cs,
+                         double&                                    Cs_delta_sq,
+                         double&                                    visceff,
+                         const double                               l_tau,
+                         const bool                                 compute_elemat
         );
 
       /*!
@@ -556,39 +560,39 @@ namespace DRT
         \param compute_elemat     (i) if false, element matrices are not computed
 
       */
-      void Sysmat_cons_qs(Fluid3*                                ele,
-                          std::vector<Epetra_SerialDenseVector>& myknots,
-                          LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
-                          LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
-                          const LINALG::Matrix<nsd_,iel>&           edispnp,
-                          const LINALG::Matrix<nsd_,iel>&           egridvaf,
-                          const LINALG::Matrix<nsd_,iel>&           evelnp,
-                          const LINALG::Matrix<iel,1>&           eprenp,
-                          const LINALG::Matrix<nsd_,iel>&           eaccam,
-                          const LINALG::Matrix<nsd_,iel>&           evelaf,
-                          const LINALG::Matrix<nsd_,iel>&           fsevelaf,
-                          Teuchos::RCP<const MAT::Material>      material,
-                          const double                           alphaM,
-                          const double                           alphaF,
-                          const double                           gamma,
-                          const double                           dt,
-                          const double                           time,
-                          const enum Fluid3::LinearisationAction newton,
-                          const bool                             higher_order_ele,
-                          const enum Fluid3::FineSubgridVisc     fssgv,
-                          const enum Fluid3::StabilisationAction pspg,
-                          const enum Fluid3::StabilisationAction supg,
-                          const enum Fluid3::StabilisationAction vstab,
-                          const enum Fluid3::StabilisationAction cstab,
-                          const enum Fluid3::StabilisationAction cross,
-                          const enum Fluid3::StabilisationAction reynolds,
-                          const enum Fluid3::TauType             whichtau,
-                          const enum Fluid3::TurbModelAction     turb_mod_action,
-                          double&                                Cs,
-                          double&                                Cs_delta_sq,
-                          double&                                visceff,
-                          const double                           l_tau,
-                          const bool                             compute_elemat
+      void Sysmat_cons_qs(Fluid3*                                    ele,
+                          std::vector<Epetra_SerialDenseVector>&     myknots,
+                          LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>& elemat,
+                          LINALG::Matrix<(nsd_+1)*iel,    1>&        elevec,
+                          const LINALG::Matrix<nsd_,iel>&            edispnp,
+                          const LINALG::Matrix<nsd_,iel>&            egridvaf,
+                          const LINALG::Matrix<nsd_,iel>&            evelnp,
+                          const LINALG::Matrix<iel,1>&               eprenp,
+                          const LINALG::Matrix<nsd_,iel>&            eaccam,
+                          const LINALG::Matrix<nsd_,iel>&            evelaf,
+                          const LINALG::Matrix<nsd_,iel>&            fsevelaf,
+                          Teuchos::RCP<const MAT::Material>          material,
+                          const double                               alphaM,
+                          const double                               alphaF,
+                          const double                               gamma,
+                          const double                               dt,
+                          const double                               time,
+                          const enum Fluid3::LinearisationAction     newton,
+                          const bool                                 higher_order_ele,
+                          const enum Fluid3::FineSubgridVisc         fssgv,
+                          const enum Fluid3::StabilisationAction     pspg,
+                          const enum Fluid3::StabilisationAction     supg,
+                          const enum Fluid3::StabilisationAction     vstab,
+                          const enum Fluid3::StabilisationAction     cstab,
+                          const enum Fluid3::StabilisationAction     cross,
+                          const enum Fluid3::StabilisationAction     reynolds,
+                          const enum Fluid3::TauType                 whichtau,
+                          const enum Fluid3::TurbModelAction         turb_mod_action,
+                          double&                                    Cs,
+                          double&                                    Cs_delta_sq,
+                          double&                                    visceff,
+                          const double                               l_tau,
+                          const bool                                 compute_elemat
         );
 
       /*!
@@ -633,40 +637,40 @@ namespace DRT
         \param compute_elemat     (i) if false, element matrices are not computed
 
       */
-      void Sysmat_cons_td(Fluid3*                                ele,
-                          std::vector<Epetra_SerialDenseVector>& myknots,
-                          LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
-                          LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
-                          const LINALG::Matrix<nsd_,iel>&           edispnp,
-                          const LINALG::Matrix<nsd_,iel>&           egridvaf,
-                          const LINALG::Matrix<nsd_,iel>&           evelnp,
-                          const LINALG::Matrix<iel,1>&           eprenp,
-                          const LINALG::Matrix<nsd_,iel>&           eaccam,
-                          const LINALG::Matrix<nsd_,iel>&           evelaf,
-                          const LINALG::Matrix<nsd_,iel>&           fsevelaf,
-                          Teuchos::RCP<const MAT::Material>      material,
-                          const double                           alphaM,
-                          const double                           alphaF,
-                          const double                           gamma,
-                          const double                           dt,
-                          const double                           time,
-                          const enum Fluid3::LinearisationAction newton,
-                          const bool                             higher_order_ele,
-                          const enum Fluid3::FineSubgridVisc     fssgv,
-                          const enum Fluid3::StabilisationAction inertia,
-                          const enum Fluid3::StabilisationAction pspg,
-                          const enum Fluid3::StabilisationAction supg,
-                          const enum Fluid3::StabilisationAction vstab,
-                          const enum Fluid3::StabilisationAction cstab,
-                          const enum Fluid3::StabilisationAction cross,
-                          const enum Fluid3::StabilisationAction reynolds,
-                          const enum Fluid3::TauType             whichtau,
-                          const enum Fluid3::TurbModelAction     turb_mod_action,
-                          double&                                Cs,
-                          double&                                Cs_delta_sq,
-                          double&                                visceff,
-                          const double                           l_tau,
-                          const bool                             compute_elemat
+      void Sysmat_cons_td(Fluid3*                                    ele,
+                          std::vector<Epetra_SerialDenseVector>&     myknots,
+                          LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>& elemat,
+                          LINALG::Matrix<(nsd_+1)*iel,    1>&        elevec,
+                          const LINALG::Matrix<nsd_,iel>&            edispnp,
+                          const LINALG::Matrix<nsd_,iel>&            egridvaf,
+                          const LINALG::Matrix<nsd_,iel>&            evelnp,
+                          const LINALG::Matrix<iel,1>&               eprenp,
+                          const LINALG::Matrix<nsd_,iel>&            eaccam,
+                          const LINALG::Matrix<nsd_,iel>&            evelaf,
+                          const LINALG::Matrix<nsd_,iel>&            fsevelaf,
+                          Teuchos::RCP<const MAT::Material>          material,
+                          const double                               alphaM,
+                          const double                               alphaF,
+                          const double                               gamma,
+                          const double                               dt,
+                          const double                               time,
+                          const enum Fluid3::LinearisationAction     newton,
+                          const bool                                 higher_order_ele,
+                          const enum Fluid3::FineSubgridVisc         fssgv,
+                          const enum Fluid3::StabilisationAction     inertia,
+                          const enum Fluid3::StabilisationAction     pspg,
+                          const enum Fluid3::StabilisationAction     supg,
+                          const enum Fluid3::StabilisationAction     vstab,
+                          const enum Fluid3::StabilisationAction     cstab,
+                          const enum Fluid3::StabilisationAction     cross,
+                          const enum Fluid3::StabilisationAction     reynolds,
+                          const enum Fluid3::TauType                 whichtau,
+                          const enum Fluid3::TurbModelAction         turb_mod_action,
+                          double&                                    Cs,
+                          double&                                    Cs_delta_sq,
+                          double&                                    visceff,
+                          const double                               l_tau,
+                          const bool                                 compute_elemat
         );
 
 
@@ -947,17 +951,17 @@ namespace DRT
       //  \param fsevelaf       (o) fine-scale velocity
 
       void ExtractValuesFromGlobalVectors(
-        const Fluid3::FineSubgridVisc     fssgv         ,
-        const bool                        is_ale        ,
-        const DRT::Discretization&        discretization,
-        const vector<int>&                lm,
-        LINALG::Matrix<iel,1>&            eprenp        ,
-        LINALG::Matrix<nsd_,iel>&            evelnp        ,
-        LINALG::Matrix<nsd_,iel>&            evelaf        ,
-        LINALG::Matrix<nsd_,iel>&            eaccam        ,
-        LINALG::Matrix<nsd_,iel>&            edispnp       ,
-        LINALG::Matrix<nsd_,iel>&            egridvelaf    ,
-        LINALG::Matrix<nsd_,iel>&            fsevelaf
+        const Fluid3::FineSubgridVisc fssgv         ,
+        const bool                    is_ale        ,
+        const DRT::Discretization&    discretization,
+        const vector<int>&            lm,
+        LINALG::Matrix<iel,1>&        eprenp        ,
+        LINALG::Matrix<nsd_,iel>&     evelnp        ,
+        LINALG::Matrix<nsd_,iel>&     evelaf        ,
+        LINALG::Matrix<nsd_,iel>&     eaccam        ,
+        LINALG::Matrix<nsd_,iel>&     edispnp       ,
+        LINALG::Matrix<nsd_,iel>&     egridvelaf    ,
+        LINALG::Matrix<nsd_,iel>&     fsevelaf
         );
 
 
@@ -980,7 +984,7 @@ namespace DRT
       double GetStrainRate(
         const LINALG::Matrix<nsd_,iel>& evel     ,
         const LINALG::Matrix<nsd_,iel>& derxy    ,
-        LINALG::Matrix<nsd_,nsd_>        & velderxy
+        LINALG::Matrix<nsd_,nsd_>     & velderxy
         )
         {
           double rateofstrain=0;
@@ -1068,8 +1072,8 @@ namespace DRT
     	\param rateofshear		(i) shear rate
        */
       void CalVisc(Teuchos::RCP<const MAT::Material> material,
-                   double&                 visc,
-                   const double &          rateofshear);
+                   double&                           visc,
+                   const double &                    rateofshear);
 
       /*!
         \brief calculation of stabilisation parameter (element center or Gaussian point)
@@ -1123,9 +1127,9 @@ namespace DRT
       void SetElementData
       (
         Fluid3*                                      ele            ,
-        const LINALG::Matrix<nsd_,iel>                & edispnp        ,
-        const LINALG::Matrix<nsd_,iel>                & evelaf         ,
-        const LINALG::Matrix<nsd_,iel>                & fsevelaf       ,
+        const LINALG::Matrix<nsd_,iel>             & edispnp        ,
+        const LINALG::Matrix<nsd_,iel>             & evelaf         ,
+        const LINALG::Matrix<nsd_,iel>             & fsevelaf       ,
         const std::vector<Epetra_SerialDenseVector>& myknots        ,
         const double                               & timealphaF     ,
         double                                     & hk             ,
@@ -1176,12 +1180,12 @@ namespace DRT
        */
       void InterpolateToGausspoint(
         Fluid3*                                     ele             ,
-        const LINALG::Matrix<nsd_,iel>               & egridvaf        ,
-        const LINALG::Matrix<nsd_,iel>               & evelnp          ,
+        const LINALG::Matrix<nsd_,iel>            & egridvaf        ,
+        const LINALG::Matrix<nsd_,iel>            & evelnp          ,
         const LINALG::Matrix<iel,1>               & eprenp          ,
-        const LINALG::Matrix<nsd_,iel>               & eaccam          ,
-        const LINALG::Matrix<nsd_,iel>               & evelaf          ,
-        const LINALG::Matrix<nsd_,iel>               & fsevelaf        ,
+        const LINALG::Matrix<nsd_,iel>            & eaccam          ,
+        const LINALG::Matrix<nsd_,iel>            & evelaf          ,
+        const LINALG::Matrix<nsd_,iel>            & fsevelaf        ,
         const double                              & visceff         ,
         const enum Fluid3::FineSubgridVisc          fssgv           ,
         const bool                                  higher_order_ele);
@@ -1473,7 +1477,7 @@ namespace DRT
       // values of non geometrical quantities in gausspoints
       // ---------------------------------------------------
       //! pressure in gausspoint, time n+1
-      double                prenp_;
+      double                   prenp_;
       //! acceleration in gausspoint, time n+am
       LINALG::Matrix<nsd_,1>   accintam_;
       //! velocity in gausspoint, time n+1
@@ -1564,6 +1568,11 @@ namespace DRT
       //! the element volume, used to define element length
       double                vol_;
 
+      //! Jacobian determinant
+      double                det_;
+
+      //! velocity derivatives w.r.t. r,s,t.
+      LINALG::Matrix<nsd_,nsd_> vderiv_;
 
       // temporary working arrays
       // ------------------------

@@ -202,8 +202,14 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
 {
   // --------------------------------------------------
   // construct views
+
+  // standard fluid linearisation
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel> elemat1(elemat1_epetra.A(),true);
-  LINALG::Matrix<(nsd_+1)*iel,    1> elevec1(elevec1_epetra.A(),true);
+  // linearisation of fluid with respect to mesh motion
+  LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel> elemat2(elemat2_epetra.A(),true);
+  // residual vector (right hand side of equation system)
+  LINALG::Matrix<(nsd_+1)*iel,    1>        elevec1(elevec1_epetra.A(),true);
+
 
   // --------------------------------------------------
   // create matrix objects for nodal values
@@ -435,6 +441,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
         ele,
         myknots,
         elemat1,
+        elemat2,
         elevec1,
         edispnp,
         egridvelaf,
@@ -744,6 +751,8 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
       if (physical_turbulence_model == "Dynamic_Smagorinsky"
           ||
           physical_turbulence_model ==  "Smagorinsky_with_van_Driest_damping"
+          ||
+          physical_turbulence_model ==  "Smagorinsky"
         )
       {
         // Cs was changed in Sysmat (Cs->sqrt(Cs/hk)) to compare it with the standard
@@ -794,40 +803,41 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs(
-  Fluid3*                                 ele             ,
-  std::vector<Epetra_SerialDenseVector> & myknots         ,
-  LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&            elemat          ,
-  LINALG::Matrix<(nsd_+1)*iel,1>&                elevec          ,
+  Fluid3*                                    ele             ,
+  std::vector<Epetra_SerialDenseVector> &    myknots         ,
+  LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>& elemat          ,
+  LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>& meshmat         ,
+  LINALG::Matrix<(nsd_+1)*iel,    1>&        elevec          ,
   const LINALG::Matrix<nsd_,iel>&            edispnp         ,
-  const LINALG::Matrix<nsd_,iel>&            egridvelaf        ,
+  const LINALG::Matrix<nsd_,iel>&            egridvelaf      ,
   const LINALG::Matrix<nsd_,iel>&            evelnp          ,
-  const LINALG::Matrix<iel,1>&            eprenp          ,
+  const LINALG::Matrix<iel,1>&               eprenp          ,
   const LINALG::Matrix<nsd_,iel>&            eaccam          ,
   const LINALG::Matrix<nsd_,iel>&            evelaf          ,
   const LINALG::Matrix<nsd_,iel>&            fsevelaf        ,
-  Teuchos::RCP<const MAT::Material>       material        ,
-  const double                            alphaM          ,
-  const double                            alphaF          ,
-  const double                            gamma           ,
-  const double                            dt              ,
-  const double                            time            ,
-  const enum Fluid3::LinearisationAction  newton          ,
-  const bool                              higher_order_ele,
-  const enum Fluid3::FineSubgridVisc      fssgv           ,
-  const enum Fluid3::StabilisationAction  inertia         ,
-  const enum Fluid3::StabilisationAction  pspg            ,
-  const enum Fluid3::StabilisationAction  supg            ,
-  const enum Fluid3::StabilisationAction  vstab           ,
-  const enum Fluid3::StabilisationAction  cstab           ,
-  const enum Fluid3::StabilisationAction  cross           ,
-  const enum Fluid3::StabilisationAction  reynolds        ,
-  const enum Fluid3::TauType              whichtau        ,
-  const enum Fluid3::TurbModelAction      turb_mod_action ,
-  double&                                 Cs              ,
-  double&                                 Cs_delta_sq     ,
-  double&                                 visceff         ,
-  const double                            l_tau           ,
-  const bool                              compute_elemat
+  Teuchos::RCP<const MAT::Material>          material        ,
+  const double                               alphaM          ,
+  const double                               alphaF          ,
+  const double                               gamma           ,
+  const double                               dt              ,
+  const double                               time            ,
+  const enum Fluid3::LinearisationAction     newton          ,
+  const bool                                 higher_order_ele,
+  const enum Fluid3::FineSubgridVisc         fssgv           ,
+  const enum Fluid3::StabilisationAction     inertia         ,
+  const enum Fluid3::StabilisationAction     pspg            ,
+  const enum Fluid3::StabilisationAction     supg            ,
+  const enum Fluid3::StabilisationAction     vstab           ,
+  const enum Fluid3::StabilisationAction     cstab           ,
+  const enum Fluid3::StabilisationAction     cross           ,
+  const enum Fluid3::StabilisationAction     reynolds        ,
+  const enum Fluid3::TauType                 whichtau        ,
+  const enum Fluid3::TurbModelAction         turb_mod_action ,
+  double&                                    Cs              ,
+  double&                                    Cs_delta_sq     ,
+  double&                                    visceff         ,
+  const double                               l_tau           ,
+  const bool                                 compute_elemat
   )
 {
   //------------------------------------------------------------------
@@ -918,7 +928,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs(
     //            interpolate nodal values to gausspoint
     //--------------------------------------------------------------
     InterpolateToGausspoint(ele             ,
-                            egridvelaf        ,
+                            egridvelaf      ,
                             evelnp          ,
                             eprenp          ,
                             eaccam          ,
@@ -2696,6 +2706,660 @@ N
                                      +2.0*derxy_(2, ui)*fsvderxyaf_(2, 2));
       } // end loop ui
     } // end not fssgv_no
+
+
+    // linearisation with respect to mesh motion
+    if (meshmat.IsInitialized())
+    {
+      const double fac_acc_minus_bf_x=fac*(accintam_(0)-bodyforceaf_(0));
+      const double fac_acc_minus_bf_y=fac*(accintam_(1)-bodyforceaf_(1));
+      const double fac_acc_minus_bf_z=fac*(accintam_(2)-bodyforceaf_(2));
+
+      // inertia + dead load
+      for (int vi=0; vi<iel; ++vi)
+      {
+	const int fvi  =4*vi;
+	const int fvip =fvi+1;
+	const int fvipp=fvip+1;
+
+	const double fac_acc_minus_bf_x_funct_vi=fac_acc_minus_bf_x*funct_(vi);
+	const double fac_acc_minus_bf_y_funct_vi=fac_acc_minus_bf_y*funct_(vi);
+	const double fac_acc_minus_bf_z_funct_vi=fac_acc_minus_bf_z*funct_(vi);
+
+        for (int ui=0; ui<iel; ++ui)
+        {
+	  const int fui  =4*ui;
+	  const int fuip =fui+1;
+	  const int fuipp=fuip+1;
+
+          meshmat(fvi  ,fui  ) += fac_acc_minus_bf_x_funct_vi*derxy_(0,ui);
+          meshmat(fvi  ,fuip ) += fac_acc_minus_bf_x_funct_vi*derxy_(1,ui);
+          meshmat(fvi  ,fuipp) += fac_acc_minus_bf_x_funct_vi*derxy_(2,ui);
+
+          meshmat(fvip ,fui  ) += fac_acc_minus_bf_y_funct_vi*derxy_(0,ui);
+          meshmat(fvip ,fuip ) += fac_acc_minus_bf_y_funct_vi*derxy_(1,ui);
+          meshmat(fvip ,fuipp) += fac_acc_minus_bf_y_funct_vi*derxy_(2,ui);
+
+          meshmat(fvipp,fui  ) += fac_acc_minus_bf_z_funct_vi*derxy_(0,ui);
+          meshmat(fvipp,fuip ) += fac_acc_minus_bf_z_funct_vi*derxy_(1,ui);
+          meshmat(fvipp,fuipp) += fac_acc_minus_bf_z_funct_vi*derxy_(2,ui);
+        }
+      }
+
+
+      //vderiv_  = sum(evelaf(i,k) * deriv_(j,k), k);
+      vderiv_.MultiplyNT(evelaf,deriv_);
+
+#define derxjm_(r,c,d,i) derxjm_ ## r ## c ## d (i)
+
+#define derxjm_001(ui) (deriv_(2, ui)*xjm_(1, 2) - deriv_(1, ui)*xjm_(2, 2))
+#define derxjm_002(ui) (deriv_(1, ui)*xjm_(2, 1) - deriv_(2, ui)*xjm_(1, 1))
+
+#define derxjm_100(ui) (deriv_(1, ui)*xjm_(2, 2) - deriv_(2, ui)*xjm_(1, 2))
+#define derxjm_102(ui) (deriv_(2, ui)*xjm_(1, 0) - deriv_(1, ui)*xjm_(2, 0))
+
+#define derxjm_200(ui) (deriv_(2, ui)*xjm_(1, 1) - deriv_(1, ui)*xjm_(2, 1))
+#define derxjm_201(ui) (deriv_(1, ui)*xjm_(2, 0) - deriv_(2, ui)*xjm_(1, 0))
+
+#define derxjm_011(ui) (deriv_(0, ui)*xjm_(2, 2) - deriv_(2, ui)*xjm_(0, 2))
+#define derxjm_012(ui) (deriv_(2, ui)*xjm_(0, 1) - deriv_(0, ui)*xjm_(2, 1))
+
+#define derxjm_110(ui) (deriv_(2, ui)*xjm_(0, 2) - deriv_(0, ui)*xjm_(2, 2))
+#define derxjm_112(ui) (deriv_(0, ui)*xjm_(2, 0) - deriv_(2, ui)*xjm_(0, 0))
+
+#define derxjm_210(ui) (deriv_(0, ui)*xjm_(2, 1) - deriv_(2, ui)*xjm_(0, 1))
+#define derxjm_211(ui) (deriv_(2, ui)*xjm_(0, 0) - deriv_(0, ui)*xjm_(2, 0))
+
+#define derxjm_021(ui) (deriv_(1, ui)*xjm_(0, 2) - deriv_(0, ui)*xjm_(1, 2))
+#define derxjm_022(ui) (deriv_(0, ui)*xjm_(1, 1) - deriv_(1, ui)*xjm_(0, 1))
+
+#define derxjm_120(ui) (deriv_(0, ui)*xjm_(1, 2) - deriv_(1, ui)*xjm_(0, 2))
+#define derxjm_122(ui) (deriv_(1, ui)*xjm_(0, 0) - deriv_(0, ui)*xjm_(1, 0))
+
+#define derxjm_220(ui) (deriv_(1, ui)*xjm_(0, 1) - deriv_(0, ui)*xjm_(1, 1))
+#define derxjm_221(ui) (deriv_(0, ui)*xjm_(1, 0) - deriv_(1, ui)*xjm_(0, 0))
+
+      for (int ui=0; ui<iel; ++ui)
+      {
+        double v00 = + convaf_old_(1)*(vderiv_(0, 0)*derxjm_(0,0,1,ui) 
+				       +
+				       vderiv_(0, 1)*derxjm_(0,1,1,ui) 
+				       + 
+				       vderiv_(0, 2)*derxjm_(0,2,1,ui))
+                     + convaf_old_(2)*(vderiv_(0, 0)*derxjm_(0,0,2,ui) 
+				       +
+				       vderiv_(0, 1)*derxjm_(0,1,2,ui) 
+				       +
+				       vderiv_(0, 2)*derxjm_(0,2,2,ui));
+        double v01 = + convaf_old_(0)*(vderiv_(0, 0)*derxjm_(1,0,0,ui) 
+				       +
+				       vderiv_(0, 1)*derxjm_(1,1,0,ui)
+				       +
+				       vderiv_(0, 2)*derxjm_(1,2,0,ui))
+                     + convaf_old_(2)*(vderiv_(0, 0)*derxjm_(1,0,2,ui) 
+				       +
+				       vderiv_(0, 1)*derxjm_(1,1,2,ui) 
+				       +
+				       vderiv_(0, 2)*derxjm_(1,2,2,ui));
+        double v02 = + convaf_old_(0)*(vderiv_(0, 0)*derxjm_(2,0,0,ui) 
+				       +
+				       vderiv_(0, 1)*derxjm_(2,1,0,ui)
+				       +
+				       vderiv_(0, 2)*derxjm_(2,2,0,ui))
+                     + convaf_old_(1)*(vderiv_(0, 0)*derxjm_(2,0,1,ui) 
+				       +
+				       vderiv_(0, 1)*derxjm_(2,1,1,ui)
+				       +
+				       vderiv_(0, 2)*derxjm_(2,2,1,ui));
+        double v10 = + convaf_old_(1)*(vderiv_(1, 0)*derxjm_(0,0,1,ui)
+				       +
+				       vderiv_(1, 1)*derxjm_(0,1,1,ui) 
+				       +
+				       vderiv_(1, 2)*derxjm_(0,2,1,ui))
+                     + convaf_old_(2)*(vderiv_(1, 0)*derxjm_(0,0,2,ui)
+				       +
+				       vderiv_(1, 1)*derxjm_(0,1,2,ui)
+				       +
+				       vderiv_(1, 2)*derxjm_(0,2,2,ui));
+        double v11 = + convaf_old_(0)*(vderiv_(1, 0)*derxjm_(1,0,0,ui)
+				       +
+				       vderiv_(1, 1)*derxjm_(1,1,0,ui) 
+				       +
+				       vderiv_(1, 2)*derxjm_(1,2,0,ui))
+                     + convaf_old_(2)*(vderiv_(1, 0)*derxjm_(1,0,2,ui)
+				       +
+				       vderiv_(1, 1)*derxjm_(1,1,2,ui) 
+				       +
+				       vderiv_(1, 2)*derxjm_(1,2,2,ui));
+        double v12 = + convaf_old_(0)*(vderiv_(1, 0)*derxjm_(2,0,0,ui) 
+				       +
+				       vderiv_(1, 1)*derxjm_(2,1,0,ui) 
+				       +
+				       vderiv_(1, 2)*derxjm_(2,2,0,ui))
+                     + convaf_old_(1)*(vderiv_(1, 0)*derxjm_(2,0,1,ui) 
+				       +
+				       vderiv_(1, 1)*derxjm_(2,1,1,ui) 
+				       +
+				       vderiv_(1, 2)*derxjm_(2,2,1,ui));
+        double v20 = + convaf_old_(1)*(vderiv_(2, 0)*derxjm_(0,0,1,ui) 
+				       +
+				       vderiv_(2, 1)*derxjm_(0,1,1,ui)
+				       +
+				       vderiv_(2, 2)*derxjm_(0,2,1,ui))
+                     + convaf_old_(2)*(vderiv_(2, 0)*derxjm_(0,0,2,ui)
+				       +
+				       vderiv_(2, 1)*derxjm_(0,1,2,ui) 
+				       +
+				       vderiv_(2, 2)*derxjm_(0,2,2,ui));
+        double v21 = + convaf_old_(0)*(vderiv_(2, 0)*derxjm_(1,0,0,ui)
+				       +
+				       vderiv_(2, 1)*derxjm_(1,1,0,ui)
+				       +
+				       vderiv_(2, 2)*derxjm_(1,2,0,ui))
+                     + convaf_old_(2)*(vderiv_(2, 0)*derxjm_(1,0,2,ui) 
+				       +
+				       vderiv_(2, 1)*derxjm_(1,1,2,ui) 
+				       +
+				       vderiv_(2, 2)*derxjm_(1,2,2,ui));
+        double v22 = + convaf_old_(0)*(vderiv_(2, 0)*derxjm_(2,0,0,ui)
+				       +
+				       vderiv_(2, 1)*derxjm_(2,1,0,ui)
+				       +
+				       vderiv_(2, 2)*derxjm_(2,2,0,ui))
+                     + convaf_old_(1)*(vderiv_(2, 0)*derxjm_(2,0,1,ui) 
+				       +
+				       vderiv_(2, 1)*derxjm_(2,1,1,ui)
+				       +
+				       vderiv_(2, 2)*derxjm_(2,2,1,ui));
+
+        for (int vi=0; vi<iel; ++vi)
+        {
+          double v = fac/det_*funct_(vi);
+
+          meshmat(vi*4    , ui*4    ) += v*v00;
+          meshmat(vi*4    , ui*4 + 1) += v*v01;
+          meshmat(vi*4    , ui*4 + 2) += v*v02;
+
+          meshmat(vi*4 + 1, ui*4    ) += v*v10;
+          meshmat(vi*4 + 1, ui*4 + 1) += v*v11;
+          meshmat(vi*4 + 1, ui*4 + 2) += v*v12;
+
+          meshmat(vi*4 + 2, ui*4    ) += v*v20;
+          meshmat(vi*4 + 2, ui*4 + 1) += v*v21;
+          meshmat(vi*4 + 2, ui*4 + 2) += v*v22;
+        }
+      }
+
+
+      // viscosity
+
+#define xji_00 xji_(0,0)
+#define xji_01 xji_(0,1)
+#define xji_02 xji_(0,2)
+#define xji_10 xji_(1,0)
+#define xji_11 xji_(1,1)
+#define xji_12 xji_(1,2)
+#define xji_20 xji_(2,0)
+#define xji_21 xji_(2,1)
+#define xji_22 xji_(2,2)
+
+#define xjm(i,j) xjm_(i,j)
+
+      // part 1: derivative of 1/det
+
+      double v = visceff*fac;
+      for (int ui=0; ui<iel; ++ui)
+      {
+        double derinvJ0 = -v*(deriv_(0,ui)*xji_00 + deriv_(1,ui)*xji_01 + deriv_(2,ui)*xji_02);
+        double derinvJ1 = -v*(deriv_(0,ui)*xji_10 + deriv_(1,ui)*xji_11 + deriv_(2,ui)*xji_12);
+        double derinvJ2 = -v*(deriv_(0,ui)*xji_20 + deriv_(1,ui)*xji_21 + deriv_(2,ui)*xji_22);
+        for (int vi=0; vi<iel; ++vi)
+        {
+          double visres0 =   2.0*derxy_(0, vi)* vderxyaf_(0, 0)
+                             +     derxy_(1, vi)*(vderxyaf_(0, 1) + vderxyaf_(1, 0))
+                             +     derxy_(2, vi)*(vderxyaf_(0, 2) + vderxyaf_(2, 0)) ;
+          double visres1 =         derxy_(0, vi)*(vderxyaf_(0, 1) + vderxyaf_(1, 0))
+                             + 2.0*derxy_(1, vi)* vderxyaf_(1, 1)
+                             +     derxy_(2, vi)*(vderxyaf_(1, 2) + vderxyaf_(2, 1)) ;
+          double visres2 =         derxy_(0, vi)*(vderxyaf_(0, 2) + vderxyaf_(2, 0))
+                             +     derxy_(1, vi)*(vderxyaf_(1, 2) + vderxyaf_(2, 1))
+                             + 2.0*derxy_(2, vi)* vderxyaf_(2, 2) ;
+          meshmat(vi*4 + 0, ui*4 + 0) += derinvJ0*visres0;
+          meshmat(vi*4 + 1, ui*4 + 0) += derinvJ0*visres1;
+          meshmat(vi*4 + 2, ui*4 + 0) += derinvJ0*visres2;
+
+          meshmat(vi*4 + 0, ui*4 + 1) += derinvJ1*visres0;
+          meshmat(vi*4 + 1, ui*4 + 1) += derinvJ1*visres1;
+          meshmat(vi*4 + 2, ui*4 + 1) += derinvJ1*visres2;
+
+          meshmat(vi*4 + 0, ui*4 + 2) += derinvJ2*visres0;
+          meshmat(vi*4 + 1, ui*4 + 2) += derinvJ2*visres1;
+          meshmat(vi*4 + 2, ui*4 + 2) += derinvJ2*visres2;
+        }
+      }
+
+      // part 2: derivative of viscosity residual
+
+      v = fac*visceff/det_;
+      for (int ui=0; ui<iel; ++ui)
+      {
+        double v0 = - vderiv_(0,0)*(xji_10*derxjm_100(ui) + xji_10*derxjm_100(ui) + xji_20*derxjm_200(ui) + xji_20*derxjm_200(ui))
+                    - vderiv_(0,1)*(xji_11*derxjm_100(ui) + xji_10*derxjm_110(ui) + xji_21*derxjm_200(ui) + xji_20*derxjm_210(ui))
+                    - vderiv_(0,2)*(xji_12*derxjm_100(ui) + xji_10*derxjm_120(ui) + xji_22*derxjm_200(ui) + xji_20*derxjm_220(ui))
+                    - vderiv_(1,0)*(derxjm_100(ui)*xji_00)
+                    - vderiv_(1,1)*(derxjm_100(ui)*xji_01)
+                    - vderiv_(1,2)*(derxjm_100(ui)*xji_02)
+                    - vderiv_(2,0)*(derxjm_200(ui)*xji_00)
+                    - vderiv_(2,1)*(derxjm_200(ui)*xji_01)
+                    - vderiv_(2,2)*(derxjm_200(ui)*xji_02);
+        double v1 = - vderiv_(0,0)*(xji_10*derxjm_110(ui) + xji_11*derxjm_100(ui) + xji_20*derxjm_210(ui) + xji_21*derxjm_200(ui))
+                    - vderiv_(0,1)*(xji_11*derxjm_110(ui) + xji_11*derxjm_110(ui) + xji_21*derxjm_210(ui) + xji_21*derxjm_210(ui))
+                    - vderiv_(0,2)*(xji_12*derxjm_110(ui) + xji_11*derxjm_120(ui) + xji_22*derxjm_210(ui) + xji_21*derxjm_220(ui))
+                    - vderiv_(1,0)*(derxjm_110(ui)*xji_00)
+                    - vderiv_(1,1)*(derxjm_110(ui)*xji_01)
+                    - vderiv_(1,2)*(derxjm_110(ui)*xji_02)
+                    - vderiv_(2,0)*(derxjm_210(ui)*xji_00)
+                    - vderiv_(2,1)*(derxjm_210(ui)*xji_01)
+                    - vderiv_(2,2)*(derxjm_210(ui)*xji_02);
+        double v2 = - vderiv_(0,0)*(xji_10*derxjm_120(ui) + xji_12*derxjm_100(ui) + xji_20*derxjm_220(ui) + xji_22*derxjm_200(ui))
+                    - vderiv_(0,1)*(xji_11*derxjm_120(ui) + xji_12*derxjm_110(ui) + xji_21*derxjm_220(ui) + xji_22*derxjm_210(ui))
+                    - vderiv_(0,2)*(xji_12*derxjm_120(ui) + xji_12*derxjm_120(ui) + xji_22*derxjm_220(ui) + xji_22*derxjm_220(ui))
+                    - vderiv_(1,0)*(derxjm_120(ui)*xji_00)
+                    - vderiv_(1,1)*(derxjm_120(ui)*xji_01)
+                    - vderiv_(1,2)*(derxjm_120(ui)*xji_02)
+                    - vderiv_(2,0)*(derxjm_220(ui)*xji_00)
+                    - vderiv_(2,1)*(derxjm_220(ui)*xji_01)
+                    - vderiv_(2,2)*(derxjm_220(ui)*xji_02);
+
+        for (int vi=0; vi<iel; ++vi)
+        {
+          meshmat(vi*4 + 0, ui*4 + 0) += v*(deriv_(0,vi)*v0 + deriv_(1,vi)*v1 + deriv_(2,vi)*v2);
+        }
+
+        ////////////////////////////////////////////////////////////////
+
+        v0 = - vderiv_(0,0)*(2*derxjm_001(ui)*xji_00 + 2*derxjm_001(ui)*xji_00 + xji_20*derxjm_201(ui) + xji_20*derxjm_201(ui))
+             - vderiv_(0,1)*(2*derxjm_011(ui)*xji_00 + 2*derxjm_001(ui)*xji_01 + xji_21*derxjm_201(ui) + xji_20*derxjm_211(ui))
+             - vderiv_(0,2)*(2*derxjm_021(ui)*xji_00 + 2*derxjm_001(ui)*xji_02 + xji_22*derxjm_201(ui) + xji_20*derxjm_221(ui))
+             - vderiv_(1,0)*(derxjm_001(ui)*xji_10)
+             - vderiv_(1,1)*(derxjm_011(ui)*xji_10)
+             - vderiv_(1,2)*(derxjm_021(ui)*xji_10)
+             - vderiv_(2,0)*(derxjm_201(ui)*xji_00 + derxjm_001(ui)*xji_20)
+             - vderiv_(2,1)*(derxjm_201(ui)*xji_01 + derxjm_011(ui)*xji_20)
+             - vderiv_(2,2)*(derxjm_201(ui)*xji_02 + derxjm_021(ui)*xji_20);
+        v1 = - vderiv_(0,0)*(2*derxjm_011(ui)*xji_00 + 2*derxjm_001(ui)*xji_01 + xji_21*derxjm_201(ui) + xji_20*derxjm_211(ui))
+             - vderiv_(0,1)*(2*derxjm_011(ui)*xji_01 + 2*derxjm_011(ui)*xji_01 + xji_21*derxjm_211(ui) + xji_21*derxjm_211(ui))
+             - vderiv_(0,2)*(2*derxjm_011(ui)*xji_02 + 2*derxjm_021(ui)*xji_01 + xji_21*derxjm_221(ui) + xji_22*derxjm_211(ui))
+             - vderiv_(1,0)*(derxjm_001(ui)*xji_11)
+             - vderiv_(1,1)*(derxjm_011(ui)*xji_11)
+             - vderiv_(1,2)*(derxjm_021(ui)*xji_11)
+             - vderiv_(2,0)*(derxjm_211(ui)*xji_00 + derxjm_001(ui)*xji_21)
+             - vderiv_(2,1)*(derxjm_211(ui)*xji_01 + derxjm_011(ui)*xji_21)
+             - vderiv_(2,2)*(derxjm_211(ui)*xji_02 + derxjm_021(ui)*xji_21);
+        v2 = - vderiv_(0,0)*(2*derxjm_021(ui)*xji_00 + 2*derxjm_001(ui)*xji_02 + xji_22*derxjm_201(ui) + xji_20*derxjm_221(ui))
+             - vderiv_(0,1)*(2*derxjm_011(ui)*xji_02 + 2*derxjm_021(ui)*xji_01 + xji_21*derxjm_221(ui) + xji_22*derxjm_211(ui))
+             - vderiv_(0,2)*(2*derxjm_021(ui)*xji_02 + 2*derxjm_021(ui)*xji_02 + xji_22*derxjm_221(ui) + xji_22*derxjm_221(ui))
+             - vderiv_(1,0)*(derxjm_001(ui)*xji_12)
+             - vderiv_(1,1)*(derxjm_011(ui)*xji_12)
+             - vderiv_(1,2)*(derxjm_021(ui)*xji_12)
+             - vderiv_(2,0)*(derxjm_221(ui)*xji_00 + derxjm_001(ui)*xji_22)
+             - vderiv_(2,1)*(derxjm_221(ui)*xji_01 + derxjm_011(ui)*xji_22)
+             - vderiv_(2,2)*(derxjm_221(ui)*xji_02 + derxjm_021(ui)*xji_22);
+
+        for (int vi=0; vi<iel; ++vi)
+        {
+          meshmat(vi*4 + 0, ui*4 + 1) += v*(deriv_(0,vi)*v0 + deriv_(1,vi)*v1 + deriv_(2,vi)*v2);
+        }
+
+        ////////////////////////////////////////////////////////////////
+
+        v0 = - vderiv_(0,0)*(2*derxjm_002(ui)*xji_00 + 2*derxjm_002(ui)*xji_00 + xji_10*derxjm_102(ui) + xji_10*derxjm_102(ui))
+             - vderiv_(0,1)*(2*derxjm_012(ui)*xji_00 + 2*derxjm_002(ui)*xji_01 + xji_11*derxjm_102(ui) + xji_10*derxjm_112(ui))
+             - vderiv_(0,2)*(2*derxjm_022(ui)*xji_00 + 2*derxjm_002(ui)*xji_02 + xji_12*derxjm_102(ui) + xji_10*derxjm_122(ui))
+             - vderiv_(1,0)*(derxjm_002(ui)*xji_10 + derxjm_102(ui)*xji_00)
+             - vderiv_(1,1)*(derxjm_012(ui)*xji_10 + derxjm_102(ui)*xji_01)
+             - vderiv_(1,2)*(derxjm_022(ui)*xji_10 + derxjm_102(ui)*xji_02)
+             - vderiv_(2,0)*(derxjm_002(ui)*xji_20)
+             - vderiv_(2,1)*(derxjm_012(ui)*xji_20)
+             - vderiv_(2,2)*(derxjm_022(ui)*xji_20);
+        v1 = - vderiv_(0,0)*(2*derxjm_012(ui)*xji_00 + 2*derxjm_002(ui)*xji_01 + xji_11*derxjm_102(ui) + xji_10*derxjm_112(ui))
+             - vderiv_(0,1)*(2*derxjm_012(ui)*xji_01 + 2*derxjm_012(ui)*xji_01 + xji_11*derxjm_112(ui) + xji_11*derxjm_112(ui))
+             - vderiv_(0,2)*(2*derxjm_012(ui)*xji_02 + 2*derxjm_022(ui)*xji_01 + xji_11*derxjm_122(ui) + xji_12*derxjm_112(ui))
+             - vderiv_(1,0)*(derxjm_002(ui)*xji_11 + derxjm_112(ui)*xji_00)
+             - vderiv_(1,1)*(derxjm_012(ui)*xji_11 + derxjm_112(ui)*xji_01)
+             - vderiv_(1,2)*(derxjm_022(ui)*xji_11 + derxjm_112(ui)*xji_02)
+             - vderiv_(2,0)*(derxjm_002(ui)*xji_21)
+             - vderiv_(2,1)*(derxjm_012(ui)*xji_21)
+             - vderiv_(2,2)*(derxjm_022(ui)*xji_21);
+        v2 = - vderiv_(0,0)*(2*derxjm_022(ui)*xji_00 + 2*derxjm_002(ui)*xji_02 + xji_12*derxjm_102(ui) + xji_10*derxjm_122(ui))
+             - vderiv_(0,1)*(2*derxjm_012(ui)*xji_02 + 2*derxjm_022(ui)*xji_01 + xji_11*derxjm_122(ui) + xji_12*derxjm_112(ui))
+             - vderiv_(0,2)*(2*derxjm_022(ui)*xji_02 + 2*derxjm_022(ui)*xji_02 + xji_12*derxjm_122(ui) + xji_12*derxjm_122(ui))
+             - vderiv_(1,0)*(derxjm_002(ui)*xji_12 + derxjm_122(ui)*xji_00)
+             - vderiv_(1,1)*(derxjm_012(ui)*xji_12 + derxjm_122(ui)*xji_01)
+             - vderiv_(1,2)*(derxjm_022(ui)*xji_12 + derxjm_122(ui)*xji_02)
+             - vderiv_(2,0)*(derxjm_002(ui)*xji_22)
+             - vderiv_(2,1)*(derxjm_012(ui)*xji_22)
+             - vderiv_(2,2)*(derxjm_022(ui)*xji_22);
+
+        for (int vi=0; vi<iel; ++vi)
+        {
+          meshmat(vi*4 + 0, ui*4 + 2) += v*(deriv_(0,vi)*v0 + deriv_(1,vi)*v1 + deriv_(2,vi)*v2);
+        }
+
+        ////////////////////////////////////////////////////////////////
+
+        v0 = - vderiv_(0,0)*(derxjm_100(ui)*xji_00)
+             - vderiv_(0,1)*(derxjm_110(ui)*xji_00)
+             - vderiv_(0,2)*(derxjm_120(ui)*xji_00)
+             - vderiv_(1,0)*(2*xji_10*derxjm_100(ui) + 2*xji_10*derxjm_100(ui) + xji_20*derxjm_200(ui) + xji_20*derxjm_200(ui))
+             - vderiv_(1,1)*(2*xji_11*derxjm_100(ui) + 2*xji_10*derxjm_110(ui) + xji_21*derxjm_200(ui) + xji_20*derxjm_210(ui))
+             - vderiv_(1,2)*(2*xji_12*derxjm_100(ui) + 2*xji_10*derxjm_120(ui) + xji_22*derxjm_200(ui) + xji_20*derxjm_220(ui))
+             - vderiv_(2,0)*(derxjm_200(ui)*xji_10 + derxjm_100(ui)*xji_20)
+             - vderiv_(2,1)*(derxjm_200(ui)*xji_11 + derxjm_110(ui)*xji_20)
+             - vderiv_(2,2)*(derxjm_200(ui)*xji_12 + derxjm_120(ui)*xji_20);
+        v1 = - vderiv_(0,0)*(derxjm_100(ui)*xji_01)
+             - vderiv_(0,1)*(derxjm_110(ui)*xji_01)
+             - vderiv_(0,2)*(derxjm_120(ui)*xji_01)
+             - vderiv_(1,0)*(2*xji_10*derxjm_110(ui) + 2*xji_11*derxjm_100(ui) + xji_20*derxjm_210(ui) + xji_21*derxjm_200(ui))
+             - vderiv_(1,1)*(2*xji_11*derxjm_110(ui) + 2*xji_11*derxjm_110(ui) + xji_21*derxjm_210(ui) + xji_21*derxjm_210(ui))
+             - vderiv_(1,2)*(2*xji_12*derxjm_110(ui) + 2*xji_11*derxjm_120(ui) + xji_22*derxjm_210(ui) + xji_21*derxjm_220(ui))
+             - vderiv_(2,0)*(derxjm_210(ui)*xji_10 + derxjm_100(ui)*xji_21)
+             - vderiv_(2,1)*(derxjm_210(ui)*xji_11 + derxjm_110(ui)*xji_21)
+             - vderiv_(2,2)*(derxjm_210(ui)*xji_12 + derxjm_120(ui)*xji_21);
+        v2 = - vderiv_(0,0)*(derxjm_100(ui)*xji_02)
+             - vderiv_(0,1)*(derxjm_110(ui)*xji_02)
+             - vderiv_(0,2)*(derxjm_120(ui)*xji_02)
+             - vderiv_(1,0)*(2*xji_10*derxjm_120(ui) + 2*xji_12*derxjm_100(ui) + xji_20*derxjm_220(ui) + xji_22*derxjm_200(ui))
+             - vderiv_(1,1)*(2*xji_11*derxjm_120(ui) + 2*xji_12*derxjm_110(ui) + xji_21*derxjm_220(ui) + xji_22*derxjm_210(ui))
+             - vderiv_(1,2)*(2*xji_12*derxjm_120(ui) + 2*xji_12*derxjm_120(ui) + xji_22*derxjm_220(ui) + xji_22*derxjm_220(ui))
+             - vderiv_(2,0)*(derxjm_220(ui)*xji_10 + derxjm_100(ui)*xji_22)
+             - vderiv_(2,1)*(derxjm_220(ui)*xji_11 + derxjm_110(ui)*xji_22)
+             - vderiv_(2,2)*(derxjm_220(ui)*xji_12 + derxjm_120(ui)*xji_22);
+
+        for (int vi=0; vi<iel; ++vi)
+        {
+          meshmat(vi*4 + 1, ui*4 + 0) += v*(deriv_(0,vi)*v0 + deriv_(1,vi)*v1 + deriv_(2,vi)*v2);
+        }
+
+        ////////////////////////////////////////////////////////////////
+
+        v0 = - vderiv_(0,0)*(derxjm_001(ui)*xji_10)
+             - vderiv_(0,1)*(derxjm_001(ui)*xji_11)
+             - vderiv_(0,2)*(derxjm_001(ui)*xji_12)
+             - vderiv_(1,0)*(xji_00*derxjm_001(ui) + xji_00*derxjm_001(ui) + xji_20*derxjm_201(ui) + xji_20*derxjm_201(ui))
+             - vderiv_(1,1)*(xji_01*derxjm_001(ui) + xji_00*derxjm_011(ui) + xji_21*derxjm_201(ui) + xji_20*derxjm_211(ui))
+             - vderiv_(1,2)*(xji_02*derxjm_001(ui) + xji_00*derxjm_021(ui) + xji_22*derxjm_201(ui) + xji_20*derxjm_221(ui))
+             - vderiv_(2,0)*(derxjm_201(ui)*xji_10)
+             - vderiv_(2,1)*(derxjm_201(ui)*xji_11)
+             - vderiv_(2,2)*(derxjm_201(ui)*xji_12);
+        v1 = - vderiv_(0,0)*(derxjm_011(ui)*xji_10)
+             - vderiv_(0,1)*(derxjm_011(ui)*xji_11)
+             - vderiv_(0,2)*(derxjm_011(ui)*xji_12)
+             - vderiv_(1,0)*(xji_00*derxjm_011(ui) + xji_01*derxjm_001(ui) + xji_20*derxjm_211(ui) + xji_21*derxjm_201(ui))
+             - vderiv_(1,1)*(xji_01*derxjm_011(ui) + xji_01*derxjm_011(ui) + xji_21*derxjm_211(ui) + xji_21*derxjm_211(ui))
+             - vderiv_(1,2)*(xji_02*derxjm_011(ui) + xji_01*derxjm_021(ui) + xji_22*derxjm_211(ui) + xji_21*derxjm_221(ui))
+             - vderiv_(2,0)*(derxjm_211(ui)*xji_10)
+             - vderiv_(2,1)*(derxjm_211(ui)*xji_11)
+             - vderiv_(2,2)*(derxjm_211(ui)*xji_12);
+        v2 = - vderiv_(0,0)*(derxjm_021(ui)*xji_10)
+             - vderiv_(0,1)*(derxjm_021(ui)*xji_11)
+             - vderiv_(0,2)*(derxjm_021(ui)*xji_12)
+             - vderiv_(1,0)*(xji_00*derxjm_021(ui) + xji_02*derxjm_001(ui) + xji_20*derxjm_221(ui) + xji_22*derxjm_201(ui))
+             - vderiv_(1,1)*(xji_01*derxjm_021(ui) + xji_02*derxjm_011(ui) + xji_21*derxjm_221(ui) + xji_22*derxjm_211(ui))
+             - vderiv_(1,2)*(xji_02*derxjm_021(ui) + xji_02*derxjm_021(ui) + xji_22*derxjm_221(ui) + xji_22*derxjm_221(ui))
+             - vderiv_(2,0)*(derxjm_221(ui)*xji_10)
+             - vderiv_(2,1)*(derxjm_221(ui)*xji_11)
+             - vderiv_(2,2)*(derxjm_221(ui)*xji_12);
+
+        for (int vi=0; vi<iel; ++vi)
+        {
+          meshmat(vi*4 + 1, ui*4 + 1) += v*(deriv_(0,vi)*v0 + deriv_(1,vi)*v1 + deriv_(2,vi)*v2);
+        }
+
+        ////////////////////////////////////////////////////////////////
+
+        v0 = - vderiv_(0,0)*(derxjm_002(ui)*xji_10 + derxjm_102(ui)*xji_00)
+             - vderiv_(0,1)*(derxjm_002(ui)*xji_11 + derxjm_112(ui)*xji_00)
+             - vderiv_(0,2)*(derxjm_002(ui)*xji_12 + derxjm_122(ui)*xji_00)
+             - vderiv_(1,0)*(xji_00*derxjm_002(ui) + xji_00*derxjm_002(ui) + 2*xji_10*derxjm_102(ui) + 2*xji_10*derxjm_102(ui))
+             - vderiv_(1,1)*(xji_01*derxjm_002(ui) + xji_00*derxjm_012(ui) + 2*xji_11*derxjm_102(ui) + 2*xji_10*derxjm_112(ui))
+             - vderiv_(1,2)*(xji_02*derxjm_002(ui) + xji_00*derxjm_022(ui) + 2*xji_12*derxjm_102(ui) + 2*xji_10*derxjm_122(ui))
+             - vderiv_(2,0)*(derxjm_102(ui)*xji_20)
+             - vderiv_(2,1)*(derxjm_112(ui)*xji_20)
+             - vderiv_(2,2)*(derxjm_122(ui)*xji_20);
+        v1 = - vderiv_(0,0)*(derxjm_012(ui)*xji_10 + derxjm_102(ui)*xji_01)
+             - vderiv_(0,1)*(derxjm_012(ui)*xji_11 + derxjm_112(ui)*xji_01)
+             - vderiv_(0,2)*(derxjm_012(ui)*xji_12 + derxjm_122(ui)*xji_01)
+             - vderiv_(1,0)*(xji_00*derxjm_012(ui) + xji_01*derxjm_002(ui) + 2*xji_10*derxjm_112(ui) + 2*xji_11*derxjm_102(ui))
+             - vderiv_(1,1)*(xji_01*derxjm_012(ui) + xji_01*derxjm_012(ui) + 2*xji_11*derxjm_112(ui) + 2*xji_11*derxjm_112(ui))
+             - vderiv_(1,2)*(xji_02*derxjm_012(ui) + xji_01*derxjm_022(ui) + 2*xji_12*derxjm_112(ui) + 2*xji_11*derxjm_122(ui))
+             - vderiv_(2,0)*(derxjm_102(ui)*xji_21)
+             - vderiv_(2,1)*(derxjm_112(ui)*xji_21)
+             - vderiv_(2,2)*(derxjm_122(ui)*xji_21);
+        v2 = - vderiv_(0,0)*(derxjm_022(ui)*xji_10 + derxjm_102(ui)*xji_02)
+             - vderiv_(0,1)*(derxjm_022(ui)*xji_11 + derxjm_112(ui)*xji_02)
+             - vderiv_(0,2)*(derxjm_022(ui)*xji_12 + derxjm_122(ui)*xji_02)
+             - vderiv_(1,0)*(xji_00*derxjm_022(ui) + xji_02*derxjm_002(ui) + 2*xji_10*derxjm_122(ui) + 2*xji_12*derxjm_102(ui))
+             - vderiv_(1,1)*(xji_01*derxjm_022(ui) + xji_02*derxjm_012(ui) + 2*xji_11*derxjm_122(ui) + 2*xji_12*derxjm_112(ui))
+             - vderiv_(1,2)*(xji_02*derxjm_022(ui) + xji_02*derxjm_022(ui) + 2*xji_12*derxjm_122(ui) + 2*xji_12*derxjm_122(ui))
+             - vderiv_(2,0)*(derxjm_102(ui)*xji_22)
+             - vderiv_(2,1)*(derxjm_112(ui)*xji_22)
+             - vderiv_(2,2)*(derxjm_122(ui)*xji_22);
+
+        for (int vi=0; vi<iel; ++vi)
+        {
+          meshmat(vi*4 + 1, ui*4 + 2) += v*(deriv_(0,vi)*v0 + deriv_(1,vi)*v1 + deriv_(2,vi)*v2);
+        }
+
+        ////////////////////////////////////////////////////////////////
+
+        v0 = - vderiv_(0,0)*(derxjm_200(ui)*xji_00)
+             - vderiv_(0,1)*(derxjm_210(ui)*xji_00)
+             - vderiv_(0,2)*(derxjm_220(ui)*xji_00)
+             - vderiv_(1,0)*(derxjm_200(ui)*xji_10 + derxjm_100(ui)*xji_20)
+             - vderiv_(1,1)*(derxjm_210(ui)*xji_10 + derxjm_100(ui)*xji_21)
+             - vderiv_(1,2)*(derxjm_220(ui)*xji_10 + derxjm_100(ui)*xji_22)
+             - vderiv_(2,0)*(xji_10*derxjm_100(ui) + xji_10*derxjm_100(ui) + 2*xji_20*derxjm_200(ui) + 2*xji_20*derxjm_200(ui))
+             - vderiv_(2,1)*(xji_11*derxjm_100(ui) + xji_10*derxjm_110(ui) + 2*xji_21*derxjm_200(ui) + 2*xji_20*derxjm_210(ui))
+             - vderiv_(2,2)*(xji_12*derxjm_100(ui) + xji_10*derxjm_120(ui) + 2*xji_22*derxjm_200(ui) + 2*xji_20*derxjm_220(ui));
+        v1 = - vderiv_(0,0)*(derxjm_200(ui)*xji_01)
+             - vderiv_(0,1)*(derxjm_210(ui)*xji_01)
+             - vderiv_(0,2)*(derxjm_220(ui)*xji_01)
+             - vderiv_(1,0)*(derxjm_200(ui)*xji_11 + derxjm_110(ui)*xji_20)
+             - vderiv_(1,1)*(derxjm_210(ui)*xji_11 + derxjm_110(ui)*xji_21)
+             - vderiv_(1,2)*(derxjm_220(ui)*xji_11 + derxjm_110(ui)*xji_22)
+             - vderiv_(2,0)*(xji_10*derxjm_110(ui) + xji_11*derxjm_100(ui) + 2*xji_20*derxjm_210(ui) + 2*xji_21*derxjm_200(ui))
+             - vderiv_(2,1)*(xji_11*derxjm_110(ui) + xji_11*derxjm_110(ui) + 2*xji_21*derxjm_210(ui) + 2*xji_21*derxjm_210(ui))
+             - vderiv_(2,2)*(xji_12*derxjm_110(ui) + xji_11*derxjm_120(ui) + 2*xji_22*derxjm_210(ui) + 2*xji_21*derxjm_220(ui));
+        v2 = - vderiv_(0,0)*(derxjm_200(ui)*xji_02)
+             - vderiv_(0,1)*(derxjm_210(ui)*xji_02)
+             - vderiv_(0,2)*(derxjm_220(ui)*xji_02)
+             - vderiv_(1,0)*(derxjm_200(ui)*xji_12 + derxjm_120(ui)*xji_20)
+             - vderiv_(1,1)*(derxjm_210(ui)*xji_12 + derxjm_120(ui)*xji_21)
+             - vderiv_(1,2)*(derxjm_220(ui)*xji_12 + derxjm_120(ui)*xji_22)
+             - vderiv_(2,0)*(xji_10*derxjm_120(ui) + xji_12*derxjm_100(ui) + 2*xji_20*derxjm_220(ui) + 2*xji_22*derxjm_200(ui))
+             - vderiv_(2,1)*(xji_11*derxjm_120(ui) + xji_12*derxjm_110(ui) + 2*xji_21*derxjm_220(ui) + 2*xji_22*derxjm_210(ui))
+             - vderiv_(2,2)*(xji_12*derxjm_120(ui) + xji_12*derxjm_120(ui) + 2*xji_22*derxjm_220(ui) + 2*xji_22*derxjm_220(ui));
+
+        for (int vi=0; vi<iel; ++vi)
+        {
+          meshmat(vi*4 + 2, ui*4 + 0) += v*(deriv_(0,vi)*v0 + deriv_(1,vi)*v1 + deriv_(2,vi)*v2);
+        }
+
+        ////////////////////////////////////////////////////////////////
+
+        v0 = - vderiv_(0,0)*(derxjm_201(ui)*xji_00 + derxjm_001(ui)*xji_20)
+             - vderiv_(0,1)*(derxjm_211(ui)*xji_00 + derxjm_001(ui)*xji_21)
+             - vderiv_(0,2)*(derxjm_221(ui)*xji_00 + derxjm_001(ui)*xji_22)
+             - vderiv_(1,0)*(derxjm_201(ui)*xji_10)
+             - vderiv_(1,1)*(derxjm_211(ui)*xji_10)
+             - vderiv_(1,2)*(derxjm_221(ui)*xji_10)
+             - vderiv_(2,0)*(xji_00*derxjm_001(ui) + xji_00*derxjm_001(ui) + 2*xji_20*derxjm_201(ui) + 2*xji_20*derxjm_201(ui))
+             - vderiv_(2,1)*(xji_01*derxjm_001(ui) + xji_00*derxjm_011(ui) + 2*xji_21*derxjm_201(ui) + 2*xji_20*derxjm_211(ui))
+             - vderiv_(2,2)*(xji_02*derxjm_001(ui) + xji_00*derxjm_021(ui) + 2*xji_22*derxjm_201(ui) + 2*xji_20*derxjm_221(ui));
+        v1 = - vderiv_(0,0)*(derxjm_201(ui)*xji_01 + derxjm_011(ui)*xji_20)
+             - vderiv_(0,1)*(derxjm_211(ui)*xji_01 + derxjm_011(ui)*xji_21)
+             - vderiv_(0,2)*(derxjm_221(ui)*xji_01 + derxjm_011(ui)*xji_22)
+             - vderiv_(1,0)*(derxjm_201(ui)*xji_11)
+             - vderiv_(1,1)*(derxjm_211(ui)*xji_11)
+             - vderiv_(1,2)*(derxjm_221(ui)*xji_11)
+             - vderiv_(2,0)*(xji_00*derxjm_011(ui) + xji_01*derxjm_001(ui) + 2*xji_20*derxjm_211(ui) + 2*xji_21*derxjm_201(ui))
+             - vderiv_(2,1)*(xji_01*derxjm_011(ui) + xji_01*derxjm_011(ui) + 2*xji_21*derxjm_211(ui) + 2*xji_21*derxjm_211(ui))
+             - vderiv_(2,2)*(xji_02*derxjm_011(ui) + xji_01*derxjm_021(ui) + 2*xji_22*derxjm_211(ui) + 2*xji_21*derxjm_221(ui));
+        v2 = - vderiv_(0,0)*(derxjm_201(ui)*xji_02 + derxjm_021(ui)*xji_20)
+             - vderiv_(0,1)*(derxjm_211(ui)*xji_02 + derxjm_021(ui)*xji_21)
+             - vderiv_(0,2)*(derxjm_221(ui)*xji_02 + derxjm_021(ui)*xji_22)
+             - vderiv_(1,0)*(derxjm_201(ui)*xji_12)
+             - vderiv_(1,1)*(derxjm_211(ui)*xji_12)
+             - vderiv_(1,2)*(derxjm_221(ui)*xji_12)
+             - vderiv_(2,0)*(xji_00*derxjm_021(ui) + xji_02*derxjm_001(ui) + 2*xji_20*derxjm_221(ui) + 2*xji_22*derxjm_201(ui))
+             - vderiv_(2,1)*(xji_01*derxjm_021(ui) + xji_02*derxjm_011(ui) + 2*xji_21*derxjm_221(ui) + 2*xji_22*derxjm_211(ui))
+             - vderiv_(2,2)*(xji_02*derxjm_021(ui) + xji_02*derxjm_021(ui) + 2*xji_22*derxjm_221(ui) + 2*xji_22*derxjm_221(ui));
+
+        for (int vi=0; vi<iel; ++vi)
+        {
+          meshmat(vi*4 + 2, ui*4 + 1) += v*(deriv_(0,vi)*v0 + deriv_(1,vi)*v1 + deriv_(2,vi)*v2);
+        }
+
+        ////////////////////////////////////////////////////////////////
+
+        v0 = - vderiv_(0,0)*(derxjm_002(ui)*xji_20)
+             - vderiv_(0,1)*(derxjm_002(ui)*xji_21)
+             - vderiv_(0,2)*(derxjm_002(ui)*xji_22)
+             - vderiv_(1,0)*(derxjm_102(ui)*xji_20)
+             - vderiv_(1,1)*(derxjm_102(ui)*xji_21)
+             - vderiv_(1,2)*(derxjm_102(ui)*xji_22)
+             - vderiv_(2,0)*(xji_00*derxjm_002(ui) + xji_00*derxjm_002(ui) + xji_10*derxjm_102(ui) + xji_10*derxjm_102(ui))
+             - vderiv_(2,1)*(xji_01*derxjm_002(ui) + xji_00*derxjm_012(ui) + xji_11*derxjm_102(ui) + xji_10*derxjm_112(ui))
+             - vderiv_(2,2)*(xji_02*derxjm_002(ui) + xji_00*derxjm_022(ui) + xji_12*derxjm_102(ui) + xji_10*derxjm_122(ui));
+        v1 = - vderiv_(0,0)*(derxjm_012(ui)*xji_20)
+             - vderiv_(0,1)*(derxjm_012(ui)*xji_21)
+             - vderiv_(0,2)*(derxjm_012(ui)*xji_22)
+             - vderiv_(1,0)*(derxjm_112(ui)*xji_20)
+             - vderiv_(1,1)*(derxjm_112(ui)*xji_21)
+             - vderiv_(1,2)*(derxjm_112(ui)*xji_22)
+             - vderiv_(2,0)*(xji_00*derxjm_012(ui) + xji_01*derxjm_002(ui) + xji_10*derxjm_112(ui) + xji_11*derxjm_102(ui))
+             - vderiv_(2,1)*(xji_01*derxjm_012(ui) + xji_01*derxjm_012(ui) + xji_11*derxjm_112(ui) + xji_11*derxjm_112(ui))
+             - vderiv_(2,2)*(xji_02*derxjm_012(ui) + xji_01*derxjm_022(ui) + xji_12*derxjm_112(ui) + xji_11*derxjm_122(ui));
+        v2 = - vderiv_(0,0)*(derxjm_022(ui)*xji_20)
+             - vderiv_(0,1)*(derxjm_022(ui)*xji_21)
+             - vderiv_(0,2)*(derxjm_022(ui)*xji_22)
+             - vderiv_(1,0)*(derxjm_122(ui)*xji_20)
+             - vderiv_(1,1)*(derxjm_122(ui)*xji_21)
+             - vderiv_(1,2)*(derxjm_122(ui)*xji_22)
+             - vderiv_(2,0)*(xji_00*derxjm_022(ui) + xji_02*derxjm_002(ui) + xji_10*derxjm_122(ui) + xji_12*derxjm_102(ui))
+             - vderiv_(2,1)*(xji_01*derxjm_022(ui) + xji_02*derxjm_012(ui) + xji_11*derxjm_122(ui) + xji_12*derxjm_112(ui))
+             - vderiv_(2,2)*(xji_02*derxjm_022(ui) + xji_02*derxjm_022(ui) + xji_12*derxjm_122(ui) + xji_12*derxjm_122(ui));
+
+        for (int vi=0; vi<iel; ++vi)
+        {
+          meshmat(vi*4 + 2, ui*4 + 2) += v*(deriv_(0,vi)*v0 + deriv_(1,vi)*v1 + deriv_(2,vi)*v2);
+        }
+      }
+
+
+      // pressure
+      for (int vi=0; vi<iel; ++vi)
+      {
+	const int fvi  =4*vi;
+	const int fvip =fvi+1;
+	const int fvipp=fvip+1;
+
+        double v = prenp_*fac/det_;
+        for (int ui=0; ui<iel; ++ui)
+        {
+	  const int fui  =4*ui;
+	  const int fuip =fui+1;
+	  const int fuipp=fuip+1;
+
+          meshmat(fvi  ,fuip ) += v*(deriv_(0, vi)*derxjm_(0,0,1,ui) 
+				     +
+				     deriv_(1, vi)*derxjm_(0,1,1,ui) 
+				     +
+				     deriv_(2, vi)*derxjm_(0,2,1,ui)) ;
+          meshmat(fvi  ,fuipp) += v*(deriv_(0, vi)*derxjm_(0,0,2,ui) 
+				     +
+				     deriv_(1, vi)*derxjm_(0,1,2,ui) 
+				     +
+				     deriv_(2, vi)*derxjm_(0,2,2,ui)) ;
+
+          meshmat(fvip ,fui  ) += v*(deriv_(0, vi)*derxjm_(1,0,0,ui) 
+				     +
+				     deriv_(1, vi)*derxjm_(1,1,0,ui) 
+				     +
+				     deriv_(2, vi)*derxjm_(1,2,0,ui)) ;
+          meshmat(fvip ,fuipp) += v*(deriv_(0, vi)*derxjm_(1,0,2,ui) 
+				     +
+				     deriv_(1, vi)*derxjm_(1,1,2,ui) 
+				     +
+				     deriv_(2, vi)*derxjm_(1,2,2,ui)) ;
+
+          meshmat(fvipp,fui  ) += v*(deriv_(0, vi)*derxjm_(2,0,0,ui) 
+				     + 
+				     deriv_(1, vi)*derxjm_(2,1,0,ui) 
+				     +
+				     deriv_(2, vi)*derxjm_(2,2,0,ui)) ;
+          meshmat(fvipp,fuip ) += v*(deriv_(0, vi)*derxjm_(2,0,1,ui) 
+				     +
+				     deriv_(1, vi)*derxjm_(2,1,1,ui) 
+				     +
+				     deriv_(2, vi)*derxjm_(2,2,1,ui)) ;
+        }
+      }
+
+      // div u
+      for (int vi=0; vi<iel; ++vi)
+      {
+	const int fvippp = 4*vi+3;
+
+        double v = fac/det_*funct_(vi);
+        for (int ui=0; ui<iel; ++ui)
+        {
+	  const int fui   = 4*ui;
+	  const int fuip  = fui+1;
+	  const int fuipp = fuip+1;
+
+          meshmat(fvippp,fui  ) += v*(vderiv_(1, 0)*derxjm_(0,0,1,ui) 
+				      +
+				      vderiv_(1, 1)*derxjm_(0,1,1,ui) 
+				      +
+				      vderiv_(1, 2)*derxjm_(0,2,1,ui)
+				      + 
+				      vderiv_(2, 0)*derxjm_(0,0,2,ui) 
+				      + 
+				      vderiv_(2, 1)*derxjm_(0,1,2,ui) 
+				      +
+				      vderiv_(2, 2)*derxjm_(0,2,2,ui));
+
+          meshmat(fvippp,fuip ) += v*(vderiv_(0, 0)*derxjm_(1,0,0,ui) 
+				      +
+				      vderiv_(0, 1)*derxjm_(1,1,0,ui) 
+				      +
+				      vderiv_(0, 2)*derxjm_(1,2,0,ui)
+				      +
+				      vderiv_(2, 0)*derxjm_(1,0,2,ui) 
+				      +
+				      vderiv_(2, 1)*derxjm_(1,1,2,ui) 
+				      +
+				      vderiv_(2, 2)*derxjm_(1,2,2,ui));
+
+          meshmat(fvippp,fuipp) += v*(vderiv_(0, 0)*derxjm_(2,0,0,ui) 
+				      +
+				      vderiv_(0, 1)*derxjm_(2,1,0,ui) 
+				      +
+				      vderiv_(0, 2)*derxjm_(2,2,0,ui)
+				      + 
+				      vderiv_(1, 0)*derxjm_(2,0,1,ui) 
+				      +
+				      vderiv_(1, 1)*derxjm_(2,1,1,ui) 
+				      +
+				      vderiv_(1, 2)*derxjm_(2,2,1,ui));
+        }
+      }
+
+
+    } // end linearisation with respect to mesh motion
+
   } // end loop iquad
   return;
 } //Sysmat_adv_qs
@@ -2708,40 +3372,40 @@ N
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
-  Fluid3*                                 ele             ,
-  std::vector<Epetra_SerialDenseVector>&  myknots         ,
-  LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&            elemat          ,
-  LINALG::Matrix<(nsd_+1)*iel,1>&                elevec          ,
+  Fluid3*                                    ele             ,
+  std::vector<Epetra_SerialDenseVector>&     myknots         ,
+  LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>& elemat          ,
+  LINALG::Matrix<(nsd_+1)*iel,1>&            elevec          ,
   const LINALG::Matrix<nsd_,iel>&            edispnp         ,
   const LINALG::Matrix<nsd_,iel>&            egridvelaf        ,
   const LINALG::Matrix<nsd_,iel>&            evelnp          ,
-  const LINALG::Matrix<iel,1>&            eprenp          ,
+  const LINALG::Matrix<iel,1>&               eprenp          ,
   const LINALG::Matrix<nsd_,iel>&            eaccam          ,
   const LINALG::Matrix<nsd_,iel>&            evelaf          ,
   const LINALG::Matrix<nsd_,iel>&            fsevelaf        ,
-  Teuchos::RCP<const MAT::Material>       material        ,
-  const double                            alphaM          ,
-  const double                            alphaF          ,
-  const double                            gamma           ,
-  const double                            dt              ,
-  const double                            time            ,
-  const enum Fluid3::LinearisationAction  newton          ,
-  const bool                              higher_order_ele,
-  const enum Fluid3::FineSubgridVisc      fssgv           ,
-  const enum Fluid3::StabilisationAction  inertia         ,
-  const enum Fluid3::StabilisationAction  pspg            ,
-  const enum Fluid3::StabilisationAction  supg            ,
-  const enum Fluid3::StabilisationAction  vstab           ,
-  const enum Fluid3::StabilisationAction  cstab           ,
-  const enum Fluid3::StabilisationAction  cross           ,
-  const enum Fluid3::StabilisationAction  reynolds        ,
-  const enum Fluid3::TauType              whichtau        ,
-  const enum Fluid3::TurbModelAction      turb_mod_action ,
-  double&                                 Cs              ,
-  double&                                 Cs_delta_sq     ,
-  double&                                 visceff         ,
-  const double                            l_tau           ,
-  const bool                              compute_elemat
+  Teuchos::RCP<const MAT::Material>          material        ,
+  const double                               alphaM          ,
+  const double                               alphaF          ,
+  const double                               gamma           ,
+  const double                               dt              ,
+  const double                               time            ,
+  const enum Fluid3::LinearisationAction     newton          ,
+  const bool                                 higher_order_ele,
+  const enum Fluid3::FineSubgridVisc         fssgv           ,
+  const enum Fluid3::StabilisationAction     inertia         ,
+  const enum Fluid3::StabilisationAction     pspg            ,
+  const enum Fluid3::StabilisationAction     supg            ,
+  const enum Fluid3::StabilisationAction     vstab           ,
+  const enum Fluid3::StabilisationAction     cstab           ,
+  const enum Fluid3::StabilisationAction     cross           ,
+  const enum Fluid3::StabilisationAction     reynolds        ,
+  const enum Fluid3::TauType                 whichtau        ,
+  const enum Fluid3::TurbModelAction         turb_mod_action ,
+  double&                                    Cs              ,
+  double&                                    Cs_delta_sq     ,
+  double&                                    visceff         ,
+  const double                               l_tau           ,
+  const bool                                 compute_elemat
   )
 {
 
@@ -5241,41 +5905,41 @@ N                   \                                                           
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_qs(
-  Fluid3*                                          ele             ,
-  std::vector<Epetra_SerialDenseVector>&           myknots         ,
-  LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&                     elemat          ,
-  LINALG::Matrix<(nsd_+1)*iel,1>&                         elevec          ,
+  Fluid3*                                             ele             ,
+  std::vector<Epetra_SerialDenseVector>&              myknots         ,
+  LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&          elemat          ,
+  LINALG::Matrix<(nsd_+1)*iel,1>&                     elevec          ,
   const LINALG::Matrix<nsd_,iel>&                     edispnp         ,
-  const LINALG::Matrix<nsd_,iel>&                     egridvelaf        ,
+  const LINALG::Matrix<nsd_,iel>&                     egridvelaf      ,
   const LINALG::Matrix<nsd_,iel>&                     evelnp          ,
-  const LINALG::Matrix<iel,1>&                     eprenp          ,
+  const LINALG::Matrix<iel,1>&                        eprenp          ,
   const LINALG::Matrix<nsd_,iel>&                     eaccam          ,
   const LINALG::Matrix<nsd_,iel>&                     evelaf          ,
   const LINALG::Matrix<nsd_,iel>&                     fsevelaf        ,
-  Teuchos::RCP<const MAT::Material>                material        ,
-  const double                                     alphaM          ,
-  const double                                     alphaF          ,
-  const double                                     gamma           ,
-  const double                                     dt              ,
-  const double                                     time            ,
-  const enum Fluid3::LinearisationAction           newton          ,
-  const bool                                       higher_order_ele,
-  const enum Fluid3::FineSubgridVisc               fssgv           ,
-  const enum Fluid3::StabilisationAction           pspg            ,
-  const enum Fluid3::StabilisationAction           supg            ,
-  const enum Fluid3::StabilisationAction           vstab           ,
-  const enum Fluid3::StabilisationAction           cstab           ,
-  const enum Fluid3::StabilisationAction           cross           ,
-  const enum Fluid3::StabilisationAction           reynolds        ,
-  const enum Fluid3::TauType                       whichtau        ,
-  const enum Fluid3::TurbModelAction               turb_mod_action ,
-  double&                                          Cs              ,
-  double&                                          Cs_delta_sq     ,
-  double&                                          visceff         ,
-  const double                                     l_tau           ,
-  const bool                                       compute_elemat
-  )
-{
+  Teuchos::RCP<const MAT::Material>                   material        ,
+  const double                                        alphaM          ,
+  const double                                        alphaF          ,
+  const double                                        gamma           ,
+  const double                                        dt              ,
+  const double                                        time            ,
+  const enum Fluid3::LinearisationAction              newton          ,
+  const bool                                          higher_order_ele,
+  const enum Fluid3::FineSubgridVisc                  fssgv           ,
+  const enum Fluid3::StabilisationAction              pspg            ,
+  const enum Fluid3::StabilisationAction              supg            ,
+  const enum Fluid3::StabilisationAction              vstab           ,
+  const enum Fluid3::StabilisationAction              cstab           ,
+  const enum Fluid3::StabilisationAction              cross           ,
+  const enum Fluid3::StabilisationAction              reynolds        ,
+  const enum Fluid3::TauType                          whichtau        ,
+  const enum Fluid3::TurbModelAction                  turb_mod_action ,
+  double&                                             Cs              ,
+  double&                                             Cs_delta_sq     ,
+  double&                                             visceff         ,
+  const double                                        l_tau           ,
+  const bool                                          compute_elemat
+  )                                                 
+{                                                   
   //------------------------------------------------------------------
   //           SET TIME INTEGRATION SCHEME RELATED DATA
   //------------------------------------------------------------------
@@ -7204,15 +7868,15 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
   Fluid3*                                          ele             ,
   std::vector<Epetra_SerialDenseVector>&           myknots         ,
-  LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&                     elemat          ,
-  LINALG::Matrix<(nsd_+1)*iel,1>&                         elevec          ,
-  const LINALG::Matrix<nsd_,iel>&                     edispnp         ,
-  const LINALG::Matrix<nsd_,iel>&                     egridvelaf        ,
-  const LINALG::Matrix<nsd_,iel>&                     evelnp          ,
+  LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&       elemat          ,
+  LINALG::Matrix<(nsd_+1)*iel,1>&                  elevec          ,
+  const LINALG::Matrix<nsd_,iel>&                  edispnp         ,
+  const LINALG::Matrix<nsd_,iel>&                  egridvelaf        ,
+  const LINALG::Matrix<nsd_,iel>&                  evelnp          ,
   const LINALG::Matrix<iel,1>&                     eprenp          ,
-  const LINALG::Matrix<nsd_,iel>&                     eaccam          ,
-  const LINALG::Matrix<nsd_,iel>&                     evelaf          ,
-  const LINALG::Matrix<nsd_,iel>&                     fsevelaf        ,
+  const LINALG::Matrix<nsd_,iel>&                  eaccam          ,
+  const LINALG::Matrix<nsd_,iel>&                  evelaf          ,
+  const LINALG::Matrix<nsd_,iel>&                  fsevelaf        ,
   Teuchos::RCP<const MAT::Material>                material        ,
   const double                                     alphaM          ,
   const double                                     alphaF          ,
@@ -7574,7 +8238,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
     //--------------------------------------------------------------
     //--------------------------------------------------------------
     //
-    //     ELEMENT FORMULATION BASED ON QUASISTATIC SUBSCALES
+    //     ELEMENT FORMULATION BASED ON DYNAMIC SUBSCALES
     //
     //--------------------------------------------------------------
     //--------------------------------------------------------------
@@ -12540,20 +13204,20 @@ double DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ShapeFunctionsFirstAndSecon
     const double xjm_1_0_xjm_0_1=xjm_(1,0)*xjm_(0,1);
 
     // The determinant ist computed using Sarrus's rule
-    const double det = xjm_(0,0)*bm_(5,5)+
-                       xjm_(2,0)*bm_(3,5)+
-                       xjm_(0,2)*(bm_(5,3)-xjm_2_0_xjm_1_1)-
-                       xjm_(2,1)*bm_(3,4)-
-                       xjm_(0,1)*bm_(5,4);
+    det_ = xjm_(0,0)*bm_(5,5)+
+           xjm_(2,0)*bm_(3,5)+
+           xjm_(0,2)*(bm_(5,3)-xjm_2_0_xjm_1_1)-
+           xjm_(2,1)*bm_(3,4)-
+           xjm_(0,1)*bm_(5,4);
 
     // check for degenerated elements
-    if (det < 0.0)
+    if (det_ < 0.0)
     {
-      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det_);
     }
 
     // set total integration factor
-    double fac = intpoints.IP().qwgt[iquad]*det;
+    double fac = intpoints.IP().qwgt[iquad]*det_;
 
     //--------------------------------------------------------------
     //             compute global first derivates
@@ -12579,15 +13243,15 @@ double DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ShapeFunctionsFirstAndSecon
     */
 
     // inverse of jacobian
-    xji_(0,0) = ( bm_(5,5)-xjm_2_1_xjm_1_2)/det;
-    xji_(1,0) = (-bm_(5,4)+xjm_2_0_xjm_1_2)/det;
-    xji_(2,0) = ( bm_(5,3)-xjm_2_0_xjm_1_1)/det;
-    xji_(0,1) = (-bm_(4,5)+xjm_2_1_xjm_0_2)/det;
-    xji_(1,1) = ( bm_(4,4)-xjm_2_0_xjm_0_2)/det;
-    xji_(2,1) = (-bm_(4,3)+xjm_2_0_xjm_0_1)/det;
-    xji_(0,2) = ( bm_(3,5)-xjm_1_1_xjm_0_2)/det;
-    xji_(1,2) = (-bm_(3,4)+xjm_1_0_xjm_0_2)/det;
-    xji_(2,2) = ( bm_(3,3)-xjm_1_0_xjm_0_1)/det;
+    xji_(0,0) = ( bm_(5,5)-xjm_2_1_xjm_1_2)/det_;
+    xji_(1,0) = (-bm_(5,4)+xjm_2_0_xjm_1_2)/det_;
+    xji_(2,0) = ( bm_(5,3)-xjm_2_0_xjm_1_1)/det_;
+    xji_(0,1) = (-bm_(4,5)+xjm_2_1_xjm_0_2)/det_;
+    xji_(1,1) = ( bm_(4,4)-xjm_2_0_xjm_0_2)/det_;
+    xji_(2,1) = (-bm_(4,3)+xjm_2_0_xjm_0_1)/det_;
+    xji_(0,2) = ( bm_(3,5)-xjm_1_1_xjm_0_2)/det_;
+    xji_(1,2) = (-bm_(3,4)+xjm_1_0_xjm_0_2)/det_;
+    xji_(2,2) = ( bm_(3,3)-xjm_1_0_xjm_0_1)/det_;
 
     // compute global derivates at integration point
     //
@@ -12963,9 +13627,9 @@ double DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ShapeFunctionsFirstAndSecon
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
   Fluid3*                                      ele            ,
-  const LINALG::Matrix<nsd_,iel>                & edispnp        ,
-  const LINALG::Matrix<nsd_,iel>                & evelaf         ,
-  const LINALG::Matrix<nsd_,iel>                & fsevelaf       ,
+  const LINALG::Matrix<nsd_,iel>             & edispnp        ,
+  const LINALG::Matrix<nsd_,iel>             & evelaf         ,
+  const LINALG::Matrix<nsd_,iel>             & fsevelaf       ,
   const std::vector<Epetra_SerialDenseVector>& myknots        ,
   const double                               & timealphaF     ,
   double                                     & hk             ,
@@ -13166,16 +13830,16 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
     }
   }
 
-  const double det = xjm_(0,0)*xjm_(1,1)*xjm_(2,2)+
-                     xjm_(0,1)*xjm_(1,2)*xjm_(2,0)+
-                     xjm_(0,2)*xjm_(1,0)*xjm_(2,1)-
-                     xjm_(0,2)*xjm_(1,1)*xjm_(2,0)-
-                     xjm_(0,0)*xjm_(1,2)*xjm_(2,1)-
-                     xjm_(0,1)*xjm_(1,0)*xjm_(2,2);
+  det_ = xjm_(0,0)*xjm_(1,1)*xjm_(2,2)+
+         xjm_(0,1)*xjm_(1,2)*xjm_(2,0)+
+         xjm_(0,2)*xjm_(1,0)*xjm_(2,1)-
+         xjm_(0,2)*xjm_(1,1)*xjm_(2,0)-
+         xjm_(0,0)*xjm_(1,2)*xjm_(2,1)-
+         xjm_(0,1)*xjm_(1,0)*xjm_(2,2);
 
   // vol is used for some stabilisation parameters and the mixing length
   // definition of the Smagorinsky models
-  vol_ = wquad*det;
+  vol_ = wquad*det_;
 
   // get element length hk for tau_M and tau_C: volume-equival. diameter/sqrt(3)
   hk = pow((6.*vol_/PI),(1.0/3.0))/sqrt(3.0);
@@ -13262,15 +13926,15 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
           +-                 -+     +-                 -+
 
     */
-    xji_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det;
-    xji_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))/det;
-    xji_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))/det;
-    xji_(0,1) = (- xjm_(0,1)*xjm_(2,2) + xjm_(2,1)*xjm_(0,2))/det;
-    xji_(1,1) = (  xjm_(0,0)*xjm_(2,2) - xjm_(2,0)*xjm_(0,2))/det;
-    xji_(2,1) = (- xjm_(0,0)*xjm_(2,1) + xjm_(2,0)*xjm_(0,1))/det;
-    xji_(0,2) = (  xjm_(0,1)*xjm_(1,2) - xjm_(1,1)*xjm_(0,2))/det;
-    xji_(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))/det;
-    xji_(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))/det;
+    xji_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det_;
+    xji_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))/det_;
+    xji_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))/det_;
+    xji_(0,1) = (- xjm_(0,1)*xjm_(2,2) + xjm_(2,1)*xjm_(0,2))/det_;
+    xji_(1,1) = (  xjm_(0,0)*xjm_(2,2) - xjm_(2,0)*xjm_(0,2))/det_;
+    xji_(2,1) = (- xjm_(0,0)*xjm_(2,1) + xjm_(2,0)*xjm_(0,1))/det_;
+    xji_(0,2) = (  xjm_(0,1)*xjm_(1,2) - xjm_(1,1)*xjm_(0,2))/det_;
+    xji_(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))/det_;
+    xji_(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))/det_;
 
     // compute global derivates at integration point
     //
@@ -13547,12 +14211,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::InterpolateToGausspoint(
   Fluid3*                                     ele             ,
-  const LINALG::Matrix<nsd_,iel>               & egridvelaf        ,
-  const LINALG::Matrix<nsd_,iel>               & evelnp          ,
+  const LINALG::Matrix<nsd_,iel>            & egridvelaf        ,
+  const LINALG::Matrix<nsd_,iel>            & evelnp          ,
   const LINALG::Matrix<iel,1>               & eprenp          ,
-  const LINALG::Matrix<nsd_,iel>               & eaccam          ,
-  const LINALG::Matrix<nsd_,iel>               & evelaf          ,
-  const LINALG::Matrix<nsd_,iel>               & fsevelaf        ,
+  const LINALG::Matrix<nsd_,iel>            & eaccam          ,
+  const LINALG::Matrix<nsd_,iel>            & evelaf          ,
+  const LINALG::Matrix<nsd_,iel>            & fsevelaf        ,
   const double                              & visceff         ,
   const enum Fluid3::FineSubgridVisc          fssgv           ,
   const bool                                  higher_order_ele)
