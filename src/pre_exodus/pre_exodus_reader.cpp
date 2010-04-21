@@ -889,21 +889,27 @@ void EXODUS::Mesh::WriteMesh(const string newexofilename) const
     const int nsID = ins->first;
     const NodeSet ns = ins->second;
     const int num_nodes_in_set = ns.GetNumNodes();
-    const string name = ns.GetName();
-    const char* nsname = name.c_str();
-    const string propname = ns.GetPropName();
-    const set<int> nodes = ns.GetNodeSet();
-    error = ex_put_node_set_param(exoid,              // of write file
-                                  nsID,               // node set id
-                                  num_nodes_in_set,
-                                  0);                 // yet no distribution factors
-    if (error!=0) dserror("error writing node set params");
-    vector<int> nodelist(num_nodes_in_set);
-    ns.FillNodelistArray(&nodelist[0]);
-    error = ex_put_node_set(exoid,nsID,&nodelist[0]);
-    if (error!=0) dserror("error writing node set");
-    error = ex_put_name (exoid, EX_NODE_SET, nsID, nsname);
-    if (error!=0) dserror("error writing node set name");
+    if (num_nodes_in_set >= 0) //do not bother if no nodes involved
+    {
+      const string name = ns.GetName();
+      const char* nsname = name.c_str();
+      const string propname = ns.GetPropName();
+      const set<int> nodes = ns.GetNodeSet();
+      error = ex_put_node_set_param(exoid,              // of write file
+                                    nsID,               // node set id
+                                    num_nodes_in_set,
+                                    0);                 // yet no distribution factors
+      if (error!=0) 
+        dserror("error writing node set params");
+      vector<int> nodelist(num_nodes_in_set);
+      ns.FillNodelistArray(&nodelist[0]);
+      error = ex_put_node_set(exoid,nsID,&nodelist[0]);
+      if (error!=0) 
+        dserror("error writing node set \"%s\" ", nsname);
+      error = ex_put_name (exoid, EX_NODE_SET, nsID, nsname);
+      if (error!=0) 
+        dserror("error writing node set name");
+    }
   }
 
   // Write ElementBlocks  ******************************************************
