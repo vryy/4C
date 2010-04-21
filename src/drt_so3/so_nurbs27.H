@@ -223,8 +223,6 @@ public:
   /*!
   \brief Read input for this element
   */
-
-  //virtual bool ReadElement();
   virtual bool ReadElement(const std::string& eletype,
                            const std::string& distype,
                            DRT::INPUT::LineDefinition* linedef);
@@ -287,12 +285,17 @@ protected:
   //! action parameters recognized by So_nurbs27
   enum ActionType
   {
-    none,
-    calc_struct_linstiff,
-    calc_struct_nlnstiff,
-    calc_struct_internalforce,
-    calc_struct_linstiffmass,
-    calc_struct_nlnstiffmass
+    none                      ,
+    calc_struct_linstiff      ,
+    calc_struct_nlnstiff      ,
+    calc_struct_internalforce ,
+    calc_struct_linstiffmass  ,
+    calc_struct_nlnstiffmass  ,
+    calc_struct_eleload       ,
+    calc_struct_fsiload       ,
+    calc_struct_update_istep  ,
+    calc_struct_update_imrlike,
+    calc_struct_reset_istep
   };
 
   //! kinematic types of So_nurbs27; only total-lagrangian
@@ -421,7 +424,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return -1;}
+  virtual int UniqueParObjectId() const { return ParObject_So_Nurbs27_Register;}
 
   /*!
   \brief Pack this class so it can be communicated

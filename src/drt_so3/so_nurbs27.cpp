@@ -13,6 +13,8 @@ Maintainer: Peter Gamnitzer
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
+#include "so_line.H"
+#include "so_surface.H"
 #include "so_nurbs27.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -193,13 +195,8 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Surfaces()
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // so we have to allocate new surface elements:
-  dserror("Surfaces not implemented yet\n");
+  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface,So_nurbs27>(DRT::UTILS::buildSurfaces,this);
 
-  vector<RCP<DRT::Element> > dummy;
-
-  return dummy;
-
-  //return DRT::UTILS::ElementBoundaryFactory<StructuralSurface,DRT::Element>(DRT::UTILS::buildSurfaces,this);
 }
 
 /*----------------------------------------------------------------------*
@@ -212,14 +209,10 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Lines()
   // Reason: if a Redistribute() is performed on the discretization,
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
-  dserror("Lines not implemented yet\n");
 
-  vector<RCP<DRT::Element> > dummy;
-
-  return dummy;
 
   // so we have to allocate new line elements:
-  //return DRT::UTILS::ElementBoundaryFactory<StructuralLine,DRT::Element>(DRT::UTILS::buildLines,this);
+  return DRT::UTILS::ElementBoundaryFactory<StructuralLine,So_nurbs27>(DRT::UTILS::buildLines,this);
 }
 
 

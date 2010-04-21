@@ -92,6 +92,7 @@ extern "C"
 #include "../drt_ale2/ale2.H"
 #include "../drt_ale2/ale2_nurbs.H"
 #include "../drt_ale3/ale3.H"
+#include "../drt_ale3/ale3_nurbs.H"
 #include "../drt_bele3/bele3.H"
 #include "../drt_bele3/vele3.H"
 #include "../drt_bele3/bele2.H"
@@ -102,6 +103,7 @@ extern "C"
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so_hex20.H"
 #include "../drt_so3/so_hex27.H"
+#include "../drt_so3/so_nurbs27.H"
 #include "../drt_so3/so_sh8.H"
 #include "../drt_so3/so_sh8p8.H"
 #include "../drt_so3/so_tet4.H"
@@ -504,6 +506,13 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       return object;
     }
     break;
+    case ParObject_Ale3_Nurbs:
+    {
+      DRT::ELEMENTS::NURBS::Ale3Nurbs* object = new DRT::ELEMENTS::NURBS::Ale3Nurbs(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
 #endif
 #ifdef D_ALE
     case ParObject_Ale2:
@@ -630,6 +639,21 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     {
       DRT::ELEMENTS::Soh27Register* object =
                 new DRT::ELEMENTS::Soh27Register(DRT::Element::element_so_hex27);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_So_Nurbs27:
+    {
+      DRT::ELEMENTS::NURBS::So_nurbs27* object = new DRT::ELEMENTS::NURBS::So_nurbs27(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_So_Nurbs27_Register:
+    {
+      DRT::ELEMENTS::NURBS::Sonurbs27Register* object =
+                new DRT::ELEMENTS::NURBS::Sonurbs27Register(DRT::Element::element_so_nurbs27);
       object->Unpack(data);
       return object;
     }
@@ -1162,6 +1186,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     so_hex8,
     so_sh8,
     so_sh8p8,
+    so_nurbs27,
     so_hex27,
     so_hex20,
     so_tet4,
@@ -1206,6 +1231,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="SOLIDH8") type = so_hex8;
   else if (eletype=="SOLIDSH8") type = so_sh8;
   else if (eletype=="SOLIDSH8P8") type = so_sh8p8;
+  else if (eletype=="SONURBS27") type = so_nurbs27;
   else if (eletype=="SOLIDH27") type = so_hex27;
   else if (eletype=="SOLIDH20") type = so_hex20;
   else if (eletype=="SOLIDT4") type = so_tet4;
@@ -1358,7 +1384,17 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_ALE
     case ale3:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Ale3(id,owner));
+      RefCountPtr<DRT::Element> ele;
+
+      if(eledistype=="NURBS27")
+      {
+        ele = rcp(new DRT::ELEMENTS::NURBS::Ale3Nurbs(id,owner));
+      }
+      else
+      {
+        ele = rcp(new DRT::ELEMENTS::Ale3(id,owner));
+      }
+
       return ele;
     }
     break;
@@ -1449,6 +1485,12 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     case so_hex27:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_hex27(id,owner));
+      return ele;
+    }
+    break;
+    case so_nurbs27:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::NURBS::So_nurbs27(id,owner));
       return ele;
     }
     break;

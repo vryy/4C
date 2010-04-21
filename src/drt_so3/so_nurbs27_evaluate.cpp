@@ -25,6 +25,8 @@ Maintainer: Peter Gamnitzer
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_mat/visconeohooke.H"
+#include "../drt_mat/viscoanisotropic.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -54,12 +56,17 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
   // get the required action
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_linstiff"     ) act = So_nurbs27::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff"     ) act = So_nurbs27::calc_struct_nlnstiff;
-  else if (action=="calc_struct_internalforce") act = So_nurbs27::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass" ) act = So_nurbs27::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass" ) act = So_nurbs27::calc_struct_nlnstiffmass;
-  else dserror("Unknown type of action for So_nurbs27");
+  else if (action=="calc_struct_linstiff"      ) act = So_nurbs27::calc_struct_linstiff;
+  else if (action=="calc_struct_nlnstiff"      ) act = So_nurbs27::calc_struct_nlnstiff;
+  else if (action=="calc_struct_internalforce" ) act = So_nurbs27::calc_struct_internalforce;
+  else if (action=="calc_struct_linstiffmass"  ) act = So_nurbs27::calc_struct_linstiffmass;
+  else if (action=="calc_struct_nlnstiffmass"  ) act = So_nurbs27::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_eleload"       ) act = So_nurbs27::calc_struct_eleload       ;
+  else if (action=="calc_struct_fsiload"       ) act = So_nurbs27::calc_struct_fsiload       ;
+  else if (action=="calc_struct_update_istep"  ) act = So_nurbs27::calc_struct_update_istep  ;
+  else if (action=="calc_struct_update_imrlike") act = So_nurbs27::calc_struct_update_imrlike;
+  else if (action=="calc_struct_reset_istep"   ) act = So_nurbs27::calc_struct_reset_istep   ;
+  else dserror("Unknown type of action '%s' for So_nurbs27",action.c_str());
   // what should the element do
   switch(act)
   {
@@ -154,6 +161,65 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
     }
     break;
 
+    case calc_struct_eleload:
+      dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+    break;
+
+    case calc_struct_fsiload:
+      dserror("Case not yet implemented");
+    break;
+
+    case calc_struct_update_istep:
+    {
+      // Update of history for visco material
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
+      {
+        MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
+        visco->Update();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_viscoanisotropic)
+      {
+        MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
+        visco->Update();
+      }
+    }
+    break;
+
+    case calc_struct_update_imrlike:
+    {
+      // Update of history for visco material
+      RefCountPtr<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
+      {
+        MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
+        visco->Update();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_viscoanisotropic)
+      {
+        MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
+        visco->Update();
+      }
+    }
+    break;
+
+    case calc_struct_reset_istep:
+    {
+      // Reset of history for visco material
+      RefCountPtr<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
+      {
+        MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
+        visco->Reset();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_viscoanisotropic)
+      {
+        MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
+        visco->Reset();
+      }
+    }
+    break;
+
     default:
       dserror("Unknown type of action for So_nurbs27");
   }
@@ -244,43 +310,56 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
     curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
   /*------------------------------------------------------------------*/
-  /*               for nurbs_27 with 27 GAUSS POINTS                  */
-  /*                  o CONST SHAPE FUNCTIONS                         */
-  /*                  o CONST DERIVATIVES                             */
-  /*                  o CONST GAUSSWEIGHTS                            */
-  /*------------------------------------------------------------------*/
-  const static vector<LINALG::Matrix<27, 1> > shapefcts
-    = sonurbs27_shapefcts(myknots,weights);
-  const static vector<LINALG::Matrix< 3,27> > derivs
-    = sonurbs27_derivs   (myknots,weights);
-  const static vector<double>                 gpweights = sonurbs27_gpweights();
-
-  /*------------------------------------------------------------------*/
   /*                    Loop over Gauss Points                        */
   /*------------------------------------------------------------------*/
   const int numgp=27;
 
-  for (int gp=0; gp<numgp; ++gp) {
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  LINALG::Matrix<3,1> gpa;
 
-    // compute the Jacobian matrix
-    LINALG::Matrix<3,3> jac;
-    jac.Multiply(derivs[gp],xrefe);
+  LINALG::Matrix<27,1> funct;
+  LINALG::Matrix<3,27> deriv;
+  
+  for (int gp=0; gp<numgp; ++gp) 
+  {
 
-    // compute determinant of Jacobian
-    const double detJ = jac.Determinant();
+    gpa(0)=intpoints.qxg[gp][0];
+    gpa(1)=intpoints.qxg[gp][1];
+    gpa(2)=intpoints.qxg[gp][2];
 
-    if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
-    else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
+    DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+      (funct                 ,
+       deriv                 ,
+       gpa                   ,
+       myknots               ,
+       weights               ,
+       DRT::Element::nurbs27);
+
+    /* get the inverse of the Jacobian matrix which looks like:
+    **            [ x_,r  y_,r  z_,r ]^-1
+    **     J^-1 = [ x_,s  y_,s  z_,s ]
+    **            [ x_,t  y_,t  z_,t ]
+    */
+    LINALG::Matrix<3,3> invJac(true);
+
+    invJac.Multiply(deriv,xrefe);
+    double detJ=invJac.Invert();
+
+    if (detJ == 0.0)
+      dserror("ZERO JACOBIAN DETERMINANT");
+    else if (detJ < 0.0)
+      dserror("NEGATIVE JACOBIAN DETERMINANT %12.5e IN ELEMENT ID %d, gauss point %d",detJ_[gp],Id(),gp);
 
     // integration factor
-    double fac = gpweights[gp] * curvefac * detJ;
+    double fac = intpoints.qwgt[gp] * curvefac * detJ;
     // distribute/add over element load vector
     for(int dim=0; dim<3; dim++)
     {
       double dim_fac = (*onoff)[dim] * (*val)[dim] * fac;
       for (int nodid=0; nodid<27; ++nodid)
       {
-	elevec1[nodid*3+dim] += shapefcts[gp](nodid) * dim_fac;
+	elevec1[nodid*3+dim] += funct(nodid) * dim_fac;
       }
     }
 
@@ -353,7 +432,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::InitJacobianMapping(DRT::Discretization& 
     if (detJ_[gp] == 0.0)
       dserror("ZERO JACOBIAN DETERMINANT");
     else if (detJ_[gp] < 0.0)
-      dserror("NEGATIVE JACOBIAN DETERMINANT");
+    dserror("NEGATIVE JACOBIAN DETERMINANT %12.5e IN ELEMENT ID %d, gauss point %d",detJ_[gp],Id(),gp);
 
   }
   return;
@@ -409,18 +488,6 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     weights(inode) = cp->W();
   }
 
-  /*------------------------------------------------------------------*/
-  /*               for nurbs_27 with 27 GAUSS POINTS                  */
-  /*                  o CONST SHAPE FUNCTIONS                         */
-  /*                  o CONST DERIVATIVES                             */
-  /*                  o CONST GAUSSWEIGHTS                            */
-  /*------------------------------------------------------------------*/
-  const static vector<LINALG::Matrix<27,1> > shapefcts
-    = sonurbs27_shapefcts(myknots,weights);
-  const static vector<LINALG::Matrix<3,27> > derivs
-    = sonurbs27_derivs   (myknots,weights);
-  const static vector<double>                gpweights = sonurbs27_gpweights();
-
   // update element geometry
   LINALG::Matrix<27,3> xrefe;  // material coord. of element
   LINALG::Matrix<27,3> xcurr;  // current  coord. of element
@@ -442,22 +509,53 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
   /*------------------------------------------------------------------*/
   const int numgp=27;
 
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+
+  invJ_.resize(numgp);
+  detJ_.resize(numgp);
+
+  LINALG::Matrix<27,1> funct;
+  LINALG::Matrix<3,27> deriv;
+
   LINALG::Matrix<3,27> N_XYZ;
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
-  LINALG::Matrix<3,3> defgrd(false);
+  LINALG::Matrix<3,3> defgrd(true);
   for (int gp=0; gp<numgp; ++gp)
   {
+
+    LINALG::Matrix<3,1> gpa;
+    gpa(0)=intpoints.qxg[gp][0];
+    gpa(1)=intpoints.qxg[gp][1];
+    gpa(2)=intpoints.qxg[gp][2];
+
+    DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+      (funct                 ,
+       deriv                 ,
+       gpa                   ,
+       myknots               ,
+       weights               ,
+       DRT::Element::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
     **     J^-1 = [ x_,s  y_,s  z_,s ]
     **            [ x_,t  y_,t  z_,t ]
     */
+    LINALG::Matrix<3,3> invJac(true);
+
+    invJac.Multiply(deriv,xrefe);
+    double detJ=invJac.Invert();
+
+    if (detJ == 0.0)
+      dserror("ZERO JACOBIAN DETERMINANT");
+    else if (detJ < 0.0)
+      dserror("NEGATIVE JACOBIAN DETERMINANT %12.5e IN ELEMENT ID %d, gauss point %d",detJ_[gp],Id(),gp);
+
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ_[gp],derivs[gp]);
-    double detJ = detJ_[gp];
+    N_XYZ.Multiply(invJac,deriv);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
     defgrd.MultiplyTT(xcurr,N_XYZ);
@@ -532,7 +630,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     sonurbs27_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
     // end of call material law
 
-    double detJ_w = detJ*gpweights[gp];
+    double detJ_w = detJ*intpoints.qwgt[gp];
     if (force != NULL && stiffmatrix != NULL)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
@@ -578,10 +676,10 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
       double ifactor, massfactor;
       for (int inod=0; inod<27; ++inod)
       {
-        ifactor = shapefcts[gp](inod) * factor;
+        ifactor = funct(inod) * factor;
         for (int jnod=0; jnod<27; ++jnod)
         {
-          massfactor = shapefcts[gp](jnod) * ifactor;     // intermediate factor
+          massfactor = funct(jnod) * ifactor;     // intermediate factor
           (*massmatrix)(3*inod  ,3*jnod  ) += massfactor;
           (*massmatrix)(3*inod+1,3*jnod+1) += massfactor;
           (*massmatrix)(3*inod+2,3*jnod+2) += massfactor;

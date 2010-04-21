@@ -45,10 +45,33 @@ bool DRT::ELEMENTS::NURBS::So_nurbs27::ReadElement(const std::string& eletype,
 
 #if 0
 /*----------------------------------------------------------------------*
- |  read element input (public)                                maf 04/07|
+ |  read element input (public)                                 pg 04/07|
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::NURBS::So_nurbs27::ReadElement()
+bool DRT::ELEMENTS::NURBS::So_nurbs27::ReadElement(
+  const std::string& eletype,
+  const std::string& distype,
+  DRT::INPUT::LineDefinition* linedef)
 {
+
+  // read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+  SetMaterial(material);
+
+
+  // read possible gaussian points, obsolete for computation
+  std::vector<int> ngp;
+  linedef->ExtractIntVector("GP",ngp);
+  for (int i=0; i<3; ++i)
+    if (ngp[i]!=3)
+      dserror("Only 3 GP for So_H20");
+
+
+
+  // we expect kintype to be total lagrangian
+  kintype_ = sonurbs27_totlag;
+
+#if 0
   // read element's nodes
   int ierr=0;
   const int nnode=27;
@@ -79,9 +102,7 @@ bool DRT::ELEMENTS::NURBS::So_nurbs27::ReadElement()
   frint_n("GP",ngp,3,&ierr);
   if (ierr==1) for (int i=0; i<3; ++i) if (ngp[i]!=3) dserror("Only version with 3 GP for So_H27 implemented");
 
-  // we expect kintype to be total lagrangian
-  kintype_ = sonurbs27_totlag;
-
+#endif
   return true;
 } // So_nurbs27::ReadElement()
 #endif

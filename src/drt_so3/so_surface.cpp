@@ -48,7 +48,10 @@ gaussrule_(DRT::UTILS::intrule2D_undefined)
   case quad8:
     gaussrule_ = DRT::UTILS::intrule_quad_9point;
   break;
-  case quad9:
+  case quad9: 
+    gaussrule_ = DRT::UTILS::intrule_quad_9point;
+  break;
+  case nurbs9: 
     gaussrule_ = DRT::UTILS::intrule_quad_9point;
   break;
   default:

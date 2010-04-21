@@ -34,6 +34,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"SOLID3");
   PrintElementLines(stream,"SOLIDH20");
   PrintElementLines(stream,"SOLIDH27");
+  PrintElementLines(stream,"SONURBS27");
   PrintElementLines(stream,"SOLIDH8");
   PrintElementLines(stream,"SOLIDH8P1J1");
   PrintElementLines(stream,"SOLIDSH8");
@@ -47,6 +48,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"TRUSS2");
   PrintElementLines(stream,"TRUSS3");
   PrintElementLines(stream,"WALL");
+
 
   PrintSectionHeader(stream,"FLUID ELEMENTS");
   PrintElementLines(stream,"COMBUST3");
@@ -144,7 +146,8 @@ void DRT::INPUT::ElementDefinition::SetupValidElementLines()
   SetupSolidshw6Lines();
   SetupSolidt10Lines();
   SetupSolidt4Lines();
-  SetupSolidw6Lines();
+  SetupSoNurbs27Lines();
+  SetupShell8Lines();
   SetupTorsion2Lines();
   SetupTorsion3Lines();
   SetupTruss2Lines();
@@ -693,6 +696,19 @@ void DRT::INPUT::ElementDefinition::SetupSolid3Lines()
 
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupSoNurbs27Lines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["SONURBS27"];
+
+  defs["NURBS27"]
+    .AddIntVector("NURBS27",27)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",3)
+    ;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -22,10 +22,10 @@ Maintainer: Michael Gee
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_statmech/bromotion_manager.H"
-
 #include "Sacado.hpp"
 
 using UTILS::SurfStressManager;
@@ -52,6 +52,16 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
     neum_live,
     neum_orthopressure
   };
+
+  LoadType ltype     = neum_none;
+  const string* type = condition.Get<string>("type");
+
+  // tangent may be computed for orthopressure if a matrix is provided
+  // (and we have a 4 noded element)
+  bool loadlin = (elemat1!=NULL);
+  if (NumNode()!=4) loadlin = false;
+  if (loadlin && elemat1->M() != 12) dserror("Mismatch in matrix size");
+
   // spatial or material configuration depends on the type of load
   enum Configuration
   {
@@ -61,22 +71,18 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
     config_both
   };
 
-  bool loadlin = (elemat1!=NULL);
-  if (NumNode()!=4) loadlin = false; // implemented for 4 node quads only
-  if (loadlin && elemat1->M() != 12) dserror("Mismatch in matrix size");
-
   Configuration config = config_none;
-  LoadType ltype       = neum_none;
-  const string* type = condition.Get<string>("type");
+
   if      (*type == "neum_live")
   {
-    ltype = neum_live;
-    config = config_material;
-    loadlin = false; // no linearization as load applies to reference config
+    ltype   = neum_live;
+    config  = config_material;
+    // no linearization as load applies to reference config
+    loadlin = false;
   }
   else if (*type == "neum_orthopressure")
   {
-    ltype = neum_orthopressure;
+    ltype  = neum_orthopressure;
     config = config_spatial;
   }
   else
@@ -153,6 +159,67 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   break;
   }
 
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  bool nurbsele=false;
+
+  DRT::NURBS::NurbsDiscretization* nurbsdis
+    =
+    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+  
+  if(nurbsdis!=NULL)
+  {
+    nurbsele=true;
+  }
+
+  // factor for surface orientation
+  double normalfac=1.0;
+
+  // local surface id
+  const int surfaceid =lsurface_;
+
+  // knot vectors for parent volume and this surface
+  std::vector<Epetra_SerialDenseVector> mypknots(3);
+  std::vector<Epetra_SerialDenseVector> myknots (2);
+
+  // NURBS control point weights for all nodes, ie. CPs
+  Epetra_SerialDenseVector weights(numnode);
+
+  if(nurbsele)
+  {
+    // --------------------------------------------------
+    // get knotvector
+
+
+    RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
+
+    bool zero_size=knots->GetBoundaryEleAndParentKnots(mypknots     ,
+                                                       myknots      ,
+                                                       normalfac    ,
+                                                       parent_->Id(),
+                                                       surfaceid    );
+    // elements that have zero size in knotspan are skipped
+    // (only required to enforce interpolation at certain points
+    //  using repeated knots)
+    if(zero_size)
+    {
+      return 0;
+    }
+
+    // --------------------------------------------------
+    // get node weights for nurbs elements
+    for (int inode=0; inode<numnode; inode++)
+    {
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
+
+      weights(inode) = cp->W();
+    }
+  }
+  // --------------------------------------------------
+
+
   // allocate vector for shape functions and matrix for derivatives
   LINALG::SerialDenseVector  funct(numnode);
   LINALG::SerialDenseMatrix  deriv(2,numnode);
@@ -163,12 +230,28 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
   for (int gp=0; gp<intpoints.nquad; gp++)
   {
-    const double e0 = intpoints.qxg[gp][0];
-    const double e1 = intpoints.qxg[gp][1];
+    // set gausspoints from integration rule
+    Epetra_SerialDenseVector e(2);
+    e(0) = intpoints.qxg[gp][0];
+    e(1) = intpoints.qxg[gp][1];
 
     // get shape functions and derivatives in the plane of the element
-    DRT::UTILS::shape_function_2D(funct,e0,e1,Shape());
-    DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
+    if(!nurbsele)
+    {
+      DRT::UTILS::shape_function_2D(funct,e(0),e(1),Shape());
+      DRT::UTILS::shape_function_2D_deriv1(deriv,e(0),e(1),Shape());
+    }
+    else
+    {
+      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+        (funct  ,
+         deriv  ,
+         e      ,
+         myknots,
+         weights,
+         nurbs9);
+    }
+
     //Stuff to get spatial Neumann
     const int numdim = 3;
     LINALG::SerialDenseMatrix gp_coord(1,numdim);
@@ -261,10 +344,10 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
           functfac = 1.0;
       }
 
-       val_curvefac_functfac = curvefac*functfac;    
+      val_curvefac_functfac = curvefac*functfac;    
            
       
-      const double fac = intpoints.qwgt[gp] * val_curvefac_functfac* ortho_value;
+      const double fac = intpoints.qwgt[gp] * val_curvefac_functfac* ortho_value * normalfac;
       for (int node=0; node < numnode; ++node)
         for(int dim=0 ; dim<3; dim++)
           elevec1[node*numdf+dim] += funct[node] * normal[dim] * fac;
