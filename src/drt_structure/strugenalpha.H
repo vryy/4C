@@ -309,6 +309,15 @@ public:
   virtual void SetTime(const double& tim);
 
   /*!
+  \brief Get time
+
+  */
+  virtual inline double GetTime()
+  {
+    return params_.get<double>("total time");
+  }
+
+  /*!
   \brief Set time step
 
   */
