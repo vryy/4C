@@ -46,6 +46,12 @@ void
 DRT::NURBS::NurbsDiscretization::SetKnotVector
 (RefCountPtr<DRT::NURBS::Knotvector> knots)
 {
+
+  if(knots==Teuchos::null)
+  {
+    dserror("trying to set invalid knotvector (%s)\n",(this->Name()).c_str());
+  }
+
   knots_=knots;
   return;
 }
@@ -60,7 +66,7 @@ DRT::NURBS::NurbsDiscretization::GetKnotVector
 {
   if(knots_==Teuchos::null)
   {
-    dserror("knotvector invalid\n");
+    dserror("knotvector invalid (%s)\n",(this->Name()).c_str());
   }
   return knots_;
 }
