@@ -474,7 +474,9 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::SetupGhosting()
+void DRT::Discretization::SetupGhosting(bool assigndegreesoffreedom ,
+                                        bool initelements           ,
+                                        bool doboundaryconditions   )
 {
   if (Filled())
     dserror("there is really no need to setup ghosting if the discretization is already filled");
@@ -574,7 +576,12 @@ void DRT::Discretization::SetupGhosting()
 
   // Redistribute discretization to match the new maps.
 
-  Redistribute(*noderowmap,*nodecolmap);
+  Redistribute(*noderowmap,
+               *nodecolmap,
+               assigndegreesoffreedom,
+               initelements,
+               doboundaryconditions);
+
 }
 
 #endif  // #ifdef CCADISCRET

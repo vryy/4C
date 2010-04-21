@@ -968,8 +968,25 @@ public:
 
     We do a repartitioning here. This might be required for
     load-balancing. But this involves graph-construction and a metis call.
+
+
+    all input arguments are passed to the final Redistribute call at the end of the
+    method
+
+
+  \param assigndegreesoffreedom (in) : if true, resets existing dofsets and performs
+                                       assigning of degrees of freedoms to nodes and
+                                       elements.
+  \param initelements           (in) : if true, build element register classes and
+                                       call Initialize() on each type of finite element
+                                       present
+  \param doboundaryconditions   (in) : if true, build geometry of boundary conditions
+                                       present.
+
    */
-  virtual void SetupGhosting();
+  virtual void SetupGhosting(bool assigndegreesoffreedom=true,
+                             bool initelements          =true,
+                             bool doboundaryconditions  =true);
 
   /*!
   \brief Build element row and column map from nodal row and column maps
