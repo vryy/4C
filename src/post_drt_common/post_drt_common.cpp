@@ -595,23 +595,6 @@ void PostProblem::read_meshes()
         cout << endl;
       }
 
-      // setup of parallel layout: create ghosting of already distributed nodes+elems
-      if (currfield.discretization()->Comm().NumProc() != 1)
-        currfield.discretization()->SetupGhosting();
-      else
-        currfield.discretization()->FillComplete();
-
-      // -------------------------------------------------------------------
-      // connect degrees of freedom for periodic boundary conditions
-      // -------------------------------------------------------------------
-      // parallel execution?!
-      if ((cond_pbcssurf!=Teuchos::null and not cond_pbcssurf->empty()) or
-          (cond_pbcsline!=Teuchos::null and not cond_pbcsline->empty()))
-      {
-        PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(currfield.discretization());
-        pbc.UpdateDofsForPeriodicBoundaryConditions();
-      }
-
       // read knot vectors for nurbs discretisations
       if(spatial_approx_=="Nurbs")
       {
@@ -676,8 +659,12 @@ void PostProblem::read_meshes()
           dserror("expected a nurbs discretisation for spatial approx. Nurbs\n");
         }
 
-        nurbsdis->FillComplete();
+        if (currfield.discretization()->Comm().NumProc() != 1)
+          currfield.discretization()->SetupGhosting(false,false,false);
+        else
+          nurbsdis->FillComplete(false,false,false);
 
+  
         if(!(nurbsdis->Filled()))
         {
           dserror("nurbsdis was not fc\n");
@@ -688,6 +675,28 @@ void PostProblem::read_meshes()
         knots->FinishKnots(smallest_gid_in_dis);
 
         nurbsdis->SetKnotVector(knots);
+
+        // do initialisation
+        currfield.discretization()->FillComplete();
+      }
+      else
+      {
+        // setup of parallel layout: create ghosting of already distributed nodes+elems
+        if (currfield.discretization()->Comm().NumProc() != 1)
+          currfield.discretization()->SetupGhosting();
+        else
+          currfield.discretization()->FillComplete();
+      }
+
+      // -------------------------------------------------------------------
+      // connect degrees of freedom for periodic boundary conditions
+      // -------------------------------------------------------------------
+      // parallel execution?!
+      if ((cond_pbcssurf!=Teuchos::null and not cond_pbcssurf->empty()) or
+          (cond_pbcsline!=Teuchos::null and not cond_pbcsline->empty()))
+      {
+        PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(currfield.discretization());
+        pbc.UpdateDofsForPeriodicBoundaryConditions();
       }
 
       fields_.push_back(currfield);
