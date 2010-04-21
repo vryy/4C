@@ -82,12 +82,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::RHS()
 /* get current displacements D_{n+1} */
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispnp()
 {
-#ifdef INVERSEDESIGNCREATE
-  dserror("check this");
-  return Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
-#else
   return structure_->DisNew();
-#endif
 }
 
 
@@ -95,12 +90,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispnp()
 /* get last converged displacements D_{n} */
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispn()
 {
-#ifdef INVERSEDESIGNCREATE
-  dserror("check this");
-  return Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
-#else
   return structure_->Dis();
-#endif
 }
 
 
@@ -303,28 +293,18 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::RelaxationSolve(
 /* extract interface displacements D_{n} */
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceDispn()
 {
-#ifdef INVERSEDESIGNCREATE
-  dserror("Check this");
-  return Teuchos::rcp(new Epetra_Vector(*interface_.FSICondMap()));
-#else
   Teuchos::RCP<Epetra_Vector> idis
     = interface_.ExtractFSICondVector(structure_->Dis());
   return idis;
-#endif
 }
 
 /*----------------------------------------------------------------------*/
 /* extract interface displacements D_{n+1} */
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceDispnp()
 {
-#ifdef INVERSEDESIGNCREATE
-  dserror("Check this");
-  return Teuchos::rcp(new Epetra_Vector(*interface_.FSICondMap()));
-#else
   Teuchos::RCP<Epetra_Vector> idis
     = interface_.ExtractFSICondVector(structure_->DisNew());
   return idis;
-#endif
 }
 
 /*----------------------------------------------------------------------*/
