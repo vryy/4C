@@ -502,6 +502,16 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
       // time measurement --- this causes the TimeMonitor tm1 to stop here
       tm1_ref_ = null;
 
+      if(discret_->Comm().NumProc()==1)
+      {
+        if(masternodeids.size()!=midtosid.size())
+        {
+          dserror("have %d masters in midtosid list, %d expected\n",
+                  midtosid.size(),
+                  masternodeids.size());
+        }
+      }
+
       if (discret_->Comm().MyPID() == 0)
       {
         cout << "adding connectivity to previous pbcs ... ";
@@ -649,7 +659,6 @@ void PeriodicBoundaryConditions::AddConnectivity(
   //       slave node -> his master node (list of size 1)
   RefCountPtr<map<int,vector<int> > > inversenodecoupling;
   inversenodecoupling=rcp(new map<int,vector<int> >);
-
 
   // rcp to the constructed rowmap
   RefCountPtr<Epetra_Map> newrownodemap;
@@ -915,7 +924,6 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
   //       slave node -> his master node (list of size 1)
   RefCountPtr<map<int,vector<int> > > inversenodecoupling;
   inversenodecoupling=rcp(new map<int,vector<int> >);
-
 
   // rcp to the constructed rowmap
   RefCountPtr<Epetra_Map> newrownodemap;
