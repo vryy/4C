@@ -52,6 +52,7 @@ Maintainer: Peter Gamnitzer
 #define FLUID_GENALPHA_INTEGRATION_H
 
 #include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_fluid/drt_transfer_turb_inflow.H"
 #include "../drt_fluid/turbulence_statistic_manager.H"
 #include "../drt_fluid/dyn_smag.H"
 
@@ -528,6 +529,10 @@ public:
   */
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
 
+
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives() { return shapederivatives_; }
+
+
   /*!
   \brief return the fluid discretisation
 
@@ -811,6 +816,9 @@ private:
   //! (standard) system matrix
   RCP<LINALG::SparseOperator> sysmat_;
 
+  /// linearization with respect to mesh motion
+  RCP<LINALG::BlockSparseMatrixBase> shapederivatives_;
+
   //! (standard) residual vector (rhs for the incremental form),
   RCP<Epetra_Vector>          residual_;
 
@@ -907,7 +915,7 @@ private:
   //@}
 
   //! @name Vectors used for convergence check
-  //         ----------------------------------
+  //        ----------------------------------
 
   //! extracts velocities and pressure dofs from dofmap
   LINALG::MapExtractor        velpressplitter_;
@@ -915,7 +923,7 @@ private:
 
 
   //! @name connectivity generated from periodic boundary conditions
-  //         --------------------------------------------------------
+  //        --------------------------------------------------------
   //
   //! the connection between master and slave nodes on this proc
   RCP<map<int,vector<int> > > pbcmapmastertoslave_;
@@ -923,10 +931,19 @@ private:
 
 
   //! @name Dirichlet BCs with local co-ordinate system
-  //         --------------------------------------------------------
+  //        -------------------------------------------
   //
   //! Dirichlet BCs with local co-ordinate system
   Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
+  //@}
+
+
+  //! @name Turbulent inflow conditions
+  //        ---------------------------
+  //
+  //! a manager doing the transfer of boundary data for 
+  //! turbulent inflow profiles from a separate (periodic) domain
+  Teuchos::RCP<TransferTurbulentInflowCondition> turbulent_inflow_condition_;
   //@}
 
 

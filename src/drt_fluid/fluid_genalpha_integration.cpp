@@ -79,11 +79,14 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
 
+#if 0
   PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(discret_);
   pbc.UpdateDofsForPeriodicBoundaryConditions();
 
   pbcmapmastertoslave_ = pbc.ReturnAllCoupledNodesOnThisProc();
-
+#else
+  pbcmapmastertoslave_= Teuchos::rcp(new map<int,vector<int> > ());
+#endif
   discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
 
   // -------------------------------------------------------------------
@@ -159,7 +162,8 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
 
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
+  // sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,500,false,true));
 
   // sysmat might be singular (if we have a purely Dirichlet constrained
   // problem, the pressure mode is defined only up to a constant)
@@ -335,6 +339,13 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
       }
     }
   }
+
+  // -------------------------------------------------------------------
+  // check whether we have a coupling to a turbulent inflow generating
+  // computation and initialise the transfer if necessary
+  // -------------------------------------------------------------------
+  turbulent_inflow_condition_ 
+    = Teuchos::rcp(new TransferTurbulentInflowCondition(discret_,dbcmaps_));
 
   //--------------------------------------------------------------------
   // do output to screen
@@ -793,6 +804,9 @@ void FLD::FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null,dbcmaps_);
   discret_->ClearState();
 
+  // Transfer of boundary data if necessary
+  turbulent_inflow_condition_->Transfer(veln_,velnp_);
+
   // in the case of local systems we have to rotate back into global
   // Cartesian frame
   if (locsysman_ != Teuchos::null)
@@ -918,6 +932,23 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeUpdate()
 
   if (alefluid_)
   {
+
+    /*
+       2nd order finite difference approximation of the new grid velocity
+
+                    (equivalent to what is done for BDF2)
+
+                           /       \          
+        n+1        3      |  n+1  n |    1       n 
+     u_G     = -------- * | d   -d  | - --- * u_G  
+                2 * dt    |         |    2
+                           \       /          
+    */
+    gridveln_->Scale(-0.5);
+    gridveln_->Update( 3.0/(2.0*dt_),*dispnp_,
+                      -3.0/(2.0*dt_),*dispn_ ,1.0);
+
+#if 0
     //            n+1   n
     //   .n+1    d   - d     gamma - 1   .n        .n
     //   d    = ---------- + --------- * d    ---> d
@@ -926,13 +957,13 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeUpdate()
 
     double gdtinv = 1.0/(gamma_*dt_);
     gridveln_->Update(gdtinv,*dispnp_,-gdtinv,*dispn_,(gamma_-1.0)/gamma_);
+#endif
 
     //    n+1         n
     //   d      ---> d
     //
 
     dispn_   ->Update(1.0,*dispnp_,0.0);
-
   }
 
 
@@ -1121,6 +1152,20 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
       output_.WriteVector("dispnp", dispnp_);
     }
 
+
+    if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+       ==
+       "Dynamic_Smagorinsky")
+    {
+      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+      RefCountPtr<Epetra_Vector> filteredvel = LINALG::CreateVector(*dofrowmap,true);
+
+      DynSmag_->OutputofAveragedVel(filteredvel);
+      output_.WriteVector("filteredvel",filteredvel);
+    }
+
+
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
@@ -1236,6 +1281,11 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
     sysmat_->Zero();
 
+    if (shapederivatives_ != Teuchos::null)
+    {
+      shapederivatives_->Zero();
+    }
+
     timesparsitypattern_ref_=null;
   }
 
@@ -1347,11 +1397,11 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   // in this case, only the residual is required for the convergence check
   if (itenum_<itemax_)
   {
-    discret_->Evaluate(eleparams,sysmat_,residual_);
+    discret_->Evaluate(eleparams,sysmat_,shapederivatives_,residual_,Teuchos::null,Teuchos::null);
   }
   else
   {
-    discret_->Evaluate(eleparams,Teuchos::null,residual_);
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
   }
 
   discret_->ClearState();
@@ -1474,6 +1524,14 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     RefCountPtr<TimeMonitor> timesparsitypattern_ref_ = rcp(new TimeMonitor(*timesparsitypattern_));
     // finalize the system matrix
     sysmat_->Complete();
+
+    if (shapederivatives_ != Teuchos::null)
+    {
+      shapederivatives_->Complete();
+      // apply Dirichlet conditions to a non-diagonal matrix
+      // (The Dirichlet rows will become all zero, no diagonal one.)
+      shapederivatives_->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
+    }
 
     timesparsitypattern_ref_ = null;
   }
@@ -1924,6 +1982,7 @@ void FLD::FluidGenAlphaIntegration::ReadRestart(int step)
   }
 
   // read the previously written elements including the history data
+
   reader.ReadMesh(step_);
 
   // read previous averages
@@ -2126,7 +2185,6 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
     veln_->Update(1.0,*velnp_ ,0.0);
 
 
-
     //----------------------------------------------------------------------
     // random perturbations for field
     //----------------------------------------------------------------------
@@ -2162,20 +2220,29 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
 
           lnode->GetCondition("SurfacePeriodic",mypbc);
 
+          bool is_slave=false;
+
           // check whether a periodic boundary condition is active on this node
           if (mypbc.size()>0)
           {
             // yes, we have one
-
-            // get the list of all his slavenodes
-            map<int, vector<int> >::iterator master = pbcmapmastertoslave_->find(lnode->Id());
-
-            // slavenodes are ignored
-            if(master == pbcmapmastertoslave_->end())
+            for (unsigned numcond=0;numcond<mypbc.size();++numcond)
             {
-              // the node is a slave --- so don't do anything
-              continue;
+
+              const string* mymasterslavetoggle
+                = mypbc[numcond]->Get<string>("Is slave periodic boundary condition");
+
+              if(!(*mymasterslavetoggle=="Master"))
+              {
+                // the node is a slave --- so don't do anything
+                is_slave=true;
+              }
             }
+          }
+
+          if(is_slave)
+          {
+            continue;
           }
 
           // the noise is proportional to the maximum component of the
@@ -2316,6 +2383,29 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
   else
   {
     dserror("no other initial fields than zero, function and beltrami are available up to now");
+  }
+
+  // for safety purposes --- make the initial flow field compatible
+  // to the initial Dirichlet boundary condition
+  {
+    ParameterList eleparams;
+
+    // total time required for Dirichlet conditions
+    eleparams.set("total time",time_);
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("velnp",velnp_);
+    // predicted dirichlet values
+    // velnp then also holds prescribed new dirichlet values
+    discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null,dbcmaps_);
+    discret_->ClearState();
+
+    // set vector values needed by elements
+    discret_->SetState("velnp",veln_);
+    // predicted dirichlet values
+    // velnp then also holds prescribed new dirichlet values
+    discret_->EvaluateDirichlet(eleparams,veln_,null,null,null,dbcmaps_);
+    discret_->ClearState();
   }
 
   return;
@@ -2829,9 +2919,35 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
 void FLD::FluidGenAlphaIntegration::UpdateGridv()
 {
   /*
+       2nd order finite difference approximation of the new grid velocity
+
+                    (equivalent to what is done for BDF2)
+
+                           /       \          
+        n+1        3      |  n+1  n |    1       n 
+     u_G     = -------- * | d   -d  | - --- * u_G  
+                2 * dt    |         |    2
+                           \       /          
+  */
+  gridvelaf_->Update(-0.5,*gridveln_,0.0);
+  gridvelaf_->Update( 3.0/(2.0*dt_),*dispnp_,
+                     -3.0/(2.0*dt_),*dispn_,1.0);
+
+  /*
+
+    now do a linear interpolation to the intermediate time level
+
+            n+af      n+1               n    /          \
+         u_G     = u_G    * alphaF + u_G  * | 1 - alphaF |  
+                                             \          /
+  */
+  gridvelaf_->Update((1-alphaF_),*gridveln_,alphaF_);
+
+#if 0
+  /*
                              /       \     /            \
-        n+af     alphaM     |  n+1  n |   |       alphaM |   .n
-     u_G     = ---------- * | d   -d  | + | 1.0 - ------ | * d
+        n+af     alphaM     |  n+1  n |   |       alphaM |   .n   . n+alphaM
+     u_G     = ---------- * | d   -d  | + | 1.0 - ------ | * d  = d
                gamma * dt   |         |   |        gamma |
                              \       /     \            /
 
@@ -2842,6 +2958,26 @@ void FLD::FluidGenAlphaIntegration::UpdateGridv()
   gridvelaf_->Update( alphaM_/(gamma_*dt_),*dispnp_,
                      -alphaM_/(gamma_*dt_),*dispn_,1.0);
 
+
+
+  /*
+                shouldn't it be something like
+ 
+                             /       \     /            \
+        n+af     alphaF     |  n+1  n |   |       alphaF |   .n
+     u_G     = ---------- * | d   -d  | + | 1.0 - ------ | * d
+               gamma * dt   |         |   |        gamma |
+                             \       /     \            /
+
+
+      ??????????????????????????????????????????????????????
+
+  gridvelaf_->Update(1.0-alphaF_/gamma_,*gridveln_,0.0);
+
+  gridvelaf_->Update( alphaF_/(gamma_*dt_),*dispnp_,
+                     -alphaF_/(gamma_*dt_),*dispn_,1.0);
+  */
+#endif
   return;
 }
 
@@ -2949,12 +3085,32 @@ void FLD::FluidGenAlphaIntegration::UseBlockMatrix(Teuchos::RCP<std::set<int> > 
                                                    const LINALG::MultiMapExtractor& rangemaps   ,
                                                    bool                             splitmatrix )
 {
+  Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat;
+
   if (splitmatrix)
   {
-    Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(
+                         domainmaps,
+                         rangemaps,
+                         500,
+                         false,
+                         true));
     mat->SetCondElements(condelements);
     sysmat_ = mat;
+  }
+
+  // if we never build the matrix nothing will be done
+  if (params_.get<bool>("shape derivatives"))
+  {
+    // allocate special mesh moving matrix
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(
+                         domainmaps,
+                         rangemaps,
+                         500,
+                         false,
+                         true));
+    mat->SetCondElements(condelements);
+    shapederivatives_ = mat;
   }
 
   return;

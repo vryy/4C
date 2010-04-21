@@ -111,6 +111,7 @@ public:
     VolumeLocsys,
     LinePeriodic,
     SurfacePeriodic,
+    TransferTurbulentInflow,
     LineWeakDirichlet,
     SurfaceWeakDirichlet,
     SurfaceConservativeOutflowConsistency,

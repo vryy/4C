@@ -523,6 +523,46 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
 
   /*--------------------------------------------------------------------*/
+  // transfer boundary condition for turbulent inflow
+
+  std::vector<Teuchos::RCP<ConditionComponent> > tbc_turb_inflow_components;
+
+  tbc_turb_inflow_components.push_back(
+    Teuchos::rcp(new SeparatorConditionComponent("ID")));
+  tbc_turb_inflow_components.push_back(
+    Teuchos::rcp(new IntConditionComponent("id",true)));
+  tbc_turb_inflow_components.push_back(
+    Teuchos::rcp(new StringConditionComponent(
+                   "toggle","master",
+                   Teuchos::tuple<std::string>("master","slave"),
+                   Teuchos::tuple<std::string>("master","slave"))));
+  tbc_turb_inflow_components.push_back(
+    Teuchos::rcp(new SeparatorConditionComponent("DIRECTION")));
+  tbc_turb_inflow_components.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "transfer direction","x",
+        Teuchos::tuple<std::string>("x","y","z"),
+        Teuchos::tuple<std::string>("x","y","z"))));
+
+  Teuchos::RCP<ConditionDefinition> tbc_turb_inflow =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF TURBULENT INFLOW TRANSFER",
+                                         "TransferTurbulentInflow",
+                                         "TransferTurbulentInflow",
+                                         DRT::Condition::TransferTurbulentInflow,
+                                         false,
+                                         DRT::Condition::Surface));
+
+  // we attach all the components of this condition to this weak line DBC
+  for (unsigned i=0; i<tbc_turb_inflow_components.size(); ++i)
+  {
+    tbc_turb_inflow->AddComponent(tbc_turb_inflow_components[i]);
+  }
+
+  // and append it to the list of all conditions
+  condlist.push_back(tbc_turb_inflow);
+
+  /*--------------------------------------------------------------------*/
   // weak Dirichlet
 
   std::vector<Teuchos::RCP<ConditionComponent> > weakDirichletcomponents;
