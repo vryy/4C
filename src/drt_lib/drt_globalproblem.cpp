@@ -594,9 +594,11 @@ void DRT::Problem::ReadKnots(const DRT::INPUT::DatFileReader& reader)
 
         // make sure atdis is fillcompleted, to be able to call
         // ElementRowMap() on it
+        // do not initialize elements, since this would require knot
+        // vector values
         if(!actdis->Filled())
         {
-          actdis->FillComplete();
+          actdis->FillComplete(false,false,false);
         }
 
         // the smallest gid in the discretisation determines the access
