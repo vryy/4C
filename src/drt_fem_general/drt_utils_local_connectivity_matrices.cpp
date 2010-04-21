@@ -510,6 +510,20 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
             }
             break;
         }
+        case DRT::Element::nurbs27: 
+        {
+            const int nLine = 12;
+            const int nNode = 3;
+            vector<int> submap(nNode, -1);
+
+            for(int i = 0; i < nLine; i++)
+            {
+                map.push_back(submap);
+                for(int j = 0; j < nNode; j++)
+                    map[i][j] = eleNodeNumbering_nurbs27_lines[i][j];
+            }
+            break;
+        }
         case DRT::Element::tet4:
         {
             const int nLine = 6;
