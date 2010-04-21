@@ -11,6 +11,7 @@ Input/inversedesign_tet4.dat                            x        x        -     
 Input/prestress_hex8.dat                                x        x        -        -        -        -
 Input/prestress_weg6.dat                                x        x        -        -        -        -
 Input/prestress_tet4.dat                                x        x        -        -        -        -
+Input/prestress_fsi.dat                                 x        x        -        -        -        -
 Input/artaneurysm_tet.dat                               x        x        -        -        -        -
 Input/artaneurysm_hex.dat                               x        x        -        -        -        -
 Input/f3_simpler_dgs.dat                                x        x        -        -        -        -
