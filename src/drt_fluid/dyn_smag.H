@@ -98,6 +98,39 @@ public:
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle
     );
 
+
+  /*!
+  \brief Output of averaged velocity vector for paraview IO
+
+  \param outvec  (in/out) vector in dofrowmap-format to use for
+                          output of averaged solution
+
+
+  */
+  void OutputofAveragedVel(
+    Teuchos::RCP<Epetra_Vector> outvec
+    )
+    {
+      // loop all elements on this proc (including ghosted ones)
+      for (int n=0;n<discret_->NumMyRowNodes();++n)
+      {
+        // get the node
+        DRT::Node* node = discret_->lRowNode(n);
+
+        vector<int> dofs= discret_->Dof(node);
+        
+        for(int d=0;d<discret_->NumDof(node)-1;++d)
+        {
+          double val=(*((*filtered_vel_)(d)))[n];
+          
+          int    id =dofs[d];
+
+          (outvec)->ReplaceGlobalValues(1,&val,&id);
+        }
+      }
+      return;
+    }
+
 private:
   /*!
   \brief perform box filtering in five steps
