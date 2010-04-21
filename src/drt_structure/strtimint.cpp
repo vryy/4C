@@ -111,9 +111,9 @@ STR::TimInt::TimInt
   }
 
   // check wether discretisation has been completed
-  if (not discret_->Filled())
+  if (not discret_->Filled() || not actdis->HaveDofs())
   {
-    dserror("Discretisation is not complete!");
+    dserror("Discretisation is not complete or has no dofs!");
   }
 
   // connect degrees of freedom for periodic boundary conditions

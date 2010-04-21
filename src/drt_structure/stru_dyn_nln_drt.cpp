@@ -136,7 +136,7 @@ void dyn_nlnstructural_drt()
   actdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
 
   // set degrees of freedom in the discretization
-  if (!actdis->Filled()) actdis->FillComplete();
+  if (!actdis->Filled() || !actdis->HaveDofs()) actdis->FillComplete();
 
   // -------------------------------------------------------------------
   // context for output and restart

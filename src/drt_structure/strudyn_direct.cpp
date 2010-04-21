@@ -68,7 +68,7 @@ void STR::strudyn_direct()
   actdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
 
   // set degrees of freedom in the discretization
-  if (not actdis->Filled()) actdis->FillComplete();
+  if (not actdis->Filled() || not actdis->HaveDofs()) actdis->FillComplete();
 
   // context for output and restart
   Teuchos::RCP<IO::DiscretizationWriter> output
