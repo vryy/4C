@@ -145,7 +145,10 @@ EXODUS::Mesh::Mesh(const string exofilename)
       // get nodes in node set
       vector<int> node_set_node_list(num_nodes_in_set);
       error = ex_get_node_set (exoid_, npropID[i], &(node_set_node_list[0]));
-      if (error != 0) dserror("error reading node set");
+      if (error > 0) 
+        cout<<"'ex_get_node_set' returned warning while reading node set "<<npropID[i]<<endl;
+      else if (error < 0) 
+        dserror("error reading node set");
       set<int> nodes_in_set;
       for (int j = 0; j < num_nodes_in_set; ++j) nodes_in_set.insert(node_set_node_list[j]);
       NodeSet actNodeSet(nodes_in_set,nodesetname,"none");
