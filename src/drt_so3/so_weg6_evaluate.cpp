@@ -29,11 +29,9 @@ Maintainer: Moritz Frenzel
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // inverse design object
-//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 #include "inversedesign.H"
-//#endif
 
-using namespace std; // cout etc.
+using namespace std;
 using namespace LINALG; // our linear algebra
 
 /*----------------------------------------------------------------------*
@@ -58,25 +56,21 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
   // get the required action
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_linstiff")      act = So_weg6::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff")      act = So_weg6::calc_struct_nlnstiff;
-  else if (action=="calc_struct_internalforce") act = So_weg6::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass")  act = So_weg6::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass")  act = So_weg6::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_stress")        act = So_weg6::calc_struct_stress;
-  else if (action=="calc_struct_eleload")       act = So_weg6::calc_struct_eleload;
-  else if (action=="calc_struct_fsiload")       act = So_weg6::calc_struct_fsiload;
-  else if (action=="calc_struct_update_istep")  act = So_weg6::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike") act = So_weg6::calc_struct_update_imrlike;
-  else if (action=="calc_struct_reset_istep")   act = So_weg6::calc_struct_reset_istep;
-  else if (action=="postprocess_stress")        act = So_weg6::postprocess_stress;
-//#ifdef PRESTRESS
-  else if (action=="calc_struct_prestress_update") act = So_weg6::prestress_update;
-//#endif
-//#ifdef INVERSEDESIGNCREATE
+  else if (action=="calc_struct_linstiff")             act = So_weg6::calc_struct_linstiff;
+  else if (action=="calc_struct_nlnstiff")             act = So_weg6::calc_struct_nlnstiff;
+  else if (action=="calc_struct_internalforce")        act = So_weg6::calc_struct_internalforce;
+  else if (action=="calc_struct_linstiffmass")         act = So_weg6::calc_struct_linstiffmass;
+  else if (action=="calc_struct_nlnstiffmass")         act = So_weg6::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_stress")               act = So_weg6::calc_struct_stress;
+  else if (action=="calc_struct_eleload")              act = So_weg6::calc_struct_eleload;
+  else if (action=="calc_struct_fsiload")              act = So_weg6::calc_struct_fsiload;
+  else if (action=="calc_struct_update_istep")         act = So_weg6::calc_struct_update_istep;
+  else if (action=="calc_struct_update_imrlike")       act = So_weg6::calc_struct_update_imrlike;
+  else if (action=="calc_struct_reset_istep")          act = So_weg6::calc_struct_reset_istep;
+  else if (action=="postprocess_stress")               act = So_weg6::postprocess_stress;
+  else if (action=="calc_struct_prestress_update")     act = So_weg6::prestress_update;
   else if (action=="calc_struct_inversedesign_update") act = So_weg6::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch") act = So_weg6::inversedesign_switch;
-//#endif
   else dserror("Unknown type of action for So_weg6");
 
   // check for patient specific data
@@ -85,6 +79,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
   // what should the element do
   switch(act)
   {
+    //==================================================================================
     // linear stiffness
     case calc_struct_linstiff:
     {
@@ -98,6 +93,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
     }
     break;
 
+    //==================================================================================
     // nonlinear stiffness and internal force vector
     case calc_struct_nlnstiff:
     {
@@ -109,18 +105,17 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-//#ifndef INVERSEDESIGNCREATE
-//#else
+
       if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
         invdesign_->sow6_nlnstiffmass(this,lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
                                       INPAR::STR::stress_none,INPAR::STR::strain_none);
       else
         sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none);
-//#endif
     }
     break;
 
+    //==================================================================================
     // internal force vector only
     case calc_struct_internalforce:
     {
@@ -139,39 +134,40 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
     }
     break;
 
+    //==================================================================================
     // linear stiffness and consistent mass matrix
     case calc_struct_linstiffmass:
       dserror("Case 'calc_struct_linstiffmass' not yet implemented");
     break;
 
+    //==================================================================================
     // nonlinear stiffness, internal force vector, and consistent mass matrix
     case calc_struct_nlnstiffmass:
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-//#ifndef INVERSEDESIGNCREATE
-//#else
+
       if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
         invdesign_->sow6_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                                       INPAR::STR::stress_none,INPAR::STR::strain_none);
       else
         sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none);
-//#endif
     }
     break;
 
+    //==================================================================================
     // evaluate stresses and strains at gauss points
     case calc_struct_stress:
     {
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
       RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
@@ -185,20 +181,19 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6> strain;
       INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
       INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
-//#ifndef INVERSEDESIGNCREATE
-//#else
+
       if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
         invdesign_->sow6_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
       else
         sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
-//#endif
+
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
     break;
 
+    //==================================================================================
     // postprocess stresses/strains at gauss points
-
     // note that in the following, quantities are always referred to as
     // "stresses" etc. although they might also apply to strains
     // (depending on what this routine is called for from the post filter)
@@ -264,14 +259,17 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
     }
     break;
 
+    //==================================================================================
     case calc_struct_eleload:
       dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
     break;
 
+    //==================================================================================
     case calc_struct_fsiload:
       dserror("Case not yet implemented");
     break;
 
+    //==================================================================================
     case calc_struct_update_istep:
     {
       // Update of history for visco material
@@ -284,19 +282,21 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
     }
     break;
 
+    //==================================================================================
     case calc_struct_update_imrlike:
     {
       ;// there is nothing to do here at the moment
     }
     break;
 
+    //==================================================================================
     case calc_struct_reset_istep:
     {
       ;// there is nothing to do here at the moment
     }
     break;
 
-//#ifdef PRESTRESS
+    //==================================================================================
     // in case of prestressing, make a snapshot of the current green-Lagrange strains and add them to
     // the previously stored GL strains in an incremental manner
     case prestress_update:
@@ -326,9 +326,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       UpdateJacobianMapping(mydisp,*prestress_);
     }
     break;
-//#endif
 
-//#ifdef INVERSEDESIGNCREATE
+    //==================================================================================
     case inversedesign_update:
     {
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -339,12 +338,13 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       invdesign_->IsInit() = true; // this is to make the restart work
     }
     break;
+
+    //==================================================================================
     case inversedesign_switch:
     {
       time_ = params.get<double>("total time");
     }
     break;
-//#endif
 
     default:
       dserror("Unknown type of action for Solid3");
@@ -403,28 +403,24 @@ void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
     invJ_[gp].Multiply(deriv_gp,xrefe);
     detJ_[gp] = invJ_[gp].Invert();
 
-//#ifdef PRESTRESS
     if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
-//#endif
-//#ifdef INVERSEDESIGNUSE
+
     if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
       if (!(invdesign_->IsInit()))
       {
         invdesign_->MatrixtoStorage(gp,invJ_[gp],invdesign_->JHistory());
         invdesign_->DetJHistory()[gp] = detJ_[gp];
       }
-//#endif
-  }
-//#ifdef PRESTRESS
+  } // for (int gp=0; gp<NUMGPT_WEG6; ++gp)
+
   if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
     prestress_->IsInit() = true;
-//#endif
-//#ifdef INVERSEDESIGNUSE
+
   if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
     invdesign_->IsInit() = true;
-//#endif
+
   return;
 }
 
@@ -456,9 +452,8 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
   // update element geometry
   LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xrefe;  // material coord. of element
   LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xcurr;  // current  coord. of element
-//#if defined(PRESTRESS) || defined(POSTSTRESS)
   LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xdisp;
-//#endif
+
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_WEG6; ++i)
   {
@@ -471,14 +466,12 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_WEG6+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_WEG6+2];
 
-//#if defined(PRESTRESS) || defined(POSTSTRESS)
     if (pstype_==INPAR::STR::prestress_mulf)
     {
       xdisp(i,0) = disp[i*NODDOF_WEG6+0];
       xdisp(i,1) = disp[i*NODDOF_WEG6+1];
       xdisp(i,2) = disp[i*NODDOF_WEG6+2];
     }
-//#endif
   }
 
   /* =========================================================================*/
@@ -499,7 +492,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     double detJ = detJ_[gp];
 
     LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> defgrd(false);
-//#if defined(PRESTRESS) || defined(POSTSTRESS)
+
     if (pstype_==INPAR::STR::prestress_mulf)
     {
       // get Jacobian mapping wrt to the stored configuration
@@ -525,12 +518,10 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       defgrd = Fnew;
     }
     else
-//#else
       // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
       defgrd.MultiplyTT(xcurr,N_XYZ);
-//#endif
 
-//#ifdef INVERSEDESIGNUSE
+
     if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
     {
       // make the multiplicative update so that defgrd refers to
@@ -548,7 +539,6 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       invdesign_->StoragetoMatrix(gp,tmp3x3,invdesign_->JHistory());
       N_XYZ.Multiply(tmp3x3,derivs[gp]);
     }
-//#endif
 
     // Right Cauchy-Green tensor = F^T * F
     LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> cauchygreen;
@@ -918,7 +908,6 @@ int DRT::ELEMENTS::Sow6Register::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
-//#if defined(PRESTRESS) || defined(POSTSTRESS)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
@@ -1005,7 +994,6 @@ void DRT::ELEMENTS::So_weg6::UpdateJacobianMapping(
 
   return;
 }
-//#endif // #if defined(PRESTRESS) || defined(POSTSTRESS)
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_WEG6

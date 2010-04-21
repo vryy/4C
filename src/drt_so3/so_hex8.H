@@ -472,7 +472,6 @@ protected:
   //! determinant of Jacobian in material frame
   vector<double>                                                        detJ_;
 
-//#if defined(PRESTRESS) || defined(POSTSTRESS)
   /// prestressing switch & time
   INPAR::STR::PreStress                                                 pstype_;
   double                                                                pstime_;
@@ -486,12 +485,10 @@ protected:
   void DefGradient(const vector<double>& disp,
                    Epetra_SerialDenseMatrix& gpdefgrd,
                    DRT::ELEMENTS::PreStress& prestress);
-//#endif
 
-//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
+  // inverse design analysis objects
   friend class DRT::ELEMENTS::InvDesign;
   RCP<DRT::ELEMENTS::InvDesign>                                         invdesign_;
-//#endif
 
 
   // internal calculation methods

@@ -25,9 +25,7 @@ Maintainer: Moritz Frenzel
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // inverse design object
-//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 #include "inversedesign.H"
-//#endif
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
@@ -56,15 +54,11 @@ time_(0.0)
     pstime_ = pslist.get<double>("PRESTRESSTIME");
   }
 
-//#if defined(PRESTRESS) || defined(POSTSTRESS)
   if (pstype_==INPAR::STR::prestress_mulf)
     prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_WEG6,NUMGPT_WEG6));
-//#endif
 
-//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   if (pstype_==INPAR::STR::prestress_id)
     invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_WEG6,NUMGPT_WEG6));
-//#endif
 
   return;
 }
@@ -88,15 +82,11 @@ time_(old.time_)
     invJ_[i] = old.invJ_[i];
   }
 
-//#if defined(PRESTRESS) || defined(POSTSTRESS)
   if (pstype_==INPAR::STR::prestress_mulf)
     prestress_ = rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
-//#endif
 
-//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   if (pstype_==INPAR::STR::prestress_id)
     invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
-//#endif
 
   return;
 }
@@ -142,7 +132,6 @@ void DRT::ELEMENTS::So_weg6::Pack(vector<char>& data) const
   data_.Pack(tmp);
   AddtoPack(data,tmp);
 
-//#if defined(PRESTRESS) || defined(POSTSTRESS)
   // prestress_
   AddtoPack(data,pstype_);
   AddtoPack(data,pstime_);
@@ -153,9 +142,7 @@ void DRT::ELEMENTS::So_weg6::Pack(vector<char>& data) const
     prestress_->Pack(tmpprestress);
     AddtoPack(data,tmpprestress);
   }
-//#endif
 
-//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   // invdesign_
   if (pstype_==INPAR::STR::prestress_id)
   {
@@ -163,7 +150,6 @@ void DRT::ELEMENTS::So_weg6::Pack(vector<char>& data) const
     invdesign_->Pack(tmpinvdesign);
     AddtoPack(data,tmpinvdesign);
   }
-//#endif
 
   // detJ_
   AddtoPack(data,detJ_);
@@ -200,7 +186,6 @@ void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
 
-//#if defined(PRESTRESS) || defined(POSTSTRESS)
   // prestress_
   ExtractfromPack(position,data,pstype_);
   ExtractfromPack(position,data,pstime_);
@@ -213,9 +198,7 @@ void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
       prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_WEG6,NUMGPT_WEG6));
     prestress_->Unpack(tmpprestress);
   }
-//#endif
 
-//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   // invdesign_
   if (pstype_==INPAR::STR::prestress_id)
   {
@@ -225,7 +208,6 @@ void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
       invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_WEG6,NUMGPT_WEG6));
     invdesign_->Unpack(tmpinvdesign);
   }
-//#endif
 
   // detJ_
   ExtractfromPack(position,data,detJ_);

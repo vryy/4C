@@ -31,11 +31,9 @@ Maintainer: Moritz Frenzel
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // inverse design object
-//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 #include "inversedesign.H"
-//#endif
 
-using namespace std; // cout etc.
+using namespace std;
 using namespace LINALG; // our linear algebra
 using POTENTIAL::PotentialManager; // potential manager
 
@@ -82,13 +80,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
   else if (action=="postprocess_stress")                          act = So_hex8::postprocess_stress;
   else if (action=="multi_readrestart")                           act = So_hex8::multi_readrestart;
   else if (action=="calc_potential_stiff")                        act = So_hex8::calc_potential_stiff;
-//#ifdef PRESTRESS
   else if (action=="calc_struct_prestress_update")                act = So_hex8::prestress_update;
-//#endif
-//#ifdef INVERSEDESIGNCREATE
   else if (action=="calc_struct_inversedesign_update")            act = So_hex8::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch")            act = So_hex8::inversedesign_switch;
-//#endif
   else dserror("Unknown type of action for So_hex8");
 
   // check for patient specific data
@@ -125,15 +119,14 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
       if (elemat1.IsInitialized()) matptr = &elemat1;
-//#ifndef INVERSEDESIGNCREATE
-//#else
+
       if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
         invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
                                       INPAR::STR::stress_none,INPAR::STR::strain_none);
+
       else // standard analysis
         soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none);
-//#endif
     }
     break;
 
@@ -175,15 +168,14 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-//#ifndef INVERSEDESIGNCREATE
-//#else
+
       if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
         invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                                       INPAR::STR::stress_none,INPAR::STR::strain_none);
       else // standard analysis
       soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
-//#endif
+
       if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
     }
     break;
@@ -207,13 +199,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
       INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
       INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
-//#ifndef INVERSEDESIGNCREATE
-//#else
+
       if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
         invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+
       else // standard analysis
         soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
-//#endif
+
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
@@ -512,7 +504,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     }
     break;
 
-//#ifdef PRESTRESS
     //==================================================================================
     case prestress_update:
     {
@@ -542,9 +533,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       UpdateJacobianMapping(mydisp,*prestress_);
     }
     break;
-//#endif
 
-//#ifdef INVERSEDESIGNCREATE
     //==================================================================================
     case inversedesign_update:
     {
@@ -563,9 +552,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       time_ = params.get<double>("total time");
     }
     break;
-//#endif
 
 
+    //==================================================================================
     default:
       dserror("Unknown type of action for So_hex8");
   }
@@ -695,12 +684,11 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
     //invJ_[gp].Shape(NUMDIM_SOH8,NUMDIM_SOH8);
     invJ_[gp].Multiply(derivs[gp],xrefe);
     detJ_[gp] = invJ_[gp].Invert();
-//#ifdef PRESTRESS
+
     if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
-//#endif
-//#ifdef INVERSEDESIGNUSE
+
     if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
       if (!(invdesign_->IsInit()))
       {
@@ -708,16 +696,14 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
         invdesign_->MatrixtoStorage(gp,invJ_[gp],invdesign_->JHistory());
         invdesign_->DetJHistory()[gp] = detJ_[gp];
       }
-//#endif
   }
-//#ifdef PRESTRESS
+
   if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
     prestress_->IsInit() = true;
-//#endif
-//#ifdef INVERSEDESIGNUSE
+
   if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
     invdesign_->IsInit() = true;
-//#endif
+
   return;
 }
 
@@ -752,9 +738,8 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
   // update element geometry
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
-//#if defined(PRESTRESS) || defined(POSTSTRESS)
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xdisp;
-//#endif
+
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_SOH8; ++i)
   {
@@ -767,14 +752,12 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH8+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH8+2];
 
-//#if defined(PRESTRESS) || defined(POSTSTRESS)
     if (pstype_==INPAR::STR::prestress_mulf)
     {
       xdisp(i,0) = disp[i*NODDOF_SOH8+0];
       xdisp(i,1) = disp[i*NODDOF_SOH8+1];
       xdisp(i,2) = disp[i*NODDOF_SOH8+2];
     }
-//#endif
   }
 
   /*
@@ -878,7 +861,6 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     N_XYZ.Multiply(invJ_[gp],derivs[gp]);
     double detJ = detJ_[gp];
 
-//#if defined(PRESTRESS) || defined(POSTSTRESS)
     if (pstype_==INPAR::STR::prestress_mulf)
     {
       // get Jacobian mapping wrt to the stored configuration
@@ -904,12 +886,9 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       defgrd = Fnew;
     }
     else
-//#else
       // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
       defgrd.MultiplyTT(xcurr,N_XYZ);
-//#endif
 
-//#ifdef INVERSEDESIGNUSE
     if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
     {
       //printf("Ele %d entering id poststress\n",Id());
@@ -928,7 +907,6 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       invdesign_->StoragetoMatrix(gp,tmp3x3,invdesign_->JHistory());
       N_XYZ.Multiply(tmp3x3,derivs[gp]);
     }
-//#endif
 
     // Right Cauchy-Green tensor = F^T * F
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreen;
@@ -1472,7 +1450,6 @@ int DRT::ELEMENTS::Soh8Register::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
-//#if defined(PRESTRESS) || defined(POSTSTRESS)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
@@ -1557,7 +1534,6 @@ void DRT::ELEMENTS::So_hex8::UpdateJacobianMapping(
 
   return;
 }
-//#endif // #if defined(PRESTRESS) || defined(POSTSTRESS)
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

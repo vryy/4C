@@ -124,8 +124,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   case config_spatial:
   {
     xc.LightShape(numnode,numdf);
-//#ifndef INVERSEDESIGNCREATE
-//#else
+
     if (pstype==INPAR::STR::prestress_id && time <= pstime) 
     {
       // in inverse design analysis, the current configuration is the reference
@@ -141,7 +140,6 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
       SpatialConfiguration(xc,mydisp);
 //      MaterialConfiguration(xc);
     }
-//#endif
   }
   break;
   case config_both:

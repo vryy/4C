@@ -381,7 +381,6 @@ protected:
   //! vector of partial derivatives in material frame
   vector<LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> > nxyz_;
 
-//#if defined(PRESTRESS) || defined(POSTSTRESS)
   /// prestressing switch & time
   INPAR::STR::PreStress                                                    pstype_;
   double                                                                   pstime_;
@@ -395,12 +394,9 @@ protected:
   void DefGradient(const vector<double>& disp,
                    Epetra_SerialDenseMatrix& gpdefgrd,
                    DRT::ELEMENTS::PreStress& prestress);
-//#endif
 
-//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
   friend class DRT::ELEMENTS::InvDesign;
   RCP<DRT::ELEMENTS::InvDesign>                                            invdesign_;
-//#endif
 
   // internal calculation methods
 

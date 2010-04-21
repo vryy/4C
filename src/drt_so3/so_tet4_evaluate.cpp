@@ -29,9 +29,7 @@ written by : Alexander Volf
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // inverse design object
-//#if defined(INVERSEDESIGNCREATE) || defined(INVERSEDESIGNUSE)
 #include "inversedesign.H"
-//#endif
 
 //#define PRINT_DEBUG
 #ifdef PRINT_DEBUG
@@ -99,13 +97,9 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
   else if (action=="calc_struct_update_istep")         act = So_tet4::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike")       act = So_tet4::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")          act = So_tet4::calc_struct_reset_istep;
-//#ifdef PRESTRESS
   else if (action=="calc_struct_prestress_update")     act = So_tet4::prestress_update;
-//#endif
-//#ifdef INVERSEDESIGNCREATE
   else if (action=="calc_struct_inversedesign_update") act = So_tet4::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch") act = So_tet4::inversedesign_switch;
-//#endif
   else dserror("Unknown type of action for So_tet4");
 
   // check for patient specific data
@@ -117,6 +111,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
   // what should the element do
   switch(act)
   {
+    //==================================================================================
     // linear stiffness
     case calc_struct_linstiff:
     {
@@ -130,6 +125,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
    }
     break;
 
+    //==================================================================================
     // nonlinear stiffness and internal force vector
     case calc_struct_nlnstiff:
     {
@@ -141,18 +137,18 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-//#ifndef INVERSEDESIGNCREATE
-//#else
+
       if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
         invdesign_->so_tet4_nlnstiffmass(params,this,lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
                                          INPAR::STR::stress_none,INPAR::STR::strain_none);
       else
         so_tet4_nlnstiffmass(params,lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
                              INPAR::STR::stress_none,INPAR::STR::strain_none);
-//#endif
+
     }
     break;
 
+    //==================================================================================
     // internal force vector only
     case calc_struct_internalforce:
     {
@@ -171,6 +167,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
     }
     break;
 
+    //==================================================================================
     // nonlinear stiffness, internal force vector, and consistent mass matrix
     case calc_struct_nlnstiffmass:
     case calc_struct_nlnstifflmass:
@@ -183,19 +180,19 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-//#ifndef INVERSEDESIGNCREATE
-//#else
+
       if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
         invdesign_->so_tet4_nlnstiffmass(params,this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
                                          INPAR::STR::stress_none,INPAR::STR::strain_none);
       else
         so_tet4_nlnstiffmass(params,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
                              INPAR::STR::stress_none,INPAR::STR::strain_none);
-//#endif
+
       if (act==calc_struct_nlnstifflmass) so_tet4_lumpmass(&elemat2);
     }
     break;
 
+    //==================================================================================
     // evaluate stresses and strains at gauss points
     case calc_struct_stress:
     {
@@ -214,13 +211,12 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4> strain(true);
       INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
       INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
-//#ifndef INVERSEDESIGNCREATE
-//#else
+
       if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
         invdesign_->so_tet4_nlnstiffmass(params,this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
       else
         so_tet4_nlnstiffmass(params,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
-//#endif
+
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
@@ -228,6 +224,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
 
     // postprocess stresses/strains at gauss points
 
+    //==================================================================================
     // note that in the following, quantities are always referred to as
     // "stresses" etc. although they might also apply to strains
     // (depending on what this routine is called for from the post filter)
@@ -290,7 +287,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
     }
     break;
 
-//#ifdef PRESTRESS
+    //==================================================================================
     case prestress_update:
     {
       time_ = params.get<double>("total time");
@@ -319,9 +316,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       UpdateJacobianMapping(mydisp,*prestress_);
     }
     break;
-//#endif
 
-//#ifdef INVERSEDESIGNCREATE
+    //==================================================================================
     case inversedesign_update:
     {
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -332,39 +328,46 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       invdesign_->IsInit() = true; // this is to make the restart work
     }
     break;
+
+    //==================================================================================
     case inversedesign_switch:
     {
       time_ = params.get<double>("total time");
     }
     break;
-//#endif
 
+    //==================================================================================
     case calc_struct_eleload:
       dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
     break;
 
+    //==================================================================================
     case calc_struct_fsiload:
       dserror("Case not yet implemented");
     break;
 
+    //==================================================================================
     case calc_struct_update_istep:
     {
       ;// there is nothing to do here at the moment
     }
     break;
 
+    //==================================================================================
     case calc_struct_update_imrlike:
     {
       ;// there is nothing to do here at the moment
     }
     break;
 
+    //==================================================================================
     case calc_struct_reset_istep:
     {
       ;// there is nothing to do here at the moment
     }
     break;
 
+    //==================================================================================
     // linear stiffness and consistent mass matrix
     case calc_struct_linstiffmass:
       dserror("Case 'calc_struct_linstiffmass' not yet implemented");
@@ -531,29 +534,25 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
     **             [    dX       dY       dZ    ]
     */
 
-//#ifdef PRESTRESS
     if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
       if (!(prestress_->IsInit()))
         prestress_->MatrixtoStorage(gp,nxyz_[gp],prestress_->JHistory());
-//#endif
-//#ifdef INVERSEDESIGNUSE
+
     if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
       if (!(invdesign_->IsInit()))
       {
         invdesign_->MatrixtoStorage(gp,nxyz_[gp],invdesign_->JHistory());
         invdesign_->DetJHistory()[gp] = V_;
       }
-//#endif
 
   } // for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
-//#ifdef PRESTRESS
+
   if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
     prestress_->IsInit() = true;
-//#endif
-//#ifdef INVERSEDESIGNUSE
+
   if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
     invdesign_->IsInit() = true;
-//#endif
+
   return;
 }
 
@@ -612,11 +611,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
   /* =========================================================================*/
   for (int gp=0; gp<NUMGPT_SOTET4; gp++)
   {
-//#ifndef INVERSEDESIGNUSE
-    //const LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4>& nxyz = nxyz_[gp];
-//#else // we need the copy to overwrite it further down
-    LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> nxyz(nxyz_[gp]); // copy
-//#endif
+    LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> nxyz(nxyz_[gp]); // copy!
 
     //                                      d xcurr
     // (material) deformation gradient F = --------- = xcurr^T * nxyz^T
@@ -638,7 +633,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
 
     // size is 3x3
     LINALG::Matrix<3,3> defgrd(false);
-//#if defined(PRESTRESS) || defined(POSTSTRESS)
+
     if (pstype_==INPAR::STR::prestress_mulf)
     {
       // get derivatives wrt to last spatial configuration
@@ -662,16 +657,13 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
       defgrd = Fnew;
     }
     else
-//#else
     {
       defgrd.MultiplyTN(xdisp,nxyz);
       defgrd(0,0)+=1;
       defgrd(1,1)+=1;
       defgrd(2,2)+=1;
     }
-//#endif
 
-//#ifdef INVERSEDESIGNUSE
     if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
     {
       // make the multiplicative update so that defgrd refers to
@@ -688,7 +680,6 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
       detJ = invdesign_->DetJHistory()[gp];
       invdesign_->StoragetoMatrix(gp,nxyz,invdesign_->JHistory());
     }
-//#endif
 
     // Right Cauchy-Green tensor = F^T * F
     // size is 3x3
@@ -1102,7 +1093,6 @@ const vector<double> DRT::ELEMENTS::So_tet4::so_tet4_4gp_weights()
 }
 
 
-//#if defined(PRESTRESS) || defined(POSTSTRESS)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
@@ -1178,7 +1168,6 @@ void DRT::ELEMENTS::So_tet4::UpdateJacobianMapping(
 
   return;
 }
-//#endif // #if defined(PRESTRESS) || defined(POSTSTRESS)
 
 
 #endif  // #ifdef CCADISCRET
