@@ -66,6 +66,7 @@ void FluidEnsightWriter::WriteAllResults(PostField* field)
 {
   EnsightWriter::WriteResult("averaged_pressure", "averaged_pressure", dofbased, 1);
   EnsightWriter::WriteResult("averaged_velnp", "averaged_velocity", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("filteredvel", "filteredvel"         , dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("velnp", "velocity", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("pressure", "pressure", dofbased, 1);
   EnsightWriter::WriteResult("scalar_field", "scalar_field", dofbased, 1);
