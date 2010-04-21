@@ -1395,10 +1395,12 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 		int lid = discret_.gElement(gid)->LID();
 		// An element used to browse through local Row Elements
 	  DRT::Element* 						element = discret_.lRowElement(lid);
+	  // number of DOFs per node
+	  int numdof = (int)discret_.Dof(0, element->Nodes()[0]).size();
 	  // positions of nodes of an element with n nodes
-	  LINALG::SerialDenseMatrix coord(3,(int)discret_.lRowElement(lid)->NumNode(), true);
+	  LINALG::SerialDenseMatrix coord(numdof,(int)discret_.lRowElement(lid)->NumNode(), true);
 	  // indicates location, direction and component of a broken element with n nodes->n-1 possible cuts
-	  LINALG::SerialDenseMatrix cut(3,(int)discret_.lRowElement(lid)->NumNode()-1,true);
+	  LINALG::SerialDenseMatrix cut(numdof,(int)discret_.lRowElement(lid)->NumNode()-1,true);
 //-------------------------------- obtain nodal coordinates of the current element
 	  // get nodal coordinates and LIDs of the nodal DOFs
 	  statmechmanager_->GetElementNodeCoords(element, disn_, coord, &lids);
@@ -1429,32 +1431,42 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				// add GID of oscillating node to osc.-nodes-vector
 				oscillnodes.push_back(element->Nodes()[n+1]->Id());
 
-				// get the number of DOFs per node
-				int numdof = (int)discret_.Dof(0, element->Nodes()[0]).size();
-
 				/* When an element is cut, there are always two nodes involved: one that is subjected to a fixed
 				 * displacement in one particular direction (oscdir_), another which oscillates in the same direction.
 				 * The following code section calculates increments for both node types and stores this increment in
 				 * a vector deltadbc_. This increment is later added to the nodes' displacement of the preceding time step.
 				 */
 				// the new displacement increments
-				// incremental displacement for a fixed node...
-				(*deltadbc_)[lids.at(3*n+oscdir_)] = 0.0;
-				// incremental Dirichlet displacement for an oscillating node
-				// time step size
-				double dt = params_.get<double>("delta time" ,-1.0);
-				// time curve increment
-				double tcincrement = 0.0;
-				//cout<<"        TIME/TIME-dt:"<<time<<" / "<<time - dt<<endl;
-				if(curvenumber_>-1)
-					tcincrement = DRT::Problem::Instance()->Curve(curvenumber_).f(time) -
-												DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
-				(*deltadbc_)[lids.at(3*(n+1)+oscdir_)] = amp_*tcincrement;
+				// incremental displacement for a fixed node...(all DOFs = 0.0)
+				for(int i=0; i<numdof; i++)
+				{
+					cout<<lids.at(numdof*n+i)<<endl;
+						(*deltadbc_)[lids.at(numdof*n+i)] = 0.0;
+				}
+
+				// incremental Dirichlet displacement for an oscillating node (all DOFs except oscdir_ = 0.0)
+				for(int i=0; i<numdof; i++)
+					if(i!=oscdir_)
+					{
+						cout<<lids.at(numdof*(n+1)+i)<<endl;
+						(*deltadbc_)[lids.at(numdof*(n+1)+i)] = 0.0;
+					}
+					else
+					{
+						// time step size
+						double dt = params_.get<double>("delta time" ,-1.0);
+						// time curve increment
+						double tcincrement = 0.0;
+						if(curvenumber_>-1)
+							tcincrement = DRT::Problem::Instance()->Curve(curvenumber_).f(time) -
+														DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
+						(*deltadbc_)[lids.at(numdof*(n+1)+oscdir_)] = amp_*tcincrement;
+					}
 
 				// add DOF LID where a force sensor is to be set
 				if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
 				{
-					int sensorlid = lids.at(3*(n+1)+oscdir_);
+					int sensorlid = lids.at(numdof*(n+1)+oscdir_);
 					fsensorlids.push_back(sensorlid);
 				}
 
@@ -1485,19 +1497,25 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				fixednodes.push_back(element->Nodes()[n+1]->Id());
 
 				// oscillating node
-				double dt = params_.get<double>("delta time" ,-1.0);
-				double tcincrement = 0.0;
-				//cout<<"        TIME/TIME-dt:"<<time<<" / "<<time - dt<<endl;
-				if(curvenumber_>-1)
-					tcincrement = DRT::Problem::Instance()->Curve(curvenumber_).f(time) -
-												DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
-				(*deltadbc_)[lids.at(3*n+oscdir_)] = amp_*tcincrement;
+				for(int i=0; i<numdof; i++)
+					if(i!=oscdir_)
+						(*deltadbc_)[lids.at(numdof*n+i)] = 0.0;
+					else
+					{
+						double dt = params_.get<double>("delta time" ,-1.0);
+						double tcincrement = 0.0;
+						if(curvenumber_>-1)
+							tcincrement = DRT::Problem::Instance()->Curve(curvenumber_).f(time) -
+														DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
+						(*deltadbc_)[lids.at(numdof*n+oscdir_)] = amp_*tcincrement;
+					}
 				// fixed node
-				(*deltadbc_)[lids.at(3*(n+1)+oscdir_)] = 0.0;
+				for(int i=0; i<numdof; i++)
+						(*deltadbc_)[lids.at(numdof*(n+1)+i)] = 0.0;
 
 				if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
 				{
-					int sensorlid = lids.at(3*n+oscdir_);
+					int sensorlid = lids.at(numdof*n+oscdir_);
 					fsensorlids.push_back(sensorlid);
 				}
 
@@ -1531,48 +1549,38 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 
 //------------------------------------set Dirichlet values
 	// preliminary
-	DRT::Node* node = discret_.gNode(discret_.NodeRowMap()->GID(0));
+  DRT::Node* node = discret_.gNode(discret_.NodeRowMap()->GID(0));
 	int numdof = (int)discret_.Dof(node).size();
-
-	vector<int> 	 addcurve(numdof, -1);
-	vector<int> 	 addfunct(numdof, 0);
 	vector<int>  	 addonoff(numdof, 0);
-	vector<double> addval(numdof, 0.0);
 
   // set condition for oscillating nodes
-	addcurve.at(oscdir_) = curvenumber_;
-	addval.at(oscdir_) = amp_;
-	// inhibit planar DOFs, leave free only z-direction (for now, inhibiting only oscdir_ seems to cause instabilities)
-	for(int i=0; i<3; i++)
-		if(i==oscdir_)
+	// inhibit all DOFs (for now, testing)
+	for(int i=0; i<numdof; i++)
 			addonoff.at(i) = 1;
-
+	//cout<<"deltadbc_ = \n"<<*deltadbc_<<endl;
   // do not do anything if vector is empty
   if(!oscillnodes.empty())
   {
   	cout<<"OSCILLATING NODES"<<endl;
-  	DoDirichletConditionPeriodic(usetime, time, &oscillnodes, &addcurve, &addfunct, &addonoff, &addval);
+  	DoDirichletConditionPeriodic(usetime, time, &oscillnodes, &addonoff);
   }
 
   // set condition for fixed nodes
-	addcurve.at(oscdir_) = -1;
-	addval.at(oscdir_) = 0.0;
 
 	if(!fixednodes.empty())
 	{
 		cout<<"FIXED NODES"<<endl;
-  	DoDirichletConditionPeriodic(usetime, time, &fixednodes, &addcurve, &addfunct, &addonoff, &addval);
+  	DoDirichletConditionPeriodic(usetime, time, &fixednodes, &addonoff);
 	}
 
   // set condition for free or recently set free nodes
-  for(int i=0; i<3; i++)
-  	if(i==oscdir_)
+  for(int i=0; i<numdof; i++)
   		addonoff.at(i) = 0;
 
 	if(!freenodes.empty())
 	{
 		cout<<"FREE NODES"<<endl;
-  	DoDirichletConditionPeriodic(usetime, time, &freenodes, &addcurve, &addfunct, &addonoff, &addval);
+  	DoDirichletConditionPeriodic(usetime, time, &freenodes, &addonoff);
 	}
 	//cout<<"deltadbc_:\n"<<*deltadbc_<<endl;
 
@@ -1589,10 +1597,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
                                                 const double time,
 																								vector<int>* nodeids,
-																								vector<int>* curve,
-																								vector<int>* funct,
-																								vector<int>* onoff,
-																								vector<double>* val)
+																								vector<int>* onoff)
 /*
  * This basically does the same thing as DoDirichletCondition() (to be found in drt_discret_evaluate.cpp),
  * but with the slight difference of taking current displacements into account.
@@ -1606,18 +1611,12 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
 	cout<<"Node Ids: ";
 	for(int i=0; i<(int)nodeids->size(); i++)
 		cout<<nodeids->at(i)<<" ";
-	cout<<"curve: ";
-	for(int i=0; i<(int)discret_.Dof(0,discret_.gNode(nodeids->at(0))).size(); i++)
-		cout<<curve->at(i)<<" ";
-	cout<<"funct: ";
-	for(int i=0; i<(int)discret_.Dof(0,discret_.gNode(nodeids->at(0))).size(); i++)
-		cout<<funct->at(i)<<" ";
 	cout<<"onoff: ";
 	for(int i=0; i<(int)discret_.Dof(0,discret_.gNode(nodeids->at(0))).size(); i++)
 		cout<<onoff->at(i)<<" ";
-	cout<<"val: ";
+	for(int h=0; h<(int)nodeids->size(); h++)
 	for(int i=0; i<(int)discret_.Dof(0,discret_.gNode(nodeids->at(0))).size(); i++)
-		cout<<val->at(i)<<" ";
+		cout<<discret_.gNode(nodeids->at(i))->LID()<<" ";
 	cout<<endl;
 
 	// some checks for errors

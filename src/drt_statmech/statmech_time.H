@@ -81,10 +81,7 @@ public:
   void DoDirichletConditionPeriodic(const bool                  usetime,
 																		const double                time,
 																		vector<int>*								nodeids,
-																		vector<int>*								curve,
-																		vector<int>*								funct,
-																		vector<int>*								onoff,
-																		vector<double>*							val);
+																		vector<int>*								onoff);
 
 
 protected:

@@ -2092,7 +2092,9 @@ void StatMechManager::GetElementNodeCoords(DRT::Element* element, RCP<Epetra_Vec
 	// clear LID vector just in case it was handed over non-empty
 	lids->clear();
 	for(int j=0; j<element->NumNode();j++)
-		for(int k = 0; k<3; k++)
+	{
+		int numdof = discret_.Dof(0,element->Nodes()[j]).size();
+		for(int k = 0; k<numdof; k++)
 	 	{
 			// obtain k-th spatial component of the reference position of the j-th node
 	 		double referenceposition = ((element->Nodes())[j])->X()[k];
@@ -2100,12 +2102,13 @@ void StatMechManager::GetElementNodeCoords(DRT::Element* element, RCP<Epetra_Vec
 	 	  vector<int> dofnode = discret_.Dof((element->Nodes())[j]);
 	 	  // store the displacement of the k-th spatial component
 	 	  double displacement = (*dis)[discret_.DofRowMap()->LID( dofnode[k] )];
-	 	  // write updated components into coord
+	 	  // write updated components into coord (only translational
 	 	  coord(k,j) =  referenceposition + displacement;
 	 	  // store current lid(s) (3 translational DOFs per node)
 	 	  if(lids!=NULL)
 	 	  	lids->push_back(discret_.DofRowMap()->LID( dofnode[k] ));
 	 	}
+	}
 	return;
 } // StatMechManager::GetElementNodeCoords
 
