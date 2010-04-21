@@ -74,11 +74,7 @@ namespace ADAPTER {
     virtual void Integrate() { structure_->Integrate(); }
 
     /// Get the current time
-    virtual double GetTime() const
-    {
-      cout << *params_;
-      dserror("Not implemented 1"); return -1.0;
-    }
+    virtual double GetTime() const { return structure_->GetTime(); }
 
     /// Get upper limit of time range of interest
     virtual double GetTimeEnd() const { dserror("Not impl."); return -1.0; }
