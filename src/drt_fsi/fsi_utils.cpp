@@ -27,9 +27,9 @@
 #include "../drt_f3/fluid3.H"
 
 #include "../drt_ale2/ale2.H"
-
 #include "../drt_ale2/ale2_nurbs.H"
 #include "../drt_ale3/ale3.H"
+#include "../drt_ale3/ale3_nurbs.H"
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -335,7 +335,6 @@ void FSI::UTILS::CreateAleDiscretization()
       }
     }
 
-
     // create the ale element with the same global element id
     RCP<DRT::Element> aleele = DRT::UTILS::Factory(aletype[i],eletype,egid[i], myrank);
 
@@ -381,7 +380,15 @@ void FSI::UTILS::CreateAleDiscretization()
       }
       else
       {
-        dserror("unsupported ale element type '%s'", typeid(*aleele).name());
+        DRT::ELEMENTS::NURBS::Ale3Nurbs* ale3 = dynamic_cast<DRT::ELEMENTS::NURBS::Ale3Nurbs*>(aleele.get());
+        if (ale3!=NULL)
+        {
+          ale3->SetMaterial(matnr);
+        }
+        else
+        {
+          dserror("unsupported ale element type '%s'", typeid(*aleele).name());
+        }
       }
     }
 #endif
@@ -581,7 +588,16 @@ void FSI::UTILS::AleFluidCloneStrategy::SetElementData(
       }
       else
       {
-        dserror("unsupported ale element type '%s'", typeid(*newele).name());
+        DRT::ELEMENTS::NURBS::Ale3Nurbs* ale3 = dynamic_cast<DRT::ELEMENTS::NURBS::Ale3Nurbs*>(newele.get());
+
+        if(ale3!=NULL)
+        {
+          ale3->SetMaterial(matnr);
+        }
+        else
+        {
+          dserror("unsupported ale element type '%s'", typeid(*newele).name());
+        }
       }
     }
 #endif
