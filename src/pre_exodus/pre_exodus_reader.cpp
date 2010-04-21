@@ -889,7 +889,7 @@ void EXODUS::Mesh::WriteMesh(const string newexofilename) const
     const int nsID = ins->first;
     const NodeSet ns = ins->second;
     const int num_nodes_in_set = ns.GetNumNodes();
-    if (num_nodes_in_set >= 0) //do not bother if no nodes involved
+    if (num_nodes_in_set > 0) //do not bother if nodeset empty
     {
       const string name = ns.GetName();
       const char* nsname = name.c_str();
