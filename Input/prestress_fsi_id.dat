@@ -99,7 +99,7 @@ FLUID DIS 1 NODE 3043 POSITION velz NAME velz VALUE -1.575533634e-03 TOLERANCE 1
 FLUID DIS 1 NODE 3043 POSITION pressure NAME pressure VALUE 2.633600519e+04 TOLERANCE 1e-3
 ------------------------------------------------------------PATIENT SPECIFIC
 PATSPEC                         no
-PRESTRESS                       mulf                // mulf id none
+PRESTRESS                       id                // mulf id none
 PRESTRESSTIME                   0.00101
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         1000.0
