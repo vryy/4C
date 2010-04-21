@@ -830,11 +830,11 @@ set(OBJS_LINALG
   src/drt_lib/linalg_sparsematrix.cpp
   src/drt_lib/linalg_utils.cpp
   src/drt_lib/saddlepointpreconditioner.cpp
-  src/drt_lib/transfer_operator.cpp
-  src/drt_lib/transfer_operator_tentative.cpp
-  src/drt_lib/transfer_operator_saamg.cpp
-  src/drt_lib/transfer_operator_pgamg.cpp
   src/drt_lib/simpler_operator.cpp
+  src/drt_lib/transfer_operator.cpp
+  src/drt_lib/transfer_operator_pgamg.cpp
+  src/drt_lib/transfer_operator_saamg.cpp
+  src/drt_lib/transfer_operator_tentative.cpp
 )
 set(OBJS_DRT_FSI
   src/drt_fsi/fs_monolithic.cpp
@@ -1432,10 +1432,10 @@ baci_test(beam2test1 1 "")
 baci_test(beam2test1 2 "")
 baci_test(beam2test2 1 "")
 baci_test(beam2test2 2 "")
-baci_test(beam3contact_penalty 1 "")
-baci_test(beam3contact_penalty 2 "")
 baci_test(beam3contact_augmented 1 "")
 baci_test(beam3contact_augmented 2 "")
+baci_test(beam3contact_penalty 1 "")
+baci_test(beam3contact_penalty 2 "")
 baci_test(beam3test1cubic 1 "")
 baci_test(beam3test1cubic 2 "")
 baci_test(beam3test1linear 1 "")
@@ -1535,6 +1535,8 @@ baci_test(contact3D_slidingblock_augmented_tet10 1 "")
 baci_test(contact3D_slidingblock_augmented_tet10 2 "")
 baci_test(contact3D_slidingblock_coulomb 1 "")
 baci_test(contact3D_slidingblock_coulomb 2 "")
+baci_test(contact3D_slidingblock_coulomb_sti 1 "")
+baci_test(contact3D_slidingblock_coulomb_sti 2 "")
 baci_test(contact3D_slidingblock_penalty 1 "")
 baci_test(contact3D_slidingblock_penalty 2 "")
 baci_test(disp_control 1 "")
@@ -1657,6 +1659,10 @@ baci_test(fsi_ring2D_sliding_up 2 "")
 baci_test(inv_analysis 1 "")
 baci_test(invaaa 1 "")
 baci_test(invaaa 2 "")
+baci_test(inversedesign 1 "")
+baci_test(inversedesign 2 "")
+baci_test(inversedesign_tet4 1 "")
+baci_test(inversedesign_tet4 2 "")
 baci_test(loadlin 1 "")
 baci_test(loadlin 2 "")
 baci_test(locsys2D 1 "")
@@ -1833,10 +1839,6 @@ baci_test(w1q4_patch_eas 2 "")
 baci_test(w1q9_dyn_rot_drt 1 "")
 
 if (INVERSEDESIGNCREATE)
-  baci_test(inversedesign 1 "")
-  baci_test(inversedesign 2 "")
-  baci_test(inversedesign_tet4 1 "")
-  baci_test(inversedesign_tet4 2 "")
   baci_test(inversedesign_wedge6 1 "")
   baci_test(inversedesign_wedge6 2 "")
 endif (INVERSEDESIGNCREATE)
