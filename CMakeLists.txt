@@ -657,6 +657,7 @@ set(OBJS_POST_GID_TXT
   src/post_gid/gid_out_txt.c
 )
 set(OBJS_DRT_FLUID
+  src/drt_fluid/drt_transfer_turb_inflow.cpp
   src/drt_fluid/dyn_smag.cpp
   src/drt_fluid/fluid_coupling_red_models.cpp
   src/drt_fluid/fluid_dyn_nln_drt.cpp
@@ -1721,6 +1722,8 @@ baci_test(potential_vol_LJ_3D 1 "")
 baci_test(potential_vol_LJ_3D 2 "")
 baci_test(prestress_fsi 1 "")
 baci_test(prestress_fsi 2 "")
+baci_test(prestress_fsi_id 1 "")
+baci_test(prestress_fsi_id 2 "")
 baci_test(prestress_hex8 1 "")
 baci_test(prestress_hex8 2 "")
 baci_test(prestress_tet4 1 "")
