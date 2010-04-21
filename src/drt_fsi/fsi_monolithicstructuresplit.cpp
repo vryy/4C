@@ -894,10 +894,10 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::ExtractFieldVectors");
 
+  // process fluid unknowns
   fx = Extractor().ExtractVector(x,1);
 
   // process structure unknowns
-
   Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractFSICondVector(fx);
   FluidField().VelocityToDisplacement(fcx);
   Teuchos::RCP<const Epetra_Vector> sox = Extractor().ExtractVector(x,0);
@@ -908,7 +908,6 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
   sx = s;
 
   // process ale unknowns
-
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
   Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
 
@@ -924,8 +923,8 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
     Teuchos::RCP<Epetra_Vector> acx = fscoupfa_.MasterToSlave(fcx);
     AleField().Interface().InsertFSCondVector(acx, a);
   }
-
   ax = a;
+
 }
 
 

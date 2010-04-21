@@ -256,7 +256,7 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   // Create printing utilities
   utils_ = Teuchos::rcp(new NOX::Utils(printParams));
 
-  Teuchos::RefCountPtr<std::ofstream> log;
+  Teuchos::RCP<std::ofstream> log;
   if (Comm().MyPID()==0)
   {
     std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
@@ -270,6 +270,23 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
 
   Teuchos::Time timer("time step timer");
 
+  // check for prestressing, 
+  // do not allow monolithic in the pre-phase
+  // allow monolithic in the post-phase
+  {
+    double time = 0.0;
+    double pstime = -1.0;
+    const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+    INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+    if (pstype != INPAR::STR::prestress_none)
+    {
+      time   = StructureField().GetTime();
+      pstime = pslist.get<double>("PRESTRESSTIME");
+      if (time <= pstime) dserror("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
+    }
+  }
+  
+
   while (NotFinished())
   {
     PrepareTimeStep();
@@ -280,7 +297,7 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
       fdbg_->NewTimeStep(Step(),"fluid");
 
     // start time measurement
-    Teuchos::RefCountPtr<Teuchos::TimeMonitor> timemonitor = rcp(new Teuchos::TimeMonitor(timer,true));
+    Teuchos::RCP<Teuchos::TimeMonitor> timemonitor = rcp(new Teuchos::TimeMonitor(timer,true));
 
     // calculate initial linear system at current position
     // (no increment)
