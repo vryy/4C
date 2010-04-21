@@ -382,7 +382,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       pedispnp_(2,i) = mypedispnp[2+fi];
     }
 
-    for (int i=0;i<piel;++i)
+    for (int i=0;i<iel;++i)
     {
       const int fi=4*i;
 
