@@ -3028,7 +3028,6 @@ void StruGenAlpha::Update()
   }
 
 
-//#ifdef INVERSEDESIGNCREATE
   if (pstype==INPAR::STR::prestress_id && timen <= pstime)
   {
     if (!discret_.Comm().MyPID()) cout << "====== Entering INVERSEDESIGN update\n"; fflush(stdout);
@@ -3046,7 +3045,6 @@ void StruGenAlpha::Update()
       discret_.Evaluate(p,null,null,null,null,null);
     }
   }
-//#endif
 
   //----------------- update surface stress history variables if present
   if (surf_stress_man_->HaveSurfStress())
@@ -3184,21 +3182,6 @@ void StruGenAlpha::Output()
     output_.WriteVector("acceleration",acc_);
     output_.WriteVector("fexternal",fext_);
     output_.WriteElementData();
-
-#if 0 // no longer necessary
-//#ifdef INVERSEDESIGNCREATE 
-    if (pstype==INPAR::STR::prestress_id && timen <= pstime) // indicate that this restart is from id create phase
-    {
-      output_.WriteInt("InverseDesignRestartFlag",0);
-    }
-//#endif
-//#ifdef INVERSEDESIGNUSE 
-    else if (pstype==INPAR::STR::prestress_id && timen > pstime) // indicate that this restart is from id use phase
-    {
-      output_.WriteInt("InverseDesignRestartFlag",1);
-    }
-//#endif
-#endif
 
     if (control) // disp or arclength control together with dynkindstat
     {
