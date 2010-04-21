@@ -255,14 +255,17 @@ int main(
     }
     case prb_tsi:
     {
+      cout << "Output TSI Problem" << endl;
+
       string basename = problem.outname();
+
       PostField* structfield = problem.get_discretization(0);
       StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
 
-      // PostField* field = problem.get_discretization(0);
-      // ThermoEnsightWriter writer(field, problem.outname(), problem.heatfluxtype(), problem.tempgradtype());
-      // writer.WriteFiles();
+      PostField* thermfield = problem.get_discretization(1);
+      ThermoEnsightWriter thermwriter(thermfield, basename);
+      thermwriter.WriteFiles();
       break;
     }
     case prb_red_airways:

@@ -429,7 +429,8 @@ void ThermoEnsightWriter::WriteElementCenterHeatflux(
 void ThermoEnsightWriter::WriteElementCenterHeatfluxStep(
   ofstream& file,
   PostResult& result,
-  std::map<std::string, std::vector<ofstream::pos_type> >& resultfilepos,
+  std::map<std::string,
+  std::vector<ofstream::pos_type> >& resultfilepos,
   const std::string groupname,
   const std::string name,
   const int numdf
@@ -453,7 +454,7 @@ void ThermoEnsightWriter::WriteElementCenterHeatfluxStep(
   dis->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   if (eleheatflux == Teuchos::null)
   {
-    dserror("vector containing element center heatfluxes/strains not available");
+    dserror("vector containing element center heatfluxes/tempgradients not available");
   }
 
   //--------------------------------------------------------------------
