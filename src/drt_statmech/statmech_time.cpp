@@ -205,8 +205,6 @@ void StatMechTime::Integrate()
           ParameterList p;
           p.set("action","calc_struct_reset_istep");
           discret_.Evaluate(p,null,null,null,null,null);
-
-          dserror("not converged");
         }
 
       }
@@ -1439,20 +1437,15 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				// the new displacement increments
 				// incremental displacement for a fixed node...(all DOFs = 0.0)
 				for(int i=0; i<numdof; i++)
-				{
-					cout<<lids.at(numdof*n+i)<<endl;
+					if(i==oscdir_)
 						(*deltadbc_)[lids.at(numdof*n+i)] = 0.0;
-				}
 
 				// incremental Dirichlet displacement for an oscillating node (all DOFs except oscdir_ = 0.0)
-				for(int i=0; i<numdof; i++)
-					if(i!=oscdir_)
-					{
-						cout<<lids.at(numdof*(n+1)+i)<<endl;
-						(*deltadbc_)[lids.at(numdof*(n+1)+i)] = 0.0;
-					}
-					else
-					{
+				//for(int i=0; i<numdof; i++)
+					//if(i!=oscdir_)
+						//(*deltadbc_)[lids.at(numdof*(n+1)+i)] = 0.0;
+					//else
+					//{
 						// time step size
 						double dt = params_.get<double>("delta time" ,-1.0);
 						// time curve increment
@@ -1461,7 +1454,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 							tcincrement = DRT::Problem::Instance()->Curve(curvenumber_).f(time) -
 														DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
 						(*deltadbc_)[lids.at(numdof*(n+1)+oscdir_)] = amp_*tcincrement;
-					}
+					//}
 
 				// add DOF LID where a force sensor is to be set
 				if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
@@ -1497,20 +1490,21 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				fixednodes.push_back(element->Nodes()[n+1]->Id());
 
 				// oscillating node
-				for(int i=0; i<numdof; i++)
-					if(i!=oscdir_)
-						(*deltadbc_)[lids.at(numdof*n+i)] = 0.0;
-					else
-					{
+				//for(int i=0; i<numdof; i++)
+					//if(i!=oscdir_)
+						//(*deltadbc_)[lids.at(numdof*n+i)] = 0.0;
+					//else
+					//{
 						double dt = params_.get<double>("delta time" ,-1.0);
 						double tcincrement = 0.0;
 						if(curvenumber_>-1)
 							tcincrement = DRT::Problem::Instance()->Curve(curvenumber_).f(time) -
 														DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
 						(*deltadbc_)[lids.at(numdof*n+oscdir_)] = amp_*tcincrement;
-					}
+					//}
 				// fixed node
 				for(int i=0; i<numdof; i++)
+					if(i==oscdir_)
 						(*deltadbc_)[lids.at(numdof*(n+1)+i)] = 0.0;
 
 				if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
@@ -1556,6 +1550,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
   // set condition for oscillating nodes
 	// inhibit all DOFs (for now, testing)
 	for(int i=0; i<numdof; i++)
+		if(i==oscdir_)
 			addonoff.at(i) = 1;
 	//cout<<"deltadbc_ = \n"<<*deltadbc_<<endl;
   // do not do anything if vector is empty
@@ -1575,6 +1570,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 
   // set condition for free or recently set free nodes
   for(int i=0; i<numdof; i++)
+  	if(i==oscdir_)
   		addonoff.at(i) = 0;
 
 	if(!freenodes.empty())
@@ -1607,17 +1603,14 @@ void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
  * at the end of the preceding time step.
  */
 {
-	// "condition output"
+	/*/ "condition output"
 	cout<<"Node Ids: ";
 	for(int i=0; i<(int)nodeids->size(); i++)
 		cout<<nodeids->at(i)<<" ";
 	cout<<"onoff: ";
 	for(int i=0; i<(int)discret_.Dof(0,discret_.gNode(nodeids->at(0))).size(); i++)
 		cout<<onoff->at(i)<<" ";
-	for(int h=0; h<(int)nodeids->size(); h++)
-	for(int i=0; i<(int)discret_.Dof(0,discret_.gNode(nodeids->at(0))).size(); i++)
-		cout<<discret_.gNode(nodeids->at(i))->LID()<<" ";
-	cout<<endl;
+	cout<<endl;*/
 
 	// some checks for errors
 	if (!nodeids) dserror("No Node IDs were handed over!");
