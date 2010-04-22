@@ -62,7 +62,7 @@ EnsightWriter::EnsightWriter(PostField* field,
   // you need to manually switch to other types distypes before querying this map
   distype2ensightstring_.clear();
   distype2ensightstring_[DRT::Element::line2] = "bar2";
-  distype2ensightstring_[DRT::Element::line3] = "bar3";
+  distype2ensightstring_[DRT::Element::line3] = "bar2"; //"bar3";
   distype2ensightstring_[DRT::Element::hex8] = "hexa8";
   distype2ensightstring_[DRT::Element::hex20] = "hexa20";
   distype2ensightstring_[DRT::Element::tet4] = "tetra4";
@@ -383,7 +383,7 @@ void EnsightWriter::WriteCells(
         switch (actele->Shape())
         {
         case DRT::Element::line2:
-        case DRT::Element::line3:
+     // case DRT::Element::line3: // Ensight format supports line3, Paraview does not.
         case DRT::Element::hex8:
         case DRT::Element::quad4:
         case DRT::Element::quad8:
@@ -422,7 +422,7 @@ void EnsightWriter::WriteCells(
         case DRT::Element::hex27:
         {
           // write subelements
-          for (int isubele=0; isubele<8; ++isubele)
+          for (int isubele=0; isubele<GetNumSubEle(DRT::Element::hex27); ++isubele)
             for (int isubnode=0; isubnode<8; ++isubnode)
               if (myrank_==0) // proc0 can write its elements immidiately
                 Write(geofile, proc0map->LID(nodes[subhexmap[isubele][isubnode]]->Id())
@@ -434,13 +434,25 @@ void EnsightWriter::WriteCells(
         case DRT::Element::quad9:
         {
           // write subelements
-          for (int isubele=0; isubele<4; ++isubele)
+          for (int isubele=0; isubele<GetNumSubEle(DRT::Element::quad9); ++isubele)
             for (int isubnode=0; isubnode<4; ++isubnode)
               if (myrank_==0) // proc0 can write its elements immidiately
                 Write(geofile, proc0map->LID(nodes[subquadmap[isubele][isubnode]]->Id())
                       +1);
               else // elements on other procs have to store their global node ids
                 nodevector.push_back(nodes[subquadmap[isubele][isubnode]]->Id());
+          break;
+        }
+        case DRT::Element::line3:
+        {
+          // write subelements
+          for (int isubele=0; isubele<GetNumSubEle(DRT::Element::line3); ++isubele)
+            for (int isubnode=0; isubnode<2; ++isubnode)
+              if (myrank_==0) // proc0 can write its elements immidiately
+                Write(geofile, proc0map->LID(nodes[sublinemap[isubele][isubnode]]->Id())
+                      +1);
+              else // elements on other procs have to store their global node ids
+                nodevector.push_back(nodes[sublinemap[isubele][isubnode]]->Id());
           break;
         }
 	case DRT::Element::nurbs4:
@@ -633,28 +645,36 @@ int EnsightWriter::GetNumEleOutput(
   const DRT::Element::DiscretizationType distype,
   const int numele) const
 {
+  return GetNumSubEle(distype)*numele;
+}
 
-  int numeleout = 0;
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int EnsightWriter::GetNumSubEle(
+  const DRT::Element::DiscretizationType distype) const
+{
   switch (distype)
   {
   case DRT::Element::hex27:
-    numeleout = 8*numele;
+    return 8;
     break;
   case DRT::Element::nurbs27:
-    numeleout = 8*numele;
+    return 8;
     break;
   case DRT::Element::quad9:
-    numeleout = 4*numele;
+    return 4;
     break;
   case DRT::Element::nurbs9:
-    numeleout = 4*numele;
+    return 4;
+    break;
+  case DRT::Element::line3:
+    return 2;
     break;
   default:
-    numeleout = numele;
+    return 1; // no element splitting necessary
   }
-  return numeleout;
 }
-
 
 /*!
  * \brief parse all elements and get the global ids of the elements for each distype
@@ -1564,24 +1584,7 @@ void EnsightWriter::WriteElementResultStep(
   {
     const string ensighteleString = GetEnsightString(iter->first);
 
-    int numsubele;
-    switch (iter->first)
-    {
-    case DRT::Element::hex27:
-      numsubele = 8;
-      break;
-    case DRT::Element::nurbs27:
-      numsubele = 8;
-      break;
-    case DRT::Element::quad9:
-      numsubele = 4;
-      break;
-    case DRT::Element::nurbs9:
-      numsubele = 4;
-      break;
-    default:
-      numsubele = 1;
-    }
+    int numsubele = GetNumSubEle(iter->first);
 
     const int numelepertype = (iter->second).size();
     vector<int> actelegids(numelepertype);

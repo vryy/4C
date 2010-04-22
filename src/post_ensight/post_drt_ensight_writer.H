@@ -32,6 +32,13 @@
 
 using namespace std;
 
+//! defines how 2 line2 elements are constructed from a line3
+const int sublinemap[2][2] =
+    {
+        { 0, 2 },
+        { 2, 1 } };
+
+
 //! defines how 4 quad4 elements are constructed from a quad9
 const int subquadmap[4][4] =
     {
@@ -423,6 +430,9 @@ protected:
     int GetNumEleOutput(
             const DRT::Element::DiscretizationType distype,
             const int numele) const;
+
+    //! number of subelements (equals 1 if no element splitting has to be done)
+    int GetNumSubEle(const DRT::Element::DiscretizationType distype) const;
 
     /*!
      * \brief store, which elements are belonging to each present distype
