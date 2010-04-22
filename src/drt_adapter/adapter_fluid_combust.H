@@ -165,6 +165,7 @@ namespace ADAPTER
 
     virtual Teuchos::RCP<DRT::Discretization> Discretization() { return fluiddis_; }
     virtual Teuchos::RCP<const DRT::DofSet> DofSet() { return fluid_.StandardDofSet(); }
+    virtual void TimeLoop();
     virtual void PrepareTimeStep();
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
     virtual void Update();

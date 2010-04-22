@@ -96,6 +96,7 @@ namespace ADAPTER {
 
     //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const;
 
+    virtual void TimeLoop();
     virtual void PrepareTimeStep();
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> dacc);
     virtual void Update();

@@ -161,6 +161,9 @@ namespace ADAPTER {
 
     //! @name Time step helpers
 
+    /// run a complete simulation (for fluid stand-alone simulations)
+    virtual void TimeLoop() = 0;
+
     /// start new time step
     virtual void PrepareTimeStep() = 0;
 

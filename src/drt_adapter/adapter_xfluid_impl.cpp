@@ -266,6 +266,14 @@ Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::XFluidImpl::GetDBCMapExtractor
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::XFluidImpl::TimeLoop()
+{
+  dserror("Not implemented.");
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::PrepareTimeStep()
 {
   // update acceleration n

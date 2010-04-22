@@ -202,6 +202,14 @@ Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::FluidImpl::GetDBCMapExtractor(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::FluidImpl::TimeLoop()
+{
+   fluid_.Integrate();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::FluidImpl::PrepareTimeStep()
 {
   fluid_.PrepareTimeStep();

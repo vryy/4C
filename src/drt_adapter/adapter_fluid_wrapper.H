@@ -63,6 +63,8 @@ namespace ADAPTER
                                    RCP<const Epetra_Vector> scatraresidual,
                                    Teuchos::RCP<DRT::Discretization> scatradis)
     { return fluid_->SetTimeLomaFields(scalarnp, thermpressnp, scatraresidual, scatradis); }
+    virtual void TimeLoop()
+    { return fluid_->TimeLoop(); }
     virtual void PrepareTimeStep()
     { return fluid_->PrepareTimeStep(); }
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel)

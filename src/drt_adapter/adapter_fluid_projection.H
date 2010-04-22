@@ -55,6 +55,7 @@ public:
     virtual Teuchos::RCP<const DRT::DofSet> DofSet() { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
 
+    virtual void TimeLoop();
     virtual void PrepareTimeStep();
 
     virtual void Update();

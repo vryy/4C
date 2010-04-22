@@ -163,6 +163,15 @@ Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::FluidGenAlpha::GetDBCMapExtrac
 //   return interface_.ExtractCondVector(Velnp());
 // }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidGenAlpha::TimeLoop()
+{
+  fluid_.GenAlphaTimeloop();
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

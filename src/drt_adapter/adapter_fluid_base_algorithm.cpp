@@ -131,24 +131,36 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   }
 
   // -------------------------------------------------------------------
+  // create a second solver for AMGBS preconditioner if chosen from input
+  // -------------------------------------------------------------------
+  if (getIntegralValue<int>(fdyn,"AMGBS"))
+  {
+    if(getIntegralValue<int>(fdyn,"SIMPLER"))
+      dserror("you can either use SIMPLER or AMGBS preconditioner but not both the same time. \nFor using AMGBS preconditioner set SIMPLER to no.");
+    solver->PutSolverParamsToSubParams("AMGBS",
+        DRT::Problem::Instance()->FluidPressureSolverParams());
+  }
+
+  // -------------------------------------------------------------------
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
   RCP<ParameterList> fluidtimeparams = rcp(new ParameterList());
 
   fluidtimeparams->set<int>("Simple Preconditioner",Teuchos::getIntegralValue<int>(fdyn,"SIMPLER"));
+  fluidtimeparams->set<int>("AMG BS Preconditioner",Teuchos::getIntegralValue<int>(fdyn,"AMGBS"));
 
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
-  fluidtimeparams->set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
+  fluidtimeparams->set<int>("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
 
-  // physical type of the fluid (incompressible, Boussinesq Approximation, varying density, loma)
+  // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma)
   fluidtimeparams->set<INPAR::FLUID::PhysicalType>("Physical Type",
-			  Teuchos::getIntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE"));
+      Teuchos::getIntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE"));
 
   // ------------------------------------------------ basic scheme, i.e.
   // --------------------- solving nonlinear or linearised flow equation
   fluidtimeparams->set<int>("type of nonlinear solve" ,
-                            Teuchos::getIntegralValue<int>(fdyn,"DYNAMICTYP"));
+      Teuchos::getIntegralValue<int>(fdyn,"DYNAMICTYP"));
 
   // -------------------------------------------------- time integration
   // note: here, the values are taken out of the problem-dependent ParameterList prbdyn
@@ -180,9 +192,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   // ---------------------------------------------- nonlinear iteration
   // type of predictor
-  fluidtimeparams->set<string>           ("predictor"                 , fdyn.get<string>("PREDICTOR"));
+  fluidtimeparams->set<string>          ("predictor"                 ,fdyn.get<string>("PREDICTOR"));
   // set linearisation scheme
-  fluidtimeparams->set<string>           ("Linearisation"             ,fdyn.get<string>("NONLINITER"));
+  fluidtimeparams->set<string>          ("Linearisation"             ,fdyn.get<string>("NONLINITER"));
   // maximum number of nonlinear iteration steps
   fluidtimeparams->set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
   // stop nonlinear iteration when both incr-norms are below this bound
@@ -206,7 +218,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   // -----------evaluate error for test flows with analytical solutions
   int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
-  fluidtimeparams->set                  ("eval err for analyt sol"   ,init);
+  fluidtimeparams->set ("eval err for analyt sol"   ,init);
 
   // ------------------------------------------ form of convective term
   fluidtimeparams->set<string> ("form of convective term", fdyn.get<string>("CONVFORM"));
@@ -215,7 +227,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   fluidtimeparams->set<string> ("Neumann inflow",fdyn.get<string>("NEUMANNINFLOW"));
 
   // ---------------------------- fine-scale subgrid viscosity approach
-  fluidtimeparams->set<string>           ("fs subgrid viscosity"   ,fdyn.get<string>("FSSUGRVISC"));
+  fluidtimeparams->set<string> ("fs subgrid viscosity"   ,fdyn.get<string>("FSSUGRVISC"));
 
   // -----------------------sublist containing stabilization parameters
   fluidtimeparams->sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
@@ -269,7 +281,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective
-  // time-integration (or statioTIMnary) scheme
+  // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
   FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
 

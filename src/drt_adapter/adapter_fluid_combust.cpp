@@ -70,8 +70,17 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::Hist()
 {
   return fluid_.Hist();
 }
+
 /*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
+ |                                                                                    bauer 04/10 |
+ *------------------------------------------------------------------------------------------------*/
+void ADAPTER::FluidCombust::TimeLoop()
+{
+  fluid_.TimeLoop();
+}
+
+/*------------------------------------------------------------------------------------------------*
+ |                                                                                    henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 void ADAPTER::FluidCombust::PrepareTimeStep()
 {
@@ -79,7 +88,7 @@ void ADAPTER::FluidCombust::PrepareTimeStep()
 }
 
 /*------------------------------------------------------------------------------------------------*
- | Wozu ist diese Abfrage nötig? henke 10/08 |
+ | Wozu ist diese Abfrage nötig?                                                      henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 void ADAPTER::FluidCombust::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 {
