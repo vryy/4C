@@ -270,7 +270,11 @@ void TransferTurbulentInflowCondition::Transfer(
       // in the first step, we cannot receive anything
       if(np >0)
       {
+#ifdef PARALLEL
         ReceiveBlock(rblock,exporter,request);
+#else
+        rblock=sblock;
+#endif
 
         // Unpack info from the receive block from the last proc
         UnpackLocalMasterValues(mymasters,mymasters_vel,rblock);
@@ -286,7 +290,9 @@ void TransferTurbulentInflowCondition::Transfer(
         // Pack info into block to send
         PackLocalMasterValues(mymasters,mymasters_vel,sblock);
 
+#ifdef PARALLEL
         SendBlock(sblock,exporter,request);
+#endif
       }
     }
   }
