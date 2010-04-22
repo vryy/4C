@@ -83,7 +83,6 @@ public:
     if (myrank_==0)
         printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d \n",
                time_,maxtime_,dta_,MethodTitle().c_str(),step_,stepmax_);
-    return;
   }
 
   /// do time integration (time loop)
@@ -320,10 +319,12 @@ public:
   int NumScal() const { return numscal_; }
 
   /// return system matrix down-casted as sparse matrix
-  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
+  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
+    { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
 
   /// return system matrix downcasted as block sparse matrix
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
+    { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
 
   /// calculate error compared to analytical solution
   void EvaluateErrorComparedToAnalyticalSol();
@@ -455,6 +456,9 @@ protected:
   //! update time-dependent electrode state variables at the end of an time step
   virtual void ElectrodeKineticsTimeUpdate(const bool init = false) = 0;
 
+  //! scale lines of linear system prior to solver call (ELCH)
+  void ScaleLinearSystem();
+
   /// the scalar transport discretization
   RCP<DRT::Discretization>   discret_;
   /// the solver
@@ -482,9 +486,6 @@ protected:
   INPAR::SCATRA::SolverType solvtype_;
   bool nonlinear_;
   bool incremental_;
-
-  /// flag for potential inclusion of reaction term
-  string reaction_;
 
   /// flag for Eulerian or ALE formulation of equation(s)
   bool isale_;

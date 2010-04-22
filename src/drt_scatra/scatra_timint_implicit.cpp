@@ -571,6 +571,12 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   ApplyNeumannBC(time_,phinp_,neumann_loads_);
 
   // -------------------------------------------------------------------
+  //     update velocity field if given by function AND time curve
+  // -------------------------------------------------------------------
+  if (cdvel_ == INPAR::SCATRA::velocity_function_and_curve)
+    SetVelocityField();
+
+  // -------------------------------------------------------------------
   //           preparation of AVM3-based scale separation
   // -------------------------------------------------------------------
   if (step_==1 and fssgd_ != INPAR::SCATRA::fssugrdiff_no) AVM3Preparation();
@@ -788,6 +794,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
         LINALG::PrintBlockMatrixInMatlabFormat(fname,*(A));
       }
       */
+      // ScaleLinearSystem();  // still experimental (gjb 04/10)
 
       PrepareKrylovSpaceProjection();
       solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,itnum==1,w_,c_,project_);
@@ -1266,13 +1273,15 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetVelocityField()
 {
-  if (cdvel_ == INPAR::SCATRA::velocity_zero) // zero
+  if (cdvel_ == INPAR::SCATRA::velocity_zero)
     convel_->PutScalar(0); // just to be sure!
-  else if ((cdvel_ == INPAR::SCATRA::velocity_function))  // function
+  else if ((cdvel_ == INPAR::SCATRA::velocity_function)
+      or (cdvel_ == INPAR::SCATRA::velocity_function_and_curve))
   {
     int err(0);
     const int numdim = 3; // the velocity field is always 3D
     const int velfuncno = params_->get<int>("VELFUNCNO");
+    const int velcurveno = params_->get<int>("VELCURVENO");
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
     {
@@ -1280,8 +1289,12 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       for(int index=0;index<numdim;++index)
       {
-        double value=DRT::Problem::Instance()->Funct(velfuncno-1).Evaluate(index,lnode->X(),0.0,NULL);
-        err = convel_->ReplaceMyValue (lnodeid, index, value);
+        double value = DRT::Problem::Instance()->Funct(velfuncno-1).Evaluate(index,lnode->X(),0.0,NULL);
+        if (cdvel_ == INPAR::SCATRA::velocity_function_and_curve)
+        {
+          value *= DRT::Problem::Instance()->Curve(velcurveno-1).f(time_);
+        }
+          err = convel_->ReplaceMyValue (lnodeid, index, value);
         if (err!=0) dserror("error while inserting a value into convel_");
       }
     }
@@ -2855,6 +2868,96 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
   return;
 
 } // ScaTraTimIntImpl::PrepareKrylovSpaceProjection
+
+
+/*----------------------------------------------------------------------*
+ | scale lines of linear system prior to solve call           gjb 04/10 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ScaleLinearSystem()
+{
+  if (scatratype_==INPAR::SCATRA::scatratype_elch_enc)
+  {
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> A = BlockSystemMatrix();
+    if (A != Teuchos::null)
+    {
+    // scale ELCH Matrix:
+    Teuchos::RCP<Epetra_Vector> d = splitter_.Vector(0);
+    Teuchos::RCP<Epetra_Vector> scalefactors = splitter_.Vector(0);
+    Teuchos::RCP<Epetra_Vector> scalefactorsENC = splitter_.Vector(1);
+    scalefactorsENC->PutScalar(1.0);
+
+    // access values located at main diagonal
+    BlockSystemMatrix()->Matrix(0,0).ExtractDiagonalCopy(*d);
+    double firstrowvalue(0.0);
+    for (int r=0;r < d->MyLength(); r++)
+    {
+      double* values = d->Values();
+      if (r % numscal_ == 0)
+      {
+        firstrowvalue = values[r];
+        if (abs(firstrowvalue)<EPS14) dserror("diagonal value too small");
+        scalefactors->ReplaceMyValue(r,0,1.0); // set scalefactor 1.0
+      }
+      else
+      {
+        if(abs(values[r])<EPS14) dserror("devision by zero prevented");
+        double scalefactor = 1.0*abs(firstrowvalue/values[r]); //sign-independent!
+        scalefactors->ReplaceMyValue(r,0,scalefactor);
+      }
+    } // for (int r=0;r < w->MyLength(); r++)
+#if 0
+    scalefactors->Print(cout);
+    d->Print(cout);
+    (((BlockSystemMatrix()->Matrix(0,0)).EpetraMatrix()->Print(cout)));
+#endif
+    // scale the complete rows and rhs
+    int err = BlockSystemMatrix()->Matrix(0,0).LeftScale(*scalefactors);
+       err += BlockSystemMatrix()->Matrix(0,1).LeftScale(*scalefactors);
+// ENC scaling
+       err += BlockSystemMatrix()->Matrix(1,0).LeftScale(*scalefactorsENC);
+
+    Teuchos::RCP<Epetra_Vector> onlyconc = splitter_.ExtractOtherVector(residual_);
+#if 0
+    cout<<"residual:\n";
+    residual_->Print(cout);
+    cout<<"non-modified onlyconc:\n";
+    onlyconc->Print(cout);
+#endif
+    //Multiply a Epetra_MultiVector with another, element-by-element.
+    onlyconc->Multiply(1.0,*onlyconc,*scalefactors,0.0);
+    // insert values into the whole rhs vector
+    splitter_.InsertOtherVector(onlyconc,residual_);
+
+#if 0
+    cout<<"modified onlyconc:\n";
+    onlyconc->Print(cout);
+    cout<<"modified residual:\n";
+    residual_->Print(cout);
+#endif
+    if (err>0) dserror("Error during pre-scaling of linear system");
+
+    /*
+    {
+      // matrix printing options (DEBUGGING!)
+      RCP<LINALG::SparseMatrix> A = SystemMatrix();
+      if (A != Teuchos::null)
+      {
+      }
+      else
+      {
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> A = BlockSystemMatrix();
+        const std::string fname = "sparsematrix_scaled.mtl";
+        LINALG::PrintBlockMatrixInMatlabFormat(fname,*(A));
+      }
+    }
+     */
+
+    cout<<"Pre-Scaling of Linear System done."<<endl;
+    }
+  } // pre-scale equation system for ELCH applications
+
+  return;
+}
 
 
 /*----------------------------------------------------------------------*

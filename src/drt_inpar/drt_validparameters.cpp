@@ -1339,9 +1339,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn);
 
   setStringToIntegralParameter<int>("FLUID_SOLVER", "Implicit",
-							   "Solving strategy for fluid",
-							   tuple<std::string>("Implicit","Pressure Correction","Pressure Correction SemiImplicit"),
-							   tuple<int>(fluid_solver_implicit, fluid_solver_pressurecorrection, fluid_solver_pressurecorrection_semiimplicit),&fdyn);
+      "Solving strategy for fluid",
+      tuple<std::string>("Implicit","Pressure Correction","Pressure Correction SemiImplicit"),
+      tuple<int>(fluid_solver_implicit, fluid_solver_pressurecorrection, fluid_solver_pressurecorrection_semiimplicit),&fdyn);
 
   setStringToIntegralParameter<FLUID_TIMEINTTYPE>("TIMEINTEGR","One_Step_Theta",
                                "Time Integration Scheme",
@@ -1984,15 +1984,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "zero",
                                  "function",
+                                 "function_and_curve",
                                  "Navier_Stokes"
                                  ),
                                tuple<INPAR::SCATRA::VelocityField>(
                                    INPAR::SCATRA::velocity_zero,
                                    INPAR::SCATRA::velocity_function,
+                                   INPAR::SCATRA::velocity_function_and_curve,
                                    INPAR::SCATRA::velocity_Navier_Stokes),
                                &scatradyn);
 
   IntParameter("VELFUNCNO",-1,"function number for scalar transport velocity field",&scatradyn);
+
+  IntParameter("VELCURVENO",-1,"curve number for time-dependent scalar transport velocity field",&scatradyn);
 
   setStringToIntegralParameter<INPAR::SCATRA::InitialField>("INITIALFIELD","zero_field",
                                "Initial Field for scalar transport problem",
