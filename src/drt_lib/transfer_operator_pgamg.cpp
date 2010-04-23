@@ -129,7 +129,7 @@ void LINALG::PGAMGTransferOperator::PG_AMG(const RCP<SparseMatrix>& A, const RCP
   }
 
   // be verbose
-  //if(nVerbose_ > 6 /*&& Comm().MyPID()==0*/)
+  if(nVerbose_ > 6 /*&& Comm().MyPID()==0*/)
   {
     double colBasedMin = 0.0;
     double colBasedMax = 0.0;
@@ -322,7 +322,8 @@ void LINALG::PGAMGTransferOperator::PG_AMG(const RCP<SparseMatrix>& A, const RCP
     }
   }
 
-  cout << "zero rows: Psmoothed=" << smoothedzeros << " Ptent=" << tentzeros << endl;
+  if(nVerbose_ > 6)
+    cout << "zero rows: Psmoothed=" << smoothedzeros << " Ptent=" << tentzeros << endl;
 
 #endif
 

@@ -169,18 +169,9 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
     \author Tobias Wiesner (wiesner@lnm.mw.tum.de)
     */
     RCP<SparseMatrix> Multiply(const SparseMatrix& A, const SparseMatrix& B, const SparseMatrix& C, bool bComplete = true);
-    void GetPtent(const Epetra_Map& rowmap, const Epetra_IntVector aggvec, int naggs, ParameterList& List, const Epetra_MultiVector& ThisNS, RCP<SparseMatrix>& Ptent, RCP<Epetra_MultiVector>& NextNS, const int domainoffset);
 
-    double MaxEigCG(const SparseMatrix& A, const bool DiagonalScaling);
-    void SA_AMG(const RCP<SparseMatrix>& A, const RCP<SparseMatrix>& P_tent, const RCP<SparseMatrix>& R_tent, RCP<SparseMatrix>& P_smoothed, RCP<SparseMatrix>& R_smoothed);
-    void PG_AMG(const RCP<SparseMatrix>& A, const RCP<SparseMatrix>& P_tent, const RCP<SparseMatrix>& R_tent, RCP<SparseMatrix>& P_smoothed, RCP<SparseMatrix>& R_smoothed);
 
-    void GetPtent(const Epetra_Map& rowmap, const Epetra_IntVector aggvec, int naggs, ParameterList& List, const Epetra_MultiVector& ThisNS, RCP<Epetra_CrsMatrix>& Ptent, RCP<Epetra_MultiVector>& NextNS, const int domainoffset);
 
-    void MultiplyAll(const RCP<SparseMatrix>& left, const RCP<SparseMatrix>& right, std::vector<double>& InnerProd);
-    void MultiplyAll(const RCP<SparseMatrix>& left, const RCP<SparseMatrix>& right, RCP<Epetra_Vector>& InnerProd);
-    void MultiplySelfAll(const RCP<SparseMatrix>& Op,std::vector<double>& Column2Norm);
-    void MultiplySelfAll(const RCP<SparseMatrix>& Op,RCP<Epetra_Vector>& Column2Norm);
 
 
 
@@ -197,10 +188,6 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
     std::vector<RCP<SparseMatrix> >                    A12_;
     std::vector<RCP<SparseMatrix> >                    A21_;
     std::vector<RCP<SparseMatrix> >                    A22_;
-    std::vector<RCP<SparseMatrix> >                    Pvel_;
-    std::vector<RCP<SparseMatrix> >                    Ppre_;
-    std::vector<RCP<SparseMatrix> >                    Rvel_;
-    std::vector<RCP<SparseMatrix> >                    Rpre_;
 
     std::vector<RCP<TransferOperator> >                Tvel_;
     std::vector<RCP<TransferOperator> >                Tpre_;
