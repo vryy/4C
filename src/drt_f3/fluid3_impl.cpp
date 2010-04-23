@@ -340,6 +340,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
 
   // set thermodynamic pressure at n+1/n+alpha_F and n+alpha_M/n and
   // its time derivative at n+alpha_M/n+1
+  //TODO: which variables should be allocated
   const double thermpressaf   = params.get<double>("thermpress at n+alpha_F/n+1");
   const double thermpressam   = params.get<double>("thermpress at n+alpha_M/n");
   const double thermpressdtam = params.get<double>("thermpressderiv at n+alpha_M/n+1");
@@ -354,8 +355,8 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   // ---------------------------------------------------------------------
 
   RefCountPtr<const Epetra_Vector> velaf = discretization.GetState("velaf");
-  RefCountPtr<const Epetra_Vector> accam = discretization.GetState("accam");
   RefCountPtr<const Epetra_Vector> scaaf = discretization.GetState("scaaf");
+  RefCountPtr<const Epetra_Vector> accam = discretization.GetState("accam");
   RefCountPtr<const Epetra_Vector> scaam = discretization.GetState("scaam");
   RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("hist");
   if (velaf==null || accam==null || scaaf==null || scaam==null || hist==null)
@@ -375,9 +376,11 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
 
   // rotation of velocity components
   // for rotationally symmetric boundary conditions
+  // TODO: all vector based variables must be rotated
   rotsymmpbc_->RotateMyValuesIfNecessary(myvelaf);
   rotsymmpbc_->RotateMyValuesIfNecessary(myhist);
 
+  // all element vectors are allocated each time
   LINALG::Matrix<nsd_,nen_> evelaf(true);
   LINALG::Matrix<nen_,1> epreaf(true);
   LINALG::Matrix<nen_,1> escaaf(true);
@@ -3402,23 +3405,41 @@ const double DRT::ELEMENTS::Fluid3Impl<distype>::SetSolutionParameter(
   // get control parameters for time integration
   //----------------------------------------------------------------------
 
+  // definition of a local variable to compute the timefac
+  double timefac = 0.0;
+
+  // set flag, if it is a stationary fluid system
+  is_stationary_ = params.get<bool>("is stationary");
+  //TODO: check, when is_stationary must be set
+
   // check whether we have a generalized-alpha time-integration scheme
   is_genalpha_ = params.get<bool>("using generalized-alpha time integration");
 
   // get current time: n+alpha_F for generalized-alpha scheme, n+1 otherwise
   time_ = params.get<double>("total time",-1.0);
 
-  // get time-step length and time-integration parameters
-  dt_                = params.get<double>("dt");
-  const double theta = params.get<double>("theta",-1.0);
-  omtheta_           = params.get<double>("omtheta",-1.0);
+  if (is_stationary_ == false)
+  {
+    // get time-step length and time-integration parameters
+    dt_                = params.get<double>("dt");
+    const double theta = params.get<double>("theta",-1.0);
+    omtheta_           = params.get<double>("omtheta",-1.0);
 
-  // compute timefactor for left-hand side
-  // One-step-Theta:    timefac = theta*dt
-  // BDF2:              timefac = 2/3 * dt
-  // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
-  const double timefac = theta*dt_;
-  if (timefac < 0.0)
+    // compute timefactor for left-hand side
+    // One-step-Theta:    timefac = theta*dt
+    // BDF2:              timefac = 2/3 * dt
+    // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
+    timefac = theta*dt_;
+  }
+  else
+  {
+    if (ele->IsAle()) dserror("No ALE support within stationary fluid solver.");
+
+    // timefac stationary = 1.0
+    timefac = 1.0;
+  }
+
+  if (timefac < 0.0 or time_ < 0.0)
     dserror("Negative time-integration parameter or time-step length supplied");
 
   // ---------------------------------------------------------------------
@@ -3429,8 +3450,12 @@ const double DRT::ELEMENTS::Fluid3Impl<distype>::SetSolutionParameter(
   string convformstr = params.get<string>("form of convective term");
   if (newtonstr=="Newton")          is_newton_       = true;
   if (convformstr =="conservative") is_conservative_ = true;
+
   // set flag physical type
   physicaltype_ = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
+  if (((physicaltype_ != INPAR::FLUID::boussinesq) and (physicaltype_ != INPAR::FLUID::incompressible))
+      and (is_stationary_ == true))
+    dserror("physical type not supported in stationary FLUID3 implementation.");
 
   // ---------------------------------------------------------------------
   // get control parameters for stabilization and higher-order elements
@@ -3450,24 +3475,18 @@ const double DRT::ELEMENTS::Fluid3Impl<distype>::SetSolutionParameter(
   //-------------------------------
 
   whichtau_ =  Teuchos::getIntegralValue<INPAR::FLUID::TauType>(stablist,"DEFINITION_TAU");
-  // TODO: Safety check
   // check if tau can be handled
   if (not(whichtau_ == INPAR::FLUID::franca_barrenechea_valentin_wall or
+      INPAR::FLUID::fbvw_wo_dt or
       INPAR::FLUID::bazilevs or
       INPAR::FLUID::codina))
     dserror("Definition of Tau cannot handled by the element");
-  /*
-  {
-    const string taudef = stablist.get<string>("DEFINITION_TAU");
 
-    if (taudef == "Barrenechea_Franca_Valentin_Wall")
-      whichtau_ = Fluid3::franca_barrenechea_valentin_wall;
-    else if (taudef == "Bazilevs")
-      whichtau_ = Fluid3::bazilevs;
-    else if (taudef == "Codina")
-      whichtau_ = Fluid3::codina;
-  }
-  */
+  // TODO: Adapt test cases, that it is necessary to use stationary tau definition in input file
+  if (is_stationary_ == true)
+    whichtau_ = INPAR::FLUID::fbvw_wo_dt;
+
+
 
   // set flags for potential evaluation of tau and material law at int. point
   // default value: evaluation at element center
@@ -3485,8 +3504,8 @@ const double DRT::ELEMENTS::Fluid3Impl<distype>::SetSolutionParameter(
   // overrule higher_order_ele if input-parameter is set
   // this might be interesting for fast (but slightly
   // less accurate) computations
+  // TODO: stationary and inconsistent
   if (stablist.get<string>("STABTYPE") == "inconsistent") is_higher_order_ele_ = false;
-
 
   // get flag for fine-scale subgrid-viscosity approach
   {
@@ -3496,6 +3515,7 @@ const double DRT::ELEMENTS::Fluid3Impl<distype>::SetSolutionParameter(
     else if (fssgvdef == "Smagorinsky_small") fssgv_ = Fluid3::smagorinsky_small;
   }
 
+  // the returned variable is saved to a const expression
   return timefac;
 } // Fluid3Impl::SetSolutionParameter
 
@@ -3511,100 +3531,60 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetTurbulenceParams(
                                double&                    l_tau,
                                int&                       nlayer)
 {
-  //TODO: Check parameter for 2D and 3D case
-
-  // get Smagorinsky model parameter for fine-scale subgrid viscosity
-  // (Since either all-scale Smagorinsky model (i.e., classical LES model
-  // as will be inititalized below) or fine-scale Smagorinsky model is
-  // used (and never both), the same input parameter can be exploited.)
-  if (fssgv_ != Fluid3::no_fssgv) Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
-
-  if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
+  if (is_stationary_ == true)
   {
-    string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
+    Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
+    Cs_delta_sq = 0.0;
+    l_tau = 0.0;
+    nlayer = 0;
+  }
+  else
+  {
+    //TODO: Check parameter for 2D and 3D case
 
-    // --------------------------------------------------
-    // standard constant coefficient Smagorinsky model
-    if (physical_turbulence_model == "Smagorinsky")
+    // get Smagorinsky model parameter for fine-scale subgrid viscosity
+    // (Since either all-scale Smagorinsky model (i.e., classical LES model
+    // as will be inititalized below) or fine-scale Smagorinsky model is
+    // used (and never both), the same input parameter can be exploited.)
+    if (fssgv_ != Fluid3::no_fssgv) Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
+
+    if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
     {
-      // the classic Smagorinsky model only requires one constant parameter
-      turb_mod_action_ = Fluid3::smagorinsky;
-      Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
-    }
-    // --------------------------------------------------
-    // Smagorinsky model with van Driest damping
-    else if (physical_turbulence_model == "Smagorinsky_with_van_Driest_damping")
-    {
-      // that's only implemented for turbulent channel flow
-      if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
-          !=
-          "channel_flow_of_height_2")
+      string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
+
+      // --------------------------------------------------
+      // standard constant coefficient Smagorinsky model
+      if (physical_turbulence_model == "Smagorinsky")
       {
-        dserror("van_Driest_damping only for channel_flow_of_height_2\n");
+        // the classic Smagorinsky model only requires one constant parameter
+        turb_mod_action_ = Fluid3::smagorinsky;
+        Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
       }
-
-      // for the Smagorinsky model with van Driest damping, we need
-      // a viscous length to determine the y+ (heigth in wall units)
-      turb_mod_action_ = Fluid3::smagorinsky_with_wall_damping;
-
-      // get parameters of model
-      Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
-      l_tau           = turbmodelparams.get<double>("CHANNEL_L_TAU");
-
-      // this will be the y-coordinate of a point in the element interior
-      // we will determine the element layer in which he is contained to
-      // be able to do the output of visceff etc.
-      double center = 0;
-
-      DRT::Node** nodes = ele->Nodes();
-      for(int inode=0;inode<nen_;inode++)
+      // --------------------------------------------------
+      // Smagorinsky model with van Driest damping
+      else if (physical_turbulence_model == "Smagorinsky_with_van_Driest_damping")
       {
-        center+=nodes[inode]->X()[1];
-      }
-      center/=nen_;
-
-      // node coordinates of plane to the element layer
-      RefCountPtr<vector<double> > planecoords
-        =
-        turbmodelparams.get<RefCountPtr<vector<double> > >("planecoords_");
-
-      bool found = false;
-      for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
-      {
-        if(center<(*planecoords)[nlayer+1])
+        // that's only implemented for turbulent channel flow
+        if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
+            !=
+            "channel_flow_of_height_2")
         {
-          found = true;
-          break;
+          dserror("van_Driest_damping only for channel_flow_of_height_2\n");
         }
-        nlayer++;
-      }
-      if (found ==false)
-      {
-        dserror("could not determine element layer");
-      }
-    }
-    // --------------------------------------------------
-    // Smagorinsky model with dynamic Computation of Cs
-    else if (physical_turbulence_model == "Dynamic_Smagorinsky")
-    {
-      turb_mod_action_ = Fluid3::dynamic_smagorinsky;
 
-      // for turbulent channel flow, use averaged quantities
-      if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
-          ==
-          "channel_flow_of_height_2")
-      {
-        RCP<vector<double> > averaged_LijMij
-          =
-          turbmodelparams.get<RCP<vector<double> > >("averaged_LijMij_");
-        RCP<vector<double> > averaged_MijMij
-          =
-          turbmodelparams.get<RCP<vector<double> > >("averaged_MijMij_");
+        // for the Smagorinsky model with van Driest damping, we need
+        // a viscous length to determine the y+ (heigth in wall units)
+        turb_mod_action_ = Fluid3::smagorinsky_with_wall_damping;
 
-        //this will be the y-coordinate of a point in the element interior
-        // here, the layer is determined in order to get the correct
-        // averaged value from the vector of averaged (M/L)ijMij
+        // get parameters of model
+        Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
+        l_tau           = turbmodelparams.get<double>("CHANNEL_L_TAU");
+
+        // this will be the y-coordinate of a point in the element interior
+        // we will determine the element layer in which he is contained to
+        // be able to do the output of visceff etc.
         double center = 0;
+
         DRT::Node** nodes = ele->Nodes();
         for(int inode=0;inode<nen_;inode++)
         {
@@ -3612,12 +3592,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetTurbulenceParams(
         }
         center/=nen_;
 
-        RCP<vector<double> > planecoords
+        // node coordinates of plane to the element layer
+        RefCountPtr<vector<double> > planecoords
           =
-          turbmodelparams.get<RCP<vector<double> > >("planecoords_");
+          turbmodelparams.get<RefCountPtr<vector<double> > >("planecoords_");
 
         bool found = false;
-        for (nlayer=0;nlayer < static_cast<int>((*planecoords).size()-1);)
+        for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
         {
           if(center<(*planecoords)[nlayer+1])
           {
@@ -3630,28 +3611,76 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetTurbulenceParams(
         {
           dserror("could not determine element layer");
         }
+      }
+      // --------------------------------------------------
+      // Smagorinsky model with dynamic Computation of Cs
+      else if (physical_turbulence_model == "Dynamic_Smagorinsky")
+      {
+        turb_mod_action_ = Fluid3::dynamic_smagorinsky;
 
-        // Cs_delta_sq is set by the averaged quantities
-        Cs_delta_sq = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
-
-        // clipping to get algorithm stable
-        if (Cs_delta_sq<0)
+        // for turbulent channel flow, use averaged quantities
+        if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
+            ==
+            "channel_flow_of_height_2")
         {
-          Cs_delta_sq=0;
+          RCP<vector<double> > averaged_LijMij
+            =
+            turbmodelparams.get<RCP<vector<double> > >("averaged_LijMij_");
+          RCP<vector<double> > averaged_MijMij
+            =
+            turbmodelparams.get<RCP<vector<double> > >("averaged_MijMij_");
+
+          //this will be the y-coordinate of a point in the element interior
+          // here, the layer is determined in order to get the correct
+          // averaged value from the vector of averaged (M/L)ijMij
+          double center = 0;
+          DRT::Node** nodes = ele->Nodes();
+          for(int inode=0;inode<nen_;inode++)
+          {
+            center+=nodes[inode]->X()[1];
+          }
+          center/=nen_;
+
+          RCP<vector<double> > planecoords
+            =
+            turbmodelparams.get<RCP<vector<double> > >("planecoords_");
+
+          bool found = false;
+          for (nlayer=0;nlayer < static_cast<int>((*planecoords).size()-1);)
+          {
+            if(center<(*planecoords)[nlayer+1])
+            {
+              found = true;
+              break;
+            }
+            nlayer++;
+          }
+          if (found ==false)
+          {
+            dserror("could not determine element layer");
+          }
+
+          // Cs_delta_sq is set by the averaged quantities
+          Cs_delta_sq = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
+
+          // clipping to get algorithm stable
+          if (Cs_delta_sq<0)
+          {
+            Cs_delta_sq=0;
+          }
+        }
+        else
+        {
+          // when no averaging was done, we just keep the calculated (clipped) value
+          Cs_delta_sq = ele->CsDeltaSq();
         }
       }
       else
       {
-        // when no averaging was done, we just keep the calculated (clipped) value
-        Cs_delta_sq = ele->CsDeltaSq();
+        dserror("Up to now, only Smagorinsky (constant coefficient with and without wall function as well as dynamic) is available");
       }
     }
-    else
-    {
-      dserror("Up to now, only Smagorinsky (constant coefficient with and without wall function as well as dynamic) is available");
-    }
-  }
-
+  } // end else(is_stationary_)
   return;
 } // Fluid3Impl::GetturbulenceParams
 
@@ -3852,8 +3881,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
   // computation of stabilization parameter tau
   // ---------------------------------------------------------------
   //a)  Franca, Barrenechea, Valentin, Wall
-  //b)  Bazilevs
-  //c)  Codina
+  //b)  Franca, Barrenechea, Valentin, Wall stationary
+  //c)  Bazilevs
+  //d)  Codina
 
   // TODO: different element length calculations for 2D and 3D flow is
   // just a temporary work around (not to change the results of the test cases)
@@ -3947,10 +3977,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
     Vol. 190, pp. 1785-1800, 2000.
     http://www.lncc.br/~valentin/publication.htm                   */
 
-    /* viscous : reactive forces */
+    // viscous : reactive forces
     const double re01 = 4.0 * timefac * visceff_ / (mk * densaf_ * DSQR(strle));
 
-    /* convective : viscous forces */
+    // convective : viscous forces
     const double re02 = mk * densaf_ * vel_norm * strle / (2.0 * visceff_);
 
     const double xi01 = DMAX(re01,1.0);
@@ -3959,6 +3989,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
     tau_(0) = timefac*DSQR(strle)/(DSQR(strle)*densaf_*xi01+(4.0*timefac*visceff_/mk)*xi02);
 
     if (nsd_ == 2)
+      //TODO: in 2D hk and strlng was defined in the same way
       tau_(1)= tau_(0);
     else if (nsd_ == 3)
     {
@@ -3966,10 +3997,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
       //    stability parameter definition according to Franca and Valentin (2000)
       //                                       and Barrenechea and Valentin (2002)
 
-      /* viscous : reactive forces */
+      // viscous : reactive forces
       const double re11 = 4.0 * timefac * visceff_ / (mk * densaf_ * DSQR(hk));
 
-      /* convective : viscous forces */
+      // convective : viscous forces
       const double re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
 
       const double xi11 = DMAX(re11,1.0);
@@ -3987,6 +4018,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
                             +--------------> re1,re2
                                 1
       */
+
       tau_(1) = timefac*DSQR(hk)/(DSQR(hk)*densaf_*xi11+(4.0*timefac*visceff_/mk)*xi12);
     }
     else
@@ -4008,6 +4040,30 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
     tau_(2) = densaf_ * vel_norm * hk * 0.5 * xi_tau_c;
   }
   break; // end franca_barrenechea_valentin_wall
+
+  case INPAR::FLUID::fbvw_wo_dt:
+  {
+    // TODO: density dependency is still missing
+
+    // compute tau_Mu
+    /* convective : viscous forces */
+    const double re_tau_mu = mk * vel_norm * strle / (2.0 * visceff_);
+    const double xi_tau_mu = DMAX(re_tau_mu, 1.0);
+    tau_(0) = (DSQR(strle)*mk)/(4.0*visceff_*xi_tau_mu);
+
+    // compute tau_Mp
+    /* convective : viscous forces */
+    const double re_tau_mp = mk  * vel_norm * hk / (2.0 * visceff_);
+    const double xi_tau_mp = DMAX(re_tau_mp,1.0);
+    tau_(1) = (DSQR(hk)*mk)/(4.0*visceff_*xi_tau_mp);
+
+    // compute tau_C
+    const double re_tau_c = mk * vel_norm * hk / (2.0 * visceff_);
+    const double xi_tau_c = DMIN(re_tau_c, 1.0);
+    tau_(2) = 0.5*vel_norm*hk*xi_tau_c;
+
+    break;
+  }
 
   case INPAR::FLUID::bazilevs:
   {
@@ -4148,6 +4204,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
     tau_(0) = timefac*DSQR(strle)/(DSQR(strle)*densaf_*xi01+(4.0*timefac*visceff_/mk)*xi02);
 
     if(nsd_==2)
+      //TODO: in 2D hk and strlng was defined in the same way
       tau_(1) = tau_(0);
 
     else if(nsd_==3)

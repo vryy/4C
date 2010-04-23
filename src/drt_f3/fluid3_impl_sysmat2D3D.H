@@ -398,16 +398,28 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       // else: 										f = rho * g
 
       if (physicaltype_ == INPAR::FLUID::boussinesq)
-    	rhsmom_.Update(densn_,histmom_,deltadens_*timefac,bodyforce_);
+        rhsmom_.Update(densn_,histmom_,deltadens_*timefac,bodyforce_);
       else rhsmom_.Update(densn_,histmom_,densaf_*timefac,bodyforce_);
 
       // modify integration factor for Galerkin rhs
       rhsfac *= timefac;
 
       // evaluate momentum residual once for all stabilization right hand sides
-      for (int rr=0;rr<3;++rr)
+      if (is_stationary_ == false)
       {
-        momres_old_(rr) = densaf_*velint_(rr)+timefac*(densaf_*conv_old_(rr)+gradp_(rr)-2*visceff_*visc_old_(rr))-rhsmom_(rr);
+        // momres_old = u_(n+1) + theta ( ... ) - histmom_ - bodyforce_
+        for (int rr=0;rr<3;++rr)
+        {
+          momres_old_(rr) = densaf_*velint_(rr)+timefac*(densaf_*conv_old_(rr)+gradp_(rr)-2*visceff_*visc_old_(rr))-rhsmom_(rr);
+        }
+      }
+      else
+      {
+        // momres_old = theta ( ... ) -  bodyforce_
+        for (int rr=0;rr<3;++rr)
+        {
+          momres_old_(rr) = timefac*(densaf_*conv_old_(rr)+gradp_(rr)-2*visceff_*visc_old_(rr))-rhsmom_(rr);
+        }
       }
 
       if (cross_    != INPAR::FLUID::cross_stress_stab_none or
@@ -482,29 +494,55 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       // reactive part) for convective form of convection term including
       // right-hand-side contribution and potential cross-stress term
       //----------------------------------------------------------------------
+
+      // // The computation of the inertia and the convective term is split
+      if (is_stationary_ == false)
+      {
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui   = 4*ui;
+          const int fuip  = fui+1;
+          const int fuipp = fui+2;
+
+          const double v = fac_*densam_*funct_(ui);
+
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            const int fvi   = 4*vi;
+            const int fvip  = fvi+1;
+            const int fvipp = fvi+2;
+            /* inertia (contribution to mass matrix) */
+            /*
+            /                \
+            |                |
+            |    rho*Du , v  |
+            |                |
+            \                /
+            */
+
+            double v2 = v*funct_(vi) ;
+            estif(fvi  , fui  ) += v2;
+            estif(fvip , fuip ) += v2;
+            estif(fvipp, fuipp) += v2;
+          }
+        }
+      }
+
+      // convective part
       for (int ui=0; ui<nen_; ++ui)
       {
         const int fui   = 4*ui;
         const int fuip  = fui+1;
         const int fuipp = fui+2;
-        const double v = fac_*densam_*funct_(ui)
-#if 1
-                         + timefacfac*densaf_*(conv_c_(ui)+sgconv_c_(ui))
-#endif
-                         ;
+
+        const double v = timefacfac*densaf_*(conv_c_(ui)+sgconv_c_(ui));
+
         for (int vi=0; vi<nen_; ++vi)
         {
           const int fvi   = 4*vi;
           const int fvip  = fvi+1;
           const int fvipp = fvi+2;
-          /* inertia (contribution to mass matrix) */
-          /*
-          /                \
-          |                |
-          |    rho*Du , v  |
-          |                |
-          \                /
-          */
+
           /* convection, convective part (convective form) */
           /*
           /                               \
@@ -554,28 +592,32 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
         }
       }
 
-      if (is_genalpha_)
+      // inertia terms on the right hand side for instationary fluids
+      if (is_stationary_ == false)
       {
-        for (int vi=0; vi<nen_; ++vi)
+        if (is_genalpha_)
         {
-          const int fvi = 4*vi;
-          /* inertia term on right-hand side for generalized-alpha scheme */
-          const double v = -fac_*densam_*funct_(vi);
-          eforce(fvi    ) += v*accint_(0) ;
-          eforce(fvi + 1) += v*accint_(1) ;
-          eforce(fvi + 2) += v*accint_(2) ;
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            const int fvi = 4*vi;
+            /* inertia term on right-hand side for generalized-alpha scheme */
+            const double v = -fac_*densam_*funct_(vi);
+            eforce(fvi    ) += v*accint_(0) ;
+            eforce(fvi + 1) += v*accint_(1) ;
+            eforce(fvi + 2) += v*accint_(2) ;
+          }
         }
-      }
-      else
-      {
-        for (int vi=0; vi<nen_; ++vi)
+        else
         {
-          const int fvi = 4*vi;
-          /* inertia term on right-hand side for one-step-theta/BDF2 schem */
-          const double v = -fac_*densaf_*funct_(vi);
-          eforce(fvi    ) += v*velint_(0) ;
-          eforce(fvi + 1) += v*velint_(1) ;
-          eforce(fvi + 2) += v*velint_(2) ;
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            const int fvi = 4*vi;
+            /* inertia term on right-hand side for one-step-theta/BDF2 schem */
+            const double v = -fac_*densaf_*funct_(vi);
+            eforce(fvi    ) += v*velint_(0) ;
+            eforce(fvi + 1) += v*velint_(1) ;
+            eforce(fvi + 2) += v*velint_(2) ;
+          }
         }
       }
 
@@ -701,36 +743,36 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
           {
             for (int vi=0; vi<nen_; ++vi)
             {
-			  const int fvi   = 4*vi;
-			  const int fvip  = fvi+1;
-			  const int fvipp = fvi+2;
-			  const double v0 = +timefacfac*grad_scaaf_(0)*velint_(0)*funct_(vi);
-			  const double v1 = +timefacfac*grad_scaaf_(1)*velint_(1)*funct_(vi);
-			  const double v2 = +timefacfac*grad_scaaf_(2)*velint_(2)*funct_(vi);
-			  for (int ui=0; ui<nen_; ++ui)
-			  {
-				const int fui   = 4*ui;
-				const int fuip  = fui+1;
-				const int fuipp = fui+2;
-				/*  convection, reactive part (conservative addition) */
-				/*
-				/                           \
-				|  n+1  /             \      |
-				| u    | Du*nabla rho | , v  |
-				|  (i)  \            /       |
-				\                           /
-				*/
-				estif(fvi,  fui  ) += v0*funct_(ui) ;
-				estif(fvi,  fuip ) += v0*funct_(ui) ;
-				estif(fvi,  fuipp) += v0*funct_(ui) ;
-				estif(fvip, fui  ) += v1*funct_(ui) ;
-				estif(fvip, fuip ) += v1*funct_(ui) ;
-				estif(fvip, fuipp) += v1*funct_(ui) ;
-				estif(fvipp,fui  ) += v2*funct_(ui) ;
-				estif(fvipp,fuip ) += v2*funct_(ui) ;
-				estif(fvipp,fuipp) += v2*funct_(ui) ;
-			  }
-			}
+              const int fvi   = 4*vi;
+              const int fvip  = fvi+1;
+              const int fvipp = fvi+2;
+              const double v0 = +timefacfac*grad_scaaf_(0)*velint_(0)*funct_(vi);
+              const double v1 = +timefacfac*grad_scaaf_(1)*velint_(1)*funct_(vi);
+              const double v2 = +timefacfac*grad_scaaf_(2)*velint_(2)*funct_(vi);
+              for (int ui=0; ui<nen_; ++ui)
+              {
+                const int fui   = 4*ui;
+                const int fuip  = fui+1;
+                const int fuipp = fui+2;
+                /*  convection, reactive part (conservative addition) */
+                /*
+                /                           \
+                |  n+1  /             \      |
+                | u    | Du*nabla rho | , v  |
+                |  (i)  \            /       |
+                \                           /
+                */
+                estif(fvi,  fui  ) += v0*funct_(ui) ;
+                estif(fvi,  fuip ) += v0*funct_(ui) ;
+                estif(fvi,  fuipp) += v0*funct_(ui) ;
+                estif(fvip, fui  ) += v1*funct_(ui) ;
+                estif(fvip, fuip ) += v1*funct_(ui) ;
+                estif(fvip, fuipp) += v1*funct_(ui) ;
+                estif(fvipp,fui  ) += v2*funct_(ui) ;
+                estif(fvipp,fuip ) += v2*funct_(ui) ;
+                estif(fvipp,fuipp) += v2*funct_(ui) ;
+              }
+            }
           }
         }
 
@@ -991,30 +1033,51 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       //----------------------------------------------------------------------
       //                 PRESSURE STABILISATION PART
 
+      // conservative, ... terms are neglected (Hughes .. .)
+
       if (pspg_ == INPAR::FLUID::pstab_use_pspg)
       {
+        // The computation of the inertia and the convective term is split
+        if (is_stationary_ == false)
+        {
+          for (int ui=0; ui<nen_; ++ui)
+          {
+            const int fui   = 4*ui;
+            const int fuip  = fui+1;
+            const int fuipp = fui+2;
+            double v = tau_Mp*densam_*funct_(ui);
+
+            for (int vi=0; vi<nen_; ++vi)
+            {
+              const int fvippp = 4*vi+3;
+
+              /* pressure stabilisation: inertia */
+              /*
+                /                    \
+                |                    |
+                |  rho*Du , nabla q  |
+                |                    |
+                \                   /
+              */
+
+              estif(fvippp, fui)   += v*derxy_(0, vi) ;
+              estif(fvippp, fuip)  += v*derxy_(1, vi) ;
+              estif(fvippp, fuipp) += v*derxy_(2, vi) ;
+            }
+          }
+        }  // end PSPG stabilization inertia
+
         for (int ui=0; ui<nen_; ++ui)
         {
           const int fui   = 4*ui;
           const int fuip  = fui+1;
           const int fuipp = fui+2;
-          double v = tau_Mp*densam_*funct_(ui)
-#if 1
-                     + timetauMp*densaf_*conv_c_(ui)
-#endif
-                     ;
+          double v =  timetauMp*densaf_*conv_c_(ui);
+
           for (int vi=0; vi<nen_; ++vi)
           {
             const int fvippp = 4*vi+3;
 
-            /* pressure stabilisation: inertia */
-            /*
-              /                    \
-              |                    |
-              |  rho*Du , nabla q  |
-              |                    |
-              \                   /
-            */
             /* pressure stabilisation: convection, convective part */
             /*
 
@@ -1149,26 +1212,48 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
       if(supg_ == INPAR::FLUID::convective_stab_supg)
       {
-#if 1
+        // The computation of the inertia and the convective term is split
+        if(is_stationary_ == false)
+        {
+          for (int ui=0; ui<nen_; ++ui)
+          {
+            const int fui   = 4*ui;
+            const int fuip  = fui+1;
+            const int fuipp = fui+2;
+            const double v = densaf_*tau_M*densam_*funct_(ui);
+            for (int vi=0; vi<nen_; ++vi)
+            {
+              const int fvi   = 4*vi;
+              const int fvip  = fvi+1;
+              const int fvipp = fvi+2;
+              /* supg stabilisation: inertia  */
+              /*
+                /                                 \
+                |           /      n+1        \    |
+                |  rho*Du , | rho*u   o nabla | v  |
+                |           \      (i)        /    |
+                \                                 /
+              */
+
+              const double v2 = v*(conv_c_(vi)+sgconv_c_(vi));
+              estif(fvi,   fui)   += v2;
+              estif(fvip,  fuip)  += v2;
+              estif(fvipp, fuipp) += v2;
+            }
+          }
+        }
+
         for (int ui=0; ui<nen_; ++ui)
         {
           const int fui   = 4*ui;
           const int fuip  = fui+1;
           const int fuipp = fui+2;
-          const double v = densaf_*(tau_M*densam_*funct_(ui) + timetauM*densaf_*conv_c_(ui));
+          const double v = densaf_*timetauM*densaf_*conv_c_(ui);
           for (int vi=0; vi<nen_; ++vi)
           {
             const int fvi   = 4*vi;
             const int fvip  = fvi+1;
             const int fvipp = fvi+2;
-            /* supg stabilisation: inertia  */
-            /*
-              /                                 \
-              |           /      n+1        \    |
-              |  rho*Du , | rho*u   o nabla | v  |
-              |           \      (i)        /    |
-              \                                 /
-            */
 
             /* supg stabilisation: convective part ( L_conv_u) */
 
@@ -1247,48 +1332,49 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
             }
           }
         }
-#endif
 
         if (is_newton_)
         {
-          for (int ui=0; ui<nen_; ++ui)
+          if (is_conservative_ == false)
           {
-            const int fui   = 4*ui;
-            const int fuip  = fui+1;
-            const int fuipp = fui+2;
-            const double v = tau_M*densam_*densaf_*funct_(ui);
-            const double v0 = v*velint_(0);
-            const double v1 = v*velint_(1);
-            const double v2 = v*velint_(2);
-            for (int vi=0; vi<nen_; ++vi)
+            for (int ui=0; ui<nen_; ++ui)
             {
-              const int fvi   = 4*vi;
-              const int fvip  = fvi+1;
-              const int fvipp = fvi+2;
-              /* supg stabilisation: inertia, linearisation of testfunction  */
-              /*
-                /                                         \
-                |         n+1      /                \     |
-                |    rho*u      ,  | rho*Du o nabla | v   |
-                |         (i)      \                /     |
-                \                                         /
+              const int fui   = 4*ui;
+              const int fuip  = fui+1;
+              const int fuipp = fui+2;
+              const double v = tau_M*densam_*densaf_*funct_(ui);
+              const double v0 = v*velint_(0);
+              const double v1 = v*velint_(1);
+              const double v2 = v*velint_(2);
+              for (int vi=0; vi<nen_; ++vi)
+              {
+                const int fvi   = 4*vi;
+                const int fvip  = fvi+1;
+                const int fvipp = fvi+2;
+                /* supg stabilisation: inertia, linearisation of testfunction  */
+                /*
+                  /                                         \
+                  |         n+1      /                \     |
+                  |    rho*u      ,  | rho*Du o nabla | v   |
+                  |         (i)      \                /     |
+                  \                                         /
 
-              */
-              estif(fvi,  fui)     += v0*derxy_(0, vi) ;
-              estif(fvip,  fui)    += v1*derxy_(0, vi) ;
-              estif(fvipp, fui)    += v2*derxy_(0, vi) ;
+                */
+                estif(fvi,  fui)     += v0*derxy_(0, vi) ;
+                estif(fvip,  fui)    += v1*derxy_(0, vi) ;
+                estif(fvipp, fui)    += v2*derxy_(0, vi) ;
 
-              estif(fvi,   fuip)   += v0*derxy_(1, vi) ;
-              estif(fvip,  fuip)   += v1*derxy_(1, vi) ;
-              estif(fvipp, fuip)   += v2*derxy_(1, vi) ;
+                estif(fvi,   fuip)   += v0*derxy_(1, vi) ;
+                estif(fvip,  fuip)   += v1*derxy_(1, vi) ;
+                estif(fvipp, fuip)   += v2*derxy_(1, vi) ;
 
-              estif(fvi,   fuipp)  += v0*derxy_(2, vi) ;
-              estif(fvip,  fuipp)  += v1*derxy_(2, vi) ;
-              estif(fvipp, fuipp)  += v2*derxy_(2, vi) ;
+                estif(fvi,   fuipp)  += v0*derxy_(2, vi) ;
+                estif(fvip,  fuipp)  += v1*derxy_(2, vi) ;
+                estif(fvipp, fuipp)  += v2*derxy_(2, vi) ;
+              }
             }
           }
 
-#if 1
           {
             const double v0 = convvelint_(0)*vderxy_(0, 0) + convvelint_(1)*vderxy_(0, 1) + convvelint_(2)*vderxy_(0, 2);
             const double v1 = convvelint_(0)*vderxy_(1, 0) + convvelint_(1)*vderxy_(1, 1) + convvelint_(2)*vderxy_(1, 2);
@@ -1333,7 +1419,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
               }
             }
           }
-#endif
 
           for (int ui=0; ui<nen_; ++ui)
           {
@@ -1448,9 +1533,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
             } // vi
           } // ui
-        } // if newton
+        } // end if(newton)
 
-#if 1
         // NOTE: Here we have a difference to the previous version of this
         // element!  Before we did not care for the mesh velocity in this
         // term. This seems unreasonable and wrong.
@@ -1463,7 +1547,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
           eforce(fvi + 1) += v*momres_old_(1) ;
           eforce(fvi + 2) += v*momres_old_(2) ;
         }
-#endif
       }
 
       //----------------------------------------------------------------------
@@ -1481,23 +1564,45 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
             const double four_visc2_timetauMp = vstabfac*4.0*visceff_*visc_*timetauMp;
 
             // viscous stabilization on left hand side
+            if (is_stationary_ == false)
+            {
+              for (int ui=0; ui<nen_; ++ui)
+              {
+                const double v = two_visc_tauMp*densam_*funct_(ui);
+                for (int vi=0; vi<nen_; ++vi)
+                {
+                  /* viscous stabilisation, inertia part */
+                  /*
+                    /                          \
+                    |                          |
+                +/- |    rho*Du , div eps (v)  |
+                    |                          |
+                    \                          /
+                  */
+
+                  estif(vi*4,     ui*4    ) += v*viscs2_(0, vi) ;
+                  estif(vi*4 + 1, ui*4    ) += v*viscs2_(1, vi) ;
+                  estif(vi*4 + 2, ui*4    ) += v*viscs2_(2, vi) ;
+
+                  estif(vi*4,     ui*4 + 1) += v*viscs2_(1, vi) ;
+                  estif(vi*4 + 1, ui*4 + 1) += v*viscs2_(4, vi) ;
+                  estif(vi*4 + 2, ui*4 + 1) += v*viscs2_(5, vi) ;
+
+                  estif(vi*4,     ui*4 + 2) += v*viscs2_(2, vi) ;
+                  estif(vi*4 + 1, ui*4 + 2) += v*viscs2_(5, vi) ;
+                  estif(vi*4 + 2, ui*4 + 2) += v*viscs2_(8, vi) ;
+                }
+              }
+            }
+
+            // viscous stabilization on left hand side
             for (int ui=0; ui<nen_; ++ui)
             {
-              const double v = two_visc_tauMp*densam_*funct_(ui)
-#if 1
-                         + two_visc_timetauMp*densaf_*conv_c_(ui)
-#endif
-                         ;
+              const double v = two_visc_timetauMp*densaf_*conv_c_(ui);
               for (int vi=0; vi<nen_; ++vi)
               {
                 /* viscous stabilisation, inertia part */
-                /*
-                  /                          \
-                  |                          |
-              +/- |    rho*Du , div eps (v)  |
-                  |                          |
-                  \                          /
-                */
+
                 /* viscous stabilisation, convective part */
                 /*
                   /                                        \
@@ -1692,8 +1797,12 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
         }
       }
 
+      //TODO: Cross-stress and Reynolds-Stress stabilization are missing
+
       //----------------------------------------------------------------------
       //     FINE-SCALE SUBGRID-VISCOSITY TERM (ON RIGHT HAND SIDE)
+
+      //TODO: Difference stationary <-> instationary
 
       if(fssgv_ != Fluid3::no_fssgv)
       {

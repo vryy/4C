@@ -965,6 +965,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
         eleparams.set("using generalized-alpha time integration",false);
         eleparams.set("total time",time_);
+        eleparams.set("is stationary", true);
 
         discret_->SetState("velaf",velnp_);
       }
@@ -973,7 +974,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
         eleparams.set("using generalized-alpha time integration",true);
         eleparams.set("total time",time_-(1-alphaF_)*dta_);
-
+        eleparams.set("is stationary", false);
 
         discret_->SetState("velaf",velaf_);
       }
@@ -982,6 +983,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         eleparams.set("action","calc_fluid_systemmat_and_residual");
         eleparams.set("using generalized-alpha time integration",false);
         eleparams.set("total time",time_);
+        eleparams.set("is stationary", false);
 
         discret_->SetState("velaf",velnp_);
       }
@@ -1311,7 +1313,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           int predof = numdim_;
 
           Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
-          
+
           presmode->PutScalar((*mode)[predof]);
 
           /* export to vector to normalize against
@@ -1393,7 +1395,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           LINALG::Export(*presmode,*tmpc);
           Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*tmpc);
           LINALG::Export(*tmpkspc,*c_);
-          
+
         }
         else
         {
@@ -1841,7 +1843,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
           int predof = numdim_;
 
           Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
-          
+
           presmode->PutScalar((*mode)[predof]);
 
           /* export to vector to normalize against
@@ -2160,6 +2162,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",false);
     eleparams.set("total time",time_);
+    eleparams.set("is stationary", true);
 
     discret_->SetState("velaf",velnp_);
   }
@@ -2168,6 +2171,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",true);
     eleparams.set("total time",time_-(1-alphaF_)*dta_);
+    eleparams.set("is stationary", false);
 
     discret_->SetState("velaf",velaf_);
   }
@@ -2176,6 +2180,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     eleparams.set("action","calc_fluid_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",false);
     eleparams.set("total time",time_);
+    eleparams.set("is stationary", false);
 
     discret_->SetState("velaf",velnp_);
   }
@@ -2340,6 +2345,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",true);
     eleparams.set("total time",time_-(1-alphaF_)*dta_);
+    eleparams.set("is stationary", false);
 
     discret_->SetState("velaf",velaf_);
   }
@@ -2348,6 +2354,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     eleparams.set("action","calc_fluid_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",false);
     eleparams.set("total time",time_);
+    eleparams.set("is stationary", false);
 
     discret_->SetState("velaf",velnp_);
   }
@@ -2788,6 +2795,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
     eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",false);
     eleparams.set("total time",time_);
+    eleparams.set("is stationary", true);
 
     discret_->SetState("velaf",velnp_);
   }
@@ -2796,6 +2804,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
     eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",true);
     eleparams.set("total time",time_-(1-alphaF_)*dta_);
+    eleparams.set("is stationary", false);
 
     discret_->SetState("velaf",velaf_);
   }
@@ -2804,6 +2813,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
     eleparams.set("action","calc_fluid_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",false);
     eleparams.set("total time",time_);
+    eleparams.set("is stationary", false);
 
     discret_->SetState("velaf",velnp_);
   }
@@ -3824,6 +3834,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
       eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
       eleparams.set("using generalized-alpha time integration",true);
       eleparams.set("total time",time_-(1-alphaF_)*dta_);
+      eleparams.set("is stationary", false);
 
       discret_->SetState("velaf",velaf_);
     }
@@ -3832,6 +3843,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
       eleparams.set("action","calc_fluid_systemmat_and_residual");
       eleparams.set("using generalized-alpha time integration",false);
       eleparams.set("total time",time_);
+      eleparams.set("is stationary", false);
 
       discret_->SetState("velaf", velnp_);
     }
