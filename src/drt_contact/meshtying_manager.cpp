@@ -409,10 +409,11 @@ void CONTACT::MtManager::WriteRestart(IO::DiscretizationWriter& output)
  |  read restart information for meshtying (public)           popp 03/08|
  *----------------------------------------------------------------------*/
 void CONTACT::MtManager::ReadRestart(IO::DiscretizationReader& reader,
-                                     RCP<Epetra_Vector> dis)
+                                     RCP<Epetra_Vector> dis, RCP<Epetra_Vector> zero)
 {
+  // this is meshtying, thus we need zeros for restart
   // let strategy object do all the work
-  GetStrategy().DoReadRestart(reader, dis);
+  GetStrategy().DoReadRestart(reader, zero);
   
   return;
 }

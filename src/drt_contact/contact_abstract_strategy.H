@@ -101,18 +101,6 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     const RCP<Epetra_Map> SlaveRowDofs() { return gsdofrowmap_; }
 
     /*!
-    \brief Return convergence status of active set loop
-
-    */
-    bool ActiveSetConverged() { return activesetconv_; }
-
-    /*!
-    \brief Return no. of active sets in this time/load step
-
-    */
-    int ActiveSetSteps() { return activesetsteps_; }
-
-    /*!
     \brief Return Lagrange multiplier vector (t_n+1)
 
     */
@@ -181,6 +169,34 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     //! @name Evaluation methods
 
+    /*!
+    \brief Global evaluation method called from time integrator
+    
+    */
+    void ApplyForceStiffCmt(const string& statename, RCP<Epetra_Vector> dis,
+                            RCP<LINALG::SparseOperator>& kt, RCP<Epetra_Vector>& f,
+                            RCP<Epetra_Vector> fcopy, bool predictor = false)
+    {
+      // mortar initialization and evaluation
+      SetState(statename,dis);
+      InitEvalInterface();
+      InitEvalMortar();
+      
+      // evaluate relative movement for friction
+      if (predictor) EvaluateRelMovPredict();
+      else           EvaluateRelMov();
+      
+      // update active set
+      UpdateActiveSetSemiSmooth();
+      
+      // apply contact forces and stiffness
+      Initialize();
+      Evaluate(kt,f,dis);
+      InterfaceForces(fcopy);
+        
+      return;
+    }
+    
     /*!
     \brief Set current deformation state
 
@@ -422,13 +438,18 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     // As the base class MORTAR::StrategyBase is always called from the control routine
     // (time integrator), these functions need to be defined purely virtual here.
 
+    virtual bool ActiveSetSemiSmoothConverged() = 0;
+    virtual bool ActiveSetConverged() = 0;
+    virtual int ActiveSetSteps() = 0;
     virtual double ConstraintNorm() = 0;
     virtual void EvaluateContact(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
     virtual void EvaluateFriction(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
+    virtual void EvaluateRelMovPredict() = 0;
     virtual double InitialPenalty() = 0;
     virtual void Initialize() = 0;
     virtual void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
     virtual void Recover(RCP<Epetra_Vector> disi) = 0;
+    virtual void ResetActiveSet() = 0;
     virtual void ResetPenalty() = 0;
     virtual void SaddlePointSolve(LINALG::Solver& solver, RCP<LINALG::SparseOperator> kdd, RCP<Epetra_Vector> fd, RCP<Epetra_Vector> sold, RCP<Epetra_Vector> dirichtoggle, int numiter) = 0;
     virtual void SaveReferenceState(const RCP<Epetra_Vector> dis) = 0;
@@ -489,8 +510,6 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     RCP<Epetra_Vector> stresstangential_;  // vector of tangential contact forces at t_n+1
 
     // global storage fields
-    bool activesetconv_;      // convergence flag for active set
-    int  activesetsteps_;     // no. of active sets in this time/load step
     bool isincontact_;        // flag indicating global contact status
     bool isselfcontact_;      // flag indicating potential self contact
     bool friction_;           // flag for frictional contact

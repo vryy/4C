@@ -104,19 +104,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
      
     */
     const RCP<Epetra_Map> SlaveRowDofs() { return gsdofrowmap_; }
-  
-    /*!
-    \brief Return convergence status of active set (this is always true for meshtying)
-     
-    */
-    bool ActiveSetConverged() { return true; }
     
-    /*!
-    \brief Return friction status (this is always false for meshtying)
-     
-    */
-    bool Friction() {return false;};  
-
     /*!
     \brief Return Lagrange multiplier vector (t_n+1)
      
@@ -144,6 +132,34 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
 
     //! @name Evaluation methods
 
+    /*!
+    \brief Global evaluation method called from time integrator
+    
+    */
+    void ApplyForceStiffCmt(const string& statename, RCP<Epetra_Vector> dis,
+                            RCP<LINALG::SparseOperator>& kt, RCP<Epetra_Vector>& f,
+                            RCP<Epetra_Vector> fcopy, bool predictor = false)
+    {
+      // mortar initialization and evaluation
+      SetState(statename,dis);
+      InitEvalInterface();
+      InitEvalMortar();
+      
+      // evaluate relative movement for friction
+      if (predictor) EvaluateRelMovPredict();
+      else           EvaluateRelMov();
+      
+      // update active set
+      UpdateActiveSetSemiSmooth();
+      
+      // apply contact forces and stiffness
+      Initialize();
+      Evaluate(kt,f,dis);
+      InterfaceForces(fcopy);
+        
+      return;
+    }
+    
     /*!
     \brief Set current deformation state
      
@@ -324,6 +340,9 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     // are defined as empty here in the case of meshtying. They can be called from the
     // control routine (time integrator), whenever you like.
     
+    bool ActiveSetConverged() {return true;}
+    bool ActiveSetSemiSmoothConverged() {return true;}
+    bool Friction() {return false;}
     RCP<Epetra_Vector> ContactNorStress() {return Teuchos::null;}
     RCP<Epetra_Vector> ContactTanStress() {return Teuchos::null;}
     void DoWriteRestart(RCP<Epetra_Vector>& activetoggle, RCP<Epetra_Vector>& sliptoggle) {}
@@ -331,12 +350,14 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     void InitEvalMortar() {}
     void Initialize() {}
     void OutputStresses() {}
+    void ResetActiveSet() {}
     void SaveReferenceState(RCP<Epetra_Vector> dis) {}
     void UpdateActiveSet() {}
     void UpdateActiveSetSemiSmooth() {}
     void EvaluateReferenceState (const RCP<Epetra_Vector> vec){}
-    void EvaluateRelMov() {} 
-    virtual void VisualizeGmsh(const int step, const int iter = 0) {}
+    void EvaluateRelMov() {}
+    void EvaluateRelMovPredict() {}
+    void VisualizeGmsh(const int step, const int iter = 0) {}
     
     //@}
         

@@ -56,8 +56,6 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(RCP<Epetra_Map> problemrowmap, T
                                                 int dim, RCP<Epetra_Comm> comm, double alphaf) :
 MORTAR::StrategyBase(problemrowmap,params,dim,comm,alphaf),
 interface_(interface),
-activesetconv_(false),
-activesetsteps_(1),
 isincontact_(false),
 isselfcontact_(false),
 friction_(false)
@@ -675,24 +673,18 @@ void CONTACT::CoAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
   // (necessary e.g. for monolithic FSI with Lagrange multiplier contact,
   // because usually active set convergence check has been integrated into
   // structure Newton scheme, but now the monolithic FSI Newton scheme decides)
-  // TODO: this should be moved to contact_lagrange_strategy
-  INPAR::CONTACT::SolvingStrategy st = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
-  if (st == INPAR::CONTACT::solution_lagmult)
-  {
-    // error
-    if (!activesetconv_) dserror("ERROR: Active set not fully converged!");
-    
-    // reset active set status for next time step
-    activesetconv_ = false;
-    activesetsteps_ = 1;
-  }
+  if (!ActiveSetConverged() || !ActiveSetSemiSmoothConverged())
+    dserror("ERROR: Active set not fully converged!");
+  
+  // reset active set status for next time step
+  ResetActiveSet();
 
   //----------------------------------------friction: store history values
   // in the case of frictional contact we have to store several
-  // informations and quantities at the end of a time step (converged
+  // information and quantities at the end of a time step (converged
   // state) which is needed in the next time step as history
-  // information/quantities. 
-  if(friction_==true)
+  // information / quantities. 
+  if (friction_)
   {
     // store contact state to contact nodes (active or inactive)
     StoreNodalQuantities(MORTAR::StrategyBase::activeold);
@@ -703,6 +695,7 @@ void CONTACT::CoAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
     // store nodal entries form penalty contact tractions to old ones
     StoreToOld(MORTAR::StrategyBase::pentrac);
   }
+  
   return;
 }
 

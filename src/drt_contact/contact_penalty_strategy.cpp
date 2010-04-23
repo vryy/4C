@@ -116,6 +116,20 @@ void CONTACT::CoPenaltyStrategy::SaveReferenceState(const RCP<Epetra_Vector> dis
 }
 
 /*----------------------------------------------------------------------*
+ | evaluate relative movement in predictor step               popp 04/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoPenaltyStrategy::EvaluateRelMovPredict()
+{
+  // only for frictional contact
+  if (friction_ == false) return;
+  
+  // call evaluation method of base class
+  EvaluateRelMov();
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | initialize global contact variables for next Newton step   popp 06/09|
  *----------------------------------------------------------------------*/
 void CONTACT::CoPenaltyStrategy::Initialize()

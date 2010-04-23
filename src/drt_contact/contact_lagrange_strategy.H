@@ -73,6 +73,50 @@ class CoLagrangeStrategy : public CoAbstractStrategy
 
     */
     virtual ~CoLagrangeStrategy() {};
+    
+    //! @name Access methods
+    
+    /*!
+    \brief Return convergence status of semi-smooth active set search
+
+    If this Lagrange contact strategy is not based on a semi-smooth
+    Newton approach, but on a fixed-point approach with two nested
+    loops, then this method simply returns true, of course. Convergence
+    of the active set is monitored with the flag activesetconv_ in
+    this case and activesetssconv_ is meaningless.
+    
+    */
+    bool ActiveSetSemiSmoothConverged()
+    {
+      bool semismooth = Teuchos::getIntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
+      if (semismooth) return activesetssconv_;
+      else            return true;
+    }
+    
+    /*!
+    \brief Return convergence status of fixed-point active set search
+
+    If this Lagrange contact strategy is based on a semi-smooth
+    Newton approach and not on a fixed-point approach with two nested
+    loops, then this method simply returns true, of course. Convergence
+    of the active set is monitored with the flag activesetssconv_ in
+    this case and activesetconv_ is meaningless.
+    
+    */
+    bool ActiveSetConverged()
+    {
+      bool semismooth = Teuchos::getIntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
+      if (!semismooth) return activesetconv_;
+      else             return true;
+    }
+    
+    /*!
+    \brief Return no. of fixed-point active sets in this time step
+
+    */
+    int ActiveSetSteps() { return activesetsteps_; }
+    
+    //@}
 
     //! @name Evaluation methods
     
@@ -164,6 +208,18 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     */
     void UpdateActiveSetSemiSmooth();
     
+    /*!
+    \brief Reset active set status for next time step
+
+    */
+    void ResetActiveSet()
+    {
+      activesetssconv_ = false;
+      activesetconv_ = false;
+      activesetsteps_ = 1;
+      return;
+    }
+    
     //@}
     
     //! @name Empty methods
@@ -176,6 +232,7 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     
     */
     double ConstraintNorm() {return 0.0;}
+    void EvaluateRelMovPredict() {}
     double InitialPenalty() {return 0.0;}
     void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) {}
     void ResetPenalty() {}
@@ -187,6 +244,10 @@ class CoLagrangeStrategy : public CoAbstractStrategy
 
   protected:
 
+    bool activesetssconv_;    // convergence flag for semi-smooth active set search
+    bool activesetconv_;      // convergence flag for fixed-point active set search      
+    int  activesetsteps_;     // number of fixed-point active set steps in this time step
+    
     RCP<LINALG::SparseMatrix> mhatmatrix_; // product of global Mortar matrices inv(D)*M    
 
     RCP<LINALG::SparseMatrix> nmatrix_; // global Matrix N containing active node normals

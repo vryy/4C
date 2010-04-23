@@ -130,10 +130,12 @@ public:
 
   \param reader (in): IO::Discretization reader for restart
   \param dis (in)   : global dof displacement vector
+  \param zero (in)  : global dof zero vector
   
   */
   void ReadRestart(IO::DiscretizationReader& reader,
-                   RCP<Epetra_Vector> dis);
+                   RCP<Epetra_Vector> dis,
+                   RCP<Epetra_Vector> zero);
   
   /*!
   \brief Write interface tractions for postprocessing

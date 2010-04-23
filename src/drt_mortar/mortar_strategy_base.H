@@ -133,6 +133,8 @@ class StrategyBase
     // (time integrator), these functions need to be defined purely virtual here.
 
     virtual bool ActiveSetConverged() = 0;
+    virtual bool ActiveSetSemiSmoothConverged() = 0;
+    virtual void ApplyForceStiffCmt(const string& statename, RCP<Epetra_Vector> dis, RCP<LINALG::SparseOperator>& kt, RCP<Epetra_Vector>& f, RCP<Epetra_Vector> fcopy, bool predictor = false) = 0;
     virtual double ConstraintNorm() = 0;
     virtual RCP<Epetra_Vector> ContactNorStress() = 0;
     virtual RCP<Epetra_Vector> ContactTanStress() = 0;
@@ -153,6 +155,7 @@ class StrategyBase
     virtual void Print(ostream& os) const = 0;
     virtual void PrintActiveSet() = 0;
     virtual void Recover(RCP<Epetra_Vector> disi) = 0;
+    virtual void ResetActiveSet() = 0;
     virtual void ResetPenalty() = 0;
     virtual void SaddlePointSolve(LINALG::Solver& solver, RCP<LINALG::SparseOperator> kdd, RCP<Epetra_Vector> fd, RCP<Epetra_Vector> sold, RCP<Epetra_Vector> dirichtoggle, int numiter) = 0; 
     virtual void SaveReferenceState(RCP<Epetra_Vector> dis) = 0;
@@ -166,6 +169,7 @@ class StrategyBase
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
     virtual void EvaluateReferenceState(const RCP<Epetra_Vector> vec) = 0;
     virtual void EvaluateRelMov() = 0;
+    virtual void EvaluateRelMovPredict() = 0;
     virtual bool Friction() = 0;
     virtual void VisualizeGmsh(const int step, const int iter = 0) = 0;
  

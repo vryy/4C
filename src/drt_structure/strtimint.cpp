@@ -630,22 +630,16 @@ void STR::TimInt::ReadRestartContactMeshtying()
 {
   if (cmtman_ != Teuchos::null)
   {
-    //********************************************************************
+    //**********************************************************************
     // NOTE: There is an important difference here between contact and
     // meshtying simulations. In both cases, the current coupling operators
     // have to be re-computed for restart, but in the meshtying case this
     // means evaluating DM in the reference configuration!
-    // Thus, dis_ is handed in as current displacement state for contact
-    // simulations, but zero_ is handed in for meshtying simulations.
-    //********************************************************************
-    IO::DiscretizationReader reader(discret_, step_);
-    INPAR::CONTACT::ApplicationType apptype =
-      Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(cmtman_->GetStrategy().Params(),"APPLICATION");
-    
-    if (apptype == INPAR::CONTACT::app_mortarcontact)
-      cmtman_->ReadRestart(reader,(*dis_)(0));
-    else if (apptype == INPAR::CONTACT::app_mortarmeshtying)
-      cmtman_->ReadRestart(reader,zeros_);
+    // Thus, both dis_ (current displacement state) and zero_ are handed
+    // in and contact / meshtying managers choose the correct state.
+    //**********************************************************************
+    IO::DiscretizationReader reader(discret_,step_);
+    cmtman_->ReadRestart(reader,(*dis_)(0),zeros_);
   }
 }
 

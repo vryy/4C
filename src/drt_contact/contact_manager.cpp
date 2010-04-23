@@ -524,8 +524,9 @@ void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output)
  |  read restart information for contact (public)             popp 03/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
-                                   RCP<Epetra_Vector> dis)
+                                     RCP<Epetra_Vector> dis, RCP<Epetra_Vector> zero)
 {
+  // this is contact, thus we need the displacement state for restart
   // let strategy object do all the work
   GetStrategy().DoReadRestart(reader, dis);
 

@@ -124,56 +124,45 @@ public:
   void CmtNonlinearSolve();
   
   /*!
-  \brief do full Newton iteration
+  \brief do full (semi-smooth) Newton iteration
 
-  This is the nonlinear solution method of choice for:
+  This is a full Newton method for:
   
   (1) Penalty Meshtying
   (2) Lagrange Meshtying
   (3) Penalty Contact
   (4) Lagrange Contact (only for fixed-point PDASS, see below)
   
-  Note for case (4): Here, FullNewton() is only chosen if the PDASS
+  Note for case (4): Here, it is only a standard full Newton if the PDASS
   (primal-dual active set strategy) is interpreted as a fixed-point
   method: The search for the correct active set (=contact nonlinearity)
   is represented by a fixed-point approach, whereas the large deformation
   linearization (=geometrical nonlinearity) is treated by a standard
   Newton scheme. This yields TWO nested iteration loops! If the PDASS
-  is interpreted as a semi-smooth Newton method, we employ a different
-  nonlinear solution method, namely SemiSmoothNewton();
-
-  */
-  void FullNewton();
-
-  /*!
-  \brief do semi-smooth Newton iteration
-
-  This is the nonlinear solution method of choice for:
+  is interpreted as a semi-smooth Newton method, this routine automatically
+  yields another nonlinear solution method, namely semi-smooth Newton.
   
-  (1) Lagrange Contact (only for semi-smooth PDASS, see below)
+  This is a semi-smooth Newton method for:
   
-  Note for case (1): Here, SemiSmoothNewton() is only chosen if the PDASS
+  (1) Lagrange Contact (only for semi-smooth PDASS, see above)
+  
+  Note for case (1): Here, it is only a semi-smooth Newton if the PDASS
   (primal-dual active set strategy) is interpreted as a semi-smooth Newton
   method: The search for the correct active set (=contact nonlinearity)
   and the large deformation linearization (=geometrical nonlinearity) are
   merged into one semi-smooth Newton method and can therefore besolved
   within ONE iteration loop! If the PDASS is interpreted as a fixed-point
-  method, we employ a different nonlinear solution method, namely FullNewton();
+  method, this routine automatically yields another nonlinear solution
+  method, namely standard full Newton.
 
   */
-  void SemiSmoothNewton();
+  void FullNewton();
     
   /*!
-  \brief Line search version of full Newton iteration
+  \brief Line search version of full (semi-smooth) Newton iteration
 
   */
   void FullNewtonLineSearch();
-  
-  /*!
-  \brief Line search version of semi-smooth Newton iteration
-
-  */
-  void SemiSmoothNewtonLineSearch();
   
   /*!
   \brief do pseudo transient continuation nonlinear iteration
@@ -187,6 +176,14 @@ public:
   */
   void PTC();
 
+  /*!
+  \brief Check convergence of nonlinear iteration
+
+  */
+  bool Converged(const string type, const double disinorm,
+                 const double resnorm, const double toldisp,
+                 const double tolres);
+  
   /*!
   \brief linear solve for meshtying and contact
   

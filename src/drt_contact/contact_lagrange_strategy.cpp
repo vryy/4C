@@ -51,7 +51,10 @@ CONTACT::CoLagrangeStrategy::CoLagrangeStrategy(RCP<Epetra_Map> problemrowmap,
                                                 Teuchos::ParameterList params,
                                                 vector<RCP<CONTACT::CoInterface> > interface,
                                                 int dim, RCP<Epetra_Comm> comm, double alphaf) :
-CoAbstractStrategy(problemrowmap,params,interface,dim,comm,alphaf)
+CoAbstractStrategy(problemrowmap,params,interface,dim,comm,alphaf),
+activesetssconv_(false),
+activesetconv_(false),
+activesetsteps_(1)
 {
   // empty constructor
 }
@@ -2453,9 +2456,12 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   // if not, increase no. of active set steps too
   if (convcheck!=Comm().NumProc())
   {
-    activesetconv_=false;
+    activesetconv_ = false;
     activesetsteps_ += 1;
   }
+  
+  // also update special flag for semi-smooth Newton convergence
+  activesetssconv_ = activesetconv_;
 
   // (re)setup active global Epetra_Maps
   gactivenodes_ = null;

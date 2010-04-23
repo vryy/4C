@@ -504,30 +504,8 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying
     Teuchos::RCP<Epetra_Vector> frescopy = Teuchos::rcp(new Epetra_Vector(*fres_));
 
     // make contact / meshtying modifications to lhs and rhs
-    cmtman_->GetStrategy().SetState("displacement",dis);
-    cmtman_->GetStrategy().InitEvalInterface();
-    cmtman_->GetStrategy().InitEvalMortar();
- 
-    // friction
-    // here the relative movement of the contact bodies is evaluated
-    // therefore the current configuration and the according mortar
-    // matrices are needed
-    // it is only evaluated (resetted) for penalty strategy and
-    // augmented lagrange strategy
-    INPAR::CONTACT::SolvingStrategy strattype =
-        Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
-
-    if (iter_== 0 and strattype == INPAR::CONTACT::solution_lagmult)
-    {}
-    else
-      cmtman_->GetStrategy().EvaluateRelMov();
-    
-    cmtman_->GetStrategy().UpdateActiveSetSemiSmooth();
-    cmtman_->GetStrategy().Initialize();
-    cmtman_->GetStrategy().Evaluate(stiff,fresm,dis);
-
-    // evaluate interface forces
-    cmtman_->GetStrategy().InterfaceForces(frescopy);
+    bool predictor = (iter_==0);
+    cmtman_->GetStrategy().ApplyForceStiffCmt("displacement",dis,stiff,fresm,frescopy,predictor);
 
     // scaling back
     fresm->Scale(-1.0);

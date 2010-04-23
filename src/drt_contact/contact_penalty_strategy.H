@@ -123,6 +123,18 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   void SaveReferenceState(const RCP<Epetra_Vector> dis);
   
   /*!
+  \brief Evaluate relative movement of contact bodies in predictor
+
+  This is a tiny control routine for evaluating the relative movement of
+  contact bodies in the predictor of an implicit time integration scheme.
+  This evaluation (resetting) is ONLY necessary for penalty strategy and
+  augmented lagrange strategy, thus this tiny routine here.
+
+  */
+  
+  void EvaluateRelMovPredict();
+  
+  /*!
   \brief Initialize general contact variables for next Newton step
        
   For a penalty strategy this involves the derivative matrix for the regularized lagrange multipliers.
@@ -205,6 +217,10 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   // All these functions only have functionality in Lagrange contact simulations,
   // thus they are defined empty here in the case of Penalty contact.
   
+  bool ActiveSetSemiSmoothConverged() {return true;}
+  bool ActiveSetConverged() {return true;}
+  int ActiveSetSteps() {return 0;}
+  void ResetActiveSet() {}
   void Recover(RCP<Epetra_Vector> disi) {}
   void SaddlePointSolve(LINALG::Solver& solver, RCP<LINALG::SparseOperator> kdd, RCP<Epetra_Vector> fd, RCP<Epetra_Vector> sold, RCP<Epetra_Vector> dirichtoggle, int numiter) {}    
   void UpdateActiveSet() {}

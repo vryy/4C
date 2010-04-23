@@ -120,7 +120,7 @@ public:
   // integrator), these functions need to be defined purely virtual here.
 
   virtual void PostprocessTractions(IO::DiscretizationWriter& output) = 0;
-  virtual void ReadRestart(IO::DiscretizationReader& reader, RCP<Epetra_Vector> dis) = 0;
+  virtual void ReadRestart(IO::DiscretizationReader& reader, RCP<Epetra_Vector> dis, RCP<Epetra_Vector> zero) = 0;
   virtual void WriteRestart(IO::DiscretizationWriter& output) = 0;
   
   //@}
