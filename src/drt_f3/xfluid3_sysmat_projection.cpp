@@ -157,7 +157,7 @@ Maintainer: Axel Gerstenberger
             size_t shpVecSize>
   void BuildStiffnessMatrixEntries(
       LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>&   assembler,
-      const XFEM::ApproxFunc<shpVecSize>&     shp,
+      const XFEM::ApproxFunc<1,shpVecSize>&     shp,
       const double&                             fac,
       const double&                             visc,
       const LINALG::Matrix<3,1>&                u2_proj,
@@ -405,7 +405,7 @@ void SysmatDomainProjection(
 
             const size_t shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
-            static XFEM::ApproxFunc<shpVecSize> shp;
+            static XFEM::ApproxFunc<1,shpVecSize> shp;
 
             if (ASSTYPE == XFEM::xfem_assembly)
             {

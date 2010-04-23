@@ -114,9 +114,9 @@ Maintainer: Axel Gerstenberger
             size_t shpVecSize,
             size_t shpVecSizeStress>
   void BuildStiffnessMatrixEntries(
-      LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>&           assembler,
-      const XFEM::ApproxFunc<shpVecSize>&                     shp,
-      const LINALG::Matrix<shpVecSizeStress,1>&  shp_tau,
+      LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>&      assembler,
+      const XFEM::ApproxFunc<1,shpVecSize>&        shp,
+      const XFEM::ApproxFunc<0,shpVecSizeStress>&  shp_tau,
       const double& fac,
       const double& timefac,
       const double& timefacfac,
@@ -158,25 +158,25 @@ Maintainer: Axel Gerstenberger
                        \                     */
 
       const double reciproke_viscfac = 1.0/(visc);
-      assembler.template Matrix<HeatFlux_x,HeatFlux_x>(shp_tau, -reciproke_viscfac*timefacfac, shp_tau);
-      assembler.template Matrix<HeatFlux_y,HeatFlux_y>(shp_tau, -reciproke_viscfac*timefacfac, shp_tau);
-      assembler.template Matrix<HeatFlux_z,HeatFlux_z>(shp_tau, -reciproke_viscfac*timefacfac, shp_tau);
+      assembler.template Matrix<HeatFlux_x,HeatFlux_x>(shp_tau.d0, -reciproke_viscfac*timefacfac, shp_tau.d0);
+      assembler.template Matrix<HeatFlux_y,HeatFlux_y>(shp_tau.d0, -reciproke_viscfac*timefacfac, shp_tau.d0);
+      assembler.template Matrix<HeatFlux_z,HeatFlux_z>(shp_tau.d0, -reciproke_viscfac*timefacfac, shp_tau.d0);
 
-      assembler.template Vector<HeatFlux_x>(shp_tau,  reciproke_viscfac*timefacfac*heatflux(0));
-      assembler.template Vector<HeatFlux_y>(shp_tau,  reciproke_viscfac*timefacfac*heatflux(1));
-      assembler.template Vector<HeatFlux_z>(shp_tau,  reciproke_viscfac*timefacfac*heatflux(2));
+      assembler.template Vector<HeatFlux_x>(shp_tau.d0,  reciproke_viscfac*timefacfac*heatflux(0));
+      assembler.template Vector<HeatFlux_y>(shp_tau.d0,  reciproke_viscfac*timefacfac*heatflux(1));
+      assembler.template Vector<HeatFlux_z>(shp_tau.d0,  reciproke_viscfac*timefacfac*heatflux(2));
 
                    /*                 \
                   | virt tau , eps(Du) |
                    \                 */
 
-      assembler.template Matrix<HeatFlux_x,Temp>(shp_tau,     -timefacfac    , shp.dx);
-      assembler.template Matrix<HeatFlux_y,Temp>(shp_tau,     -timefacfac    , shp.dy);
-      assembler.template Matrix<HeatFlux_z,Temp>(shp_tau,     -timefacfac    , shp.dz);
+      assembler.template Matrix<HeatFlux_x,Temp>(shp_tau.d0,     -timefacfac    , shp.dx);
+      assembler.template Matrix<HeatFlux_y,Temp>(shp_tau.d0,     -timefacfac    , shp.dy);
+      assembler.template Matrix<HeatFlux_z,Temp>(shp_tau.d0,     -timefacfac    , shp.dz);
 
-      assembler.template Vector<HeatFlux_x>(shp_tau,     timefacfac*Tderxy(0));
-      assembler.template Vector<HeatFlux_y>(shp_tau,     timefacfac*Tderxy(1));
-      assembler.template Vector<HeatFlux_z>(shp_tau,     timefacfac*Tderxy(2));
+      assembler.template Vector<HeatFlux_x>(shp_tau.d0,     timefacfac*Tderxy(0));
+      assembler.template Vector<HeatFlux_y>(shp_tau.d0,     timefacfac*Tderxy(1));
+      assembler.template Vector<HeatFlux_z>(shp_tau.d0,     timefacfac*Tderxy(2));
 
   }
 
@@ -226,11 +226,6 @@ void SysmatDomain4(
     static LINALG::Matrix<nsd,numnode> xyze;
     GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
-    // get older interface velocities and accelerations
-//    const Epetra_Vector& ivelcoln  = *ih->cutterdis()->GetState("ivelcoln");
-//    const Epetra_Vector& ivelcolnm = *ih->cutterdis()->GetState("ivelcolnm");
-//    const Epetra_Vector& iacccoln  = *ih->cutterdis()->GetState("iacccoln");
-
     // dead load in element nodes
     //////////////////////////////////////////////////// , LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
 
@@ -247,18 +242,6 @@ void SysmatDomain4(
 
     // figure out whether we have stress unknowns at all
     const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, HeatFlux_x, 0) > 0);
-//    const bool velocity_unknowns_present = (getNumParam<ASSTYPE>(dofman, Velx, 1) > 0);
-//    const bool pressure_unknowns_present = (getNumParam<ASSTYPE>(dofman, Pres, 1) > 0);
-//    cout << endl;
-//    if (ASSTYPE == XFEM::standard_assembly)
-//        cout << "standard assembly" << endl;
-//    else
-//        cout << "xfem assembly" << endl;
-//
-//    cout << "stress unknowns present  : " << stress_unknowns_present << endl;
-//    cout << "velocity unknowns present: " << velocity_unknowns_present << endl;
-//    cout << "pressure unknowns present: " << pressure_unknowns_present << endl;
-
 
     // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
     //const int numparamvelx = getNumParam<ASSTYPE>(dofman, Velx, numnode);
@@ -364,9 +347,9 @@ void SysmatDomain4(
             const size_t shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
             const size_t shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
 
-            static XFEM::ApproxFunc<shpVecSize> shp;
+            static XFEM::ApproxFunc<1,shpVecSize> shp;
 
-            static LINALG::Matrix<shpVecSizeStress,1>   shp_tau;
+            static XFEM::ApproxFunc<0,shpVecSizeStress>   shp_tau;
 
             if (ASSTYPE == XFEM::xfem_assembly)
             {
@@ -410,12 +393,12 @@ void SysmatDomain4(
 
                     for (size_t iparam = 0; iparam < numparamtauxx; ++iparam)
                     {
-                      shp_tau(iparam) = enr_funct_stress(iparam);
+                      shp_tau.d0(iparam) = enr_funct_stress(iparam);
                     }
                 }
                 else
                 {
-                  shp_tau.Clear();
+                  shp_tau.d0.Clear();
                 }
             }
             else // standard assembly
@@ -501,7 +484,7 @@ void SysmatDomain4(
             static LINALG::Matrix<nsd,1> heatflux;
             if (tauele_unknowns_present)
             {
-              XDIFF::fill_tau(numparamtauxx, shp_tau, eflux, heatflux);
+              XDIFF::fill_tau(numparamtauxx, shp_tau.d0, eflux, heatflux);
             }
             else
             {
@@ -645,7 +628,7 @@ void SysmatBoundary4(
     const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
     const M1&                         evelnp,
     const M2&                         eflux,
-    const Teuchos::RCP<const Epetra_Vector>& ivelcol,       ///< velocity for interface nodes
+    const Teuchos::RCP<const Epetra_Vector>& ivelcolnp,       ///< velocity for interface nodes
     const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
     const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
     const double&                     dt,            ///< delta t (time step size)
@@ -711,7 +694,7 @@ void SysmatBoundary4(
           for (std::size_t inode = 0; inode < numnode_boundary; ++inode)
           {
             ih->cutterdis()->Dof(nodes[inode],0,gdofs);
-            DRT::UTILS::ExtractMyValues(*ivelcol,myvel,gdofs);
+            DRT::UTILS::ExtractMyValues(*ivelcolnp,myvel,gdofs);
             vel_boundary(0,inode) = myvel[0];
             vel_boundary(1,inode) = myvel[1];
             vel_boundary(2,inode) = myvel[2];
@@ -797,12 +780,12 @@ void SysmatBoundary4(
               dserror("negative fac! should be a bug!");
             }
 
-            const std::size_t shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-            const std::size_t shpVecSizeStress = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
+            const std::size_t shpVecSize         = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+            const std::size_t shpVecSizeStress   = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
 
             // temporary arrays
-            static LINALG::Matrix<shpVecSize,1>       enr_funct;
-            static LINALG::Matrix<shpVecSizeStress,1> enr_funct_stress;
+            static LINALG::Matrix<shpVecSize,1>          enr_funct;
+            static LINALG::Matrix<shpVecSizeStress,1>    enr_funct_stress;
 
 //            if (dofman.getUniqueEnrichments().size() > 1)
 //              dserror("for an intersected element, we assume only 1 enrichment for now!");
@@ -827,15 +810,15 @@ void SysmatBoundary4(
                     enr_funct_stress);
 
             // perform integration for entire matrix and rhs
-            static LINALG::Matrix<shpVecSize,1> shp;
+            static XFEM::ApproxFunc<0,shpVecSize> shp;
             for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
             {
-              shp(iparam) = enr_funct(iparam);
+              shp.d0(iparam) = enr_funct(iparam);
             }
-            static LINALG::Matrix<shpVecSizeStress,1> shp_tau;
+            static XFEM::ApproxFunc<0,shpVecSizeStress> shp_tau;
             for (std::size_t iparam = 0; iparam < numparamtauxx; ++iparam)
             {
-              shp_tau(iparam) = enr_funct_stress(iparam);
+              shp_tau.d0(iparam) = enr_funct_stress(iparam);
             }
 
             // get normal vector (in physical coordinates) to surface element at integration point
@@ -848,7 +831,7 @@ void SysmatBoundary4(
             // gpvelnp = evelnp(i,j)*shp(j);
             double gpvelnp = 0.0;
             for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
-                gpvelnp += evelnp(iparam)*shp(iparam);
+                gpvelnp += evelnp(iparam)*shp.d0(iparam);
 
             // get interface velocity
             const int belegid = cell->GetSurfaceEleGid();
@@ -864,7 +847,7 @@ void SysmatBoundary4(
 
             // get viscous stress unknowns
             static LINALG::Matrix<nsd,1> heatflux;
-            XDIFF::fill_tau(numparamtauxx, shp_tau, eflux, heatflux);
+            XDIFF::fill_tau(numparamtauxx, shp_tau.d0, eflux, heatflux);
 
             // integration factors and coefficients of single terms
             const double timefacfac = timefac * fac;
@@ -877,38 +860,38 @@ void SysmatBoundary4(
             - |  (virt tau) * n^f , Du  |
                \                      */
 
-            assembler.template Matrix<HeatFlux_x,Temp>(shp_tau, timefacfac*normalvec_fluid(0), shp);
-            assembler.template Matrix<HeatFlux_y,Temp>(shp_tau, timefacfac*normalvec_fluid(1), shp);
-            assembler.template Matrix<HeatFlux_z,Temp>(shp_tau, timefacfac*normalvec_fluid(2), shp);
+            assembler.template Matrix<HeatFlux_x,Temp>(shp_tau.d0, timefacfac*normalvec_fluid(0), shp.d0);
+            assembler.template Matrix<HeatFlux_y,Temp>(shp_tau.d0, timefacfac*normalvec_fluid(1), shp.d0);
+            assembler.template Matrix<HeatFlux_z,Temp>(shp_tau.d0, timefacfac*normalvec_fluid(2), shp.d0);
 
 
-            assembler.template Vector<HeatFlux_x>(shp_tau, -timefacfac*normalvec_fluid(0)*gpvelnp);
-            assembler.template Vector<HeatFlux_y>(shp_tau, -timefacfac*normalvec_fluid(1)*gpvelnp);
-            assembler.template Vector<HeatFlux_z>(shp_tau, -timefacfac*normalvec_fluid(2)*gpvelnp);
+            assembler.template Vector<HeatFlux_x>(shp_tau.d0, -timefacfac*normalvec_fluid(0)*gpvelnp);
+            assembler.template Vector<HeatFlux_y>(shp_tau.d0, -timefacfac*normalvec_fluid(1)*gpvelnp);
+            assembler.template Vector<HeatFlux_z>(shp_tau.d0, -timefacfac*normalvec_fluid(2)*gpvelnp);
 
 
                /*                            \
               |  (virt tau) * n^f , u^\iface  |
                \                            */
 
-            assembler.template Vector<HeatFlux_x>(shp_tau, timefacfac*normalvec_fluid(0)*interface_Temp);
-            assembler.template Vector<HeatFlux_y>(shp_tau, timefacfac*normalvec_fluid(1)*interface_Temp);
-            assembler.template Vector<HeatFlux_z>(shp_tau, timefacfac*normalvec_fluid(2)*interface_Temp);
+            assembler.template Vector<HeatFlux_x>(shp_tau.d0, timefacfac*normalvec_fluid(0)*interface_Temp);
+            assembler.template Vector<HeatFlux_y>(shp_tau.d0, timefacfac*normalvec_fluid(1)*interface_Temp);
+            assembler.template Vector<HeatFlux_z>(shp_tau.d0, timefacfac*normalvec_fluid(2)*interface_Temp);
 
 
                /*               \
             - |  v , Dtau * n^f  |
                \               */
 
-            assembler.template Matrix<Temp,HeatFlux_x>(shp, timefacfac*normalvec_fluid(0), shp_tau);
-            assembler.template Matrix<Temp,HeatFlux_y>(shp, timefacfac*normalvec_fluid(1), shp_tau);
-            assembler.template Matrix<Temp,HeatFlux_z>(shp, timefacfac*normalvec_fluid(2), shp_tau);
+            assembler.template Matrix<Temp,HeatFlux_x>(shp.d0, timefacfac*normalvec_fluid(0), shp_tau.d0);
+            assembler.template Matrix<Temp,HeatFlux_y>(shp.d0, timefacfac*normalvec_fluid(1), shp_tau.d0);
+            assembler.template Matrix<Temp,HeatFlux_z>(shp.d0, timefacfac*normalvec_fluid(2), shp_tau.d0);
 
             double q_times_n = 0.0;
             for (std::size_t isd = 0; isd < nsd; ++isd)
               q_times_n += heatflux(isd)*normalvec_fluid(isd);
             //cout << "sigmaijnj : " << disctau_times_n << endl;
-            assembler.template Vector<Temp>(shp, -timefacfac*q_times_n);
+            assembler.template Vector<Temp>(shp.d0, -timefacfac*q_times_n);
 //
 //            // here the interface force is integrated
 //            // this is done using test shape functions of the boundary mesh
@@ -998,7 +981,7 @@ void Sysmat4(
         ele, ih, dofman, evelnp, etau,
         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler, L2);
 
-    if (ASSTYPE == XFEM::xfem_assembly)
+    if (ih->ElementIntersected(ele->Id()))
     {
       SysmatBoundary4<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelnp, etau, ivelcol, iforcecol,

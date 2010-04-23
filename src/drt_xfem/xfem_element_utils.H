@@ -48,8 +48,29 @@ namespace XFEM
   /// | P4/dx |   | dN2/dx*psi + N2*dpsi/dx |
   ///   ...
   ///   Note the chain rule above!
-  template <size_t numparam>
+  template <unsigned int numdiv, size_t numparam>
   struct ApproxFunc
+  {
+
+  };
+
+  template <size_t numparam>
+  struct ApproxFunc<0, numparam>
+  {
+    LINALG::Matrix<numparam,1>  d0;
+  };
+
+  template <size_t numparam>
+  struct ApproxFunc<1, numparam>
+  {
+    LINALG::Matrix<numparam,1>  d0;
+    LINALG::Matrix<numparam,1>  dx;
+    LINALG::Matrix<numparam,1>  dy;
+    LINALG::Matrix<numparam,1>  dz;
+  };
+
+  template <size_t numparam>
+  struct ApproxFunc<2, numparam>
   {
     LINALG::Matrix<numparam,1>  d0;
     LINALG::Matrix<numparam,1>  dx;

@@ -247,8 +247,8 @@ void SysmatTwoPhaseFlow(
 
       //static Shp<shpVecSize> shp;
 
-      static XFEM::ApproxFunc<shpVecSize> shpvel;
-      static XFEM::ApproxFunc<shpVecSize> shppres;
+      static XFEM::ApproxFunc<2,shpVecSize> shpvel;
+      static XFEM::ApproxFunc<2,shpVecSize> shppres;
 
       //            typedef LINALG::Matrix<shpVecSize,1> ShpVec;
       //            static ShpVec shp;

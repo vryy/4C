@@ -59,8 +59,8 @@ template <DRT::Element::DiscretizationType DISTYPE,
           size_t shpVecSizeStress>
 void BuildDomainIntegralsStress(
     LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>& assembler,
-    const XFEM::ApproxFunc<shpVecSize>& shp,           // shape functions and derivatives
-    const LINALG::Matrix<shpVecSizeStress,1>& shp_tau, //
+    const XFEM::ApproxFunc<2,shpVecSize>& shp,           // shape functions and derivatives
+    const XFEM::ApproxFunc<0,shpVecSizeStress>& shp_tau, //
     const double& fac,                                 // factor for integration in space
     const double& timefac,                             // factor for integration in time
     const double& timefacfac,                          // overall integration factor
@@ -362,9 +362,9 @@ void SysmatDomainStress(
       const size_t shpVecSizeStress = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
 
       // (enriched) shape functions = approximation functions (P = N * \Psi)
-      static XFEM::ApproxFunc<shpVecSize> shp;
+      static XFEM::ApproxFunc<2,shpVecSize> shp;
       // comment missing
-      static LINALG::Matrix<shpVecSizeStress,1> shp_tau;
+      static XFEM::ApproxFunc<0,shpVecSizeStress> shp_tau;
       if (ASSTYPE == XFEM::xfem_assembly)
       {
         //cout << "this is a fully or partially enriched element" << endl;
@@ -416,12 +416,12 @@ void SysmatDomainStress(
 
           for (size_t iparam = 0; iparam < numparamtauxx; ++iparam)
           {
-            shp_tau(iparam) = enr_funct_stress(iparam);
+            shp_tau.d0(iparam) = enr_funct_stress(iparam);
           }
         }
         else
         {
-          shp_tau.Clear();
+          shp_tau.d0.Clear();
         }
 
       }
@@ -521,7 +521,7 @@ void SysmatDomainStress(
       static LINALG::Matrix<nsd,nsd> tau;
       if (tauele_unknowns_present)
       {
-        XFLUID::fill_tau(numparamtauxx, shp_tau, etau, tau);
+        XFLUID::fill_tau(numparamtauxx, shp_tau.d0, etau, tau);
       }
       else
       {

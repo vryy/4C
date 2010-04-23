@@ -1117,7 +1117,7 @@ void integrateShapefunctionT(
 
       const size_t shpVecSize       = SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
-      static XFEM::ApproxFunc<shpVecSize> shp;
+      static XFEM::ApproxFunc<1,shpVecSize> shp;
 
       if (ASSTYPE == XFEM::xfem_assembly)
       {

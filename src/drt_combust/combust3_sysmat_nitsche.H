@@ -60,7 +60,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           size_t shpVecSizeStress>
 void BuildDomainIntegrals(
     LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>& assembler,
-    const XFEM::ApproxFunc<shpVecSize>& shp,           // shape functions and their derivatives
+    const XFEM::ApproxFunc<2,shpVecSize>& shp,           // shape functions and their derivatives
     const double& fac,                                 // factor for integration in space
     const double& timefac,                             // factor for integration in time
     const double& timefacfac,                          // overall integration factor
@@ -829,7 +829,7 @@ void SysmatDomainNitsche(
       const size_t shpVecSizeStress = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
 
       // (enriched) shape functions = approximation functions (P = N * \Psi)
-      static XFEM::ApproxFunc<shpVecSize> shp;
+      static XFEM::ApproxFunc<2,shpVecSize> shp;
 #if 0
       // comment missing
       static LINALG::Matrix<shpVecSizeStress,1> shp_tau;
@@ -995,7 +995,7 @@ void SysmatDomainNitsche(
       static LINALG::Matrix<nsd,nsd> tau;
       if (tauele_unknowns_present)
       {
-        XFLUID::fill_tau(numparamtauxx, shp_tau, etau, tau);
+        XFLUID::fill_tau(numparamtauxx, shp_tau.d0, etau, tau);
       }
       else
       {
@@ -1457,10 +1457,10 @@ void SysmatBoundaryNitsche(
           enrfunct_minus, enrderxy_minus, enrderxy2_minus);
 
       // (enriched) shape functions = approximation functions (P = N * \Psi)
-      static XFEM::ApproxFunc<shpVecSize> shp_jump;
-      static XFEM::ApproxFunc<shpVecSize> shp_mean;
-      static XFEM::ApproxFunc<shpVecSize> shp_mean_visc;
-      static XFEM::ApproxFunc<shpVecSize> shp_jump_visc;
+      static XFEM::ApproxFunc<0,shpVecSize> shp_jump;
+      static XFEM::ApproxFunc<0,shpVecSize> shp_mean;
+      static XFEM::ApproxFunc<2,shpVecSize> shp_mean_visc;
+      static XFEM::ApproxFunc<2,shpVecSize> shp_jump_visc;
 
       // fill approximation functions
       for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
