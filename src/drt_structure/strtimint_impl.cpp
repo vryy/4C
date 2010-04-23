@@ -838,7 +838,11 @@ void STR::TimIntImpl::NewtonFull()
   }
 
   // test whether max iterations was hit
-  if ( (iter_ >= itermax_) and (not iterdivercont_) )
+  if ( (Converged()) and (myrank_ == 0) )
+  {
+    PrintNewtonConv();
+  }
+  else if ( (iter_ >= itermax_) and (not iterdivercont_) )
   {
     dserror("Newton unconverged in %d iterations", iter_);
   }
@@ -846,10 +850,7 @@ void STR::TimIntImpl::NewtonFull()
   {
     printf("Newton unconverged in %d iterations ... continuing\n", iter_);
   }
-  else if ( (Converged()) and (myrank_ == 0) )
-  {
-    PrintNewtonConv();
-  }
+
 
   // get out of here
   return;
@@ -1040,8 +1041,20 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
   // correct iteration counter
   iter_ -= 1;
 
+  if ( Converged() )
+  {
+    // compute and print monitor values
+    if (conman_->HaveMonitor())
+    {
+      conman_->ComputeMonitorValues(disn_);
+    }
+
+    // print newton message on proc 0
+    if (myrank_ == 0)
+      conman_->PrintMonitorValues();
+  }  
   // test whether max iterations was hit
-  if ( (iter_ >= itermax_) and (not iterdivercont_) )
+  else if ( (iter_ >= itermax_) and (not iterdivercont_) )
   {
     dserror("Newton unconverged in %d iterations", iter_);
   }
@@ -1054,23 +1067,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     // compute and print monitor values
     if (conman_->HaveMonitor())
       conman_->ComputeMonitorValues(disn_);
-
   }
-  else if ( Converged() )
-  {
-    // compute and print monitor values
-    if (conman_->HaveMonitor())
-    {
-      conman_->ComputeMonitorValues(disn_);
-    }
-
-
-    // print newton message on proc 0
-    if (myrank_ == 0)
-      conman_->PrintMonitorValues();
-
-  }
-
 
   // good evening
   return;
