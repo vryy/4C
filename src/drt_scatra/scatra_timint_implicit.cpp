@@ -928,10 +928,9 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
         // print 'finish line'
         printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
         // write info to error file
-        FILE* errfile = params_->get<FILE*>("err file",NULL);
-        if (errfile!=NULL)
+        if (errfile_!=NULL)
         {
-          fprintf(errfile,"elch solve:   %3d/%3d  tol=%10.3E[L_2 ]  cres=%10.3E  pres=%10.3E  cinc=%10.3E  pinc=%10.3E\n",
+          fprintf(errfile_,"elch solve:   %3d/%3d  tol=%10.3E[L_2 ]  cres=%10.3E  pres=%10.3E  cinc=%10.3E  pinc=%10.3E\n",
               itnum,itemax,ittol,conresnorm,potresnorm,
               incconnorm_L2/connorm_L2,incpotnorm_L2/potnorm_L2);
         }
@@ -964,10 +963,9 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
       printf("|            >>>>>> not converged in itemax steps!              |\n");
       printf("+---------------------------------------------------------------+\n");
 
-      FILE* errfile = params_->get<FILE*>("err file",NULL);
-      if (errfile!=NULL)
+      if (errfile_!=NULL)
       {
-        fprintf(errfile,"elch divergent solve:   %3d/%3d  tol=%10.3E[L_2 ]  cres=%10.3E  pres=%10.3E  cinc=%10.3E  pinc=%10.3E\n",
+        fprintf(errfile_,"elch divergent solve:   %3d/%3d  tol=%10.3E[L_2 ]  cres=%10.3E  pres=%10.3E  cinc=%10.3E  pinc=%10.3E\n",
             itnum,itemax,ittol,conresnorm,potresnorm,
             incconnorm_L2/connorm_L2,incpotnorm_L2/potnorm_L2);
       }
