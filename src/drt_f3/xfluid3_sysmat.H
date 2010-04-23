@@ -52,7 +52,8 @@ namespace XFLUID
           const bool                        cstab  ,
           const bool                        ifaceForceContribution, ///< is xfem element a row element?
           const bool                        monolithic_FSI,
-          double&                           L2
+          double&                           L2,
+          DRT::ELEMENTS::XFluid3::FluidFluidCouplingMatrices fluidfluidmatrices
           );
 
   /*!
@@ -129,7 +130,7 @@ namespace XFLUID
     case INPAR::XFEM::BoundaryTypeTauPressure:
       XFLUID::callSysmatTauPressure(params, assembly_type,
           ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
-          material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2);
+          material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
       break;
     default:
       dserror("unknown boundary type");
