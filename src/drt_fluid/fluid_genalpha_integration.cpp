@@ -79,7 +79,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
 
-#if 0
+#if 1
   PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(discret_);
   pbc.UpdateDofsForPeriodicBoundaryConditions();
 
@@ -87,6 +87,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
 #else
   pbcmapmastertoslave_= Teuchos::rcp(new map<int,vector<int> > ());
 #endif
+
   discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
 
   // -------------------------------------------------------------------
