@@ -75,7 +75,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     break;
     //TODO: Clean up after Fluid2 element died (ehrl)
     case DRT::Element::element_fluid3:
-      nv = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
+      nv = dwele->NumDofPerNode(*(dwele->Nodes()[0]))-1;
       np = 1;
     break;
     case DRT::Element::element_sosh8p8:
