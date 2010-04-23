@@ -39,7 +39,7 @@ MonWriter::MonWriter(
 {
   // determine the owner of the node
   nodeowner_ = false;
-  
+
   int numdis = problem.num_discr();
   //std::string fieldtype = "";
   // loop over all available discretizations
@@ -57,7 +57,7 @@ MonWriter::MonWriter(
       }
     }
   }// end loop over dis
-    
+
   //ensure that we really found exactly one node owner
   {
     int localnodeowner = (int) nodeowner_;
@@ -175,10 +175,10 @@ void MonWriter::WriteMonStressFile(
   // stop it now
   if ( (stresstype != "none") and (stresstype != "ndxyz") )
     dserror("Cannot deal with requested stress output type: %s", stresstype.c_str());
-  
+
   // write stress
   if (stresstype != "none")
-  { 
+  {
     // file name
     const std::string filename = problem.outname() + ".stress.mon";
 
@@ -188,7 +188,7 @@ void MonWriter::WriteMonStressFile(
     groupnames.push_back("gauss_2PK_stresses_xyz");
 
     // write it, now
-    WriteMonStrFile(filename, problem, infieldtype, "stress", stresstype, groupnames, node);  
+    WriteMonStrFile(filename, problem, infieldtype, "stress", stresstype, groupnames, node);
   }
 
   return;
@@ -706,7 +706,7 @@ void StructMonWriter::WriteStrResult(
       nodal_stresses.push_back((*normal_stresses)[lnodedofs[2]]/adjele);
       nodal_stresses.push_back((*shear_stresses)[lnodedofs[0]]/adjele);
       nodal_stresses.push_back((*shear_stresses)[lnodedofs[1]]/adjele);
-      nodal_stresses.push_back((*shear_stresses)[lnodedofs[2]]/adjele);      
+      nodal_stresses.push_back((*shear_stresses)[lnodedofs[2]]/adjele);
     }
     else if (numdf == 3)
     {
@@ -720,7 +720,7 @@ void StructMonWriter::WriteStrResult(
     {
       dserror("Don't know what to do with %d DOFs per node", numdf);
     }
-    
+
     // print to file
     outfile << std::right << std::setw(10) << result.step();
     outfile << std::right << std::setw(16) << std::scientific << result.time();
@@ -946,6 +946,7 @@ int main(int argc, char** argv)
   switch (problem.Problemtype())
   {
     case prb_fsi:
+    case prb_fsi_lung:
     {
       if(infieldtype == "fluid")
       {
