@@ -81,7 +81,6 @@ XFEM::DofManager::DofManager(
   };
   for ( std::map<int, std::set<XFEM::FieldEnr> >::const_iterator oneset = elementDofMap.begin(); oneset != elementDofMap.end(); ++oneset )
   {
-    cout << "element in map" << endl;
     elementalDofs_.insert( make_pair(oneset->first, oneset->second));
   };
 

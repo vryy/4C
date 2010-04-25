@@ -203,7 +203,9 @@ void XFEM::createDofMapCombust(
     const DRT::Element* xfemele = ih.xfemdis()->lColElement(i);
 
     bool skipped_node_enr = false;
+#ifdef COMBUST_STRESS_BASED
     bool skipped_elem_enr = false;
+#endif
 
     // create an empty element ansatz map
     map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
@@ -344,14 +346,16 @@ bool XFEM::ApplyElementEnrichmentCombust(
   bool skipped_element = false;
 
   // type of enrichment corresponds to name of function; label (second argument) = 0
-  const XFEM::Enrichment elementenr(XFEM::Enrichment::typeVoid, 0);
+  const XFEM::Enrichment elementenr1(XFEM::Enrichment::typeStandard, 0);
+  const XFEM::Enrichment elementenr2(XFEM::Enrichment::typeJump, 0);
 
   //if (not almost_zero_surface)
   //{
       map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
       for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
       {
-        elementDofMap[xfemele->Id()].insert(XFEM::FieldEnr(fielditer->first, elementenr));
+        elementDofMap[xfemele->Id()].insert(XFEM::FieldEnr(fielditer->first, elementenr1));
+        elementDofMap[xfemele->Id()].insert(XFEM::FieldEnr(fielditer->first, elementenr2));
       }
   //}
   //else
@@ -377,14 +381,16 @@ bool XFEM::ApplyElementEnrichmentCombust(
   bool skipped_element = false;
 
   // type of enrichment corresponds to name of function; label (second argument) = 0
-  const XFEM::Enrichment elementenr(XFEM::Enrichment::typeVoid, 0);
+  const XFEM::Enrichment elementenr1(XFEM::Enrichment::typeStandard, 0);
+  const XFEM::Enrichment elementenr2(XFEM::Enrichment::typeVoid, 0);
 
   //if (not almost_zero_surface)
   //{
       map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
       for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
       {
-        elementFieldEnrSet.insert(XFEM::FieldEnr(fielditer->first, elementenr));
+        elementFieldEnrSet.insert(XFEM::FieldEnr(fielditer->first, elementenr1));
+        elementFieldEnrSet.insert(XFEM::FieldEnr(fielditer->first, elementenr2));
       }
   //}
   //else

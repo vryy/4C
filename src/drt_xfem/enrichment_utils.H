@@ -90,7 +90,6 @@ namespace XFEM
       for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
       {
         const double enrvalcell = enriter->EnrValueIntCell(cell);
-//cout << "enrichment value cell " << enrvalcell << endl;
         enrvals_[*enriter] = enrvalcell;
         enrvalderxy_[*enriter] = enrvalderxy;
         enrvalderxy2_[*enriter] = enrvalderxy2;
@@ -109,7 +108,6 @@ namespace XFEM
           {
             enrvalnode = enriter->EnrValueNodeLevelSet(inode,phi);
           }
-//cout << "enrichment node: " << inode << "value: " << enrvalnode << endl;
           enrvalues[*enriter] = enrvalnode;
         }
         enrvalnodes[inode] = enrvalues;
@@ -130,7 +128,6 @@ namespace XFEM
         for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
         {
           enrvalues[*enriter] = enrvals_.find(*enriter)->second - (enrvalnodes.find(inode)->second).find(*enriter)->second;
-//cout << "enrval difference" << enrvalues[*enriter] << endl;
         }
         enrvalnodes_[inode] = enrvalues;
         enrvalues.clear();
@@ -556,6 +553,51 @@ namespace XFEM
       }
       dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
     }
+
+    /*!
+     * \brief compute the enriched shape functions for element dofs
+     *
+     * remarks:
+     * - simplest case: jump or void enrichment
+     *   -> no chain rule, since derivative of enrichment function is zero
+     * - be carefull: if enrichment function has derivatives not equal to zero, we need the chain rule here!
+     *   -> for kink enrichment use ComputeKinkEnrichedNodalShapefunction()
+     */
+    template<class VI, class VO>
+    inline void ComputeShiftedEnrichedElementShapefunction(
+        const XFEM::PHYSICS::Field                 field,
+        const VI&                                  funct,
+        VO&                                        enr_funct
+    ) const
+    {
+      //const int* nodeids = ele_.NodeIds();
+      //const std::size_t numnode = ele_.NumNode();
+
+      std::size_t dofcounter = 0;
+
+      const std::set<XFEM::FieldEnr>& enrfieldset(dofman_.getEnrichedFieldsPerEleField(field));
+      dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
+
+      const DRT::Element::DiscretizationType distype = dofman_.getDisTypePerField(field);
+      const std::size_t numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
+      if (numvirtualnode != ele_.NumNode())
+        dserror("you can not use the shifted enrichment without correcting the implementation!");
+
+      for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
+        enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+      {
+        for (std::size_t inode = 0; inode < numvirtualnode; ++inode)
+        {
+          const std::map<XFEM::Enrichment, double> enrvalues = enrvalnodes_.find(inode)->second;
+          const double enrval = enrvalues.find(enrfield->getEnrichment())->second;
+          //const double enrval = enrvals_.find(enrfield->getEnrichment())->second;
+          enr_funct(dofcounter) = funct(inode) * enrval;
+          dofcounter += 1;
+        }
+      }
+      dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
+    }
+
 
     /*!
     * \brief For a given situation compute the enriched shape functions
