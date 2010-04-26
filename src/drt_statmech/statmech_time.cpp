@@ -1323,12 +1323,6 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
  * be added to the time curve value in DoDirichletConditionPeriodic().
  */
 {
-  // get the current time
-	const double time = statmechmanager_->time_;
-	// check if start time for DBC evaluation has been reached. If not, do nothing and just return!
-	if(statmechmanager_->statmechparams_.get<double>("STARTTIME",-1.0) > time)
-		return;
-
 #ifdef MEASURETIME
   const double t_start = Teuchos::Time::wallTime();
 #endif // #ifdef MEASURETIME
@@ -1374,6 +1368,11 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 		isinit_=true;
 	} // init
 
+  // get the current time
+	const double time = statmechmanager_->time_;
+	// check if start time for DBC evaluation has been reached. If not, do nothing and just return!
+	if(statmechmanager_->statmechparams_.get<double>("STARTTIME",-1.0) > time)
+		return;
 	if (time<0.0)
 		usetime = false;
 
@@ -1556,7 +1555,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
   // do not do anything if vector is empty
   if(!oscillnodes.empty())
   {
-  	cout<<"OSCILLATING NODES"<<endl;
+  	//cout<<"OSCILLATING NODES"<<endl;
   	DoDirichletConditionPeriodic(usetime, time, &oscillnodes, &addonoff);
   }
 
@@ -1564,7 +1563,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 
 	if(!fixednodes.empty())
 	{
-		cout<<"FIXED NODES"<<endl;
+		//cout<<"FIXED NODES"<<endl;
   	DoDirichletConditionPeriodic(usetime, time, &fixednodes, &addonoff);
 	}
 
@@ -1575,7 +1574,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 
 	if(!freenodes.empty())
 	{
-		cout<<"FREE NODES"<<endl;
+		//cout<<"FREE NODES"<<endl;
   	DoDirichletConditionPeriodic(usetime, time, &freenodes, &addonoff);
 	}
 	//cout<<"deltadbc_:\n"<<*deltadbc_<<endl;
