@@ -56,88 +56,123 @@ template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
           size_t NUMDOF,
           size_t shpVecSize,
-          size_t shpVecSizeStress>
+          size_t shpVecSizeStress,
+          size_t shpVecSizeDiscPres>
 void BuildDomainIntegralsStress(
     LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>& assembler,
-    const XFEM::ApproxFunc<2,shpVecSize>& shp,           // shape functions and derivatives
-    const XFEM::ApproxFunc<0,shpVecSizeStress>& shp_tau, //
-    const double& fac,                                 // factor for integration in space
-    const double& timefac,                             // factor for integration in time
-    const double& timefacfac,                          // overall integration factor
-    const double& densnp,                              // density at n+1
-    const double& dynvisc,                             // dynamic viscosity at n+1
-    const LINALG::Matrix<3,1>& velnp,                  // velocity at Gaussian point (GP) at n+1
-    const double&              pres,                   // pressure at GP at n+1
-    const LINALG::Matrix<3,1>& gradp,                  // pressure gradient at GP at n+1
-    const LINALG::Matrix<3,3>& vderxy,                 // velocity derivative at GP at n+1
-    const LINALG::Matrix<3,1>& rhsint,                 // time RHS (at n) and body force (at n+1) at GP
-    const LINALG::Matrix<3,1>& res_old,                // residual at GP at n
-    const LINALG::Matrix<3,1>& visc_old,               // viscous term at GP at n
-    const LINALG::Matrix<3,3>& tau,                    // element stress unknowns
-    const LINALG::Matrix<shpVecSize,1>& enr_conv_c,    // convective term at GP at n
-    const COMBUST::EnrViscs2<shpVecSize>& enr_viscs2,  // viscous term (second derivatves) at GP at n
-    const bool newton                                  // turn on/off linearization of convective term
+    const XFEM::ApproxFunc<2,shpVecSize>& shp,                  // shape functions and derivatives
+    const XFEM::ApproxFunc<0,shpVecSizeStress>& shp_tau,        // shape functions for stresses
+    const XFEM::ApproxFunc<0,shpVecSizeDiscPres>& shp_discpres, // shape functions for disc. pressure
+    const double& fac,                                        // factor for integration in space
+    const double& timefac,                                    // factor for integration in time
+    const double& timefacfac,                                 // overall integration factor
+    const double& dynvisc,                                    // dynamic viscosity at n+1
+    const double& pres,                                       // pressure at GP at n+1
+    const LINALG::Matrix<3,3>& vderxy,                        // velocity derivative at GP at n+1
+    const LINALG::Matrix<3,3>& tau,                           // element stress unknowns
+    const double& discpres                                    // discontinuous pressure at GP at n+1
 )
 {
-#if 0
-    /*
-                       /                      \
-                    - |  virt tau , eps(Dtau)  |
-                       \                      /
-     */
+#ifdef COMBUST_STRESS_BASED_TAU_COUPLING
+  // epsilon term
+  // remark: the symmetry properties are used (Tauxy = Tauyx)
+  //                                          (Tauxz = Tauzx)
+  //                                          (Tauyz = Tauzy)
+  /*
+              /                      \       /                          \
+           - |  virt tau , eps(Dtau)  | = - |  virt tau , 1/(2\mu) Dtau  |
+              \                      /       \                          /
+   */
+  const double reciprocal_viscfac = 1.0/(2.0*dynvisc);
+  assembler.template Matrix<Tauxx,Tauxx>(shp_tau.d0, -reciprocal_viscfac*timefacfac,     shp_tau.d0);
+  assembler.template Matrix<Tauxy,Tauxy>(shp_tau.d0, -reciprocal_viscfac*timefacfac*2.0, shp_tau.d0);
+  assembler.template Matrix<Tauxz,Tauxz>(shp_tau.d0, -reciprocal_viscfac*timefacfac*2.0, shp_tau.d0);
+  assembler.template Matrix<Tauyy,Tauyy>(shp_tau.d0, -reciprocal_viscfac*timefacfac,     shp_tau.d0);
+  assembler.template Matrix<Tauyz,Tauyz>(shp_tau.d0, -reciprocal_viscfac*timefacfac*2.0, shp_tau.d0);
+  assembler.template Matrix<Tauzz,Tauzz>(shp_tau.d0, -reciprocal_viscfac*timefacfac,     shp_tau.d0);
 
-    const double reciproke_viscfac = 1.0/(2.0*visc);
-    assembler.template Matrix<Sigmaxx,Sigmaxx>(shp_tau, -reciproke_viscfac*timefacfac, shp_tau);
-    assembler.template Matrix<Sigmaxy,Sigmaxy>(shp_tau, -reciproke_viscfac*timefacfac*2.0, shp_tau);
-    assembler.template Matrix<Sigmaxz,Sigmaxz>(shp_tau, -reciproke_viscfac*timefacfac*2.0, shp_tau);
-    assembler.template Matrix<Sigmayy,Sigmayy>(shp_tau, -reciproke_viscfac*timefacfac, shp_tau);
-    assembler.template Matrix<Sigmayz,Sigmayz>(shp_tau, -reciproke_viscfac*timefacfac*2.0, shp_tau);
-    assembler.template Matrix<Sigmazz,Sigmazz>(shp_tau, -reciproke_viscfac*timefacfac, shp_tau);
+  assembler.template Vector<Tauxx>(shp_tau.d0, reciprocal_viscfac*timefacfac*tau(0,0));
+  assembler.template Vector<Tauxy>(shp_tau.d0, reciprocal_viscfac*timefacfac*tau(0,1)*2.0);
+  assembler.template Vector<Tauxz>(shp_tau.d0, reciprocal_viscfac*timefacfac*tau(0,2)*2.0);
+  assembler.template Vector<Tauyy>(shp_tau.d0, reciprocal_viscfac*timefacfac*tau(1,1));
+  assembler.template Vector<Tauyz>(shp_tau.d0, reciprocal_viscfac*timefacfac*tau(1,2)*2.0);
+  assembler.template Vector<Tauzz>(shp_tau.d0, reciprocal_viscfac*timefacfac*tau(2,2));
 
-    assembler.template Vector<Sigmaxx>(shp_tau,  reciproke_viscfac*timefacfac*tau(0,0));
-    assembler.template Vector<Sigmaxy>(shp_tau,  reciproke_viscfac*timefacfac*tau(0,1)*2.0);
-    assembler.template Vector<Sigmaxz>(shp_tau,  reciproke_viscfac*timefacfac*tau(0,2)*2.0);
-    assembler.template Vector<Sigmayy>(shp_tau,  reciproke_viscfac*timefacfac*tau(1,1));
-    assembler.template Vector<Sigmayz>(shp_tau,  reciproke_viscfac*timefacfac*tau(1,2)*2.0);
-    assembler.template Vector<Sigmazz>(shp_tau,  reciproke_viscfac*timefacfac*tau(2,2));
+  // TODO name term, rewrite without using symmetry
+  // remark: the symmetry properties are used (Tauxy = Tauyx)
+  //                                          (Tauxz = Tauzx)
+  //                                          (Tauyz = Tauzy)
+  /*               /                  \
+                  | virt tau , eps(Du) |
+                   \                  /
+   */
+  assembler.template Matrix<Tauxx,Velx>(shp_tau.d0, timefacfac , shp.dx);
+  assembler.template Matrix<Tauxy,Velx>(shp_tau.d0, timefacfac , shp.dy);
+  assembler.template Matrix<Tauxy,Vely>(shp_tau.d0, timefacfac , shp.dx);
+  assembler.template Matrix<Tauxz,Velx>(shp_tau.d0, timefacfac , shp.dz);
+  assembler.template Matrix<Tauxz,Velz>(shp_tau.d0, timefacfac , shp.dx);
+  assembler.template Matrix<Tauyy,Vely>(shp_tau.d0, timefacfac , shp.dy);
+  assembler.template Matrix<Tauyz,Vely>(shp_tau.d0, timefacfac , shp.dz);
+  assembler.template Matrix<Tauyz,Velz>(shp_tau.d0, timefacfac , shp.dy);
+  assembler.template Matrix<Tauzz,Velz>(shp_tau.d0, timefacfac , shp.dz);
 
-    /*               /                  \
-                    | virt tau , eps(Du) |
+  assembler.template Vector<Tauxx>(shp_tau.d0, -timefacfac*vderxy(0,0));
+  assembler.template Vector<Tauxy>(shp_tau.d0, -timefacfac*(vderxy(0,1) + vderxy(1,0)));
+  assembler.template Vector<Tauxz>(shp_tau.d0, -timefacfac*(vderxy(0,2) + vderxy(2,0)));
+  assembler.template Vector<Tauyy>(shp_tau.d0, -timefacfac*vderxy(1,1));
+  assembler.template Vector<Tauyz>(shp_tau.d0, -timefacfac*(vderxy(1,2) + vderxy(2,1)));
+  assembler.template Vector<Tauzz>(shp_tau.d0, -timefacfac*vderxy(2,2));
+#endif
+
+#ifdef COMBUST_STRESS_BASED_PRESSURE_COUPLING
+  // pressure-pressure coupling, continuous pressure
+  /*
+                     /                \
+                    |                  |
+                  - | tr(virt tau) , p |
+                    |                  |
+                     \                /
+   */
+  assembler.template Matrix<Tauxx,Pres>(shp_tau.d0, -reciprocal_viscfac*timefacfac, shp.d0);
+  assembler.template Matrix<Tauyy,Pres>(shp_tau.d0, -reciprocal_viscfac*timefacfac, shp.d0);
+  assembler.template Matrix<Tauzz,Pres>(shp_tau.d0, -reciprocal_viscfac*timefacfac, shp.d0);
+
+  assembler.template Vector<Tauxx>(shp_tau.d0, reciprocal_viscfac*timefacfac*pres);
+  assembler.template Vector<Tauyy>(shp_tau.d0, reciprocal_viscfac*timefacfac*pres);
+  assembler.template Vector<Tauzz>(shp_tau.d0, reciprocal_viscfac*timefacfac*pres);
+
+  // pressure-pressure coupling, discontinuous pressure
+  /*
+                     /                  \
+                    |                    |
+                    | tr(virt tau) , p^e |
+                    |                    |
                      \                  /
-     */
-    assembler.template Matrix<Sigmaxx,Velx>(shp_tau,     timefacfac    , shp.dx);
-    assembler.template Matrix<Sigmaxy,Velx>(shp_tau,     timefacfac    , shp.dy);
-    assembler.template Matrix<Sigmaxy,Vely>(shp_tau,     timefacfac    , shp.dx);
-    assembler.template Matrix<Sigmaxz,Velx>(shp_tau,     timefacfac    , shp.dz);
-    assembler.template Matrix<Sigmaxz,Velz>(shp_tau,     timefacfac    , shp.dx);
-    assembler.template Matrix<Sigmayy,Vely>(shp_tau,     timefacfac    , shp.dy);
-    assembler.template Matrix<Sigmayz,Vely>(shp_tau,     timefacfac    , shp.dz);
-    assembler.template Matrix<Sigmayz,Velz>(shp_tau,     timefacfac    , shp.dy);
-    assembler.template Matrix<Sigmazz,Velz>(shp_tau,     timefacfac    , shp.dz);
+   */
+  assembler.template Matrix<Tauxx,DiscPres>(shp_tau.d0, reciprocal_viscfac*timefacfac, shp_discpres.d0);
+  assembler.template Matrix<Tauyy,DiscPres>(shp_tau.d0, reciprocal_viscfac*timefacfac, shp_discpres.d0);
+  assembler.template Matrix<Tauzz,DiscPres>(shp_tau.d0, reciprocal_viscfac*timefacfac, shp_discpres.d0);
 
-    assembler.template Vector<Sigmaxx>(shp_tau,    - timefacfac*vderxy(0, 0));
-    assembler.template Vector<Sigmaxy>(shp_tau,    - timefacfac*(vderxy(0, 1) + vderxy(1, 0)));
-    assembler.template Vector<Sigmaxz>(shp_tau,    - timefacfac*(vderxy(0, 2) + vderxy(2, 0)));
-    assembler.template Vector<Sigmayy>(shp_tau,    - timefacfac*vderxy(1, 1));
-    assembler.template Vector<Sigmayz>(shp_tau,    - timefacfac*(vderxy(1, 2) + vderxy(2, 1)));
-    assembler.template Vector<Sigmazz>(shp_tau,    - timefacfac*vderxy(2, 2));
+  assembler.template Vector<Tauxx>(shp_tau.d0, -reciprocal_viscfac*timefacfac*discpres);
+  assembler.template Vector<Tauyy>(shp_tau.d0, -reciprocal_viscfac*timefacfac*discpres);
+  assembler.template Vector<Tauzz>(shp_tau.d0, -reciprocal_viscfac*timefacfac*discpres);
+#endif
 
+#ifdef COMBUST_STRESS_BASED_INCOMPR
+  // enforce solenoidality of auxiliar field
+  /*
+                     /               \
+                    |                 |
+                    | q^e , tr(eps^e) |
+                    |                 |
+                     \               /
+   */
+  assembler.template Matrix<DiscPres,Tauxx>(shp_discpres.d0, -reciprocal_viscfac*timefacfac, shp_tau.d0);
+  assembler.template Matrix<DiscPres,Tauyy>(shp_discpres.d0, -reciprocal_viscfac*timefacfac, shp_tau.d0);
+  assembler.template Matrix<DiscPres,Tauzz>(shp_discpres.d0, -reciprocal_viscfac*timefacfac, shp_tau.d0);
 
-    /* pressure-pressure coupling, rectangular part */
-    /*
-                     /                    \
-                    |                      |
-                  - | tr(virt tau^e) , p I |
-                    |                      |
-                     \                    /
-     */
-    assembler.template Matrix<Sigmaxx,Pres>(shp_tau, -1.0/(2.0*visc)*timefacfac, shp.d0);
-    assembler.template Matrix<Sigmayy,Pres>(shp_tau, -1.0/(2.0*visc)*timefacfac, shp.d0);
-    assembler.template Matrix<Sigmazz,Pres>(shp_tau, -1.0/(2.0*visc)*timefacfac, shp.d0);
-
-    assembler.template Vector<Sigmaxx>(shp_tau, 1.0/(2.0*visc)*timefacfac*pres);
-    assembler.template Vector<Sigmayy>(shp_tau, 1.0/(2.0*visc)*timefacfac*pres);
-    assembler.template Vector<Sigmazz>(shp_tau, 1.0/(2.0*visc)*timefacfac*pres);
+  const double trace_tau = (tau(0,0) + tau(1,1) + tau(2,2));
+  assembler.template Vector<DiscPres>(shp_discpres.d0, reciprocal_viscfac*timefacfac*trace_tau);
 #endif
 }
 
@@ -147,7 +182,7 @@ void BuildDomainIntegralsStress(
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
           int NUMDOF,
-          class M1, class V1, class M2, class V2>
+          class M1, class V1, class M2, class V2, class V3>
 void SysmatDomainStress(
     const DRT::ELEMENTS::Combust3*      ele,          ///< element whose matrix is calculated
     const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih, ///< information about the interface
@@ -159,6 +194,7 @@ void SysmatDomainStress(
     const V1&                           eprenp,       ///< nodal pressure n+1 values for this element
     const V2&                           ephi,         ///< nodal G-function values for this element
     const M2&                           etau,         ///< element stresses (?) not used in combustion
+    const V3&                           ediscpres,    ///<
     Teuchos::RCP<const MAT::Material>   material,     ///< fluid material
     const FLUID_TIMEINTTYPE             timealgo,     ///< time discretization scheme
     const double                        dt,           ///< delta t (time step size)
@@ -201,13 +237,21 @@ void SysmatDomainStress(
   const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
 
   const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
+  const DRT::Element::DiscretizationType discpresdistype = COMBUST::DiscPressureInterpolation3D<DISTYPE>::distype;
+
+  const bool velocity_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, 1) > 0);
+  dsassert(velocity_unknowns_present == true, "there are no velocity unknowns!");
+  const bool pressure_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Pres, 1) > 0);
+  dsassert(pressure_unknowns_present == true, "there are no pressure unknowns!");
 
   // figure out whether we have stress unknowns at all
-  const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
-  dsassert(tauele_unknowns_present == true, "there are no element stress unknowns!");
-  //    const bool velocity_unknowns_present = (getNumParam<ASSTYPE>(dofman, Velx, 1) > 0);
-  const bool pressure_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Pres, 1) > 0);
-  dsassert(pressure_unknowns_present == true, "there is no element pressure unknown!");
+  const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 0) > 0);
+  const bool discpres_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 0) > 0);
+  if (ele->Intersected())
+  {
+    dsassert(tauele_unknowns_present == true, "there are no element stress unknowns!");
+    dsassert(discpres_unknowns_present == true, "there are no discontinuous pressure unknowns!");
+  }
 
   // get number of parameters (dofs) for each field
   // remark: it is assumed that all fields are enriched -> equal for all velocity components and pressure
@@ -217,7 +261,8 @@ void SysmatDomainStress(
 
   // put one here to create arrays of size 1, since they are not needed anyway
   // in the xfem assembly, numparam is determined by the dofmanager
-  const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
+  const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Tauxx);
+  const size_t numparamdiscpres = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 1);
 
   // stabilization parameter
   const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
@@ -313,8 +358,24 @@ void SysmatDomainStress(
           funct_stress.Clear();
         }
       }
+      // discontinouos pressure shape functions
+      static LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement,1> funct_discpres;
+      static LINALG::Matrix<3,DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement> deriv_discpres;
+      if (ASSTYPE == XFEM::xfem_assembly)
+      {
+        if (discpres_unknowns_present)
+        {
+          DRT::UTILS::shape_function_3D(funct_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
+          DRT::UTILS::shape_function_3D_deriv1(deriv_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
+        }
+        else
+        {
+          funct_discpres.Clear();
+          deriv_discpres.Clear();
+        }
+      }
 
-//--------------------------------------------------------------------------------------
+      //--------------------------------------------------------------------------------------
       // procedures involving Jacobian matrix
       //--------------------------------------------------------------------------------------
       // get transposed of the jacobian matrix d x / d \xi
@@ -360,11 +421,13 @@ void SysmatDomainStress(
       //--------------------------------------------------------------------------------------
       const size_t shpVecSize       = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
       const size_t shpVecSizeStress = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
+      const size_t shpVecSizeDiscPres = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement;
 
       // (enriched) shape functions = approximation functions (P = N * \Psi)
       static XFEM::ApproxFunc<2,shpVecSize> shp;
-      // comment missing
       static XFEM::ApproxFunc<0,shpVecSizeStress> shp_tau;
+      static XFEM::ApproxFunc<0,shpVecSizeDiscPres> shp_discpres;
+
       if (ASSTYPE == XFEM::xfem_assembly)
       {
         //cout << "this is a fully or partially enriched element" << endl;
@@ -406,24 +469,37 @@ void SysmatDomainStress(
 
         if (tauele_unknowns_present)
         {
-          LINALG::Matrix<shpVecSizeStress,1> enr_funct_stress;
-
           // shape functions for element dofs
-          enrvals.ComputeEnrichedElementShapefunction(
-              Sigmaxx,
-              funct_stress,
-              enr_funct_stress);
+          static LINALG::Matrix<shpVecSizeStress,1> enrfunct_stress;
+          enrfunct_stress.Clear();
+          enrvals.ComputeShiftedEnrichedElementShapefunction(Tauxx, funct_stress, enrfunct_stress);
 
           for (size_t iparam = 0; iparam < numparamtauxx; ++iparam)
           {
-            shp_tau.d0(iparam) = enr_funct_stress(iparam);
+            shp_tau.d0(iparam) = enrfunct_stress(iparam);
           }
         }
         else
         {
           shp_tau.d0.Clear();
         }
+        if (discpres_unknowns_present)
+        {
+          // shape functions for element dofs
+          static LINALG::Matrix<shpVecSizeDiscPres,1> enrfunct_discpres;
+          enrfunct_discpres.Clear();
 
+          enrvals.ComputeShiftedEnrichedElementShapefunction(DiscPres, funct_discpres, enrfunct_discpres);
+
+          for (size_t iparam = 0; iparam < numparamdiscpres; ++iparam)
+          {
+            shp_discpres.d0(iparam) = enrfunct_discpres(iparam);
+          }
+        }
+        else
+        {
+          shp_discpres.d0.Clear();
+        }
       }
       else // not xfem_assembly i.e. standard assembly
       {
@@ -517,11 +593,16 @@ void SysmatDomainStress(
         gradp(2) += eprenp(iparam) * shp.dz(iparam);
       }
 
+      // get discontinous pressure
+      double discpres = 0.0;
+      for (size_t iparam = 0; iparam < numparamdiscpres; ++iparam)
+        discpres += shp_discpres.d0(iparam)*ediscpres(iparam);
+
       // get viscous stress unknowns
       static LINALG::Matrix<nsd,nsd> tau;
       if (tauele_unknowns_present)
       {
-        XFLUID::fill_tau(numparamtauxx, shp_tau.d0, etau, tau);
+        COMBUST::fill_tau(numparamtauxx, shp_tau.d0, etau, tau);
       }
       else
       {
@@ -666,10 +747,21 @@ void SysmatDomainStress(
           instationary, newton, pstab, supg, cstab,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 
-      COMBUST::BuildDomainIntegralsStress<DISTYPE,ASSTYPE,NUMDOF,shpVecSize,shpVecSizeStress>(
-          assembler, shp, shp_tau, fac, timefac, timefacfac, densnp, dynvisc,
-          gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, tau,
-          enr_conv_c, enr_viscs2, newton);
+      if (tauele_unknowns_present)
+      {
+      COMBUST::BuildDomainIntegralsStress<DISTYPE,ASSTYPE,NUMDOF,shpVecSize,shpVecSizeStress,shpVecSizeDiscPres>(
+          assembler, shp, shp_tau, shp_discpres, fac, timefac, timefacfac,
+          //densnp,
+          dynvisc,
+          //gpvelnp,
+          pres,
+          //gradp,
+          vderxy,
+          //rhsint, res_old, visc_old,
+          tau, discpres
+          //enr_conv_c, enr_viscs2, newton
+          );
+      }
 
     } // end loop over gauss points
   } // end loop over integration cells
@@ -685,7 +777,7 @@ void SysmatDomainStress(
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
           int NUMDOF,
-          class M1, class M2, class V1, class V2>
+          class M1, class M2, class V1, class V2, class V3>
 void SysmatBoundaryStress(
     const DRT::ELEMENTS::Combust3*    ele,           ///< the element those matrix is calculated
     const Teuchos::RCP<COMBUST::InterfaceHandleCombust>&  ih,   ///< connection to the interface handler
@@ -694,6 +786,7 @@ void SysmatBoundaryStress(
     const V1&                         eprenp,
     const V2&                         ephi,
     const M2&                         etau,
+    const V3&                         ediscpres,
     Teuchos::RCP<const MAT::Material> material,      ///< fluid material
     const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
     const double&                     dt,            ///< delta t (time step size)
@@ -704,7 +797,6 @@ void SysmatBoundaryStress(
     const double                      nitschepres
 )
 {
-#if 0
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion sysmat - boundary");
 
 #ifdef DEBUG
@@ -769,34 +861,25 @@ void SysmatBoundaryStress(
   // compute jump values
   //------------------------------------------------------------------------------------------------
   // velocity jump value
-  const double ju = -2.0; // -flamespeed*dens_minus*(1/dens_plus - 1/dens_minus);
-  //cout << "J_u: " << ju << endl;
+  const double ju = 4.0; // -flamespeed*dens_minus*(1/dens_plus - 1/dens_minus);
+  //cout << "ju: " << ju << endl;
   // pressure jump value
-  const double jp = 20.0; // (flamespeed*flamespeed*dens_minus*dens_minus)*(1/dens_plus - 1/dens_minus);
-  //cout << "J_p: " << jp << endl;
+  const double jp = 3.0; // (flamespeed*flamespeed*dens_minus*dens_minus)*(1/dens_plus - 1/dens_minus);
+  //cout << "jp: " << jp << endl;
 
-  // Nitsche parameter velocity
-  const double alphau = nitschevel;
-  //cout << "alpha_u: " << alphau << endl;
-  // Nitsche parameter pressure
-  const double alphap = nitschepres;
-  //cout << "alpha_p: " << alphap << endl;
+  const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
+  const DRT::Element::DiscretizationType discpresdistype = COMBUST::DiscPressureInterpolation3D<DISTYPE>::distype;
 
-#if 0
-  const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
-  // for now, I don't try to compare to elements without stress unknowns, since they lock anyway
-#endif
-
-  // get number of parameters (dofs) for each field
+    // get number of parameters (dofs) for each field
   // remark: it is assumed that all fields are enriched -> equal for all velocity components and pressure
   const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
   const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
-#if 0
+  dsassert(numparamvelx == numparampres, "assumption violation");
+
   // put one here to create arrays of size 1, since they are not needed anyway
-  // in the xfem assembly, the numparam is determined by the dofmanager
-  //const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Sigmaxx, 1);
-  const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
-#endif
+  // in the xfem assembly, numparam is determined by the dofmanager
+  const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Tauxx);
+  const size_t numparamdiscpres = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 1);
 
   // get domain integration cells for this element
   const GEO::BoundaryIntCells& boundaryIntCells = ih->GetBoundaryIntCells(ele->Id());
@@ -870,14 +953,24 @@ void SysmatBoundaryStress(
       GEO::computeNormalToSurfaceElement(cell->Shape(), cellXYZDomain, posEtaBoundary, normal);
 
       //--------------------------------------------------------------------------------------------
-      // evaluate shape functions and their first derivatives at this Gaussian point
+      // evaluate shape functions at this Gaussian point
       //--------------------------------------------------------------------------------------------
+      // shape functions for fields with dofs at nodes
       static LINALG::Matrix<numnode,1> funct;
       funct.Clear();
+      DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+      // derivatives of shape functions for fields with dofs at nodes
       static LINALG::Matrix<nsd,numnode> deriv;
       deriv.Clear();
-      DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+      // shape functions for element stress field
+      static LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement,1> funct_stress;
+      funct_stress.Clear();
+      DRT::UTILS::shape_function_3D(funct_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
+      // shape functions for discontinuous element pressure field
+      static LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement,1> funct_discpres;
+      funct_discpres.Clear();
+      DRT::UTILS::shape_function_3D(funct_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
 
       //--------------------------------------------------------------------------------------------
       // procedures involving Jacobian matrix for domain mapping
@@ -889,12 +982,12 @@ void SysmatBoundaryStress(
       xjm.MultiplyNT(deriv,xyze);
       // determinant for mapping from physical space (X^3D/domain) to element (Xi^3D/domain)
       const double detXtoXi = xjm.Determinant();
-      //#ifdef DEBUG
+//#ifdef DEBUG
       if (detXtoXi < 0.0)
       {
-        dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), detXtoXi);
+        dserror("negative Jacobian determinant detXtoXi: %f for element %d!", detXtoXi, ele->Id());
       }
-      //#endif
+//#endif
       // inverse of jacobian
       static LINALG::Matrix<nsd,nsd> xji;
       xji.Clear();
@@ -944,13 +1037,13 @@ void SysmatBoundaryStress(
       metric.MultiplyTN(dxideta,dxideta);
       // determinant for mapping from element (Xi^3D/domain) to integration cell (Eta^2D/boundary)
       const double detXitoEta = sqrt(metric.Determinant());
-      //#ifdef DEBUG
+//#ifdef DEBUG
       // actually ths makes no sence, because the square root was already taken before
       if (detXitoEta  < 0.0)
       {
-        dserror("negative Jacobian determinant detXitoEta: %f!", detXitoEta );
+        dserror("negative Jacobian determinant detXitoEta: %f for element %d!", detXitoEta, ele->Id());
       }
-      //#endif
+//#endif
 
       //--------------------------------------------------------------------------------------------
       // compute integration factors
@@ -965,13 +1058,23 @@ void SysmatBoundaryStress(
       //--------------------------------------------------------------------------------------------
       // rearrange (enriched) shape functions and derivatives as approximation functions
       //--------------------------------------------------------------------------------------------
-      const std::size_t shpVecSize = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+      const std::size_t shpVecSize         = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+      const std::size_t shpVecSizeStress   = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
+      const std::size_t shpVecSizeDiscPres = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement;
 
       // temporary arrays holding enriched shape functions (N * \Psi) on either side of the interface
-      static LINALG::Matrix<shpVecSize,1>       enrfunct_plus;
+      static LINALG::Matrix<shpVecSize,1>         enrfunct_plus;
       enrfunct_plus.Clear();
-      static LINALG::Matrix<shpVecSize,1>       enrfunct_minus;
+      static LINALG::Matrix<shpVecSize,1>         enrfunct_minus;
       enrfunct_minus.Clear();
+      static LINALG::Matrix<shpVecSizeStress,1>   enrfunct_stress_plus;
+      enrfunct_stress_plus.Clear();
+      static LINALG::Matrix<shpVecSizeStress,1>   enrfunct_stress_minus;
+      enrfunct_stress_minus.Clear();
+      static LINALG::Matrix<shpVecSizeDiscPres,1> enrfunct_discpres_plus;
+      enrfunct_discpres_plus.Clear();
+      static LINALG::Matrix<shpVecSizeDiscPres,1> enrfunct_discpres_minus;
+      enrfunct_discpres_minus.Clear();
 
       static LINALG::Matrix<3,shpVecSize> enrderxy_plus;
       enrderxy_plus.Clear();
@@ -982,17 +1085,41 @@ void SysmatBoundaryStress(
       static LINALG::Matrix<6,shpVecSize> enrderxy2_minus;
       enrderxy2_minus.Clear();
 
+//      static LINALG::Matrix<3,shpVecSizeStress> enrderxy_stress_plus;
+//      enrderxy_stress_plus.Clear();
+//      static LINALG::Matrix<3,shpVecSizeStress> enrderxy_stress_minus;
+//      enrderxy_stress_minus.Clear();
+//      static LINALG::Matrix<6,shpVecSizeStress> enrderxy2_stress_plus;
+//      enrderxy2_stress_plus.Clear();
+//      static LINALG::Matrix<6,shpVecSizeStress> enrderxy2_stress_minus;
+//      enrderxy2_stress_minus.Clear();
+
+//      static LINALG::Matrix<3,shpVecSizeDiscPres> enrderxy_discpress_plus;
+//      enrderxy_discpress_plus.Clear();
+//      static LINALG::Matrix<3,shpVecSizeDiscPres> enrderxy_discpress_minus;
+//      enrderxy_discpress_minus.Clear();
+//      static LINALG::Matrix<6,shpVecSizeDiscPres> enrderxy2_discpress_plus;
+//      enrderxy2_discpress_plus.Clear();
+//      static LINALG::Matrix<6,shpVecSizeDiscPres> enrderxy2_discpress_minus;
+//      enrderxy2_discpress_minus.Clear();
+
       // shape functions for nodal parameters (dofs) on plus and minus side
       enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct, derxy, derxy2,
           enrfunct_plus, enrderxy_plus, enrderxy2_plus);
       enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct, derxy, derxy2,
           enrfunct_minus, enrderxy_minus, enrderxy2_minus);
 
+      enrvals_plus.ComputeShiftedEnrichedElementShapefunction(Tauxx, funct_stress, enrfunct_stress_plus);
+      enrvals_minus.ComputeShiftedEnrichedElementShapefunction(Tauxx, funct_stress, enrfunct_stress_minus);
+
+      enrvals_plus.ComputeShiftedEnrichedElementShapefunction(DiscPres, funct_discpres, enrfunct_discpres_plus);
+      enrvals_minus.ComputeShiftedEnrichedElementShapefunction(DiscPres, funct_discpres, enrfunct_discpres_minus);
+
       // (enriched) shape functions = approximation functions (P = N * \Psi)
-      static XFEM::ApproxFunc<shpVecSize> shp_jump;
-      static XFEM::ApproxFunc<shpVecSize> shp_mean;
-      static XFEM::ApproxFunc<shpVecSize> shp_mean_visc;
-      static XFEM::ApproxFunc<shpVecSize> shp_jump_visc;
+      static XFEM::ApproxFunc<2,shpVecSize> shp_jump;
+      static XFEM::ApproxFunc<2,shpVecSize> shp_mean;
+      static XFEM::ApproxFunc<2,shpVecSize> shp_mean_visc;
+      static XFEM::ApproxFunc<2,shpVecSize> shp_jump_visc;
 
       // fill approximation functions
       for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
@@ -1030,98 +1157,84 @@ void SysmatBoundaryStress(
         shp_jump_visc.dzdz(iparam) = visc_plus*enrderxy2_plus(2,iparam) - visc_minus*enrderxy2_minus(2,iparam);
       }
       //cout << "mean enrichment function: " << shp_mean_visc.d0 << endl;
+
+      // TODO: extend struct XFEM::ApproxFunc
+      static XFEM::ApproxFunc<0,shpVecSizeStress> shp_tau_jump;
+      static XFEM::ApproxFunc<0,shpVecSizeStress> shp_tau_mean;
+      for (std::size_t iparam = 0; iparam < numparamtauxx; ++iparam)
+      {
+        shp_tau_jump.d0(iparam) = enrfunct_stress_plus(iparam) - enrfunct_stress_minus(iparam);
+        shp_tau_mean.d0(iparam) = 0.5*(enrfunct_stress_plus(iparam) + enrfunct_stress_minus(iparam));
+      }
+
+      static XFEM::ApproxFunc<0,shpVecSizeDiscPres> shp_discpres_jump;
+      static XFEM::ApproxFunc<0,shpVecSizeDiscPres> shp_discpres_mean;
+      for (size_t iparam = 0; iparam < numparamdiscpres; ++iparam)
+      {
+        shp_discpres_jump.d0(iparam) = enrfunct_discpres_plus(iparam) - enrfunct_discpres_minus(iparam);
+        shp_discpres_mean.d0(iparam) = 0.5*(enrfunct_discpres_plus(iparam) + enrfunct_discpres_minus(iparam));
+      }
+
       //--------------------------------------------------------------------------------------------
       // compute data at Gaussian point for rhs
       //--------------------------------------------------------------------------------------------
 
       // velocity jump
-      static LINALG::Matrix<nsd,1> vjump(true);
-      vjump.Clear();
-      vjump = COMBUST::interpolateVectorFieldToIntPoint(evelnp, shp_jump.d0, numparamvelx);
-      //cout << "evelnp: " << evelnp << endl;
-      //cout << "shp_jump.d0: " << shp_jump.d0 << endl;
-      //cout << "vjump: " << vjump << endl;
+      static LINALG::Matrix<nsd,1> veljump(true);
+      veljump.Clear();
+      veljump = COMBUST::interpolateVectorFieldToIntPoint(evelnp, shp_jump.d0, numparamvelx);
 
-      // mean velocity
-      static LINALG::Matrix<nsd,1> vmean(true);
-      vmean.Clear();
-      vmean = COMBUST::interpolateVectorFieldToIntPoint(evelnp, shp_mean.d0, numparamvelx);
-      //cout << "vmean: " << vmean << endl;
+//      // mean velocity
+//      static LINALG::Matrix<nsd,1> vmean(true);
+//      vmean.Clear();
+//      vmean = COMBUST::interpolateVectorFieldToIntPoint(evelnp, shp_mean.d0, numparamvelx);
+//      //cout << "vmean: " << vmean << endl;
 
-      // get velocity (np,i) derivatives at integration point
-      // vderxy = enr_derxy(j,k)*evelnp(i,k);
-      static LINALG::Matrix<nsd,nsd> vderxy_mean_visc(true);
-      vderxy_mean_visc.Clear();
-      for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
-        for (size_t isd = 0; isd < nsd; ++isd)
-        {
-          vderxy_mean_visc(isd,0) += evelnp(isd,iparam) * shp_mean_visc.dx(iparam);
-          vderxy_mean_visc(isd,1) += evelnp(isd,iparam) * shp_mean_visc.dy(iparam);
-          vderxy_mean_visc(isd,2) += evelnp(isd,iparam) * shp_mean_visc.dz(iparam);
-        }
-      //cout << "vderxy_mean_visc: " << vderxy_mean_visc << endl;
+//      // get velocity (np,i) derivatives at integration point
+//      // vderxy = enr_derxy(j,k)*evelnp(i,k);
+//      static LINALG::Matrix<nsd,nsd> vderxy_mean_visc(true);
+//      vderxy_mean_visc.Clear();
+//      for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
+//        for (size_t isd = 0; isd < nsd; ++isd)
+//        {
+//          vderxy_mean_visc(isd,0) += evelnp(isd,iparam) * shp_mean_visc.dx(iparam);
+//          vderxy_mean_visc(isd,1) += evelnp(isd,iparam) * shp_mean_visc.dy(iparam);
+//          vderxy_mean_visc(isd,2) += evelnp(isd,iparam) * shp_mean_visc.dz(iparam);
+//        }
+//      //cout << "vderxy_mean_visc: " << vderxy_mean_visc << endl;
 
-      // get velocity (np,i) derivatives at integration point
-      // vderxy = enr_derxy(j,k)*evelnp(i,k);
-      static LINALG::Matrix<nsd,nsd> vderxy_jump_visc(true);
-      vderxy_jump_visc.Clear();
-      for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
-        for (size_t isd = 0; isd < nsd; ++isd)
-        {
-          vderxy_jump_visc(isd,0) += evelnp(isd,iparam) * shp_jump_visc.dx(iparam);
-          vderxy_jump_visc(isd,1) += evelnp(isd,iparam) * shp_jump_visc.dy(iparam);
-          vderxy_jump_visc(isd,2) += evelnp(isd,iparam) * shp_jump_visc.dz(iparam);
-        }
-      //cout << "vderxy_mean_visc: " << vderxy_mean_visc << endl;
+//      // get velocity (np,i) derivatives at integration point
+//      // vderxy = enr_derxy(j,k)*evelnp(i,k);
+//      static LINALG::Matrix<nsd,nsd> vderxy_jump_visc(true);
+//      vderxy_jump_visc.Clear();
+//      for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
+//        for (size_t isd = 0; isd < nsd; ++isd)
+//        {
+//          vderxy_jump_visc(isd,0) += evelnp(isd,iparam) * shp_jump_visc.dx(iparam);
+//          vderxy_jump_visc(isd,1) += evelnp(isd,iparam) * shp_jump_visc.dy(iparam);
+//          vderxy_jump_visc(isd,2) += evelnp(isd,iparam) * shp_jump_visc.dz(iparam);
+//        }
+//      //cout << "vderxy_mean_visc: " << vderxy_mean_visc << endl;
 
-      // get pressure jump
-      static double pjump;
-      pjump = 0.0;
+      // get discontinuous pressure jump
+      static double pdiscjump;
+      pdiscjump = 0.0;
       for (size_t iparam = 0; iparam != numparampres; ++iparam)
-        pjump += shp_jump.d0(iparam)*eprenp(iparam);
-      //cout << "pjump: " << pjump << endl;
+        pdiscjump += shp_discpres_jump.d0(iparam)*ediscpres(iparam);
 
-      static double pmean;
-      pmean = 0.0;
+      // get discontinuous pressure average
+      static double pdiscmean;
+      pdiscmean = 0.0;
       for (size_t iparam = 0; iparam != numparampres; ++iparam)
-        pmean += shp_mean.d0(iparam)*eprenp(iparam);
-      //cout << "pmean: " << pmean << endl;
+        pdiscmean += shp_discpres_mean.d0(iparam)*ediscpres(iparam);
 
-      //            Epetra_SerialDenseVector shp_iface(numnode_boundary*begids.size());
-      //            int pos = 0;
-      //            for (std::set<int>::const_iterator begid = begids.begin(); begid != begids.end();++begid)
-      //            {
-      //              if (*begid == boundaryele->Id())
-      //              {
-      //                for (std::size_t inode=0; inode < numnode_boundary; ++inode)
-      //                {
-      //                  shp_iface(pos+inode) = funct_boundary(inode);
-      //                }
-      //                break;
-      //              }
-      //              pos += numnode_boundary;
-      //            }
-      //
-      //            // get velocities (n+g,i) at integration point
-      //            // gpvelnp = evelnp(i,j)*shp(j);
-      //            LINALG::Matrix<nsd,1> gpvelnp;
-      //            gpvelnp.Clear();
-      //            for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
-      //                for (std::size_t isd = 0; isd < nsd; ++isd)
-      //                    gpvelnp(isd) += evelnp(isd,iparam)*shp(iparam);
-      //
-      //            // get interface velocity
-      //            LINALG::Matrix<nsd,1> interface_gpvelnp;
-      //            interface_gpvelnp.Clear();
-      //            for (std::size_t inode = 0; inode < numnode_boundary; ++inode)
-      //                for (std::size_t isd = 0; isd < nsd; ++isd)
-      //                    interface_gpvelnp(isd) += vel_boundary(isd,inode)*funct_boundary(inode);
-      //
-      //            // get viscous stress unknowns
-      //            static LINALG::Matrix<nsd,nsd> tau;
-      //            XFLUID::fill_tau(numparamtauxx, shp_tau, etau, tau);
-
-
+      // get viscous stress unknowns
+      static LINALG::Matrix<nsd,nsd> taujump;
+      taujump.Clear();
+      COMBUST::fill_tau(numparamtauxx, shp_tau_jump.d0, etau, taujump);
+      static LINALG::Matrix<nsd,nsd> taumean;
+      taumean.Clear();
+      COMBUST::fill_tau(numparamtauxx, shp_tau_mean.d0, etau, taumean);
 
       //--------------------------------------------------------------------------------------------
       // build single boundary integral stiffness terms
@@ -1132,205 +1245,59 @@ void SysmatBoundaryStress(
       //                  burnt domain (n = n^- = -n^+)
       //--------------------------------------------------------------------------------------------
 
-#ifdef COMBUST_VISCCONSISTMEAN
-      //-------------------------    |                                      |
-      // viscous consistency term  + |  || v || , < 2\mu epsilon( Du ) > n  |
-      //-------------------------    |                                      |
+#ifdef COMBUST_STRESS_BASED_CONSISTVISCJUMP
+      //-------------------------    |                        |
+      // viscous consistency term  + |  < v > , || Dtau || n  |
+      //-------------------------    |                        |
 
-      assembler.template Matrix<Velx,Velx>(shp_jump.d0, 2.0*timefacfac*normal(0), shp_mean_visc.dx);
-      assembler.template Matrix<Velx,Velx>(shp_jump.d0,     timefacfac*normal(1), shp_mean_visc.dy);
-      assembler.template Matrix<Velx,Velx>(shp_jump.d0,     timefacfac*normal(2), shp_mean_visc.dz);
-      assembler.template Matrix<Velx,Vely>(shp_jump.d0,     timefacfac*normal(1), shp_mean_visc.dx);
-      assembler.template Matrix<Velx,Velz>(shp_jump.d0,     timefacfac*normal(2), shp_mean_visc.dx);
+      assembler.template Matrix<Velx,Tauxx>(shp_mean.d0, timefacfac*normal(0), shp_tau_jump.d0);
+      assembler.template Matrix<Velx,Tauxy>(shp_mean.d0, timefacfac*normal(1), shp_tau_jump.d0);
+      assembler.template Matrix<Velx,Tauxz>(shp_mean.d0, timefacfac*normal(2), shp_tau_jump.d0);
 
-      assembler.template Matrix<Vely,Velx>(shp_jump.d0,     timefacfac*normal(0), shp_mean_visc.dy);
-      assembler.template Matrix<Vely,Vely>(shp_jump.d0,     timefacfac*normal(0), shp_mean_visc.dx);
-      assembler.template Matrix<Vely,Vely>(shp_jump.d0, 2.0*timefacfac*normal(1), shp_mean_visc.dy);
-      assembler.template Matrix<Vely,Vely>(shp_jump.d0,     timefacfac*normal(2), shp_mean_visc.dz);
-      assembler.template Matrix<Vely,Velz>(shp_jump.d0,     timefacfac*normal(2), shp_mean_visc.dy);
+      assembler.template Matrix<Vely,Tauyx>(shp_mean.d0, timefacfac*normal(0), shp_tau_jump.d0);
+      assembler.template Matrix<Vely,Tauyy>(shp_mean.d0, timefacfac*normal(1), shp_tau_jump.d0);
+      assembler.template Matrix<Vely,Tauyz>(shp_mean.d0, timefacfac*normal(2), shp_tau_jump.d0);
 
-      assembler.template Matrix<Velz,Velx>(shp_jump.d0,     timefacfac*normal(0), shp_mean_visc.dz);
-      assembler.template Matrix<Velz,Vely>(shp_jump.d0,     timefacfac*normal(1), shp_mean_visc.dz);
-      assembler.template Matrix<Velz,Velz>(shp_jump.d0,     timefacfac*normal(0), shp_mean_visc.dx);
-      assembler.template Matrix<Velz,Velz>(shp_jump.d0,     timefacfac*normal(1), shp_mean_visc.dy);
-      assembler.template Matrix<Velz,Velz>(shp_jump.d0, 2.0*timefacfac*normal(2), shp_mean_visc.dz);
+      assembler.template Matrix<Velz,Tauzx>(shp_mean.d0, timefacfac*normal(0), shp_tau_jump.d0);
+      assembler.template Matrix<Velz,Tauzy>(shp_mean.d0, timefacfac*normal(1), shp_tau_jump.d0);
+      assembler.template Matrix<Velz,Tauzz>(shp_mean.d0, timefacfac*normal(2), shp_tau_jump.d0);
 
-      //   |                                       |
-      // - |  || v || , < 2\mu epsilon( u_i ) > n  |
-      //   |                                       |
+      //   |                         |
+      // - |  < v > , || tau_i || n  |
+      //   |                         |
 
-      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac* (vderxy_mean_visc(0,0) + vderxy_mean_visc(0,0))*normal(0));
-      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac* (vderxy_mean_visc(0,1) + vderxy_mean_visc(1,0))*normal(1));
-      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac* (vderxy_mean_visc(0,2) + vderxy_mean_visc(2,0))*normal(2));
+      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac*normal(0)*taujump(0,0));
+      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac*normal(1)*taujump(0,1));
+      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac*normal(2)*taujump(0,2));
 
-      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac* (vderxy_mean_visc(1,0) + vderxy_mean_visc(0,1))*normal(0));
-      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac* (vderxy_mean_visc(1,1) + vderxy_mean_visc(1,1))*normal(1));
-      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac* (vderxy_mean_visc(1,2) + vderxy_mean_visc(2,1))*normal(2));
+      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac*normal(0)*taujump(1,0));
+      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac*normal(1)*taujump(1,1));
+      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac*normal(2)*taujump(1,2));
 
-      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac* (vderxy_mean_visc(2,0) + vderxy_mean_visc(0,2))*normal(0));
-      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac* (vderxy_mean_visc(2,1) + vderxy_mean_visc(1,2))*normal(1));
-      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac* (vderxy_mean_visc(2,2) + vderxy_mean_visc(2,2))*normal(2));
+      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac*normal(0)*taujump(2,0));
+      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac*normal(1)*taujump(2,1));
+      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac*normal(2)*taujump(2,2));
 #endif
 
-#ifdef COMBUST_VISCCONSISTJUMP
-      //-------------------------    |                                      |
-      // viscous consistency term  + |  < v > , || 2\mu epsilon( Du ) || n  |
-      //-------------------------    |                                      |
+#ifdef COMBUST_STRESS_BASED_CONSISTPRESJUMP
+      //--------------------------    |                       |
+      // pressure consistency term  - |  < v >, || Dp^e || n  |
+      //--------------------------    |                       |
 
-      assembler.template Matrix<Velx,Velx>(shp_mean.d0, 2.0*timefacfac*normal(0), shp_jump_visc.dx);
-      assembler.template Matrix<Velx,Velx>(shp_mean.d0,     timefacfac*normal(1), shp_jump_visc.dy);
-      assembler.template Matrix<Velx,Velx>(shp_mean.d0,     timefacfac*normal(2), shp_jump_visc.dz);
-      assembler.template Matrix<Velx,Vely>(shp_mean.d0,     timefacfac*normal(1), shp_jump_visc.dx);
-      assembler.template Matrix<Velx,Velz>(shp_mean.d0,     timefacfac*normal(2), shp_jump_visc.dx);
+      assembler.template Matrix<Velx,DiscPres>(shp_mean.d0, -timefacfac*normal(0), shp_discpres_jump.d0);
+      assembler.template Matrix<Vely,DiscPres>(shp_mean.d0, -timefacfac*normal(1), shp_discpres_jump.d0);
+      assembler.template Matrix<Velz,DiscPres>(shp_mean.d0, -timefacfac*normal(2), shp_discpres_jump.d0);
 
-      assembler.template Matrix<Vely,Velx>(shp_mean.d0,     timefacfac*normal(0), shp_jump_visc.dy);
-      assembler.template Matrix<Vely,Vely>(shp_mean.d0,     timefacfac*normal(0), shp_jump_visc.dx);
-      assembler.template Matrix<Vely,Vely>(shp_mean.d0, 2.0*timefacfac*normal(1), shp_jump_visc.dy);
-      assembler.template Matrix<Vely,Vely>(shp_mean.d0,     timefacfac*normal(2), shp_jump_visc.dz);
-      assembler.template Matrix<Vely,Velz>(shp_mean.d0,     timefacfac*normal(2), shp_jump_visc.dy);
+      //   |                        |
+      // + |  < v >, || p^e_i || n  |
+      //   |                        |
 
-      assembler.template Matrix<Velz,Velx>(shp_mean.d0,     timefacfac*normal(0), shp_jump_visc.dz);
-      assembler.template Matrix<Velz,Vely>(shp_mean.d0,     timefacfac*normal(1), shp_jump_visc.dz);
-      assembler.template Matrix<Velz,Velz>(shp_mean.d0,     timefacfac*normal(0), shp_jump_visc.dx);
-      assembler.template Matrix<Velz,Velz>(shp_mean.d0,     timefacfac*normal(1), shp_jump_visc.dy);
-      assembler.template Matrix<Velz,Velz>(shp_mean.d0, 2.0*timefacfac*normal(2), shp_jump_visc.dz);
+      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(0)*pdiscjump);
+      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*normal(1)*pdiscjump);
+      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(2)*pdiscjump);
 
-      //   |                                       |
-      // - |  < v > , || 2\mu epsilon( u_i ) || n  |
-      //   |                                       |
-
-      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(0,0) + vderxy_jump_visc(0,0))*normal(0));
-      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(0,1) + vderxy_jump_visc(1,0))*normal(1));
-      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(0,2) + vderxy_jump_visc(2,0))*normal(2));
-
-      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(1,0) + vderxy_jump_visc(0,1))*normal(0));
-      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(1,1) + vderxy_jump_visc(1,1))*normal(1));
-      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(1,2) + vderxy_jump_visc(2,1))*normal(2));
-
-      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(2,0) + vderxy_jump_visc(0,2))*normal(0));
-      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(2,1) + vderxy_jump_visc(1,2))*normal(1));
-      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(2,2) + vderxy_jump_visc(2,2))*normal(2));
-#endif
-
-#ifdef COMBUST_VISCADJCONSIST
-      //---------------------------------    |                                     |
-      // viscous adjoint consistency term  + |  < 2\mu epsilon( v ) > n, || Du ||  |
-      //---------------------------------    |                                     |
-
-      assembler.template Matrix<Velx,Velx>(shp_mean_visc.dx, -2.0*timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<Velx,Velx>(shp_mean_visc.dy, -    timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<Velx,Velx>(shp_mean_visc.dz, -    timefacfac*normal(2), shp_jump.d0);
-      assembler.template Matrix<Vely,Velx>(shp_mean_visc.dx, -    timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<Velz,Velx>(shp_mean_visc.dx, -    timefacfac*normal(2), shp_jump.d0);
-
-      assembler.template Matrix<Velx,Vely>(shp_mean_visc.dy, -    timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<Vely,Vely>(shp_mean_visc.dx, -    timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<Vely,Vely>(shp_mean_visc.dy, -2.0*timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<Vely,Vely>(shp_mean_visc.dz, -    timefacfac*normal(2), shp_jump.d0);
-      assembler.template Matrix<Velz,Vely>(shp_mean_visc.dy, -    timefacfac*normal(2), shp_jump.d0);
-
-      assembler.template Matrix<Velx,Velz>(shp_mean_visc.dz, -    timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<Vely,Velz>(shp_mean_visc.dz, -    timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<Velz,Velz>(shp_mean_visc.dx, -    timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<Velz,Velz>(shp_mean_visc.dy, -    timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<Velz,Velz>(shp_mean_visc.dz, -2.0*timefacfac*normal(2), shp_jump.d0);
-
-      //   |                                      |
-      // - |  < 2\mu epsilon( v ) > n, || u_i ||  |
-      //   |                                      |
-
-      assembler.template Vector<Velx>(shp_mean_visc.dx, +2.0* normal(0)           *timefacfac*vjump(0,0));
-      assembler.template Vector<Velx>(shp_mean_visc.dy, +    (normal(0)+normal(1))*timefacfac*vjump(0,0));
-      assembler.template Vector<Velx>(shp_mean_visc.dz, +    (normal(0)+normal(2))*timefacfac*vjump(0,0));
-
-      assembler.template Vector<Vely>(shp_mean_visc.dx, +    (normal(1)+normal(0))*timefacfac*vjump(1,0));
-      assembler.template Vector<Vely>(shp_mean_visc.dy, +2.0* normal(1)           *timefacfac*vjump(1,0));
-      assembler.template Vector<Vely>(shp_mean_visc.dz, +    (normal(1)+normal(2))*timefacfac*vjump(1,0));
-
-      assembler.template Vector<Velz>(shp_mean_visc.dx, +    (normal(2)+normal(0))*timefacfac*vjump(2,0));
-      assembler.template Vector<Velz>(shp_mean_visc.dy, +    (normal(2)+normal(1))*timefacfac*vjump(2,0));
-      assembler.template Vector<Velz>(shp_mean_visc.dz, +2.0* normal(2)           *timefacfac*vjump(2,0));
-
-      //-------------------------------------    |                                    |
-      // viscous adjoint consistency term RHS  + |  < 2\mu\rho epsilon( v ) > n, J_u  |
-      //-------------------------------------    |                                    |
-
-      assembler.template Vector<Velx>(shp_mean_visc.dx, +2.0* normal(0)           *timefacfac*normal(0)*ju);
-      assembler.template Vector<Velx>(shp_mean_visc.dy, +    (normal(0)+normal(1))*timefacfac*normal(0)*ju);
-      assembler.template Vector<Velx>(shp_mean_visc.dz, +    (normal(0)+normal(2))*timefacfac*normal(0)*ju);
-
-      assembler.template Vector<Vely>(shp_mean_visc.dx, +    (normal(1)+normal(0))*timefacfac*normal(1)*ju);
-      assembler.template Vector<Vely>(shp_mean_visc.dy, +2.0* normal(1)           *timefacfac*normal(1)*ju);
-      assembler.template Vector<Vely>(shp_mean_visc.dz, +    (normal(1)+normal(2))*timefacfac*normal(1)*ju);
-
-      assembler.template Vector<Velz>(shp_mean_visc.dx, +    (normal(2)+normal(0))*timefacfac*normal(2)*ju);
-      assembler.template Vector<Velz>(shp_mean_visc.dy, +    (normal(2)+normal(1))*timefacfac*normal(2)*ju);
-      assembler.template Vector<Velz>(shp_mean_visc.dz, +2.0* normal(2)           *timefacfac*normal(2)*ju);
-#endif
-
-#ifdef COMBUST_PRESCONSISTMEAN
-      //--------------------------    |                     |
-      // pressure consistency term  - |  || v ||, < Dp > n  |
-      //--------------------------    |                     |
-
-      assembler.template Matrix<Velx,Pres>(shp_jump.d0, +timefacfac*normal(0), shp_mean.d0);
-      assembler.template Matrix<Vely,Pres>(shp_jump.d0, +timefacfac*normal(1), shp_mean.d0);
-      assembler.template Matrix<Velz,Pres>(shp_jump.d0, +timefacfac*normal(2), shp_mean.d0);
-
-      //   |                      |
-      // + |  || v ||, < p_i > n  |
-      //   |                      |
-
-      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac*normal(0)*pmean);
-      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac*normal(1)*pmean);
-      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac*normal(2)*pmean);
-#endif
-
-#ifdef COMBUST_PRESCONSISTJUMP
-      //--------------------------    |                     |
-      // pressure consistency term  - |  < v >, || Dp || n  |
-      //--------------------------    |                     |
-
-      assembler.template Matrix<Velx,Pres>(shp_mean.d0, -timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<Vely,Pres>(shp_mean.d0, -timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<Velz,Pres>(shp_mean.d0, -timefacfac*normal(2), shp_jump.d0);
-
-      //   |                      |
-      // + |  < v >, || p_i || n  |
-      //   |                      |
-
-      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(0)*pjump);
-      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*normal(1)*pjump);
-      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(2)*pjump);
-#endif
-
-#ifdef COMBUST_PRESADJCONSIST
-      //----------------------------------    |                     |
-      // pressure adjoint consistency term  + |  < q > n, || Du ||  |
-      //----------------------------------    |                     |
-
-      assembler.template Matrix<Pres,Velx>(shp_mean.d0, +timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<Pres,Vely>(shp_mean.d0, +timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<Pres,Velz>(shp_mean.d0, +timefacfac*normal(2), shp_jump.d0);
-
-      //   |                      |
-      // - |  < q > n, || u_i ||  |
-      //   |                      |
-
-      assembler.template Vector<Pres>(shp_mean.d0, -timefacfac*(vmean(0,0)*normal(0)
-          +vmean(1,0)*normal(1)
-          +vmean(2,0)*normal(2)));
-
-      //--------------------------------------    |                |
-      // pressure adjoint consistency term RHS  + |  < q > n, J_u  |
-      //--------------------------------------    |                |
-
-      assembler.template Vector<Pres>(shp_mean.d0, -timefacfac*ju);
-#endif
-
-#ifdef COMBUST_PRESJUMPRHS
       //------------------------------------------    |                |
-      // pressure/flux jump (consistency) term RHS  + |  < v >, J_p*n  |
+      // pressure/flux jump (consistency) term RHS  + |  < v >, j_p*n  |
       //------------------------------------------    |                |
 
       assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(0)*jp);
@@ -1338,55 +1305,187 @@ void SysmatBoundaryStress(
       assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(2)*jp);
 #endif
 
-#ifdef COMBUST_NITSCHEVEL
-      //------------------------    |                              |
-      // Nitsche term (velocity)  + |  \alpha_u || v ||, || Du ||  |
-      //------------------------    |                              |
+#if 0
+      //------------------------------------------    |                |
+      // pressure/flux jump (consistency) term RHS  + |  < v >, j_p*n  |
+      //------------------------------------------    |                |
 
-      assembler.template Matrix<Velx,Velx>(shp_jump.d0, +alphau*timefacfac, shp_jump.d0);
-      assembler.template Matrix<Vely,Vely>(shp_jump.d0, +alphau*timefacfac, shp_jump.d0);
-      assembler.template Matrix<Velz,Velz>(shp_jump.d0, +alphau*timefacfac, shp_jump.d0);
+//      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(0)*jp);
+//      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*normal(1)*jp);
+//      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(2)*jp);
 
-      //    |                               |
-      //  - |  \alpha_u || v ||, || u_i ||  |
-      //    |                               |
+      assembler.template Vector<Velx>(shp_jump.d0, timefacfac*normal(0)*jp);
+      assembler.template Vector<Vely>(shp_jump.d0, timefacfac*normal(1)*jp);
+      assembler.template Vector<Velz>(shp_jump.d0, timefacfac*normal(2)*jp);
 
-      assembler.template Vector<Velx>(shp_jump.d0, -alphau*timefacfac*vjump(0,0));
-      assembler.template Vector<Vely>(shp_jump.d0, -alphau*timefacfac*vjump(1,0));
-      assembler.template Vector<Velz>(shp_jump.d0, -alphau*timefacfac*vjump(2,0));
+      // jump u, jump tau
+      assembler.template Matrix<Velx,Tauxx>(shp_jump.d0, timefacfac*normal(0), shp_tau_jump.d0);
+      assembler.template Matrix<Velx,Tauxy>(shp_jump.d0, timefacfac*normal(1), shp_tau_jump.d0);
+      assembler.template Matrix<Velx,Tauxz>(shp_jump.d0, timefacfac*normal(2), shp_tau_jump.d0);
 
-      //----------------------------    |                         |
-      // Nitsche term (velocity) RHS  + |  \alpha_u || v ||, J_u  |
-      //----------------------------    |                         |
+      assembler.template Matrix<Vely,Tauyx>(shp_jump.d0, timefacfac*normal(0), shp_tau_jump.d0);
+      assembler.template Matrix<Vely,Tauyy>(shp_jump.d0, timefacfac*normal(1), shp_tau_jump.d0);
+      assembler.template Matrix<Vely,Tauyz>(shp_jump.d0, timefacfac*normal(2), shp_tau_jump.d0);
 
-      assembler.template Vector<Velx>(shp_jump.d0, +alphau*timefacfac*normal(0)*ju);
-      assembler.template Vector<Vely>(shp_jump.d0, +alphau*timefacfac*normal(1)*ju);
-      assembler.template Vector<Velz>(shp_jump.d0, +alphau*timefacfac*normal(2)*ju);
+      assembler.template Matrix<Velz,Tauzx>(shp_jump.d0, timefacfac*normal(0), shp_tau_jump.d0);
+      assembler.template Matrix<Velz,Tauzy>(shp_jump.d0, timefacfac*normal(1), shp_tau_jump.d0);
+      assembler.template Matrix<Velz,Tauzz>(shp_jump.d0, timefacfac*normal(2), shp_tau_jump.d0);
+
+      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac*normal(0)*taujump(0,0));
+      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac*normal(1)*taujump(0,1));
+      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac*normal(2)*taujump(0,2));
+
+      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac*normal(0)*taujump(1,0));
+      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac*normal(1)*taujump(1,1));
+      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac*normal(2)*taujump(1,2));
+
+      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac*normal(0)*taujump(2,0));
+      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac*normal(1)*taujump(2,1));
+      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac*normal(2)*taujump(2,2));
+
+      // jump u, jump p
+      assembler.template Matrix<Velx,DiscPres>(shp_jump.d0, -timefacfac*normal(0), shp_discpres_jump.d0);
+      assembler.template Matrix<Vely,DiscPres>(shp_jump.d0, -timefacfac*normal(1), shp_discpres_jump.d0);
+      assembler.template Matrix<Velz,DiscPres>(shp_jump.d0, -timefacfac*normal(2), shp_discpres_jump.d0);
+
+      //   |                        |
+      // + |  || v ||, < p^e_i > n  |
+      //   |                        |
+
+      assembler.template Vector<Velx>(shp_jump.d0, timefacfac*normal(0)*pdiscjump);
+      assembler.template Vector<Vely>(shp_jump.d0, timefacfac*normal(1)*pdiscjump);
+      assembler.template Vector<Velz>(shp_jump.d0, timefacfac*normal(2)*pdiscjump);
 #endif
 
-#ifdef COMBUST_NITSCHEPRES
-      //------------------------    |                              |
-      // Nitsche term (pressure)  + |  \alpha_p || q ||, || Dp ||  |
-      //------------------------    |                              |
 
-      assembler.template Matrix<Pres,Pres>(shp_jump.d0, alphap*timefacfac, shp_jump.d0);
+#ifdef COMBUST_STRESS_BASED_CONSISTVISCMEAN
+      //-------------------------    |                        |
+      // viscous consistency term  + |  || v || , < Dtau > n  |
+      //-------------------------    |                        |
 
-      //    |                               |
-      //  - |  \alpha_p || q ||, || p_i ||  |
-      //    |                               |
+      assembler.template Matrix<Velx,Tauxx>(shp_jump.d0, timefacfac*normal(0), shp_tau_mean.d0);
+      assembler.template Matrix<Velx,Tauxy>(shp_jump.d0, timefacfac*normal(1), shp_tau_mean.d0);
+      assembler.template Matrix<Velx,Tauxz>(shp_jump.d0, timefacfac*normal(2), shp_tau_mean.d0);
 
-      assembler.template Vector<Pres>(shp_jump.d0, -alphap*timefacfac*pjump);
+      assembler.template Matrix<Vely,Tauyx>(shp_jump.d0, timefacfac*normal(0), shp_tau_mean.d0);
+      assembler.template Matrix<Vely,Tauyy>(shp_jump.d0, timefacfac*normal(1), shp_tau_mean.d0);
+      assembler.template Matrix<Vely,Tauyz>(shp_jump.d0, timefacfac*normal(2), shp_tau_mean.d0);
 
-      //----------------------------    |                         |
-      // Nitsche term (pressure) RHS  + |  \alpha_p || q ||, J_p  |
-      //----------------------------    |                         |
+      assembler.template Matrix<Velz,Tauzx>(shp_jump.d0, timefacfac*normal(0), shp_tau_mean.d0);
+      assembler.template Matrix<Velz,Tauzy>(shp_jump.d0, timefacfac*normal(1), shp_tau_mean.d0);
+      assembler.template Matrix<Velz,Tauzz>(shp_jump.d0, timefacfac*normal(2), shp_tau_mean.d0);
 
-      assembler.template Vector<Pres>(shp_jump.d0, alphap*timefacfac*jp);
+      //   |                         |
+      // - |  || v || , < tau_i > n  |
+      //   |                         |
+
+      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac*normal(0)*taumean(0,0));
+      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac*normal(1)*taumean(0,1));
+      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac*normal(2)*taumean(0,2));
+
+      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac*normal(0)*taumean(1,0));
+      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac*normal(1)*taumean(1,1));
+      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac*normal(2)*taumean(1,2));
+
+      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac*normal(0)*taumean(2,0));
+      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac*normal(1)*taumean(2,1));
+      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac*normal(2)*taumean(2,2));
 #endif
 
+#ifdef COMBUST_STRESS_BASED_CONSISTPRESMEAN
+      //--------------------------    |                       |
+      // pressure consistency term  - |  || v ||, < Dp^e > n  |
+      //--------------------------    |                       |
+
+      assembler.template Matrix<Velx,DiscPres>(shp_jump.d0, -timefacfac*normal(0), shp_discpres_mean.d0);
+      assembler.template Matrix<Vely,DiscPres>(shp_jump.d0, -timefacfac*normal(1), shp_discpres_mean.d0);
+      assembler.template Matrix<Velz,DiscPres>(shp_jump.d0, -timefacfac*normal(2), shp_discpres_mean.d0);
+
+      //   |                        |
+      // + |  || v ||, < p^e_i > n  |
+      //   |                        |
+
+      assembler.template Vector<Velx>(shp_jump.d0, timefacfac*normal(0)*pdiscmean);
+      assembler.template Vector<Vely>(shp_jump.d0, timefacfac*normal(1)*pdiscmean);
+      assembler.template Vector<Velz>(shp_jump.d0, timefacfac*normal(2)*pdiscmean);
+#endif
+
+#ifdef COMBUST_STRESS_BASED_ADJCONSISTVISCJUMP
+      //---------------------------------    |                         |
+      // viscous adjoint consistency term  + |  < tau^e > n, || Du ||  |
+      //---------------------------------    |                         |
+
+      assembler.template Matrix<Tauxx,Velx>(shp_tau_mean.d0, timefacfac*normal(0), shp_jump.d0);
+      assembler.template Matrix<Tauxy,Velx>(shp_tau_mean.d0, timefacfac*normal(1), shp_jump.d0);
+      assembler.template Matrix<Tauxz,Velx>(shp_tau_mean.d0, timefacfac*normal(2), shp_jump.d0);
+
+      assembler.template Matrix<Tauyx,Vely>(shp_tau_mean.d0, timefacfac*normal(0), shp_jump.d0);
+      assembler.template Matrix<Tauyy,Vely>(shp_tau_mean.d0, timefacfac*normal(1), shp_jump.d0);
+      assembler.template Matrix<Tauyz,Vely>(shp_tau_mean.d0, timefacfac*normal(2), shp_jump.d0);
+
+      assembler.template Matrix<Tauzx,Velz>(shp_tau_mean.d0, timefacfac*normal(0), shp_jump.d0);
+      assembler.template Matrix<Tauzy,Velz>(shp_tau_mean.d0, timefacfac*normal(1), shp_jump.d0);
+      assembler.template Matrix<Tauzz,Velz>(shp_tau_mean.d0, timefacfac*normal(2), shp_jump.d0);
+
+      //   |                          |
+      // - |  < tau^e > n, || u_i ||  |
+      //   |                          |
+
+      assembler.template Vector<Tauxx>(shp_tau_mean.d0, -timefacfac*normal(0)*veljump(0,0));
+      assembler.template Vector<Tauxy>(shp_tau_mean.d0, -timefacfac*normal(1)*veljump(0,0));
+      assembler.template Vector<Tauxz>(shp_tau_mean.d0, -timefacfac*normal(2)*veljump(0,0));
+
+      assembler.template Vector<Tauyx>(shp_tau_mean.d0, -timefacfac*normal(0)*veljump(1,0));
+      assembler.template Vector<Tauyy>(shp_tau_mean.d0, -timefacfac*normal(1)*veljump(1,0));
+      assembler.template Vector<Tauyz>(shp_tau_mean.d0, -timefacfac*normal(2)*veljump(1,0));
+
+      assembler.template Vector<Tauzx>(shp_tau_mean.d0, -timefacfac*normal(0)*veljump(2,0));
+      assembler.template Vector<Tauzy>(shp_tau_mean.d0, -timefacfac*normal(1)*veljump(2,0));
+      assembler.template Vector<Tauzz>(shp_tau_mean.d0, -timefacfac*normal(2)*veljump(2,0));
+
+      //-------------------------------------    |                                    |
+      // viscous adjoint consistency term RHS  + |  < tau^e > n, j_u  |
+      //-------------------------------------    |                                    |
+
+      assembler.template Vector<Tauxx>(shp_tau_mean.d0, timefacfac*normal(0)*normal(0)*ju);
+      assembler.template Vector<Tauxy>(shp_tau_mean.d0, timefacfac*normal(1)*normal(0)*ju);
+      assembler.template Vector<Tauxz>(shp_tau_mean.d0, timefacfac*normal(2)*normal(0)*ju);
+
+      assembler.template Vector<Tauyx>(shp_tau_mean.d0, timefacfac*normal(0)*normal(1)*ju);
+      assembler.template Vector<Tauyy>(shp_tau_mean.d0, timefacfac*normal(1)*normal(1)*ju);
+      assembler.template Vector<Tauyz>(shp_tau_mean.d0, timefacfac*normal(2)*normal(1)*ju);
+
+      assembler.template Vector<Tauzx>(shp_tau_mean.d0, timefacfac*normal(0)*normal(2)*ju);
+      assembler.template Vector<Tauzy>(shp_tau_mean.d0, timefacfac*normal(1)*normal(2)*ju);
+      assembler.template Vector<Tauzz>(shp_tau_mean.d0, timefacfac*normal(2)*normal(2)*ju);
+#endif
+
+#ifdef COMBUST_STRESS_BASED_ADJCONSISTPRESJUMP
+      //----------------------------------    |                       |
+      // pressure adjoint consistency term  + |  < q^e > n, || Du ||  |
+      //----------------------------------    |                       |
+
+      assembler.template Matrix<DiscPres,Velx>(shp_discpres_jump.d0, timefacfac*normal(0), shp_jump.d0);
+      assembler.template Matrix<DiscPres,Vely>(shp_discpres_jump.d0, timefacfac*normal(1), shp_jump.d0);
+      assembler.template Matrix<DiscPres,Velz>(shp_discpres_jump.d0, timefacfac*normal(2), shp_jump.d0);
+
+      //   |                        |
+      // - |  < q^e > n, || u_i ||  |
+      //   |                        |
+
+      assembler.template Vector<DiscPres>(shp_discpres_jump.d0, -timefacfac*(veljump(0,0)*normal(0)
+                                                                   +veljump(1,0)*normal(1)
+                                                                   +veljump(2,0)*normal(2)));
+
+      //--------------------------------------    |                  |
+      // pressure adjoint consistency term RHS  + |  < q^e > n, j_u  |
+      //--------------------------------------    |                  |
+
+      assembler.template Vector<DiscPres>(shp_discpres_jump.d0, timefacfac*ju);
+#endif
     } // loop Gaussian points
   } // loop boundary integration cells
-#endif
+
   return;
 }
 

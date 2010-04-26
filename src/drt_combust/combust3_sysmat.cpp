@@ -48,7 +48,7 @@ using namespace XFEM::PHYSICS;
 //! fill a number of (local) element arrays with unknown values from the (global) unknown vector given by the discretization
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
-          class M1, class V1, class M2, class V2>
+          class M1, class V1, class M2, class V2, class V3>
 void fillElementUnknownsArrays(
     const XFEM::ElementDofManager& dofman,
     const DRT::ELEMENTS::Combust3::MyState& mystate,
@@ -58,7 +58,8 @@ void fillElementUnknownsArrays(
     M1& eaccn,
     V1& eprenp,
     V2& ephi,
-    M2& etau
+    M2& etau,
+    V3& ediscpres
 )
 {
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
@@ -113,29 +114,30 @@ void fillElementUnknownsArrays(
   }
   for (size_t iparam=0; iparam<numparampres; ++iparam)
     eprenp(iparam) = mystate.velnp_[presdof[iparam]];
-  const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxx, 0) > 0);
+
+  const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 0) > 0);
   if (tauele_unknowns_present)
   {
     // put one here to create arrays of size 1, since they are not needed anyway
     // in the xfem assembly, the numparam is determined by the dofmanager
-    const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
-    const size_t numparamtauyy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayy, 1);
-    const size_t numparamtauzz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmazz, 1);
-    const size_t numparamtauxy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxy, 1);
-    const size_t numparamtauxz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxz, 1);
-    const size_t numparamtauyz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayz, 1);
+    const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Tauxx);
+    const size_t numparamtauyy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyy, 1);
+    const size_t numparamtauzz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauzz, 1);
+    const size_t numparamtauxy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxy, 1);
+    const size_t numparamtauxz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxz, 1);
+    const size_t numparamtauyz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyz, 1);
     const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
     const size_t shpVecSizeStress = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
     if (numparamtauxx > shpVecSizeStress)
     {
       dserror("increase SizeFac for stress unknowns");
     }
-    const std::vector<int>& tauxxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxx>());
-    const std::vector<int>& tauyydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmayy>());
-    const std::vector<int>& tauzzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmazz>());
-    const std::vector<int>& tauxydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxy>());
-    const std::vector<int>& tauxzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxz>());
-    const std::vector<int>& tauyzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmayz>());
+    const std::vector<int>& tauxxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxx>());
+    const std::vector<int>& tauyydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauyy>());
+    const std::vector<int>& tauzzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauzz>());
+    const std::vector<int>& tauxydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxy>());
+    const std::vector<int>& tauxzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxz>());
+    const std::vector<int>& tauyzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauyz>());
     for (size_t iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = mystate.velnp_[tauxxdof[iparam]];
     for (size_t iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = mystate.velnp_[tauyydof[iparam]];
     for (size_t iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = mystate.velnp_[tauzzdof[iparam]];
@@ -143,6 +145,20 @@ void fillElementUnknownsArrays(
     for (size_t iparam=0; iparam<numparamtauxz; ++iparam)   etau(4,iparam) = mystate.velnp_[tauxzdof[iparam]];
     for (size_t iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = mystate.velnp_[tauyzdof[iparam]];
   }
+  const bool discpres_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 0) > 0);
+  if (discpres_unknowns_present)
+  {
+    const size_t numparamdiscpres = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::DiscPres);
+    const DRT::Element::DiscretizationType discpresdistype = COMBUST::DiscPressureInterpolation3D<DISTYPE>::distype;
+    const size_t shpVecSizeDiscPres = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement;
+    if (numparamdiscpres > shpVecSizeDiscPres)
+    {
+      cout << "increase SizeFac for stress unknowns" << endl;
+    }
+    const vector<int>& discpresdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::DiscPres>());
+    for (std::size_t iparam=0; iparam<numparamdiscpres; ++iparam)   ediscpres(iparam) = mystate.velnp_[discpresdof[iparam]];
+  }
+
   // copy element phi vector from std::vector (mystate) to LINALG::Matrix (ephi)
   // TODO: this is inefficient, but it is nice to have only fixed size matrices afterwards!
   for (size_t iparam=0; iparam<numnode; ++iparam)
@@ -188,9 +204,11 @@ void Sysmat(
 
   // split velocity and pressure (and stress)
   const int shpVecSize       = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-  const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
-  const int shpVecSizeStress = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+  const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
+  const DRT::Element::DiscretizationType discpresdistype = COMBUST::DiscPressureInterpolation3D<DISTYPE>::distype;
+  const int shpVecSizeStress = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
+  const int shpVecSizeDiscPres = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement;
   LINALG::Matrix<shpVecSize,1> eprenp;
   LINALG::Matrix<3,shpVecSize> evelnp;
   LINALG::Matrix<3,shpVecSize> eveln;
@@ -198,9 +216,10 @@ void Sysmat(
   LINALG::Matrix<3,shpVecSize> eaccn;
   LINALG::Matrix<numnode,1> ephi;
   LINALG::Matrix<6,shpVecSizeStress> etau;
+  LINALG::Matrix<shpVecSizeDiscPres,1> ediscpres;
 
   fillElementUnknownsArrays<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp,
-      ephi, etau);
+      ephi, etau, ediscpres);
 
   switch(combusttype)
   {
@@ -213,7 +232,7 @@ void Sysmat(
 #endif
 #ifdef COMBUST_STRESS_BASED
     COMBUST::SysmatDomainStress<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etau,
+        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etau, ediscpres,
         material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
 #endif
 
@@ -232,7 +251,7 @@ void Sysmat(
     if (ele->Intersected() == true)
     {
       COMBUST::SysmatBoundaryStress<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, eprenp, ephi, etau, material, timealgo, dt, theta, assembler,
+          ele, ih, dofman, evelnp, eprenp, ephi, etau, ediscpres, material, timealgo, dt, theta, assembler,
           flamespeed,nitschevel,nitschepres);
     }
 #endif

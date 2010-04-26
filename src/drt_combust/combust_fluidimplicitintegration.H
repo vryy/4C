@@ -355,6 +355,8 @@ protected:
   const double nitschevel_;
   // Nitsche parameter pressure
   const double nitschepres_;
+  // boolean indicating condensation of element dofs on/off
+  const bool condensation_;
 
   //! @name time stepping variables
   int     step_;    ///< timestep
@@ -397,6 +399,9 @@ protected:
 
   /// (standard) system matrix
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;
+
+  /// TODO add comment
+  Teuchos::RCP<Epetra_Vector> oldinc_;
 
   /// maps for extracting Dirichlet and free DOF sets
   Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;

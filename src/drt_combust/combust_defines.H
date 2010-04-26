@@ -18,12 +18,12 @@ Maintainer: Florian Henke
 // combustion algorithm options
 //-----------------------------
 //#define COMBUST_DECOUPLEDXFEM   // turn on/off boundary integrals for premixed combustion system matrix
-#define COMBUST_NITSCHE
+//#define COMBUST_NITSCHE
 #define COMBUST_STRESS_BASED
 //#define COMBUST_PROJCELLEDGES // turn on/off old method to find facing flame front patches
-//---------------------------------
-// combustion domain integral terms
-//---------------------------------
+//------------------------------------------
+// combustion domain integral terms standard
+//------------------------------------------
 #define COMBUST_DOM_INERTIA    // turn on/off inertia term
 #define COMBUST_DOM_CONVECTION // turn on/off concevtion term
 #define COMBUST_DOM_DIFFUSION  // turn on/off diffusion term
@@ -46,18 +46,34 @@ Maintainer: Florian Henke
 
 #define COMBUST_CSTAB // turn on/off CSTAB inertia term
 
-//-----------------------------------
-// combustion boundary integral terms
-//-----------------------------------
-#define COMBUST_VISCCONSISTMEAN    // turn on/off
-#define COMBUST_VISCCONSISTJUMP    // turn on/off
-#define COMBUST_VISCADJCONSIST     // turn on/off
-#define COMBUST_PRESCONSISTMEAN    // turn on/off
-#define COMBUST_PRESCONSISTJUMP    // turn on/off
-#define COMBUST_PRESADJCONSIST     // turn on/off pressure adjoint consistency term
-#define COMBUST_PRESJUMPRHS        // turn on/off pressure/flux jump RHS term
-#define COMBUST_NITSCHEVEL         // turn on/off Nitsche velocity terms
-#define COMBUST_NITSCHEPRES      // turn on/off Nitsche pressure terms
+//-------------------------------------------
+// combustion Nitsche boundary integral terms
+//-------------------------------------------
+#define COMBUST_NITSCHE_VISCCONSISTMEAN // turn on/off
+#define COMBUST_NITSCHE_PRESCONSISTMEAN // turn on/off
+//#define COMBUST_NITSCHE_VISCCONSISTJUMP // turn on/off
+#define COMBUST_NITSCHE_VISCADJCONSIST  // turn on/off
+//#define COMBUST_NITSCHE_PRESCONSISTJUMP // turn on/off
+#define COMBUST_NITSCHE_PRESADJCONSIST  // turn on/off pressure adjoint consistency term
+#define COMBUST_NITSCHE_PRESJUMPRHS     // turn on/off pressure/flux jump RHS term
+#define COMBUST_NITSCHE_NITSCHEVEL      // turn on/off Nitsche velocity terms
+//#define COMBUST_NITSCHE_NITSCHEPRES     // turn on/off Nitsche pressure terms
+
+//----------------------------------------------------------
+// combustion domain integral terms stress-based formulation
+//----------------------------------------------------------
+#define COMBUST_STRESS_BASED_TAU_COUPLING
+#define COMBUST_STRESS_BASED_PRESSURE_COUPLING
+#define COMBUST_STRESS_BASED_INCOMPR
+//------------------------------------------------
+// combustion stress-based boundary integral terms
+//------------------------------------------------
+#define COMBUST_STRESS_BASED_CONSISTVISCJUMP    // turn on/off
+#define COMBUST_STRESS_BASED_CONSISTPRESJUMP    // turn on/off
+#define COMBUST_STRESS_BASED_CONSISTVISCMEAN    // turn on/off
+#define COMBUST_STRESS_BASED_CONSISTPRESMEAN    // turn on/off
+#define COMBUST_STRESS_BASED_ADJCONSISTVISCJUMP // turn on/off
+#define COMBUST_STRESS_BASED_ADJCONSISTPRESJUMP // turn on/off
 
 //-----------------------------
 // combustion test case options

@@ -69,6 +69,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   flamespeed_(params_.sublist("COMBUSTION FLUID").get<double>("LAMINAR_FLAMESPEED")),
   nitschevel_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_VELOCITY")),
   nitschepres_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_PRESSURE")),
+  condensation_(xparams_.get<bool>("DLM_condensation")),
   step_(0),
   time_(0.0),
   stepmax_ (params_.get<int>   ("max number timesteps")),
@@ -411,7 +412,6 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
   dofmanager->toGmsh(step_);
   interfacehandle->toGmsh(step_);
 
-
   // get old dofmap, compute new one and get the new one, too
   const Epetra_Map olddofrowmap = *discret_->DofRowMap();
   // assign degrees of freedom
@@ -442,7 +442,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
   // switch state vectors to new dof distribution
   // --------------------------------------------
 
-    cout0_ << " Initialize system vectors..." << endl;
+  cout0_ << " Initialize system vectors..." << endl;
   // accelerations at time n and n-1
   dofswitch.mapVectorToNewDofDistributionCombust(state_.accnp_);
   dofswitch.mapVectorToNewDofDistributionCombust(state_.accn_);
@@ -640,6 +640,13 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- fullres ---|-- vel-inc ---|-- pre-inc ---|-- fullinc ---|\n");
   }
 
+  // TODO add comment
+  incvel_->PutScalar(0.0);
+  residual_->PutScalar(0.0);
+  // increment of the old iteration step - used for update of condensed element stresses
+  oldinc_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+
+
   while (stopnonliniter==false)
   {
     itnum++;
@@ -673,6 +680,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("flamespeed",flamespeed_);
       eleparams.set("nitschevel",nitschevel_);
       eleparams.set("nitschepres",nitschepres_);
+      eleparams.set("DLM_condensation",condensation_);
 
       // other parameters that might be needed by the elements
       //eleparams.set("total time",time_);
@@ -694,6 +702,8 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       discret_->SetState("veln" ,state_.veln_);
       discret_->SetState("velnm",state_.velnm_);
       discret_->SetState("accn" ,state_.accn_);
+
+      discret_->SetState("nodal increment",oldinc_);
 
       // convergence check at itemax is skipped for speedup if
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
@@ -894,6 +904,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
 
       // get cpu time
+      discret_->Comm().Barrier();
       const double tcpusolve=Teuchos::Time::wallTime();
 
       // do adaptive linear solver tolerance (not in first solve)
@@ -908,12 +919,23 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       solver_.ResetTolerance();
 
       // end time measurement for solver
+      // remark: to get realistic times, this barrier results in the longest time being printed
+      discret_->Comm().Barrier();
       dtsolve = Teuchos::Time::wallTime()-tcpusolve;
     }
 
     //------------------------------------------------ update (u,p) trial
     state_.velnp_->Update(1.0,*incvel_,1.0);
+    //------------------- store nodal increment for element stress update
+    oldinc_->Update(1.0,*incvel_,0.0);
   }
+
+  oldinc_ = Teuchos::null;
+  incvel_ = Teuchos::null;
+  residual_ = Teuchos::null;
+  zeros_ = Teuchos::null;
+  sysmat_ = Teuchos::null;
+
 } // CombustImplicitTimeInt::NonlinearSolve
 
 
@@ -938,6 +960,9 @@ void FLD::CombustFluidImplicitTimeInt::TimeUpdate()
       state_.velnp_, state_.veln_, state_.velnm_, state_.accn_,
           timealgo_, step_, theta_, dta_, dtp_,
           state_.accnp_);
+
+  // TODO copied from Axel, needed here?
+  oldinc_= Teuchos::null;
 
   return;
 }// FluidImplicitTimeInt::TimeUpdate

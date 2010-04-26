@@ -215,7 +215,7 @@ void BuildDomainIntegrals(
 #endif
 
 #ifdef COMBUST_DOM_CONTINUITY
-  //  cout << "/!\\ warning === sign of continuity term has been changed to make formulation symmetric" << endl;
+  // cout << "/!\\ warning === sign of continuity term has been changed to make formulation symmetric" << endl;
   // solenoidality term - continuity equation
   /*
                  /              \
@@ -224,9 +224,9 @@ void BuildDomainIntegrals(
                 |                |
                  \              /
    */
-  assembler.template Matrix<Pres,Velx>(shp.d0, +timefacfac, shp.dx);
-  assembler.template Matrix<Pres,Vely>(shp.d0, +timefacfac, shp.dy);
-  assembler.template Matrix<Pres,Velz>(shp.d0, +timefacfac, shp.dz);
+  assembler.template Matrix<Pres,Velx>(shp.d0, timefacfac, shp.dx);
+  assembler.template Matrix<Pres,Vely>(shp.d0, timefacfac, shp.dy);
+  assembler.template Matrix<Pres,Velz>(shp.d0, timefacfac, shp.dz);
 
   const double trace_gamma = (vderxy(0,0) + vderxy(1,1) + vderxy(2,2));
   assembler.template Vector<Pres>(shp.d0, -timefacfac*trace_gamma);
@@ -525,18 +525,18 @@ void BuildDomainIntegrals(
                    |               \ (i) /    \          /     |
                     \                                         /
        */
-      const double timetauMu = timefac * tauMu;
-      assembler.template Matrix<Velx,Velx>(shp.dx, -2.0*dynvisc*timetauMu*visc_old(0), shp.d0);
-      assembler.template Matrix<Velx,Vely>(shp.dy, -2.0*dynvisc*timetauMu*visc_old(0), shp.d0);
-      assembler.template Matrix<Velx,Velz>(shp.dz, -2.0*dynvisc*timetauMu*visc_old(0), shp.d0);
+      // TODO: check again: const double denstimetauMu = timefac * denstauMu;
+      assembler.template Matrix<Velx,Velx>(shp.dx, -2.0*dynvisc*denstimetauMu*visc_old(0), shp.d0);
+      assembler.template Matrix<Velx,Vely>(shp.dy, -2.0*dynvisc*denstimetauMu*visc_old(0), shp.d0);
+      assembler.template Matrix<Velx,Velz>(shp.dz, -2.0*dynvisc*denstimetauMu*visc_old(0), shp.d0);
 
-      assembler.template Matrix<Vely,Velx>(shp.dx, -2.0*dynvisc*timetauMu*visc_old(1), shp.d0);
-      assembler.template Matrix<Vely,Vely>(shp.dy, -2.0*dynvisc*timetauMu*visc_old(1), shp.d0);
-      assembler.template Matrix<Vely,Velz>(shp.dz, -2.0*dynvisc*timetauMu*visc_old(1), shp.d0);
+      assembler.template Matrix<Vely,Velx>(shp.dx, -2.0*dynvisc*denstimetauMu*visc_old(1), shp.d0);
+      assembler.template Matrix<Vely,Vely>(shp.dy, -2.0*dynvisc*denstimetauMu*visc_old(1), shp.d0);
+      assembler.template Matrix<Vely,Velz>(shp.dz, -2.0*dynvisc*denstimetauMu*visc_old(1), shp.d0);
 
-      assembler.template Matrix<Velz,Velx>(shp.dx, -2.0*dynvisc*timetauMu*visc_old(2), shp.d0);
-      assembler.template Matrix<Velz,Vely>(shp.dy, -2.0*dynvisc*timetauMu*visc_old(2), shp.d0);
-      assembler.template Matrix<Velz,Velz>(shp.dz, -2.0*dynvisc*timetauMu*visc_old(2), shp.d0);
+      assembler.template Matrix<Velz,Velx>(shp.dx, -2.0*dynvisc*denstimetauMu*visc_old(2), shp.d0);
+      assembler.template Matrix<Velz,Vely>(shp.dy, -2.0*dynvisc*denstimetauMu*visc_old(2), shp.d0);
+      assembler.template Matrix<Velz,Velz>(shp.dz, -2.0*dynvisc*denstimetauMu*visc_old(2), shp.d0);
 #endif
 
 #ifdef COMBUST_SUPG_BODYFORCE
@@ -995,7 +995,7 @@ void SysmatDomainNitsche(
       static LINALG::Matrix<nsd,nsd> tau;
       if (tauele_unknowns_present)
       {
-        XFLUID::fill_tau(numparamtauxx, shp_tau.d0, etau, tau);
+        COMBUST::fill_tau(numparamtauxx, shp_tau.d0, etau, tau);
       }
       else
       {
@@ -1237,11 +1237,11 @@ void SysmatBoundaryNitsche(
   // compute jump values
   //------------------------------------------------------------------------------------------------
   // velocity jump value
-  const double ju = -2.0; // -flamespeed*dens_minus*(1/dens_plus - 1/dens_minus);
-  //cout << "J_u: " << ju << endl;
+  const double ju = 0.0; // -flamespeed*dens_minus*(1/dens_plus - 1/dens_minus);
+  cout << "j_u: " << ju << endl;
   // pressure jump value
-  const double jp = 20.0; // (flamespeed*flamespeed*dens_minus*dens_minus)*(1/dens_plus - 1/dens_minus);
-  //cout << "J_p: " << jp << endl;
+  const double jp = 10.0; // (flamespeed*flamespeed*dens_minus*dens_minus)*(1/dens_plus - 1/dens_minus);
+  cout << "j_p: " << jp << endl;
 
   // Nitsche parameter velocity
   const double alphau = nitschevel;
@@ -1332,6 +1332,7 @@ void SysmatBoundaryNitsche(
       // remark: for linear boundary integrastion cells this could be done before the loop over all
       //         Gaussian points
       // TODO: is this normal normed?
+      //       compute once for all Gaussian points -> before loop
       //--------------------------------------------------------------------------------------------
       static LINALG::Matrix<nsd,1> normal(true);
       normal.Clear();
@@ -1564,7 +1565,7 @@ void SysmatBoundaryNitsche(
       //                  burnt domain (n = n^- = -n^+)
       //--------------------------------------------------------------------------------------------
 
-#ifdef COMBUST_VISCCONSISTMEAN
+#ifdef COMBUST_NITSCHE_VISCCONSISTMEAN
       //-------------------------    |                                      |
       // viscous consistency term  + |  || v || , < 2\mu epsilon( Du ) > n  |
       //-------------------------    |                                      |
@@ -1604,7 +1605,7 @@ void SysmatBoundaryNitsche(
       assembler.template Vector<Velz>(shp_jump.d0, -timefacfac* (vderxy_mean_visc(2,2) + vderxy_mean_visc(2,2))*normal(2));
 #endif
 
-#ifdef COMBUST_VISCCONSISTJUMP
+#ifdef COMBUST_NITSCHE_VISCCONSISTJUMP
       //-------------------------    |                                      |
       // viscous consistency term  + |  < v > , || 2\mu epsilon( Du ) || n  |
       //-------------------------    |                                      |
@@ -1644,81 +1645,116 @@ void SysmatBoundaryNitsche(
       assembler.template Vector<Velz>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(2,2) + vderxy_jump_visc(2,2))*normal(2));
 #endif
 
-#ifdef COMBUST_VISCADJCONSIST
+#ifdef COMBUST_NITSCHE_VISCADJCONSIST
       //---------------------------------    |                                     |
       // viscous adjoint consistency term  + |  < 2\mu epsilon( v ) > n, || Du ||  |
       //---------------------------------    |                                     |
 
-      assembler.template Matrix<Velx,Velx>(shp_mean_visc.dx, -2.0*timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<Velx,Velx>(shp_mean_visc.dy, -    timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<Velx,Velx>(shp_mean_visc.dz, -    timefacfac*normal(2), shp_jump.d0);
-      assembler.template Matrix<Vely,Velx>(shp_mean_visc.dx, -    timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<Velz,Velx>(shp_mean_visc.dx, -    timefacfac*normal(2), shp_jump.d0);
+      assembler.template Matrix<Velx,Velx>(shp_mean_visc.dx, 2.0*timefacfac*normal(0), shp_jump.d0);
+      assembler.template Matrix<Velx,Velx>(shp_mean_visc.dy,     timefacfac*normal(1), shp_jump.d0);
+      assembler.template Matrix<Velx,Velx>(shp_mean_visc.dz,     timefacfac*normal(2), shp_jump.d0);
+      assembler.template Matrix<Vely,Velx>(shp_mean_visc.dx,     timefacfac*normal(1), shp_jump.d0);
+      assembler.template Matrix<Velz,Velx>(shp_mean_visc.dx,     timefacfac*normal(2), shp_jump.d0);
 
-      assembler.template Matrix<Velx,Vely>(shp_mean_visc.dy, -    timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<Vely,Vely>(shp_mean_visc.dx, -    timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<Vely,Vely>(shp_mean_visc.dy, -2.0*timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<Vely,Vely>(shp_mean_visc.dz, -    timefacfac*normal(2), shp_jump.d0);
-      assembler.template Matrix<Velz,Vely>(shp_mean_visc.dy, -    timefacfac*normal(2), shp_jump.d0);
+      assembler.template Matrix<Velx,Vely>(shp_mean_visc.dy,     timefacfac*normal(0), shp_jump.d0);
+      assembler.template Matrix<Vely,Vely>(shp_mean_visc.dx,     timefacfac*normal(0), shp_jump.d0);
+      assembler.template Matrix<Vely,Vely>(shp_mean_visc.dy, 2.0*timefacfac*normal(1), shp_jump.d0);
+      assembler.template Matrix<Vely,Vely>(shp_mean_visc.dz,     timefacfac*normal(2), shp_jump.d0);
+      assembler.template Matrix<Velz,Vely>(shp_mean_visc.dy,     timefacfac*normal(2), shp_jump.d0);
 
-      assembler.template Matrix<Velx,Velz>(shp_mean_visc.dz, -    timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<Vely,Velz>(shp_mean_visc.dz, -    timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<Velz,Velz>(shp_mean_visc.dx, -    timefacfac*normal(0), shp_jump.d0);
-      assembler.template Matrix<Velz,Velz>(shp_mean_visc.dy, -    timefacfac*normal(1), shp_jump.d0);
-      assembler.template Matrix<Velz,Velz>(shp_mean_visc.dz, -2.0*timefacfac*normal(2), shp_jump.d0);
+      assembler.template Matrix<Velx,Velz>(shp_mean_visc.dz,     timefacfac*normal(0), shp_jump.d0);
+      assembler.template Matrix<Vely,Velz>(shp_mean_visc.dz,     timefacfac*normal(1), shp_jump.d0);
+      assembler.template Matrix<Velz,Velz>(shp_mean_visc.dx,     timefacfac*normal(0), shp_jump.d0);
+      assembler.template Matrix<Velz,Velz>(shp_mean_visc.dy,     timefacfac*normal(1), shp_jump.d0);
+      assembler.template Matrix<Velz,Velz>(shp_mean_visc.dz, 2.0*timefacfac*normal(2), shp_jump.d0);
 
       //   |                                      |
       // - |  < 2\mu epsilon( v ) > n, || u_i ||  |
       //   |                                      |
 
-      assembler.template Vector<Velx>(shp_mean_visc.dx, +2.0* normal(0)           *timefacfac*vjump(0,0));
-      assembler.template Vector<Velx>(shp_mean_visc.dy, +    (normal(0)+normal(1))*timefacfac*vjump(0,0));
-      assembler.template Vector<Velx>(shp_mean_visc.dz, +    (normal(0)+normal(2))*timefacfac*vjump(0,0));
+//      assembler.template Vector<Velx>(shp_mean_visc.dx, -2.0* normal(0)           *timefacfac*vjump(0,0));
+//      assembler.template Vector<Velx>(shp_mean_visc.dy, -    (normal(0)+normal(1))*timefacfac*vjump(0,0));
+//      assembler.template Vector<Velx>(shp_mean_visc.dz, -    (normal(0)+normal(2))*timefacfac*vjump(0,0));
 
-      assembler.template Vector<Vely>(shp_mean_visc.dx, +    (normal(1)+normal(0))*timefacfac*vjump(1,0));
-      assembler.template Vector<Vely>(shp_mean_visc.dy, +2.0* normal(1)           *timefacfac*vjump(1,0));
-      assembler.template Vector<Vely>(shp_mean_visc.dz, +    (normal(1)+normal(2))*timefacfac*vjump(1,0));
+      assembler.template Vector<Velx>(shp_mean_visc.dx, -2.0*timefacfac*normal(0)*vjump(0,0));
+      assembler.template Vector<Velx>(shp_mean_visc.dy, -    timefacfac*normal(1)*vjump(0,0));
+      assembler.template Vector<Velx>(shp_mean_visc.dz, -    timefacfac*normal(2)*vjump(0,0));
+      assembler.template Vector<Vely>(shp_mean_visc.dx, -    timefacfac*normal(1)*vjump(0,0));
+      assembler.template Vector<Velz>(shp_mean_visc.dx, -    timefacfac*normal(2)*vjump(0,0));
 
-      assembler.template Vector<Velz>(shp_mean_visc.dx, +    (normal(2)+normal(0))*timefacfac*vjump(2,0));
-      assembler.template Vector<Velz>(shp_mean_visc.dy, +    (normal(2)+normal(1))*timefacfac*vjump(2,0));
-      assembler.template Vector<Velz>(shp_mean_visc.dz, +2.0* normal(2)           *timefacfac*vjump(2,0));
+//      assembler.template Vector<Vely>(shp_mean_visc.dx, -    (normal(1)+normal(0))*timefacfac*vjump(1,0));
+//      assembler.template Vector<Vely>(shp_mean_visc.dy, -2.0* normal(1)           *timefacfac*vjump(1,0));
+//      assembler.template Vector<Vely>(shp_mean_visc.dz, -    (normal(1)+normal(2))*timefacfac*vjump(1,0));
+
+      assembler.template Vector<Velx>(shp_mean_visc.dy, -    timefacfac*normal(0)*vjump(1,0));
+      assembler.template Vector<Vely>(shp_mean_visc.dx, -    timefacfac*normal(0)*vjump(1,0));
+      assembler.template Vector<Vely>(shp_mean_visc.dy, -2.0*timefacfac*normal(1)*vjump(1,0));
+      assembler.template Vector<Vely>(shp_mean_visc.dz, -    timefacfac*normal(2)*vjump(1,0));
+      assembler.template Vector<Velz>(shp_mean_visc.dy, -    timefacfac*normal(2)*vjump(1,0));
+
+//      assembler.template Vector<Velz>(shp_mean_visc.dx, -    (normal(2)+normal(0))*timefacfac*vjump(2,0));
+//      assembler.template Vector<Velz>(shp_mean_visc.dy, -    (normal(2)+normal(1))*timefacfac*vjump(2,0));
+//      assembler.template Vector<Velz>(shp_mean_visc.dz, -2.0* normal(2)           *timefacfac*vjump(2,0));
+
+      assembler.template Vector<Velx>(shp_mean_visc.dz, -    timefacfac*normal(0)*vjump(2,0));
+      assembler.template Vector<Vely>(shp_mean_visc.dz, -    timefacfac*normal(1)*vjump(2,0));
+      assembler.template Vector<Velz>(shp_mean_visc.dx, -    timefacfac*normal(0)*vjump(2,0));
+      assembler.template Vector<Velz>(shp_mean_visc.dy, -    timefacfac*normal(1)*vjump(2,0));
+      assembler.template Vector<Velz>(shp_mean_visc.dz, -2.0*timefacfac*normal(2)*vjump(2,0));
 
       //-------------------------------------    |                                    |
-      // viscous adjoint consistency term RHS  + |  < 2\mu\rho epsilon( v ) > n, J_u  |
+      // viscous adjoint consistency term RHS  + |  < 2\mu\rho epsilon( v ) > n, j_u  |
       //-------------------------------------    |                                    |
+//      assembler.template Vector<Velx>(shp_mean_visc.dx, 2.0* normal(0)           *timefacfac*normal(0)*ju);
+//      assembler.template Vector<Velx>(shp_mean_visc.dy,     (normal(0)+normal(1))*timefacfac*normal(0)*ju);
+//      assembler.template Vector<Velx>(shp_mean_visc.dz,     (normal(0)+normal(2))*timefacfac*normal(0)*ju);
 
-      assembler.template Vector<Velx>(shp_mean_visc.dx, +2.0* normal(0)           *timefacfac*normal(0)*ju);
-      assembler.template Vector<Velx>(shp_mean_visc.dy, +    (normal(0)+normal(1))*timefacfac*normal(0)*ju);
-      assembler.template Vector<Velx>(shp_mean_visc.dz, +    (normal(0)+normal(2))*timefacfac*normal(0)*ju);
+      assembler.template Vector<Velx>(shp_mean_visc.dx, 2.0*timefacfac*normal(0)*normal(0)*ju);
+      assembler.template Vector<Velx>(shp_mean_visc.dy,     timefacfac*normal(1)*normal(0)*ju);
+      assembler.template Vector<Velx>(shp_mean_visc.dz,     timefacfac*normal(2)*normal(0)*ju);
+      assembler.template Vector<Vely>(shp_mean_visc.dx,     timefacfac*normal(1)*normal(0)*ju);
+      assembler.template Vector<Velz>(shp_mean_visc.dx,     timefacfac*normal(2)*normal(0)*ju);
 
-      assembler.template Vector<Vely>(shp_mean_visc.dx, +    (normal(1)+normal(0))*timefacfac*normal(1)*ju);
-      assembler.template Vector<Vely>(shp_mean_visc.dy, +2.0* normal(1)           *timefacfac*normal(1)*ju);
-      assembler.template Vector<Vely>(shp_mean_visc.dz, +    (normal(1)+normal(2))*timefacfac*normal(1)*ju);
+//      assembler.template Vector<Vely>(shp_mean_visc.dx,     (normal(1)+normal(0))*timefacfac*normal(1)*ju);
+//      assembler.template Vector<Vely>(shp_mean_visc.dy, 2.0* normal(1)           *timefacfac*normal(1)*ju);
+//      assembler.template Vector<Vely>(shp_mean_visc.dz,     (normal(1)+normal(2))*timefacfac*normal(1)*ju);
 
-      assembler.template Vector<Velz>(shp_mean_visc.dx, +    (normal(2)+normal(0))*timefacfac*normal(2)*ju);
-      assembler.template Vector<Velz>(shp_mean_visc.dy, +    (normal(2)+normal(1))*timefacfac*normal(2)*ju);
-      assembler.template Vector<Velz>(shp_mean_visc.dz, +2.0* normal(2)           *timefacfac*normal(2)*ju);
+      assembler.template Vector<Velx>(shp_mean_visc.dy,     timefacfac*normal(0)*normal(1)*ju);
+      assembler.template Vector<Vely>(shp_mean_visc.dx,     timefacfac*normal(0)*normal(1)*ju);
+      assembler.template Vector<Vely>(shp_mean_visc.dy, 2.0*timefacfac*normal(1)*normal(1)*ju);
+      assembler.template Vector<Vely>(shp_mean_visc.dz,     timefacfac*normal(2)*normal(1)*ju);
+      assembler.template Vector<Velz>(shp_mean_visc.dy,     timefacfac*normal(2)*normal(1)*ju);
+
+//      assembler.template Vector<Velz>(shp_mean_visc.dx,     (normal(2)+normal(0))*timefacfac*normal(2)*ju);
+//      assembler.template Vector<Velz>(shp_mean_visc.dy,     (normal(2)+normal(1))*timefacfac*normal(2)*ju);
+//      assembler.template Vector<Velz>(shp_mean_visc.dz, 2.0* normal(2)           *timefacfac*normal(2)*ju);
+
+      assembler.template Vector<Velx>(shp_mean_visc.dz,     timefacfac*normal(0)*normal(2)*ju);
+      assembler.template Vector<Vely>(shp_mean_visc.dz,     timefacfac*normal(1)*normal(2)*ju);
+      assembler.template Vector<Velz>(shp_mean_visc.dx,     timefacfac*normal(0)*normal(2)*ju);
+      assembler.template Vector<Velz>(shp_mean_visc.dy,     timefacfac*normal(1)*normal(2)*ju);
+      assembler.template Vector<Velz>(shp_mean_visc.dz, 2.0*timefacfac*normal(2)*normal(2)*ju);
 #endif
 
-#ifdef COMBUST_PRESCONSISTMEAN
+#ifdef COMBUST_NITSCHE_PRESCONSISTMEAN
       //--------------------------    |                     |
       // pressure consistency term  - |  || v ||, < Dp > n  |
       //--------------------------    |                     |
 
-      assembler.template Matrix<Velx,Pres>(shp_jump.d0, +timefacfac*normal(0), shp_mean.d0);
-      assembler.template Matrix<Vely,Pres>(shp_jump.d0, +timefacfac*normal(1), shp_mean.d0);
-      assembler.template Matrix<Velz,Pres>(shp_jump.d0, +timefacfac*normal(2), shp_mean.d0);
+      assembler.template Matrix<Velx,Pres>(shp_jump.d0, -timefacfac*normal(0), shp_mean.d0);
+      assembler.template Matrix<Vely,Pres>(shp_jump.d0, -timefacfac*normal(1), shp_mean.d0);
+      assembler.template Matrix<Velz,Pres>(shp_jump.d0, -timefacfac*normal(2), shp_mean.d0);
 
       //   |                      |
       // + |  || v ||, < p_i > n  |
       //   |                      |
 
-      assembler.template Vector<Velx>(shp_jump.d0, -timefacfac*normal(0)*pmean);
-      assembler.template Vector<Vely>(shp_jump.d0, -timefacfac*normal(1)*pmean);
-      assembler.template Vector<Velz>(shp_jump.d0, -timefacfac*normal(2)*pmean);
+      assembler.template Vector<Velx>(shp_jump.d0, timefacfac*normal(0)*pmean);
+      assembler.template Vector<Vely>(shp_jump.d0, timefacfac*normal(1)*pmean);
+      assembler.template Vector<Velz>(shp_jump.d0, timefacfac*normal(2)*pmean);
 #endif
 
-#ifdef COMBUST_PRESCONSISTJUMP
+#ifdef COMBUST_NITSCHE_PRESCONSISTJUMP
       //--------------------------    |                     |
       // pressure consistency term  - |  < v >, || Dp || n  |
       //--------------------------    |                     |
@@ -1736,7 +1772,7 @@ void SysmatBoundaryNitsche(
       assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(2)*pjump);
 #endif
 
-#ifdef COMBUST_PRESADJCONSIST
+#ifdef COMBUST_NITSCHE_PRESADJCONSIST
       //----------------------------------    |                     |
       // pressure adjoint consistency term  + |  < q > n, || Du ||  |
       //----------------------------------    |                     |
@@ -1749,20 +1785,20 @@ void SysmatBoundaryNitsche(
       // - |  < q > n, || u_i ||  |
       //   |                      |
 
-      assembler.template Vector<Pres>(shp_mean.d0, -timefacfac*(vmean(0,0)*normal(0)
-          +vmean(1,0)*normal(1)
-          +vmean(2,0)*normal(2)));
+      assembler.template Vector<Pres>(shp_mean.d0, -timefacfac*(vjump(0,0)*normal(0)
+                                                               +vjump(1,0)*normal(1)
+                                                               +vjump(2,0)*normal(2)));
 
       //--------------------------------------    |                |
-      // pressure adjoint consistency term RHS  + |  < q > n, J_u  |
+      // pressure adjoint consistency term RHS  + |  < q > n, j_u  |
       //--------------------------------------    |                |
 
-      assembler.template Vector<Pres>(shp_mean.d0, -timefacfac*ju);
+      assembler.template Vector<Pres>(shp_mean.d0, timefacfac*ju);
 #endif
 
-#ifdef COMBUST_PRESJUMPRHS
+#ifdef COMBUST_NITSCHE_PRESJUMPRHS
       //------------------------------------------    |                |
-      // pressure/flux jump (consistency) term RHS  + |  < v >, J_p*n  |
+      // pressure/flux jump (consistency) term RHS  + |  < v >, j_p*n  |
       //------------------------------------------    |                |
 
       assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(0)*jp);
@@ -1770,7 +1806,7 @@ void SysmatBoundaryNitsche(
       assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(2)*jp);
 #endif
 
-#ifdef COMBUST_NITSCHEVEL
+#ifdef COMBUST_NITSCHE_NITSCHEVEL
       //------------------------    |                              |
       // Nitsche term (velocity)  + |  \alpha_u || v ||, || Du ||  |
       //------------------------    |                              |
@@ -1788,7 +1824,7 @@ void SysmatBoundaryNitsche(
       assembler.template Vector<Velz>(shp_jump.d0, -alphau*timefacfac*vjump(2,0));
 
       //----------------------------    |                         |
-      // Nitsche term (velocity) RHS  + |  \alpha_u || v ||, J_u  |
+      // Nitsche term (velocity) RHS  + |  \alpha_u || v ||, j_u  |
       //----------------------------    |                         |
 
       assembler.template Vector<Velx>(shp_jump.d0, +alphau*timefacfac*normal(0)*ju);
@@ -1796,7 +1832,7 @@ void SysmatBoundaryNitsche(
       assembler.template Vector<Velz>(shp_jump.d0, +alphau*timefacfac*normal(2)*ju);
 #endif
 
-#ifdef COMBUST_NITSCHEPRES
+#ifdef COMBUST_NITSCHE_NITSCHEPRES
       //------------------------    |                              |
       // Nitsche term (pressure)  + |  \alpha_p || q ||, || Dp ||  |
       //------------------------    |                              |
