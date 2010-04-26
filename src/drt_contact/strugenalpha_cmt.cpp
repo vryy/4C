@@ -1586,7 +1586,12 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
   int nstep = params_.get<int>("nstep",5);
   if (dynkindstat && maxiter==1 && nstep==1)
   {
-    dserror("ERROR: Linear Static solution not applicable to semi-smooth Newton case");
+    if (!myrank_ and printscreen)
+    {
+      cout << "computed 1 step with 1 iteration: STATIC LINEAR SOLUTION\n";
+      PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                  fresmnorm,disinorm,convcheck);
+    }
   }
   //-------------------------------- test whether max iterations was hit
   else if (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter==maxiter)
