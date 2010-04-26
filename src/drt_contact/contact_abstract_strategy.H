@@ -187,7 +187,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
       else           EvaluateRelMov();
       
       // update active set
-      UpdateActiveSetSemiSmooth();
+      if (!predictor) UpdateActiveSetSemiSmooth();
       
       // apply contact forces and stiffness
       Initialize();
