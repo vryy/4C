@@ -512,7 +512,10 @@ namespace STR
     {
       return (locsysman_ != Teuchos::null) ? locsysman_->Trafo() : Teuchos::null;
     }
-
+    
+    //! Return contact/meshtying manager
+    Teuchos::RCP<MORTAR::ManagerBase> ContactManager() {return cmtman_;}
+ 
     //@}
 
   protected:

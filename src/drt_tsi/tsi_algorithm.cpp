@@ -121,43 +121,66 @@ void TSI::Algorithm::TimeLoop()
   // time loop
   while (NotFinished())
   {
-    // iterate between the two fields
-    int  itnum = 0;  // itnum in Scatra
-    bool stopnonliniter = false;
+    // get active nodes from structural contact simulation
+    RCP<MORTAR::ManagerBase> cmtman = StructureField().ContactManager();
 
-    // Start OUTER ITERATION
-    while (stopnonliniter == false)
+    // tsi with or without contact  
+    if (cmtman == Teuchos::null)
+    {  
+      // iterate between the two fields
+      int  itnum = 0;  // itnum in Scatra
+      bool stopnonliniter = false;
+      
+      // Start OUTER ITERATION
+      while (stopnonliniter == false)
+      {
+        itnum ++;
+  
+        // store temperature from first solution for convergence check
+        tempincnp_->Update(1.0,*ThermoField().Tempnp(),0.0);
+   
+        // prepare next time step
+        PrepareTimeStep();
+  
+        const Teuchos::RCP<Epetra_Vector> itemp = DoThermoStep();
+  
+        // solve structure system
+        DoStructureStep(itemp);
+  
+        // solve thermo system
+        DoThermoStep();
+  
+        // update all single field solvers
+        Update();
+  
+        // extract final temperatures,
+        // since we did update, this is very easy to extract
+        itempn_ = ThermoField().ExtractTemperatures();
+  
+        // write output to screen and files
+        Output();
+  
+        // check convergence of temperature field for "partitioned scheme"
+        stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
+      } // end OUTER ITERATION
+    }
+    else
     {
-      itnum ++;
-
-      // store temperature from first solution for convergence check
-      tempincnp_->Update(1.0,*ThermoField().Tempnp(),0.0);
- 
+      // not yet implemented
+      dserror("TSI with CONTACT not yet implemented");
+      
       // prepare next time step
       PrepareTimeStep();
-
-      const Teuchos::RCP<Epetra_Vector> itemp = DoThermoStep();
-
-      // solve structure system
-      DoStructureStep(itemp);
-
+      
       // solve thermo system
       DoThermoStep();
 
       // update all single field solvers
       Update();
 
-      // extract final temperatures,
-      // since we did update, this is very easy to extract
-      itempn_ = ThermoField().ExtractTemperatures();
-
       // write output to screen and files
       Output();
-
-      // check convergence of temperature field for "partitioned scheme"
-      stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
-    } // end OUTER ITERATION
-
+    }
   } // time loop
 }
 

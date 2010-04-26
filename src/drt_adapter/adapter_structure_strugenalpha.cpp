@@ -199,6 +199,17 @@ void ADAPTER::StructureGenAlpha::TSIMatrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<MORTAR::ManagerBase> ADAPTER::StructureGenAlpha::ContactManager()
+{
+  // no contact with tsi in old time integration
+  if (structure_->HaveContactMeshtying())
+    dserror("TSI and contact only in new time integration");
+    
+  return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> ADAPTER::StructureGenAlpha::Discretization()
 {
   return structure_->Discretization();

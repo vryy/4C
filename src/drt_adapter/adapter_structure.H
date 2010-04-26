@@ -120,6 +120,9 @@ namespace ADAPTER {
 
     /// recalculate structural matrices for tsi simulations
     virtual void TSIMatrix() = 0;
+    
+    /// return contact/meshtying manager
+    virtual Teuchos::RCP<MORTAR::ManagerBase> ContactManager() = 0;
 
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;

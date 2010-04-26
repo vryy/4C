@@ -93,6 +93,9 @@ namespace ADAPTER {
 
     /// direct access to discretization
     Teuchos::RCP<DRT::Discretization> Discretization();
+    
+    // access to contact/meshtying manager
+    Teuchos::RCP<MORTAR::ManagerBase> ContactManager();
 
     /// External force at t_{n+1}
     Teuchos::RCP<const Epetra_Vector> FExtn();

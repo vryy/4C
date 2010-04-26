@@ -144,6 +144,13 @@ void ADAPTER::StructureTimInt::TSIMatrix()
 }
 
 /*----------------------------------------------------------------------*/
+/* get contact manager */
+Teuchos::RCP<MORTAR::ManagerBase> ADAPTER::StructureTimInt::ContactManager()
+{
+  return structure_->ContactManager();
+}
+
+/*----------------------------------------------------------------------*/
 /* get discretisation */
 Teuchos::RCP<DRT::Discretization> ADAPTER::StructureTimInt::Discretization()
 {

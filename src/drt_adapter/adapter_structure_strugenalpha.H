@@ -59,6 +59,7 @@ namespace ADAPTER {
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
     void UseBlockMatrix();
     void TSIMatrix();
+    Teuchos::RCP<MORTAR::ManagerBase> ContactManager();
     Teuchos::RCP<DRT::Discretization> Discretization();
     Teuchos::RCP<const Epetra_Vector> FExtn();
     Teuchos::RCP<const Epetra_Vector> FRobin();

@@ -39,6 +39,8 @@ namespace ADAPTER
     { return structure_->UseBlockMatrix(); }
     virtual void TSIMatrix()
     { return structure_->TSIMatrix(); }
+    virtual Teuchos::RCP<MORTAR::ManagerBase> ContactManager()
+    { return structure_->ContactManager(); }
     virtual Teuchos::RCP<DRT::Discretization> Discretization()
     { return structure_->Discretization(); }
     virtual bool HaveConstraint()
