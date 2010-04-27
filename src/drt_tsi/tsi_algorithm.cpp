@@ -85,21 +85,22 @@ TSI::Algorithm::~Algorithm()
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::ReadRestart(int step)
 {
-//  //fsi-like part 10.12.09
-//  StructureField().ReadRestart(step);
-//  double time = ThermoField().ReadRestart(step);
-//  SetTimeStep(time,step);
-
-  StructureField().ReadRestart(step);
+  // 14.04.10
   ThermoField().ReadRestart(step);
-//  //20.01.2010 passt das so? entspricht das derselben Zeit??
-//  double time = ThermoField().GetTime();
-//  SetTimeStep(time,step);
+  StructureField().ReadRestart(step);
+  SetTimeStep(ThermoField().GetTime(),step);
 
-//  // Georg´s version 10.12.09
-//  ThermoField().ReadRestart(step);
-//  StructureField().ReadRestart(step);
-//  SetTimeStep(StructureField().Time(),step);
+  //  //fsi-like part 10.12.09
+  //  StructureField().ReadRestart(step);
+  //  double time = ThermoField().ReadRestart(step);
+  //  SetTimeStep(time,step);
+
+  //  StructureField().ReadRestart(step);
+  //  ThermoField().ReadRestart(step);
+  //  //20.01.2010 passt das so? entspricht das derselben Zeit??
+  //  double time = ThermoField().GetTime();
+  //  SetTimeStep(time,step);
+
   return;
 }
 
@@ -112,71 +113,96 @@ void TSI::Algorithm::TimeLoop()
   const Teuchos::ParameterList& tsidyn
     = DRT::Problem::Instance()->TSIDynamicParams();
   // Get the parameters for the ConvergenceCheck
-  itmax_ = tsidyn.get<int>("ITEMAX"); // default: = 1
+  itmax_ = tsidyn.get<int>("ITEMAX"); // default: =1
   ittol_ = tsidyn.get<double>("CONVTOL"); // default: =1e-6
 
   // get an idea of the temperatures (like in partitioned FSI)
   itempn_ = ThermoField().ExtractTemperatures();
 
+  // ==================================================================
+
   // time loop
   while (NotFinished())
   {
+    // prepare next time step ==> muss ausserhalb der Newton-Schleife sein!! 21.04.10 ULI!!!
+    PrepareTimeStep();
+
     // get active nodes from structural contact simulation
     RCP<MORTAR::ManagerBase> cmtman = StructureField().ContactManager();
 
-    // tsi with or without contact  
+    // tsi with or without contact
     if (cmtman == Teuchos::null)
-    {  
+    {
+
+      // Begin Nonlinear Solver / Outer Iteration *******************************
+
       // iterate between the two fields
       int  itnum = 0;  // itnum in Scatra
       bool stopnonliniter = false;
-      
+
+      // Outer Iteration loop starts
+      if (Comm().MyPID()==0)
+      {
+        cout<<"\n";
+        cout<<"**************************************************************\n";
+        cout<<"      OUTER ITERATION LOOP \n";
+        printf("      Time Step %3d/%3d \n",ThermoField().GetTimeStep(), ThermoField().GetTimeNumStep());
+        cout<<"**************************************************************\n";
+      }
+
       // Start OUTER ITERATION
       while (stopnonliniter == false)
       {
         itnum ++;
-  
+
         // store temperature from first solution for convergence check
         tempincnp_->Update(1.0,*ThermoField().Tempnp(),0.0);
-   
-        // prepare next time step
-        PrepareTimeStep();
-  
+
         const Teuchos::RCP<Epetra_Vector> itemp = DoThermoStep();
-  
+
         // solve structure system
         DoStructureStep(itemp);
-  
-        // solve thermo system
-        DoThermoStep();
-  
-        // update all single field solvers
-        Update();
-  
-        // extract final temperatures,
-        // since we did update, this is very easy to extract
-        itempn_ = ThermoField().ExtractTemperatures();
-  
-        // write output to screen and files
-        Output();
-  
+
         // check convergence of temperature field for "partitioned scheme"
         stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
+
       } // end OUTER ITERATION
+
+      // End Nonlinear Solver **************************************
+
+      // ==================================================================
+
+      // update all single field solvers
+      Update();
+
+      // extract final temperatures,
+      // since we did update, this is very easy to extract
+      itempn_ = ThermoField().ExtractTemperatures();
+
+      // write output to screen and files
+      Output();
     }
+
     else
     {
       // not yet implemented
       dserror("TSI with CONTACT not yet implemented");
-      
+
       // prepare next time step
       PrepareTimeStep();
-      
+
       // solve thermo system
-      DoThermoStep();
+      const Teuchos::RCP<Epetra_Vector> itemp = DoThermoStep();
+
+      // solve structure system
+      DoStructureStep(itemp);
 
       // update all single field solvers
       Update();
+
+      // extract final temperatures,
+      // since we did update, this is very easy to extract
+      itempn_ = ThermoField().ExtractTemperatures();
 
       // write output to screen and files
       Output();
@@ -186,7 +212,7 @@ void TSI::Algorithm::TimeLoop()
 
 
 /*----------------------------------------------------------------------*
- | (protected)                                               dano 12/09 |
+ | prepare time step (protected)                             dano 12/09 |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::PrepareTimeStep()
 {
@@ -194,6 +220,8 @@ void TSI::Algorithm::PrepareTimeStep()
 
   PrintHeader();
 
+  // predict
+  // 14.04.10 check again if PrepareTimeStep() is needed here!
   StructureField().PrepareTimeStep();
   ThermoField().PrepareTimeStep();
 }
@@ -213,6 +241,10 @@ void TSI::Algorithm::DoStructureStep(Teuchos::RCP<Epetra_Vector> itemp)
   }
   // call the current temperatures
   StructureField().ApplyTemperatures(itemp);
+
+  // call the predictor here, because the temperature is considered
+  StructureField().PrepareTimeStep();
+
   // solve structure system
   /// Do the nonlinear solve for the time step. All boundary conditions have
   /// been set.
@@ -301,6 +333,10 @@ bool TSI::Algorithm::ConvergenceCheck(
   tempincnp_->Norm2(&tempincnorm_L2);
   ThermoField().Tempnp()->Norm2(&tempnorm_L2);
 
+//  // 14.04.10 NAN
+//  cout << "\ntempincnorm_L2\n" << tempincnorm_L2 << endl;
+//  cout << "\ntempnorm_L2\n" << tempnorm_L2 << endl;
+
   // care for the case that there is (almost) zero temperature
   // (usually not required for temperature)
   // if (tempnorm_L2 < 1e-6) tempnorm_L2 = 1.0;
@@ -327,7 +363,7 @@ bool TSI::Algorithm::ConvergenceCheck(
     if (Comm().MyPID() == 0)
     {
       printf("\n");
-      printf("|  >>>>>> converged after iteration %3d/%3d ! |\n", itnum,itmax);
+      printf("|  Outer Iteration loop converged after iteration %3d/%3d ! |\n", itnum,itmax);
       printf("+-----------------------------------------------+\n");
     }
   }
