@@ -20,6 +20,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_solver.H"
 
 using namespace std;
 extern struct _GENPROB genprob;
@@ -215,37 +216,27 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   dmatrix->Complete();
   mmatrix->Complete(*masterdofrowmap, *slavedofrowmap);
 
-  D_ = dmatrix->EpetraMatrix();
+  D_ = dmatrix;
 
-  M_ = mmatrix->EpetraMatrix();
+  M_ = mmatrix;
 
   //Build Dinv
-  Dinv_ = rcp(
-      new Epetra_CrsMatrix(Copy, D_->DomainMap(), D_->RangeMap(), 1, true));
+  Dinv_ = rcp(new LINALG::SparseMatrix(*D_));
+  
+  RCP<Epetra_Vector> diag = LINALG::CreateVector(*slavedofrowmap,true);
 
-  const Epetra_Map& Dinvmap = Dinv_->RowMap();
-  const Epetra_Map& Dmap = D_->RowMap();
-  for (int row = 0; row < Dinvmap.NumMyElements(); ++row)
-  {
-    int rowgid = Dinvmap.GID(row);
-    int colgid = Dmap.GID(row);
+  // extract diagonal of invd into diag
+  Dinv_->ExtractDiagonalCopy(*diag);
 
-    int numentries;
-    double *values;
-    int *indices;
+  // set zero diagonal values to dummy 1.0
+  for (int i=0;i<diag->MyLength();++i)
+    if ((*diag)[i]==0.0) (*diag)[i]=1.0;
 
-    // do some validation
-
-    if (D_->ExtractMyRowView(row, numentries, values, indices))
-      dserror("ExtractMyRowView failed");
-    double value = 1.0/values[0];
-    if ( Dinv_->InsertGlobalValues(rowgid, 1, &value, &colgid) )
-        dserror( "InsertGlobalValues failed" );
-
-  }
-
-  if ( Dinv_->FillComplete( D_->RangeMap(), D_->DomainMap() ) )
-    dserror( "Filling failed" );
+  // scalar inversion of diagonal values
+  diag->Reciprocal(*diag);
+  Dinv_->ReplaceDiagonalValues(*diag);
+  
+  Dinv_->Complete( D_->RangeMap(), D_->DomainMap() );
 
   //store interface
   interface_ = interface;
@@ -279,37 +270,27 @@ void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idisp)
 	  dmatrix->Complete();
 	  mmatrix->Complete(*masterdofrowmap, *slavedofrowmap);
 
-	  D_ = dmatrix->EpetraMatrix();
+	  D_ = dmatrix;
 
-	  M_ = mmatrix->EpetraMatrix();
+	  M_ = mmatrix;
 
-	  //Build Dinv 		
-	  Dinv_ = rcp(
-	      new Epetra_CrsMatrix(Copy, D_->DomainMap(), D_->RangeMap(), 1, true));
+	  //Build Dinv
+	  Dinv_ = rcp(new LINALG::SparseMatrix(*D_));
+	  
+	  RCP<Epetra_Vector> diag = LINALG::CreateVector(*slavedofrowmap,true);
 
-	  const Epetra_Map& Dinvmap = Dinv_->RowMap();
-	  const Epetra_Map& Dmap = D_->RowMap();
-	  for (int row = 0; row < Dinvmap.NumMyElements(); ++row)
-	  {
-	    int rowgid = Dinvmap.GID(row);
-	    int colgid = Dmap.GID(row);
+	  // extract diagonal of invd into diag
+	  Dinv_->ExtractDiagonalCopy(*diag);
 
-	    int numentries;
-	    double *values;
-	    int *indices;
+	  // set zero diagonal values to dummy 1.0
+	  for (int i=0;i<diag->MyLength();++i)
+	    if ((*diag)[i]==0.0) (*diag)[i]=1.0;
 
-	    // do some validation
-
-	    if (D_->ExtractMyRowView(row, numentries, values, indices))
-	      dserror("ExtractMyRowView failed");
-	    double value = 1.0/values[0];
-	    if ( Dinv_->InsertGlobalValues(rowgid, 1, &value, &colgid) )
-	        dserror( "InsertGlobalValues failed" );
-
-	  }
-
-	  if ( Dinv_->FillComplete( D_->RangeMap(), D_->DomainMap() ) )
-	    dserror( "Filling failed" );
+	  // scalar inversion of diagonal values
+	  diag->Reciprocal(*diag);
+	  Dinv_->ReplaceDiagonalValues(*diag);
+	  
+	  Dinv_->Complete( D_->RangeMap(), D_->DomainMap() );
 
 	  return;
 }
@@ -350,6 +331,11 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster(RefCountPtr<
     dserror( "M^{T}*sv multiplication failed" );
 
   return mv;
+}
+
+RCP<LINALG::SparseMatrix> ADAPTER::CouplingMortar::GetMortarTrafo()
+{
+  return MLMultiply(*Dinv_,*M_,false,false,true);
 }
 
 #endif // CCADISCRET

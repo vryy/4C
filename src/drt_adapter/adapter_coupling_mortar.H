@@ -96,6 +96,8 @@ namespace ADAPTER
     RefCountPtr<Epetra_Map> SlaveDofColMap()  const { return slavedofcolmap_; }
     
     RCP<MORTAR::MortarInterface> Interface() const { return interface_;}
+    
+    RCP<LINALG::SparseMatrix> GetMortarTrafo();
 
     
 
@@ -106,9 +108,9 @@ namespace ADAPTER
     RefCountPtr<Epetra_Map>       slavedofrowmap_;  ///< map of slave row dofs without pressure
     RefCountPtr<Epetra_Map>       slavedofcolmap_;  ///< map of slave col dofs without pressure
 
-    RefCountPtr<Epetra_CrsMatrix> D_;            ///< mortar matrix
-    RefCountPtr<Epetra_CrsMatrix> Dinv_;         ///< inverse of mortar matrix #D_
-    RefCountPtr<Epetra_CrsMatrix> M_;            ///< mortar matrix
+    RefCountPtr<LINALG::SparseMatrix> D_;            ///< mortar matrix
+    RefCountPtr<LINALG::SparseMatrix> Dinv_;         ///< inverse of mortar matrix #D_
+    RefCountPtr<LINALG::SparseMatrix> M_;            ///< mortar matrix
   };
 }
 
