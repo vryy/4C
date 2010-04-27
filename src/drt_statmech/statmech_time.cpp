@@ -410,6 +410,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
     p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
     p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
+    p.set("STARTTIME",(statmechmanager_->statmechparams_).get<double>("STARTTIME",0.0));
     p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
 
 
@@ -667,6 +668,7 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
       p.set("RandomNumbers",randomnumbers);
       p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
       p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
+      p.set("STARTTIME",(statmechmanager_->statmechparams_).get<double>("STARTTIME",0.0));
       p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
       p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
 
@@ -931,6 +933,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
       p.set("RandomNumbers",randomnumbers);
       p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
       p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
+      p.set("STARTTIME",(statmechmanager_->statmechparams_).get<double>("STARTTIME",0.0));
       p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
       p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
 
