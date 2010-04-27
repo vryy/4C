@@ -1087,6 +1087,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                                     &statmech);
   //time after which writing of statistical output is started/ DBCs are applied
   DoubleParameter("STARTTIME",0.0,"Time after which writing of statistical output is started (identical to time curve start value)",&statmech);
+  //alternative post-STARTTIME time step size
+  DoubleParameter("DELTA_T_NEW",0.0,"A new time step size that comes into play once DBCs are have been activated",&statmech);
   //Reading whether dynamics remodelling of cross linker distribution takes place
   setStringToIntegralParameter<int>("DYN_CROSSLINKERS","No","If chosen cross linker proteins are added and removed in each time step",
                                yesnotuple,yesnovalue,&statmech);
