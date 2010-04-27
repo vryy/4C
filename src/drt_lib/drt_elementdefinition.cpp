@@ -147,7 +147,7 @@ void DRT::INPUT::ElementDefinition::SetupValidElementLines()
   SetupSolidt10Lines();
   SetupSolidt4Lines();
   SetupSoNurbs27Lines();
-  SetupShell8Lines();
+  SetupSolidw6Lines();
   SetupTorsion2Lines();
   SetupTorsion3Lines();
   SetupTruss2Lines();
