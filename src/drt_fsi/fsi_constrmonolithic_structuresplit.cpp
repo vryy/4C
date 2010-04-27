@@ -377,12 +377,12 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
 
   mat.Assign(3,0,View,sconT_->Matrix(0,0));
   
-  csigtransform_(sconT_->FullRowMap(),
-      sconT_->FullColMap(),
+  csigtransform_(*coupsf.MasterDofMap(),
+      sconT_->Matrix(0,1).ColMap(),
       sconT_->Matrix(0,1),
       1./timescale,
       ADAPTER::Coupling::MasterConverter(coupsf),
-      mat.Matrix(3,1),false);
+      mat.Matrix(3,1),true);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
