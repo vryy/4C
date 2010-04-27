@@ -171,6 +171,12 @@ void StatMechTime::Integrate()
 
 			//time_ is time at the end of this time step
       double time = params_.get<double>("total time",0.0);
+      if(time + statmechmanager_->statmechparams_.get<double>("DELTA_T_NEW",dt) >= statmechmanager_->statmechparams_.get<double>("STARTTIME", 0.0))
+      {
+      	dt = statmechmanager_->statmechparams_.get<double>("DELTA_T_NEW",dt);
+      	params_.set("delta time", dt);
+      }
+
       statmechmanager_->time_ = time + dt;
 
 
@@ -1371,7 +1377,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
   // get the current time
 	const double time = statmechmanager_->time_;
 	// check if start time for DBC evaluation has been reached. If not, do nothing and just return!
-	if(statmechmanager_->statmechparams_.get<double>("STARTTIME",-1.0) > time)
+	if(time < statmechmanager_->statmechparams_.get<double>("STARTTIME",-1.0))
 		return;
 	if (time<0.0)
 		usetime = false;
@@ -1556,7 +1562,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
   if(!oscillnodes.empty())
   {
   	//cout<<"OSCILLATING NODES"<<endl;
-  	DoDirichletConditionPeriodic(usetime, time, &oscillnodes, &addonoff);
+  	DoDirichletConditionPeriodic(&oscillnodes, &addonoff);
   }
 
   // set condition for fixed nodes
@@ -1564,7 +1570,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	if(!fixednodes.empty())
 	{
 		//cout<<"FIXED NODES"<<endl;
-  	DoDirichletConditionPeriodic(usetime, time, &fixednodes, &addonoff);
+  	DoDirichletConditionPeriodic(&fixednodes, &addonoff);
 	}
 
   // set condition for free or recently set free nodes
@@ -1575,7 +1581,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	if(!freenodes.empty())
 	{
 		//cout<<"FREE NODES"<<endl;
-  	DoDirichletConditionPeriodic(usetime, time, &freenodes, &addonoff);
+  	DoDirichletConditionPeriodic(&freenodes, &addonoff);
 	}
 	//cout<<"deltadbc_:\n"<<*deltadbc_<<endl;
 
@@ -1589,9 +1595,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 /*----------------------------------------------------------------------*
  |  fill system vector and toggle vector (public)          mueller  3/10|
  *----------------------------------------------------------------------*/
-void StatMechTime::DoDirichletConditionPeriodic(const bool usetime,
-                                                const double time,
-																								vector<int>* nodeids,
+void StatMechTime::DoDirichletConditionPeriodic(vector<int>* nodeids,
 																								vector<int>* onoff)
 /*
  * This basically does the same thing as DoDirichletCondition() (to be found in drt_discret_evaluate.cpp),

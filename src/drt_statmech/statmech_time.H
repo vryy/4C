@@ -69,18 +69,11 @@ public:
   \brief Determine Dirichlet condition at given time and apply its
          values to a system vector
 
-  \param usetime
-  \param time            Evaluation time
   \param nodeids				 vector containing DBC Node IDs
-  \param curve					 vector containing curve values for DOFs
-  \param funct					 vector containing funct values for DOFs
   \param onoff					 vector containing onoff values for DOFs
-  \param val						 vector containing double multiplicator values for DOFs (amplitude)
   \date 03/10
   */
-  void DoDirichletConditionPeriodic(const bool                  usetime,
-																		const double                time,
-																		vector<int>*								nodeids,
+  void DoDirichletConditionPeriodic(vector<int>*								nodeids,
 																		vector<int>*								onoff);
 
 
