@@ -2,8 +2,8 @@
 /*!
 \file tsi_algorithm.cpp
 
-\brief  Basis of all TSI algorithms that perform a coupling between the linear momentum equation
-        and the heat conduction equation
+\brief  Basis of all TSI algorithms that perform a coupling between the linear
+        momentum equation and the heat conduction equation
 
 <pre>
 Maintainer: Caroline Danowski
@@ -81,11 +81,10 @@ TSI::Algorithm::~Algorithm()
 
 
 /*----------------------------------------------------------------------*
- | (public)                                                  dano 12/09 |
+ | read restart information for given time step (public)     dano 12/09 |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::ReadRestart(int step)
 {
-  // 14.04.10
   ThermoField().ReadRestart(step);
   StructureField().ReadRestart(step);
   SetTimeStep(ThermoField().GetTime(),step);
@@ -97,7 +96,6 @@ void TSI::Algorithm::ReadRestart(int step)
 
   //  StructureField().ReadRestart(step);
   //  ThermoField().ReadRestart(step);
-  //  //20.01.2010 passt das so? entspricht das derselben Zeit??
   //  double time = ThermoField().GetTime();
   //  SetTimeStep(time,step);
 
@@ -124,7 +122,7 @@ void TSI::Algorithm::TimeLoop()
   // time loop
   while (NotFinished())
   {
-    // prepare next time step ==> muss ausserhalb der Newton-Schleife sein!! 21.04.10 ULI!!!
+    // prepare next time step
     PrepareTimeStep();
 
     // get active nodes from structural contact simulation
@@ -170,8 +168,6 @@ void TSI::Algorithm::TimeLoop()
 
       // End Nonlinear Solver **************************************
 
-      // ==================================================================
-
       // update all single field solvers
       Update();
 
@@ -181,7 +177,7 @@ void TSI::Algorithm::TimeLoop()
 
       // write output to screen and files
       Output();
-    }
+    } // tsi
 
     else
     {
@@ -207,7 +203,11 @@ void TSI::Algorithm::TimeLoop()
       // write output to screen and files
       Output();
     }
+
   } // time loop
+
+  // ==================================================================
+
 }
 
 
@@ -221,8 +221,8 @@ void TSI::Algorithm::PrepareTimeStep()
   PrintHeader();
 
   // predict
-  // 14.04.10 check again if PrepareTimeStep() is needed here!
-  StructureField().PrepareTimeStep();
+  // StructureField.PrepareTimeStep() is moved to DoStructureStep()
+//  StructureField().PrepareTimeStep();
   ThermoField().PrepareTimeStep();
 }
 
@@ -242,7 +242,7 @@ void TSI::Algorithm::DoStructureStep(Teuchos::RCP<Epetra_Vector> itemp)
   // call the current temperatures
   StructureField().ApplyTemperatures(itemp);
 
-  // call the predictor here, because the temperature is considered
+  // call the predictor here, because the temperature is considered too
   StructureField().PrepareTimeStep();
 
   // solve structure system
@@ -257,7 +257,8 @@ void TSI::Algorithm::DoStructureStep(Teuchos::RCP<Epetra_Vector> itemp)
  | Solve the thermo system (protected)                       dano 03/10 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> TSI::Algorithm::DoThermoStep(
-  //Teuchos::RCP<Epetra_Vector> idisp // 25.3.10 necessary if coupling displacemnents to temperature
+  // necessary if coupling displacemnents to temperature
+  //Teuchos::RCP<Epetra_Vector> idisp
   )
 {
   if (Comm().MyPID()==0)
@@ -333,7 +334,6 @@ bool TSI::Algorithm::ConvergenceCheck(
   tempincnp_->Norm2(&tempincnorm_L2);
   ThermoField().Tempnp()->Norm2(&tempnorm_L2);
 
-//  // 14.04.10 NAN
 //  cout << "\ntempincnorm_L2\n" << tempincnorm_L2 << endl;
 //  cout << "\ntempnorm_L2\n" << tempnorm_L2 << endl;
 

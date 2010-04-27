@@ -35,14 +35,15 @@ namespace PAR
   /*----------------------------------------------------------------------*/
   /// material parameters for de St. Venant--Kirchhoff with temperature
   /// dependent term
+  ///
+  /// <h3>Input line</h3>
+  /// MAT 1 MAT_Struct_ThrStVenantK YOUNG 400 NUE 0.3 DENS 1 THEXPANS 1 INITTEMP 20
   class ThermoStVenantKirchhoff : public Parameter
   {
   public:
 
     /// standard constructor
-    ThermoStVenantKirchhoff(
-      Teuchos::RCP<MAT::PAR::Material> matdata
-      );
+    ThermoStVenantKirchhoff(Teuchos::RCP<MAT::PAR::Material> matdata);
 
     /// destructor
     virtual ~ThermoStVenantKirchhoff() { ; }
@@ -61,12 +62,12 @@ namespace PAR
     /// initial temperature (constant) \f \Theta_0 \f
     const double thetainit_;
 
-
     //@}
 
   };  // class ThermoStVenantKirchhoff
 
 }  // namespace PAR
+
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for St.-Venant-Kirchhoff material with temperature term
@@ -88,7 +89,10 @@ namespace PAR
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_ThermoStVenantKirchhoff; }
+    virtual int UniqueParObjectId() const
+    {
+      return ParObject_ThermoStVenantKirchhoff;
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -119,17 +123,24 @@ namespace PAR
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_thermostvenant; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_thermostvenant;
+    }
 
     // evaluates stresses for 3d
-    void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
-                  Epetra_SerialDenseMatrix* cmat_e,
-                  Epetra_SerialDenseVector* stress_e);
+    void Evaluate(
+      const Epetra_SerialDenseVector* glstrain_e,
+      Epetra_SerialDenseMatrix* cmat_e,
+      Epetra_SerialDenseVector* stress_e
+      );
 
     // evaluates stresses for 3d
-    void Evaluate(const LINALG::Matrix<6,1>& glstrain,
-                  LINALG::Matrix<6,6>& cmat,
-                  LINALG::Matrix<6,1>& stress);
+    void Evaluate(
+      const LINALG::Matrix<6,1>& glstrain,
+      LINALG::Matrix<6,6>& cmat,
+      LINALG::Matrix<6,1>& stress
+      );
 
     /// Main 3D material call to determine stress and constitutive tensor ctemp
     //  originally method of fourieriso with const!!!
@@ -137,7 +148,7 @@ namespace PAR
       const LINALG::Matrix<8,1>& etemp,  // temperature of element
       LINALG::Matrix<6,8>& ctemp,
       LINALG::Matrix<6,1>& stresstemp
-    );
+      );
 
     // computes isotropic elasticity tensor in matrix notion for 3d
     void SetupCmat(LINALG::Matrix<6,6>& cmat);
@@ -155,9 +166,7 @@ namespace PAR
     void SetupCthermo2d(Epetra_SerialDenseMatrix* ctemp);
 
     // computes the constant temperature fraction
-    void Ctempconst(
-      LINALG::Matrix<6,1>& ctempconst
-      );
+    void Ctempconst(LINALG::Matrix<6,1>& ctempconst);
 
     // calculates stress-temperature modulus
     double STModulus();
@@ -175,7 +184,10 @@ namespace PAR
     double InitTemp() const { return params_->thetainit_; }
 
     /// shear modulus \f \mu \f
-    double ShearMod() const { return 0.5*params_->youngs_/(1.0+params_->poissonratio_); }
+    double ShearMod() const
+    {
+      return 0.5*params_->youngs_/(1.0+params_->poissonratio_);
+    }
 
   private:
 
@@ -184,6 +196,7 @@ namespace PAR
 
   };  // ThermoStVenantKirchhoff
 }  // namespace MAT
+
 
 /*----------------------------------------------------------------------*/
 #endif  // CCADISCRET

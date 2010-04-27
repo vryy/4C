@@ -15,6 +15,7 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+
 /*----------------------------------------------------------------------*
  | headers                                                   dano 02/10 |
  *----------------------------------------------------------------------*/
@@ -22,6 +23,7 @@ Maintainer: Caroline Danowski
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
 #include "thermostvenantkirchhoff.H"
+
 
 /*----------------------------------------------------------------------*
  |                                                           dano 02/10 |
@@ -38,6 +40,7 @@ MAT::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(
 {
 }
 
+
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     dano 02/10 |
  *----------------------------------------------------------------------*/
@@ -45,6 +48,7 @@ MAT::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff()
   : params_(NULL)
 {
 }
+
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 02/10 |
@@ -55,6 +59,7 @@ MAT::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(
   : params_(params)
 {
 }
+
 
 /*----------------------------------------------------------------------*
  |  Pack (public)                                            dano 02/10 |
@@ -72,6 +77,7 @@ void MAT::ThermoStVenantKirchhoff::Pack(vector<char>& data) const
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data,matid);
 }
+
 
 /*----------------------------------------------------------------------*
  |  Unpack (public)                                          dano 02/10 |
@@ -105,6 +111,7 @@ void MAT::ThermoStVenantKirchhoff::Unpack(const vector<char>& data)
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 }
+
 
 /*----------------------------------------------------------------------*
  | computes isotropic eplane strain, rotational symmetry     dano 02/10 |
@@ -146,8 +153,11 @@ void MAT::ThermoStVenantKirchhoff::SetupCmat2d(Epetra_SerialDenseMatrix* cmat)
   (*cmat)(3,2) = 0.;
   (*cmat)(3,3) = a1;
 }
+
+
 /*----------------------------------------------------------------------*
-// computes isotropic elasticity tensor in matrix notion for 3d
+ | computes isotropic elasticity tensor in matrix notion     dano 02/10 |
+ | for 3d                                                               |
  *----------------------------------------------------------------------*/
 void MAT::ThermoStVenantKirchhoff::SetupCmat(LINALG::Matrix<6,6>& cmat)
 {
@@ -216,6 +226,7 @@ void MAT::ThermoStVenantKirchhoff::SetupCmat(LINALG::Matrix<6,6>& cmat)
   }
 }
 
+
 /*----------------------------------------------------------------------*
  | calculates stresses using one of the above method to      dano 02/10 |
  | evaluate the elasticity tensor                                       |
@@ -238,6 +249,7 @@ void MAT::ThermoStVenantKirchhoff::Evaluate(
   stress.MultiplyNN(cmat,glstrain);
 }
 
+
 /*----------------------------------------------------------------------*
  | calculates stresses using one of the above method to      dano 02/10 |
  | evaluate the elasticity tensor                                       |
@@ -254,6 +266,7 @@ void MAT::ThermoStVenantKirchhoff::Evaluate(
   stress.MultiplyNN(cmat,glstrain);
 }
 
+
 /*----------------------------------------------------------------------*
  | computes temperature dependent isotropic eplane           dano 02/10 |
  | strain, rotational symmetry,plane strain, rotational symmetry        |
@@ -269,16 +282,14 @@ void MAT::ThermoStVenantKirchhoff::SetupCthermo2d(
   (*ctemp)(0,1) = 0.;
   (*ctemp)(1,0) = 0.;
   (*ctemp)(1,1) = m;
-
 }
+
 
 /*----------------------------------------------------------------------*
  | computes temperature dependent isotropic                  dano 02/10 |
  | elasticity tensor in matrix notion for 3d, second(!) order tensor    |
  *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::SetupCthermo(
-  LINALG::Matrix<6,8>& ctemp
-  )
+void MAT::ThermoStVenantKirchhoff::SetupCthermo(LINALG::Matrix<6,8>& ctemp)
 {
   double m = STModulus();
 
@@ -343,12 +354,11 @@ void MAT::ThermoStVenantKirchhoff::Evaluate(
 
 } // Evaluate
 
+
 /*----------------------------------------------------------------------*
  | calculates the constant temperature fraction              dano 03/10 |
  *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::Ctempconst(
-  LINALG::Matrix<6,1>& ctempconst
-  )
+void MAT::ThermoStVenantKirchhoff::Ctempconst(LINALG::Matrix<6,1>& ctempconst)
 {
 
   // get the stress-temperature modulus
@@ -381,8 +391,6 @@ double MAT::ThermoStVenantKirchhoff::STModulus()
   const double ym  = params_->youngs_;
   const double pv  = params_->poissonratio_;
 
-//  // initialize the constant initial temperature
-//  const double thetainit = params_->thetainit_;
   // initialize the thermal expansion coefficient
   const double thermexpans = params_->thermexpans_;
 
