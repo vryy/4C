@@ -1627,6 +1627,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateParameterCalculation(
   }  // end Gauss loop
   // set new flow rate
   params.set<double>("Outlet flowrate", flowrate);
+  cout << "flow rate: "<< flowrate << endl;
 }//DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCalculation
 
 
@@ -2086,7 +2087,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
 
     for (int inode=0;inode<iel;++inode)
       for(int idim=0;idim<nsd_;++idim)
-        elevec1[inode*numdofpernode_+idim] += funct(inode,1) * fac_thsl_pres_inve * normal(idim,1);
+        elevec1[inode*numdofpernode_+idim] += funct(inode) * fac_thsl_pres_inve * normal(idim);
   }
   return;
 } //DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration
