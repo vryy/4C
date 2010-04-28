@@ -1718,10 +1718,8 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   //**********************************************************************
   // SIMPLER preconditioner
   //**********************************************************************
+//#define SIMPLER
 #ifdef SIMPLER
-  // not yet fully tested
-  dserror("ERROR: SIMPLE(R) not yet tested for mortar contact");
-  
   // apply Dirichlet conditions to (0,0) and (0,1) blocks
   RCP<Epetra_Vector> zeros   = rcp(new Epetra_Vector(*dispmap,true));
   RCP<Epetra_Vector> rhscopy = rcp(new Epetra_Vector(*fd));

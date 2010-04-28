@@ -889,10 +889,8 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   //**********************************************************************
   // SIMPLER preconditioner
   //**********************************************************************
+//#define SIMPLER
 #ifdef SIMPLER
-  // not yet fully tested
-  dserror("ERROR: SIMPLE(R) not yet tested for mortar contact");
-  
   // build transposed transformed constraint matrix
   RCP<LINALG::SparseMatrix> trtrconstrmt = rcp(new LINALG::SparseMatrix(*lmmap,100,false,true)); 
   trtrconstrmt->Add(*trconstrmt,true,1.0,0.0); 
