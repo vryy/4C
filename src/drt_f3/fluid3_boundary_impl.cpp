@@ -2080,14 +2080,15 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
   {
     // integration factor * Gauss weights & local Gauss point coordinates
     // shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // normalized normal vector at gausspoint
+    // normal vector of unit length at gausspoint (outward pointing)
     const double fac = EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, &normal);
 
     const double fac_thsl_pres_inve = fac * thsl * pressure * invdensity;
 
     for (int inode=0;inode<iel;++inode)
       for(int idim=0;idim<nsd_;++idim)
-        elevec1[inode*numdofpernode_+idim] += funct(inode) * fac_thsl_pres_inve * normal(idim);
+        // inward pointing normal of unit length
+        elevec1[inode*numdofpernode_+idim] += funct(inode) * fac_thsl_pres_inve * (-normal(idim));
   }
   return;
 } //DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration
