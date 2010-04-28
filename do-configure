@@ -18,6 +18,7 @@ BUILD_TYPE="RELEASE"
     -D CMAKE_Fortran_FLAGS_RELEASE:STRING="-O5 -funroll-all-loops -malign-double" \
     -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
     -D DEBUG:BOOL=ON \
+    -D D_EXODUS:BOOL=ON \
     -D D_ALE:BOOL=ON \
     -D D_ALE:BOOL=ON \
     -D D_BEAM2:BOOL=ON \
