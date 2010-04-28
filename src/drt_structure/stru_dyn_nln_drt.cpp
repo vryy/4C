@@ -116,8 +116,22 @@ void dyn_nlnstructural_drt()
   ADAPTER::Structure& structadaptor = const_cast<ADAPTER::Structure&>(adapterbase.StructureField());
 
   // do restart
-  if (genprob.restart) structadaptor.ReadRestart(genprob.restart);
-
+  if (genprob.restart)
+  {
+    structadaptor.ReadRestart(genprob.restart);
+  }
+  
+  // write output at beginnning of calc
+  else
+  {
+    RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+    RCP<IO::DiscretizationWriter> output = rcp(new IO::DiscretizationWriter(actdis));
+    output->NewStep(0, 0.0);
+    RCP<Epetra_Vector> zeros = rcp (new Epetra_Vector(*(actdis->DofRowMap())));
+    output->WriteVector("displacement",zeros);
+    output->WriteElementData();
+  }
+  
   // run time integration
   structadaptor.Integrate();
 
