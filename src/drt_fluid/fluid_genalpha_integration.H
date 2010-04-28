@@ -897,6 +897,8 @@ private:
   RCP<Epetra_Vector>          dispnp_   ;
   //! ALE related stuff: most recent grid displacements, time n
   RCP<Epetra_Vector>          dispn_    ;
+  //! ALE related stuff: most recent grid displacements, time n-1
+  RCP<Epetra_Vector>          dispnm_    ;
   //! ALE related stuff: grid velocities, most recent time step n
   RCP<Epetra_Vector>          gridveln_ ;
   //! ALE related stuff: intermediate grid velocities at time n+af
