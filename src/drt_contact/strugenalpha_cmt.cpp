@@ -2853,6 +2853,7 @@ void CONTACT::CmtStruGenAlpha::Output()
     output_.WriteVector("velocity",vel_);
     output_.WriteVector("acceleration",acc_);
     output_.WriteVector("fexternal",fext_);
+    output_.WriteElementData();
     isdatawritten = true;
 
     // write restart information for contact

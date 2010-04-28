@@ -195,9 +195,17 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
   // shape function type
   INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
   
+  //**********************************************************************
+  //**********************************************************************
   // CASE A: DUAL LM SHAPE FUNCTIONS
+  //**********************************************************************
+  //**********************************************************************
   if (shapefcn == INPAR::MORTAR::shape_dual)
   {
+    //********************************************************************
+    // VERSION 1: CONDENSE LAGRANGE MULTIPLIERS AND SLAVE DOFS
+    //********************************************************************
+#ifdef MESHTYINGTWOCON
     // complete stiffness matrix
     // (this is a prerequisite for the Split2x2 methods to be called later)
     kteff->Complete();
@@ -252,6 +260,288 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
     ksm_  = ksm;
     kss_  = kss;
 
+    /**********************************************************************/
+    /* Build the constraint vector                                        */
+    /**********************************************************************/
+    // VERSION 1: constraints for u (displacements)
+    //     (+) rotational invariance
+    //     (+) no initial stresses
+    // VERSION 2: constraints for x (current configuration)
+    //     (+) rotational invariance
+    //     (+) no initial stresses
+    // VERSION 3: mesh initialization (default)
+    //     (+) rotational invariance
+    //     (+) initial stresses
+    
+    // As long as we perform mesh initialization, there is no difference
+    // between versions 1 and 2, as the constraints are then exactly
+    // fulfilled in the reference configuration X already (version 3)!
+    
+#ifdef MESHTYINGUCONSTR
+    // VERSION 1: constraints for u (displacements)
+    // (nothing needs not be done, as the constraints for meshtying are
+    // LINEAR w.r.t. the displacements and in the first step, dis is zero.
+    // Thus, the right hand side of the constraint lines is ALWAYS zero!)
+    
+    /*
+    RCP<Epetra_Vector> tempvec1 = rcp(new Epetra_Vector(*gsdofrowmap_));
+    RCP<Epetra_Vector> tempvec2 = rcp(new Epetra_Vector(*gsdofrowmap_));
+    LINALG::Export(*dis,*tempvec1);
+    dmatrix_->Multiply(false,*tempvec1,*tempvec2);
+    g_->Update(-1.0,*tempvec2,0.0);
+    RCP<Epetra_Vector> tempvec3 = rcp(new Epetra_Vector(*gmdofrowmap_));
+    RCP<Epetra_Vector> tempvec4 = rcp(new Epetra_Vector(*gsdofrowmap_));
+    LINALG::Export(*dis,*tempvec3);
+    mmatrix_->Multiply(false,*tempvec3,*tempvec4);
+    g_->Update(1.0,*tempvec4,1.0);
+    */
+
+#else
+    // VERSION 2: constraints for x (current configuration)
+    // fill xmaster
+    RCP<Epetra_Vector> xmaster = LINALG::CreateVector(*gmdofrowmap_, true);
+    
+    // loop over all interfaces
+    for (int i=0; i<(int)interface_.size(); ++i)
+    {
+      // loop over all master row nodes on the current interface
+      for (int j=0; j<interface_[i]->MasterRowNodes()->NumMyElements(); ++j)
+      {
+        int gid = interface_[i]->MasterRowNodes()->GID(j);
+        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+        MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+        
+        // prepare assembly   
+        Epetra_SerialDenseVector val(Dim());
+        vector<int> lm(Dim());
+        vector<int> lmowner(Dim());
+        
+        for (int k=0;k<Dim();++k)
+        {
+          val[k] = mtnode->xspatial()[k];
+          lm[k] = mtnode->Dofs()[k];
+          lmowner[k] = mtnode->Owner();
+        }
+        
+        // do assembly
+        LINALG::Assemble(*xmaster,val,lm,lmowner);
+      }
+    }
+    
+    // fill xslave
+    RCP<Epetra_Vector> xslave = LINALG::CreateVector(*gsdofrowmap_, true);
+    
+    // loop over all interfaces
+    for (int i=0; i<(int)interface_.size(); ++i)
+    {
+      // loop over all master row nodes on the current interface
+      for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
+      {
+        int gid = interface_[i]->SlaveRowNodes()->GID(j);
+        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+        MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+        
+        // prepare assembly   
+        Epetra_SerialDenseVector val(Dim());
+        vector<int> lm(Dim());
+        vector<int> lmowner(Dim());
+        
+        for (int k=0;k<Dim();++k)
+        {
+          val[k] = mtnode->xspatial()[k];
+          lm[k] = mtnode->Dofs()[k];
+          lmowner[k] = mtnode->Owner();
+        }
+        
+        // do assembly
+        LINALG::Assemble(*xslave,val,lm,lmowner);
+      }
+    }
+    
+    // finally build constraint vector
+    RCP<Epetra_Vector> tempvec1 = rcp(new Epetra_Vector(*gsdofrowmap_));
+    dmatrix_->Multiply(false,*xslave,*tempvec1);
+    g_->Update(-1.0,*tempvec1,0.0);  
+    RCP<Epetra_Vector> tempvec2 = rcp(new Epetra_Vector(*gsdofrowmap_));
+    mmatrix_->Multiply(false,*xmaster,*tempvec2);
+    g_->Update(1.0,*tempvec2,1.0);  
+  #endif // #ifdef MESHTYINGUCONSTR
+    
+    /**********************************************************************/
+    /* Build the final K and f blocks                                     */
+    /**********************************************************************/
+    // knn: nothing to do
+
+    // knm: add kns*mbar
+    RCP<LINALG::SparseMatrix> knmmod = rcp(new LINALG::SparseMatrix(*gndofrowmap_,100));
+    knmmod->Add(*knm,false,1.0,1.0);
+    RCP<LINALG::SparseMatrix> knmadd = LINALG::MLMultiply(*kns,false,*mhatmatrix_,false,false,false,true);
+    knmmod->Add(*knmadd,false,1.0,1.0);
+    knmmod->Complete(knm->DomainMap(),knm->RowMap());
+
+    // kms: add T(mbar)*kss
+    RCP<LINALG::SparseMatrix> kmsmod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
+    kmsmod->Add(*kms,false,1.0,1.0);
+    RCP<LINALG::SparseMatrix> kmsadd = LINALG::MLMultiply(*mhatmatrix_,true,*kss,false,false,false,true);
+    kmsmod->Add(*kmsadd,false,1.0,1.0);
+    kmsmod->Complete(kms->DomainMap(),kms->RowMap());
+          
+    // kmn: add T(mbar)*ksn
+    RCP<LINALG::SparseMatrix> kmnmod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
+    kmnmod->Add(*kmn,false,1.0,1.0);
+    RCP<LINALG::SparseMatrix> kmnadd = LINALG::MLMultiply(*mhatmatrix_,true,*ksn,false,false,false,true);
+    kmnmod->Add(*kmnadd,false,1.0,1.0);
+    kmnmod->Complete(kmn->DomainMap(),kmn->RowMap());
+
+    // kmm: add T(mbar)*ksm + kmsmod*mbar
+    RCP<LINALG::SparseMatrix> kmmmod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
+    kmmmod->Add(*kmm,false,1.0,1.0);
+    RCP<LINALG::SparseMatrix> kmmadd = LINALG::MLMultiply(*mhatmatrix_,true,*ksm,false,false,false,true);
+    kmmmod->Add(*kmmadd,false,1.0,1.0);
+    RCP<LINALG::SparseMatrix> kmmadd2 = LINALG::MLMultiply(*kmsmod,false,*mhatmatrix_,false,false,false,true);
+    kmmmod->Add(*kmmadd2,false,1.0,1.0);
+    kmmmod->Complete(kmm->DomainMap(),kmm->RowMap());
+
+    // fn: subtract kns*inv(D)*g
+#ifndef MESHTYINGUCONSTR
+    RCP<Epetra_Vector> tempvec = rcp(new Epetra_Vector(*gsdofrowmap_));
+    invd_->Multiply(false,*g_,*tempvec);
+    RCP<Epetra_Vector> fnmod = rcp(new Epetra_Vector(*gndofrowmap_));
+    kns->Multiply(false,*tempvec,*fnmod);
+    fnmod->Update(1.0,*fn,1.0);
+#endif
+
+    // fs: subtract alphaf * old interface forces (t_n)
+    RCP<Epetra_Vector> tempvecs = rcp(new Epetra_Vector(*gsdofrowmap_));
+    dmatrix_->Multiply(false,*zold_,*tempvecs);
+    fs->Update(-alphaf_,*tempvecs,1.0);
+
+    // fm: add alphaf * old interface forces (t_n)
+    RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
+    mmatrix_->Multiply(true,*zold_,*tempvecm);
+    fm->Update(alphaf_,*tempvecm,1.0); 
+    
+    // fm: add T(mbar)*fs
+    RCP<Epetra_Vector> fmmod = rcp(new Epetra_Vector(*gmdofrowmap_));
+    mhatmatrix_->Multiply(true,*fs,*fmmod);
+    fmmod->Update(1.0,*fm,1.0);
+
+    // fm: subtract kmsmod*inv(D)*g
+#ifndef MESHTYINGUCONSTR
+    RCP<Epetra_Vector> fmadd = rcp(new Epetra_Vector(*gmdofrowmap_));
+    kmsmod->Multiply(false,*tempvec,*fmadd);
+    fmmod->Update(1.0,*fmadd,1.0);
+#endif  
+    
+    // build identity matrix for slave dofs
+    RCP<Epetra_Vector> ones = rcp (new Epetra_Vector(*gsdofrowmap_));
+    ones->PutScalar(1.0);
+    RCP<LINALG::SparseMatrix> onesdiag = rcp(new LINALG::SparseMatrix(*ones));
+    onesdiag->Complete();
+    
+    /**********************************************************************/
+    /* Global setup of kteffnew, feffnew (including meshtying)            */
+    /**********************************************************************/
+    RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap_,81,true,false,kteffmatrix->GetMatrixtype()));
+    RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*problemrowmap_);
+
+    // add n submatrices to kteffnew
+    kteffnew->Add(*knn,false,1.0,1.0);
+    kteffnew->Add(*knmmod,false,1.0,1.0);
+    //kteffnew->Add(*kns,false,1.0,1.0);
+
+    // add m submatrices to kteffnew
+    kteffnew->Add(*kmnmod,false,1.0,1.0);
+    kteffnew->Add(*kmmmod,false,1.0,1.0);
+    //kteffnew->Add(*kmsmod,false,1.0,1.0);
+
+    // add identitiy for slave increments
+    kteffnew->Add(*onesdiag,false,1.0,1.0);
+    
+    // FillComplete kteffnew (square)
+    kteffnew->Complete();
+          
+    // add n subvector to feffnew
+    RCP<Epetra_Vector> fnexp = rcp(new Epetra_Vector(*problemrowmap_));
+#ifdef MESHTYINGUCONSTR
+    LINALG::Export(*fn,*fnexp);
+#else
+    LINALG::Export(*fnmod,*fnexp);
+#endif
+    feffnew->Update(1.0,*fnexp,1.0);
+
+    // add m subvector to feffnew
+    RCP<Epetra_Vector> fmmodexp = rcp(new Epetra_Vector(*problemrowmap_));
+    LINALG::Export(*fmmod,*fmmodexp);
+    feffnew->Update(1.0,*fmmodexp,1.0);
+
+    /**********************************************************************/
+    /* Replace kteff and feff by kteffnew and feffnew                     */
+    /**********************************************************************/
+    kteff = kteffnew;
+    feff = feffnew;
+    
+    
+    //********************************************************************
+    // VERSION 2: CONDENSE ONLY LAGRANGE MULTIPLIERS
+    //********************************************************************
+#else
+    // complete stiffness matrix
+    // (this is a prerequisite for the Split2x2 methods to be called later)
+    kteff->Complete();
+      
+    /**********************************************************************/
+    /* Split kteff into 3x3 block matrix                                  */
+    /**********************************************************************/
+    // we want to split k into 3 groups s,m,n = 9 blocks
+    RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
+
+    // temporarily we need the blocks ksmsm, ksmn, knsm
+    // (FIXME: because a direct SplitMatrix3x3 is still missing!)
+    RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
+
+    // some temporary RCPs
+    RCP<Epetra_Map> tempmap;
+    RCP<LINALG::SparseMatrix> tempmtx1;
+    RCP<LINALG::SparseMatrix> tempmtx2;
+    RCP<LINALG::SparseMatrix> tempmtx3;
+
+    // split into slave/master part + structure part
+    RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
+    LINALG::SplitMatrix2x2(kteffmatrix,gsmdofs_,gndofrowmap_,gsmdofs_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+
+    // further splits into slave part + master part
+    LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,kss,ksm,kms,kmm);
+    LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
+    LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
+
+    /**********************************************************************/
+    /* Split feff into 3 subvectors                                       */
+    /**********************************************************************/
+    // we want to split f into 3 groups s.m,n
+    RCP<Epetra_Vector> fs, fm, fn;
+
+    // temporarily we need the group sm
+    RCP<Epetra_Vector> fsm;
+
+    // do the vector splitting smn -> sm+n
+    LINALG::SplitVector(*problemrowmap_,*feff,gsmdofs_,fsm,gndofrowmap_,fn);
+
+    // we want to split fsm into 2 groups s,m
+    fs = rcp(new Epetra_Vector(*gsdofrowmap_));
+    fm = rcp(new Epetra_Vector(*gmdofrowmap_));
+    
+    // do the vector splitting sm -> s+m
+    LINALG::SplitVector(*gsmdofs_,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
+
+    // store some stuff for static condensation of LM
+    fs_   = fs;
+    ksn_  = ksn;
+    ksm_  = ksm;
+    kss_  = kss;
+    
     /**********************************************************************/
     /* Build the final K and f blocks                                     */
     /**********************************************************************/
@@ -455,9 +745,14 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
     /**********************************************************************/
     kteff = kteffnew;
     feff = feffnew;
+#endif // #ifdef MESHTYINGTWOCON 
   }
   
-  // CASE B: STANDARD LM SHAPE FUNCTIONS
+  //**********************************************************************
+  //**********************************************************************
+  // CASE B: STANDARD LM SHAPE FUNCTIONS (NO CONDENSATION)
+  //**********************************************************************
+  //**********************************************************************
   else if (shapefcn == INPAR::MORTAR::shape_standard)
   {
     // add meshtying force terms
@@ -679,9 +974,17 @@ void CONTACT::MtLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
   // shape function type
   INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
   
+  //**********************************************************************
+  //**********************************************************************
   // CASE A: DUAL LM SHAPE FUNCTIONS
+  //**********************************************************************
+  //**********************************************************************
   if (shapefcn == INPAR::MORTAR::shape_dual)
   {
+    //********************************************************************
+    // VERSION 1: CONDENSE LAGRANGE MULTIPLIERS AND SLAVE DOFS
+    //********************************************************************
+#ifdef MESHTYINGTWOCON
     // extract slave displacements from disi
     RCP<Epetra_Vector> disis = rcp(new Epetra_Vector(*gsdofrowmap_));
     if (gsdofrowmap_->NumGlobalElements()) LINALG::Export(*disi, *disis);
@@ -693,7 +996,55 @@ void CONTACT::MtLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
     // extract other displacements from disi
     RCP<Epetra_Vector> disin = rcp(new Epetra_Vector(*gndofrowmap_));
     if (gndofrowmap_->NumGlobalElements()) LINALG::Export(*disi,*disin);
+    
+    /**********************************************************************/
+    /* Update slave increment \Delta d_s                                  */
+    /**********************************************************************/
+    RCP<Epetra_Vector> realdisis = rcp(new Epetra_Vector(*gsdofrowmap_));
+    mhatmatrix_->Multiply(false,*disim,*realdisis);
+    RCP<Epetra_Vector> realdisisexp = rcp(new Epetra_Vector(*problemrowmap_));
+    LINALG::Export(*realdisis,*realdisisexp);
+    disi->Update(1.0,*realdisisexp,1.0);
+          
+    /**********************************************************************/
+    /* Update Lagrange multipliers z_n+1                                  */
+    /**********************************************************************/
+    
+    // approximate update
+    //invd_->Multiply(false,*fs_,*z_);
 
+    // full update
+    z_->Update(1.0,*fs_,0.0);
+    RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*gsdofrowmap_));
+    kss_->Multiply(false,*realdisis,*mod);
+    z_->Update(-1.0,*mod,1.0);
+    ksm_->Multiply(false,*disim,*mod);
+    z_->Update(-1.0,*mod,1.0);
+    ksn_->Multiply(false,*disin,*mod);
+    z_->Update(-1.0,*mod,1.0);
+    dmatrix_->Multiply(false,*zold_,*mod);
+    z_->Update(-alphaf_,*mod,1.0);
+    RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
+    invd_->Multiply(false,*zcopy,*z_);
+    z_->Scale(1/(1-alphaf_));
+    
+    
+    //********************************************************************
+    // VERSION 2: CONDENSE ONLY LAGRANGE MULTIPLIERS
+    //********************************************************************
+#else
+    // extract slave displacements from disi
+    RCP<Epetra_Vector> disis = rcp(new Epetra_Vector(*gsdofrowmap_));
+    if (gsdofrowmap_->NumGlobalElements()) LINALG::Export(*disi, *disis);
+
+    // extract master displacements from disi
+    RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*gmdofrowmap_));
+    if (gmdofrowmap_->NumGlobalElements()) LINALG::Export(*disi, *disim);
+    
+    // extract other displacements from disi
+    RCP<Epetra_Vector> disin = rcp(new Epetra_Vector(*gndofrowmap_));
+    if (gndofrowmap_->NumGlobalElements()) LINALG::Export(*disi,*disin);
+    
     /**********************************************************************/
     /* Update Lagrange multipliers z_n+1                                  */
     /**********************************************************************/
@@ -715,9 +1066,14 @@ void CONTACT::MtLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
     RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
     invd_->Multiply(false,*zcopy,*z_);
     z_->Scale(1/(1-alphaf_));
+#endif // #ifdef MESHTYINGTWOCON
   }
   
+  //**********************************************************************
+  //**********************************************************************
   // CASE B: STANDARD LM SHAPE FUNCTIONS
+  //**********************************************************************
+  //**********************************************************************
   else if (shapefcn == INPAR::MORTAR::shape_standard)
   {
     // do nothing (z_ was part of soultion already)
