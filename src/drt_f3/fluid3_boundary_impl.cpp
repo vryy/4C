@@ -1621,10 +1621,10 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateParameterCalculation(
     {
       for(int idim=0; idim<nsd_; ++idim)
       {
-        flowrate += funct(inode,1) * evelnp(idim,inode)*normal(idim,1) *fac;
+        flowrate += funct(inode) * evelnp(idim,inode)*normal(idim) *fac;
       }
     }
-  }
+  }  // end Gauss loop
   // set new flow rate
   params.set<double>("Outlet flowrate", flowrate);
 }//DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCalculation
