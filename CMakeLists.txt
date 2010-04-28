@@ -337,6 +337,8 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_structure_lung.cpp
   src/drt_adapter/adapter_structure_strugenalpha.cpp
   src/drt_adapter/adapter_structure_timint.cpp
+  src/drt_adapter/adapter_structure_timint_adapt.cpp
+  src/drt_adapter/adapter_structure_timint_expl.cpp
   src/drt_adapter/adapter_structure_wrapper.cpp
   src/drt_adapter/adapter_thermo.cpp
   src/drt_adapter/adapter_thermo_timint.cpp

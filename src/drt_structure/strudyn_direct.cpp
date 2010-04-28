@@ -63,6 +63,7 @@ extern GENPROB genprob;
 /* structural non-linear dynamics */
 void STR::strudyn_direct()
 {
+#if 0
   // access the discretization
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
   actdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
@@ -182,6 +183,7 @@ void STR::strudyn_direct()
 
   // done
   return;
+#endif
 } // end strudyn_direct()
 
 

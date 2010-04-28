@@ -323,6 +323,8 @@ OBJS_DRT_ADAPT= src/drt_adapter/adapter_algorithmbase.o \
                 src/drt_adapter/adapter_structure.o \
                 src/drt_adapter/adapter_structure_strugenalpha.o \
                 src/drt_adapter/adapter_structure_timint.o \
+                src/drt_adapter/adapter_structure_timint_expl.o \
+                src/drt_adapter/adapter_structure_timint_adapt.o \
                 src/drt_adapter/adapter_structure_constr_merged.o \
                 src/drt_adapter/adapter_structure_lung.o \
                 src/drt_adapter/adapter_structure_wrapper.o \

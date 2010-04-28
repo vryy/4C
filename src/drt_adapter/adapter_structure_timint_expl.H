@@ -16,8 +16,8 @@ Maintainer: Burkhard Bornemann
 /* macros */
 #ifdef CCADISCRET
 
-#ifndef ADAPTER_STRUCTURE_TIMINT_H
-#define ADAPTER_STRUCTURE_TIMINT_H
+#ifndef ADAPTER_STRUCTURE_TIMINT_EXPL_H
+#define ADAPTER_STRUCTURE_TIMINT_EXPL_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -31,7 +31,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/drt_utils.H"
 #include "../drt_structure/stru_resulttest.H"
 
-#include "../drt_structure/strtimint_impl.H"
+#include "../drt_structure/strtimint_expl.H"
 #include "../drt_structure/structure_utils_mapextractor.H"
 #include "adapter_structure.H"
 
@@ -46,13 +46,13 @@ namespace ADAPTER {
    *
    * \date 08/08
    */
-  class StructureTimIntImpl : public Structure
+  class StructureTimIntExpl : public Structure
   {
   public:
 
     /// Constructor
-    StructureTimIntImpl(
-      Teuchos::RCP<STR::TimIntImpl> stii,
+    StructureTimIntExpl(
+      Teuchos::RCP<STR::TimIntExpl> stie,
       Teuchos::RCP<Teuchos::ParameterList> ioparams,  ///< I/O flags
       Teuchos::RCP<Teuchos::ParameterList> sdynparams,  ///< input parameters
       Teuchos::RCP<Teuchos::ParameterList> xparams,  ///< extra flags
@@ -143,7 +143,7 @@ namespace ADAPTER {
       Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
     )
     {
-      structure_->UpdateIterIncrConstr(lagrincr);
+      dserror("not implemented");
     }
 
     /// Return MapExtractor for Dirichlet boundary conditions
@@ -181,13 +181,13 @@ namespace ADAPTER {
     /// are there any algebraic constraints?
     virtual bool HaveConstraint()
     {
-      return structure_->HaveConstraint();
+      dserror("not implemented"); return false;
     };
 
     /// get constraint manager defined in the structure
     virtual const RCP<UTILS::ConstrManager> GetConstraintManager()
     {
-      return structure_->GetConstraintManager();
+      dserror("not implemented"); return Teuchos::null;
     };
 
     /// @name Solver calls
@@ -269,7 +269,7 @@ namespace ADAPTER {
   private:
 
     /// the actual structure algorithm
-    Teuchos::RCP<STR::TimIntImpl> structure_;
+    Teuchos::RCP<STR::TimIntExpl> structure_;
 
     /// the interface map setup for interface <-> full translation
     STR::UTILS::MapExtractor interface_;
@@ -285,7 +285,7 @@ namespace ADAPTER {
     Teuchos::RCP<IO::DiscretizationWriter> output_;  ///< the output writer
     //@}
 
-  };  // class StructureTimIntImpl
+  };  // class StructureTimIntExpl
 
 }  // namespace ADAPTER
 

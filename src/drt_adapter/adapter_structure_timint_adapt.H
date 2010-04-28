@@ -16,8 +16,8 @@ Maintainer: Burkhard Bornemann
 /* macros */
 #ifdef CCADISCRET
 
-#ifndef ADAPTER_STRUCTURE_TIMINT_H
-#define ADAPTER_STRUCTURE_TIMINT_H
+#ifndef ADAPTER_STRUCTURE_TIMINT_ADAPT_H
+#define ADAPTER_STRUCTURE_TIMINT_ADAPT_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -31,7 +31,8 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/drt_utils.H"
 #include "../drt_structure/stru_resulttest.H"
 
-#include "../drt_structure/strtimint_impl.H"
+#include "../drt_structure/strtimada.H"
+#include "../drt_structure/strtimint.H"
 #include "../drt_structure/structure_utils_mapextractor.H"
 #include "adapter_structure.H"
 
@@ -46,13 +47,14 @@ namespace ADAPTER {
    *
    * \date 08/08
    */
-  class StructureTimIntImpl : public Structure
+  class StructureTimIntAda : public Structure
   {
   public:
 
     /// Constructor
-    StructureTimIntImpl(
-      Teuchos::RCP<STR::TimIntImpl> stii,
+    StructureTimIntAda(
+      Teuchos::RCP<STR::TimAda> sta,
+      Teuchos::RCP<STR::TimInt> sti,
       Teuchos::RCP<Teuchos::ParameterList> ioparams,  ///< I/O flags
       Teuchos::RCP<Teuchos::ParameterList> sdynparams,  ///< input parameters
       Teuchos::RCP<Teuchos::ParameterList> xparams,  ///< extra flags
@@ -111,19 +113,19 @@ namespace ADAPTER {
     virtual void Integrate();
 
     /// Get the current time
-    virtual double GetTime() const { return structure_->GetTime(); }
+    virtual double GetTime() const { dserror("not implemented"); return 0; }
 
     /// Get upper limit of time range of interest
-    virtual double GetTimeEnd() const { return structure_->GetTimeEnd(); }
+    virtual double GetTimeEnd() const { dserror("not implemented"); return 0; }
 
     /// Get time step size \f$\Delta t_n\f$
-    virtual double GetTimeStepSize() const { return structure_->GetTimeStepSize(); }
+    virtual double GetTimeStepSize() const { dserror("not implemented"); return 0; }
 
     /// Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
-    virtual int GetTimeStep() const { return structure_->GetStep(); }
+    virtual int GetTimeStep() const { dserror("not implemented"); return 0; }
 
     /// Get number of time steps
-    virtual int GetTimeNumStep() const { return structure_->GetTimeNumStep(); }
+    virtual int GetTimeNumStep() const { dserror("not implemented"); return 0; }
 
     /// start new time step
     void PrepareTimeStep();
@@ -143,13 +145,13 @@ namespace ADAPTER {
       Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
     )
     {
-      structure_->UpdateIterIncrConstr(lagrincr);
+      dserror("not implemented");
     }
 
     /// Return MapExtractor for Dirichlet boundary conditions
     virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     {
-      return structure_->GetDBCMapExtractor();
+      dserror("not implemented"); return Teuchos::null;
     }
 
     /// Access to output object
@@ -181,13 +183,13 @@ namespace ADAPTER {
     /// are there any algebraic constraints?
     virtual bool HaveConstraint()
     {
-      return structure_->HaveConstraint();
+      dserror("not implemented"); return false;
     };
 
     /// get constraint manager defined in the structure
     virtual const RCP<UTILS::ConstrManager> GetConstraintManager()
     {
-      return structure_->GetConstraintManager();
+      dserror("not implemented"); return Teuchos::null;
     };
 
     /// @name Solver calls
@@ -269,7 +271,9 @@ namespace ADAPTER {
   private:
 
     /// the actual structure algorithm
-    Teuchos::RCP<STR::TimIntImpl> structure_;
+    Teuchos::RCP<STR::TimAda> structure_;
+
+    Teuchos::RCP<STR::TimInt> sti_;
 
     /// the interface map setup for interface <-> full translation
     STR::UTILS::MapExtractor interface_;
@@ -285,7 +289,7 @@ namespace ADAPTER {
     Teuchos::RCP<IO::DiscretizationWriter> output_;  ///< the output writer
     //@}
 
-  };  // class StructureTimIntImpl
+  };  // class StructureTimIntAda
 
 }  // namespace ADAPTER
 

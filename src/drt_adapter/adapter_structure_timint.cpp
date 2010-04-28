@@ -32,7 +32,8 @@ Maintainer: Burkhard Bornemann
 
 /*======================================================================*/
 /* constructor */
-ADAPTER::StructureTimInt::StructureTimInt(
+ADAPTER::StructureTimIntImpl::StructureTimIntImpl(
+  Teuchos::RCP<STR::TimIntImpl> stii,
   Teuchos::RCP<Teuchos::ParameterList> ioparams,
   Teuchos::RCP<Teuchos::ParameterList> sdynparams,
   Teuchos::RCP<Teuchos::ParameterList> xparams,
@@ -40,8 +41,7 @@ ADAPTER::StructureTimInt::StructureTimInt(
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<IO::DiscretizationWriter> output
 )
-: structure_(STR::TimIntImplCreate(*ioparams, *sdynparams, *xparams,
-                                   discret, solver, output)),
+: structure_(stii),
   discret_(discret),
   ioparams_(ioparams),
   sdynparams_(sdynparams),
@@ -61,7 +61,7 @@ ADAPTER::StructureTimInt::StructureTimInt(
 
 /*----------------------------------------------------------------------*/
 /* */
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::InitialGuess()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimIntImpl::InitialGuess()
 {
   return structure_->DisRes();
   //return structure_->Dispm();
@@ -70,7 +70,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::InitialGuess()
 
 /*----------------------------------------------------------------------*/
 /* right-hand side alias the dynamic force residual */
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::RHS()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimIntImpl::RHS()
 {
   // this expects a _negative_ (Newton-ready) residual with blanked
   // Dirichlet DOFs. We did it in #Evaluate.
@@ -80,7 +80,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::RHS()
 
 /*----------------------------------------------------------------------*/
 /* get current displacements D_{n+1} */
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispnp()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimIntImpl::Dispnp()
 {
   return structure_->DisNew();
 }
@@ -88,7 +88,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispnp()
 
 /*----------------------------------------------------------------------*/
 /* get last converged displacements D_{n} */
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispn()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimIntImpl::Dispn()
 {
   return structure_->Dis();
 }
@@ -96,7 +96,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::Dispn()
 
 /*----------------------------------------------------------------------*/
 /* non-overlapping DOF map */
-Teuchos::RCP<const Epetra_Map> ADAPTER::StructureTimInt::DofRowMap()
+Teuchos::RCP<const Epetra_Map> ADAPTER::StructureTimIntImpl::DofRowMap()
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   return Teuchos::rcp(new Epetra_Map(*dofrowmap));
@@ -104,7 +104,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::StructureTimInt::DofRowMap()
 
 /*----------------------------------------------------------------------*/
 /* non-overlapping DOF map */
-Teuchos::RCP<const Epetra_Map> ADAPTER::StructureTimInt::DofRowMap(unsigned nds)
+Teuchos::RCP<const Epetra_Map> ADAPTER::StructureTimIntImpl::DofRowMap(unsigned nds)
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
   return Teuchos::rcp(new Epetra_Map(*dofrowmap));
@@ -113,7 +113,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::StructureTimInt::DofRowMap(unsigned nds)
 /*----------------------------------------------------------------------*/
 /* stiffness, i.e. force residual R_{n+1} differentiated
  * by displacements D_{n+1} */
-Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::StructureTimInt::SystemMatrix()
+Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::StructureTimIntImpl::SystemMatrix()
 {
 //  cout<<*structure_->SystemMatrix()<<endl;
   return structure_->SystemMatrix();
@@ -123,7 +123,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::StructureTimInt::SystemMatrix()
 /*----------------------------------------------------------------------*/
 /* stiffness, i.e. force residual R_{n+1} differentiated
  * by displacements D_{n+1} */
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::StructureTimInt::BlockSystemMatrix()
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::StructureTimIntImpl::BlockSystemMatrix()
 {
   return structure_->BlockSystemMatrix();
 }
@@ -131,28 +131,28 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::StructureTimInt::BlockSyste
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::StructureTimInt::UseBlockMatrix()
+void ADAPTER::StructureTimIntImpl::UseBlockMatrix()
 {
   structure_->UseBlockMatrix(Interface(),Interface());
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::StructureTimInt::TSIMatrix()
+void ADAPTER::StructureTimIntImpl::TSIMatrix()
 {
   structure_->TSIMatrix();
 }
 
 /*----------------------------------------------------------------------*/
 /* get contact manager */
-Teuchos::RCP<MORTAR::ManagerBase> ADAPTER::StructureTimInt::ContactManager()
+Teuchos::RCP<MORTAR::ManagerBase> ADAPTER::StructureTimIntImpl::ContactManager()
 {
   return structure_->ContactManager();
 }
 
 /*----------------------------------------------------------------------*/
 /* get discretisation */
-Teuchos::RCP<DRT::Discretization> ADAPTER::StructureTimInt::Discretization()
+Teuchos::RCP<DRT::Discretization> ADAPTER::StructureTimIntImpl::Discretization()
 {
   return structure_->Discretization();
 }
@@ -160,7 +160,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::StructureTimInt::Discretization()
 
 /*----------------------------------------------------------------------*/
 /* */
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::FRobin()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimIntImpl::FRobin()
 {
   //return structure_->GetForceRobinFSI();
   return LINALG::CreateVector(*discret_->DofRowMap(), true);
@@ -168,7 +168,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::FRobin()
 
 /*----------------------------------------------------------------------*/
 /* External force F_{ext,n+1} */
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::FExtn()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimIntImpl::FExtn()
 {
   return structure_->FextNew();
 }
@@ -176,7 +176,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::FExtn()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-// Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::FluidCondRHS() const
+// Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntImpl::FluidCondRHS() const
 // {
 //   // structure part of the rhs to enforce
 //   // u(n+1) dt = d(n+1) - d(n)
@@ -194,7 +194,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::FExtn()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-// Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::MeshCondRHS() const
+// Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntImpl::MeshCondRHS() const
 // {
 //   // structure part of the rhs to enforce
 //   // d(G,n+1) = d(n+1)
@@ -212,7 +212,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimInt::FExtn()
 
 /*----------------------------------------------------------------------*/
 /* prepare time step */
-void ADAPTER::StructureTimInt::PrepareTimeStep()
+void ADAPTER::StructureTimIntImpl::PrepareTimeStep()
 {
   // Note: MFSI requires a constant predictor. Otherwise the fields will get
   // out of sync.
@@ -226,7 +226,7 @@ void ADAPTER::StructureTimInt::PrepareTimeStep()
 /* build linear system stiffness matrix and rhs/force residual
  *
  * Monolithic FSI accesses the linearised structure problem. */
-void ADAPTER::StructureTimInt::Evaluate(
+void ADAPTER::StructureTimIntImpl::Evaluate(
   Teuchos::RCP<const Epetra_Vector> disp
 )
 {
@@ -240,7 +240,7 @@ void ADAPTER::StructureTimInt::Evaluate(
 
 /*----------------------------------------------------------------------*/
 /* update time step */
-void ADAPTER::StructureTimInt::Update()
+void ADAPTER::StructureTimIntImpl::Update()
 {
   structure_->UpdateStepState();
   structure_->UpdateStepTime();
@@ -250,7 +250,7 @@ void ADAPTER::StructureTimInt::Update()
 
 /*----------------------------------------------------------------------*/
 /* output */
-void ADAPTER::StructureTimInt::Output()
+void ADAPTER::StructureTimIntImpl::Output()
 {
   structure_->OutputStep();
   structure_->UpdateStepElement();
@@ -259,7 +259,7 @@ void ADAPTER::StructureTimInt::Output()
 
 /*----------------------------------------------------------------------*/
 /* domain map */
-const Epetra_Map& ADAPTER::StructureTimInt::DomainMap()
+const Epetra_Map& ADAPTER::StructureTimIntImpl::DomainMap()
 {
   return structure_->GetDomainMap();
 }
@@ -267,7 +267,7 @@ const Epetra_Map& ADAPTER::StructureTimInt::DomainMap()
 
 /*----------------------------------------------------------------------*/
 /* read restart */
-void ADAPTER::StructureTimInt::ReadRestart(int step)
+void ADAPTER::StructureTimIntImpl::ReadRestart(int step)
 {
   structure_->ReadRestart(step);
 }
@@ -275,7 +275,7 @@ void ADAPTER::StructureTimInt::ReadRestart(int step)
 
 /*----------------------------------------------------------------------*/
 /* find iteratively solution */
-void ADAPTER::StructureTimInt::Solve()
+void ADAPTER::StructureTimIntImpl::Solve()
 {
   structure_->Solve();
 }
@@ -283,7 +283,7 @@ void ADAPTER::StructureTimInt::Solve()
 
 /*----------------------------------------------------------------------*/
 /* */
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::RelaxationSolve(
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntImpl::RelaxationSolve(
   Teuchos::RCP<Epetra_Vector> iforce
 )
 {
@@ -298,7 +298,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::RelaxationSolve(
 
 /*----------------------------------------------------------------------*/
 /* extract interface displacements D_{n} */
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceDispn()
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntImpl::ExtractInterfaceDispn()
 {
   Teuchos::RCP<Epetra_Vector> idis
     = interface_.ExtractFSICondVector(structure_->Dis());
@@ -307,7 +307,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceDispn()
 
 /*----------------------------------------------------------------------*/
 /* extract interface displacements D_{n+1} */
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceDispnp()
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntImpl::ExtractInterfaceDispnp()
 {
   Teuchos::RCP<Epetra_Vector> idis
     = interface_.ExtractFSICondVector(structure_->DisNew());
@@ -316,7 +316,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceDispnp()
 
 /*----------------------------------------------------------------------*/
 /* extract external forces at interface F_{ext,n+1} */
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceForces()
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntImpl::ExtractInterfaceForces()
 {
   Teuchos::RCP<Epetra_Vector> iforce
     = interface_.ExtractFSICondVector(structure_->FextNew());
@@ -325,7 +325,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::ExtractInterfaceForces()
 
 /*----------------------------------------------------------------------*/
 /* */
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::PredictInterfaceDispnp()
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntImpl::PredictInterfaceDispnp()
 {
   const Teuchos::ParameterList& fsidyn
     = DRT::Problem::Instance()->FSIDynamicParams();
@@ -382,7 +382,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimInt::PredictInterfaceDispnp()
 
 /*----------------------------------------------------------------------*/
 /* */
-void ADAPTER::StructureTimInt::ApplyInterfaceForces(
+void ADAPTER::StructureTimIntImpl::ApplyInterfaceForces(
   Teuchos::RCP<Epetra_Vector> iforce
 )
 {
@@ -404,7 +404,7 @@ void ADAPTER::StructureTimInt::ApplyInterfaceForces(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimInt::ApplyInterfaceRobinValue(
+void ADAPTER::StructureTimIntImpl::ApplyInterfaceRobinValue(
   Teuchos::RCP<Epetra_Vector> iforce,
   Teuchos::RCP<Epetra_Vector> ifluidvel
 )
@@ -446,7 +446,7 @@ void ADAPTER::StructureTimInt::ApplyInterfaceRobinValue(
 
 /*----------------------------------------------------------------------*/
 /* apply the current temperatures (FSI like)                 dano 03/10 */
-void ADAPTER::StructureTimInt::ApplyTemperatures(
+void ADAPTER::StructureTimIntImpl::ApplyTemperatures(
   Teuchos::RCP<Epetra_Vector> itemp
 )
 {
@@ -471,7 +471,7 @@ void ADAPTER::StructureTimInt::ApplyTemperatures(
 
 /*----------------------------------------------------------------------*/
 /* structural result test */
-Teuchos::RCP<DRT::ResultTest> ADAPTER::StructureTimInt::CreateFieldTest()
+Teuchos::RCP<DRT::ResultTest> ADAPTER::StructureTimIntImpl::CreateFieldTest()
 {
   return Teuchos::rcp(new StruResultTest(*structure_));
 }
@@ -479,8 +479,11 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::StructureTimInt::CreateFieldTest()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimInt::Integrate()
+void ADAPTER::StructureTimIntImpl::Integrate()
 {
+#if 1
+  structure_->Integrate();
+#else
   // a few parameters
   double time = GetTime();
   const double timeend = GetTimeEnd();
@@ -518,6 +521,7 @@ void ADAPTER::StructureTimInt::Integrate()
 
   // Jump you f***ers
   return;
+#endif
 }
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

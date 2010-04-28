@@ -17,6 +17,8 @@ Maintainer: Ulrich Kuettler
 #include "adapter_structure.H"
 #include "adapter_structure_strugenalpha.H"
 #include "adapter_structure_timint.H"
+#include "adapter_structure_timint_adapt.H"
+#include "adapter_structure_timint_expl.H"
 #include "adapter_structure_constr_merged.H"
 #include "adapter_structure_wrapper.H"
 #include "adapter_structure_lung.H"
@@ -34,6 +36,8 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_Time.hpp>
 
 #include "../drt_structure/strugenalpha.H"
+#include "../drt_structure/strtimint_create.H"
+#include "../drt_structure/strtimada_create.H"
 #include "../drt_beamcontact/beam3contactstrugenalpha.H"
 #include "../drt_contact/strugenalpha_cmt.H"
 #include "../drt_statmech/statmech_time.H"
@@ -89,11 +93,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
   case INPAR::STR::dyna_genalpha :
   case INPAR::STR::dyna_onesteptheta :
   case INPAR::STR::dyna_gemm :
+  case INPAR::STR::dyna_ab2:
+  case INPAR::STR::dyna_euma :
+  case INPAR::STR::dyna_euimsto :
     SetupTimIntImpl(prbdyn);  // <-- here is the show
-    break;
-  case INPAR::STR::dyna_ab2 :
-//  case STRUCT_DYNAMIC::euma :
-    dserror("explicitly no");
     break;
   default :
     dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
@@ -416,7 +419,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   actdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
 
   // set degrees of freedom in the discretization
-  if (not actdis->Filled()) actdis->FillComplete();
+  if (not actdis->Filled() || not actdis->HaveDofs()) actdis->FillComplete();
 
   // context for output and restart
   Teuchos::RCP<IO::DiscretizationWriter> output
@@ -430,8 +433,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
     = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->IOParams()));
   Teuchos::RCP<Teuchos::ParameterList> sdyn
     = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->StructuralDynamicParams()));
-  //const Teuchos::ParameterList& size
-  //  = DRT::Problem::Instance()->ProblemSizeParams();
+  Teuchos::RCP<Teuchos::ParameterList> tap
+    = Teuchos::rcp(new Teuchos::ParameterList(sdyn->sublist("TIMEADAPTIVITY")));
+  Teuchos::RCP<Teuchos::ParameterList> snox
+    = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->StructuralNoxParams()));
 
   // show default parameters
   if ((actdis->Comm()).MyPID()==0)
@@ -441,6 +446,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   Teuchos::RCP<Teuchos::ParameterList> xparams
     = Teuchos::rcp(new Teuchos::ParameterList());
   xparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
+  Teuchos::ParameterList& nox = xparams->sublist("NOX");
+  nox = *snox;
 
   // overrule certain parameters
   sdyn->set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
@@ -486,39 +493,109 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   }
 
   // create a solver
-  Teuchos::RCP<ParameterList> solveparams
-    = Teuchos::rcp(new ParameterList());
   Teuchos::RCP<LINALG::Solver> solver
     = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->StructSolverParams(),
                                       actdis->Comm(),
                                       DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
-  // create marching time integrator
-  RCP<Structure> tmpstr;
-  tmpstr = Teuchos::rcp(new StructureTimInt(ioflags, sdyn, xparams,
-                                            actdis, solver, output));
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-  int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+  // Checks in case of multi-scale simulations
 
-  if (tmpstr->HaveConstraint())
-    if (coupling == fsi_iter_constr_monolithicstructuresplit or 
-        coupling == fsi_iter_constr_monolithicfluidsplit)
-      structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
-    else
-      structure_ = rcp(new StructureNOXCorrectionWrapper(rcp(new StructureConstrMerged(tmpstr))));
-  else
   {
-    if (coupling==fsi_iter_monolithicxfem)
+    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
+    // make sure we IMR-like generalised-alpha requested for multi-scale
+    // simulations
+    Teuchos::RCP<MAT::PAR::Bundle> materials = DRT::Problem::Instance()->Materials();
+    for (std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator i=materials->Map()->begin();
+         i!=materials->Map()->end();
+         ++i)
     {
-      // no NOX correction required
+      Teuchos::RCP<MAT::PAR::Material> mat = i->second;
+      if (mat->Type() == INPAR::MAT::m_struct_multiscale)
+      {
+        if (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") != INPAR::STR::dyna_genalpha)
+          dserror("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha");
+        else if (Teuchos::getIntegralValue<INPAR::STR::MidAverageEnum>(sdyn.sublist("GENALPHA"), "GENAVG") != INPAR::STR::midavg_imrlike)
+          dserror("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha with GENAVG=ImrLike");
+        break;
+      }
+    }
+  }
+
+  // create marching time integrator
+
+  Teuchos::RCP<STR::TimInt> sti;
+  Teuchos::RCP<STR::TimIntImpl> stii;
+
+  sti = stii = STR::TimIntImplCreate(*ioflags, *sdyn, *xparams, actdis, solver, output);
+
+  Teuchos::RCP<STR::TimIntExpl> stie;
+  if (stii==Teuchos::null)
+  {
+    sti = stie = STR::TimIntExplCreate(*ioflags, *sdyn, *xparams, actdis, solver, output);
+  }
+
+  // create auxiliar time integrator
+  Teuchos::RCP<STR::TimAda> sta = STR::TimAdaCreate(*ioflags, *sdyn, *xparams, *tap, sti);
+
+  if (sta!=Teuchos::null)
+  {
+    if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
+    {
+      dserror("no adaptive time integration with fsi");
+    }
+    structure_ = Teuchos::rcp(new StructureTimIntAda(sta, sti, ioflags, sdyn, xparams,
+                                                     actdis, solver, output));
+  }
+  else if (stie!=Teuchos::null)
+  {
+    if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
+    {
+      dserror("no explicit time integration with fsi");
+    }
+    structure_ = Teuchos::rcp(new StructureTimIntExpl(stie, ioflags, sdyn, xparams,
+                                                      actdis, solver, output));
+  }
+  else if (stii!=Teuchos::null)
+  {
+    Teuchos::RCP<Structure> tmpstr
+      = Teuchos::rcp(new StructureTimIntImpl(stii, ioflags, sdyn, xparams,
+                                             actdis, solver, output));
+
+    if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
+    {
+      const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+      int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+
+      if (tmpstr->HaveConstraint())
+        if (coupling == fsi_iter_constr_monolithicstructuresplit or
+            coupling == fsi_iter_constr_monolithicfluidsplit)
+          structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
+        else
+          structure_ = rcp(new StructureNOXCorrectionWrapper(rcp(new StructureConstrMerged(tmpstr))));
+      else
+      {
+        if (coupling==fsi_iter_monolithicxfem)
+        {
+          // no NOX correction required
+          structure_ = tmpstr;
+        }
+        else if (coupling == fsi_iter_lung_monolithicstructuresplit or
+                 coupling == fsi_iter_lung_monolithicfluidsplit)
+          structure_ = rcp(new StructureLung(rcp(new StructureNOXCorrectionWrapper(tmpstr))));
+        else
+          structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
+      }
+    }
+    else
+    {
       structure_ = tmpstr;
     }
-    else if (coupling == fsi_iter_lung_monolithicstructuresplit or
-             coupling == fsi_iter_lung_monolithicfluidsplit)
-      structure_ = rcp(new StructureLung(rcp(new StructureNOXCorrectionWrapper(tmpstr))));
-    else
-      structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
+  }
+  else
+  {
+    dserror("no proper time integration found");
   }
 
   // see you

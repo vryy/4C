@@ -77,11 +77,6 @@ void caldyn_drt()
       break;
     case INPAR::STR::dyna_gen_alfa:
     case INPAR::STR::dyna_gen_alfa_statics:
-      dyn_nlnstructural_drt();
-      break;
-    case INPAR::STR::dyna_Gen_EMM:
-      dserror("GEMM not supported");
-      break;
     case INPAR::STR::dyna_statics:
     case INPAR::STR::dyna_genalpha:
     case INPAR::STR::dyna_onesteptheta:
@@ -89,8 +84,10 @@ void caldyn_drt()
     case INPAR::STR::dyna_ab2:
     case INPAR::STR::dyna_euma :
     case INPAR::STR::dyna_euimsto :
-      // direct time integration
-      STR::strudyn_direct();
+      dyn_nlnstructural_drt();
+      break;
+    case INPAR::STR::dyna_Gen_EMM:
+      dserror("GEMM not supported");
       break;
     default:
       dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
@@ -138,10 +135,10 @@ void dyn_nlnstructural_drt()
   // test results
   DRT::Problem::Instance()->AddFieldTest(structadaptor.CreateFieldTest());
   DRT::Problem::Instance()->TestAll(structadaptor.DofRowMap()->Comm());
-  
+
   // time to go home...
   return;
-#endif
+#else
 
   // -------------------------------------------------------------------
   // access the discretization
@@ -424,6 +421,7 @@ void dyn_nlnstructural_drt()
   Teuchos::TimeMonitor::summarize();
 
   return;
+#endif
 } // end of dyn_nlnstructural_drt()
 
 #endif  // #ifdef CCADISCRET
