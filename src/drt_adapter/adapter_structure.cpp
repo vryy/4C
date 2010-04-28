@@ -524,6 +524,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   }
 
   // create marching time integrator
+  //
+  // This is a copy of STR::TimIntCreate().
 
   Teuchos::RCP<STR::TimInt> sti;
   Teuchos::RCP<STR::TimIntImpl> stii;

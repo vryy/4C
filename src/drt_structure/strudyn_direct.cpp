@@ -187,6 +187,7 @@ void STR::strudyn_direct()
 } // end strudyn_direct()
 
 
+#if 0
 /*======================================================================*/
 /* checks for multi-scale simulations */
 void STR::MultiScaleCheck()
@@ -211,6 +212,7 @@ void STR::MultiScaleCheck()
     }
   }
 }
+#endif
 
 
 /*----------------------------------------------------------------------*/
