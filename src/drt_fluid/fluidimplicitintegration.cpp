@@ -2728,8 +2728,8 @@ void FLD::FluidImplicitTimeInt::UpdateGridv()
            -> requires one more previous mesh position or displacemnt
            -> somewhat more complicated
            -> allows second order accuracy for the overall flow solution  */
-      gridv_->Update(1.5/dta_, *dispnp_, -2.0, *dispn_, 0.0);
-      gridv_->Update(0.5, *dispnm_, 1.0);
+      gridv_->Update(1.5/dta_, *dispnp_, -2.0/dta_, *dispn_, 0.0);
+      gridv_->Update(0.5/dta_, *dispnm_, 1.0);
     break;
   }
 }
