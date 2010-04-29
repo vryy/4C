@@ -944,6 +944,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                 INPAR::MORTAR::shape_dual, INPAR::MORTAR::shape_dual,
                 INPAR::MORTAR::shape_standard, INPAR::MORTAR::shape_standard, INPAR::MORTAR::shape_standard),
         &scontact);
+  
+  setStringToIntegralParameter<INPAR::CONTACT::SystemType>("SYSTEM","Condensed","Type of linear system setup / solution",
+        tuple<std::string>("Condensed","condensed", "cond",
+                           "SaddlePointCoupled","saddlepointcoupled", "spcoupled",
+                           "SaddlePointSimpler","saddlepointsimpler", "spsimpler"),
+        tuple<INPAR::CONTACT::SystemType>(
+                INPAR::CONTACT::system_condensed, INPAR::CONTACT::system_condensed, INPAR::CONTACT::system_condensed,
+                INPAR::CONTACT::system_spcoupled, INPAR::CONTACT::system_spcoupled, INPAR::CONTACT::system_spcoupled,
+                INPAR::CONTACT::system_spsimpler, INPAR::CONTACT::system_spsimpler, INPAR::CONTACT::system_spsimpler),
+        &scontact);
 
   DoubleParameter("PENALTYPARAM",0.0,"Penalty parameter for penalty / augmented solution strategy",&scontact);
   DoubleParameter("PENALTYPARAMTAN",0.0,"Tangential penalty parameter for penalty / augmented solution strategy",&scontact);

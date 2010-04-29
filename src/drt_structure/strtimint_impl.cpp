@@ -1193,27 +1193,30 @@ void STR::TimIntImpl::CmtNonlinearSolve()
 /* linear solver call for contact / meshtying */
 void STR::TimIntImpl::CmtLinearSolve()
 {
-  // shape function and strategy types
-  INPAR::MORTAR::ShapeFcn shapefcn        = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(cmtman_->GetStrategy().Params(),"SHAPEFCN");  
+  // strategy and system setup types
   INPAR::CONTACT::SolvingStrategy soltype = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
+  INPAR::CONTACT::SystemType      systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
   
   //**********************************************************************
-  // Solving strategy using standard Lagrange multipliers
+  // Solving a saddle point system
+  // (1) Standard / Dual Lagrange multipliers -> SaddlePointCoupled
+  // (2) Standard / Dual Lagrange multipliers -> SaddlePointSimpler
   //**********************************************************************
-  if (shapefcn == INPAR::MORTAR::shape_standard && soltype==INPAR::CONTACT::solution_lagmult)
+  if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
   {
-    // saddle point solver call
     // (iter_-1 to be consistent with old time integration)
     cmtman_->GetStrategy().SaddlePointSolve(*solver_,stiff_,fres_,disi_,dirichtoggle_,iter_-1);
   }
   
   //**********************************************************************
-  // All other solving strategies (Dual Lagrange, Penalty, Augmented)
+  // Solving a purely displacement based system
+  // (1) Dual (not Standard) Lagrange multipliers -> Condensed
+  // (2) Penalty and Augmented Lagrange strategies
   //**********************************************************************
   else
   {
     // standard solver call
-    solver_->Solve(stiff_->EpetraOperator(),disi_,fres_,true,iter_==1);  
+    solver_->Solve(stiff_->EpetraOperator(),disi_,fres_,true,iter_==1);
   }
 
   return;

@@ -446,6 +446,11 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::MORTAR::search_bfnode &&
                                                         input.get<double>("SEARCH_PARAM") == 0.0)
     dserror("Search radius sp = 0, must be greater than 0 for node-based search");
+  
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
+      Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
+      Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(input,"SYSTEM") == INPAR::CONTACT::system_condensed)
+    dserror("Condensation of linear system only possible for dual Lagrange multipliers");
 
   // *********************************************************************
   // not (yet) implemented combinations

@@ -10,7 +10,7 @@
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-first 2D contact tester (linear elements, penalty approach)
+first 2D contact tester (linear elements, standard LM)
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS          63
 NODES             92
@@ -40,23 +40,6 @@ FLUID_STRESS      No
 FLUID_VIS         No
 ALE_DISP          No
 FILESTEPS         1000
-------------------------------------------------------------STATIC
-//NONLINEAR
-//KINTYP       Tot_Lagr
-NEWTONRAPHSO Load_Control
-NUMSTEP      50
-MAXITER      20
-//TOLRESID     1.0E-08
-TOLDISP      1.0E-08
-STEPSIZE     0.03
-//IARC         No
-//ARCSCL       1.0
-//SIGNCHCSP    No
-RESEVRYDISP  1
-RESEVRYSTRS  1
-RESTARTEVRY  20
-//
------------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0
@@ -82,14 +65,11 @@ MAXITER      50
 APPLICATION          MortarContact
 STRATEGY             Lagrange
 SHAPEFCN             Standard
+SYSTEM               SaddlePointCoupled
 FRICTION             None
 FULL_LINEARIZATION   Yes
 SEARCH_ALGORITHM     Binarytree
 SEARCH_PARAM         0.3
------------------------------------------------------FLUID DYNAMIC
--------------------------------------------------------FSI DYNAMIC
--------------------------------------------------------ALE DYNAMIC
--------------------------------------------------------TSI DYNAMIC
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         UMFPACK
 ------------------------------------------------DESIGN DESCRIPTION

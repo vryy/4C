@@ -48,7 +48,16 @@ namespace INPAR
     {
       solution_lagmult,  ///< method of lagrange multipliers
       solution_penalty,  ///< penalty approach
-      solution_auglag   ///< augmented lagrange approach
+      solution_auglag    ///< augmented lagrange approach
+    };
+    
+    /// Type of linear system setup and solution
+    /// (this enum represents the input file parameter SYSTEM)
+    enum SystemType
+    {
+      system_condensed,  ///< condensed system
+      system_spcoupled,  ///< saddle point system, coupled solution
+      system_spsimpler   ///< saddle point system, SIMPLE(R) preconditioner
     };
 
   }  // namespace CONTACT

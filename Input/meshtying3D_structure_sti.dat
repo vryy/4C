@@ -40,7 +40,6 @@ FLUID_STRESS      No
 FLUID_VIS         No
 ALE_DISP          No
 FILESTEPS         1000
------------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Statics
 EIGEN        0
@@ -65,6 +64,7 @@ MAXITER      50
 APPLICATION          MortarMeshtying
 STRATEGY             Lagrange
 SHAPEFCN             Dual
+SYSTEM               Condensed
 -----------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC

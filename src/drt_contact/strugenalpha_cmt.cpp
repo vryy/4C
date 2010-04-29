@@ -3193,21 +3193,25 @@ void CONTACT::CmtStruGenAlpha::LinearSolve(int numiter, double wanted, double wo
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
   if (isadapttol && numiter) solver_.AdaptTolerance(wanted,worst,adaptolbetter);
   
-  // shape function and strategy types
-  INPAR::MORTAR::ShapeFcn shapefcn        = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(cmtmanager_->GetStrategy().Params(),"SHAPEFCN");  
+  // strategy and system setup types
   INPAR::CONTACT::SolvingStrategy soltype = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
+  INPAR::CONTACT::SystemType      systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(cmtmanager_->GetStrategy().Params(),"SYSTEM");
   
   //**********************************************************************
-  // Solving strategy using standard Lagrange multipliers
+  // Solving a saddle point system
+  // (1) Standard / Dual Lagrange multipliers -> SaddlePointCoupled
+  // (2) Standard / Dual Lagrange multipliers -> SaddlePointSimpler
   //**********************************************************************
-  if (shapefcn == INPAR::MORTAR::shape_standard && soltype==INPAR::CONTACT::solution_lagmult)
+  if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
   {
     // saddle point solver call
     cmtmanager_->GetStrategy().SaddlePointSolve(solver_,stiff_,fresm_,disi_,dirichtoggle_,numiter);
   }
   
   //**********************************************************************
-  // All other solving strategies (Dual LM, Penalty, Augmented)
+  // Solving a purely displacement based system
+  // (1) Dual (not Standard) Lagrange multipliers -> Condensed
+  // (2) Penalty and Augmented Lagrange strategies
   //**********************************************************************
   else
   {

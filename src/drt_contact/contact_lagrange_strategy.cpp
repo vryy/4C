@@ -160,12 +160,20 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
   linslipLM_->Complete(*gslipdofs_,*gslipt_);
   linslipDIS_->Complete(*gsmdofs,*gslipt_);
   
-  // shape function type
+  // shape function and system types
   INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  INPAR::CONTACT::SystemType systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
   
-  // CASE A: DUAL LM SHAPE FUNCTIONS
-  if (shapefcn == INPAR::MORTAR::shape_dual)
+  //**********************************************************************
+  //**********************************************************************
+  // CASE A: CONDENSED SYSTEM (DUAL)
+  //**********************************************************************
+  //**********************************************************************
+  if (systype == INPAR::CONTACT::system_condensed)
   {
+    // double-check if this is a dual LM system
+    if (shapefcn!=INPAR::MORTAR::shape_dual) dserror("Condensation only for dual LM");
+        
     /**********************************************************************/
     /* Multiply Mortar matrices: m^ = inv(d) * m                          */
     /**********************************************************************/
@@ -717,8 +725,12 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     feff = feffnew;
   }
   
-  // CASE B: STANDARD LM SHAPE FUNCTIONS
-  if (shapefcn == INPAR::MORTAR::shape_standard)
+  //**********************************************************************
+  //**********************************************************************
+  // CASE B: SADDLE POINT SYSTEM
+  //**********************************************************************
+  //**********************************************************************
+  else
   {
     // add contact stiffness
     kteff->UnComplete();
@@ -863,12 +875,20 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
   lindmatrix_->Complete(*gsmdofs,*gsdofrowmap_);
   linmmatrix_->Complete(*gsmdofs,*gmdofrowmap_);
 
-  // shape function type
+  // shape function and system types
   INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  INPAR::CONTACT::SystemType systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
   
-  // CASE A: DUAL LM SHAPE FUNCTIONS
-  if (shapefcn == INPAR::MORTAR::shape_dual)
+  //**********************************************************************
+  //**********************************************************************
+  // CASE A: CONDENSED SYSTEM (DUAL)
+  //**********************************************************************
+  //**********************************************************************
+  if (systype == INPAR::CONTACT::system_condensed)
   {
+    // double-check if this is a dual LM system
+    if (shapefcn!=INPAR::MORTAR::shape_dual) dserror("Condensation only for dual LM");
+        
     /**********************************************************************/
     /* Multiply Mortar matrices: m^ = inv(d) * m                          */
     /**********************************************************************/
@@ -1277,8 +1297,12 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     feff = feffnew;
   }
   
-  // CASE B: STANDARD LM SHAPE FUNCTIONS
-  if (shapefcn == INPAR::MORTAR::shape_standard)
+  //**********************************************************************
+  //**********************************************************************
+  // CASE B: SADDLE POINT SYSTEM
+  //**********************************************************************
+  //**********************************************************************
+  else
   {
     // add contact stiffness
     kteff->UnComplete();
@@ -1342,14 +1366,12 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
                   RCP<Epetra_Vector>  sold, RCP<Epetra_Vector> dirichtoggle,
                   int numiter)
 {
-  // you should only be here for standard shape functions
-  INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
-  if (shapefcn != INPAR::MORTAR::shape_standard)
-    dserror("ERROR: SaddlePintSolve only defined for standard LM shape functions!");
-  
   //**********************************************************************
   // prepare saddle point system
   //**********************************************************************
+  // get system type
+  INPAR::CONTACT::SystemType systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
+    
   // some pointers and variables
   RCP<LINALG::SparseMatrix> stiffmt   = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kdd);
   RCP<Epetra_Map>           dispmap   = problemrowmap_;
@@ -1716,66 +1738,88 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   }
 
   //**********************************************************************
-  // SIMPLER preconditioner
+  // Build and solve saddle point system
+  // (A) Standard coupled version
   //**********************************************************************
-//#define SIMPLER
-#ifdef SIMPLER
-  // apply Dirichlet conditions to (0,0) and (0,1) blocks
-  RCP<Epetra_Vector> zeros   = rcp(new Epetra_Vector(*dispmap,true));
-  RCP<Epetra_Vector> rhscopy = rcp(new Epetra_Vector(*fd));
-  LINALG::ApplyDirichlettoSystem(stiffmt,sold,rhscopy,zeros,dirichtoggle);
-  trkdz->ApplyDirichlet(dirichtoggle,false);
+  if (systype==INPAR::CONTACT::system_spcoupled)
+  {
+    // build merged matrix    
+    mergedmt->Add(*stiffmt,false,1.0,1.0);
+    mergedmt->Add(*trkdz,false,1.0,1.0);
+    mergedmt->Add(*trkzd,false,1.0,1.0);
+    mergedmt->Add(*trkzz,false,1.0,1.0);
+    mergedmt->Complete();    
+       
+    // build merged rhs
+    RCP<Epetra_Vector> fresmexp = rcp(new Epetra_Vector(*mergedmap));
+    LINALG::Export(*fd,*fresmexp);
+    mergedrhs->Update(1.0,*fresmexp,1.0);
+    RCP<Epetra_Vector> constrexp = rcp(new Epetra_Vector(*mergedmap));
+    LINALG::Export(*constrrhs,*constrexp);
+    mergedrhs->Update(1.0,*constrexp,1.0);
+    
+    // adapt dirichtoggle vector and apply DBC
+    RCP<Epetra_Vector> dirichtoggleexp = rcp(new Epetra_Vector(*mergedmap));
+    LINALG::Export(*dirichtoggle,*dirichtoggleexp);
+    LINALG::ApplyDirichlettoSystem(mergedmt,mergedsol,mergedrhs,mergedzeros,dirichtoggleexp);
+    
+    // standard solver call
+    solver.Solve(mergedmt->EpetraMatrix(),mergedsol,mergedrhs,true,numiter==0);
+  }
   
-  // row map (equals domain map) extractor
-  LINALG::MapExtractor rowmapext(*mergedmap,lmmap,dispmap);
-  LINALG::MapExtractor dommapext(*mergedmap,lmmap,dispmap);
+  //**********************************************************************
+  // Build and solve saddle point system
+  // (B) SIMPLER preconditioner version
+  //**********************************************************************
+  else if (systype==INPAR::CONTACT::system_spsimpler)
+  {
+    // apply Dirichlet conditions to (0,0) and (0,1) blocks
+    RCP<Epetra_Vector> zeros   = rcp(new Epetra_Vector(*dispmap,true));
+    RCP<Epetra_Vector> rhscopy = rcp(new Epetra_Vector(*fd));
+    LINALG::ApplyDirichlettoSystem(stiffmt,sold,rhscopy,zeros,dirichtoggle);
+    trkdz->ApplyDirichlet(dirichtoggle,false);
+    
+    // row map (equals domain map) extractor
+    LINALG::MapExtractor rowmapext(*mergedmap,lmmap,dispmap);
+    LINALG::MapExtractor dommapext(*mergedmap,lmmap,dispmap);
 
-  //make solver SIMPLER-ready
-  solver.PutSolverParamsToSubParams("SIMPLER", DRT::Problem::Instance()->FluidPressureSolverParams());
-  
-  //build block matrix for SIMPLER
-  Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat =
-    rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
-  mat->Assign(0,0,View,*stiffmt);
-  mat->Assign(0,1,View,*trkdz);
-  mat->Assign(1,0,View,*trkzd);
-  mat->Assign(1,1,View,*trkzz);
-  mat->Complete();
-#endif
-  
-  //**********************************************************************
-  // build saddle point system
-  //**********************************************************************
-  // build merged matrix    
-  mergedmt->Add(*stiffmt,false,1.0,1.0);
-  mergedmt->Add(*trkdz,false,1.0,1.0);
-  mergedmt->Add(*trkzd,false,1.0,1.0);
-  mergedmt->Add(*trkzz,false,1.0,1.0);
-  mergedmt->Complete();    
-     
-  // build merged rhs
-  RCP<Epetra_Vector> fresmexp = rcp(new Epetra_Vector(*mergedmap));
-  LINALG::Export(*fd,*fresmexp);
-  mergedrhs->Update(1.0,*fresmexp,1.0);
-  RCP<Epetra_Vector> constrexp = rcp(new Epetra_Vector(*mergedmap));
-  LINALG::Export(*constrrhs,*constrexp);
-  mergedrhs->Update(1.0,*constrexp,1.0);
-  
-  // adapt dirichtoggle vector and apply DBC
-  RCP<Epetra_Vector> dirichtoggleexp = rcp(new Epetra_Vector(*mergedmap));
-  LINALG::Export(*dirichtoggle,*dirichtoggleexp);
-  LINALG::ApplyDirichlettoSystem(mergedmt,mergedsol,mergedrhs,mergedzeros,dirichtoggleexp);
+    // make solver SIMPLER-ready
+    solver.PutSolverParamsToSubParams("SIMPLER", DRT::Problem::Instance()->FluidPressureSolverParams());
+    
+    // build block matrix for SIMPLER
+    Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat =
+      rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
+    mat->Assign(0,0,View,*stiffmt);
+    mat->Assign(0,1,View,*trkdz);
+    mat->Assign(1,0,View,*trkzd);
+    mat->Assign(1,1,View,*trkzz);
+    mat->Complete();
+    
+    // we also need merged rhs here
+    RCP<Epetra_Vector> fresmexp = rcp(new Epetra_Vector(*mergedmap));
+    LINALG::Export(*fd,*fresmexp);
+    mergedrhs->Update(1.0,*fresmexp,1.0);
+    RCP<Epetra_Vector> constrexp = rcp(new Epetra_Vector(*mergedmap));
+    LINALG::Export(*constrrhs,*constrexp);
+    mergedrhs->Update(1.0,*constrexp,1.0);
+    
+    // we need a dummy merged matrix here in order to be able
+    // to apply Dirichlet B.C. to mergedrhs and mergedsol
+    mergedmt->Complete();
+    
+    // adapt dirichtoggle vector and apply DBC
+    RCP<Epetra_Vector> dirichtoggleexp = rcp(new Epetra_Vector(*mergedmap));
+    LINALG::Export(*dirichtoggle,*dirichtoggleexp);
+    LINALG::ApplyDirichlettoSystem(mergedmt,mergedsol,mergedrhs,mergedzeros,dirichtoggleexp);
+    
+    // SIMPLER preconditioning solver call
+    solver.Solve(mat->EpetraOperator(),mergedsol,mergedrhs,true,numiter==0);
+  }
   
   //**********************************************************************
-  // solve saddle point system
+  // invalid system types
   //**********************************************************************
-#ifdef SIMPLER
-  // SIMPLER preconditioning version
-  solver.Solve(mat->EpetraOperator(),mergedsol,mergedrhs,true,numiter==0);
-#else
-  // standard version
-  solver.Solve(mergedmt->EpetraMatrix(),mergedsol,mergedrhs,true,numiter==0);
-#endif
+  else dserror("ERROR: Invalid system type in SaddlePontSolve");
   
   //**********************************************************************
   // extract results for displacement and LM increments
@@ -1795,12 +1839,20 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
 {
-  // shape function type
+  // shape function and system types
   INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  INPAR::CONTACT::SystemType systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
  
-  // CASE A: DUAL LM SHAPE FUNCTIONS
-  if (shapefcn == INPAR::MORTAR::shape_dual)
+  //**********************************************************************
+  //**********************************************************************
+  // CASE A: CONDENSED SYSTEM (DUAL)
+  //**********************************************************************
+  //**********************************************************************
+  if (systype == INPAR::CONTACT::system_condensed)
   {
+    // double-check if this is a dual LM system
+    if (shapefcn!=INPAR::MORTAR::shape_dual) dserror("Condensation only for dual LM");
+        
     // extract slave displacements from disi
     RCP<Epetra_Vector> disis = rcp(new Epetra_Vector(*gsdofrowmap_));
     if (gsdofrowmap_->NumGlobalElements()) LINALG::Export(*disi, *disis);
@@ -1868,8 +1920,12 @@ void CONTACT::CoLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
     }
   }
    
-  // CASE B: STANDARD LM SHAPE FUNCTIONS
-  if (shapefcn == INPAR::MORTAR::shape_standard)
+  //**********************************************************************
+  //**********************************************************************
+  // CASE B: SADDLE POINT SYSTEM
+  //**********************************************************************
+  //**********************************************************************
+  else
   {
     // do nothing (z_ was part of soultion already)
   }
@@ -1913,6 +1969,7 @@ void CONTACT::CoLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
   */
 
   //cout << *z_ << endl;
+  
   return;
 }
 
