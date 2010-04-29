@@ -535,11 +535,32 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   // get time step of the current problems
   double ndta = dta_;
 
-  // Get old Vector size
-  int oVecSize = (int)flowrates_->size();
 
-  // Calculate new Vector size
-  int nVecSize = (int)(oVecSize*odta/ndta);
+  // time of restart
+  double t = reader.ReadDouble("time");
+
+  // -------------------------------------------------------------------
+  // Read in the pressure values and the pressure difference
+  // -------------------------------------------------------------------
+  stream4 << "pressuresId"<<condnum;
+  stream5 << "pressuresposId" << condnum;
+  
+  // read in pressure difference
+  dpstream <<"dP"<<condnum;
+  dP_ = reader.ReadDouble(dpstream.str());
+
+  // read in pressures
+  reader.ReadRedundantDoubleVector(pressures_ ,stream4.str());
+  
+  // read in the pressures' position
+  pressurespos_ = reader.ReadInt(stream5.str());
+
+  // Get old Pressure Vector size
+  int oPSize = (int)pressures_->size();
+
+  // Calculate new Pressure Vector size
+  int nPSize = (int)(double(oPSize)*odta/ndta);
+
 
   if(treetype_ == "windkessel_freq_indp")
   {
@@ -573,6 +594,12 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   }
   else
   {
+    // Get old flowrates Vector size
+    int oQSize = (int)pressures_->size();
+    
+    // Calculate new flowrates Vector size
+    int nQSize = (int)(double(oQSize)*odta/ndta);
+
     stream1 << "flowratesId" << condnum;
     stream2 << "flowratesposId" << condnum;
 
@@ -585,9 +612,8 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
     if (flowrates_->size() == 0)
     dserror("could not re-read vector of flowrates");
     
-    // time of restart
-    double t = reader.ReadDouble("time");
     // old number of flowrates in vector
+
 #if 1
     if (dta_ == odta)
     {
@@ -600,8 +626,8 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
 
     // evaluate the new flow rate vector
     int nfr_pos = 0;
-    RCP<std::vector<double> > nfr = rcp(new vector<double>(nVecSize,0.0));
-    this->interpolate(flowrates_,nfr,flowratespos_,nfr_pos);
+    RCP<std::vector<double> > nfr = rcp(new vector<double>(nQSize,0.0));
+    this->interpolate(flowrates_,nfr,flowratespos_,nfr_pos,t);
     // store new values in class
     flowratespos_ = nfr_pos;
     flowrates_    = nfr;
@@ -611,26 +637,10 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
     OutflowBoundary(t,ndta,0.66,condnum);
   }
 
-  // -------------------------------------------------------------------
-  // Read in the pressure values and the pressure difference
-  // -------------------------------------------------------------------
-  stream4 << "pressuresId"<<condnum;
-  stream5 << "pressuresposId" << condnum;
-  
-  // read in pressure difference
-  dpstream <<"dP"<<condnum;
-  dP_ = reader.ReadDouble(dpstream.str());
-
-  // read in pressures
-  reader.ReadRedundantDoubleVector(pressures_ ,stream4.str());
-  
-  // read in the pressures' position
-  pressurespos_ = reader.ReadInt(stream5.str());
-
   // evaluate the new pressure vector
   int np_pos = 0;
-  RCP<std::vector<double> > np = rcp(new vector<double>(nVecSize,0.0));
-  this->interpolate(pressures_,np,pressurespos_,np_pos);
+  RCP<std::vector<double> > np = rcp(new vector<double>(nPSize,0.0));
+  this->interpolate(pressures_,np,pressurespos_,np_pos,t);
 
   // store new values in class
   pressurespos_ = np_pos;
@@ -1633,15 +1643,22 @@ void FLD::UTILS::FluidImpedanceBc::getResultsOfAPeriod(
 void FLD::UTILS::FluidImpedanceBc::interpolate(RCP<std::vector<double> > V1,
                                                RCP<std::vector<double> > V2,
                                                int index1,
-                                               int & index2)
+                                               int & index2,
+                                               double time)
 {
   // Get size of V1 and V2
   int n1 = V1->size();
   int n2 = V2->size();
 
+  double TotalTime;
+  if (time<period_)
+    TotalTime = time;
+  else
+    TotalTime = period_;
+    
   // Get time step size of V1 and V2
-  double dt1 = period_/double(n1 - 1);
-  double dt2 = period_/double(n2 - 1);
+  double dt1 = (TotalTime)/double(n1 - 1);
+  double dt2 = (TotalTime)/double(n2 - 1);
 
   // defining some necessary variables
   double t1_1, t1_2;
@@ -1656,7 +1673,7 @@ void FLD::UTILS::FluidImpedanceBc::interpolate(RCP<std::vector<double> > V1,
     // Get V1 values at T(i) and T(i+1)
     // -----------------------------------------------------------------
     v1_1 = (*V1)[i];
-    v1_2 = (*V2)[i];
+    v1_2 = (*V1)[i+1];
 
     // -----------------------------------------------------------------
     // Calculate T(i) and T(i+1)

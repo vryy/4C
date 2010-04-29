@@ -280,7 +280,8 @@ private:
   void interpolate(RCP<std::vector<double> > V1,
                    RCP<std::vector<double> > V2,
                    int  index1,
-                   int & index2);
+                   int & index2,
+                   double time);
 
 
 protected:

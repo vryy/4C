@@ -1627,7 +1627,6 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateParameterCalculation(
   }  // end Gauss loop
   // set new flow rate
   params.set<double>("Outlet flowrate", flowrate);
-  cout << "flow rate: "<< flowrate << endl;
 }//DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCalculation
 
 
@@ -2076,7 +2075,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
 
-#ifdef D_ALE_BFLOW
+#if 0 //def D_ALE_BFLOW
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
   RCP<const Epetra_Vector>      dispnp;
