@@ -577,6 +577,51 @@ set(OBJS_DRT_S8_LIB
   src/drt_s8/shell8.cpp
   src/drt_s8/shell8_line.cpp
 )
+set(OBJS_DRT_FSI
+  src/drt_fsi/fs_monolithic.cpp
+  src/drt_fsi/fsi_algorithm.cpp
+  src/drt_fsi/fsi_constrmonolithic.cpp
+  src/drt_fsi/fsi_constrmonolithic_fluidsplit.cpp
+  src/drt_fsi/fsi_constrmonolithic_structuresplit.cpp
+  src/drt_fsi/fsi_debugwriter.cpp
+  src/drt_fsi/fsi_dirichletneumann.cpp
+  src/drt_fsi/fsi_dirichletneumannslideale.cpp
+  src/drt_fsi/fsi_dyn.cpp
+  src/drt_fsi/fsi_fluid_ale.cpp
+  src/drt_fsi/fsi_fluid_xfem.cpp
+  src/drt_fsi/fsi_lagrangeprec.cpp
+  src/drt_fsi/fsi_lungmonolithic.cpp
+  src/drt_fsi/fsi_lungmonolithic_fluidsplit.cpp
+  src/drt_fsi/fsi_lungmonolithic_structuresplit.cpp
+  src/drt_fsi/fsi_matrixtransform.cpp
+  src/drt_fsi/fsi_monolithic.cpp
+  src/drt_fsi/fsi_monolithic_linearsystem.cpp
+  src/drt_fsi/fsi_monolithiclagrange.cpp
+  src/drt_fsi/fsi_monolithicoverlap.cpp
+  src/drt_fsi/fsi_monolithicstructuresplit.cpp
+  src/drt_fsi/fsi_monolithicxfem.cpp
+  src/drt_fsi/fsi_mortarmonolithic_structuresplit.cpp
+  src/drt_fsi/fsi_nox_aitken.cpp
+  src/drt_fsi/fsi_nox_epsilon.cpp
+  src/drt_fsi/fsi_nox_fixpoint.cpp
+  src/drt_fsi/fsi_nox_group.cpp
+  src/drt_fsi/fsi_nox_jacobian.cpp
+  src/drt_fsi/fsi_nox_linearsystem_bgs.cpp
+  src/drt_fsi/fsi_nox_linearsystem_gcr.cpp
+  src/drt_fsi/fsi_nox_linearsystem_partitioned.cpp
+  src/drt_fsi/fsi_nox_mpe.cpp
+  src/drt_fsi/fsi_nox_newton.cpp
+  src/drt_fsi/fsi_nox_sd.cpp
+  src/drt_fsi/fsi_overlapprec.cpp
+  src/drt_fsi/fsi_overlapprec_fsiamg.cpp
+  src/drt_fsi/fsi_partitioned.cpp
+  src/drt_fsi/fsi_partitionedmonolithic.cpp
+  src/drt_fsi/fsi_robin.cpp
+  src/drt_fsi/fsi_robinneumann.cpp
+  src/drt_fsi/fsi_statustest.cpp
+  src/drt_fsi/fsi_structureale.cpp
+  src/drt_fsi/fsi_utils.cpp
+)
 set(OBJS_DRT_RED_AIRWAYS
   src/drt_red_airways/airwayimplicitintegration.cpp
   src/drt_red_airways/red_airways_dyn_drt.cpp
@@ -751,6 +796,11 @@ set(OBJS_BACI_MAIN
   src/global_full/global_control.c
   src/global_full/main_ccarat.c
 )
+set(OBJS_DRT_B3II_LIB
+  src/drt_beam3ii/beam3ii.cpp
+  src/drt_beam3ii/beam3ii_evaluate.cpp
+  src/drt_beam3ii/beam3ii_input.cpp
+)
 set(OBJS_PRE_CURVE
   src/pre_curve/pre_curve.cpp
 )
@@ -838,51 +888,6 @@ set(OBJS_LINALG
   src/drt_lib/transfer_operator_pgamg.cpp
   src/drt_lib/transfer_operator_saamg.cpp
   src/drt_lib/transfer_operator_tentative.cpp
-)
-set(OBJS_DRT_FSI
-  src/drt_fsi/fs_monolithic.cpp
-  src/drt_fsi/fsi_algorithm.cpp
-  src/drt_fsi/fsi_constrmonolithic.cpp
-  src/drt_fsi/fsi_constrmonolithic_fluidsplit.cpp
-  src/drt_fsi/fsi_constrmonolithic_structuresplit.cpp
-  src/drt_fsi/fsi_debugwriter.cpp
-  src/drt_fsi/fsi_dirichletneumann.cpp
-  src/drt_fsi/fsi_dirichletneumannslideale.cpp
-  src/drt_fsi/fsi_dyn.cpp
-  src/drt_fsi/fsi_fluid_ale.cpp
-  src/drt_fsi/fsi_fluid_xfem.cpp
-  src/drt_fsi/fsi_lagrangeprec.cpp
-  src/drt_fsi/fsi_lungmonolithic.cpp
-  src/drt_fsi/fsi_lungmonolithic_fluidsplit.cpp
-  src/drt_fsi/fsi_lungmonolithic_structuresplit.cpp
-  src/drt_fsi/fsi_matrixtransform.cpp
-  src/drt_fsi/fsi_monolithic.cpp
-  src/drt_fsi/fsi_monolithic_linearsystem.cpp
-  src/drt_fsi/fsi_monolithiclagrange.cpp
-  src/drt_fsi/fsi_monolithicoverlap.cpp
-  src/drt_fsi/fsi_monolithicstructuresplit.cpp
-  src/drt_fsi/fsi_monolithicxfem.cpp
-  src/drt_fsi/fsi_mortarmonolithic_structuresplit.cpp
-  src/drt_fsi/fsi_nox_aitken.cpp
-  src/drt_fsi/fsi_nox_epsilon.cpp
-  src/drt_fsi/fsi_nox_fixpoint.cpp
-  src/drt_fsi/fsi_nox_group.cpp
-  src/drt_fsi/fsi_nox_jacobian.cpp
-  src/drt_fsi/fsi_nox_linearsystem_bgs.cpp
-  src/drt_fsi/fsi_nox_linearsystem_gcr.cpp
-  src/drt_fsi/fsi_nox_linearsystem_partitioned.cpp
-  src/drt_fsi/fsi_nox_mpe.cpp
-  src/drt_fsi/fsi_nox_newton.cpp
-  src/drt_fsi/fsi_nox_sd.cpp
-  src/drt_fsi/fsi_overlapprec.cpp
-  src/drt_fsi/fsi_overlapprec_fsiamg.cpp
-  src/drt_fsi/fsi_partitioned.cpp
-  src/drt_fsi/fsi_partitionedmonolithic.cpp
-  src/drt_fsi/fsi_robin.cpp
-  src/drt_fsi/fsi_robinneumann.cpp
-  src/drt_fsi/fsi_statustest.cpp
-  src/drt_fsi/fsi_structureale.cpp
-  src/drt_fsi/fsi_utils.cpp
 )
 set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint.cpp
@@ -1061,6 +1066,11 @@ option (D_BEAM3       "3D Reissner beam element" ON)
 if (D_BEAM3)
   add_definitions("-DD_BEAM3")
 endif(D_BEAM3)
+
+option (D_BEAM3II     "3D Reissner beam element of type II" ON)
+if (D_BEAM3II)
+  add_definitions("-DD_BEAM3II")
+endif(D_BEAM3II)
 
 option (D_SMOOTHROD      "3D smooth rod element" ON)
 if (D_SMOOTHROD)
@@ -1302,6 +1312,7 @@ add_library(ele_ale ${OBJS_DRT_ALE_LIB})
 add_library(ele_b2 ${OBJS_DRT_B2_LIB})
 add_library(ele_b2r ${OBJS_DRT_B2R_LIB})
 add_library(ele_b3 ${OBJS_DRT_B3_LIB})
+add_library(ele_b3ii ${OBJS_DRT_B3II_LIB})
 add_library(ele_bele3 ${OBJS_DRT_BELE3_LIB})
 add_library(ele_combust3 ${OBJS_DRT_COMBUST3_LIB})
 add_library(ele_f2 ${OBJS_DRT_F2_LIB})
@@ -1322,6 +1333,7 @@ set(ELEMENT_LIBRARIES
   ele_b2
   ele_b2r
   ele_b3
+  ele_b3ii
   ele_bele3
   ele_combust3
   ele_f2
@@ -1707,6 +1719,12 @@ baci_test(mfsi-volconstr-fluidsplit 1 "")
 baci_test(mfsi-volconstr-fluidsplit 2 "")
 baci_test(mfsi-volconstr-structsplit 1 "")
 baci_test(mfsi-volconstr-structsplit 2 "")
+baci_test(mfsi_ow32x32_sti_drt_mtrss 1 "")
+baci_test(mfsi_ow32x32_sti_drt_mtrss 2 "")
+baci_test(mfsi_ow32x32_sti_drt_ss 1 "")
+baci_test(mfsi_ow32x32_sti_drt_ss 2 "")
+baci_test(mfsi_ow3D_mtr_drt 1 "")
+baci_test(mfsi_ow3D_mtr_drt 2 "")
 baci_test(orthopressure_shell8_eas_ans_sphere 1 8)
 baci_test(orthopressure_shell8_eas_ans_sphere 2 8)
 baci_test(orthopressure_solidh8_eas_sphere 1 "")
