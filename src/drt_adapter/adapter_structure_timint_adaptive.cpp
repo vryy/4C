@@ -19,7 +19,7 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../drt_structure/strtimint_create.H"
-#include "adapter_structure_timint_adapt.H"
+#include "adapter_structure_timint_adaptive.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition_utils.H"
 
