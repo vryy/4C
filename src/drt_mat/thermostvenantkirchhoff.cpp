@@ -194,7 +194,8 @@ void MAT::ThermoStVenantKirchhoff::SetupCmat(LINALG::Matrix<6,6>& cmat)
     cmat(4,4) = mfac*0.5;
     cmat(5,5) = mfac*0.5;
   }
-  else */ {
+  else */
+  {
     // isotropic elasticity tensor C in Voigt matrix notation
     //                       [ 1-nu     nu     nu |          0    0    0 ]
     //                       [        1-nu     nu |          0    0    0 ]
@@ -206,7 +207,6 @@ void MAT::ThermoStVenantKirchhoff::SetupCmat(LINALG::Matrix<6,6>& cmat)
     //
     const double mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  // factor
 
-    // control this Clear() command once again!!! 16.02.10
     // clear the material tangent
     cmat.Clear();
     // write non-zero components
@@ -367,12 +367,12 @@ void MAT::ThermoStVenantKirchhoff::Ctempconst(LINALG::Matrix<6,1>& ctempconst)
   const double inittemp = params_->thetainit_;
   // rhs = C_theta * theta_init = const
   // loop over the element nodes
-  for (int i=0; i<2; ++i)
+  for (int i=0; i<3; ++i)
   {
     // non-zero entries only in main directions
-    ctempconst(i,0) = m * inittemp;
+    ctempconst(i,0) = -m * inittemp;
   }
-  for (int i=3; i<5; ++i)
+  for (int i=3; i<6; ++i)
   {
     ctempconst(i,0) = 0;
   }
