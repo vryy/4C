@@ -25,6 +25,7 @@ CCADISCRET           # use new baci discretization subsystem DRT
 # D_BEAM2            # 2D Timoshenko beam element 
 # D_BEAM2R           # 2D Reissner beam element
 # D_BEAM3            # 3D Reissner beam element 
+# D_BEAM3II          # 3D Reissner beam element of type II
 # D_TRUSS3           # 3D truss element
 # D_TRUSS2           # 2D truss element
 # D_TORSION3         # 3D torsion spring element

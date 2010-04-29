@@ -65,6 +65,9 @@ public:
 
   //! \brief Initializes beam3 elements in case of perioddic boundary conditions
   void PeriodicBoundaryBeam3Init(DRT::Element* element);
+  
+  //! \brief Initializes beam3ii elements in case of perioddic boundary conditions
+  void PeriodicBoundaryBeam3iiInit(DRT::Element* element);
 
   //! \brief Initializes truss3 elements in case of perioddic boundary conditions
   void PeriodicBoundaryTruss3Init(DRT::Element* element);

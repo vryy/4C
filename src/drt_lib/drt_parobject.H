@@ -205,6 +205,8 @@ using namespace std;
 #define ParObject_ThermoStVenantKirchhoff (int)190
 #define ParObject_Smoothrod             (int)191
 #define ParObject_SmoothrodRegister     (int)192
+#define ParObject_Beam3ii               (int)193
+#define ParObject_Beam3iiRegister       (int)194
 namespace DRT
 {
 

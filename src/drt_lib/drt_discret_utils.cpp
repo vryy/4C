@@ -50,6 +50,9 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     case DRT::Element::element_beam3:
       nv = 6;
     break;
+    case DRT::Element::element_beam3ii:
+      nv = 6;
+    break;
     case DRT::Element::element_smoothrod:
       nv = 4;
     break;
@@ -162,6 +165,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     break;
     case DRT::Element::element_shell8:
     case DRT::Element::element_beam3:
+    case DRT::Element::element_beam3ii:
       numdf = 6;
       dimns = 6;
     break;
@@ -548,9 +552,9 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
    * for beam3 elements just amounts to an error as no properly working
    * implementation has been available so far*/
 
-  else if (ele->Type() == DRT::Element::element_beam3)
+  else if (ele->Type() == DRT::Element::element_beam3 || ele->Type() == DRT::Element::element_beam3ii)
   {
-    dserror("No Algebraic Multigrid support by beam3 element");
+    dserror("No Algebraic Multigrid support for beam3 and beam3ii element");
     /*
     //looping through all nodes
     for (int i=0; i<NumMyRowNodes(); ++i)
@@ -628,7 +632,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
     } // for (int i=0; i<NumMyRowNodes(); ++i)
     */
-  } // else if (ele->Type() == DRT::Element::element_beam3)
+  } // else if (ele->Type() == DRT::Element::element_beam3 || ele->Type() == DRT::Element::element_beam3ii)
 
 
   /* the rigid body modes for fluids are:

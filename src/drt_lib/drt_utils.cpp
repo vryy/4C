@@ -75,6 +75,7 @@ extern "C"
 #include "../drt_beam2/beam2.H"
 #include "../drt_beam2r/beam2r.H"
 #include "../drt_beam3/beam3.H"
+#include "../drt_beam3ii/beam3ii.H"
 #include "../drt_smoothrod/smoothrod.H"
 #include "../drt_truss3/truss3.H"
 #include "../drt_truss2/truss2.H"
@@ -266,6 +267,23 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     {
       DRT::ELEMENTS::Beam3Register* object =
                       new DRT::ELEMENTS::Beam3Register(DRT::Element::element_beam3);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+#endif
+#ifdef D_BEAM3II
+    case ParObject_Beam3ii:
+    {
+      DRT::ELEMENTS::Beam3ii* object = new DRT::ELEMENTS::Beam3ii(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Beam3iiRegister:
+    {
+      DRT::ELEMENTS::Beam3iiRegister* object =
+                      new DRT::ELEMENTS::Beam3iiRegister(DRT::Element::element_beam3ii);
       object->Unpack(data);
       return object;
     }
@@ -1199,6 +1217,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     beam2,
     beam2r,
     beam3,
+    beam3ii,
     truss3,
     truss2,
     torsion3,
@@ -1244,6 +1263,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="BEAM2") type = beam2;
   else if (eletype=="BEAM2R") type = beam2r;
   else if (eletype=="BEAM3") type = beam3;
+  else if (eletype=="BEAM3II") type = beam3ii;
   else if (eletype=="TRUSS3") type = truss3;
   else if (eletype=="TRUSS2") type = truss2;
   else if (eletype=="TORSION3") type = torsion3;
@@ -1285,6 +1305,14 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     case beam3:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam3(id,owner));
+      return ele;
+    }
+    break;
+#endif
+#ifdef D_BEAM3II
+    case beam3ii:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam3ii(id,owner));
       return ele;
     }
     break;

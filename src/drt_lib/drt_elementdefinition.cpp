@@ -25,6 +25,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"BEAM2");
   PrintElementLines(stream,"BEAM2R");
   PrintElementLines(stream,"BEAM3");
+  PrintElementLines(stream,"BEAM3II");
   PrintElementLines(stream,"Smoothrod");
   //PrintElementLines(stream,"CONSTRELE2");
   //PrintElementLines(stream,"CONSTRELE3");
@@ -130,6 +131,7 @@ void DRT::INPUT::ElementDefinition::SetupValidElementLines()
   SetupBeam2Lines();
   SetupBeam2rLines();
   SetupBeam3Lines();
+  SetupBeam3iiLines();
   SetupSmoothrodLines();
 //   SetupConstrele2Lines();
 //   SetupConstrele3Lines();
@@ -397,6 +399,102 @@ void DRT::INPUT::ElementDefinition::SetupBeam3Lines()
     .AddNamedDouble("MOMINPOL")
     ;
 }
+
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::ElementDefinition::SetupBeam3iiLines()
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["BEAM3II"];
+
+  defs["LINE2"]
+    .AddIntVector("LINE2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    .AddDoubleVector("TRIADS",6)
+    ;
+
+  defs["LIN2"]
+    .AddIntVector("LIN2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    .AddDoubleVector("TRIADS",6)
+    ;
+
+  defs["LINE3"]
+    .AddIntVector("LINE3",3)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    .AddDoubleVector("TRIADS",9)
+    ;
+
+  defs["LIN3"]
+    .AddIntVector("LIN3",3)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    .AddDoubleVector("TRIADS",9)
+    ;
+
+  defs["LINE4"]
+    .AddIntVector("LINE4",4)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    .AddDoubleVector("TRIADS",12)
+    ;
+
+  defs["LIN4"]
+    .AddIntVector("LIN4",4)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    .AddDoubleVector("TRIADS",12)
+    ;
+
+  defs["LINE5"]
+    .AddIntVector("LINE5",5)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    .AddDoubleVector("TRIADS",15)
+    ;
+
+  defs["LIN5"]
+    .AddIntVector("LIN5",5)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    .AddDoubleVector("TRIADS",15)
+    ;
+}
+
+
 
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::ElementDefinition::SetupSmoothrodLines()
