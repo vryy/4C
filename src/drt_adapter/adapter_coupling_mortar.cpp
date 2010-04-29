@@ -72,22 +72,11 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
   {
     DRT::Node* node = nodeiter->second;
-    if (masterdis.NumDof(node)<4)
-    {
-      RCP<MORTAR::MortarNode> mrtrnode = rcp(
+    RCP<MORTAR::MortarNode> mrtrnode = rcp(
                 new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
-                   masterdis.NumDof(node), masterdis.Dof(node), false));
-      interface->AddMortarNode(mrtrnode);
-    }
-    else
-    {
-      RCP<MORTAR::MortarNode> mrtrnode = rcp(
-                new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
-                    masterdis.NumDof(node)-1, masterdis.Dof(node), false));
-      interface->AddMortarNode(mrtrnode);
-    }     
-
+                    dim, masterdis.Dof(node), false));
     
+    interface->AddMortarNode(mrtrnode);    
   }
 
   // build master dof row map
@@ -95,13 +84,9 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   {
     DRT::Node* node = nodeiter->second;
     vector<int> dofs = masterdis.Dof(node);
-    if (dofs.size()<4)
-      masterdofs.insert(masterdofs.end(), dofs.begin(), dofs.end());
-    else
-    {
-      dofs.resize(dofs.size()-1);
-      masterdofs.insert(masterdofs.end(), dofs.begin(), dofs.end());
-    }
+ 
+    dofs.resize(dim);
+    masterdofs.insert(masterdofs.end(), dofs.begin(), dofs.end());
 
   }
 
@@ -118,7 +103,7 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
 
     RCP<MORTAR::MortarNode> mrtrnode = rcp(
                 new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
-                    slavedis.NumDof(node)-1, slavedis.Dof(node), true));
+                    dim, slavedis.Dof(node), true));
 
     interface->AddMortarNode(mrtrnode);
     
@@ -126,7 +111,7 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
     // couples just the displacements, so remove the pressure dof.
 
     vector<int> dofs = slavedis.Dof(node);
-    dofs.resize(dofs.size() - 1);
+    dofs.resize(dim);
     slavecoldofs.insert(slavecoldofs.end(), dofs.begin(), dofs.end());
   }
 
@@ -296,10 +281,11 @@ void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idisp)
 }
 
 /*----------------------------------------------------------------------*
- * Compute sv = D^{-1}M(mv)
  *----------------------------------------------------------------------*/
-RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave(RefCountPtr<
-    Epetra_Vector> mv)
+RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
+(
+  RefCountPtr<Epetra_Vector> mv
+) const
 {
 
   dsassert( masterdofrowmap_->SameAs( mv->Map() ),
@@ -320,8 +306,51 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave(RefCountPtr<
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster(RefCountPtr<
-    Epetra_Vector> sv)
+RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
+(
+  RefCountPtr<Epetra_Vector> sv
+) const
+{
+  Epetra_Vector tmp = Epetra_Vector(M_->RangeMap());
+  copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
+
+  RefCountPtr<Epetra_Vector> mv = rcp(new Epetra_Vector(*masterdofrowmap_));
+  if (M_->Multiply(true, tmp, *mv))
+    dserror( "M^{T}*sv multiplication failed" );
+
+  return mv;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
+(
+  RefCountPtr<const Epetra_Vector> mv
+) const
+{
+
+  dsassert( masterdofrowmap_->SameAs( mv->Map() ),
+      "Vector with master dof map expected" );
+
+  Epetra_Vector tmp = Epetra_Vector(M_->RowMap());
+
+  if (M_->Multiply(false, *mv, tmp))
+    dserror( "M*mv multiplication failed" );
+
+  RefCountPtr<Epetra_Vector> sv = rcp( new Epetra_Vector( *slavedofrowmap_ ) );
+
+  if ( Dinv_->Multiply( false, tmp, *sv ) )
+    dserror( "D^{-1}*v multiplication failed" );
+
+  return sv;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
+(
+  RefCountPtr<const Epetra_Vector> sv
+) const
 {
   Epetra_Vector tmp = Epetra_Vector(M_->RangeMap());
   copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());

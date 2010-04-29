@@ -63,16 +63,16 @@ namespace ADAPTER
     ///filling matrices
     void Evaluate(RCP<Epetra_Vector> idisp);
 
-    /// transfer a dof vector from master to slave
-    /*!
-      Expects the structural interface displacements and returns interface
-      displacements on the fluid side.
-      Compute sv = D^{-1}M(mv)
-     */
     RefCountPtr<Epetra_Vector> MasterToSlave
     (
         RefCountPtr<Epetra_Vector> mv ///< structural interface displacements
-    );
+    ) const;
+    
+    /// const version
+    RefCountPtr<Epetra_Vector> MasterToSlave
+    (
+        RefCountPtr<const Epetra_Vector> mv ///< structural interface displacements
+    ) const;
 
     /// transfer a dof vector from slave to master
     /*!
@@ -84,7 +84,13 @@ namespace ADAPTER
     RefCountPtr<Epetra_Vector> SlaveToMaster
     (
         RefCountPtr<Epetra_Vector> sv   ///< fluid interface loads
-    );
+    ) const;
+    
+    /// const version
+    RefCountPtr<Epetra_Vector> SlaveToMaster
+    (
+        RefCountPtr<const Epetra_Vector> sv   ///< fluid interface loads
+    ) const;
 
     /// the interface dof map of the master side
     RefCountPtr<Epetra_Map> MasterDofRowMap() const { return masterdofrowmap_; }
