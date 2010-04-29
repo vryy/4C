@@ -226,6 +226,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   {
     dispnp_     = LINALG::CreateVector(*dofrowmap,true);
     dispn_      = LINALG::CreateVector(*dofrowmap,true);
+    dispnm_     = LINALG::CreateVector(*dofrowmap,true);
     gridveln_   = LINALG::CreateVector(*dofrowmap,true);
     gridvelaf_  = LINALG::CreateVector(*dofrowmap,true);
   }
@@ -939,31 +940,19 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeUpdate()
 
                     (equivalent to what is done for BDF2)
 
-                           /       \          
-        n+1        3      |  n+1  n |    1       n 
-     u_G     = -------- * | d   -d  | - --- * u_G  
-                2 * dt    |         |    2
-                           \       /          
+                           /                      \  
+        n+1        1      |     n+1       n    n-1 | 
+     u_G     = -------- * | 3* d   - 4 * d  + d    | 
+                2 * dt    |                        | 
+                           \                      /          
     */
-    gridveln_->Scale(-0.5);
-    gridveln_->Update( 3.0/(2.0*dt_),*dispnp_,
-                      -3.0/(2.0*dt_),*dispn_ ,1.0);
-
-#if 0
-    //            n+1   n
-    //   .n+1    d   - d     gamma - 1   .n        .n
-    //   d    = ---------- + --------- * d    ---> d
-    //          gamma * dt     gamma
-    //
-
-    double gdtinv = 1.0/(gamma_*dt_);
-    gridveln_->Update(gdtinv,*dispnp_,-gdtinv,*dispn_,(gamma_-1.0)/gamma_);
-#endif
-
+    gridveln_->Update(1.5/dt_, *dispnp_, -2.0/dt_, *dispn_, 0.0);
+    gridveln_->Update(0.5/dt_, *dispnm_, 1.0);
+   
     //    n+1         n
     //   d      ---> d
     //
-
+    dispnm_  ->Update(1.0,*dispn_,0.0);
     dispn_   ->Update(1.0,*dispnp_,0.0);
   }
 
