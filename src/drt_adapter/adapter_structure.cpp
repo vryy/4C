@@ -17,7 +17,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_structure.H"
 #include "adapter_structure_strugenalpha.H"
 #include "adapter_structure_timint.H"
-#include "adapter_structure_timint_adapt.H"
+#include "adapter_structure_timint_adaptive.H"
 #include "adapter_structure_timint_expl.H"
 #include "adapter_structure_constr_merged.H"
 #include "adapter_structure_wrapper.H"
