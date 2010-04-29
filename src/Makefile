@@ -1,6 +1,6 @@
 
-ccarat:
-	cd .. && $(MAKE) ccarat
+baci:
+	cd .. && $(MAKE) baci
 
 all:
 	cd .. && $(MAKE) all

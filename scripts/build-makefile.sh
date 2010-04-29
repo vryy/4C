@@ -75,7 +75,7 @@ include \$(SRC)/Makefile.objects
 #--------------------------------------------------------------------
 #
 # The main rule called when no arguments are given
-ccarat: \$(PROGRAM)
+baci: \$(PROGRAM)
 
 # Build (nearly) everything.
 # Some filters (like the visual ones) are very specific and system dependent
