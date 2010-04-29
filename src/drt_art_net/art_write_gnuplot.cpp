@@ -289,7 +289,6 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
       exit(1);
     }
     
-    cout<<"(*nodes)[i] is: "<<(*nodes)[i]<<endl;
     //    DRT::Node * nd = discret->lColNode((*nodes)[i]);
     DRT::Node * nd = discret->gNode((*nodes)[i]);
     DRT::Element** ele = nd->Elements();

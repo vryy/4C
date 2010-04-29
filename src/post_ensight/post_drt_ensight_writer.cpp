@@ -192,7 +192,7 @@ void EnsightWriter::WriteGeoFile(const string& geofilename)
   // header
   Write(geofile, "C Binary");
 
-  // print out one timestep
+  // print out one
   // if more are needed, this has to go into a loop
   map<string, vector<ofstream::pos_type> > resultfilepos;
 

@@ -294,7 +294,8 @@ private:
     calc_sys_matrix_rhs,
     get_initail_artery_state,
     solve_riemann_problem,
-    set_term_bc
+    set_term_bc,
+    calc_postpro_vals
   };
 
 

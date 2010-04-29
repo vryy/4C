@@ -67,6 +67,13 @@ namespace ELEMENTS
                                     vector<int>&                  lm,
                                     RefCountPtr<MAT::Material>    mat) = 0;
 
+    virtual void CalcPostprocessingValues(Artery*                       ele,
+                                          ParameterList&                params,
+                                          DRT::Discretization&          discretization,
+                                          vector<int>&                  lm,
+                                          RefCountPtr<MAT::Material>    mat) = 0;
+
+
     virtual bool SolveRiemann(Artery*                             ele,
                               ParameterList&                      params,
                               DRT::Discretization&                discretization,
@@ -149,6 +156,13 @@ namespace ELEMENTS
                                     DRT::Discretization&         disctretization,
                                     vector<int>&                 lm,
                                     RefCountPtr<MAT::Material>   mat);
+
+    virtual void CalcPostprocessingValues(Artery*                       ele,
+                                          ParameterList&                params,
+                                          DRT::Discretization&          discretization,
+                                          vector<int>&                  lm,
+                                          RefCountPtr<MAT::Material>    mat);
+
 
     /*!
       \brief get the initial values of the degrees of freedome at the node

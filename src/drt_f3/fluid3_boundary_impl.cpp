@@ -2076,6 +2076,31 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
 
+#ifdef D_ALE_BFLOW
+  // Add the deformation of the ALE mesh to the nodes coordinates
+  // displacements
+  RCP<const Epetra_Vector>      dispnp;
+  vector<double>                mydispnp;
+
+  if (ele->ParentElement()->IsAle())
+  {
+    dispnp = discretization.GetState("dispnp");
+    if (dispnp!=null)
+    {
+      mydispnp.resize(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+    }
+    dsassert(mydispnp.size()!=0,"paranoid");
+    for (int inode=0;inode<iel;++inode)
+    {
+      for (int idim=0; idim<nsd_; ++idim)
+      {
+        xyze(idim,inode)+=mydispnp[numdofpernode_*inode+idim];
+      }
+    }
+  }
+#endif // D_ALE_BFLOW
+
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
     // integration factor * Gauss weights & local Gauss point coordinates

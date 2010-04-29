@@ -480,6 +480,7 @@ int ART::UTILS::ArtJunctionBc::Solve(ParameterList & params)
     cout<<"rho ["<<i<<"] is: "<<rho[i]<<endl;
     cout<<"beta["<<i<<"] is: "<<beta[i]<<endl;
     cout<<"Pext["<<i<<"] is: "<<Pext[i]<<endl;
+    cout<<endl;
 #endif
   }
 
@@ -602,6 +603,7 @@ void ART::UTILS::ArtJunctionBc::Jacobian_Eval( Epetra_SerialDenseMatrix & Jacobi
     cout<<"A   ["<<i<<"] : "<<A[i]<<endl;
     cout<<"Ao  ["<<i<<"] : "<<Ao[i]<<endl;
     cout<<"rho ["<<i<<"] : "<<rho[i]<<endl;
+    cout<<endl;
 #endif
   }
 
@@ -622,7 +624,6 @@ void ART::UTILS::ArtJunctionBc::Jacobian_Eval( Epetra_SerialDenseMatrix & Jacobi
     Jacobian(i+nodes_.size(),nodes_.size()  ) =  P_A;
     Jacobian(i+nodes_.size(),nodes_.size()+i) = -0.5*beta[i]/(Ao[i]*sqrt(A[i]));
   }
-
 
 }
 

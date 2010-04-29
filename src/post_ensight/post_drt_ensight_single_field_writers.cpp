@@ -32,6 +32,10 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("tancontactstress", "tancontactstress", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("interfacetraction", "interfacetraction", dofbased, field->problem()->num_dim());
 
+  // one-dimensional artery   
+  EnsightWriter::WriteResult("one_d_artery_pressure", "one_d_artery_pressure", nodebased, 1);
+  EnsightWriter::WriteResult("one_d_artery_flow", "one_d_artery_flow", nodebased, 1);
+
   // reduced dimensional airway
   EnsightWriter::WriteResult("pnp", "pressure", dofbased, 1);
   EnsightWriter::WriteResult("NodeIDs", "NodeIDs", dofbased, 1);

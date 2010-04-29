@@ -64,6 +64,14 @@ int main(
         //PostField* alefield = problem.get_discretization(2);
         //AleEnsightWriter alewriter(alefield, basename);
         //alewriter.WriteFiles();
+        
+        // 1d artery
+        if (problem.num_discr()== 4)
+        {
+          PostField* field = problem.get_discretization(2);
+          StructureEnsightWriter writer(field, basename, problem.stresstype(), problem.straintype());
+          writer.WriteFiles();
+        }
         break;
     }
     case prb_structure:
@@ -74,6 +82,16 @@ int main(
         break;
     }
     case prb_fluid:
+    {
+      // 1d artery
+      if (problem.num_discr()== 2)
+      {
+        string basename = problem.outname();
+        PostField* field = problem.get_discretization(1);
+        StructureEnsightWriter writer(field, basename, problem.stresstype(), problem.straintype());
+        writer.WriteFiles();
+      }
+    }
     case prb_fluid_ale:
     case prb_freesurf:
     {
@@ -240,9 +258,12 @@ int main(
     }
     case prb_art_net:
     {
+      string basename = problem.outname();
       PostField* field = problem.get_discretization(0);
+      //AnyEnsightWriter writer(field, problem.outname());
+      StructureEnsightWriter writer(field, basename, problem.stresstype(), problem.straintype());
+      writer.WriteFiles();
 
-      cout<<"artery network post-processing will be implimented here!"<<endl;
       break;
     }
     case prb_thermo:

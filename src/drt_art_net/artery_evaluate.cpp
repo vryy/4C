@@ -59,6 +59,8 @@ int DRT::ELEMENTS::Artery::Evaluate(ParameterList& params,
     act = Artery::solve_riemann_problem;
   else if (action == "set_term_bc")
     act = Artery::set_term_bc;
+  else if (action == "calc_postprocessing_values")
+    act = Artery::calc_postpro_vals;
   else
   {
 
@@ -116,6 +118,16 @@ Here must add the steps for evaluating an element
                                                                   discretization,
                                                                   lm,
                                                                   mat);
+
+    }
+    break;
+    case calc_postpro_vals:
+    {
+      DRT::ELEMENTS::ArteryExpInterface::Expl(this)->CalcPostprocessingValues(this,
+                                                                              params,
+                                                                              discretization,
+                                                                              lm,
+                                                                              mat);
 
     }
     break;

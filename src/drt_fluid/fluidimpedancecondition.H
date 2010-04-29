@@ -273,6 +273,16 @@ private:
   */
   RCP<vector<double> > getPressures(){return pressures_;}
 
+
+  /*!
+  \brief interpolate Vector1 to get Vector2
+  */
+  void interpolate(RCP<std::vector<double> > V1,
+                   RCP<std::vector<double> > V2,
+                   int  index1,
+                   int & index2);
+
+
 protected:
 
   RCP<Epetra_Vector> impedancetbc_;

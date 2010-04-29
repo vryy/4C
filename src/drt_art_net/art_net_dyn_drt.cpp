@@ -68,6 +68,27 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   if (!actdis->Filled()) actdis->FillComplete();
 
   // -------------------------------------------------------------------
+  // check if descretization exits
+  // -------------------------------------------------------------------
+  int NumberOfElements = actdis->NumMyRowElements();
+  int TotalNumberOfElements = 0;
+  actdis->Comm().SumAll(&NumberOfElements,&TotalNumberOfElements,1);
+  
+  if(TotalNumberOfElements == 0)
+  {
+    if (actdis->Comm().MyPID()==0)
+    {
+      cout<<"+--------------------- WARNING ---------------------+"<<endl;
+      cout<<"|                                                   |"<<endl;
+      cout<<"| One-dimesional arterial network is compiled, but  |"<<endl;
+      cout<<"| no artery elements are defined!                   |"<<endl;
+      cout<<"|                                                   |"<<endl;
+      cout<<"+---------------------------------------------------+"<<endl;
+    }
+    return Teuchos::null;
+  }
+  
+  // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
   RCP<IO::DiscretizationWriter>  output = rcp( new IO::DiscretizationWriter(actdis),false);
@@ -113,6 +134,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   arterytimeparams.set                  ("write restart every"       ,artdyn.get<int>("RESTARTEVRY"));
   // solution output
   arterytimeparams.set                  ("write solution every"      ,artdyn.get<int>("UPRES"));
+
   // flag for writing the hemodynamic physiological results
   //arterytimeparams.set ("write stresses"  ,Teuchos::getIntegralValue<int>(ioflags,"HEMO_PHYS_RESULTS"));
   //---------------------- A method to initialize the flow inside the 
@@ -139,7 +161,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   {
     // artnetexplicit.SetInitialData(init,startfuncno);
   }
-  
+
   arterytimeparams.set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
   if (!CoupledTo3D)

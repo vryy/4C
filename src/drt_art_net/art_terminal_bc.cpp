@@ -190,6 +190,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
       }
     }
 
+    cout<<"3D is generating: ["<<BC<<"] : "<<BCin<<endl;
     if (Type == "forced")
     {
       Rf = 1.0;

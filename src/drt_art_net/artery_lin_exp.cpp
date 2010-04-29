@@ -282,7 +282,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
     Ao2   = Ao1;
     // Read in blood density
     dens  = actmat->Density();
-    // Read in blodd viscosity
+    // Read in blood viscosity
     visc  = actmat->Viscosity();
     // Read in artery's thickness at node 1
     t1    = actmat->Th();
@@ -745,7 +745,7 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
     Ao2    = Ao1;
     // Read in blood density
     dens   = actmat->Density();
-    // Read in blodd viscosity
+    // Read in blood viscosity
     visc   = actmat->Viscosity();
     // Read in artery's thickness at node 1
     t1     = actmat->Th();
@@ -998,7 +998,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
     Ao2    = Ao1;
     // Read in blood density
     dens   = actmat->Density();
-    // Read in blodd viscosity
+    // Read in blood viscosity
     visc   = actmat->Viscosity();
     // Read in artery's thickness at node 1
     t1     = actmat->Th();
@@ -1196,9 +1196,8 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
         double val; 
         double cross_area;
 
-        cross_area = pow(2.0*dens*area0_(i)/beta,2)*pow((Wf - Wb)/8.0,4);
-        cout<<"CROSS_SECTIONAL AREA IS: "<<cross_area<<endl;
-        
+        cross_area = pow(2.0*dens*area0_(i)/beta,2.0)*pow((Wf - Wb)/8.0,4.0);
+     
         gid = lm[2*i];
         val = cross_area;
         bcval->ReplaceGlobalValues(1,&val,&gid);
@@ -1255,6 +1254,154 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       dbctog->ReplaceGlobalValues(1,&val,&gid);
     }
   }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  Evaluate the values of the degrees of freedom           ismail 07/09|
+ |  at terminal nodes.                                                  |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
+  Artery*                      ele,
+  ParameterList&               params,
+  DRT::Discretization&         discretization,
+  vector<int>&                 lm,
+  RefCountPtr<MAT::Material>   material)
+{
+  RefCountPtr<const Epetra_Vector> qanp  = discretization.GetState("qanp");
+  //  RefCountPtr<const Epetra_Vector> Wfnp  = discretization.GetState("Wfnp");
+  //  RefCountPtr<const Epetra_Vector> Wbnp  = discretization.GetState("Wbnp");
+
+  RCP<Epetra_Vector>   pn  = params.get<RCP<Epetra_Vector> >("pressure");
+  RCP<Epetra_Vector>   qn  = params.get<RCP<Epetra_Vector> >("flow");
+
+  // get time-step size
+  //  const double dt = params.get<double>("time step size");
+
+  // check here, if we really have an artery !!
+  // Define Geometric variables
+  double Ao1 = 0.0;
+  double Ao2 = 0.0;
+  // Define blood material variables
+  double visc=0.0;
+  double dens=0.0;
+  // Define artery's material variables
+  double t1 = 0.0;
+  double t2 = 0.0;
+  double E1 = 0.0;
+  double E2 = 0.0;
+  double nue= 0.0;
+  // Define artery's external forces
+  double pext1 =0.0;
+  double pext2 =0.0;
+  // check here, if we really have an artery !!
+  if( material->MaterialType() == INPAR::MAT::m_cnst_art)
+  {
+    const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
+    // Read in initial cross-sectional area at node 1
+    Ao1    = M_PI*pow(actmat->Diam()/2,2);
+    // Read in initial cross-sectional area at node 2
+    Ao2    = Ao1;
+    // Read in blood density
+    dens   = actmat->Density();
+    // Read in blood viscosity
+    visc   = actmat->Viscosity();
+    // Read in artery's thickness at node 1
+    t1     = actmat->Th();
+    // Read in artery's thickness at node 2
+    t2     = t1;
+    // Read in artery's Youngs modulus of elasticity thickness at node 1
+    E1     = actmat->Young();
+    // Read in artery's Youngs modulus of elasticity thickness at node 2
+    E2     = E1;
+    // Read in artery's Poisson's ratio
+    nue    = actmat->Nue();
+    // Read in artery's external forces at node 1
+    pext1  = actmat->pext(0);
+    // Read in artery's external forces at node 1
+    pext2  = actmat->pext(1);
+    
+    // Set up all the needed vectors for furthur calculations
+    area0_(0,0) = Ao1;
+    area0_(1,0) = Ao2;
+    th_(0,0)    = t1;
+    th_(1,0)    = t2;
+    young_(0,0) = E1;
+    young_(1,0) = E2;
+    pext_(0,0)  = pext1;
+    pext_(1,0)  = pext2;
+  }
+  else
+    dserror("Material law is not an artery");
+
+
+  // the number of nodes
+  const int numnode = iel;
+  vector<int>::iterator it_vcr;
+
+  if (qanp==null)
+    dserror("Cannot get state vectors 'qanp'");
+
+  // extract local values from the global vectors
+  vector<double> myqanp(lm.size());
+  DRT::UTILS::ExtractMyValues(*qanp,myqanp,lm);
+
+  // create objects for element arrays
+  LINALG::Matrix<numnode,1> eareanp;
+  LINALG::Matrix<numnode,1> eqnp;
+
+  //get time step size
+  //  const double dt = params.get<double>("time step size");
+
+  //get all values at the last computed time step
+  for (int i=0;i<numnode;++i)
+  {
+    // split area and volumetric flow rate, insert into element arrays
+    eqnp(i)    = myqanp[1+(i*2)];
+    qn_(i)     = myqanp[1+(i*2)];
+    eareanp(i) = myqanp[0+(i*2)];
+    an_(i)     = myqanp[0+(i*2)];
+  }
+
+
+  // ---------------------------------------------------------------------------------
+  // Evaluate flowrate and pressure values at both sides of the artery
+  // ---------------------------------------------------------------------------------
+  area0_(0,0) = Ao1;
+  area0_(1,0) = Ao2;
+  th_(0,0)    = t1;
+  th_(1,0)    = t2;
+  young_(0,0) = E1;
+  young_(1,0) = E2;
+  pext_(0,0)  = pext1;
+  pext_(1,0)  = pext2;
+
+  for (int i =0; i<2; i++)
+  {
+    const double beta = sqrt(PI)*young_(i)*th_(i)/(1.0-nue*nue);
+
+    int myrank  = discretization.Comm().MyPID();
+    if(myrank == ele->Nodes()[i]->Owner())
+    {
+      int    gid  = ele->Nodes()[i]->Id();
+      double val; 
+
+      // calculating P at node i
+      double pressure = 0.0;
+      pressure = beta*(sqrt(an_(i)) - sqrt(area0_(i)))/area0_(i) + pext_(i);
+
+      gid = ele->Nodes()[i]->Id();
+      val = pressure;
+      pn->ReplaceGlobalValues(1,&val,&gid);
+
+      // calculating Q at node i      
+      val = qn_(i);
+      qn->ReplaceGlobalValues(1,&val,&gid);
+      
+    }
+  } // End of node i has a condition
 }
 
 #endif

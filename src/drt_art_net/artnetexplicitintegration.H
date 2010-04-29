@@ -169,11 +169,10 @@ public:
 
 
   /*!
-  \brief calculate error between a analytical solution and the
-         numerical solution of a test problems
-
+  \brief calculate values that could be used for postprocessing
+         such as pressure and flowrate.
   */
-  //void EvaluateErrorComparedToAnalyticalSol();
+  void CalcPostprocessingValues();
 
 
   /*!
@@ -294,6 +293,10 @@ protected:
   RCP<Epetra_Vector>    qnm_;
   //@}
 
+  //! @name Pressure at time n
+  RCP<Epetra_Vector>    pn_;
+  //@}
+
   //! @name Forward and backwar characteristic wave speeds at time n+1, n and n-1
   RCP<Epetra_Vector>    Wfnp_;
   RCP<Epetra_Vector>    Wfn_;
@@ -330,6 +333,10 @@ protected:
 
   /// connection between master and slave nodes on this proc
   RCP<map<int,vector<int> > >     pbcmapmastertoslave_;
+
+  //!
+  bool coupledTo3D_;
+  //@}
 
   /// bio related special (outflow) boudaries
   //  RCP<UTILS::FluidImpedanceWrapper> impedancebc_;

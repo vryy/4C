@@ -507,13 +507,17 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // -------------------------------------------------------------------
 
   ART_exp_timeInt_ = dyn_art_net_drt(true);
-  IO::DiscretizationWriter output_redD(ART_exp_timeInt_->Discretization());
-  coupled3D_redDbc_= rcp(new UTILS::Fluid_couplingWrapper(discret_,
-                                                          ART_exp_timeInt_->Discretization(),
-                                                          ART_exp_timeInt_,
-                                                          output_redD,
-                                                          dta_,
-                                                          ART_exp_timeInt_->Dt()) );
+  // Check if one-dimensional artery network problem exist
+  if (ART_exp_timeInt_ != Teuchos::null)
+  {
+    IO::DiscretizationWriter output_redD(ART_exp_timeInt_->Discretization());
+    coupled3D_redDbc_= rcp(new UTILS::Fluid_couplingWrapper(discret_,
+                                                            ART_exp_timeInt_->Discretization(),
+                                                            ART_exp_timeInt_,
+                                                            output_redD,
+                                                            dta_,
+                                                            ART_exp_timeInt_->Dt()) );
+  }
 
 #endif //D_ARTNET
 
@@ -905,7 +909,11 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
 #ifdef D_ARTNET
       // update the 3D-to-reduced_D coupling data
-      coupled3D_redDbc_->UpdateResidual(residual_);
+      // Check if one-dimensional artery network problem exist
+      if (ART_exp_timeInt_ != Teuchos::null)
+      {
+        coupled3D_redDbc_->UpdateResidual(residual_);
+      }
 #endif //D_ARTNET
 
       // Filter velocity for dynamic Smagorinsky model --- this provides
@@ -2114,7 +2122,11 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 
   // update the 3D-to-reduced_D coupling condition
 #ifdef D_ARTNET
-  coupled3D_redDbc_->UpdateResidual(residual_);
+  // Check if one-dimensional artery network problem exist
+  if (ART_exp_timeInt_ != Teuchos::null)
+  {
+    coupled3D_redDbc_->UpdateResidual(residual_);
+  }
 #endif //D_ARTNET
 
   if (dynamic_smagorinsky_)
@@ -2302,7 +2314,11 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 
   // update the 3D-to-reduce_D coupling condition
 #ifdef D_ARTNET
-  coupled3D_redDbc_->UpdateResidual(residual_);
+  // Check if one-dimensional artery network problem exist
+  if (ART_exp_timeInt_ != Teuchos::null)
+  {
+    coupled3D_redDbc_->UpdateResidual(residual_);
+  }
 #endif // D_ARTNET
 
   // create the parameters for the discretization
@@ -2498,8 +2514,12 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   // -------------------------------------------------------------------
 
 #ifdef D_ARTNET
-  coupled3D_redDbc_->FlowRateCalculation(time_,dta_);
-  coupled3D_redDbc_->ApplyBoundaryConditions(time_, dta_, theta_);
+  // Check if one-dimensional artery network problem exist
+  if (ART_exp_timeInt_ != Teuchos::null)
+  {
+    coupled3D_redDbc_->FlowRateCalculation(time_,dta_);
+    coupled3D_redDbc_->ApplyBoundaryConditions(time_, dta_, theta_);
+  }
 #endif //D_ARTNET
 
   return;
@@ -2692,6 +2712,7 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
 
   Wk_optimization_->ReadRestart(reader);
 
+  // Read restart of one-dimensional arterial network
 }
 
 

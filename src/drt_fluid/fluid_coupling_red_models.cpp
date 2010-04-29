@@ -41,6 +41,7 @@ FLD::UTILS::Fluid_couplingWrapper::Fluid_couplingWrapper(RefCountPtr<DRT::Discre
   ArtExpTime_integ_(ArtExpTime_integ),
   output_ (output)
 {
+
   // ---------------------------------------------------------------------
   // Read in the time step
   // ---------------------------------------------------------------------
@@ -240,7 +241,6 @@ FLD::UTILS::Fluid_couplingWrapper::~Fluid_couplingWrapper()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::Fluid_couplingWrapper::FlowRateCalculation(double time, double dta)
 {
-
   // get an iterator to my map
   map<const int, RCP<class Fluid_couplingBc> >::iterator mapiter;
 
@@ -418,6 +418,7 @@ void FLD::UTILS::Fluid_couplingWrapper::ApplyBoundaryConditions(double time, dou
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::Fluid_couplingWrapper::UpdateResidual(RCP<Epetra_Vector>  residual )
 {
+
   map<const int, RCP<class Fluid_couplingBc> >::iterator mapiter;
 
   (*mapRed_Dn_) = (*mapRed_Dnp_);
@@ -441,6 +442,7 @@ void FLD::UTILS::Fluid_couplingWrapper::UpdateResidual(RCP<Epetra_Vector>  resid
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::Fluid_couplingWrapper::WriteRestart( IO::DiscretizationWriter&  output )
 {
+
   map<const int, RCP<class Fluid_couplingBc> >::iterator mapiter;
 
   for (mapiter = coup_map3D_.begin(); mapiter != coup_map3D_.end(); mapiter++ )
@@ -461,6 +463,7 @@ void FLD::UTILS::Fluid_couplingWrapper::WriteRestart( IO::DiscretizationWriter& 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::Fluid_couplingWrapper::ReadRestart( IO::DiscretizationReader& reader)
 {
+
   map<const int, RCP<class Fluid_couplingBc> >::iterator mapiter;
 
   for (mapiter = coup_map3D_.begin(); mapiter != coup_map3D_.end(); mapiter++ )
@@ -539,7 +542,6 @@ void FLD::UTILS::Fluid_couplingBc::WriteRestart( IO::DiscretizationWriter&  outp
 
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!
-  cout<<"?????????????????????  Why  ????????????????????"<<endl;
   std::stringstream stream1, stream2, stream3;
 
 #if 0
@@ -707,11 +709,13 @@ double FLD::UTILS::Fluid_couplingBc::FlowRateCalculation(double time, double dta
 
   // ... as well as actual total flowrate on this proc
   double actflowrate = eleparams.get<double>("Outlet flowrate");
+  cout<<"Act Flow rate: "<<actflowrate<<endl;
 
   // get total flowrate in parallel case
   double parflowrate = 0.0;
   discret_3D_->Comm().SumAll(&actflowrate,&parflowrate,1);
 
+  cout<<"My Parallel FlowRate is: "<<parflowrate<<endl;
   return parflowrate;
 }//FluidImplicitTimeInt::FlowRateCalculation
 
