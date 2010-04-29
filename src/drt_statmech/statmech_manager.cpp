@@ -619,7 +619,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
           fprintf(fp,filecontent.str().c_str());
           fclose(fp);
       }
-      // Hack: Gmsh-Output
+      /*/ Hack: Gmsh-Output
       if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1)  == 0 )
       {
         /*construct unique filename for gmsh output with two indices: the first one marking the time step number
@@ -627,7 +627,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
          * e.g. number one is written as 000001, number fourteen as 000014 and so on;*/
 
         //note: this kind of output is possilbe for serial computing only (otherwise the following method would have to be adapted to parallel use*/
-        if(discret_.Comm().NumProc() > 1)
+        /*if(discret_.Comm().NumProc() > 1)
           dserror("No Gmsh output for parallel computation possible so far");
 
         // first index = time step index
@@ -641,7 +641,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
 
         //calling method for writing Gmsh output
         GmshOutput(dis,filename,istep);
-      }
+      }*/
 
     }
     break;
