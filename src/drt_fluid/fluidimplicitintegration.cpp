@@ -2079,11 +2079,36 @@ void FLD::FluidImplicitTimeInt::GenAlphaIntermediateValues()
   //       n+alphaM                n+1                      n
   //    acc         = alpha_M * acc     + (1-alpha_M) *  acc
   //       (i)                     (i)
-  accam_->Update((alphaM_),*accnp_,(1.0-alphaM_),*accn_,0.0);
+  {
+    // extract the degrees of freedom associated with velocities
+    // only these are allowed to be updated, otherwise you will
+    // run into trouble in loma, where the 'pressure' component
+    // is used to store the acceleration of the temperature
+    Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(accn_ );
+    Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_.ExtractOtherVector(accnp_);
 
+    Teuchos::RCP<Epetra_Vector> onlyaccam = rcp(new Epetra_Vector(onlyaccnp->Map()));
+
+    onlyaccam->Update((alphaM_),*onlyaccnp,(1.0-alphaM_),*onlyaccn,0.0);
+
+    // copy back into global vector
+    LINALG::Export(*onlyaccam,*accam_);
+  }
+
+  // set intermediate values for velocity
+  //
   //       n+alphaF              n+1                   n
   //      u         = alpha_F * u     + (1-alpha_F) * u
   //       (i)                   (i)
+  //
+  // and pressure
+  //
+  //       n+alphaF              n+1                   n
+  //      p         = alpha_F * p     + (1-alpha_F) * p
+  //       (i)                   (i)
+  //
+  // note that its af-genalpha with mid-point treatment of the pressure,
+  // not implicit treatment as for the genalpha according to Whiting
   velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
 
 } // FluidImplicitTimeInt::GenAlphaIntermediateValues
@@ -2271,12 +2296,31 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::GenAlphaUpdateAcceleration()
 {
-  // -------------------------------------------------------------------
-  // acc(n+1) = vel(n+1) - vel(n) / (gamma*dt) + (1-(1/gamma))*acc(n)
+
+  //                                  n+1     n
+  //                               vel   - vel
+  //       n+1      n  gamma-1.0      (i)
+  //    acc    = acc * --------- + ------------
+  //       (i)           gamma      gamma * dt
+  //
+
+  // extract the degrees of freedom associated with velocities
+  // only these are allowed to be updated, otherwise you will
+  // run into trouble in loma, where the 'pressure' component
+  // is used to store the acceleration of the temperature
+  Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(accn_ );
+  Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_.ExtractOtherVector(veln_ );
+  Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_.ExtractOtherVector(velnp_);
+
+  Teuchos::RCP<Epetra_Vector> onlyaccnp = rcp(new Epetra_Vector(onlyaccn->Map()));
+
   const double fact1 = 1.0/(gamma_*dta_);
   const double fact2 = 1.0 - (1.0/gamma_);
-  accnp_->Update(fact2,*accn_,0.0);
-  accnp_->Update(fact1,*velnp_,-fact1,*veln_,1.0);
+  onlyaccnp->Update(fact2,*onlyaccn,0.0);
+  onlyaccnp->Update(fact1,*onlyvelnp,-fact1,*onlyveln,1.0);
+
+  // copy back into global vector
+  LINALG::Export(*onlyaccnp,*accnp_);
 
 } // FluidImplicitTimeInt::GenAlphaUpdateAcceleration
 
