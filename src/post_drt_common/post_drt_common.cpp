@@ -82,6 +82,11 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   CLP.setOption("stress",&stresstype_,"stress output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
   CLP.setOption("straintype",&straintype_,"strain output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
   CLP.setOption("strain",&straintype_,"strain output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
+  CLP.setOption("heatfluxtype",&heatfluxtype_,"heatflux output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
+  CLP.setOption("heatflux",&heatfluxtype_,"heatflux output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
+  CLP.setOption("tempgradtype",&tempgradtype_,"tempgrad output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
+  CLP.setOption("tempgrad",&tempgradtype_,"tempgrad output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
+
 
   CommandLineProcessor::EParseCommandLineReturn
     parseReturn = CLP.parse(argc,argv);
@@ -119,6 +124,16 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   if (straintype_=="")
   {
     straintype_ = "none";
+  }
+
+  if (heatfluxtype_=="")
+  {
+    heatfluxtype_ = "none";
+  }
+
+  if (heatfluxtype_=="")
+  {
+    heatfluxtype_ = "none";
   }
 
   result_group_ = vector<MAP*>();
@@ -664,7 +679,7 @@ void PostProblem::read_meshes()
         else
           nurbsdis->FillComplete(false,false,false);
 
-  
+
         if(!(nurbsdis->Filled()))
         {
           dserror("nurbsdis was not fc\n");

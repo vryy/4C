@@ -152,6 +152,12 @@ public:
   //! returns strain type
   string straintype() { return straintype_; }
 
+  //! returns heatflux type
+  string heatfluxtype() { return heatfluxtype_; }
+
+  //! returns tempgrad type
+  string tempgradtype() { return tempgradtype_; }
+
   //@}
 
 private:
@@ -204,14 +210,16 @@ private:
   int step_;
 
   //! stress output type optionally set by command line argument
-  //!
-  //! In case of thermal field this holds the heatflux output.
   string stresstype_;
 
   //! strain output type optionally set by command line argument
-  //!
-  //! In case of thermal field this holds the spatial temperature gradient output.
   string straintype_;
+
+  //! heatflux output type optionally set by command line argument
+  string heatfluxtype_;
+
+  //! spatial temperature gradient output type optionally set by command line argument
+  string tempgradtype_;
 
   //! MAP pointers into the control file map.
   // We don't own these pointers, so no reference counting.

@@ -269,8 +269,7 @@ int main(
     case prb_thermo:
     {
       PostField* field = problem.get_discretization(0);
-
-      ThermoEnsightWriter writer(field, problem.outname(), problem.stresstype(), problem.straintype());
+      ThermoEnsightWriter writer(field, problem.outname(), problem.tempgradtype(), problem.tempgradtype());
       writer.WriteFiles();
       break;
     }
@@ -285,7 +284,7 @@ int main(
       structwriter.WriteFiles();
 
       PostField* thermfield = problem.get_discretization(1);
-      ThermoEnsightWriter thermwriter(thermfield, basename);
+      ThermoEnsightWriter thermwriter(thermfield, basename, problem.heatfluxtype(), problem.tempgradtype());
       thermwriter.WriteFiles();
       break;
     }
