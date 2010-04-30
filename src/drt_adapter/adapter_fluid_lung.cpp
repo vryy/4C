@@ -301,12 +301,6 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
   FluidConstrMatrix->Complete(constrmap, fluidmap);
   AleConstrMatrix->Complete();
 
-  // transposed fluid constraint matrix -> linearization of constraint equation
-  ConstrFluidMatrix->Add(*FluidConstrMatrix, true, 1.0, 0.0);
-  ConstrFluidMatrix->Complete(fluidmap, constrmap);
-  FluidConstrMatrix->Scale(invresscale);
-  ConstrFluidMatrix->Scale(dttheta);
-
   // transposed "ale" constraint matrix -> linearization of constraint equation
   for (int i=0; i<Interface().NumMaps(); ++i)
     ConstrAleMatrix->Matrix(0,i).Add(AleConstrMatrix->Matrix(i,0), true, 1.0, 0.0);
@@ -321,16 +315,19 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
   // corresponding contributions are not zero here and need to be set to zero
   // in the following.
 
-  // Apply Dirichlet BC to relevant stiffness matrices and vectors and zero
-  // out outflow fsi contributions
-  const Teuchos::RCP<const Epetra_Map >& condmap = GetDBCMapExtractor()->CondMap();
+  // At the outlet, no fluid Dirichlet conditions are present!
+
   const Teuchos::RCP<const Epetra_Map >& outflowfsimap = outflowfsiinterface_.Map(1);
-  Teuchos::RCP<Epetra_Map> finmap = LINALG::MergeMap(*condmap, *outflowfsimap, false);
-  FluidShapeDerivMatrix->ApplyDirichlet(*finmap, false);
-  FluidConstrMatrix->ApplyDirichlet(*finmap, false);
+  FluidShapeDerivMatrix->ApplyDirichlet(*outflowfsimap, false);
+  FluidConstrMatrix->ApplyDirichlet(*outflowfsimap, false);
+
+  // transposed fluid constraint matrix -> linearization of constraint equation
+  ConstrFluidMatrix->Add(*FluidConstrMatrix, true, 1.0, 0.0);
+  ConstrFluidMatrix->Complete(fluidmap, constrmap);
+  FluidConstrMatrix->Scale(invresscale);
+  ConstrFluidMatrix->Scale(dttheta);
 
   Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*DofRowMap(), true);
-  GetDBCMapExtractor()->InsertCondVector(GetDBCMapExtractor()->ExtractCondVector(zeros), FluidRHS);
   outflowfsiinterface_.InsertCondVector(outflowfsiinterface_.ExtractCondVector(zeros), FluidRHS);
 }
 

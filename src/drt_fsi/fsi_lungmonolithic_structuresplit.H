@@ -83,7 +83,6 @@ namespace FSI
     UTILS::MatrixColTransform fmGGtransform_;
     UTILS::MatrixColTransform fmgGtransform_;
     UTILS::MatrixColTransform addfmGGtransform_;
-    UTILS::MatrixColTransform addfmgGtransform_;
 
     /// split of constraint matrices
     UTILS::MatrixRowTransform scgitransform_;

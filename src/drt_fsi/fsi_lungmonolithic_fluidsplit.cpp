@@ -389,19 +389,8 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
                    true,
                    true);
 
-    LINALG::SparseMatrix& addfmgg = AddFluidShapeDerivMatrix_->Matrix(1,1);
-    LINALG::SparseMatrix& addfmgG = AddFluidShapeDerivMatrix_->Matrix(1,3);
-
     LINALG::SparseMatrix& addfmGg = AddFluidShapeDerivMatrix_->Matrix(3,1);
     LINALG::SparseMatrix& addfmGG = AddFluidShapeDerivMatrix_->Matrix(3,3);
-
-    addfmgGtransform_(addfmgG,
-                      scale,
-                      ADAPTER::Coupling::SlaveConverter(coupsf),
-                      ADAPTER::Coupling::MasterConverter(coupfsout_),
-                      mat.Matrix(0,0),
-                      true,
-                      true);
 
     addfmGGtransform_(AddFluidShapeDerivMatrix_->FullRowMap(),
                       AddFluidShapeDerivMatrix_->FullColMap(),
@@ -409,14 +398,6 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
                       1.,
                       ADAPTER::Coupling::MasterConverter(coupfsout_),
                       mat.Matrix(1,0),
-                      true,
-                      true);
-
-    addfmggtransform_(addfmgg,
-                      scale,
-                      ADAPTER::Coupling::SlaveConverter(coupsf),
-                      ADAPTER::Coupling::SlaveConverter(coupsf),
-                      mat.Matrix(0,0),
                       true,
                       true);
 
@@ -512,35 +493,14 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   constrfluidblocks->Complete();
 
   LINALG::SparseMatrix& cfii = constrfluidblocks->Matrix(0,0);
-  LINALG::SparseMatrix& cfig = constrfluidblocks->Matrix(0,1);
 
   // cfii cannot be simply assigned here (in case of fsi amg which is default)
   // due to non-matching maps
   mat.Matrix(3,1).Zero();
   mat.Matrix(3,1).Add(cfii,false,1.0,0.0);
 
-  cfigtransform_(*coupsf.SlaveDofMap(),
-                 cfig.ColMap(),
-                 cfig,
-                 timescale,
-                 ADAPTER::Coupling::SlaveConverter(coupsf),
-                 mat.Matrix(3,0),
-                 true,
-                 true);
-
   /*----------------------------------------------------------------------*/
   // constraint part -> "ale"
-
-  LINALG::SparseMatrix& caig = ConstrAleMatrix_->Matrix(0,1);
-
-  caigtransform_(*coupsf.SlaveDofMap(),
-                 caig.ColMap(),
-                 caig,
-                 1.0,
-                 ADAPTER::Coupling::SlaveConverter(coupsf),
-                 mat.Matrix(3,0),
-                 true,
-                 true);
 
   LINALG::SparseMatrix& caiG = ConstrAleMatrix_->Matrix(0,3);
   caiGtransform_(*coupfsout_.MasterDofMap(),

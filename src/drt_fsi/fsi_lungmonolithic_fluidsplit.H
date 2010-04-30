@@ -89,9 +89,7 @@ namespace FSI
     UTILS::MatrixRowColTransform fmgGtransform_;
 
     /// transformation of additional shape derivative matrix (volume constraint)
-    UTILS::MatrixRowColTransform addfmgGtransform_;
     UTILS::MatrixColTransform addfmGGtransform_;
-    UTILS::MatrixRowColTransform addfmggtransform_;
     UTILS::MatrixColTransform addfmGgtransform_;
 
     /// transformation of fluid constraint matrix
@@ -101,11 +99,7 @@ namespace FSI
     UTILS::MatrixColTransform aigtransform_;
     UTILS::MatrixColTransform aiGtransform_;
 
-    /// transformation of constraint fluid matrix
-    UTILS::MatrixColTransform cfigtransform_;
-
     /// transformation of constraint "ale" matrix
-    UTILS::MatrixColTransform caigtransform_;
     UTILS::MatrixColTransform caiGtransform_;
 
   };

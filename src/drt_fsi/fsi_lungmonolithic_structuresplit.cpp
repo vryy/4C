@@ -329,9 +329,6 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
     LINALG::SparseMatrix& fmGg = mmm->Matrix(3,1);
     LINALG::SparseMatrix& fmGG = mmm->Matrix(3,3);
 
-    LINALG::SparseMatrix& addfmgg = AddFluidShapeDerivMatrix_->Matrix(1,1);
-    LINALG::SparseMatrix& addfmgG = AddFluidShapeDerivMatrix_->Matrix(1,3);
-
     LINALG::SparseMatrix& addfmGg = AddFluidShapeDerivMatrix_->Matrix(3,1);
     LINALG::SparseMatrix& addfmGG = AddFluidShapeDerivMatrix_->Matrix(3,3);
 
@@ -389,17 +386,8 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
                    true,
                    true);
 
-    mat.Matrix(1,1).Add(addfmgg,false,1./timescale,1.0);
     mat.Matrix(1,1).Add(addfmGg,false,1./timescale,1.0);
 
-    addfmgGtransform_(AddFluidShapeDerivMatrix_->FullRowMap(),
-                      AddFluidShapeDerivMatrix_->FullColMap(),
-                      addfmgG,
-                      1.,
-                      ADAPTER::Coupling::MasterConverter(coupfsout_),
-                      mat.Matrix(1,0),
-                      true,
-                      true);
     addfmGGtransform_(AddFluidShapeDerivMatrix_->FullRowMap(),
                       AddFluidShapeDerivMatrix_->FullColMap(),
                       addfmGG,
@@ -549,9 +537,6 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
 
   /*----------------------------------------------------------------------*/
   // constraint part -> ale
-
-  LINALG::SparseMatrix& caig = ConstrAleMatrix_->Matrix(0,1);
-  mat.Matrix(3,1).Add(caig, false, 1./timescale, 1.0);
 
   LINALG::SparseMatrix& caiG = ConstrAleMatrix_->Matrix(0,3);
   caiGtransform_(*coupfsout_.MasterDofMap(),
