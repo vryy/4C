@@ -123,7 +123,7 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
 
     DRT::Node* node = nodeiter->second;
     vector<int> dofs = slavedis.Dof(node);
-    dofs.resize(dofs.size() - 1);
+    dofs.resize(dim);
     slaverowdofs.insert(slaverowdofs.end(), dofs.begin(), dofs.end());
 
   }
@@ -233,51 +233,50 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idisp)
 {
-	
-	  interface_->SetState("displacement", idisp);
-	  //in the following two steps MORTAR does all the work for new interface displacements 
-	  interface_->Initialize();
-	  interface_->Evaluate();
-	  
-	  //Preparation for AssembleDMG
-	  RCP<Epetra_Map> slavedofrowmap = interface_->SlaveRowDofs();
-	  RCP<Epetra_Map> masterdofrowmap = interface_->MasterRowDofs();
+  interface_->SetState("displacement", idisp);
+  //in the following two steps MORTAR does all the work for new interface displacements 
+  interface_->Initialize();
+  interface_->Evaluate();
+  
+  //Preparation for AssembleDMG
+  RCP<Epetra_Map> slavedofrowmap = interface_->SlaveRowDofs();
+  RCP<Epetra_Map> masterdofrowmap = interface_->MasterRowDofs();
 
-	  RCP<LINALG::SparseMatrix> dmatrix = rcp(
-	      new LINALG::SparseMatrix(*slavedofrowmap, 10));
+  RCP<LINALG::SparseMatrix> dmatrix = rcp(
+      new LINALG::SparseMatrix(*slavedofrowmap, 10));
 
-	  RCP<LINALG::SparseMatrix> mmatrix = rcp(
-	      new LINALG::SparseMatrix(*slavedofrowmap, 100));
+  RCP<LINALG::SparseMatrix> mmatrix = rcp(
+      new LINALG::SparseMatrix(*slavedofrowmap, 100));
 
-	  interface_->AssembleDM(*dmatrix, *mmatrix);
+  interface_->AssembleDM(*dmatrix, *mmatrix);
 
-	  // Complete() global Mortar matrices
-	  dmatrix->Complete();
-	  mmatrix->Complete(*masterdofrowmap, *slavedofrowmap);
+  // Complete() global Mortar matrices
+  dmatrix->Complete();
+  mmatrix->Complete(*masterdofrowmap, *slavedofrowmap);
 
-	  D_ = dmatrix;
+  D_ = dmatrix;
 
-	  M_ = mmatrix;
+  M_ = mmatrix;
 
-	  //Build Dinv
-	  Dinv_ = rcp(new LINALG::SparseMatrix(*D_));
-	  
-	  RCP<Epetra_Vector> diag = LINALG::CreateVector(*slavedofrowmap,true);
+  //Build Dinv
+  Dinv_ = rcp(new LINALG::SparseMatrix(*D_));
+  
+  RCP<Epetra_Vector> diag = LINALG::CreateVector(*slavedofrowmap,true);
 
-	  // extract diagonal of invd into diag
-	  Dinv_->ExtractDiagonalCopy(*diag);
+  // extract diagonal of invd into diag
+  Dinv_->ExtractDiagonalCopy(*diag);
 
-	  // set zero diagonal values to dummy 1.0
-	  for (int i=0;i<diag->MyLength();++i)
-	    if ((*diag)[i]==0.0) (*diag)[i]=1.0;
+  // set zero diagonal values to dummy 1.0
+  for (int i=0;i<diag->MyLength();++i)
+    if ((*diag)[i]==0.0) (*diag)[i]=1.0;
 
-	  // scalar inversion of diagonal values
-	  diag->Reciprocal(*diag);
-	  Dinv_->ReplaceDiagonalValues(*diag);
-	  
-	  Dinv_->Complete( D_->RangeMap(), D_->DomainMap() );
+  // scalar inversion of diagonal values
+  diag->Reciprocal(*diag);
+  Dinv_->ReplaceDiagonalValues(*diag);
+  
+  Dinv_->Complete( D_->RangeMap(), D_->DomainMap() );
 
-	  return;
+  return;
 }
 
 /*----------------------------------------------------------------------*
