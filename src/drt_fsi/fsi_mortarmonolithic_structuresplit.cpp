@@ -46,12 +46,6 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
                  *StructureField().Discretization(),
                  comm_);
 
-  // structure to ale
-
-  coupsam_.Setup(*AleField().Discretization(), 
-                 *StructureField().Discretization(),
-                 comm_);
-
   // fluid to ale at the interface
 
   icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
@@ -934,27 +928,6 @@ void FSI::MortarMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MortarMonolithicStructureSplit::StructToAle
-(
-  Teuchos::RCP<Epetra_Vector> iv
-) const
-{
-  dserror("Do not try to tranform slave (struct) to master (fluid)!");
-  return coupsam_.SlaveToMaster(iv);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MortarMonolithicStructureSplit::AleToStruct
-(
-  Teuchos::RCP<Epetra_Vector> iv
-) const
-{
-  return coupsam_.MasterToSlave(iv);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MortarMonolithicStructureSplit::StructToFluid
 (
   Teuchos::RCP<Epetra_Vector> iv
@@ -972,27 +945,6 @@ Teuchos::RCP<Epetra_Vector> FSI::MortarMonolithicStructureSplit::FluidToStruct
 ) const
 {
   return coupsfm_.MasterToSlave(iv);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MortarMonolithicStructureSplit::StructToAle
-(
-  Teuchos::RCP<const Epetra_Vector> iv
-) const
-{
-  dserror("Do not try to tranform slave (struct) to master (fluid)!");
-  return coupsam_.SlaveToMaster(iv);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MortarMonolithicStructureSplit::AleToStruct
-(
-  Teuchos::RCP<const Epetra_Vector> iv
-) const
-{
-  return coupsam_.MasterToSlave(iv);
 }
 
 /*----------------------------------------------------------------------*/

@@ -63,13 +63,9 @@ namespace FSI
     virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
     
     //! @name Transfer helpers
-    virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
 
-    virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
     //@}
@@ -123,19 +119,13 @@ namespace FSI
     
     /// coupling of structure and fluid at the interface
     ADAPTER::CouplingMortar               coupsfm_;
-
-    /// coupling of structure and ale at the interface
-    ADAPTER::CouplingMortar               coupsam_;
-    
+  
     ///communicator
     Epetra_Comm& comm_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    UTILS::MatrixRowColTransform sggtransform_;
-    UTILS::MatrixRowTransform sgitransform_;
-    UTILS::MatrixColTransform sigtransform_;
     UTILS::MatrixColTransform aigtransform_;
 
     UTILS::MatrixColTransform fmiitransform_;
