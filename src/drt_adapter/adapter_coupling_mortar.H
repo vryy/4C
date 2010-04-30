@@ -38,12 +38,6 @@ namespace ADAPTER
     The actual coupling methods MasterToSlave() and SlaveToMaster() just
     evaluate one simple equation each.
 
-    \note This class is specific to FSI coupling with structure being the
-    master and fluid the slave.
-
-    \note The force coupling in SlaveToMaster() expects interface loads on the
-    fluid side and returns consistent interface forces on the structural side.
-
     \author tk
     \date 06/09
    */

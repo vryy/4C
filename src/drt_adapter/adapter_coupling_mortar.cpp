@@ -63,6 +63,8 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
     dserror("Mortar coupling adapter only works for dual shape functions");
 
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
+  // IMPORTANT: We assume that all nodes have 'dim' DoF, that have to be considered for coupling.
+  //            Possible pressure DoF are not transferred to MortarInterface.
   const int dim = genprob.ndim;
   RCP<MORTAR::MortarInterface> interface = rcp(new MORTAR::MortarInterface(0, comm, dim, input));
 
@@ -107,9 +109,6 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
 
     interface->AddMortarNode(mrtrnode);
     
-    // We expect to have a pressure dof at each node. Mortar
-    // couples just the displacements, so remove the pressure dof.
-
     vector<int> dofs = slavedis.Dof(node);
     dofs.resize(dim);
     slavecoldofs.insert(slavecoldofs.end(), dofs.begin(), dofs.end());
@@ -118,9 +117,6 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   // build slave dof row map
   for (nodeiter = slavenodes.begin(); nodeiter != slavenodes.end(); ++nodeiter)
   {
-    // We expect to have a pressure dof at each node. Mortar
-    // couples just the displacements, so remove the pressure dof.
-
     DRT::Node* node = nodeiter->second;
     vector<int> dofs = slavedis.Dof(node);
     dofs.resize(dim);
@@ -286,7 +282,6 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
   RefCountPtr<Epetra_Vector> mv
 ) const
 {
-
   dsassert( masterdofrowmap_->SameAs( mv->Map() ),
       "Vector with master dof map expected" );
 
@@ -327,7 +322,6 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
   RefCountPtr<const Epetra_Vector> mv
 ) const
 {
-
   dsassert( masterdofrowmap_->SameAs( mv->Map() ),
       "Vector with master dof map expected" );
 
