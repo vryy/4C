@@ -50,6 +50,7 @@ Maintainer: Ulrich Kuettler
 
 #include <iostream>
 #include <vector>
+#include <complex>
 #include <Teuchos_RCP.hpp>
 
 #include "drt_dserror.H"
