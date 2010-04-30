@@ -219,6 +219,8 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   
   Dinv_->Complete( D_->RangeMap(), D_->DomainMap() );
 
+  DinvM_ = MLMultiply(*Dinv_,*M_,false,false,true);
+  
   //store interface
   interface_ = interface;
 
@@ -271,6 +273,8 @@ void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idisp)
   Dinv_->ReplaceDiagonalValues(*diag);
   
   Dinv_->Complete( D_->RangeMap(), D_->DomainMap() );
+  
+  DinvM_ = MLMultiply(*Dinv_,*M_,false,false,true);
 
   return;
 }
@@ -357,7 +361,7 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
 
 RCP<LINALG::SparseMatrix> ADAPTER::CouplingMortar::GetMortarTrafo()
 {
-  return MLMultiply(*Dinv_,*M_,false,false,true);
+  return DinvM_;
 }
 
 #endif // CCADISCRET

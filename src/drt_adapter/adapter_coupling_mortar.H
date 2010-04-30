@@ -69,12 +69,6 @@ namespace ADAPTER
     ) const;
 
     /// transfer a dof vector from slave to master
-    /*!
-      Expects the fluid interface loads and returns consistent interface
-      forces at the structural side. So here we have a subtle change of the
-      meaning these numbers.
-      Computes mv = M^{T}(sv).
-     */
     RefCountPtr<Epetra_Vector> SlaveToMaster
     (
         RefCountPtr<Epetra_Vector> sv   ///< fluid interface loads
@@ -111,6 +105,7 @@ namespace ADAPTER
     RefCountPtr<LINALG::SparseMatrix> D_;            ///< mortar matrix
     RefCountPtr<LINALG::SparseMatrix> Dinv_;         ///< inverse of mortar matrix #D_
     RefCountPtr<LINALG::SparseMatrix> M_;            ///< mortar matrix
+    RefCountPtr<LINALG::SparseMatrix> DinvM_;        ///< product of Dinv_ \times M_
   };
 }
 
