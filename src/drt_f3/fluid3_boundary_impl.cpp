@@ -189,6 +189,8 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
         act = Fluid3Boundary::conservative_outflow_bc;
     else if (action == "calc_Neumann_inflow")
         act = Fluid3Boundary::calc_Neumann_inflow;
+    else if (action == "calculate integrated pressure")
+        act = Fluid3Boundary::integ_pressure_calc;
     else dserror("Unknown type of action for Fluid3_Boundary");
 
     // get status of Ale
@@ -222,6 +224,11 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
     case flowratecalc:
     {
         FlowRateParameterCalculation(ele, params,discretization,lm);
+        break;
+    }
+    case integ_pressure_calc:
+    {
+        IntegratedPressureParameterCalculation(ele, params,discretization,lm);
         break;
     }
     // general action to calculate the flow rate (replaces flowratecalc soon)
@@ -1629,6 +1636,133 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateParameterCalculation(
   params.set<double>("Outlet flowrate", flowrate);
 }//DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCalculation
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalculation(
+  DRT::ELEMENTS::Fluid3Boundary*    ele,
+  ParameterList&                    params,
+  DRT::Discretization&              discretization,
+  vector<int>&                      lm)
+{
+  // allocate vector for shape functions and for derivatives
+  LINALG::Matrix<iel,1> funct(true);
+  LINALG::Matrix<bdrynsd_,iel> deriv(true);
+
+  // global node coordinates
+  LINALG::Matrix<nsd_,iel> xyze(true);
+
+  // coordinates of current integration point in reference coordinates
+  LINALG::Matrix<bdrynsd_,1> xsi(true);
+
+  // normal vector
+  LINALG::Matrix<nsd_,1> normal(true);
+
+  // get material of volume element this surface belongs to
+  RCP<MAT::Material> mat = ele->ParentElement()->Material();
+
+  double density = 0.0;
+
+  if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
+      && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
+      && mat->MaterialType() != INPAR::MAT::m_fluid)
+          dserror("Material law is not a fluid");
+
+  if(mat->MaterialType()== INPAR::MAT::m_fluid)
+  {
+    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+    density = actmat->Density();
+  }
+  else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
+  {
+    const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(mat.get());
+    density = actmat->Density();
+  }
+  else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
+  {
+    const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
+    density = actmat->Density();
+  }
+  else
+    dserror("Fluid material expected but got type %d", mat->MaterialType());
+
+  //get gauss rule
+  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+
+  // extract local values from the global vectors
+  RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+  if (velnp==null)
+    dserror("Cannot get state vector 'velnp'");
+
+  vector<double> myvelnp(lm.size());
+  DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+
+  // allocate local velocity vector
+  LINALG::Matrix<nsd_,iel> evelnp(true);
+  // allocate local pressure vector
+  LINALG::Matrix<1,iel>   eprenp(true);
+
+  // split velocity and pressure, insert into element arrays
+  for (int inode=0; inode<iel; ++inode)
+  {
+    eprenp(inode) = density*myvelnp[nsd_+inode*numdofpernode_];
+  }
+
+  // get  actual outflowrate
+  double pressure    = params.get<double>("Inlet integrated pressure");
+
+  // get node coordinates
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
+
+#ifdef D_ALE_BFLOW
+  // Add the deformation of the ALE mesh to the nodes coordinates
+  // displacements
+  RCP<const Epetra_Vector>      dispnp;
+  vector<double>                mydispnp;
+
+  if (ele->ParentElement()->IsAle())
+  {
+    dispnp = discretization.GetState("dispnp");
+    if (dispnp!=null)
+    {
+      mydispnp.resize(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+    }
+    dsassert(mydispnp.size()!=0,"paranoid");
+    for (int inode=0;inode<iel;++inode)
+    {
+      for (int idim=0; idim<nsd_; ++idim)
+      {
+        xyze(idim,inode)+=mydispnp[numdofpernode_*inode+idim];
+      }
+    }
+  }
+#endif // D_ALE_BFLOW
+
+  // TODO: Normal at Gauss point or at node
+
+  //const IntegrationPoints2D  intpoints(gaussrule);
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    // integration factor * Gauss weights & local Gauss point coordinates
+    // shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // normalized normal vector at gausspoint
+    const double fac = EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, &normal);
+
+    //Compute elment flowrate (add to actual frow rate obtained before
+    for (int inode=0;inode<iel;++inode)
+    {
+      pressure += funct(inode) * eprenp(inode) *fac;
+    }
+  }  // end Gauss loop
+  // set new flow rate
+
+  params.set<double>("Inlet integrated pressure", pressure);
+
+}//DRT::ELEMENTS::Fluid3Surface::IntegratedPressureParameterCalculation
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -54,7 +54,6 @@ void dyn_art_net_drt()
 
 Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
 {
-
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -74,7 +73,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   int TotalNumberOfElements = 0;
   actdis->Comm().SumAll(&NumberOfElements,&TotalNumberOfElements,1);
   
-  if(TotalNumberOfElements == 0)
+  if(TotalNumberOfElements == 0 && CoupledTo3D)
   {
     if (actdis->Comm().MyPID()==0)
     {

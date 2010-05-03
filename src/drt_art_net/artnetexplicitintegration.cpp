@@ -183,7 +183,8 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
   discret_->SetState("qanp",qanp_);
 
   // loop all elements on this proc (including ghosted ones)
-  int localNode;
+  int localNode;                                                
+
   for (int nele=0;nele<discret_->NumMyColElements();++nele)
   {
     // get the element
@@ -623,7 +624,6 @@ void ART::ArtNetExplicitTimeInt::TimeUpdate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetExplicitTimeInt::Output()
 {
-  
   if (step_%upres_ == 0)
   {
     // step number and time
@@ -717,6 +717,7 @@ void ART::ArtNetExplicitTimeInt::ReadRestart(int step)
 {
 
   IO::DiscretizationReader reader(discret_,step);
+  
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 

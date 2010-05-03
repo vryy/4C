@@ -2610,7 +2610,7 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   //          dumping of turbulence statistics if required
   // -------------------------------------------------------------------
   statisticsmanager_->DoOutput(output_,step_,eosfac);
-
+  
   return;
 } // FluidImplicitTimeInt::StatisticsAndOutput
 
@@ -2626,6 +2626,7 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::Output()
 {
+
   //  ART_exp_timeInt_->Output();
   // output of solution
   if (step_%upres_ == 0)

@@ -256,6 +256,29 @@ void FLD::UTILS::Fluid_couplingWrapper::FlowRateCalculation(double time, double 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
+ |  Wrap flow rate calculation                             ismail 12/09 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::UTILS::Fluid_couplingWrapper::PressureCalculation(double time, double dta)
+{
+  // get an iterator to my map
+  map<const int, RCP<class Fluid_couplingBc> >::iterator mapiter;
+
+  for (mapiter = coup_map3D_.begin(); mapiter != coup_map3D_.end(); mapiter++ )
+  {
+    mapiter->second->Fluid_couplingBc::PressureCalculation(time,dta,mapiter->first);
+  }
+
+  return;
+}
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
  |  Wrap outflow boundary pressure application             ismail 12/09 |
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -308,6 +331,15 @@ void FLD::UTILS::Fluid_couplingWrapper::ApplyBoundaryConditions(double time, dou
             dserror("[3D/Reduced-D COUPLING] 3D map has no variable %s for condition [%d]",variable_str.c_str(),condID);
           }
           (*map3_Dnp_)[CouplingVariable.str()] = mapiter->second->Fluid_couplingBc::FlowRateCalculation(time,dta,condID);
+        }
+        else if (variable_str == "pressure")
+        {
+          map<string,double>::iterator itr = map3_Dnp_->find(CouplingVariable.str());
+          if(itr == map3_Dnp_->end())
+          {
+            dserror("[3D/Reduced-D COUPLING] 3D map has no variable %s for condition [%d]",variable_str.c_str(),condID);
+          }
+          (*map3_Dnp_)[CouplingVariable.str()] = mapiter->second->Fluid_couplingBc::PressureCalculation(time,dta,condID);
         }
         else
         {
@@ -709,16 +741,66 @@ double FLD::UTILS::Fluid_couplingBc::FlowRateCalculation(double time, double dta
 
   // ... as well as actual total flowrate on this proc
   double actflowrate = eleparams.get<double>("Outlet flowrate");
-  cout<<"Act Flow rate: "<<actflowrate<<endl;
 
   // get total flowrate in parallel case
   double parflowrate = 0.0;
   discret_3D_->Comm().SumAll(&actflowrate,&parflowrate,1);
 
-  cout<<"My Parallel FlowRate is: "<<parflowrate<<endl;
   return parflowrate;
 }//FluidImplicitTimeInt::FlowRateCalculation
 
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Pressure calculation                                   ismail 04/10 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*!
+  Calculate the pressure accros a coupling boundary surface
+
+  Flow rates are
+  (1) calculated for single element surfaces
+  (2) added up over the elements of the single procs
+  (3) communicated and added over the procs
+  (4) devide the integrated pressure over the cross-sectional area
+  (4) and finally stored within the vector 'pressures_'
+
+  The vector of the flowrates holds the flow rate history of the
+  very last cycle!
+
+*/
+double FLD::UTILS::Fluid_couplingBc::PressureCalculation(double time, double dta, int condid)
+{
+  // fill in parameter list for subsequent element evaluation
+  // there's no assembly required here
+  ParameterList eleparams;
+  eleparams.set("action","calculate integrated pressure");
+  eleparams.set<double>("Inlet integrated pressure", 0.0);
+  eleparams.set("total time",time);
+
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  const Epetra_Map* dofrowmap = discret_3D_->DofRowMap();
+
+  // get elemental flowrates ...
+  RCP<Epetra_Vector> myStoredPressures=rcp(new Epetra_Vector(*dofrowmap,100));
+  const string condstring("Art_3D_redD_CouplingCond");
+  discret_3D_->EvaluateCondition(eleparams,myStoredPressures,condstring,condid);
+
+  // ... as well as actual total flowrate on this proc
+  double actpressure = eleparams.get<double>("Inlet integrated pressure");
+
+  // get total flowrate in parallel case
+  double parpressure = 0.0;
+  discret_3D_->Comm().SumAll(&actpressure,&parpressure,1);
+
+  return parpressure;
+}//FluidImplicitTimeInt::PressureCalculation
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

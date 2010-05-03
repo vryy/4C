@@ -238,14 +238,16 @@ void DRT::Problem::InputControl()
   switch (genprob.probtyp)
   {
   case prb_fsi:
+  {
+#ifdef D_ARTNET
+    genprob.numartf = 3;
+#endif
+  }
   case prb_fsi_lung:
   {
     genprob.numsf=0;
     genprob.numff=1;
     genprob.numaf=2;
-#ifdef D_ARTNET
-    genprob.numartf = 3;
-#endif
     break;
   }
   case prb_fsi_xfem:
@@ -260,6 +262,9 @@ void DRT::Problem::InputControl()
   {
     genprob.numff=0;
     genprob.numaf=1;
+#ifdef D_ARTNET
+    genprob.numartf = 2;
+#endif
     break;
   }
   case prb_fluid_ale:
@@ -709,10 +714,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 #ifdef D_ARTNET
     // create empty discretizations
     arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
-#ifdef D_RED_AIRWAYS
-    // create empty discretizations
-    airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
-#endif
 #endif
     AddDis(genprob.numsf, structdis);
     AddDis(genprob.numff, fluiddis);
@@ -720,9 +721,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 #ifdef D_ARTNET
     AddDis(genprob.numartf, arterydis);
 #endif
-#ifdef D_RED_AIRWAYS
-    AddDis(genprob.numawf, airwaydis);
-#endif
+
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
 
@@ -789,6 +788,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   }
   case prb_fluid:
   {
+    
     // allocate and input general old stuff....
     std::string distype = ptype.get<std::string>("SHAPEFCT");
 
@@ -802,9 +802,20 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     }
 
     AddDis(genprob.numff, fluiddis);
+#ifdef D_ARTNET
+    // create empty discretizations
+    arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
+#endif
+#ifdef D_ARTNET
+    AddDis(genprob.numartf, arterydis);
+#endif
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+#ifdef D_ARTNET
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+#endif
+
     nodereader.Read();
     break;
   }

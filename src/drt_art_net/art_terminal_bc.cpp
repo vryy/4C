@@ -190,7 +190,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
       }
     }
 
-    cout<<"3D is generating: ["<<BC<<"] : "<<BCin<<endl;
+    cout<<"Return ["<<BC<<"] form 3D problem to 1D POINT of ID["<<ID<<"]: "<<BCin<<endl;
     if (Type == "forced")
     {
       Rf = 1.0;
@@ -495,6 +495,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
     std::stringstream returnedBCwithId;
     returnedBCwithId << returnedBC <<"_" << ID;
 
+    cout<<"Return ["<<returnedBC<<"] form 1D problem to 3D SURFACE of ID["<<ID<<"]: "<<BC3d<<endl;
     // -----------------------------------------------------------------
     // Check whether the coupling wrapper has already initialized this
     // map else wise we will have problems with parallelization, that's

@@ -99,7 +99,7 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
   else if (action == "calc_fluid_elementvolume")
     act = Fluid3::calc_fluid_elementvolume;
   else
-    dserror("Unknown type of action for Fluid3");
+  dserror("(%s) Unknown type of action for Fluid3",action.c_str());
   return act;
 }
 

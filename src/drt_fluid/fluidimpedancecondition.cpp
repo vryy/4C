@@ -905,6 +905,33 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
     cout << "Impedance condition Id: " << condid << " Flowrate = " << parflowrate <<"\t time: "<<time<< endl;
   }
 
+#if 0 // This is kept for some minor debugging purposes
+  eleparams.set("action","calculate integrated pressure");
+  eleparams.set<double>("Inlet integrated pressure", 0.0);
+  eleparams.set("total time",time);
+
+
+  // get elemental flowrates ...
+  RCP<Epetra_Vector> myStoredPressures=rcp(new Epetra_Vector(*dofrowmap,100));
+
+  discret_->EvaluateCondition(eleparams,myStoredPressures,condstring,condid);
+
+  // ... as well as actual total flowrate on this proc
+  double actpressure = eleparams.get<double>("Inlet integrated pressure");
+
+  // get total flowrate in parallel case
+  double parpressure = 0.0;
+  discret_->Comm().SumAll(&actpressure,&parpressure,1);
+
+  double density=0.0, viscosity=0.0;
+  double area = Area(density,viscosity,condid);
+  if (myrank_ == 0)
+  {
+    printf("Pressure calculation is:  %10.5e | %10.5e\n",parpressure, parpressure/area);
+  }
+
+#endif
+
   return;
 }//FluidImplicitTimeInt::FlowRateCalculation
 

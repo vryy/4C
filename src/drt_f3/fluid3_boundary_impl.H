@@ -260,6 +260,21 @@ private:
                     DRT::Discretization&              discretization,
                     vector<int>&                      lm);
 
+   /*!
+    brief integrate elemental pressure over a surface
+
+    \param params (in/out)    : ParameterList for communication between control routine
+                                and elements
+    \param discretization (in): A reference to the underlying discretization
+    \param lm (in)            : location vector of this element
+    */
+    void IntegratedPressureParameterCalculation(
+      DRT::ELEMENTS::Fluid3Boundary*    ele,
+      ParameterList&                    params,
+      DRT::Discretization&              discretization,
+      vector<int>&                      lm);
+
+
     /*!
      brief integrate elemental flow rates over a surface
 
@@ -371,7 +386,8 @@ private:
       calc_surface_tension,
       enforce_weak_dbc,
       conservative_outflow_bc,
-      calc_Neumann_inflow
+      calc_Neumann_inflow,
+      integ_pressure_calc
     };
 
   //! evaluate shape functions/derivatives, metric tensor and

@@ -1192,7 +1192,8 @@ private:
     calc_surface_tension,
     enforce_weak_dbc,
     conservative_outflow_bc,
-    calc_Neumann_inflow
+    calc_Neumann_inflow,
+    integ_pressure_calc
   };
 
   // don't want = operator

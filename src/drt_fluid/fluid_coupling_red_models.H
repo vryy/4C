@@ -76,6 +76,11 @@ public:
   void FlowRateCalculation(double time, double dta);
 
   /*!
+  \brief Wrapper for Fluid_couplingWrapper::PressureCalculation
+  */
+  void PressureCalculation(double time, double dta);
+
+  /*!
   \brief Wrapper for Fluid_couplingWrapper::OutflowBoundary
   */
   void ApplyBoundaryConditions(double time, double dta, double theta);
@@ -190,6 +195,15 @@ protected:
   double FlowRateCalculation( double time,
                               double dta,
                               int condid );
+
+  /*!
+    \brief compute and store pressure of all previous
+    time steps belonging to one cycle
+  */
+  double PressureCalculation( double time,
+                              double dta,
+                              int condid );
+
 
   /*!
     \brief compute convolution integral and apply pressure
