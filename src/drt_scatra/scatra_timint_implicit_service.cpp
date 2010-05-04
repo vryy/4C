@@ -128,6 +128,96 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
 }
 
 /*----------------------------------------------------------------------*
+ | calculate initial electric potential field at t=t_0         gjb 04/10|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CalcInitialPotentialField()
+{
+  if (scatratype_==INPAR::SCATRA::scatratype_elch_enc)
+  {
+    if (Teuchos::getIntegralValue<int>(*params_,"INITPOTCALC"))
+    {
+      // time measurement:
+      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc initial potential field");
+      if (myrank_ == 0)
+        std::cout<<"SCATRA: calculating initial field for electric potential"<<endl;
+
+      // are we really at step 0?
+      dsassert(step_==0,"Step counter is not 0");
+
+      // construct intermediate vectors
+      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+      RCP<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap,true);
+      RCP<Epetra_Vector> phi0 = LINALG::CreateVector(*dofrowmap,true);
+
+      // call elements to calculate matrix and right-hand-side
+      {
+        // zero out matrix entries
+        sysmat_->Zero();
+
+        // ToDo:
+        // contributions due to Neumann b.c. have to be summed up here, and applied
+        // as a current flux condition at the potential field!
+
+        // add potential Neumann boundary condition at time t=0
+        // residual_->Update(1.0,*neumann_loads_,0.0);
+
+        // create the parameters for the discretization
+        ParameterList eleparams;
+
+        // action for elements
+        eleparams.set("action","calc_initial_potential_field");
+
+        // set type of scalar transport problem
+        eleparams.set("scatratype",scatratype_);
+
+        // factor F/RT
+        eleparams.set("frt",frt_);
+
+        // parameters for stabilization
+        eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+
+        //provide displacement field in case of ALE
+        eleparams.set("isale",isale_);
+        if (isale_)
+          AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+        // set vector values needed by elements
+        discret_->ClearState();
+        discret_->SetState("phi0",phin_);
+
+        // call loop over elements
+        discret_->Evaluate(eleparams,sysmat_,rhs);
+        discret_->ClearState();
+
+        // finalize the complete matrix
+        sysmat_->Complete();
+      }
+
+      // apply Dirichlet boundary conditions to system matrix
+      LINALG::ApplyDirichlettoSystem(sysmat_,phi0,rhs,phi0,*(dbcmaps_->CondMap()));
+
+      // solve
+      solver_->Solve(sysmat_->EpetraOperator(),phi0,rhs,true,true);
+
+      // copy solution of initial potential field to the solution vectors
+      Teuchos::RCP<Epetra_Vector> onlypot = splitter_.ExtractCondVector(phi0);
+      // insert values into the whole solution vectors
+      splitter_.InsertCondVector(onlypot,phinp_);
+      splitter_.InsertCondVector(onlypot,phin_);
+
+      // reset the matrix (and its graph!) since we solved
+      // a very special problem here that has a different sparsity pattern
+      if (getIntegralValue<int>(*params_,"BLOCKPRECOND"))
+        BlockSystemMatrix()->Reset();
+      else
+        SystemMatrix()->Reset();
+    }
+  }
+  // go on!
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | evaluate contribution of electrode kinetics to eq. system  gjb 02/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(

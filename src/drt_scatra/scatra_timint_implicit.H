@@ -378,8 +378,11 @@ protected:
   /// calculate initial value for phidtn_
   void CalcInitialPhidt();
 
-  /// calcuate phidt after reinitialization for OST scheme
+  /// calculate phidt after reinitialization for OST scheme
   virtual void CalcPhidtReinit() = 0;
+
+  /// calculate initial field for electric potential based on ion concentrations (ELCH)
+  void CalcInitialPotentialField();
 
   /// initialization procedure before the first time step is done
   virtual void PrepareFirstTimeStep() = 0;
