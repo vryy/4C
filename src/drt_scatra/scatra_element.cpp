@@ -395,22 +395,7 @@ DRT::Element* DRT::ELEMENTS::TransportBoundary::Clone() const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::TransportBoundary::Shape() const
 {
-  switch (NumNode())
-  {
-  case 2: return line2;
-  case 3:
-    if ((parent_->Shape() == quad8) || (parent_->Shape() == quad9))
-      return line3;
-    else
-      return tri3;
-  case 4: return quad4;
-  case 6: return tri6;
-  case 8: return quad8;
-  case 9: return quad9;
-  default:
-    dserror("unexpected number of nodes %d", NumNode());
-  }
-  return dis_none;
+  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), parent_->Shape());
 }
 
 /*----------------------------------------------------------------------*

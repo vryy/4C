@@ -359,7 +359,7 @@ namespace UTILS
   //!                         /
   //!                   10   /
   //!          X---------X---------X
-  //!         /|                  /|  
+  //!         /|                  /|
   //!  w     / |                 / |
   //!  ^    /  |                /  |
   //!  | 11X   |               X9  |
@@ -371,11 +371,11 @@ namespace UTILS
   //!  |       |           |       |
   //!  |       |         2 |       |
   //!  |       X---------X-|-------X
-  //!  |      /            |      / 
+  //!  |      /            |      /
   //! 4X     /             X5    /
   //!  |    /              |    /
   //!  |  3X               |   X1
-  //!  |  /                |  / 
+  //!  |  /                |  /
   //!  | /                 | /
   //!  |/                  |/
   //!  X---------X---------X ----->u
@@ -813,6 +813,15 @@ namespace UTILS
    */
   double getSizeInLocalCoordinates(
       const DRT::Element::DiscretizationType     distype);
+
+  /*!
+   *  returns the shape of a given boundary element (is used in various element classes
+   *  for implementing the Shape() method of boundary elements)
+   */
+  DRT::Element::DiscretizationType getShapeOfBoundaryElement(
+      const int nen, ///< number of nodes of the boundary element
+      const DRT::Element::DiscretizationType parentshape ///< shape of parent element
+  );
 
 } // namespace UTILS
 } // namespace DRT

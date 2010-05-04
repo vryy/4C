@@ -224,7 +224,7 @@ DRT::ELEMENTS::Fluid3ImplInterface* DRT::ELEMENTS::Fluid3ImplInterface::Impl(DRT
   }
   */
   default:
-    dserror("shape %d (%d nodes) not supported", f3->Shape(), f3->NumNode());
+    dserror("Element shape %s not activated. Just do it.",DRT::DistypeToString(f3->Shape()).c_str());
   }
   return NULL;
 }

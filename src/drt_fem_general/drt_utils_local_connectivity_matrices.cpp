@@ -510,7 +510,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
             }
             break;
         }
-        case DRT::Element::nurbs27: 
+        case DRT::Element::nurbs27:
         {
             const int nLine = 12;
             const int nNode = 3;
@@ -1386,6 +1386,90 @@ double DRT::UTILS::getSizeInLocalCoordinates(
     };
 
     return size;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+DRT::Element::DiscretizationType DRT::UTILS::getShapeOfBoundaryElement(
+    const int nen,
+    const DRT::Element::DiscretizationType parentshape)
+{
+  switch (nen) // number of nodes for the boundary element
+  {
+  // 2D parent element -> Fluid3Boundary element: line2 and line3
+
+  // Fluid3Boundary element: line2
+  case 2:
+    if(parentshape == DRT::Element::quad4 || parentshape == DRT::Element::tri3)
+      return DRT::Element::line2;
+    else if (parentshape == DRT::Element::nurbs4)
+      return DRT::Element::nurbs2;
+    // 1D line element in a 3D volume
+    else if(parentshape == DRT::Element::hex8 ||
+        parentshape == DRT::Element::tet4 ||
+        parentshape == DRT::Element::wedge6 ||
+        parentshape == DRT::Element::pyramid5)
+      return DRT::Element::line2;
+    // 1D line element in a 3D volume
+    else if (parentshape == DRT::Element::nurbs8)
+      return DRT::Element::nurbs2;
+    else dserror("%d nodes of the Fluid3Boundary element does not fit to the distype %s of the parent element",
+        nen, DistypeToString(parentshape).c_str());
+
+  // Fluid3Boundary element: line3
+  case 3:
+    if ((parentshape == DRT::Element::quad8) || (parentshape == DRT::Element::quad9))
+      return DRT::Element::line3;
+    else if (parentshape == DRT::Element::nurbs9)
+      return DRT::Element::nurbs3;
+    // 1D line element in a 3D volume
+    else if (parentshape == DRT::Element::hex20 ||
+        parentshape == DRT::Element::hex27 ||
+        parentshape == DRT::Element::tet10 ||
+        parentshape == DRT::Element::wedge15)
+      return DRT::Element::line3;
+
+  // Fluid3Boundary element: tri3 (surface)
+    else if(parentshape == DRT::Element::tet4 || parentshape == DRT::Element::wedge6 || parentshape == DRT::Element::pyramid5)
+      return DRT::Element::tri3;
+    else dserror("%d nodes of the Fluid3Boundary element does not fit to the distype %s of the parent element",
+        nen, DistypeToString(parentshape).c_str());
+
+  // Fluid3Boundary element: quad4
+  case 4:
+    if(parentshape == DRT::Element::hex8 || parentshape == DRT::Element::wedge6 || parentshape == DRT::Element::pyramid5 )
+      return DRT::Element::quad4;
+    else if (parentshape == DRT::Element::nurbs8)
+      return DRT::Element::nurbs4;
+    else dserror("%d nodes of the Fluid3Boundary element does not fit to the distype %s of the parent element",
+        nen, DistypeToString(parentshape).c_str());
+
+  // Fluid3Boundary element: tri6
+  case 6:
+    if (parentshape == DRT::Element::tet10 || parentshape == DRT::Element::wedge15)
+      return DRT::Element::tri6;
+    else dserror("%d nodes of the Fluid3Boundary element does not fit to the distype %s of the parent element",
+        nen, DistypeToString(parentshape).c_str());
+
+  // Fluid3Boundary element: quad8
+  case 8:
+    if(parentshape == DRT::Element::hex20 || parentshape == DRT::Element::wedge15)
+      return DRT::Element::quad8;
+    else dserror("%d nodes of the Fluid3Boundary element does not fit to the distype %s of the parent element",
+        nen, DistypeToString(parentshape).c_str());
+
+  // Fluid3Boundary element: quad9
+  case 9:
+    if(parentshape == DRT::Element::hex27)
+        return DRT::Element::quad9;
+    else if (parentshape == DRT::Element::nurbs27)
+      return DRT::Element::nurbs9;
+    else dserror("%d nodes of the Fluid3Boundary element does not fit to the distype %s of the parent element",
+        nen, DistypeToString(parentshape).c_str());
+  default:
+    dserror("unexpected number of nodes %d for boundary element", nen);
+  }
+  return DRT::Element::dis_none;
 }
 
 #endif  // #ifdef CCADISCRET
