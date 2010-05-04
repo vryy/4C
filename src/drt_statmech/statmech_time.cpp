@@ -1368,7 +1368,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 		curvenumber_ = statmechmanager_->statmechparams_.get<int>("CURVENUMBER",0)-1;
 		// initialize deltadbc with large values
 		for(int i=0; i<deltadbc_->MyLength(); i++)
-			(*deltadbc_)[i] = 9e99;
+			(*deltadbc_)[i] = 0.0;
 
 		//error message
 		if(oscdir_!=0 && oscdir_!=1 && oscdir_!=2)
