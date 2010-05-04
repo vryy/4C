@@ -1199,8 +1199,9 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
 
     if (alefluid_)
     {
-      output_.WriteVector("dispnp", dispnp_);
+      output_.WriteVector("dispnp" , dispnp_  );
       output_.WriteVector("dispn"   ,dispn_   );
+      output_.WriteVector("dispnm"  ,dispnm_  );
       output_.WriteVector("gridveln",gridveln_);
     }
 
@@ -1968,6 +1969,7 @@ void FLD::FluidGenAlphaIntegration::ReadRestart(int step)
   {
     reader.ReadVector(dispnp_  ,"dispnp"  );
     reader.ReadVector(dispn_   ,"dispn"   );
+    reader.ReadVector(dispnm_  ,"dispnm"  );
     reader.ReadVector(gridveln_,"gridveln");
   }
 
