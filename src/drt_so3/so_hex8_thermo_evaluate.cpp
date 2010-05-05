@@ -56,7 +56,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
       elevec2_epetra,
       elevec3_epetra
       );
-
   }
 
   // TSI: volume coupling stuff
@@ -80,6 +79,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
   else if (action=="calc_struct_nlnstiffmass")                    act = So_hex8::calc_struct_nlnstiffmass;
   else if (action=="calc_struct_stress")                          act = So_hex8::calc_struct_stress;
   else if (action=="calc_struct_update_istep")                    act = So_hex8::calc_struct_update_istep;
+  else if (action=="calc_struct_reset_istep")                     act = So_hex8::calc_struct_reset_istep;    // needed for TangDis predictor
   else if (action=="postprocess_stress")                          act = So_hex8::postprocess_stress;
   else dserror("Unknown type of action for So_hex8");
   // what should the element do
@@ -102,11 +102,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     DRT::UTILS::ExtractMyValues(*res,myres,lm);
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
     if (elemat1.IsInitialized()) matptr = &elemat1;
-    // mechanical stress
-    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
-
     // call soh8_nlnstiffmass to calculate the normal structure solution
-    soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,&stress,NULL,params,
+    soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
                        INPAR::STR::stress_none,INPAR::STR::strain_none);
 
     // need current temperature state, call the temperature discretization
@@ -120,11 +117,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
         dserror("Cannot get state vector 'tempnp'");
       // call the temperature discretization in the location array
       std::vector<double> mytempnp((la[1].lm_).size());
-//        cout << "tempnp\n " << "\n" << *tempnp << endl;
-//        for (int a=0; a<23; a++)
-//        {
-//         cout << "mytempnp\n "<< mytempnp[a] << endl;
-//        }
 
       // the temperature field has only one dof per node, disregarded by the
       // dimension of the problem
@@ -139,19 +131,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
       // the coupling stiffness matrix (3nx1n)
       LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8> elemat1(elemat1_epetra.A(),true);
       // get the temperature dependent stress
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stresstemp;
 
       soh8_nlnstiffmasstemp(la,mydisp,myres,mytempnp,&elemat1,&elemat2,&elevec1,
-        &stresstemp,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
-
-//      cout << "\n calc_struct_nlnstiff stress\n" << stress << endl;
-//      cout << "\nstresstemp\n" << stresstemp << endl;
-
-      // total stress
-      // add stresstemp to the mechanical stress
-      stress.Update(1.0,stresstemp,1.0);
-
-//      cout << "\ntotal stress\n" << stress << endl;
+        NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
   }
   break;
@@ -172,12 +154,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // lm now contains only u-dofs
     vector<double> myres((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*res,myres,lm); // lm now contains only u-dofs
-    // get the mechanical stress
-    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
-
     // call the older version of the soh8_nlnstiffmass to calculate the normal
     // structure solution
-    soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,&stress,NULL,params,
+    soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                       INPAR::STR::stress_none,INPAR::STR::strain_none);
 
     // need current temperature state,
@@ -208,21 +187,18 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
       // the coupling stiffness matrix (3nx1n)
       LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8> elemat1(elemat1_epetra.A(),true);
       // get the temperature dependent stress
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stresstemp;
       soh8_nlnstiffmasstemp(la,mydisp,myres,mytempnp,&elemat1,&elemat2,&elevec1,
-       &stresstemp,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
-
-//      cout << "\n calc_struct_nlnstiffmass stress\n" << stress << endl;
-//      cout << "\nstresstemp\n" << stresstemp << endl;
-
-      // total stress
-      // add stresstemp to the mechanical stress
-      stress.Update(1.0,stresstemp,1.0);
-
-//      cout << "\ntotal stress\n" << stress << endl;
+        NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
   }
   break;
+
+  // allowing the predictor TangDis in .dat --> can be decisive in compressible case!
+  case calc_struct_reset_istep:
+  {
+  }
+  break;
+
 
   // evaluate stresses and strains at gauss points
   case calc_struct_stress:
@@ -251,7 +227,42 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     INPAR::STR::StrainType iostrain
       = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
 
-    soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+    soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,
+      iostress,iostrain);
+
+    // need current temperature state,
+    // call the temperature discretization: thermo equates 2nd dofset
+    // disassemble temperature
+    if (discretization.HasState(1,"temperature"))
+    {
+      // call the temperature discretization in the location array
+      std::vector<double> mytempnp((la[1].lm_).size());
+      // check if you can get the temperature state
+      Teuchos::RCP<const Epetra_Vector> tempnp
+       = discretization.GetState(1,"temperature");
+      if (tempnp==Teuchos::null)
+        dserror("Cannot get state vector 'tempnp'");
+
+      // the temperature field has only one dof per node, disregarded by the
+      // dimension of the problem
+      const int numdofpernode_ = 1;
+      // number of nodes per element
+      const int iel = 8;
+
+      if (la[1].Size() != iel*numdofpernode_)
+        dserror("Location vector length for temperature does not match!");
+      // extract the current temperatures
+      DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
+      // get the temperature dependent stress
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stresstemp;
+      soh8_nlnstiffmasstemp(la,mydisp,myres,mytempnp,NULL,NULL,NULL,
+        &stresstemp,NULL,params,iostress,INPAR::STR::strain_none);
+
+      // total stress
+      // add stresstemp to the mechanical stress
+      stress.Update(1.0,stresstemp,1.0);
+
+    }
 
     AddtoPack(*stressdata, stress);
     AddtoPack(*straindata, strain);
@@ -356,7 +367,6 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmasstemp(
   vector<double>& disp,  // current displacements
   vector<double>& residual,  // current residual displ
   vector<double>& temp, // current temperature
-//  LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix, // element stiffness matrix
   LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8>* tempstiffmatrix, // coupling stiffness matrix
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  // element mass matrix
   LINALG::Matrix<NUMDOF_SOH8,1>* force,  // element internal force vector
@@ -477,6 +487,14 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmasstemp(
     soh8_mat_temp(&stresstemp,&ctemp,&density,&etemp,&defgrd,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
+    // and now the constant stress part of theta_0 must be added
+    LINALG::Matrix<NUMSTR_SOH8,1> ctempconst(true);
+    Ctempconst(&ctempconst);
+    LINALG::Matrix<NUMSTR_SOH8,1> stresstempconst(true);
+    stresstempconst = ctempconst;
+    // total temperature stress
+    stresstemp.Update(1.0,stresstempconst,1.0);
+
     // return gp stresses
     switch (iostress)
     {
@@ -528,15 +546,10 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmasstemp(
       // integrate internal force vector f = f + (B^T . sigma_temp) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stresstemp, 1.0);
 
-      // add the constant temperature fraction to the internal force vector
-      LINALG::Matrix<NUMSTR_SOH8,1> ctempconst(true); // 6x8
-      Ctempconst(&ctempconst);
-      // integrate internal force vector f = (B^T . Ctemp_const) * detJ * w(gp)
-      force->MultiplyTN(detJ_w, bop, ctempconst, 1.0); // (24x1) = (24x6)(6x1)
-
       //-----------------------------------------------------------------------
       // integrate `initial-displacement-temperature' stiffness matrix  02/10
-      // keu += (B^T . Ctemp . N_temp) * detJ * w(gp)
+      // update the stiffness part depending of the temperature
+      // k_theta += 1.0 * k_theta + detJ * w(gp) * (B^T . C_Theta . N_Theta)
       //-----------------------------------------------------------------------
       LINALG::Matrix<NUMSTR_SOH8,NUMNOD_SOH8> cn; // 6x8 = 6x1n
       // extract the shapefunctions on the gp_i and multiply it with cn
@@ -547,47 +560,53 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmasstemp(
           cn(stresscomp,nodid)= ctemp(stresscomp,nodid)*shapefcts[gp](nodid); // (6x8) = (6x8)(8x8)
         }
       }
-      // no matrix available for the coupling term! elemat3 doesn't exist!!!!
       tempstiffmatrix->MultiplyTN(detJ_w,bop,cn,1.0); // [(3nx6)(6x1n)=(3nx1n)] (24x6)(6x8)=(24x8)
 
-//      //-----------------------------------------------------------------------
-//      // integrate `geometric' stiffness matrix and add to keu            02/10
-//      // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj
-//      //-----------------------------------------------------------------------
-//      // \f {\mathbf S}:\Delta\delta{\mathbf E} \f
-//      // \f = \delta {\mathbf d}^T \,{\mathbf k}_{geo}\, \Delta{\mathbf d} \f
-//      // auxiliary integrated stress
-//      LINALG::Matrix<6,1> sfac(stresstemp);
-//
-//      cout << "sfac\n" << sfac << endl;
-//
-//      // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-//      sfac.Scale(detJ_w);
-//      // intermediate Sm.B_L
-//      // attend: SmB_L has only diagonal entries!!!
-//      vector<double> SmB_L(3);
-//      // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
-//      for (int inod=0; inod<NUMNOD_SOH8; ++inod)
-//      {
-//        SmB_L[0] = sfac(0) * N_XYZ(0, inod) + sfac(3) * N_XYZ(1, inod)
-//            + sfac(5) * N_XYZ(2, inod);
-//        SmB_L[1] = sfac(3) * N_XYZ(0, inod) + sfac(1) * N_XYZ(1, inod)
-//            + sfac(4) * N_XYZ(2, inod);
-//        SmB_L[2] = sfac(5) * N_XYZ(0, inod) + sfac(4) * N_XYZ(1, inod)
-//            + sfac(2) * N_XYZ(2, inod);
-//
-//        for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod)
-//        {
-//          double bopstrbop = 0.0; // intermediate value
-//          for (int idim=0; idim<NUMDIM_SOH8; ++idim)
-//          {
-//            bopstrbop += N_XYZ(idim, jnod) * SmB_L[idim];
-//            (*tempstiffmatrix)(3*inod+0,3*jnod+0) += bopstrbop;
-//            (*tempstiffmatrix)(3*inod+1,3*jnod+1) += bopstrbop;
-//            (*tempstiffmatrix)(3*inod+2,3*jnod+2) += bopstrbop;
-//          }
-//        }
-//      } // end of integrate `geometric' stiffness******************************
+      //-----------------------------------------------------------------------
+      // integrate `geometric' stiffness matrix and add to keu            04/10
+      // kgeo += (B_L^T . sigma_Theta . B_L^T) * detJ * w(gp)  with B_L = Ni,Xj
+      //-----------------------------------------------------------------------
+      // \f {\mathbf S}:\Delta\delta{\mathbf E} \f
+      // \f = \delta {\mathbf d}^T \,{\mathbf k}_{geo}\, \Delta{\mathbf d} \f
+      // auxiliary integrated temperature stress
+      LINALG::Matrix<6,1> sfac(stresstemp);
+
+      // detJ * w(gp) * [S11,S22,S33,S12=S21,S23=S32,S13=S31]
+      sfac.Scale(detJ_w);
+
+      // intermediate Sm.B_L
+      vector<double> SmB_L(3);
+
+      // like in so_hex8_evaluate no changes for tempstress
+      // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
+      for (int inod=0; inod<NUMNOD_SOH8; ++inod)
+      {
+        SmB_L[0] = sfac(0) * N_XYZ(0, inod) + sfac(3) * N_XYZ(1, inod)
+            + sfac(5) * N_XYZ(2, inod);
+        SmB_L[1] = sfac(3) * N_XYZ(0, inod) + sfac(1) * N_XYZ(1, inod)
+            + sfac(4) * N_XYZ(2, inod);
+        SmB_L[2] = sfac(5) * N_XYZ(0, inod) + sfac(4) * N_XYZ(1, inod)
+            + sfac(2) * N_XYZ(2, inod);
+        SmB_L[0] = sfac(3) * N_XYZ(1, inod) + sfac(0) * N_XYZ(0, inod)
+            + sfac(5) * N_XYZ(2, inod);
+        SmB_L[1] = sfac(3) * N_XYZ(0, inod) + sfac(1) * N_XYZ(1, inod)
+            + sfac(4) * N_XYZ(2, inod);
+        SmB_L[2] = sfac(5) * N_XYZ(0, inod) + sfac(4) * N_XYZ(1, inod)
+            + sfac(2) * N_XYZ(2, inod);
+
+        for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod)
+        {
+          double bopstrbop = 0.0; // intermediate value
+          for (int idim=0; idim<NUMDIM_SOH8; ++idim)
+            bopstrbop += N_XYZ(idim, jnod) * SmB_L[idim];
+          // <3n,1n>
+          // 3n: displacement:3(3FHG/node)*8(8nodes/element)+3(dim),
+          // 1n: temperature :8(1FHG/node) (no differentiation in directions)
+          (*tempstiffmatrix)(3*inod+0,jnod) += bopstrbop;
+          (*tempstiffmatrix)(3*inod+1,jnod) += bopstrbop;
+          (*tempstiffmatrix)(3*inod+2,jnod) += bopstrbop;
+        }
+      } // end of integrate `geometric' stiffness******************************
     }
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
@@ -654,7 +673,8 @@ void DRT::ELEMENTS::So_hex8::Ctempconst(
   Teuchos::RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
-    case INPAR::MAT::m_thermostvenant: /*-------- thermo st.venant-kirchhoff-material */
+    /*-------- thermo st.venant-kirchhoff-material */
+    case INPAR::MAT::m_thermostvenant:
     {
       MAT::ThermoStVenantKirchhoff* thrstvk
         = static_cast<MAT::ThermoStVenantKirchhoff*>(mat.get());

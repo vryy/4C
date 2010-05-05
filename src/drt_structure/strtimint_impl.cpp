@@ -115,9 +115,9 @@ STR::TimIntImpl::TimIntImpl
   // iterative displacement increments IncD_{n+1}
   // also known as residual displacements
   disi_ = LINALG::CreateVector(*dofrowmap_, true);
-  
+
   //prepare matrix for scaled thickness business of thin shell structures
-  stcmat_= 
+  stcmat_=
     Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
 
 
@@ -147,7 +147,7 @@ void STR::TimIntImpl::Predict()
 
   // set iteration step to 0 (predictor)
   iter_ = 0;
-  
+
   // choose predictor
   if ( (pred_ == INPAR::STR::pred_constdis)
        or (pred_ == INPAR::STR::pred_constdispres) )
@@ -579,13 +579,13 @@ bool STR::TimIntImpl::Converged()
   bool ccontact = true;
   if (cmtman_!=Teuchos::null)
   {
-    // check which case (application, strategy) we are in 
+    // check which case (application, strategy) we are in
     INPAR::CONTACT::ApplicationType apptype =
       Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(cmtman_->GetStrategy().Params(),"APPLICATION");
     INPAR::CONTACT::SolvingStrategy stype =
       Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
     bool semismooth = Teuchos::getIntegralValue<int>(cmtman_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
-    
+
     // only do this convergence check for semi-smooth Lagrange multiplier contact
     if (apptype == INPAR::CONTACT::app_mortarcontact && stype == INPAR::CONTACT::solution_lagmult && semismooth)
       ccontact = cmtman_->GetStrategy().ActiveSetConverged();
@@ -659,7 +659,7 @@ void STR::TimIntImpl::Solve()
     // choose solution technique in accordance with user's will
     CmtNonlinearSolve();
   }
-  
+
   // all other cases
   else
   {
@@ -1030,7 +1030,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     // print newton message on proc 0
     if (myrank_ == 0)
       conman_->PrintMonitorValues();
-  }  
+  }
   // test whether max iterations was hit
   else if ( (iter_ >= itermax_) and (not iterdivercont_) )
   {
@@ -1061,14 +1061,14 @@ void STR::TimIntImpl::CmtNonlinearSolve()
   // application type
   INPAR::CONTACT::ApplicationType apptype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(cmtman_->GetStrategy().Params(),"APPLICATION");
-  
+
   // strategy type
   INPAR::CONTACT::SolvingStrategy soltype =
     Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
-  
+
   // semi-smooth Newton type
   bool semismooth = Teuchos::getIntegralValue<int>(cmtman_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
-  
+
   // iteration type
   if (itertype_ != INPAR::STR::soltech_newtonfull)
     dserror("Unknown type of equilibrium iteration");
@@ -1086,11 +1086,11 @@ void STR::TimIntImpl::CmtNonlinearSolve()
     // iteration loop (which is then basically a standard Newton).
     //********************************************************************
     if (apptype == INPAR::CONTACT::app_mortarcontact && semismooth)
-    { 
+    {
       // nonlinear iteration
       NewtonFull();
     }
-    
+
     //********************************************************************
     // 2) FIXED-POINT APPROACH FOR CONTACT
     // The search for the correct active set (=contact nonlinearity) is
@@ -1106,10 +1106,10 @@ void STR::TimIntImpl::CmtNonlinearSolve()
       {
         // increase active set iteration index
         ++activeiter;
-        
+
         // predictor step (except for first active set step)
         if (activeiter > 1) Predict();
-        
+
         // nonlinear iteration
         NewtonFull();
 
@@ -1117,7 +1117,7 @@ void STR::TimIntImpl::CmtNonlinearSolve()
         cmtman_->GetStrategy().UpdateActiveSet();
       }
     }
-    
+
     //********************************************************************
     // 3) STANDARD NEWTON APPROACH FOR MESHTYING
     // No search for the correct active set has to be resolved for mortar
@@ -1181,11 +1181,11 @@ void STR::TimIntImpl::CmtNonlinearSolve()
       cmtman_->GetStrategy().StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
 
     } while (cmtman_->GetStrategy().ConstraintNorm() >= eps);
-          
+
     // reset penalty parameter
     cmtman_->GetStrategy().ResetPenalty();
   }
-    
+
   return;
 }
 
@@ -1196,7 +1196,7 @@ void STR::TimIntImpl::CmtLinearSolve()
   // strategy and system setup types
   INPAR::CONTACT::SolvingStrategy soltype = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
   INPAR::CONTACT::SystemType      systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
-  
+
   //**********************************************************************
   // Solving a saddle point system
   // (1) Standard / Dual Lagrange multipliers -> SaddlePointCoupled
@@ -1207,7 +1207,7 @@ void STR::TimIntImpl::CmtLinearSolve()
     // (iter_-1 to be consistent with old time integration)
     cmtman_->GetStrategy().SaddlePointSolve(*solver_,stiff_,fres_,disi_,dirichtoggle_,iter_-1);
   }
-  
+
   //**********************************************************************
   // Solving a purely displacement based system
   // (1) Dual (not Standard) Lagrange multipliers -> Condensed
@@ -1263,7 +1263,7 @@ void STR::TimIntImpl::UpdateIterIncrementally
   // recover contact / meshtying Lagrange multipliers (monolithic FSI)
   if (cmtman_ != Teuchos::null && disi != Teuchos::null)
     cmtman_->GetStrategy().Recover(disi_);
-  
+
   // Update using #disi_
   UpdateIterIncrementally();
 
@@ -1854,9 +1854,9 @@ void STR::TimIntImpl::STCPreconditioning()
 {
   if(stcscale_!=INPAR::STR::stc_none)
   {
-    if (iter_==1 and step_==0 and  
+    if (iter_==1 and step_==0 and
         (stcscale_==INPAR::STR::stc_curr or stcscale_==INPAR::STR::stc_currsym))
-    { 
+    {
       stcmat_->Zero();
       // create the parameters for the discretization
       Teuchos::ParameterList p;
@@ -1871,7 +1871,7 @@ void STR::TimIntImpl::STCPreconditioning()
       discret_-> ClearState();
       stcmat_->Complete();
     }
-    
+
     stiff_ = MLMultiply(*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),*stcmat_,false,false,true);
     if(stcscale_==INPAR::STR::stc_parasym or stcscale_==INPAR::STR::stc_currsym)
     {
@@ -1939,7 +1939,6 @@ void STR::TimIntImpl::TSIMatrix()
     discret_->SetState(0,"residual displacement", zeros_);
     discret_->SetState(0,"displacement", (*dis_)(0));
     if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", (*vel_)(0));
-    // 29.03.10
     if(tempn_!=Teuchos::null)
     {
       cout << "yeah calc_struct_nlnstiffmass in TSIMatrix" << endl;

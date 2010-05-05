@@ -186,7 +186,7 @@ STR::TimInt::TimInt
                                                         dbcmaps_,
                                                         sdynparams));
   }
-  
+
   // check for contact or meshtying conditions
   {
     // If contact or meshtying conditions are detected, then a corresponding
@@ -194,7 +194,7 @@ STR::TimInt::TimInt
     // initialized. Else, #cmtman_ remains a Teuchos::null pointer.
     PrepareContactMeshtying(sdynparams);
   }
-    
+
   // fix pointer to #dofrowmap_, which has not really changed, but is
   // located at different place
   // (this is necessary to BOTH constraints and contact / meshtying)
@@ -260,15 +260,15 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 {
   // some parameters
   const Teuchos::ParameterList&   scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
-  INPAR::CONTACT::ApplicationType apptype  = Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION"); 
-  INPAR::MORTAR::ShapeFcn         shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(scontact,"SHAPEFCN");  
+  INPAR::CONTACT::ApplicationType apptype  = Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
+  INPAR::MORTAR::ShapeFcn         shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(scontact,"SHAPEFCN");
   INPAR::CONTACT::SolvingStrategy soltype  = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact,"STRATEGY");
   bool semismooth = Teuchos::getIntegralValue<int>(scontact,"SEMI_SMOOTH_NEWTON");
-  
+
   // check contact conditions
   vector<DRT::Condition*> contactconditions(0);
   discret_->GetCondition("Contact",contactconditions);
-  
+
   // only continue if contact unmistakably chosen in input file
   if (contactconditions.size() && apptype != INPAR::CONTACT::app_none)
   {
@@ -279,7 +279,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
     if (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") == INPAR::STR::dyna_gemm)
       alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
-      
+
     // decide whether this is meshtying or contact and create manager
     if (apptype == INPAR::CONTACT::app_mortarmeshtying)
       cmtman_ = rcp(new CONTACT::MtManager(*discret_,alphaf));
@@ -287,22 +287,22 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       cmtman_ = rcp(new CONTACT::CoManager(*discret_,alphaf));
     else if (apptype == INPAR::CONTACT::app_beamcontact)
       dserror("ERROR: Beam contact not yet implemented in new STI!");
-    
+
     // store DBC status in contact nodes
     cmtman_->GetStrategy().StoreDirichletStatus(dbcmaps_);
-    
+
     // create old style dirichtoggle vector (supposed to go away)
     dirichtoggle_ = rcp(new Epetra_Vector(*(dbcmaps_->FullMap())));
     RCP<Epetra_Vector> temp = rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
     temp->PutScalar(1.0);
     LINALG::Export(*temp,*dirichtoggle_);
-    
+
     // contact and constraints together not yet implemented
     if (conman_->HaveConstraint())
       dserror("ERROR: Constraints and contact cannot be treated at the same time yet");
-    
+
     // print messages for multifield problems (e.g FSI)
-    const string probtype = DRT::Problem::Instance()->ProblemType(); 
+    const string probtype = DRT::Problem::Instance()->ProblemType();
     if (probtype != "structure" && !myrank_)
     {
       // warnings
@@ -315,19 +315,19 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 #endif // #ifdef CONTACTPSEUDO2D
       cout << RED << "WARNING: Contact and Meshtying are still experimental "
            << "for the chosen problem type \"" << probtype << "\"!\n" << END_COLOR << endl;
-      
+
       // errors
       if (soltype == INPAR::CONTACT::solution_lagmult && (!semismooth || shapefcn != INPAR::MORTAR::shape_dual))
         dserror("ERROR: Multifield problems with LM strategy for meshtying/contact only for dual+semismooth case!");
       if (soltype == INPAR::CONTACT::solution_auglag)
         dserror("ERROR: Multifield problems with AL strategy for meshtying/contact not yet implemented");
     }
-      
+
     // visualization of initial configuration
 #ifdef CONTACTGMSH3
     cmtman_->GetStrategy().VisualizeGmsh(0,0);
 #endif // #ifdef CONTACTGMSH2
-    
+
     // initialization of contact or meshting
     {
       // FOR MESHTYING (ONLY ONCE), NO FUNCTIONALITY FOR CONTACT CASES
@@ -335,21 +335,21 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       // (2) Perform mesh intialization for rotational invariance
       cmtman_->GetStrategy().MortarCoupling(zeros_);
       cmtman_->GetStrategy().MeshInitialization();
-      
+
       // FOR FRICTIONAL CONTACT
-      // (1) Mortar coupling in reference configuration 
+      // (1) Mortar coupling in reference configuration
       // for frictional contact we need history values (relative velocity) and
       // therefore we store the nodal entries of mortar matrices (reference
       // configuration) before the first time step
       cmtman_->GetStrategy().EvaluateReferenceState(disn_);
-      
+
       // FOR PENALTY CONTACT (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
       // (1) Explicitly store gap-scaling factor kappa
       cmtman_->GetStrategy().SaveReferenceState(zeros_);
     }
 
     // output of strategy type to screen
-    {             
+    {
       // output
       if (!myrank_)
       {
@@ -366,12 +366,12 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
         else if (soltype == INPAR::CONTACT::solution_auglag && shapefcn == INPAR::MORTAR::shape_dual)
           cout << "===== Dual Augmented Lagrange strategy =========================\n" << endl;
       }
-    }       
+    }
   }
-  
+
   return;
 }
-  
+
 /*----------------------------------------------------------------------*/
 /* equilibrate system at initial state
  * and identify consistent accelerations */
@@ -718,7 +718,7 @@ void STR::TimInt::OutputStep()
   // print active contact / meshtying set
   if (cmtman_ != Teuchos::null)
     cmtman_->GetStrategy().PrintActiveSet();
-  
+
   // what's next?
   return;
 }
@@ -806,7 +806,7 @@ void STR::TimInt::OutputState
 
   if (surfstressman_->HaveSurfStress() && writesurfactant_)
     surfstressman_->WriteResults(step_, (*time_)[0]);
-  
+
   // contact / meshtying
   if (cmtman_ != Teuchos::null)
     cmtman_->PostprocessTractions(*output_);
@@ -846,6 +846,12 @@ void STR::TimInt::OutputStressStrain
   // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->SetState(0,"residual displacement", zeros_);
   discret_->SetState(0,"displacement", (*dis_)(0));
+  // 29.04.10
+  // set the temperature for the coupled problem
+  if(tempn_!=Teuchos::null)
+  {
+    discret_->SetState(1,"temperature",tempn_);
+  }
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
@@ -1092,7 +1098,7 @@ void STR::TimInt::Integrate()
 
     // write output
     OutputStep();
-    
+
     // print info about finished time step
     PrintStep();
 
