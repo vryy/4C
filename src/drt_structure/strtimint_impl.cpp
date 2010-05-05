@@ -1941,7 +1941,6 @@ void STR::TimIntImpl::TSIMatrix()
     if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", (*vel_)(0));
     if(tempn_!=Teuchos::null)
     {
-      cout << "yeah calc_struct_nlnstiffmass in TSIMatrix" << endl;
       discret_->SetState(1,"temperature",tempn_);
     }
     discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
