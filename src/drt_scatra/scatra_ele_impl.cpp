@@ -193,7 +193,7 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(
     return cl3;
   }*/
   default:
-    dserror("Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
+    dserror("Element shape %s not activated. Just do it.",DRT::DistypeToString(ele->Shape()).c_str());
   }
   return NULL;
 }
@@ -933,9 +933,32 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         timefac
         );
   }
+  // calculate initial electric potential field caused by initial ion concentrations
+  else if (action =="calc_initial_potential_field")
+  {
+    // need initial field -> extract local values from the global vector
+    RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
+    if (phi0==null) dserror("Cannot get state vector 'phi0'");
+    vector<double> myphi0(lm.size());
+    DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
+
+    // fill element arrays
+    for (int i=0;i<nen_;++i)
+    {
+      for (int k = 0; k< numscal_; ++k)
+      {
+        // split for each transported scalar, insert into element arrays
+        ephinp_[k](i,0) = myphi0[k+(i*numdofpernode_)];
+      }
+    } // for i
+    const double frt = params.get<double>("frt");
+
+    CalculateElectricPotentialField(ele,frt,elemat1_epetra,elevec1_epetra);
+
+  }
   else
     dserror("Unknown type of action for Scatra Implementation: %s",action.c_str());
-
+  // work is done
   return 0;
 }
 
@@ -4922,6 +4945,83 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
 
 } //ScaTraImpl<distype>::CalculateConductivity
 
+
+/*----------------------------------------------------------------------*
+ |  CalculateElectricPotentialField (ELCH) (private)          gjb 04/10 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
+    const DRT::Element*         ele,
+    const double                frt,
+    Epetra_SerialDenseMatrix&   emat,
+    Epetra_SerialDenseVector&   erhs
+)
+{
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  // in the ALE case add nodal displacements
+  if (isale_) xyze_ += edispnp_;
+
+  // access material parameters
+  GetMaterialParams(ele);
+
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // integration loop
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+    double sigmaint(0.0);
+    for (int k=0; k<numscal_; ++k)
+    {
+      // concentration of ionic species k at element center
+      double conintk = funct_.Dot(ephinp_[k]);
+      double sigma_k = frt*valence_[k]*diffusvalence_[k]*conintk;
+      sigmaint += sigma_k;
+
+      // diffusive terms on rhs
+      // gradient of current scalar value
+      gradphi_.Multiply(derxy_,ephinp_[k]);
+      const double vrhs = fac*diffusvalence_[k];
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+numscal_;
+        double laplawf(0.0);
+        GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
+        erhs[fvi] -= vrhs*laplawf;
+      }
+
+      // provide something for conc. dofs: a standard mass matrix
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int    fvi = vi*numdofpernode_+k;
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui = ui*numdofpernode_+k;
+          emat(fvi,fui) += fac*funct_(vi)*funct_(ui);
+        }
+      }
+    } // for k
+
+    // ----------------------------------------matrix entries
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const int    fvi = vi*numdofpernode_+numscal_;
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const int fui = ui*numdofpernode_+numscal_;
+        double laplawf(0.0);
+        GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
+        emat(fvi,fui) += fac*sigmaint*laplawf;
+      }
+    }
+  } // integration loop
+
+  return;
+
+} //ScaTraImpl<distype>::CalculateElectricPotentialField
 
 #endif // CCADISCRET
 #endif // D_FLUID3 or D_FLUID2

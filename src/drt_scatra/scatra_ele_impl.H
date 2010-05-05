@@ -335,16 +335,25 @@ public:
 
    //! integral of shape functions over the element
    void IntegrateShapeFunctions(
-       const DRT::Element*                ele,    ///< the actual element
+       const DRT::Element*                ele,    ///< the current element
        Epetra_SerialDenseVector&          elevec1,///< result vector (to be assembled)
-       const Epetra_IntSerialDenseVector& dofids    ///< for which dof we need to integrate?
+       const Epetra_IntSerialDenseVector& dofids  ///< for which dof we need to integrate?
    );
 
+   //! calculate conductivity of electrolyte solution
    void CalculateConductivity(
-       const DRT::Element*       ele, ///< the actual element
-       const double              frt, ///< factor F/RT needed for ELCH calculations
+       const DRT::Element*       ele,  ///< the current element
+       const double              frt,  ///< factor F/RT needed for ELCH calculations
        Epetra_SerialDenseVector& sigma ///< values for different conductivity expressions
        );
+
+   //! calculate el. potential field based on ion concentrations
+   void CalculateElectricPotentialField(
+       const DRT::Element*         ele,  ///<the current element
+       const double                frt,  ///< factor F/RT needed for ELCH calculations
+       Epetra_SerialDenseMatrix&   emat, ///< matrix (to be assembled)
+       Epetra_SerialDenseVector&   erhs  ///< rhs-vector (to be assembled)
+   );
 
     //! calculate the Laplacian for all shape functions(strong form)
     inline void GetLaplacianStrongForm
