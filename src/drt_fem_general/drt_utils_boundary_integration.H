@@ -178,7 +178,7 @@ void ComputeMetricTensorForBoundaryEle(
       (*normalvec)(0) = dxyzdrs(0,1)*dxyzdrs(1,2)-dxyzdrs(1,1)*dxyzdrs(0,2);
       (*normalvec)(1) = dxyzdrs(0,2)*dxyzdrs(1,0)-dxyzdrs(1,2)*dxyzdrs(0,0);
       (*normalvec)(2) = dxyzdrs(0,0)*dxyzdrs(1,1)-dxyzdrs(1,0)*dxyzdrs(0,1);
-      // normalize normal
+      // normalize normal (outward pointing)
       const double norm2 = normalvec->Norm2();
       normalvec->Scale(1/norm2);
 
@@ -187,7 +187,7 @@ void ComputeMetricTensorForBoundaryEle(
     {
       (*normalvec)(0) = dxyzdrs(0,1);
       (*normalvec)(1) = -dxyzdrs(0,0);
-      // normalize normal
+      // normalize normal (outward pointing)
       const double norm2 = normalvec->Norm2();
       normalvec->Scale(1/norm2);
     }
