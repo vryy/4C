@@ -516,6 +516,8 @@ public:
     vector<LINALG::Matrix<nen_,1> > ehist_;
     //! actual electric potential (ELCH)
     LINALG::Matrix<nen_,1> epotnp_;
+    //! magnetic field at t_(n+1) (ELCH)
+    LINALG::Matrix<nsd_,nen_> emagnetnp_;
     //! fine-scale solution
     vector<LINALG::Matrix<nen_,1> > fsphinp_;
     //! nodal displacement values for ALE

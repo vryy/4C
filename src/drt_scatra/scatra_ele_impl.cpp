@@ -216,6 +216,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     ephiam_(numscal_),
     ehist_(numdofpernode_),
     epotnp_(true),
+    emagnetnp_(true),
     fsphinp_(numscal_),
     edispnp_(true),
     xyze_(true),
@@ -514,6 +515,14 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       }
       // get parameter F/RT needed for ELCH ;-)
       frt = params.get<double>("frt");
+
+      // get magnetic field at nodes (if available)
+      const RCP<Epetra_MultiVector> b
+        = params.get< RCP<Epetra_MultiVector> >("magnetic field",Teuchos::null);
+      if (b != Teuchos::null)
+        DRT::UTILS::ExtractMyNodeBasedValues(ele,emagnetnp_,b,nsd_);
+      else
+        emagnetnp_.Clear();
     }
     else epotnp_.Clear();
 
