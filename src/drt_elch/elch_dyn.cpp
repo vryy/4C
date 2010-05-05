@@ -74,7 +74,8 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
   switch (veltype)
   {
   case INPAR::SCATRA::velocity_zero:  // zero  (see case 1)
-  case INPAR::SCATRA::velocity_function:  // function
+  case INPAR::SCATRA::velocity_function:  // spatial function
+  case INPAR::SCATRA::velocity_function_and_curve:  // spatial function and time curve
   {
     // we directly use the elements from the scalar transport elements section
     if (scatradis->NumGlobalNodes()==0)

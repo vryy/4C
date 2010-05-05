@@ -483,6 +483,9 @@ void SCATRA::TimIntOneStepTheta::PrepareFirstTimeStep()
   discret_->EvaluateNeumann(p,*neumann_loads_);
   discret_->ClearState();
 
+  // compute initial field for electric potential (ELCH)
+  CalcInitialPotentialField();
+
   // compute time derivative of phi at time t=0
   CalcInitialPhidt();
 

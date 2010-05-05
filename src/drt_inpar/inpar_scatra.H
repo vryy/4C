@@ -142,6 +142,7 @@ namespace INPAR
       scatratype_condif,
       scatratype_loma,
       scatratype_elch_enc,
+      scatratype_elch_enc_pde,
       scatratype_levelset
     };
 

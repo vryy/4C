@@ -2078,6 +2078,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("SKIPINITDER",
       "no","Flag to skip computation of initial time derivative",&scatradyn);
 
+  BoolParameter("INITPOTCALC","no",
+      "Automatically calculate initial field for electric potential",&scatradyn);
+
   setStringToIntegralParameter<INPAR::SCATRA::FSSUGRDIFF>("FSSUGRDIFF",
                                "No",
                                "fine-scale subgrid diffusivity",
@@ -2104,12 +2107,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "ConvectionDiffusion",
                                  "LowMachNumberFlow",
                                  "Elch_ENC",
+                                 "Elch_ENC_PDE",
                                  "LevelSet"),
                                tuple<INPAR::SCATRA::ScaTraType>(
                                  INPAR::SCATRA::scatratype_undefined,
                                  INPAR::SCATRA::scatratype_condif,
                                  INPAR::SCATRA::scatratype_loma,
                                  INPAR::SCATRA::scatratype_elch_enc,
+                                 INPAR::SCATRA::scatratype_elch_enc_pde,
                                  INPAR::SCATRA::scatratype_levelset),
                                &scatradyn);
 

@@ -420,19 +420,19 @@ void SCATRA::TimIntGenAlpha::OutputRestart()
   // write electrode potential of the first, galvanostatic electro kinetic condition
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
-  if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
-  {
-    // define a vector with all electro kinetic BC 
-    vector<DRT::Condition*> cond;
-    discret_->GetCondition("ElectrodeKinetics",cond);
-    if (!cond.empty())
+    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
-      // electrode potential of the first electro kinetic BC
-      double pot = cond[0]->GetDouble("pot");
-      // write electrode potential to the .case file	
-      output_->WriteDouble("pot",pot);
+      // define a vector with all electrokinetic BC
+      vector<DRT::Condition*> cond;
+      discret_->GetCondition("ElectrodeKinetics",cond);
+      if (!cond.empty())
+      {
+        // electrode potential of the first electrokinetic BC
+        double pot = cond[0]->GetDouble("pot");
+        // write electrode potential to the .control file
+        output_->WriteDouble("pot",pot);
+      }
     }
-  }
   }
 
   return;
@@ -457,23 +457,24 @@ void SCATRA::TimIntGenAlpha::ReadRestart(int step)
   // get electrode potential of the first, galvanostatic ButlerVolmer condition
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
-  if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
-  {
-    // define a vector with all electro kinetic BC 
-    vector<DRT::Condition*> cond;
-    discret_->GetCondition("ElectrodeKinetics",cond);
-    if (!cond.empty())
+    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
-      // read electrode potential from the .case file
-      double pot = reader.ReadDouble("pot");
-      // adapt electrode potential of the first electro kinetic condition
-      cond[0]->Add("pot",pot);
+      // define a vector with all electrokinetic BC
+      vector<DRT::Condition*> cond;
+      discret_->GetCondition("ElectrodeKinetics",cond);
+      if (!cond.empty())
+      {
+        // read electrode potential from the .case file
+        double pot = reader.ReadDouble("pot");
+        // adapt electrode potential of the first electrokinetic condition
+        cond[0]->Add("pot",pot);
+      }
     }
-  }
   }
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  | Initialization procedure before the first time step         vg 11/08 |
@@ -491,6 +492,9 @@ void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
   discret_->ClearState();
   discret_->EvaluateNeumann(p,*neumann_loads_);
   discret_->ClearState();
+
+  // compute initial field for electric potential (ELCH)
+  CalcInitialPotentialField();
 
   // compute time derivative of phi at time t=0
   CalcInitialPhidt();

@@ -105,7 +105,11 @@ protected:
   TimIntStationary (const TimIntStationary& old);
 
   /// Initialization procedure before the first time step is done
-  void PrepareFirstTimeStep(){return;};
+  void PrepareFirstTimeStep(){
+    // compute initial field for electric potential (ELCH)
+    CalcInitialPotentialField();
+    return;
+    };
 
   /// Set the part of the righthandside belonging to the last timestep.
   void SetOldPartOfRighthandside();

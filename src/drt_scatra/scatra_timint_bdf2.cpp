@@ -504,6 +504,10 @@ void SCATRA::TimIntBDF2::ReadRestart(int step)
 void SCATRA::TimIntBDF2::PrepareFirstTimeStep()
 {
   ApplyDirichletBC(time_, phin_,Teuchos::null);
+
+  // compute initial field for electric potential (ELCH)
+  CalcInitialPotentialField();
+
   return;
 }
 
