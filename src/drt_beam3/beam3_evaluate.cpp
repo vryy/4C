@@ -631,10 +631,9 @@ inline void DRT::ELEMENTS::Beam3::quaterniontoangle(const LINALG::Matrix<4,1>& q
 /*---------------------------------------------------------------------------*
  |computes a spin matrix out of a rotation vector 		   (public)cyron02/09|
  *---------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam3::computespin(LINALG::Matrix<3,3>& spin, LINALG::Matrix<3,1> rotationangle, const double& spinscale)
+inline void DRT::ELEMENTS::Beam3::computespin(LINALG::Matrix<3,3>& spin, LINALG::Matrix<3,1> rotationangle)
 {
   //function based on Crisfield Vol. 2, Section 16 (16.8)
-  rotationangle.Scale(spinscale);
   spin(0,0) = 0;
   spin(0,1) = -rotationangle(2);
   spin(0,2) = rotationangle(1);
@@ -663,7 +662,8 @@ inline void DRT::ELEMENTS::Beam3::quaterniontotriad(const LINALG::Matrix<4,1>& q
     qvec(i) = q(i);
 
   //setting R to third summand of equation (16.70)
-  computespin(R, qvec, 2*q(3));
+  computespin(R, qvec);
+  R.Scale(2*q(3));
 
   //adding second summand of equation (16.70)
   for(int i = 0; i<3; i++)
@@ -763,7 +763,8 @@ LINALG::Matrix<3,3> DRT::ELEMENTS::Beam3::Hinv(LINALG::Matrix<3,1> theta)
   //in case of theta_abs == 0 the following computation has problems with singularities
   if(theta_abs > 0)
   {
-    computespin(result, theta, -0.5);
+    computespin(result, theta);
+    result.Scale(-0.5);
 
     for(int i = 0; i<3; i++)
       result(i,i) += theta_abs/( 2*tan(theta_abs/2) );
@@ -787,10 +788,10 @@ LINALG::Matrix<3,3> DRT::ELEMENTS::Beam3::Hinv(LINALG::Matrix<3,1> theta)
 
 
 /*---------------------------------------------------------------------------*
- |this function performs an update of the central triad as in principle 	 |
- |given in Crisfield, Vol. 2, equation (17.65), but by means of a			 |
- |quaternion product and then calculation of the equivalent rotation matrix   |
- | according to eq. (16.70)								   (public)cyron02/09|
+ |this function performs an update of the rotation (in quaterion form) at the|
+ |numgp-th Gauss point by the incremental rotation deltatheta, by means of a |
+ |quaternion product and then computes the respective new triad Tnew at the  |
+ | Gauss point							                              (public) cyron02/09|
  *---------------------------------------------------------------------------*/
 inline void DRT::ELEMENTS::Beam3::updatetriad(const LINALG::Matrix<3,1>& deltatheta, LINALG::Matrix<3,3>& Tnew, const int numgp)
 {
@@ -932,7 +933,7 @@ inline void DRT::ELEMENTS::Beam3::approxupdatecurvature(const LINALG::Matrix<3,3
 
   //compute spin matrix from eq. (17.73)
   LINALG::Matrix<3,3> spin;
-  computespin(spin, deltatheta, 1.0);
+  computespin(spin, deltatheta);
 
   //turning spin matrix to left right hand side matrix of eq. (17.73)
   for(int i = 0; i<3; i++)
@@ -964,8 +965,8 @@ inline void DRT::ELEMENTS::Beam3::computeKsig1(LINALG::Matrix<6*nnode,6*nnode>& 
   LINALG::Matrix<3,3> Sn;
   LINALG::Matrix<3,3> Sm;
   //first we caluclate S(n) and S(m)
-  computespin(Sn,stressn,1.0);
-  computespin(Sm,stressm,1.0);
+  computespin(Sn,stressn);
+  computespin(Sm,stressm);
 
   //then we insert them blockwise in Ksig1
   for (int n = 0; n < nnode; ++n)
@@ -1001,7 +1002,7 @@ inline void DRT::ELEMENTS::Beam3::computeKsig2(LINALG::Matrix<6*nnode,6*nnode>& 
   LINALG::Matrix<3,3> Sn;
   LINALG::Matrix<3,3> Y;
   //first we compute S(n) and Y according to (17.107b)
-  computespin(Sn,stressn, 1.0);
+  computespin(Sn,stressn);
   Y.Multiply(S,Sn);
 
   //then we insert them into Ksig2 by means of a blockwise algorithm
@@ -1180,7 +1181,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
 
 		S_gp.Clear();
 
-		computespin(S_gp,dxdxi_gp,1.0);
+		computespin(S_gp,dxdxi_gp);
 
 		//stress values n and m, Crisfield, Vol. 2, equation (17.76) and (17.78)
 		epsilonn(0) *= ym*crosssec_;
@@ -1640,7 +1641,7 @@ inline void DRT::ELEMENTS::Beam3::MyRotationalDamping(ParameterList& params,  //
 
     //compute spin matrix S(\omega)
     LINALG::Matrix<3,3> Sofomega;
-    computespin(Sofomega,omega,1);
+    computespin(Sofomega,omega);
 
     //compute matrix T*W*T^t*S(\omega)
     LINALG::Matrix<3,3> TWTtSofomega;
@@ -1648,7 +1649,7 @@ inline void DRT::ELEMENTS::Beam3::MyRotationalDamping(ParameterList& params,  //
 
     //compute spin matrix S(T*W*T^t*\omega)
     LINALG::Matrix<3,3> SofTWTtomega;
-    computespin(SofTWTtomega,TWTtomega,1);
+    computespin(SofTWTtomega,TWTtomega);
 
     //loop over all line nodes
     for(int i=0; i<nnode; i++)
@@ -1908,7 +1909,8 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticMoments(ParameterList& params,  //
 
     //compute spin matrix from first column of Tnew times random number
     LINALG::Matrix<3,3> S;
-    computespin(S,t1,(*randomnumbers)[gp*randompergauss+3][LID()]);
+    computespin(S,t1);
+    S.Scale((*randomnumbers)[gp*randompergauss+3][LID()]);
 
 
     //loop over all line nodes

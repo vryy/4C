@@ -1,7 +1,9 @@
 /*!----------------------------------------------------------------------
 \file beam3ii.H
 
-\brief three dimensional nonlinear Reissner beam element oy type II
+\brief 3D nonlinear Reissner beam element oy type II (according to "The
+ interpolation of rotations and its application to finite element models
+  of geometrically exact rods", Romero 2004)
 
 <pre>
 Maintainer: Christian Cyron
@@ -47,19 +49,13 @@ namespace DRT
 namespace ELEMENTS
 {
 /*!
-\brief three dimensional nonlinear corotational Timoshenko beam element according to Crisfield, Vol.2,
-section 17.2 ("an interpretation of an element due to simo and vu-quoc"), p. 226 - 231; the current
-implementation sets the initial director angles and curvature to zero, which can be done without loss
-of generality since any initial rotation cancels out in the equations (17.72) and (17.76). As a consequence
-the current nodal directors do not appear in the element, but only the values of the current director
-angles minus reference director angles, respectively
+\brief 3D nonlinear Reissner beam element implemented according to the following sources: 
+Jelenic, Crisfield, 1999, "Geometrically exact 3D beam theory: implementations of a strain-invariant finite element for statics and dynamics",
+Crisfield, Jelenic, 1998, "Objectivity of strain measures in the geometrically exact three dimensional beam theory and its finite element implementation",
+Romero, 2004, "The interpolation of rotations and its application to finite element models of geometrically exact rods",
+Crisfield, 2003, "Non-linear Finite Element Analysis of Solids and Structures", Volume 2
 
-The element is capable of using higher order functions from linear to quartic. Please make sure you put the nodes in the right order
-in the input file.
-LIN2  1---2
-LIN3	 1---3---2
-LIN4  1---4---2---3
-LIN5	 1---5---2---3---4
+The element has been implemented with linear basis functions only so far.
 
 author cyron (cyron @lnm.mw.tum.de)
 */
@@ -345,31 +341,26 @@ private:
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
 
-  //! quaternions of triads at GPs at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
+  //! nodal triads in quaternion form at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
   vector<LINALG::Matrix<4,1> > Qconv_;
-  //! quaternions of triads at GPs at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.65)
+  //! nodal triads in quaternion form at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.65)
   vector<LINALG::Matrix<4,1> > Qold_;
-  //! quaternions of triads at GPs during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
+  //! nodal triads in quaternion form during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
   vector<LINALG::Matrix<4,1> > Qnew_;
-  //!curvaturea at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.72)
-  vector<LINALG::Matrix<3,1> > curvconv_;
-  //!curvaturea at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.72)
-  vector<LINALG::Matrix<3,1> > curvold_;
-  //!curvaturea during the current iteration step due to Crisfield, Vol. 2, equation (17.72)
-  vector<LINALG::Matrix<3,1> > curvnew_;
 
-  //!angle displacement taken from discretization and interpolated for a specific Gauss point by Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding time step
-  vector<LINALG::Matrix<3,1> > thetaconv_;
-  //!angle displacement taken from discretization and interpolated for a specific Gauss point by Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding iteration step
-  vector<LINALG::Matrix<3,1> > thetaold_;
-  //!angle displacement taken from discretization and interpolated for a specific Gauss point by Crisfield, Vol. 2, equation (17.93); relates to current iteration step
-  vector<LINALG::Matrix<3,1> > thetanew_;
-  //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding time step
-  vector<LINALG::Matrix<3,1> > thetaprimeconv_;
-  //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding iteration step
-  vector<LINALG::Matrix<3,1> > thetaprimeold_;
-  //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the current iteration step
-  vector<LINALG::Matrix<3,1> > thetaprimenew_;
+  //!rotation angle displacement at nodes; relates to the end of the preceeding time step
+  vector<LINALG::Matrix<3,1> > dispthetaconv_;
+  //!rotation angle displacement at nodes; relates to the end of the preceeding iteration step
+  vector<LINALG::Matrix<3,1> > dispthetaold_;
+  //!rotation angle displacement at nodes; relates to current configuration
+  vector<LINALG::Matrix<3,1> > dispthetanew_;
+  
+  //!node I for determination of reference triad, eq. (3.9), (3.10), Jelenic 1999
+  int nodeI_;
+  
+  //!node J for determination of reference triad, eq. (3.9), (3.10), Jelenic 1999
+  int nodeJ_;
+
 
   //! cross section area
   double crosssec_;
@@ -407,7 +398,7 @@ private:
   //! @name auxiliary computation methods for non-additive, large rotation variables
 
   //!computing spin matrix out of a rotation vector
-  void computespin(LINALG::Matrix<3,3>& spin, LINALG::Matrix<3,1> rotationangle, const double& spinscale);
+  void computespin(LINALG::Matrix<3,3>& spin, LINALG::Matrix<3,1> rotationangle);
 
   //!computing a rotation matrix R from a quaternion q
   void quaterniontotriad(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,3>& R);
@@ -426,39 +417,70 @@ private:
 
   //!quaternion product q12 = q2*q1, Crisfield, Vol. 2, equation (16.71)
   void quaternionproduct(const LINALG::Matrix<4,1>& q1,const LINALG::Matrix<4,1>& q2,LINALG::Matrix<4,1>& q12);
+  
+  //!compute relative rotation qrel between quaterion q1 and q1
+  void relrot(const LINALG::Matrix<4,1>& q1,const LINALG::Matrix<4,1>& q2,LINALG::Matrix<4,1>& qrel);
 
   //!computes inverse quaternion q^{-1} for input quaternion q
   LINALG::Matrix<4,1> inversequaternion(const LINALG::Matrix<4,1>& q);
 
-  //!inverse of matrix H which make rotation variables additive in the limit, eq. (16.94)
-  LINALG::Matrix<3,3> Hinv(LINALG::Matrix<3,1> theta);
+  //!matrix T(\theta) from Jelenic 1999, eq. (2.5)
+  LINALG::Matrix<3,3> Tmatrix(LINALG::Matrix<3,1> theta);
+  
+  //!matrix T(\theta)^{-1} from Jelenic 1999, eq. (2.5)
+  LINALG::Matrix<3,3> Tinvmatrix(LINALG::Matrix<3,1> theta);
 
 
   //@}
 
   //! @name Internal calculation methods
 
-  /*!this function performs an update of the central triad as in principle given in Crisfield, Vol. 2, equation (16.65),
-   * but by means of a quaternion product and then multiplication of the rotation matrix in (16.69) with the reference triad Tref*/
-  void updatetriad(const LINALG::Matrix<3,1>& deltatheta, LINALG::Matrix<3,3>& Tnew, const int numgp);
+  //!compute derivative r' (rprime) of line of centroids at Gauss point x with respect to Jelenic 1999 , eq. (2.12)
+  template<int nnode, int dof>
+  void curvederivative(const vector<double>& disp, const LINALG::Matrix<1,nnode> deriv, LINALG::Matrix<3,1>& rprime);
+  
+  //!compute convected strain at a certain Gauss point with triad rotmat according to Crisfield 1999, eq. (3.4) and eq. (4.9) 
+  void computestrain(const LINALG::Matrix<3,1>& rprime, const LINALG::Matrix<3,3>& Lambda,
+                     LINALG::Matrix<3,1>& gamma, LINALG::Matrix<3,1>& kappa);
+  
+  //!computing convected stresses from convected strains vector and returing also convected constitutive matrix between both
+  void strainstress(const LINALG::Matrix<3,1>& gamma, const LINALG::Matrix<3,1>& kappa,
+                    LINALG::Matrix<3,1>& stressN, LINALG::Matrix<3,3>& CN,
+                    LINALG::Matrix<3,1>& stressM, LINALG::Matrix<3,3>& CM);
+  
+  //!push forward strains, stresses and constitutive matrices to their spatial counterparts by rotation matrix Lambda according to Romero 2004, eq. (3.10)
+  void pushforward(const LINALG::Matrix<3,3>& Lambda,
+                  const LINALG::Matrix<3,1>& stressN , const LINALG::Matrix<3,3>& CN,
+                  const LINALG::Matrix<3,1>& stressM , const LINALG::Matrix<3,3>& CM,
+                  LINALG::Matrix<3,1>& stressn, LINALG::Matrix<3,3>& cn,
+                  LINALG::Matrix<3,1>& stressm, LINALG::Matrix<3,3>& cm);
 
-  //!updating local curvature according to Crisfield, Vol. 2, pages 209 - 210, basically equation (16.148)
-  void updatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1>& deltatheta,LINALG::Matrix<3,1>& deltathetaprime, const int numgp);
-
-  //!updating local curvature approximately according to Crisfield, Vol. 2, eqs. (17.72) & (17.73) (only possible for linear elements)
-  void approxupdatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1> deltatheta,LINALG::Matrix<3,1> deltathetaprime, const int numgp);
-
-  //!computing stiffness matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.106)
+  //!compute convected strain at certain Gauss point with triad rotmat according to Crisfield 1999, eq. (3.4) and eq. (4.9)
+  void computestrain(const LINALG::Matrix<3,1> Psil, const LINALG::Matrix<3,1> Psilprime,
+                     const double& xi, const LINALG::Matrix<3,1>& rprime, const LINALG::Matrix<3,3>& rotmat,
+                     LINALG::Matrix<3,1>& gamma, LINALG::Matrix<3,1>& kappa);
+  
+  //!compute d(T^{-1})/dx according to the two-lined equation below (3.19) on page 152 of Jelenic 1999
+  void computedTinvdx(const LINALG::Matrix<3,1>& Psil, const LINALG::Matrix<3,1>& Psilprime, LINALG::Matrix<3,3>& dTinvdx);
+  
+  
+  //!compute \tilde{I}^i in (3.18), page 152, Jelenic 1999, for all nodes i at a certaom Gauss point
   template<int nnode>
-  void computeKsig1(LINALG::Matrix<6*nnode,6*nnode>& Ksig1, const LINALG::Matrix<3,1>& stressn, const LINALG::Matrix<3,1>& stressm, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv);
-
-  //!computing stiffness matrix Ksigma2 according to Crisfield, Vol. 2, equation (17.107a) and (17.107b)
+  void computeItilde(const LINALG::Matrix<3,1>& Psil, const LINALG::Matrix<3,1>& Psilprime, vector<LINALG::Matrix<3,3> >& Itilde,
+                     const LINALG::Matrix<3,1>& phiIJ, const LINALG::Matrix<3,3>& Lambdar,
+                     const vector<LINALG::Matrix<3,1> >& Psili, const LINALG::Matrix<1,nnode>& funct);
+  
+  //!compute \tilde{I}^{i'} in (3.19), page 152, Jelenic 1999, for all nodes i at a certaom Gauss point
   template<int nnode>
-  void computeKsig2(LINALG::Matrix<6*nnode,6*nnode>& Ksig2, const LINALG::Matrix<3,1>& stressn, const LINALG::Matrix<3,3>& S, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv);
-
-  //!computing basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.105)
-  template<int nnode>
-  void computestiffbasis(const LINALG::Matrix<3,3>& Tnew, const LINALG::Matrix<3,1>& Cm, const LINALG::Matrix<3,1>& Cb, const LINALG::Matrix<3,3>& S, LINALG::Matrix<6*nnode,6*nnode>& stiffmatrix, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv);
+  void computeItildeprime(const LINALG::Matrix<3,1>& Psil, const LINALG::Matrix<3,1>& Psilprime, vector<LINALG::Matrix<3,3> >& Itildeprime,
+                          const LINALG::Matrix<3,1>& phiIJ, const LINALG::Matrix<3,3>& Lambdar,
+                          const vector<LINALG::Matrix<3,1> >& Psili, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv);
+  
+  //!compute matrix v_I as outlined in the equations above (3.15) on page 152 of Jelenic 1999
+  LINALG::Matrix<3,3> vI(const LINALG::Matrix<3,1>& phiIJ);
+  
+  //!compute matrix v_J as outlined in the equations above (3.15) on page 152 of Jelenic 1999
+  LINALG::Matrix<3,3> vJ(const LINALG::Matrix<3,1>& phiIJ);
 
   //!calculation of nonlinear stiffness and mass matrix
   template<int nnode>

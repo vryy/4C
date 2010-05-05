@@ -46,6 +46,26 @@ bool DRT::ELEMENTS::Beam3ii::ReadElement(const std::string& eletype,
   linedef->ExtractDouble("MOMIN",Iyy_);
   linedef->ExtractDouble("MOMIN",Izz_);
   linedef->ExtractDouble("MOMINPOL",Irr_);
+  
+  //set nodal tridas according to input file
+  Qnew_.resize(NumNode());
+  Qold_.resize(NumNode());
+  Qconv_.resize(NumNode());
+  
+  
+  //extract triads at element nodes in reference configuration as rotation vectors and save them as quaternions at each node, respectively
+  vector<double> triads(NumNode()*3,0);
+  linedef->ExtractDoubleVector("TRIADS",triads);
+  LINALG::Matrix<3,1> nodeangle;
+    for(int i=0; i<NumNode(); i++)
+      for(int j=0; j<3; j++)
+      {
+        nodeangle(j) = triads[3*i+j];
+        angletoquaternion(nodeangle,Qnew_[i]);
+      }
+    
+  Qold_ = Qconv_;
+  Qnew_ = Qconv_;
 
   return true;
 }

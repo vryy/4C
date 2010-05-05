@@ -407,7 +407,7 @@ private:
   //! @name auxiliary computation methods for non-additive, large rotation variables
 
   //!computing spin matrix out of a rotation vector
-  void computespin(LINALG::Matrix<3,3>& spin, LINALG::Matrix<3,1> rotationangle, const double& spinscale);
+  void computespin(LINALG::Matrix<3,3>& spin, LINALG::Matrix<3,1> rotationangle);
 
   //!computing a rotation matrix R from a quaternion q
   void quaterniontotriad(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,3>& R);
@@ -438,8 +438,8 @@ private:
 
   //! @name Internal calculation methods
 
-  /*!this function performs an update of the central triad as in principle given in Crisfield, Vol. 2, equation (16.65),
-   * but by means of a quaternion product and then multiplication of the rotation matrix in (16.69) with the reference triad Tref*/
+  /*!this function performs an update of the rotation (in quaterion form) at the numgp-th Gauss point by the incremental rotation deltatheta,
+   *by means of a quaternion product and then computes the respective new triad Tnew at the Gauss point*/
   void updatetriad(const LINALG::Matrix<3,1>& deltatheta, LINALG::Matrix<3,3>& Tnew, const int numgp);
 
   //!updating local curvature according to Crisfield, Vol. 2, pages 209 - 210, basically equation (16.148)

@@ -28,6 +28,8 @@ Maintainer: Christian Cyron
 DRT::ELEMENTS::Beam3ii::Beam3ii(int id, int owner) :
 DRT::Element(id,element_beam3ii,owner),
 isinit_(false),
+nodeI_(0),
+nodeJ_(0),
 crosssec_(0),
 crosssecshear_(0),
 Iyy_(0),
@@ -48,15 +50,10 @@ DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  Qconv_(old.Qconv_),
  Qold_(old.Qold_),
  Qnew_(old.Qnew_),
- curvconv_(old.curvconv_),
- curvold_(old.curvold_),
- curvnew_(old.curvnew_),
- thetaconv_(old.thetaconv_),
- thetaold_(old.thetaold_),
- thetanew_(old.thetanew_),
- thetaprimeconv_(old.thetaprimeconv_),
- thetaprimeold_(old.thetaprimeold_),
- thetaprimenew_(old.thetaprimenew_),
+ dispthetaconv_(old.dispthetaconv_),
+ dispthetaold_(old.dispthetaold_),
+ nodeI_(old.nodeI_),
+ nodeJ_(old.nodeJ_),
  crosssec_(old.crosssec_),
  crosssecshear_(old.crosssecshear_),
  Iyy_(old.Iyy_),
@@ -154,11 +151,10 @@ void DRT::ELEMENTS::Beam3ii::Pack(vector<char>& data) const
   AddtoPack(data,jacobi_);
   AddtoPack(data,jacobimass_);
   AddtoPack(data,jacobinode_);
+  AddtoPack(data,nodeI_);
+  AddtoPack(data,nodeJ_);
   AddtoPack(data,crosssec_);
   AddtoPack(data,crosssecshear_); 
-  AddtoPack<3,1>(data,curvnew_);
-  AddtoPack<3,1>(data,curvconv_);
-  AddtoPack<3,1>(data,curvold_);
   AddtoPack(data,isinit_);
   AddtoPack(data,Irr_);
   AddtoPack(data,Iyy_);
@@ -166,12 +162,8 @@ void DRT::ELEMENTS::Beam3ii::Pack(vector<char>& data) const
   AddtoPack<4,1>(data,Qconv_);
   AddtoPack<4,1>(data,Qnew_);
   AddtoPack<4,1>(data,Qold_);
-  AddtoPack<3,1>(data,thetanew_);
-  AddtoPack<3,1>(data,thetaconv_);
-  AddtoPack<3,1>(data,thetaold_);
-  AddtoPack<3,1>(data,thetaprimenew_);
-  AddtoPack<3,1>(data,thetaprimeconv_);
-  AddtoPack<3,1>(data,thetaprimeold_);
+  AddtoPack<3,1>(data,dispthetaconv_);
+  AddtoPack<3,1>(data,dispthetaold_);
 
   return;
 }
@@ -197,11 +189,10 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,jacobi_);
   ExtractfromPack(position,data,jacobimass_);
   ExtractfromPack(position,data,jacobinode_);
+  ExtractfromPack(position,data,nodeI_);
+  ExtractfromPack(position,data,nodeJ_);
   ExtractfromPack(position,data,crosssec_);
   ExtractfromPack(position,data,crosssecshear_);
-  ExtractfromPack<3,1>(position,data,curvnew_);
-  ExtractfromPack<3,1>(position,data,curvconv_);
-  ExtractfromPack<3,1>(position,data,curvold_);
   ExtractfromPack(position,data,isinit_);
   ExtractfromPack(position,data,Irr_);
   ExtractfromPack(position,data,Iyy_);
@@ -209,12 +200,8 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const vector<char>& data)
   ExtractfromPack<4,1>(position,data,Qconv_);
   ExtractfromPack<4,1>(position,data,Qnew_);
   ExtractfromPack<4,1>(position,data,Qold_);
-  ExtractfromPack<3,1>(position,data,thetanew_);
-  ExtractfromPack<3,1>(position,data,thetaconv_);
-  ExtractfromPack<3,1>(position,data,thetaold_);
-  ExtractfromPack<3,1>(position,data,thetaprimenew_);
-  ExtractfromPack<3,1>(position,data,thetaprimeconv_);
-  ExtractfromPack<3,1>(position,data,thetaprimeold_);
+  ExtractfromPack<3,1>(position,data,dispthetaconv_);
+  ExtractfromPack<3,1>(position,data,dispthetaold_);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -355,186 +342,120 @@ void DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry(const vector<double>& xrefe,
   {
     isinit_ = true;
     
-
-  //resize all class STL vectors so that they can each store 1 value at each GP
-  jacobi_.resize(nnode-1);
-  jacobimass_.resize(nnode);
-  jacobinode_.resize(nnode);
-  Qconv_.resize((nnode-1));
-  Qold_.resize((nnode-1));
-  Qnew_.resize((nnode-1));
-  curvconv_.resize((nnode-1));
-  curvold_.resize((nnode-1));
-  curvnew_.resize((nnode-1));
-  thetaconv_.resize((nnode-1));
-  thetaold_.resize((nnode-1));
-  thetanew_.resize((nnode-1));
-  thetaprimeconv_.resize((nnode-1));
-  thetaprimeold_.resize((nnode-1));
-  thetaprimenew_.resize((nnode-1));
-  
-  //create Matrix for the derivates of the shapefunctions at the GP
-	LINALG::Matrix<1,nnode> shapefuncderiv;
-	
-	//create Matrix for the shapefunctions at the GP
-	LINALG::Matrix<1,nnode> funct;
-	
-	//Get DiscretizationType
-	DRT::Element::DiscretizationType distype = Shape();
-	
-	//Get the applied integrationpoints for underintegration
-	DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
-	
-    //Loop through all GPs and calculate jacobi the triads at the GPs
-	for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-	{  	
-		//Get position xi of GP
-		const double xi = gausspoints.qxg[numgp][0];
-		
-		//Get derivatives of shapefunctions at GP
-		DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
-		
-		//Get shapefunctions at GP
-		DRT::UTILS::shape_function_1D(funct,xi,distype);
-	
-		//triad in reference configuration at GP
-		LINALG::Matrix<3,3> Tref;
-	
-    /*initial triad Tref = [t1,t2,t3] is set in a way for which we don`t have strains in reference configuration*/
-    LINALG::Matrix<3,1> dxdxi;
-
-    dxdxi.Clear();
-    thetaconv_[numgp].Clear();
-    thetaprimeconv_[numgp].Clear();
-
-    //calculate vector dxdxi
-    for(int node=0; node<nnode; node++)
-    {
-    	for(int dof=0; dof<3 ; dof++)
-    	{
-	    	dxdxi(dof) += shapefuncderiv(node) * xrefe[3*node+dof];
-		    thetaconv_[numgp](dof) += funct(node) * rotrefe[3*node+dof];
-		    thetaprimeconv_[numgp](dof) += shapefuncderiv(node) * rotrefe[3*node+dof]; 		
-    	}//for(int dof=0; dof<3 ; dof++)
-    }//for(int node=0; node<nnode; node++)
+    //first the nodes for the reference triad \Lambda_r of the element are chosen according to eq. (6.2), Crisfield 1999
+    nodeI_ = (int)floor(0.5*(NumNode()+1));
+    nodeJ_ = (int)floor(0.5*(NumNode()+2));
     
-
-
-    //Store length factor for every GP
-    //note: the length factor jacobi replaces the determinant and refers to the reference configuration by definition
-    jacobi_[numgp]= dxdxi.Norm2();
-
-    for (int k=0; k<3; k++)
-    {
-  		//t1 axis points in positive direction along xi and is a unit vector
-  		Tref(k,0)=dxdxi(k)/jacobi_[numgp];
-    }
-
-    //t2 is a unit vector in the x2x3-plane orthogonal to t1
-    Tref(0,1) = 0;
-    //if t1 is parallel to the x1-axis t2 is set parallel to the x2-axis
-    if (Tref(1,0) == 0 && Tref(2,0) == 0)
-    {
-         Tref(1,1) = 1;
-         Tref(2,1) = 0;
-    }
-
-    //otherwise t2 is calculated from the scalar product with t1
-    else
-    {
-      //setting t2(0)=0 and calculating other elements by setting scalar product t1 o t2 to zero
-      double lin1norm = pow(pow(Tref(1,0),2)+pow(Tref(2,0),2),0.5);
-      Tref(1,1) = -Tref(2,0)/lin1norm;
-      Tref(2,1) =  Tref(1,0)/lin1norm;
-    }	
-           	
-    //calculating t3 by crossproduct t1 x t2
-    Tref(0,2) = Tref(1,0)*Tref(2,1)-Tref(1,1)*Tref(2,0);
-    Tref(1,2) = Tref(2,0)*Tref(0,1)-Tref(2,1)*Tref(0,0);
-    Tref(2,2) = Tref(0,0)*Tref(1,1)-Tref(0,1)*Tref(1,0);
-
-    /*the center triad in reference configuration is stored as a quaternion whose equivalent would be the rotation
-    * from the identity matrix into the reference configuration*/
-    triadtoquaternion(Tref,Qconv_[numgp]);
-
-    //the here employed beam element does not need data about the current position of the nodal directors so that
-    //initilization of those can be skipped (the nodal displacements handeled in beam3ii_evaluate.cpp are not the current angles,
-    //but only the differences between current angles and angles in reference configuration, respectively. Thus the
-    //director orientation in reference configuration cancels out and can be assumed to be zero without loss of
-    //generality
-
-    curvconv_[numgp].Clear();
-  }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-	
-	//Now all triads have been calculated and Qold_ and Qnew_ can be updated
-  Qold_ = Qconv_;
-  Qnew_ = Qconv_;
-
-  curvold_ = curvconv_;
-  curvnew_ = curvconv_;
-
-  thetaold_ = thetaconv_;
-  thetanew_ = thetaconv_;
-
-  thetaprimeold_ = thetaprimeconv_;
-  thetaprimenew_ = thetaprimeconv_;
-	
-	//Get the applied integrationpoints for exact integration of mass matrix
-	DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
-	  	
-	//Loop through all GPs and calculate jacobi and theta0
-	for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
-	{
-	  	
-		//Get position xi of GP
-		const double xi = gausspointsmass.qxg[numgp][0];
-		
-		//Get derivatives of shapefunctions at GP
-		DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
-	
-    LINALG::Matrix<3,1> dxdximass;
-
-    dxdximass.Clear();
-    //calculate dx/dxi and dz/dxi
-    for(int node=0; node<nnode; node++)
-      for(int dof=0; dof<3; dof++)
-        dxdximass(dof)+=shapefuncderiv(node)*xrefe[3*node+dof];
     
-
-    //Store length factor for every GP
-    //note: the length factor jacobi replaces the determinant and refers by definition always to the reference configuration
-    jacobimass_[numgp]= dxdximass.Norm2();	
-	
-	}//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
-	
-	
-	//compute Jacobi determinant at gauss points for Lobatto quadrature (i.e. at nodes)
-  for(int numgp=0; numgp< nnode; numgp++)
-  {
+    //resize and initialized STL vectors for rotational displacements so that they can store one value at each node
+    dispthetaconv_.resize(nnode);
+    dispthetaold_.resize(nnode);
+    dispthetanew_.resize(nnode);
+    for(int i=0; i<nnode; i++)
+      for(int j=0; j<3; j++)
+      {
+        dispthetaconv_[i](j) = 0;
+        dispthetaold_[i](j) = 0;
+        dispthetanew_[i](j) = 0;
+      }
       
-    //Get position xi of nodes
-    const double xi = -1.0 + 2*numgp / (nnode - 1);
     
-    //Get derivatives of shapefunctions at GP
-    DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
-  
-    LINALG::Matrix<3,1> dxdxi;
+    //resize STL vectors for Jacobi determinants so that they can store one value at each Gauss point
+    jacobi_.resize(nnode-1);
+    jacobimass_.resize(nnode);
+    jacobinode_.resize(nnode);
 
-    dxdxi.Clear();
-    //calculate dx/dxi and dz/dxi
-    for(int node=0; node<nnode; node++)
-      for(int dof=0; dof<3; dof++)
-        dxdxi(dof)+=shapefuncderiv(node)*xrefe[3*node+dof];
+    //create Matrix for the derivates of the shapefunctions at the GP
+    LINALG::Matrix<1,nnode> shapefuncderiv;
     
-    //Store Jacobi determinant for each node (Jacobi determinant refers by definition always to the reference configuration)
-    jacobinode_[numgp]= dxdxi.Norm2(); 
-  
-  }//for(int numgp=0; numgp< nnode; numgp++)
-	
-	return;
+    //create Matrix for the shapefunctions at the GP
+    LINALG::Matrix<1,nnode> funct;
+    
+    //derivative of curve in physical space with respect to curve parameter xi \in [-1;1] on element level
+    LINALG::Matrix<3,1> drdxi;
+    
+    //Get DiscretizationType
+    DRT::Element::DiscretizationType distype = Shape();
+    
+    //Get the applied integrationpoints for underintegration
+    DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
+    
+    //Loop through all GPs and calculate jacobi the triads at the GPs
+    for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+    {   
+      //Get position xi of GP
+      const double xi = gausspoints.qxg[numgp][0];
+      
+      //Get derivatives of shapefunctions at GP
+      DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
+      
+      //Get shapefunctions at GP
+      DRT::UTILS::shape_function_1D(funct,xi,distype);
 
+      drdxi.Clear();
+
+      //calculate vector dxdxi
+      for(int node=0; node<nnode; node++)
+        for(int dof=0; dof<3 ; dof++)
+          drdxi(dof) += shapefuncderiv(node) * xrefe[3*node+dof];
+
+      //Store Jacobi determinant with respect to reference configuration
+      jacobi_[numgp]= drdxi.Norm2();
+      
+    }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+    
+
+    
+    //Get the applied integrationpoints for exact integration of mass matrix
+    DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
+        
+    //Loop through all GPs and calculate jacobi and theta0
+    for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
+    {
+        
+      //Get position xi of GP
+      const double xi = gausspointsmass.qxg[numgp][0];
+      
+      //Get derivatives of shapefunctions at GP
+      DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
+
+      drdxi.Clear();
+      //calculate dx/dxi and dz/dxi
+      for(int node=0; node<nnode; node++)
+        for(int dof=0; dof<3; dof++)
+          drdxi(dof)+=shapefuncderiv(node)*xrefe[3*node+dof];
+      
+
+      //Store Jacobi determinant with respect to reference configuration
+      jacobimass_[numgp]= drdxi.Norm2();  
+    
+    }//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
+    
+    
+    //compute Jacobi determinant at gauss points for Lobatto quadrature (i.e. at nodes)
+    for(int numgp=0; numgp< nnode; numgp++)
+    {  
+      //Get position xi of nodes
+      const double xi = -1.0 + 2*numgp / (nnode - 1);
+      
+      //Get derivatives of shapefunctions at GP
+      DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
+
+      drdxi.Clear();
+      //calculate dx/dxi and dz/dxi
+      for(int node=0; node<nnode; node++)
+        for(int dof=0; dof<3; dof++)
+          drdxi(dof)+=shapefuncderiv(node)*xrefe[3*node+dof];
+      
+      //Store Jacobi determinant for each node (Jacobi determinant refers by definition always to the reference configuration)
+      jacobinode_[numgp]= drdxi.Norm2(); 
+    
+    }//for(int numgp=0; numgp< nnode; numgp++)
+    
   }//if(!isinit_)
 
+	return;
+	
 }//DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry()
 
 //------------- class Beam3iiRegister: -------------------------------------
