@@ -1179,6 +1179,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
       if (alefluid_)
       {
         output_.WriteVector("dispn"   ,dispn_   );
+        output_.WriteVector("dispnm"  ,dispnm_  );
         output_.WriteVector("gridveln",gridveln_);
       }
 
