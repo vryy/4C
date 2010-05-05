@@ -145,7 +145,6 @@ void StatMechTime::Integrate()
 
   for (int i=step; i<nstep; ++i)
   {
-
     //if input flag is set random number seed should be the same for all realizations
     if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"FIXEDSEED"))
     {
@@ -1350,8 +1349,6 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
   int 											tmpid = -1;
   // store LIDs of element nodes
   vector<int>								lids;
-  // store LIDs of DOFs subjected to oscillation in order to identify force sensor locations
-  vector<int>								fsensorlids;
   // vectors to manipulate DBC properties
   vector<int> 							oscillnodes;
   vector<int> 							fixednodes;
@@ -1464,13 +1461,6 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 						(*deltadbc_)[lids.at(numdof*(n+1)+oscdir_)] = amp_*tcincrement;
 					//}
 
-				// add DOF LID where a force sensor is to be set
-				if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
-				{
-					int sensorlid = lids.at(numdof*(n+1)+oscdir_);
-					fsensorlids.push_back(sensorlid);
-				}
-
 				// delete last Id of freenodes if it was previously and falsely added
 				if(element->Nodes()[n]->Id()==tmpid && !alreadydone && !newfilament)
 					freenodes.pop_back();
@@ -1515,12 +1505,6 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 					if(i==oscdir_)
 						(*deltadbc_)[lids.at(numdof*(n+1)+i)] = 0.0;
 
-				if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
-				{
-					int sensorlid = lids.at(numdof*n+oscdir_);
-					fsensorlids.push_back(sensorlid);
-				}
-
 				if(element->Nodes()[n]->Id()==tmpid && !alreadydone && !newfilament)
 					freenodes.pop_back();
 
@@ -1547,7 +1531,11 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 
 //---------check/set force sensors anew for each time step
   if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
-  	statmechmanager_->UpdateForceSensors(fsensorlids);
+  	// add DOF LID where a force sensor is to be set
+  	statmechmanager_->UpdateForceSensors(oscillnodes, oscdir_);
+  cout<<"\n=========================================="<<endl;
+  cout<<"UpdateForceSensors: "<<oscillnodes.size()<< " nodes @ t="<<time<<endl;
+  cout<<"==========================================\n"<<endl;
 
 //------------------------------------set Dirichlet values
 	// preliminary

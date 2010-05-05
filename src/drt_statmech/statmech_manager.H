@@ -65,7 +65,7 @@ public:
 
   //! \brief Initializes beam3 elements in case of perioddic boundary conditions
   void PeriodicBoundaryBeam3Init(DRT::Element* element);
-  
+
   //! \brief Initializes beam3ii elements in case of perioddic boundary conditions
   void PeriodicBoundaryBeam3iiInit(DRT::Element* element);
 
@@ -89,9 +89,10 @@ public:
   void GetElementNodeCoords(DRT::Element* element, RCP<Epetra_Vector> dis, LINALG::SerialDenseMatrix& coord, vector<int>* lids=NULL);
 
   /*!\brief update locations of force sensors
-     \param fsensorlids   (in) vector holding the LIDs of force sensor DOFs
+     \param sensornodes   (in) vector holding the GIDs of the sensor nodes
+     \param oscdir   (in) direction (DOF) of oscillation
    */
-  void UpdateForceSensors(vector<int>& fsensorlids);
+  void UpdateForceSensors(vector<int>& sensornodes, int oscdir);
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;

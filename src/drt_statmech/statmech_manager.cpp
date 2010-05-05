@@ -227,9 +227,9 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
 
 
         /*if the node does not belong to current processor Id is set by LID() to -1 and the node is ignored; otherwise the degrees of
-         * freedom affected by this condition are marked in the vector *forcesensor_ by an one entry*/
+         * freedom affected by this condition are marked in the vector *forcesensor_ by a one entry*/
         if(nodenumber > -1)
-          (*forcesensor_)[dofnumber] = 1;
+          (*forcesensor_)[dofnumber] = 1.0;
       }
      }
 
@@ -603,46 +603,23 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
 
           double f = 0;//mean value of force
           double d = 0;//Displacement
+          int count = 0;
 
           for(int i = 0; i < forcesensor_->MyLength(); i++)//changed
           {
-            if( (*forcesensor_)[i] == 1)
-               {
-                 f += fint[i];
-                 d =  dis[i];
-               }
-           }
-
+            if( (*forcesensor_)[i] == 1.0)
+            {
+            	count++;
+							f += fint[i];
+							d =  dis[i];
+            }
+          }
           //Putting time, displacement, meanforce  in Filestream
           filecontent << "   "<< d << "   " << f << "   " << discret_.NumMyRowElements() << endl; //changed
           //writing filecontent into output file and closing it
           fprintf(fp,filecontent.str().c_str());
           fclose(fp);
       }
-      /*/ Hack: Gmsh-Output
-      if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1)  == 0 )
-      {
-        /*construct unique filename for gmsh output with two indices: the first one marking the time step number
-         * and the second one marking the newton iteration number, where numbers are written with zeros in the front
-         * e.g. number one is written as 000001, number fourteen as 000014 and so on;*/
-
-        //note: this kind of output is possilbe for serial computing only (otherwise the following method would have to be adapted to parallel use*/
-        /*if(discret_.Comm().NumProc() > 1)
-          dserror("No Gmsh output for parallel computation possible so far");
-
-        // first index = time step index
-        std::ostringstream filename;
-
-        //creating complete file name dependent on step number with 6 digits and leading zeros
-        if (istep<1000000)
-          filename << "./GmshOutput/network"<< std::setw(6) << setfill('0') << istep <<".pos";
-        else
-          dserror("Gmsh output implemented for a maximum of 999999 steps");
-
-        //calling method for writing Gmsh output
-        GmshOutput(dis,filename,istep);
-      }*/
-
     }
     break;
     //writing data for generating a Gmsh video of the simulation
@@ -2138,20 +2115,28 @@ void StatMechManager::GetElementNodeCoords(DRT::Element* element, RCP<Epetra_Vec
 /*----------------------------------------------------------------------*
  | update force sensor locations                   (public) mueller 3/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::UpdateForceSensors(vector<int>& fsensorlids)
+void StatMechManager::UpdateForceSensors(vector<int>& sensornodes, int oscdir)
 {
+	// reinitialize forcesensor_, so that tedious looping
+	// in order to cancel previous force sensor positions is avoided
+	forcesensor_->PutScalar(-1.0);
+
 	// loop over DOFs subjected to oscillation (by DBC)
-	for(int i=0; i<(int)fsensorlids.size(); i++)
+	for(int i=0; i<(int)sensornodes.size(); i++)
 	{
-		// loop over forcesensor_
-		for(int j=0; j<forcesensor_->MyLength(); j++)
-		{
-			// turn on force sensors for all DOFs in fsensorlids and else turn off
-			if(j==fsensorlids.at(i))
-				(*forcesensor_)[j] = 1.0;
-			else
-				(*forcesensor_)[j] = -1.0;
-		}
+		// check if node is on proc (if not, continue)
+		bool havenode = discret_.HaveGlobalNode(sensornodes.at(i));
+		if(!havenode)
+			continue;
+
+		// get the node
+		DRT::Node* actnode = discret_.gNode(sensornodes.at(i));
+		// get the GID of the DOF of the oscillatory motion
+		int gid = discret_.Dof(0,actnode)[oscdir];
+		// now, get the LID
+		int lid = discret_.DofRowMap()->LID(gid);
+		// activate force sensor at lid-th position
+		(*forcesensor_)[lid] = 1.0;
 	}
 } // StatMechManager::UpdateForceSensors
 #endif  // #ifdef CCADISCRET
