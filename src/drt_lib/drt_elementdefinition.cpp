@@ -413,7 +413,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam3iiLines()
     .AddNamedDouble("MOMIN")
     //.AddNamedDouble("MOMIN")
     .AddNamedDouble("MOMINPOL")
-    .AddDoubleVector("TRIADS",6)
+    .AddNamedDoubleVector("TRIADS",6)
     ;
 
   defs["LIN2"]
@@ -424,7 +424,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam3iiLines()
     .AddNamedDouble("MOMIN")
     //.AddNamedDouble("MOMIN")
     .AddNamedDouble("MOMINPOL")
-    .AddDoubleVector("TRIADS",6)
+    .AddNamedDoubleVector("TRIADS",6)
     ;
 
   defs["LINE3"]
@@ -435,7 +435,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam3iiLines()
     .AddNamedDouble("MOMIN")
     //.AddNamedDouble("MOMIN")
     .AddNamedDouble("MOMINPOL")
-    .AddDoubleVector("TRIADS",9)
+    .AddNamedDoubleVector("TRIADS",9)
     ;
 
   defs["LIN3"]
@@ -446,7 +446,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam3iiLines()
     .AddNamedDouble("MOMIN")
     //.AddNamedDouble("MOMIN")
     .AddNamedDouble("MOMINPOL")
-    .AddDoubleVector("TRIADS",9)
+    .AddNamedDoubleVector("TRIADS",9)
     ;
 
   defs["LINE4"]
@@ -457,7 +457,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam3iiLines()
     .AddNamedDouble("MOMIN")
     //.AddNamedDouble("MOMIN")
     .AddNamedDouble("MOMINPOL")
-    .AddDoubleVector("TRIADS",12)
+    .AddNamedDoubleVector("TRIADS",12)
     ;
 
   defs["LIN4"]
@@ -468,7 +468,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam3iiLines()
     .AddNamedDouble("MOMIN")
     //.AddNamedDouble("MOMIN")
     .AddNamedDouble("MOMINPOL")
-    .AddDoubleVector("TRIADS",12)
+    .AddNamedDoubleVector("TRIADS",12)
     ;
 
   defs["LINE5"]
@@ -479,7 +479,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam3iiLines()
     .AddNamedDouble("MOMIN")
     //.AddNamedDouble("MOMIN")
     .AddNamedDouble("MOMINPOL")
-    .AddDoubleVector("TRIADS",15)
+    .AddNamedDoubleVector("TRIADS",15)
     ;
 
   defs["LIN5"]
@@ -490,7 +490,7 @@ void DRT::INPUT::ElementDefinition::SetupBeam3iiLines()
     .AddNamedDouble("MOMIN")
     //.AddNamedDouble("MOMIN")
     .AddNamedDouble("MOMINPOL")
-    .AddDoubleVector("TRIADS",15)
+    .AddNamedDoubleVector("TRIADS",15)
     ;
 }
 
