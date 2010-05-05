@@ -1793,7 +1793,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
       double gstatcurrenttol = (extraparams_->sublist("ELCH CONTROL").get<double>("GSTATCURTOL"));
       const int curvenum = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCURVENO");
       const double tol = extraparams_->sublist("ELCH CONTROL").get<double>("GSTATCONVTOL");
-      const double effective_length = extraparams_->sublist("ELCH CONTROL").get<double>("LENGTH_CURRENT_PATH");
+      const double effective_length = extraparams_->sublist("ELCH CONTROL").get<double>("GSTAT_LENGTH_CURRENTPATH");
 
       // for all time integration schemes, compute the current value for phidtnp
       // this is needed for evaluating charging currents due to double-layer capacity
@@ -1935,5 +1935,35 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues()
   }
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ | define the magnetic field                                  gjb 05/10 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetMagneticField(const int funcno)
+{
+  if (funcno > 0)
+  {
+    int err(0);
+    const int numdim = 3; // the magnetic field is always 3D
+
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode = discret_->lRowNode(lnodeid);
+      for(int index=0;index<numdim;++index)
+      {
+        double value = DRT::Problem::Instance()->Funct(funcno-1).Evaluate(index,lnode->X(),0.0,NULL);
+        // no time-dependency included, yet!
+        err = magneticfield_->ReplaceMyValue(lnodeid, index, value);
+        if (err!=0) dserror("error while inserting a value into magneticfield_");
+      }
+    }
+  }
+  return;
+
+} // ScaTraImplicitTimeInt::SetMagneticField
+
 
 #endif /* CCADISCRET       */

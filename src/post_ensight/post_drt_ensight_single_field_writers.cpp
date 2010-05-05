@@ -32,7 +32,7 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("tancontactstress", "tancontactstress", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("interfacetraction", "interfacetraction", dofbased, field->problem()->num_dim());
 
-  // one-dimensional artery   
+  // one-dimensional artery
   EnsightWriter::WriteResult("one_d_artery_pressure", "one_d_artery_pressure", nodebased, 1);
   EnsightWriter::WriteResult("one_d_artery_flow", "one_d_artery_flow", nodebased, 1);
 
@@ -231,6 +231,9 @@ void ElchEnsightWriter::WriteAllResults(PostField* field)
 
   // write displacement field (always 3D)
   EnsightWriter::WriteResult("dispnp", "ale-displacement", nodebased, 3);
+
+  // write magnetic field (always 3D)
+  EnsightWriter::WriteResult("magnetic_field", "B", nodebased, 3);
 
   // write element results (e.g. element owner)
   WriteElementResults(field);

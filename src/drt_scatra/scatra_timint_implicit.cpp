@@ -388,6 +388,17 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       }
       cout<<"Electrolyte conductivity (all species) = "<<sigma_[numscal_]<<endl<<endl;
     }
+
+    // setup of magnetic field (always three(!) components per node)
+    const int magnetfuncno = (extraparams_->sublist("ELCH CONTROL")).get<int>("MAGNETICFIELD_FUNCNO");
+    if (magnetfuncno > 0)
+    {
+      // allocate the multivector
+      magneticfield_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+      // fill it with values
+      SetMagneticField(magnetfuncno);
+    }
+
   }
 
   // sysmat might be singular (some modes are defined only up to a constant)
@@ -650,14 +661,19 @@ void SCATRA::ScaTraTimIntImpl::AddMultiVectorToParameterList
     Teuchos::RCP<Epetra_MultiVector> vec
 )
 {
-  //provide data in node-based multi-vector for usage on element level
-  // -> export to column map is necessary for parallel evaluation
-  //SetState cannot be used since this multi-vector is nodebased and not dofbased!
-  const Epetra_Map* nodecolmap = discret_->NodeColMap();
-  int numcol = vec->NumVectors();
-  RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,numcol));
-  LINALG::Export(*vec,*tmp);
-  p.set(name,tmp);
+  if (vec != Teuchos::null)
+  {
+    //provide data in node-based multi-vector for usage on element level
+    // -> export to column map is necessary for parallel evaluation
+    //SetState cannot be used since this multi-vector is nodebased and not dofbased!
+    const Epetra_Map* nodecolmap = discret_->NodeColMap();
+    int numcol = vec->NumVectors();
+    RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,numcol));
+    LINALG::Export(*vec,*tmp);
+    p.set(name,tmp);
+  }
+  else
+    p.set(name,Teuchos::null);
 
   return;
 }
@@ -1144,6 +1160,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // (export to column map necessary for parallel evaluation)
   AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
   AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
+  AddMultiVectorToParameterList(eleparams,"magnetic field",magneticfield_);
 
   // provide displacement field in case of ALE
   eleparams.set("isale",isale_);
@@ -1237,6 +1254,10 @@ void SCATRA::ScaTraTimIntImpl::Output()
       OutputMeanScalars();
       OutputElectrodeInfo();
     }
+
+    // magnetic field (if existing)
+    if (magneticfield_ != Teuchos::null)
+      output_->WriteVector("magnetic_field", magneticfield_,IO::DiscretizationWriter::nodevector);
   }
   else
   {

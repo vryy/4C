@@ -462,6 +462,11 @@ protected:
   //! scale lines of linear system prior to solver call (ELCH)
   void ScaleLinearSystem();
 
+  //! set magnetic field (ELCH)
+  void SetMagneticField(
+      const int funcno ///< number of spatial function that defines the vector field
+      );
+
   /// the scalar transport discretization
   RCP<DRT::Discretization>   discret_;
   /// the solver
@@ -674,6 +679,9 @@ protected:
 
   /// value of electric potential increment in galvanostatic mode (ELCH)
   double gstatincrement_;
+
+  /// magnetic field (3D vector field)
+  RCP<Epetra_MultiVector> magneticfield_;
 
   /// conductivity of the single species and the whole electrolyte
   Epetra_SerialDenseVector sigma_;

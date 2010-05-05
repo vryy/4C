@@ -944,7 +944,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                 INPAR::MORTAR::shape_dual, INPAR::MORTAR::shape_dual,
                 INPAR::MORTAR::shape_standard, INPAR::MORTAR::shape_standard, INPAR::MORTAR::shape_standard),
         &scontact);
-  
+
   setStringToIntegralParameter<INPAR::CONTACT::SystemType>("SYSTEM","Condensed","Type of linear system setup / solution",
         tuple<std::string>("Condensed","condensed", "cond",
                            "SaddlePointCoupled","saddlepointcoupled", "spcoupled",
@@ -2313,7 +2313,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     &lomacontrol);
   IntParameter("SAMPLING_START",1,"Time step after when sampling shall be started",&lomacontrol);
 
-
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& elchcontrol = list->sublist(
       "ELCH CONTROL",
@@ -2343,11 +2342,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::ELCH::natural_convection_ion),
                                &elchcontrol);
   BoolParameter("GALVANOSTATIC","No","flag for galvanostatic mode",&elchcontrol);
-  DoubleParameter("GSTATCONVTOL",1e-5,"Convergence check tolerance for galvanostatic mode",&elchcontrol);
-  DoubleParameter("GSTATCURTOL",1e-15,"Current Tolerance",&elchcontrol);
+  DoubleParameter("GSTATCONVTOL",1.e-5,"Convergence check tolerance for galvanostatic mode",&elchcontrol);
+  DoubleParameter("GSTATCURTOL",1.e-15,"Current Tolerance",&elchcontrol);
   IntParameter("GSTATCURVENO",-1,"function number defining the imposed current curve",&elchcontrol);
   IntParameter("GSTATITEMAX",10,"maximum number of iterations for galvanostatic mode",&elchcontrol);
-  DoubleParameter("LENGTH_CURRENT_PATH",0,"average length of the current path",&elchcontrol);
+  DoubleParameter("GSTAT_LENGTH_CURRENTPATH",0.0,"average length of the current path",&elchcontrol);
+  IntParameter("MAGNETICFIELD_FUNCNO",-1,"function number defining an externally imposed magnetic field",&elchcontrol);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrol = list->sublist("COMBUSTION CONTROL",false,
       "control parameters for a combustion problem");
