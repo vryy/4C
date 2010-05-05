@@ -245,8 +245,7 @@ public:
 
 protected:
 
-    virtual void WriteAllResults(
-            PostField* field);
+    virtual void WriteAllResults(PostField* field);
 
     /*!
     \brief postprocess gauss point heatfluxes and write results

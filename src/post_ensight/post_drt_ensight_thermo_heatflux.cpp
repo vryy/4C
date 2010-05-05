@@ -16,6 +16,7 @@
  *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+
 /*----------------------------------------------------------------------*
  | headers                                                   dano 11/09 |
  *----------------------------------------------------------------------*/
@@ -23,6 +24,7 @@
 #include <string>
 #include "post_drt_ensight_single_field_writers.H"
 #include "../drt_lib/drt_utils.H"
+
 
 /*----------------------------------------------------------------------*
  | constructor                                               dano 11/09 |
@@ -73,6 +75,7 @@ void ThermoEnsightWriter::PostHeatflux(
 
   return;
 } // ThermoEnsightWriter::PostHeatflux
+
 
 /*----------------------------------------------------------------------*
  | write nodal heatflux or temperature gradient              dano 11/09 |
@@ -182,6 +185,7 @@ void ThermoEnsightWriter::WriteNodalHeatflux(
 
   return;
 } // ThermoEnsightWriter::WriteNodalHeatflux
+
 
 /*----------------------------------------------------------------------*
  |  write nodal heatfluxes                                   dano 11/09 |
@@ -313,6 +317,7 @@ void ThermoEnsightWriter::WriteNodalHeatfluxStep(
   return;
 } // ThermoEnsightWriter::WriteNodalHeatfluxStep
 
+
 /*----------------------------------------------------------------------*
  | write the output at the element center                    dano 11/09 |
  *----------------------------------------------------------------------*/
@@ -422,6 +427,7 @@ void ThermoEnsightWriter::WriteElementCenterHeatflux(
 
   return;
 } // ThermoEnsightWriter::WriteElementCenterHeatflux
+
 
 /*----------------------------------------------------------------------*
  |  output at the center                                     dano 11/09 |
@@ -536,6 +542,7 @@ void ThermoEnsightWriter::WriteElementCenterHeatfluxStep(
 
   return;
 } // ThermoEnsightWriter::WriteElementCenterHeatfluxStep
+
 
 /*----------------------------------------------------------------------*/
 #endif  // CCADISCRET

@@ -131,9 +131,9 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
     heatfluxtype_ = "none";
   }
 
-  if (heatfluxtype_=="")
+  if (tempgradtype_=="")
   {
-    heatfluxtype_ = "none";
+    tempgradtype_ = "none";
   }
 
   result_group_ = vector<MAP*>();
