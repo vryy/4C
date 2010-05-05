@@ -517,12 +517,13 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       frt = params.get<double>("frt");
 
       // get magnetic field at nodes (if available)
-      const RCP<Epetra_MultiVector> b
+/*     const RCP<Epetra_MultiVector> b
         = params.get< RCP<Epetra_MultiVector> >("magnetic field",Teuchos::null);
       if (b != Teuchos::null)
         DRT::UTILS::ExtractMyNodeBasedValues(ele,emagnetnp_,b,nsd_);
       else
         emagnetnp_.Clear();
+*/
     }
     else epotnp_.Clear();
 
