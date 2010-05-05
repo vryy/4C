@@ -562,6 +562,15 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   int nPSize = (int)(double(oPSize)*odta/ndta);
 
 
+  // evaluate the new pressure vector
+  int np_pos = 0;
+  RCP<std::vector<double> > np = rcp(new vector<double>(nPSize,0.0));
+  this->interpolate(pressures_,np,pressurespos_,np_pos,t);
+
+  // store new values in class
+  pressurespos_ = np_pos;
+  pressures_    = np;
+
   if(treetype_ == "windkessel_freq_indp")
   {
     if (IsPrecalibrated_)
@@ -637,15 +646,6 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
     OutflowBoundary(t,ndta,0.66,condnum);
   }
 
-  // evaluate the new pressure vector
-  int np_pos = 0;
-  RCP<std::vector<double> > np = rcp(new vector<double>(nPSize,0.0));
-  this->interpolate(pressures_,np,pressurespos_,np_pos,t);
-
-  // store new values in class
-  pressurespos_ = np_pos;
-  pressures_    = np;
-  
   return;
 }
 
