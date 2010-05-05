@@ -119,15 +119,15 @@ void LOMA::Algorithm::InitialCalculations()
 
   // energy conservation: compute initial time derivative of therm. pressure
   // mass conservation: compute initial mass (initial time deriv. assumed zero)
-  // constant thermodynamic pressure: for generalized-alpha
-  // time-integration scheme, values at n+alpha_F and n+alpha_M are set
-  // once and for all simulation time
   if (consthermpress_=="No_energy")
     ScaTraField().ComputeInitialThermPressureDeriv();
   else if (consthermpress_=="No_mass")
     ScaTraField().ComputeInitialMass();
-  else
-    ScaTraField().ComputeThermPressureIntermediateValues();
+
+  // for generalized-alpha time-integration scheme, values at n+alpha_F and
+  // n+alpha_M are set (for constant thermodynamic pressure, this is done here
+  // once and for all simulation time)
+  ScaTraField().ComputeThermPressureIntermediateValues();
 
   // set initial scalar field and thermodynamic pressure for evaluation of
   // Neumann boundary conditions in FLUID at beginning of first time step
