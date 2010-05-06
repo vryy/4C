@@ -942,7 +942,6 @@ void CONTACT::CmtStruGenAlpha::ApplyExternalForce(const STR::UTILS::MapExtractor
 #endif
     }
   }
-  stiff_->Complete();
 
   // keep a copy of fresm for contact forces / equilibrium check
   RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
@@ -955,6 +954,9 @@ void CONTACT::CmtStruGenAlpha::ApplyExternalForce(const STR::UTILS::MapExtractor
   cmtmanager_->GetStrategy().VisualizeGmsh(istep,0);
 #endif // #ifdef CONTACTGMSH2
 
+  //------------------------------------ ----complete stiffness matrix
+  stiff_->Complete();
+  
   // blank residual DOFs that are on Dirichlet BC
   // in the case of local systems we have to rotate forth and back
   {
