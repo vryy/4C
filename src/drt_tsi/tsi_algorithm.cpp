@@ -338,18 +338,21 @@ void TSI::Algorithm::Output()
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
   StructureField().Output();
-  ThermoField().Output();
   
-  // preparation of output form thermo things to structural field
-  //  // get disc writer from structure field
-  //  Teuchos::RCP<IO::DiscretizationWriter> output = StructureField().DiscWriter();
-  //  
-  //  //  RCP<Epetra_Vector> temperature = ThermoField().Tempn();
-  //  //  const Epetra_Map* temprowmap = ThermoField().Discretization()->NodeRowMap();
-  //  //  temperature->ReplaceMap(*temprowmap);
-  //  //  cout << "Temperature" << *temperature << endl;
-  //  //  output->WriteVector("temperature", temperature);
+  // write the thermo output (temperatures at the moment) to the the structure output 
+  // get disc writer from structure field
+  Teuchos::RCP<IO::DiscretizationWriter> output = StructureField().DiscWriter();
+  
+  // get the temperature and the noderowmap of thermo discretization
+  Epetra_Vector temperature = *(ThermoField().Tempn());
+  const Epetra_Map* temprowmap = ThermoField().Discretization()->NodeRowMap();
 
+  // replace map and write it to output
+  temperature.ReplaceMap(*temprowmap);
+  RCP<Epetra_Vector> temp = rcp(new Epetra_Vector(temperature));
+  output->WriteVector("temperature",temp);
+
+  ThermoField().Output();
 }
 
 
@@ -982,8 +985,10 @@ void TSI::Algorithm::AssembleThermContCondition(LINALG::SparseMatrix& thermcontL
   for (int m=0; m<(int)interface.size(); ++m)
   {
 
-    // heat transfer coefficient
+    // heat transfer coefficient, should be greater than zero
     double heattrancoeff = interface[m]->IParams().get<double>("HEATTRANSFERCOEFF");
+    if (heattrancoeff <= 0)
+      dserror("Error: Choose realistic heat transfer coefficient");
     
     // active 
     const RCP<Epetra_Map> activenodes = interface[m]->ActiveNodes();
