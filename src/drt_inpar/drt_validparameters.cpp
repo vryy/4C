@@ -1605,7 +1605,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn_stab);
 
   // the following parameters are necessary only if a residual based stabilized method is applied
-  setStringToIntegralParameter<int>("TDS",
+  setStringToIntegralParameter<INPAR::FLUID::TDS>("TDS",
                                "quasistatic",
                                "Flag to allow time dependency of subscales for residual-based stabilization.",
                                tuple<std::string>(
@@ -1614,10 +1614,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "Use a quasi-static residual-based stabilization (standard case)",
                                  "Residual-based stabilization including time evolution equations for subscales"),
-                               tuple<int>(0,1),
+                                 tuple<INPAR::FLUID::TDS>(
+                                   INPAR::FLUID::subscales_quasistatic,
+                                   INPAR::FLUID::subscales_time_dependent),
                                &fdyn_stab);
 
-  setStringToIntegralParameter<int>("TRANSIENT",
+  setStringToIntegralParameter<INPAR::FLUID::TRANSIENT>("TRANSIENT",
                                "no_transient",
                                "Specify how to treat the transient term.",
                                tuple<std::string>(
@@ -1628,7 +1630,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Do not use transient term (currently only opportunity for quasistatic stabilization)",
                                  "Use transient term (recommended for time dependent subscales)",
                                  "Use transient term including a linearisation of 1/tau"),
-                               tuple<int>(0,1,2),
+                               tuple<INPAR::FLUID::TRANSIENT>(
+                                   INPAR::FLUID::inertia_stab_drop,
+                                   INPAR::FLUID::inertia_stab_keep,
+                                   INPAR::FLUID::inertia_stab_keep_complete),
                                &fdyn_stab);
 
   setStringToIntegralParameter<INPAR::FLUID::PSPG>("PSPG",
@@ -1746,6 +1751,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                ),
                                &fdyn_stab);
 
+  // TODO: delete one of the two input parameter
   // this parameter selects the tau definition applied
   setStringToIntegralParameter<INPAR::FLUID::TauType>("DEFINITION_TAU",
                                "Barrenechea_Franca_Valentin_Wall",
@@ -1767,13 +1773,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "tau_M and tau_C (Bazilevs, based on G_ij and g_i)",
                                  "tau_M and tau_C: Codina")  ,
                                tuple<INPAR::FLUID::TauType>(
-                                   INPAR::FLUID::franca_barrenechea_valentin_wall,
-                                   INPAR::FLUID::fbvw_gradient_based_hk,
-                                   INPAR::FLUID::smoothed_franca_barrenechea_valentin_wall,
-                                   INPAR::FLUID::fbvw_wo_dt,
-                                   INPAR::FLUID::franca_barrenechea_valentin_codina       ,
-                                   INPAR::FLUID::bazilevs,
-                                   INPAR::FLUID::codina
+                                   INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
+                                   INPAR::FLUID::tau_not_defined,
+                                   INPAR::FLUID::tau_not_defined,
+                                   INPAR::FLUID::tau_not_defined,
+                                   INPAR::FLUID::tautype_franca_barrenechea_valentin_codina,
+                                   INPAR::FLUID::tautype_bazilevs,
+                                   INPAR::FLUID::tau_not_defined
                                     ),
                                &fdyn_stab);
 
