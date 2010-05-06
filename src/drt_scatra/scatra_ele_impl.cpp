@@ -4890,6 +4890,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::IntegrateShapeFunctions(
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
+  // safety check
+  if (dofids.M() < numdofpernode_)
+    dserror("Dofids vector is too short. Received not enough flags");
+
   // loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
