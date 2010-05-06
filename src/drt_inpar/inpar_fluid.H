@@ -72,19 +72,26 @@ namespace INPAR
       reynolds_stress_stab_only_rhs
     };
 
-    /// type of stabilization parameter definition
-    //TODO:
+    enum TDS
+    {
+      subscales_none,
+      subscales_quasistatic,
+      subscales_time_dependent
+    };
+
+    enum TRANSIENT
+    {
+      inertia_stab_drop,
+      inertia_stab_keep,
+      inertia_stab_keep_complete
+    };
+
     enum TauType
     {
-      tautype_franca_barrenechea_valentin_wall,   // combustion
-      tautype_bazilevs,                           // combustion
-      smoothed_franca_barrenechea_valentin_wall,  // Fluid3
-      franca_barrenechea_valentin_wall         ,  // Fluid3
-      franca_barrenechea_valentin_codina       ,  // Fluid3
-      fbvw_gradient_based_hk                   ,  // Fluid3
-      codina                                   ,  // Fluid3
-      bazilevs                                 ,  // Fluid3
-      fbvw_wo_dt                               ,  // Fluid3
+      tautype_franca_barrenechea_valentin_wall,   // combustion & Fluid3
+      tautype_bazilevs,                           // combustion & Fluid3
+      tautype_franca_barrenechea_valentin_codina, // Fluid3
+      tautype_stationary,
       tau_not_defined
     };
 
