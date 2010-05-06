@@ -577,9 +577,6 @@ inline void DRT::ELEMENTS::Beam3::quaterniontorodrigues(const LINALG::Matrix<4,1
   return;
 } //DRT::ELEMENTS::Beam3::quaterniontorodrigues
 
-
-
-
 /*----------------------------------------------------------------------*
  |computes from a quaternion q the related angle theta (public)cyron10/08|
  *----------------------------------------------------------------------*/
@@ -589,43 +586,40 @@ inline void DRT::ELEMENTS::Beam3::quaterniontoangle(const LINALG::Matrix<4,1>& q
    * imperative for the use of the resulting angle together with formulae like Crisfield, Vol. 2, equation (16.90);
    * note that these formulae comprise not only trigonometric functions, but rather the angle theta directly. Hence
    * they are not 2*PI-invariant !!! */
-
-  //first we consider the case that the absolute value of the rotation angle equals zero
-  if(q(0) == 0 && q(1) == 0 && q(2) == 0 )
-  {
-    for(int i = 0; i<3; i++)
-      theta(i) = 0;
-
-    return;
-  }
-
-  //second we consider the case that the abolute value of the rotation angle equals PI
+    
+  //if the rotation angle is pi we have q(3) == 0 and the rotation angle vector can be computed by
   if(q(3) == 0)
   {
     //note that with q(3) == 0 the first three elements of q represent the unit direction vector of the angle
     //according to Crisfield, Vol. 2, equation (16.67)
     for(int i = 0; i<3; i++)
       theta(i) = q(i) * M_PI;
+  }
+  else
+  {
+    //otherwise the angle can be computed from a quaternion via Crisfield, Vol. 2, eq. (16.79)
+    LINALG::Matrix<3,1> omega;
+    for(int i = 0; i<3; i++)
+      omega(i) = q(i)*2/q(3);
+  
+    double tanhalf = omega.Norm2() / 2;
+    double thetaabs = atan(tanhalf)*2;
+    
+    //if the rotation angle is zero we return a zero rotation angle vector at once
+    if(omega.Norm2() == 0)
+    {
+      for(int i = 0; i<3; i++)
+        theta(i) = 0;
 
-    return;
+
+    }
+    else
+      for(int i = 0; i<3; i++)
+        theta(i) = thetaabs* omega(i) / omega.Norm2();
   }
 
-  //in any case except for the one dealt with above the angle can be computed from a quaternion via Crisfield, Vol. 2, eq. (16.79)
-  LINALG::Matrix<3,1> omega;
-  for(int i = 0; i<3; i++)
-    omega(i) = q(i)*2/q(3);
-
-  double tanhalf = omega.Norm2() / 2;
-
-  double thetaabs = atan(tanhalf)*2;
-
-  for(int i = 0; i<3; i++)
-      theta(i) = thetaabs* omega(i) / omega.Norm2();
-
   return;
-} //DRT::ELEMENTS::Beam3::quaterniontoangle()
-
-
+} //DRT::ELEMENTS::Beam3ii::quaterniontoangle()
 
 
 /*---------------------------------------------------------------------------*

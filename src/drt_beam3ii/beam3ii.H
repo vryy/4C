@@ -437,7 +437,7 @@ private:
 
   //!compute derivative r' (rprime) of line of centroids at Gauss point x with respect to Jelenic 1999 , eq. (2.12)
   template<int nnode, int dof>
-  void curvederivative(const vector<double>& disp, const LINALG::Matrix<1,nnode> deriv, LINALG::Matrix<3,1>& rprime);
+  void curvederivative(const vector<double>& disp, const LINALG::Matrix<1,nnode> deriv, LINALG::Matrix<3,1>& rprime, const double& jacobi);
   
   //!compute convected strain at a certain Gauss point with triad rotmat according to Crisfield 1999, eq. (3.4) and eq. (4.9) 
   void computestrain(const LINALG::Matrix<3,1>& rprime, const LINALG::Matrix<3,3>& Lambda,

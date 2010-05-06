@@ -57,14 +57,15 @@ bool DRT::ELEMENTS::Beam3ii::ReadElement(const std::string& eletype,
   linedef->ExtractDoubleVector("TRIADS",triads);
   LINALG::Matrix<3,1> nodeangle;
     for(int i=0; i<NumNode(); i++)
+    {
       for(int j=0; j<3; j++)
-      {
         nodeangle(j) = triads[3*i+j];
-        angletoquaternion(nodeangle,Qnew_[i]);
-      }
+        
+      angletoquaternion(nodeangle,Qnew_[i]);
+    }
     
-  Qold_ = Qconv_;
-  Qnew_ = Qconv_;
+  Qold_  = Qnew_;
+  Qconv_ = Qnew_;
 
   return true;
 }

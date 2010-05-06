@@ -236,7 +236,7 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(ParameterList& params,
   Qold_ = Qnew_;
   dispthetaold_= dispthetanew_;
 
-/*
+
     //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
     //correctly or not by means of a numerically approximated stiffness matrix
     //The code block will work for all higher order elements.
@@ -334,7 +334,7 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(ParameterList& params,
       }
 
     } //end of section in which numerical approximation for stiffness matrix is computed
-*/
+
 
     }
     break;
@@ -479,9 +479,6 @@ inline void DRT::ELEMENTS::Beam3ii::quaterniontorodrigues(const LINALG::Matrix<4
   return;
 } //DRT::ELEMENTS::Beam3ii::quaterniontorodrigues
 
-
-
-
 /*----------------------------------------------------------------------*
  |computes from a quaternion q the related angle theta (public)cyron10/08|
  *----------------------------------------------------------------------*/
@@ -491,38 +488,37 @@ inline void DRT::ELEMENTS::Beam3ii::quaterniontoangle(const LINALG::Matrix<4,1>&
    * imperative for the use of the resulting angle together with formulae like Crisfield, Vol. 2, equation (16.90);
    * note that these formulae comprise not only trigonometric functions, but rather the angle theta directly. Hence
    * they are not 2*PI-invariant !!! */
-
-  //first we consider the case that the absolute value of the rotation angle equals zero
-  if(q(0) == 0 && q(1) == 0 && q(2) == 0 )
-  {
-    for(int i = 0; i<3; i++)
-      theta(i) = 0;
-
-    return;
-  }
-
-  //second we consider the case that the abolute value of the rotation angle equals PI
+    
+  //if the rotation angle is pi we have q(3) == 0 and the rotation angle vector can be computed by
   if(q(3) == 0)
   {
     //note that with q(3) == 0 the first three elements of q represent the unit direction vector of the angle
     //according to Crisfield, Vol. 2, equation (16.67)
     for(int i = 0; i<3; i++)
       theta(i) = q(i) * M_PI;
-
-    return;
   }
+  else
+  {
+    //otherwise the angle can be computed from a quaternion via Crisfield, Vol. 2, eq. (16.79)
+    LINALG::Matrix<3,1> omega;
+    for(int i = 0; i<3; i++)
+      omega(i) = q(i)*2/q(3);
+  
+    double tanhalf = omega.Norm2() / 2;
+    double thetaabs = atan(tanhalf)*2;
+    
+    //if the rotation angle is zero we return a zero rotation angle vector at once
+    if(omega.Norm2() == 0)
+    {
+      for(int i = 0; i<3; i++)
+        theta(i) = 0;
 
-  //in any case except for the one dealt with above the angle can be computed from a quaternion via Crisfield, Vol. 2, eq. (16.79)
-  LINALG::Matrix<3,1> omega;
-  for(int i = 0; i<3; i++)
-    omega(i) = q(i)*2/q(3);
 
-  double tanhalf = omega.Norm2() / 2;
-
-  double thetaabs = atan(tanhalf)*2;
-
-  for(int i = 0; i<3; i++)
-      theta(i) = thetaabs* omega(i) / omega.Norm2();
+    }
+    else
+      for(int i = 0; i<3; i++)
+        theta(i) = thetaabs* omega(i) / omega.Norm2();
+  }
 
   return;
 } //DRT::ELEMENTS::Beam3ii::quaterniontoangle()
@@ -548,8 +544,6 @@ inline void DRT::ELEMENTS::Beam3ii::computespin(LINALG::Matrix<3,3>& spin, LINAL
 
   return;
 } // DRT::ELEMENTS::Beam3ii::computespin
-
-
 
 
 /*----------------------------------------------------------------------*
@@ -859,13 +853,11 @@ inline void DRT::ELEMENTS::Beam3ii::computestrain(const LINALG::Matrix<3,1>& rpr
   
   //compute local rotational vector according to Crisfield 1999,(4.6) in quaterion form
   LINALG::Matrix<4,1> phi12;
-  quaternionproduct(inversequaternion(Qnew_[0]),Qnew_[1],phi12);
+  quaternionproduct(inversequaternion(Qnew_[0]),Qnew_[1],phi12);  
   
   //according o Crisfield 1999, eq. (4.9), kappa equals the vector corresponding to phi12 divided by the element reference length
   quaterniontoangle(phi12,kappa);
   kappa.Scale(0.5/jacobi_[0]);
-  
-
 
    return;
 } // DRT::ELEMENTS::Beam3ii::computestrain
@@ -882,42 +874,51 @@ inline void DRT::ELEMENTS::Beam3ii::computedTinvdx(const LINALG::Matrix<3,1>& Ps
   //norm of \Psi^l:
   double normPsil = Psil.Norm2();
   
-  //scalarproduct \Psi^{l,t} \cdot \Psi^{l,'}
-  double scalarproductPsilPsilprime = 0;
-  for(int i=0; i<3; i++)
-    for(int j=0; j<3; j++)
-      scalarproductPsilPsilprime += Psil(i)*Psilprime(i);
+  if(Psil.Norm2() == 0)
+  {
+    //limit for Psil -> 0 according to the comment above NOTE 4 on page 152, Jelenic 1999
+    computespin(dTinvdx,Psilprime);
+    dTinvdx.Scale(0.5); 
+  }
+  else
+  {  
+    //scalarproduct \Psi^{l,t} \cdot \Psi^{l,'}
+    double scalarproductPsilPsilprime = 0;
+    for(int i=0; i<3; i++)
+      for(int j=0; j<3; j++)
+        scalarproductPsilPsilprime += Psil(i)*Psilprime(i);
+    
+    //spin matrices of Psil and Psilprime
+    LINALG::Matrix<3,3> spinPsil;
+    LINALG::Matrix<3,3> spinPsilprime;
+    computespin(spinPsil,Psil);
+    computespin(spinPsilprime,Psilprime);
+    
+    //thrid summand
+    dTinvdx.Multiply(spinPsilprime,spinPsil);
+    auxmatrix.Multiply(spinPsil,spinPsilprime);
+    dTinvdx += auxmatrix;
+    dTinvdx.Scale(1-(sin(normPsil)/normPsil)/pow(normPsil,2));
   
-  //spin matrices of Psil and Psilprime
-  LINALG::Matrix<3,3> spinPsil;
-  LINALG::Matrix<3,3> spinPsilprime;
-  computespin(spinPsil,Psil);
-  computespin(spinPsilprime,Psilprime);
-  
-  //thrid summand
-  dTinvdx.Multiply(spinPsilprime,spinPsil);
-  auxmatrix.Multiply(spinPsil,spinPsilprime);
-  dTinvdx += auxmatrix;
-  dTinvdx.Scale(1-(sin(normPsil)/normPsil)/pow(normPsil,2));
-
-  
-  //first summand
-  auxmatrix.PutScalar(0);
-  auxmatrix += spinPsil;
-  auxmatrix.Scale( scalarproductPsilPsilprime*(normPsil*sin(normPsil) - 2*(1-cos(normPsil)))/pow(normPsil,4) ); 
-  dTinvdx += auxmatrix;
-  
-  
-  //second summand
-  auxmatrix.PutScalar(0);
-  auxmatrix += spinPsilprime;
-  auxmatrix.Scale((1-cos(Psilprime.Norm2()))/pow(normPsil,2));
-  dTinvdx += auxmatrix;
-  
-  //fourth summand
-  auxmatrix.Multiply(spinPsil,spinPsil);
-  auxmatrix.Scale( scalarproductPsilPsilprime*(3*sin(normPsil) - normPsil*(2+cos(normPsil)))/pow(normPsil,5) );
-  dTinvdx += auxmatrix;
+    
+    //first summand
+    auxmatrix.PutScalar(0);
+    auxmatrix += spinPsil;
+    auxmatrix.Scale( scalarproductPsilPsilprime*(normPsil*sin(normPsil) - 2*(1-cos(normPsil)))/pow(normPsil,4) ); 
+    dTinvdx += auxmatrix;
+    
+    
+    //second summand
+    auxmatrix.PutScalar(0);
+    auxmatrix += spinPsilprime;
+    auxmatrix.Scale((1-cos(Psilprime.Norm2()))/pow(normPsil,2));
+    dTinvdx += auxmatrix;
+    
+    //fourth summand
+    auxmatrix.Multiply(spinPsil,spinPsil);
+    auxmatrix.Scale( scalarproductPsilPsilprime*(3*sin(normPsil) - normPsil*(2+cos(normPsil)))/pow(normPsil,5) );
+    dTinvdx += auxmatrix;
+  }
 
    return;
 } // DRT::ELEMENTS::Beam3ii::computedTinvdx
@@ -934,9 +935,19 @@ inline void DRT::ELEMENTS::Beam3ii::computeItilde(const LINALG::Matrix<3,1>& Psi
   LINALG::Matrix<3,3> auxmatrix;
   auxmatrix.PutScalar(0);
   
-  //matrix d(T^{-1})/dx
-  LINALG::Matrix<3,3> dTinvdx;
-  computedTinvdx(Psil,Psilprime,dTinvdx);
+  //compute squared brackets term in (3.18), Jelenic 1999v
+  LINALG::Matrix<3,3> squaredbrackets;
+  squaredbrackets.PutScalar(0);
+  for(int node=0; node<nnode; ++node)
+  {
+    auxmatrix = Tmatrix(Psili[node]);
+    auxmatrix.Scale(funct(node));
+    squaredbrackets -= auxmatrix;
+  }
+  for(int i=0; i<3; i++)
+    squaredbrackets(i,i) += 1;
+
+  
   
   //loop through all nodes i
   for (int node=0; node<nnode; ++node)
@@ -944,15 +955,9 @@ inline void DRT::ELEMENTS::Beam3ii::computeItilde(const LINALG::Matrix<3,1>& Psi
 
     //compute rightmost term in curley brackets in (3.18), Jelenic 1999
     Itilde[node].PutScalar(0);
-    Itilde[node].Multiply(dTinvdx,Tmatrix(Psili[node]));
+    Itilde[node].Multiply(Tinvmatrix(Psil),Tmatrix(Psili[node]));
     Itilde[node].Scale(funct(node));
     
-    //compute squared brackets term in (3.18), Jelenic 1999
-    LINALG::Matrix<3,3> squaredbrackets(Itilde[node]);
-    squaredbrackets.Scale(-1);
-    for(int i=0; i<3; i++)
-      squaredbrackets(i,i) += 1;
-      
     //if node i is node I then add squared bracktets term times v_I
     if(node == nodeI_)
     { 
@@ -970,8 +975,8 @@ inline void DRT::ELEMENTS::Beam3ii::computeItilde(const LINALG::Matrix<3,1>& Psi
     //now the term in the curley bracktets has been computed and has to be rotated by \Lambda_r and \Lambda_r^t
     auxmatrix.MultiplyNT(Itilde[node],Lambdar);
     Itilde[node].MultiplyNN(Lambdar,auxmatrix);
+
   }
-  
 
    return;
 } // DRT::ELEMENTS::Beam3ii::computeItilde
@@ -985,48 +990,77 @@ inline void DRT::ELEMENTS::Beam3ii::computeItildeprime(const LINALG::Matrix<3,1>
                                                        const vector<LINALG::Matrix<3,1> >& Psili, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv)
 {
 
-  
   //auxiliary matrices for storing intermediate results 
   LINALG::Matrix<3,3> auxmatrix;
-  auxmatrix.PutScalar(0);
   
   //matrix d(T^{-1})/dx
   LINALG::Matrix<3,3> dTinvdx;
   computedTinvdx(Psil,Psilprime,dTinvdx);
+
+  //compute T^{~} according to remark subsequent to (3.19), Jelenic 1999
+  LINALG::Matrix<3,3> Ttilde;
+  Ttilde.PutScalar(0);
+  for(int node=0; node<nnode; ++node)
+  {
+    auxmatrix = Tmatrix(Psili[node]);
+    auxmatrix.Scale(funct(node));
+    Ttilde += auxmatrix;
+  }
+  
+  //compute T^{~'} according to remark subsequent to (3.19), Jelenic 1999
+  LINALG::Matrix<3,3> Ttildeprime;
+  Ttildeprime.PutScalar(0);
+  for(int node=0; node<nnode; ++node)
+  {
+    auxmatrix = Tmatrix(Psili[node]);
+    auxmatrix.Scale(deriv(node));
+    Ttildeprime += auxmatrix;
+  }
+  
+  //compute first squared brackets term in (3.18), Jelenic 1999v
+  LINALG::Matrix<3,3> squaredbrackets;
+  squaredbrackets.PutScalar(0);
+  squaredbrackets.Multiply(dTinvdx,Ttilde);
+  auxmatrix.Multiply(Tinvmatrix(Psil),Ttildeprime);
+  squaredbrackets += auxmatrix;
   
   //loop through all nodes i
   for (int node=0; node<nnode; ++node)
   {   
   
-    //compute first term in squared brackets in (3.19), Jelenic 1999 (equal to second term in squared bracketds times T(\Psi^l_j))
+    //compute first term in second squared brackets
+    Itildeprime[node] = dTinvdx;
+    Itildeprime[node].Scale(funct(node));
+    
+    //compute second term in second squared brackets
+    auxmatrix.PutScalar(0);
     auxmatrix += Tinvmatrix(Psil);
     auxmatrix.Scale(deriv(node));
-    for(int i=0; i<3; i++)
-      for(int j=0; j<3; j++)
-        auxmatrix(i,j) += funct(node)*dTinvdx(i,j);
     
+    //compute second squared brackets
+    auxmatrix += Itildeprime[node];
+    
+    //compute second squared bracketds time T(\Psi^l_j)
     Itildeprime[node].Multiply(auxmatrix,Tmatrix(Psili[node]));
-    
-    //now Itildeprime equals the second term in squared brackets times T(\Psi^l_j); save whole term for later use
-    LINALG::Matrix<3,3> squaredbracktets(Itildeprime[node]);
-       
+  
     //if node i is node I then add first squared bracktets term times v_I
     if(node == nodeI_)
     { 
-      auxmatrix.Multiply(squaredbracktets,vI(phiIJ));  
+      auxmatrix.Multiply(squaredbrackets,vI(phiIJ));  
       Itildeprime[node] -= auxmatrix;   
     }
     
     //if node i is node J then add first squared bracktets term times v_J
     if(node == nodeJ_)
     { 
-      auxmatrix.Multiply(squaredbracktets,vJ(phiIJ));
+      auxmatrix.Multiply(squaredbrackets,vJ(phiIJ));
       Itildeprime[node] -= auxmatrix;   
     }
     
     //now the term in the curley bracktets has been computed and has to be rotated by \Lambda_r and \Lambda_r^t
     auxmatrix.MultiplyNT(Itildeprime[node],Lambdar);
     Itildeprime[node].MultiplyNN(Lambdar,auxmatrix);
+
   }
 
    return;
@@ -1041,7 +1075,11 @@ inline LINALG::Matrix<3,3> DRT::ELEMENTS::Beam3ii::vI(const LINALG::Matrix<3,1>&
   LINALG::Matrix<3,3> result;
   
   computespin(result,phiIJ);
-  result.Scale(tan(phiIJ.Norm2()/4.0)/phiIJ.Norm2());
+  if(phiIJ.Norm2() == 0)
+    result.Scale(-0.25);
+  else
+    result.Scale(-tan(phiIJ.Norm2()/4.0)/phiIJ.Norm2());
+  
   for(int i=0; i<3; i++)
     result(i,i) +=1;
   
@@ -1059,7 +1097,11 @@ inline LINALG::Matrix<3,3> DRT::ELEMENTS::Beam3ii::vJ(const LINALG::Matrix<3,1>&
   LINALG::Matrix<3,3> result;
   
   computespin(result,phiIJ);
-  result.Scale(-tan(phiIJ.Norm2()/4.0)/phiIJ.Norm2());
+  if(phiIJ.Norm2() == 0)
+    result.Scale(-0.25);
+  else
+    result.Scale(-tan(phiIJ.Norm2()/4.0)/phiIJ.Norm2());
+  
   for(int i=0; i<3; i++)
     result(i,i) +=1;
   
@@ -1074,7 +1116,7 @@ inline LINALG::Matrix<3,3> DRT::ELEMENTS::Beam3ii::vJ(const LINALG::Matrix<3,1>&
  |                                                                                                           cyron 04/10|
  *----------------------------------------------------------------------------------------------------------------------*/
 template<int nnode, int dof>
-inline void DRT::ELEMENTS::Beam3ii::curvederivative(const vector<double>& disp, const LINALG::Matrix<1,nnode> deriv, LINALG::Matrix<3,1>& rprime)
+inline void DRT::ELEMENTS::Beam3ii::curvederivative(const vector<double>& disp, const LINALG::Matrix<1,nnode> deriv, LINALG::Matrix<3,1>& rprime, const double& jacobi)
 {
   //initialize rprime
   rprime.PutScalar(0);
@@ -1082,6 +1124,11 @@ inline void DRT::ELEMENTS::Beam3ii::curvederivative(const vector<double>& disp, 
   for (int i=0; i<dof; ++i)
     for (int node=0; node<nnode; ++node)
       rprime(i) += (Nodes()[node]->X()[i]+disp[6*node+i])*deriv(node);
+  
+  /*so far we have computed the derivative of the curve with respect to the element parameter \xi \in [-1;1];
+   *as r' in (2.12) is the derivative with respect to the reference length, we have to divided it by the Jacobi
+   *determinant at the respective point*/
+  rprime.Scale(1.0/jacobi);
 
    return;
 } // DRT::ELEMENTS::Beam3ii::curvederivative      
@@ -1103,10 +1150,8 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
   
   /*variables to store basis function matrices \tilde{I}^i(x) and \tilde{I}^{i'}(x) according to (3.18) and (3.19), Jelenic 1999
    *at some Gauss point for all nodes i*/
-  vector<LINALG::Matrix<3,3> > Itilde;
-  Itilde.resize(nnode);
-  vector<LINALG::Matrix<3,3> > Itildeprime;
-  Itildeprime.resize(nnode);
+  vector<LINALG::Matrix<3,3> > Itilde(nnode);
+  vector<LINALG::Matrix<3,3> > Itildeprime(nnode);
   
   //quaternion of relative rotation between node I and J according to (3.10), Jelenic 1999
   LINALG::Matrix<4,1> QIJ;
@@ -1121,10 +1166,13 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
   //rotation quaternion between i-th nodal triadsand refenrece triad according to (3.8), Jelenic 1999
   LINALG::Matrix<4,1>  Qli;
   //rotation angles between nodal triads and refenrece triad according to (3.8), Jelenic 1999
-  vector<LINALG::Matrix<3,1> > Psili;
+  vector<LINALG::Matrix<3,1> > Psili(nnode);
   //interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11), Jelenic 1999
   LINALG::Matrix<3,1> Psil;
-  //derivative of interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11), Jelenic 1999
+  /*derivative of interpolated local relative rotation \Psi^l at a certain Gauss point according to
+   *(3.11), Jelenic 1999, but not with respect to reference length parameter, but with respect to space of integration
+   *parameter. Hence, the difference between the variable used in this code and the one used in the 
+   *equations of Jelenic 1999 is the Jacobi determinant*/
   LINALG::Matrix<3,1> Psilprime;
   //rotation quaternion between triad at Gauss point and reference triad Qr
   LINALG::Matrix<4,1>  Ql;
@@ -1145,8 +1193,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
   //spin matrix related to vector rprime at some Gauss point
   LINALG::Matrix<3,3> rprimehat;
 
-  
-  
   //convected stresses N and M and constitutive matrices C_N and C_M according to section 2.4, Jelenic 1999
   LINALG::Matrix<3,1> stressN;
   LINALG::Matrix<3,1> stressM;
@@ -1184,7 +1230,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
     //multiply relative rotation with rotation in last configuration to get rotation in new configuration
     quaternionproduct(deltaQ,Qold_[node],Qnew_[node]);    
   }
-
   
   //compute reference rotation \Lambda_r according to eq. (3.10) and (3.9), Jelenic 1999
   quaternionproduct(Qnew_[nodeJ_],inversequaternion(Qnew_[nodeI_]),QIJ);
@@ -1238,19 +1283,26 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
     quaterniontotriad(Qgauss,Lambda);
     
     //compute derivative of line of centroids with respect to curve parameter in reference configuration, i.e. r' from Jelenic 1999, eq. (2.12)
-    curvederivative<nnode,3>(disp,deriv,rprime);
+    curvederivative<nnode,3>(disp,deriv,rprime,jacobi_[numgp]);
     
     //compute spin matrix related to vector rprime for later use
     computespin(rprimehat,rprime);
     
     //compute convected strains gamma and kappa according to Jelenic 1999, eq. (2.12)
     computestrain(rprime,Lambda,gamma,kappa);
+
+    //compute convected stress vector from strain vector according to Jelenic 1999, page 147, section 2.4
+    strainstress(gamma,kappa,stressN,CN,stressM,CM);
     
+    /*compute spatial stresses and constitutive matrices from convected ones according to Jelenic 1999, page 148, paragraph
+     *between (2.22) and (2.23) and Romero 2004, (3.10)*/
     pushforward(Lambda,stressN,CN,stressM,CM,stressn,cn,stressm,cm);
-
-
+    
+    
     /*computation of internal forces according to Jelenic 1999, eq. (4.3); computation split up with respect
-     *to single blocks of matrix in eq. (4.3)*/
+     *to single blocks of matrix in eq. (4.3); note that Jacobi determinantn in diagonal blocks cancels out
+     *in implementation, whereas for the lower left block we have to multiply the weight by the jacobi
+     *determinant*/
     if (force != NULL)
     {
       for (int node=0; node<nnode; ++node)
@@ -1273,13 +1325,15 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
           (*force)(6*node+3+j) += deriv(node)*stressm(j)*wgt;
 
         }
-      }
-    }//if (force != NULL)
-  
+     }//if (force != NULL)
+
   
     //compute at this Gauss point basis functions \tilde{I}^i and \tilde{I}^{i'} in (3.19), page 152, Jelenic 1999, for all nodes
     computeItilde<nnode>(Psil,Psilprime,Itilde,phiIJ,Lambdar,Psili,funct);
     computeItildeprime<nnode>(Psil,Psilprime,Itildeprime,phiIJ,Lambdar,Psili,funct,deriv);  
+    
+    
+
 
   
     /*computation of stiffness matrix according to Jelenic 1999, eq. (4.7); computation split up with respect
@@ -1294,23 +1348,31 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
       //compute spin matrix of rprime
       computespin(rprimehat,rprime);
       
+      if(Id() == 0)
+      {
+
+        std::cout<<"\ncn="<<cn;
+        std::cout<<"\ncm="<<cm;
+        std::cout<<"\nrprimehat="<<rprimehat;
+      }
+      
       for(int nodei = 0; nodei < nnode; nodei++)
         for(int nodej = 0; nodej < nnode; nodej++)
         {
           //upper left block
           for (int i=0; i<3; ++i)
             for (int j=0; j<3; ++j)
-              (*stiffmatrix)(6*nodei+i,6*nodej+j) += deriv(nodei)*deriv(nodej)*cn(i,j);
+              (*stiffmatrix)(6*nodei+i,6*nodej+j) += deriv(nodei)*deriv(nodej)*cn(i,j)*wgt/jacobi_[numgp];
           
           //upper right block
           auxmatrix2.Multiply(cn,rprimehat);
-          computespin(auxmatrix1,rprime);
+          computespin(auxmatrix1,stressn);
           auxmatrix2 -= auxmatrix1;
           auxmatrix2.Scale(deriv(nodei));
           auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);
           for (int i=0; i<3; ++i)
             for (int j=0; j<3; ++j)
-              (*stiffmatrix)(6*nodei+i,6*nodej+3+j) += auxmatrix1(i,j);
+              (*stiffmatrix)(6*nodei+i,6*nodej+3+j) += auxmatrix1(i,j)*wgt;
           
           //lower left block
           auxmatrix2.Multiply(rprimehat,cn);
@@ -1319,7 +1381,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
           auxmatrix1.Scale(funct(nodei)*deriv(nodej));
           for (int i=0; i<3; ++i)
             for (int j=0; j<3; ++j)
-              (*stiffmatrix)(6*nodei+3+i,6*nodej+j) += auxmatrix1(i,j);
+              (*stiffmatrix)(6*nodei+3+i,6*nodej+j) += auxmatrix1(i,j)*wgt;
           
           //lower right block
           //first summand
@@ -1327,7 +1389,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
           auxmatrix1.Scale(deriv(nodei));
           for (int i=0; i<3; ++i)
             for (int j=0; j<3; ++j)
-              (*stiffmatrix)(6*nodei+3+i,6*nodej+3+j) += auxmatrix1(i,j);
+              (*stiffmatrix)(6*nodei+3+i,6*nodej+3+j) += auxmatrix1(i,j)*wgt/jacobi_[numgp];
           
           //second summand
           computespin(auxmatrix2,stressm);
@@ -1335,7 +1397,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
           auxmatrix1.Scale(deriv(nodei));
           for (int i=0; i<3; ++i)
             for (int j=0; j<3; ++j)
-              (*stiffmatrix)(6*nodei+3+i,6*nodej+3+j) -= auxmatrix1(i,j);
+              (*stiffmatrix)(6*nodei+3+i,6*nodej+3+j) -= auxmatrix1(i,j)*wgt;
           
           //third summand
           auxmatrix2.Multiply(rprimehat,cn);
@@ -1346,17 +1408,19 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
           auxmatrix1.Scale(funct(nodei));
           for (int i=0; i<3; ++i)
             for (int j=0; j<3; ++j)
-              (*stiffmatrix)(6*nodei+3+i,6*nodej+3+j) += auxmatrix1(i,j);
+              (*stiffmatrix)(6*nodei+3+i,6*nodej+3+j) += auxmatrix1(i,j)*jacobi_[numgp];
 
         } 
     }
 
+    if (massmatrix != NULL)
+    {
+      //pay attention: no mass matrix has been implemented so far for this elemetn (nor forces owing to inertia)
+  
+    }//if (massmatrix != NULL)
+  
+  }
 
-  if (massmatrix != NULL)
-  {
-    //pay attention: no mass matrix has been implemented so far for this elemetn (nor forces owing to inertia)
-
-  }//if (massmatrix != NULL)
 
   /*the following function call applied statistical forces and damping matrix according to the fluctuation dissipation theorem;
    * it is dedicated to the application of beam2 elements in the frame of statistical mechanics problems; for these problems a

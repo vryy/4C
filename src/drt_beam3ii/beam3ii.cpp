@@ -342,9 +342,11 @@ void DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry(const vector<double>& xrefe,
   {
     isinit_ = true;
     
-    //first the nodes for the reference triad \Lambda_r of the element are chosen according to eq. (6.2), Crisfield 1999
-    nodeI_ = (int)floor(0.5*(NumNode()+1));
-    nodeJ_ = (int)floor(0.5*(NumNode()+2));
+    /*first the nodes for the reference triad \Lambda_r of the element are chosen according to eq. (6.2), Crisfield 1999;
+     *note that the first node of the element in BACI is node 0 so that we need -1 in the end to convert from the notation
+     *in Crisfield 1999 to the BACI convention*/
+    nodeI_ = (int)floor(0.5*(NumNode()+1)) - 1;
+    nodeJ_ = (int)floor(0.5*(NumNode()+2)) - 1;
     
     
     //resize and initialized STL vectors for rotational displacements so that they can store one value at each node
