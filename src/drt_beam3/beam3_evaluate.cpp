@@ -586,7 +586,7 @@ inline void DRT::ELEMENTS::Beam3::quaterniontoangle(const LINALG::Matrix<4,1>& q
    * imperative for the use of the resulting angle together with formulae like Crisfield, Vol. 2, equation (16.90);
    * note that these formulae comprise not only trigonometric functions, but rather the angle theta directly. Hence
    * they are not 2*PI-invariant !!! */
-    
+
   //if the rotation angle is pi we have q(3) == 0 and the rotation angle vector can be computed by
   if(q(3) == 0)
   {
@@ -601,10 +601,10 @@ inline void DRT::ELEMENTS::Beam3::quaterniontoangle(const LINALG::Matrix<4,1>& q
     LINALG::Matrix<3,1> omega;
     for(int i = 0; i<3; i++)
       omega(i) = q(i)*2/q(3);
-  
+
     double tanhalf = omega.Norm2() / 2;
     double thetaabs = atan(tanhalf)*2;
-    
+
     //if the rotation angle is zero we return a zero rotation angle vector at once
     if(omega.Norm2() == 0)
     {
@@ -1554,19 +1554,19 @@ void DRT::ELEMENTS::Beam3::MyBackgroundVelocity(ParameterList& params,  //!<para
 
   //velocity at upper boundary of domain
   double uppervel = 0.0;
-  
+
   //default values for background velocity and its gradient
   velbackground.PutScalar(0);
   velbackgroundgrad.PutScalar(0);
 
   //oscillations start only at params.get<double>("STARTTIME",0.0)
-  if(params.get<double>("total time",0.0) > params.get<double>("STARTTIME",0.0) && params.get<int>("CURVENUMBER",-1) >=  1 && params.get<int>("OSCILLDIR",-1) >= 0 )
+  if(params.get<double>("total time",0.0) > params.get<double>("STARTTIME",0.0) + params.get<double>("DELTA_T_NEW",0.0) && params.get<int>("CURVENUMBER",-1) >=  1 && params.get<int>("OSCILLDIR",-1) >= 0 )
   {
     uppervel = (params.get<double>("SHEARAMPLITUDE",0.0)) * (DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).FctDer(params.get<double>("total time",0.0),1))[1];
-  
+
     //compute background velocity
     velbackground(params.get<int>("OSCILLDIR",-1)) = (evaluationpoint(ndim-1) / params.get<double>("PeriodLength",0.0)) * uppervel;
-  
+
     //compute gradient of background velocity
     velbackgroundgrad(params.get<int>("OSCILLDIR",-1),ndim-1) = uppervel / params.get<double>("PeriodLength",0.0);
   }
