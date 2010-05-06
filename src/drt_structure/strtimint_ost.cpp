@@ -438,6 +438,7 @@ void STR::TimIntOneStepTheta::ReadRestartForce()
   IO::DiscretizationReader reader(discret_, step_);
   // set 'initial' external force
   reader.ReadVector(fext_, "fexternal");
+  fint_->PutScalar(0.0);
   // set 'initial' internal force vector
   // Set dt to 0, since we do not propagate in time.
   ApplyForceInternal((*time_)[0], 0.0, (*dis_)(0), zeros_, (*vel_)(0), fint_);
