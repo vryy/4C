@@ -301,6 +301,7 @@ void ADAPTER::StructureGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp
 void ADAPTER::StructureGenAlpha::Update()
 {
   structure_->Update();
+  structure_->UpdateElement();
 }
 
 
@@ -309,7 +310,7 @@ void ADAPTER::StructureGenAlpha::Update()
 void ADAPTER::StructureGenAlpha::Output()
 {
   structure_->Output();
-  structure_->UpdateElement();
+  
 }
 
 

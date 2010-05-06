@@ -1096,14 +1096,15 @@ void STR::TimInt::Integrate()
     // update time and step
     UpdateStepTime();
 
+    // update everything on the element level
+    UpdateStepElement();
+
     // write output
     OutputStep();
 
     // print info about finished time step
     PrintStep();
 
-    // update everything on the element level
-    UpdateStepElement();
   }
 
   // print monitoring of time consumption

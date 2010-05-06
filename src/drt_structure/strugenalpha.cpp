@@ -2925,8 +2925,8 @@ void StruGenAlpha::computeJacobian(const Epetra_Vector& x)
 void StruGenAlpha::UpdateandOutput()
 {
   Update();
-  Output();
   UpdateElement();
+  Output();
   return;
 } // StruGenAlpha::UpdateandOutput()
 

@@ -237,6 +237,7 @@ void ADAPTER::StructureTimIntExpl::Update()
 {
   structure_->UpdateStepState();
   structure_->UpdateStepTime();
+  structure_->UpdateStepElement();
   return;
 }
 
@@ -246,7 +247,6 @@ void ADAPTER::StructureTimIntExpl::Update()
 void ADAPTER::StructureTimIntExpl::Output()
 {
   structure_->OutputStep();
-  structure_->UpdateStepElement();
 }
 
 
