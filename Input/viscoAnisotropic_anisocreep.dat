@@ -53,6 +53,7 @@ MULTISC_STRUCT                  0
 NUMFIELD                        1
 PROBLEMTYP                      Structure
 RESTART                         0
+//!RESTART                      60   
 TIMETYP                         Dynamic
 ------------------------------------------------------STRUCT SOLVER
 AZBDIAG                         0
