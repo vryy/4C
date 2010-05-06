@@ -695,9 +695,9 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     RCP<Epetra_Vector> fstmodexp;
     if (stickset)
     {
-    fstmodexp = rcp(new Epetra_Vector(*problemrowmap_));
-    LINALG::Export(*fstmod,*fstmodexp);
-    feffnew->Update(1.0,*fstmodexp,+1.0);
+      fstmodexp = rcp(new Epetra_Vector(*problemrowmap_));
+      LINALG::Export(*fstmod,*fstmodexp);
+      feffnew->Update(1.0,*fstmodexp,+1.0);
     }
     
     // add a subvector to feffnew

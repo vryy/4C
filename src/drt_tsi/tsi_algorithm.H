@@ -98,7 +98,29 @@ namespace TSI
 
     /// convergence check for natural convection solver
     bool ConvergenceCheck(int itnum, int itmax, double ittol);
+    
+    // apply modifications towards thermal contact
+    void ApplyThermoContact(RCP<LINALG::SparseMatrix>& stiff,
+                            RCP<Epetra_Vector>& rhs,
+                            RCP<MORTAR::ManagerBase> cmtman);
+    
+    // convert maps form structure discretization to thermo discretization
+    void ConvertMaps(RCP<Epetra_Map>& slavedofs,
+                     RCP<Epetra_Map>& activedofs,
+                     RCP<Epetra_Map>& masterdofs,
+                     RCP<MORTAR::ManagerBase> cmtman);
 
+    // apply mortar matrices for nodes in contact
+    void AssembleDM(LINALG::SparseMatrix& dmatrix,
+                    LINALG::SparseMatrix& mmatrix,
+                    RCP<MORTAR::ManagerBase> cmtman);
+
+    // assemble thermal contact condition
+    void AssembleThermContCondition(LINALG::SparseMatrix& thermcontLM,
+                                    LINALG::SparseMatrix& thermcontTEMP,
+                                    Epetra_Vector& thermcontRHS,
+                                    RCP<Epetra_Map> activedofs,  
+                                    RCP<MORTAR::ManagerBase> cmtman);
     //@}
 
     //! @name Transfer helpers

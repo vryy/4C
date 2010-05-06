@@ -25,6 +25,7 @@ Maintainer: Caroline Danowski
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_contact/contact_abstract_strategy.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -122,18 +123,17 @@ void TSI::Algorithm::TimeLoop()
   // time loop
   while (NotFinished())
   {
-    // prepare next time step
-    PrepareTimeStep();
-
     // get active nodes from structural contact simulation
     RCP<MORTAR::ManagerBase> cmtman = StructureField().ContactManager();
 
     // tsi with or without contact
     if (cmtman == Teuchos::null)
     {
-
       // Begin Nonlinear Solver / Outer Iteration *******************************
 
+      // prepare next time step ==> muss ausserhalb der Newton-Schleife sein!! 21.04.10 ULI!!!
+      PrepareTimeStep();
+      
       // iterate between the two fields
       int  itnum = 0;  // itnum in Scatra
       bool stopnonliniter = false;
@@ -178,38 +178,78 @@ void TSI::Algorithm::TimeLoop()
       // write output to screen and files
       Output();
     } // tsi
-
+    // thermo-structure interaction with contact in seperate routine
     else
     {
-      // not yet implemented
-      dserror("TSI with CONTACT not yet implemented");
+      //****************************************************************//
+      // this algorithm consists of two parts within one time step      //
+      // 1) solution of nonlinear structural system without influence   //
+      //    of temperature.                                             //
+      // 2) solution of linear temperature problem                      //
+      //    with heat transfer over the contacting surface (as a result //
+      //    from the structural problem). This linear problem is solved //
+      //    within one Newton step.                                     // 
+      //******************************************************************
+     
+      // only for frictional contact so far
+      // as information are needed from the friction node
+      if((cmtman->GetStrategy().Friction())==false)
+        dserror ("Thermo-Structure interaction only for frictional contact so far");
+      
+      // reset thermo field
+      // FIXGIT: Is there another possibility to reset
+      // I had to omit the "const" 
+      (ThermoField().Tempn())->PutScalar(0.0);
+      
+      // counter and print header 
+      IncrementTimeAndStep();
+      PrintHeader();
 
-      // prepare next time step
-      PrepareTimeStep();
+      // predict ans solve structural system
+      StructureField().PrepareTimeStep();
+      StructureField().Solve();
+      
+      // predict and evaluate the thermal field without influence of structure
+      // evaluate assembles the stiffness matrix and the rhs of 
+      // the thermo field
+      ThermoField().PrepareTimeStep();
+      ThermoField().Evaluate(Teuchos::null);
 
-      // solve thermo system
-      const Teuchos::RCP<Epetra_Vector> itemp = DoThermoStep();
-
-      // solve structure system
-      DoStructureStep(itemp);
-
+      // get the linear system of equations form the thermo field
+      Teuchos::RCP<const LINALG::SparseMatrix> stiff = ThermoField().SystemMatrix();
+      Teuchos::RCP<const Epetra_Vector> rhs = ThermoField().RHS();
+      
+      // copy the linear system of equations to new matrix/vector
+      RCP<LINALG::SparseMatrix> stiffthermcont = rcp(new LINALG::SparseMatrix(*stiff));
+      RCP<Epetra_Vector> rhsthermcont = rcp(new Epetra_Vector(*rhs));
+      
+      // make modifications towards thermo contact to the stiffness matrix
+      // and the right hand side
+      ApplyThermoContact(stiffthermcont,rhsthermcont,cmtman);
+      
+      // solution vector
+      // FIXGIT: perhaps this should be written in existing vector
+      Teuchos::RCP<Epetra_Vector> inc = LINALG::CreateVector(*(ThermoField().DofRowMap()),true);
+      inc = LINALG::CreateVector(*(ThermoField().DofRowMap()),true);
+      
+      // Create the solver and solve modified system of equations
+      Teuchos::RCP<LINALG::Solver> solver = ThermoField().LinearSolver();
+      solver->Solve(stiffthermcont->EpetraMatrix(),inc,rhsthermcont,true,true);
+      
+      // write solution 
+      ThermoField().UpdateNewton(inc);
+      
       // update all single field solvers
       Update();
-
-      // extract final temperatures,
-      // since we did update, this is very easy to extract
-      itempn_ = ThermoField().ExtractTemperatures();
 
       // write output to screen and files
       Output();
     }
-
   } // time loop
 
   // ==================================================================
 
 }
-
 
 /*----------------------------------------------------------------------*
  | prepare time step (protected)                             dano 12/09 |
@@ -225,7 +265,6 @@ void TSI::Algorithm::PrepareTimeStep()
 //  StructureField().PrepareTimeStep();
   ThermoField().PrepareTimeStep();
 }
-
 
 /*----------------------------------------------------------------------*
  | Solve the structure system (protected)                    dano 03/10 |
@@ -300,6 +339,17 @@ void TSI::Algorithm::Output()
   // Discretizations.
   StructureField().Output();
   ThermoField().Output();
+  
+  // preparation of output form thermo things to structural field
+  //  // get disc writer from structure field
+  //  Teuchos::RCP<IO::DiscretizationWriter> output = StructureField().DiscWriter();
+  //  
+  //  //  RCP<Epetra_Vector> temperature = ThermoField().Tempn();
+  //  //  const Epetra_Map* temprowmap = ThermoField().Discretization()->NodeRowMap();
+  //  //  temperature->ReplaceMap(*temprowmap);
+  //  //  cout << "Temperature" << *temperature << endl;
+  //  //  output->WriteVector("temperature", temperature);
+
 }
 
 
@@ -386,5 +436,613 @@ bool TSI::Algorithm::ConvergenceCheck(
 }  // TSI::Algorithm::ConvergenceCheck
 
 
+/*----------------------------------------------------------------------*
+ | apply modifications towards thermal contact               mgit 04/10 |
+ *----------------------------------------------------------------------*/
+
+void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
+                                        RCP<Epetra_Vector>& feff,
+                                        RCP<MORTAR::ManagerBase> cmtman)
+{
+  
+  // complete stiffness matrix
+  // (this is a prerequisite for the Split2x2 methods to be called later)
+  kteff->Complete();
+  
+  // convert maps (from structure discretization to thermo discretization)
+  // slave-, active-, inactive-, master-, activemaster- and ndofs
+  RCP<Epetra_Map> sdofs,adofs,idofs,mdofs,amdofs,ndofs;
+  ConvertMaps (sdofs,adofs,mdofs,cmtman);
+  
+  // map of active and master dofs
+  amdofs = LINALG::MergeMap(adofs,mdofs,false);
+  idofs =  LINALG::SplitMap(*sdofs,*adofs);
+  
+  // row map of thermal problem 
+  RCP<const Epetra_Map> problemrowmap = ThermoField().DofRowMap();
+  
+  // split problemrowmap in n+am
+  ndofs = LINALG::SplitMap(*problemrowmap,*amdofs);
+
+  // modifications only for active nodes
+  if (adofs->NumGlobalElements()==0)
+    return;
+  
+  // assemble Mortar Matrices D and M in thermo dofs for active nodes
+  RCP<LINALG::SparseMatrix> dmatrix = rcp(new LINALG::SparseMatrix(*adofs,10));
+  RCP<LINALG::SparseMatrix> mmatrix = rcp(new LINALG::SparseMatrix(*adofs,100));
+  AssembleDM(*dmatrix,*mmatrix,cmtman);
+  
+  // FillComplete() global Mortar matrices
+  dmatrix->Complete();
+  mmatrix->Complete(*mdofs,*adofs);
+  
+  // matrices from linearized thermal contact condition 
+  RCP<LINALG::SparseMatrix>  thermcontLM = rcp(new LINALG::SparseMatrix(*adofs,3));  
+  RCP<LINALG::SparseMatrix>  thermcontTEMP = rcp(new LINALG::SparseMatrix(*adofs,3));
+  RCP<Epetra_Vector>         thermcontRHS = LINALG::CreateVector(*adofs,true); 
+  
+  // assemble thermal contact contition
+  AssembleThermContCondition(*thermcontLM,*thermcontTEMP,*thermcontRHS,adofs,cmtman);
+  
+  // complete the matrices
+  thermcontLM->Complete(*adofs,*adofs);
+  thermcontTEMP->Complete(*amdofs,*adofs);
+  
+  /**********************************************************************/
+  /* Modification of the stiff matrix and rhs towards thermo contact    */
+  /**********************************************************************/
+  
+  /**********************************************************************/
+  /* Create inv(D)                                                      */
+  /**********************************************************************/
+  RCP<LINALG::SparseMatrix> invd = rcp(new LINALG::SparseMatrix(*dmatrix));
+  RCP<Epetra_Vector> diag = LINALG::CreateVector(*adofs,true);
+  int err = 0;
+
+  // extract diagonal of invd into diag
+  invd->ExtractDiagonalCopy(*diag);
+
+  // set zero diagonal values to dummy 1.0
+  for (int i=0;i<diag->MyLength();++i)
+    if ((*diag)[i]==0.0) (*diag)[i]=1.0;
+
+  // scalar inversion of diagonal values
+  err = diag->Reciprocal(*diag);
+  if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+
+  // re-insert inverted diagonal into invd
+  err = invd->ReplaceDiagonalValues(*diag);
+  // we cannot use this check, as we deliberately replaced zero entries
+  //if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+  
+  // do the multiplication M^ = inv(D) * M
+  RCP<LINALG::SparseMatrix> mhatmatrix;
+  mhatmatrix = LINALG::MLMultiply(*invd,false,*mmatrix,false,false,false);
+
+  /**********************************************************************/
+  /* Split kteff into 3x3 block matrix                                  */
+  /**********************************************************************/
+  // we want to split k into 3 groups s,m,n = 9 blocks
+  RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
+
+  // temporarily we need the blocks ksmsm, ksmn, knsm
+  // (FIXME: because a direct SplitMatrix3x3 is still missing!)
+  RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
+
+  // some temporary RCPs
+  RCP<Epetra_Map> tempmap;
+  RCP<LINALG::SparseMatrix> tempmtx1;
+  RCP<LINALG::SparseMatrix> tempmtx2;
+  RCP<LINALG::SparseMatrix> tempmtx3;
+
+  // split into slave/master part + structure part
+  RCP<LINALG::SparseMatrix> kteffmatrix = rcp(new LINALG::SparseMatrix(*kteff));
+  
+  LINALG::SplitMatrix2x2(kteffmatrix,amdofs,ndofs,amdofs,ndofs,ksmsm,ksmn,knsm,knn);
+
+  // further splits into slave part + master part
+  LINALG::SplitMatrix2x2(ksmsm,adofs,mdofs,adofs,mdofs,kss,ksm,kms,kmm);
+  LINALG::SplitMatrix2x2(ksmn,adofs,mdofs,ndofs,tempmap,ksn,tempmtx1,kmn,tempmtx2);
+  LINALG::SplitMatrix2x2(knsm,ndofs,tempmap,adofs,mdofs,kns,knm,tempmtx1,tempmtx2);
+
+  /**********************************************************************/
+  /* Split feff into 3 subvectors                                       */
+  /**********************************************************************/
+  // we want to split f into 3 groups s.m,n
+  RCP<Epetra_Vector> fs, fm, fn;
+
+  // temporarily we need the group sm
+  RCP<Epetra_Vector> fsm;
+
+  // do the vector splitting smn -> sm+n -> s+m+n
+  LINALG::SplitVector(*problemrowmap,*feff,amdofs,fsm,ndofs,fn);
+  LINALG::SplitVector(*amdofs,*fsm,adofs,fs,mdofs,fm);
+  
+  /**********************************************************************/
+  /* Split slave quantities into active / inactive                      */
+  /**********************************************************************/
+  // we want to split kssmod into 2 groups a,i = 4 blocks
+  RCP<LINALG::SparseMatrix> kaa, kai, kia, kii;
+
+  // we want to split ksn / ksm / kms into 2 groups a,i = 2 blocks
+  RCP<LINALG::SparseMatrix> kan, kin, kam, kim, kma, kmi;
+
+  // do the splitting
+  LINALG::SplitMatrix2x2(kss,adofs,idofs,adofs,idofs,kaa,kai,kia,kii);
+  LINALG::SplitMatrix2x2(ksn,adofs,idofs,ndofs,tempmap,kan,tempmtx1,kin,tempmtx2);
+  LINALG::SplitMatrix2x2(ksm,adofs,idofs,mdofs,tempmap,kam,tempmtx1,kim,tempmtx2);
+  LINALG::SplitMatrix2x2(kms,mdofs,tempmap,adofs,idofs,kma,kmi,tempmtx1,tempmtx2);
+
+  // we want to split fsmod into 2 groups a,i
+  RCP<Epetra_Vector> fa = rcp(new Epetra_Vector(*adofs));
+  RCP<Epetra_Vector> fi = rcp(new Epetra_Vector(*idofs));
+
+  // do the vector splitting s -> a+i
+  LINALG::SplitVector(*sdofs,*fs,adofs,fa,idofs,fi);
+
+  // abbreviations for active and inactive set
+  int aset = adofs->NumGlobalElements();
+  int iset = idofs->NumGlobalElements();
+ 
+  /**********************************************************************/
+  /* Build the final K and f blocks                                     */
+  /**********************************************************************/
+  // knn: nothing to do
+
+  // knm: nothing to do
+
+  // kns: nothing to do
+  
+  // kmn: add T(mbaractive)*kan
+  RCP<LINALG::SparseMatrix> kmnmod = rcp(new LINALG::SparseMatrix(*mdofs,100));
+  kmnmod->Add(*kmn,false,1.0,1.0);
+  RCP<LINALG::SparseMatrix> kmnadd = LINALG::MLMultiply(*mhatmatrix,true,*ksn,false,false,false,true);
+  kmnmod->Add(*kmnadd,false,1.0,1.0);
+  kmnmod->Complete(kmn->DomainMap(),kmn->RowMap());
+  
+  // kmm: add T(mbaractive)*kam 
+  RCP<LINALG::SparseMatrix> kmmmod = rcp(new LINALG::SparseMatrix(*mdofs,100));
+  kmmmod->Add(*kmm,false,1.0,1.0);
+  RCP<LINALG::SparseMatrix> kmmadd = LINALG::MLMultiply(*mhatmatrix,true,*ksm,false,false,false,true);
+  kmmmod->Add(*kmmadd,false,1.0,1.0);
+  kmmmod->Complete(kmm->DomainMap(),kmm->RowMap());
+  
+  // kmi: add T(mbaractive)*kai 
+  RCP<LINALG::SparseMatrix> kmimod;
+  if (iset)
+  {  
+    kmimod = rcp(new LINALG::SparseMatrix(*mdofs,100));
+    kmimod->Add(*kmi,false,1.0,1.0);
+    RCP<LINALG::SparseMatrix> kmiadd = LINALG::MLMultiply(*mhatmatrix,true,*kai,false,false,false,true);
+    kmimod->Add(*kmiadd,false,1.0,1.0);
+    kmimod->Complete(kmi->DomainMap(),kmi->RowMap());
+  }
+
+  // kmi: add T(mbaractive)*kaa 
+  RCP<LINALG::SparseMatrix> kmamod;
+  if (aset)
+  {  
+    kmamod = rcp(new LINALG::SparseMatrix(*mdofs,100));
+    kmamod->Add(*kma,false,1.0,1.0);
+    RCP<LINALG::SparseMatrix> kmaadd = LINALG::MLMultiply(*mhatmatrix,true,*kaa,false,false,false,true);
+    kmamod->Add(*kmaadd,false,1.0,1.0);
+    kmamod->Complete(kma->DomainMap(),kma->RowMap());
+  }
+  
+  // kan: thermcontlm*invd*kan
+  RCP<LINALG::SparseMatrix> kanmod;
+  if (aset)
+  {  
+    kanmod = LINALG::MLMultiply(*thermcontLM,false,*invd,false,false,false,true);
+    kanmod = LINALG::MLMultiply(*kanmod,false,*kan,false,false,false,true);
+    kanmod->Complete(kan->DomainMap(),kan->RowMap());
+  }  
+
+  // kam: thermcontlm*invd*kam
+  RCP<LINALG::SparseMatrix> kammod;
+  if (aset)
+  {  
+    kammod = LINALG::MLMultiply(*thermcontLM,false,*invd,false,false,false,true);
+    kammod = LINALG::MLMultiply(*kammod,false,*kam,false,false,false,true);
+    kammod->Complete(kam->DomainMap(),kam->RowMap());
+  }
+
+  // kai: thermcontlm*invd*kai
+  RCP<LINALG::SparseMatrix> kaimod;
+  if (aset && iset)
+  {  
+    kaimod = LINALG::MLMultiply(*thermcontLM,false,*invd,false,false,false,true);
+    kaimod = LINALG::MLMultiply(*kaimod,false,*kai,false,false,false,true);
+    kaimod->Complete(kai->DomainMap(),kai->RowMap());
+  }
+
+  // kaa: thermcontlm*invd*kaa
+  RCP<LINALG::SparseMatrix> kaamod;
+  if (aset)
+  {  
+    kaamod = LINALG::MLMultiply(*thermcontLM,false,*invd,false,false,false,true);
+    kaamod = LINALG::MLMultiply(*kaamod,false,*kaa,false,false,false,true);
+    kaamod->Complete(kaa->DomainMap(),kaa->RowMap());
+  }
+  
+  // Modifications towards rhs
+  // FIXGIT: pay attention to genalpha 
+  // fm: add T(mbaractive)*fa
+  RCP<Epetra_Vector> fmmod = rcp(new Epetra_Vector(*mdofs));
+  mhatmatrix->Multiply(true,*fa,*fmmod);
+  fmmod->Update(1.0,*fm,1.0);
+
+  // fa: mutliply with thermcontlm
+  RCP<Epetra_Vector> famod;
+  {
+    famod = rcp(new Epetra_Vector(*adofs));
+    RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*thermcontLM,false,*invd,false,false,false,true);
+    temp->Multiply(false,*fa,*famod);
+  }
+  
+  /**********************************************************************/
+  /* Global setup of kteffnew, feffnew (including contact)              */
+  /**********************************************************************/
+  RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap,81,true,false,kteffmatrix->GetMatrixtype()));
+  RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*problemrowmap);
+  
+  // add n submatrices to kteffnew
+  kteffnew->Add(*knn,false,1.0,1.0);
+  kteffnew->Add(*knm,false,1.0,1.0);
+  kteffnew->Add(*kns,false,1.0,1.0);
+  
+  // add m submatrices to kteffnew
+  kteffnew->Add(*kmnmod,false,1.0,1.0);
+  kteffnew->Add(*kmmmod,false,1.0,1.0);
+  if (iset) kteffnew->Add(*kmamod,false,1.0,1.0);
+  if (aset) kteffnew->Add(*kmamod,false,1.0,1.0);
+  
+  // add i submatrices to kteffnew
+  if (iset) kteffnew->Add(*kin,false,1.0,1.0);
+  if (iset) kteffnew->Add(*kim,false,1.0,1.0);
+  if (iset) kteffnew->Add(*kii,false,1.0,1.0);
+  if (iset) kteffnew->Add(*kia,false,1.0,1.0);
+  
+  // add a submatrices to kteffnew
+  if (aset) kteffnew->Add(*kanmod,false,1.0,1.0);
+  if (aset) kteffnew->Add(*kammod,false,1.0,1.0);
+  if (aset && iset) kteffnew->Add(*kaimod,false,1.0,1.0);
+  if (aset) kteffnew->Add(*kaamod,false,1.0,1.0);
+  
+  // add n subvector to feffnew
+  RCP<Epetra_Vector> fnexp = rcp(new Epetra_Vector(*problemrowmap));
+  LINALG::Export(*fn,*fnexp);
+  feffnew->Update(1.0,*fnexp,1.0);
+  
+  // add m subvector to feffnew
+  RCP<Epetra_Vector> fmmodexp = rcp(new Epetra_Vector(*problemrowmap));
+  LINALG::Export(*fmmod,*fmmodexp);
+  feffnew->Update(1.0,*fmmodexp,1.0);
+  
+  // add i subvector to feffnew
+  RCP<Epetra_Vector> fiexp;
+  if (iset)
+  {
+    fiexp = rcp(new Epetra_Vector(*problemrowmap));
+    LINALG::Export(*fi,*fiexp);
+    feffnew->Update(1.0,*fiexp,1.0);
+  }
+
+  // add a subvector to feffnew
+  RCP<Epetra_Vector> famodexp;
+  if (aset)
+  {  
+    famodexp = rcp(new Epetra_Vector(*problemrowmap));
+    LINALG::Export(*famod,*famodexp);
+    feffnew->Update(1.0,*famodexp,+1.0);
+  }  
+  
+  // add linearized thermo contact condition
+  kteffnew->Add(*thermcontTEMP,false,-1.0,+1.0);
+  
+  // rhs zero till now
+  //RCP<Epetra_Vector> linslipRHSexp = rcp(new Epetra_Vector(*problemrowmap_));
+  //LINALG::Export(*linslipRHS_,*linslipRHSexp);
+  //feffnew->Update(-1.0,*linslipRHSexp,1.0);
+  
+  // FillComplete kteffnew (square)
+  kteffnew->Complete();
+  
+  /**********************************************************************/
+  /* Replace kteff and feff by kteffnew and feffnew                     */
+  /**********************************************************************/
+  kteff = kteffnew;
+  feff = feffnew;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | convert maps form structure dofs to thermo dofs            mgit 04/10 |
+ *----------------------------------------------------------------------*/
+
+void TSI::Algorithm::ConvertMaps(RCP<Epetra_Map>& slavedofs,
+                                 RCP<Epetra_Map>& activedofs,
+                                 RCP<Epetra_Map>& masterdofs,
+                                 RCP<MORTAR::ManagerBase> cmtman)
+{
+
+  // stactic cast of mortar strategy to contact strategy
+  MORTAR::StrategyBase& strategy = cmtman->GetStrategy();
+  CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
+  
+  // get vector of contact interfaces
+  vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+    
+  // this currently works only for one interface yet
+  if (interface.size()>1)
+    dserror("Error in TSI::Algorithm::ConvertMaps: Only for one interface yet.");
+  
+  // loop over all interfaces
+  for (int m=0; m<(int)interface.size(); ++m)
+  {
+    // slave nodes/dofs
+    const RCP<Epetra_Map> slavenodes = interface[m]->SlaveRowNodes();
+
+    // define local variables
+    int slavecountnodes = 0;
+    vector<int> myslavegids(slavenodes->NumMyElements());
+    
+    // loop over all slave nodes of the interface
+    for (int i=0;i<slavenodes->NumMyElements();++i)
+    {
+      int gid = slavenodes->GID(i);
+      DRT::Node* node = (StructureField().Discretization())->gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(node);
+      
+      if (cnode->Owner() != Comm().MyPID())
+        dserror("ERROR: AssembleDM: Node ownership inconsistency!");
+      
+      myslavegids[slavecountnodes] = ((StructureField().Discretization())->Dof(1,node))[0];
+      ++slavecountnodes;
+    }
+
+    // resize the temporary vectors
+    myslavegids.resize(slavecountnodes);
+
+    // communicate countnodes, countdofs, countslipnodes and countslipdofs among procs
+    int gslavecountnodes;
+    Comm().SumAll(&slavecountnodes,&gslavecountnodes,1);
+
+    // create active node map and active dof map
+    slavedofs = rcp(new Epetra_Map(gslavecountnodes,slavecountnodes,&myslavegids[0],0,Comm()));
+
+    // active nodes/dofs 
+    const RCP<Epetra_Map> activenodes = interface[m]->ActiveNodes();
+
+    // define local variables
+    int countnodes = 0;
+    vector<int> mynodegids(activenodes->NumMyElements());
+    
+    // loop over all active nodes of the interface
+    for (int i=0;i<activenodes->NumMyElements();++i)
+    {
+      int gid = activenodes->GID(i);
+      DRT::Node* node = (StructureField().Discretization())->gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(node);
+      
+      if (cnode->Owner() != Comm().MyPID())
+        dserror("ERROR: AssembleDM: Node ownership inconsistency!");
+      
+      mynodegids[countnodes] = ((StructureField().Discretization())->Dof(1,node))[0];
+      ++countnodes;
+    }
+
+    // resize the temporary vectors
+    mynodegids.resize(countnodes);
+
+    // communicate countnodes, countdofs, countslipnodes and countslipdofs among procs
+    int gcountnodes;
+    Comm().SumAll(&countnodes,&gcountnodes,1);
+
+    // create active node map and active dof map
+    activedofs = rcp(new Epetra_Map(gcountnodes,countnodes,&mynodegids[0],0,Comm()));
+    
+    // master nodes/dofs 
+    const RCP<Epetra_Map> masternodes = interface[m]->MasterRowNodes();
+
+    // define local variables
+    int mastercountnodes = 0;
+    vector<int> mymastergids(masternodes->NumMyElements());
+    
+    // loop over all active nodes of the interface
+    for (int i=0;i<masternodes->NumMyElements();++i)
+    {
+      int gid = masternodes->GID(i);
+      DRT::Node* node = (StructureField().Discretization())->gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(node);
+      
+      if (cnode->Owner() != Comm().MyPID())
+        dserror("ERROR: AssembleDM: Node ownership inconsistency!");
+      
+      mymastergids[mastercountnodes] = ((StructureField().Discretization())->Dof(1,node))[0];
+      ++mastercountnodes;
+    }
+
+    // resize the temporary vectors
+    mymastergids.resize(mastercountnodes);
+
+    // communicate countnodes, countdofs, countslipnodes and countslipdofs among procs
+    int gmastercountnodes;
+    Comm().SumAll(&mastercountnodes,&gmastercountnodes,1);
+
+    // create active node map and active dof map
+    masterdofs = rcp(new Epetra_Map(gmastercountnodes,mastercountnodes,&mymastergids[0],0,Comm()));
+  }  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | assemnle mortar matrices in thermo dofs (active nodes)     mgit 04/10 |
+ *----------------------------------------------------------------------*/
+
+void TSI::Algorithm::AssembleDM(LINALG::SparseMatrix& dmatrix,
+                                LINALG::SparseMatrix& mmatrix,
+                                RCP<MORTAR::ManagerBase> cmtman)
+{
+  // stactic cast of mortar strategy to contact strategy
+  MORTAR::StrategyBase& strategy = cmtman->GetStrategy();
+  CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
+
+  // get vector of contact interfaces
+  vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+    
+  // this currently works only for one interface yet
+  if (interface.size()>1)
+    dserror("Error in TSI::Algorithm::ConvertMaps: Only for one interface yet.");
+  
+  // loop over all interfaces
+  for (int m=0; m<(int)interface.size(); ++m)
+  {
+    // active 
+    const RCP<Epetra_Map> activenodes = interface[m]->ActiveNodes();
+
+    // loop over all active nodes of the interface
+    for (int i=0;i<activenodes->NumMyElements();++i)
+    {
+      int gid = activenodes->GID(i);
+      DRT::Node* node    = (interface[m]->Discret()).gNode(gid);
+      DRT::Node* nodeges = (StructureField().Discretization())->gNode(gid);
+      
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(node);
+      
+      /************************************************** D-matrix ******/
+      if ((cnode->MoData().GetD()).size()>0)
+      {
+        vector<map<int,double> > dmap = cnode->MoData().GetD();
+        int rowtemp = (StructureField().Discretization())->Dof(1,nodeges)[0];
+        int rowdisp = cnode->Dofs()[0];
+        double val = (dmap[0])[rowdisp];
+        dmatrix.Assemble(val, rowtemp, rowtemp); 
+      }
+      
+      /************************************************** M-matrix ******/
+      if ((cnode->MoData().GetM()).size()>0)
+      {
+        vector<map<int,double> > mmap = cnode->MoData().GetM();
+
+        int rowtemp = (StructureField().Discretization())->Dof(1,nodeges)[0];
+
+        set<int> mnodes = cnode->Data().GetMNodes();
+        set<int>::iterator mcurr;
+        
+        // loop over all according master nodes 
+        for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
+        {
+          int gid = *mcurr;
+          DRT::Node* mnode = (interface[m]->Discret()).gNode(gid);
+          DRT::Node* mnodeges = (StructureField().Discretization())->gNode(gid);
+          if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+          CONTACT::CoNode* cmnode = static_cast<CONTACT::CoNode*>(mnode);
+          const int* mdofs = cmnode->Dofs();
+          int coltemp = (StructureField().Discretization())->Dof(1,mnodeges)[0];
+          double val = (mmap[0])[mdofs[0]];
+          
+          if(abs(val)>1e-12)
+            mmatrix.Assemble(val, rowtemp, coltemp);
+        }
+      }
+    }
+  } 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | assemble the thermal contact conditions                    mgit 04/10 |
+ *----------------------------------------------------------------------*/
+
+void TSI::Algorithm::AssembleThermContCondition(LINALG::SparseMatrix& thermcontLM,
+                                                LINALG::SparseMatrix& thermcontTEMP,
+                                                Epetra_Vector& thermcontRHS,
+                                                RCP<Epetra_Map> activedofs,  
+                                                RCP<MORTAR::ManagerBase> cmtman)
+{
+  // stactic cast of mortar strategy to contact strategy
+  MORTAR::StrategyBase& strategy = cmtman->GetStrategy();
+  CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
+
+  // get vector of contact interfaces
+  vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+
+  // this currently works only for one interface yet
+  if (interface.size()>1)
+    dserror("Error in TSI::Algorithm::ConvertMaps: Only for one interface yet.");
+  
+  // loop over all interfaces
+  for (int m=0; m<(int)interface.size(); ++m)
+  {
+
+    // heat transfer coefficient
+    double heattrancoeff = interface[m]->IParams().get<double>("HEATTRANSFERCOEFF");
+    
+    // active 
+    const RCP<Epetra_Map> activenodes = interface[m]->ActiveNodes();
+
+    // loop over all active nodes of the interface
+    for (int i=0;i<activenodes->NumMyElements();++i)
+    {
+      int gid = activenodes->GID(i);
+      DRT::Node* node    = (interface[m]->Discret()).gNode(gid);
+      DRT::Node* nodeges = (StructureField().Discretization())->gNode(gid);
+      
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(node);
+      
+      // with respect to Lagrange multipliers
+      int row = (StructureField().Discretization())->Dof(1,nodeges)[0];
+      int val = 1;
+      thermcontLM.Assemble(val,row,row);
+      
+      // with resprect to temperatur dof
+      /************************************************** D-matrix ******/
+      if ((cnode->MoData().GetD()).size()>0)
+      {
+        vector<map<int,double> > dmap = cnode->MoData().GetD();
+        int rowtemp = (StructureField().Discretization())->Dof(1,nodeges)[0];
+        int rowdisp = cnode->Dofs()[0];
+        double val = -heattrancoeff*(dmap[0])[rowdisp];
+        if (abs(val)>1.0e-12) thermcontTEMP.Assemble(val,rowtemp,rowtemp); 
+      }
+      
+      /************************************************** M-matrix ******/
+      if ((cnode->MoData().GetM()).size()>0)
+      {
+        vector<map<int,double> > mmap = cnode->MoData().GetM();
+
+        int rowtemp = (StructureField().Discretization())->Dof(1,nodeges)[0];
+
+        set<int> mnodes = cnode->Data().GetMNodes();
+        set<int>::iterator mcurr;
+        
+        // loop over all according master nodes 
+        for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
+        {
+          int gid = *mcurr;
+          DRT::Node* mnode = (interface[m]->Discret()).gNode(gid);
+          DRT::Node* mnodeges = (StructureField().Discretization())->gNode(gid);
+          if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+          CONTACT::CoNode* cmnode = static_cast<CONTACT::CoNode*>(mnode);
+          const int* mdofs = cmnode->Dofs();
+          int coltemp = (StructureField().Discretization())->Dof(1,mnodeges)[0];
+          double val = +heattrancoeff*(mmap[0])[mdofs[0]];
+          
+          if(abs(val)>1e-12)
+            thermcontTEMP.Assemble(val, rowtemp, coltemp);
+        }
+      }
+    }
+  } 
+  return;
+}
 /*----------------------------------------------------------------------*/
 #endif  // CCADISCRET

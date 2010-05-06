@@ -99,7 +99,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Tempnp() = 0;
 
     /// unknown temperatures at t(n)
-    virtual Teuchos::RCP<const Epetra_Vector> Tempn() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> Tempn() = 0;
 
     //@}
 
@@ -153,6 +153,9 @@ namespace ADAPTER
     /// evaluate residual at given temperature (?)
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> temp) = 0;
 
+    /// update after one Newton step (tsi with contact)
+    virtual void UpdateNewton(Teuchos::RCP<Epetra_Vector> temp) = 0;
+    
     /// update at time step end
     virtual void Update() = 0;
 

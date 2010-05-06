@@ -165,6 +165,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     */
     bool Friction() { return friction_; }
 
+    /*!
+    \brief Return contact interfaces
+
+    */
+    const vector<RCP<CONTACT::CoInterface> > ContactInterfaces() { return interface_; }
+
     //@}
 
     //! @name Evaluation methods

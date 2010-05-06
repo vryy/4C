@@ -73,7 +73,7 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Vector> Tempnp();
 
     /// unknown temperature at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Tempn();
+    Teuchos::RCP<Epetra_Vector> Tempn();
 
     /// dof map of vector of unknowns
     Teuchos::RCP<const Epetra_Map> DofRowMap();
@@ -125,6 +125,9 @@ namespace ADAPTER
       Teuchos::RCP<const Epetra_Vector> temp  ///< current state
       );
 
+    /// update after one Newton step (tsi with contact)
+    void UpdateNewton(Teuchos::RCP<Epetra_Vector> temp);
+    
     /// update at time step end
     void Update();
 
