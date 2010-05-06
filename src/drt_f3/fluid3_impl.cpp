@@ -277,9 +277,9 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl(int numdofpernode)
     dt_(0.0),
     omtheta_(0.0),
     rhscon_(true),
-    densaf_(1.0),   // initialized to 1.0 (filled in Fluid3::GetMaterialParams)
-    densam_(1.0),   // initialized to 1.0 (filled in Fluid3::GetMaterialParams)
-    densn_(1.0),    // initialized to 1.0 (filled in Fluid3::GetMaterialParams)
+    densaf_(1.0),         // initialized to 1.0 (filled in Fluid3::GetMaterialParams)
+    densam_(1.0),         // initialized to 1.0 (filled in Fluid3::GetMaterialParams)
+    densn_(1.0),          // initialized to 1.0 (filled in Fluid3::GetMaterialParams)
     scadtfac_(0.0),       // initialized to 0.0 (filled in Fluid3::GetMaterialParams)
     scaconvfacaf_(0.0),   // initialized to 0.0 (filled in Fluid3::GetMaterialParams)
     scaconvfacn_(0.0),    // initialized to 0.0 (filled in Fluid3::GetMaterialParams)
@@ -340,7 +340,6 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
 
   // set thermodynamic pressure at n+1/n+alpha_F and n+alpha_M/n and
   // its time derivative at n+alpha_M/n+1
-  //TODO: which variables should be allocated
   const double thermpressaf   = params.get<double>("thermpress at n+alpha_F/n+1");
   const double thermpressam   = params.get<double>("thermpress at n+alpha_M/n");
   const double thermpressdtam = params.get<double>("thermpressderiv at n+alpha_M/n+1");
@@ -3476,15 +3475,14 @@ const double DRT::ELEMENTS::Fluid3Impl<distype>::SetSolutionParameter(
 
   whichtau_ =  Teuchos::getIntegralValue<INPAR::FLUID::TauType>(stablist,"DEFINITION_TAU");
   // check if tau can be handled
-  if (not(whichtau_ == INPAR::FLUID::franca_barrenechea_valentin_wall or
-      INPAR::FLUID::fbvw_wo_dt or
-      INPAR::FLUID::bazilevs or
-      INPAR::FLUID::codina))
+  if (not(whichtau_ == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall or
+      INPAR::FLUID::tautype_bazilevs or
+      INPAR::FLUID::tautype_franca_barrenechea_valentin_codina))
     dserror("Definition of Tau cannot handled by the element");
 
   // TODO: Adapt test cases, that it is necessary to use stationary tau definition in input file
   if (is_stationary_ == true)
-    whichtau_ = INPAR::FLUID::fbvw_wo_dt;
+    whichtau_ = INPAR::FLUID::tautype_stationary;
 
 
 
@@ -3959,7 +3957,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
 
   switch (whichtau_)
   {
-  case INPAR::FLUID::franca_barrenechea_valentin_wall:
+  case INPAR::FLUID::tautype_franca_barrenechea_valentin_wall:
   {
     /*----------------------------------------------------- compute tau_Mu ---*/
     /* stability parameter definition according to
@@ -4041,7 +4039,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
   }
   break; // end franca_barrenechea_valentin_wall
 
-  case INPAR::FLUID::fbvw_wo_dt:
+  case INPAR::FLUID::tautype_stationary:
   {
     // TODO: density dependency is still missing
 
@@ -4065,7 +4063,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
     break;
   }
 
-  case INPAR::FLUID::bazilevs:
+  case INPAR::FLUID::tautype_bazilevs:
   {
     /*
 
@@ -4174,7 +4172,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
   }
   break;  // end Bazilev
 
-  case INPAR::FLUID::codina:
+  case INPAR::FLUID::tautype_franca_barrenechea_valentin_codina:
   {
     /*----------------------------------------------------- compute tau_Mu ---*/
     /* stability parameter definition according to
