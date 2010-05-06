@@ -67,6 +67,8 @@ public:
   friend class Fluid3Register;
   friend class Fluid3Boundary;
 
+  // TODO: StationaryImpl will be deleted and this friendships will vanish
+
   // All the template specializations that are used, new ones must be
   // added here.
   friend class Fluid3StationaryImplInterface;
@@ -93,6 +95,9 @@ public:
   // 1D
   friend class Fluid3StationaryImpl<DRT::Element::line2>;
   friend class Fluid3StationaryImpl<DRT::Element::line3>;
+
+  // TODO: linImpl will be deleted and this friendships will vanish
+
   friend class Fluid3lin_ImplInterface;
   // All the template specializations that are used, new ones must be
   // added here.
@@ -113,9 +118,11 @@ public:
   // 1D
   friend class Fluid3lin_Impl<DRT::Element::line2>;
   friend class Fluid3lin_Impl<DRT::Element::line3>;
-  friend class Fluid3ImplInterface;
+
+  //friend class Fluid3ImplInterface;
   // All the template specializations that are used, new ones must be
   // added here.
+  /*
   friend class Fluid3GenalphaResVMM<DRT::Element::hex8>;
   friend class Fluid3GenalphaResVMM<DRT::Element::hex20>;
   friend class Fluid3GenalphaResVMM<DRT::Element::hex27>;
@@ -138,7 +145,7 @@ public:
   friend class Fluid3GenalphaResVMM<DRT::Element::line2>;
   friend class Fluid3GenalphaResVMM<DRT::Element::line3>;
   friend class Fluid3GenalphaResVMMInterface;
-
+*/
   friend class Fluid3SystemEvaluator;
 
   //@}
@@ -281,7 +288,7 @@ public:
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
   {
-    // number of Dof's is fluid specific. 
+    // number of Dof's is fluid specific.
     // Therefore, it is not pushed into drt_utilis_local_connectivity
     switch(distype_)
     {
@@ -438,6 +445,31 @@ public:
 
   //@}
 
+  //! @name Time-dependent subgrid scales
+  /*!
+  \brief Memory allocation for subgrid-scale arrays
+  */
+  void ActivateTDS(int nquad,int nsd);
+
+  /*!
+  \brief Nonlinear update for current subgrid velocities according to the current
+         residual
+  */
+  void UpdateSvelnpInOneDirection(
+    const double  fac1   ,
+    const double  fac2   ,
+    const double  fac3   ,
+    const double  facMtau,
+    const double  resM   ,
+    const double  alphaF ,
+    const int     dim    ,
+    const int     iquad  ,
+    double&       svelnp,
+    double&       svelaf);
+
+  //@}
+
+
   //! @name Other
 
   /*!
@@ -450,8 +482,17 @@ public:
   */
   double CsDeltaSq() const {return Cs_delta_sq_; }
 
-  //@}
+  /*!
+  \brief Returns the subgrid velocity at time n (sveln_)
+  */
+  Epetra_SerialDenseMatrix Sveln() const {return sveln_; }
 
+  /*!
+  \brief Returns the subgrid velocity at time n+1 (svelnp_)
+  */
+  Epetra_SerialDenseMatrix Svelnp() const {return svelnp_; }
+
+  //@}
 
 private:
 
@@ -517,6 +558,7 @@ private:
   };
 
   //! possible options for the stabilisation parameter
+  // this is only used in genalpha_resVMM
   enum TauType
   {
     smoothed_franca_barrenechea_valentin_wall,

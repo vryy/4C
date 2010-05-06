@@ -265,14 +265,14 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
 
   // specify which residual based stabilisation terms
   // will be used
-  Fluid3::StabilisationAction tds      = ele->ConvertStringToStabAction(stablist.get<string>("TDS"));
-  Fluid3::StabilisationAction inertia  = ele->ConvertStringToStabAction(stablist.get<string>("TRANSIENT"));
-  Fluid3::StabilisationAction pspg     = ele->ConvertStringToStabAction(stablist.get<string>("PSPG"));
-  Fluid3::StabilisationAction supg     = ele->ConvertStringToStabAction(stablist.get<string>("SUPG"));
-  Fluid3::StabilisationAction vstab    = ele->ConvertStringToStabAction(stablist.get<string>("VSTAB"));
-  Fluid3::StabilisationAction cstab    = ele->ConvertStringToStabAction(stablist.get<string>("CSTAB"));
-  Fluid3::StabilisationAction cross    = ele->ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
-  Fluid3::StabilisationAction reynolds = ele->ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
+  INPAR::FLUID::TDS             tds = Teuchos::getIntegralValue<INPAR::FLUID::TDS>(stablist,"TDS");
+  INPAR::FLUID::TRANSIENT       inertia = Teuchos::getIntegralValue<INPAR::FLUID::TRANSIENT>(stablist,"TRANSIENT");
+  INPAR::FLUID::PSPG            pspg = Teuchos::getIntegralValue<INPAR::FLUID::PSPG>(stablist,"PSPG");
+  INPAR::FLUID::SUPG            supg = Teuchos::getIntegralValue<INPAR::FLUID::SUPG>(stablist,"SUPG");
+  INPAR::FLUID::VStab           vstab = Teuchos::getIntegralValue<INPAR::FLUID::VStab>(stablist,"VSTAB");
+  INPAR::FLUID::CStab           cstab = Teuchos::getIntegralValue<INPAR::FLUID::CStab>(stablist,"CSTAB");
+  INPAR::FLUID::CrossStress     cross = Teuchos::getIntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
+  INPAR::FLUID::ReynoldsStress  reynolds = Teuchos::getIntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
 
   // select tau definition
   Fluid3::TauType whichtau = Fluid3::tau_not_defined;
@@ -376,7 +376,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   if (nsd_ == 3)
     ExtractValuesFromGlobalVectors(
           fssgv         ,
-          ele->is_ale_  ,
+          ele->IsAle()  ,
           discretization,
           lm,
           eprenp        ,
@@ -389,7 +389,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
       );
   else if (nsd_==2)
     ExtractValuesFromGlobalVectors_2D(
-          ele->is_ale_  ,
+          ele->IsAle()  ,
           discretization,
           lm,
           eprenp        ,
@@ -435,7 +435,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   {
   if(!conservative)
   {
-    if(tds!=Fluid3::subscales_time_dependent)
+    if(tds!=INPAR::FLUID::subscales_time_dependent)
     {
       Sysmat_adv_qs(
         ele,
@@ -517,7 +517,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   }
   else
   {
-    if(tds!=Fluid3::subscales_time_dependent)
+    if(tds!=INPAR::FLUID::subscales_time_dependent)
     {
       Sysmat_cons_qs(
 	ele,
@@ -601,7 +601,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   {
     if(!conservative)
     {
-      if(tds!=Fluid3::subscales_time_dependent)
+      if(tds!=INPAR::FLUID::subscales_time_dependent)
       {
         Sysmat_adv_qs_2D(
           ele,
@@ -670,7 +670,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
     }
     else
     {
-      if(tds!=Fluid3::subscales_time_dependent)
+      if(tds!=INPAR::FLUID::subscales_time_dependent)
       {
         Sysmat_cons_qs_2D(
     ele,
@@ -824,13 +824,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs(
   const enum Fluid3::LinearisationAction     newton          ,
   const bool                                 higher_order_ele,
   const enum Fluid3::FineSubgridVisc         fssgv           ,
-  const enum Fluid3::StabilisationAction     inertia         ,
-  const enum Fluid3::StabilisationAction     pspg            ,
-  const enum Fluid3::StabilisationAction     supg            ,
-  const enum Fluid3::StabilisationAction     vstab           ,
-  const enum Fluid3::StabilisationAction     cstab           ,
-  const enum Fluid3::StabilisationAction     cross           ,
-  const enum Fluid3::StabilisationAction     reynolds        ,
+  const enum INPAR::FLUID::TRANSIENT         inertia         ,
+  const enum INPAR::FLUID::PSPG              pspg            ,
+  const enum INPAR::FLUID::SUPG              supg            ,
+  const enum INPAR::FLUID::VStab             vstab           ,
+  const enum INPAR::FLUID::CStab             cstab           ,
+  const enum INPAR::FLUID::CrossStress       cross           ,
+  const enum INPAR::FLUID::ReynoldsStress    reynolds        ,
   const enum Fluid3::TauType                 whichtau        ,
   const enum Fluid3::TurbModelAction         turb_mod_action ,
   double&                                    Cs              ,
@@ -854,11 +854,11 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs(
 
   // in case of viscous stabilization decide whether to use GLS or USFEM
   double vstabfac= 0.0;
-  if (vstab == Fluid3::viscous_stab_usfem || vstab == Fluid3::viscous_stab_usfem_only_rhs)
+  if (vstab == INPAR::FLUID::viscous_stab_usfem || vstab == INPAR::FLUID::viscous_stab_usfem_only_rhs)
   {
     vstabfac =  1.0;
   }
-  else if(vstab == Fluid3::viscous_stab_gls || vstab == Fluid3::viscous_stab_gls_only_rhs)
+  else if(vstab == INPAR::FLUID::viscous_stab_gls || vstab == INPAR::FLUID::viscous_stab_gls_only_rhs)
   {
     vstabfac = -1.0;
   }
@@ -953,7 +953,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs(
     //                     /         j         dx
     //                    +-----                 j
     //                     dim j
-    if(cross == Fluid3::cross_stress_stab)
+    if(cross == INPAR::FLUID::cross_stress_stab)
     {
       for(int nn=0;nn<iel;++nn)
       {
@@ -967,14 +967,14 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs(
     }
 
     /*---------------------------- get stabilisation parameter ---*/
-    CalcTau(whichtau,Fluid3::subscales_quasistatic,gamma,dt,hk,mk,visceff);
+    CalcTau(whichtau,INPAR::FLUID::subscales_quasistatic,gamma,dt,hk,mk,visceff);
 
 
     // stabilisation parameters
     const double tauM   = tau_(0);
     const double tauMp  = tau_(1);
 
-    if(cstab == Fluid3::continuity_stab_none)
+    if(cstab == INPAR::FLUID::continuity_stab_none)
     {
       tau_(2)=0.0;
     }
@@ -982,7 +982,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs(
     const double tauC   = tau_(2);
 
     double supg_active_tauM;
-    if(supg == Fluid3::convective_stab_supg)
+    if(supg == INPAR::FLUID::convective_stab_supg)
     {
       supg_active_tauM=tauM;
     }
@@ -1043,7 +1043,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs(
         conv_c_plus_svel_af_(nn)=supg_active_tauM*conv_c_af_(nn);
       }
 
-      if(reynolds == Fluid3::reynolds_stress_stab)
+      if(reynolds == INPAR::FLUID::reynolds_stress_stab)
       {
 
         /* half of the reynolds linearisation is done by modifiing
@@ -1653,7 +1653,7 @@ N
       //             PSPG PART, QUASISTATIC FORMULATION
       //
       //---------------------------------------------------------------
-      if(pspg == Fluid3::pstab_use_pspg)
+      if(pspg == INPAR::FLUID::pstab_use_pspg)
       {
         const double fac_tauMp                   = fac*tauMp;
         const double fac_alphaM_tauMp            = fac_tauMp*alphaM;
@@ -1853,7 +1853,7 @@ N
       //---------------------------------------------------------------
       if (higher_order_ele)
       {
-        if((vstab == Fluid3::viscous_stab_gls || vstab == Fluid3::viscous_stab_usfem)&&higher_order_ele)
+        if((vstab == INPAR::FLUID::viscous_stab_gls || vstab == INPAR::FLUID::viscous_stab_usfem)&&higher_order_ele)
         {
           const double fac_visc_tauMp_gamma_dt      = vstabfac*fac*visc*tauMp*gamma*dt;
           const double fac_visc_afgdt_tauMp         = vstabfac*fac*visc*afgdt*tauMp;
@@ -2100,7 +2100,7 @@ N
       //       RESIDUAL BASED VMM STABILISATION --- CROSS STRESS
       //
       //---------------------------------------------------------------
-      if(cross == Fluid3::cross_stress_stab)
+      if(cross == INPAR::FLUID::cross_stress_stab)
       {
         const double fac_afgdt_tauM = fac*afgdt*tauM;
 
@@ -2423,7 +2423,7 @@ N
     fac_inertia_conv_and_bodyforce[1] = fac*(accintam_(1)+convaf_old_(1)-bodyforceaf_(1));
     fac_inertia_conv_and_bodyforce[2] = fac*(accintam_(2)+convaf_old_(2)-bodyforceaf_(2));
 
-    if(cross == Fluid3::cross_stress_stab_only_rhs || cross == Fluid3::cross_stress_stab)
+    if(cross == INPAR::FLUID::cross_stress_stab_only_rhs || cross == INPAR::FLUID::cross_stress_stab)
     {
       const double fac_tauM = fac*tauM;
 
@@ -2505,9 +2505,9 @@ N
     viscous_and_pres[7]=visceff_fac*(vderxyaf_(1,2)+vderxyaf_(2,1));
     viscous_and_pres[8]=visceff_fac*vderxyaf_(2,2)*2.0-fac_prenp;
 
-    if(reynolds == Fluid3::reynolds_stress_stab_only_rhs
+    if(reynolds == INPAR::FLUID::reynolds_stress_stab_only_rhs
        ||
-       reynolds == Fluid3::reynolds_stress_stab)
+       reynolds == INPAR::FLUID::reynolds_stress_stab)
     {
 
       /* factor: -tauM*tauM
@@ -2580,7 +2580,7 @@ N
       elevec(fui  ) -= fac_divunp*funct_(ui);
     }
 
-    if(pspg == Fluid3::pstab_use_pspg)
+    if(pspg == INPAR::FLUID::pstab_use_pspg)
     {
       /*
             pressure stabilisation
@@ -2602,7 +2602,7 @@ N
       }
     } // end pspg
 
-    if(supg == Fluid3::convective_stab_supg)
+    if(supg == INPAR::FLUID::convective_stab_supg)
     {
       const double fac_tauM = fac*supg_active_tauM;
 
@@ -2632,7 +2632,7 @@ N
 
     if (higher_order_ele)
     {
-      if(vstab != Fluid3::viscous_stab_none && higher_order_ele)
+      if(vstab != INPAR::FLUID::viscous_stab_none && higher_order_ele)
       {
         const double fac_visc_tauMp = vstabfac * fac*visc*tauMp;
 
@@ -2781,39 +2781,39 @@ N
 
       for (int ui=0; ui<iel; ++ui)
       {
-        double v00 = + convaf_old_(1)*(vderiv_(0, 0)*derxjm_(0,0,1,ui) 
+        double v00 = + convaf_old_(1)*(vderiv_(0, 0)*derxjm_(0,0,1,ui)
 				       +
-				       vderiv_(0, 1)*derxjm_(0,1,1,ui) 
-				       + 
+				       vderiv_(0, 1)*derxjm_(0,1,1,ui)
+				       +
 				       vderiv_(0, 2)*derxjm_(0,2,1,ui))
-                     + convaf_old_(2)*(vderiv_(0, 0)*derxjm_(0,0,2,ui) 
+                     + convaf_old_(2)*(vderiv_(0, 0)*derxjm_(0,0,2,ui)
 				       +
-				       vderiv_(0, 1)*derxjm_(0,1,2,ui) 
+				       vderiv_(0, 1)*derxjm_(0,1,2,ui)
 				       +
 				       vderiv_(0, 2)*derxjm_(0,2,2,ui));
-        double v01 = + convaf_old_(0)*(vderiv_(0, 0)*derxjm_(1,0,0,ui) 
+        double v01 = + convaf_old_(0)*(vderiv_(0, 0)*derxjm_(1,0,0,ui)
 				       +
 				       vderiv_(0, 1)*derxjm_(1,1,0,ui)
 				       +
 				       vderiv_(0, 2)*derxjm_(1,2,0,ui))
-                     + convaf_old_(2)*(vderiv_(0, 0)*derxjm_(1,0,2,ui) 
+                     + convaf_old_(2)*(vderiv_(0, 0)*derxjm_(1,0,2,ui)
 				       +
-				       vderiv_(0, 1)*derxjm_(1,1,2,ui) 
+				       vderiv_(0, 1)*derxjm_(1,1,2,ui)
 				       +
 				       vderiv_(0, 2)*derxjm_(1,2,2,ui));
-        double v02 = + convaf_old_(0)*(vderiv_(0, 0)*derxjm_(2,0,0,ui) 
+        double v02 = + convaf_old_(0)*(vderiv_(0, 0)*derxjm_(2,0,0,ui)
 				       +
 				       vderiv_(0, 1)*derxjm_(2,1,0,ui)
 				       +
 				       vderiv_(0, 2)*derxjm_(2,2,0,ui))
-                     + convaf_old_(1)*(vderiv_(0, 0)*derxjm_(2,0,1,ui) 
+                     + convaf_old_(1)*(vderiv_(0, 0)*derxjm_(2,0,1,ui)
 				       +
 				       vderiv_(0, 1)*derxjm_(2,1,1,ui)
 				       +
 				       vderiv_(0, 2)*derxjm_(2,2,1,ui));
         double v10 = + convaf_old_(1)*(vderiv_(1, 0)*derxjm_(0,0,1,ui)
 				       +
-				       vderiv_(1, 1)*derxjm_(0,1,1,ui) 
+				       vderiv_(1, 1)*derxjm_(0,1,1,ui)
 				       +
 				       vderiv_(1, 2)*derxjm_(0,2,1,ui))
                      + convaf_old_(2)*(vderiv_(1, 0)*derxjm_(0,0,2,ui)
@@ -2823,32 +2823,32 @@ N
 				       vderiv_(1, 2)*derxjm_(0,2,2,ui));
         double v11 = + convaf_old_(0)*(vderiv_(1, 0)*derxjm_(1,0,0,ui)
 				       +
-				       vderiv_(1, 1)*derxjm_(1,1,0,ui) 
+				       vderiv_(1, 1)*derxjm_(1,1,0,ui)
 				       +
 				       vderiv_(1, 2)*derxjm_(1,2,0,ui))
                      + convaf_old_(2)*(vderiv_(1, 0)*derxjm_(1,0,2,ui)
 				       +
-				       vderiv_(1, 1)*derxjm_(1,1,2,ui) 
+				       vderiv_(1, 1)*derxjm_(1,1,2,ui)
 				       +
 				       vderiv_(1, 2)*derxjm_(1,2,2,ui));
-        double v12 = + convaf_old_(0)*(vderiv_(1, 0)*derxjm_(2,0,0,ui) 
+        double v12 = + convaf_old_(0)*(vderiv_(1, 0)*derxjm_(2,0,0,ui)
 				       +
-				       vderiv_(1, 1)*derxjm_(2,1,0,ui) 
+				       vderiv_(1, 1)*derxjm_(2,1,0,ui)
 				       +
 				       vderiv_(1, 2)*derxjm_(2,2,0,ui))
-                     + convaf_old_(1)*(vderiv_(1, 0)*derxjm_(2,0,1,ui) 
+                     + convaf_old_(1)*(vderiv_(1, 0)*derxjm_(2,0,1,ui)
 				       +
-				       vderiv_(1, 1)*derxjm_(2,1,1,ui) 
+				       vderiv_(1, 1)*derxjm_(2,1,1,ui)
 				       +
 				       vderiv_(1, 2)*derxjm_(2,2,1,ui));
-        double v20 = + convaf_old_(1)*(vderiv_(2, 0)*derxjm_(0,0,1,ui) 
+        double v20 = + convaf_old_(1)*(vderiv_(2, 0)*derxjm_(0,0,1,ui)
 				       +
 				       vderiv_(2, 1)*derxjm_(0,1,1,ui)
 				       +
 				       vderiv_(2, 2)*derxjm_(0,2,1,ui))
                      + convaf_old_(2)*(vderiv_(2, 0)*derxjm_(0,0,2,ui)
 				       +
-				       vderiv_(2, 1)*derxjm_(0,1,2,ui) 
+				       vderiv_(2, 1)*derxjm_(0,1,2,ui)
 				       +
 				       vderiv_(2, 2)*derxjm_(0,2,2,ui));
         double v21 = + convaf_old_(0)*(vderiv_(2, 0)*derxjm_(1,0,0,ui)
@@ -2856,9 +2856,9 @@ N
 				       vderiv_(2, 1)*derxjm_(1,1,0,ui)
 				       +
 				       vderiv_(2, 2)*derxjm_(1,2,0,ui))
-                     + convaf_old_(2)*(vderiv_(2, 0)*derxjm_(1,0,2,ui) 
+                     + convaf_old_(2)*(vderiv_(2, 0)*derxjm_(1,0,2,ui)
 				       +
-				       vderiv_(2, 1)*derxjm_(1,1,2,ui) 
+				       vderiv_(2, 1)*derxjm_(1,1,2,ui)
 				       +
 				       vderiv_(2, 2)*derxjm_(1,2,2,ui));
         double v22 = + convaf_old_(0)*(vderiv_(2, 0)*derxjm_(2,0,0,ui)
@@ -2866,7 +2866,7 @@ N
 				       vderiv_(2, 1)*derxjm_(2,1,0,ui)
 				       +
 				       vderiv_(2, 2)*derxjm_(2,2,0,ui))
-                     + convaf_old_(1)*(vderiv_(2, 0)*derxjm_(2,0,1,ui) 
+                     + convaf_old_(1)*(vderiv_(2, 0)*derxjm_(2,0,1,ui)
 				       +
 				       vderiv_(2, 1)*derxjm_(2,1,1,ui)
 				       +
@@ -3272,36 +3272,36 @@ N
 	  const int fuip =fui+1;
 	  const int fuipp=fuip+1;
 
-          meshmat(fvi  ,fuip ) += v*(deriv_(0, vi)*derxjm_(0,0,1,ui) 
+          meshmat(fvi  ,fuip ) += v*(deriv_(0, vi)*derxjm_(0,0,1,ui)
 				     +
-				     deriv_(1, vi)*derxjm_(0,1,1,ui) 
+				     deriv_(1, vi)*derxjm_(0,1,1,ui)
 				     +
 				     deriv_(2, vi)*derxjm_(0,2,1,ui)) ;
-          meshmat(fvi  ,fuipp) += v*(deriv_(0, vi)*derxjm_(0,0,2,ui) 
+          meshmat(fvi  ,fuipp) += v*(deriv_(0, vi)*derxjm_(0,0,2,ui)
 				     +
-				     deriv_(1, vi)*derxjm_(0,1,2,ui) 
+				     deriv_(1, vi)*derxjm_(0,1,2,ui)
 				     +
 				     deriv_(2, vi)*derxjm_(0,2,2,ui)) ;
 
-          meshmat(fvip ,fui  ) += v*(deriv_(0, vi)*derxjm_(1,0,0,ui) 
+          meshmat(fvip ,fui  ) += v*(deriv_(0, vi)*derxjm_(1,0,0,ui)
 				     +
-				     deriv_(1, vi)*derxjm_(1,1,0,ui) 
+				     deriv_(1, vi)*derxjm_(1,1,0,ui)
 				     +
 				     deriv_(2, vi)*derxjm_(1,2,0,ui)) ;
-          meshmat(fvip ,fuipp) += v*(deriv_(0, vi)*derxjm_(1,0,2,ui) 
+          meshmat(fvip ,fuipp) += v*(deriv_(0, vi)*derxjm_(1,0,2,ui)
 				     +
-				     deriv_(1, vi)*derxjm_(1,1,2,ui) 
+				     deriv_(1, vi)*derxjm_(1,1,2,ui)
 				     +
 				     deriv_(2, vi)*derxjm_(1,2,2,ui)) ;
 
-          meshmat(fvipp,fui  ) += v*(deriv_(0, vi)*derxjm_(2,0,0,ui) 
-				     + 
-				     deriv_(1, vi)*derxjm_(2,1,0,ui) 
+          meshmat(fvipp,fui  ) += v*(deriv_(0, vi)*derxjm_(2,0,0,ui)
+				     +
+				     deriv_(1, vi)*derxjm_(2,1,0,ui)
 				     +
 				     deriv_(2, vi)*derxjm_(2,2,0,ui)) ;
-          meshmat(fvipp,fuip ) += v*(deriv_(0, vi)*derxjm_(2,0,1,ui) 
+          meshmat(fvipp,fuip ) += v*(deriv_(0, vi)*derxjm_(2,0,1,ui)
 				     +
-				     deriv_(1, vi)*derxjm_(2,1,1,ui) 
+				     deriv_(1, vi)*derxjm_(2,1,1,ui)
 				     +
 				     deriv_(2, vi)*derxjm_(2,2,1,ui)) ;
         }
@@ -3319,39 +3319,39 @@ N
 	  const int fuip  = fui+1;
 	  const int fuipp = fuip+1;
 
-          meshmat(fvippp,fui  ) += v*(vderiv_(1, 0)*derxjm_(0,0,1,ui) 
+          meshmat(fvippp,fui  ) += v*(vderiv_(1, 0)*derxjm_(0,0,1,ui)
 				      +
-				      vderiv_(1, 1)*derxjm_(0,1,1,ui) 
+				      vderiv_(1, 1)*derxjm_(0,1,1,ui)
 				      +
 				      vderiv_(1, 2)*derxjm_(0,2,1,ui)
-				      + 
-				      vderiv_(2, 0)*derxjm_(0,0,2,ui) 
-				      + 
-				      vderiv_(2, 1)*derxjm_(0,1,2,ui) 
+				      +
+				      vderiv_(2, 0)*derxjm_(0,0,2,ui)
+				      +
+				      vderiv_(2, 1)*derxjm_(0,1,2,ui)
 				      +
 				      vderiv_(2, 2)*derxjm_(0,2,2,ui));
 
-          meshmat(fvippp,fuip ) += v*(vderiv_(0, 0)*derxjm_(1,0,0,ui) 
+          meshmat(fvippp,fuip ) += v*(vderiv_(0, 0)*derxjm_(1,0,0,ui)
 				      +
-				      vderiv_(0, 1)*derxjm_(1,1,0,ui) 
+				      vderiv_(0, 1)*derxjm_(1,1,0,ui)
 				      +
 				      vderiv_(0, 2)*derxjm_(1,2,0,ui)
 				      +
-				      vderiv_(2, 0)*derxjm_(1,0,2,ui) 
+				      vderiv_(2, 0)*derxjm_(1,0,2,ui)
 				      +
-				      vderiv_(2, 1)*derxjm_(1,1,2,ui) 
+				      vderiv_(2, 1)*derxjm_(1,1,2,ui)
 				      +
 				      vderiv_(2, 2)*derxjm_(1,2,2,ui));
 
-          meshmat(fvippp,fuipp) += v*(vderiv_(0, 0)*derxjm_(2,0,0,ui) 
+          meshmat(fvippp,fuipp) += v*(vderiv_(0, 0)*derxjm_(2,0,0,ui)
 				      +
-				      vderiv_(0, 1)*derxjm_(2,1,0,ui) 
+				      vderiv_(0, 1)*derxjm_(2,1,0,ui)
 				      +
 				      vderiv_(0, 2)*derxjm_(2,2,0,ui)
-				      + 
-				      vderiv_(1, 0)*derxjm_(2,0,1,ui) 
 				      +
-				      vderiv_(1, 1)*derxjm_(2,1,1,ui) 
+				      vderiv_(1, 0)*derxjm_(2,0,1,ui)
+				      +
+				      vderiv_(1, 1)*derxjm_(2,1,1,ui)
 				      +
 				      vderiv_(1, 2)*derxjm_(2,2,1,ui));
         }
@@ -3392,13 +3392,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
   const enum Fluid3::LinearisationAction     newton          ,
   const bool                                 higher_order_ele,
   const enum Fluid3::FineSubgridVisc         fssgv           ,
-  const enum Fluid3::StabilisationAction     inertia         ,
-  const enum Fluid3::StabilisationAction     pspg            ,
-  const enum Fluid3::StabilisationAction     supg            ,
-  const enum Fluid3::StabilisationAction     vstab           ,
-  const enum Fluid3::StabilisationAction     cstab           ,
-  const enum Fluid3::StabilisationAction     cross           ,
-  const enum Fluid3::StabilisationAction     reynolds        ,
+  const enum INPAR::FLUID::TRANSIENT         inertia         ,
+  const enum INPAR::FLUID::PSPG              pspg            ,
+  const enum INPAR::FLUID::SUPG              supg            ,
+  const enum INPAR::FLUID::VStab             vstab           ,
+  const enum INPAR::FLUID::CStab             cstab           ,
+  const enum INPAR::FLUID::CrossStress       cross           ,
+  const enum INPAR::FLUID::ReynoldsStress    reynolds        ,
   const enum Fluid3::TauType                 whichtau        ,
   const enum Fluid3::TurbModelAction         turb_mod_action ,
   double&                                    Cs              ,
@@ -3423,11 +3423,11 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
 
   // in case of viscous stabilization decide whether to use GLS or USFEM
   double vstabfac= 0.0;
-  if (vstab == Fluid3::viscous_stab_usfem || vstab == Fluid3::viscous_stab_usfem_only_rhs)
+  if (vstab == INPAR::FLUID::viscous_stab_usfem || vstab == INPAR::FLUID::viscous_stab_usfem_only_rhs)
   {
     vstabfac =  1.0;
   }
-  else if(vstab == Fluid3::viscous_stab_gls || vstab == Fluid3::viscous_stab_gls_only_rhs)
+  else if(vstab == INPAR::FLUID::viscous_stab_gls || vstab == INPAR::FLUID::viscous_stab_gls_only_rhs)
   {
     vstabfac = -1.0;
   }
@@ -3475,19 +3475,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
 
   // if not available, the arrays for the subscale quantities have to
   // be resized and initialised to zero
-  if(ele->saccn_.M() != 3
-     ||
-     ele->saccn_.N() != intpoints.IP().nquad)
-  {
-    ele->saccn_ .Shape(3,intpoints.IP().nquad);
-    memset(ele->saccn_.A(),0,3*intpoints.IP().nquad*sizeof(double));
 
-    ele->sveln_ .Shape(3,intpoints.IP().nquad);
-    memset(ele->sveln_.A(),0,3*intpoints.IP().nquad*sizeof(double));
-
-    ele->svelnp_.Shape(3,intpoints.IP().nquad);
-    memset(ele->svelnp_.A(),0,3*intpoints.IP().nquad*sizeof(double));
-  }
+  ele->ActivateTDS(intpoints.IP().nquad,nsd_);
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
@@ -3522,7 +3511,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
                             higher_order_ele);
 
     /*---------------------------- get stabilisation parameter ---*/
-    CalcTau(whichtau,Fluid3::subscales_time_dependent,gamma,dt,hk,mk,visceff);
+    CalcTau(whichtau,INPAR::FLUID::subscales_time_dependent,gamma,dt,hk,mk,visceff);
 
     //--------------------------------------------------------------
     //--------------------------------------------------------------
@@ -3538,7 +3527,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
 
     const double tauM   = tau_(0);
 
-    if(cstab == Fluid3::continuity_stab_none)
+    if(cstab == INPAR::FLUID::continuity_stab_none)
     {
       tau_(2)=0.0;
     }
@@ -3546,7 +3535,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
     const double tauC   = tau_(2);
 
     double supg_active;
-    if(supg == Fluid3::convective_stab_supg)
+    if(supg == INPAR::FLUID::convective_stab_supg)
     {
       supg_active=1.0;
     }
@@ -3557,10 +3546,14 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
 
     // update estimates for the subscale quantities
     const double facMtau = 1./(alphaM*tauM+afgdt);
+    const double fac1=(alphaM*tauM+gamma*dt*(alphaF-1.0))*facMtau;
+    const double fac2=(dt*tauM*(alphaM-gamma))*facMtau;
+    const double fac3=(gamma*dt*tauM)*facMtau;
 
     /*-------------------------------------------------------------------*
      *                                                                   *
      *                  update of SUBSCALE VELOCITY                      *
+     *             and update of intermediate quantities                 *
      *                                                                   *
      *-------------------------------------------------------------------*/
 
@@ -3585,43 +3578,28 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
                   - gamma*dt*tauM * res     |
                                        (i)  |
                                            -+
-    */
-    {
-      const double fac1=(alphaM*tauM+gamma*dt*(alphaF-1.0))*facMtau;
-      const double fac2=(dt*tauM*(alphaM-gamma))*facMtau;
-      const double fac3=(gamma*dt*tauM)*facMtau;
 
-
-      for (int rr=0;rr<3;++rr)
-      {
-        ele->svelnp_(rr,iquad)=
-          fac1*ele->sveln_(rr,iquad)
-          +
-          fac2*ele->saccn_(rr,iquad)
-          -
-          fac3*resM_(rr);
-      }
-    }
-
-    /*-------------------------------------------------------------------*
-     *                                                                   *
-     *               update of intermediate quantities                   *
-     *                                                                   *
-     *-------------------------------------------------------------------*/
-
-    /* compute the intermediate value of subscale velocity
+     compute the intermediate value of subscale velocity
 
               ~n+af            ~n+1                   ~n
               u     = alphaF * u     + (1.0-alphaF) * u
                (i)              (i)
 
-    */
-    for (int rr=0;rr<3;++rr)
+  */
+
+    for(int rr=0;rr<nsd_;++rr)
     {
-      svelaf_(rr)=
-        alphaF      *ele->svelnp_(rr,iquad)
-        +
-        (1.0-alphaF)*ele->sveln_ (rr,iquad);
+      ele->UpdateSvelnpInOneDirection(
+          fac1       ,
+          fac2       ,
+          fac3       ,
+          facMtau    ,
+          resM_(rr)  ,
+          alphaF     ,
+          rr         ,
+          iquad      ,
+          svelnp_(rr),
+          svelaf_(rr));
     }
 
     /* the intermediate value of subscale acceleration is not needed to be
@@ -3650,9 +3628,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
         required for the cross/reynolds stress linearisation
 
     */
-    if(cross    == Fluid3::cross_stress_stab
+    if(cross    == INPAR::FLUID::cross_stress_stab
        ||
-       reynolds == Fluid3::reynolds_stress_stab)
+       reynolds == INPAR::FLUID::reynolds_stress_stab)
     {
       for (int rr=0;rr<iel;++rr)
       {
@@ -3664,7 +3642,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
         }
       }
 
-      if(reynolds == Fluid3::reynolds_stress_stab)
+      if(reynolds == INPAR::FLUID::reynolds_stress_stab)
       {
         /* get modified convective linearisation (n+alpha_F,i) at
            integration point takes care of half of the linearisation
@@ -3692,9 +3670,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
                  | u      o nabla | u
                   \   (i)        /   (i)
     */
-    if(cross == Fluid3::cross_stress_stab_only_rhs
+    if(cross == INPAR::FLUID::cross_stress_stab_only_rhs
        ||
-       cross == Fluid3::cross_stress_stab
+       cross == INPAR::FLUID::cross_stress_stab
       )
     {
       for (int rr=0;rr<3;++rr)
@@ -3736,9 +3714,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
       //
       //---------------------------------------------------------------
 
-      if(inertia == Fluid3::inertia_stab_keep
+      if(inertia == INPAR::FLUID::inertia_stab_keep
          ||
-         inertia == Fluid3::inertia_stab_keep_complete)
+         inertia == INPAR::FLUID::inertia_stab_keep_complete)
       {
         // rescale time factors terms affected by inertia stabilisation
         fac_inertia   *=afgdt*facMtau;
@@ -3834,7 +3812,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
           } // vi
         } // end higher order element and  linearisation of linear terms not supressed
 
-        if(inertia == Fluid3::inertia_stab_keep_complete)
+        if(inertia == INPAR::FLUID::inertia_stab_keep_complete)
         {
 
           /*
@@ -4379,7 +4357,7 @@ N                   \                                                           
       //                    PRESSURE STABILISATION
       //
       //---------------------------------------------------------------
-      if(pspg == Fluid3::pstab_use_pspg)
+      if(pspg == INPAR::FLUID::pstab_use_pspg)
       {
         const double fac_afgdt_gamma_dt_tauM_facMtau  = fac*afgdt*gamma*dt*tauM*facMtau;
         const double fac_gdt_gdt_tauM_facMtau         = fac*gamma*dt*tauM*facMtau*gamma*dt;
@@ -4615,7 +4593,7 @@ N                   \                                                           
       //---------------------------------------------------------------
       if (higher_order_ele)
       {
-        if(vstab == Fluid3::viscous_stab_usfem || vstab == Fluid3::viscous_stab_gls)
+        if(vstab == INPAR::FLUID::viscous_stab_usfem || vstab == INPAR::FLUID::viscous_stab_gls)
         {
           const double tauMqs = afgdt*tauM*facMtau;
 
@@ -4914,7 +4892,7 @@ N                   \                                                           
       //       RESIDUAL BASED VMM STABILISATION --- CROSS STRESS
       //
       //---------------------------------------------------------------
-      if(cross == Fluid3::cross_stress_stab)
+      if(cross == INPAR::FLUID::cross_stress_stab)
       {
         const double fac_afgdt=fac*afgdt;
 
@@ -5225,7 +5203,7 @@ N                   \                                                           
       } // end cross
 
 
-      if(reynolds == Fluid3::reynolds_stress_stab)
+      if(reynolds == INPAR::FLUID::reynolds_stress_stab)
       {
         /*
                   /                            \
@@ -5486,9 +5464,9 @@ N                   \                                                           
     // (MODIFIED) GALERKIN PART, SUBSCALE ACCELERATION STABILISATION
     //
     //---------------------------------------------------------------
-    if(inertia == Fluid3::inertia_stab_keep
+    if(inertia == INPAR::FLUID::inertia_stab_keep
        ||
-       inertia == Fluid3::inertia_stab_keep_complete)
+       inertia == INPAR::FLUID::inertia_stab_keep_complete)
     {
 
       double aux_x =(-svelaf_(0)/tauM-pderxynp_(0)) ;
@@ -5721,12 +5699,12 @@ N                   \                                                           
     //                    PRESSURE STABILISATION
     //
     //---------------------------------------------------------------
-    if(pspg == Fluid3::pstab_use_pspg)
+    if(pspg == INPAR::FLUID::pstab_use_pspg)
     {
 
-      const double fac_svelnpx                      = fac*ele->svelnp_(0,iquad);
-      const double fac_svelnpy                      = fac*ele->svelnp_(1,iquad);
-      const double fac_svelnpz                      = fac*ele->svelnp_(2,iquad);
+      const double fac_svelnpx                      = fac*svelnp_(0);
+      const double fac_svelnpy                      = fac*svelnp_(1);
+      const double fac_svelnpz                      = fac*svelnp_(2);
 
       for (int ui=0; ui<iel; ++ui) // loop columns (solution for matrix, test function for vector)
       {
@@ -5750,7 +5728,7 @@ N                   \                                                           
     //         SUPG STABILISATION FOR CONVECTION DOMINATED FLOWS
     //
     //---------------------------------------------------------------
-    if(supg == Fluid3::convective_stab_supg)
+    if(supg == INPAR::FLUID::convective_stab_supg)
     {
       const double fac_svelaf_x=fac*svelaf_(0);
       const double fac_svelaf_y=fac*svelaf_(1);
@@ -5783,7 +5761,7 @@ N                   \                                                           
     //---------------------------------------------------------------
     if (higher_order_ele)
     {
-      if (vstab != Fluid3::viscous_stab_none)
+      if (vstab != INPAR::FLUID::viscous_stab_none)
       {
         const double fac_visc_svelaf_x = vstabfac*fac*visc*svelaf_(0);
         const double fac_visc_svelaf_y = vstabfac*fac*visc*svelaf_(1);
@@ -5828,7 +5806,7 @@ N                   \                                                           
     //       RESIDUAL BASED VMM STABILISATION --- CROSS STRESS
     //
     //---------------------------------------------------------------
-    if(cross == Fluid3::cross_stress_stab_only_rhs || cross == Fluid3::cross_stress_stab)
+    if(cross == INPAR::FLUID::cross_stress_stab_only_rhs || cross == INPAR::FLUID::cross_stress_stab)
     {
       const double fac_convsubaf_old_x=fac*convsubaf_old_(0);
       const double fac_convsubaf_old_y=fac*convsubaf_old_(1);
@@ -5858,7 +5836,7 @@ N                   \                                                           
     //     RESIDUAL BASED VMM STABILISATION --- REYNOLDS STRESS
     //
     //---------------------------------------------------------------
-    if(reynolds != Fluid3::reynolds_stress_stab_none)
+    if(reynolds != INPAR::FLUID::reynolds_stress_stab_none)
     {
       const double fac_svelaf_x=fac*svelaf_(0);
       const double fac_svelaf_y=fac*svelaf_(1);
@@ -5925,12 +5903,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_qs(
   const enum Fluid3::LinearisationAction              newton          ,
   const bool                                          higher_order_ele,
   const enum Fluid3::FineSubgridVisc                  fssgv           ,
-  const enum Fluid3::StabilisationAction              pspg            ,
-  const enum Fluid3::StabilisationAction              supg            ,
-  const enum Fluid3::StabilisationAction              vstab           ,
-  const enum Fluid3::StabilisationAction              cstab           ,
-  const enum Fluid3::StabilisationAction              cross           ,
-  const enum Fluid3::StabilisationAction              reynolds        ,
+  const enum INPAR::FLUID::PSPG                       pspg            ,
+  const enum INPAR::FLUID::SUPG                       supg            ,
+  const enum INPAR::FLUID::VStab                      vstab           ,
+  const enum INPAR::FLUID::CStab                      cstab           ,
+  const enum INPAR::FLUID::CrossStress                cross           ,
+  const enum INPAR::FLUID::ReynoldsStress             reynolds        ,
   const enum Fluid3::TauType                          whichtau        ,
   const enum Fluid3::TurbModelAction                  turb_mod_action ,
   double&                                             Cs              ,
@@ -5938,8 +5916,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_qs(
   double&                                             visceff         ,
   const double                                        l_tau           ,
   const bool                                          compute_elemat
-  )                                                 
-{                                                   
+  )
+{
   //------------------------------------------------------------------
   //           SET TIME INTEGRATION SCHEME RELATED DATA
   //------------------------------------------------------------------
@@ -5954,11 +5932,11 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_qs(
 
   // in case of viscous stabilization decide whether to use GLS or USFEM
   double vstabfac= 0.0;
-  if (vstab == Fluid3::viscous_stab_usfem || vstab == Fluid3::viscous_stab_usfem_only_rhs)
+  if (vstab == INPAR::FLUID::viscous_stab_usfem || vstab == INPAR::FLUID::viscous_stab_usfem_only_rhs)
   {
     vstabfac =  1.0;
   }
-  else if(vstab == Fluid3::viscous_stab_gls || vstab == Fluid3::viscous_stab_gls_only_rhs)
+  else if(vstab == INPAR::FLUID::viscous_stab_gls || vstab == INPAR::FLUID::viscous_stab_gls_only_rhs)
   {
     vstabfac = -1.0;
   }
@@ -6052,7 +6030,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_qs(
     //                     /         j         dx
     //                    +-----                 j
     //                     dim j
-    if(cross == Fluid3::cross_stress_stab)
+    if(cross == INPAR::FLUID::cross_stress_stab)
     {
       for(int nn=0;nn<iel;++nn)
       {
@@ -6075,7 +6053,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_qs(
     //                    +-----              j
     //                    dim j
     //
-    if(ele->is_ale_)
+    if(ele->IsAle())
     {
       for(int nn=0;nn<iel;++nn)
       {
@@ -6111,20 +6089,20 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_qs(
     }
 
     /*---------------------------- get stabilisation parameter ---*/
-    CalcTau(whichtau,Fluid3::subscales_quasistatic,gamma,dt,hk,mk,visceff);
+    CalcTau(whichtau,INPAR::FLUID::subscales_quasistatic,gamma,dt,hk,mk,visceff);
 
     // stabilisation parameters
     const double tauM   = tau_(0);
     const double tauMp  = tau_(1);
 
-    if(cstab == Fluid3::continuity_stab_none)
+    if(cstab == INPAR::FLUID::continuity_stab_none)
     {
       tau_(2)=0.0;
     }
     const double tauC    = tau_(2);
 
     double supg_active_tauM;
-    if(supg == Fluid3::convective_stab_supg)
+    if(supg == INPAR::FLUID::convective_stab_supg)
     {
       supg_active_tauM=tauM;
     }
@@ -6183,7 +6161,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_qs(
         conv_c_plus_svel_af_(nn)=supg_active_tauM*conv_c_af_(nn);
       }
 
-      if(reynolds == Fluid3::reynolds_stress_stab)
+      if(reynolds == INPAR::FLUID::reynolds_stress_stab)
       {
 
         /* half of the reynolds linearisation is done by modifiing
@@ -6814,7 +6792,7 @@ N
       //             PSPG PART, QUASISTATIC FORMULATION
       //
       //---------------------------------------------------------------
-      if(pspg == Fluid3::pstab_use_pspg)
+      if(pspg == INPAR::FLUID::pstab_use_pspg)
       {
 	const double fac_tauMp                   = fac*tauMp;
 	const double fac_alphaM_tauMp            = fac_tauMp*alphaM;
@@ -7013,7 +6991,7 @@ N
       //---------------------------------------------------------------
       if (higher_order_ele)
       {
-	if((vstab == Fluid3::viscous_stab_gls || vstab == Fluid3::viscous_stab_usfem)&&higher_order_ele)
+	if((vstab == INPAR::FLUID::viscous_stab_gls || vstab == INPAR::FLUID::viscous_stab_usfem)&&higher_order_ele)
 	{
 	  const double fac_visc_tauMp_gamma_dt      = vstabfac*fac*visc*tauMp*gamma*dt;
 	  const double fac_visc_afgdt_tauMp         = vstabfac*fac*visc*afgdt*tauMp;
@@ -7259,7 +7237,7 @@ N
       //       RESIDUAL BASED VMM STABILISATION --- CROSS STRESS
       //
       //---------------------------------------------------------------
-      if(cross == Fluid3::cross_stress_stab)
+      if(cross == INPAR::FLUID::cross_stress_stab)
       {
         const double fac_tauM         =fac*tauM;
         const double fac_tauM_alphaM  =fac_tauM*alphaM;
@@ -7619,7 +7597,7 @@ N
                \                                       /
     */
 
-    if(cross == Fluid3::cross_stress_stab_only_rhs || cross == Fluid3::cross_stress_stab)
+    if(cross == INPAR::FLUID::cross_stress_stab_only_rhs || cross == INPAR::FLUID::cross_stress_stab)
     {
       const double fac_tauM = fac*tauM;
 
@@ -7654,7 +7632,7 @@ N
       viscous_conv_and_pres[8]-=velintaf_(2)*velintaf_(2)*fac;
     }
 
-    if(reynolds != Fluid3::reynolds_stress_stab_none)
+    if(reynolds != INPAR::FLUID::reynolds_stress_stab_none)
     {
 
       /* factor: -tauM*tauM
@@ -7727,7 +7705,7 @@ N
       elevec(fui  ) -= fac_divunp*funct_(ui);
     }
 
-    if(pspg == Fluid3::pstab_use_pspg)
+    if(pspg == INPAR::FLUID::pstab_use_pspg)
     {
       /*
       pressure stabilisation
@@ -7749,7 +7727,7 @@ N
       }
     } // end pspg
 
-    if(supg == Fluid3::convective_stab_supg)
+    if(supg == INPAR::FLUID::convective_stab_supg)
     {
       const double fac_tauM = fac*tauM;
 
@@ -7780,7 +7758,7 @@ N
 
     if (higher_order_ele)
     {
-      if(vstab != Fluid3::viscous_stab_none && higher_order_ele)
+      if(vstab != INPAR::FLUID::viscous_stab_none && higher_order_ele)
       {
 	const double fac_visc_tauMp = vstabfac * fac*visc*tauMp;
 
@@ -7886,13 +7864,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
   const enum Fluid3::LinearisationAction           newton          ,
   const bool                                       higher_order_ele,
   const enum Fluid3::FineSubgridVisc               fssgv           ,
-  const enum Fluid3::StabilisationAction           inertia         ,
-  const enum Fluid3::StabilisationAction           pspg            ,
-  const enum Fluid3::StabilisationAction           supg            ,
-  const enum Fluid3::StabilisationAction           vstab           ,
-  const enum Fluid3::StabilisationAction           cstab           ,
-  const enum Fluid3::StabilisationAction           cross           ,
-  const enum Fluid3::StabilisationAction           reynolds        ,
+  const enum INPAR::FLUID::TRANSIENT               inertia         ,
+  const enum INPAR::FLUID::PSPG                    pspg            ,
+  const enum INPAR::FLUID::SUPG                    supg            ,
+  const enum INPAR::FLUID::VStab                   vstab           ,
+  const enum INPAR::FLUID::CStab                   cstab           ,
+  const enum INPAR::FLUID::CrossStress             cross           ,
+  const enum INPAR::FLUID::ReynoldsStress          reynolds        ,
   const enum Fluid3::TauType                       whichtau        ,
   const enum Fluid3::TurbModelAction               turb_mod_action ,
   double&                                          Cs              ,
@@ -7916,11 +7894,11 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
 
   // in case of viscous stabilization decide whether to use GLS or USFEM
   double vstabfac= 0.0;
-  if (vstab == Fluid3::viscous_stab_usfem || vstab == Fluid3::viscous_stab_usfem_only_rhs)
+  if (vstab == INPAR::FLUID::viscous_stab_usfem || vstab == INPAR::FLUID::viscous_stab_usfem_only_rhs)
   {
     vstabfac =  1.0;
   }
-  else if(vstab == Fluid3::viscous_stab_gls || vstab == Fluid3::viscous_stab_gls_only_rhs)
+  else if(vstab == INPAR::FLUID::viscous_stab_gls || vstab == INPAR::FLUID::viscous_stab_gls_only_rhs)
   {
     vstabfac = -1.0;
   }
@@ -7968,19 +7946,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
 
   // if not available, the arrays for the subscale quantities have to
   // be resized and initialised to zero
-  if(ele->saccn_.M() != 3
-     ||
-     ele->saccn_.N() != intpoints.IP().nquad)
-  {
-    ele->saccn_ .Shape(3,intpoints.IP().nquad);
-    memset(ele->saccn_.A(),0,3*intpoints.IP().nquad*sizeof(double));
 
-    ele->sveln_ .Shape(3,intpoints.IP().nquad);
-    memset(ele->sveln_.A(),0,3*intpoints.IP().nquad*sizeof(double));
-
-    ele->svelnp_.Shape(3,intpoints.IP().nquad);
-    memset(ele->svelnp_.A(),0,3*intpoints.IP().nquad*sizeof(double));
-  }
+  ele->ActivateTDS(intpoints.IP().nquad,nsd_);
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
@@ -8015,19 +7982,19 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
                             higher_order_ele);
 
     /*---------------------------- get stabilisation parameter ---*/
-    CalcTau(whichtau,Fluid3::subscales_time_dependent,gamma,dt,hk,mk,visceff);
+    CalcTau(whichtau,INPAR::FLUID::subscales_time_dependent,gamma,dt,hk,mk,visceff);
 
     // stabilisation parameters
     const double tauM   = tau_(0);
 
-    if(cstab == Fluid3::continuity_stab_none)
+    if(cstab == INPAR::FLUID::continuity_stab_none)
     {
       tau_(2)=0.0;
     }
     const double tauC    = tau_(2);
 
     double supg_active;
-    if(supg == Fluid3::convective_stab_supg)
+    if(supg == INPAR::FLUID::convective_stab_supg)
     {
       supg_active=1.0;
     }
@@ -8038,12 +8005,18 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
 
     // subgrid-viscosity factor
     const double vartfac = vart_*fac;
+
+
     // update estimates for the subscale quantities
     const double facMtau = 1./(alphaM*tauM+afgdt);
+    const double fac1=(alphaM*tauM+gamma*dt*(alphaF-1.0))*facMtau;
+    const double fac2=(dt*tauM*(alphaM-gamma))*facMtau;
+    const double fac3=(gamma*dt*tauM)*facMtau;
 
     /*-------------------------------------------------------------------*
      *                                                                   *
      *                  update of SUBSCALE VELOCITY                      *
+     *             and update of intermediate quantities                 *
      *                                                                   *
      *-------------------------------------------------------------------*/
 
@@ -8068,40 +8041,28 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
                   - gamma*dt*tauM * res     |
                                        (i)  |
                                            -+
-    */
-    const double fac1=(alphaM*tauM+gamma*dt*(alphaF-1.0))*facMtau;
-    const double fac2=(dt*tauM*(alphaM-gamma))*facMtau;
-    const double fac3=(gamma*dt*tauM)*facMtau;
 
-    for (int rr=0;rr<3;++rr)
-    {
-      ele->svelnp_(rr,iquad)=
-        fac1*ele->sveln_(rr,iquad)
-        +
-        fac2*ele->saccn_(rr,iquad)
-        -
-        fac3*resM_(rr);
-    }
-
-    /*-------------------------------------------------------------------*
-     *                                                                   *
-     *               update of intermediate quantities                   *
-     *                                                                   *
-     *-------------------------------------------------------------------*/
-
-    /* compute the intermediate value of subscale velocity
+     compute the intermediate value of subscale velocity
 
               ~n+af            ~n+1                   ~n
               u     = alphaF * u     + (1.0-alphaF) * u
                (i)              (i)
 
-    */
-    for (int rr=0;rr<3;++rr)
+  */
+
+    for(int rr=0;rr<nsd_;++rr)
     {
-      svelaf_(rr)=
-        alphaF      *ele->svelnp_(rr,iquad)
-        +
-        (1.0-alphaF)*ele->sveln_ (rr,iquad);
+      ele->UpdateSvelnpInOneDirection(
+          fac1       ,
+          fac2       ,
+          fac3       ,
+          facMtau    ,
+          resM_(rr)  ,
+          alphaF     ,
+          rr         ,
+          iquad      ,
+          svelnp_(rr),
+          svelaf_(rr));
     }
 
     /* the intermediate value of subscale acceleration is not needed to be
@@ -8112,6 +8073,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
                (i)    gamma*dt    \  (i)      /         gamma
 
     */
+
 
     // prepare possible modification of convective linearisation for
     // combined reynolds/supg test function
@@ -8130,9 +8092,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
         required for the cross/reynolds stress linearisation
 
     */
-    if(cross    == Fluid3::cross_stress_stab
+    if(cross    == INPAR::FLUID::cross_stress_stab
        ||
-       reynolds == Fluid3::reynolds_stress_stab)
+       reynolds == INPAR::FLUID::reynolds_stress_stab)
     {
       for (int rr=0;rr<iel;++rr)
       {
@@ -8144,7 +8106,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
         }
       }
 
-      if(reynolds == Fluid3::reynolds_stress_stab)
+      if(reynolds == INPAR::FLUID::reynolds_stress_stab)
       {
         /* get modified convective linearisation (n+alpha_F,i) at
            integration point takes care of half of the linearisation
@@ -8172,9 +8134,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
                  | u      o nabla | u
                   \   (i)        /   (i)
     */
-    if(cross == Fluid3::cross_stress_stab_only_rhs
+    if(cross == INPAR::FLUID::cross_stress_stab_only_rhs
        ||
-       cross == Fluid3::cross_stress_stab
+       cross == INPAR::FLUID::cross_stress_stab
       )
     {
       for (int rr=0;rr<3;++rr)
@@ -8198,7 +8160,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
     //                    +-----              j
     //                    dim j
     //
-    if(ele->is_ale_)
+    if(ele->IsAle())
     {
       for(int nn=0;nn<iel;++nn)
       {
@@ -8268,9 +8230,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
       //
       //---------------------------------------------------------------
 
-      if(inertia == Fluid3::inertia_stab_keep
+      if(inertia == INPAR::FLUID::inertia_stab_keep
          ||
-         inertia == Fluid3::inertia_stab_keep_complete)
+         inertia == INPAR::FLUID::inertia_stab_keep_complete)
       {
         // rescale time factors terms affected by inertia stabilisation
         fac_inertia*=afgdt*facMtau;
@@ -8456,7 +8418,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
           } // vi
         } // end higher order element and  linearisation of linear terms not supressed
 
-        if(inertia == Fluid3::inertia_stab_keep_complete)
+        if(inertia == INPAR::FLUID::inertia_stab_keep_complete)
         {
 
           /*
@@ -8982,7 +8944,7 @@ N                   \                                                           
         } // ui
       } // hoel
 
-      if(reynolds == Fluid3::reynolds_stress_stab)
+      if(reynolds == INPAR::FLUID::reynolds_stress_stab)
       {
         /*
                   /                            \
@@ -9235,7 +9197,7 @@ N                   \                                                           
       //       RESIDUAL BASED VMM STABILISATION --- CROSS STRESS
       //
       //---------------------------------------------------------------
-      if(cross == Fluid3::cross_stress_stab)
+      if(cross == INPAR::FLUID::cross_stress_stab)
       {
         const double fac_afgdt_afgdt_tauM_facMtau  = fac*afgdt   *afgdt*tauM*facMtau;
         const double fac_gdt_afgdt_tauM_facMtau    = fac*gamma*dt*afgdt*tauM*facMtau;
@@ -9499,7 +9461,7 @@ N                   \                                                           
       //                    PRESSURE STABILISATION
       //
       //---------------------------------------------------------------
-      if(pspg == Fluid3::pstab_use_pspg)
+      if(pspg == INPAR::FLUID::pstab_use_pspg)
       {
         const double fac_afgdt_gamma_dt_tauM_facMtau  = fac*afgdt*gamma*dt*tauM*facMtau;
         const double fac_gdt_gdt_tauM_facMtau         = fac*gamma*dt*tauM*facMtau*gamma*dt;
@@ -9735,7 +9697,7 @@ N                   \                                                           
       //---------------------------------------------------------------
       if (higher_order_ele)
       {
-        if(vstab == Fluid3::viscous_stab_usfem || vstab == Fluid3::viscous_stab_gls)
+        if(vstab == INPAR::FLUID::viscous_stab_usfem || vstab == INPAR::FLUID::viscous_stab_gls)
         {
           const double tauMqs = afgdt*tauM*facMtau;
 
@@ -10043,9 +10005,9 @@ N                   \                                                           
     // (MODIFIED) GALERKIN PART, SUBSCALE ACCELERATION STABILISATION
     //
     //---------------------------------------------------------------
-    if(inertia == Fluid3::inertia_stab_keep
+    if(inertia == INPAR::FLUID::inertia_stab_keep
        ||
-       inertia == Fluid3::inertia_stab_keep_complete)
+       inertia == INPAR::FLUID::inertia_stab_keep_complete)
     {
 
       double aux_x =(-svelaf_(0)/tauM-pderxynp_(0)-convaf_old_(0)) ;
@@ -10289,7 +10251,7 @@ N                   \                                                           
     */
     double conv_and_cross_and_re[9];
 
-    if(cross == Fluid3::cross_stress_stab_only_rhs || cross == Fluid3::cross_stress_stab)
+    if(cross == INPAR::FLUID::cross_stress_stab_only_rhs || cross == INPAR::FLUID::cross_stress_stab)
     {
       /*
                   /                             \
@@ -10334,7 +10296,7 @@ N                   \                                                           
       conv_and_cross_and_re[8]=-velintaf_(2)*velintaf_(2)*fac;
     }
 
-    if(reynolds != Fluid3::reynolds_stress_stab_none)
+    if(reynolds != INPAR::FLUID::reynolds_stress_stab_none)
     {
       /*
                   /                             \
@@ -10387,7 +10349,7 @@ N                   \                                                           
 	derxy_(2,ui)*conv_and_cross_and_re[8];
     }
 
-    if(supg == Fluid3::convective_stab_supg)
+    if(supg == INPAR::FLUID::convective_stab_supg)
     {
       for (int ui=0; ui<iel; ++ui) // loop rows  (test functions)
       {
@@ -10418,12 +10380,12 @@ N                   \                                                           
     //                    PRESSURE STABILISATION
     //
     //---------------------------------------------------------------
-    if(pspg == Fluid3::pstab_use_pspg)
+    if(pspg == INPAR::FLUID::pstab_use_pspg)
     {
 
-      const double fac_svelnpx                      = fac*ele->svelnp_(0,iquad);
-      const double fac_svelnpy                      = fac*ele->svelnp_(1,iquad);
-      const double fac_svelnpz                      = fac*ele->svelnp_(2,iquad);
+      const double fac_svelnpx                      = fac*svelnp_(0);
+      const double fac_svelnpy                      = fac*svelnp_(1);
+      const double fac_svelnpz                      = fac*svelnp_(2);
 
       for (int ui=0; ui<iel; ++ui) // loop columns (solution for matrix, test function for vector)
       {
@@ -10449,7 +10411,7 @@ N                   \                                                           
     //---------------------------------------------------------------
     if (higher_order_ele)
     {
-      if (vstab != Fluid3::viscous_stab_none)
+      if (vstab != INPAR::FLUID::viscous_stab_none)
       {
         const double fac_visc_svelaf_x = vstabfac*fac*visc*svelaf_(0);
         const double fac_visc_svelaf_y = vstabfac*fac*visc*svelaf_(1);
@@ -10568,14 +10530,14 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
   // specify which residual based stabilisation terms
   // will be used
-  Fluid3::StabilisationAction tds      = ele->ConvertStringToStabAction(stablist.get<string>("TDS"));
-  Fluid3::StabilisationAction inertia  = ele->ConvertStringToStabAction(stablist.get<string>("TRANSIENT"));
-  Fluid3::StabilisationAction pspg     = ele->ConvertStringToStabAction(stablist.get<string>("PSPG"));
-  Fluid3::StabilisationAction supg     = ele->ConvertStringToStabAction(stablist.get<string>("SUPG"));
-  Fluid3::StabilisationAction vstab    = ele->ConvertStringToStabAction(stablist.get<string>("VSTAB"));
-  Fluid3::StabilisationAction cstab    = ele->ConvertStringToStabAction(stablist.get<string>("CSTAB"));
-  Fluid3::StabilisationAction cross    = ele->ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
-  Fluid3::StabilisationAction reynolds = ele->ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
+  INPAR::FLUID::TDS             tds = Teuchos::getIntegralValue<INPAR::FLUID::TDS>(stablist,"TDS");
+  INPAR::FLUID::TRANSIENT       inertia = Teuchos::getIntegralValue<INPAR::FLUID::TRANSIENT>(stablist,"TRANSIENT");
+  INPAR::FLUID::PSPG            pspg = Teuchos::getIntegralValue<INPAR::FLUID::PSPG>(stablist,"PSPG");
+  INPAR::FLUID::SUPG            supg = Teuchos::getIntegralValue<INPAR::FLUID::SUPG>(stablist,"SUPG");
+  INPAR::FLUID::VStab           vstab = Teuchos::getIntegralValue<INPAR::FLUID::VStab>(stablist,"VSTAB");
+  INPAR::FLUID::CStab           cstab = Teuchos::getIntegralValue<INPAR::FLUID::CStab>(stablist,"CSTAB");
+  INPAR::FLUID::CrossStress     cross = Teuchos::getIntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
+  INPAR::FLUID::ReynoldsStress  reynolds = Teuchos::getIntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
 
 
   // flag conservative form on/off
@@ -10666,7 +10628,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   // global distributed vectors
   ExtractValuesFromGlobalVectors(
         fssgv         ,
-        ele->is_ale_  ,
+        ele->IsAle()  ,
         discretization,
         lm,
         eprenp        ,
@@ -10851,7 +10813,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
                             fssgv           ,
                             higher_order_ele);
 
-    if(tds == Fluid3::subscales_time_dependent)
+    if(tds == INPAR::FLUID::subscales_time_dependent)
     {
       /* compute the intermediate value of subscale velocity
 
@@ -10863,9 +10825,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       for (int rr=0;rr<3;++rr)
       {
         svelaf_(rr) =
-          alphaF      *ele->svelnp_(rr,iquad)
+          alphaF      *(ele->Svelnp())(rr,iquad)
           +
-          (1.0-alphaF)*ele->sveln_ (rr,iquad);
+          (1.0-alphaF)*(ele->Sveln())(rr,iquad);
       }
     }
 
@@ -11014,11 +10976,11 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     }
     abs_res    += sqrt(resM_(0)*resM_(0)+resM_(1)*resM_(1)+resM_(2)*resM_(2))*fac;
 
-    if(tds == Fluid3::subscales_time_dependent
+    if(tds == INPAR::FLUID::subscales_time_dependent
        &&
-       (inertia == Fluid3::inertia_stab_keep
+       (inertia == INPAR::FLUID::inertia_stab_keep
         ||
-        inertia == Fluid3::inertia_stab_keep_complete))
+        inertia == INPAR::FLUID::inertia_stab_keep_complete))
     {
       for(int rr=0;rr<3;++rr)
       {
@@ -11034,7 +10996,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       abs_sacc += sqrt(aux0*aux0+aux1*aux1+aux2*aux2)*fac;
     }
 
-    if(tds == Fluid3::subscales_time_dependent)
+    if(tds == INPAR::FLUID::subscales_time_dependent)
     {
       for(int rr=0;rr<3;++rr)
       {
@@ -11082,9 +11044,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     // Element average:
     //      o cross stresses 11,22,33,12,23,31
     //      o reynolds stresses 11,22,33,12,23,31
-    if(tds      == Fluid3::subscales_time_dependent)
+    if(tds      == INPAR::FLUID::subscales_time_dependent)
     {
-      if(cross    != Fluid3::cross_stress_stab_none)
+      if(cross    != INPAR::FLUID::cross_stress_stab_none)
       {
         mean_crossstress(0)+=fac*(svelaf_(0)*velintaf_(0)+svelaf_(0)*velintaf_(0));
         mean_crossstress(1)+=fac*(svelaf_(1)*velintaf_(1)+svelaf_(1)*velintaf_(1));
@@ -11094,7 +11056,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
         mean_crossstress(5)+=fac*(svelaf_(2)*velintaf_(0)+svelaf_(0)*velintaf_(2));
       }
 
-      if(reynolds != Fluid3::reynolds_stress_stab_none)
+      if(reynolds != INPAR::FLUID::reynolds_stress_stab_none)
       {
         mean_reystress(0)  +=fac*(svelaf_(0)*svelaf_(0)+svelaf_(0)*svelaf_(0));
         mean_reystress(1)  +=fac*(svelaf_(1)*svelaf_(1)+svelaf_(1)*svelaf_(1));
@@ -11106,7 +11068,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     }
     else
     {
-      if(cross    != Fluid3::cross_stress_stab_none)
+      if(cross    != INPAR::FLUID::cross_stress_stab_none)
       {
         mean_crossstress(0)-=fac*tau_(1)*(resM_(0)*velintaf_(0)+velintaf_(0)*resM_(0));
         mean_crossstress(1)-=fac*tau_(1)*(resM_(1)*velintaf_(1)+velintaf_(1)*resM_(1));
@@ -11116,7 +11078,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
         mean_crossstress(5)-=fac*tau_(1)*(resM_(2)*velintaf_(0)+velintaf_(2)*resM_(0));
       }
 
-      if(reynolds != Fluid3::reynolds_stress_stab_none)
+      if(reynolds != INPAR::FLUID::reynolds_stress_stab_none)
       {
         mean_reystress(0)  +=fac*tau_(1)*tau_(1)*(resM_(0)*resM_(0)+resM_(0)*resM_(0));
         mean_reystress(1)  +=fac*tau_(1)*tau_(1)*(resM_(1)*resM_(1)+resM_(1)*resM_(1));
@@ -11152,11 +11114,11 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     //      o Galerkin visc
     //      o Galerkin convection
 
-    if(tds      == Fluid3::subscales_time_dependent
+    if(tds      == INPAR::FLUID::subscales_time_dependent
        &&
-       (inertia  == Fluid3::inertia_stab_keep
+       (inertia  == INPAR::FLUID::inertia_stab_keep
         ||
-        inertia == Fluid3::inertia_stab_keep_complete))
+        inertia == INPAR::FLUID::inertia_stab_keep_complete))
     {
       double sacc[3];
       sacc[0]= -1.0/tau_(1)*svelaf_(0) -resM_(0);
@@ -11175,7 +11137,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       eps_sacc+=(sacc[0]*velintaf_(0)+sacc[1]*velintaf_(1)+sacc[2]*velintaf_(2))*fac;
     }
 
-    if(pspg     == Fluid3::pstab_use_pspg)
+    if(pspg     == INPAR::FLUID::pstab_use_pspg)
     {
       // contribution of this gausspoint to energy dissipated by pspg
       /*
@@ -11185,14 +11147,14 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
                        |                    |
                         \                  /
       */
-      if(tds == Fluid3::subscales_time_dependent)
+      if(tds == INPAR::FLUID::subscales_time_dependent)
       {
         eps_pspg-=
-          (ele->svelnp_(0,iquad)*pderxynp_(0)
+          ((ele->Svelnp())(0,iquad)*pderxynp_(0)
            +
-           ele->svelnp_(1,iquad)*pderxynp_(1)
+           (ele->Svelnp())(1,iquad)*pderxynp_(1)
            +
-           ele->svelnp_(2,iquad)*pderxynp_(2))*fac;
+           (ele->Svelnp())(2,iquad)*pderxynp_(2))*fac;
       }
       else
       {
@@ -11205,7 +11167,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       }
     }
 
-    if(supg     == Fluid3::convective_stab_supg)
+    if(supg     == INPAR::FLUID::convective_stab_supg)
     {
       // contribution of this gausspoint to energy dissipated by supg
       /*
@@ -11216,7 +11178,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
                   |           \      /           \     /   |
                    \                                      /
       */
-      if(tds == Fluid3::subscales_time_dependent)
+      if(tds == INPAR::FLUID::subscales_time_dependent)
       {
         eps_supg-=fac*
           (svelaf_(0)*convaf_old_(0)
@@ -11236,7 +11198,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       }
     }
 
-    if(cross    != Fluid3::cross_stress_stab_none)
+    if(cross    != INPAR::FLUID::cross_stress_stab_none)
     {
       /*
                /                                       \
@@ -11246,7 +11208,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
                \                                       /
 
       */
-      if(tds == Fluid3::subscales_time_dependent)
+      if(tds == INPAR::FLUID::subscales_time_dependent)
       {
         eps_cross+=fac*(velintaf_(0)*(svelaf_(0)*vderxyaf_(0,0)+
                                       svelaf_(1)*vderxyaf_(0,1)+
@@ -11277,7 +11239,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       }
     }
 
-    if(reynolds != Fluid3::reynolds_stress_stab_none)
+    if(reynolds != INPAR::FLUID::reynolds_stress_stab_none)
     {
       // contribution of this gausspoint to energy
       // dissipated/produced by reynolds
@@ -11289,7 +11251,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
                 |           \             /         |
                  \                                 /
       */
-      if(tds == Fluid3::subscales_time_dependent)
+      if(tds == INPAR::FLUID::subscales_time_dependent)
       {
         eps_rey-=fac*
           (svelaf_(0)*(svelaf_(0)*vderxyaf_(0,0)+
@@ -11322,16 +11284,16 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       }
     }
 
-    if(vstab    != Fluid3::viscous_stab_none)
+    if(vstab    != INPAR::FLUID::viscous_stab_none)
     {
 
       // in case of viscous stabilization decide whether to use GLS or USFEM
       double vstabfac= 0.0;
-      if (vstab == Fluid3::viscous_stab_usfem || vstab == Fluid3::viscous_stab_usfem_only_rhs)
+      if (vstab == INPAR::FLUID::viscous_stab_usfem || vstab == INPAR::FLUID::viscous_stab_usfem_only_rhs)
       {
         vstabfac =  1.0;
       }
-      else if(vstab == Fluid3::viscous_stab_gls || vstab == Fluid3::viscous_stab_gls_only_rhs)
+      else if(vstab == INPAR::FLUID::viscous_stab_gls || vstab == INPAR::FLUID::viscous_stab_gls_only_rhs)
       {
         vstabfac = -1.0;
       }
@@ -11344,7 +11306,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
          \                        /
 
       */
-      if(tds == Fluid3::subscales_time_dependent)
+      if(tds == INPAR::FLUID::subscales_time_dependent)
       {
         eps_vstab-=
           vstabfac*fac*
@@ -11366,7 +11328,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       }
     }
 
-    if(cstab    != Fluid3::continuity_stab_none)
+    if(cstab    != INPAR::FLUID::continuity_stab_none)
     {
       // contribution of this gausspoint to energy dissipated/produced by pprime
       /*
@@ -11972,7 +11934,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetParametersForTurbulenceMod
       }
       else
       {
-        Cs_delta_sq = ele->Cs_delta_sq_;
+        Cs_delta_sq = ele->CsDeltaSq();
       }
     }
     else
@@ -12123,7 +12085,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalVisc(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
   const enum Fluid3::TauType             whichtau  ,
-  const enum Fluid3::StabilisationAction tds       ,
+  const enum INPAR::FLUID::TDS           tds       ,
   const double &                         gamma     ,
   const double &                         dt        ,
   const double &                         hk        ,
@@ -12136,7 +12098,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
   const double vel_normaf = velintaf_.Norm2();
   const double vel_normnp = velintnp_.Norm2();
 
-  if(tds == Fluid3::subscales_time_dependent)
+  if(tds == INPAR::FLUID::subscales_time_dependent)
   {
     //-------------------------------------------------------
     //          TAUS FOR TIME DEPENDENT SUBSCALES
@@ -13678,7 +13640,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
 
 
   // add displacement, when fluid nodes move in the ALE case
-  if (ele->is_ale_)
+  if (ele->IsAle())
   {
     for (int inode=0; inode<iel; inode++)
     {
@@ -14411,7 +14373,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::InterpolateToGausspoint(
     aleconvintaf_(rr)=velintaf_(rr);
   }
 
-  if (ele->is_ale_)
+  if (ele->IsAle())
   {
     // u_G is the grid velocity at the integration point,
     // time (n+alpha_F,i)

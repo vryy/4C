@@ -275,6 +275,75 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Volumes()
   }
 }
 
+
+/*----------------------------------------------------------------------*
+ |  activate time dependend subscales (public)           gamnitzer 05/10|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Fluid3::ActivateTDS(int nquad,int nsd)
+   {
+     if(saccn_.M() != nsd
+        ||
+        saccn_.N() != nquad)
+     {
+       saccn_ .Shape(nsd,nquad);
+       memset(saccn_.A() ,0,nsd*nquad*sizeof(double));
+
+       sveln_ .Shape(nsd,nquad);
+       memset(sveln_.A() ,0,nsd*nquad*sizeof(double));
+
+       svelnp_.Shape(nsd,nquad);
+       memset(svelnp_.A(),0,nsd*nquad*sizeof(double));
+     }
+     return;
+   }
+
+/*----------------------------------------------------------------------*
+ |  activate time dependend subscales (public)           gamnitzer 05/10|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Fluid3::UpdateSvelnpInOneDirection(
+    const double  fac1   ,
+    const double  fac2   ,
+    const double  fac3   ,
+    const double  facMtau,
+    const double  resM   ,
+    const double  alphaF ,
+    const int     dim    ,
+    const int     iquad  ,
+    double&       svelnp,
+    double&       svelaf
+    )
+    {
+    /*                   +-                                       -+
+        ~n+1             |        ~n           ~ n            n+1  |
+        u    = facMtau * | fac1 * u  + fac2 * acc  -fac3 * res     |
+         (i)             |                                    (i)  |
+                         +-                                       -+
+    */
+
+      svelnp_(dim,iquad)=(fac1*sveln_(dim,iquad)
+                          +
+                          (fac2*saccn_(dim,iquad)
+                           -
+                           fac3*resM));
+
+      svelnp=svelnp_(dim,iquad);
+
+      /* compute the intermediate value of subscale velocity
+
+              ~n+af            ~n+1                   ~n
+              u     = alphaF * u     + (1.0-alphaF) * u
+               (i)              (i)
+
+      */
+      svelaf=
+        alphaF      *svelnp_(dim,iquad)
+        +
+        (1.0-alphaF)*sveln_ (dim,iquad);
+
+      return;
+    }
+
+
 //=======================================================================
 //=======================================================================
 //=======================================================================
