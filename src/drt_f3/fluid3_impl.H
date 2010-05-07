@@ -285,11 +285,11 @@ namespace ELEMENTS
      */
 
     // TODO: think about location
-    void FillElementMatrix( const DRT::Discretization&          discretization, ///< discretization
-                            const vector<int>&                  lm,             ///<
-                            LINALG::Matrix<nsd_,nen_> *         matrixtofill,   ///< vector field
-                            LINALG::Matrix<nen_,1> *            vectortofill,   ///< scalar field
-                            const string                        state)          ///< state of the global vector
+    void ExtractValuesFromGlobalVector( const DRT::Discretization&          discretization, ///< discretization
+                                        const vector<int>&                  lm,             ///<
+                                        LINALG::Matrix<nsd_,nen_> *         matrixtofill,   ///< vector field
+                                        LINALG::Matrix<nen_,1> *            vectortofill,   ///< scalar field
+                                        const string                        state)          ///< state of the global vector
     {
       // get state of the global vector
       RefCountPtr<const Epetra_Vector> matrix_state = discretization.GetState(state);

@@ -374,21 +374,21 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   // fill the local element vector/matrix with the global values
   LINALG::Matrix<nsd_,nen_> evelaf(true);
   LINALG::Matrix<nen_,1> epreaf(true);
-  FillElementMatrix(discretization,lm, &evelaf, &epreaf,"velaf");
+  ExtractValuesFromGlobalVector(discretization,lm, &evelaf, &epreaf,"velaf");
 
   LINALG::Matrix<nen_,1> escaaf(true);
-  FillElementMatrix(discretization,lm, NULL, &escaaf,"scaaf");
+  ExtractValuesFromGlobalVector(discretization,lm, NULL, &escaaf,"scaaf");
 
   LINALG::Matrix<nsd_,nen_> emhist(true);
-  FillElementMatrix(discretization,lm, &emhist, NULL,"hist");
+  ExtractValuesFromGlobalVector(discretization,lm, &emhist, NULL,"hist");
 
   LINALG::Matrix<nsd_,nen_> eaccam(true);
   LINALG::Matrix<nen_,1> escadtam(true);
-  FillElementMatrix(discretization,lm, &eaccam, &escadtam,"accam");
+  ExtractValuesFromGlobalVector(discretization,lm, &eaccam, &escadtam,"accam");
 
   LINALG::Matrix<nsd_,nen_> eveln(true);
   LINALG::Matrix<nen_,1> escaam(true);
-  FillElementMatrix(discretization,lm, &eveln, &escaam,"scaam");
+  ExtractValuesFromGlobalVector(discretization,lm, &eveln, &escaam,"scaam");
 
   if (is_genalpha_)
     eveln.Clear();
@@ -404,8 +404,8 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
 
   if(ele-> IsAle())
   {
-    FillElementMatrix(discretization,lm, &edispnp, NULL,"dispnp");
-    FillElementMatrix(discretization,lm, &egridv, NULL,"gridv");
+    ExtractValuesFromGlobalVector(discretization,lm, &edispnp, NULL,"dispnp");
+    ExtractValuesFromGlobalVector(discretization,lm, &egridv, NULL,"gridv");
   }
 
   // ---------------------------------------------------------------------
@@ -418,7 +418,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   LINALG::Matrix<nsd_,nen_> fsevelaf(true);
   if (fssgv_ != Fluid3::no_fssgv)
   {
-    FillElementMatrix(discretization,lm, &fsevelaf, NULL,"fsvelaf");
+    ExtractValuesFromGlobalVector(discretization,lm, &fsevelaf, NULL,"fsvelaf");
   }
 
 
