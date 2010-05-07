@@ -67,8 +67,8 @@ namespace ADAPTER
     { return fluid_->TimeLoop(); }
     virtual void PrepareTimeStep()
     { return fluid_->PrepareTimeStep(); }
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
-    { return fluid_->Evaluate(vel); }
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
+    { return fluid_->Evaluate(stepinc); }
     virtual void Update()
     { return fluid_->Update(); }
     virtual void StatisticsAndOutput()
@@ -143,6 +143,8 @@ namespace ADAPTER
     { return fluid_->ExtractInterfaceForcesRobin(); }
     virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp)
     { return fluid_->ApplyMeshDisplacement(fluiddisp); }
+    virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<Epetra_Vector> dispstepinc)
+    { return fluid_->ApplyMeshDisplacementIncrement(dispstepinc); }
     virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)
     { return fluid_->ApplyMeshVelocity(gridvel); }
     virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)

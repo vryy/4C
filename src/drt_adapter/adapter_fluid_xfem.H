@@ -44,7 +44,7 @@ namespace ADAPTER
     virtual const FLD::UTILS::MapExtractor& Interface() const;
 
     virtual void PrepareTimeStep();
-    void Evaluate(Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<const Epetra_Vector> vel);
+    void Evaluate(Teuchos::RCP<Epetra_Vector> idispstepinc, Teuchos::RCP<const Epetra_Vector> fluidstepinc);
     Teuchos::RCP<const Epetra_Vector> InitialGuess();
     Teuchos::RCP<const Epetra_Vector> RHS();
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();

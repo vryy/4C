@@ -99,7 +99,7 @@ namespace ADAPTER {
 
     virtual void TimeLoop();
     virtual void PrepareTimeStep();
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc);
     virtual void Update();
     virtual void StatisticsAndOutput();
     virtual void Output();
@@ -142,6 +142,7 @@ namespace ADAPTER {
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
     virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<Epetra_Vector> iforce);
     virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp);
+    virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<Epetra_Vector> idispstepinc);
     virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel);
 
     virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);

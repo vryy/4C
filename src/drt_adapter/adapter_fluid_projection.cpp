@@ -177,7 +177,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidProjection::ConvectiveVel()
             return Teuchos::null;
         }
 
-        void ADAPTER::FluidProjection::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
+        void ADAPTER::FluidProjection::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
         {
             dserror("not implemented");	return;
         }

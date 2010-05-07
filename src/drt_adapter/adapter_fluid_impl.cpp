@@ -221,11 +221,11 @@ void ADAPTER::FluidImpl::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
+void ADAPTER::FluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
-  if (vel!=Teuchos::null)
+  if (stepinc!=Teuchos::null)
   {
-    fluid_.Evaluate(vel);
+    fluid_.Evaluate(stepinc);
   }
   else
   {

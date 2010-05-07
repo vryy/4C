@@ -87,6 +87,7 @@ namespace ADAPTER
                                                                          return Teuchos::null; };
 
     virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp){ return; };
+    virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<Epetra_Vector> dispstepinc){dserror("not implemented!");};
     virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)      { return; };
     virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> ivel,
                                           Teuchos::RCP<Epetra_Vector> iforce){ return; };
@@ -167,7 +168,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const DRT::DofSet> DofSet() { return fluid_.StandardDofSet(); }
     virtual void TimeLoop();
     virtual void PrepareTimeStep();
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc);
     virtual void Update();
     virtual void Output();
     virtual IO::DiscretizationWriter& DiscWriter() { return fluid_.DiscWriter();}

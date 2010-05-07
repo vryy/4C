@@ -167,8 +167,17 @@ namespace ADAPTER {
     /// start new time step
     virtual void PrepareTimeStep() = 0;
 
-    /// evaluate elements with given displacement
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) = 0;
+    /// update fluid unknowns and evaluate elements
+    ///
+    /// there are two increments possible
+    /// x^n+1_i+1 = x^n+1_i + iterinc, and
+    ///
+    /// x^n+1_i+1 = x^n     + stepinc
+    ///
+    /// with n and i being time and Newton iteration step
+    virtual void Evaluate(
+        Teuchos::RCP<const Epetra_Vector> stepinc ///< increment between time step n and n+1
+        ) = 0;
 
     /// update at time step end
     virtual void Update() = 0;
@@ -317,6 +326,9 @@ namespace ADAPTER {
 
     /// tell the mesh displacement to the fluid solver
     virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp) = 0;
+
+    /// tell the mesh displacement step increment to the fluid solver
+    virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<Epetra_Vector> dispstepinc) = 0;
 
     /// tell the mesh velocity to the fluid solver
     virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel) = 0;

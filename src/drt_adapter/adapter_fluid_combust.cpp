@@ -90,12 +90,12 @@ void ADAPTER::FluidCombust::PrepareTimeStep()
 /*------------------------------------------------------------------------------------------------*
  | Wozu ist diese Abfrage nötig?                                                      henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
-void ADAPTER::FluidCombust::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
+void ADAPTER::FluidCombust::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
   dserror("Thou shalt not call this function!");
-  if (vel!=Teuchos::null)
+  if (stepinc!=Teuchos::null)
   {
-    fluid_.Evaluate(vel);
+    fluid_.Evaluate(stepinc);
   }
   else
   {

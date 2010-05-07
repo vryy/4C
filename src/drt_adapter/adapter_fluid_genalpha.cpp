@@ -185,11 +185,11 @@ void ADAPTER::FluidGenAlpha::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> dacc)
+void ADAPTER::FluidGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> accstepinc)
 {
-  if (dacc!=Teuchos::null)
+  if (accstepinc!=Teuchos::null)
   {
-    fluid_.ExternIncrementOfVelnp(dacc);
+    fluid_.ExternIncrementOfVelnp(accstepinc);
   }
 
   fluid_.GenAlphaComputeIntermediateSol();

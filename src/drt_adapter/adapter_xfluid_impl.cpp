@@ -294,7 +294,7 @@ void ADAPTER::XFluidImpl::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
+void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
   cout << "ADAPTER::XFluidImpl::Evaluate()" << endl;
 
@@ -303,7 +303,7 @@ void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   PrepareBoundaryDis();
 
   // evaluate
-  fluid_.Evaluate(boundarydis_, vel);
+  fluid_.Evaluate(boundarydis_, stepinc);
 
   // get surface force
   Teuchos::RCP<const Epetra_Vector> itruerescol = boundarydis_->GetState("iforcenp");
@@ -944,6 +944,14 @@ void ADAPTER::XFluidImpl::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> i
 void ADAPTER::XFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> idisp)
 {
   interface_.InsertFSICondVector(idisp,idispnp_);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::XFluidImpl::ApplyMeshDisplacementIncrement(Teuchos::RCP<Epetra_Vector> idispstepinc)
+{
+//  interface_.InsertFSICondVector(idisstepinc,idispnp_);
+  idispnp_->Update(1.0, *idispn_, 1.0, *idispstepinc, 0.0);
 }
 
 
