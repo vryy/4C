@@ -231,16 +231,17 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(ParameterList& params,
     	  }
       }
 
-  /*at the end of an iteration step the geometric configuration has to be updated: the starting point for the
-   * next iteration step is the configuration at the end of the current step */
-  Qold_ = Qnew_;
-  dispthetaold_= dispthetanew_;
+    /*at the end of an iteration step the geometric configuration has to be updated: the starting point for the
+     * next iteration step is the configuration at the end of the current step */
+    Qold_ = Qnew_;
+    dispthetaold_= dispthetanew_;
 
-
+    
+    /*
     //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
     //correctly or not by means of a numerically approximated stiffness matrix
     //The code block will work for all higher order elements.
-    if(Id() == 3) //limiting the following tests to certain element numbers
+    if(Id() == 0) //limiting the following tests to certain element numbers
     {
       //variable to store numerically approximated stiffness matrix
       Epetra_SerialDenseMatrix stiff_approx;
@@ -252,7 +253,7 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(ParameterList& params,
       stiff_relerr.Shape(6*nnode,6*nnode);
 
       //characteristic length for numerical approximation of stiffness
-      double h_rel = 1e-8;
+      double h_rel = 1e-5;
 
       //flag indicating whether approximation leads to significant relative error
       int outputflag = 0;
@@ -274,32 +275,32 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(ParameterList& params,
       		disp_aux[6*k + i] += h_rel;
       		vel_aux[6*k + i] += h_rel / params.get<double>("delta time",0.01);
 
-		  //b3_nlnstiffmass is a templated function. therefore we need to point out the number of nodes in advance
-        	  switch(nnode)
-        	  {
-        	  		case 2:
-        	  		{
-        	  			b3_nlnstiffmass<2>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
-        	  			break;
-        	  		}
-        	  		case 3:
-        	  		{
-        	  			b3_nlnstiffmass<3>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
-        	  			break;
-        	  		}
-        	  		case 4:
-        	  		{
-        	  			b3_nlnstiffmass<4>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
-        	  			break;
-        	  		}
-        	  		case 5:
-        	  		{
-        	  			b3_nlnstiffmass<5>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
-        	  			break;
-        	  		}
-        	  		default:
-        	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
-        	  }
+      		//b3_nlnstiffmass is a templated function. therefore we need to point out the number of nodes in advance
+      	  switch(nnode)
+      	  {
+      	  		case 2:
+      	  		{
+      	  			b3_nlnstiffmass<2>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
+      	  			break;
+      	  		}
+      	  		case 3:
+      	  		{
+      	  			b3_nlnstiffmass<3>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
+      	  			break;
+      	  		}
+      	  		case 4:
+      	  		{
+      	  			b3_nlnstiffmass<4>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
+      	  			break;
+      	  		}
+      	  		case 5:
+      	  		{
+      	  			b3_nlnstiffmass<5>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
+      	  			break;
+      	  		}
+      	  		default:
+      	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+      	  }
 
         	//computing derivative d(fint)/du numerically by finite difference
       		for(int u = 0 ; u < 6*nnode ; u++ )
@@ -326,14 +327,63 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(ParameterList& params,
 
       } //for(int line=0; line<3*nnode; line++)
 
-      if(outputflag ==1)
+      if(outputflag ==1) 
       {
-      	std::cout<<"\n\n acutally calculated stiffness matrix"<< elemat1;
-      	std::cout<<"\n\n approximated stiffness matrix"<< stiff_approx;
-      	std::cout<<"\n\n rel error stiffness matrix"<< stiff_relerr;
+        
+        std::cout<<"\n\n acutally calculated stiffness matrix\n";
+        for(int line=0; line<6*nnode; line++)
+        {
+          for(int col=0; col<6*nnode; col++)
+          {
+            if(isnan(elemat1(line,col)))
+              std::cout<<"     nan   ";
+            else if(elemat1(line,col) == 0)
+              std::cout<<"     0     ";           
+            else if(elemat1(line,col) >= 0)
+              std::cout<<"  "<< scientific << setprecision(3)<<elemat1(line,col);
+            else
+              std::cout<<" "<< scientific << setprecision(3)<<elemat1(line,col);
+          }
+          std::cout<<"\n";
+        }
+        
+        std::cout<<"\n\n approximated stiffness matrix\n";
+        for(int line=0; line<6*nnode; line++)
+        {
+          for(int col=0; col<6*nnode; col++)
+          {
+            if(isnan(stiff_approx(line,col)))
+              std::cout<<"     nan   ";
+            else if(stiff_approx(line,col) == 0)
+              std::cout<<"     0     "; 
+            else if(stiff_approx(line,col) >= 0)
+              std::cout<<"  "<< scientific << setprecision(3)<<stiff_approx(line,col);
+            else
+              std::cout<<" "<< scientific << setprecision(3)<<stiff_approx(line,col);
+          }
+          std::cout<<"\n";
+        }
+        
+        std::cout<<"\n\n rel error stiffness matrix\n";
+        for(int line=0; line<6*nnode; line++)
+        {
+          for(int col=0; col<6*nnode; col++)
+          {
+            if(isnan(stiff_relerr(line,col)))
+              std::cout<<"     nan   ";
+            else if(stiff_relerr(line,col) == 0)
+              std::cout<<"     0     ";
+            else if(stiff_relerr(line,col) >= 0)
+              std::cout<<"  "<< scientific << setprecision(3)<<stiff_relerr(line,col);
+            else
+              std::cout<<" "<< scientific << setprecision(3)<<stiff_relerr(line,col);
+          }
+          std::cout<<"\n";
+        }
       }
 
     } //end of section in which numerical approximation for stiffness matrix is computed
+    */
 
 
     }
@@ -679,6 +729,9 @@ LINALG::Matrix<3,3> DRT::ELEMENTS::Beam3ii::Tmatrix(LINALG::Matrix<3,1> theta)
   return result;
 }// DRT::ELEMENTS::Beam3ii::Tmatrix
 
+
+
+
 /*---------------------------------------------------------------------------*
  |matrix T(\theta)^{-1} from Jelenic 1999, eq. (2.5)     (public) cyron 04/10|
  *---------------------------------------------------------------------------*/
@@ -843,7 +896,7 @@ inline void DRT::ELEMENTS::Beam3ii::computestrain(const LINALG::Matrix<3,1>& rpr
 {
 
   //convected strain gamma according to Crisfield 1999, eq. (3.4) 
-  gamma.Multiply(Lambda,rprime);
+  gamma.MultiplyTN(Lambda,rprime);
   gamma(0) = gamma(0) - 1.0;
   
   /*the below curvature computation is possible for 2-noded elements only; for higher order elements one might replace it by 
@@ -874,9 +927,9 @@ inline void DRT::ELEMENTS::Beam3ii::computedTinvdx(const LINALG::Matrix<3,1>& Ps
   //norm of \Psi^l:
   double normPsil = Psil.Norm2();
   
-  if(Psil.Norm2() == 0)
+  //for relative rotations smaller then 1e-12 we use the limit for Psil -> 0 according to the comment above NOTE 4 on page 152, Jelenic 1999
+  if(Psil.Norm2() < 1e-12)
   {
-    //limit for Psil -> 0 according to the comment above NOTE 4 on page 152, Jelenic 1999
     computespin(dTinvdx,Psilprime);
     dTinvdx.Scale(0.5); 
   }
@@ -899,25 +952,24 @@ inline void DRT::ELEMENTS::Beam3ii::computedTinvdx(const LINALG::Matrix<3,1>& Ps
     auxmatrix.Multiply(spinPsil,spinPsilprime);
     dTinvdx += auxmatrix;
     dTinvdx.Scale(1-(sin(normPsil)/normPsil)/pow(normPsil,2));
-  
     
     //first summand
     auxmatrix.PutScalar(0);
     auxmatrix += spinPsil;
     auxmatrix.Scale( scalarproductPsilPsilprime*(normPsil*sin(normPsil) - 2*(1-cos(normPsil)))/pow(normPsil,4) ); 
     dTinvdx += auxmatrix;
-    
-    
+
     //second summand
     auxmatrix.PutScalar(0);
     auxmatrix += spinPsilprime;
     auxmatrix.Scale((1-cos(Psilprime.Norm2()))/pow(normPsil,2));
     dTinvdx += auxmatrix;
-    
+
     //fourth summand
     auxmatrix.Multiply(spinPsil,spinPsil);
     auxmatrix.Scale( scalarproductPsilPsilprime*(3*sin(normPsil) - normPsil*(2+cos(normPsil)))/pow(normPsil,5) );
     dTinvdx += auxmatrix;
+
   }
 
    return;
@@ -947,8 +999,6 @@ inline void DRT::ELEMENTS::Beam3ii::computeItilde(const LINALG::Matrix<3,1>& Psi
   for(int i=0; i<3; i++)
     squaredbrackets(i,i) += 1;
 
-  
-  
   //loop through all nodes i
   for (int node=0; node<nnode; ++node)
   {   
@@ -977,6 +1027,8 @@ inline void DRT::ELEMENTS::Beam3ii::computeItilde(const LINALG::Matrix<3,1>& Psi
     Itilde[node].MultiplyNN(Lambdar,auxmatrix);
 
   }
+  
+
 
    return;
 } // DRT::ELEMENTS::Beam3ii::computeItilde
@@ -1006,7 +1058,7 @@ inline void DRT::ELEMENTS::Beam3ii::computeItildeprime(const LINALG::Matrix<3,1>
     auxmatrix.Scale(funct(node));
     Ttilde += auxmatrix;
   }
-  
+
   //compute T^{~'} according to remark subsequent to (3.19), Jelenic 1999
   LINALG::Matrix<3,3> Ttildeprime;
   Ttildeprime.PutScalar(0);
@@ -1060,7 +1112,6 @@ inline void DRT::ELEMENTS::Beam3ii::computeItildeprime(const LINALG::Matrix<3,1>
     //now the term in the curley bracktets has been computed and has to be rotated by \Lambda_r and \Lambda_r^t
     auxmatrix.MultiplyNT(Itildeprime[node],Lambdar);
     Itildeprime[node].MultiplyNN(Lambdar,auxmatrix);
-
   }
 
    return;
@@ -1076,9 +1127,9 @@ inline LINALG::Matrix<3,3> DRT::ELEMENTS::Beam3ii::vI(const LINALG::Matrix<3,1>&
   
   computespin(result,phiIJ);
   if(phiIJ.Norm2() == 0)
-    result.Scale(-0.25);
+    result.Scale(0.25);
   else
-    result.Scale(-tan(phiIJ.Norm2()/4.0)/phiIJ.Norm2());
+    result.Scale(tan(phiIJ.Norm2()/4.0)/phiIJ.Norm2());
   
   for(int i=0; i<3; i++)
     result(i,i) +=1;
@@ -1223,14 +1274,14 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
     
     deltatheta  = dispthetanew_[node];
     deltatheta -= dispthetaold_[node];
-    
+        
     //compute quaternion from rotation angle relative to last configuration
     angletoquaternion(deltatheta,deltaQ);
     
     //multiply relative rotation with rotation in last configuration to get rotation in new configuration
-    quaternionproduct(deltaQ,Qold_[node],Qnew_[node]);    
+    quaternionproduct(Qold_[node],deltaQ,Qnew_[node]);  
   }
-  
+
   //compute reference rotation \Lambda_r according to eq. (3.10) and (3.9), Jelenic 1999
   quaternionproduct(Qnew_[nodeJ_],inversequaternion(Qnew_[nodeI_]),QIJ);
   quaterniontoangle(QIJ,phiIJ);
@@ -1246,9 +1297,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
     quaternionproduct(Qnew_[node],inversequaternion(Qr),Qli);  
     quaterniontoangle(Qli,Psili[node]);
   }
-  
-  
-  
+
   //Get integrationpoints for Gauss-Legendre underintegration
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
   
@@ -1272,6 +1321,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
         Psil(i)      += funct(node)*Psili[node](i);
         Psilprime(i) += deriv(node)*Psili[node](i);
       }
+    
 
     //compute relative rotation between triad at Gauss point and reference triad Qr
     angletoquaternion(Psil,Ql);
@@ -1281,6 +1331,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
     
     //compute rotation matrix at Gauss point, i.e. \Lambda(s) in Crisfield 1999, eq. (4.7)
     quaterniontotriad(Qgauss,Lambda);
+    
     
     //compute derivative of line of centroids with respect to curve parameter in reference configuration, i.e. r' from Jelenic 1999, eq. (2.12)
     curvederivative<nnode,3>(disp,deriv,rprime,jacobi_[numgp]);
@@ -1292,13 +1343,13 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
     computestrain(rprime,Lambda,gamma,kappa);
 
     //compute convected stress vector from strain vector according to Jelenic 1999, page 147, section 2.4
-    strainstress(gamma,kappa,stressN,CN,stressM,CM);
+    strainstress(gamma,kappa,stressN,CN,stressM,CM);   
     
     /*compute spatial stresses and constitutive matrices from convected ones according to Jelenic 1999, page 148, paragraph
      *between (2.22) and (2.23) and Romero 2004, (3.10)*/
     pushforward(Lambda,stressN,CN,stressM,CM,stressn,cn,stressm,cm);
     
-    
+
     /*computation of internal forces according to Jelenic 1999, eq. (4.3); computation split up with respect
      *to single blocks of matrix in eq. (4.3); note that Jacobi determinantn in diagonal blocks cancels out
      *in implementation, whereas for the lower left block we have to multiply the weight by the jacobi
@@ -1316,7 +1367,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
         //lower left block  
         for (int i=0; i<3; ++i)
           for (int j=0; j<3; ++j)
-            (*force)(6*node+3+i) -= rprimehat(i,j)*stressm(j)*funct(node)*wgt*jacobi_[numgp];
+            (*force)(6*node+3+i) -= rprimehat(i,j)*stressn(j)*funct(node)*wgt*jacobi_[numgp];
         
         /*lower right block (note: jacobi determinant cancels out as deriv is derivative with respect to
          *parameter in Gauss integration interval and I^{i'} in Jelenic 1999 is derivative with respect to
@@ -1326,16 +1377,12 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
 
         }
      }//if (force != NULL)
+    
 
-  
     //compute at this Gauss point basis functions \tilde{I}^i and \tilde{I}^{i'} in (3.19), page 152, Jelenic 1999, for all nodes
     computeItilde<nnode>(Psil,Psilprime,Itilde,phiIJ,Lambdar,Psili,funct);
-    computeItildeprime<nnode>(Psil,Psilprime,Itildeprime,phiIJ,Lambdar,Psili,funct,deriv);  
-    
-    
+    computeItildeprime<nnode>(Psil,Psilprime,Itildeprime,phiIJ,Lambdar,Psili,funct,deriv);
 
-
-  
     /*computation of stiffness matrix according to Jelenic 1999, eq. (4.7); computation split up with respect
     *to single blocks of matrix in eq. (4.3)*/
     if (stiffmatrix != NULL)
@@ -1343,18 +1390,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
       //auxiliary variables for storing intermediate matrices in computation of entries of stiffness matrix
       LINALG::Matrix<3,3> auxmatrix1;
       LINALG::Matrix<3,3> auxmatrix2;
-      
-      
-      //compute spin matrix of rprime
-      computespin(rprimehat,rprime);
-      
-      if(Id() == 0)
-      {
-
-        std::cout<<"\ncn="<<cn;
-        std::cout<<"\ncm="<<cm;
-        std::cout<<"\nrprimehat="<<rprimehat;
-      }
       
       for(int nodei = 0; nodei < nnode; nodei++)
         for(int nodej = 0; nodej < nnode; nodej++)
@@ -1373,8 +1408,8 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
           for (int i=0; i<3; ++i)
             for (int j=0; j<3; ++j)
               (*stiffmatrix)(6*nodei+i,6*nodej+3+j) += auxmatrix1(i,j)*wgt;
-          
-          //lower left block
+
+          //lower left block; note: error in eq. (4.7), Jelenic 1999: the first factor should be I^i instead of I^j
           auxmatrix2.Multiply(rprimehat,cn);
           computespin(auxmatrix1,stressn);
           auxmatrix1 -= auxmatrix2;
@@ -1383,7 +1418,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
             for (int j=0; j<3; ++j)
               (*stiffmatrix)(6*nodei+3+i,6*nodej+j) += auxmatrix1(i,j)*wgt;
           
-          //lower right block
+          //lower right block 
           //first summand
           auxmatrix1.Multiply(cm,Itildeprime[nodej]);
           auxmatrix1.Scale(deriv(nodei));
@@ -1399,16 +1434,16 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
             for (int j=0; j<3; ++j)
               (*stiffmatrix)(6*nodei+3+i,6*nodej+3+j) -= auxmatrix1(i,j)*wgt;
           
-          //third summand
-          auxmatrix2.Multiply(rprimehat,cn);
+          //third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses should be \hat{\Lambda N} instead of \Lambda N
           computespin(auxmatrix1,stressn);
+          auxmatrix2.Multiply(cn,rprimehat);         
           auxmatrix1 -= auxmatrix2;
           auxmatrix2.Multiply(auxmatrix1,Itilde[nodej]);
           auxmatrix1.Multiply(rprimehat,auxmatrix2);
           auxmatrix1.Scale(funct(nodei));
           for (int i=0; i<3; ++i)
             for (int j=0; j<3; ++j)
-              (*stiffmatrix)(6*nodei+3+i,6*nodej+3+j) += auxmatrix1(i,j)*jacobi_[numgp];
+              (*stiffmatrix)(6*nodei+3+i,6*nodej+3+j) += auxmatrix1(i,j)*jacobi_[numgp]*wgt;
 
         } 
     }
