@@ -565,6 +565,7 @@ protected:
                     const int gp,
                     ParameterList&  params);
 
+
   //! @name TSI related stuff
 
   // for so_hex8_thermo_evaluate.cpp
@@ -574,7 +575,7 @@ protected:
     vector<double>& disp,  // current displacements
     vector<double>& residual,  // current residual displ
     vector<double>& temp, // current temperature
-    LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8>* tempstiffmatrix, // coupling stiffness matrix
+    LINALG::Matrix<NUMDOF_SOH8,1>* tempstiffmatrix, // coupling stiffness matrix
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  // element mass matrix
     LINALG::Matrix<NUMDOF_SOH8,1>* force,  // element internal force vector
     LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  // stresses at GP
@@ -584,9 +585,9 @@ protected:
     const INPAR::STR::StrainType iostrain  // strain output option
     );
 
-
   /*!
-   * \brief Interface to the material law (Thermo St.Venant Kirchoff) working with soh8.
+   * \brief Interface to the material law (Thermo St.Venant Kirchoff) working
+   * with soh8.
    *
    * Here the interface to the first solid material with temperature takes place.
    * Stress and material tangent must be retrieved whereas all necessary data
@@ -595,28 +596,31 @@ protected:
    * overdone performance-wise.
    *
    * \param *stress (out): Voigt-Vector of stresses at current gp
-   * \param *ctheta (out): temperature dependent tangent matrix at current gp
+   * \param *ctemp (out): temperature dependent tangent matrix at current gp
    * \param *density (out): density of material
-   * \param *etemp (out): temperature at current gp
+   * \param *Ntemp (out): shapefcts * element temperature at current gp
    * \param *defgrd (in): F at current gp, CAUTION! only for disp-based soh8
    * \param gp (in): current gp
    * \param params (in): parameterlist to access time, etc. in materials
    * */
   void soh8_mat_temp(
     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stresstemp,
-    LINALG::Matrix<MAT::NUM_STRESS_3D,8>* ctemp,
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* ctemp,
     double* density,
-    LINALG::Matrix<8,1>* etemp,  // temperature of element
+    LINALG::Matrix<1,1>* Ntemp,  // temperature of element
     LINALG::Matrix<3,3>* defgrd,
     const int gp,
-    Teuchos::ParameterList& params);
+    Teuchos::ParameterList& params
+    );
 
-  /// Retrieve the temperature dependent material tangent for the rhs
-  void Ctempconst(
-    LINALG::Matrix<6,1>* ctempconst
+  // calculate the constant temperature fraction for stresstemp
+  void Stempconst(
+    LINALG::Matrix<6,1>* ctemp,
+    LINALG::Matrix<6,1>* stempconst
     );
 
   //@}
+
 
   //! EAS technology, init
   void soh8_easinit();

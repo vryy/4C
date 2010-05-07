@@ -102,7 +102,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     DRT::UTILS::ExtractMyValues(*res,myres,lm);
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
     if (elemat1.IsInitialized()) matptr = &elemat1;
-    // call soh8_nlnstiffmass to calculate the normal structure solution
+    // call the well-known soh8_nlnstiffmass for the normal structure solution
     soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
                        INPAR::STR::stress_none,INPAR::STR::strain_none);
 
@@ -128,10 +128,10 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
       // extract the current temperatures
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
 
-      // the coupling stiffness matrix (3nx1n)
-      LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8> elemat1(elemat1_epetra.A(),true);
-      // get the temperature dependent stress
+      // the coupling stiffness matrix (3nx1)
+      LINALG::Matrix<NUMDOF_SOH8,1> elemat1(elemat1_epetra.A(),true);
 
+      // calculate the THERMOmechanical solution
       soh8_nlnstiffmasstemp(la,mydisp,myres,mytempnp,&elemat1,&elemat2,&elevec1,
         NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
@@ -154,8 +154,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // lm now contains only u-dofs
     vector<double> myres((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*res,myres,lm); // lm now contains only u-dofs
-    // call the older version of the soh8_nlnstiffmass to calculate the normal
-    // structure solution
+    // call the well-known soh8_nlnstiffmass for the normal structure solution
     soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                       INPAR::STR::stress_none,INPAR::STR::strain_none);
 
@@ -184,9 +183,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
       // build the current temperature vector
       LINALG::Matrix<iel*numdofpernode_,1> etemp(&(mytempnp[1]),true);  // view only!
-      // the coupling stiffness matrix (3nx1n)
-      LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8> elemat1(elemat1_epetra.A(),true);
-      // get the temperature dependent stress
+      // the coupling stiffness matrix (3nx1)
+      LINALG::Matrix<NUMDOF_SOH8,1> elemat1(elemat1_epetra.A(),true);
+      // calculate the THERMOmechanical solution
       soh8_nlnstiffmasstemp(la,mydisp,myres,mytempnp,&elemat1,&elemat2,&elevec1,
         NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
@@ -226,7 +225,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
       = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
     INPAR::STR::StrainType iostrain
       = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
-
+    // call the well-known soh8_nlnstiffmass for the normal structure solution
     soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,
       iostress,iostrain);
 
@@ -255,6 +254,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
       // get the temperature dependent stress
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stresstemp;
+      // calculate the THERMOmechanical solution: temperature stresses
       soh8_nlnstiffmasstemp(la,mydisp,myres,mytempnp,NULL,NULL,NULL,
         &stresstemp,NULL,params,iostress,INPAR::STR::strain_none);
 
@@ -367,7 +367,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmasstemp(
   vector<double>& disp,  // current displacements
   vector<double>& residual,  // current residual displ
   vector<double>& temp, // current temperature
-  LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8>* tempstiffmatrix, // coupling stiffness matrix
+  LINALG::Matrix<NUMDOF_SOH8,1>* tempstiffmatrix, // coupling stiffness matrix
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  // element mass matrix
   LINALG::Matrix<NUMDOF_SOH8,1>* force,  // element internal force vector
   LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  // stresses at GP
@@ -401,6 +401,13 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmasstemp(
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH8+2];
   }
 
+  // vector of the current element temperatures
+  LINALG::Matrix<NUMNOD_SOH8,1> etemp;
+  for (int i=0; i<NUMNOD_SOH8; ++i)
+  {
+    etemp(i,0) = temp[i+0];
+  }
+
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
@@ -408,6 +415,10 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmasstemp(
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
   LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(false);
+
+  // identical shapefunctions for the displacements and the temperatures
+  LINALG::Matrix<NUMNOD_SOH8,1> shapetemp;
+
   for (int gp=0; gp<NUMGPT_SOH8; ++gp)
   {
 
@@ -468,12 +479,12 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmasstemp(
       bop(5,NODDOF_SOH8*i+2) = defgrd(2,2)*N_XYZ(0,i) + defgrd(2,0)*N_XYZ(2,i);
     }
 
-    // call the current element temperature vector
-    LINALG::Matrix<NUMNOD_SOH8,1> etemp;  // X, material coord. of element
-    for (int i=0; i<NUMNOD_SOH8; ++i)
-    {
-      etemp(i,0) = temp[i+0];
-    }
+    // copy structural shape functions needed for the thermo field
+    shapetemp.Update(shapefcts[gp]);
+
+    // product of shapefunctions and element temperatures for stresstemp
+    LINALG::Matrix<1,1> Ntemp;
+    Ntemp.MultiplyTN(shapetemp,etemp);
 
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     ** Here all possible material laws need to be incorporated,
@@ -481,19 +492,18 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmasstemp(
     ** every necessary data must be passed.
     */
     double density = 0.0;
-    // calculate the stress part dependent on the temperature
-    LINALG::Matrix<NUMSTR_SOH8,NUMNOD_SOH8> ctemp(true);
+    // calculate the stress part dependent on the temperature in the material
+    LINALG::Matrix<NUMSTR_SOH8,1> ctemp(true);
     LINALG::Matrix<NUMSTR_SOH8,1> stresstemp(true);
-    soh8_mat_temp(&stresstemp,&ctemp,&density,&etemp,&defgrd,gp,params);
-    // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+    soh8_mat_temp(&stresstemp,&ctemp,&density,&Ntemp,&defgrd,gp,params);
 
-    // and now the constant stress part of theta_0 must be added
-    LINALG::Matrix<NUMSTR_SOH8,1> ctempconst(true);
-    Ctempconst(&ctempconst);
-    LINALG::Matrix<NUMSTR_SOH8,1> stresstempconst(true);
-    stresstempconst = ctempconst;
+    // and now add the constant temperature fraction to stresstemp, too
+    LINALG::Matrix<NUMSTR_SOH8,1> stempconst(true);
+    Stempconst(&ctemp,&stempconst);
     // total temperature stress
-    stresstemp.Update(1.0,stresstempconst,1.0);
+    stresstemp.Update(1.0,stempconst,1.0);
+
+    // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
     switch (iostress)
@@ -551,16 +561,14 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmasstemp(
       // update the stiffness part depending of the temperature
       // k_theta += 1.0 * k_theta + detJ * w(gp) * (B^T . C_Theta . N_Theta)
       //-----------------------------------------------------------------------
-      LINALG::Matrix<NUMSTR_SOH8,NUMNOD_SOH8> cn; // 6x8 = 6x1n
+      LINALG::Matrix<NUMSTR_SOH8,1> cn; // 6x1 = 6x1n
       // extract the shapefunctions on the gp_i and multiply it with cn
       for (int stresscomp=0; stresscomp<NUMSTR_SOH8; ++stresscomp)
       {
-        for (int nodid=0; nodid<NUMNOD_SOH8; ++nodid)
-        {
-          cn(stresscomp,nodid)= ctemp(stresscomp,nodid)*shapefcts[gp](nodid); // (6x8) = (6x8)(8x8)
-        }
+          cn.Multiply(ctemp,Ntemp); // (6x1) = (6x1)(1x1)
       }
-      tempstiffmatrix->MultiplyTN(detJ_w,bop,cn,1.0); // [(3nx6)(6x1n)=(3nx1n)] (24x6)(6x8)=(24x8)
+      tempstiffmatrix->MultiplyTN(detJ_w,bop,cn,1.0); // [(3nx6)(6x1)=(3nx1)] (24x6)(6x1)=(24x1)
+
 
       //-----------------------------------------------------------------------
       // integrate `geometric' stiffness matrix and add to keu            04/10
@@ -578,7 +586,8 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmasstemp(
       vector<double> SmB_L(3);
 
       // like in so_hex8_evaluate no changes for tempstress
-      // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
+      // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)
+      // with B_L = Ni,Xj: LINEAR B-operator see NiliFEM-Skript
       for (int inod=0; inod<NUMNOD_SOH8; ++inod)
       {
         SmB_L[0] = sfac(0) * N_XYZ(0, inod) + sfac(3) * N_XYZ(1, inod)
@@ -599,12 +608,12 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmasstemp(
           double bopstrbop = 0.0; // intermediate value
           for (int idim=0; idim<NUMDIM_SOH8; ++idim)
             bopstrbop += N_XYZ(idim, jnod) * SmB_L[idim];
-          // <3n,1n>
+          // <3n,1>
           // 3n: displacement:3(3FHG/node)*8(8nodes/element)+3(dim),
-          // 1n: temperature :8(1FHG/node) (no differentiation in directions)
-          (*tempstiffmatrix)(3*inod+0,jnod) += bopstrbop;
-          (*tempstiffmatrix)(3*inod+1,jnod) += bopstrbop;
-          (*tempstiffmatrix)(3*inod+2,jnod) += bopstrbop;
+          //  1: temperature is a scalar
+          (*tempstiffmatrix)(3*inod+0,0) += bopstrbop;
+          (*tempstiffmatrix)(3*inod+1,0) += bopstrbop;
+          (*tempstiffmatrix)(3*inod+2,0) += bopstrbop;
         }
       } // end of integrate `geometric' stiffness******************************
     }
@@ -617,14 +626,14 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmasstemp(
 
 
 /*----------------------------------------------------------------------*
- | material law with temperature part for So_hex8            dano 02/10 |
+ | material law with temperature part for So_hex8            dano 05/10 |
  | originally by gee in so_material.cpp 10/08                           |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_mat_temp(
   LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stresstemp,
-  LINALG::Matrix<MAT::NUM_STRESS_3D,8>* ctemp,
+  LINALG::Matrix<MAT::NUM_STRESS_3D,1>* ctemp,
   double* density,
-  LINALG::Matrix<8,1>* etemp,  // temperature of element
+  LINALG::Matrix<1,1>* Ntemp,  // temperature of element
   LINALG::Matrix<3,3>* defgrd,
   const int gp,
   Teuchos::ParameterList& params
@@ -634,7 +643,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_temp(
   // I'm not sure whether all of these are always supplied, we'll see....
   if (!stresstemp) dserror("No stress vector supplied");
   if (!ctemp) dserror("No material tangent matrix supplied");
-  if (!etemp) dserror("No temperature supplied");
+  if (!Ntemp) dserror("No temperature supplied");
   if (!defgrd) dserror("No defgrd supplied");
 #endif
 
@@ -649,7 +658,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_temp(
     {
       MAT::ThermoStVenantKirchhoff* thrstvk
         = static_cast <MAT::ThermoStVenantKirchhoff*>(mat.get());
-      thrstvk->Evaluate(*etemp,*ctemp,*stresstemp);
+      thrstvk->Evaluate(*Ntemp,*ctemp,*stresstemp);
       *density = thrstvk->Density();
       return;
       break;
@@ -663,11 +672,13 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_temp(
 } // of soh8_mat_temp
 
 
+
 /*----------------------------------------------------------------------*
- | get the constant temperature fraction for the rhs         dano 03/10 |
+ | get the constant temperature fraction for stresstemp      dano 05/10 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::Ctempconst(
-  LINALG::Matrix<6,1>* ctempconst
+void DRT::ELEMENTS::So_hex8::Stempconst(
+  LINALG::Matrix<6,1>* ctemp,
+  LINALG::Matrix<6,1>* stempconst
   )
 {
   Teuchos::RCP<MAT::Material> mat = Material();
@@ -678,7 +689,7 @@ void DRT::ELEMENTS::So_hex8::Ctempconst(
     {
       MAT::ThermoStVenantKirchhoff* thrstvk
         = static_cast<MAT::ThermoStVenantKirchhoff*>(mat.get());
-       return thrstvk->Ctempconst(*ctempconst);
+       return thrstvk->Stempconst(*ctemp,*stempconst);
        break;
     }
     default:
@@ -687,7 +698,7 @@ void DRT::ELEMENTS::So_hex8::Ctempconst(
   } // switch (mat->MaterialType())
 
   return;
-} // So_hex8::Ctempconst
+} // So_hex8::Stempconst
 
 
 /*----------------------------------------------------------------------*/

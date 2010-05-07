@@ -136,15 +136,15 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterList&
   // overrule certain parameters for coupled problems
   // -------------------------------------------------------------------
   // the default time step size
-  tdynparams->set<double> ("TIMESTEP"   ,prbdyn.get<double>("TIMESTEP"));
+  tdynparams->set<double>("TIMESTEP",prbdyn.get<double>("TIMESTEP"));
   // maximum simulation time
-  tdynparams->set<double> ("MAXTIME"    ,prbdyn.get<double>("MAXTIME"));
+  tdynparams->set<double>("MAXTIME",prbdyn.get<double>("MAXTIME"));
   // maximum number of timesteps
-  tdynparams->set<int>    ("NUMSTEP"    ,prbdyn.get<int>("NUMSTEP"));
+  tdynparams->set<int>("NUMSTEP",prbdyn.get<int>("NUMSTEP"));
   // restart
-  tdynparams->set<int>    ("RESTARTEVRY",prbdyn.get<int>("RESTARTEVRY"));
+  tdynparams->set<int>("RESTARTEVRY",prbdyn.get<int>("RESTARTEVRY"));
   // solution output
-  tdynparams->set<int>    ("RESEVRYGLOB",prbdyn.get<int>("UPRES"));
+  tdynparams->set<int>("RESEVRYGLOB",prbdyn.get<int>("UPRES"));
 
   // create a linear solver
   Teuchos::RCP<Teuchos::ParameterList> solveparams

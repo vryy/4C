@@ -286,103 +286,6 @@ void MAT::ThermoStVenantKirchhoff::SetupCthermo2d(
 
 
 /*----------------------------------------------------------------------*
- | computes temperature dependent isotropic                  dano 02/10 |
- | elasticity tensor in matrix notion for 3d, second(!) order tensor    |
- *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::SetupCthermo(LINALG::Matrix<6,8>& ctemp)
-{
-  double m = STModulus();
-
-  // isotropic elasticity tensor C_temp in Voigt matrix notation C_temp = m I
-  // (Identity second order tensor)
-  //                       [ m   m   m   m   m   m  m  m ]  [N_1]
-  //                       [ m   m   m   m   m   m  m  m ]  [N_2]
-  //   C_temp * N_i =      [ m   m   m   m   m   m  m  m ]  [N_3]
-  //                       [ 0   0   0   0   0   0  0  0 ]  [N_4]
-  //                       [ 0   0   0   0   0   0  0  0 ]  [N_5]
-  //                       [ 0   0   0   0   0   0  0  0 ]  [N_6]
-  //                                                        [N_7]
-  //                                                        [N_8]
-  //
-  // Matrix-notation for 3D case
-  //              [ m      0      0 ]
-  //   C_temp =   [ 0      m      0 ]
-  //              [ 0      0      m ]
-  //  in Vector notation
-  //   C_temp =   [m, m, m, 0, 0, 0]^T
-  //
-  // write non-zero components
-
-  // clear the material tangent
-  ctemp.Clear();
-
-  // loop over the element nodes
-  for (int i=0; i<8; ++i)
-  {
-    // non-zero entries only in main directions
-    ctemp(0,i) = m;
-    ctemp(1,i) = m;
-    ctemp(2,i) = m;
-    ctemp(3,i) = 0;
-    ctemp(4,i) = 0;
-    ctemp(5,i) = 0;
-  }
-}
-
-
-/*----------------------------------------------------------------------*
- | calculates stresses evaluate the temperature tangent      dano 02/10 |
- *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::Evaluate(
-  const LINALG::Matrix<8,1>& etemp,  // temperature of element
-  LINALG::Matrix<6,8>& ctemp,
-  LINALG::Matrix<6,1>& stresstemp
-  )
-{
-//  // this is temporary as long as the material does not have a
-//  // Matrix-type interface
-//  const LINALG::Matrix<1,1> etemp(etemp_e->A(),true);
-//        LINALG::Matrix<6,1> ctemp(ctemp_e->A(),true);
-//        LINALG::Matrix<6,1> stresstemp(stress_e->A(),true);
-  SetupCthermo(ctemp);
-  // temperature dependent stress
-  // sigma = C_theta * theta = (m*I) * theta
-  stresstemp.MultiplyNN(ctemp,etemp);
-
-  // done
-  return;
-
-} // Evaluate
-
-
-/*----------------------------------------------------------------------*
- | calculates the constant temperature fraction              dano 03/10 |
- *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::Ctempconst(LINALG::Matrix<6,1>& ctempconst)
-{
-
-  // get the stress-temperature modulus
-  double m = STModulus();
-  // SetupCthermo(ctemp);
-  const double inittemp = params_->thetainit_;
-  // rhs = C_theta * theta_init = const
-  // loop over the element nodes
-  for (int i=0; i<3; ++i)
-  {
-    // non-zero entries only in main directions
-    ctempconst(i,0) = -m * inittemp;
-  }
-  for (int i=3; i<6; ++i)
-  {
-    ctempconst(i,0) = 0;
-  }
-
-  // done
-  return;
-} // Ctempconst()
-
-
-/*----------------------------------------------------------------------*
  | calculates stress-temperature modulus                     dano 04/10 |
  *----------------------------------------------------------------------*/
 double MAT::ThermoStVenantKirchhoff::STModulus()
@@ -421,6 +324,78 @@ double MAT::ThermoStVenantKirchhoff::STModulus()
   return stmodulus;
 
 } // STModulus()
+
+
+/*----------------------------------------------------------------------*
+ | computes temperature dependent isotropic                  dano 05/10 |
+ | elasticity tensor in matrix notion for 3d, second(!) order tensor    |
+ *----------------------------------------------------------------------*/
+void MAT::ThermoStVenantKirchhoff::SetupCthermo(LINALG::Matrix<6,1>& ctemp)
+{
+  double m = STModulus();
+
+  // isotropic elasticity tensor C_temp in Voigt matrix notation C_temp = m I
+  //
+  // Matrix-notation for 3D case
+  //              [ m      0      0 ]
+  //   C_temp =   [ 0      m      0 ]
+  //              [ 0      0      m ]
+  //
+  //  in Vector notation
+  //   C_temp =   [m, m, m, 0, 0, 0]^T
+  //
+  // write non-zero components
+
+  // clear the material tangent
+  ctemp.Clear();
+
+  // loop over the element nodes
+  for (int i=0; i<3; ++i)
+  {
+    // non-zero entries only in main directions
+    ctemp(i,0) = m;
+  }
+  for (int i=3; i<6; ++i)
+  {
+    ctemp(i,0) = 0;
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ | calculates stresses by evaluating the temperature tangent dano 05/10 |
+ *----------------------------------------------------------------------*/
+void MAT::ThermoStVenantKirchhoff::Evaluate(
+  const LINALG::Matrix<1,1>& Ntemp,  // shapefcts . temperatures
+  LINALG::Matrix<6,1>& ctemp,
+  LINALG::Matrix<6,1>& stresstemp
+  )
+{
+  SetupCthermo(ctemp);
+  // temperature dependent stress
+  // sigma = C_theta * theta = (m*I) * theta
+  stresstemp.MultiplyNN(ctemp,Ntemp);
+
+} // Evaluate
+
+
+/*----------------------------------------------------------------------*
+ | calculates the constant temperature stress                dano 05/10 |
+ *----------------------------------------------------------------------*/
+void MAT::ThermoStVenantKirchhoff::Stempconst(
+  LINALG::Matrix<6,1>& ctemp,
+  LINALG::Matrix<6,1>& stempconst
+  )
+{
+  const double inittemp = -1.0*(params_->thetainit_);
+
+  // C_theta * theta_init = const
+  SetupCthermo(ctemp);
+  stempconst.Update(inittemp,ctemp);
+
+  // done
+  return;
+} // Ctempconst()
 
 
 /*----------------------------------------------------------------------*/

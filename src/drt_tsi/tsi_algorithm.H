@@ -81,9 +81,6 @@ namespace TSI
 
     //! @name Time loop building blocks
 
-    /// start a new time step
-    virtual void PrepareTimeStep();
-
     /// solve structure equations for current time step
     void DoStructureStep(Teuchos::RCP<Epetra_Vector> itemp);
 
@@ -98,12 +95,12 @@ namespace TSI
 
     /// convergence check for natural convection solver
     bool ConvergenceCheck(int itnum, int itmax, double ittol);
-    
+
     // apply modifications towards thermal contact
     void ApplyThermoContact(RCP<LINALG::SparseMatrix>& stiff,
                             RCP<Epetra_Vector>& rhs,
                             RCP<MORTAR::ManagerBase> cmtman);
-    
+
     // convert maps form structure discretization to thermo discretization
     void ConvertMaps(RCP<Epetra_Map>& slavedofs,
                      RCP<Epetra_Map>& activedofs,
@@ -119,7 +116,7 @@ namespace TSI
     void AssembleThermContCondition(LINALG::SparseMatrix& thermcontLM,
                                     LINALG::SparseMatrix& thermcontTEMP,
                                     Epetra_Vector& thermcontRHS,
-                                    RCP<Epetra_Map> activedofs,  
+                                    RCP<Epetra_Map> activedofs,
                                     RCP<MORTAR::ManagerBase> cmtman);
     //@}
 
@@ -139,6 +136,7 @@ namespace TSI
 //
   private:
 
+    /// maximum iteration steps
     int itmax_;
     /// temperature tolerance
     double ittol_;
@@ -149,7 +147,6 @@ namespace TSI
     /// temperature from time step begin (t_n)
     Teuchos::RCP<Epetra_Vector> itempn_;
 
-//    // 14.12.09 not yet used!
 //    /// coupling of structure and temperature
 //    TSI::Algorithm  coupst_;
   };
