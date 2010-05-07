@@ -171,14 +171,6 @@ DRT::ELEMENTS::Fluid3ImplInterface* DRT::ELEMENTS::Fluid3ImplInterface::Impl(DRT
       cl5 = new Fluid3Impl<DRT::Element::line5>(numdofpernode);
     return cl5;
   }
-  // no 0D elements
-  case DRT::Element::point1:
-  {
-    static Fluid3Impl<DRT::Element::tpoint1>* cp1;
-    if (cp1==NULL)
-      cp1 = new Fluid3Impl<DRT::Element::point1>(numdofpernode);
-    return cp1;
-  }
   //nurbs are not integrated yet
   case DRT::Element::nurbs2:
   {
@@ -352,18 +344,18 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   // acceleration/scalar time derivative values are at time n+alpha_M for
   // generalized-alpha scheme and at time n+1 for all other schemes
   // ---------------------------------------------------------------------
-
-  RefCountPtr<const Epetra_Vector> velaf = discretization.GetState("velaf");
+/*
+  //RefCountPtr<const Epetra_Vector> velaf = discretization.GetState("velaf");
   RefCountPtr<const Epetra_Vector> scaaf = discretization.GetState("scaaf");
   RefCountPtr<const Epetra_Vector> accam = discretization.GetState("accam");
   RefCountPtr<const Epetra_Vector> scaam = discretization.GetState("scaam");
   RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("hist");
-  if (velaf==null || accam==null || scaaf==null || scaam==null || hist==null)
-    dserror("Cannot get state vectors 'velaf', 'accam', 'scaaf', 'scaam' and/or 'hist'");
+  //if (velaf==null || accam==null || scaaf==null || scaam==null || hist==null)
+  //  dserror("Cannot get state vectors 'velaf', 'accam', 'scaaf', 'scaam' and/or 'hist'");
 
   // extract local values from the global vectors
-  vector<double> myvelaf(lm.size());
-  DRT::UTILS::ExtractMyValues(*velaf,myvelaf,lm);
+  //vector<double> myvelaf(lm.size());
+  //DRT::UTILS::ExtractMyValues(*velaf,myvelaf,lm);
   vector<double> myaccam(lm.size());
   DRT::UTILS::ExtractMyValues(*accam,myaccam,lm);
   vector<double> myscaaf(lm.size());
@@ -375,24 +367,68 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
 
   // rotation of velocity components
   // for rotationally symmetric boundary conditions
-  // TODO: all vector based variables must be rotated
-  rotsymmpbc_->RotateMyValuesIfNecessary(myvelaf);
-  rotsymmpbc_->RotateMyValuesIfNecessary(myhist);
+  //rotsymmpbc_->RotateMyValuesIfNecessary(myvelaf);
+  //rotsymmpbc_->RotateMyValuesIfNecessary(myhist);
+*/
 
-  // all element vectors are allocated each time
+  // fill the local element vector/matrix with the global values
   LINALG::Matrix<nsd_,nen_> evelaf(true);
   LINALG::Matrix<nen_,1> epreaf(true);
-  LINALG::Matrix<nen_,1> escaaf(true);
-  LINALG::Matrix<nen_,1> escaam(true);
-  LINALG::Matrix<nen_,1> escadtam(true);
-  LINALG::Matrix<nsd_,nen_> emhist(true);
+  FillElementMatrix(discretization,lm, &evelaf, &epreaf,"velaf");
 
+  LINALG::Matrix<nen_,1> escaaf(true);
+  FillElementMatrix(discretization,lm, NULL, &escaaf,"scaaf");
+
+  LINALG::Matrix<nsd_,nen_> emhist(true);
+  FillElementMatrix(discretization,lm, &emhist, NULL,"hist");
+
+  LINALG::Matrix<nsd_,nen_> eaccam(true);
+  LINALG::Matrix<nen_,1> escadtam(true);
+  FillElementMatrix(discretization,lm, &eaccam, &escadtam,"accam");
+
+  LINALG::Matrix<nsd_,nen_> eveln(true);
+  LINALG::Matrix<nen_,1> escaam(true);
+  FillElementMatrix(discretization,lm, &eveln, &escaam,"scaam");
+
+  if (is_genalpha_)
+    eveln.Clear();
+  else
+    eaccam.Clear();
+
+  // ---------------------------------------------------------------------
+  // get additional state vectors for ALE case: grid displacement and vel.
+  // ---------------------------------------------------------------------
+
+  LINALG::Matrix<nsd_, nen_> edispnp(true);
+  LINALG::Matrix<nsd_, nen_> egridv(true);
+
+  if(ele-> IsAle())
+  {
+    FillElementMatrix(discretization,lm, &edispnp, NULL,"dispnp");
+    FillElementMatrix(discretization,lm, &egridv, NULL,"gridv");
+  }
+
+  // ---------------------------------------------------------------------
+  // get additional state vector for AVM3 case: fine-scale velocity
+  // values are at time n+alpha_F for generalized-alpha scheme and at
+  // time n+1 for all other schemes
+  // ---------------------------------------------------------------------
+
+  // fine-scale velocity at time n+alpha_F/n+1
+  LINALG::Matrix<nsd_,nen_> fsevelaf(true);
+  if (fssgv_ != Fluid3::no_fssgv)
+  {
+    FillElementMatrix(discretization,lm, &fsevelaf, NULL,"fsvelaf");
+  }
+
+
+  /*
   for (int i=0;i<nen_;++i)
   {
     for (int idim=0; idim<nsd_;++idim)
     {
       // velocity at n+alpha_F or n+1
-      evelaf(idim,i) = myvelaf[idim+(i*numdofpernode_)];
+      //evelaf(idim,i) = myvelaf[idim+(i*numdofpernode_)];
 
       // momentum equation part of history vector
       // (containing information of time step t_n (mass rhs!))
@@ -400,7 +436,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
     }
 
     // pressure at n+alpha_F or n+1
-    epreaf(i) = myvelaf[nsd_+(i*numdofpernode_)];
+    //epreaf(i) = myvelaf[nsd_+(i*numdofpernode_)];
 
     // scalar at n+alpha_F or n+1
     escaaf(i) = myscaaf[nsd_+(i*numdofpernode_)];
@@ -411,16 +447,17 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
     // scalar time derivative at n+alpha_M or n+1
     escadtam(i) = myaccam[nsd_+(i*numdofpernode_)];
   }
-
+*/
   // ---------------------------------------------------------------------
   // get additional state vector for generalized-alpha scheme or OST/BDF2:
   // acceleration at time n+alpha_M or velocity at time n
   // ---------------------------------------------------------------------
 
   // create objects for element arrays
-  LINALG::Matrix<nsd_,nen_> eaccam(true);
-  LINALG::Matrix<nsd_,nen_> eveln(true);
+  //LINALG::Matrix<nsd_,nen_> eaccam(true);
+  //LINALG::Matrix<nsd_,nen_> eveln(true);
 
+  /*
   if (is_genalpha_)
   {
     for (int i=0;i<nen_;++i)
@@ -443,19 +480,20 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
       }
     }
   }
-
+*/
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
   // ---------------------------------------------------------------------
-  RCP<const Epetra_Vector> dispnp;
-  vector<double> mydispnp;
-  RCP<const Epetra_Vector> gridv;
-  vector<double> mygridv;
+  //RCP<const Epetra_Vector> dispnp;
+  //vector<double> mydispnp;
+  //RCP<const Epetra_Vector> gridv;
+  //vector<double> mygridv;
 
   // create objects for element arrays
-  LINALG::Matrix<nsd_, nen_> edispnp(true);
-  LINALG::Matrix<nsd_, nen_> egridv(true);
+  //LINALG::Matrix<nsd_, nen_> edispnp(true);
+  //LINALG::Matrix<nsd_, nen_> egridv(true);
 
+  /*
   if (ele->IsAle())
   {
     dispnp = discretization.GetState("dispnp");
@@ -480,13 +518,13 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
       }
     }
   }
-
+*/
   // ---------------------------------------------------------------------
   // get additional state vector for AVM3 case: fine-scale velocity
   // values are at time n+alpha_F for generalized-alpha scheme and at
   // time n+1 for all other schemes
   // ---------------------------------------------------------------------
-
+/*
   // fine-scale velocity at time n+alpha_F/n+1
   RCP<const Epetra_Vector> fsvelaf;
   vector<double> myfsvelaf;
@@ -510,7 +548,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
       }
     }
   }
-
+*/
   // ---------------------------------------------------------------------
   // set parameters for classical turbulence models
   // ---------------------------------------------------------------------

@@ -280,42 +280,48 @@ namespace ELEMENTS
     const double SetSolutionParameter(Fluid3*                    ele,
                               ParameterList&             params);
 
-    //TODO: filling of element matrix
-    /*
-    void FillElementVector( DRT::Discretization&          discretization,
-                            vector<int>&                  lm,
-                            LINALG::MATRIX<nsd_,nen_>&    matrixtofill,
-                            LINALG::MATRIX<nen,1>&        vectortofill,
-                            string                        state)
+    /*!
+     * \brief fill elment matrix and vectors with the global values
+     */
+
+    // TODO: think about location
+    void FillElementMatrix( const DRT::Discretization&          discretization, ///< discretization
+                            const vector<int>&                  lm,             ///<
+                            LINALG::Matrix<nsd_,nen_> *         matrixtofill,   ///< vector field
+                            LINALG::Matrix<nen_,1> *            vectortofill,   ///< scalar field
+                            const string                        state)          ///< state of the global vector
     {
-       const int row = matrixtofill.Rows();
-       const int col = matrixtofill.Columns();
+      // get state of the global vector
+      RefCountPtr<const Epetra_Vector> matrix_state = discretization.GetState(state);
+      if(matrix_state == null)
+        dserror("Cannot get state vector %s", state.c_str());
 
-       RefCountPtr<const Epetra_Vector> matrix_state = discretization.GetState(state);
-       if(matrix_state == null)
-         dserror("Cannot get state vector");
+      // extract local values of the global vectors
+      vector<double> mymatrix(lm.size());
+      DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
 
-       vector<double> mymatrix(lm.size());
-       DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
+      // rotate the vector field in the case of rotationally symmetric boundary conditions
+      if(matrixtofill != NULL)
+        rotsymmpbc_->RotateMyValuesIfNecessary(mymatrix);
 
-       for (int i=0; i<row; ++i) //number of rows
-       {
-         if (col == nen_)
-         {
-           for(int j=0; j<col; ++j) // number of colomns
-           {
-             matrixtofill(i,j) = mymatrix[j+(i*numdofpernode_)];
-           }  // end number of columns
-         }
-         else if (col == 1)
-           matrixtofill(i,0) = mymatrix[nsd_+(i*numdofpernode_)];
-         else
-           dserror("number of columns does not correspond to the number of nodes");
-       } // end number of rows
+      for (int inode=0; inode<nen_; ++inode)  // number of nodes
+      {
+        // fill a vector field via a pointer
+        if (matrixtofill != NULL)
+        {
+          for(int idim=0; idim<nsd_; ++idim) // number of dimensions
+            {
+              (*matrixtofill)(idim,inode) = mymatrix[idim+(inode*numdofpernode_)];
+            }  // end for(idim)
+        }
+        // fill a scalar field via a pointer
+        if (vectortofill != NULL)
+          (*vectortofill)(inode,0) = mymatrix[nsd_+(inode*numdofpernode_)];
+      } // end for(inodes)
 
-       return;
+      return;
    }  // End FillElementVector
-*/
+
 
     /*!
        \brief get material parameters
