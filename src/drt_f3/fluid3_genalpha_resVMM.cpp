@@ -265,8 +265,8 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
 
   // specify which residual based stabilisation terms
   // will be used
-  INPAR::FLUID::TDS             tds = Teuchos::getIntegralValue<INPAR::FLUID::TDS>(stablist,"TDS");
-  INPAR::FLUID::TRANSIENT       inertia = Teuchos::getIntegralValue<INPAR::FLUID::TRANSIENT>(stablist,"TRANSIENT");
+  INPAR::FLUID::SubscalesTD             tds = Teuchos::getIntegralValue<INPAR::FLUID::SubscalesTD>(stablist,"TDS");
+  INPAR::FLUID::Transient       inertia = Teuchos::getIntegralValue<INPAR::FLUID::Transient>(stablist,"TRANSIENT");
   INPAR::FLUID::PSPG            pspg = Teuchos::getIntegralValue<INPAR::FLUID::PSPG>(stablist,"PSPG");
   INPAR::FLUID::SUPG            supg = Teuchos::getIntegralValue<INPAR::FLUID::SUPG>(stablist,"SUPG");
   INPAR::FLUID::VStab           vstab = Teuchos::getIntegralValue<INPAR::FLUID::VStab>(stablist,"VSTAB");
@@ -824,7 +824,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs(
   const enum Fluid3::LinearisationAction     newton          ,
   const bool                                 higher_order_ele,
   const enum Fluid3::FineSubgridVisc         fssgv           ,
-  const enum INPAR::FLUID::TRANSIENT         inertia         ,
+  const enum INPAR::FLUID::Transient         inertia         ,
   const enum INPAR::FLUID::PSPG              pspg            ,
   const enum INPAR::FLUID::SUPG              supg            ,
   const enum INPAR::FLUID::VStab             vstab           ,
@@ -3392,7 +3392,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
   const enum Fluid3::LinearisationAction     newton          ,
   const bool                                 higher_order_ele,
   const enum Fluid3::FineSubgridVisc         fssgv           ,
-  const enum INPAR::FLUID::TRANSIENT         inertia         ,
+  const enum INPAR::FLUID::Transient         inertia         ,
   const enum INPAR::FLUID::PSPG              pspg            ,
   const enum INPAR::FLUID::SUPG              supg            ,
   const enum INPAR::FLUID::VStab             vstab           ,
@@ -7864,7 +7864,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
   const enum Fluid3::LinearisationAction           newton          ,
   const bool                                       higher_order_ele,
   const enum Fluid3::FineSubgridVisc               fssgv           ,
-  const enum INPAR::FLUID::TRANSIENT               inertia         ,
+  const enum INPAR::FLUID::Transient               inertia         ,
   const enum INPAR::FLUID::PSPG                    pspg            ,
   const enum INPAR::FLUID::SUPG                    supg            ,
   const enum INPAR::FLUID::VStab                   vstab           ,
@@ -10530,8 +10530,8 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
   // specify which residual based stabilisation terms
   // will be used
-  INPAR::FLUID::TDS             tds = Teuchos::getIntegralValue<INPAR::FLUID::TDS>(stablist,"TDS");
-  INPAR::FLUID::TRANSIENT       inertia = Teuchos::getIntegralValue<INPAR::FLUID::TRANSIENT>(stablist,"TRANSIENT");
+  INPAR::FLUID::SubscalesTD             tds = Teuchos::getIntegralValue<INPAR::FLUID::SubscalesTD>(stablist,"TDS");
+  INPAR::FLUID::Transient       inertia = Teuchos::getIntegralValue<INPAR::FLUID::Transient>(stablist,"TRANSIENT");
   INPAR::FLUID::PSPG            pspg = Teuchos::getIntegralValue<INPAR::FLUID::PSPG>(stablist,"PSPG");
   INPAR::FLUID::SUPG            supg = Teuchos::getIntegralValue<INPAR::FLUID::SUPG>(stablist,"SUPG");
   INPAR::FLUID::VStab           vstab = Teuchos::getIntegralValue<INPAR::FLUID::VStab>(stablist,"VSTAB");
@@ -12085,7 +12085,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalVisc(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
   const enum Fluid3::TauType             whichtau  ,
-  const enum INPAR::FLUID::TDS           tds       ,
+  const enum INPAR::FLUID::SubscalesTD           tds       ,
   const double &                         gamma     ,
   const double &                         dt        ,
   const double &                         hk        ,

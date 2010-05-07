@@ -72,14 +72,14 @@ namespace INPAR
       reynolds_stress_stab_only_rhs
     };
 
-    enum TDS
+    enum SubscalesTD
     {
       subscales_none,
       subscales_quasistatic,
       subscales_time_dependent
     };
 
-    enum TRANSIENT
+    enum Transient
     {
       inertia_stab_drop,
       inertia_stab_keep,

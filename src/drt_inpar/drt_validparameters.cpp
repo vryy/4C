@@ -1002,7 +1002,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("CROSSPOINTS","No","If chosen, multipliers are removed from crosspoints / edge nodes",
                                yesnotuple,yesnovalue,&scontact);
-  
+
   DoubleParameter("HEATTRANSFERCOEFF",0.0,"Heat transfer coefficient for thermal contact",&scontact);
 
   /*----------------------------------------------------------------------*/
@@ -1605,7 +1605,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn_stab);
 
   // the following parameters are necessary only if a residual based stabilized method is applied
-  setStringToIntegralParameter<INPAR::FLUID::TDS>("TDS",
+  setStringToIntegralParameter<INPAR::FLUID::SubscalesTD>("TDS",
                                "quasistatic",
                                "Flag to allow time dependency of subscales for residual-based stabilization.",
                                tuple<std::string>(
@@ -1614,12 +1614,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "Use a quasi-static residual-based stabilization (standard case)",
                                  "Residual-based stabilization including time evolution equations for subscales"),
-                                 tuple<INPAR::FLUID::TDS>(
+                                 tuple<INPAR::FLUID::SubscalesTD>(
                                    INPAR::FLUID::subscales_quasistatic,
                                    INPAR::FLUID::subscales_time_dependent),
                                &fdyn_stab);
 
-  setStringToIntegralParameter<INPAR::FLUID::TRANSIENT>("TRANSIENT",
+  setStringToIntegralParameter<INPAR::FLUID::Transient>("TRANSIENT",
                                "no_transient",
                                "Specify how to treat the transient term.",
                                tuple<std::string>(
@@ -1630,7 +1630,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Do not use transient term (currently only opportunity for quasistatic stabilization)",
                                  "Use transient term (recommended for time dependent subscales)",
                                  "Use transient term including a linearisation of 1/tau"),
-                               tuple<INPAR::FLUID::TRANSIENT>(
+                               tuple<INPAR::FLUID::Transient>(
                                    INPAR::FLUID::inertia_stab_drop,
                                    INPAR::FLUID::inertia_stab_keep,
                                    INPAR::FLUID::inertia_stab_keep_complete),
