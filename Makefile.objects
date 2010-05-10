@@ -200,6 +200,7 @@ OBJS_DRT_CONTACT = \
 #----------------------------------------------------- drt version statmech
 OBJS_DRT_STATMECH = \
                 src/drt_statmech/statmech_time.o \
+                src/drt_statmech/brownianrod.o \
                 src/drt_statmech/statmech_manager.o
 #----------------------------------------------------- drt version statmech
 OBJS_DRT_STATMECH_LIB = src/drt_statmech/bromotion_manager.o
