@@ -2334,19 +2334,19 @@ void FLD::FluidImplicitTimeInt::GenAlphaUpdateAcceleration()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
+void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
   sysmat_->Zero();
   if (shapederivatives_ != Teuchos::null)
     shapederivatives_->Zero();
 
   // set the new solution we just got
-  if (vel!=Teuchos::null)
+  if (stepinc!=Teuchos::null)
   {
-    // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
+    // Take Dirichlet values from velnp and add stepinc to veln for non-Dirichlet
     // values.
     Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-    aux->Update(1.0, *veln_, 1.0, *vel, 0.0);
+    aux->Update(1.0, *veln_, 1.0, *stepinc, 0.0);
     dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), velnp_);
   }
 

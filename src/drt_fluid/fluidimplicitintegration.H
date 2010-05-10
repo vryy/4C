@@ -179,10 +179,10 @@ public:
     \brief build linear system matrix and rhs
 
     Monolithic FSI needs to access the linear fluid problem.
-
-    \param vel new guess at velocity and pressure
   */
-  void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
+  void Evaluate(
+      Teuchos::RCP<const Epetra_Vector> stepinc  ///< solution increment between time step n and n+1
+      );
 
   /*!
   \brief Update the solution after convergence of the nonlinear
