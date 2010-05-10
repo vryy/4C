@@ -175,7 +175,7 @@ Maintainer: Axel Gerstenberger
   /*
                        /          \
                       |            |
-                      |  du2 , u2  |
+                      |  du , u    |
                       |            |
                        \          /
   */
@@ -188,7 +188,7 @@ Maintainer: Axel Gerstenberger
   /*
                        /               \
                       |                 |
-                      |  du2 , u2_proj  |
+                      |  du , u_proj    |
                       |                 |
                        \               /
   */
@@ -197,18 +197,6 @@ Maintainer: Axel Gerstenberger
   assembler.template Vector<Vely>(shp.d0, fac*u2_proj(1));
   assembler.template Vector<Velz>(shp.d0, fac*u2_proj(2));
 
-
-   /* Druckterm */
-  /*
-                  /                \
-                 |                  |
-               - |  nabla o v , Dp  |
-                 |                  |
-                  \                /
-  */
-  assembler.template Matrix<Velx,Pres>(shp.dx, -fac, shp.d0);
-  assembler.template Matrix<Vely,Pres>(shp.dy, -fac, shp.d0);
-  assembler.template Matrix<Velz,Pres>(shp.dz, -fac, shp.d0);
 
   /* Divergenzfreiheit - continuity equation*/
   /*
