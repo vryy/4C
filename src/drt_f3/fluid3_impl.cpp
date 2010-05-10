@@ -574,7 +574,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
 
-  bool mixed_formulation = false;
+  bool mixed_formulation = params.get<bool>("mixed_formulation",false);
 
   if (mixed_formulation == false)
   {

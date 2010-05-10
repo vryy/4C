@@ -1541,17 +1541,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&fdyn);
   IntParameter("ITEMAX",10,"max. number of nonlin. iterations",&fdyn);
   IntParameter("GRIDVEL",1,"order of accuracy of mesh velocity determination",&fdyn);
+  IntParameter("COMBISYSMAT",0,"combined sysmat implementation 2D/3D",&fdyn);
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&fdyn);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&fdyn);
   DoubleParameter("ALPHA_M",1.0,"Time integration factor",&fdyn);
   DoubleParameter("ALPHA_F",1.0,"Time integration factor",&fdyn);
   DoubleParameter("GAMMA",1.0,"Time integration factor",&fdyn);
-
   DoubleParameter("THETA",0.66,"Time integration factor",&fdyn);
 
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&fdyn);
   DoubleParameter("STEADYTOL",1e-6,"Tolerance for steady state check",&fdyn);
   DoubleParameter("START_THETA",1.0,"Time integration factor for starting scheme",&fdyn);
+
  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& andyn = list->sublist("ARTERIAL DYNAMIC",false,"");
 
