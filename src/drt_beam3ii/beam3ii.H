@@ -355,6 +355,9 @@ private:
   //!rotation angle displacement at nodes; relates to current configuration
   vector<LINALG::Matrix<3,1> > dispthetanew_;
   
+  //!initial curvature at Gauss points for elasticity (corresponding to \Lambda_0^t \Labmda'_0 in eq. (3.5), Crisfield 1999
+  vector<LINALG::Matrix<3,1> > kapparef_;
+  
   //!node I for determination of reference triad, eq. (3.9), (3.10), Jelenic 1999
   int nodeI_;
   

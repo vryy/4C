@@ -902,13 +902,16 @@ inline void DRT::ELEMENTS::Beam3ii::computestrain(const LINALG::Matrix<3,1>& rpr
   if(NumNode()>2)
     dserror("computation of curvature in beam3ii element implemented only for 2 nodes!");
   
-  //compute global and local rotational vectors phi according to Crisfield 1999,(4.6) in quaterion form
+  //compute local rotational vectors phi according to Crisfield 1999,(4.6) in quaterion form
   LINALG::Matrix<4,1> phi12;
   quaternionproduct(Qnew_[1],inversequaternion(Qnew_[0]),phi12); 
   
   //according o Crisfield 1999, eq. (4.9), kappa equals the vector corresponding to phi12 divided by the element reference length
   quaterniontoangle(phi12,kappa);
   kappa.Scale(0.5/jacobi_[0]);
+  
+  //mechanically relevant curvature is current curvature minus curvature in reference position
+  kappa -= kapparef_[0];
 
 
    return;

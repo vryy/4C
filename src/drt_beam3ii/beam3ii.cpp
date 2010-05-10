@@ -52,6 +52,8 @@ DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  Qnew_(old.Qnew_),
  dispthetaconv_(old.dispthetaconv_),
  dispthetaold_(old.dispthetaold_),
+ dispthetanew_(old.dispthetanew_),
+ kapparef_(old.kapparef_),
  nodeI_(old.nodeI_),
  nodeJ_(old.nodeJ_),
  crosssec_(old.crosssec_),
@@ -164,6 +166,9 @@ void DRT::ELEMENTS::Beam3ii::Pack(vector<char>& data) const
   AddtoPack<4,1>(data,Qold_);
   AddtoPack<3,1>(data,dispthetaconv_);
   AddtoPack<3,1>(data,dispthetaold_);
+  AddtoPack<3,1>(data,dispthetanew_);
+  AddtoPack<3,1>(data,kapparef_);
+
 
   return;
 }
@@ -202,6 +207,9 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const vector<char>& data)
   ExtractfromPack<4,1>(position,data,Qold_);
   ExtractfromPack<3,1>(position,data,dispthetaconv_);
   ExtractfromPack<3,1>(position,data,dispthetaold_);
+  ExtractfromPack<3,1>(position,data,dispthetanew_);
+  ExtractfromPack<3,1>(position,data,kapparef_);
+
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -364,6 +372,7 @@ void DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry(const vector<double>& xrefe,
     
     //resize STL vectors for Jacobi determinants so that they can store one value at each Gauss point
     jacobi_.resize(nnode-1);
+    kapparef_.resize(nnode-1);
     jacobimass_.resize(nnode);
     jacobinode_.resize(nnode);
 
@@ -382,7 +391,7 @@ void DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry(const vector<double>& xrefe,
     //Get the applied integrationpoints for underintegration
     DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
     
-    //Loop through all GPs and calculate jacobi the triads at the GPs
+    //Loop through all GPs for underintegration and calculate jacobi determinants and initial curvature at the GPs
     for(int numgp=0; numgp < gausspoints.nquad; numgp++)
     {   
       //Get position xi of GP
@@ -404,6 +413,21 @@ void DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry(const vector<double>& xrefe,
       //Store Jacobi determinant with respect to reference configuration
       jacobi_[numgp]= drdxi.Norm2();
       
+      
+      /*the below curvature computation is possible for 2-noded elements only; for higher order elements one might replace it by 
+       *a computation according to eq. (2.12), Jelenic 1999*/
+      if(NumNode()>2)
+        dserror("computation of curvature in beam3ii element implemented only for 2 nodes!");
+      
+      //compute local rotational vectors phi according to Crisfield 1999,(4.6) in quaterion form
+      LINALG::Matrix<4,1> phi12;
+      quaternionproduct(Qnew_[1],inversequaternion(Qnew_[0]),phi12); 
+      
+      //according o Crisfield 1999, eq. (4.9), kappa equals the vector corresponding to phi12 divided by the element reference length
+      quaterniontoangle(phi12,kapparef_[0]);
+      kapparef_[0].Scale(0.5/jacobi_[0]);
+      
+   
     }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
     
 
@@ -411,7 +435,7 @@ void DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry(const vector<double>& xrefe,
     //Get the applied integrationpoints for exact integration of mass matrix
     DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
         
-    //Loop through all GPs and calculate jacobi and theta0
+    //Loop through all GPs for exact integration and compute initial jacobi determinant
     for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
     {
         
