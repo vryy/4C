@@ -306,11 +306,11 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
           fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), numifacepatchdof));
           fluidfluidmatrices_.rhuis_uncond = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
-          Cuu  = params.get<RCP<Epetra_SerialDenseMatrix> >("Cuu");
-          Mud  = params.get<RCP<Epetra_SerialDenseMatrix> >("Mud");
-          Mdu  = params.get<RCP<Epetra_SerialDenseMatrix> >("Mdu");
-          Cdd  = params.get<RCP<Epetra_SerialDenseMatrix> >("Cdd");
-          rhsd = params.get<RCP<Epetra_SerialDenseVector> >("rhsd");
+          Cuu  = params.get<RCP<Epetra_SerialDenseMatrix> >("Cuulm");
+          Mud  = params.get<RCP<Epetra_SerialDenseMatrix> >("Mudlm");
+          Mdu  = params.get<RCP<Epetra_SerialDenseMatrix> >("Mdulm");
+          Cdd  = params.get<RCP<Epetra_SerialDenseMatrix> >("Cddlm");
+          rhsd = params.get<RCP<Epetra_SerialDenseVector> >("rhslm");
         }
 
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
