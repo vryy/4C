@@ -1362,8 +1362,6 @@ void SysmatBoundaryTauPressure(
     const M2&                         etau,
     const V2&                         ediscpres,
     const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
-    Epetra_SerialDenseMatrix&         Gds,
-    Epetra_SerialDenseVector&         rhsd,
     const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
     const double&                     dt,            ///< delta t (time step size)
     const double&                     theta,         ///< factor for one step theta scheme
@@ -1795,8 +1793,6 @@ void SysmatTauPressure(
         const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
         Epetra_SerialDenseMatrix&         estif,         ///< element matrix to calculate
         Epetra_SerialDenseVector&         eforce,        ///< element rhs to calculate
-        Epetra_SerialDenseMatrix&         Gds,
-        Epetra_SerialDenseVector&         rhsd,
         Teuchos::RCP<const MAT::Material> material,      ///< fluid material
         const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
         const double                      dt,            ///< delta t (time step size)
@@ -1845,7 +1841,7 @@ void SysmatTauPressure(
     if (ih->ElementIntersected(ele->Id()))
     {
       SysmatBoundaryTauPressure<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, etau, ediscpres, iforcecol, Gds, rhsd,
+          ele, ih, dofman, evelnp, etau, ediscpres, iforcecol,
           timealgo, dt, theta, assembler, ifaceForceContribution, monolithic_FSI, fluidfluidmatrices, params);
     }
 }
@@ -1863,8 +1859,6 @@ void XFLUID::callSysmatTauPressure(
         const Teuchos::RCP<Epetra_Vector>&  iforcecol,     ///< reaction force due to given interface velocity
         Epetra_SerialDenseMatrix&         estif,
         Epetra_SerialDenseVector&         eforce,
-        Epetra_SerialDenseMatrix&         Gds,
-        Epetra_SerialDenseVector&         rhsd,
         Teuchos::RCP<const MAT::Material> material,
         const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
         const double                      dt,            ///< delta t (time step size)
@@ -1885,27 +1879,27 @@ void XFLUID::callSysmatTauPressure(
         {
             case DRT::Element::hex8:
                 SysmatTauPressure<DRT::Element::hex8,XFEM::standard_assembly>(
-                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             case DRT::Element::hex20:
                 SysmatTauPressure<DRT::Element::hex20,XFEM::standard_assembly>(
-                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             case DRT::Element::hex27:
                 SysmatTauPressure<DRT::Element::hex27,XFEM::standard_assembly>(
-                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             case DRT::Element::tet4:
                 SysmatTauPressure<DRT::Element::tet4,XFEM::standard_assembly>(
-                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             case DRT::Element::tet10:
                 SysmatTauPressure<DRT::Element::tet10,XFEM::standard_assembly>(
-                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             default:
@@ -1918,27 +1912,27 @@ void XFLUID::callSysmatTauPressure(
         {
             case DRT::Element::hex8:
                 SysmatTauPressure<DRT::Element::hex8,XFEM::xfem_assembly>(
-                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             case DRT::Element::hex20:
                 SysmatTauPressure<DRT::Element::hex20,XFEM::xfem_assembly>(
-                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             case DRT::Element::hex27:
                 SysmatTauPressure<DRT::Element::hex27,XFEM::xfem_assembly>(
-                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             case DRT::Element::tet4:
                 SysmatTauPressure<DRT::Element::tet4,XFEM::xfem_assembly>(
-                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             case DRT::Element::tet10:
                 SysmatTauPressure<DRT::Element::tet10,XFEM::xfem_assembly>(
-                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+                        params, ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
                         material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
                 break;
             default:

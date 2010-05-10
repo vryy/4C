@@ -40,8 +40,6 @@ namespace XFLUID
           const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
           Epetra_SerialDenseMatrix&         estif,
           Epetra_SerialDenseVector&         eforce,
-          Epetra_SerialDenseMatrix&         Gds,           ///< stress-displacement coupling matrix
-          Epetra_SerialDenseVector&         rhsd,          ///< stress-displacement coupling residual
           Teuchos::RCP<const MAT::Material> material,
           const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
           const double                      dt,            ///< delta t (time step size)
@@ -71,8 +69,6 @@ namespace XFLUID
           const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
           Epetra_SerialDenseMatrix&         estif,         ///< element stiffness matrix
           Epetra_SerialDenseVector&         eforce,        ///< element rhs vector
-          Epetra_SerialDenseMatrix&         Gds,           ///< stress-displacement coupling matrix
-          Epetra_SerialDenseVector&         rhsd,          ///< stress-displacement coupling residual
           Teuchos::RCP<const MAT::Material> material,
           const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
           const double                      dt,            ///< delta t (time step size)
@@ -104,8 +100,6 @@ namespace XFLUID
           const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
           Epetra_SerialDenseMatrix&         estif,
           Epetra_SerialDenseVector&         eforce,
-          Epetra_SerialDenseMatrix&         Gds,           ///< stress-displacement coupling matrix
-          Epetra_SerialDenseVector&         rhsd,          ///< stress-displacement coupling residual
           Teuchos::RCP<const MAT::Material> material,
           const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
           const double                      dt,            ///< delta t (time step size)
@@ -124,12 +118,12 @@ namespace XFLUID
     {
     case INPAR::XFEM::BoundaryTypeSigma:
       XFLUID::callSysmatSigma(params, assembly_type,
-          ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+          ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
       break;
     case INPAR::XFEM::BoundaryTypeTauPressure:
       XFLUID::callSysmatTauPressure(params, assembly_type,
-          ele, ih, eleDofManager, mystate, iforcecol, estif, eforce, Gds, rhsd,
+          ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
       break;
     default:

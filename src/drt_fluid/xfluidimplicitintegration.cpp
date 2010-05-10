@@ -1565,16 +1565,22 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::Evaluate(
     const Teuchos::RCP<DRT::Discretization> cutterdiscret,
-    Teuchos::RCP<const Epetra_Vector> fluidvel)
+    Teuchos::RCP<const Epetra_Vector> stepinc)
 {
   cout << "FLD::XFluidImplicitTimeInt::Evaluate()" << endl;
 
-  const bool firstcall = state_.velnp_ == Teuchos::null;
+  const bool firstFSINewtonStep = (stepinc == Teuchos::null);
 
-  if (state_.velnp_ != Teuchos::null)
-    state_.velnp_->Update(1.0,*fluidvel,1.0);
-
-  if (firstcall)
+  // set the new solution we just got
+  if (not firstFSINewtonStep)
+  {
+    // Take Dirichlet values from velnp and add stepinc to veln for non-Dirichlet
+    // values.
+    Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+    aux->Update(1.0, *state_.veln_, 1.0, *stepinc, 0.0);
+    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), state_.velnp_);
+  }
+  else
   {
     cout << "Resetting!!!!!!!!!!!!!!!!!!!" << endl;
     ParameterList eleparams;
@@ -1622,10 +1628,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   ParameterList eleparams;
 
   // action for elements
-  if (timealgo_==timeint_stationary)
-    eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
-  else
-    eleparams.set("action","calc_fluid_systemmat_and_residual");
+  eleparams.set("action","calc_fluid_systemmat_and_residual");
 
   // set general element parameters
   //eleparams.set("total time",time_);
@@ -1653,6 +1656,8 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   // reset interface force and let the elements fill it
   eleparams.set("interface force",iforcecolnp);
 
+  eleparams.set("fluidfluidCoupling",true);
+
   double L2 = 0.0;
   eleparams.set("L2",L2);
 
@@ -1660,6 +1665,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   eleparams.set("INCOMP_PROJECTION",xparams_.get<bool>("INCOMP_PROJECTION"));
   eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
   eleparams.set<bool>("monolithic_FSI",true);
+  eleparams.set("EMBEDDED_BOUNDARY",xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"));
 
   // call loop over elements
   //discret_->Evaluate(eleparams,sysmat_,residual_);
@@ -3114,11 +3120,10 @@ void FLD::XFluidImplicitTimeInt::MonolithicMultiDisEvaluate(
 
     vector<int> ifacepatchlm;
     vector<int> ifacepatchlmowner;
-    std::set<int> begids;
 
     if (intersected)
     {
-      begids = ih->GetIntersectingBoundaryElementsGID(actele->Id());
+      const std::set<int> begids = ih->GetIntersectingBoundaryElementsGID(actele->Id());
       for (std::set<int>::const_iterator begid = begids.begin(); begid != begids.end(); ++begid)
       {
         DRT::Element* bele = ifacedis->gElement(*begid);
@@ -3615,7 +3620,6 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
       for (std::set<int>::const_iterator begid = begids.begin(); begid != begids.end(); ++begid)
       {
         DRT::Element* bele = boundarydiscret->gElement(*begid);
-        params.set("boundaryelementNumnode",bele->NumNode());
         std::vector<int> ifacelm;
         std::vector<int> ifacelmowner;
         bele->LocationVector(*boundarydiscret, ifacelm, ifacelmowner);
@@ -3716,84 +3720,11 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
 /*----------------------------------------------------------------------------*/
 void FLD::XFluidImplicitTimeInt::ComputeFluidFluidInterfaceAccelerationsAndVelocities()
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  const double dt = fsidyn.get<double>("TIMESTEP");
-
-  // use only one of these switches
-  //#define USE_FSI_VEL_AND_COMPUTE_ONLY_ACCNP
-  #define COMPUTE_VEL_AND_ACCNP_VIA_BETA_NEWMARK
-  //#define COMPUTE_VEL_AND_ACCNP_VIA_ONE_STEP_THETA
-
-  #ifdef USE_FSI_VEL_AND_COMPUTE_ONLY_ACCNP
-    double theta = 0.66;
-    if (Step() == 1)
-      theta = 1.0;
-    iaccnp_->Update(-(1.0-theta)/(theta),*iaccn_,0.0);
-    iaccnp_->Update(1.0/(theta*dt),*ivelnp_,-1.0/(theta*dt),*iveln_,1.0);
-  #endif
-  #ifdef COMPUTE_VEL_AND_ACCNP_VIA_BETA_NEWMARK
-    double beta;
-    double gamma;
-    if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
-    {
-      if (Step() == 1)
-      {
-        gamma = 1.0;
-        beta = gamma/2.0;
-      }
-      else
-      {
-        gamma = 0.66;
-        beta = gamma/2.0;
-      }
-    }
-    else
-    {
-      gamma = 1.0;
-      beta = gamma/2.0;
-    }
-
     // compute acceleration at timestep n+1
-    fluidfluidstate_.fiaccnp_->Update(-(1.0-(2.0*beta))/(2.0*beta),*fluidfluidstate_.fiaccn_,0.0);
-    fluidfluidstate_.fiaccnp_->Update(-1.0/(beta*dt),*fluidfluidstate_.fiveln_,1.0);
-    fluidfluidstate_.fiaccnp_->Update(1.0/(beta*dt*dt),*fluidfluidstate_.fidispnp_,-1.0/(beta*dt*dt),*fluidfluidstate_.fidispn_,1.0);
-
-    // compute velocity at timestep n+1
-    fluidfluidstate_.fivelnp_->Update(1.0,*fluidfluidstate_.fiveln_,0.0);
-    fluidfluidstate_.fivelnp_->Update(gamma*dt,*fluidfluidstate_.fiaccnp_,(1-gamma)*dt,*fluidfluidstate_.fiaccn_,1.0);
-   // fluidfluidstate_.fivelnp_->Print(cout);
-  #endif
-  #ifdef COMPUTE_VEL_AND_ACCNP_VIA_ONE_STEP_THETA
-
-    double theta_vel = 0.5;
-    double theta_acc = 0.66;
-    if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
-    {
-      if (Step() == 1)
-      {
-        theta_vel = 1.0;
-        theta_acc = 1.0;
-      }
-      else
-      {
-        theta_vel = 0.66;
-        theta_acc = 0.66;
-      }
-    }
-    else
-    {
-      theta_vel = 1.0;
-      theta_acc = 1.0;
-    }
-
-    // compute velocity at timestep n+1
-    fluidfluidstate_.fivelnp_->Update(-(1.0-theta_vel)/theta_vel,*fluidfluidstate_.fiveln_,0.0);
-    fluidfluidstate_.fivelnp_->Update(1.0/(theta_vel*dt),*fluidfluidstate_.fidispnp_,-1.0/(theta_vel*dt),*fluidfluidstate_.fidispn_,1.0);
-
-    // compute acceleration at timestep n+1
-    fluidfluidstate_.fiaccnp_->Update(-(1.0-theta_acc)/theta_acc,*fluidfluidstate_.fiaccn_,0.0);
-    fluidfluidstate_.fiaccnp_->Update(1.0/(theta_acc*dt),*fluidfluidstate_.fivelnp_,-1.0/(theta_acc*dt),*fluidfluidstate_.fiveln_,1.0);
-  #endif
+    const double theta = Theta();
+    const double dt = Dt();
+    fluidfluidstate_.fiaccnp_->Update(-(1.0-theta)/(theta),*fluidfluidstate_.fiaccn_,0.0);
+    fluidfluidstate_.fiaccnp_->Update(1.0/(theta*dt),*fluidfluidstate_.fivelnp_,-1.0/(theta*dt),*fluidfluidstate_.fiveln_,1.0);
 }
 /*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/

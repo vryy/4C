@@ -59,7 +59,10 @@ DRT::ELEMENTS::XFluid3::ActionType DRT::ELEMENTS::XFluid3::convertStringToAction
   else if (action == "fluidfluidCoupling")
     act = XFluid3::fluidfluidCoupling;
   else
+  {
+    cout << "Unknown action: " << action << endl;
     dserror("Unknown type of action for XFluid3");
+  }
   return act;
 }
 
@@ -251,18 +254,35 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       RCP<Epetra_SerialDenseMatrix> Cdd;
       RCP<Epetra_SerialDenseVector> rhsd;
 
-      RCP<Epetra_SerialDenseMatrix> Gds_uncond;
-      RCP<Epetra_SerialDenseVector> rhsd_uncond;
-
       if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
       {
+        if (ih_->ElementIntersected(Id()))
+        {
+          std::set<int> begids = ih_->GetIntersectingBoundaryElementsGID(this->Id());
+          const int numnode_bele = ih_->cutterdis()->gElement(*begids.begin())->NumNode();
+          // the size of the numifacepatchdof matches to the size of ifacepatchlm
+          const size_t numifacepatchdof = begids.size()*3*numnode_bele;
+          fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
+          fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), numifacepatchdof));
+          fluidfluidmatrices_.rhuis_uncond = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
+          Cdd = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, numifacepatchdof));
+        }
+
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
                 *eleDofManager_, NumNode(), NodeIds());
 
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
-                this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1, *Gds_uncond, *rhsd_uncond,
+                this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2,fluidfluidmatrices_);
+
+        if (ih_->ElementIntersected(Id()))
+        {
+           params.set("Mdulm",fluidfluidmatrices_.Guis_uncond);
+           params.set("Mudlm",fluidfluidmatrices_.Gsui_uncond);
+           params.set("Cddlm",Cdd);
+           params.set("rhslm",fluidfluidmatrices_.rhuis_uncond);
+        }
       }
       else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       {
@@ -277,40 +297,49 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
         Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
 
-        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
-                *eleDofManager_uncondensed_, NumNode(), NodeIds());
-
         if (ih_->ElementIntersected(Id()) and monolithic_FSI)
         {
+          std::set<int> begids = ih_->GetIntersectingBoundaryElementsGID(this->Id());
+          const int numnode_bele = ih_->cutterdis()->gElement(*begids.begin())->NumNode();
+          // the size of the numifacepatchdof matches to the size of ifacepatchlm
+          const size_t numifacepatchdof = begids.size()*3*numnode_bele;
+          fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
+          fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), numifacepatchdof));
+          fluidfluidmatrices_.rhuis_uncond = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
           Cuu  = params.get<RCP<Epetra_SerialDenseMatrix> >("Cuu");
           Mud  = params.get<RCP<Epetra_SerialDenseMatrix> >("Mud");
           Mdu  = params.get<RCP<Epetra_SerialDenseMatrix> >("Mdu");
           Cdd  = params.get<RCP<Epetra_SerialDenseMatrix> >("Cdd");
           rhsd = params.get<RCP<Epetra_SerialDenseVector> >("rhsd");
-
-          const std::set<int> begids = ih_->GetIntersectingBoundaryElementsGID(this->Id());
-          const int numnode_b = 4;
-          const size_t numpatchdof = 3*numnode_b*begids.size();
-          Gds_uncond  = rcp(new Epetra_SerialDenseMatrix(numpatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
-          rhsd_uncond = rcp(new Epetra_SerialDenseVector(numpatchdof));
         }
+
+        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
+                *eleDofManager_uncondensed_, NumNode(), NodeIds());
 
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
-                this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond, *Gds_uncond, *rhsd_uncond,
+                this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices_);
 
         // condensation
         CondenseElementStressAndStoreOldIterationStep(
             elemat1_uncond, elevec1_uncond,
-            *Gds_uncond, *rhsd_uncond,
+            *fluidfluidmatrices_.Guis_uncond, *fluidfluidmatrices_.rhuis_uncond,
             elemat1, elevec1,
             *Cuu, *Mud, *Mdu, *Cdd, *rhsd,
             monolithic_FSI
             );
+
+        if (ih_->ElementIntersected(Id()))
+        {
+          params.set("Mdulm",Mdu);
+          params.set("Mudlm",Mud);
+          params.set("Cddlm",Cdd);
+          params.set("rhslm",rhsd);
+        }
       }
 
-#if 0
+#if DEBUG
       if (std::isnan(elevec1.Norm2()))   { cout << *this << endl; dserror("NaNs in elevec1 detected! Quitting..."); }
       if (std::isnan(elemat1.InfNorm())) { cout << *this << endl; dserror("NaNs in elemat1 detected! Quitting..."); }
 #endif
@@ -380,8 +409,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           }
           else
 #endif
-	   break;
-	}
+	    break;
+	  }
     case fluidfluidCoupling:
     {
       // do no calculation, if not needed
@@ -410,9 +439,6 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
       const bool monolithic_FSI = params.get<bool>("monolithic_FSI");         
             
-      RCP<Epetra_SerialDenseMatrix> Gds_uncond;
-      RCP<Epetra_SerialDenseVector> rhsd_uncond;
-      
       RCP<Epetra_SerialDenseMatrix> Cuu;
       RCP<Epetra_SerialDenseMatrix> Mud;
       RCP<Epetra_SerialDenseMatrix> Mdu;
@@ -424,8 +450,9 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         if (ih_->ElementIntersected(Id()))
         {
           std::set<int> begids = ih_->GetIntersectingBoundaryElementsGID(this->Id());
+          const int numnode_bele = ih_->cutterdis()->gElement(*begids.begin())->NumNode();
           // the size of the numifacepatchdof matches to the size of ifacepatchlm
-          const size_t numifacepatchdof = begids.size()*3*params.get <int >("boundaryelementNumnode");
+          const size_t numifacepatchdof = begids.size()*3*numnode_bele;
           fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
           fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), numifacepatchdof));
           fluidfluidmatrices_.rhuis_uncond = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
@@ -437,7 +464,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
-            this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1, *Gds_uncond, *rhsd_uncond,
+            this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1,
             mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices_);
         
         if (ih_->ElementIntersected(Id()))
@@ -465,8 +492,9 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         if (ih_->ElementIntersected(Id()))
         {
           std::set<int> begids = ih_->GetIntersectingBoundaryElementsGID(this->Id());
+          const int numnode_bele = ih_->cutterdis()->gElement(*begids.begin())->NumNode(); // numnode of first boundary element
           // the size of the numifacepatchdof matches to the size of ifacepatchlm
-          const size_t numifacepatchdof = begids.size()*3*params.get <int >("boundaryelementNumnode");
+          const size_t numifacepatchdof = begids.size()*3*numnode_bele;
           fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
           fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), numifacepatchdof));
           fluidfluidmatrices_.rhuis_uncond = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
@@ -481,7 +509,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
-            this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond, *Gds_uncond, *rhsd_uncond,
+            this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond,
             mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices_);
         
         // condensation
@@ -527,7 +555,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
               this, ih_, *eleDofManager_, mystate, elemat1, elemat2, elevec1, elevec2,
               pstab, ifaceForceContribution);
 
-#if 0
+#if DEBUG
       if (std::isnan(elevec1.Norm2()))   { cout << *this << endl; dserror("NaNs in elevec1 detected! Quitting..."); }
       if (std::isnan(elemat1.InfNorm())) { cout << *this << endl; dserror("NaNs in elemat1 detected! Quitting..."); }
 #endif
