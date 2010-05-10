@@ -533,6 +533,7 @@ set(OBJS_DRT_UTILS
   src/drt_fem_general/drt_utils_fem_shapefunctions.cpp
   src/drt_fem_general/drt_utils_integration.cpp
   src/drt_fem_general/drt_utils_local_connectivity_matrices.cpp
+  src/drt_fem_general/largerotations.cpp
   src/drt_fluid/fluid_rotsym_periodicbc_utils.cpp
   src/drt_geometry/integrationcell.cpp
   src/drt_geometry/intersection.cpp
@@ -1852,12 +1853,12 @@ baci_test(torsion3test 1 "")
 baci_test(torsion3test 2 "")
 baci_test(truss2test1 1 "")
 baci_test(truss3test1 1 "")
-baci_test(viscoAnisotropic_anisocreep 1 "")
-baci_test(viscoAnisotropic_anisocreep 2 "")
-baci_test(viscoAnisotropic_creep 1 "")
-baci_test(viscoAnisotropic_creep 2 "")
-baci_test(viscoNeoHooke_creep 1 "")
-baci_test(viscoNeoHooke_creep 2 "")
+baci_test(viscoAnisotropic_anisocreep 1 60)
+baci_test(viscoAnisotropic_anisocreep 2 60)
+baci_test(viscoAnisotropic_creep 1 60)
+baci_test(viscoAnisotropic_creep 2 60)
+baci_test(viscoNeoHooke_creep 1 60)
+baci_test(viscoNeoHooke_creep 2 60)
 baci_test(w1_dyn_dirich_drt 1 "")
 baci_test(w1_dyn_dirich_drt 2 "")
 baci_test(w1q4_cantilever_eas 1 "")
@@ -1865,6 +1866,13 @@ baci_test(w1q4_cantilever_eas 2 "")
 baci_test(w1q4_patch_eas 1 "")
 baci_test(w1q4_patch_eas 2 "")
 baci_test(w1q9_dyn_rot_drt 1 "")
+
+if (D_BEAM3II)
+  baci_test(beam3iitest1linear 1 "")
+  baci_test(beam3iitest1linear 2 "")
+  baci_test(beam3iitest2linear 1 "")
+  baci_test(beam3iitest2linear 2 "")
+endif (D_BEAM3II)
 
 if (INVERSEDESIGNCREATE)
   baci_test(inversedesign_wedge6 1 "")
@@ -1911,6 +1919,7 @@ if (QHULL)
   baci_test(xfsi_fluid_pusher_BE 1 15)
   baci_test(xfsi_fluid_pusher_bdf2 1 "")
   baci_test(xfsi_fluid_pusher_ost 1 15)
+  baci_test(xfsi_fluid_pusher_ost_densmod 1 15)
   baci_test(xfsi_fluid_pusher_ost_projection 1 15)
   baci_test(xfsi_multibody_hex20 1 "")
   baci_test(xfsi_multibody_hex20 2 "")
