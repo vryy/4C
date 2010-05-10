@@ -290,9 +290,9 @@ void ADAPTER::StructureGenAlpha::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
+void ADAPTER::StructureGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
-  structure_->Evaluate(disp);
+  structure_->Evaluate(disiterinc);
 }
 
 

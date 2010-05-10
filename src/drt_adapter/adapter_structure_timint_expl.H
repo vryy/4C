@@ -128,10 +128,7 @@ namespace ADAPTER {
     /// start new time step
     void PrepareTimeStep();
 
-    /// evaluate elements with given displacement
-    void Evaluate(
-      Teuchos::RCP<const Epetra_Vector> disp  ///< current state
-    );
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
 
     /// update at time step end
     void Update();

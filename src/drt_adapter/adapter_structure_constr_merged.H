@@ -88,9 +88,9 @@ namespace ADAPTER {
     /// IT'S ACTUALLY ALWAYS ZERO AND RATHER POINTLESS, OR?
     RCP<const Epetra_Vector> FRobin();
 
-    /// evaluate elements with given displacement
+    /// update displacement and evaluate elements
     void Evaluate(
-      RCP<const Epetra_Vector> disp  ///< current state
+      RCP<const Epetra_Vector> dispstepinc  ///< solution increment between time step n and n+1
     );
 
     /// communication object at the interface

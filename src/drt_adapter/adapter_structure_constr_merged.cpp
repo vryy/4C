@@ -177,23 +177,23 @@ RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::FRobin()
  *
  * Monolithic FSI accesses the linearised structure problem. */
 void ADAPTER::StructureConstrMerged::Evaluate(
-  RCP<const Epetra_Vector> disp
+  RCP<const Epetra_Vector> dispstepinc
 )
 {
   // 'initialize' structural displacement as null-pointer
-  RCP<Epetra_Vector> dispstruct = Teuchos::null;
+  RCP<Epetra_Vector> dispstructstepinc = Teuchos::null;
 
   // Compute residual increments, update total increments and update lagrange multipliers
-  if (disp != Teuchos::null)
+  if (dispstepinc != Teuchos::null)
   {
     // Extract increments for lagr multipliers and do update
-    RCP<Epetra_Vector> lagrincr = conmerger_.ExtractOtherVector(disp);
+    RCP<Epetra_Vector> lagrincr = conmerger_.ExtractOtherVector(dispstepinc);
     structure_->UpdateIterIncrConstr(lagrincr);
-    dispstruct = conmerger_.ExtractCondVector(disp);
+    dispstructstepinc = conmerger_.ExtractCondVector(dispstepinc);
   }
   // Hand down incremental displacements,
   // structure_ will compute the residual increments on its own
-  structure_->Evaluate(dispstruct);
+  structure_->Evaluate(dispstructstepinc);
 
 }
 

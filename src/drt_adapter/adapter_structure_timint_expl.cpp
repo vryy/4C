@@ -224,7 +224,7 @@ void ADAPTER::StructureTimIntExpl::PrepareTimeStep()
  *
  * Monolithic FSI accesses the linearised structure problem. */
 void ADAPTER::StructureTimIntExpl::Evaluate(
-  Teuchos::RCP<const Epetra_Vector> disp
+  Teuchos::RCP<const Epetra_Vector>
 )
 {
   dserror("not implemented");

@@ -227,10 +227,10 @@ void ADAPTER::StructureTimIntImpl::PrepareTimeStep()
  *
  * Monolithic FSI accesses the linearised structure problem. */
 void ADAPTER::StructureTimIntImpl::Evaluate(
-  Teuchos::RCP<const Epetra_Vector> disp
+  Teuchos::RCP<const Epetra_Vector> disiterinc
 )
 {
-  structure_->UpdateIterIncrementally(disp);
+  structure_->UpdateIterIncrementally(disiterinc);
 
   // builds tangent, residual and applies DBC
   structure_->EvaluateForceStiffResidual();

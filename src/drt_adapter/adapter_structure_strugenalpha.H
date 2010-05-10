@@ -93,7 +93,7 @@ namespace ADAPTER {
     }
 
     void PrepareTimeStep();
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> disp);
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
     void Update();
     void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr)
     {
