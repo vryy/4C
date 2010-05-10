@@ -65,8 +65,8 @@ namespace ADAPTER
 
     virtual void PrepareTimeStep()
     { structure_->PrepareTimeStep(); }
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
-    { structure_->Evaluate(disp); }
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
+    { structure_->Evaluate(disiterinc); }
     virtual void Update()
     { structure_->Update(); }
     virtual void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr)
@@ -123,13 +123,18 @@ namespace ADAPTER
       : StructureWrapper(structure) {}
 
     virtual void PrepareTimeStep();
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disp);
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disstepinc);
 
   private:
 
-    /// sum of displacement vectors already applied,
-    /// i.e. the incremental displacements
-    Teuchos::RCP<Epetra_Vector> disinc_;
+    /// sum of displacement increments already applied,
+    ///
+    /// there are two increments around
+    ///
+    /// x^n+1_i+1 = x^n+1_i + disiterinc  (also referred to as residual increment)
+    ///
+    /// x^n+1_i+1 = x^n     + disstepinc
+    Teuchos::RCP<Epetra_Vector> disstepinc_;
   };
 }
 

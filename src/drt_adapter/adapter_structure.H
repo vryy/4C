@@ -180,8 +180,18 @@ namespace ADAPTER {
     /// start new time step
     virtual void PrepareTimeStep() = 0;
 
-    /// evaluate elements with given displacement
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disp) = 0;
+    /// update displacement and evaluate elements
+    ///
+    /// there are two displacement increments possible
+    ///
+    /// x^n+1_i+1 = x^n+1_i + disiterinc  (sometimes referred to as residual increment), and
+    ///
+    /// x^n+1_i+1 = x^n     + disstepinc
+    ///
+    /// with n and i being time and Newton iteration step
+    virtual void Evaluate(
+        Teuchos::RCP<const Epetra_Vector> disiterinc ///< displacement increment between Newton iteration i and i+1
+        ) = 0;
 
     /// update at time step end
     virtual void Update() = 0;
