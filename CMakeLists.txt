@@ -312,6 +312,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_patspec/patspec.cpp
 )
 set(OBJS_DRT_STATMECH
+  src/drt_statmech/brownianrod.cpp
   src/drt_statmech/statmech_manager.cpp
   src/drt_statmech/statmech_time.cpp
 )
