@@ -15,6 +15,10 @@ Maintainer: Christian Cyron
 
 #include "beam3ii.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_fem_general/largerotations.H"
+
+//namespace with utility functions for operations with large rotations used
+using namespace LARGEROTATIONS;
 
 
 /*----------------------------------------------------------------------*/

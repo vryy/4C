@@ -13,6 +13,7 @@ Maintainer: Christian Cyron
 #ifdef D_BEAM3II
 #ifdef CCADISCRET
 
+
 #include "beam3ii.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_exporter.H"
@@ -22,6 +23,10 @@ Maintainer: Christian Cyron
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../drt_fem_general/largerotations.H"
+
+//namespace with utility functions for operations with large rotations used
+using namespace LARGEROTATIONS;
 
 
 
@@ -510,239 +515,6 @@ int DRT::ELEMENTS::Beam3ii::EvaluateNeumann(ParameterList& params,
   return 0;
 }
 
-/*---------------------------------------------------------------------------*
- |computes from a quaternion q rodrigues parameters omega (public)cyron02/09|
- *---------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam3ii::quaterniontorodrigues(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,1>& omega)
-{
-  /*the Rodrigues parameters are defined only for angles whose absolute valued is smaller than PI, i.e. for which
-   * the fourth component of the quaternion is unequal zero; if this is not satisfied for the quaternion passed into
-   * this method an error is thrown*/
-  if(q(3) == 0)
-    dserror("cannot compute Rodrigues parameters for angles with absolute valued PI !!!");
-
-  //in any case except for the one dealt with above the angle can be computed from a quaternion via Crisfield, Vol. 2, eq. (16.79)
-  for(int i = 0; i<3; i++)
-    omega(i) = q(i)*2/q(3);
-
-
-  return;
-} //DRT::ELEMENTS::Beam3ii::quaterniontorodrigues
-
-
-/*---------------------------------------------------------------------------*
- |computes a spin matrix out of a rotation vector 		   (public)cyron02/09|
- *---------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam3ii::computespin(LINALG::Matrix<3,3>& spin, LINALG::Matrix<3,1> rotationangle)
-{
-  //function based on Crisfield Vol. 2, Section 16 (16.8)
-  spin(0,0) = 0;
-  spin(0,1) = -rotationangle(2);
-  spin(0,2) = rotationangle(1);
-  spin(1,0) = rotationangle(2);
-  spin(1,1) = 0;
-  spin(1,2) = -rotationangle(0);
-  spin(2,0) = -rotationangle(1);
-  spin(2,1) = rotationangle(0);
-  spin(2,2) = 0;
-
-  return;
-} // DRT::ELEMENTS::Beam3ii::computespin
-
-
-/*----------------------------------------------------------------------*
- |computes a rotation matrix R from a quaternion q						|
- |cf. Crisfield, Vol. 2, equation (16.70) 			  (public)cyron10/08|
- *----------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam3ii::quaterniontotriad(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,3>& R)
-{
-  //separate storage of vector part of q
-  LINALG::Matrix<3,1> qvec;
-  for(int i = 0; i<3; i++)
-    qvec(i) = q(i);
-
-  //setting R to third summand of equation (16.70)
-  computespin(R, qvec);
-  R.Scale(2*q(3));
-
-  //adding second summand of equation (16.70)
-  for(int i = 0; i<3; i++)
-    for(int j = 0; j<3; j++)
-      R(i,j) += 2*q(i)*q(j);
-
-  //adding diagonal entries according to first summand of equation (16.70)
-  R(0,0) = 1 - 2*(q(1)*q(1) + q(2)*q(2));
-  R(1,1) = 1 - 2*(q(0)*q(0) + q(2)*q(2));
-  R(2,2) = 1 - 2*(q(0)*q(0) + q(1)*q(1));
-
-  return;
-} // DRT::ELEMENTS::Beam3ii::quaterniontotriad
-
-
-
-
-/*---------------------------------------------------------------------------*
- |computes a quaternion from an angle vector 		  	   (public)cyron02/09|
- *---------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ii::angletoquaternion(const LINALG::Matrix<3,1>& theta, LINALG::Matrix<4,1>& q)
-{
-  //absolute value of rotation angle theta
-  double abs_theta = theta.Norm2();
-
-  //computing quaterion for rotation by angle theta, Crisfield, Vol. 2, equation (16.67)
-  if (abs_theta > 0)
-  {
-    q(0) = theta(0) * sin(abs_theta / 2) / abs_theta;
-    q(1) = theta(1) * sin(abs_theta / 2) / abs_theta;
-    q(2) = theta(2) * sin(abs_theta / 2) / abs_theta;
-    q(3) = cos(abs_theta / 2);
-  }
-  else
-  {
-    q.PutScalar(0.0);
-    q(3) = 1;
-  }
-
-  return;
-}// DRT::ELEMENTS::Beam3ii::angletoquaternion
-
-
-
-
-/*---------------------------------------------------------------------------*
- |computes a quaternion q from a rotation matrix R; all operations are      |
- |performed according to Crisfield, Vol. 2, section 16.10 and the there      |
- |described Spurrier's algorithm		  	   			   (public)cyron02/09|
- *---------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ii::triadtoquaternion(const LINALG::Matrix<3,3>& R, LINALG::Matrix<4,1>& q)
-{
-  double trace = R(0,0) + R(1,1) + R(2,2);
-  if(trace>R(0,0)  && trace>R(1,1) && trace>R(2,2))
-  {
-    q(3) = 0.5 * pow(1 + trace, 0.5);
-    q(0) = (R(2,1) - R(1,2)) / (4*q(3));
-    q(1) = (R(0,2) - R(2,0)) / (4*q(3));
-    q(2) = (R(1,0) - R(0,1)) / (4*q(3));
-  }
-  else
-  {
-    for(int i = 0 ; i<3 ; i++)
-    {
-      int j = (i+1)% 3;
-      int k = (i+2)% 3;
-
-      if(R(i,i) >= R(j,j) && R(i,i) >= R(k,k))
-      {
-        //equation (16.78a)
-        q(i) = pow(0.5*R(i,i) + 0.25*(1 - trace) , 0.5);
-
-        //equation (16.78b)
-        q(3) = 0.25*(R(k,j) - R(j,k)) / q(i);
-
-        //equation (16.78c)
-        q(j) = 0.25*(R(j,i) + R(i,j)) / q(i);
-        q(k) = 0.25*(R(k,i) + R(i,k)) / q(i);
-       }
-     }
-   }
-  return;
-}// DRT::ELEMENTS::Beam3ii::TriadToQuaternion
-
-
-
-
-/*---------------------------------------------------------------------------*
- |matrix T(\theta) from Jelenic 1999, eq. (2.5)  	       (public) cyron 04/10|
- *---------------------------------------------------------------------------*/
-LINALG::Matrix<3,3> DRT::ELEMENTS::Beam3ii::Tmatrix(LINALG::Matrix<3,1> theta)
-{
-  LINALG::Matrix<3,3> result;
-  double theta_abs = pow(theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2) ,0.5);
-
-  //in case of theta_abs == 0 the following computation has problems with singularities
-  if(theta_abs > 0)
-  {
-    computespin(result, theta);
-    result.Scale(-0.5);
-
-    for(int i = 0; i<3; i++)
-      result(i,i) += theta_abs/( 2*tan(theta_abs/2) );
-
-    for(int i = 0; i<3; i++)
-      for(int j=0; j<3; j++)
-        result(i,j) += theta(i) * theta(j) * (1 - theta_abs/(2*tan(theta_abs/2)) )/pow(theta_abs,2);
-  }
-  //in case of theta_abs == 0 H(theta) is the identity matrix and hence also Hinv
-  else
-  {
-    result.PutScalar(0.0);
-    for(int j=0; j<3; j++)
-      result(j,j) = 1;
-  }
-
-  return result;
-}// DRT::ELEMENTS::Beam3ii::Tmatrix
-
-
-
-
-/*---------------------------------------------------------------------------*
- |matrix T(\theta)^{-1} from Jelenic 1999, eq. (2.5)     (public) cyron 04/10|
- *---------------------------------------------------------------------------*/
-LINALG::Matrix<3,3> DRT::ELEMENTS::Beam3ii::Tinvmatrix(LINALG::Matrix<3,1> theta)
-{
-
-  LINALG::Matrix<3,3> result;
-  double theta_abs = pow(theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2) ,0.5);
-
-  //in case of theta_abs == 0 the following computation has problems with singularities
-  if(theta_abs > 0)
-  {
-    //ultimate term in eq. (2.5)
-    computespin(result, theta);
-    result.Scale((1-cos(theta_abs)) / pow(theta_abs,2));
-
-    //penultimate term in eq. (2.5)
-    for(int i = 0; i<3; i++)
-      result(i,i) += sin(theta_abs)/(theta_abs);
-
-    //first term on the right side in eq. (2.5)
-    for(int i = 0; i<3; i++)
-      for(int j=0; j<3; j++)
-        result(i,j) += theta(i) * theta(j) * (1 - sin(theta_abs)/(theta_abs) )/pow(theta_abs,2);
-  }
-  //in case of theta_abs == 0 H(theta) is the identity matrix and hence also Hinv
-  else
-  {
-    result.PutScalar(0.0);
-    for(int j=0; j<3; j++)
-      result(j,j) = 1;
-  }
-
-  return result;
-}// DRT::ELEMENTS::Beam3ii::Tinvmatrix
-
-
-
-/*---------------------------------------------------------------------------------------------------*
- |quaternion product q12 = q2*q1, Crisfield, Vol. 2, equation (16.71)		  	   (public)cyron02/09|
- *---------------------------------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam3ii::quaternionproduct(const LINALG::Matrix<4,1>& q1,const LINALG::Matrix<4,1>& q2,LINALG::Matrix<4,1>& q12)
-{
-  q12(0) = q2(3)*q1(0) + q1(3)*q2(0) + q2(1)*q1(2) - q1(1)*q2(2);
-  q12(1) = q2(3)*q1(1) + q1(3)*q2(1) + q2(2)*q1(0) - q1(2)*q2(0);
-  q12(2) = q2(3)*q1(2) + q1(3)*q2(2) + q2(0)*q1(1) - q1(0)*q2(1);
-  q12(3) = q2(3)*q1(3) - q2(2)*q1(2) - q2(1)*q1(1) - q2(0)*q1(0);
-} //DRT::ELEMENTS::Beam3ii::quaternionproduct
-
-/*---------------------------------------------------------------------------------------------------*
- |compute relative rotation qrel from rotation q1 to rotation q1 (all rotations in quaterion format) |
- |                                                                                 (public)cyron02/09|
- *---------------------------------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam3ii::relrot(const LINALG::Matrix<4,1>& q1,const LINALG::Matrix<4,1>& q2,LINALG::Matrix<4,1>& qrel)
-{
-  quaternionproduct(q2,inversequaternion(q1),qrel);
-} //DRT::ELEMENTS::Beam3ii::relrot
 
 /*----------------------------------------------------------------------------------------------------------------------*
  |compute convected stresses from convected strains and returing also constitutive matrix between both according to     |
@@ -854,65 +626,6 @@ inline void DRT::ELEMENTS::Beam3ii::computestrain(const LINALG::Matrix<3,1>& rpr
    return;
 } // DRT::ELEMENTS::Beam3ii::computestrain
 
-/*----------------------------------------------------------------------------------------------------------------------*
- |compute d(T^{-1})/dx according to the two-lined equation below (3.19) on page 152 of Jelenic 1999                     |
- |                                                                                                           cyron 04/10|
- *----------------------------------------------------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam3ii::computedTinvdx(const LINALG::Matrix<3,1>& Psil, const LINALG::Matrix<3,1>& Psilprime, LINALG::Matrix<3,3>& dTinvdx)
-{
-  //auxiliary matrix for storing intermediate results
-  LINALG::Matrix<3,3> auxmatrix;
-  
-  //norm of \Psi^l:
-  double normPsil = Psil.Norm2();
-  
-  //for relative rotations smaller then 1e-12 we use the limit for Psil -> 0 according to the comment above NOTE 4 on page 152, Jelenic 1999
-  if(Psil.Norm2() < 1e-12)
-  {
-    computespin(dTinvdx,Psilprime);
-    dTinvdx.Scale(0.5); 
-  }
-  else
-  {  
-    //scalarproduct \Psi^{l,t} \cdot \Psi^{l,'}
-    double scalarproductPsilPsilprime = 0;
-    for(int i=0; i<3; i++)
-      for(int j=0; j<3; j++)
-        scalarproductPsilPsilprime += Psil(i)*Psilprime(i);
-    
-    //spin matrices of Psil and Psilprime
-    LINALG::Matrix<3,3> spinPsil;
-    LINALG::Matrix<3,3> spinPsilprime;
-    computespin(spinPsil,Psil);
-    computespin(spinPsilprime,Psilprime);
-    
-    //thrid summand
-    dTinvdx.Multiply(spinPsilprime,spinPsil);
-    auxmatrix.Multiply(spinPsil,spinPsilprime);
-    dTinvdx += auxmatrix;
-    dTinvdx.Scale(1-(sin(normPsil)/normPsil)/pow(normPsil,2));
-    
-    //first summand
-    auxmatrix.PutScalar(0);
-    auxmatrix += spinPsil;
-    auxmatrix.Scale( scalarproductPsilPsilprime*(normPsil*sin(normPsil) - 2*(1-cos(normPsil)))/pow(normPsil,4) ); 
-    dTinvdx += auxmatrix;
-
-    //second summand
-    auxmatrix.PutScalar(0);
-    auxmatrix += spinPsilprime;
-    auxmatrix.Scale((1-cos(Psilprime.Norm2()))/pow(normPsil,2));
-    dTinvdx += auxmatrix;
-
-    //fourth summand
-    auxmatrix.Multiply(spinPsil,spinPsil);
-    auxmatrix.Scale( scalarproductPsilPsilprime*(3*sin(normPsil) - normPsil*(2+cos(normPsil)))/pow(normPsil,5) );
-    dTinvdx += auxmatrix;
-
-  }
-
-   return;
-} // DRT::ELEMENTS::Beam3ii::computedTinvdx
 
 /*----------------------------------------------------------------------------------------------------------------------*
  |compute \tilde{I}^i in (3.18), page 152, Jelenic 1999, for all nodes i at a certaom Gauss point            cyron 04/10|

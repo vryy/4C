@@ -404,38 +404,6 @@ private:
 
   //@}
 
-  //! @name auxiliary computation methods for non-additive, large rotation variables
-
-  //!computing spin matrix out of a rotation vector
-  void computespin(LINALG::Matrix<3,3>& spin, LINALG::Matrix<3,1> rotationangle);
-
-  //!computing a rotation matrix R from a quaternion q
-  void quaterniontotriad(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,3>& R);
-
-  //!computing a quaternion from an angle vector
-  void angletoquaternion(const LINALG::Matrix<3,1>& theta, LINALG::Matrix<4,1>& q);
-
-  //!computing an angle vector from a quaternion q
-  void quaterniontoangle(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,1>& theta);
-
-  //!computing from a quaternion q the Rodrigues parameters omega, Crisfield, Vol. 2, equation (16.79)
-  void quaterniontorodrigues(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,1>& omega);
-
-  //!computing a quaternion q from a rotation matrix R
-  void triadtoquaternion(const LINALG::Matrix<3,3>& R, LINALG::Matrix<4,1>& q);
-
-  //!quaternion product q12 = q2*q1, Crisfield, Vol. 2, equation (16.71)
-  void quaternionproduct(const LINALG::Matrix<4,1>& q1,const LINALG::Matrix<4,1>& q2,LINALG::Matrix<4,1>& q12);
-
-  //!computes inverse quaternion q^{-1} for input quaternion q
-  LINALG::Matrix<4,1> inversequaternion(const LINALG::Matrix<4,1>& q);
-
-  //!inverse of matrix H which make rotation variables additive in the limit, eq. (16.94)
-  LINALG::Matrix<3,3> Hinv(LINALG::Matrix<3,1> theta);
-
-
-  //@}
-
   //! @name Internal calculation methods
 
   /*!this function performs an update of the rotation (in quaterion form) at the numgp-th Gauss point by the incremental rotation deltatheta,

@@ -21,6 +21,10 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../drt_fem_general/largerotations.H"
+
+//namespace with utility functions for operations with large rotations used
+using namespace LARGEROTATIONS;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 01/08|

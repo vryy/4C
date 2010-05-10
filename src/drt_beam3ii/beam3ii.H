@@ -398,99 +398,6 @@ private:
 
   //@}
 
-  //! @name auxiliary computation methods for non-additive, large rotation variables
-
-  //!computing spin matrix out of a rotation vector
-  void computespin(LINALG::Matrix<3,3>& spin, LINALG::Matrix<3,1> rotationangle);
-
-  //!computing a rotation matrix R from a quaternion q
-  void quaterniontotriad(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,3>& R);
-
-  //!computing a quaternion from an angle vector
-  void angletoquaternion(const LINALG::Matrix<3,1>& theta, LINALG::Matrix<4,1>& q);
-
-  //!computes from a quaternion q the related angle theta
-  inline void quaterniontoangle(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,1>& theta)
-  {
-    /*the following function computes from a quaternion q an angle theta within [-PI; PI]; such an interval is
-     * imperative for the use of the resulting angle together with formulae like Crisfield, Vol. 2, equation (16.90);
-     * note that these formulae comprise not only trigonometric functions, but rather the angle theta directly. Hence
-     * they are not 2*PI-invariant !!! */
-      
-    //if the rotation angle is pi we have q(3) == 0 and the rotation angle vector can be computed by
-    if(q(3) == 0)
-    {
-      //note that with q(3) == 0 the first three elements of q represent the unit direction vector of the angle
-      //according to Crisfield, Vol. 2, equation (16.67)
-      for(int i = 0; i<3; i++)
-        theta(i) = q(i) * M_PI;
-    }
-    else
-    {
-      //otherwise the angle can be computed from a quaternion via Crisfield, Vol. 2, eq. (16.79)
-      LINALG::Matrix<3,1> omega;
-      for(int i = 0; i<3; i++)
-        omega(i) = q(i)*2/q(3);
-    
-      double tanhalf = omega.Norm2() / 2;
-      double thetaabs = atan(tanhalf)*2;
-      
-      //if the rotation angle is zero we return a zero rotation angle vector at once
-      if(omega.Norm2() == 0)
-      {
-        for(int i = 0; i<3; i++)
-          theta(i) = 0;
-
-
-      }
-      else
-        for(int i = 0; i<3; i++)
-          theta(i) = thetaabs* omega(i) / omega.Norm2();
-    }
-
-    return;
-  } 
-
-  //!computing from a quaternion q the Rodrigues parameters omega, Crisfield, Vol. 2, equation (16.79)
-  void quaterniontorodrigues(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,1>& omega);
-
-  //!computing a quaternion q from a rotation matrix R
-  void triadtoquaternion(const LINALG::Matrix<3,3>& R, LINALG::Matrix<4,1>& q);
-
-  //!quaternion product q12 = q2*q1, Crisfield, Vol. 2, equation (16.71)
-  void quaternionproduct(const LINALG::Matrix<4,1>& q1,const LINALG::Matrix<4,1>& q2,LINALG::Matrix<4,1>& q12);
-  
-  //!compute relative rotation qrel between quaterion q1 and q1
-  void relrot(const LINALG::Matrix<4,1>& q1,const LINALG::Matrix<4,1>& q2,LINALG::Matrix<4,1>& qrel);
-
-  //!computes inverse quaternion q^{-1} for input quaternion q
-  inline LINALG::Matrix<4,1> inversequaternion(const LINALG::Matrix<4,1>& q)
-  {
-    //square norm ||q||^2 of quaternion q
-    double qnormsq = q.Norm2() * q.Norm2();
-  
-    //declaration of variable for inverse quaternion
-    LINALG::Matrix<4,1> qinv;
-  
-    //inverse quaternion q^(-1) = [-q0, -q1, -q2, q3] / ||q||^2;
-    for(int i = 0; i<3; i++)
-      qinv(i) = -q(i) / qnormsq;
-  
-    qinv(3) = q(3) / qnormsq;
-  
-    return qinv;
-  
-  }
-
-  //!matrix T(\theta) from Jelenic 1999, eq. (2.5)
-  LINALG::Matrix<3,3> Tmatrix(LINALG::Matrix<3,1> theta);
-  
-  //!matrix T(\theta)^{-1} from Jelenic 1999, eq. (2.5)
-  LINALG::Matrix<3,3> Tinvmatrix(LINALG::Matrix<3,1> theta);
-
-
-  //@}
-
   //! @name Internal calculation methods
 
   //!compute derivative r' (rprime) of line of centroids at Gauss point x with respect to Jelenic 1999 , eq. (2.12)
@@ -517,10 +424,6 @@ private:
   void computestrain(const LINALG::Matrix<3,1> Psil, const LINALG::Matrix<3,1> Psilprime,
                      const double& xi, const LINALG::Matrix<3,1>& rprime, const LINALG::Matrix<3,3>& rotmat,
                      LINALG::Matrix<3,1>& gamma, LINALG::Matrix<3,1>& kappa);
-  
-  //!compute d(T^{-1})/dx according to the two-lined equation below (3.19) on page 152 of Jelenic 1999
-  void computedTinvdx(const LINALG::Matrix<3,1>& Psil, const LINALG::Matrix<3,1>& Psilprime, LINALG::Matrix<3,3>& dTinvdx);
-  
   
   //!compute \tilde{I}^i in (3.18), page 152, Jelenic 1999, for all nodes i at a certaom Gauss point
   template<int nnode>
