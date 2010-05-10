@@ -711,9 +711,12 @@ void DRT::ELEMENTS::Beam3::angletoquaternion(const LINALG::Matrix<3,1>& theta, L
 void DRT::ELEMENTS::Beam3::triadtoquaternion(const LINALG::Matrix<3,3>& R, LINALG::Matrix<4,1>& q)
 {
   double trace = R(0,0) + R(1,1) + R(2,2);
+
   if(trace>R(0,0)  && trace>R(1,1) && trace>R(2,2))
   {
     q(3) = 0.5 * pow(1 + trace, 0.5);
+    /*note: if trace is greater than each element on diagonal, all diagonal elements are positive
+     *and hence also the trace is positive and thus q(3) > 0 so that division by q(3) is allowed*/
     q(0) = (R(2,1) - R(1,2)) / (4*q(3));
     q(1) = (R(0,2) - R(2,0)) / (4*q(3));
     q(2) = (R(1,0) - R(0,1)) / (4*q(3));

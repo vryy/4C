@@ -574,8 +574,6 @@ inline void DRT::ELEMENTS::Beam3ii::quaterniontoangle(const LINALG::Matrix<4,1>&
 } //DRT::ELEMENTS::Beam3ii::quaterniontoangle()
 
 
-
-
 /*---------------------------------------------------------------------------*
  |computes a spin matrix out of a rotation vector 		   (public)cyron02/09|
  *---------------------------------------------------------------------------*/
@@ -904,13 +902,14 @@ inline void DRT::ELEMENTS::Beam3ii::computestrain(const LINALG::Matrix<3,1>& rpr
   if(NumNode()>2)
     dserror("computation of curvature in beam3ii element implemented only for 2 nodes!");
   
-  //compute local rotational vector according to Crisfield 1999,(4.6) in quaterion form
+  //compute global and local rotational vectors phi according to Crisfield 1999,(4.6) in quaterion form
   LINALG::Matrix<4,1> phi12;
-  quaternionproduct(inversequaternion(Qnew_[0]),Qnew_[1],phi12);  
+  quaternionproduct(Qnew_[1],inversequaternion(Qnew_[0]),phi12); 
   
   //according o Crisfield 1999, eq. (4.9), kappa equals the vector corresponding to phi12 divided by the element reference length
   quaterniontoangle(phi12,kappa);
   kappa.Scale(0.5/jacobi_[0]);
+
 
    return;
 } // DRT::ELEMENTS::Beam3ii::computestrain
@@ -1265,22 +1264,26 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
   
   //Compute current nodal triads
   for (int node=0; node<nnode; ++node)
-  {
-    
+  {   
     /*rotation increment relative to configuration in last iteration step is difference between current rotation
      *entry in displacement vector minus rotation entry in displacement vector in last iteration step*/
     for(int i=0; i<3; i++)
       dispthetanew_[node](i) = disp[6*node+3+i];
-    
+
     deltatheta  = dispthetanew_[node];
     deltatheta -= dispthetaold_[node];
-        
+      
     //compute quaternion from rotation angle relative to last configuration
     angletoquaternion(deltatheta,deltaQ);
     
     //multiply relative rotation with rotation in last configuration to get rotation in new configuration
     quaternionproduct(Qold_[node],deltaQ,Qnew_[node]);  
+    
+    //renormalize quaternion to keep its absolute value one even in case of long simulations and intricate calculations
+    Qnew_[node].Scale(1/Qnew_[node].Norm2());
   }
+
+  
 
   //compute reference rotation \Lambda_r according to eq. (3.10) and (3.9), Jelenic 1999
   quaternionproduct(Qnew_[nodeJ_],inversequaternion(Qnew_[nodeI_]),QIJ);
@@ -1377,6 +1380,10 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
 
         }
      }//if (force != NULL)
+    
+
+    
+
     
 
     //compute at this Gauss point basis functions \tilde{I}^i and \tilde{I}^{i'} in (3.19), page 152, Jelenic 1999, for all nodes
