@@ -1379,18 +1379,18 @@ NODE           51     COORD 1.850000000000000e+01     0.000000000000000e+00     
 NODE           52     COORD 1.850000000000000e+01     0.000000000000000e+00     0.000000000000000e+00   
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1 SOLIDH8 HEX8      43     49     51     47     44     50     52     48 MAT       1 EAS none
-      2 SOLIDH8 HEX8      41     45     49     43     42     46     50     44 MAT       1 EAS none
-      3 SOLIDH8 HEX8      37     39     45     41     38     40     46     42 MAT       1 EAS none
-      4 SOLIDH8 HEX8      33     35     39     37     34     36     40     38 MAT       1 EAS none
-      5 SOLIDH8 HEX8      29     31     35     33     30     32     36     34 MAT       1 EAS none
-      6 SOLIDH8 HEX8      25     27     31     29     26     28     32     30 MAT       1 EAS none
-      7 SOLIDH8 HEX8      21     23     27     25     22     24     28     26 MAT       2 EAS none
-      8 SOLIDH8 HEX8      17     19     23     21     18     20     24     22 MAT       2 EAS none
-      9 SOLIDH8 HEX8      13     15     19     17     14     16     20     18 MAT       2 EAS none
-     10 SOLIDH8 HEX8       9     11     15     13     10     12     16     14 MAT       2 EAS none
-     11 SOLIDH8 HEX8       5      6     11      9      7      8     12     10 MAT       2 EAS none
-     12 SOLIDH8 HEX8       3      1      6      5      4      2      8      7 MAT       2 EAS none
+      1 SOLIDH8 HEX8      43     49     51     47     44     50     52     48 MAT       1 EAS none  KINTYP nln
+      2 SOLIDH8 HEX8      41     45     49     43     42     46     50     44 MAT       1 EAS none  KINTYP nln
+      3 SOLIDH8 HEX8      37     39     45     41     38     40     46     42 MAT       1 EAS none  KINTYP nln
+      4 SOLIDH8 HEX8      33     35     39     37     34     36     40     38 MAT       1 EAS none  KINTYP nln
+      5 SOLIDH8 HEX8      29     31     35     33     30     32     36     34 MAT       1 EAS none  KINTYP nln
+      6 SOLIDH8 HEX8      25     27     31     29     26     28     32     30 MAT       1 EAS none  KINTYP nln
+      7 SOLIDH8 HEX8      21     23     27     25     22     24     28     26 MAT       2 EAS none  KINTYP nln
+      8 SOLIDH8 HEX8      17     19     23     21     18     20     24     22 MAT       2 EAS none  KINTYP nln
+      9 SOLIDH8 HEX8      13     15     19     17     14     16     20     18 MAT       2 EAS none  KINTYP nln
+     10 SOLIDH8 HEX8       9     11     15     13     10     12     16     14 MAT       2 EAS none  KINTYP nln
+     11 SOLIDH8 HEX8       5      6     11      9      7      8     12     10 MAT       2 EAS none  KINTYP nln
+     12 SOLIDH8 HEX8       3      1      6      5      4      2      8      7 MAT       2 EAS none  KINTYP nln
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 --------------------------------------------------THERMAL ELEMENTS
