@@ -120,13 +120,24 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
-      if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
-        invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
-                                      INPAR::STR::stress_none,INPAR::STR::strain_none);
-
-      else // standard analysis
-        soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
+      // special case: geometric linear
+      if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
+      {
+        soh8_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
+      // standard is: geometrically non-linear with Total Lagrangean approach
+      else
+      {
+        if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
+          invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
+                                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+
+        else // standard analysis
+          soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
+                            INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
+
     }
     break;
 
@@ -144,7 +155,16 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> myemat(true);
-      soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
+
+      // special case: geometric linear
+      if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
+      {
+        soh8_linstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
+          INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
+      // standard is: geometrically non-linear with Total Lagrangean approach
+      else
+        soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
@@ -152,7 +172,20 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     //==================================================================================
     // linear stiffness and consistent mass matrix
     case calc_struct_linstiffmass:
-      dserror("Case 'calc_struct_linstiffmass' not yet implemented");
+    {
+      // need current displacement and residual forces
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+
+      // standard analysis
+      soh8_linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+    }
     break;
 
     //==================================================================================
@@ -169,14 +202,23 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
-      if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
-        invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
-                                      INPAR::STR::stress_none,INPAR::STR::strain_none);
-      else // standard analysis
-      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
-                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      // special case: geometric linear
+      if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
+        soh8_linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none);
+      // standard is: geometrically non-linear with Total Lagrangean approach
+      else
+      {
+        if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
+          invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+                                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+        else // standard analysis
+        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none);
 
       if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
+      }
+
     }
     break;
 
@@ -200,11 +242,18 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
       INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
 
-      if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
-        invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+      // if a linear analysis is desired
+      if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
+        soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+      // standard is: geometrically non-linear with Total Lagrangean approach
+      else
+      {
+        if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
+          invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
 
-      else // standard analysis
-        soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+        else // standard analysis
+          soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+      }
 
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
@@ -1236,12 +1285,6 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
   }
   return;
 } // DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass
-
-
-
-
-
-
 
 
 /*----------------------------------------------------------------------*

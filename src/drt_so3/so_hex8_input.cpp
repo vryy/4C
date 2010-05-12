@@ -62,7 +62,7 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
   } else if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
 	  MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(Material().get());
 	  holzcard->Setup(NUMGPT_SOH8, linedef);
-  } else if (Material()->MaterialType() == INPAR::MAT::m_plneohooke){       
+  } else if (Material()->MaterialType() == INPAR::MAT::m_plneohooke){
     MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(Material().get());
     plastic->Setup(NUMGPT_SOH8);
   } else if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
@@ -73,8 +73,17 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
   // temporary variable for read-in
   std::string buffer;
 
-  // we expect kintype to be total lagrangian
-  kintype_ = soh8_totlag;
+  // read kinematic flag (default: we expect kintype to be total lagrangian)
+  linedef->ExtractString("KINTYP",buffer);
+  if (buffer=="lin")
+  {
+    kintype_ = soh8_geolin;
+  }
+  else if (buffer=="nln")
+  {
+    kintype_ = soh8_totlag;
+  }
+  else dserror ("Reading SO_HEX8 element failed");
 
   // read EAS technology flag
   linedef->ExtractString("EAS",buffer);
@@ -97,7 +106,7 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
   else if (buffer=="none")
   {
     eastype_ = soh8_easnone;
-    neas_ = 0;  
+    neas_ = 0;
   }
   else
     dserror("Reading of SO_HEX8 EAS technology failed");

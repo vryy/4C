@@ -373,6 +373,41 @@ public:
                Epetra_SerialDenseVector& elevec3);
 
   /*!
+  \brief Evaluate an element
+
+  Evaluate so_hex8 element LINEAR stiffness, mass, internal forces, etc.
+
+  \param params (in/out): ParameterList for communication between control routine
+                          and elements
+  \param discretization : pointer to discretization for de-assembly
+  \param la (in)        : location array for de-assembly
+  \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If NULL on input,
+                          the controling method does not expect the element to fill
+                          this matrix.
+  \param elemat2 (out)  : (mass-)matrix to be filled by element. If NULL on input,
+                          the controling method does not expect the element to fill
+                          this matrix.
+  \param elevec1 (out)  : (internal force-)vector to be filled by element. If NULL on input,
+                          the controlling method does not expect the element
+                          to fill this vector
+  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not expect the element
+                          to fill this vector
+  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not expect the element
+                          to fill this vector
+  \return 0 if successful, negative otherwise
+  */
+  int LinEvaluate(Teuchos::ParameterList& params,
+                  DRT::Discretization& discretization,
+                  DRT::Element::LocationArray& la,
+                  Epetra_SerialDenseMatrix& elemat1,
+                  Epetra_SerialDenseMatrix& elemat2,
+                  Epetra_SerialDenseVector& elevec1,
+                  Epetra_SerialDenseVector& elevec2,
+                  Epetra_SerialDenseVector& elevec3);
+
+  /*!
   \brief Evaluate a Neumann boundary condition
 
   this method evaluates a surface Neumann condition on the solid3 element
@@ -430,12 +465,12 @@ protected:
     calc_stc_matrix            //! calculate scaled director matrix for thin shell structures
   };
 
-  //! kinematic types of so_hex8, but yet only total-lagrangian is implemented
+  //! kinematic types of so_hex8 (default: total-lagrangian)
   enum KinematicType
   {
     soh8_geolin,
     soh8_totlag,
-    soh8_updlag
+    soh8_updlag // not yet implemented
   };
 
   /*!
@@ -565,12 +600,42 @@ protected:
                     const int gp,
                     ParameterList&  params);
 
+  //! Calculate linear stiffness and mass matrix
+  virtual void soh8_linstiffmass(
+      vector<int>& lm,  ///< location matrix
+      vector<double>& disp,  ///< current displacements
+      vector<double>& residual,  ///< current residual displ
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
+      LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain, ///< strains at GP
+      ParameterList& params,  ///< algorithmic parameters e.g. time
+      const INPAR::STR::StressType iostress,  ///< stress output option
+      const INPAR::STR::StrainType iostrain); ///< strain output option
+
 
   //! @name TSI related stuff
 
   // for so_hex8_thermo_evaluate.cpp
   //! Calculate nonlinear stiffness and mass matrix with temperature fraction
   virtual void soh8_nlnstiffmasstemp(
+    DRT::Element::LocationArray& la,  // location array
+    vector<double>& disp,  // current displacements
+    vector<double>& residual,  // current residual displ
+    vector<double>& temp, // current temperature
+    LINALG::Matrix<NUMDOF_SOH8,1>* tempstiffmatrix, // coupling stiffness matrix
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  // element mass matrix
+    LINALG::Matrix<NUMDOF_SOH8,1>* force,  // element internal force vector
+    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  // stresses at GP
+    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  // strains at GP
+    Teuchos::ParameterList& params,  // algorithmic parameters e.g. time
+    const INPAR::STR::StressType iostress,  // stress output option
+    const INPAR::STR::StrainType iostrain  // strain output option
+    );
+
+  //! Calculate linear stiffness and mass matrix with temperature fraction
+  virtual void soh8_linstiffmasstemp(
     DRT::Element::LocationArray& la,  // location array
     vector<double>& disp,  // current displacements
     vector<double>& residual,  // current residual displ
