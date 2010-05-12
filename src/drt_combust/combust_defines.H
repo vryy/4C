@@ -65,27 +65,41 @@ Maintainer: Florian Henke
 #define COMBUST_STRESS_BASED_TAU_COUPLING
 #define COMBUST_STRESS_BASED_PRESSURE_COUPLING
 #define COMBUST_STRESS_BASED_INCOMPR
+//--------------------------------------------------------------------
+// combustion stress-based double one-sided formulation boundary terms
+//--------------------------------------------------------------------
+//#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED
 //------------------------------------------------
 // combustion stress-based boundary integral terms
 //------------------------------------------------
-#define COMBUST_STRESS_BASED_CONSISTVISCJUMP    // turn on/off
-#define COMBUST_STRESS_BASED_CONSISTPRESJUMP    // turn on/off
+//#define COMBUST_STRESS_BASED_CONSISTVISCJUMP    // turn on/off
+//#define COMBUST_STRESS_BASED_CONSISTPRESJUMP    // turn on/off
 #define COMBUST_STRESS_BASED_CONSISTVISCMEAN    // turn on/off
 #define COMBUST_STRESS_BASED_CONSISTPRESMEAN    // turn on/off
 #define COMBUST_STRESS_BASED_ADJCONSISTVISCJUMP // turn on/off
 #define COMBUST_STRESS_BASED_ADJCONSISTPRESJUMP // turn on/off
 
+#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_TAU_PLUS
+#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_TAU_MINUS
+#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_PRES_PLUS
+#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_PRES_MINUS
+#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_TAU_DIRICH_PLUS
+#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_TAU_DIRICH_MINUS
+#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_PRES_DIRICH_PLUS
+#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_PRES_DIRICH_MINUS
+
 //-----------------------------
 // combustion test case options
 //-----------------------------
 //#define COMBUST_TESTCOUETTEFLOW // modify Dirichlet boundary conditions manually for Couette flow test case
-//#define COMBUST_XVELFREE      // free Dirichlet boundary conditions manually for Couette flow test case
+//#define COMBUST_XVELFREE // free Dirichlet boundary conditions x-component manually
+//#define COMBUST_YVELFREE // free Dirichlet boundary conditions y-component manually
 
 //----------------------
 // combustion tolerances
 //----------------------
 //#define COMBUSTCONVTOL 1.0e-12 // just an example
-
+#define COMBUST_GMSH_NORMALFIELD
 
 #endif // #ifndef COMBUST_DEFINES_H
 #endif // #ifdef CCADISCRET

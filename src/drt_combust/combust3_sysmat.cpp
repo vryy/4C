@@ -153,7 +153,7 @@ void fillElementUnknownsArrays(
     const size_t shpVecSizeDiscPres = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement;
     if (numparamdiscpres > shpVecSizeDiscPres)
     {
-      cout << "increase SizeFac for stress unknowns" << endl;
+      dserror("increase SizeFac for stress unknowns");
     }
     const vector<int>& discpresdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::DiscPres>());
     for (std::size_t iparam=0; iparam<numparamdiscpres; ++iparam)   ediscpres(iparam) = mystate.velnp_[discpresdof[iparam]];
@@ -250,9 +250,15 @@ void Sysmat(
     // boundary integrals are only added for intersected elements (fully enriched elements)
     if (ele->Intersected() == true)
     {
+#ifdef COMBUST_STRESS_BASED_DOUBLE_ONESIDED
+      COMBUST::SysmatBoundaryStressDoubleOneSided<DISTYPE,ASSTYPE,NUMDOF>(
+          ele, ih, dofman, evelnp, eprenp, ephi, etau, ediscpres, material, timealgo, dt, theta, assembler,
+          flamespeed);
+#else
       COMBUST::SysmatBoundaryStress<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelnp, eprenp, ephi, etau, ediscpres, material, timealgo, dt, theta, assembler,
-          flamespeed,nitschevel,nitschepres);
+          flamespeed);
+#endif
     }
 #endif
 #endif
