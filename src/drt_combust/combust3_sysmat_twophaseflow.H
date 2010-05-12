@@ -524,7 +524,7 @@ void SysmatTwoPhaseFlow(
       LINALG::Matrix<nsd,1> bodyforce;
       bodyforce.Clear();
       //std::cout << "BodyForce" << std::endl;
-      bodyforce(0) = -10.0;
+      bodyforce(0) = 0.0;
       //            bodyforce(1) = -0.01;
       //            bodyforce(0) = 0.5/dens;
       // --------------- DAS GEHT AUCH, WENN MAN EINE VOLUMENLAST IM DAT-FILE VORGIBT!!!!!!!!!!!!!! -------
