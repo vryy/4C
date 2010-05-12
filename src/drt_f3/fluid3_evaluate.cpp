@@ -396,9 +396,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
               dserror("Unknown element type for mean value evaluation\n");
             }
             }
-          } // end if (nsd == 3)
-          else dserror("action 'calc_turbulence_statistics' is a 3D specific action");
-        }
+          }
+        } // end if (nsd == 3)
+        else dserror("action 'calc_turbulence_statistics' is a 3D specific action");
       }
       break;
       case calc_loma_statistics:
