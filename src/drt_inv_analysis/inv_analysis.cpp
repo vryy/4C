@@ -139,6 +139,7 @@ void STR::InvAnalysis::Integrate()
   double beta   = iap.get<double>("INV_BETA");
   int max_itter = iap.get<int>("INV_ANA_MAX_RUN");
   output_->NewResultFile((numb_run_-1));
+  output_->WriteMesh(0,0.0);
   // fitting loop
   do
   {
