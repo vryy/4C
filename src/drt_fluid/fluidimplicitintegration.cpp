@@ -944,6 +944,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("fs subgrid viscosity",fssgv_);
       eleparams.set("Linearisation",newton_);
       eleparams.set("Physical Type", physicaltype_);
+      eleparams.set("mixed_formulation", params_.get<bool>("mixed_formulation", false));
 
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -971,6 +972,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       if (timealgo_==timeint_stationary)
       {
         eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
+        //eleparams.set("action","calc_fluid_systemmat_and_residual");
         eleparams.set("using generalized-alpha time integration",false);
         eleparams.set("total time",time_);
         eleparams.set("is stationary", true);
@@ -2170,6 +2172,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   eleparams.set("fs subgrid viscosity",fssgv_);
   eleparams.set("Linearisation",newton_);
   eleparams.set("Physical Type", physicaltype_);
+  eleparams.set("mixed_formulation", params_.get<bool>("mixed_formulation", false));
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -2197,6 +2200,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   if (timealgo_==timeint_stationary)
   {
     eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
+    //eleparams.set("action","calc_fluid_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",false);
     eleparams.set("total time",time_);
     eleparams.set("is stationary", true);
@@ -2610,7 +2614,7 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   //          dumping of turbulence statistics if required
   // -------------------------------------------------------------------
   statisticsmanager_->DoOutput(output_,step_,eosfac);
-  
+
   return;
 } // FluidImplicitTimeInt::StatisticsAndOutput
 

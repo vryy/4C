@@ -1541,7 +1541,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&fdyn);
   IntParameter("ITEMAX",10,"max. number of nonlin. iterations",&fdyn);
   IntParameter("GRIDVEL",1,"order of accuracy of mesh velocity determination",&fdyn);
-  IntParameter("COMBISYSMAT",0,"combined sysmat implementation 2D/3D",&fdyn);
+  setStringToIntegralParameter<int>("COMBISYSMAT","no",
+                                    "combined sysmat implementation 2D/3D", yesnotuple,yesnovalue,&fdyn);
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&fdyn);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&fdyn);
   DoubleParameter("ALPHA_M",1.0,"Time integration factor",&fdyn);

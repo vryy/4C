@@ -205,7 +205,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   fluidtimeparams->set<bool>            ("ADAPTCONV",getIntegralValue<int>(fdyn,"ADAPTCONV")==1);
   fluidtimeparams->set<double>          ("ADAPTCONV_BETTER",fdyn.get<double>("ADAPTCONV_BETTER"));
   // use combined 2D/3D implementation
-  fluidtimeparams->set<bool>            ("mixed_formulation",fdyn.get<int>("COMBISYSMAT")==1);
+  fluidtimeparams->set<bool>            ("mixed_formulation",getIntegralValue<int>(fdyn,"COMBISYSMAT")==1);
 
   // ----------------------------------------------- restart and output
   // restart
