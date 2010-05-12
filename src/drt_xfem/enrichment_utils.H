@@ -100,7 +100,7 @@ namespace XFEM
       //------------------------------------------------------------
       for(int inode=0; inode < numnode; inode++)
       {
-        std::map<XFEM::Enrichment, double> enrvalues;
+        std::map<XFEM::Enrichment, double> enrvalstmp;
         for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
         {
           double enrvalnode = 0.0;
@@ -108,10 +108,10 @@ namespace XFEM
           {
             enrvalnode = enriter->EnrValueNodeLevelSet(inode,phi);
           }
-          enrvalues[*enriter] = enrvalnode;
+          enrvalstmp[*enriter] = enrvalnode;
         }
-        enrvalnodes[inode] = enrvalues;
-        enrvalues.clear();
+        enrvalnodes[inode] = enrvalstmp;
+        enrvalstmp.clear();
       }
 
       //------------------------------------------------------------------------
@@ -192,7 +192,11 @@ namespace XFEM
         std::map<XFEM::Enrichment, double> enrvalstmp;
         for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
         {
-          const double enrvalnode = enriter->EnrValueNodeLevelSet(inode,phi);
+          double enrvalnode = 0.0;
+          if (enriter->Type()==XFEM::Enrichment::typeJump || enriter->Type()==XFEM::Enrichment::typeVoid)
+          {
+            enrvalnode = enriter->EnrValueNodeLevelSet(inode,phi);
+          }
           enrvalstmp[*enriter] = enrvalnode;
         }
         enrvalnodes[inode] = enrvalstmp;
@@ -213,6 +217,7 @@ namespace XFEM
         for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
         {
           enrvalstmp[*enriter] = enrvals_.find(*enriter)->second - (enrvalnodes.find(inode)->second).find(*enriter)->second;
+          //cout << "shifted enrichment value " << enrvalstmp[*enriter] << endl;
         }
         enrvalnodes_[inode] = enrvalstmp;
         enrvalstmp.clear();
@@ -579,14 +584,14 @@ namespace XFEM
       dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
 
       const DRT::Element::DiscretizationType distype = dofman_.getDisTypePerField(field);
-      const std::size_t numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
+      const int numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
       if (numvirtualnode != ele_.NumNode())
         dserror("you can not use the shifted enrichment without correcting the implementation!");
 
       for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
         enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
       {
-        for (std::size_t inode = 0; inode < numvirtualnode; ++inode)
+        for (int inode = 0; inode < numvirtualnode; ++inode)
         {
           const std::map<XFEM::Enrichment, double> enrvalues = enrvalnodes_.find(inode)->second;
           const double enrval = enrvalues.find(enrfield->getEnrichment())->second;
