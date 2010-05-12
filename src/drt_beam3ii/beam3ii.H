@@ -425,6 +425,17 @@ private:
                      const double& xi, const LINALG::Matrix<3,1>& rprime, const LINALG::Matrix<3,3>& rotmat,
                      LINALG::Matrix<3,1>& gamma, LINALG::Matrix<3,1>& kappa);
   
+  //!evaluates basis functions for a given type of Gauss rule  and triads at all Gauss points
+  template<int nnode>
+  void evaluatebasisfunctionsandtriads(const DRT::UTILS::IntegrationPoints1D gausspoints,
+                                       vector<LINALG::Matrix<1,nnode> >& I,
+                                       vector<LINALG::Matrix<1,nnode> >& Iprime,
+                                       vector<vector<LINALG::Matrix<3,3> > >& Itilde,
+                                       vector<vector<LINALG::Matrix<3,3> > >& Itildeprime,
+                                       vector<LINALG::Matrix<3,3> >& Lambda);
+  
+  
+  
   //!compute \tilde{I}^i in (3.18), page 152, Jelenic 1999, for all nodes i at a certaom Gauss point
   template<int nnode>
   void computeItilde(const LINALG::Matrix<3,1>& Psil, const LINALG::Matrix<3,1>& Psilprime, vector<LINALG::Matrix<3,3> >& Itilde,

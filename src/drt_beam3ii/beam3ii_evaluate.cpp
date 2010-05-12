@@ -639,6 +639,9 @@ inline void DRT::ELEMENTS::Beam3ii::computeItilde(const LINALG::Matrix<3,1>& Psi
   LINALG::Matrix<3,3> auxmatrix;
   auxmatrix.PutScalar(0);
   
+  //make sure that Itildeprime has proper dimensions
+  Itilde.resize(nnode);
+  
   //compute squared brackets term in (3.18), Jelenic 1999v
   LINALG::Matrix<3,3> squaredbrackets;
   squaredbrackets.PutScalar(0);
@@ -693,9 +696,11 @@ inline void DRT::ELEMENTS::Beam3ii::computeItildeprime(const LINALG::Matrix<3,1>
                                                        const LINALG::Matrix<3,1>& phiIJ, const LINALG::Matrix<3,3>& Lambdar,
                                                        const vector<LINALG::Matrix<3,1> >& Psili, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv)
 {
-
   //auxiliary matrices for storing intermediate results 
   LINALG::Matrix<3,3> auxmatrix;
+  
+  //make sure that Itildeprime has proper dimensions
+  Itildeprime.resize(nnode);
   
   //matrix d(T^{-1})/dx
   LINALG::Matrix<3,3> dTinvdx;
@@ -834,27 +839,21 @@ inline void DRT::ELEMENTS::Beam3ii::curvederivative(const vector<double>& disp, 
   rprime.Scale(1.0/jacobi);
 
    return;
-} // DRT::ELEMENTS::Beam3ii::curvederivative      
+} // DRT::ELEMENTS::Beam3ii::curvederivative  
 
-/*------------------------------------------------------------------------------------------------------------*
- | nonlinear stiffness and mass matrix (private)                                                   cyron 01/08|
- *-----------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------------------------------------------------*
+ |evaluates basis functions for a given type of Gauss rule  and triads at all Gauss points                              |
+ |                                                                                                           cyron 05/10|
+ *----------------------------------------------------------------------------------------------------------------------*/
 template<int nnode>
-void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
-                                            vector<double>&           vel,
-                                            vector<double>&           disp,
-                                            Epetra_SerialDenseMatrix* stiffmatrix,
-                                            Epetra_SerialDenseMatrix* massmatrix,
-                                            Epetra_SerialDenseVector* force)
+inline void DRT::ELEMENTS::Beam3ii::evaluatebasisfunctionsandtriads(const DRT::UTILS::IntegrationPoints1D gausspoints,
+                                                                    vector<LINALG::Matrix<1,nnode> >& I,
+                                                                    vector<LINALG::Matrix<1,nnode> >& Iprime,
+                                                                    vector<vector<LINALG::Matrix<3,3> > >& Itilde,
+                                                                    vector<vector<LINALG::Matrix<3,3> > >& Itildeprime,
+                                                                    vector<LINALG::Matrix<3,3> >& Lambda)
 {
-  //variables to store shape functions and its derivatives at a certain Gauss point
-  LINALG::Matrix<1,nnode> funct;
-  LINALG::Matrix<1,nnode> deriv;
-  
-  /*variables to store basis function matrices \tilde{I}^i(x) and \tilde{I}^{i'}(x) according to (3.18) and (3.19), Jelenic 1999
-   *at some Gauss point for all nodes i*/
-  vector<LINALG::Matrix<3,3> > Itilde(nnode);
-  vector<LINALG::Matrix<3,3> > Itildeprime(nnode);
+  //declaration of variables
   
   //quaternion of relative rotation between node I and J according to (3.10), Jelenic 1999
   LINALG::Matrix<4,1> QIJ;
@@ -864,8 +863,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
   LINALG::Matrix<4,1> QIJhalf;
   //quaternion of reference triad \Lambda_r according to (3.9), Jelenic 1999
   LINALG::Matrix<4,1> Qr;
-  //matrix of reference triad \Lambda_r according to (3.9), Jelenic 1999
-  LINALG::Matrix<3,3> Lambdar; 
   //rotation quaternion between i-th nodal triadsand refenrece triad according to (3.8), Jelenic 1999
   LINALG::Matrix<4,1>  Qli;
   //rotation angles between nodal triads and refenrece triad according to (3.8), Jelenic 1999
@@ -881,8 +878,100 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
   LINALG::Matrix<4,1>  Ql;
   //rotation quaternion at Gauss point 
   LINALG::Matrix<4,1>  Qgauss;
-  //rotation matrix at Gauss point 
-  LINALG::Matrix<3,3>  Lambda; 
+  //matrix of reference triad \Lambda_r according to (3.9), Jelenic 1999
+  LINALG::Matrix<3,3> Lambdar; 
+  
+  
+  
+  //computation of element reference triad and rotations relative to this triad at nodes and Gauss points
+
+  //compute reference rotation quaternion Qr corresponding to triad \Lambda_r according to eq. (3.10) and (3.9), Jelenic 1999
+  quaternionproduct(Qnew_[nodeJ_],inversequaternion(Qnew_[nodeI_]),QIJ);
+  quaterniontoangle(QIJ,phiIJ);
+  phiIJ.Scale(0.5);
+  angletoquaternion(phiIJ,QIJhalf);
+  phiIJ.Scale(2.0);
+  quaternionproduct(QIJhalf,Qnew_[nodeI_],Qr);
+  
+  //Compute relative rotations \Psi^l_i at all nodes i according to (3.8), Jelenic 1999
+  for (int node=0; node<nnode; ++node)
+  {   
+    quaternionproduct(Qnew_[node],inversequaternion(Qr),Qli);  
+    quaterniontoangle(Qli,Psili[node]);
+  }
+
+  
+  //evaluation of basis functions and triads at all Gauss points
+  for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+  {
+    
+    //Get location and weight of GP in parameter space
+    const double xi = gausspoints.qxg[numgp][0];
+    
+    //evaluate Lagrange polynomial basis functions and its derivatives at xi
+    DRT::UTILS::shape_function_1D(I[numgp],xi,this->Shape());
+    DRT::UTILS::shape_function_1D_deriv1(Iprime[numgp],xi,this->Shape());
+    
+    //compute local relative rotation \Psi^l and its derivative at current Gauss point according to (3.11), Jelenic 1999
+    Psil.PutScalar(0);
+    Psilprime.PutScalar(0);
+    for (int node=0; node<nnode; ++node)
+      for(int i=0; i<3; i++)
+      {
+        Psil(i)      += I[numgp](node)*Psili[node](i);
+        Psilprime(i) += Iprime[numgp](node)*Psili[node](i);
+      }
+    
+
+    //compute relative rotation between triad at Gauss point and reference triad Qr
+    angletoquaternion(Psil,Ql);
+    
+    //compute rotation at Gauss point, i.e. the quaternion equivalent to \Lambda(s) in Crisfield 1999, eq. (4.7)
+    quaternionproduct(Qr,Ql,Qgauss);
+    
+    //compute rotation matrix at Gauss point, i.e. \Lambda(s) in Crisfield 1999, eq. (4.7)
+    quaterniontotriad(Qgauss,Lambda[numgp]);
+    
+    //compute triad Lambdar corresponding to reference rotation quaternion Qr
+    quaterniontotriad(Qr,Lambdar);
+    
+    //compute at this Gauss point basis functions \tilde{I}^i and \tilde{I}^{i'} in (3.19), page 152, Jelenic 1999, for all nodes
+    computeItilde<nnode>(Psil,Psilprime,Itilde[numgp],phiIJ,Lambdar,Psili,I[numgp]);
+    computeItildeprime<nnode>(Psil,Psilprime,Itildeprime[numgp],phiIJ,Lambdar,Psili,I[numgp],Iprime[numgp]);
+    
+  }
+  
+  
+
+   return;
+} // DRT::ELEMENTS::Beam3ii::evaluatebasisfunctionsandtriads   
+
+/*------------------------------------------------------------------------------------------------------------*
+ | nonlinear stiffness and mass matrix (private)                                                   cyron 01/08|
+ *-----------------------------------------------------------------------------------------------------------*/
+template<int nnode>
+void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
+                                            vector<double>&           vel,
+                                            vector<double>&           disp,
+                                            Epetra_SerialDenseMatrix* stiffmatrix,
+                                            Epetra_SerialDenseMatrix* massmatrix,
+                                            Epetra_SerialDenseVector* force)
+{
+  //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
+  vector<LINALG::Matrix<1,nnode> > I(nnode-1);
+  
+  //vector whose numgp-th element is a 1xnnode-matrix with the derivatives of all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
+  vector<LINALG::Matrix<1,nnode> > Iprime(nnode-1);
+  
+  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at the numgp-the Gauss point according to according to (3.18), Jelenic 1999
+  vector<vector<LINALG::Matrix<3,3> > > Itilde(nnode-1);
+  
+  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^nnode at the numgp-the Gauss point according to according to (3.19), Jelenic 1999
+  vector<vector<LINALG::Matrix<3,3> > > Itildeprime(nnode-1);
+  
+  //vector with rotation matrices at all Gauss points
+  vector<LINALG::Matrix<3,3> > Lambda(nnode-1);
+  
   //r'(x) from (2.1), Jelenic 1999
   LINALG::Matrix<3,1>  rprime;
   //3D vector related to spin matrix \hat{\kappa} from (2.1), Jelenic 1999
@@ -935,75 +1024,35 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
     //renormalize quaternion to keep its absolute value one even in case of long simulations and intricate calculations
     Qnew_[node].Scale(1/Qnew_[node].Norm2());
   }
-
   
-
-  //compute reference rotation \Lambda_r according to eq. (3.10) and (3.9), Jelenic 1999
-  quaternionproduct(Qnew_[nodeJ_],inversequaternion(Qnew_[nodeI_]),QIJ);
-  quaterniontoangle(QIJ,phiIJ);
-  phiIJ.Scale(0.5);
-  angletoquaternion(phiIJ,QIJhalf);
-  phiIJ.Scale(2.0);
-  quaternionproduct(QIJhalf,Qnew_[nodeI_],Qr);
-  quaterniontotriad(Qr,Lambdar);
-  
-  //Compute relative rotations \Psi^l_i at all nodes i according to (3.8), Jelenic 1999
-  for (int node=0; node<nnode; ++node)
-  {   
-    quaternionproduct(Qnew_[node],inversequaternion(Qr),Qli);  
-    quaterniontoangle(Qli,Psili[node]);
-  }
-
-  //Get integrationpoints for Gauss-Legendre underintegration
+  //integration points for underintegration
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
-  
+
+  //evaluate at all Gauss points basis functions of all nodes, their derivatives and the triad of the beam frame
+  evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda);
+
   //Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
   for(int numgp=0; numgp < gausspoints.nquad; numgp++)
   {
-    //Get location and weight of GP in parameter space
-    const double xi = gausspoints.qxg[numgp][0];
+    
+    //weight of GP in parameter space
     const double wgt = gausspoints.qwgt[numgp];
     
-    //evaluate shape functions and its derivatives at xi
-    DRT::UTILS::shape_function_1D(funct,xi,this->Shape());
-    DRT::UTILS::shape_function_1D_deriv1(deriv,xi,this->Shape());
-    
-    //compute local relative rotation \Psi^l and its derivative at current Gauss point according to (3.11), Jelenic 1999
-    Psil.PutScalar(0);
-    Psilprime.PutScalar(0);
-    for (int node=0; node<nnode; ++node)
-      for(int i=0; i<3; i++)
-      {
-        Psil(i)      += funct(node)*Psili[node](i);
-        Psilprime(i) += deriv(node)*Psili[node](i);
-      }
-    
-
-    //compute relative rotation between triad at Gauss point and reference triad Qr
-    angletoquaternion(Psil,Ql);
-    
-    //compute rotation at Gauss point, i.e. the quaternion equivalent to \Lambda(s) in Crisfield 1999, eq. (4.7)
-    quaternionproduct(Qr,Ql,Qgauss);
-    
-    //compute rotation matrix at Gauss point, i.e. \Lambda(s) in Crisfield 1999, eq. (4.7)
-    quaterniontotriad(Qgauss,Lambda);
-    
-    
     //compute derivative of line of centroids with respect to curve parameter in reference configuration, i.e. r' from Jelenic 1999, eq. (2.12)
-    curvederivative<nnode,3>(disp,deriv,rprime,jacobi_[numgp]);
+    curvederivative<nnode,3>(disp,Iprime[numgp],rprime,jacobi_[numgp]);
     
     //compute spin matrix related to vector rprime for later use
     computespin(rprimehat,rprime);
     
     //compute convected strains gamma and kappa according to Jelenic 1999, eq. (2.12)
-    computestrain(rprime,Lambda,gamma,kappa);
+    computestrain(rprime,Lambda[numgp],gamma,kappa);
 
     //compute convected stress vector from strain vector according to Jelenic 1999, page 147, section 2.4
     strainstress(gamma,kappa,stressN,CN,stressM,CM);   
     
     /*compute spatial stresses and constitutive matrices from convected ones according to Jelenic 1999, page 148, paragraph
      *between (2.22) and (2.23) and Romero 2004, (3.10)*/
-    pushforward(Lambda,stressN,CN,stressM,CM,stressn,cn,stressm,cm);
+    pushforward(Lambda[numgp],stressN,CN,stressM,CM,stressn,cn,stressm,cm);
     
 
     /*computation of internal forces according to Jelenic 1999, eq. (4.3); computation split up with respect
@@ -1018,30 +1067,22 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
          *parameter in Gauss integration interval and I^{i'} in Jelenic 1999 is derivative with respect to
          *curve length in reference configuration*/
         for (int i=0; i<3; ++i)
-          (*force)(6*node+i) += deriv(node)*stressn(i)*wgt;
+          (*force)(6*node+i) += Iprime[numgp](node)*stressn(i)*wgt;
         
         //lower left block  
         for (int i=0; i<3; ++i)
           for (int j=0; j<3; ++j)
-            (*force)(6*node+3+i) -= rprimehat(i,j)*stressn(j)*funct(node)*wgt*jacobi_[numgp];
+            (*force)(6*node+3+i) -= rprimehat(i,j)*stressn(j)*I[numgp](node)*wgt*jacobi_[numgp];
         
-        /*lower right block (note: jacobi determinant cancels out as deriv is derivative with respect to
+        /*lower right block (note: jacobi determinant cancels out as Iprime is derivative with respect to
          *parameter in Gauss integration interval and I^{i'} in Jelenic 1999 is derivative with respect to
          *curve length in reference configuration*/
         for (int j=0; j<3; ++j)
-          (*force)(6*node+3+j) += deriv(node)*stressm(j)*wgt;
+          (*force)(6*node+3+j) += Iprime[numgp](node)*stressm(j)*wgt;
 
         }
      }//if (force != NULL)
-    
 
-    
-
-    
-
-    //compute at this Gauss point basis functions \tilde{I}^i and \tilde{I}^{i'} in (3.19), page 152, Jelenic 1999, for all nodes
-    computeItilde<nnode>(Psil,Psilprime,Itilde,phiIJ,Lambdar,Psili,funct);
-    computeItildeprime<nnode>(Psil,Psilprime,Itildeprime,phiIJ,Lambdar,Psili,funct,deriv);
 
     /*computation of stiffness matrix according to Jelenic 1999, eq. (4.7); computation split up with respect
     *to single blocks of matrix in eq. (4.3)*/
@@ -1057,14 +1098,14 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
           //upper left block
           for (int i=0; i<3; ++i)
             for (int j=0; j<3; ++j)
-              (*stiffmatrix)(6*nodei+i,6*nodej+j) += deriv(nodei)*deriv(nodej)*cn(i,j)*wgt/jacobi_[numgp];
+              (*stiffmatrix)(6*nodei+i,6*nodej+j) += Iprime[numgp](nodei)*Iprime[numgp](nodej)*cn(i,j)*wgt/jacobi_[numgp];
           
           //upper right block
           auxmatrix2.Multiply(cn,rprimehat);
           computespin(auxmatrix1,stressn);
           auxmatrix2 -= auxmatrix1;
-          auxmatrix2.Scale(deriv(nodei));
-          auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);
+          auxmatrix2.Scale(Iprime[numgp](nodei));
+          auxmatrix1.Multiply(auxmatrix2,Itilde[numgp][nodej]);
           for (int i=0; i<3; ++i)
             for (int j=0; j<3; ++j)
               (*stiffmatrix)(6*nodei+i,6*nodej+3+j) += auxmatrix1(i,j)*wgt;
@@ -1073,23 +1114,23 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
           auxmatrix2.Multiply(rprimehat,cn);
           computespin(auxmatrix1,stressn);
           auxmatrix1 -= auxmatrix2;
-          auxmatrix1.Scale(funct(nodei)*deriv(nodej));
+          auxmatrix1.Scale(I[numgp](nodei)*Iprime[numgp](nodej));
           for (int i=0; i<3; ++i)
             for (int j=0; j<3; ++j)
               (*stiffmatrix)(6*nodei+3+i,6*nodej+j) += auxmatrix1(i,j)*wgt;
           
           //lower right block 
           //first summand
-          auxmatrix1.Multiply(cm,Itildeprime[nodej]);
-          auxmatrix1.Scale(deriv(nodei));
+          auxmatrix1.Multiply(cm,Itildeprime[numgp][nodej]);
+          auxmatrix1.Scale(Iprime[numgp](nodei));
           for (int i=0; i<3; ++i)
             for (int j=0; j<3; ++j)
               (*stiffmatrix)(6*nodei+3+i,6*nodej+3+j) += auxmatrix1(i,j)*wgt/jacobi_[numgp];
           
           //second summand
           computespin(auxmatrix2,stressm);
-          auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);
-          auxmatrix1.Scale(deriv(nodei));
+          auxmatrix1.Multiply(auxmatrix2,Itilde[numgp][nodej]);
+          auxmatrix1.Scale(Iprime[numgp](nodei));
           for (int i=0; i<3; ++i)
             for (int j=0; j<3; ++j)
               (*stiffmatrix)(6*nodei+3+i,6*nodej+3+j) -= auxmatrix1(i,j)*wgt;
@@ -1098,9 +1139,9 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
           computespin(auxmatrix1,stressn);
           auxmatrix2.Multiply(cn,rprimehat);         
           auxmatrix1 -= auxmatrix2;
-          auxmatrix2.Multiply(auxmatrix1,Itilde[nodej]);
+          auxmatrix2.Multiply(auxmatrix1,Itilde[numgp][nodej]);
           auxmatrix1.Multiply(rprimehat,auxmatrix2);
-          auxmatrix1.Scale(funct(nodei));
+          auxmatrix1.Scale(I[numgp](nodei));
           for (int i=0; i<3; ++i)
             for (int j=0; j<3; ++j)
               (*stiffmatrix)(6*nodei+3+i,6*nodej+3+j) += auxmatrix1(i,j)*jacobi_[numgp]*wgt;
