@@ -2693,9 +2693,6 @@ double resdiffus(0.0);
     default: dserror("Unknown definition of tau\n");
   } //switch (whichtau)
 
-  cout << tau_[k];
-  printf("\n");
-
 #ifdef VISUALIZE_ELEMENT_DATA
   // visualize stabilization parameter
   DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
