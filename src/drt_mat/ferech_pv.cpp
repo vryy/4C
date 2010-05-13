@@ -117,9 +117,26 @@ double MAT::FerEchPV::ComputeTemperature(const double provar) const
 /*----------------------------------------------------------------------*/
 double MAT::FerEchPV::ComputeDensity(const double provar) const
 {
+  // BML hypothesis
   const double density = UnbDens() + provar * (BurDens() - UnbDens());
 
+  // equation of state
+  //const double density = UnbDens()*BurDens()/(BurDens() + provar * (UnbDens() - BurDens()));
+
   return density;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::FerEchPV::ComputeFactor(const double provar) const
+{
+  // BML hypothesis
+  const double factor = (UnbDens() - BurDens())/(UnbDens() + provar * (BurDens() - UnbDens()));
+
+  // equation of state
+  //const double factor = (UnbDens() - BurDens())/(BurDens() + provar * (UnbDens() - BurDens()));
+
+  return factor;
 }
 
 /*----------------------------------------------------------------------*/
@@ -169,20 +186,27 @@ double MAT::FerEchPV::ComputeDiffusivity(const double temp) const
 /*----------------------------------------------------------------------*/
 double MAT::FerEchPV::ComputeReactionCoeff(const double provar) const
 {
+  // no reaction coefficient if progress variable lower than critical value
   double reacoeff = 0.0;
 
   // Heaviside function loop
   if (provar > PvCrit())
   {
+    // modified version by Poinsot and Veynante (2005)
+    double reacoeff = ReacRateCon();
+
     // original version by Ferziger and Echekki (1993)
     if (Mod() < EPS15)
-      reacoeff = ReacRateCon();
-    // modified version by Poinsot and Veynante (1993)
-    else if (Mod() > EPS15 and Mod() < (2.0-EPS15))
-      reacoeff *= UnbDens()/(UnbDens()+provar*(BurDens()-UnbDens()));
-    else
+    {
+      // BML hypothesis
+      reacoeff *= UnbDens()/(UnbDens() + provar * (BurDens() - UnbDens()));
+
+      // equation of state
+      //reacoeff *= (BurDens() + provar * (UnbDens() - BurDens()))/BurDens();
+    }
+    else if (Mod() > (1.0+EPS15))
       // modified version by Hartmann et al. (2010)
-      reacoeff *= UnbDens()*UnbDens()/(BurDens()+provar*(UnbDens()-UnbDens()));
+      reacoeff *= UnbDens()*UnbDens()/(BurDens() + provar * (UnbDens() - BurDens()));
   }
 
   return reacoeff;

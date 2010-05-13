@@ -138,6 +138,9 @@ namespace MAT
     /// compute density
     double ComputeDensity(const double provar) const;
 
+    /// compute factor for scalar time derivative and convective scalar term
+    double ComputeFactor(const double provar) const;
+
     /// compute specific heat capacity at constant pressure
     double ComputeShc(const double provar) const;
 

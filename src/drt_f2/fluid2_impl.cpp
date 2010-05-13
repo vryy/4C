@@ -2512,7 +2512,7 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
   densaf_ = actmat->ComputeDensity(provaraf);
 
   // factor for convective scalar term at n+alpha_F or n+1
-  scaconvfacaf_ = (actmat->UnbDens()-actmat->BurDens())/densaf_;
+  scaconvfacaf_ = actmat->ComputeFactor(provaraf);
 
   if (is_genalpha)
   {
@@ -2521,7 +2521,7 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
     densam_ = actmat->ComputeDensity(provaram);
 
     // factor for scalar time derivative at n+alpha_M
-    scadtfac_ = (actmat->UnbDens()-actmat->BurDens())/densam_;
+    scadtfac_ = actmat->ComputeFactor(provaram);
   }
   else
   {
@@ -2530,13 +2530,13 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
     densn_ = actmat->ComputeDensity(provarn);
 
     // factor for convective scalar term at n
-    scaconvfacn_ = (actmat->UnbDens()-actmat->BurDens())/densn_;
+    scaconvfacn_ = actmat->ComputeFactor(provarn);
 
     // set density at n+1 at location n+alpha_M as well
     densam_ = densaf_;
 
     // factor for scalar time derivative
-    scadtfac_ = dt_*(actmat->UnbDens()-actmat->BurDens())/densam_;
+    scadtfac_ = dt_*scaconvfacaf_;
   }
 }
 else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
@@ -2556,7 +2556,7 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
   densaf_ = actmat->ComputeDensity(provaraf);
 
   // factor for convective scalar term at n+alpha_F or n+1
-  scaconvfacaf_ = (actmat->UnbDens()-actmat->BurDens())/densaf_;
+  scaconvfacaf_ = actmat->ComputeFactor(provaraf);
 
   if (is_genalpha)
   {
@@ -2565,7 +2565,7 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
     densam_ = actmat->ComputeDensity(provaram);
 
     // factor for scalar time derivative at n+alpha_M
-    scadtfac_ = (actmat->UnbDens()-actmat->BurDens())/densam_;
+    scadtfac_ = actmat->ComputeFactor(provaram);
   }
   else
   {
@@ -2574,13 +2574,13 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
     densn_ = actmat->ComputeDensity(provarn);
 
     // factor for convective scalar term at n
-    scaconvfacn_ = (actmat->UnbDens()-actmat->BurDens())/densn_;
+    scaconvfacn_ = actmat->ComputeFactor(provarn);
 
     // set density at n+1 at location n+alpha_M as well
     densam_ = densaf_;
 
     // factor for scalar time derivative
-    scadtfac_ = dt_*(actmat->UnbDens()-actmat->BurDens())/densam_;
+    scadtfac_ = dt_*scaconvfacaf_;
   }
 }
 else dserror("Material type is not supported");

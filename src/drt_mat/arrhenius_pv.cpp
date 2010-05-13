@@ -117,9 +117,26 @@ double MAT::ArrheniusPV::ComputeTemperature(const double provar) const
 /*----------------------------------------------------------------------*/
 double MAT::ArrheniusPV::ComputeDensity(const double provar) const
 {
+  // BML hypothesis
   const double density = UnbDens() + provar * (BurDens() - UnbDens());
 
+  // equation of state
+  //const double density = UnbDens()*BurDens()/(BurDens() + provar * (UnbDens() - BurDens()));
+
   return density;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ArrheniusPV::ComputeFactor(const double provar) const
+{
+  // BML hypothesis
+  const double factor = (UnbDens() - BurDens())/(UnbDens() + provar * (BurDens() - UnbDens()));
+
+  // equation of state
+  //const double factor = (UnbDens() - BurDens())/(BurDens() + provar * (UnbDens() - BurDens()));
+
+  return factor;
 }
 
 /*----------------------------------------------------------------------*/

@@ -1983,8 +1983,8 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
   }
   else densam_[0] = densnp_[0];
 
-  // factor for density gradient: unburnt-burnt density difference
-  densgradfac_[0] = actmat->BurDens() - actmat->UnbDens();
+  // factor for density gradient
+  densgradfac_[0] = -densnp_[0]*actmat->ComputeFactor(provarnp);
 
   // compute diffusivity according to Sutherland law
   diffus_[0] = actmat->ComputeDiffusivity(tempnp);
@@ -2035,8 +2035,8 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
   }
   else densam_[0] = densnp_[0];
 
-  // factor for density gradient: unburnt-burnt density difference
-  densgradfac_[0] = actmat->BurDens() - actmat->UnbDens();
+  // factor for density gradient
+  densgradfac_[0] = -densnp_[0]*actmat->ComputeFactor(provarnp);
 
   // compute diffusivity according to Sutherland law
   diffus_[0] = actmat->ComputeDiffusivity(tempnp);
