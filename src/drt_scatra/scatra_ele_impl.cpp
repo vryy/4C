@@ -2646,6 +2646,44 @@ double resdiffus(0.0);
       else tau_[k] = 0.0;
     }
     break;
+    case INPAR::SCATRA::tau_oberai:
+    {
+      // tau according to Assad Oberai's suggestion
+      if (is_stationary_) dserror("This stabilization parameter only available for instationary case");
+
+      // get number of dimensions (convert from int to double)
+      const double dim = (double) nsd_;
+
+      // get characteristic element length
+      const double h = pow(vol,(1.0/dim));
+
+      // get Euclidean norm of (weighted) velocity at element center
+      double vel_norm = velint_.Norm2();
+
+      // compute element Peclet number
+      // (caution: element Peclet number defined here without division by 2)
+      const double epe = densnp_[k] * vel_norm * h / diffus;
+
+      // compute CFL number
+      const double cfl = vel_norm * dt / h;
+
+      // compute k_bar
+      const double pp = exp(epe/20.0);
+      const double pm = exp(-epe/20.0);
+      const double k_bar = 1.0 + (8.0*((pp-pm)/(pp+pm))/(1.0+((pp-pm)/(pp+pm))));
+
+      // compute factors gamma, kappa, alpha and mu
+      const double kp = exp(k_bar);
+      const double km = exp(-k_bar);
+      const double fac_gamma = exp(k_bar*cfl*(1.0-(k_bar/epe)));
+      const double fac_kappa = (2.0/(kp+km))-1.0;
+      const double fac_alpha = (kp-km)/(kp+km);
+      const double fac_mu    = (2.0*(2.0/(kp+km))+1.0)/3.0;
+
+      // compute tau
+      tau_[k] = fac_mu*(fac_gamma-1.0)-(fac_gamma+1.0)*cfl*((fac_alpha/2.0)+(fac_kappa/epe))/(fac_alpha*(fac_gamma-1.0)+cfl*fac_kappa*(fac_gamma+1.0));
+    }
+    break;
     case INPAR::SCATRA::tau_zero:
     {
       // set tau's to zero (-> no stabilization effect)
@@ -2654,6 +2692,9 @@ double resdiffus(0.0);
     break;
     default: dserror("Unknown definition of tau\n");
   } //switch (whichtau)
+
+  cout << tau_[k];
+  printf("\n");
 
 #ifdef VISUALIZE_ELEMENT_DATA
   // visualize stabilization parameter

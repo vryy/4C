@@ -2215,16 +2215,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Franca_Valentin",
                                  "Bazilevs",
                                  "Exact_1D",
+                                 "Oberai",
                                  "Zero"),
                                tuple<std::string>(
                                  "tau according to Franca and Valentin (2000)",
                                  "tau according to Bazilevs et al. (2007) (based on G_ij and g_i)",
                                  "exact tau for stationary 1d problems and linear shape functions",
+                                 "tau according to Oberai for instationary problems",
                                  "zero tau (no stabilizing effect)")  ,
                                 tuple<INPAR::SCATRA::TauType>(
                                     INPAR::SCATRA::tau_franca_valentin,
                                     INPAR::SCATRA::tau_bazilevs,
                                     INPAR::SCATRA::tau_exact_1d,
+                                    INPAR::SCATRA::tau_oberai,
                                     INPAR::SCATRA::tau_zero),
                                &scatradyn_stab);
 

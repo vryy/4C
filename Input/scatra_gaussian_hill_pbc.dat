@@ -71,6 +71,8 @@ INITFUNCNO       2
 FSSUGRDIFF       No
 WRITEFLUX        No
 MATID            4
+----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+DEFINITION_TAU   Oberai    // Zero Franca_Valentin Bazilevs Oberai
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
 ------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -------------------------------------------------------FSI DYNAMIC
