@@ -179,8 +179,8 @@ Maintainer: Axel Gerstenberger
       const bool pstab,
       const bool supg,
       const bool cstab,
-      const double& tau_stab_Mp,
       const double& tau_stab_Mu,
+      const double& tau_stab_Mp,
       const double& tau_stab_C
         )
   {
@@ -1125,7 +1125,7 @@ void SysmatDomainSigma(
             // evaluate residual once for all stabilization right hand sides
             LINALG::Matrix<nsd,1> res_old;
             for (size_t isd = 0; isd < nsd; ++isd)
-                res_old(isd) = -(rhsint(isd))+(dens*conv_old(isd)+gradp(isd)-2.0*dynvisc*div_eps_old(isd));
+                res_old(isd) = -rhsint(isd)+(dens*conv_old(isd)+gradp(isd)-2.0*dynvisc*div_eps_old(isd));
 
             if (instationary)
               for (size_t isd = 0; isd < nsd; ++isd)
@@ -1180,7 +1180,7 @@ void SysmatDomainSigma(
             }
 
             if (0)
-            {  
+            {
               // for Jeffery-Hamel Flow
               LINALG::Matrix<3,1> physpos(true);
               GEO::elementToCurrentCoordinates(DISTYPE, xyze, posXiDomain, physpos);
@@ -1209,7 +1209,7 @@ void SysmatDomainSigma(
                 gpvelnp, pres, gradp, vderxy, rhsint, res_old, div_eps_old, tau,
                 enr_conv_c_, enr_viscs2,
                 tauele_unknowns_present, instationary, newton, pstab, supg, cstab,
-                tau_stab_Mp, tau_stab_Mu, tau_stab_C);
+                tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 
         } // end loop over gauss points
     } // end loop over integration cells
