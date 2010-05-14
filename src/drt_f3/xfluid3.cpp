@@ -318,11 +318,12 @@ void DRT::ELEMENTS::XFluid3Register::Print(ostream& os) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::XFluid3::DLMInfo::DLMInfo(const int nd, const int na)
-: oldKaainv_(LINALG::SerialDenseMatrix(na,na,true)),
-  oldKad_(LINALG::SerialDenseMatrix(na,nd,true)),
-  oldfa_(LINALG::SerialDenseVector(na,true)),
-  stressdofs_(LINALG::SerialDenseVector(na,true))
+DRT::ELEMENTS::XFluid3::DLMInfo::DLMInfo(const int nu, const int ns, const int nui)
+: oldKssinv_(LINALG::SerialDenseMatrix(ns,ns,true)),
+  oldKGsu_(LINALG::SerialDenseMatrix(ns,nu,true)),
+  oldGsui_(LINALG::SerialDenseMatrix(ns,nui,true)),
+  oldrs_(LINALG::SerialDenseVector(ns,true)),
+  stressdofs_(LINALG::SerialDenseVector(ns,true))
 {
   return;
 }

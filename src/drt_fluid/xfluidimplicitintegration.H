@@ -374,13 +374,14 @@ protected:
       const Teuchos::RCP<DRT::Discretization> fluiddis,
       const Teuchos::RCP<DRT::Discretization> ifacedis,
       Teuchos::ParameterList&                 params,
-      Teuchos::RCP<LINALG::SparseOperator>    Cuu,
-      Teuchos::RCP<LINALG::SparseOperator>    Mud,
-      Teuchos::RCP<LINALG::SparseOperator>    Mdu,
+//      Teuchos::RCP<LINALG::SparseOperator>    Cuu,
+      Teuchos::RCP<LINALG::SparseOperator>    Cud,
+      Teuchos::RCP<LINALG::SparseOperator>    Cdu,
       Teuchos::RCP<LINALG::SparseOperator>    Cdd,
       Teuchos::RCP<Epetra_Vector>             RHSd,
       Teuchos::RCP<LINALG::SparseOperator>    systemmatrix1,
-      Teuchos::RCP<Epetra_Vector>             systemvector1
+      Teuchos::RCP<Epetra_Vector>             systemvector1,
+      const bool                              assemble_coupling_matrices
       );
 
   void preparefluidfluidboundaryDis();
@@ -492,23 +493,10 @@ protected:
   /// (standard) system matrix
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;
 
-  Teuchos::RCP<LINALG::SparseMatrix> Cuu_;
-  Teuchos::RCP<LINALG::SparseMatrix> Mud_;
-  Teuchos::RCP<LINALG::SparseMatrix> Mdu_;
+  Teuchos::RCP<LINALG::SparseMatrix> Cdu_;
+  Teuchos::RCP<LINALG::SparseMatrix> Cud_;
   Teuchos::RCP<LINALG::SparseMatrix> Cdd_;
-  Teuchos::RCP<Epetra_Vector>        RHSd_;
-
-  
-  Teuchos::RCP<LINALG::SparseMatrix> Mdulm_;
-  Teuchos::RCP<LINALG::SparseMatrix> Mudlm_;
-  Teuchos::RCP<LINALG::SparseMatrix> Cddlm_;
-  Teuchos::RCP<Epetra_Vector>        RHSlm_;
-
-  Teuchos::RCP<Epetra_Vector> oldinc_;
-
-//
-//  /// (standard) system matrix
-//  Teuchos::RCP<LINALG::SparseOperator> enrichsysmat_;
+  Teuchos::RCP<Epetra_Vector>        rhsd_;
 
   /// maps for extracting Dirichlet and free DOF sets
   Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;

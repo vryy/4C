@@ -1533,19 +1533,21 @@ void SysmatBoundarySigma(
               patchassembler.template Matrix<Sigmazx,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(0), shp_iface);
               patchassembler.template Matrix<Sigmazy,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(1), shp_iface);
               patchassembler.template Matrix<Sigmazz,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(2), shp_iface);
-
-              // always needed. Above matrix only needed for instationary monolithic formulation
-              //            cout << interface_gpvelnp(0) << endl;
-              assembler.template Vector<Sigmaxx>(shp_tau.d0, -fac*normalvec_fluid(0)*interface_gpvelnp(0));
-              assembler.template Vector<Sigmaxy>(shp_tau.d0, -fac*normalvec_fluid(1)*interface_gpvelnp(0));
-              assembler.template Vector<Sigmaxz>(shp_tau.d0, -fac*normalvec_fluid(2)*interface_gpvelnp(0));
-              assembler.template Vector<Sigmayx>(shp_tau.d0, -fac*normalvec_fluid(0)*interface_gpvelnp(1));
-              assembler.template Vector<Sigmayy>(shp_tau.d0, -fac*normalvec_fluid(1)*interface_gpvelnp(1));
-              assembler.template Vector<Sigmayz>(shp_tau.d0, -fac*normalvec_fluid(2)*interface_gpvelnp(1));
-              assembler.template Vector<Sigmazx>(shp_tau.d0, -fac*normalvec_fluid(0)*interface_gpvelnp(2));
-              assembler.template Vector<Sigmazy>(shp_tau.d0, -fac*normalvec_fluid(1)*interface_gpvelnp(2));
-              assembler.template Vector<Sigmazz>(shp_tau.d0, -fac*normalvec_fluid(2)*interface_gpvelnp(2));
             }
+            else
+            {
+              cout << "monolithic FSI" << endl;
+            }
+            // always needed. Above matrix only needed for instationary monolithic formulation
+            assembler.template Vector<Sigmaxx>(shp_tau.d0, -fac*normalvec_fluid(0)*interface_gpvelnp(0));
+            assembler.template Vector<Sigmaxy>(shp_tau.d0, -fac*normalvec_fluid(1)*interface_gpvelnp(0));
+            assembler.template Vector<Sigmaxz>(shp_tau.d0, -fac*normalvec_fluid(2)*interface_gpvelnp(0));
+            assembler.template Vector<Sigmayx>(shp_tau.d0, -fac*normalvec_fluid(0)*interface_gpvelnp(1));
+            assembler.template Vector<Sigmayy>(shp_tau.d0, -fac*normalvec_fluid(1)*interface_gpvelnp(1));
+            assembler.template Vector<Sigmayz>(shp_tau.d0, -fac*normalvec_fluid(2)*interface_gpvelnp(1));
+            assembler.template Vector<Sigmazx>(shp_tau.d0, -fac*normalvec_fluid(0)*interface_gpvelnp(2));
+            assembler.template Vector<Sigmazy>(shp_tau.d0, -fac*normalvec_fluid(1)*interface_gpvelnp(2));
+            assembler.template Vector<Sigmazz>(shp_tau.d0, -fac*normalvec_fluid(2)*interface_gpvelnp(2));
 
                /*               \
             - |  v , Dtau * n^f  |
@@ -1586,12 +1588,12 @@ void SysmatBoundarySigma(
             patchassembler.template Matrix<Velziface,Sigmazz>(*(fluidfluidmatrices.Guis_uncond), shp_iface, fac*normalvec_fluid(2), shp_tau.d0);
 
 
-            if (fluidfluidmatrices.rhuis_uncond == null)
+            if (fluidfluidmatrices.rhsui_uncond == null)
               dserror("rhuis_uncond should not be Null!");
 
-            patchassembler.template Vector<Velxiface>(*(fluidfluidmatrices.rhuis_uncond), shp_iface, -fac*disctau_times_nf(0));
-            patchassembler.template Vector<Velyiface>(*(fluidfluidmatrices.rhuis_uncond), shp_iface, -fac*disctau_times_nf(1));
-            patchassembler.template Vector<Velziface>(*(fluidfluidmatrices.rhuis_uncond), shp_iface, -fac*disctau_times_nf(2));
+            patchassembler.template Vector<Velxiface>(*(fluidfluidmatrices.rhsui_uncond), shp_iface, -fac*disctau_times_nf(0));
+            patchassembler.template Vector<Velyiface>(*(fluidfluidmatrices.rhsui_uncond), shp_iface, -fac*disctau_times_nf(1));
+            patchassembler.template Vector<Velziface>(*(fluidfluidmatrices.rhsui_uncond), shp_iface, -fac*disctau_times_nf(2));
 
             // here the interface force is integrated
             // this is done using test shape functions of the boundary mesh

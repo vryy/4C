@@ -62,11 +62,12 @@ namespace DRT
         
         struct FluidFluidCouplingMatrices
         {
-          RCP<Epetra_SerialDenseMatrix> Guis_uncond;
           RCP<Epetra_SerialDenseMatrix> Gsui_uncond;
-          RCP<Epetra_SerialDenseVector> rhuis_uncond;
-        }fluidfluidmatrices_;
+          RCP<Epetra_SerialDenseMatrix> Guis_uncond;
+          RCP<Epetra_SerialDenseVector> rhsui_uncond;
+        };
         
+        FluidFluidCouplingMatrices fluidfluidmatrices_;
 
         //! @name Constructors and destructors and related methods
 
@@ -283,18 +284,20 @@ namespace DRT
         class DLMInfo
         {
         public:
-          //! Kaa inv of old iteration step
-          LINALG::SerialDenseMatrix      oldKaainv_;
-          //! Kad of old iteration step
-          LINALG::SerialDenseMatrix      oldKad_;
-          //! fa inv of old iteration step
-          LINALG::SerialDenseVector      oldfa_;
+          //! Kss inv of old iteration step
+          LINALG::SerialDenseMatrix      oldKssinv_;
+          //! Ksu of old iteration step
+          LINALG::SerialDenseMatrix      oldKGsu_;
+          //! Ksui of old iteration step
+          LINALG::SerialDenseMatrix      oldGsui_;
+          //! fs inv of old iteration step
+          LINALG::SerialDenseVector      oldrs_;
 
           //! this map stores all element stresses (independent of the xfem label)
           LINALG::SerialDenseVector      stressdofs_;
 
           //! constructor
-          explicit DLMInfo(const int nd, const int na);
+          explicit DLMInfo(const int nu, const int ns, const int nui);
         private:
           //! disabled standard constructor
           DLMInfo();
@@ -320,23 +323,27 @@ namespace DRT
         //! compute stresses from previous newton iteration and store them in dlm_info_
         void UpdateOldDLMAndDLMRHS(
             const DRT::Discretization&      discretization,
+            const DRT::Discretization&      discretizationiface,
             const std::vector<int>&         lm,
-            MyState&                        mystate
+            const std::vector<int>&         lmiface,
+            MyState&                        mystate,
+            const bool                      interface_unknowns
             ) const;
 
         //! condense (u,p,sigma) matrix to (u,p) matrix and store this iterations sub-matrices
         void CondenseElementStressAndStoreOldIterationStep(
             const Epetra_SerialDenseMatrix& elemat1_uncond,
             const Epetra_SerialDenseVector& elevec1_uncond,
+            const Epetra_SerialDenseMatrix& Gsd_uncond,
             const Epetra_SerialDenseMatrix& Gds_uncond,
             const Epetra_SerialDenseVector& rhsd_uncond,
             Epetra_SerialDenseMatrix&       elemat1,
             Epetra_SerialDenseVector&       elevec1,
-            Epetra_SerialDenseMatrix&       Cuu,
-            Epetra_SerialDenseMatrix&       Mud,
-            Epetra_SerialDenseMatrix&       Mdu,
+            Epetra_SerialDenseMatrix&       Cud,
+            Epetra_SerialDenseMatrix&       Cdu,
             Epetra_SerialDenseMatrix&       Cdd,
             Epetra_SerialDenseVector&       rhsd,
+            const std::vector<int>&         lmiface,
             const bool                      monolithic_FSI
             ) const;
 

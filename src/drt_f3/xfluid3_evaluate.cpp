@@ -206,10 +206,15 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
               *this, eleDofManager_->getNodalDofSet(), enrfieldset, element_ansatz_filled
               ));
 
+        const RCP<vector<int> > ifacepatchlm = rcp(new vector<int>());
+        const RCP<vector<int> > ifacepatchlmowner = rcp(new vector<int>());
+        ih_->GetInterfacepatchLocationVectors(*this, ifacepatchlm, ifacepatchlmowner);
+
         DLM_info_ = Teuchos::rcp(
             new DLMInfo(
                 eleDofManager_uncondensed_->NumNodeDof(),
-                eleDofManager_uncondensed_->NumElemDof()
+                eleDofManager_uncondensed_->NumElemDof(),
+                ifacepatchlm->size()
                 )
             );
       }
@@ -248,24 +253,16 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
       const bool monolithic_FSI = params.get<bool>("monolithic_FSI");
 
-      RCP<Epetra_SerialDenseMatrix> Cuu;
-      RCP<Epetra_SerialDenseMatrix> Mud;
-      RCP<Epetra_SerialDenseMatrix> Mdu;
-      RCP<Epetra_SerialDenseMatrix> Cdd;
-      RCP<Epetra_SerialDenseVector> rhsd;
+      const RCP<const vector<int> > ifacepatchlm = params.get<RCP<vector<int> > >("ifacepatchlm");
 
       if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
       {
         if (ih_->ElementIntersected(Id()))
         {
-          std::set<int> begids = ih_->GetIntersectingBoundaryElementsGID(this->Id());
-          const int numnode_bele = ih_->cutterdis()->gElement(*begids.begin())->NumNode();
-          // the size of the numifacepatchdof matches to the size of ifacepatchlm
-          const size_t numifacepatchdof = begids.size()*3*numnode_bele;
-          fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
-          fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), numifacepatchdof));
-          fluidfluidmatrices_.rhuis_uncond = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
-          Cdd = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, numifacepatchdof));
+          const size_t nui = ifacepatchlm->size();
+          fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(nui, eleDofManager_uncondensed_->NumDofElemAndNode()));
+          fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), nui));
+          fluidfluidmatrices_.rhsui_uncond = rcp(new Epetra_SerialDenseVector(nui));
         }
 
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
@@ -278,10 +275,12 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
         if (ih_->ElementIntersected(Id()))
         {
-           params.set("Mdulm",fluidfluidmatrices_.Guis_uncond);
-           params.set("Mudlm",fluidfluidmatrices_.Gsui_uncond);
-           params.set("Cddlm",Cdd);
-           params.set("rhslm",fluidfluidmatrices_.rhuis_uncond);
+          const size_t nui = ifacepatchlm->size();
+          RCP<Epetra_SerialDenseMatrix> Cdd = rcp(new Epetra_SerialDenseMatrix(nui, nui));
+          params.set("Cdu",fluidfluidmatrices_.Guis_uncond);
+          params.set("Cud",fluidfluidmatrices_.Gsui_uncond);
+          params.set("Cdd",Cdd);
+          params.set("rhsd",fluidfluidmatrices_.rhsui_uncond);
         }
       }
       else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
@@ -290,27 +289,28 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         SanityChecks(eleDofManager_, eleDofManager_uncondensed_);
 
         // stress update
-        UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
+        UpdateOldDLMAndDLMRHS(discretization, *ih_->cutterdis(), lm, *ifacepatchlm, mystate, monolithic_FSI);
 
         // create uncondensed element matrix and vector
         const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
         Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
         Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
 
-        if (ih_->ElementIntersected(Id()) and monolithic_FSI)
+        RCP<Epetra_SerialDenseMatrix> Cud;
+        RCP<Epetra_SerialDenseMatrix> Cdu;
+        RCP<Epetra_SerialDenseMatrix> Cdd;
+        RCP<Epetra_SerialDenseVector> rhsd;
+
+        if (ih_->ElementIntersected(Id()))
         {
-          std::set<int> begids = ih_->GetIntersectingBoundaryElementsGID(this->Id());
-          const int numnode_bele = ih_->cutterdis()->gElement(*begids.begin())->NumNode();
-          // the size of the numifacepatchdof matches to the size of ifacepatchlm
-          const size_t numifacepatchdof = begids.size()*3*numnode_bele;
-          fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
-          fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), numifacepatchdof));
-          fluidfluidmatrices_.rhuis_uncond = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
-          Cuu  = params.get<RCP<Epetra_SerialDenseMatrix> >("Cuulm");
-          Mud  = params.get<RCP<Epetra_SerialDenseMatrix> >("Mudlm");
-          Mdu  = params.get<RCP<Epetra_SerialDenseMatrix> >("Mdulm");
-          Cdd  = params.get<RCP<Epetra_SerialDenseMatrix> >("Cddlm");
-          rhsd = params.get<RCP<Epetra_SerialDenseVector> >("rhslm");
+          const size_t nui = ifacepatchlm->size();
+          fluidfluidmatrices_.Gsui_uncond  = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), nui));
+          fluidfluidmatrices_.Guis_uncond  = rcp(new Epetra_SerialDenseMatrix(nui, eleDofManager_uncondensed_->NumDofElemAndNode()));
+          fluidfluidmatrices_.rhsui_uncond = rcp(new Epetra_SerialDenseVector(nui));
+          Cud  = rcp(new Epetra_SerialDenseMatrix(lm.size(), nui));
+          Cdu  = rcp(new Epetra_SerialDenseMatrix(nui, lm.size()));
+          Cdd  = rcp(new Epetra_SerialDenseMatrix(nui, nui));
+          rhsd = rcp(new Epetra_SerialDenseVector(nui));
         }
 
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
@@ -324,18 +324,21 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // condensation
         CondenseElementStressAndStoreOldIterationStep(
             elemat1_uncond, elevec1_uncond,
-            *fluidfluidmatrices_.Guis_uncond, *fluidfluidmatrices_.rhuis_uncond,
+            *fluidfluidmatrices_.Gsui_uncond,
+            *fluidfluidmatrices_.Guis_uncond,
+            *fluidfluidmatrices_.rhsui_uncond,
             elemat1, elevec1,
-            *Cuu, *Mud, *Mdu, *Cdd, *rhsd,
+            *Cud, *Cdu, *Cdd, *rhsd,
+            *ifacepatchlm,
             monolithic_FSI
             );
 
         if (ih_->ElementIntersected(Id()))
         {
-          params.set("Mdulm",Mdu);
-          params.set("Mudlm",Mud);
-          params.set("Cddlm",Cdd);
-          params.set("rhslm",rhsd);
+          params.set("Cud",Cud);
+          params.set("Cdu",Cdu);
+          params.set("Cdd",Cdd);
+          params.set("rhsd",rhsd);
         }
       }
 
@@ -436,9 +439,9 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       const bool supg   = true;
       const bool cstab  = true;
 
-      const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
+//      const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
       const bool monolithic_FSI = params.get<bool>("monolithic_FSI");         
-            
+
       RCP<Epetra_SerialDenseMatrix> Cuu;
       RCP<Epetra_SerialDenseMatrix> Mud;
       RCP<Epetra_SerialDenseMatrix> Mdu;
@@ -455,7 +458,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           const size_t numifacepatchdof = begids.size()*3*numnode_bele;
           fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
           fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), numifacepatchdof));
-          fluidfluidmatrices_.rhuis_uncond = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
+          fluidfluidmatrices_.rhsui_uncond = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
           Cdd = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, numifacepatchdof));
         }
             
@@ -465,24 +468,25 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
             this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1,
-            mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices_);
+            mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_);
         
         if (ih_->ElementIntersected(Id()))
-        {          
-           params.set("Mdulm",fluidfluidmatrices_.Guis_uncond);
-           params.set("Mudlm",fluidfluidmatrices_.Gsui_uncond);
-           params.set("Cddlm",Cdd);
-           params.set("rhslm",fluidfluidmatrices_.rhuis_uncond);
+        {
+           params.set("Cdu",fluidfluidmatrices_.Guis_uncond);
+           params.set("Cud",fluidfluidmatrices_.Gsui_uncond);
+           params.set("Cdd",Cdd);
+           params.set("rhsd",fluidfluidmatrices_.rhsui_uncond);
         }
       }
-      
+
       else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       {
         // sanity checks
         SanityChecks(eleDofManager_, eleDofManager_uncondensed_);
 
         // stress update
-        UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
+//        UpdateOldDLMAndDLMRHS(discretization, *ih_->cutterdis(), lm, *ifacepatchlm, mystate, monolithic_FSI);
+//        UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
 
         // create uncondensed element matrix and vector
         const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
@@ -497,7 +501,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           const size_t numifacepatchdof = begids.size()*3*numnode_bele;
           fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
           fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), numifacepatchdof));
-          fluidfluidmatrices_.rhuis_uncond = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
+          fluidfluidmatrices_.rhsui_uncond = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
           Mud = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumNodeDof(), numifacepatchdof));
           Mdu = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumNodeDof()));
           Cdd = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, numifacepatchdof));
@@ -510,23 +514,26 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
             this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond,
-            mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices_);
+            mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_);
         
         // condensation
-        CondenseElementStressAndStoreOldIterationStep(
-            elemat1_uncond, elevec1_uncond,
-            *fluidfluidmatrices_.Guis_uncond, *fluidfluidmatrices_.rhuis_uncond,
-            elemat1, elevec1,
-            *Cuu, *Mud, *Mdu, *Cdd, *rhsd,
-            true
-        );
+//        CondenseElementStressAndStoreOldIterationStep(
+//            elemat1_uncond, elevec1_uncond,
+//            *fluidfluidmatrices_.Gsui_uncond,
+//            *fluidfluidmatrices_.Guis_uncond,
+//            *fluidfluidmatrices_.rhsui_uncond,
+//            elemat1, elevec1,
+//            *Mud, *Mdu, *Cdd, *rhsd,
+//            *lmiface,
+//            true
+//        );
        
         if (ih_->ElementIntersected(Id()))
         {
-          params.set("Mdulm",Mdu);
-          params.set("Mudlm",Mud);
-          params.set("Cddlm",Cdd);
-          params.set("rhslm",rhsd);
+          params.set("Cdu",Mdu);
+          params.set("Cud",Mud);
+          params.set("Cdd",Cdd);
+          params.set("rhsd",rhsd);
         }
        }
 
@@ -706,14 +713,18 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
   const double d      = M_PI/2.0;
 
   // get viscosity
-  double  visc = 0.0;
+  double  kinvisc = 0.0;
+  double  dens = 0.0;
   if(material->MaterialType() == INPAR::MAT::m_fluid)
   {
     const MAT::NewtonianFluid* actmat = dynamic_cast<const MAT::NewtonianFluid*>(material.get());
-    visc = actmat->Viscosity();
+    kinvisc = actmat->Viscosity();
+    dens = actmat->Density();
   }
   else
     dserror("Cannot handle material of type %d", material->MaterialType());
+
+  const double dynvisc = kinvisc * dens;
 
   double         preint;
   vector<double> velint  (3);
@@ -820,15 +831,15 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
         + 2.0 * sin(a*xint[0] + d*xint[1]) * cos(a*xint[2] + d*xint[0]) * exp(a*(xint[1]+xint[2]))
         + 2.0 * sin(a*xint[1] + d*xint[2]) * cos(a*xint[0] + d*xint[1]) * exp(a*(xint[2]+xint[0]))
         + 2.0 * sin(a*xint[2] + d*xint[0]) * cos(a*xint[1] + d*xint[2]) * exp(a*(xint[0]+xint[1]))
-        )* exp(-2.0*visc*d*d*t);
+        )* exp(-2.0*dynvisc*d*d*t);
 
     // compute analytical velocities
     u[0] = -a * ( exp(a*xint[0]) * sin(a*xint[1] + d*xint[2]) +
-                  exp(a*xint[2]) * cos(a*xint[0] + d*xint[1]) ) * exp(-visc*d*d*t);
+                  exp(a*xint[2]) * cos(a*xint[0] + d*xint[1]) ) * exp(-dynvisc*d*d*t);
     u[1] = -a * ( exp(a*xint[1]) * sin(a*xint[2] + d*xint[0]) +
-                  exp(a*xint[0]) * cos(a*xint[1] + d*xint[2]) ) * exp(-visc*d*d*t);
+                  exp(a*xint[0]) * cos(a*xint[1] + d*xint[2]) ) * exp(-dynvisc*d*d*t);
     u[2] = -a * ( exp(a*xint[2]) * sin(a*xint[0] + d*xint[1]) +
-                  exp(a*xint[1]) * cos(a*xint[2] + d*xint[0]) ) * exp(-visc*d*d*t);
+                  exp(a*xint[1]) * cos(a*xint[2] + d*xint[0]) ) * exp(-dynvisc*d*d*t);
 
     // compute difference between analytical solution and numerical solution
     deltap = preint - p;
@@ -861,15 +872,22 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
  *---------------------------------------------------------------------*/
 void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
     const DRT::Discretization&      discretization,
+    const DRT::Discretization&      discretizationiface,
     const std::vector<int>&         lm,
-    MyState&                        mystate
+    const std::vector<int>&         lmiface,
+    MyState&                        mystate,
+    const bool                      interface_unknowns
     ) const
 {
-  const int nu = eleDofManager_uncondensed_->NumNodeDof();
-  const int ns = eleDofManager_uncondensed_->NumElemDof();
+  const std::size_t nu = eleDofManager_uncondensed_->NumNodeDof();
+  const std::size_t ns = eleDofManager_uncondensed_->NumElemDof();
+  const std::size_t nui = lmiface.size();
 
   if (ns > 0)
   {
+    if (nu != lm.size())
+      dserror("mismatch in fluid velocity and pressure number of DOFs. This is a bug!");
+
     // add Kda . inc_velnp to feas
     // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
 
@@ -877,22 +895,32 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
     DRT::UTILS::ExtractMyValues(*discretization.GetState("nodal increment"),inc_velnp,lm);
 
     static const Epetra_BLAS blas;
+    // update old iteration residual of the stresses from velocity and pressure increments
+    // DLM_info_->oldrs_(i) += DLM_info_->oldKsu_(i,j)*inc_velnp[j];
+    blas.GEMV('N', ns, nu,-1.0, DLM_info_->oldKGsu_.A(), DLM_info_->oldKGsu_.LDA(), &inc_velnp[0], 1.0, DLM_info_->oldrs_.A());
 
-    // update old iteration residual of the stresses
-    // DLM_info_->oldfa_(i) += DLM_info_->oldKad_(i,j)*inc_velnp[j];
-    blas.GEMV('N', ns, nu,-1.0, DLM_info_->oldKad_.A(), DLM_info_->oldKad_.LDA(), &inc_velnp[0], 1.0, DLM_info_->oldfa_.A());
+    if (nui > 0 and interface_unknowns)
+    {
+      cout << "only for monolithic" << endl;
+      vector<double> inc_velnp_iface(nui);
+      DRT::UTILS::ExtractMyValues(*discretizationiface.GetState("nodal increment"),inc_velnp_iface,lmiface);
+
+      // update old iteration residual of the stresses from interface velocity increments
+      // DLM_info_->oldrs_(i) += DLM_info_->oldKsui_(i,j)*inc_velnp_iface[j];
+      blas.GEMV('N', ns, nui,-1.0, DLM_info_->oldGsui_.A(), DLM_info_->oldGsui_.LDA(), &inc_velnp_iface[0], 1.0, DLM_info_->oldrs_.A());
+    }
 
     // compute element stresses
-    // DLM_info_->stressdofs_(i) -= DLM_info_->oldKaainv_(i,j)*DLM_info_->oldfa_(j);
-    blas.GEMV('N', ns, ns,1.0, DLM_info_->oldKaainv_.A(), DLM_info_->oldKaainv_.LDA(), DLM_info_->oldfa_.A(), 1.0, DLM_info_->stressdofs_.A());
+    // DLM_info_->stressdofs_(i) -= DLM_info_->oldKssinv_(i,j)*DLM_info_->oldrs_(j);
+    blas.GEMV('N', ns, ns,1.0, DLM_info_->oldKssinv_.A(), DLM_info_->oldKssinv_.LDA(), DLM_info_->oldrs_.A(), 1.0, DLM_info_->stressdofs_.A());
 
     // increase size of element vector (old values stay and zeros are added)
-    const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
+    const std::size_t numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
     mystate.velnp.resize(numdof_uncond,0.0);
     mystate.veln .resize(numdof_uncond,0.0);
     mystate.velnm.resize(numdof_uncond,0.0);
     mystate.accn .resize(numdof_uncond,0.0);
-    for (int i=0;i<ns;i++)
+    for (std::size_t i=0;i<ns;i++)
     {
       mystate.velnp[nu+i] = DLM_info_->stressdofs_(i);
     }
@@ -904,21 +932,23 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
 void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
     const Epetra_SerialDenseMatrix& elemat1_uncond,
     const Epetra_SerialDenseVector& elevec1_uncond,
-    const Epetra_SerialDenseMatrix& Gds_uncond,
-    const Epetra_SerialDenseVector& rhsd_uncond,
+    const Epetra_SerialDenseMatrix& Gsui_uncond,
+    const Epetra_SerialDenseMatrix& Guis_uncond,
+    const Epetra_SerialDenseVector& rhsui_uncond,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseMatrix& Cuu,
-    Epetra_SerialDenseMatrix& Mud,
-    Epetra_SerialDenseMatrix& Mdu,
-    Epetra_SerialDenseMatrix& Cdd,
-    Epetra_SerialDenseVector& rhsd,
+    Epetra_SerialDenseMatrix& Cuui,
+    Epetra_SerialDenseMatrix& Cuiu,
+    Epetra_SerialDenseMatrix& Cuiui,
+    Epetra_SerialDenseVector& rhsui,
+    const std::vector<int>&   lmiface,
     const bool monolithic_FSI
 ) const
 {
 
   const size_t nu = eleDofManager_uncondensed_->NumNodeDof();
   const size_t ns = eleDofManager_uncondensed_->NumElemDof();
+  const size_t nui = lmiface.size();
 
   // copy nodal dof entries
   for (size_t i = 0; i < nu; ++i)
@@ -937,6 +967,8 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
     LINALG::SerialDenseMatrix Gus(nu,ns);
     LINALG::SerialDenseMatrix Kssinv(ns,ns);
     LINALG::SerialDenseMatrix KGsu(ns,nu);
+    LINALG::SerialDenseMatrix Gsui(ns,nui);
+    LINALG::SerialDenseMatrix Guis(nui,ns);
     LINALG::SerialDenseVector fs(ns);
 
 //    cout << elemat1_uncond << endl;
@@ -961,9 +993,9 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
     // DLM-internal force is: fint - Kda . Kaa^-1 . feas
 
     // we need the inverse of Kaa
-    Epetra_SerialDenseSolver solve_for_inverseKaa;
-    solve_for_inverseKaa.SetMatrix(Kssinv);
-    solve_for_inverseKaa.Invert();
+    Epetra_SerialDenseSolver solve_for_inverseKss;
+    solve_for_inverseKss.SetMatrix(Kssinv);
+    solve_for_inverseKss.Invert();
 
     static const Epetra_BLAS blas;
     {
@@ -980,59 +1012,48 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
 
       if (monolithic_FSI)
       {
-        const std::set<int> begids = ih_->GetIntersectingBoundaryElementsGID(this->Id());
-        set<int>::const_iterator begid = begids.begin();
-        const int numnode_b = ih_->cutterdis()->gElement(*begid)->NumNode();
-
-        const size_t nd = 3*numnode_b*begids.size();
-
-        Epetra_SerialDenseMatrix Gds(nd, ns);
-        Epetra_SerialDenseMatrix Gsd(ns, nd);
-
-        for (size_t i=0;i<nd;i++)
+        for (size_t i=0;i<nui;i++)
         {
-          rhsd(i) = rhsd_uncond(i);
+          rhsui(i) = rhsui_uncond(i);
           for (size_t j=0;j<ns;j++)
           {
-            Gds(i,j) = Gds_uncond(i, nu+j);
-            Gsd(j,i) = Gds_uncond(i, nu+j); //only for transient
+            Gsui(j,i) = Gsui_uncond(nu+j, i);
+            Guis(i,j) = Guis_uncond(i, nu+j);
           }
         }
 
-        LINALG::SerialDenseMatrix GdsKssinv(nd,ns); // temporary Gds.Kss^{-1}
+        LINALG::SerialDenseMatrix GuisKssinv(nui,ns);
 
-        // GdsKssinv(i,j) = Kds(i,k)*Kssinv(k,j);
-        blas.GEMM('N','N',nd,ns,ns,1.0,Gds.A(),Gds.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,GdsKssinv.A(),GdsKssinv.LDA());
+        // GuisKssinv(i,j) = Kuis(i,k)*Kssinv(k,j);
+        blas.GEMM('N','N',nui,ns,ns,1.0,Guis.A(),Guis.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,GuisKssinv.A(),GuisKssinv.LDA());
 
-//        for (size_t i=0;i<nu;i++)
-//          for (size_t j=0;j<nu;j++)
-//            for (size_t k=0;k<ns;k++)
-//              Cuu(i,j) += KusKssinv(i,k)*Ksu(k,j); has been included already in elemat1
         for (size_t i=0;i<nu;i++)
-          for (size_t j=0;j<nd;j++)
+          for (size_t j=0;j<nui;j++)
             for (size_t k=0;k<ns;k++)
-              Mud(i,j) += -GusKssinv(i,k)*Gsd(k,j);
-        for (size_t i=0;i<nd;i++)
+              Cuui(i,j) += -GusKssinv(i,k)*Gsui(k,j);
+        for (size_t i=0;i<nui;i++)
           for (size_t j=0;j<nu;j++)
             for (size_t k=0;k<ns;k++)
-              Mdu(i,j) += -GdsKssinv(i,k)*KGsu(k,j);
-        for (size_t i=0;i<nd;i++)
-          for (size_t j=0;j<nd;j++)
+              Cuiu(i,j) += -GuisKssinv(i,k)*KGsu(k,j);
+        for (size_t i=0;i<nui;i++)
+          for (size_t j=0;j<nui;j++)
             for (size_t k=0;k<ns;k++)
-              Cdd(i,j) += -GdsKssinv(i,k)*Gsd(k,j);
-        for (size_t i=0;i<nd;i++)
+              Cuiui(i,j) += -GuisKssinv(i,k)*Gsui(k,j);
+        for (size_t i=0;i<nui;i++)
           for (size_t j=0;j<ns;j++)
-            rhsd(i) += - GdsKssinv(i,j)*fs(j);
+            rhsui(i) += - GuisKssinv(i,j)*fs(j);
       }
     }
 
     // store current DLM data in iteration history
-    //DLM_info_->oldKaainv_.Update(1.0,Kaa,0.0);
-    blas.COPY(DLM_info_->oldKaainv_.M()*DLM_info_->oldKaainv_.N(), Kssinv.A(), DLM_info_->oldKaainv_.A());
-    //DLM_info_->oldKad_.Update(1.0,Kad,0.0);
-    blas.COPY(DLM_info_->oldKad_.M()*DLM_info_->oldKad_.N(), KGsu.A(), DLM_info_->oldKad_.A());
-    //DLM_info_->oldfa_.Update(1.0,fa,0.0);
-    blas.COPY(DLM_info_->oldfa_.M()*DLM_info_->oldfa_.N(), fs.A(), DLM_info_->oldfa_.A());
+    //DLM_info_->oldKssinv_.Update(1.0,Kssinv,0.0);
+    blas.COPY(DLM_info_->oldKssinv_.M()*DLM_info_->oldKssinv_.N(), Kssinv.A(), DLM_info_->oldKssinv_.A());
+    //DLM_info_->oldKsu_.Update(1.0,KGsu,0.0);
+    blas.COPY(DLM_info_->oldKGsu_.M()*DLM_info_->oldKGsu_.N(), KGsu.A(), DLM_info_->oldKGsu_.A());
+    //DLM_info_->oldGsui_.Update(1.0,Gsui,0.0);
+    blas.COPY(DLM_info_->oldGsui_.M()*DLM_info_->oldGsui_.N(), Gsui.A(), DLM_info_->oldGsui_.A());
+    //DLM_info_->oldrs_.Update(1.0,fa,0.0);
+    blas.COPY(DLM_info_->oldrs_.M()*DLM_info_->oldrs_.N(), fs.A(), DLM_info_->oldrs_.A());
   }
 }
 
