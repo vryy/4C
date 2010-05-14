@@ -407,7 +407,28 @@ bool XFEM::InterfaceHandleXFSI::FindSpaceTimeLayerCell(
   return false;
 }
 
+void XFEM::InterfaceHandleXFSI::GetInterfacepatchLocationVectors(
+    const DRT::Element&        xele,
+    const RCP<vector<int> >    ifacepatchlm,
+    const RCP<vector<int> >    ifacepatchlmowner
+    ) const
+{
+  const std::set<int> begids = this->GetIntersectingBoundaryElementsGID(xele.Id());
+  for (std::set<int>::const_iterator begid = begids.begin(); begid != begids.end(); ++begid)
+  {
+    const DRT::Element* bele = cutterdis_->gElement(*begid);
 
+    vector<int> ifacelm;
+    vector<int> ifacelmowner;
+    bele->LocationVector(*cutterdis_,ifacelm,ifacelmowner);
+
+    ifacepatchlm->reserve( ifacepatchlm->size() + ifacelm.size());
+    ifacepatchlm->insert( ifacepatchlm->end(), ifacelm.begin(), ifacelm.end());
+
+    ifacepatchlmowner->reserve( ifacepatchlmowner->size() + ifacelmowner.size());
+    ifacepatchlmowner->insert( ifacepatchlmowner->end(), ifacelmowner.begin(), ifacelmowner.end());
+  }
+}
 
 /*----------------------------------------------------------------------*
  * Debug only

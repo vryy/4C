@@ -58,6 +58,12 @@ namespace XFEM
         return cutterdis_->gElement(element_gid);
     }
 
+    void GetInterfacepatchLocationVectors(
+        const DRT::Element&        xele,
+        const RCP<vector<int> >    ifacepatchlm,
+        const RCP<vector<int> >    ifacepatchlmowner
+        ) const;
+
     template<class M>
     void fillBoundaryNodalPositionsNP(
         const DRT::Element*                   ele,                ///< element with nodal pointers
