@@ -241,6 +241,22 @@ namespace ADAPTER {
 
     /// all velocity dofs not at the interface
     Teuchos::RefCountPtr<Epetra_Map>       innervelmap_;
+
+    //! @name monolithic FSI
+
+    /// sum of displacement increments already applied,
+    ///
+    /// there are two increments around
+    ///
+    /// x^n+1_i+1 = x^n+1_i + iterinc  (also referred to as residual increment)
+    ///
+    /// x^n+1_i+1 = x^n     + stepinc
+    Teuchos::RCP<Epetra_Vector> idispstepinc_;
+    Teuchos::RCP<Epetra_Vector> idispiterinc_;
+
+    Teuchos::RCP<Epetra_Vector> velpresstepinc_;
+
+    //@}
   };
 
 }

@@ -63,7 +63,7 @@ void ADAPTER::FluidXFEM::Evaluate(
     Teuchos::RCP<const Epetra_Vector> fluidstepinc)
 {
   std::cout << "ADAPTER::FluidXFEM::Evaluate()" << endl;
-  if (idispstepinc!=Teuchos::null)
+//  if (idispstepinc!=Teuchos::null)
   {
     // if we have values at the interface we need to apply them
     FluidField().ApplyMeshDisplacementIncrement(idispstepinc);

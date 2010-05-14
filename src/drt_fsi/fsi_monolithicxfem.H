@@ -17,25 +17,27 @@
 #include "fsi_matrixtransform.H"
 #include "fsi_statustest.H"
 #include "fsi_debugwriter.H"
-#include "fsi_monolithicinterface.H"
 
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
 #include <NOX_Direction_UserDefinedFactory.H>
 
+#include "fsi_monolithicinterface.H"
 namespace FSI
 {
 
+  /// monolithic FSI with XFEM: map extractor
   class MonolithicXFEMExtractor : public LINALG::MultiMapExtractor
   {
   public:
 
-    MAP_EXTRACTOR_VECTOR_METHODS(Structure,0)
-    MAP_EXTRACTOR_VECTOR_METHODS(Fluid,    1)
+    MAP_EXTRACTOR_VECTOR_METHODS(StructureInterior,0)
+    MAP_EXTRACTOR_VECTOR_METHODS(StructureBoundary,1)
+    MAP_EXTRACTOR_VECTOR_METHODS(Fluid            ,2)
 
   };
 
-  /// base class for monolithic FSI with xfem
+  /// base class for monolithic FSI with XFEM
   class MonolithicBaseXFEM : public ADAPTER::AlgorithmBase,
                              public ADAPTER::StructureBaseAlgorithm
   {
@@ -57,6 +59,14 @@ namespace FSI
 
     ADAPTER::Coupling& StructureFluidCoupling() { return coupsf_; }
 
+    /// set full monolithic dof row map
+    /*!
+      A subclass calls this method (from its constructor) and thereby
+      defines the number of blocks, their maps and the block order. The block
+      maps must be row maps by themselves and must not contain identical GIDs.
+     */
+    void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
+
   protected:
 
     //! @name Time loop building blocks
@@ -70,7 +80,10 @@ namespace FSI
     /// write output
     virtual void Output();
 
-  protected:
+    //@}
+
+    /// extractor to communicate between full monolithic map and block maps
+    const MonolithicXFEMExtractor& Extractor(){return extractor_;};
 
     /// coupling of structure and fluid at the interface
     ADAPTER::Coupling               coupsf_;
@@ -84,10 +97,12 @@ namespace FSI
 
     /// the very xfem fluid
     ADAPTER::FluidXFEM              fluidfield_;
+
+    MonolithicXFEMExtractor extractor_;
   };
 
 
-  /// monolithic FSI with xfem
+  /// base class of XFEM monolithic FSI algorithms
   class MonolithicXFEM : public MonolithicBaseXFEM
   {
   public:
@@ -105,8 +120,7 @@ namespace FSI
 
     /// extract the two field vectors from a given composed vector
     /*!
-      We are dealing with NOX here, so we get absolute values. x is the sum of
-      all increments up to this point.
+      x is the sum of all increments up to this point.
 
       \param x  (i) composed vector that contains all field vectors
       \param sx (o) structural displacements
@@ -119,13 +133,11 @@ namespace FSI
 
   private:
 
-    void SetupVector(
-        Epetra_Vector &f,
-        Teuchos::RCP<const Epetra_Vector> sv,
-        Teuchos::RCP<const Epetra_Vector> fv,
-        double fluidscale);
-
-    const MonolithicXFEMExtractor& Extractor(){return *extractor_;};
+//    void SetupVector(
+//        Epetra_Vector &f,
+//        Teuchos::RCP<const Epetra_Vector> sv,
+//        Teuchos::RCP<const Epetra_Vector> fv,
+//        double fluidscale);
 
     void Newton();
     void Evaluate();
@@ -144,10 +156,11 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv);
     Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv);
 
-    Teuchos::RCP<MonolithicXFEMExtractor> extractor_;
-
+    /// residual
     Teuchos::RCP<Epetra_Vector> rhs_;
-    Teuchos::RCP<Epetra_Vector> x_;
+    /// increment between timestep n and n+1
+    Teuchos::RCP<Epetra_Vector> stepinc_;
+    /// system matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
   };
 
