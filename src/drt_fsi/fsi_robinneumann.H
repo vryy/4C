@@ -48,7 +48,7 @@ protected:
 
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
 
-  /// create convergance tests
+  /// create convergence tests
   virtual void CreateStatusTest(ParameterList& nlParams,
                                 Teuchos::RCP<NOX::Epetra::Group> grp,
                                 Teuchos::RCP<NOX::StatusTest::Combo> converged);

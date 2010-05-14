@@ -70,7 +70,7 @@ namespace FSI
                        NOX::Epetra::Vector& noxSoln,
                        Teuchos::RCP<NOX::Utils> utils);
 
-    /// setup of NOX convergance tests
+    /// setup of NOX convergence tests
     virtual Teuchos::RCP<NOX::StatusTest::Combo>
     CreateStatusTest(Teuchos::ParameterList& nlParams,
                      Teuchos::RCP<NOX::Epetra::Group> grp);
@@ -135,7 +135,7 @@ namespace FSI
     /// @ information about constraints are taken from structure ConstraintManager
 
     const Teuchos::RCP< ::UTILS::ConstrManager> conman_; ///<constraint manager
-    
+
     //@}
 
     /// preconditioned block Krylov or block Gauss-Seidel linear solver

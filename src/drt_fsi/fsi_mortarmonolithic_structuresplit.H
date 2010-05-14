@@ -61,7 +61,7 @@ namespace FSI
 
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
-    
+
     //! @name Transfer helpers
     virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
@@ -78,7 +78,7 @@ namespace FSI
                        NOX::Epetra::Vector& noxSoln,
                        Teuchos::RCP<NOX::Utils> utils);
 
-    /// setup of NOX convergance tests
+    /// setup of NOX convergence tests
     virtual Teuchos::RCP<NOX::StatusTest::Combo>
     CreateStatusTest(Teuchos::ParameterList& nlParams,
                      Teuchos::RCP<NOX::Epetra::Group> grp);
@@ -116,10 +116,10 @@ namespace FSI
 
     /// coupling of fluid and ale at the free surface
     ADAPTER::Coupling fscoupfa_;
-    
+
     /// coupling of structure and fluid at the interface
     ADAPTER::CouplingMortar               coupsfm_;
-  
+
     ///communicator
     Epetra_Comm& comm_;
 

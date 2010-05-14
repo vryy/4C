@@ -42,7 +42,7 @@ protected:
   virtual Teuchos::RCP<Epetra_Vector> StructOp(Teuchos::RCP<Epetra_Vector> iforce,
                                                const FillType fillFlag);
 
-  /// create convergance tests
+  /// create convergence tests
   virtual void CreateStatusTest(ParameterList& nlParams,
                                 Teuchos::RCP<NOX::Epetra::Group> grp,
                                 Teuchos::RCP<NOX::StatusTest::Combo> converged);

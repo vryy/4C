@@ -310,7 +310,7 @@ namespace UTILS
                        NOX::Epetra::Vector& noxSoln,
                        Teuchos::RCP<NOX::Utils> utils) = 0;
 
-    /// setup of NOX convergance tests
+    /// setup of NOX convergence tests
     virtual Teuchos::RCP<NOX::StatusTest::Combo>
     CreateStatusTest(Teuchos::ParameterList& nlParams,
                      Teuchos::RCP<NOX::Epetra::Group> grp) = 0;
@@ -355,7 +355,7 @@ namespace UTILS
     /// setup list with default parameters
     void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
-    /// add a status test to be used for adaptive linear solver convergance
+    /// add a status test to be used for adaptive linear solver convergence
     void AddStatusTest(Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> test) { statustests_.push_back(test); }
 
   private:
@@ -483,7 +483,7 @@ namespace UTILS
                        NOX::Epetra::Vector& noxSoln,
                        Teuchos::RCP<NOX::Utils> utils);
 
-    /// setup of NOX convergance tests
+    /// setup of NOX convergence tests
     virtual Teuchos::RCP<NOX::StatusTest::Combo>
     CreateStatusTest(Teuchos::ParameterList& nlParams,
                      Teuchos::RCP<NOX::Epetra::Group> grp);

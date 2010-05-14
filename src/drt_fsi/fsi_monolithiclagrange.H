@@ -60,7 +60,7 @@ namespace FSI
                        NOX::Epetra::Vector& noxSoln,
                        Teuchos::RCP<NOX::Utils> utils);
 
-    /// setup of NOX convergance tests
+    /// setup of NOX convergence tests
     virtual Teuchos::RCP<NOX::StatusTest::Combo>
     CreateStatusTest(Teuchos::ParameterList& nlParams,
                      Teuchos::RCP<NOX::Epetra::Group> grp);
