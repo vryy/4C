@@ -148,8 +148,8 @@ AZSOLVE                         GMRES                              // CG GMRES C
 AZPREC                          MLFLUID2                              // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         10                               // how often to recompute some preconditioners
 AZDROP                          0.0                             // drop tolerance for ILUT
-AZFILL                          1.0                             // fill-in for ILUT
-AZGFILL                         0                               // graph fill for ILU
+IFPACKFILL                          1.0                             // fill-in for ILUT
+IFPACKGFILL                         0                               // graph fill for ILU
 AZTOL                           1.0E-4                          // tolerance in unscaled residual
 AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test
 AZITER                          1200                            // max iterations
@@ -157,7 +157,7 @@ AZSUB                           25                              // size of krylo
 AZOMEGA                         1.0                             // unused
 AZGRAPH                         1                               // unused
 AZPOLY                          5                               // polynomial order for Neumann
-AZOVERLAP                       0                               // amount of ASM overlap for ILU, ILU, ICC, LU
+IFPACKOVERLAP                       0                               // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL                          none                         // none sym infnorm scaling of the system
 ML_PRINT                        0                               // ML print-out level (0-10)
 ML_MAXCOARSESIZE                1                           // ML stop coarsening when coarse ndof smaller then this
@@ -181,8 +181,8 @@ AZSOLVE                         GMRES                           // CG GMRES CGS 
 AZPREC                          MLFLUID2                        // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         10                               // how often to recompute some preconditioners
 AZDROP                          0.0                             // drop tolerance for ILUT
-AZFILL                          1.0                             // fill-in for ILUT
-AZGFILL                         0                               // graph fill for ILU
+IFPACKFILL                          1.0                             // fill-in for ILUT
+IFPACKGFILL                         0                               // graph fill for ILU
 AZTOL                           1.0E-4                          // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1200                            // max iterations
@@ -190,7 +190,7 @@ AZSUB                           25                              // size of krylo
 AZOMEGA                         1.0                             // unused
 AZGRAPH                         1                               // unused
 AZPOLY                          5                               // polynomial order for Neumann
-AZOVERLAP                       0                               // amount of ASM overlap for ILU, ILU, ICC, LU
+IFPACKOVERLAP                       0                               // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL                          none                            // none sym infnorm scaling of the system
 ML_PRINT                        0                               // ML print-out level (0-10)
 ML_MAXCOARSESIZE                1                            // ML stop coarsening when coarse ndof smaller then this
@@ -214,8 +214,8 @@ AZSOLVE                         CG                              // CG GMRES CGS 
 AZPREC                          ML                             // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         10                               // how often to recompute some preconditioners
 AZDROP                          0.0                             // drop tolerance for ILUT
-AZFILL                          1.0                             // fill-in for ILUT
-AZGFILL                         0                               // graph fill for ILU
+IFPACKFILL                          1.0                             // fill-in for ILUT
+IFPACKGFILL                         0                               // graph fill for ILU
 AZTOL                           1.0E-4                          // tolerance in unscaled residual
 AZCONV                          AZ_r0                     // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                            // max iterations
@@ -223,7 +223,7 @@ AZSUB                           40                              // size of krylo
 AZOMEGA                         1.0                             // unused
 AZGRAPH                         1                               // unused
 AZPOLY                          5                               // polynomial order for Neumann
-AZOVERLAP                       0                               // amount of ASM overlap for ILU, ILU, ICC, LU
+IFPACKOVERLAP                       0                               // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL                          infnorm                         // none sym infnorm scaling of the system
 ML_PRINT                        0                               // ML print-out level (0-10)
 ML_MAXCOARSESIZE                1                            // ML stop coarsening when coarse ndof smaller then this

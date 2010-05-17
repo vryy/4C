@@ -145,8 +145,8 @@ AZSOLVE        GMRES
 AZPREC         SymmGaussSeidel
 AZREUSE        0
 AZDROP         0.0
-AZFILL         1.0
-AZGFILL        0
+IFPACKFILL         1.0
+IFPACKGFILL        0
 AZTOL          1.0E-10
 AZITER         2500
 AZSUB          70

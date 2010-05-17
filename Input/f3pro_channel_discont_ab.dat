@@ -205,8 +205,8 @@ AZSOLVE        GMRES
 AZPREC         ILU
 AZREUSE        0
 AZDROP         0.0
-AZFILL         1.0
-AZGFILL        1
+IFPACKFILL         1.0
+IFPACKGFILL        1
 AZTOL          1.0E-15
 AZITER         2500
 AZSUB          50
@@ -222,15 +222,15 @@ AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC         SymmGaussSeidel    // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE        0                  // how often to recompute some preconditioners
 AZDROP         0.0                // drop tolerance for ILUT
-AZFILL         1.0                // fill-in for ILUT
-AZGFILL        0                  // graph fill for ILU
+IFPACKFILL         1.0                // fill-in for ILUT
+IFPACKGFILL        0                  // graph fill for ILU
 AZTOL          1.0E-10            // tolerance in unscaled residual
 AZITER         1000               // max iterations
 AZSUB          50                 // size of krylov space for gmres
 AZOMEGA        1.0                // unused
 AZGRAPH        1                  // unused
 AZPOLY         5                  // polynomial order for Neumann
-AZOVERLAP      0                  // amount of ASM overlap for ILU, ILU, ICC, LU
+IFPACKOVERLAP      0                  // amount of ASM overlap for ILU, ILU, ICC, LU
 ML_PRINT          0               // ML print-out level (0-10)
 ML_MAXCOARSESIZE  1               // ML stop coarsening when coarse ndof smaller then this
 ML_MAXLEVEL       3               // ML max number of levels
@@ -252,8 +252,8 @@ AZSOLVE        CG
 AZPREC         ILU
 AZREUSE        0
 AZDROP         0.0
-AZFILL         2.0
-AZGFILL        0
+IFPACKFILL         2.0
+IFPACKGFILL        0
 AZTOL          1.0E-08
 AZITER         2500
 AZSUB          50
@@ -267,8 +267,8 @@ AZSOLVE        CG
 AZPREC         ILU
 AZREUSE        0
 AZDROP         0.0
-AZFILL         2.0
-AZGFILL        0
+IFPACKFILL         2.0
+IFPACKGFILL        0
 AZTOL          1.0E-08
 AZITER         2500
 AZSUB          50

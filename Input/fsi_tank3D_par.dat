@@ -238,8 +238,8 @@ AZSOLVE        BiCGSTAB
 AZPREC         ILU
 AZREUSE        0
 AZDROP         0.0
-AZFILL         1.0
-AZGFILL        0
+IFPACKFILL         1.0
+IFPACKGFILL        0
 AZTOL          1.0E-12
 AZITER         2500
 AZSUB          50
@@ -259,8 +259,8 @@ AZSOLVE        BiCGSTAB
 AZPREC         ILU
 AZREUSE        0
 AZDROP         0.0
-AZFILL         1.0
-AZGFILL        0
+IFPACKFILL         1.0
+IFPACKGFILL        0
 AZTOL          1.0E-08
 AZITER         2500
 AZSUB          50

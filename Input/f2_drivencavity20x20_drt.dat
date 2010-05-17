@@ -108,15 +108,15 @@ AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC         MLFLUID2            // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE        8                  // how often to recompute some preconditioners
 AZDROP         0.0                // drop tolerance for ILUT
-AZFILL         1.0                // fill-in for ILUT
-AZGFILL        0                  // graph fill for ILU
+IFPACKFILL         1.0                // fill-in for ILUT
+IFPACKGFILL        0                  // graph fill for ILU
 AZTOL          1.0E-4             // tolerance in unscaled residual
 AZITER         600                // max iterations
 AZSUB          25                 // size of krylov space for gmres
 AZOMEGA        1.0                // unused
 AZGRAPH        1                  // unused
 AZPOLY         5                  // polynomial order for Neumann
-AZOVERLAP      0                  // amount of ASM overlap for ILU, ILU, ICC, LU
+IFPACKOVERLAP      0                  // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL         none               // none sym infnorm scaling of the system
 AZCONV         AZ_r0              // AZ_r0 AZ_noscaled AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values  AZTECOO_conv_test AZ_inf_noscaled
 ML_PRINT          0               // ML print-out level (0-10)
@@ -141,15 +141,15 @@ AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC         MLFLUID2                 // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE        0                  // no effect in the fluid pressure context
 AZDROP         0.0                // drop tolerance for ILUT
-AZFILL         1.0                // fill-in for ILUT
-AZGFILL        0                  // graph fill for ILU
+IFPACKFILL         1.0                // fill-in for ILUT
+IFPACKGFILL        0                  // graph fill for ILU
 AZTOL          1.0E-6             // tolerance in unscaled residual
 AZITER         500                // max iterations
 AZSUB          25                 // size of krylov space for gmres
 AZOMEGA        1.0                // unused
 AZGRAPH        1                  // unused
 AZPOLY         5                  // polynomial order for Neumann
-AZOVERLAP      0                  // amount of ASM overlap for ILU, ILU, ICC, LU
+IFPACKOVERLAP      0                  // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL         none               // none sym infnorm scaling of the system
 AZCONV         AZ_r0              // AZ_r0 AZ_noscaled AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZTECOO_conv_test AZ_inf_noscaled
 ML_PRINT          0               // ML print-out level (0-10)
@@ -173,8 +173,8 @@ AZSOLVE        CG
 AZPREC         ILU
 AZREUSE        0
 AZDROP         0.0
-AZFILL         2.0
-AZGFILL        0
+IFPACKFILL         2.0
+IFPACKGFILL        0
 AZTOL          1.0E-12
 AZITER         2500
 AZSUB          50
@@ -188,8 +188,8 @@ AZSOLVE        CG
 AZPREC         ILU
 AZREUSE        0
 AZDROP         0.0
-AZFILL         2.0
-AZGFILL        0
+IFPACKFILL         2.0
+IFPACKGFILL        0
 AZTOL          1.0E-08
 AZITER         2500
 AZSUB          50
