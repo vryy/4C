@@ -1695,12 +1695,12 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
           {
             const int fvippp= numdofpernode_*vi+nsd_;
             const double timefacfac_scaconvfacaf_funct_vi=timefacfac_scaconvfacaf*funct_(vi);
-            
+
             for(int jdim=0;jdim<nsd_;++jdim)
             {
               temp(jdim)=timefacfac_scaconvfacaf_funct_vi*grad_scaaf_(jdim);
             }
-            
+
             for (int ui=0; ui<nen_; ++ui)
             {
               const int fui=numdofpernode_*ui;
@@ -1710,13 +1710,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                 /*
                   factor afgtd/am
 
-                          /                    \                                      
-                    1    |       /         \    |                                      
-                   --- * |  q , | Du o grad | T |                                           
+                          /                    \
+                    1    |       /         \    |
+                   --- * |  q , | Du o grad | T |
                     T    |       \         /    |
-                          \                    /                                  
+                          \                    /
                 */
-                estif(fvippp,fui+jdim) -= temp(jdim)*funct_(ui);  
+                estif(fvippp,fui+jdim) -= temp(jdim)*funct_(ui);
               }
             }
           }
@@ -1985,11 +1985,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
               estif(fvi, fui)     += v*viscs2_(0, ui) ;
               estif(fvip, fui)    += v*viscs2_(1, ui) ;
               estif(fvipp, fui)   += v*viscs2_(2, ui) ;
-                                                
+
               estif(fvi, fuip)    += v*viscs2_(1, ui) ;
               estif(fvip, fuip)   += v*viscs2_(4, ui) ;
               estif(fvipp, fuip)  += v*viscs2_(5, ui) ;
-                                                
+
               estif(fvi, fuipp)   += v*viscs2_(2, ui) ;
               estif(fvip, fuipp)  += v*viscs2_(5, ui) ;
               estif(fvipp, fuipp) += v*viscs2_(8, ui) ;
@@ -2028,11 +2028,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                 estif(fvi,  fui)     += v0*derxy_(0, vi) ;
                 estif(fvip,  fui)    += v1*derxy_(0, vi) ;
                 estif(fvipp, fui)    += v2*derxy_(0, vi) ;
-                
+
                 estif(fvi,   fuip)   += v0*derxy_(1, vi) ;
                 estif(fvip,  fuip)   += v1*derxy_(1, vi) ;
                 estif(fvipp, fuip)   += v2*derxy_(1, vi) ;
-                
+
                 estif(fvi,   fuipp)  += v0*derxy_(2, vi) ;
                 estif(fvip,  fuipp)  += v1*derxy_(2, vi) ;
                 estif(fvipp, fuipp)  += v2*derxy_(2, vi) ;
@@ -2063,7 +2063,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                 |  rho*rhsint   , |  rho*Du o nabla | v  |
                 |                 \                /     |
                 \                                        /
-                
+
                 */
                 estif(fvi    , fui)   += (v0*derxy_(0, vi)) ;
                 estif(fvip   , fui)   += (v1*derxy_(0, vi)) ;
@@ -2108,11 +2108,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                 estif(fvi,  fui)     += v0*derxy_(0, vi) ;
                 estif(fvip,  fui)    += v1*derxy_(0, vi) ;
                 estif(fvipp, fui)    += v2*derxy_(0, vi) ;
-                
+
                 estif(fvi,   fuip)   += v0*derxy_(1, vi) ;
                 estif(fvip,  fuip)   += v1*derxy_(1, vi) ;
                 estif(fvipp, fuip)   += v2*derxy_(1, vi) ;
-                
+
                 estif(fvi,   fuipp)  += v0*derxy_(2, vi) ;
                 estif(fvip,  fuipp)  += v1*derxy_(2, vi) ;
                 estif(fvipp, fuipp)  += v2*derxy_(2, vi) ;
@@ -2143,7 +2143,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                 |  rho*rhsint   , |  rho*Du o nabla | v  |
                 |                 \                /     |
                 \                                        /
-                
+
                 */
                 estif(fvi    , fui)   += (v0*derxy_(0, vi)) ;
                 estif(fvip   , fui)   += (v1*derxy_(0, vi)) ;
