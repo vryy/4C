@@ -178,7 +178,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
     // get momentum history data at integration point
     histmom_.Multiply(emhist,funct_);
-    
+
     // get velocity derivatives at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     vderxy_.MultiplyNT(evelaf,derxy_);
@@ -289,7 +289,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       viscs2_.Clear();
       visc_old_.Clear();
     }
-  
+
 
 #if 0
     if (is_higher_order_ele_)
@@ -375,7 +375,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
         viscs2_(1,0) = 0.5 * derxy2_(2,0);
         viscs2_(2,0) = 0.5 * derxy2_(2,0);
         viscs2_(3,0) = 0.5 * (sum + derxy2_(1,0));
-      
+
         /* viscous term  div epsilon(u_old) */
         visc_old_(0) = viscs2_(0,0)*evelaf(0,0)+viscs2_(1,0)*evelaf(1,0);
         visc_old_(1) = viscs2_(1,0)*evelaf(0,0)+viscs2_(3,0)*evelaf(1,0);
@@ -507,14 +507,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
 
         /*
-                                                                             
-                 /                                                dp   \     
-                |         1     / dT     /         \   \     1      th  |     
-                |    q , --- * | ---- + | u o nabla | T | - --- * ----  |        
-                |         T     \ dt     \         /   /    p      dt   |      
-                 \                                           th        /    
-                        +---------------------------------------------+     
-                                          rhscon_                                                                             
+
+                 /                                                dp   \
+                |         1     / dT     /         \   \     1      th  |
+                |    q , --- * | ---- + | u o nabla | T | - --- * ----  |
+                |         T     \ dt     \         /   /    p      dt   |
+                 \                                           th        /
+                        +---------------------------------------------+
+                                          rhscon_
         */
 
         // rhs of continuity equation (only relevant for low-Mach-number flow)
@@ -648,9 +648,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
           //const int fui   = 4*ui;
           //const int fuip  = fui+1;
           //const int fuipp = fui+2;
-          
+
           const double v = fac_densam*funct_(ui);
-          
+
           for (int vi=0; vi<nen_; ++vi)
           {
             const int fvi   = numdofpernode_*vi;
@@ -667,7 +667,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
             */
 
             double v2 = v*funct_(vi) ;
-            
+
             for (int idim = 0; idim <nsd_; ++idim)
             {
               estif(fvi+idim,fui+idim) += v2;
@@ -689,7 +689,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
           //const int fui   = 4*ui;
           //const int fuip  = fui+1;
           //const int fuipp = fui+2;
-          
+
           const double v = timefacfac_densaf*(conv_c_(ui)+sgconv_c_(ui));
 
           for (int vi=0; vi<nen_; ++vi)
@@ -723,7 +723,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       if (is_newton_)
       {
         const double timefacfac_densaf=timefacfac*densaf_;
-        
+
         for (int vi=0; vi<nen_; ++vi)
         {
           const int fvi   = numdofpernode_*vi;
@@ -777,7 +777,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
             //const int fvi = 4*vi;
             /* inertia term on right-hand side for generalized-alpha scheme */
             const double v = -fac_*densam_*funct_(vi);
-            
+
             for (int idim = 0; idim <nsd_; ++idim)
             {
               eforce(fvi+idim) += v*accint_(idim) ;
@@ -1153,7 +1153,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
           //const int fvi   = 4*vi;
           //const int fvip  = fvi+1;
           //const int fvipp = fvi+2;
-          
+
           //const double derxy_0ui_0vi = derxy_(0, ui)*derxy_(0, vi);
           //const double derxy_1ui_1vi = derxy_(1, ui)*derxy_(1, vi);
           //const double derxy_2ui_2vi = derxy_(2, ui)*derxy_(2, vi);
@@ -1161,7 +1161,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
           for(int jdim=0; jdim<nsd_; ++jdim)
           {
             const double visceff_timefacfac_derxy_jdim_vi=visceff_timefacfac*derxy_(jdim, vi);
-          
+
             for (int ui=0; ui<nen_; ++ui)
             {
 
@@ -1185,11 +1185,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
                     |       \  /         \ /   |
                     \                          /
                 */
-                
+
                 estif(fvi_p_idim, fui+jdim) += visceff_timefacfac_derxy_jdim_vi*derxy_(idim,ui);
                 estif(fvi_p_idim, fui+idim) += visceff_timefacfac_derxy_jdim_vi*derxy_(jdim,ui);
               }
-              
+
               /*estif(fvi, fui)     += visceff_timefacfac*(2.0*derxy_0ui_0vi
                                                        +
                                                        derxy_1ui_1vi
@@ -1366,7 +1366,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
           //eforce(fvi + 2) += v*rhsmom_(2) ;
         }
       }  // end for(idim)
-      
+
       //----------------------------------------------------------------------
       // computation of additional terms for low-Mach-number flow:
       // 1) subtracted viscosity term including right-hand-side contribution
@@ -1376,7 +1376,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       if (physicaltype_ == INPAR::FLUID::loma)
       {
         const double v = -(2.0/3.0)*visceff_*timefacfac ;
-        
+
         for (int ui=0; ui<nen_; ++ui)
         {
           const int fui   = numdofpernode_*ui;
@@ -1419,7 +1419,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
             }
           }
         }  // end for(idim)
-        
+
         if (is_newton_)
         {
           const double timefacfac_scaconvfacaf=timefacfac*scaconvfacaf_;
@@ -1430,12 +1430,12 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
           {
             const int fvippp= numdofpernode_*vi+nsd_;
             const double timefacfac_scaconvfacaf_funct_vi=timefacfac_scaconvfacaf*funct_(vi);
-            
+
             for(int jdim=0;jdim<nsd_;++jdim)
             {
               temp(jdim)=timefacfac_scaconvfacaf_funct_vi*grad_scaaf_(jdim);
             }
-            
+
             for (int ui=0; ui<nen_; ++ui)
             {
               const int fui=numdofpernode_*ui;
@@ -1445,24 +1445,24 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
                 /*
                   factor afgtd/am
 
-                          /                    \                                      
-                    1    |       /         \    |                                      
-                   --- * |  q , | Du o grad | T |                                           
+                          /                    \
+                    1    |       /         \    |
+                   --- * |  q , | Du o grad | T |
                     T    |       \         /    |
-                          \                    /                                  
+                          \                    /
                 */
-                estif(fvippp,fui+jdim) -= temp(jdim)*funct_(ui);  
+                estif(fvippp,fui+jdim) -= temp(jdim)*funct_(ui);
               }
             }
           }
         } // end if (is_newton_)
-        
+
         const double v_div = (2.0/3.0)*visceff_*rhsfac*vdiv_ ;
         const double fac_rhscon = fac_*rhscon_;
         for (int vi=0; vi<nen_; ++vi)
         {
           const int fvi = numdofpernode_*vi;
-          
+
           for(int idim=0;idim<nsd_;++idim)
           {
             //const int fvi = 4*vi;
@@ -1481,17 +1481,17 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       }  // end if(loma)
 
       //----------------------------------------------------------------------
-      //  PROVIDE LINEARISATION OF MOMENTUM RESIDUAL WRT VELOCITIES FOR ALL              
+      //  PROVIDE LINEARISATION OF MOMENTUM RESIDUAL WRT VELOCITIES FOR ALL
       //                     STABILISATION PARTS
 
-      //                                                             
-      //           /       n+1        \       /                \  n+1 
+      //
+      //           /       n+1        \       /                \  n+1
       // rho*Du + |   rho*u   o nabla | Du + |   rho*Du o nabla | u   +
       //           \      (i)         /       \                /   (i)
       //
-      //                       /  \ 
+      //                       /  \
       //        + nabla o eps | Du |
-      //                       \  / 
+      //                       \  /
 
       LINALG::Matrix<nen_,nsd_*nsd_> lin_resM_Du;
 
@@ -1500,7 +1500,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       const double timefac_densaf=timefac*densaf_;
 
       for (int ui=0; ui<nen_; ++ui)
-      {  
+      {
         for (int idim = 0; idim <nsd_; ++idim)
         {
           lin_resM_Du(ui,idim*nsd_+idim)+=timefac_densaf*conv_c_(ui);
@@ -1510,20 +1510,20 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       if(!is_stationary_)
       {
         for (int ui=0; ui<nen_; ++ui)
-        {  
+        {
           for (int idim = 0; idim <nsd_; ++idim)
           {
             lin_resM_Du(ui,idim*nsd_+idim)+=densam_*funct_(ui);
           }
         }
       }
-      
+
       if (is_higher_order_ele_)
       {
         const double v = -2.0*visceff_*timefac;
-        
+
         for (int ui=0; ui<nen_; ++ui)
-        {  
+        {
           for (int idim = 0; idim <nsd_; ++idim)
           {
             for(int jdim=0;jdim<nsd_;++jdim)
@@ -1539,11 +1539,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
         for (int idim = 0; idim <nsd_; ++idim)
         {
           for(int jdim=0;jdim<nsd_;++jdim)
-          {   
+          {
             const double temp=timefac*densaf_*vderxy_(jdim,idim);
-            
+
             for (int ui=0; ui<nen_; ++ui)
-            {  
+            {
               lin_resM_Du(ui,idim*nsd_+jdim)+=temp*funct_(ui);
             }
           }
@@ -1599,15 +1599,15 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
             for(int jdim=0;jdim<nsd_;++jdim)
             {
               const double temp_vi_jdim=derxy_(jdim, vi)*tau_Mp;
-              
+
               for(int idim=0;idim<nsd_;++idim)
               {
                 const int nsd_idim=nsd_*idim;
-                
+
                 for (int ui=0; ui<nen_; ++ui)
                 {
                   const int fui_p_idim   = numdofpernode_*ui + idim;
-                  
+
                   estif(fvippp,fui_p_idim) += lin_resM_Du(ui,nsd_idim+jdim)*temp_vi_jdim;
                 } // jdim
               } // vi
@@ -1619,17 +1619,17 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
           for (int vi=0; vi<nen_; ++vi)
           {
             const int fvippp = numdofpernode_*vi+nsd_;
-            
+
             for(int idim=0;idim<nsd_;++idim)
             {
               const int nsd_idim=nsd_*idim;
-              
+
               const double temp_vi_idim=derxy_(idim, vi)*tau_Mp;
-              
+
               for (int ui=0; ui<nen_; ++ui)
               {
                 const int fui_p_idim   = numdofpernode_*ui + idim;
-                
+
                 estif(fvippp,fui_p_idim) += lin_resM_Du(ui,nsd_idim+idim)*temp_vi_idim;
               } // vi
             } // ui
@@ -1639,14 +1639,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
         for (int ui=0; ui<nen_; ++ui)
         {
           const int fuippp = numdofpernode_*ui+nsd_;
-          
+
           for (int idim = 0; idim <nsd_; ++idim)
           {
             const double timetauMp_derxy_idim_ui=timetauMp*derxy_(idim, ui);
-            
+
             for (int vi=0; vi<nen_; ++vi)
             {
-              
+
               /* pressure stabilisation: pressure( L_pres_p) */
               /*
                  /                    \
@@ -1660,7 +1660,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
             } // vi
           } // end for(idim)
         }  // ui
-              
+
         for (int idim = 0; idim <nsd_; ++idim)
         {
           for (int vi=0; vi<nen_; ++vi)
@@ -1677,7 +1677,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       if(supg_ == INPAR::FLUID::convective_stab_supg)
       {
         LINALG::Matrix<nen_,1> supg_test;
-              
+
         for (int vi=0; vi<nen_; ++vi)
         {
           supg_test(vi)=(conv_c_(vi)+sgconv_c_(vi))*tau_M;
@@ -1726,11 +1726,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
               for(int idim=0;idim<nsd_;++idim)
               {
                 const int nsd_idim=nsd_*idim;
-                
+
                 for (int ui=0; ui<nen_; ++ui)
                 {
                   const int fui_p_idim   = numdofpernode_*ui + idim;
-                  
+
                   estif(fvi_p_jdim,fui_p_idim) += lin_resM_Du(ui,nsd_idim+jdim)*supg_test(vi);
                 } // jdim
               } // vi
@@ -1746,11 +1746,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
               const int fvi_p_idim = numdofpernode_*vi+idim;
 
               const int nsd_idim=nsd_*idim;
-                
+
               for (int ui=0; ui<nen_; ++ui)
               {
                 const int fui_p_idim   = numdofpernode_*ui + idim;
-                  
+
                 estif(fvi_p_idim,fui_p_idim) += lin_resM_Du(ui,nsd_idim+idim)*supg_test(vi);
               } // ui
             } //idim
@@ -1834,7 +1834,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
                 for (int ui=0; ui<nen_; ++ui)
                 {
                   const int fui_p_idim   = numdofpernode_*ui + idim;
-                  
+
                   estif(fvi_p_jdim,fui_p_idim) += timetauM*densaf_*momres_old_(jdim)*derxy_(idim,vi)*funct_(ui);
                 } // jdim
               } // vi
@@ -1861,7 +1861,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
       //----------------------------------------------------------------------
       //                       STABILISATION, VISCOUS PART
-      
+
       if (is_higher_order_ele_ && (vstab_ != INPAR::FLUID::viscous_stab_none))
       {
         const double two_visc_tauMp = vstabfac*2.0*visc_*tau_Mp;
@@ -1869,7 +1869,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
         if (vstab_ == INPAR::FLUID::viscous_stab_gls || vstab_ == INPAR::FLUID::viscous_stab_usfem)
         {
           const double two_visc_timetauMp   = vstabfac*2.0*visc_*timetauMp;
-          
+
           /* viscous stabilisation, inertia part if not stationary */
           /*
                     /                          \
@@ -1907,7 +1907,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
             for(int jdim=0;jdim<nsd_;++jdim)
             {
               const int fvi_p_jdim = numdofpernode_*vi+jdim;
-                
+
               for(int idim=0;idim<nsd_;++idim)
               {
                 const int nsd_idim=nsd_*idim;
@@ -1920,7 +1920,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
               } // vi
             } // ui
           } //idim
-         
+
 
           /* viscous stabilisation, pressure part ( L_pres_p) */
           /*
@@ -2014,11 +2014,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
                     //estif(fvi,  fui)     += v0*derxy_(0, vi) ;
                     //estif(fvip,  fui)    += v1*derxy_(0, vi) ;
                     //estif(fvipp, fui)    += v2*derxy_(0, vi) ;
-                    
+
                     //estif(fvi,   fuip)   += v0*derxy_(1, vi) ;
                     //estif(fvip,  fuip)   += v1*derxy_(1, vi) ;
                     //estif(fvipp, fuip)   += v2*derxy_(1, vi) ;
-                    
+
                     //estif(fvi,   fuipp)  += v0*derxy_(2, vi) ;
                     //estif(fvip,  fuipp)  += v1*derxy_(2, vi) ;
                     //estif(fvipp, fuipp)  += v2*derxy_(2, vi) ;
@@ -2063,11 +2063,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
                     //estif(fvi,  fui)     += v0*derxy_(0, vi) ;
                     //estif(fvip,  fui)    += v1*derxy_(0, vi) ;
                     //estif(fvipp, fui)    += v2*derxy_(0, vi) ;
-                    
+
                     //estif(fvi,   fuip)   += v0*derxy_(1, vi) ;
                     //estif(fvip,  fuip)   += v1*derxy_(1, vi) ;
                     //estif(fvipp, fuip)   += v2*derxy_(1, vi) ;
-                    
+
                     //estif(fvi,   fuipp)  += v0*derxy_(2, vi) ;
                     //estif(fvip,  fuipp)  += v1*derxy_(2, vi) ;
                     //estif(fvipp, fuipp)  += v2*derxy_(2, vi) ;
@@ -2076,7 +2076,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
               }  // end for(idim)
             } // end if not genalpha
           }  // end if(is_conservative)
-          
+
           {
 
             const double timetauM_densaf_densaf=timetauM*densaf_*densaf_;
@@ -2091,7 +2091,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
             //const double v0 = convvelint_(0)*vderxy_(0, 0) + convvelint_(1)*vderxy_(0, 1) + convvelint_(2)*vderxy_(0, 2);
             //const double v1 = convvelint_(0)*vderxy_(1, 0) + convvelint_(1)*vderxy_(1, 1) + convvelint_(2)*vderxy_(1, 2);
             //const double v2 = convvelint_(0)*vderxy_(2, 0) + convvelint_(1)*vderxy_(2, 1) + convvelint_(2)*vderxy_(2, 2);
-            
+
             for (int ui=0; ui<nen_; ++ui)
             {
 
@@ -2103,7 +2103,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
               const double timetauM_densaf_densaf_funct_ui=funct_(ui)*timetauM_densaf_densaf;
 
               for (int idim = 0; idim <nsd_; ++idim)
-              {    
+              {
                 temp(idim)=timetauM_densaf_densaf_funct_ui*convvelint_vderxy(idim);
 
                 for(int jdim=0;jdim<nsd_;++jdim)
@@ -2115,7 +2115,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
               for (int vi=0; vi<nen_; ++vi)
               {
                 const int fvi=numdofpernode_*vi;
-                
+
                 for (int idim = 0; idim <nsd_; ++idim)
                 {
                   const int fvi_p_idim   = fvi +idim;
@@ -2276,7 +2276,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
                     //estif(fvi    , fuipp) += (v0*derxy_(2, vi)) ;
                     //estif(fvip   , fuipp) += (v1*derxy_(2, vi)) ;
                     //estif(fvipp  , fuipp) += (v2*derxy_(2, vi)) ;
-                    
+
                   } // vi
               } // ui
             }  // end for(idim)
@@ -2289,7 +2289,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
               {
                 const int fui   = numdofpernode_*ui;
                 //const int fui   = 4*ui;
-                
+
                   //const int fuip  = fui+1;
                   //const int fuipp = fui+2;
                   const double v = -tau_M*densaf_*funct_(ui);
@@ -2328,7 +2328,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
                     //estif(fvi    , fuipp) += (v0*derxy_(2, vi)) ;
                     //estif(fvip   , fuipp) += (v1*derxy_(2, vi)) ;
                     //estif(fvipp  , fuipp) += (v2*derxy_(2, vi)) ;
-                    
+
                   } // vi
               } // ui
             }  // end for(idim)
@@ -3111,7 +3111,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
             ) ;
         }
       }
-      
+
     }
   } // loop gausspoints
 
@@ -3120,23 +3120,23 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
 
 /*!
-      \brief Do a finite difference check for a given element id --- 
+      \brief Do a finite difference check for a given element id ---
       this function is for debugging purposes only
 
-      \param ele              (i) the element those matrix is calculated 
+      \param ele              (i) the element those matrix is calculated
                                   (pass-through)
       \param evelaf           (i) nodal velocities at n+alpha_F/n+1 (pass-through)
       \param eveln            (i) nodal velocities at n (pass-through)
-      \param fsevelaf         (i) fine-scale nodal velocities at n+alpha_F/n+1 
+      \param fsevelaf         (i) fine-scale nodal velocities at n+alpha_F/n+1
                                   (pass-through)
       \param epreaf           (i) nodal pressure at n+alpha_F/n+1 (pass-through)
       \param eaccam           (i) nodal accelerations at n+alpha_M (pass-through)
       \param escaaf           (i) nodal scalar at n+alpha_F/n+1 (pass-through)
       \param escaam           (i) nodal scalar at n+alpha_M/n (pass-through)
-      \param escadtam         (i) nodal scalar derivatives at n+alpha_M/n+1 
+      \param escadtam         (i) nodal scalar derivatives at n+alpha_M/n+1
                                   (pass-through)
       \param emhist           (i) time rhs for momentum equation (pass-through)
-      \param edispnp          (i) nodal displacements (on moving mesh) 
+      \param edispnp          (i) nodal displacements (on moving mesh)
                                   (pass-through)
       \param egridv           (i) grid velocity (on moving mesh) (pass-through)
       \param estif            (i) element matrix to calculate (pass-through)
@@ -3146,13 +3146,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       \param time             (i) current simulation time (pass-through)
       \param timefac          (i) time discretization factor (pass-through)
       \param newton           (i) boolean flag for linearisation (pass-through)
-      \param loma             (i) boolean flag for potential low-Mach-number solver 
+      \param loma             (i) boolean flag for potential low-Mach-number solver
                                   (pass-through)
       \param conservative     (i) boolean flag for conservative form (pass-through)
-      \param is_genalpha      (i) boolean flag for generalized-alpha time 
+      \param is_genalpha      (i) boolean flag for generalized-alpha time
                                   integration (pass-through)
       \param higher_order_ele (i) keep or drop second derivatives (pass-through)
-      \param fssgv            (i) flag for type of fine-scale subgrid viscosity 
+      \param fssgv            (i) flag for type of fine-scale subgrid viscosity
                                   (pass-through)
       \param pspg             (i) boolean flag for stabilisation (pass-through)
       \param supg             (i) boolean flag for stabilisation (pass-through)
@@ -3161,7 +3161,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       \param cross            (i) boolean flag for stabilisation (pass-through)
       \param reynolds         (i) boolean flag for stabilisation (pass-through)
       \param whichtau         (i) selecting available tau definition (pass-through)
-      \param turb_mod_action  (i) selecting turbulence model (none, Smagorisky, 
+      \param turb_mod_action  (i) selecting turbulence model (none, Smagorisky,
                                   dynamic Smagorinsky, Smagorinsky with van Driest
                                   damping for channel flows) (pass-through)
       \param Cs               (i) Smagorinsky model parameter (pass-through)
@@ -3169,7 +3169,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
                                   approach (Cs*h*h) (pass-through)
       \param l_tau            (i) viscous length scale, required for van driest
                                   damping function and defined on input (pass-through)
-*/            
+*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::FDcheck(
   Fluid3*                                               ele,
@@ -3199,7 +3199,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::FDcheck(
   // magnitude of dof perturbation
   const double epsilon=1e-9;
 
-  // make a copy of all input parameters potentially modified by Sysmat 
+  // make a copy of all input parameters potentially modified by Sysmat
   // call --- they are not intended to be modified
   double copy_Cs         =Cs;
   double copy_Cs_delta_sq=Cs_delta_sq;
@@ -3212,9 +3212,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::FDcheck(
   LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> checkmat1(true);
   LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> checkmat2(true);
   LINALG::Matrix<(nsd_+1)*nen_,            1> checkvec1(true);
-        
-  // alloc the vectors that will contain the perturbed velocities or 
-  // pressures 
+
+  // alloc the vectors that will contain the perturbed velocities or
+  // pressures
   LINALG::Matrix<nsd_,nen_>                   checkevelaf(true);
   LINALG::Matrix<nsd_,nen_>                   checkeaccam(true);
   LINALG::Matrix<nen_,1>                      checkepreaf(true);
@@ -3249,10 +3249,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::FDcheck(
         for(int dim=0;dim<nsd_;++dim)
         {
           checkevelaf(dim,mm)=evelaf(dim,mm);
-                
+
           checkeaccam(dim,mm)=eaccam(dim,mm);
         }
-              
+
         checkepreaf(  mm)=epreaf(  mm);
       }
 
@@ -3284,7 +3284,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::FDcheck(
           checkevelaf(rr,nn)+=epsilon;
         }
       }
-        
+
       // calculate the right hand side for the perturbed vector
       Sysmat2D3D(ele,
                  checkevelaf,
@@ -3324,7 +3324,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::FDcheck(
         double lin;
         double nonlin;
 
-        // For af-generalized-alpha scheme, the residual vector for the 
+        // For af-generalized-alpha scheme, the residual vector for the
         // solution rhs is scaled on the time-integration level...
         if (is_genalpha_)
         {
@@ -3344,7 +3344,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::FDcheck(
         {
           norm=1e-9;
         }
-              
+
         // output to screen
         printf("relerr         %+12.5e ",(lin-nonlin)/norm);
         printf("abserr         %+12.5e ",lin-nonlin);
