@@ -333,7 +333,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   for (int i=0; i<snlevel_-1; ++i)
   {
     Teuchos::ParameterList p;
-    Teuchos::ParameterList pushlist;
+    Teuchos::ParameterList pushlist(sparams_.sublist("smoother: ifpack list"));
     char levelstr[11];
     sprintf(levelstr,"(level %d)",i);
     Teuchos::ParameterList& subp = sparams_.sublist("smoother: list "+(string)levelstr);
@@ -350,7 +350,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   for (int i=0; i<fnlevel_-1; ++i)
   {
     Teuchos::ParameterList p;
-    Teuchos::ParameterList pushlist;
+    Teuchos::ParameterList pushlist(fparams_.sublist("smoother: ifpack list"));
     char levelstr[11];
     sprintf(levelstr,"(level %d)",i);
     Teuchos::ParameterList& subp = fparams_.sublist("smoother: list "+(string)levelstr);
@@ -367,7 +367,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   for (int i=0; i<anlevel_-1; ++i)
   {
     Teuchos::ParameterList p;
-    Teuchos::ParameterList pushlist;
+    Teuchos::ParameterList pushlist(aparams_.sublist("smoother: ifpack list"));
     char levelstr[11];
     sprintf(levelstr,"(level %d)",i);
     Teuchos::ParameterList& subp = aparams_.sublist("smoother: list "+(string)levelstr);
@@ -496,10 +496,23 @@ void FSI::OverlappingBlockMatrixFSIAMG::WrapILUSmoother(ML* ml,
   // we use pre == post smoother here, so get postsmoother from ml
   void* data = ml->post_smoother[level].smoother->data;
   Ifpack_Preconditioner* prec = static_cast<Ifpack_Preconditioner*>(data);
+  Epetra_RowMatrix& mat = const_cast<Epetra_RowMatrix&>(prec->Matrix());
+  
   // make sure this really is an Epetra_Operator
   //std::string test = prec->Label();
   //if (!prec->Comm().MyPID()) cout << test << endl;
+
+#if 0  
   S.Reshape(prec,A,false);
+#else 
+  // better use operator from underneath Ifpack preconditioner,
+  // otherwise overlapping Ifpack will crash
+  MLAPI::Space range(mat.OperatorRangeMap());
+  MLAPI::Space domain(mat.OperatorDomainMap());
+  MLAPI::Operator tmp;
+  tmp.Reshape(domain,range,&mat,false);
+  S.Reshape(prec,tmp,false);
+#endif
 
   return;
 }
@@ -924,8 +937,10 @@ void FSI::OverlappingBlockMatrixFSIAMG::LocalBlockRichardson(
                      ) const
 {
   // do one iteration in any case (start counting iterations from zero)
-  if (!amgsolve) S[level].Apply(b,z);
-  else           Vcycle(level,nlevel,z,b,A,S,P,R);
+  if (!amgsolve)
+    S[level].Apply(b,z);
+  else
+    Vcycle(level,nlevel,z,b,A,S,P,R);
 
   if (iterations>0)
   {
