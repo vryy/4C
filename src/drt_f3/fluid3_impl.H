@@ -224,7 +224,7 @@ namespace ELEMENTS
                 double&                                  Cs);
 
     // 2D/3D mixed sysmat
-    void Sysmat2D3D(Fluid3*                                       ele,
+    void Sysmat2D3D(Fluid3*                                    ele,
                 const LINALG::Matrix<nsd_,nen_>&               evelaf,
                 const LINALG::Matrix<nsd_,nen_>&               eveln,
                 const LINALG::Matrix<nsd_,nen_>&               fsevelaf,
@@ -236,17 +236,45 @@ namespace ELEMENTS
                 const LINALG::Matrix<nsd_,nen_>&               emhist,
                 const LINALG::Matrix<nsd_,nen_>&               edispnp,
                 const LINALG::Matrix<nsd_,nen_>&               egridv,
-                LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&    estif,
-                LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&    emesh,
+                LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&   estif,
+                LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&   emesh,
                 LINALG::Matrix<(nsd_+1)*nen_,    1>&           eforce,
                 const double                                   thermpressaf,
                 const double                                   thermpressam,
                 const double                                   thermpressdtam,
-                Teuchos::RCP<const MAT::Material>             material,
-                const double                                  timefac,
-                double&                                       Cs,
-                double&                                       Cs_delta_sq,
-                double&                                       l_tau);
+                Teuchos::RCP<const MAT::Material>              material,
+                const double                                   timefac,
+                double&                                        Cs,
+                double&                                        Cs_delta_sq,
+                double&                                        l_tau);
+
+    // FD-check for debugging
+    void FDcheck(
+      Fluid3*                                               ele,
+      const LINALG::Matrix<nsd_,nen_>&                      evelaf,
+      const LINALG::Matrix<nsd_,nen_>&                      eveln,
+      const LINALG::Matrix<nsd_,nen_>&                      fsevelaf,
+      const LINALG::Matrix<nen_,1>&                         epreaf,
+      const LINALG::Matrix<nsd_,nen_>&                      eaccam,
+      const LINALG::Matrix<nen_,1>&                         escaaf,
+      const LINALG::Matrix<nen_,1>&                         escaam,
+      const LINALG::Matrix<nen_,1>&                         escadtam,
+      const LINALG::Matrix<nsd_,nen_>&                      emhist,
+      const LINALG::Matrix<nsd_,nen_>&                      edispnp,
+      const LINALG::Matrix<nsd_,nen_>&                      egridv,
+      const LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&    estif,
+      const LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&    emesh,
+      const LINALG::Matrix<(nsd_+1)*nen_,    1>&            eforce,
+      const double                                          thermpressaf,
+      const double                                          thermpressam,
+      const double                                          thermpressdtam,
+      const Teuchos::RCP<const MAT::Material>               material,
+      const double                                          timefac,
+      const double&                                         Cs,
+      const double&                                         Cs_delta_sq,
+      const double&                                         l_tau);
+
+
 
   private:
 
@@ -535,6 +563,13 @@ namespace ELEMENTS
     double dt_;
     //! factor for right-hand side due to time-integration scheme
     double omtheta_;
+    //! generalised-alpha parameter (connecting velocity and acceleration)
+    double gamma_;
+    //! generalised-alpha parameter (velocity)
+    double alphaF_;
+    //! generalised-alpha parameter (acceleration)
+    double alphaM_;
+
 
     //! LOMA-specific variables:
     //! right-hand-side term at int.-point for continuity equation
