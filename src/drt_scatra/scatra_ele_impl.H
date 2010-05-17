@@ -317,6 +317,17 @@ public:
         const int                       dofindex
     );
 
+    //! calculate flux vector for actual solution
+    virtual void CalculateFluxNew(
+        LINALG::Matrix<3,nen_>&         flux,
+        const DRT::Element*             ele,
+        const vector<double>&           ephinp,
+        const double                    frt,
+        const Epetra_SerialDenseVector& evel,
+        const INPAR::SCATRA::FluxType   fluxtype,
+        const int                       dofindex
+    );
+
     //! calculate scalars and domain integral
    virtual void CalculateScalars(
         const DRT::Element*       ele,      ///< pointer to the element
@@ -404,8 +415,8 @@ public:
       return;
     };
 
-    //! calculate velocity divergence
-    inline void GetVelocityDivergence(double&                               vdiv,
+    //! calculate divergence of vector field (e.g., velocity)
+    inline void GetDivergence(double&                               vdiv,
                                       const LINALG::Matrix<nsd_,nen_>&       evel,
                                       const LINALG::Matrix<nsd_,nen_>&       derxy)
     {
@@ -514,7 +525,7 @@ public:
     vector<LINALG::Matrix<nen_,1> > ephiam_;
     //! history vector of transported scalars
     vector<LINALG::Matrix<nen_,1> > ehist_;
-    //! actual electric potential (ELCH)
+    //! electric potential (ELCH)
     LINALG::Matrix<nen_,1> epotnp_;
     //! magnetic field at t_(n+1) (ELCH)
     LINALG::Matrix<nsd_,nen_> emagnetnp_;
@@ -585,6 +596,8 @@ public:
     double vdiv_;
     //! the stabilisation parameters (one per transported scalar)
     vector<double> tau_;
+    //! corner stabilisation parameters (one per transported scalar)
+    vector<double> tau_corner_;
     //! all-scale or fine-scale subgrid diffusivities (one per transported scalar)
     vector<double> sgdiff_;
     //! 2nd derivatives of coord.-functions w.r.t r,s,t
@@ -616,6 +629,10 @@ public:
     double thermpressam_;
     //! time derivative of thermodynamic pressure (LOMA specific)
     double thermpressdt_;
+
+    vector<LINALG::Matrix<nsd_,nen_> > efluxreconstr_;
+
+    bool betterconsistency_;
 
   };
 

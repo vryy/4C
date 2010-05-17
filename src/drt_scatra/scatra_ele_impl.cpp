@@ -41,8 +41,15 @@ Maintainer: Georg Bauer
 
 //#define VISUALIZE_ELEMENT_DATA
 #include "scatra_element.H" // only for visualization of element data
+
+// include migration velocity into stabilization
 //#define MIGRATIONSTAB  //stabilization w.r.t migration term (obsolete!)
+// activate debug screen output
 //#define PRINT_ELCH_DEBUG
+// use effective diffusion coefficient for stabilization
+#define ACTIVATEBINARYELECTROLYTE
+// nodally exact solution for line3 elements
+// #define LINE3EXACTSTAB
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -249,6 +256,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     migvelint_(true),
     vdiv_(0.0),
     tau_(numscal_),
+    tau_corner_(numscal_),
     sgdiff_(numscal_),
     xder2_(true),
     conv_(true),
@@ -263,7 +271,9 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     laplace_(true),
     thermpressnp_(0.0),
     thermpressam_(0.0),
-    thermpressdt_(0.0)
+    thermpressdt_(0.0),
+    efluxreconstr_(numscal_),
+    betterconsistency_(false)
 {
   return;
 }
@@ -516,6 +526,30 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       // get parameter F/RT needed for ELCH ;-)
       frt = params.get<double>("frt");
 
+      const INPAR::SCATRA::Consistency consistency
+        = Teuchos::getIntegralValue<INPAR::SCATRA::Consistency>(stablist,"CONSISTENCY");
+      betterconsistency_=(consistency==INPAR::SCATRA::consistency_l2_projection_lumped);
+
+      for (int k=0; k < numscal_; k++)
+      {
+        if (betterconsistency_)
+        {
+          ostringstream temp;
+          temp << k;
+          string name = "flux_phi_"+temp.str();
+          // try to get the pointer to the entry (and check if type is RCP<Epetra_MultiVector>)
+          RCP<Epetra_MultiVector>* f = params.getPtr< RCP<Epetra_MultiVector> >(name);
+          if (f!= NULL) // field has been set and is not of type Teuchos::null
+          {
+            DRT::UTILS::ExtractMyNodeBasedValues(ele,efluxreconstr_[k],*f,nsd_);
+          }
+          else
+            dserror("Could not extract values of flux approximation");
+        }
+        else
+          efluxreconstr_[k].Clear();
+      }
+
       // get magnetic field at nodes (if available)
       // try to get the pointer to the entry (and check if type is RCP<Epetra_MultiVector>)
       RCP<Epetra_MultiVector>* b = params.getPtr< RCP<Epetra_MultiVector> >("magnetic field");
@@ -559,17 +593,13 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     }
 
     // --------------------------------------------------
-    // Now do the nurbs specific stuff
-    //std::vector<Epetra_SerialDenseVector> myknots_(nsd_);
-
-    // for isogeometric elements
+    // Now do the nurbs specific stuff (for isogeometric elements)
     if(SCATRA::IsNurbs(distype))
     {
       DRT::NURBS::NurbsDiscretization* nurbsdis
-        =
-        dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+        = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-      bool zero_size = false;
+      bool zero_size(false);
       zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots_,ele->Id());
 
       // if we have a zero sized element due to a interpolated
@@ -666,6 +696,9 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     }
     else epotnp_.Clear();
 
+    // get control parameter
+    is_genalpha_ = params.get<bool>("using generalized-alpha time integration");
+
     // calculate matrix and rhs
     InitialTimeDerivative(
         ele,
@@ -751,21 +784,32 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     LINALG::Matrix<3,nen_> eflux(true);
 
     // do a loop for systems of transported scalars
-    for (int i = 0; i<numscal; ++i)
+    for (int idof = 0; idof<numscal; ++idof)
     {
       // calculate flux vectors for actual scalar
       eflux.Clear();
-      CalculateFlux(eflux,ele,myphinp,frt,evel,fluxtype,i);
-
+#if 1
+      CalculateFlux(eflux,ele,myphinp,frt,evel,fluxtype,idof);
       // assembly
       for (int k=0;k<nen_;k++)
       { // form arithmetic mean of assembled nodal flux vectors
         // => factor is the number of adjacent elements for each node
         double factor = ((ele->Nodes())[k])->NumElement();
-        elevec1_epetra[k*numdofpernode_+i]+=eflux(0,k)/factor;
-        elevec2_epetra[k*numdofpernode_+i]+=eflux(1,k)/factor;
-        elevec3_epetra[k*numdofpernode_+i]+=eflux(2,k)/factor;
+        elevec1_epetra[k*numdofpernode_+idof]+=eflux(0,k)/factor;
+        elevec2_epetra[k*numdofpernode_+idof]+=eflux(1,k)/factor;
+        elevec3_epetra[k*numdofpernode_+idof]+=eflux(2,k)/factor;
       }
+#else
+      CalculateFluxNew(eflux,ele,myphinp,frt,evel,fluxtype,idof);
+      // assembly
+      for (int inode=0;inode<nen_;inode++)
+      {
+        const int fvi = inode*numdofpernode_+idof;
+        elevec1_epetra[fvi]+=eflux(0,inode);
+        elevec2_epetra[fvi]+=eflux(1,inode);
+        elevec3_epetra[fvi]+=eflux(2,inode);
+      }
+#endif
     } // loop over numscal
   }
   else if (action=="calc_mean_scalars")
@@ -1108,7 +1152,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       if (twoionsystem)
         resdiffus = SCATRA::CalResDiffCoeff(valence_,diffus_,diffusvalence_);
 
- //     cout<<"resdiffus = "<<resdiffus<<endl;
     }
 
     for (int k = 0;k<numscal_;++k) // loop of each transported scalar
@@ -1123,10 +1166,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
       // generating copy of diffusivity for use in CalTau routine
       double diffus = diffus_[k];
-
+#ifdef ACTIVATEBINARYELECTROLYTE
       // use resulting diffusion coefficient for binary electrolyte solutions
       if (twoionsystem && (k<2)) diffus = resdiffus;
-
+#endif
       // calculation of stabilization parameter at element center
       CalTau(ele,diffus,dt,timefac,whichtau,vol,k);
     }
@@ -1157,7 +1200,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       conv_.MultiplyTN(derxy_,velint_);
 
       // momentum divergence required for conservative form
-      if (conservative_) GetVelocityDivergence(vdiv_,evelnp_,derxy_);
+      if (conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
 
       //--------------------------------------------------------------------
       // calculation of subgrid diffusivity and stabilization parameter(s)
@@ -1193,10 +1236,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
           // generating copy of diffusivity for use in CalTau routine
           double diffus = diffus_[k];
-
+#ifdef ACTIVATEBINARYELECTROLYTE
           // use resulting diffusion coefficient for binary electrolyte solutions
           if (twoionsystem && (k<2)) diffus = resdiffus;
-
+#endif
           // calculation of stabilization parameter at integration point
           CalTau(ele,diffus,dt,timefac,whichtau,vol,k);
         }
@@ -1416,7 +1459,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         conv_.MultiplyTN(derxy_,velint_);
 
         // momentum divergence required for conservative form
-        if (conservative_) GetVelocityDivergence(vdiv_,evelnp_,derxy_);
+        if (conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
 
         //--------------------------------------------------------------------
         // calculation of subgrid diffusivity and stabilization parameter(s)
@@ -1504,7 +1547,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         conv_.MultiplyTN(derxy_,velint_);
 
         // velocity divergence required for conservative form
-        if (conservative_) GetVelocityDivergence(vdiv_,evelnp_,derxy_);
+        if (conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
 
         //--------------------------------------------------------------------
         // calculation of subgrid diffusivity and stabilization parameter(s)
@@ -2610,23 +2653,34 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       const double dim = (double) nsd_;
 
       // get characteristic element length
-      const double h = pow(vol,(1.0/dim));
+      double h = pow(vol,(1.0/dim)); // equals streamlength in 1D
 
+#ifdef LINE3EXACTSTAB
+      if (distype == DRT::Element::line3)
+        h *= 0.5; // for quadratic shape functions h = 0.5* elementlength
+#endif
       // get Euclidean norm of (weighted) velocity at element center
-      double vel_norm = velint_.Norm2();
+      double vel_norm;
+#ifdef MIGRATIONSTAB
+      if (iselch_) // ELCH
+      {
+        // get Euclidean norm of effective velocity at element center:
+        // (weighted) convective velocity + individual migration velocity
+        LINALG::Matrix<nsd_,1> veleff(velint_,false);
+        veleff.Update(diffusvalence_[k],migvelint_,1.0);
+        //veleff.Update(diffus_[k],migvelint_,1.0);
+        vel_norm = veleff.Norm2();
+      }
+      else
+#endif
+        vel_norm = velint_.Norm2();
 
 #if 0
-      // element Peclet number relating convective and diffusive forces
-double resdiffus(0.0);
-      if (k==0) resdiffus = 0.00628095; //0.01125;
-      if (k==1) resdiffus = 0.0211878;
-      if (k==2) resdiffus = 0.03075393; //3075393;
-       cout<<"resdiffus  for k "<<k <<" is = "<<resdiffus<<endl;
-
-
-      double epe = 0.5 * densnp_[k] * vel_norm * h / resdiffus;
+      cout<<"diffus  for k "<<k <<" is = "<<diffus<<endl;
 #endif
+
       double epe = 0.5 * densnp_[k] * vel_norm * h / diffus;
+
       const double pp = exp(epe);
       const double pm = exp(-epe);
       double xi = 0.0;
@@ -2636,14 +2690,52 @@ double resdiffus(0.0);
         xi = (((pp+pm)/(pp-pm))-(1.0/epe)); // xi = coth(epe) - 1/epe
         // compute optimal stabilization parameter
         tau_[k] = 0.5*h*xi/vel_norm;
+
+#ifdef LINE3EXACTSTAB
+        if (distype==DRT::Element::line3)
+        { // Donea A. and Huerta: Stabilized finite element methods
+          double betac = ((2.0*epe-1.0)+(-6.0*epe+7.0)*exp(-2.0*epe)+(-6.0*epe-7.0)*exp(-4.0*epe)+(2.0*epe+1.0)*exp(-6.0*epe))/((epe+3.0)+(-7.0*epe-3.0)*exp(-2.0*epe)+(7.0*epe-3.0)*exp(-4.0*epe)-(epe+3.0)*exp(-6.0*epe));
+        // Donea, other formulation given at p.56
+        // double coshepe = (pp+pm);
+        // double coth2epe = (exp(2.0*epe) + exp(-2.0*epe))/(exp(2.0*epe) - exp(-2.0*epe));
+        // betac = (xi - (coshepe*coshepe)*(coth2epe - (1.0/(2.0*epe))))/(1.0-(0.5*coshepe*coshepe));
+        tau_corner_[k]= 0.5*h*betac/vel_norm;
+        }
+        else
+#endif
+          tau_corner_[k]= 0.0;
+
 #if 0
         cout<<"epe = "<<epe<<endl;
         cout<<"xi_opt  = "<<xi<<endl;
         cout<<"vel_norm  = "<<vel_norm<<endl;
-        cout<<"tau_opt = "<<0.5*h*xi/vel_norm<<endl<<endl;
+        cout<<"tau_opt = "<<tau_[k]<<endl<<endl;
+        cout<<"tau_corner = "<<tau_corner_[k]<<endl<<endl;
 #endif
       }
       else tau_[k] = 0.0;
+    }
+    break;
+    case INPAR::SCATRA::tau_codina:
+    {
+      // Parameter from Codina, Badia (Constants are chosen according to
+      // the values in the standard definition above)
+
+      const double CI  = 4.0/mk;
+      const double CII = 2.0/mk;
+
+      const double vel_norm = velint_.Norm2();
+
+      // get number of dimensions (convert from int to double)
+      const double dim = (double) nsd_;
+
+      // get characteristic element length
+      double hk = pow(vol,(1.0/dim)); // equals streamlength in 1D
+
+      // in contrast to the original definition, we neglect the influence of
+      // the subscale velocity on velnormaf
+      tau_[k]=1.0/(1./timefac+CI*diffus/(hk*hk)+CII*vel_norm/hk);
+
     }
     break;
     case INPAR::SCATRA::tau_oberai:
@@ -3673,7 +3765,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
       conv_.MultiplyTN(derxy_,velint_);
 
       // velocity divergence required for conservative form
-      if (conservative_) GetVelocityDivergence(vdiv_,evelnp_,derxy_);
+      if (conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
 
       // diffusive integration factor
       const double fac_diffus = fac*diffus_[k];
@@ -3879,7 +3971,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
       conv_.MultiplyTN(derxy_,velint_);
 
       // velocity divergence required for conservative form
-      if (conservative_) GetVelocityDivergence(vdiv_,evelnp_,derxy_);
+      if (conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
 
       if (tau_gp_)
       {
@@ -4082,20 +4174,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     const double                          fac
 )
 {
-  // get values of all transported scalars at integration point
-  for (int k=0; k<numscal_; ++k)
-  {
-    conint_[k] = funct_.Dot(ephinp_[k]);
-
-    // when concentration becomes zero, the coupling terms in the system matrix get lost!
-    //if (conint_[k] < 1e-18)
-    //  printf("WARNING: species concentration %d at GP is zero or negative: %g\n",k,conint_[k]);
-  }
-
   // get gradient of el. potential at integration point
   gradpot_.Multiply(derxy_,epotnp_);
 
-  // migration term (convective part)
+  // migration term (convective part):   -F/RT\grad{\Phi}\grad
   migconv_.MultiplyTN(-frt,derxy_,gradpot_);
 
   // Laplacian of shape functions at integration point
@@ -4110,8 +4192,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
   cout<<"factor F/RT = "<<frt<<endl;
   for (int k=0;k<numscal_;++k)
   {cout<<"conint_["<<k<<"] = "<<conint_[k]<<endl;}
-  for (int k=0;k<3;++k)
-  {cout<<"gradpot_["<<k<<"] = "<<gradpot_[k]<<endl;}
+  for (int k=0;k<nsd_;++k)
+  {cout<<"gradpot_["<<k<<"] = "<<gradpot_(k)<<endl;}
 #endif
   // some 'working doubles'
   double diffus_valence_k;
@@ -4123,6 +4205,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
   for (int k = 0; k < numscal_;++k) // loop over all transported scalars
   {
+    // get values of all transported scalars at integration point
+    conint_[k] = funct_.Dot(ephinp_[k]);
+
     // stabilization parameters
     taufac = tau_[k]*fac;
 
@@ -4165,6 +4250,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       double timetaufac_conv_eff_vi = timetaufac*conv_(vi);
 #ifdef MIGRATIONSTAB
       timetaufac_conv_eff_vi += timetaufac*diffus_valence_k*migconv_(vi);
+#endif
+#ifdef LINE3EXACTSTAB
+      if (distype==DRT::Element::line3 && vi!=2 && timetaufac > 0)
+        timetaufac_conv_eff_vi *= tau_corner_[k]/tau_[k];
 #endif
       const double timefacfac_funct_vi = timefacfac*funct_(vi);
       const double timefacfac_diffus_valence_k_mig_vi = timefacfac*diffus_valence_k*migconv_(vi);
@@ -4210,7 +4299,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         // partial derivative w.r.t potential
 #if 1
         double val_ui; GetLaplacianWeakFormRHS(val_ui, derxy_,gradphi_,ui);
-        emat(fvi,ui*numdofpernode_+numscal_) -= timetaufac_conv_eff_vi*diffus_valence_k*val_ui;
+          emat(fvi,ui*numdofpernode_+numscal_) -= timetaufac_conv_eff_vi*diffus_valence_k*val_ui;
 #else
         // linearization w.r.t potential phi
         double val_ui; GetLaplacianWeakFormRHS(val_ui, derxy_,gradphi_,ui);
@@ -4226,7 +4315,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       for (int vi=0; vi<nen_; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
-        const double timetaufac_conv_eff_vi = timetaufac*(conv_(vi)+diffus_valence_k*migconv_(vi));
+        double timetaufac_conv_eff_vi = timetaufac*(conv_(vi)+diffus_valence_k*migconv_(vi));
+#ifdef LINE3EXACTSTAB
+        if (distype==DRT::Element::line3 && vi!=2 && tau_[k] > 0)
+          timetaufac_conv_eff_vi *= tau_corner_[k]/ tau_[k];
+#endif
+
         for (int ui=0; ui<nen_; ++ui)
         {
           const int fui = ui*numdofpernode_+k;
@@ -4240,7 +4334,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
           emat(fvi, fui) += -timetaufac_conv_eff_vi*migrea_(ui) ;
 
           /* 2) diffusive stabilization */
-
+/*
           // convective term
           emat(fvi, fui) -= diffreastafac_*timetaufac*diff_(vi)*(conv_(ui)+diffus_valence_k*migconv_(ui));
 
@@ -4249,7 +4343,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
           // migration term (reactive part)
           emat(fvi, fui) -= diffreastafac_*timetaufac*diff_(vi)*migrea_(ui) ;
-
+*/
           /* 3) reactive stabilization (reactive part of migration term) */
 
           // convective terms
@@ -4280,7 +4374,18 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     }
 
     // compute residual of strong form for residual-based stabilization
-    double taufacresidual = taufac*rhsint - timetaufac*(conv_eff_k - diff_ephinp_k + migrea_k);
+    double taufacresidual(0.0);
+if ( not betterconsistency_)
+    taufacresidual = taufac*rhsint - timetaufac*(conv_eff_k - diff_ephinp_k + migrea_k);
+else
+{
+    double fdiv(0.0); // we get the negative(!) reconstructed flux from outside!
+    // compute divergence of approximated diffusive and migrative fluxes
+    GetDivergence(fdiv,efluxreconstr_[k],derxy_);
+    cout<<"conv_ephinp_k = "<<conv_ephinp_k<<" fdiv = "<<fdiv<<endl;
+    taufacresidual = taufac*rhsint - timetaufac*(conv_ephinp_k + fdiv);
+    cout<<"taufacresidual = "<<taufacresidual<<endl;
+}
     if (!is_stationary_) // add transient term to the residual
       taufacresidual -= taufac*funct_ephinp_k;
 
@@ -4332,11 +4437,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
       // 0) transient stabilization
       // not implemented
+      double adjust (1.0);
+#ifdef LINE3EXACTSTAB
+      if (distype==DRT::Element::line3 && vi!=2 && tau_[k] > 0)
+        adjust *= tau_corner_[k] / tau_[k];
+#endif
 
       // 1) convective stabilization
-      erhs[fvi] += conv_(vi)* taufacresidual;
+      erhs[fvi] += conv_(vi)* taufacresidual *adjust;
 #ifdef MIGRATIONSTAB
-      erhs[fvi] +=  diffus_valence_k*migconv_(vi) * taufacresidual;
+      erhs[fvi] +=  diffus_valence_k*migconv_(vi) * taufacresidual*adjust;
 #endif
 
     } // for vi
@@ -4347,8 +4457,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       {
         const int fvi = vi*numdofpernode_+k;
 
+        double adjust (1.0);
+#ifdef LINE3EXACTSTAB
+        if (distype==DRT::Element::line3 && vi!=2 && tau_[k] > 0)
+          adjust *= tau_corner_[k] / tau_[k];
+#endif
+
         // 2) diffusive stabilization
-        erhs[fvi] -= diffreastafac_*diff_(vi)*taufacresidual ;
+  //      erhs[fvi] -= diffreastafac_*diff_(vi)*taufacresidual*adjust ;
 
         /* 3) reactive stabilization (reactive part of migration term) */
 
@@ -4762,14 +4878,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
     switch (fluxtype)
     {
       case INPAR::SCATRA::flux_total_domain:
-        if (frt > 0.0) // ELCH
-        {
-          // migration flux terms
-          for (int idim=0; idim<nsd_ ;idim++)
-          {
-            flux(idim,iquad) += diffus_valence_frt*gradpot_(idim)*ephinpatnode;
-          }
-        }
         // convective flux terms
         for (int idim=0; idim<nsd_ ;idim++)
         {
@@ -4783,6 +4891,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
           for (int idim=0; idim<nsd_ ;idim++)
           {
             flux(idim,iquad) += diffus*derxy_(idim,k)*ephinp[k*numdofpernode_+dofindex];
+          }
+        }
+        if (frt > 0.0) // ELCH
+        {
+          // migration flux terms
+          for (int idim=0; idim<nsd_ ;idim++)
+          {
+            flux(idim,iquad) += diffusvalence_[dofindex]*frt*ephinpatnode*gradpot_(idim);
           }
         }
         break;
@@ -4800,6 +4916,301 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
   return;
 } // ScaTraImpl::CalculateFlux
 
+
+  /*----------------------------------------------------------------------*
+   |  calculate mass flux (no reactive flux so far)    (private) gjb 06/08|
+   *----------------------------------------------------------------------*/
+  template <DRT::Element::DiscretizationType distype>
+  void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFluxNew(
+      LINALG::Matrix<3,nen_>&         flux,
+      const DRT::Element*             ele,
+      const vector<double>&           ephinp,
+      const double                    frt,
+      const Epetra_SerialDenseVector& evel,
+      const INPAR::SCATRA::FluxType   fluxtype,
+      const int                       dofindex
+  )
+  {
+    // get node coordinates
+    GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+    // in the ALE case add nodal displacements
+    if (isale_) xyze_ += edispnp_;
+
+    // set material variables
+    // GetMaterialParams(ele);  // how could we use this here?
+
+    // get the material
+    RefCountPtr<MAT::Material> material = ele->Material();
+
+    // use one-point Gauss rule to do calculations at element center
+    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+
+    // evaluate shape functions and derivatives at element center
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
+
+    // set material variables
+    double diffus(0.0);
+    double dens(0.0);
+    double valence(0.0);
+    double diffus_valence_frt(0.0);
+
+    // get diffusivity and density
+    if (material->MaterialType() == INPAR::MAT::m_matlist)
+    {
+      const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
+
+      const int matid = actmat->MatID(dofindex);
+      Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
+
+      // set density to 1.0
+      dens = 1.0;
+
+      if (singlemat->MaterialType() == INPAR::MAT::m_scatra)
+      {
+        const MAT::ScatraMat* actsinglemat = static_cast<const MAT::ScatraMat*>(singlemat.get());
+        diffus = actsinglemat->Diffusivity();
+      }
+      else if (singlemat->MaterialType() == INPAR::MAT::m_ion)
+      {
+        const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
+        diffus = actsinglemat->Diffusivity();
+        valence = actsinglemat->Valence();
+        diffus_valence_frt = diffus*valence*frt;
+      }
+      else if (singlemat->MaterialType() == INPAR::MAT::m_arrhenius_spec)
+      {
+        const MAT::ArrheniusSpec* actsinglemat = static_cast<const MAT::ArrheniusSpec*>(singlemat.get());
+
+        // compute temperature
+        double temp = 0.0;
+        for (int i=0; i<nen_; ++i)
+        {
+          temp += funct_(i)*ephinp[i];
+        }
+
+        // compute diffusivity according to Sutherland law
+        diffus = actsinglemat->ComputeDiffusivity(temp);
+      }
+      else if (singlemat->MaterialType() == INPAR::MAT::m_arrhenius_temp)
+      {
+        const MAT::ArrheniusTemp* actsinglemat = static_cast<const MAT::ArrheniusTemp*>(singlemat.get());
+
+        // get specific heat capacity at constant pressure
+        shcacp_ = actsinglemat->Shc();
+
+        // compute temperature
+        double temp = 0.0;
+        for (int i=0; i<nen_; ++i)
+        {
+          temp += funct_(i)*ephinp[i];
+        }
+
+        // compute thermal conductivity according to Sutherland law
+        diffus = shcacp_*actsinglemat->ComputeDiffusivity(temp);
+
+        // compute density based on temperature and thermodynamic pressure
+        dens = actsinglemat->ComputeDensity(temp,thermpressnp_);
+      }
+      else dserror("type of material found in material list not supported");
+    }
+    else if (material->MaterialType() == INPAR::MAT::m_scatra)
+    {
+      const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(material.get());
+
+      // get constant diffusivity
+      diffus = actmat->Diffusivity();
+
+      // set density to 1.0
+      dens = 1.0;
+    }
+    else if (material->MaterialType() == INPAR::MAT::m_ion)
+    {
+      const MAT::Ion* actmat = static_cast<const MAT::Ion*>(material.get());
+
+      // get constant diffusivity (we only do convection-diffusion in this case!)
+      diffus = actmat->Diffusivity();
+
+      // set density to 1.0
+      dens = 1.0;
+    }
+    else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
+    {
+      const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
+
+      // compute mixture fraction
+      double mixfrac = 0.0;
+      for (int i=0; i<nen_; ++i)
+      {
+        mixfrac += funct_(i)*ephinp[i];
+      }
+
+      // compute dynamic diffusivity based on mixture fraction
+      diffus = actmat->ComputeDiffusivity(mixfrac);
+
+      // compute density based on mixture fraction
+      dens = actmat->ComputeDensity(mixfrac);
+    }
+    else if (material->MaterialType() == INPAR::MAT::m_sutherland)
+    {
+      const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
+
+      // get specific heat capacity at constant pressure
+      shcacp_ = actmat->Shc();
+
+      // compute temperature
+      double temp = 0.0;
+      for (int i=0; i<nen_; ++i)
+      {
+        temp += funct_(i)*ephinp[i];
+      }
+
+      // compute thermal conductivity according to Sutherland law
+      diffus = shcacp_*actmat->ComputeDiffusivity(temp);
+
+      // compute density based on temperature and thermodynamic pressure
+      dens = actmat->ComputeDensity(temp,thermpressnp_);
+    }
+    else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
+    {
+      const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
+
+      // compute progress variable
+      double provar = 0.0;
+      for (int i=0; i<nen_; ++i)
+      {
+        provar += funct_(i)*ephinp[i];
+      }
+
+      // get specific heat capacity at constant pressure and
+      // compute temperature based on progress variable
+      shcacp_ = actmat->ComputeShc(provar);
+      const double temp = actmat->ComputeTemperature(provar);
+
+      // compute thermal conductivity according to Sutherland law
+      diffus = shcacp_*actmat->ComputeDiffusivity(temp);
+
+      // compute density at n+1 or n+alpha_F
+      dens = actmat->ComputeDensity(provar);
+    }
+    else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
+    {
+      const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
+
+      // compute progress variable
+      double provar = 0.0;
+      for (int i=0; i<nen_; ++i)
+      {
+        provar += funct_(i)*ephinp[i];
+      }
+
+      // get specific heat capacity at constant pressure and
+      // compute temperature based on progress variable
+      shcacp_ = actmat->ComputeShc(provar);
+      const double temp = actmat->ComputeTemperature(provar);
+
+      // compute thermal conductivity according to Sutherland law
+      diffus = shcacp_*actmat->ComputeDiffusivity(temp);
+
+      // compute density at n+1 or n+alpha_F
+      dens = actmat->ComputeDensity(provar);
+    }
+    else dserror("Material type is not supported");
+
+    // integration rule
+    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+    // loop over all nodes
+    for (int iquad=0; iquad< intpoints.IP().nquad; ++iquad)
+    {
+      // evaluate shape functions and derivatives at integration point
+      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+      // gradient of electric potential
+      gradpot_.Clear();
+      if (frt > 0.0) // ELCH
+      {
+        for (int k=0;k<nen_;k++)
+        {
+          for (int idim=0; idim<nsd_ ;idim++)
+          {
+            gradpot_(idim) += derxy_(idim,k)*ephinp[k*numdofpernode_+numscal_];
+          }
+        }
+      }
+
+      double ephinpint(0.0);
+      LINALG::Matrix<3,1> velint(true);
+      for (int vi=0; vi<nen_;vi++)
+      {
+        ephinpint += funct_(vi)*ephinp[vi*numdofpernode_+dofindex];
+        for (int idim=0; idim<nsd_ ;idim++)
+        {
+          velint(idim) += funct_(vi)*evel[idim+vi*nsd_];
+        }
+      }
+
+      // allocate and initialize!
+      LINALG::Matrix<3,1> q(true);
+
+      // add different flux contributions as specified by user input
+      // BE CAREFUL. WE COMPUTE THE NEGATIVE OF THE MASS FLUX!
+      switch (fluxtype)
+      {
+      case INPAR::SCATRA::flux_total_domain:
+
+        // convective flux terms
+        for (int idim=0; idim<nsd_ ;idim++)
+        {
+          q(idim) -= densnp_[dofindex]*velint(idim)*ephinpint;
+        }
+        // no break statement here!
+      case INPAR::SCATRA::flux_diffusive_domain:
+        //diffusive flux terms
+        for (int vi=0;vi<nen_;vi++)
+        {
+          for (int idim=0; idim<nsd_ ;idim++)
+          {
+            q(idim) += diffus_[dofindex]*derxy_(idim,vi)*ephinp[vi*numdofpernode_+dofindex];
+          }
+        }
+
+        if (frt > 0.0) // ELCH
+        {
+          // migration flux terms
+          for (int idim=0; idim<nsd_ ;idim++)
+          {
+            q(idim) += diffusvalence_[dofindex]*frt*ephinpint*gradpot_(idim);
+          }
+        }
+        break;
+      default:
+        dserror("received illegal flag inside flux evaluation for whole domain");
+      };
+      // q at integration point
+
+      // integrate and assemble
+      for (int vi=0; vi < nen_; vi++)
+      {
+        for (int idim=0; idim<nsd_ ;idim++)
+        {
+          flux(idim,vi) += fac*funct_(vi)*q(idim);
+        } // idim
+      } // vi
+
+    } // integration loop
+
+    //set zeros for unused space dimensions
+    for (int idim=nsd_; idim<3; idim++)
+    {
+      for (int vi=0; vi < nen_; vi++)
+      {
+        flux(idim,vi) = 0.0;
+      }
+    }
+
+    return;
+  } // ScaTraImpl::CalculateFluxNew
 
 /*----------------------------------------------------------------------*
  |  calculate scalar(s) and domain integral                     vg 09/08|
