@@ -268,6 +268,9 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl(int numdofpernode)
     fssgvisc_(0.0),
     dt_(0.0),
     omtheta_(0.0),
+    gamma_(0.0),
+    alphaF_(0.0),
+    alphaM_(0.0),
     rhscon_(true),
     densaf_(1.0),         // initialized to 1.0 (filled in Fluid3::GetMaterialParams)
     densam_(1.0),         // initialized to 1.0 (filled in Fluid3::GetMaterialParams)
@@ -580,58 +583,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   {
     if (nsd_ == 3)
     {
-    Sysmat(ele,
-           evelaf,
-           eveln,
-           fsevelaf,
-           epreaf,
-           eaccam,
-           escaaf,
-           escaam,
-           escadtam,
-           emhist,
-           edispnp,
-           egridv,
-           elemat1,
-           elemat2,
-           elevec1,
-           thermpressaf,
-           thermpressam,
-           thermpressdtam,
-           mat,
-           timefac,
-           Cs,
-           Cs_delta_sq,
-           l_tau);
-    }
-    else if (nsd_==2)
-    {
-      Sysmat2D(ele,
-             evelaf,
-             eveln,
-             fsevelaf,
-             epreaf,
-             eaccam,
-             escaaf,
-             escaam,
-             escadtam,
-             emhist,
-             edispnp,
-             egridv,
-             elemat1,
-             elemat2,
-             elevec1,
-             thermpressaf,
-             thermpressam,
-             thermpressdtam,
-             mat,
-             timefac,
-             Cs);
-    }
-    else dserror("Dimension is not working");
-  }
-  else
-    Sysmat2D3D(ele,
+      Sysmat(ele,
              evelaf,
              eveln,
              fsevelaf,
@@ -654,6 +606,117 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
              Cs,
              Cs_delta_sq,
              l_tau);
+
+#if 0
+      if(ele->Id()==100 && 1)
+      {
+        FDcheck(ele,
+                evelaf,
+                eveln,
+                fsevelaf,
+                epreaf,
+                eaccam,
+                escaaf,
+                escaam,
+                escadtam,
+                emhist,
+                edispnp,
+                egridv,
+                elemat1,
+                elemat2,
+                elevec1,
+                thermpressaf,
+                thermpressam,
+                thermpressdtam,
+                mat,
+                timefac,
+                Cs,
+                Cs_delta_sq,
+                l_tau);
+      }
+#endif
+    }
+    else if (nsd_==2)
+    {
+      Sysmat2D(ele,
+               evelaf,
+               eveln,
+               fsevelaf,
+               epreaf,
+               eaccam,
+               escaaf,
+               escaam,
+               escadtam,
+               emhist,
+               edispnp,
+               egridv,
+               elemat1,
+               elemat2,
+               elevec1,
+               thermpressaf,
+               thermpressam,
+               thermpressdtam,
+               mat,
+               timefac,
+               Cs);
+    }
+    else dserror("Dimension is not working");
+  }
+  else
+  {
+    Sysmat2D3D(ele,
+               evelaf,
+               eveln,
+               fsevelaf,
+               epreaf,
+               eaccam,
+               escaaf,
+               escaam,
+               escadtam,
+               emhist,
+               edispnp,
+               egridv,
+               elemat1,
+               elemat2,
+               elevec1,
+               thermpressaf,
+               thermpressam,
+               thermpressdtam,
+               mat,
+               timefac,
+               Cs,
+               Cs_delta_sq,
+               l_tau);
+
+#if 0
+    if(ele->Id()==100 && 1)
+    {
+      FDcheck(ele,
+              evelaf,
+              eveln,
+              fsevelaf,
+              epreaf,
+              eaccam,
+              escaaf,
+              escaam,
+              escadtam,
+              emhist,
+              edispnp,
+              egridv,
+              elemat1,
+              elemat2,
+              elevec1,
+              thermpressaf,
+              thermpressam,
+              thermpressdtam,
+              mat,
+              timefac,
+              Cs,
+              Cs_delta_sq,
+              l_tau);
+    }
+#endif
+  }
 
   // ---------------------------------------------------------------------
   // output values of Cs, visceff and Cs_delta_sq
@@ -1621,6 +1684,44 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
           }
         }
 
+
+        if (is_newton_)
+        {
+          const double timefacfac_scaconvfacaf=timefacfac*scaconvfacaf_;
+
+          LINALG::Matrix<nsd_,1> temp;
+
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            const int fvippp= numdofpernode_*vi+nsd_;
+            const double timefacfac_scaconvfacaf_funct_vi=timefacfac_scaconvfacaf*funct_(vi);
+            
+            for(int jdim=0;jdim<nsd_;++jdim)
+            {
+              temp(jdim)=timefacfac_scaconvfacaf_funct_vi*grad_scaaf_(jdim);
+            }
+            
+            for (int ui=0; ui<nen_; ++ui)
+            {
+              const int fui=numdofpernode_*ui;
+
+              for(int jdim=0;jdim<nsd_;++jdim)
+              {
+                /*
+                  factor afgtd/am
+
+                          /                    \                                      
+                    1    |       /         \    |                                      
+                   --- * |  q , | Du o grad | T |                                           
+                    T    |       \         /    |
+                          \                    /                                  
+                */
+                estif(fvippp,fui+jdim) -= temp(jdim)*funct_(ui);  
+              }
+            }
+          }
+        } // end if (is_newton_)
+
         const double v_div = (2.0/3.0)*visceff_*rhsfac*vdiv_ ;
         const double fac_rhscon = fac_*rhscon_;
         for (int vi=0; vi<nen_; ++vi)
@@ -1884,11 +1985,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
               estif(fvi, fui)     += v*viscs2_(0, ui) ;
               estif(fvip, fui)    += v*viscs2_(1, ui) ;
               estif(fvipp, fui)   += v*viscs2_(2, ui) ;
-
+                                                
               estif(fvi, fuip)    += v*viscs2_(1, ui) ;
               estif(fvip, fuip)   += v*viscs2_(4, ui) ;
               estif(fvipp, fuip)  += v*viscs2_(5, ui) ;
-
+                                                
               estif(fvi, fuipp)   += v*viscs2_(2, ui) ;
               estif(fvip, fuipp)  += v*viscs2_(5, ui) ;
               estif(fvipp, fuipp) += v*viscs2_(8, ui) ;
@@ -1899,43 +2000,166 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 
         if (is_newton_)
         {
-          for (int ui=0; ui<nen_; ++ui)
+          if(is_genalpha_)
           {
-            const int fui   = 4*ui;
-            const int fuip  = fui+1;
-            const int fuipp = fui+2;
-            const double v = tau_M*densam_*densaf_*funct_(ui);
-            const double v0 = v*velint_(0);
-            const double v1 = v*velint_(1);
-            const double v2 = v*velint_(2);
-            for (int vi=0; vi<nen_; ++vi)
+            for (int ui=0; ui<nen_; ++ui)
             {
-              const int fvi   = 4*vi;
-              const int fvip  = fvi+1;
-              const int fvipp = fvi+2;
-              /* supg stabilisation: inertia, linearisation of testfunction  */
-              /*
+              const int fui   = 4*ui;
+              const int fuip  = fui+1;
+              const int fuipp = fui+2;
+              const double v = timetauM*densam_*densaf_*funct_(ui);
+              const double v0 = v*accint_(0);
+              const double v1 = v*accint_(1);
+              const double v2 = v*accint_(2);
+              for (int vi=0; vi<nen_; ++vi)
+              {
+                const int fvi   = 4*vi;
+                const int fvip  = fvi+1;
+                const int fvipp = fvi+2;
+                /* supg stabilisation: inertia, linearisation of testfunction  */
+                /*
                 /                                         \
                 |         n+1      /                \     |
                 |    rho*u      ,  | rho*Du o nabla | v   |
                 |         (i)      \                /     |
                 \                                         /
 
-              */
-              estif(fvi,  fui)     += v0*derxy_(0, vi) ;
-              estif(fvip,  fui)    += v1*derxy_(0, vi) ;
-              estif(fvipp, fui)    += v2*derxy_(0, vi) ;
-
-              estif(fvi,   fuip)   += v0*derxy_(1, vi) ;
-              estif(fvip,  fuip)   += v1*derxy_(1, vi) ;
-              estif(fvipp, fuip)   += v2*derxy_(1, vi) ;
-
-              estif(fvi,   fuipp)  += v0*derxy_(2, vi) ;
-              estif(fvip,  fuipp)  += v1*derxy_(2, vi) ;
-              estif(fvipp, fuipp)  += v2*derxy_(2, vi) ;
+                */
+                estif(fvi,  fui)     += v0*derxy_(0, vi) ;
+                estif(fvip,  fui)    += v1*derxy_(0, vi) ;
+                estif(fvipp, fui)    += v2*derxy_(0, vi) ;
+                
+                estif(fvi,   fuip)   += v0*derxy_(1, vi) ;
+                estif(fvip,  fuip)   += v1*derxy_(1, vi) ;
+                estif(fvipp, fuip)   += v2*derxy_(1, vi) ;
+                
+                estif(fvi,   fuipp)  += v0*derxy_(2, vi) ;
+                estif(fvip,  fuipp)  += v1*derxy_(2, vi) ;
+                estif(fvipp, fuipp)  += v2*derxy_(2, vi) ;
+              }
             }
-          }
 
+
+            for (int ui=0; ui<nen_; ++ui)
+            {
+              const int fui   = 4*ui;
+              const int fuip  = fui+1;
+              const int fuipp = fui+2;
+              const double v = -timetauM*densaf_*funct_(ui);
+              for (int vi=0; vi<nen_; ++vi)
+              {
+                const int fvi   = 4*vi;
+                const int fvip  = fvi+1;
+                const int fvipp = fvi+2;
+                const double v0 = v*rhsmom_(0);
+                const double v1 = v*rhsmom_(1);
+                const double v2 = v*rhsmom_(2);
+
+                /* supg stabilisation: bodyforce part, linearisation of test function */
+
+                /*
+                /                                       \
+                |                 /                \     |
+                |  rho*rhsint   , |  rho*Du o nabla | v  |
+                |                 \                /     |
+                \                                        /
+                
+                */
+                estif(fvi    , fui)   += (v0*derxy_(0, vi)) ;
+                estif(fvip   , fui)   += (v1*derxy_(0, vi)) ;
+                estif(fvipp  , fui)   += (v2*derxy_(0, vi)) ;
+
+                estif(fvi    , fuip)  += (v0*derxy_(1, vi)) ;
+                estif(fvip   , fuip)  += (v1*derxy_(1, vi)) ;
+                estif(fvipp  , fuip)  += (v2*derxy_(1, vi)) ;
+
+                estif(fvi    , fuipp) += (v0*derxy_(2, vi)) ;
+                estif(fvip   , fuipp) += (v1*derxy_(2, vi)) ;
+                estif(fvipp  , fuipp) += (v2*derxy_(2, vi)) ;
+
+              } // vi
+            } // ui
+          } // end is_genalpha
+          else
+          {
+            for (int ui=0; ui<nen_; ++ui)
+            {
+              const int fui   = 4*ui;
+              const int fuip  = fui+1;
+              const int fuipp = fui+2;
+              const double v = tau_M*densam_*densaf_*funct_(ui);
+              const double v0 = v*velint_(0);
+              const double v1 = v*velint_(1);
+              const double v2 = v*velint_(2);
+              for (int vi=0; vi<nen_; ++vi)
+              {
+                const int fvi   = 4*vi;
+                const int fvip  = fvi+1;
+                const int fvipp = fvi+2;
+                /* supg stabilisation: inertia, linearisation of testfunction  */
+                /*
+                /                                         \
+                |         n+1      /                \     |
+                |    rho*u      ,  | rho*Du o nabla | v   |
+                |         (i)      \                /     |
+                \                                         /
+
+                */
+                estif(fvi,  fui)     += v0*derxy_(0, vi) ;
+                estif(fvip,  fui)    += v1*derxy_(0, vi) ;
+                estif(fvipp, fui)    += v2*derxy_(0, vi) ;
+                
+                estif(fvi,   fuip)   += v0*derxy_(1, vi) ;
+                estif(fvip,  fuip)   += v1*derxy_(1, vi) ;
+                estif(fvipp, fuip)   += v2*derxy_(1, vi) ;
+                
+                estif(fvi,   fuipp)  += v0*derxy_(2, vi) ;
+                estif(fvip,  fuipp)  += v1*derxy_(2, vi) ;
+                estif(fvipp, fuipp)  += v2*derxy_(2, vi) ;
+              }
+            }
+
+
+            for (int ui=0; ui<nen_; ++ui)
+            {
+              const int fui   = 4*ui;
+              const int fuip  = fui+1;
+              const int fuipp = fui+2;
+              const double v = -tau_M*densaf_*funct_(ui);
+              for (int vi=0; vi<nen_; ++vi)
+              {
+                const int fvi   = 4*vi;
+                const int fvip  = fvi+1;
+                const int fvipp = fvi+2;
+                const double v0 = v*rhsmom_(0);
+                const double v1 = v*rhsmom_(1);
+                const double v2 = v*rhsmom_(2);
+
+                /* supg stabilisation: bodyforce part, linearisation of test function */
+
+                /*
+                /                                       \
+                |                 /                \     |
+                |  rho*rhsint   , |  rho*Du o nabla | v  |
+                |                 \                /     |
+                \                                        /
+                
+                */
+                estif(fvi    , fui)   += (v0*derxy_(0, vi)) ;
+                estif(fvip   , fui)   += (v1*derxy_(0, vi)) ;
+                estif(fvipp  , fui)   += (v2*derxy_(0, vi)) ;
+
+                estif(fvi    , fuip)  += (v0*derxy_(1, vi)) ;
+                estif(fvip   , fuip)  += (v1*derxy_(1, vi)) ;
+                estif(fvipp  , fuip)  += (v2*derxy_(1, vi)) ;
+
+                estif(fvi    , fuipp) += (v0*derxy_(2, vi)) ;
+                estif(fvip   , fuipp) += (v1*derxy_(2, vi)) ;
+                estif(fvipp  , fuipp) += (v2*derxy_(2, vi)) ;
+
+              } // vi
+            } // ui
+          } // end not genalpha
 #if 1
           {
             const double v0 = convvelint_(0)*vderxy_(0, 0) + convvelint_(1)*vderxy_(0, 1) + convvelint_(2)*vderxy_(0, 2);
@@ -2056,46 +2280,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
               }
             }
           }
-
-          for (int ui=0; ui<nen_; ++ui)
-          {
-            const int fui   = 4*ui;
-            const int fuip  = fui+1;
-            const int fuipp = fui+2;
-            const double v = -tau_M*densaf_*funct_(ui);
-            for (int vi=0; vi<nen_; ++vi)
-            {
-              const int fvi   = 4*vi;
-              const int fvip  = fvi+1;
-              const int fvipp = fvi+2;
-              const double v0 = v*rhsmom_(0);
-              const double v1 = v*rhsmom_(1);
-              const double v2 = v*rhsmom_(2);
-
-              /* supg stabilisation: bodyforce part, linearisation of test function */
-
-              /*
-                /                                       \
-                |                 /                \     |
-                |  rho*rhsint   , |  rho*Du o nabla | v  |
-                |                 \                /     |
-                \                                        /
-
-              */
-              estif(fvi    , fui)   += (v0*derxy_(0, vi)) ;
-              estif(fvip   , fui)   += (v1*derxy_(0, vi)) ;
-              estif(fvipp  , fui)   += (v2*derxy_(0, vi)) ;
-
-              estif(fvi    , fuip)  += (v0*derxy_(1, vi)) ;
-              estif(fvip   , fuip)  += (v1*derxy_(1, vi)) ;
-              estif(fvipp  , fuip)  += (v2*derxy_(1, vi)) ;
-
-              estif(fvi    , fuipp) += (v0*derxy_(2, vi)) ;
-              estif(fvip   , fuipp) += (v1*derxy_(2, vi)) ;
-              estif(fvipp  , fuipp) += (v2*derxy_(2, vi)) ;
-
-            } // vi
-          } // ui
         } // if newton
 
 #if 1
@@ -2882,6 +3066,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 
     }
   } // loop gausspoints
+
+  return;
 }
 
 
@@ -3467,6 +3653,13 @@ const double DRT::ELEMENTS::Fluid3Impl<distype>::SetSolutionParameter(
     // BDF2:              timefac = 2/3 * dt
     // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
     timefac = theta*dt_;
+
+    if(is_genalpha_)
+    {
+      gamma_ =params.get<double>("gamma");
+      alphaF_=params.get<double>("alphaF");
+      alphaM_=params.get<double>("alphaM");
+    }
   }
   else
   {
