@@ -44,29 +44,29 @@ Maintainer: Ulrich Kuettler
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
-  Fluid3*                                     ele,
-  const LINALG::Matrix<nsd_,nen_>&             evelaf,
-  const LINALG::Matrix<nsd_,nen_>&             eveln,
-  const LINALG::Matrix<nsd_,nen_>&             fsevelaf,
-  const LINALG::Matrix<nen_,1>&                epreaf,
-  const LINALG::Matrix<nsd_,nen_>&             eaccam,
-  const LINALG::Matrix<nen_,1>&                escaaf,
-  const LINALG::Matrix<nen_,1>&                escaam,
-  const LINALG::Matrix<nen_,1>&                escadtam,
-  const LINALG::Matrix<nsd_,nen_>&             emhist,
-  const LINALG::Matrix<nsd_,nen_>&             edispnp,
-  const LINALG::Matrix<nsd_,nen_>&             egridv,
+  Fluid3*                                       ele,
+  const LINALG::Matrix<nsd_,nen_>&              evelaf,
+  const LINALG::Matrix<nsd_,nen_>&              eveln,
+  const LINALG::Matrix<nsd_,nen_>&              fsevelaf,
+  const LINALG::Matrix<nen_,1>&                 epreaf,
+  const LINALG::Matrix<nsd_,nen_>&              eaccam,
+  const LINALG::Matrix<nen_,1>&                 escaaf,
+  const LINALG::Matrix<nen_,1>&                 escaam,
+  const LINALG::Matrix<nen_,1>&                 escadtam,
+  const LINALG::Matrix<nsd_,nen_>&              emhist,
+  const LINALG::Matrix<nsd_,nen_>&              edispnp,
+  const LINALG::Matrix<nsd_,nen_>&              egridv,
   LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  estif,
   LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
-  LINALG::Matrix<(nsd_+1)*nen_,1>&             eforce,
-  const double                                 thermpressaf,
-  const double                                 thermpressam,
-  const double                                 thermpressdtam,
-  Teuchos::RCP<const MAT::Material>           material,
-  const double                                timefac,
-  double&                                     Cs,
-  double&                                     Cs_delta_sq,
-  double&                                     l_tau
+  LINALG::Matrix<(nsd_+1)*nen_,1>&              eforce,
+  const double                                  thermpressaf,
+  const double                                  thermpressam,
+  const double                                  thermpressdtam,
+  Teuchos::RCP<const MAT::Material>             material,
+  const double                                  timefac,
+  double&                                       Cs,
+  double&                                       Cs_delta_sq,
+  double&                                       l_tau
   )
 {
   // get node coordinates and number of elements per node
@@ -178,7 +178,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
     // get momentum history data at integration point
     histmom_.Multiply(emhist,funct_);
-
+    
     // get velocity derivatives at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     vderxy_.MultiplyNT(evelaf,derxy_);
@@ -278,67 +278,70 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
          {
            visc_old_(idim) += viscs2_(jdim+(idim*nsd_),inode)*evelaf(jdim,inode);
          }
-        //visc_old_(0) += viscs2_(0,i)*evelaf(0,i)+viscs2_(1,i)*evelaf(1,i)+viscs2_(2,i)*evelaf(2,i);
-        //visc_old_(1) += viscs2_(3,i)*evelaf(0,i)+viscs2_(4,i)*evelaf(1,i)+viscs2_(5,i)*evelaf(2,i);
-        //visc_old_(2) += viscs2_(6,i)*evelaf(0,i)+viscs2_(7,i)*evelaf(1,i)+viscs2_(8,i)*evelaf(2,i);
+         //visc_old_(0) += viscs2_(0,i)*evelaf(0,i)+viscs2_(1,i)*evelaf(1,i)+viscs2_(2,i)*evelaf(2,i);
+         //visc_old_(1) += viscs2_(3,i)*evelaf(0,i)+viscs2_(4,i)*evelaf(1,i)+viscs2_(5,i)*evelaf(2,i);
+         //visc_old_(2) += viscs2_(6,i)*evelaf(0,i)+viscs2_(7,i)*evelaf(1,i)+viscs2_(8,i)*evelaf(2,i);
        }
      }
-   }
-  else
-  {
-    viscs2_.Clear();
-    visc_old_.Clear();
-  }
-
-#if 0
-    if(nsd_ == 3)
-    {
-
-      double prefac;
-      if(physicaltype_ == INPAR::FLUID::loma)
-      {
-        prefac = 1.0/3.0;
-        derxy2_.Scale(prefac);
-      }
-      else prefac = 1.0;
-
-      double sum = (derxy2_(0,0)+derxy2_(1,0)+derxy2_(2,0))/prefac;
-
-      viscs2_(0,0) = 0.5 * (sum + derxy2_(0,0));
-      viscs2_(1,0) = 0.5 *  derxy2_(3,0);
-      viscs2_(2,0) = 0.5 *  derxy2_(4,0);
-      viscs2_(3,0) = 0.5 *  derxy2_(3,0);
-      viscs2_(4,0) = 0.5 * (sum + derxy2_(1,0));
-      viscs2_(5,0) = 0.5 *  derxy2_(5,0);
-      viscs2_(6,0) = 0.5 *  derxy2_(4,0);
-      viscs2_(7,0) = 0.5 *  derxy2_(5,0);
-      viscs2_(8,0) = 0.5 * (sum + derxy2_(2,0));
-
-      visc_old_(0) = viscs2_(0,0)*evelaf(0,0)+viscs2_(1,0)*evelaf(1,0)+viscs2_(2,0)*evelaf(2,0);
-      visc_old_(1) = viscs2_(3,0)*evelaf(0,0)+viscs2_(4,0)*evelaf(1,0)+viscs2_(5,0)*evelaf(2,0);
-      visc_old_(2) = viscs2_(6,0)*evelaf(0,0)+viscs2_(7,0)*evelaf(1,0)+viscs2_(8,0)*evelaf(2,0);
-
-      for (int i=1; i<nen_; ++i)
-      {
-        double sum = (derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i))/prefac;
-
-        viscs2_(0,i) = 0.5 * (sum + derxy2_(0,i));
-        viscs2_(1,i) = 0.5 *  derxy2_(3,i);
-        viscs2_(2,i) = 0.5 *  derxy2_(4,i);
-        viscs2_(3,i) = 0.5 *  derxy2_(3,i);
-        viscs2_(4,i) = 0.5 * (sum + derxy2_(1,i));
-        viscs2_(5,i) = 0.5 *  derxy2_(5,i);
-        viscs2_(6,i) = 0.5 *  derxy2_(4,i);
-        viscs2_(7,i) = 0.5 *  derxy2_(5,i);
-        viscs2_(8,i) = 0.5 * (sum + derxy2_(2,i));
-
-        visc_old_(0) += viscs2_(0,i)*evelaf(0,i)+viscs2_(1,i)*evelaf(1,i)+viscs2_(2,i)*evelaf(2,i);
-        visc_old_(1) += viscs2_(3,i)*evelaf(0,i)+viscs2_(4,i)*evelaf(1,i)+viscs2_(5,i)*evelaf(2,i);
-        visc_old_(2) += viscs2_(6,i)*evelaf(0,i)+viscs2_(7,i)*evelaf(1,i)+viscs2_(8,i)*evelaf(2,i);
-      }
     }
     else
     {
+      viscs2_.Clear();
+      visc_old_.Clear();
+    }
+  
+
+#if 0
+    if (is_higher_order_ele_)
+    {
+      if(nsd_ == 3)
+      {
+
+        double prefac;
+        if(physicaltype_ == INPAR::FLUID::loma)
+        {
+          prefac = 1.0/3.0;
+          derxy2_.Scale(prefac);
+        }
+        else prefac = 1.0;
+
+        double sum = (derxy2_(0,0)+derxy2_(1,0)+derxy2_(2,0))/prefac;
+
+        viscs2_(0,0) = 0.5 * (sum + derxy2_(0,0));
+        viscs2_(1,0) = 0.5 *  derxy2_(3,0);
+        viscs2_(2,0) = 0.5 *  derxy2_(4,0);
+        viscs2_(3,0) = 0.5 *  derxy2_(3,0);
+        viscs2_(4,0) = 0.5 * (sum + derxy2_(1,0));
+        viscs2_(5,0) = 0.5 *  derxy2_(5,0);
+        viscs2_(6,0) = 0.5 *  derxy2_(4,0);
+        viscs2_(7,0) = 0.5 *  derxy2_(5,0);
+        viscs2_(8,0) = 0.5 * (sum + derxy2_(2,0));
+
+        visc_old_(0) = viscs2_(0,0)*evelaf(0,0)+viscs2_(1,0)*evelaf(1,0)+viscs2_(2,0)*evelaf(2,0);
+        visc_old_(1) = viscs2_(3,0)*evelaf(0,0)+viscs2_(4,0)*evelaf(1,0)+viscs2_(5,0)*evelaf(2,0);
+        visc_old_(2) = viscs2_(6,0)*evelaf(0,0)+viscs2_(7,0)*evelaf(1,0)+viscs2_(8,0)*evelaf(2,0);
+
+        for (int i=1; i<nen_; ++i)
+        {
+          double sum = (derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i))/prefac;
+
+          viscs2_(0,i) = 0.5 * (sum + derxy2_(0,i));
+          viscs2_(1,i) = 0.5 *  derxy2_(3,i);
+          viscs2_(2,i) = 0.5 *  derxy2_(4,i);
+          viscs2_(3,i) = 0.5 *  derxy2_(3,i);
+          viscs2_(4,i) = 0.5 * (sum + derxy2_(1,i));
+          viscs2_(5,i) = 0.5 *  derxy2_(5,i);
+          viscs2_(6,i) = 0.5 *  derxy2_(4,i);
+          viscs2_(7,i) = 0.5 *  derxy2_(5,i);
+          viscs2_(8,i) = 0.5 * (sum + derxy2_(2,i));
+
+          visc_old_(0) += viscs2_(0,i)*evelaf(0,i)+viscs2_(1,i)*evelaf(1,i)+viscs2_(2,i)*evelaf(2,i);
+          visc_old_(1) += viscs2_(3,i)*evelaf(0,i)+viscs2_(4,i)*evelaf(1,i)+viscs2_(5,i)*evelaf(2,i);
+          visc_old_(2) += viscs2_(6,i)*evelaf(0,i)+viscs2_(7,i)*evelaf(1,i)+viscs2_(8,i)*evelaf(2,i);
+        }
+      }
+      else
+      {
       /*--- viscous term: div(epsilon(u)) -------------------------------*/
       /*     /                              \
            1 |  2 N_x,xx + N_x,yy + N_y,xy  |    with N_x .. x-line of N
@@ -358,47 +361,46 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
       // varying density: div u = 0
       // therefore, no stabilization of the second term
-      double prefac;
-      if (physicaltype_ == INPAR::FLUID::loma)
-      {
-        prefac = 1.0/3.0;
-        derxy2_.Scale(prefac);
-      }
-      else prefac = 1.0;
+        double prefac;
+        if (physicaltype_ == INPAR::FLUID::loma)
+        {
+          prefac = 1.0/3.0;
+          derxy2_.Scale(prefac);
+        }
+        else prefac = 1.0;
 
-      double sum = (derxy2_(0,0)+derxy2_(1,0))/prefac;
+        double sum = (derxy2_(0,0)+derxy2_(1,0))/prefac;
 
-      viscs2_(0,0) = 0.5 * (sum + derxy2_(0,0));
-      viscs2_(1,0) = 0.5 * derxy2_(2,0);
-      viscs2_(2,0) = 0.5 * derxy2_(2,0);
-      viscs2_(3,0) = 0.5 * (sum + derxy2_(1,0));
-
-      /* viscous term  div epsilon(u_old) */
-      visc_old_(0) = viscs2_(0,0)*evelaf(0,0)+viscs2_(1,0)*evelaf(1,0);
-      visc_old_(1) = viscs2_(1,0)*evelaf(0,0)+viscs2_(3,0)*evelaf(1,0);
-
-      for (int i=1; i<nen_; ++i)
-      {
-        double sum = (derxy2_(0,i)+derxy2_(1,i))/prefac;
-
-        viscs2_(0,i) = 0.5 * (sum + derxy2_(0,i));
-        viscs2_(1,i) = 0.5 * derxy2_(2,i);
-        viscs2_(2,i) = 0.5 * derxy2_(2,i);
-        viscs2_(3,i) = 0.5 * (sum + derxy2_(1,i));
-
+        viscs2_(0,0) = 0.5 * (sum + derxy2_(0,0));
+        viscs2_(1,0) = 0.5 * derxy2_(2,0);
+        viscs2_(2,0) = 0.5 * derxy2_(2,0);
+        viscs2_(3,0) = 0.5 * (sum + derxy2_(1,0));
+      
         /* viscous term  div epsilon(u_old) */
-        visc_old_(0) += viscs2_(0,i)*evelaf(0,i)+viscs2_(1,i)*evelaf(1,i);
-        visc_old_(1) += viscs2_(1,i)*evelaf(0,i)+viscs2_(3,i)*evelaf(1,i);
+        visc_old_(0) = viscs2_(0,0)*evelaf(0,0)+viscs2_(1,0)*evelaf(1,0);
+        visc_old_(1) = viscs2_(1,0)*evelaf(0,0)+viscs2_(3,0)*evelaf(1,0);
+
+        for (int i=1; i<nen_; ++i)
+        {
+          double sum = (derxy2_(0,i)+derxy2_(1,i))/prefac;
+
+          viscs2_(0,i) = 0.5 * (sum + derxy2_(0,i));
+          viscs2_(1,i) = 0.5 * derxy2_(2,i);
+          viscs2_(2,i) = 0.5 * derxy2_(2,i);
+          viscs2_(3,i) = 0.5 * (sum + derxy2_(1,i));
+
+          /* viscous term  div epsilon(u_old) */
+          visc_old_(0) += viscs2_(0,i)*evelaf(0,i)+viscs2_(1,i)*evelaf(1,i);
+          visc_old_(1) += viscs2_(1,i)*evelaf(0,i)+viscs2_(3,i)*evelaf(1,i);
+        }
       }
     }
-  }
-  else
-  {
-    viscs2_.Clear();
-    visc_old_.Clear();
-  }
+    else
+    {
+      viscs2_.Clear();
+      visc_old_.Clear();
+    }
 #endif
-
 
     // convective term from previous iteration
     conv_old_.Multiply(vderxy_,convvelint_);
@@ -502,6 +504,18 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
         /*if (cross    != Fluid3::cross_stress_stab_none or
             reynolds != Fluid3::reynolds_stress_stab_none)
           conv_scaaf_ += sgvelint_.Dot(grad_scaaf_);*/
+
+
+        /*
+                                                                             
+                 /                                                dp   \     
+                |         1     / dT     /         \   \     1      th  |     
+                |    q , --- * | ---- + | u o nabla | T | - --- * ----  |        
+                |         T     \ dt     \         /   /    p      dt   |      
+                 \                                           th        /    
+                        +---------------------------------------------+     
+                                          rhscon_                                                                             
+        */
 
         // rhs of continuity equation (only relevant for low-Mach-number flow)
         rhscon_ = scadtfac_*tder_sca + scaconvfacaf_*conv_scaaf_ + thermpressadd_;
@@ -626,34 +640,37 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       // // The computation of the inertia and the convective term is split
       if (is_stationary_ == false)
       {
-        for (int idim = 0; idim <nsd_; ++idim)
+        const double fac_densam=fac_*densam_;
+
+        for (int ui=0; ui<nen_; ++ui)
         {
-          for (int ui=0; ui<nen_; ++ui)
+          const int fui   = numdofpernode_*ui;
+          //const int fui   = 4*ui;
+          //const int fuip  = fui+1;
+          //const int fuipp = fui+2;
+          
+          const double v = fac_densam*funct_(ui);
+          
+          for (int vi=0; vi<nen_; ++vi)
           {
-            const int fui   = numdofpernode_*ui+idim;
-            //const int fui   = 4*ui;
-            //const int fuip  = fui+1;
-            //const int fuipp = fui+2;
-
-            const double v = fac_*densam_*funct_(ui);
-
-            for (int vi=0; vi<nen_; ++vi)
-            {
-              const int fvi   = numdofpernode_*vi+idim;
-              //const int fvi   = 4*vi;
-              //const int fvip  = fvi+1;
-              //const int fvipp = fvi+2;
-              /* inertia (contribution to mass matrix) */
-              /*
+            const int fvi   = numdofpernode_*vi;
+            //const int fvi   = 4*vi;
+            //const int fvip  = fvi+1;
+            //const int fvipp = fvi+2;
+            /* inertia (contribution to mass matrix) */
+            /*
               /                \
               |                |
               |    rho*Du , v  |
               |                |
               \                /
-              */
+            */
 
-              double v2 = v*funct_(vi) ;
-              estif(fvi  , fui  ) += v2;
+            double v2 = v*funct_(vi) ;
+            
+            for (int idim = 0; idim <nsd_; ++idim)
+            {
+              estif(fvi+idim,fui+idim) += v2;
               //estif(fvi  , fui  ) += v2;
               //estif(fvip , fuip ) += v2;
               //estif(fvipp, fuipp) += v2;
@@ -662,21 +679,22 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
         }  // end for (idim)
       }  // end if(stationary)
 
-      for (int idim = 0; idim <nsd_; ++idim)
+
+      // convective part
       {
-        // convective part
+        const double timefacfac_densaf=timefacfac*densaf_;
         for (int ui=0; ui<nen_; ++ui)
         {
-          const int fui   = numdofpernode_*ui+idim;
+          const int fui   = numdofpernode_*ui;
           //const int fui   = 4*ui;
           //const int fuip  = fui+1;
           //const int fuipp = fui+2;
-
-          const double v = timefacfac*densaf_*(conv_c_(ui)+sgconv_c_(ui));
+          
+          const double v = timefacfac_densaf*(conv_c_(ui)+sgconv_c_(ui));
 
           for (int vi=0; vi<nen_; ++vi)
           {
-            const int fvi   = numdofpernode_*vi+idim;
+            const int fvi   = numdofpernode_*vi;
             //const int fvi   = 4*vi;
             //const int fvip  = fvi+1;
             //const int fvipp = fvi+2;
@@ -690,26 +708,30 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
             \                              /
             */
             double v2 = v*funct_(vi) ;
-            estif(fvi  , fui  ) += v2;
+
+            for (int idim = 0; idim <nsd_; ++idim)
+            {
+              estif(fvi+idim,fui+idim) += v2;
             //estif(fvi  , fui  ) += v2;
             //estif(fvip , fuip ) += v2;
             //estif(fvipp, fuipp) += v2;
-          }
-        }
-      }  // end for (idim)
-
+            }  // end for (idim)
+          } // vi
+        } // ui
+      }
 
       if (is_newton_)
       {
-        for (int idim = 0; idim <nsd_; ++idim)
+        const double timefacfac_densaf=timefacfac*densaf_;
+        
+        for (int vi=0; vi<nen_; ++vi)
         {
-          for (int vi=0; vi<nen_; ++vi)
-          {
-            const int fvi   = numdofpernode_*vi+idim;
+          const int fvi   = numdofpernode_*vi;
             //const int fvi   = 4*vi;
             //const int fvip  = fvi+1;
             //const int fvipp = fvi+2;
-            const double v = timefacfac*densaf_*funct_(vi);
+            const double v = timefacfac_densaf*funct_(vi);
+
             for (int ui=0; ui<nen_; ++ui)
             {
               const int fui   = numdofpernode_*ui;
@@ -724,8 +746,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
               |  \                /   (i)       |
               \                                /
               */
-              for (int jdim= 0; jdim<nsd_;++jdim)
-                estif(fvi,   fui+jdim)   += v2*vderxy_(idim, jdim);
+              for (int idim = 0; idim <nsd_; ++idim)
+              {
+                for (int jdim= 0; jdim<nsd_;++jdim)
+                {
+                  estif(fvi+idim,fui+jdim) += v2*vderxy_(idim, jdim);
+                } // end for (jdim)
+              } // end for (idim)
               //estif(fvi,   fui)   += v2*vderxy_(0, 0) ;
               //estif(fvi,   fuip)  += v2*vderxy_(0, 1) ;
               //estif(fvi,   fuipp) += v2*vderxy_(0, 2) ;
@@ -735,31 +762,34 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
               //estif(fvipp, fui)   += v2*vderxy_(2, 0) ;
               //estif(fvipp, fuip)  += v2*vderxy_(2, 1) ;
               //estif(fvipp, fuipp) += v2*vderxy_(2, 2) ;
-            }
-          }
-        }  // end for (idim)
+            } // ui
+        } //vi
       }  // end if(Newton)
 
       // inertia terms on the right hand side for instationary fluids
       if (is_stationary_ == false)
       {
-        for (int idim = 0; idim <nsd_; ++idim)
+        if (is_genalpha_)
         {
-          if (is_genalpha_)
+          for (int vi=0; vi<nen_; ++vi)
           {
-            for (int vi=0; vi<nen_; ++vi)
+            const int fvi = numdofpernode_*vi;
+            //const int fvi = 4*vi;
+            /* inertia term on right-hand side for generalized-alpha scheme */
+            const double v = -fac_*densam_*funct_(vi);
+            
+            for (int idim = 0; idim <nsd_; ++idim)
             {
-              const int fvi = numdofpernode_*vi + idim;
-              //const int fvi = 4*vi;
-              /* inertia term on right-hand side for generalized-alpha scheme */
-              const double v = -fac_*densam_*funct_(vi);
-              eforce(fvi    ) += v*accint_(idim) ;
-              //eforce(fvi    ) += v*accint_(0) ;
-              //eforce(fvi + 1) += v*accint_(1) ;
-              //eforce(fvi + 2) += v*accint_(2) ;
+              eforce(fvi+idim) += v*accint_(idim) ;
             }
+            //eforce(fvi    ) += v*accint_(0) ;
+            //eforce(fvi + 1) += v*accint_(1) ;
+            //eforce(fvi + 2) += v*accint_(2) ;
           }
-          else
+        }
+        else
+        {
+          for (int idim = 0; idim <nsd_; ++idim)
           {
             for (int vi=0; vi<nen_; ++vi)
             {
@@ -772,10 +802,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
               //eforce(fvi + 1) += v*velint_(1) ;
               //eforce(fvi + 2) += v*velint_(2) ;
             }
-          }
-        }  // end for (idim)
+          }  // end for (idim)
+        }
       }  // end if(stationary)
-
 
       for (int idim = 0; idim <nsd_; ++idim)
       {
@@ -1005,6 +1034,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       //----------------------------------------------------------------------
       // computation of viscosity term including right-hand-side contribution
       //----------------------------------------------------------------------
+#if 0
       const double visceff_timefacfac = visceff_*timefacfac;
       for (int idim = 0; idim < nsd_; ++idim)
       {
@@ -1113,21 +1143,136 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
         }
       } // end for(idim) viscosity term
 
+#endif
+      const double visceff_timefacfac = visceff_*timefacfac;
 
+      {
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const int fvi   = numdofpernode_*vi;
+          //const int fvi   = 4*vi;
+          //const int fvip  = fvi+1;
+          //const int fvipp = fvi+2;
+          
+          //const double derxy_0ui_0vi = derxy_(0, ui)*derxy_(0, vi);
+          //const double derxy_1ui_1vi = derxy_(1, ui)*derxy_(1, vi);
+          //const double derxy_2ui_2vi = derxy_(2, ui)*derxy_(2, vi);
+
+          for(int jdim=0; jdim<nsd_; ++jdim)
+          {
+            const double visceff_timefacfac_derxy_jdim_vi=visceff_timefacfac*derxy_(jdim, vi);
+          
+            for (int ui=0; ui<nen_; ++ui)
+            {
+
+              const int fui   = numdofpernode_*ui;
+              //const int fui   = 4*ui;
+              //const int fuip  = fui+1;
+              //const int fuipp = fui+2;
+
+              for (int idim = 0; idim < nsd_; ++idim)
+              {
+                const int fvi_p_idim=fvi+idim;
+
+                //const double derxy_0ui_0vi = derxy_(0, ui)*derxy_(0, vi);
+                //const double derxy_1ui_1vi = derxy_(1, ui)*derxy_(1, vi);
+                //const double derxy_2ui_2vi = derxy_(2, ui)*derxy_(2, vi);
+                /* viscosity term */
+                /*
+                    /                          \
+                    |       /  \         / \   |
+              2 mu  |  eps | Du | , eps | v |  |
+                    |       \  /         \ /   |
+                    \                          /
+                */
+                
+                estif(fvi_p_idim, fui+jdim) += visceff_timefacfac_derxy_jdim_vi*derxy_(idim,ui);
+                estif(fvi_p_idim, fui+idim) += visceff_timefacfac_derxy_jdim_vi*derxy_(jdim,ui);
+              }
+              
+              /*estif(fvi, fui)     += visceff_timefacfac*(2.0*derxy_0ui_0vi
+                                                       +
+                                                       derxy_1ui_1vi
+                                                       +
+                                                       derxy_2ui_2vi) ;
+               estif(fvi , fuip)   += visceff_timefacfac*derxy_(0, ui)*derxy_(1, vi) ;
+               estif(fvi , fuipp)  += visceff_timefacfac*derxy_(0, ui)*derxy_(2, vi) ;
+
+               estif(fvip, fui)    += visceff_timefacfac*derxy_(0, vi)*derxy_(1, ui) ;
+               estif(fvip, fuip)   += visceff_timefacfac*(derxy_0ui_0vi
+                                                       +
+                                                       2.0*derxy_1ui_1vi
+                                                       +
+                                                       derxy_2ui_2vi) ;
+               estif(fvip , fuipp) += visceff_timefacfac*derxy_(1, ui)*derxy_(2, vi) ;
+
+               estif(fvipp, fui)   += visceff_timefacfac*derxy_(0, vi)*derxy_(2, ui) ;
+               estif(fvipp, fuip)  += visceff_timefacfac*derxy_(1, vi)*derxy_(2, ui) ;
+               estif(fvipp, fuipp) += visceff_timefacfac*(derxy_0ui_0vi
+                                                       +
+                                                       derxy_1ui_1vi
+                                                       +
+                                                       2.0*derxy_2ui_2vi) ; */
+            }
+          }
+        }
+
+        for (int idim = 0; idim < nsd_; ++idim)
+        {
+          //computation of right-hand-side viscosity term
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            const int fvi = numdofpernode_*vi;
+            //const int fvi = 4*vi;
+            const double v = -visceff_*rhsfac;
+            /* viscosity term on right-hand side */
+            for (int jdim = 0; jdim < nsd_; ++jdim)
+            {
+              eforce(fvi + idim) += v*derxy_(jdim,vi)*(vderxy_(jdim,idim)+vderxy_(idim,jdim));
+            }
+
+          /*eforce(fvi)     += v*(2.0*derxy_(0, vi)*vderxy_(0, 0)
+                                +
+                                derxy_(1, vi)*vderxy_(0, 1)
+                                +
+                                derxy_(1, vi)*vderxy_(1, 0)
+                                +
+                                derxy_(2, vi)*vderxy_(0, 2)
+                                +
+                                derxy_(2, vi)*vderxy_(2, 0)) ;
+          eforce(fvi + 1) += v*(derxy_(0, vi)*vderxy_(0, 1)
+                                +
+                                derxy_(0, vi)*vderxy_(1, 0)
+                                +
+                                2.0*derxy_(1, vi)*vderxy_(1, 1)
+                                +
+                                derxy_(2, vi)*vderxy_(1, 2)
+                                +
+                                derxy_(2, vi)*vderxy_(2, 1)) ;
+          eforce(fvi + 2) += v*(derxy_(0, vi)*vderxy_(0, 2)
+                                +
+                                derxy_(0, vi)*vderxy_(2, 0)
+                                +
+                                derxy_(1, vi)*vderxy_(1, 2)
+                                +
+                                derxy_(1, vi)*vderxy_(2, 1)
+                                +
+                                2.0*derxy_(2, vi)*vderxy_(2, 2)) ;*/
+          }
+        }  // end for(idim) viscosity term
+      }
 
       //----------------------------------------------------------------------
       // computation of pressure term including right-hand-side contribution
       //----------------------------------------------------------------------
-      for (int idim = 0; idim <nsd_; ++idim)
+      for (int ui=0; ui<nen_; ++ui)
       {
-        for (int ui=0; ui<nen_; ++ui)
+        const int fuippp = numdofpernode_*ui+nsd_;
+        //const int fuippp = 4*ui+3;
+        const double v = -timefacfac*funct_(ui);
+        for (int vi=0; vi<nen_; ++vi)
         {
-          const int fuippp = numdofpernode_*ui+nsd_;
-          //const int fuippp = 4*ui+3;
-          const double v = -timefacfac*funct_(ui);
-          for (int vi=0; vi<nen_; ++vi)
-          {
-            const int fvi   = numdofpernode_*vi + idim;
+          const int fvi = numdofpernode_*vi;
             //const int fvi   = 4*vi;
             /* pressure term */
             /*
@@ -1137,25 +1282,33 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
             |                  |
             \                  /
             */
-            estif(fvi,     fuippp) += v*derxy_(idim, vi) ;
+          for (int idim = 0; idim <nsd_; ++idim)
+          {
+            estif(fvi + idim, fuippp) += v*derxy_(idim, vi) ;
             //estif(fvi,     fuippp) += v*derxy_(0, vi) ;
             //estif(fvi + 1, fuippp) += v*derxy_(1, vi) ;
             //estif(fvi + 2, fuippp) += v*derxy_(2, vi) ;
           }
         }
+      }
+
+      {
+        const double v = press*rhsfac;
 
         for (int vi=0; vi<nen_; ++vi)
         {
-          const int fvi = numdofpernode_*vi + idim;
+          const int fvi = numdofpernode_*vi;
           //const int fvi = 4*vi;
           /* pressure term on right-hand side */
-          const double v = press*rhsfac;
-          eforce(fvi    ) += v*derxy_(idim, vi) ;
-          //eforce(fvi    ) += v*derxy_(0, vi) ;
-          //eforce(fvi + 1) += v*derxy_(1, vi) ;
-          //eforce(fvi + 2) += v*derxy_(2, vi) ;
-        }
-      }  //end for(idim)
+          for (int idim = 0; idim <nsd_; ++idim)
+          {
+            eforce(fvi+idim) += v*derxy_(idim, vi) ;
+            //eforce(fvi    ) += v*derxy_(0, vi) ;
+            //eforce(fvi + 1) += v*derxy_(1, vi) ;
+            //eforce(fvi + 2) += v*derxy_(2, vi) ;
+          }
+        }  //end for(idim)
+      }
 
       //----------------------------------------------------------------------
       // computation of continuity term including right-hand-side contribution
@@ -1213,7 +1366,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
           //eforce(fvi + 2) += v*rhsmom_(2) ;
         }
       }  // end for(idim)
-
+      
       //----------------------------------------------------------------------
       // computation of additional terms for low-Mach-number flow:
       // 1) subtracted viscosity term including right-hand-side contribution
@@ -1222,15 +1375,17 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
       if (physicaltype_ == INPAR::FLUID::loma)
       {
-        for (int idim = 0; idim <nsd_; ++idim)
+        const double v = -(2.0/3.0)*visceff_*timefacfac ;
+        
+        for (int ui=0; ui<nen_; ++ui)
         {
-          const double v = -(2.0/3.0)*visceff_*timefacfac ;
-          for (int ui=0; ui<nen_; ++ui)
+          const int fui   = numdofpernode_*ui;
+          //const int fui   = 4*ui;
+          //const int fuip  = fui+1;
+          //const int fuipp = fui+2;
+
+          for (int idim = 0; idim <nsd_; ++idim)
           {
-            const int fui   = numdofpernode_*ui;
-            //const int fui   = 4*ui;
-            //const int fuip  = fui+1;
-            //const int fuipp = fui+2;
             const double v0 = v*derxy_(idim,ui);
             //const double v0 = v*derxy_(0,ui);
             //const double v1 = v*derxy_(1,ui);
@@ -1264,29 +1419,136 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
             }
           }
         }  // end for(idim)
+        
+        if (is_newton_)
+        {
+          const double timefacfac_scaconvfacaf=timefacfac*scaconvfacaf_;
 
-          const double v_div = (2.0/3.0)*visceff_*rhsfac*vdiv_ ;
-          const double fac_rhscon = fac_*rhscon_;
+          LINALG::Matrix<nsd_,1> temp;
+
           for (int vi=0; vi<nen_; ++vi)
           {
-            const int fvi = numdofpernode_*vi;
-
-            for(int idim=0;idim<nsd_;++idim)
+            const int fvippp= numdofpernode_*vi+nsd_;
+            const double timefacfac_scaconvfacaf_funct_vi=timefacfac_scaconvfacaf*funct_(vi);
+            
+            for(int jdim=0;jdim<nsd_;++jdim)
             {
+              temp(jdim)=timefacfac_scaconvfacaf_funct_vi*grad_scaaf_(jdim);
+            }
+            
+            for (int ui=0; ui<nen_; ++ui)
+            {
+              const int fui=numdofpernode_*ui;
+
+              for(int jdim=0;jdim<nsd_;++jdim)
+              {
+                /*
+                  factor afgtd/am
+
+                          /                    \                                      
+                    1    |       /         \    |                                      
+                   --- * |  q , | Du o grad | T |                                           
+                    T    |       \         /    |
+                          \                    /                                  
+                */
+                estif(fvippp,fui+jdim) -= temp(jdim)*funct_(ui);  
+              }
+            }
+          }
+        } // end if (is_newton_)
+        
+        const double v_div = (2.0/3.0)*visceff_*rhsfac*vdiv_ ;
+        const double fac_rhscon = fac_*rhscon_;
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const int fvi = numdofpernode_*vi;
+          
+          for(int idim=0;idim<nsd_;++idim)
+          {
             //const int fvi = 4*vi;
             /* viscosity term on rhs - subtraction for low-Mach-number flow */
             eforce(fvi +idim) += derxy_(idim, vi)*v_div ;
             //eforce(fvi    ) += derxy_(0, vi)*v_div ;
             //eforce(fvi + 1) += derxy_(1, vi)*v_div ;
             //eforce(fvi + 2) += derxy_(2, vi)*v_div ;
-            }
-
-            /* additional rhs term of continuity equation */
-            eforce(fvi + nsd_) += fac_rhscon*funct_(vi) ;
-            //eforce(fvi + 3) += fac_rhscon*funct_(vi) ;
           }
 
+          /* additional rhs term of continuity equation */
+          eforce(fvi + nsd_) += fac_rhscon*funct_(vi) ;
+          //eforce(fvi + 3) += fac_rhscon*funct_(vi) ;
+        }
+
       }  // end if(loma)
+
+      //----------------------------------------------------------------------
+      //  PROVIDE LINEARISATION OF MOMENTUM RESIDUAL WRT VELOCITIES FOR ALL              
+      //                     STABILISATION PARTS
+
+      //                                                             
+      //           /       n+1        \       /                \  n+1 
+      // rho*Du + |   rho*u   o nabla | Du + |   rho*Du o nabla | u   +
+      //           \      (i)         /       \                /   (i)
+      //
+      //                       /  \ 
+      //        + nabla o eps | Du |
+      //                       \  / 
+
+      LINALG::Matrix<nen_,nsd_*nsd_> lin_resM_Du;
+
+      lin_resM_Du.Clear();
+
+      const double timefac_densaf=timefac*densaf_;
+
+      for (int ui=0; ui<nen_; ++ui)
+      {  
+        for (int idim = 0; idim <nsd_; ++idim)
+        {
+          lin_resM_Du(ui,idim*nsd_+idim)+=timefac_densaf*conv_c_(ui);
+        }
+      }
+
+      if(!is_stationary_)
+      {
+        for (int ui=0; ui<nen_; ++ui)
+        {  
+          for (int idim = 0; idim <nsd_; ++idim)
+          {
+            lin_resM_Du(ui,idim*nsd_+idim)+=densam_*funct_(ui);
+          }
+        }
+      }
+      
+      if (is_higher_order_ele_)
+      {
+        const double v = -2.0*visceff_*timefac;
+        
+        for (int ui=0; ui<nen_; ++ui)
+        {  
+          for (int idim = 0; idim <nsd_; ++idim)
+          {
+            for(int jdim=0;jdim<nsd_;++jdim)
+            {
+              lin_resM_Du(ui,idim*nsd_+jdim)+=v*viscs2_(jdim+nsd_*idim, ui);
+            }
+          }
+        }
+      }
+
+      if (is_newton_)
+      {
+        for (int idim = 0; idim <nsd_; ++idim)
+        {
+          for(int jdim=0;jdim<nsd_;++jdim)
+          {   
+            const double temp=timefac*densaf_*vderxy_(jdim,idim);
+            
+            for (int ui=0; ui<nen_; ++ui)
+            {  
+              lin_resM_Du(ui,idim*nsd_+jdim)+=temp*funct_(ui);
+            }
+          }
+        }
+      }
 
       //----------------------------------------------------------------------
       //                 PRESSURE STABILISATION PART
@@ -1295,285 +1557,116 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
       if (pspg_ == INPAR::FLUID::pstab_use_pspg)
       {
-        // The computation of the inertia and the convective term is split
-        if (is_stationary_ == false)
-        {
-          for (int idim = 0; idim <nsd_; ++idim)
-          {
-            for (int ui=0; ui<nen_; ++ui)
-            {
-              const int fui   = numdofpernode_*ui + idim;
-              //const int fui   = 4*ui;
-              //const int fuip  = fui+1;
-              //const int fuipp = fui+2;
-              double v = tau_Mp*densam_*funct_(ui);
-
-              for (int vi=0; vi<nen_; ++vi)
-              {
-                const int fvippp = numdofpernode_*vi+nsd_;
-                //const int fvippp = 4*vi+3;
-
-                /* pressure stabilisation: inertia */
-                /*
-                  /                    \
+        /* pressure stabilisation: inertia if not stationary*/
+        /*
+                   /                  \
                   |                    |
                   |  rho*Du , nabla q  |
                   |                    |
-                  \                   /
-                */
-
-                estif(fvippp, fui)   += v*derxy_(idim, vi) ;
-                //estif(fvippp, fui)   += v*derxy_(0, vi) ;
-                //estif(fvippp, fuip)  += v*derxy_(1, vi) ;
-                //estif(fvippp, fuipp) += v*derxy_(2, vi) ;
-              }
-            }
-          }  // end for(idim)
-        }  // end if(stationary)
-
-        for (int idim = 0; idim <nsd_; ++idim)
-        {
-          for (int ui=0; ui<nen_; ++ui)
-          {
-            const int fui   = numdofpernode_*ui + idim;
-            //const int fui   = 4*ui;
-            //const int fuip  = fui+1;
-            //const int fuipp = fui+2;
-            double v =  timetauMp*densaf_*conv_c_(ui);
-
-            for (int vi=0; vi<nen_; ++vi)
-            {
-              const int fvippp = numdofpernode_*vi+nsd_;
-              //const int fvippp = 4*vi+3;
-
-              /* pressure stabilisation: convection, convective part */
-              /*
-
-              /                                     \
+                   \                  /
+        */
+        /* pressure stabilisation: convection, convective part */
+        /*
+               /                                   \
               |  /       n+1        \               |
               | |   rho*u   o nabla | Du , nabla q  |
               |  \      (i)         /               |
-              \                                    /
-
-              */
-
-              estif(fvippp, fui)   += v*derxy_(idim, vi) ;
-              //estif(fvippp, fui)   += v*derxy_(0, vi) ;
-              //estif(fvippp, fuip)  += v*derxy_(1, vi) ;
-              //estif(fvippp, fuipp) += v*derxy_(2, vi) ;
-            }
-          }
-        }  // end for(idim)
-
-        if (is_higher_order_ele_)
-        {
-          for(int idim=0;idim<nsd_;++idim)
-          {
-          const double v = -2.0*visceff_*timetauMp;
-          for (int ui=0; ui<nen_; ++ui)
-          {
-            const int fui   = numdofpernode_*ui + idim;
-            //const int fui   = 4*ui;
-            //cjdim+(idim*nsd_)onst int fuip  = fui+1;
-            //const int fuipp = fui+2;
-            for (int vi=0; vi<nen_; ++vi)
-            {
-              const int fvippp = numdofpernode_*vi+nsd_;
-              //const int fvippp = 4*vi+3;
-              /* pressure stabilisation: viscosity (-L_visc_u) */
-              /*
-                /                              \
-                |               /  \             |
-                |  nabla o eps | Du | , nabla q  |
-                |               \  /             |
-                \                              /
-              */
-
-              for(int jdim=0;jdim<nsd_;++jdim)
-                estif(fvippp, fui)   += v*derxy_(jdim, vi)*viscs2_(jdim+(nsd_*idim), ui);
-
-
-              /*estif(fvippp, fui)   += v*(derxy_(0, vi)*viscs2_(0, ui)
-                                         +
-                                         derxy_(1, vi)*viscs2_(1, ui)
-                                         +
-                                         derxy_(2, vi)*viscs2_(2, ui)) ;
-              estif(fvippp, fuip)  += v*(derxy_(0, vi)*viscs2_(1, ui)
-                                         +
-                                         derxy_(1, vi)*viscs2_(4, ui)
-                                         +
-                                         derxy_(2, vi)*viscs2_(5, ui)) ;
-              estif(fvippp, fuipp) += v*(derxy_(0, vi)*viscs2_(2, ui)
-                                         +
-                                         derxy_(1, vi)*viscs2_(5, ui)
-                                         +
-                                         derxy_(2, vi)*viscs2_(8, ui)) ;*/
-            }
-          }
-        }
-      }
-#if 0
-            if (nsd_==3)
-            {
-            const double v = -2.0*visceff_*timetauMp;
-            for (int ui=0; ui<nen_; ++ui)
-            {
-              const int fui   = 4*ui;
-              const int fuip  = fui+1;
-              const int fuipp = fui+2;
-              for (int vi=0; vi<nen_; ++vi)
-              {
-                const int fvippp = 4*vi+3;
-                /* pressure stabilisation: viscosity (-L_visc_u) */
-                /*
-                  /                              \
-                  |               /  \             |
-                  |  nabla o eps | Du | , nabla q  |
-                  |               \  /             |
-                  \                              /
-                */
-
-                estif(fvippp, fui)   += v*(derxy_(0, vi)*viscs2_(0, ui)
-                                           +
-                                           derxy_(1, vi)*viscs2_(1, ui)
-                                           +
-                                           derxy_(2, vi)*viscs2_(2, ui)) ;
-                estif(fvippp, fuip)  += v*(derxy_(0, vi)*viscs2_(1, ui)
-                                           +
-                                           derxy_(1, vi)*viscs2_(4, ui)
-                                           +
-                                           derxy_(2, vi)*viscs2_(5, ui)) ;
-                estif(fvippp, fuipp) += v*(derxy_(0, vi)*viscs2_(2, ui)
-                                           +
-                                           derxy_(1, vi)*viscs2_(5, ui)
-                                           +
-                                           derxy_(2, vi)*viscs2_(8, ui)) ;
-              }
-          }
-
-            }
-            else
-            {
-              const double v = -2.0*visceff_*timetauMp;
-              for (int ui=0; ui<nen_; ++ui)
-              {
-                const int tui  = 3*ui;
-                const int tuip = tui+1;
-                for (int vi=0; vi<nen_; ++vi)
-                {
-                  const int tvipp  = 3*vi + 2;
-
-                  /* pressure stabilisation: viscosity (-L_visc_u) */
-                  /*
-                    /                              \
-                    |               /  \             |
-                    |  nabla o eps | Du | , nabla q  |
-                    |               \  /             |
-                    \                              /
-                  */
-                  estif(tvipp, tui ) += v*(derxy_(0, vi)*viscs2_(0, ui)
-                                           +
-                                           derxy_(1, vi)*viscs2_(1, ui)) ;
-                  estif(tvipp, tuip) += v*(derxy_(0, vi)*viscs2_(1, ui)
-                                           +
-                                           derxy_(1, vi)*viscs2_(3, ui)) ;
-                }
-              }
-            }
-        }
-#endif
-
-
-        for (int idim = 0; idim <nsd_; ++idim)
-        {
-          for (int ui=0; ui<nen_; ++ui)
-          {
-            const int fuippp = numdofpernode_*ui+nsd_;
-            //const int fuippp = 4*ui+3;
-            for (int vi=0; vi<nen_; ++vi)
-            {
-              const int fvippp = numdofpernode_*vi+nsd_;
-              /* pressure stabilisation: pressure( L_pres_p) */
-              /*
-                /                    \
-                |                      |
-                |  nabla Dp , nabla q  |
-                |                      |
-                \                    /
-              */
-              estif(fvippp, fuippp) += timetauMp*derxy_(idim, ui)*derxy_(idim, vi);
-
-              /*estif(vi*4 + 3, fuippp) += timetauMp*(derxy_(0, ui)*derxy_(0, vi)
-                                                    +
-                                                    derxy_(1, ui)*derxy_(1, vi)
-                                                    +
-                                                    derxy_(2, ui)*derxy_(2, vi)) ;*/
-
-            } // vi
-          } // ui
-        }  // end for(idim)
-
-        if (is_newton_)
-        {
-          for (int idim = 0; idim <nsd_; ++idim)
-          {
-            for (int ui=0; ui<nen_; ++ui)
-            {
-              const int fui   = numdofpernode_*ui+idim;
-              //const int fui   = 4*ui;
-              //const int fuip  = fui+1;
-              //const int fuipp = fui+2;
-              const double v = timetauMp*densaf_*funct_(ui);
-              for (int vi=0; vi<nen_; ++vi)
-              {
-                const int fvippp = numdofpernode_*vi + nsd_;
-                //const int fvippp = 4*vi + 3;
-                /*  pressure stabilisation: convection, reactive part
-
-                /                                     \
+               \                                   /
+        */
+        /* pressure stabilisation: convection, reactive part if Newton */
+        /*
+                 /                                   \
                 |  /                 \  n+1           |
                 | |   rho*Du o nabla | u     , grad q |
                 |  \                /   (i)           |
-                \                                     /
+                 \                                   /
+        */
+        /* pressure stabilisation: viscosity (-L_visc_u) */
+        /*
+                 /                              \
+                |               /  \             |
+                |  nabla o eps | Du | , nabla q  |
+                |               \  /             |
+                 \                              /
+        */
 
-                */
-                for (int jdim = 0; jdim <nsd_; ++jdim)
-                  estif(fvippp, fui)   += v*derxy_(jdim, vi)*vderxy_(jdim, idim);
+        if (is_higher_order_ele_ || is_newton_)
+        {
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            const int fvippp = numdofpernode_*vi+nsd_;
 
-                /*estif(fvippp, fui)   += v*(derxy_(0, vi)*vderxy_(0, 0)
-                                           +
-                                           derxy_(1, vi)*vderxy_(1, 0)
-                                           +
-                                           derxy_(2, vi)*vderxy_(2, 0)) ;
-                estif(fvippp, fuip)  += v*(derxy_(0, vi)*vderxy_(0, 1)
-                                           +
-                                           derxy_(1, vi)*vderxy_(1, 1)
-                                           +
-                                           derxy_(2, vi)*vderxy_(2, 1)) ;
-                estif(fvippp, fuipp) += v*(derxy_(0, vi)*vderxy_(0, 2)
-                                           +
-                                           derxy_(1, vi)*vderxy_(1, 2)
-                                           +
-                                           derxy_(2, vi)*vderxy_(2, 2)) ;*/
-
+            for(int jdim=0;jdim<nsd_;++jdim)
+            {
+              const double temp_vi_jdim=derxy_(jdim, vi)*tau_Mp;
+              
+              for(int idim=0;idim<nsd_;++idim)
+              {
+                const int nsd_idim=nsd_*idim;
+                
+                for (int ui=0; ui<nen_; ++ui)
+                {
+                  const int fui_p_idim   = numdofpernode_*ui + idim;
+                  
+                  estif(fvippp,fui_p_idim) += lin_resM_Du(ui,nsd_idim+jdim)*temp_vi_jdim;
+                } // jdim
               } // vi
             } // ui
-          }
-        } // end if(is_newton)
+          } //idim
+        } // end if (is_higher_order_ele_) or (newton_)
+        else
+        {
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            const int fvippp = numdofpernode_*vi+nsd_;
+            
+            for(int idim=0;idim<nsd_;++idim)
+            {
+              const int nsd_idim=nsd_*idim;
+              
+              const double temp_vi_idim=derxy_(idim, vi)*tau_Mp;
+              
+              for (int ui=0; ui<nen_; ++ui)
+              {
+                const int fui_p_idim   = numdofpernode_*ui + idim;
+                
+                estif(fvippp,fui_p_idim) += lin_resM_Du(ui,nsd_idim+idim)*temp_vi_idim;
+              } // vi
+            } // ui
+          } //idim
+        } // end if not (is_higher_order_ele_) nor (newton_)
 
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fuippp = numdofpernode_*ui+nsd_;
+          
+          for (int idim = 0; idim <nsd_; ++idim)
+          {
+            const double timetauMp_derxy_idim_ui=timetauMp*derxy_(idim, ui);
+            
+            for (int vi=0; vi<nen_; ++vi)
+            {
+              
+              /* pressure stabilisation: pressure( L_pres_p) */
+              /*
+                 /                    \
+                |                      |
+                |  nabla Dp , nabla q  |
+                |                      |
+                 \                    /
+                */
+              estif(numdofpernode_*vi+nsd_,fuippp)
+                += timetauMp_derxy_idim_ui*derxy_(idim, vi);
+            } // vi
+          } // end for(idim)
+        }  // ui
+              
         for (int idim = 0; idim <nsd_; ++idim)
         {
           for (int vi=0; vi<nen_; ++vi)
           {
-            const int fvippp = numdofpernode_ * vi + nsd_;
             // pressure stabilisation
-            eforce(fvippp) -= tau_Mp*momres_old_(idim)*derxy_(idim, vi);
-
-            /*eforce(vi*4 + 3) -= tau_Mp*(momres_old_(0)*derxy_(0, vi)
-                                        +
-                                        momres_old_(1)*derxy_(1, vi)
-                                        +
-                                        momres_old_(2)*derxy_(2, vi)) ;*/
+            eforce(numdofpernode_*vi+nsd_) -= tau_Mp*momres_old_(idim)*derxy_(idim, vi);
           }
         } // end for(idim)
       }  // end PSPG stabilization
@@ -1583,288 +1676,450 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
       if(supg_ == INPAR::FLUID::convective_stab_supg)
       {
-        // The computation of the inertia and the convective term is split
-        if(is_stationary_ == false)
+        LINALG::Matrix<nen_,1> supg_test;
+              
+        for (int vi=0; vi<nen_; ++vi)
         {
-          for (int idim = 0; idim <nsd_; ++idim)
-          {
-            for (int ui=0; ui<nen_; ++ui)
-            {
-              const int fui   = numdofpernode_*ui + idim;
-              //const int fui   = 4*ui;
-              //const int fuip  = fui+1;
-              //const int fuipp = fui+2;
-              const double v = densaf_*tau_M*densam_*funct_(ui);
-              for (int vi=0; vi<nen_; ++vi)
-              {
-                const int fvi   = numdofpernode_*vi+idim;
-                //const int fvi   = 4*vi;
-                //const int fvip  = fvi+1;
-                //const int fvipp = fvi+2;
-                /* supg stabilisation: inertia  */
-                /*
-                  /                                 \
+          supg_test(vi)=(conv_c_(vi)+sgconv_c_(vi))*tau_M;
+        }
+
+        /* supg stabilisation: inertia if not stationary */
+        /*
+                   /                                \
                   |           /      n+1        \    |
                   |  rho*Du , | rho*u   o nabla | v  |
                   |           \      (i)        /    |
-                  \                                 /
-                */
-
-                const double v2 = v*(conv_c_(vi)+sgconv_c_(vi));
-                estif(fvi,   fui)   += v2;
-                //estif(fvi,   fui)   += v2;
-                //estif(fvip,  fuip)  += v2;
-                //estif(fvipp, fuipp) += v2;
-              }
-            }
-          } //end for(idim)
-        }  // end if(is_stationary)
-
-        for (int idim = 0; idim <nsd_; ++idim)
-        {
-          for (int ui=0; ui<nen_; ++ui)
-          {
-            const int fui   = numdofpernode_*ui + idim;
-            //const int fui   = 4*ui;
-            //const int fuip  = fui+1;
-            //const int fuipp = fui+2;
-            const double v = densaf_*timetauM*densaf_*conv_c_(ui);
-            for (int vi=0; vi<nen_; ++vi)
-            {
-              const int fvi   = numdofpernode_*vi + idim;
-              //const int fvi   = 4*vi;
-              //const int fvip  = fvi+1;
-              //const int fvipp = fvi+2;
-
-              /* supg stabilisation: convective part ( L_conv_u) */
-
-              /*
-
-              /                                                      \
+                   \                                /
+        */
+        /* supg stabilisation: convective part ( L_conv_u) , convective term */
+        /*
+               /                                                     \
               |    /       n+1         \      /      n+1        \     |
               |   |   rho*u    o nabla | Du , | rho*u    o nabla | v  |
               |    \       (i)         /      \      (i)        /     |
-              \                                                       /
+               \                                                     /
+        */
+        /* supg stabilisation: viscous part  (-L_visc_u) if is_higher_order_ele_ */
+        /*
+                 /                                              \
+                |               /  \    /       n+1        \     |
+                |  nabla o eps | Du |, |   rho*u    o nabla | v  |
+                |               \  /    \       (i)        /     |
+                 \                                              /
+        */
+        /* supg stabilisation: convective part ( L_conv_u) , reactive term if Newton */
+        /*
+               /                                                     \
+              |    /       n+1         \      /      n+1        \     |
+              |   |   rho*u    o nabla | Du , | rho*u    o nabla | v  |
+              |    \       (i)         /      \      (i)        /     |
+               \                                                     /
+        */
+        if (is_higher_order_ele_ || is_newton_)
+        {
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            for(int jdim=0;jdim<nsd_;++jdim)
+            {
+              const int fvi_p_jdim = numdofpernode_*vi+jdim;
 
-              */
+              for(int idim=0;idim<nsd_;++idim)
+              {
+                const int nsd_idim=nsd_*idim;
+                
+                for (int ui=0; ui<nen_; ++ui)
+                {
+                  const int fui_p_idim   = numdofpernode_*ui + idim;
+                  
+                  estif(fvi_p_jdim,fui_p_idim) += lin_resM_Du(ui,nsd_idim+jdim)*supg_test(vi);
+                } // jdim
+              } // vi
+            } // ui
+          } //idim
+        } // end if (is_higher_order_ele_) or (newton_)
+        else
+        {
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            for(int idim=0;idim<nsd_;++idim)
+            {
+              const int fvi_p_idim = numdofpernode_*vi+idim;
 
-              const double v2 = v*(conv_c_(vi)+sgconv_c_(vi));
-              estif(fvi,   fui)   += v2;
-              //estif(fvi,   fui)   += v2;
-              //estif(fvip,  fuip)  += v2;
-              //estif(fvipp, fuipp) += v2;
+              const int nsd_idim=nsd_*idim;
+                
+              for (int ui=0; ui<nen_; ++ui)
+              {
+                const int fui_p_idim   = numdofpernode_*ui + idim;
+                  
+                estif(fvi_p_idim,fui_p_idim) += lin_resM_Du(ui,nsd_idim+idim)*supg_test(vi);
+              } // ui
+            } //idim
+          } // vi
+        } // end if not (is_higher_order_ele_) nor (newton_)
+
+        /* supg stabilisation: pressure part  ( L_pres_p) */
+        /*
+                 /                                    \
+                |              /       n+1       \     |
+                |  nabla Dp , |   rho*u   o nabla | v  |
+                |              \       (i)       /     |
+                 \                                    /
+        */
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const double v = timetauM*densaf_*supg_test(vi);
+
+          for (int idim = 0; idim <nsd_; ++idim)
+          {
+            const int fvi   = numdofpernode_*vi + idim;
+            for (int ui=0; ui<nen_; ++ui)
+            {
+              const int fuippp = numdofpernode_*ui + nsd_;
+
+              estif(fvi,fuippp) += v*derxy_(idim, ui);
             }
           }
         }  // end for(idim)
+
+        /* supg stabilisation: inertia, linearisation of testfunction  */
+        /*
+                     /                                       \
+                    |         n+1      /                \     |
+                    |    rho*u      ,  | rho*Du o nabla | v   |
+                    |         (i)      \                /     |
+                     \                                       /
+        */
+        /* supg stabilisation: reactive part of convection and linearisation of testfunction ( L_conv_u) */
+        /*
+                     /                                                       \
+                    |    /       n+1        \   n+1    /                \     |
+                    |   |   rho*u    o nabla | u    ,  | rho*Du o nabla | v   |
+                    |    \       (i)        /   (i)    \                /     |
+                     \                                                       /
+        */
+        /* supg stabilisation: pressure part, linearisation of test function  ( L_pres_p) */
+        /*
+                   /                                     \
+                  |         n+1    /                \     |
+                  |  nabla p    , |   rho*Du o nabla | v  |
+                  |         (i)    \                /     |
+                   \                                     /
+        */
+        /* supg stabilisation: viscous part, linearisation of test function  (-L_visc_u) */
+        /*
+                   /                                               \
+                  |               / n+1 \    /                \     |
+                  |  nabla o eps | u     |, |  rho*Du o nabla | v   |
+                  |               \ (i) /    \                /     |
+                   \                                               /
+        */
+        /* supg stabilisation: bodyforce part, linearisation of test function */
+        /*
+                   /                                      \
+                  |                 /                \     |
+                  |  rho*rhsint   , |  rho*Du o nabla | v  |
+                  |                 \                /     |
+                   \                                      /
+        */
+        if (is_newton_)
+        {
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            for(int jdim=0;jdim<nsd_;++jdim)
+            {
+              const int fvi_p_jdim = numdofpernode_*vi+jdim;
+
+              for(int idim=0;idim<nsd_;++idim)
+              {
+                for (int ui=0; ui<nen_; ++ui)
+                {
+                  const int fui_p_idim   = numdofpernode_*ui + idim;
+                  
+                  estif(fvi_p_jdim,fui_p_idim) += timetauM*densaf_*momres_old_(jdim)*derxy_(idim,vi)*funct_(ui);
+                } // jdim
+              } // vi
+            } // ui
+          } //idim
+        }
+
+        // NOTE: Here we have a difference to the previous version of this
+        // element!  Before we did not care for the mesh velocity in this
+        // term. This seems unreasonable and wrong.
 
         for (int idim = 0; idim <nsd_; ++idim)
         {
           for (int vi=0; vi<nen_; ++vi)
           {
-            const int fvi   = numdofpernode_*vi + idim;
-            //const int fvi   = 4*vi;
-            //const int fvip  = fvi+1;
-            //const int fvipp = fvi+2;
-            const double v = timetauM*densaf_*(conv_c_(vi)+sgconv_c_(vi));
-            for (int ui=0; ui<nen_; ++ui)
-            {
-              const int fuippp = numdofpernode_*ui + nsd_;
-              //const int fuippp = 4*ui + 3;
-              /* supg stabilisation: pressure part  ( L_pres_p) */
-              /*
-                /                                      \
-                |              /       n+1       \     |
-                |  nabla Dp , |   rho*u   o nabla | v  |
-                |              \       (i)       /     |
-                \                                     /
-              */
-              estif(fvi,   fuippp) += v*derxy_(idim, ui) ;
-              //estif(fvi,   fuippp) += v*derxy_(0, ui) ;
-              //estif(fvip,  fuippp) += v*derxy_(1, ui) ;
-              //estif(fvipp, fuippp) += v*derxy_(2, ui) ;
-            }
+            const int fvi = numdofpernode_*vi +idim;
+            //const int fvi = 4*vi;
+            // supg stabilisation
+            const double v = -tau_M*densaf_*(conv_c_(vi)+sgconv_c_(vi));
+            eforce(fvi)     += v*momres_old_(idim) ;
           }
         }  // end for(idim)
+      }  // end SUPG stabilization
 
-        if (is_higher_order_ele_)
+      //----------------------------------------------------------------------
+      //                       STABILISATION, VISCOUS PART
+      
+      if (is_higher_order_ele_ && (vstab_ != INPAR::FLUID::viscous_stab_none))
+      {
+        const double two_visc_tauMp = vstabfac*2.0*visc_*tau_Mp;
+        // viscous stabilization either on left hand side or on right hand side
+        if (vstab_ == INPAR::FLUID::viscous_stab_gls || vstab_ == INPAR::FLUID::viscous_stab_usfem)
         {
-          for (int idim =0; idim<nsd_;++idim)
-          {
+          const double two_visc_timetauMp   = vstabfac*2.0*visc_*timetauMp;
+          
+          /* viscous stabilisation, inertia part if not stationary */
+          /*
+                    /                          \
+                    |                          |
+                +/- |    rho*Du , div eps (v)  |
+                    |                          |
+                    \                          /
+          */
+          /* viscous stabilisation, convective part, convective type */
+          /*
+                  /                                        \
+                  |  /       n+1       \                   |
+              +/- | |   rho*u   o nabla | Du , div eps (v) |
+                  |  \       (i)       /                   |
+                  \                                        /
+          */
+          /* viscous stabilisation, reactive part of convection */
+          /*
+                    /                                         \
+                    |  /                \   n+1               |
+                +/- | |   rho*Du o nabla | u    , div eps (v) |
+                    |  \                /   (i)               |
+                    \                                         /
+          */
+          /* viscous stabilisation, viscous part (-L_visc_u) */
+          /*
+                  /                                 \
+                  |               /  \                |
+             -/+  |  nabla o eps | Du | , div eps (v) |
+                  |               \  /                |
+                  \                                 /
+          */
           for (int vi=0; vi<nen_; ++vi)
           {
-            const int fvi   = numdofpernode_*vi +idim;
-            //const int fvip  = fvi+1;
-            //const int fvipp = fvi+2;
-            const double v = -2.0*visceff_*timetauM*densaf_*(conv_c_(vi)+sgconv_c_(vi));
+            for(int jdim=0;jdim<nsd_;++jdim)
+            {
+              const int fvi_p_jdim = numdofpernode_*vi+jdim;
+                
+              for(int idim=0;idim<nsd_;++idim)
+              {
+                const int nsd_idim=nsd_*idim;
+
+                for (int ui=0; ui<nen_; ++ui)
+                {
+                  const int fui_p_idim   = numdofpernode_*ui + idim;
+                  estif(fvi_p_jdim,fui_p_idim) += two_visc_timetauMp*lin_resM_Du(ui,nsd_idim+jdim)*viscs2_(jdim+nsd_idim,vi);
+                } // jdim
+              } // vi
+            } // ui
+          } //idim
+         
+
+          /* viscous stabilisation, pressure part ( L_pres_p) */
+          /*
+                   /                        \
+                  |                          |
+             +/-  |  nabla Dp , div eps (v)  |
+                  |                          |
+                   \                        /
+          */
+          for (int idim=0;idim<nsd_; ++idim)
+          {
             for (int ui=0; ui<nen_; ++ui)
             {
-              const int fui   = numdofpernode_*ui;
-              //const int fuip  = fui+1;
-              //const int fuipp = fui+2;
-              /* supg stabilisation: viscous part  (-L_visc_u) */
-              /*
-                /                                                \
-                |               /  \    /       n+1        \     |
-                |  nabla o eps | Du |, |   rho*u    o nabla | v  |
-                |               \  /    \       (i)        /     |
-                \                                                /
-              */
-              for (int jdim=0;jdim<nsd_;++jdim)
-                estif(fvi, fui + jdim)     += v*viscs2_(idim+(jdim*nsd_), ui);
+              const int fui = ui*numdofpernode_ + nsd_;
+              for (int vi=0; vi<nen_; ++vi)
+              {
+                const int fvi = vi*numdofpernode_ + idim;
 
-              //estif(fvi, fui)     += v*viscs2_(0, ui) ;
-              //estif(fvip, fui)    += v*viscs2_(1, ui) ;
-              //estif(fvipp, fui)   += v*viscs2_(2, ui) ;
-
-              //estif(fvi, fuip)    += v*viscs2_(1, ui) ;
-              //estif(fvip, fuip)   += v*viscs2_(4, ui) ;
-              //estif(fvipp, fuip)  += v*viscs2_(5, ui) ;
-
-              //estif(fvi, fuipp)   += v*viscs2_(2, ui) ;
-              //estif(fvip, fuipp)  += v*viscs2_(5, ui) ;
-              //estif(fvipp, fuipp) += v*viscs2_(8, ui) ;
+                for(int jdim=0;jdim<nsd_;++jdim)
+                {
+                  estif(fvi, fui) += two_visc_timetauMp*(derxy_(jdim, ui))*viscs2_(jdim+(idim*nsd_), vi);
+                }
+              }
             }
-          }
-          }  // end for(idim)
-#if 0
-          if(nsd_ == 3)
-          {
-          for (int vi=0; vi<nen_; ++vi)
-          {
-            const int fvi   = 4*vi;
-            const int fvip  = fvi+1;
-            const int fvipp = fvi+2;
-            const double v = -2.0*visceff_*timetauM*densaf_*(conv_c_(vi)+sgconv_c_(vi));
-            for (int ui=0; ui<nen_; ++ui)
-            {
-              const int fui   = 4*ui;
-              const int fuip  = fui+1;
-              const int fuipp = fui+2;
-              /* supg stabilisation: viscous part  (-L_visc_u) */
-              /*
-                /                                                \
-                |               /  \    /       n+1        \     |
-                |  nabla o eps | Du |, |   rho*u    o nabla | v  |
-                |               \  /    \       (i)        /     |
-                \                                                /
-              */
-              estif(fvi, fui)     += v*viscs2_(0, ui) ;
-              estif(fvip, fui)    += v*viscs2_(1, ui) ;
-              estif(fvipp, fui)   += v*viscs2_(2, ui) ;
+          } // end for(idim)
 
-              estif(fvi, fuip)    += v*viscs2_(1, ui) ;
-              estif(fvip, fuip)   += v*viscs2_(4, ui) ;
-              estif(fvipp, fuip)  += v*viscs2_(5, ui) ;
 
-              estif(fvi, fuipp)   += v*viscs2_(2, ui) ;
-              estif(fvip, fuipp)  += v*viscs2_(5, ui) ;
-              estif(fvipp, fuipp) += v*viscs2_(8, ui) ;
-            }
-          }
-          }
-          else
+          for (int idim =0;idim<nsd_;++idim)
           {
             for (int vi=0; vi<nen_; ++vi)
             {
-              const int tvi  = 3*vi;
-              const int tvip = tvi+1;
-              const double v = -2.0*visceff_*timetauM*densaf_*(conv_c_(vi)+sgconv_c_(vi));
-              for (int ui=0; ui<nen_; ++ui)
-              {
-                const int tui  = 3*ui;
-                const int tuip = tui+1;
-                /* supg stabilisation: viscous part  (-L_visc_u) */
-                /*
-                  /                                                \
-                  |               /  \    /       n+1        \     |
-                  |  nabla o eps | Du |, |   rho*u    o nabla | v  |
-                  |               \  /    \       (i)        /     |
-                  \                                                /
-                */
-                estif(tvi,  tui ) += v*viscs2_(0, ui) ;
-                estif(tvip, tui ) += v*viscs2_(1, ui) ;
-
-                estif(tvi,  tuip) += v*viscs2_(1, ui) ;
-                estif(tvip, tuip) += v*viscs2_(3, ui) ;
-              }
+              const int fvi=vi*numdofpernode_ +idim;
+              /* viscous stabilisation */
+              for (int jdim=0;jdim<nsd_;++jdim)
+              eforce(fvi) -= two_visc_tauMp*momres_old_(jdim)*viscs2_(jdim+(idim*nsd_), vi);
             }
-          }
-#endif
-        }  //end if(is_higherOrder)
+          } // end for(idim)
+
+        } // end if viscous stabilization on left hand side
+      } //end if(is_higherOrder)
 
 
-        if (is_newton_)
+
+
+#if 0
         {
           if (is_conservative_ == false)
           {
-            for (int idim = 0; idim <nsd_; ++idim)
+            if(is_genalpha_)
             {
+              const double timetauM_densam_densaf=timetauM*densam_*densaf_;
+
+              LINALG::Matrix<nsd_,1> timetauM_densam_densaf_accint;
+              for (int idim = 0; idim <nsd_; ++idim)
+              {
+                timetauM_densam_densaf_accint(idim)=timetauM_densam_densaf*accint_(idim);
+              }
+
               for (int ui=0; ui<nen_; ++ui)
               {
                 const int fui   = numdofpernode_*ui;
-                //const int fui   = 4*ui;
-                //const int fuip  = fui+1;
-                //const int fuipp = fui+2;
-                const double v = tau_M*densam_*densaf_*funct_(ui);
-                const double v_idim = v*velint_(idim);
-                //const double v0 = v*velint_(0);
-                //const double v1 = v*velint_(1);
-                //const double v2 = v*velint_(2);
-                for (int vi=0; vi<nen_; ++vi)
+
+                for (int idim = 0; idim <nsd_; ++idim)
                 {
-                  const int fvi   = numdofpernode_*vi + idim;
-                  //const int fvi   = 4*vi;
-                  //const int fvip  = fvi+1;
-                  //const int fvipp = fvi+2;
-                  /* supg stabilisation: inertia, linearisation of testfunction  */
-                  /*
+                  //const int fui   = 4*ui;
+                  //const int fuip  = fui+1;
+                  //const int fuipp = fui+2;
+                  const double v = timetauM_densam_densaf_accint(idim)*funct_(ui);
+                  //const double v0 = v*velint_(0);
+                  //const double v1 = v*velint_(1);
+                  //const double v2 = v*velint_(2);
+                  for (int vi=0; vi<nen_; ++vi)
+                  {
+                    const int fvi_p_idim = numdofpernode_*vi + idim;
+                    //const int fvi   = 4*vi;
+                    //const int fvip  = fvi+1;
+                    //const int fvipp = fvi+2;
+                    /* supg stabilisation: inertia, linearisation of testfunction  */
+                    /*
                     /                                         \
                     |         n+1      /                \     |
                     |    rho*u      ,  | rho*Du o nabla | v   |
                     |         (i)      \                /     |
                     \                                         /
 
-                  */
-                  for (int jdim = 0; jdim < nsd_; ++jdim)
-                    estif(fvi,  fui + jdim)     += v_idim*derxy_(jdim, vi) ;
-
-                  //estif(fvi,  fui)     += v0*derxy_(0, vi) ;
-                  //estif(fvip,  fui)    += v1*derxy_(0, vi) ;
-                  //estif(fvipp, fui)    += v2*derxy_(0, vi) ;
-
-                  //estif(fvi,   fuip)   += v0*derxy_(1, vi) ;
-                  //estif(fvip,  fuip)   += v1*derxy_(1, vi) ;
-                  //estif(fvipp, fuip)   += v2*derxy_(1, vi) ;
-
-                  //estif(fvi,   fuipp)  += v0*derxy_(2, vi) ;
-                  //estif(fvip,  fuipp)  += v1*derxy_(2, vi) ;
-                  //estif(fvipp, fuipp)  += v2*derxy_(2, vi) ;
+                    */
+                    for (int jdim = 0; jdim < nsd_; ++jdim)
+                    {
+                      estif(fvi_p_idim,fui+jdim) += v*derxy_(jdim,vi);
+                    }
+                    //estif(fvi,  fui)     += v0*derxy_(0, vi) ;
+                    //estif(fvip,  fui)    += v1*derxy_(0, vi) ;
+                    //estif(fvipp, fui)    += v2*derxy_(0, vi) ;
+                    
+                    //estif(fvi,   fuip)   += v0*derxy_(1, vi) ;
+                    //estif(fvip,  fuip)   += v1*derxy_(1, vi) ;
+                    //estif(fvipp, fuip)   += v2*derxy_(1, vi) ;
+                    
+                    //estif(fvi,   fuipp)  += v0*derxy_(2, vi) ;
+                    //estif(fvip,  fuipp)  += v1*derxy_(2, vi) ;
+                    //estif(fvipp, fuipp)  += v2*derxy_(2, vi) ;
+                  }
                 }
-              }
-            }  // end for(idim)
-          }  // end if(is_conservative)
+              }  // end for(idim)
+            }
+            else
+            {
+              for (int idim = 0; idim <nsd_; ++idim)
+              {
+                for (int ui=0; ui<nen_; ++ui)
+                {
+                  const int fui   = numdofpernode_*ui;
+                  //const int fui   = 4*ui;
+                  //const int fuip  = fui+1;
+                  //const int fuipp = fui+2;
+                  const double v = tau_M*densam_*densaf_*funct_(ui);
+                  const double v_idim = v*velint_(idim);
+                  //const double v0 = v*velint_(0);
+                  //const double v1 = v*velint_(1);
+                  //const double v2 = v*velint_(2);
+                  for (int vi=0; vi<nen_; ++vi)
+                  {
+                    const int fvi   = numdofpernode_*vi + idim;
+                    //const int fvi   = 4*vi;
+                    //const int fvip  = fvi+1;
+                    //const int fvipp = fvi+2;
+                    /* supg stabilisation: inertia, linearisation of testfunction  */
+                    /*
+                    /                                         \
+                    |         n+1      /                \     |
+                    |    rho*u      ,  | rho*Du o nabla | v   |
+                    |         (i)      \                /     |
+                    \                                         /
 
+                    */
+                    for (int jdim = 0; jdim < nsd_; ++jdim)
+                    {
+                      estif(fvi,  fui + jdim)     += v_idim*derxy_(jdim, vi) ;
+                    }
+                    //estif(fvi,  fui)     += v0*derxy_(0, vi) ;
+                    //estif(fvip,  fui)    += v1*derxy_(0, vi) ;
+                    //estif(fvipp, fui)    += v2*derxy_(0, vi) ;
+                    
+                    //estif(fvi,   fuip)   += v0*derxy_(1, vi) ;
+                    //estif(fvip,  fuip)   += v1*derxy_(1, vi) ;
+                    //estif(fvipp, fuip)   += v2*derxy_(1, vi) ;
+                    
+                    //estif(fvi,   fuipp)  += v0*derxy_(2, vi) ;
+                    //estif(fvip,  fuipp)  += v1*derxy_(2, vi) ;
+                    //estif(fvipp, fuipp)  += v2*derxy_(2, vi) ;
+                  }
+                }
+              }  // end for(idim)
+            } // end if not genalpha
+          }  // end if(is_conservative)
+          
           {
+
+            const double timetauM_densaf_densaf=timetauM*densaf_*densaf_;
+
+            LINALG::Matrix<nsd_,nsd_> scaled_vderxy;
+
             LINALG::Matrix<nsd_,1> convvelint_vderxy(true);
+            LINALG::Matrix<nsd_,1> temp;
 
             convvelint_vderxy.Multiply(vderxy_,convvelint_);
 
             //const double v0 = convvelint_(0)*vderxy_(0, 0) + convvelint_(1)*vderxy_(0, 1) + convvelint_(2)*vderxy_(0, 2);
             //const double v1 = convvelint_(0)*vderxy_(1, 0) + convvelint_(1)*vderxy_(1, 1) + convvelint_(2)*vderxy_(1, 2);
             //const double v2 = convvelint_(0)*vderxy_(2, 0) + convvelint_(1)*vderxy_(2, 1) + convvelint_(2)*vderxy_(2, 2);
-
-            for (int idim = 0; idim <nsd_; ++idim)
+            
+            for (int ui=0; ui<nen_; ++ui)
             {
-              for (int ui=0; ui<nen_; ++ui)
-              {
-                const int fui   = numdofpernode_*ui;
+
+              const int fui   = numdofpernode_*ui;
                 //const int fui   = 4*ui;
                 //const int fuip  = fui+1;
                 //const int fuipp = fui+2;
-                const double v = timetauM*densaf_*densaf_*funct_(ui);
-                for (int vi=0; vi<nen_; ++vi)
+
+              const double timetauM_densaf_densaf_funct_ui=funct_(ui)*timetauM_densaf_densaf;
+
+              for (int idim = 0; idim <nsd_; ++idim)
+              {    
+                temp(idim)=timetauM_densaf_densaf_funct_ui*convvelint_vderxy(idim);
+
+                for(int jdim=0;jdim<nsd_;++jdim)
                 {
-                  const int fvi   = numdofpernode_*vi +idim;
+                  scaled_vderxy(idim,jdim)=timetauM_densaf_densaf_funct_ui*vderxy_(idim,jdim);
+                }
+              }
+
+              for (int vi=0; vi<nen_; ++vi)
+              {
+                const int fvi=numdofpernode_*vi;
+                
+                for (int idim = 0; idim <nsd_; ++idim)
+                {
+                  const int fvi_p_idim   = fvi +idim;
+
                   //const int fvi   = 4*vi;
                   //const int fvip  = fvi+1;
                   //const int fvipp = fvi+2;
@@ -1876,15 +2131,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
                     |    \       (i)        /   (i)    \                /     |
                     \                                                        /
 
-                    /                                                         \
-                    |    /                \   n+1    /       n+1        \     |
-                    |    | rho*Du o nabla | u    ,   | rho*u   o nabla  | v   |
-                    |    \                /   (i)    \       (i)        /     |
-                    \                                                        /
                   */
                   for(int jdim=0;jdim<nsd_;++jdim)
-                    estif(fvi, fui+jdim)     += (conv_c_(vi,0)*vderxy_(idim, jdim) + convvelint_vderxy(idim)*derxy_(jdim, vi))*v;
-
+                  {
+                    estif(fvi_p_idim, fui+jdim) += temp(idim)*derxy_(jdim, vi);
+                  }
                   //estif(fvi, fui)     += (conv_c_(vi,0)*vderxy_(0, 0) + v0*derxy_(0, vi))*v;
                   //estif(fvip, fui)    += (conv_c_(vi,0)*vderxy_(1, 0) + v1*derxy_(0, vi))*v;
                   //estif(fvipp, fui)   += (conv_c_(vi,0)*vderxy_(2, 0) + v2*derxy_(0, vi))*v;
@@ -1944,138 +2195,150 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
           if (is_higher_order_ele_)
           {
+            const double scaling=-2.0*visceff_*timetauM*densaf_;
+
+
             for(int idim =0;idim<nsd_;++idim)
             {
-            for (int ui=0; ui<nen_; ++ui)
-            {
-              const int fui   = numdofpernode_*ui;
-              //const int fui   = 4*ui;
-              //const int fuip  = fui+1;
-              //const int fuipp = fui+2;
-              const double v = -2.0*visceff_*timetauM*densaf_*funct_(ui);
-              for (int vi=0; vi<nen_; ++vi)
-              {
-                const int fvi   = numdofpernode_*vi + idim;
-                //const int fvi   = 4*vi;
-                //const int fvip  = fvi+1;
-                //const int fvipp = fvi+2;
-                const double v0 = v*visc_old_(idim);
-                //const double v0 = v*visc_old_(0);
-                //const double v1 = v*visc_old_(1);
-                //const double v2 = v*visc_old_(2);
 
-                /* supg stabilisation: viscous part, linearisation of test function  (-L_visc_u) */
-                /*
+              const double visc_scaling=scaling*visc_old_(idim);
+
+              for (int ui=0; ui<nen_; ++ui)
+              {
+                const int fui  = numdofpernode_*ui;
+
+                const double v = visc_scaling*funct_(ui);
+
+                for (int vi=0; vi<nen_; ++vi)
+                {
+                  const int fvi   = numdofpernode_*vi + idim;
+
+                  /* supg stabilisation: viscous part, linearisation of test function  (-L_visc_u) */
+                  /*
                   /                                                 \
                   |               / n+1 \    /                \     |
                   |  nabla o eps | u     |, |  rho*Du o nabla | v   |
                   |               \ (i) /    \                /     |
                   \                                                 /
-                */
-                for(int jdim=0;jdim<nsd_;++jdim)
-                  estif(fvi, fui +jdim)     += v0*derxy_(jdim, vi) ;
-
-                //estif(fvi, fui)     += v0*derxy_(0, vi) ;
-                //estif(fvip, fui)    += v1*derxy_(0, vi) ;
-                //estif(fvipp, fui)   += v2*derxy_(0, vi) ;
-
-                //estif(fvi, fuip)    += v0*derxy_(1, vi) ;
-                //estif(fvip, fuip)   += v1*derxy_(1, vi) ;
-                //estif(fvipp, fuip)  += v2*derxy_(1, vi) ;
-
-                //estif(fvi, fuipp)   += v0*derxy_(2, vi) ;
-                //estif(fvip, fuipp)  += v1*derxy_(2, vi) ;
-                //estif(fvipp, fuipp) += v2*derxy_(2, vi) ;
+                  */
+                  for(int jdim=0;jdim<nsd_;++jdim)
+                  {
+                    estif(fvi, fui +jdim) += v*derxy_(jdim, vi) ;
+                  }
+                }
               }
-            }
             }
           }
 
-          for (int idim = 0; idim <nsd_; ++idim)
+          if(is_genalpha_)
           {
-            for (int ui=0; ui<nen_; ++ui)
+            for (int idim = 0; idim <nsd_; ++idim)
             {
-              const int fui   = numdofpernode_*ui;
-              //const int fui   = 4*ui;
-              //const int fuip  = fui+1;
-              //const int fuipp = fui+2;
-              const double v = -tau_M*densaf_*funct_(ui);
-              for (int vi=0; vi<nen_; ++vi)
+              for (int ui=0; ui<nen_; ++ui)
               {
-                const int fvi   = numdofpernode_*vi + idim;
-                //const int fvi   = 4*vi;
-                //const int fvip  = fvi+1;
-                //const int fvipp = fvi+2;
-                const double v_idim = v*rhsmom_(idim);
-                //const double v0 = v*rhsmom_(0);
-                //const double v1 = v*rhsmom_(1);
-                //const double v2 = v*rhsmom_(2);
+                const int fui   = numdofpernode_*ui;
+                //const int fui   = 4*ui;
+                //const int fuip  = fui+1;
+                //const int fuipp = fui+2;
+                const double v = -timetauM*densaf_*funct_(ui);
+                for (int vi=0; vi<nen_; ++vi)
+                {
+                    const int fvi   = numdofpernode_*vi + idim;
+                    //const int fvi   = 4*vi;
+                    //const int fvip  = fvi+1;
+                    //const int fvipp = fvi+2;
+                    const double v_idim = v*rhsmom_(idim);
+                    //const double v0 = v*rhsmom_(0);
+                    //const double v1 = v*rhsmom_(1);
+                    //const double v2 = v*rhsmom_(2);
 
-                /* supg stabilisation: bodyforce part, linearisation of test function */
+                    /* supg stabilisation: bodyforce part, linearisation of test function */
 
-                /*
+                    /*
                   /                                       \
                   |                 /                \     |
                   |  rho*rhsint   , |  rho*Du o nabla | v  |
                   |                 \                /     |
                   \                                        /
 
-                */
-                for(int jdim=0; jdim < nsd_; ++jdim)
-                  estif(fvi, fui + jdim) += (v_idim*derxy_(jdim, vi)) ;
+                    */
+                    for(int jdim=0; jdim < nsd_; ++jdim)
+                      estif(fvi, fui + jdim) += (v_idim*derxy_(jdim, vi)) ;
 
-                //estif(fvi    , fui)   += (v0*derxy_(0, vi)) ;
-                //estif(fvip   , fui)   += (v1*derxy_(0, vi)) ;
-                //estif(fvipp  , fui)   += (v2*derxy_(0, vi)) ;
+                    //estif(fvi    , fui)   += (v0*derxy_(0, vi)) ;
+                    //estif(fvip   , fui)   += (v1*derxy_(0, vi)) ;
+                    //estif(fvipp  , fui)   += (v2*derxy_(0, vi)) ;
 
-                //estif(fvi    , fuip)  += (v0*derxy_(1, vi)) ;
-                //estif(fvip   , fuip)  += (v1*derxy_(1, vi)) ;
-                //estif(fvipp  , fuip)  += (v2*derxy_(1, vi)) ;
+                    //estif(fvi    , fuip)  += (v0*derxy_(1, vi)) ;
+                    //estif(fvip   , fuip)  += (v1*derxy_(1, vi)) ;
+                    //estif(fvipp  , fuip)  += (v2*derxy_(1, vi)) ;
 
-                //estif(fvi    , fuipp) += (v0*derxy_(2, vi)) ;
-                //estif(fvip   , fuipp) += (v1*derxy_(2, vi)) ;
-                //estif(fvipp  , fuipp) += (v2*derxy_(2, vi)) ;
-
-              } // vi
-            } // ui
-          }  // end for(idim)
-        } // end if(newton)
-
-
-        // NOTE: Here we have a difference to the previous version of this
-        // element!  Before we did not care for the mesh velocity in this
-        // term. This seems unreasonable and wrong.
-
-        for (int idim = 0; idim <nsd_; ++idim)
-        {
-          for (int vi=0; vi<nen_; ++vi)
-          {
-            const int fvi = numdofpernode_*vi +idim;
-            //const int fvi = 4*vi;
-            // supg stabilisation
-            const double v = -tau_M*densaf_*(conv_c_(vi)+sgconv_c_(vi));
-            eforce(fvi)     += v*momres_old_(idim) ;
-            //eforce(fvi)     += v*momres_old_(0) ;
-            //eforce(fvi + 1) += v*momres_old_(1) ;
-            //eforce(fvi + 2) += v*momres_old_(2) ;
+                    //estif(fvi    , fuipp) += (v0*derxy_(2, vi)) ;
+                    //estif(fvip   , fuipp) += (v1*derxy_(2, vi)) ;
+                    //estif(fvipp  , fuipp) += (v2*derxy_(2, vi)) ;
+                    
+                  } // vi
+              } // ui
+            }  // end for(idim)
           }
-        }  // end for(idim)
-      }  // end SUPG stabilization
-
-      //----------------------------------------------------------------------
-      //                       STABILISATION, VISCOUS PART
-
-      if (is_higher_order_ele_)
-      {
-        if(vstab_ != INPAR::FLUID::viscous_stab_none)
-        {
-          const double two_visc_tauMp = vstabfac*2.0*visc_*tau_Mp;
-          // viscous stabilization either on left hand side or on right hand side
-          if (vstab_ == INPAR::FLUID::viscous_stab_gls || vstab_ == INPAR::FLUID::viscous_stab_usfem)
+          else
           {
-            const double two_visc_timetauMp   = vstabfac*2.0*visc_*timetauMp;
-            const double four_visc2_timetauMp = vstabfac*4.0*visceff_*visc_*timetauMp;
+            for (int idim = 0; idim <nsd_; ++idim)
+            {
+              for (int ui=0; ui<nen_; ++ui)
+              {
+                const int fui   = numdofpernode_*ui;
+                //const int fui   = 4*ui;
+                
+                  //const int fuip  = fui+1;
+                  //const int fuipp = fui+2;
+                  const double v = -tau_M*densaf_*funct_(ui);
+                  for (int vi=0; vi<nen_; ++vi)
+                  {
+                    const int fvi   = numdofpernode_*vi + idim;
+                    //const int fvi   = 4*vi;
+                    //const int fvip  = fvi+1;
+                    //const int fvipp = fvi+2;
+                    const double v_idim = v*rhsmom_(idim);
+                    //const double v0 = v*rhsmom_(0);
+                    //const double v1 = v*rhsmom_(1);
+                    //const double v2 = v*rhsmom_(2);
 
+                    /* supg stabilisation: bodyforce part, linearisation of test function */
+
+                    /*
+                  /                                       \
+                  |                 /                \     |
+                  |  rho*rhsint   , |  rho*Du o nabla | v  |
+                  |                 \                /     |
+                  \                                        /
+
+                    */
+                    for(int jdim=0; jdim < nsd_; ++jdim)
+                      estif(fvi, fui + jdim) += (v_idim*derxy_(jdim, vi)) ;
+
+                    //estif(fvi    , fui)   += (v0*derxy_(0, vi)) ;
+                    //estif(fvip   , fui)   += (v1*derxy_(0, vi)) ;
+                    //estif(fvipp  , fui)   += (v2*derxy_(0, vi)) ;
+
+                    //estif(fvi    , fuip)  += (v0*derxy_(1, vi)) ;
+                    //estif(fvip   , fuip)  += (v1*derxy_(1, vi)) ;
+                    //estif(fvipp  , fuip)  += (v2*derxy_(1, vi)) ;
+
+                    //estif(fvi    , fuipp) += (v0*derxy_(2, vi)) ;
+                    //estif(fvip   , fuipp) += (v1*derxy_(2, vi)) ;
+                    //estif(fvipp  , fuipp) += (v2*derxy_(2, vi)) ;
+                    
+                  } // vi
+              } // ui
+            }  // end for(idim)
+          }
+        } // end if(newton)
+#endif
+
+
+#if 0
+            const double four_visc2_timetauMp = vstabfac*4.0*visceff_*visc_*timetauMp;
             // viscous stabilization on left hand side
             if (is_stationary_ == false)
             {
@@ -2091,14 +2354,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
                   for(int jdim=0;jdim<nsd_;++jdim)
                   {
-                  /* viscous stabilisation, inertia part */
-                  /*
-                    /                          \
-                    |                          |
-                +/- |    rho*Du , div eps (v)  |
-                    |                          |
-                    \                          /
-                  */
+
 
                   estif(fvi, fui+jdim) += v*viscs2_(jdim+(idim*nsd_), vi) ;
 
@@ -2133,14 +2389,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
                 {
                 /* viscous stabilisation, inertia part */
 
-                /* viscous stabilisation, convective part */
-                /*
-                  /                                        \
-                  |  /       n+1       \                   |
-              +/- | |   rho*u   o nabla | Du , div eps (v) |
-                  |  \       (i)       /                   |
-                  \                                        /
-                */
+
 
                   estif(fvi, fui + jdim   ) += v*viscs2_(jdim+(idim*nsd_), vi) ;
 
@@ -2160,45 +2409,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
             }
             } // end for(idim)
 
-            for (int idim=0;idim<nsd_; ++idim)
-            {
-            for (int ui=0; ui<nen_; ++ui)
-            {
-              const int fui = ui*numdofpernode_ + nsd_;
-              for (int vi=0; vi<nen_; ++vi)
-              {
-                const int fvi = vi*numdofpernode_ + idim;
-                /* viscous stabilisation, pressure part ( L_pres_p) */
-                /*
-                  /                          \
-                  |                          |
-             +/-  |  nabla Dp , div eps (v)  |
-                  |                          |
-                  \                          /
-                */
-                for(int jdim=0;jdim<nsd_;++jdim)
-                  estif(fvi, fui) += two_visc_timetauMp*(derxy_(jdim, ui))*viscs2_(jdim+(idim*nsd_), vi);
-
-                  /*
-                estif(vi*4,     ui*4 + 3) += two_visc_timetauMp*(derxy_(0, ui)*viscs2_(0, vi)
-                                                                +
-                                                                derxy_(1, ui)*viscs2_(1, vi)
-                                                                +
-                                                                derxy_(2, ui)*viscs2_(2, vi)) ;
-                estif(vi*4 + 1, ui*4 + 3) += two_visc_timetauMp*(derxy_(0, ui)*viscs2_(1, vi)
-                                                                +
-                                                                derxy_(1, ui)*viscs2_(4, vi)
-                                                                +
-                                                                derxy_(2, ui)*viscs2_(5, vi)) ;
-                estif(vi*4 + 2, ui*4 + 3) += two_visc_timetauMp*(derxy_(0, ui)*viscs2_(2, vi)
-                                                                +
-                                                                derxy_(1, ui)*viscs2_(5, vi)
-                                                                +
-                                                                derxy_(2, ui)*viscs2_(8, vi)) ;*/
-
-              }
-            }
-            } // end for(idim)
 
             for(int idim =0;idim<nsd_;++idim)
             {
@@ -2291,26 +2501,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
               } // ui
               } // end for(idim)
             } // if newton
-          } // end if viscous stabilization on left hand side
-
-          for (int idim =0;idim<nsd_;++idim)
-          {
-            for (int vi=0; vi<nen_; ++vi)
-            {
-              const int fvi=vi*numdofpernode_ +idim;
-              /* viscous stabilisation */
-              for (int jdim=0;jdim<nsd_;++jdim)
-                eforce(fvi) -= two_visc_tauMp*momres_old_(jdim)*viscs2_(jdim+(idim*nsd_), vi);
-
-              //eforce(vi*4    ) -= two_visc_tauMp*(momres_old_(0)*viscs2_(0, vi)+momres_old_(1)*viscs2_(1, vi)+momres_old_(2)*viscs2_(2, vi)) ;
-              //eforce(vi*4 + 1) -= two_visc_tauMp*(momres_old_(0)*viscs2_(1, vi)+momres_old_(1)*viscs2_(4, vi)+momres_old_(2)*viscs2_(5, vi)) ;
-              //eforce(vi*4 + 2) -= two_visc_tauMp*(momres_old_(0)*viscs2_(2, vi)+momres_old_(1)*viscs2_(5, vi)+momres_old_(2)*viscs2_(8, vi)) ;
-            }
-          } // end for(idim)
-        }  // end if(is_vstab)
-      } //end if(is_higherOrder)
-
-
+#endif
       //----------------------------------------------------------------------
       //                     STABILISATION, CONTINUITY PART
 
@@ -2920,9 +3111,253 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
             ) ;
         }
       }
-
+      
     }
   } // loop gausspoints
+
+  return;
+}
+
+
+/*!
+      \brief Do a finite difference check for a given element id --- 
+      this function is for debugging purposes only
+
+      \param ele              (i) the element those matrix is calculated 
+                                  (pass-through)
+      \param evelaf           (i) nodal velocities at n+alpha_F/n+1 (pass-through)
+      \param eveln            (i) nodal velocities at n (pass-through)
+      \param fsevelaf         (i) fine-scale nodal velocities at n+alpha_F/n+1 
+                                  (pass-through)
+      \param epreaf           (i) nodal pressure at n+alpha_F/n+1 (pass-through)
+      \param eaccam           (i) nodal accelerations at n+alpha_M (pass-through)
+      \param escaaf           (i) nodal scalar at n+alpha_F/n+1 (pass-through)
+      \param escaam           (i) nodal scalar at n+alpha_M/n (pass-through)
+      \param escadtam         (i) nodal scalar derivatives at n+alpha_M/n+1 
+                                  (pass-through)
+      \param emhist           (i) time rhs for momentum equation (pass-through)
+      \param edispnp          (i) nodal displacements (on moving mesh) 
+                                  (pass-through)
+      \param egridv           (i) grid velocity (on moving mesh) (pass-through)
+      \param estif            (i) element matrix to calculate (pass-through)
+      \param emesh            (i) linearization wrt mesh motion (pass-through)
+      \param eforce           (i) element rhs to calculate (pass-through)
+      \param material         (i) fluid material (pass-through)
+      \param time             (i) current simulation time (pass-through)
+      \param timefac          (i) time discretization factor (pass-through)
+      \param newton           (i) boolean flag for linearisation (pass-through)
+      \param loma             (i) boolean flag for potential low-Mach-number solver 
+                                  (pass-through)
+      \param conservative     (i) boolean flag for conservative form (pass-through)
+      \param is_genalpha      (i) boolean flag for generalized-alpha time 
+                                  integration (pass-through)
+      \param higher_order_ele (i) keep or drop second derivatives (pass-through)
+      \param fssgv            (i) flag for type of fine-scale subgrid viscosity 
+                                  (pass-through)
+      \param pspg             (i) boolean flag for stabilisation (pass-through)
+      \param supg             (i) boolean flag for stabilisation (pass-through)
+      \param vstab            (i) boolean flag for stabilisation (pass-through)
+      \param cstab            (i) boolean flag for stabilisation (pass-through)
+      \param cross            (i) boolean flag for stabilisation (pass-through)
+      \param reynolds         (i) boolean flag for stabilisation (pass-through)
+      \param whichtau         (i) selecting available tau definition (pass-through)
+      \param turb_mod_action  (i) selecting turbulence model (none, Smagorisky, 
+                                  dynamic Smagorinsky, Smagorinsky with van Driest
+                                  damping for channel flows) (pass-through)
+      \param Cs               (i) Smagorinsky model parameter (pass-through)
+      \param Cs_delta_sq      (i) Model parameter computed by dynamic Smagorinsky
+                                  approach (Cs*h*h) (pass-through)
+      \param l_tau            (i) viscous length scale, required for van driest
+                                  damping function and defined on input (pass-through)
+*/            
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3Impl<distype>::FDcheck(
+  Fluid3*                                               ele,
+  const LINALG::Matrix<nsd_,nen_>&                      evelaf,
+  const LINALG::Matrix<nsd_,nen_>&                      eveln,
+  const LINALG::Matrix<nsd_,nen_>&                      fsevelaf,
+  const LINALG::Matrix<nen_,1>&                         epreaf,
+  const LINALG::Matrix<nsd_,nen_>&                      eaccam,
+  const LINALG::Matrix<nen_,1>&                         escaaf,
+  const LINALG::Matrix<nen_,1>&                         escaam,
+  const LINALG::Matrix<nen_,1>&                         escadtam,
+  const LINALG::Matrix<nsd_,nen_>&                      emhist,
+  const LINALG::Matrix<nsd_,nen_>&                      edispnp,
+  const LINALG::Matrix<nsd_,nen_>&                      egridv,
+  const LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&    estif,
+  const LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&    emesh,
+  const LINALG::Matrix<(nsd_+1)*nen_,    1>&            eforce,
+  const double                                          thermpressaf,
+  const double                                          thermpressam,
+  const double                                          thermpressdtam,
+  const Teuchos::RCP<const MAT::Material>               material,
+  const double                                          timefac,
+  const double&                                         Cs,
+  const double&                                         Cs_delta_sq,
+  const double&                                         l_tau)
+{
+  // magnitude of dof perturbation
+  const double epsilon=1e-9;
+
+  // make a copy of all input parameters potentially modified by Sysmat 
+  // call --- they are not intended to be modified
+  double copy_Cs         =Cs;
+  double copy_Cs_delta_sq=Cs_delta_sq;
+  double copy_l_tau      =l_tau;
+
+  Teuchos::RCP<const MAT::Material> copy_material=material;
+
+  // allocate arrays to compute element matrices and vectors at perturbed
+  // positions
+  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> checkmat1(true);
+  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> checkmat2(true);
+  LINALG::Matrix<(nsd_+1)*nen_,            1> checkvec1(true);
+        
+  // alloc the vectors that will contain the perturbed velocities or 
+  // pressures 
+  LINALG::Matrix<nsd_,nen_>                   checkevelaf(true);
+  LINALG::Matrix<nsd_,nen_>                   checkeaccam(true);
+  LINALG::Matrix<nen_,1>                      checkepreaf(true);
+
+  // echo to screen
+  printf("+-------------------------------------------+\n");
+  printf("| FINITE DIFFERENCE CHECK FOR ELEMENT %5d |\n",ele->Id());
+  printf("+-------------------------------------------+\n");
+  printf("\n");
+  // loop columns of matrix by looping nodes and then dof per nodes
+
+  // loop nodes
+  for(int nn=0;nn<nen_;++nn)
+  {
+    printf("-------------------------------------\n");
+    printf("-------------------------------------\n");
+    printf("NODE of element local id %d\n",nn);
+    // loop dofs
+    for(int rr=0;rr<(nsd_+1);++rr)
+    {
+      // number of the matrix column to check
+      int dof=nn*(nsd_+1)+rr;
+
+      // clear element matrices and vectors to assemble
+      checkmat1.Clear();
+      checkmat2.Clear();
+      checkvec1.Clear();
+
+      // copy velocities and pressures to perturbed arrays
+      for(int mm=0;mm<nen_;++mm)
+      {
+        for(int dim=0;dim<nsd_;++dim)
+        {
+          checkevelaf(dim,mm)=evelaf(dim,mm);
+                
+          checkeaccam(dim,mm)=eaccam(dim,mm);
+        }
+              
+        checkepreaf(  mm)=epreaf(  mm);
+      }
+
+      // perturb the respective elemental quantities
+      if(rr==nsd_)
+      {
+        printf("pressure dof (%d) %f\n",nn,epsilon);
+
+        if (is_genalpha_)
+        {
+          checkepreaf(nn)+=alphaF_*epsilon;
+        }
+        else
+        {
+          checkepreaf(nn)+=epsilon;
+        }
+      }
+      else
+      {
+        printf("velocity dof %d (%d)\n",rr,nn);
+
+        if (is_genalpha_)
+        {
+          checkevelaf(rr,nn)+=alphaF_*epsilon;
+          checkeaccam(rr,nn)+=alphaM_/(gamma_*dt_)*epsilon;
+        }
+        else
+        {
+          checkevelaf(rr,nn)+=epsilon;
+        }
+      }
+        
+      // calculate the right hand side for the perturbed vector
+      Sysmat2D3D(ele,
+                 checkevelaf,
+                 eveln,
+                 fsevelaf,
+                 checkepreaf,
+                 checkeaccam,
+                 escaaf,
+                 escaam,
+                 escadtam,
+                 emhist,
+                 edispnp,
+                 egridv,
+                 checkmat1,
+                 checkmat2,
+                 checkvec1,
+                 thermpressaf,
+                 thermpressam,
+                 thermpressdtam,
+                 copy_material,
+                 timefac,
+                 copy_Cs,
+                 copy_Cs_delta_sq,
+                 copy_l_tau);
+
+      // compare the difference between linaer approximation and
+      // (nonlinear) right hand side evaluation
+
+      // note that it makes more sense to compare these quantities
+      // than to compare the matrix entry to the difference of the
+      // the right hand sides --- the latter causes numerical problems
+      // do to deletion
+
+      for(int mm=0;mm<(nsd_+1)*nen_;++mm)
+      {
+        double val;
+        double lin;
+        double nonlin;
+
+        // For af-generalized-alpha scheme, the residual vector for the 
+        // solution rhs is scaled on the time-integration level...
+        if (is_genalpha_)
+        {
+          val   =-eforce(mm)   /(epsilon);
+          lin   =-eforce(mm)   /(epsilon)+estif(mm,dof)*(alphaM_)/(gamma_*dt_);
+          nonlin=-checkvec1(mm)/(epsilon);
+        }
+        else
+        {
+          val   =-eforce(mm)/epsilon;
+          lin   =-eforce(mm)/epsilon+estif(mm,dof);
+          nonlin=-checkvec1(mm)/epsilon;
+        }
+
+        double norm=abs(lin);
+        if(norm<1e-9)
+        {
+          norm=1e-9;
+        }
+              
+        // output to screen
+        printf("relerr         %+12.5e ",(lin-nonlin)/norm);
+        printf("abserr         %+12.5e ",lin-nonlin);
+        printf("orig. value    %+12.5e ",val);
+        printf("lin. approx.   %+12.5e ",lin);
+        printf("nonlin. funct. %+12.5e ",nonlin);
+        printf("matrix entry   %+12.5e ",estif(mm,dof));
+        printf("\n");
+      }
+    }
+  }
+
+  return;
 }
 
 #endif
