@@ -2869,24 +2869,30 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   }
 
   IntParameter(
-    "AZOVERLAP", 0,
-    "The amount of overlap used for the internal \"ilu\" and \"ilut\" preconditioners.",
-    &list
-    );
+    "IFPACKOVERLAP", 0,
+    "The amount of overlap used for the ifpack \"ilu\" and \"ilut\" preconditioners.",
+    &list);
+    
   IntParameter(
-    "AZGFILL", 0,
+    "IFPACKGFILL", 0,
     "The amount of fill allowed for the internal \"ilu\" preconditioner.",
-    &list
-    );
+    &list);
+    
+  DoubleParameter(
+    "IFPACKFILL", 1.0,
+    "The amount of fill allowed for an internal \"ilut\" preconditioner.",
+    &list);
+    
+  setStringToIntegralParameter<int>(
+    "IFPACKCOMBINE","Add","Combine mode for Ifpack Additive Schwarz",
+    tuple<std::string>("Add","Insert","Zero"),
+    tuple<int>(0,1,2),
+    &list);
+    
   DoubleParameter(
     "AZDROP", 0.0,
     "The tolerance below which an entry from the factors of an internal \"ilut\"\n"
     "preconditioner will be dropped.",
-    &list
-    );
-  DoubleParameter(
-    "AZFILL", 1.0,
-    "The amount of fill allowed for an internal \"ilut\" preconditioner.",
     &list
     );
 //   IntParameter(
