@@ -1143,6 +1143,16 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // action for elements
   eleparams.set("action","calc_condif_systemmat_and_residual");
 
+  // DO THIS AT VERY FIRST!!!
+  // compute reconstructed diffusive fluxes for better consistency
+  const enum INPAR::SCATRA::Consistency consistency
+  = Teuchos::getIntegralValue<INPAR::SCATRA::Consistency>(params_->sublist("STABILIZATION"),"CONSISTENCY");
+  if (consistency == INPAR::SCATRA::consistency_l2_projection_lumped)
+  {
+    // compute flux approximation and add it to the parameter list
+    AddFluxApproxToParameterList(eleparams,INPAR::SCATRA::flux_diffusive_domain);
+  }
+
   // set type of scalar transport problem
   eleparams.set("scatratype",scatratype_);
 

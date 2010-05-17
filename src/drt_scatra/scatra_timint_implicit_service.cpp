@@ -69,6 +69,9 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
     // set type of scalar transport problem
     eleparams.set("scatratype",scatratype_);
 
+    // add additional parameters
+    AddSpecificTimeIntegrationParameters(eleparams);
+
     // other parameters that are needed by the elements
     eleparams.set("incremental solver",incremental_);
     eleparams.set("form of convective term",convform_);
@@ -485,12 +488,16 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
 {
+  // define element parameter list
+  ParameterList eleparams;
+
+  // DO THIS BEFORE PHINP IS SET (calls ClearState() internally!!!!)
+  // compute flux approximation and add it to the parameter list
+  //AddFluxApproxToParameterList(eleparams,INPAR::SCATRA::flux_diffusive_domain);
+
   // set scalar vector values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phin_);
-
-  // define element parameter list
-  ParameterList eleparams;
 
   // provide velocity field and potentially acceleration/pressure field
   // (export to column map necessary for parallel evaluation)
@@ -1267,8 +1274,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
 (const INPAR::SCATRA::FluxType fluxtype)
 {
   // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global dof numbering
+  // vectors and matrices    local <-> global dof numbering
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // empty vector for (normal) mass or heat flux vectors (always 3D)
@@ -1279,6 +1285,34 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   Teuchos::RCP<Epetra_Vector> fluxy = LINALG::CreateVector(*dofrowmap,true);
   Teuchos::RCP<Epetra_Vector> fluxz = LINALG::CreateVector(*dofrowmap,true);
 
+  // we need a vector for the integrated shape functions
+  Teuchos::RCP<Epetra_Vector> integratedshapefcts = LINALG::CreateVector(*dofrowmap,true);
+#if 0
+  {
+    ParameterList eleparams;
+    eleparams.set("action","integrate_shape_functions");
+    eleparams.set("scatratype",scatratype_);
+    // we integrate shape functions for the first numscal_ dofs per node!!
+    Epetra_IntSerialDenseVector dofids(7); // make it big enough!
+    for(int rr=0;rr < numscal_;rr++)
+    {
+      dofids(rr) = rr;
+    }
+    for(int rr=numscal_;rr<7;rr++)
+    {
+      dofids(rr) = -1; // do not integrate shape functions for these dofs
+    }
+    eleparams.set("dofids",dofids);
+    eleparams.set("isale",isale_);
+    if (isale_)
+      AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+    // evaluate fluxes in the whole computational domain
+    // (e.g., for visualization of particle path-lines) or L2 projection for better consistency
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,integratedshapefcts,Teuchos::null,Teuchos::null);
+  }
+#else
+  integratedshapefcts->PutScalar(1.0);
+#endif
   // set action for elements
   ParameterList params;
   params.set("action","calc_condif_flux");
@@ -1304,11 +1338,19 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   discret_->Evaluate(params,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz);
 
   // insert values into final flux vector for visualization
+  // we do not solve a global equation system for the flux values here
+  // but perform a lumped mass matrix approach, i.e., dividing by the values of
+  // integrated shape functions
   for (int i = 0;i<flux->MyLength();++i)
   {
-    flux->ReplaceMyValue(i,0,(*fluxx)[i]);
-    flux->ReplaceMyValue(i,1,(*fluxy)[i]);
-    flux->ReplaceMyValue(i,2,(*fluxz)[i]);
+    const double intshapefct = (*integratedshapefcts)[i];
+    // is zero at electric potential dofs
+    if (abs(intshapefct) > EPS13)
+    {
+      flux->ReplaceMyValue(i,0,((*fluxx)[i])/intshapefct);
+      flux->ReplaceMyValue(i,1,((*fluxy)[i])/intshapefct);
+      flux->ReplaceMyValue(i,2,((*fluxz)[i])/intshapefct);
+    }
   }
 
   // clean up
@@ -1964,6 +2006,42 @@ void SCATRA::ScaTraTimIntImpl::SetMagneticField(const int funcno)
   return;
 
 } // ScaTraImplicitTimeInt::SetMagneticField
+
+
+/*----------------------------------------------------------------------*
+ | add approximation to flux vectors to a parameter list      gjb 05/10 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList(
+    Teuchos::ParameterList& p,
+    const enum INPAR::SCATRA::FluxType fluxtype
+)
+{
+Teuchos::RCP<Epetra_MultiVector> flux
+ = CalcFluxInDomain(fluxtype);
+
+// post_drt_ensight does not support multivectors based on the dofmap
+// for now, I create single vectors that can be handled by the filter
+
+// get the noderowmap
+const Epetra_Map* noderowmap = discret_->NodeRowMap();
+Teuchos::RCP<Epetra_MultiVector> fluxk = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+for(int k=0;k<numscal_;++k)
+{
+  ostringstream temp;
+  temp << k;
+  string name = "flux_phi_"+temp.str();
+  for (int i = 0;i<fluxk->MyLength();++i)
+  {
+    DRT::Node* actnode = discret_->lRowNode(i);
+    int dofgid = discret_->Dof(actnode,k);
+    fluxk->ReplaceMyValue(i,0,((*flux)[0])[(flux->Map()).LID(dofgid)]);
+    fluxk->ReplaceMyValue(i,1,((*flux)[1])[(flux->Map()).LID(dofgid)]);
+    fluxk->ReplaceMyValue(i,2,((*flux)[2])[(flux->Map()).LID(dofgid)]);
+  }
+  AddMultiVectorToParameterList(p,name,fluxk);
+}
+return;
+}
 
 
 #endif /* CCADISCRET       */

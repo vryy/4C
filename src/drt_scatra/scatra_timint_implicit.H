@@ -422,6 +422,12 @@ protected:
       Teuchos::RCP<Epetra_MultiVector> vec ///< Epetra_MultiVector to be added
   );
 
+  /// compute approximation for fluxes and add it to a parameter list
+  void AddFluxApproxToParameterList(
+      Teuchos::ParameterList& p,                  ///< parameter list
+      const enum INPAR::SCATRA::FluxType fluxtype ///< switch for flux calculation
+  );
+
   /// write state vectors (phinp and convective velocity) to BINIO
   void OutputState();
 
