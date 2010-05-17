@@ -2216,18 +2216,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Bazilevs",
                                  "Exact_1D",
                                  "Oberai",
+                                 "Codina",
                                  "Zero"),
                                tuple<std::string>(
                                  "tau according to Franca and Valentin (2000)",
                                  "tau according to Bazilevs et al. (2007) (based on G_ij and g_i)",
                                  "exact tau for stationary 1d problems and linear shape functions",
                                  "tau according to Oberai for instationary problems",
-                                 "zero tau (no stabilizing effect)")  ,
+                                 "tau according to Codina (2000)",
+                                 "zero tau (no stabilizing effect)"),
                                 tuple<INPAR::SCATRA::TauType>(
                                     INPAR::SCATRA::tau_franca_valentin,
                                     INPAR::SCATRA::tau_bazilevs,
                                     INPAR::SCATRA::tau_exact_1d,
                                     INPAR::SCATRA::tau_oberai,
+                                    INPAR::SCATRA::tau_codina,
                                     INPAR::SCATRA::tau_zero),
                                &scatradyn_stab);
 
@@ -2284,6 +2287,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<INPAR::SCATRA::EvalMat>(
                                  INPAR::SCATRA::evalmat_element_center,
                                  INPAR::SCATRA::evalmat_integration_point),
+                               &scatradyn_stab);
+
+  // this parameter selects methods for improving consistency of stabilization terms
+  setStringToIntegralParameter<INPAR::SCATRA::Consistency>("CONSISTENCY",
+                               "no",
+                               "improvement of consistency for stabilization",
+                               tuple<std::string>(
+                                 "no",
+                                 "L2_projection_lumped"),
+                               tuple<std::string>(
+                                 "inconsistent",
+                                 "L2 projection with lumped mass matrix")  ,
+                                tuple<INPAR::SCATRA::Consistency>(
+                                  INPAR::SCATRA::consistency_no,
+                                  INPAR::SCATRA::consistency_l2_projection_lumped),
                                &scatradyn_stab);
 
   /*----------------------------------------------------------------------*/

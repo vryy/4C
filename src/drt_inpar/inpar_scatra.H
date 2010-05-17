@@ -90,6 +90,7 @@ namespace INPAR
       tau_bazilevs,
       tau_exact_1d,
       tau_oberai,
+      tau_codina,
       tau_zero
     };
 
@@ -164,6 +165,13 @@ namespace INPAR
       masscalc_none,
       masscalc_squares,
       masscalc_interpolated
+    };
+
+    /// type of method for improving consistency of stabilized methods
+    enum Consistency
+    {
+      consistency_no,
+      consistency_l2_projection_lumped
     };
 
   }  // namespace SCATRA
