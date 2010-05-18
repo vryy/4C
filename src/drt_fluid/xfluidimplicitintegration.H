@@ -374,27 +374,25 @@ protected:
       const Teuchos::RCP<DRT::Discretization> fluiddis,
       const Teuchos::RCP<DRT::Discretization> ifacedis,
       Teuchos::ParameterList&                 params,
-//      Teuchos::RCP<LINALG::SparseOperator>    Cuu,
       Teuchos::RCP<LINALG::SparseOperator>    Cud,
       Teuchos::RCP<LINALG::SparseOperator>    Cdu,
       Teuchos::RCP<LINALG::SparseOperator>    Cdd,
       Teuchos::RCP<Epetra_Vector>             RHSd,
       Teuchos::RCP<LINALG::SparseOperator>    systemmatrix1,
       Teuchos::RCP<Epetra_Vector>             systemvector1,
-      const bool                              assemble_coupling_matrices
+      const bool                              assemble_coupling_matrices,
+      const bool                              fluidfluidcoupling
       );
 
   void preparefluidfluidboundaryDis();
 
-  void FluidFluidCouplingEvaluate(
-      Teuchos::ParameterList&                   params,
-      Teuchos::RCP<LINALG::SparseOperator>      systemmatrix,
-      Teuchos::RCP<Epetra_Vector>               systemvector,
-      Teuchos::RCP<DRT::Discretization>         fluiddiscret,
-      Teuchos::RCP<DRT::Discretization>         cutterdiscret,
-      Teuchos::RCP<XFEM::InterfaceHandleXFSI>   ih);
-
   void ComputeFluidFluidInterfaceAccelerationsAndVelocities();
+
+  void GetInterfacepatchLocationVectorsFluidFluid(
+      const DRT::Element&        xele,
+      const RCP<vector<int> >    ifaceboundarylm,
+      const RCP<vector<int> >    ifaceboundarylmowner
+      ) const;
 
   void FluidFluidboundaryOutput();
 
