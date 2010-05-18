@@ -79,7 +79,7 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
   {
     kintype_ = soh8_geolin;
   }
-  else if (buffer=="nln")
+  else if (buffer=="nln" or buffer=="Totlag")
   {
     kintype_ = soh8_totlag;
   }
