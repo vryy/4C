@@ -967,7 +967,8 @@ void DoDirichletConditionXFEM(DRT::Condition&             cond,
             cout << *actnode << endl;
             for (unsigned i=0; i<deg+1; ++i)
             {
-              value[i] = -6.5;
+              //value[i] = -6.5;
+              value[i] = 1.0;
             }
           }
 //          // domain with 10 elements in x-direction
@@ -985,7 +986,8 @@ void DoDirichletConditionXFEM(DRT::Condition&             cond,
             cout << *actnode << endl;
             for (unsigned i=0; i<deg+1; ++i)
             {
-              value[i] = -2.5;
+              //value[i] = -2.5;
+              value[i] = 1.0;
             }
           }
           else // free x-velocity dof for all other Dirichlet nodes
@@ -1021,6 +1023,20 @@ void DoDirichletConditionXFEM(DRT::Condition&             cond,
         if ((*onoff)[truncj]!=0 and j==3) // if Dirichlet value is turned on in input file (1)
         {
           cout << "/!\\ warning === no Dirichlet value set for enriched y-velocity dof of node " << actnode->Id() << endl;
+          const int lid = (*systemvectoraux).Map().LID(dofs[j]);
+          if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
+          if (toggle!=Teuchos::null)
+            (*toggle)[lid] = 0.0;
+          // get rid of entry in DBC map - if it exists
+          if (dbcgids != Teuchos::null)
+            (*dbcgids).erase(dofs[j]);
+          continue; // for loop over dofs is advanced by 1 (++j)
+        }
+#endif
+#ifdef COMBUST_PRESFREE
+        if ((*onoff)[truncj]!=0 and j==7) // if Dirichlet value is turned on in input file (1)
+        {
+          cout << "/!\\ warning === no Dirichlet value set for enriched pressure dof of node " << actnode->Id() << endl;
           const int lid = (*systemvectoraux).Map().LID(dofs[j]);
           if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
           if (toggle!=Teuchos::null)
