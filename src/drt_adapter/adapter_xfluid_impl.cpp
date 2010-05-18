@@ -130,6 +130,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::RHS()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::TrueResidual()
 {
+  dserror("stop here");
   return fluid_.TrueResidual();
 }
 
@@ -304,7 +305,7 @@ void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> velpresstep
 
   if (idispiterinc_ == Teuchos::null)
     dserror("should be set already");
-  boundarydis_->SetState("nodal increment", idispiterinc_);
+  boundarydis_->SetState("nodal iterinc", idispiterinc_);
 
   // The field solver expects an iteration increment only. And
   // there are Dirichlet conditions that need to be preserved. So take
@@ -339,17 +340,18 @@ void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> velpresstep
   // do fluid evaluation provided residual displacements - iteration increment
   fluid_.Evaluate(boundarydis_, velpresiterinc);
 
-  // get surface force
-  Teuchos::RCP<const Epetra_Vector> itruerescol = boundarydis_->GetState("iforcenp");
-
-  // dump all vectors in the boundary discretization
-  boundarydis_->ClearState();
-
-  // map back to solid parallel distribution
-  Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp (new Epetra_Export(itruerescol->Map(),itrueresnp_->Map()));
-
-  itrueresnp_->PutScalar(0.0);
-  itrueresnp_->Export(*itruerescol,*conimpo,Add);
+  itrueresnp_ = Teuchos::null;//LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+//  // get surface force
+//  Teuchos::RCP<const Epetra_Vector> itruerescol = boundarydis_->GetState("iforcenp");
+//
+//  // dump all vectors in the boundary discretization
+//  boundarydis_->ClearState();
+//
+//  // map back to solid parallel distribution
+//  Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp (new Epetra_Export(itruerescol->Map(),itrueresnp_->Map()));
+//
+//  itrueresnp_->PutScalar(0.0);
+//  itrueresnp_->Export(*itruerescol,*conimpo,Add);
 
 }
 
@@ -614,7 +616,7 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
 
   PrepareBoundaryDis();
   idispiterinc_ = rcp(new Epetra_Vector(idispnp_->Map(),true));
-  boundarydis_->SetState("nodal increment", idispiterinc_);
+  boundarydis_->SetState("nodal iterinc", idispiterinc_);
 
   // solve
   fluid_.NonlinearSolve(boundarydis_);
