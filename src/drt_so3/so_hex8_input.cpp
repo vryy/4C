@@ -74,7 +74,7 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
   std::string buffer;
 
   // read kinematic flag (default: we expect kintype to be total lagrangian)
-  linedef->ExtractString("KINTYP",buffer);
+  linedef->ExtractString("KINEM",buffer);
   if (buffer=="lin")
   {
     kintype_ = soh8_geolin;
