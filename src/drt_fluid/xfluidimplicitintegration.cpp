@@ -548,6 +548,8 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
 void FLD::XFluidImplicitTimeInt::PrepareNonlinearSolve()
 {
 
+  cout << "FLD::XFluidImplicitTimeInt::PrepareNonlinearSolve()" << endl;
+
   // -------------------------------------------------------------------
   // set part of the rhs vector belonging to the old timestep
   // -------------------------------------------------------------------
@@ -1180,16 +1182,11 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       FluidFluidboundarydis_->SetState("ivelnm" ,fluidfluidstate_.fivelnm_);
       FluidFluidboundarydis_->SetState("iaccn"  ,fluidfluidstate_.fiaccn_);
 
-      discret_->SetState("nodal increment",oldinc);
+      discret_->SetState("nodal iterinc",oldinc);
 
       // reset interface force and let the elements fill it
       iforcecolnp->PutScalar(0.0);
       eleparams.set("interface force",iforcecolnp);
-
-      if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
-        eleparams.set("fluidfluidCoupling",true);
-      else
-        eleparams.set("fluidfluidCoupling",false);
 
       double L2 = 0.0;
       eleparams.set("L2",L2);
@@ -1592,8 +1589,6 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
 
   Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = ComputeInterfaceAndSetDOFs(cutterdiscret);
 
-  cout << "state_.velnp_" << *state_.velnp_ << endl;
-
   PrepareNonlinearSolve();
 
   const Epetra_Map& fluiddofrowmap = *discret_->DofRowMap();
@@ -1607,18 +1602,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
 
   const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*cutterdiscret->DofColMap(),true);
 
-  incvel_->PutScalar(0.0);
-
-//  // increment of the old iteration step - used for update of condensed element stresses
-//  if (oldinc == Teuchos::null)
-//    oldinc = LINALG::CreateVector(*discret_->DofRowMap(),true);
-//  else
-//  {
-//    if (oldinc->MyLength() != incvel_->MyLength())
-//      oldinc = LINALG::CreateVector(*discret_->DofRowMap(),true);
-//  }
-
-  cout << "state_.velnp_" << *state_.velnp_ << endl;
+//  cout << "state_.velnp_" << *state_.velnp_ << endl;
 
   // add Neumann loads
   residual_->Update(1.0,*neumann_loads_,0.0);
@@ -1655,12 +1639,12 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
     oldinc = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(),true));
   else
     oldinc = velpresiterinc;
-  discret_->SetState("nodal increment",oldinc);
+  discret_->SetState("nodal iterinc",oldinc);
+//  cout << "*oldinc" << endl;
+//  cout << *oldinc << endl;
 
   // reset interface force and let the elements fill it
   eleparams.set("interface force",iforcecolnp);
-
-  eleparams.set("fluidfluidCoupling",true);
 
   double L2 = 0.0;
   eleparams.set("L2",L2);
@@ -1690,13 +1674,13 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   // Apply dirichlet boundary conditions to system of equations
   // residual displacements are supposed to be zero at boundary
   // conditions
-  incvel_->PutScalar(0.0);
+  RCP<Epetra_Vector> incvel = LINALG::CreateVector(fluiddofrowmap,true);
   LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
-
-  // macht der FSI algorithmus
-  iforcecolnp->Scale(ResidualScaling());
-
-  cutterdiscret->SetState("iforcenp", iforcecolnp);
+//
+//  // macht der FSI algorithmus
+//  iforcecolnp->Scale(ResidualScaling());
+//
+//  cutterdiscret->SetState("iforcenp", iforcecolnp);
 }
 
 
@@ -2261,7 +2245,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
         LINALG::SerialDenseVector elementvaluexy(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvaluexy(iparam) = myvelnp[dofposxy[iparam]];
         LINALG::SerialDenseVector elementvaluexz(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvaluexz(iparam) = myvelnp[dofposxz[iparam]];
         LINALG::SerialDenseVector elementvalueyz(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvalueyz(iparam) = myvelnp[dofposyz[iparam]];
-
+cout << elementvaluexx << endl;
 
         const GEO::DomainIntCells& domainintcells =
           dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);

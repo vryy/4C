@@ -210,18 +210,56 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         const RCP<vector<int> > ifacepatchlmowner = rcp(new vector<int>());
         ih_->GetInterfacepatchLocationVectors(*this, ifacepatchlm, ifacepatchlmowner);
 
-        DLM_info_ = Teuchos::rcp(
-            new DLMInfo(
-                eleDofManager_uncondensed_->NumNodeDof(),
-                eleDofManager_uncondensed_->NumElemDof(),
-                ifacepatchlm->size()
-                )
-            );
+        if (DLM_info_ == Teuchos::null)
+        {
+          DLM_info_ = Teuchos::rcp(
+              new DLMInfo(
+                  eleDofManager_uncondensed_->NumNodeDof(),
+                  eleDofManager_uncondensed_->NumElemDof(),
+                  ifacepatchlm->size()
+                  )
+              );
+        }
       }
       else
       {
         eleDofManager_uncondensed_ = Teuchos::null;
         DLM_info_ = Teuchos::null;
+      }
+      break;
+    }
+    case stress_update:
+    {
+      // do no calculation, if not needed
+      if (lm.empty())
+        break;
+
+      const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
+
+      // time integration factors
+      const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
+
+      // extract local values from the global vectors
+      const bool instationary = (timealgo != timeint_stationary);
+
+      DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,instationary);
+
+      const bool monolithic_FSI = params.get<bool>("monolithic_FSI");
+
+      const RCP<const vector<int> > ifacepatchlm = params.get<RCP<vector<int> > >("ifacepatchlm");
+
+      if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
+      {
+
+      }
+      else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
+      {
+        // sanity checks
+        SanityChecks(eleDofManager_, eleDofManager_uncondensed_);
+
+        // stress update
+        UpdateOldDLMAndDLMRHS(discretization, *ih_->cutterdis(), lm, *ifacepatchlm, mystate, monolithic_FSI);
+
       }
       break;
     }
@@ -891,23 +929,23 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
     // add Kda . inc_velnp to feas
     // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
 
-    vector<double> inc_velnp(lm.size());
-    DRT::UTILS::ExtractMyValues(*discretization.GetState("nodal increment"),inc_velnp,lm);
+    vector<double> iterinc_velnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*discretization.GetState("nodal iterinc"),iterinc_velnp,lm);
 
     static const Epetra_BLAS blas;
     // update old iteration residual of the stresses from velocity and pressure increments
     // DLM_info_->oldrs_(i) += DLM_info_->oldKsu_(i,j)*inc_velnp[j];
-    blas.GEMV('N', ns, nu,-1.0, DLM_info_->oldKGsu_.A(), DLM_info_->oldKGsu_.LDA(), &inc_velnp[0], 1.0, DLM_info_->oldrs_.A());
+    blas.GEMV('N', ns, nu,-1.0, DLM_info_->oldKGsu_.A(), DLM_info_->oldKGsu_.LDA(), &iterinc_velnp[0], 1.0, DLM_info_->oldrs_.A());
 
     if (nui > 0 and interface_unknowns)
     {
       cout << "only for monolithic" << endl;
-      vector<double> inc_velnp_iface(nui);
-      DRT::UTILS::ExtractMyValues(*discretizationiface.GetState("nodal increment"),inc_velnp_iface,lmiface);
+      vector<double> iterinc_velnp_iface(nui);
+      DRT::UTILS::ExtractMyValues(*discretizationiface.GetState("nodal iterinc"),iterinc_velnp_iface,lmiface);
 
       // update old iteration residual of the stresses from interface velocity increments
-      // DLM_info_->oldrs_(i) += DLM_info_->oldKsui_(i,j)*inc_velnp_iface[j];
-      blas.GEMV('N', ns, nui,-1.0, DLM_info_->oldGsui_.A(), DLM_info_->oldGsui_.LDA(), &inc_velnp_iface[0], 1.0, DLM_info_->oldrs_.A());
+      // DLM_info_->oldrs_(i) += DLM_info_->oldGsui_(i,j)*inc_velnp_iface[j];
+      blas.GEMV('N', ns, nui,-1.0, DLM_info_->oldGsui_.A(), DLM_info_->oldGsui_.LDA(), &iterinc_velnp_iface[0], 1.0, DLM_info_->oldrs_.A());
     }
 
     // compute element stresses
@@ -924,6 +962,8 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
     {
       mystate.velnp[nu+i] = DLM_info_->stressdofs_(i);
     }
+//    cout << "DLM_info_->stressdofs_" << endl;
+//    cout << DLM_info_->stressdofs_ << endl;
   }
 }
 
@@ -971,8 +1011,6 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
     LINALG::SerialDenseMatrix Guis(nui,ns);
     LINALG::SerialDenseVector fs(ns);
 
-//    cout << elemat1_uncond << endl;
-
     // copy data of uncondensed matrix into submatrices
     for (size_t i=0;i<nu;i++)
       for (size_t j=0;j<ns;j++)
@@ -999,7 +1037,7 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
 
     static const Epetra_BLAS blas;
     {
-      LINALG::SerialDenseMatrix GusKssinv(nu,ns); // temporary Gus.Kss^{-1}
+      LINALG::SerialDenseMatrix GusKssinv(nu,ns,true); // temporary Gus.Kss^{-1}
 
       // GusKssinv(i,j) = Gus(i,k)*Kssinv(k,j);
       blas.GEMM('N','N',nu,ns,ns,1.0,Gus.A(),Gus.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,GusKssinv.A(),GusKssinv.LDA());
@@ -1022,7 +1060,7 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
           }
         }
 
-        LINALG::SerialDenseMatrix GuisKssinv(nui,ns);
+        LINALG::SerialDenseMatrix GuisKssinv(nui,ns,true);
 
         // GuisKssinv(i,j) = Kuis(i,k)*Kssinv(k,j);
         blas.GEMM('N','N',nui,ns,ns,1.0,Guis.A(),Guis.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,GuisKssinv.A(),GuisKssinv.LDA());

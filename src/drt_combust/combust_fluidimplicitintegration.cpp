@@ -703,7 +703,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       discret_->SetState("velnm",state_.velnm_);
       discret_->SetState("accn" ,state_.accn_);
 
-      discret_->SetState("nodal increment",oldinc_);
+      discret_->SetState("nodal iterinc",oldinc_);
 
       // convergence check at itemax is skipped for speedup if
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax

@@ -205,6 +205,7 @@ namespace DRT
           calc_fluid_projection_systemmat_and_residual,
           calc_fluid_beltrami_error,
           store_xfem_info,
+          stress_update,
           get_density,
           reset,
           set_output_mode,

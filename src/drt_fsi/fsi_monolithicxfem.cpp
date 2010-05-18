@@ -226,15 +226,14 @@ void FSI::MonolithicXFEM::Newton()
   stepinc_ = Teuchos::null;
   systemmatrix_ = Teuchos::null;
 
-  for (int i =0;i<100;++i)
+  for (int i =0;i<10;++i)
   {
     cout << "Newton step: " << i << endl;
     Evaluate();
 
-    const bool firstcall = i==0;
-    SetupRHS(firstcall);
+    SetupRHS();
 
-    if (ConverganceTest() or i > 3)
+    if (ConverganceTest())
     {
       break;
     }
@@ -259,12 +258,23 @@ void FSI::MonolithicXFEM::Evaluate()
     cout << "later step" << endl;
 
     // extract structure displacement
-    Teuchos::RCP<Epetra_Vector> sxstepinc_i = Extractor().ExtractStructureInteriorVector(stepinc_);
-    Teuchos::RCP<Epetra_Vector> sxstepinc_b = Extractor().ExtractStructureBoundaryVector(stepinc_);
+    const Teuchos::RCP<Epetra_Vector> sxstepinc_i = Extractor().ExtractStructureInteriorVector(stepinc_);
+    const Teuchos::RCP<Epetra_Vector> sxstepinc_b = Extractor().ExtractStructureBoundaryVector(stepinc_);
 
-    Teuchos::RCP<Epetra_Vector> sxstepinc = StructureField().Interface().InsertOtherVector(sxstepinc_i);
+    const Teuchos::RCP<Epetra_Vector> sxstepinc = LINALG::CreateVector(*StructureField().Interface().FullMap(),true);
+    StructureField().Interface().InsertOtherVector(sxstepinc_i,sxstepinc);
     StructureField().Interface().InsertFSICondVector(sxstepinc_b,sxstepinc);
 
+    const Teuchos::RCP<Epetra_Vector> fxstepinc = Extractor().ExtractFluidVector(stepinc_);
+
+    cout << "fluid stepinc:" << endl;
+    cout << *fxstepinc << endl;
+    cout << "solid boundary step inc" << endl;
+    cout << *sxstepinc_b << endl;
+    cout << "solid interiour step inc" << endl;
+    cout << *sxstepinc_i << endl;
+
+    FluidField().Evaluate(StructToFluid(sxstepinc_b), fxstepinc);
     StructureField().Evaluate(sxstepinc);
 
 
@@ -274,24 +284,15 @@ void FSI::MonolithicXFEM::Evaluate()
       const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
                               + ".outifacedispstepinc.txt";
       f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-      f << (*sxstepinc)[0] << "  " << "\n";
+      f << (*sxstepinc_b)[0] << "  " << "\n";
       f.close();
     }
-
-    cout << "solid stepinc:" << endl;
-    cout << *sxstepinc << endl;
-
-    Teuchos::RCP<Epetra_Vector> fxstepinc = Extractor().ExtractFluidVector(stepinc_);
-    cout << "fluid stepinc:" << endl;
-    cout << *fxstepinc << endl;
-
-    FluidField().Evaluate(StructToFluid(sxstepinc_b), fxstepinc);
   }
   else
   {
     cout << "first step" << endl;
-    StructureField().Evaluate(Teuchos::null);
     FluidField().Evaluate(Teuchos::null, Teuchos::null);
+    StructureField().Evaluate(Teuchos::null);
   }
 
 
@@ -312,33 +313,55 @@ void FSI::MonolithicXFEM::Evaluate()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::SetupRHS(bool firstcall)
+void FSI::MonolithicXFEM::SetupRHS()
 {
   cout << "FSI::MonolithicXFEM::SetupRHS" << endl;
 
   // get rhs from fields
-  Teuchos::RCP<const Epetra_Vector> srhs = StructureField().RHS();
-  Teuchos::RCP<const Epetra_Vector> frhs = FluidField().RHS();
-  Teuchos::RCP<Epetra_Vector> sxi = StructureField().Interface().ExtractOtherVector(srhs);
-  Teuchos::RCP<Epetra_Vector> sxb = StructureField().Interface().ExtractFSICondVector(srhs);
+  const Teuchos::RCP<const Epetra_Vector> srhs = StructureField().RHS();
+  const Teuchos::RCP<const Epetra_Vector> frhs = FluidField().RHS();
+
+  Teuchos::RCP<Epetra_Vector> srhs_copy = LINALG::CreateVector(*StructureField().GetDBCMapExtractor()->FullMap(), true);
+
+  srhs_copy->Update(1.0,*srhs,0.0);
+
+  const Teuchos::RCP<const Epetra_Vector> srhsinterior = StructureField().Interface().ExtractOtherVector(srhs_copy);
+  const Teuchos::RCP<const Epetra_Vector> srhsboundary = StructureField().Interface().ExtractFSICondVector(srhs_copy);
+
+
+  cout << "frhs" << endl;
+  cout << *frhs << endl;
+  cout << "srhsboundary" << endl;
+  cout << *srhsboundary << endl;
+  cout << "srhsinterior" << endl;
+  cout << *srhsinterior << endl;
+
 
   // create full monolithic rhs vector
-  rhs_ = Extractor().InsertStructureInteriorVector(sxi);  // structure interior
-  Extractor().InsertStructureBoundaryVector(sxb, rhs_);   // structure boundary
-//  rhs_->Scale(-1.);
-  Extractor().InsertFluidVector(frhs,rhs_);               // fluid all
+  rhs_ = rcp(new Epetra_Vector(*Extractor().FullMap(), true));
+
+  Extractor().InsertFluidVector(frhs, rhs_);                      // fluid all
+  Extractor().InsertStructureBoundaryVector(srhsboundary, rhs_);  // structure boundary
+  Extractor().InsertStructureInteriorVector(srhsinterior, rhs_);  // structure interior
 
   // add condensed contribution from stress Lagrange multiplier
-  const map<std::string, Teuchos::RCP<Epetra_Vector> > cvecs = FluidField().CouplingVectors();
-  Teuchos::RCP<Epetra_Vector> rhsd = cvecs.find("rhsd")->second;
+  const Teuchos::RCP<Epetra_Vector> rhsd = FluidField().CouplingVectors().find("rhsd")->second;
 
-//  rhsd->Scale(-1.0);
-  Extractor().AddVector(*FluidToStruct(rhsd),1,*rhs_);
+  const Teuchos::RCP<Epetra_Vector> structboundarycoupleforce = FluidToStruct(rhsd);
 
+  cout << "rhsd^sigma + rhs_condense" << endl;
+  cout << *structboundarycoupleforce << endl;
+  Extractor().AddVector(*structboundarycoupleforce,1,*rhs_);
+
+  const Teuchos::RCP<const Epetra_Map >& condmap = StructureField().GetDBCMapExtractor()->CondMap();
+  Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*condmap, true);
+  Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*Extractor().FullMap(), true);
+
+  LINALG::ApplyDirichlettoSystem(tmp, rhs_, zeros, *condmap);
+
+  cout << "rhs_" << endl;
   cout << *rhs_ << endl;
 
-  // NOX expects a different sign here.
-//  rhs_->Scale(-1.);
 }
 
 
@@ -389,9 +412,9 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   const map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > cmats = FluidField().CouplingMatrices();
 
 //  Teuchos::RCP<LINALG::SparseMatrix> Cuu = cmats.find("Cuu")->second; // schon erledigt im Fluid
-  Teuchos::RCP<LINALG::SparseMatrix> Mud = cmats.find("Mud")->second;
-  Teuchos::RCP<LINALG::SparseMatrix> Mdu = cmats.find("Mdu")->second;
-  Teuchos::RCP<LINALG::SparseMatrix> Cdd = cmats.find("Cdd")->second;
+  const Teuchos::RCP<LINALG::SparseMatrix> Cud = cmats.find("Cud")->second;
+  const Teuchos::RCP<LINALG::SparseMatrix> Cdu = cmats.find("Cdu")->second;
+  const Teuchos::RCP<LINALG::SparseMatrix> Cdd = cmats.find("Cdd")->second;
 
 
   /*----------------------------------------------------------------------*/
@@ -399,7 +422,7 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
 //  double scale     = FluidField().ResidualScaling();
 //  double timescale = FluidField().TimeScaling();
 
-  systemmatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(Extractor(),Extractor()));
+  systemmatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(Extractor(),Extractor(),81,false));
 
   systemmatrix_->Assign(0,0,View,s->Matrix(0,0));
   systemmatrix_->Assign(1,0,View,s->Matrix(1,0));
@@ -415,13 +438,20 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
 
 
 //  matrix_->Matrix(1,0).Add(*Mud,false,1.0,0.0);
-  sigtransform_(Mud->RowMap(),
-                Mud->ColMap(),
-                *Mud,
+  sigtransform_(Cud->RowMap(),
+                Cud->ColMap(),
+                *Cud,
                 1.0,
                 ADAPTER::Coupling::SlaveConverter(coupsf),
                 systemmatrix_->Matrix(2,1),
                 true,
+                false);
+
+  //  matrix_->Matrix(0,1).Add(*Mdu,false,1.0,0.0);
+  sgitransform_(*Cdu,
+                1.0,
+                ADAPTER::Coupling::SlaveConverter(coupsf),
+                systemmatrix_->Matrix(1,2),
                 false);
 
   //  matrix_->Matrix(0,0).Add(*Cdd,false,1.0,1.0);
@@ -433,12 +463,6 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
                 true,
                 true);
 
-
-  //  matrix_->Matrix(0,1).Add(*Mdu,false,1.0,0.0);
-  sgitransform_(*Mdu,
-                1.0,
-                ADAPTER::Coupling::SlaveConverter(coupsf),
-                systemmatrix_->Matrix(1,2));
 //  cout << "alles addiert" << endl;
 
 
@@ -446,6 +470,11 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
 
   // done. make sure all blocks are filled.
   systemmatrix_->Complete();
+
+
+  const Teuchos::RCP<const Epetra_Map >& condmap = StructureField().GetDBCMapExtractor()->CondMap();
+  systemmatrix_->ApplyDirichlet(*condmap, true);
+
   cout << "systemmatrix_->Complete() ... Done!" << endl;
 }
 
@@ -511,6 +540,13 @@ void FSI::MonolithicXFEM::LinearSolve()
     stepinc_ = LINALG::CreateVector(*Extractor().FullMap(),true);
 
   stepinc_->Update(1.0,*iterinc, 1.0);
+
+  const Teuchos::RCP<const Epetra_Map >& condmap = StructureField().GetDBCMapExtractor()->CondMap();
+  Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*condmap, true);
+//  Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*Extractor().FullMap(), true);
+
+  LINALG::ApplyDirichlettoSystem(iterinc, stepinc_, zeros, *condmap);
+
 
 }
 
