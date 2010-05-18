@@ -889,6 +889,7 @@ set(OBJS_LINALG
   src/drt_lib/simpler_operator.cpp
   src/drt_lib/transfer_operator.cpp
   src/drt_lib/transfer_operator_pgamg.cpp
+  src/drt_lib/transfer_operator_pgamg2.cpp
   src/drt_lib/transfer_operator_saamg.cpp
   src/drt_lib/transfer_operator_tentative.cpp
 )
@@ -1595,6 +1596,8 @@ baci_test(f2_dc20x20_drt_afgenalpha 1 5)
 baci_test(f2_dc20x20_drt_afgenalpha 2 5)
 baci_test(f2_drivencavity20x20_drt 1 5)
 baci_test(f2_drivencavity20x20_drt 2 5)
+baci_test(f2_drivencavity40x40_braess_sarazin_drt 1 "")
+baci_test(f2_drivencavity40x40_braess_sarazin_drt 2 "")
 baci_test(f2_drivencavity32x32_Re1000_stat 1 "")
 baci_test(f2_drivencavity32x32_Re1000_stat 2 "")
 baci_test(f2_impinging_flow_drt 1 "")

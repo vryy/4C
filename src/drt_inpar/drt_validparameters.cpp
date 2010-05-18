@@ -1521,10 +1521,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Switch on SIMPLE family of solvers, needs additional FLUID PRESSURE SOLVER block!",
                                yesnotuple,yesnovalue,&fdyn);
 
-  setStringToIntegralParameter<int>("AMGBS","no",
-                                "Switch on AMG preconditioner with Braess-Sarazin smoother for saddle-point problems (e.g. Navier-Stokes equations), needs additional FLUID PRESSURE SOLVER block!",
-                                yesnotuple,yesnovalue,&fdyn);
-
   setStringToIntegralParameter<int>("ADAPTCONV","yes",
                                "Switch on adaptive control of linear solver tolerance for nonlinear solution",
                                yesnotuple,yesnovalue,&fdyn);
@@ -3031,33 +3027,42 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
                             "Relaxation factor for Braess-Sarazin smoother within AMGBS method",
                             &list);
 
+  setNumericStringParameter("AMGBS_BS_PCSWEEPS","2 2 2",
+                            "number of jacobi/sgs sweeps for smoothing/solving pressure correction equation within Braess-Sarazin. only necessary for jacobi/gauss seidel",
+                            &list);
+
+  setNumericStringParameter("AMGBS_BS_PCDAMPING","1.0 1.0 1.0",
+                              "jacobi damping factors for smoothing/solving pressure correction equation within Braess-Sarazin. only necessary for jacobi/gauss seidel",
+                              &list);
+
+
   setStringToIntegralParameter<int>(
     "AMGBS_PSMOOTHER_VEL","PA-AMG","Prolongation/Restriction smoothing strategy (velocity part in AMGBS preconditioner)",
-    tuple<std::string>("PA-AMG","SA-AMG","PG-AMG"),
-    tuple<int>(INPAR::SOLVER::PA_AMG,INPAR::SOLVER::SA_AMG,INPAR::SOLVER::PG_AMG),
+    tuple<std::string>("PA-AMG","SA-AMG","PG-AMG","PG2-AMG"),
+    tuple<int>(INPAR::SOLVER::PA_AMG,INPAR::SOLVER::SA_AMG,INPAR::SOLVER::PG_AMG,INPAR::SOLVER::PG2_AMG),
     &list);
   setStringToIntegralParameter<int>(
     "AMGBS_PSMOOTHER_PRE","PA-AMG","Prolongation/Restriction smoothing strategy (pressure part in AMGBS preconditioner)",
-    tuple<std::string>("PA-AMG","SA-AMG","PG-AMG"),
-    tuple<int>(INPAR::SOLVER::PA_AMG,INPAR::SOLVER::SA_AMG,INPAR::SOLVER::PG_AMG),
+    tuple<std::string>("PA-AMG","SA-AMG","PG-AMG","PG2-AMG"),
+    tuple<int>(INPAR::SOLVER::PA_AMG,INPAR::SOLVER::SA_AMG,INPAR::SOLVER::PG_AMG,INPAR::SOLVER::PG2_AMG),
     &list);
 
   setStringToIntegralParameter<int>(
     "AMGBS_BS_PCCOARSE","Umfpack","approximation algorithm for solving pressure correction equation (coarsest level)",
-    tuple<std::string>("Umfpack","KLU","ILU","ML"),
-    tuple<int>(0,1,2,3),
+    tuple<std::string>("Umfpack","KLU","ILU","Jacobi","Gauss-Seidel","symmetric Gauss-Seidel","Jacobi stand-alone","Gauss-Seidel stand-alone","symmetric Gauss-Seidel stand-alone"),
+    tuple<int>(0,1,2,3,4,5,6,7,8),
     &list);
 
   setStringToIntegralParameter<int>(
     "AMGBS_BS_PCMEDIUM","Umfpack","approximation algorithm for solving pressure correction equation (medium level)",
-    tuple<std::string>("Umfpack","KLU","ILU","ML"),
-    tuple<int>(0,1,2,3),
+    tuple<std::string>("Umfpack","KLU","ILU","Jacobi","Gauss-Seidel","symmetric Gauss-Seidel","Jacobi stand-alone","Gauss-Seidel stand-alone","symmetric Gauss-Seidel stand-alone"),
+    tuple<int>(0,1,2,3,4,5,6,7,8),
     &list);
 
   setStringToIntegralParameter<int>(
     "AMGBS_BS_PCFINE","Umfpack","approximation algorithm for solving pressure correction equation (finest level)",
-    tuple<std::string>("Umfpack","KLU","ILU","ML"),
-    tuple<int>(0,1,2,3),
+    tuple<std::string>("Umfpack","KLU","ILU","Jacobi","Gauss-Seidel","symmetric Gauss-Seidel","Jacobi stand-alone","Gauss-Seidel stand-alone","symmetric Gauss-Seidel stand-alone"),
+    tuple<int>(0,1,2,3,4,5,6,7,8),
     &list);
 
   // unused

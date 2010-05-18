@@ -53,7 +53,7 @@ namespace LINALG
 class SaddlePointPreconditioner : public virtual Epetra_Operator
 {
   public:
-    SaddlePointPreconditioner(RCP<Epetra_Operator> A, const ParameterList& params, const ParameterList& pressurelist, FILE* outfile = NULL);
+    SaddlePointPreconditioner(RCP<Epetra_Operator> A, const ParameterList& params, FILE* outfile = NULL);
     virtual ~SaddlePointPreconditioner();
 
     virtual const char* Label() const { return "SaddlePoint Preconditioner"; }
@@ -99,7 +99,7 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
     SaddlePointPreconditioner(SaddlePointPreconditioner& old);
     SaddlePointPreconditioner operator = (const SaddlePointPreconditioner& old);
 
-    void Setup(RCP<Epetra_Operator> A, const ParameterList& origlist, const ParameterList& origplist);
+    void Setup(RCP<Epetra_Operator> A, const ParameterList& origlist);
     int VCycle(const Epetra_MultiVector& Xvel, const Epetra_MultiVector& Xpre, Epetra_MultiVector& Yvel, Epetra_MultiVector& Ypre, const int level) const;
 
     /*!
@@ -175,8 +175,8 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
 
 
 
-    ParameterList                                       params_;   // list for velocity solver
-    ParameterList                                       pressureparams_;   // list for pressure solver
+    ParameterList                                       params_;   // list for Braess-Sarazin
+    //ParameterList                                       pressureparams_;   // list for pressure solver
     FILE*                                               outfile_; // error file to write output to or NULL
 
     int                                                 nmaxlevels_;  // number of maximal allowed multigrid levels

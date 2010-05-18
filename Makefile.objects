@@ -107,6 +107,7 @@ OBJS_DRT      = \
                 src/drt_lib/transfer_operator_tentative.o \
                 src/drt_lib/transfer_operator_saamg.o \
                 src/drt_lib/transfer_operator_pgamg.o \
+                src/drt_lib/transfer_operator_pgamg2.o \
                 src/drt_lib/braesssarazin_smoother.o \
                 src/drt_lib/linalg_downwindmatrix.o
 #-------------------------------------------------------structural drivers

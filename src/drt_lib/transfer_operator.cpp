@@ -11,6 +11,7 @@
 #include "transfer_operator_tentative.H"
 #include "transfer_operator_saamg.H"
 #include "transfer_operator_pgamg.H"
+#include "transfer_operator_pgamg2.H"
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
@@ -49,6 +50,8 @@ RCP<LINALG::TransferOperator> LINALG::TransferOperatorFactory::Create(const stri
       op = new LINALG::SAAMGTransferOperator(A,outfile);
     else if(TransferOperatorType == "PG-AMG")
       op = new LINALG::PGAMGTransferOperator(A,outfile);
+    else if(TransferOperatorType == "PG2-AMG")
+      op = new LINALG::PGAMG2TransferOperator(A,outfile);
     else
         dserror("error");
 

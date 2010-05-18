@@ -187,13 +187,15 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
 
-  if (not params_.get<int>("Simple Preconditioner",0) && not params_.get<int>("AMG BS Preconditioner",0))
+  if(not params_.get<int>("Simple Preconditioner",0) &&
+     params_.get<INPAR::SOLVER::AzPrecType>("AMG(BS) Preconditioner") != INPAR::SOLVER::azprec_AMGBS)
   {
     // initialize standard (stabilized) system matrix
     sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
   }
   else
   {
+    // initialize block sparse system matrix (needed for SIMPLER or AMG(BS) fluid preconditioner)
     Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
       Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
     blocksysmat->SetNumdim(numdim_);

@@ -101,7 +101,8 @@ namespace INPAR
     {
         PA_AMG,         ///< plain aggregation: no smoothing
         SA_AMG,         ///< SA-AMG (smoothed aggregation)
-        PG_AMG          ///< PG-AMG (Petrov Galerkin energy minimization)
+        PG_AMG,         ///< PG-AMG (Petrov Galerkin energy minimization)
+        PG2_AMG         ///< PG-AMG (Petrov Galerkin energy minimization), same as MATLAB variant
     };
   }  // namespace SOLVER
 

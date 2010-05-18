@@ -24,6 +24,8 @@ LINALG::PGAMGTransferOperator::PGAMGTransferOperator(const RCP<SparseMatrix>& A,
 ////////////////////////////////////////////////////////////
 RCP<Epetra_MultiVector>  LINALG::PGAMGTransferOperator::buildTransferOperators(const RCP<Epetra_IntVector> aggs, int naggs_local, Teuchos::ParameterList& params, const RCP<Epetra_MultiVector>& ThisNS, const int domainoffset)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PGAMGTransferOperator::buildTransferOperators");
+
   ////////////// define dummy variable for next nullspace
   RCP<Epetra_MultiVector> NextNS = null;
   RCP<SparseMatrix> prolongator_tent = null;

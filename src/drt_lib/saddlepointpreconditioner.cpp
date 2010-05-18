@@ -44,13 +44,12 @@
 
 #include "float.h" // for DBL_MAX and DBL_MIN
 
-LINALG::SaddlePointPreconditioner::SaddlePointPreconditioner(RCP<Epetra_Operator> A, const ParameterList& params, const ParameterList& pressurelist, FILE* outfile)
+LINALG::SaddlePointPreconditioner::SaddlePointPreconditioner(RCP<Epetra_Operator> A, const ParameterList& params, FILE* outfile)
 : params_(params),
-pressureparams_(pressurelist),
 outfile_(outfile),
 nVerbose_(0)
 {
-  Setup(A,params,pressurelist);
+  Setup(A,params);
 }
 
 LINALG::SaddlePointPreconditioner::~SaddlePointPreconditioner()
@@ -61,6 +60,8 @@ LINALG::SaddlePointPreconditioner::~SaddlePointPreconditioner()
 
 int LINALG::SaddlePointPreconditioner::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
+  TEUCHOS_FUNC_TIME_MONITOR("SaddlePointPreconditioner::ApplyInverse");
+
   // VCycle
 
   // note: Aztec might pass X and Y as physically identical objects,
@@ -157,7 +158,7 @@ int LINALG::SaddlePointPreconditioner::VCycle(const Epetra_MultiVector& Xvel, co
   return 0;
 }
 
-void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const ParameterList& origlist,const ParameterList& origplist)
+void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const ParameterList& origlist)
 {
 
 #ifdef WRITEOUTSTATISTICS
@@ -196,10 +197,8 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
   // we extract this from the Aztec Parameters and the downwind nv parameter there
   if(!params_.isSublist("Aztec Parameters")) dserror ("we expect Aztec Parameters, but there are none" );
 
-  // this is somewhat suspicious
-  int nPDE = params_.sublist("Aztec Parameters").get("downwinding nv",3);
-  if(nPDE == 2) nPDE = 3;   // i don't know why downwinding nv is 2 in 2d and 4 in 3d, thats somewhat stupid. i think nv=3 in 3d would be better?? (it's meant to be the number of PDEs per dof)
-  spparams->sublist("AMGBS Parameters").set("PDE equations",nPDE);
+  int nPDE = params_.sublist("Aztec Parameters").get("downwinding nv",3); // extract number of velocity dofs
+  spparams->sublist("AMGBS Parameters").set("PDE equations",nPDE+1);
   spparams->sublist("AMGBS Parameters").set("null space: dimension",params_.sublist("AMGBS Parameters").get("PDE equations",3)); // copy the PDE equations as nullspace dimension
 
   spparams->sublist("AMGBS Parameters").set("null space: add default vectors",params_.sublist("ML Parameters").get("null space: add default vectors",false));
@@ -411,26 +410,23 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
     ParameterList& subparams = spparams->sublist("AMGBS Parameters").sublist(stream.str());
 
     // copy ML Parameters or IFPACK Parameters from FLUID PRESSURE SOLVER block
-    if (pressureparams_.isSublist("IFPACK Parameters"))
-      subparams.sublist("IFPACK Parameters") = pressureparams_.sublist("IFPACK Parameters");
-    else if(pressureparams_.isSublist("ML Parameters"))
-      subparams.sublist("ML Parameters") = pressureparams_.sublist("ML Parameters");
-    else
-      dserror("SaddlePointPreconditioner::Setup: no IFPACK or ML ParameterList found in FLUD PRESSURE SOLVER block -> cannot be!");
-
     if(curlevel==0)
     {
-      subparams.set("pressure correction approx: type",subparams.get("fine: type","IFPACK"));
-      if(subparams.isParameter("fine: ifpack type"))  subparams.set("pressure correction approx: ifpack type",subparams.get("fine: ifpack type","ILU"));
+      subparams.set("pressure correction approx: type",subparams.get("fine: type","ILU"));
+      if(subparams.isSublist("IFPACK Parameters fine")) subparams.sublist("IFPACK Parameters") = subparams.sublist("IFPACK Parameters fine");
+      subparams.remove("IFPACK Parameters fine",false);
+      subparams.remove("IFPACK Parameters medium",false);
+      subparams.remove("IFPACK Parameters coarse",false);
       subparams.remove("fine: type",false);
-      subparams.remove("fine: ifpack type",false);
     }
     else
     {
-      subparams.set("pressure correction approx: type",subparams.get("medium: type","IFPACK"));
-      if(subparams.isParameter("medium: ifpack type"))  subparams.set("pressure correction approx: ifpack type",subparams.get("medium: ifpack type","ILU"));
+      subparams.set("pressure correction approx: type",subparams.get("medium: type","ILU"));
+      if(subparams.isSublist("IFPACK Parameters medium")) subparams.sublist("IFPACK Parameters") = subparams.sublist("IFPACK Parameters medium");
+      subparams.remove("IFPACK Parameters fine",false);
+      subparams.remove("IFPACK Parameters medium",false);
+      subparams.remove("IFPACK Parameters coarse",false);
       subparams.remove("medium: type",false);
-      subparams.remove("medium: ifpack type",false);
     }
 
     if(nVerbose_ > 8)
@@ -461,17 +457,12 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
   ParameterList& subparams = spparams->sublist("AMGBS Parameters").sublist(stream.str());
 
   // copy ML Parameters or IFPACK Parameters from FLUID PRESSURE SOLVER block
-  if (pressureparams_.isSublist("IFPACK Parameters"))
-    subparams.sublist("IFPACK Parameters") = pressureparams_.sublist("IFPACK Parameters");
-  else if(pressureparams_.isSublist("ML Parameters"))
-    subparams.sublist("ML Parameters") = pressureparams_.sublist("ML Parameters");
-  else
-    dserror("SaddlePointPreconditioner::Setup: no IFPACK or ML ParameterList found in FLUD PRESSURE SOLVER block -> cannot be!");
-
-  subparams.set("pressure correction approx: type",subparams.get("coarse: type","IFPACK"));
-  if(subparams.isParameter("coarse: ifpack type"))  subparams.set("pressure correction approx: ifpack type",subparams.get("coarse: ifpack type","ILU"));
+  subparams.set("pressure correction approx: type",subparams.get("coarse: type","ILU"));
+  if(subparams.isSublist("IFPACK Parameters coarse")) subparams.sublist("IFPACK Parameters") = subparams.sublist("IFPACK Parameters coarse");
+  subparams.remove("IFPACK Parameters fine",false);
+  subparams.remove("IFPACK Parameters medium",false);
+  subparams.remove("IFPACK Parameters coarse",false);
   subparams.remove("coarse: type",false);
-  subparams.remove("coarse: ifpack type",false);
 
   if(nVerbose_ > 8)
   {

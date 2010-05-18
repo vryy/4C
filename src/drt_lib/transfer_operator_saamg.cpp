@@ -17,6 +17,7 @@
 #include "ml_aggregate.h"
 #include "ml_agg_METIS.h"
 #include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_TimeMonitor.hpp"
 #include "MLAPI.h"
 
 
@@ -28,6 +29,8 @@ LINALG::SAAMGTransferOperator::SAAMGTransferOperator(const RCP<SparseMatrix>& A,
 
 RCP<Epetra_MultiVector>  LINALG::SAAMGTransferOperator::buildTransferOperators(const RCP<Epetra_IntVector> aggs, int naggs_local, Teuchos::ParameterList& params, const RCP<Epetra_MultiVector>& ThisNS, const int domainoffset)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("SAAMGTransferOperator::buildTransferOperators");
+
   ////////////// define dummy variable for next nullspace
   RCP<Epetra_MultiVector> NextNS = null;
   RCP<SparseMatrix> prolongator_tent = null;

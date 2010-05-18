@@ -35,14 +35,14 @@ class BraessSarazin_Smoother : public virtual Epetra_Operator
 
     virtual const char* Label() const { return "Braess-Sarazin Smoother"; }
 
-    const Epetra_Map& OperatorDomainMap() const {return *(mmex_.FullMap());}
-    const Epetra_Map& OperatorRangeMap() const {return *(mmex_.FullMap());}
+    const Epetra_Map& OperatorDomainMap() const {return *(LINALG::MergeMap(velmap_,premap_));}
+    const Epetra_Map& OperatorRangeMap() const {return *(LINALG::MergeMap(velmap_,premap_));}
 
     virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
     int ApplyInverse(const Epetra_MultiVector& velrhs, const Epetra_MultiVector& prerhs, Epetra_MultiVector& velsol, Epetra_MultiVector& presol) const;
 
-    const Epetra_Comm& Comm() const { return mmex_.FullMap()->Comm(); }
+    const Epetra_Comm& Comm() const { return F_->Comm(); }
 
     int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
     {
@@ -77,30 +77,28 @@ class BraessSarazin_Smoother : public virtual Epetra_Operator
   private:
     bool Setup();
 
-    RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB, const SparseMatrix& C, bool transC, bool bComplete = true);
+    RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB, const SparseMatrix& C, bool transC, bool bComplete = true); ///< matrix-matrix-matrix multiplication
 #if 0
     RCP<SparseMatrix>                  diagFinv_;   // inverse diagonal of fluid operator
 #else
-    RCP<Epetra_Vector>                 diagFinv_;   // inverse diagonal of fluid operator (vector)
+    RCP<Epetra_Vector>                 diagFinv_;   ///< inverse diagonal of fluid operator (vector)
 #endif
-    RCP<const SparseMatrix>                  F_;    // fluid operator
-    RCP<const SparseMatrix>                  G_;    // pressure gradient operator
-    RCP<const SparseMatrix>                  D_;    // divergence operator
-    RCP<const SparseMatrix>                  Z_;    // pressure stabilization terms or null block
-    RCP<SparseMatrix>                        S_;    // Schur complement matrix of F_
+    RCP<const SparseMatrix>                  F_;    ///< fluid operator
+    RCP<const SparseMatrix>                  G_;    ///< pressure gradient operator
+    RCP<const SparseMatrix>                  D_;    ///< divergence operator
+    RCP<const SparseMatrix>                  Z_;    ///< pressure stabilization terms or null block
+    RCP<SparseMatrix>                        S_;    ///< Schur complement matrix of F_
 
-    MultiMapExtractor         mmex_;                // DO WE NEED THIS????? NO! multi map extractor (velocity - pressure) on finest level only
+    ParameterList             params_;              ///< parameter list for Braess-Sarazin smoother
 
-    ParameterList             params_;
+    double                    omega_;               ///< damping factor for Braess Sarazin
 
-    double                    omega_;               // damping factor for Braess Sarazin
+    RCP<Epetra_Operator>      Pp_;                  ///< "preconditioner" for "solving" pressure correction equation (ILU, Jacobi, Gauss-Seidel etc)
 
-    RCP<Epetra_Operator>      Pp_;                  // "preconditioner" for "solving" pressure correction equation
+    const Epetra_Map          velmap_;              ///< map for velocity dofs (primary variables)
+    const Epetra_Map          premap_;              ///< map for pressure dofs (Lagrange multipliers)
 
-    const Epetra_Map          velmap_;
-    const Epetra_Map          premap_;
-
-    int                       nSweeps_;             // number of Braess-Sarazin sweeps
+    int                       nSweeps_;             ///< number of Braess-Sarazin sweeps
 
 };
 
