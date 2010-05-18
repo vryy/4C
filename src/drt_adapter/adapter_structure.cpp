@@ -565,17 +565,21 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
       = Teuchos::rcp(new StructureTimIntImpl(stii, ioflags, sdyn, xparams,
                                              actdis, solver, output));
 
-    if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
+    if (genprob.probtyp == prb_fsi or
+        genprob.probtyp == prb_fsi_lung or
+        genprob.probtyp == prb_fsi_xfem)
     {
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       const int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
-
+      cout << "Using StructureNOXCorrectionWrapper()..." << endl;
       if (tmpstr->HaveConstraint())
+      {
         if (coupling == fsi_iter_constr_monolithicstructuresplit or
             coupling == fsi_iter_constr_monolithicfluidsplit)
           structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
         else
           structure_ = rcp(new StructureNOXCorrectionWrapper(rcp(new StructureConstrMerged(tmpstr))));
+      }
       else
       {
         if (coupling == fsi_iter_lung_monolithicstructuresplit or
