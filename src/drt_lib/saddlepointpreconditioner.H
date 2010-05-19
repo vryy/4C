@@ -5,7 +5,10 @@
  *      Author: wiesner
  */
 
-
+/*!
+  \file saddlepointpreconditoiner.H
+  \brief implementation of multigrid saddlepoint preconditioner for fluid problems
+ */
 
 #ifdef CCADISCRET
 #ifndef SADDLEPOINTPRECONDITIONER_H_
@@ -50,9 +53,27 @@ using namespace Teuchos;
 namespace LINALG
 {
 
+/*!
+ * \brief class SaddlePointPreconditioner: implements saddle point preconditioner for fluid problems
+ *
+ * this class implements a multigrid saddle point preconditioner for fluid problems (Navier-Stokes equations)
+ * We assume, that the number and ratio of velocity and pressure degrees of freedom per node is the same for all nodes.
+ *
+ * The "AMGBS Parameters" list handles following parameters
+ * - "amgbs: smoother: pre or post": select if pre- and/or postsmoothing is done within V-cycle (default: "both", choose from: "both", "pre", "post")
+ * - "amgbs: prolongator smoother (vel)": prolongation smoothing/improving strategy for velocity part (default: "PA-AMG", can also be "SA-AMG" and "PG-AMG")
+ * - "amgbs: prolongator smoother (pre)": prolongation smoothing/improving strategy for pressure part (default: "PA-AMG", can also be "SA-AMG" and "PG-AMG")
+ * - "max coarse dimension": the maximal dimension of coarse grid system before aggregation process stops (default: 20)
+ * - "ML output": verbosity level between 0 and 10 (default: 0 = no debug output)
+ * - "PDE equations": number of underlaying PDE equations. corresponds to number of degrees of freedom per node (should be 3 for 2D and 4 for 3D problems)
+ * - "aggregation: type": algorithm for aggregation process (default: "Uncoupled")
+ * - "aggregation: threshold": threshold parameter for aggregation process (default: 0.0)
+ * - furthermore all ML parameters are transferred to ML aggregation method
+ */
 class SaddlePointPreconditioner : public virtual Epetra_Operator
 {
   public:
+    /*! constructor */
     SaddlePointPreconditioner(RCP<Epetra_Operator> A, const ParameterList& params, FILE* outfile = NULL);
     virtual ~SaddlePointPreconditioner();
 
@@ -62,6 +83,7 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
     const Epetra_Map& OperatorDomainMap() const { return Ainput_->FullDomainMap(); }
     const Epetra_Map& OperatorRangeMap() const { return Ainput_->FullRangeMap(); }
 
+    /*! entry function for V-Cycle */
     int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
     int SetUseTranspose(bool UseTranspose)
@@ -99,7 +121,29 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
     SaddlePointPreconditioner(SaddlePointPreconditioner& old);
     SaddlePointPreconditioner operator = (const SaddlePointPreconditioner& old);
 
+    /*! \brief setup phase of multigrid algorithm
+     * performs the multigrid setup
+     *
+     * -# for each level first the aggregates for the velocity part are generated using ML aggregation
+     * -# the aggregation information is transferred to the pressure part. here we assume, that we can find corresponding pressure degrees of freedom for all aggregated velocity degrees of freedom
+     * -# next the transfer operators (separately for velocity and pressure) are built.
+     * -# with the transfer operators the system matrix for the next level is calculated.
+     * -# the BraessSarazin_Smoother objects for pre- and postsmoothing in the V-cycle are generated.
+     * -# finally it's checked if the setup process can be stopped
+     *
+     * \param A: Epetra_Operator: should be a BlockSparseMatrixBase object or a sparse matrix or at least a SparseMatrix.
+     * \param origlist: parameter list for saddle-point preconditioner
+     *
+     * \note if A is a SparseMatrix we have to split the matrix in 2x2 blocks every time this function is called. That's too expensive.
+     *
+     * \author Tobias Wiesner (wiesner@lnm.mw.tum.de)
+     */
     void Setup(RCP<Epetra_Operator> A, const ParameterList& origlist);
+
+    /*! \brief implementation of the V-Cycle
+     * this function is called recursively
+     * \author Tobias Wiesner (wiesner@lnm.mw.tum.de)
+     */
     int VCycle(const Epetra_MultiVector& Xvel, const Epetra_MultiVector& Xpre, Epetra_MultiVector& Yvel, Epetra_MultiVector& Ypre, const int level) const;
 
     /*!
@@ -175,19 +219,18 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
 
 
 
-    ParameterList                                       params_;   // list for Braess-Sarazin
-    //ParameterList                                       pressureparams_;   // list for pressure solver
-    FILE*                                               outfile_; // error file to write output to or NULL
+    ParameterList                                       params_;    ///< parameter list for SaddlePoint Preconditioner
+    FILE*                                               outfile_;   ///< error file to write output to or NULL
 
-    int                                                 nmaxlevels_;  // number of maximal allowed multigrid levels
-    int                                                 nlevels_;     // number of used multigrid levels
+    int                                                 nmaxlevels_;  // /<number of maximal allowed multigrid levels
+    int                                                 nlevels_;     ///< number of used multigrid levels
 
-    RCP<BlockSparseMatrixBase>                          Ainput_; // input matrix
+    RCP<BlockSparseMatrixBase>                          Ainput_; ///< input matrix
 
-    std::vector<RCP<SparseMatrix> >                    A11_;    // vector with splitted blocks of matrix
-    std::vector<RCP<SparseMatrix> >                    A12_;
-    std::vector<RCP<SparseMatrix> >                    A21_;
-    std::vector<RCP<SparseMatrix> >                    A22_;
+    std::vector<RCP<SparseMatrix> >                    A11_;    ///< vector with splitted blocks of matrix for all multigrid levels
+    std::vector<RCP<SparseMatrix> >                    A12_;    ///< vector with splitted blocks of matrix for all multigrid levels
+    std::vector<RCP<SparseMatrix> >                    A21_;    ///< vector with splitted blocks of matrix for all multigrid levels
+    std::vector<RCP<SparseMatrix> >                    A22_;    ///< vector with splitted blocks of matrix for all multigrid levels
 
     std::vector<RCP<TransferOperator> >                Tvel_;
     std::vector<RCP<TransferOperator> >                Tpre_;
@@ -202,8 +245,8 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
 
     int                                                nVerbose_; // verbosity level (set in Setup)
 
-    bool                                               bPresmoothing_;        // presmoothing in V-Cycle
-    bool                                               bPostsmoothing_;       // postsmoothing in V-Cycle
+    bool                                               bPresmoothing_;        ///< presmoothing in V-Cycle
+    bool                                               bPostsmoothing_;       ///< postsmoothing in V-Cycle
 
 };
 

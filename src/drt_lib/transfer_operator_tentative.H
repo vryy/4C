@@ -5,6 +5,11 @@
  *      Author: wiesner
  */
 
+/*!
+  \file transfer_operator_tentative.H
+  \brief implementation for tentative transfer operators
+ */
+
 #ifdef CCADISCRET
 #ifndef TRANSFER_OPERATOR_TENTATIVE_H_
 #define TRANSFER_OPERATOR_TENTATIVE_H_
@@ -19,6 +24,9 @@ using namespace Teuchos;
 namespace LINALG
 {
 
+  /*! \brief concrete implementation of the tentative transfer opeartors
+   * uses the aggregation information for building the tentative prolongator and restrictor
+   */
   class TentativeTransferOperator : public TransferOperator
   {
     public:

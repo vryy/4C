@@ -5,6 +5,11 @@
  *      Author: wiesner
  */
 
+/*!
+  \file transfer_operator.H
+  \brief basis class for multigrid transfer operators
+ */
+
 #ifdef CCADISCRET
 
 #ifndef TRANSFER_OPERATOR_H_
@@ -31,6 +36,12 @@ using namespace Teuchos;
 namespace LINALG
 {
 
+/*!
+ *  \brief basis class for multigrid transfer operators
+ *
+ *  class provides a virtual interface for concrete transfer operator implementations.
+ *  a new transfer operator has to implement the buildTransferOperators function
+ */
 class TransferOperator : public virtual Epetra_Operator
 {
 
@@ -100,10 +111,10 @@ class TransferOperator : public virtual Epetra_Operator
     */
     virtual RCP<Epetra_MultiVector> buildTransferOperators(const RCP<Epetra_IntVector> aggs, int naggs_local, Teuchos::ParameterList& params, const RCP<Epetra_MultiVector>& ThisNS, const int domainoffset = 0) = 0;
 
-    RCP<SparseMatrix> Prolongator() {return prolongator_; };
-    RCP<SparseMatrix> Restrictor() {return restrictor_; };
-    const SparseMatrix& P() {return *prolongator_; };
-    const SparseMatrix& R() {return *restrictor_; };
+    RCP<SparseMatrix> Prolongator() {return prolongator_; };///< returns the prolongation operator
+    RCP<SparseMatrix> Restrictor() {return restrictor_; }; ///< returns the restriction operator
+    const SparseMatrix& P() {return *prolongator_; }; ///< returns the prolongation operator
+    const SparseMatrix& R() {return *restrictor_; };  ///< returns the restriction operator
 
   protected:
     const Teuchos::RCP<SparseMatrix>       A_;              ///< Input matrix

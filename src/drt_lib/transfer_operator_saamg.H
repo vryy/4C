@@ -5,6 +5,11 @@
  *      Author: wiesner
  */
 
+/*!
+  \file transfer_operator_saamg.H
+  \brief implementation for SA-AMG transfer operators
+ */
+
 #ifdef CCADISCRET
 #ifndef TRANSFER_OPERATOR_SAAMG_H_
 #define TRANSFER_OPERATOR_SAAMG_H_
@@ -16,7 +21,9 @@ using namespace Teuchos;
 
 namespace LINALG
 {
-
+  /*! concrete implementation for the smoothed aggregation transfer operators
+   * uses the tentative transfer operators and smoothes them using the SA-AMG method. This smoothing method is dedicated to symmetric positive definite problems only.
+   */
   class SAAMGTransferOperator : public TentativeTransferOperator
   {
     public:

@@ -5,6 +5,11 @@
  *      Author: wiesner
  */
 
+/*!
+  \file braesssarazin_smoother.H
+  \brief implementation of Braess-Sarazin smoother
+ */
+
 #ifdef CCADISCRET
 
 #ifndef BRAESSSARAZIN_SMOOTHER_H_
@@ -27,19 +32,62 @@ using namespace Teuchos;
 namespace LINALG
 {
 
+/*!
+ * \brief class BraessSarazin_Smoother: implements Braess-Sarazin smoothing algorithm
+ *
+ * BraessSarazin_Smoother implements the Braess-Sarazin smoothing algorithm for a multigrid saddlepoint preconditioner
+ *
+ * the Braess-Sarazn smoother supports the following parameters
+ * - "braess-sarazin: sweeps": number of Braess-Sarazin sweeps (default: 1)
+ * - "braess-sarazin: damping factor": damping factor for Braess-Sarazin (default: 1.3)
+ * - "pressure correction approx: type": type of pressure correction approximation (default: "ILU")
+ *  possible parameters for this are "ILU", "Jacobi", "Gauss-Seidel", "symmetric Gauss-Seidel", "Jacobi stand-alone", "Gauss-Seidel stand-alone", "symmetric Gauss-Seidel stand-alone".
+ *  These methods use the parameters in the "IFPACK parameters" sublist.
+ *  Furthermore you can use "KLU" and "Umfpack" as direct solvers.
+ *
+ *  For BACI users: The "IFPACK parameters" sublist is filled using the IFPACK specific parameters from the dat file.
+ *
+ */
 class BraessSarazin_Smoother : public virtual Epetra_Operator
 {
   public:
+    /*!
+     *  constructor
+     *  \param A11: matrix block (1,1)
+     *  \param A12: matrix block (1,2)
+     *  \param A21: matrix block (2,1)
+     *  \param A22: matrix block (2,2)
+     *  \param params: parameter list
+     */
     explicit BraessSarazin_Smoother(RCP<const SparseMatrix> A11, RCP<const SparseMatrix> A12, RCP<const SparseMatrix> A21, RCP<const SparseMatrix> A22, const ParameterList& params);
     virtual ~BraessSarazin_Smoother() {};
 
     virtual const char* Label() const { return "Braess-Sarazin Smoother"; }
 
+    /*! returns the domain map of the overall operator
+     *  \return Epetra_Map for the overall operator domain map
+     */
     const Epetra_Map& OperatorDomainMap() const {return *(LINALG::MergeMap(velmap_,premap_));}
+
+    /*! returns the range map of the overall operator
+     *  \return Epetra_Map for the overall operator range map
+     */
     const Epetra_Map& OperatorRangeMap() const {return *(LINALG::MergeMap(velmap_,premap_));}
 
+    /*! not supported */
     virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
+    /*! application of Braess-Sarazin smoother to (velsol,presol) vector with given rhs (velrhs, prerhs)
+     *  performs nSweeps_ sweeps with Braess-Sarazin smoother.
+     *  After exit, velsol and presol contain the smoothed solution vector (velocity and pressure part).
+     *  The pressure-correction equation is solved approximately with the Pp_ operator, that is generated in Setup.
+     *
+     *  \param velrhs: rhs vector (velocity part)
+     *  \param prerhs: rhs vector (pressure part)
+     *  \param velsol: solution vector (velocity part)
+     *  \param presol: solution vector (pressure part)
+     *  \return 0
+     */
     int ApplyInverse(const Epetra_MultiVector& velrhs, const Epetra_MultiVector& prerhs, Epetra_MultiVector& velsol, Epetra_MultiVector& presol) const;
 
     const Epetra_Comm& Comm() const { return F_->Comm(); }

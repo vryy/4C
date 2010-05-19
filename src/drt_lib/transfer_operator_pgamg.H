@@ -5,6 +5,10 @@
  *      Author: wiesner
  */
 
+/*!
+  \file transfer_operator_pgamg.H
+  \brief implementation for a PG-AMG variant of transfer operators
+ */
 #ifdef CCADISCRET
 #ifndef TRANSFER_OPERATOR_PGAMG_H_
 #define TRANSFER_OPERATOR_PGAMG_H_
@@ -16,6 +20,10 @@ using namespace Teuchos;
 
 namespace LINALG
 {
+  /*! \brief variant of PG-AMG
+   *  this transfer operators is dedicated to nonsymmetric (and indefinite problems).
+   *  \note not optimized for parallel use
+   */
   class PGAMGTransferOperator : public SAAMGTransferOperator
   {
     public:
