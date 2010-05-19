@@ -115,7 +115,10 @@ void FSI::MonolithicXFEM::SetupExtractor()
   maps.push_back(FluidField()    .DofRowMap());
 
   if (maps[0]->NumGlobalElements()==0)
-    dserror("No inner structural equations. Splitting not possible. Panic.");
+  {
+//    dserror("No inner structural equations. Splitting not possible. Panic.");
+    cout <<"No inner structural equations... All structure DOFs are surface DOFs, Axel?" << endl;
+  }
 
   SetDofRowMaps(maps);
 
