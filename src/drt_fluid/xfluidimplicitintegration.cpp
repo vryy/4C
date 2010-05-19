@@ -692,7 +692,7 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
 
   // get old dofmap, compute new one and get the new one, too
   const Epetra_Map olddofrowmap = *discret_->DofRowMap();
-  discret_->FillComplete(true,false,false);
+  discret_->FillComplete(true,false,true);
   const Epetra_Map& newdofrowmap = *discret_->DofRowMap();
 
   {
@@ -1127,6 +1127,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*cutterdiscret->DofColMap(),true);
 
   incvel_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+  residual_->PutScalar(0.0);
 
   // increment of the old iteration step - used for update of condensed element stresses
   Teuchos::RCP<Epetra_Vector> oldinc = LINALG::CreateVector(*discret_->DofRowMap(),true);
@@ -1663,6 +1664,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   eleparams.set("timealgo",timealgo_);
   eleparams.set("dt",dta_);
   eleparams.set("theta",theta_);
+  eleparams.set("interface second order", params_.get<bool>("interface second order"));
   eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
 
   // parameters for stabilization
@@ -3120,7 +3122,6 @@ void FLD::XFluidImplicitTimeInt::MonolithicMultiDisEvaluate(
   if (!fluiddis->HaveDofs()) dserror("fluiddis->AssignDegreesOfFreedom() was not called");
 
   systemmatrix1->Zero();
-  systemvector1->PutScalar(0.0);
 
   // define element matrices and vectors
   Epetra_SerialDenseMatrix elematrix1;

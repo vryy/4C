@@ -359,6 +359,28 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                 this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices_);
 
+        const bool stationary_monolithic_FSI = (monolithic_FSI and (timealgo == timeint_stationary));
+        const bool instationary_monolithic_FSI = (monolithic_FSI and (timealgo != timeint_stationary));
+
+        if (stationary_monolithic_FSI)
+        {
+          fluidfluidmatrices_.Gsui_uncond->Scale(0.0);
+        }
+        else if (instationary_monolithic_FSI)
+        {
+          const bool secondorder = params.get<bool>("interface second order");
+          double theta_iface;
+          if (secondorder)
+          { theta_iface = 0.5; }
+          else
+          { theta_iface = 1.0; }
+          fluidfluidmatrices_.Gsui_uncond->Scale(1.0/(dt*theta_iface));
+        }
+        else
+        {
+          // fluid fluid coupling: everything is ok.
+        }
+
         // condensation
         CondenseElementStressAndStoreOldIterationStep(
             elemat1_uncond, elevec1_uncond,

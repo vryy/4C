@@ -1105,7 +1105,7 @@ void SysmatDomainSigma(
             LINALG::Matrix<nsd,1> rhsint;
             LINALG::Matrix<nsd,1> bodyforce;
             bodyforce.Clear();
-//            bodyforce(0) = 0.1; //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//            bodyforce(0) = 1.0*dens; //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             for (size_t isd = 0; isd < nsd; ++isd)
                 rhsint(isd) = histvec(isd)*dens/timefac + bodyforce(isd);
 
@@ -1513,32 +1513,24 @@ void SysmatBoundarySigma(
             assembler.template Vector<Sigmazy>(shp_tau.d0, fac*normalvec_fluid(1)*gpvelnp(2));
             assembler.template Vector<Sigmazz>(shp_tau.d0, fac*normalvec_fluid(2)*gpvelnp(2));
 
-            const bool stationary_monolithic_FSI = monolithic_FSI and (timealgo == timeint_stationary);
 
-            if (not stationary_monolithic_FSI)
-            {
               /*                      \
              |  (virt tau) * n^f , Dui |
               \                      */
 
-              if (fluidfluidmatrices.Gsui_uncond == null)
-                dserror("Gsui_uncond should not be Null!");
+            if (fluidfluidmatrices.Gsui_uncond == null)
+              dserror("Gsui_uncond should not be Null!");
 
-              patchassembler.template Matrix<Sigmaxx,Velxiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(0), shp_iface);
-              patchassembler.template Matrix<Sigmaxy,Velxiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(1), shp_iface);
-              patchassembler.template Matrix<Sigmaxz,Velxiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(2), shp_iface);
-              patchassembler.template Matrix<Sigmayx,Velyiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(0), shp_iface);
-              patchassembler.template Matrix<Sigmayy,Velyiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(1), shp_iface);
-              patchassembler.template Matrix<Sigmayz,Velyiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(2), shp_iface);
-              patchassembler.template Matrix<Sigmazx,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(0), shp_iface);
-              patchassembler.template Matrix<Sigmazy,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(1), shp_iface);
-              patchassembler.template Matrix<Sigmazz,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(2), shp_iface);
-            }
-            else
-            {
-              cout << "monolithic FSI" << endl;
-            }
-            // always needed. Above matrix only needed for instationary monolithic formulation
+            patchassembler.template Matrix<Sigmaxx,Velxiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(0), shp_iface);
+            patchassembler.template Matrix<Sigmaxy,Velxiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(1), shp_iface);
+            patchassembler.template Matrix<Sigmaxz,Velxiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(2), shp_iface);
+            patchassembler.template Matrix<Sigmayx,Velyiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(0), shp_iface);
+            patchassembler.template Matrix<Sigmayy,Velyiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(1), shp_iface);
+            patchassembler.template Matrix<Sigmayz,Velyiface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(2), shp_iface);
+            patchassembler.template Matrix<Sigmazx,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(0), shp_iface);
+            patchassembler.template Matrix<Sigmazy,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(1), shp_iface);
+            patchassembler.template Matrix<Sigmazz,Velziface>(*(fluidfluidmatrices.Gsui_uncond), shp_tau.d0, fac*normalvec_fluid(2), shp_iface);
+
             assembler.template Vector<Sigmaxx>(shp_tau.d0, -fac*normalvec_fluid(0)*interface_gpvelnp(0));
             assembler.template Vector<Sigmaxy>(shp_tau.d0, -fac*normalvec_fluid(1)*interface_gpvelnp(0));
             assembler.template Vector<Sigmaxz>(shp_tau.d0, -fac*normalvec_fluid(2)*interface_gpvelnp(0));

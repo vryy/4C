@@ -112,7 +112,9 @@ int DRT::ELEMENTS::XFluid3Surface::EvaluateNeumann(
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {
+#ifdef DEBUG
   std::cout << "/!\\ warning === Neumann boundary conditions in XFEM problems are not implemented in a general way!" << std::endl;
+#endif
   // there are 3 velocities and 1 pressure
   const int numdf = 4;
 
@@ -121,7 +123,8 @@ int DRT::ELEMENTS::XFluid3Surface::EvaluateNeumann(
   // find out whether we will use a time curve
   bool usetime = true;
   const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
+  if (time<0.0)
+    usetime = false;
 
   // find out whether we will use a time curve and get the factor
   const vector<int>* curve  = condition.Get<vector<int> >("curve");
@@ -137,7 +140,7 @@ int DRT::ELEMENTS::XFluid3Surface::EvaluateNeumann(
   const vector<int>*    func  = condition.Get<vector<int> >   ("funct");
 
   // set number of nodes
-  const int iel   = this->NumNode();
+  const int numnode = this->NumNode();
 
   DRT::UTILS::GaussRule2D  gaussrule = DRT::UTILS::intrule2D_undefined;
   switch(distype)
@@ -159,18 +162,18 @@ int DRT::ELEMENTS::XFluid3Surface::EvaluateNeumann(
   }
 
   // allocate vector for shape functions and matrix for derivatives
-  Epetra_SerialDenseVector  funct(iel);
-  Epetra_SerialDenseMatrix  deriv(2,iel);
+  Epetra_SerialDenseVector  funct(numnode);
+  Epetra_SerialDenseMatrix  deriv(2,numnode);
 
   // node coordinates
-  Epetra_SerialDenseMatrix  xyze(3,iel);
+  Epetra_SerialDenseMatrix  xyze(3,numnode);
 
   // the metric tensor and the area of an infintesimal surface element
   Epetra_SerialDenseMatrix  metrictensor(2,2);
   double                        drs;
 
   // get node coordinates
-  for(int i=0;i<iel;i++)
+  for(int i=0;i<numnode;i++)
   {
     xyze(0,i)=this->Nodes()[i]->X()[0];
     xyze(1,i)=this->Nodes()[i]->X()[1];
@@ -198,14 +201,12 @@ int DRT::ELEMENTS::XFluid3Surface::EvaluateNeumann(
     // the gauss weight, the timecurve factor
     const double fac = intpoints.qwgt[gpid] * drs * curvefac;
 
-    // factor given by spatial function
-    double functfac = 1.0;
     // determine coordinates of current Gauss point
     double coordgp[3];
     coordgp[0]=0.0;
     coordgp[1]=0.0;
     coordgp[2]=0.0;
-    for (int i = 0; i< iel; i++)
+    for (int i = 0; i< numnode; i++)
     {
       coordgp[0] += xyze(0,i) * funct[i];
       coordgp[1] += xyze(1,i) * funct[i];
@@ -215,20 +216,21 @@ int DRT::ELEMENTS::XFluid3Surface::EvaluateNeumann(
     int functnum = -1;
     const double* coordgpref = &coordgp[0]; // needed for function evaluation
 
-    for (int node=0;node<iel;++node)
+    for (int node=0;node<numnode;++node)
     {
       for(int dim=0;dim<3;dim++)
       {
-        if (func) functnum = (*func)[dim];
+        if (func)
+          functnum = (*func)[dim];
+
+        // factor given by spatial function
+        double functfac = 1.0;
+        if (functnum>0)
         {
-          if (functnum>0)
-          {
-            // evaluate function at current gauss point
-            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgpref,time,NULL);
-          }
-          else
-            functfac = 1.0;
+          // evaluate function at current gauss point
+          functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgpref,time,NULL);
         }
+
         elevec1[node*numdf+dim]+= funct[node]*(*onoff)[dim]*(*val)[dim]*fac*functfac;
       }
     }
