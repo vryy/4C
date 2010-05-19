@@ -1489,7 +1489,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       // rho*Du + |   rho*u   o nabla | Du + |   rho*Du o nabla | u   +
       //           \      (i)         /       \                /   (i)
       //
-      //                       /  \
+      /*                       /  \   */
       //        + nabla o eps | Du |
       //                       \  /
 
