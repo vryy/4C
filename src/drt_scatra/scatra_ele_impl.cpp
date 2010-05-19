@@ -5120,7 +5120,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
     // integration rule
     DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
-    // loop over all nodes
+    // integration loop
     for (int iquad=0; iquad< intpoints.IP().nquad; ++iquad)
     {
       // evaluate shape functions and derivatives at integration point
@@ -5162,7 +5162,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
         // convective flux terms
         for (int idim=0; idim<nsd_ ;idim++)
         {
-          q(idim) -= densnp_[dofindex]*velint(idim)*ephinpint;
+          q(idim) -= dens*velint(idim)*ephinpint;
         }
         // no break statement here!
       case INPAR::SCATRA::flux_diffusive_domain:
@@ -5171,7 +5171,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
         {
           for (int idim=0; idim<nsd_ ;idim++)
           {
-            q(idim) += diffus_[dofindex]*derxy_(idim,vi)*ephinp[vi*numdofpernode_+dofindex];
+            q(idim) += diffus*derxy_(idim,vi)*ephinp[vi*numdofpernode_+dofindex];
           }
         }
 
