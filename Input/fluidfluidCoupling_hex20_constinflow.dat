@@ -123,13 +123,13 @@ UPRES                           1
 SOLVER                          UMFPACK 
 AZCONV          AZ_r0
 AZDROP          0
-AZFILL          0     // The amount of fill allowed for an internal "ilut" preconditioner.
-AZGFILL         0   // The amount of fill allowed for the internal "ilu" preconditioner.
+IFPACKFILL          0     // The amount of fill allowed for an internal "ilut" preconditioner.
+IFPACKGFILL         0   // The amount of fill allowed for the internal "ilu" preconditioner.
 AZGRAPH                         1
 AZITER                          1000 // max iteration
 AZOMEGA                         1.0   // damping for GaussSeidel and jacobi type methods
 AZOUTPUT         0  // The amount of overlap used for the internal "ilu" and "ilut" preconditioners.
-AZOVERLAP       0   // The order for of the polynomials used for the "Polynomial" and
+IFPACKOVERLAP       0   // The order for of the polynomials used for the "Polynomial" and
 AZPOLY           1  // "Least-squares Polynomial" internal preconditioners.
 AZPREC          ILU  // Type of internal preconditioner to use.
 AZREUSE           4  // how often to recompute some preconditioners
@@ -158,7 +158,7 @@ SOLVER         UMFPACK  // The solver to attack the system of linear equations
 PARTITION                       Cut_Elements
 -------------------------------------------------------XFEM GENERAL
 CONDEST            No  // Do you want to estimate the condition number? 
-DLM_CONDENSATION      No  //Do you want to condense the distributed Lagrange multiplier?
+DLM_CONDENSATION     No  //Do you want to condense the distributed Lagrange multiplier?
 GMSH_DEBUG_OUT                  Yes
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid VISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
