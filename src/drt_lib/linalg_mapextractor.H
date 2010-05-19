@@ -107,8 +107,15 @@ namespace LINALG
     /// merge set of unique maps
     /*!
       \warning There must be no overlap in these maps.
+               The order of the GIDs is destroyed
      */
     static Teuchos::RCP<Epetra_Map> MergeMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
+
+    /// merge set of unique maps
+    /*!
+      \warning There must be no overlap in these maps.
+    */
+    static Teuchos::RCP<Epetra_Map> MergeMapsKeepOrder(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
 
     /// intersect set of unique maps
     /*!

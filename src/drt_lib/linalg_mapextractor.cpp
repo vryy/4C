@@ -140,6 +140,42 @@ Teuchos::RCP<Epetra_Map> LINALG::MultiMapExtractor::MergeMaps(const std::vector<
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> LINALG::MultiMapExtractor::MergeMapsKeepOrder(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps)
+{
+  if (maps.empty())
+    dserror("no maps to merge");
+
+  // sanity checks
+  for (std::size_t i=0; i<maps.size(); ++i)
+  {
+    if (maps[i]==Teuchos::null)
+      dserror("can not merge extractor with null maps");
+    if (not maps[i]->UniqueGIDs())
+      dserror("map %d not unique", i);
+  }
+
+  // collect gids
+  std::vector<int> gids;
+  for (std::size_t i=0; i<maps.size(); ++i)
+  {
+    const Epetra_Map& map = *maps[i];
+    for (int j=0; j<map.NumMyElements(); ++j)
+      gids.push_back(map.GID(j));
+  }
+
+  // build combined map
+  Teuchos::RCP<Epetra_Map> fullmap =
+      Teuchos::rcp(new Epetra_Map(-1,
+          gids.size(),
+          &gids[0],
+          0,
+          maps[0]->Comm()));
+  return fullmap;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> LINALG::MultiMapExtractor::IntersectMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps)
 {
   if (maps.size()==0)
