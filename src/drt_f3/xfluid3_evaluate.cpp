@@ -933,7 +933,6 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
 
     if (nui > 0 and interface_unknowns)
     {
-      cout << "only for monolithic" << endl;
       vector<double> iterinc_velnp_iface(nui);
       DRT::UTILS::ExtractMyValues(*discretizationiface.GetState("nodal iterinc"),iterinc_velnp_iface,lmiface);
 
