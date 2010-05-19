@@ -261,7 +261,6 @@ void FSI::MonolithicXFEM::Newton()
       break;
     }
 
-
     SetupSystemMatrix();
 
     LinearSolve();
@@ -276,17 +275,22 @@ void FSI::MonolithicXFEM::Evaluate()
   // take current increment and setup linear system
   cout << "FSI::MonolithicXFEM::Evaluate()" << endl;
 
-  if (stepinc_!=Teuchos::null)
+  if (stepinc_ == Teuchos::null)
+  {
+    FluidField().Evaluate(Teuchos::null, Teuchos::null);
+    StructureField().Evaluate(Teuchos::null);
+  }
+  else
   {
     // extract structure displacement
-    const Teuchos::RCP<Epetra_Vector> sxstepinc_interior = Extractor().ExtractStructureInteriorVector(stepinc_);
-    const Teuchos::RCP<Epetra_Vector> sxstepinc_boundary = Extractor().ExtractStructureBoundaryVector(stepinc_);
+    const Teuchos::RCP<const Epetra_Vector> sxstepinc_interior = Extractor().ExtractStructureInteriorVector(stepinc_);
+    const Teuchos::RCP<const Epetra_Vector> sxstepinc_boundary = Extractor().ExtractStructureBoundaryVector(stepinc_);
 
     const Teuchos::RCP<Epetra_Vector> sxstepinc = LINALG::CreateVector(*StructureField().Interface().FullMap(),true);
     StructureField().Interface().InsertOtherVector(sxstepinc_interior,sxstepinc);
     StructureField().Interface().InsertFSICondVector(sxstepinc_boundary,sxstepinc);
 
-    const Teuchos::RCP<Epetra_Vector> fxstepinc = Extractor().ExtractFluidVector(stepinc_);
+    const Teuchos::RCP<const Epetra_Vector> fxstepinc = Extractor().ExtractFluidVector(stepinc_);
 
 //    cout << "solid interiour step inc" << endl;
 //    cout << *sxstepinc_interior << endl;
@@ -308,12 +312,6 @@ void FSI::MonolithicXFEM::Evaluate()
       f << (*sxstepinc_boundary)[0] << "  " << "\n";
       f.close();
     }
-  }
-  else
-  {
-    cout << "first step" << endl;
-    FluidField().Evaluate(Teuchos::null, Teuchos::null);
-    StructureField().Evaluate(Teuchos::null);
   }
 
 }
@@ -347,16 +345,15 @@ void FSI::MonolithicXFEM::SetupRHS()
   Extractor().InsertFluidVector(frhs, rhs_);                      // fluid all
 
   // add condensed contribution from stress Lagrange multiplier
-  const Teuchos::RCP<Epetra_Vector> rhsd = FluidField().CouplingVectors().find("rhsd")->second;
-
-  const Teuchos::RCP<Epetra_Vector> structboundarycoupleforce = FluidToStruct(rhsd);
+  const Teuchos::RCP<const Epetra_Vector> rhsd = FluidField().CouplingVectors().find("rhsd")->second;
+  const Teuchos::RCP<const Epetra_Vector> structboundarycoupleforce = FluidToStruct(rhsd);
 
 //  cout << "rhsd^sigma + rhs_condense" << endl;
 //  cout << *structboundarycoupleforce << endl;
   Extractor().AddStructureBoundaryVector(structboundarycoupleforce,rhs_);
 
   const Teuchos::RCP<const Epetra_Map >& condmap = StructureField().GetDBCMapExtractor()->CondMap();
-  Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*condmap, true);
+  const Teuchos::RCP<const Epetra_Vector> zeros = LINALG::CreateVector(*condmap, true);
   Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*Extractor().FullMap(), true);
 
   LINALG::ApplyDirichlettoSystem(tmp, rhs_, zeros, *condmap);
@@ -601,7 +598,7 @@ void FSI::MonolithicXFEM::LinearSolve()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicXFEM::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicXFEM::StructToFluid(const Teuchos::RCP<const Epetra_Vector> iv)
 {
   const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   return coupsf.MasterToSlave(iv);
@@ -610,7 +607,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicXFEM::StructToFluid(Teuchos::RCP<Epet
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicXFEM::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicXFEM::FluidToStruct(const Teuchos::RCP<const Epetra_Vector> iv)
 {
   const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   return coupsf.SlaveToMaster(iv);

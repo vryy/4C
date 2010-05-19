@@ -162,8 +162,8 @@ namespace FSI
 
     MonolithicXFEMExtractor extractor_;
 
-    Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv);
-    Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv);
+    Teuchos::RCP<Epetra_Vector> StructToFluid(const Teuchos::RCP<const Epetra_Vector> iv);
+    Teuchos::RCP<Epetra_Vector> FluidToStruct(const Teuchos::RCP<const Epetra_Vector> iv);
 
     /// residual
     Teuchos::RCP<Epetra_Vector> rhs_;
