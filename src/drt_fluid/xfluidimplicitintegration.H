@@ -586,6 +586,8 @@ protected:
 	  //@}
 
 	  Teuchos::RCP<Epetra_Vector>    mfvelnp_;
+	  /// Nonlinear iteration increment vector
+	  Teuchos::RCP<Epetra_Vector>    fluidfluidincvel_;
   }fluidfluidstate_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)

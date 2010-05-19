@@ -477,27 +477,18 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       const bool supg   = true;
       const bool cstab  = true;
 
-//      const bool ifaceForceContribution = discretization.ElementRowMap()->MyGID(this->Id());
-      const bool monolithic_FSI = params.get<bool>("monolithic_FSI");         
-
-      RCP<Epetra_SerialDenseMatrix> Cuu;
-      RCP<Epetra_SerialDenseMatrix> Mud;
-      RCP<Epetra_SerialDenseMatrix> Mdu;
-      RCP<Epetra_SerialDenseMatrix> Cdd;
-      RCP<Epetra_SerialDenseVector> rhsd;
+      const bool monolithic_FSI = params.get<bool>("monolithic_FSI");
+      
+      const RCP<const vector<int> > ifacepatchlm = params.get<RCP<vector<int> > >("ifacepatchlm");
                       
       if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
       { 
         if (ih_->ElementIntersected(Id()))
         {
-          std::set<int> begids = ih_->GetIntersectingBoundaryElementsGID(this->Id());
-          const int numnode_bele = ih_->cutterdis()->gElement(*begids.begin())->NumNode();
-          // the size of the numifacepatchdof matches to the size of ifacepatchlm
-          const size_t numifacepatchdof = begids.size()*3*numnode_bele;
-          fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
-          fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), numifacepatchdof));
-          fluidfluidmatrices_.rhsui_uncond = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
-          Cdd = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, numifacepatchdof));
+          const size_t nui = ifacepatchlm->size();
+          fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(nui, eleDofManager_uncondensed_->NumDofElemAndNode()));
+          fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), nui));
+          fluidfluidmatrices_.rhsui_uncond = rcp(new Epetra_SerialDenseVector(nui));
         }
             
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
@@ -510,10 +501,12 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         
         if (ih_->ElementIntersected(Id()))
         {
-           params.set("Cdu",fluidfluidmatrices_.Guis_uncond);
-           params.set("Cud",fluidfluidmatrices_.Gsui_uncond);
-           params.set("Cdd",Cdd);
-           params.set("rhsd",fluidfluidmatrices_.rhsui_uncond);
+          const size_t nui = ifacepatchlm->size();
+          RCP<Epetra_SerialDenseMatrix> Cdd = rcp(new Epetra_SerialDenseMatrix(nui, nui));
+          params.set("Cdu",fluidfluidmatrices_.Guis_uncond);
+          params.set("Cud",fluidfluidmatrices_.Gsui_uncond);
+          params.set("Cdd",Cdd);
+          params.set("rhsd",fluidfluidmatrices_.rhsui_uncond);
         }
       }
 
@@ -523,27 +516,28 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         SanityChecks(eleDofManager_, eleDofManager_uncondensed_);
 
         // stress update
-//        UpdateOldDLMAndDLMRHS(discretization, *ih_->cutterdis(), lm, *ifacepatchlm, mystate, monolithic_FSI);
-//        UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
+        UpdateOldDLMAndDLMRHS(discretization, *ih_->cutterdis(), lm, *ifacepatchlm, mystate, true);
 
         // create uncondensed element matrix and vector
         const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
         Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
         Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
         
+        RCP<Epetra_SerialDenseMatrix> Cud;
+        RCP<Epetra_SerialDenseMatrix> Cdu;
+        RCP<Epetra_SerialDenseMatrix> Cdd;
+        RCP<Epetra_SerialDenseVector> rhsd;
+        
         if (ih_->ElementIntersected(Id()))
         {
-          std::set<int> begids = ih_->GetIntersectingBoundaryElementsGID(this->Id());
-          const int numnode_bele = ih_->cutterdis()->gElement(*begids.begin())->NumNode(); // numnode of first boundary element
-          // the size of the numifacepatchdof matches to the size of ifacepatchlm
-          const size_t numifacepatchdof = begids.size()*3*numnode_bele;
-          fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumDofElemAndNode()));
-          fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), numifacepatchdof));
-          fluidfluidmatrices_.rhsui_uncond = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
-          Mud = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumNodeDof(), numifacepatchdof));
-          Mdu = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, eleDofManager_uncondensed_->NumNodeDof()));
-          Cdd = rcp(new Epetra_SerialDenseMatrix(numifacepatchdof, numifacepatchdof));
-          rhsd = rcp(new Epetra_SerialDenseVector(numifacepatchdof));
+          const size_t nui = ifacepatchlm->size();
+          fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(nui, eleDofManager_uncondensed_->NumDofElemAndNode()));
+          fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), nui));
+          fluidfluidmatrices_.rhsui_uncond = rcp(new Epetra_SerialDenseVector(nui));
+          Cud = rcp(new Epetra_SerialDenseMatrix(lm.size(), nui));
+          Cdu = rcp(new Epetra_SerialDenseMatrix(nui, lm.size()));
+          Cdd = rcp(new Epetra_SerialDenseMatrix(nui, nui));
+          rhsd = rcp(new Epetra_SerialDenseVector(nui));
         }
 
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
@@ -555,21 +549,21 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_);
         
         // condensation
-//        CondenseElementStressAndStoreOldIterationStep(
-//            elemat1_uncond, elevec1_uncond,
-//            *fluidfluidmatrices_.Gsui_uncond,
-//            *fluidfluidmatrices_.Guis_uncond,
-//            *fluidfluidmatrices_.rhsui_uncond,
-//            elemat1, elevec1,
-//            *Mud, *Mdu, *Cdd, *rhsd,
-//            *lmiface,
-//            true
-//        );
+        CondenseElementStressAndStoreOldIterationStep(
+            elemat1_uncond, elevec1_uncond,
+            *fluidfluidmatrices_.Gsui_uncond,
+            *fluidfluidmatrices_.Guis_uncond,
+            *fluidfluidmatrices_.rhsui_uncond,
+            elemat1, elevec1,
+            *Cud, *Cdu, *Cdd, *rhsd,
+            *ifacepatchlm,
+            true
+        );
        
         if (ih_->ElementIntersected(Id()))
         {
-          params.set("Cdu",Mdu);
-          params.set("Cud",Mud);
+          params.set("Cdu",Cdu);
+          params.set("Cud",Cud);
           params.set("Cdd",Cdd);
           params.set("rhsd",rhsd);
         }

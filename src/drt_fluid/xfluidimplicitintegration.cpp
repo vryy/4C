@@ -1560,11 +1560,14 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
    if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
    {
+     fluidfluidstate_.fluidfluidincvel_ = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
      for (std::map<int,int>::const_iterator iter = fluidfluidstate_.fluidboundarymap_.begin(); iter != fluidfluidstate_.fluidboundarymap_.end(); ++iter)
      {
        (*fluidfluidstate_.fivelnp_)[fluidfluidstate_.fivelnp_->Map().LID(iter->first)] = (*state_.velnp_)[state_.velnp_->Map().LID(iter->second)];
+       (*fluidfluidstate_.fluidfluidincvel_)[fluidfluidstate_.fluidfluidincvel_->Map().LID(iter->first)] = (*incvel_)[incvel_->Map().LID(iter->second)];
      }
      FluidFluidboundarydis_->SetState("ivelcolnp",fluidfluidstate_.fivelnp_);
+     FluidFluidboundarydis_->SetState("nodal iterinc",fluidfluidstate_.fluidfluidincvel_);
    }
   }
 
