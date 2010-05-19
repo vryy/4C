@@ -74,12 +74,12 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
   std::string buffer;
 
   // read kinematic flag (default: we expect kintype to be total lagrangian)
-  linedef->ExtractString("KINEM",buffer);
+  linedef->ExtractString("KINTYP",buffer);
   if (buffer=="lin")
   {
     kintype_ = soh8_geolin;
   }
-  else if (buffer=="nln" or buffer=="Totlag")
+  else if (buffer=="nln")
   {
     kintype_ = soh8_totlag;
   }
