@@ -248,6 +248,9 @@ void FSI::MonolithicXFEM::Newton()
     cout << "Newton step: " << i << endl;
     Evaluate();
 
+    // setup global (full monolithic) map
+    SetupExtractor();
+
     SetupRHS();
 
     if (ConverganceTest())
@@ -310,9 +313,6 @@ void FSI::MonolithicXFEM::Evaluate()
     StructureField().Evaluate(Teuchos::null);
   }
 
-
-  // setup global (full monolithic) map
-  SetupExtractor();
 }
 
 
@@ -358,8 +358,8 @@ void FSI::MonolithicXFEM::SetupRHS()
 
   LINALG::ApplyDirichlettoSystem(tmp, rhs_, zeros, *condmap);
 
-  cout << "rhs_" << endl;
-  cout << *rhs_ << endl;
+//  cout << "rhs_" << endl;
+//  cout << *rhs_ << endl;
 
 }
 
@@ -421,6 +421,8 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
 //  double timescale = FluidField().TimeScaling();
 
   systemmatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(Extractor(),Extractor(),81,false));
+
+  s->Matrix(1,1).UnComplete(); // da kommt noch etwas dazu
 
   systemmatrix_->Assign(0,0,View,s->Matrix(0,0)); // interior
   systemmatrix_->Assign(1,0,View,s->Matrix(1,0));
@@ -517,6 +519,7 @@ void FSI::MonolithicXFEM::LinearSolve()
 
 //  cout << systemmatrix_->FullRowMap() << endl;
   Teuchos::RCP<LINALG::SparseMatrix> m = systemmatrix_->Merge();
+  cout << "  merged" << endl;
 //  cout << m->RowMap() << endl;
 //  cout << rhs_->Map() << endl;
 //  LINALG::PrintMatrixInMatlabFormat("monomatrix.txt", *m->EpetraMatrix(), true);
@@ -536,16 +539,48 @@ void FSI::MonolithicXFEM::LinearSolve()
 //  state_.velnp_->Update(1.0,*incvel_,1.0);
 //  cout << *x_ << endl;
 
+  cout << "  solved" << endl;
+
   if (stepinc_ == Teuchos::null)
+  {
     stepinc_ = LINALG::CreateVector(*Extractor().FullMap(),true);
+  }
+  else
+  {
+    if (not stepinc_->Map().SameAs(iterinc->Map()))
+    {
+      Teuchos::RCP<Epetra_Vector> oldstepinc_ = stepinc_;
+      stepinc_ = LINALG::CreateVector(*Extractor().FullMap(),true);
+      // recover step vector as much as possible
+      cout << "  recovering" << endl;
+      for (int newLID = 0; newLID < stepinc_->Map().NumMyElements(); newLID++)
+      {
+        const int newGID = stepinc_->Map().GID(newLID);
+        const int oldLID = oldstepinc_->Map().LID(newGID);
+        if (oldLID == -1)
+        {
+          // not found
+        }
+        else
+        {
+          (*stepinc_)[newLID] = (*oldstepinc_)[oldLID];
+        }
+      }
+
+    }
+  }
 
   stepinc_->Update(1.0,*iterinc, 1.0);
+//  cout << iterinc->Map() << endl;
+//  cout << stepinc_->Map() << endl;
+  cout << "  updated" << endl;
 
   const Teuchos::RCP<const Epetra_Map >& condmap = StructureField().GetDBCMapExtractor()->CondMap();
   Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*condmap, true);
   Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*Extractor().FullMap(), true);
 
   LINALG::ApplyDirichlettoSystem(tmp, stepinc_, zeros, *condmap);
+  cout << "  DBC applied" << endl;
 
 
 }

@@ -323,17 +323,21 @@ void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> velpresstep
   {
     // iteration increments
     velpresiterinc = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
-    if (velpresstepinc_!=Teuchos::null)
+    if (velpresstepinc_==Teuchos::null)
+    {
+      velpresstepinc_ = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
+    }
+    else if (not velpresstepinc_->Map().SameAs(velpresstepinc->Map()))
+    {
+      velpresstepinc_ = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
+    }
+    else
     {
       velpresiterinc->Update(-1.0,*velpresstepinc_,1.0);
 
       // update incremental displacement member to provided step increments
       // shortly: disinc_^<i> := disp^<i+1>
       velpresstepinc_->Update(1.0,*velpresstepinc,0.0);
-    }
-    else
-    {
-      velpresstepinc_ = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
     }
   }
 
