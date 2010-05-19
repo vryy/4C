@@ -340,7 +340,7 @@ void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> velpresstep
   // do fluid evaluation provided residual displacements - iteration increment
   fluid_.Evaluate(boundarydis_, velpresiterinc);
 
-  itrueresnp_ = Teuchos::null;//LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+  itrueresnp_ = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
 //  // get surface force
 //  Teuchos::RCP<const Epetra_Vector> itruerescol = boundarydis_->GetState("iforcenp");
 //
@@ -957,39 +957,30 @@ void ADAPTER::XFluidImpl::ApplyMeshDisplacementIncrement(Teuchos::RCP<Epetra_Vec
 {
   // The field solver always expects an iteration increment only. And
   // there are Dirichlet conditions that need to be preserved. So take
-  // the sum of increments we get from NOX and apply the latest iteration
-  // increment only.
+  // the sum of increments (disstepinc) and compute disiterinc
   // Naming:
   //
   // x^n+1_i+1 = x^n+1_i + disiterinc  (sometimes referred to as residual increment), and
   //
   // x^n+1_i+1 = x^n     + disstepinc
 
-  idispiterinc_ = Teuchos::null;
-
-  if (idispstepinc!=Teuchos::null)
+  if (idispstepinc == Teuchos::null) // first step
   {
-    //  interface_.InsertFSICondVector(idisstepinc,idispnp_);
+    idispnp_      = Teuchos::rcp(new Epetra_Vector(*idispn_));
+    idispiterinc_ = Teuchos::rcp(new Epetra_Vector(idispn_->Map(),true));
+    idispstepinc_ = Teuchos::rcp(new Epetra_Vector(idispn_->Map(),true));
+  }
+  else
+  {
     idispnp_->Update(1.0, *idispn_, 1.0, *idispstepinc, 0.0);
 
     // iteration increments
     idispiterinc_ = Teuchos::rcp(new Epetra_Vector(*idispstepinc));
-    if (idispstepinc_!=Teuchos::null)
-    {
-      idispiterinc_->Update(-1.0,*idispstepinc_,1.0);
+    idispiterinc_->Update(-1.0,*idispstepinc_,1.0);
 
-      // update incremental displacement member to provided step increments
-      // shortly: disinc_^<i> := disp^<i+1>
-      idispstepinc_->Update(1.0,*idispstepinc,0.0);
-    }
-    else
-    {
-      idispstepinc_ = Teuchos::rcp(new Epetra_Vector(*idispstepinc));
-    }
-  }
-  else
-  {
-    idispiterinc_ = Teuchos::rcp(new Epetra_Vector(idispnp_->Map(),true));
+    // update step increment
+    // shortly: disinc_^<i> := stepincdisp^<i+1>
+    idispstepinc_->Update(1.0,*idispstepinc,0.0);
   }
 }
 

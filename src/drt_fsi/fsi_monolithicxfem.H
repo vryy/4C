@@ -59,13 +59,7 @@ namespace FSI
 
     ADAPTER::Coupling& StructureFluidCoupling() { return coupsf_; }
 
-    /// set full monolithic dof row map
-    /*!
-      A subclass calls this method (from its constructor) and thereby
-      defines the number of blocks, their maps and the block order. The block
-      maps must be row maps by themselves and must not contain identical GIDs.
-     */
-    void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
+
 
   protected:
 
@@ -82,8 +76,7 @@ namespace FSI
 
     //@}
 
-    /// extractor to communicate between full monolithic map and block maps
-    const MonolithicXFEMExtractor& Extractor(){return extractor_;};
+
 
     /// coupling of structure and fluid at the interface
     ADAPTER::Coupling               coupsf_;
@@ -98,7 +91,7 @@ namespace FSI
     /// the very xfem fluid
     ADAPTER::FluidXFEM              fluidfield_;
 
-    MonolithicXFEMExtractor extractor_;
+
   };
 
 
@@ -131,6 +124,22 @@ namespace FSI
                              Teuchos::RCP<const Epetra_Vector>& fx);
 
 
+    /// extractor to communicate between full monolithic map and block maps
+    const MonolithicXFEMExtractor& Extractor(){return extractor_;};
+
+    /// full monolithic dof row map
+    Teuchos::RCP<const Epetra_Map> DofRowMap() const { return extractor_.FullMap(); }
+
+    /// set full monolithic dof row map
+    /*!
+      A subclass calls this method (from its constructor) and thereby
+      defines the number of blocks, their maps and the block order. The block
+      maps must be row maps by themselves and must not contain identical GIDs.
+     */
+    void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
+
+    void SetupExtractor();
+
   private:
 
 //    void SetupVector(
@@ -150,6 +159,8 @@ namespace FSI
     bool ConverganceTest();
 
     void LinearSolve();
+
+    MonolithicXFEMExtractor extractor_;
 
     Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv);
     Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv);
