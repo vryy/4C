@@ -519,6 +519,8 @@ namespace ELEMENTS
     //! viscous term including 2nd derivatives
     //! (This array once had three dimensions, now the first two are combined to one.)
     LINALG::Matrix<nsd_*nsd_,nen_> viscs2_;
+    //! linearisation of residual of momentum equation wrt velocities (precomputed)
+    LINALG::Matrix<nsd_*nsd_,nen_> lin_resM_Du_;
     //! linearisation of convection, convective part
     LINALG::Matrix<nen_,1> conv_c_;
     //! linearisation of subgrid-scale convection, convective part
@@ -539,6 +541,15 @@ namespace ELEMENTS
     LINALG::Matrix<numderiv2_,nsd_> xder2_;
 
     LINALG::Matrix<nsd_,nsd_> vderiv_;
+
+    LINALG::Matrix<nen_*nsd_,nen_*nsd_>    estif_;
+    LINALG::Matrix<nen_*nsd_,nen_>    estif_p_v_;
+    LINALG::Matrix<nen_, nen_*nsd_>    estif_q_u_;
+
+    LINALG::Matrix<nen_,1>      preforce;
+    LINALG::Matrix<nsd_,nen_>   velforce;
+
+    LINALG::Matrix<nen_,nen_>   ppmat;
 
     //! coordinates of current integration point in reference coordinates
     LINALG::Matrix<nsd_,1> xsi_;
