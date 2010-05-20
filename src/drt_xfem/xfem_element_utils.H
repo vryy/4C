@@ -51,7 +51,7 @@ namespace XFEM
   template <unsigned int numdiv, size_t numparam>
   struct ApproxFunc
   {
-
+    // intentionally left empty -> Compiler cries, if numdiv is not one of the following structs
   };
 
   template <size_t numparam>
