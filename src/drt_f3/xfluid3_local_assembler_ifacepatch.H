@@ -139,7 +139,7 @@ public:
             ) const
     {
       
-      const int numdof = 3;
+      const std::size_t numdof = 3;
       const std::vector<int>& trialdof(dofman_.LocalDofPosPerField<SymmetryMangle<trialfield>::name>());
 
       const std::size_t numnodetest = emat.M()/numdof;
@@ -169,12 +169,12 @@ public:
             ) const
     {
 
-      const int numdof = 3;
+      const std::size_t numdof = 3;
 
       const std::vector<int>& testdof (dofman_.LocalDofPosPerField<SymmetryMangle<testfield>::name>());
 
-      const std::size_t numparamtest  = testdof.size();
-      const std::size_t numnodetrial = emat.N()/numdof; 
+      const std::size_t numparamtest = testdof.size();
+      const std::size_t numnodetrial = emat.N()/numdof;
       for (std::size_t uinode=0; uinode<numnodetrial; ++uinode)
       {
         const std::size_t trialpos = numdof*uinode + IfaceFieldNum<trialfield>::pos;
@@ -200,7 +200,7 @@ public:
           testfield == XFEM::PHYSICS::Velyiface or
           testfield == XFEM::PHYSICS::Velziface)
       {
-        Vector_rhuis<testfield>(evec, testshape, fac); 
+        Vector_rhsui<testfield>(evec, testshape, fac);
       }
       else
         dserror(" Wrong position! ");
@@ -208,13 +208,13 @@ public:
     
     template <XFEM::PHYSICS::Field testfield,
                   class V1>
-    void Vector_rhuis(
+    void Vector_rhsui(
         Epetra_SerialDenseVector& evec,
         const V1&           testshape,
         const double&       fac
         ) const
     {                  
-        const int numdof = 3;
+        const std::size_t numdof = 3;
 
         const std::size_t numnodetest = evec.Length()/numdof;
         for (std::size_t vi=0; vi<numnodetest; ++vi)
