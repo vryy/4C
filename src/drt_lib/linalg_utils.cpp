@@ -1502,8 +1502,8 @@ RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
 /*----------------------------------------------------------------------*
  | merge two given maps to one map                            popp 01/08|
  *----------------------------------------------------------------------*/
-RCP<Epetra_Map> LINALG::MergeMap(const RCP<Epetra_Map>& map1,
-                                 const RCP<Epetra_Map>& map2,
+RCP<Epetra_Map> LINALG::MergeMap(const RCP<const Epetra_Map>& map1,
+                                 const RCP<const Epetra_Map>& map2,
                                  bool overlap)
 {
   // check for cases with null RCPs

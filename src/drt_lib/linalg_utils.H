@@ -794,8 +794,8 @@ namespace LINALG
                         map is overlapping (default = true, overlap allowed)
   \return the (sorted) merged map of input maps map1 and map2
   */
-  RCP<Epetra_Map> MergeMap(const RCP<Epetra_Map>& map1,
-                           const RCP<Epetra_Map>& map2,
+  RCP<Epetra_Map> MergeMap(const RCP<const Epetra_Map>& map1,
+                           const RCP<const Epetra_Map>& map2,
                            bool overlap = true);
 
   /// create an Epetra_Map from a set of gids
