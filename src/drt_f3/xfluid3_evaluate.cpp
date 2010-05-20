@@ -566,7 +566,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         SanityChecks(eleDofManager_, eleDofManager_uncondensed_);
 
         const RCP<const Epetra_Vector>  iterincxdomain = discretization.GetState("nodal iterinc");
-        const RCP<const Epetra_Vector>  iterinciface   = ih_->cutterdis()->GetState("nodal iterinc");
+        const RCP<const Epetra_Vector>  iterinciface   = discretization.GetState("interface nodal iterinc");
 
         // stress update
         UpdateOldDLMAndDLMRHS(iterincxdomain, iterinciface, lm, *ifacepatchlm, mystate, true);
@@ -986,7 +986,10 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
 
     if (nui > 0 and interface_unknowns)
     {
+      //cout << "only for monolithic" << endl;
       vector<double> iterinc_velnp_iface(nui);
+//      DRT::UTILS::ExtractMyValues(*discretization.GetState("interface nodal iterinc"),iterinc_velnp_iface,lm);
+
       DRT::UTILS::ExtractMyValues(*iterinciface,iterinc_velnp_iface,lmiface);
 
       // update old iteration residual of the stresses from interface velocity increments

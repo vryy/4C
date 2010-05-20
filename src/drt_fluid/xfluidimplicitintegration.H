@@ -393,6 +393,11 @@ protected:
       const RCP<vector<int> >    ifaceboundarylm,
       const RCP<vector<int> >    ifaceboundarylmowner
       ) const;
+  
+  void BuildFluidFluidboundaryDofMap(
+      Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih,
+      const Teuchos::RCP<DRT::Discretization> fluiddis
+      );
 
   void FluidFluidboundaryOutput();
 

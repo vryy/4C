@@ -290,6 +290,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   fluidfluidstate_.fivelnm_   = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
   fluidfluidstate_.fiaccnp_   = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
   fluidfluidstate_.fiaccn_    = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
+  fluidfluidstate_.fluidfluidincvel_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
   fluidfluidstate_.mfvelnp_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
@@ -1214,31 +1215,10 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         // call standard loop over elements
         if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
         {
-          const RCP<DRT::Discretization> boundarydiscret = ih_np_->cutterdis();
-          const RCP<DRT::Discretization> fluiddiscret = discret_;
-          // Map für Dof-GIDs
-          // loop over boundarydiscret elements
-          for (int iele=0; iele< boundarydiscret->NumMyRowElements(); ++iele)
-          {
-            DRT::Element* boundarydisele = boundarydiscret->lRowElement(iele);
-            // loop all nodes of this element
-            for (int inode = 0; inode < boundarydisele->NumNode(); ++inode)
-            {
-              // get Dof of this node
-              const DRT::Node*  beleNode = boundarydisele->Nodes()[inode];
-              vector <int> boundarydisDof = boundarydiscret->Dof(boundarydiscret->gNode(beleNode->Id()));
-              vector <int> fluiddisDof = fluiddiscret->Dof(fluiddiscret->gNode(beleNode->Id()));
-              // Find the Owner of the Nodes (Nodes von beiden dis sind identisch)
-              int fluidNodeOwner =  fluiddiscret->gNode(beleNode->Id())->Owner();
-              // make map (cutterdisDof.size()=3 and fluiddisDof.size()=4 !!)
-              for (size_t i=0; i<3; ++i)
-              {
-                fluidfluidstate_.fluidboundarymap_.insert(make_pair(boundarydisDof[i], fluiddisDof[i]));
-                fluidfluidstate_.fluidDofsOwnermap_.insert(make_pair(fluiddisDof[i], fluidNodeOwner));
-              }
-            }
-          }
-
+          discret_->SetState("interface nodal iterinc",fluidfluidstate_.fluidfluidincvel_);
+          
+          BuildFluidFluidboundaryDofMap(ih_np_, discret_);
+         
           const Epetra_Map& fluiddofrowmap = *discret_->DofRowMap();
           Cud_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
           Cdu_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
@@ -1561,14 +1541,13 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
    if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
    {
-     fluidfluidstate_.fluidfluidincvel_ = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
      for (std::map<int,int>::const_iterator iter = fluidfluidstate_.fluidboundarymap_.begin(); iter != fluidfluidstate_.fluidboundarymap_.end(); ++iter)
      {
        (*fluidfluidstate_.fivelnp_)[fluidfluidstate_.fivelnp_->Map().LID(iter->first)] = (*state_.velnp_)[state_.velnp_->Map().LID(iter->second)];
-       (*fluidfluidstate_.fluidfluidincvel_)[fluidfluidstate_.fluidfluidincvel_->Map().LID(iter->first)] = (*incvel_)[incvel_->Map().LID(iter->second)];
+       (*fluidfluidstate_.fluidfluidincvel_)[fluidfluidstate_.fluidfluidincvel_->Map().LID(iter->second)] = (*incvel_)[incvel_->Map().LID(iter->second)];
      }
      FluidFluidboundarydis_->SetState("ivelcolnp",fluidfluidstate_.fivelnp_);
-     FluidFluidboundarydis_->SetState("nodal iterinc",fluidfluidstate_.fluidfluidincvel_);
+     discret_->SetState("interface nodal iterinc",fluidfluidstate_.fluidfluidincvel_);
    }
   }
 
@@ -3511,7 +3490,36 @@ void FLD::XFluidImplicitTimeInt::GetInterfacepatchLocationVectorsFluidFluid(
     ifaceboundarylmowner->insert( ifaceboundarylmowner->end(), ifacefluidlmowner.begin(), ifacefluidlmowner.end());
   }
 }
-
+ void FLD::XFluidImplicitTimeInt::BuildFluidFluidboundaryDofMap(
+     Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih,
+     const Teuchos::RCP<DRT::Discretization> fluiddis
+     )
+ {
+   const RCP<DRT::Discretization> boundarydiscret = ih_np_->cutterdis();
+   const RCP<DRT::Discretization> fluiddiscret = discret_;
+   // Map für Dof-GIDs
+   // loop over boundarydiscret elements
+   for (int iele=0; iele< boundarydiscret->NumMyRowElements(); ++iele)
+     {
+       DRT::Element* boundarydisele = boundarydiscret->lRowElement(iele);
+       // loop all nodes of this element
+       for (int inode = 0; inode < boundarydisele->NumNode(); ++inode)
+         {
+           // get Dof of this node
+           const DRT::Node*  beleNode = boundarydisele->Nodes()[inode];
+           vector <int> boundarydisDof = boundarydiscret->Dof(boundarydiscret->gNode(beleNode->Id()));
+           vector <int> fluiddisDof = fluiddiscret->Dof(fluiddiscret->gNode(beleNode->Id()));
+           // Find the Owner of the Nodes (Nodes von beiden dis sind identisch)
+           int fluidNodeOwner =  fluiddiscret->gNode(beleNode->Id())->Owner();
+           // make map (cutterdisDof.size()=3 and fluiddisDof.size()=4 !!)
+           for (size_t i=0; i<3; ++i)
+             {
+               fluidfluidstate_.fluidboundarymap_.insert(make_pair(boundarydisDof[i], fluiddisDof[i]));
+               fluidfluidstate_.fluidDofsOwnermap_.insert(make_pair(fluiddisDof[i], fluidNodeOwner));
+             }
+         }
+     }
+ }
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FLD::XFluidImplicitTimeInt::ComputeFluidFluidInterfaceAccelerationsAndVelocities()
