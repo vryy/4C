@@ -18,6 +18,7 @@ Maintainer: Florian Henke
 
 #include "combust3.H"
 #include "../drt_f3/xfluid3_utils.H"
+#include "../drt_xfem/xfem_element_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
@@ -533,7 +534,7 @@ void DRT::ELEMENTS::Combust3Surface::IntegrateSurfaceFlow(
     const double fac = drs * intpoints.qwgt[gpid];
 
     // velocity at gausspoint
-    const LINALG::Matrix<3,1> gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp, funct, iel);
+    const LINALG::Matrix<3,1> gpvelnp = XFEM::interpolateVectorFieldToIntPoint(evelnp, funct, iel);
 
     // get normal vector (in x coordinates) to surface element at integration point
     LINALG::Matrix<3,1> n(true);

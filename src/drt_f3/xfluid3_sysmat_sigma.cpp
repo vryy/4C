@@ -814,7 +814,7 @@ void SysmatDomainSigma(
               dofman,
               cellcenter_xyz, false, -1);
 
-        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
+        const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
 
         // integration points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
@@ -1000,10 +1000,10 @@ void SysmatDomainSigma(
             }
 
             // get velocities and accelerations at integration point
-            const LINALG::Matrix<nsd,1> gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
-            const LINALG::Matrix<nsd,1> gpveln  = XFLUID::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
-            const LINALG::Matrix<nsd,1> gpvelnm = XFLUID::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
-            const LINALG::Matrix<nsd,1> gpaccn  = XFLUID::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
+            const LINALG::Matrix<nsd,1> gpvelnp = XFEM::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
+            const LINALG::Matrix<nsd,1> gpveln  = XFEM::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
+            const LINALG::Matrix<nsd,1> gpvelnm = XFEM::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
+            const LINALG::Matrix<nsd,1> gpaccn  = XFEM::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
 
             // get history data (n) at integration point
 //            LINALG::Matrix<3,1> histvec;
@@ -1076,7 +1076,7 @@ void SysmatDomainSigma(
             static LINALG::Matrix<nsd,nsd> tau;
             if (tauele_unknowns_present)
             {
-              XFLUID::fill_tau(numparamtauxx, shp_tau.d0, etau, tau);
+              XFEM::fill_tau(numparamtauxx, shp_tau.d0, etau, tau);
             }
             else
             {
@@ -1190,7 +1190,7 @@ void SysmatDomainSigma(
               position[1] = physpos(1);
               const double u_exact_x = DRT::Problem::Instance()->Funct(0).Evaluate(0,position,0.0,NULL);
               const double u_exact_y = DRT::Problem::Instance()->Funct(0).Evaluate(1,position,0.0,NULL);
-              
+
               if (1.0 < position[0] and position[0] < 2.0 and 0.0 < position[1] and position[1] < position[0])
               {
                 const double epsilon_x = (gpvelnp(0) - u_exact_x);
@@ -1199,7 +1199,7 @@ void SysmatDomainSigma(
                 L2 += (epsilon_x*epsilon_x + epsilon_y*epsilon_y)*fac;
               }
             }
-            
+
             //////////////////////////////////////
             // now build single stiffness terms //
             //////////////////////////////////////
@@ -1245,7 +1245,7 @@ void SysmatBoundarySigma(
 
     const size_t nsd = 3;
     const size_t numnodefix_boundary = 9;
-    
+
 #if 0
     // get node coordinates of the current element
     // number of nodes for element
@@ -1363,7 +1363,7 @@ void SysmatBoundarySigma(
 
             // position of the gausspoint in physical coordinates
             // gauss_pos_xyz = funct_boundary(j)*xyze_boundary(i,j);
-            const LINALG::Matrix<nsd,1> gauss_pos_xyz = XFLUID::interpolateVectorFieldToIntPoint(xyze_boundary,funct_boundary,numnode_boundary);
+            const LINALG::Matrix<nsd,1> gauss_pos_xyz = XFEM::interpolateVectorFieldToIntPoint(xyze_boundary,funct_boundary,numnode_boundary);
 
             // get jacobian matrix d x / d \xi  (3x2)
             // dxyzdrs(i,j) = xyze_boundary(i,k)*deriv_boundary(j,k);
@@ -1458,10 +1458,10 @@ void SysmatBoundarySigma(
 
             // get velocities (n+g,i) at integration point
             // gpvelnp = evelnp(i,j)*shp(j);
-            const LINALG::Matrix<nsd,1> gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp , shp.d0, numparamvelx);
+            const LINALG::Matrix<nsd,1> gpvelnp = XFEM::interpolateVectorFieldToIntPoint(evelnp , shp.d0, numparamvelx);
 
             // get interface velocity
-            const LINALG::Matrix<nsd,1> interface_gpvelnp  = XFLUID::interpolateVectorFieldToIntPoint(vel_boundary , funct_boundary, numnode_boundary);
+            const LINALG::Matrix<nsd,1> interface_gpvelnp  = XFEM::interpolateVectorFieldToIntPoint(vel_boundary , funct_boundary, numnode_boundary);
 
 #if 0
             // for Jeffery-Hamel Flow
@@ -1483,7 +1483,7 @@ void SysmatBoundarySigma(
 
             // get viscous stress unknowns
             static LINALG::Matrix<nsd,nsd> tau;
-            XFLUID::fill_tau(numparamtauxx, shp_tau.d0, etau, tau);
+            XFEM::fill_tau(numparamtauxx, shp_tau.d0, etau, tau);
 
             //////////////////////////////////////
             // now build single stiffness terms //

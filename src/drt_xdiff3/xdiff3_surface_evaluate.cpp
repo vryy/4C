@@ -18,6 +18,7 @@ Maintainer: Axel Gerstenberger
 
 #include "xdiff3.H"
 #include "xdiff3_utils.H"
+#include "../drt_xfem/xfem_element_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_geometry/element_normals.H"
@@ -469,7 +470,7 @@ void DRT::ELEMENTS::XDiff3Surface::IntegrateSurfaceFlowRate(
     const double fac = drs * intpoints.qwgt[gpid];
 
     // velocity at gausspoint
-    const LINALG::Matrix<3,1> gpvelnp = XDIFF::interpolateVectorFieldToIntPoint(evelnp, funct, iel);
+    const LINALG::Matrix<3,1> gpvelnp = XFEM::interpolateVectorFieldToIntPoint(evelnp, funct, iel);
 
     // get normal vector (in x coordinates) to surface element at integration point
     LINALG::Matrix<3,1> n(true);
@@ -590,7 +591,7 @@ void DRT::ELEMENTS::XDiff3Surface::IntegrateSurfaceImpulsRate(
     const double fac = drs * intpoints.qwgt[gpid];
 
     // velocity at gausspoint
-    const LINALG::Matrix<3,1> gpvelnp = XDIFF::interpolateVectorFieldToIntPoint(evelnp, funct, iel);
+    const LINALG::Matrix<3,1> gpvelnp = XFEM::interpolateVectorFieldToIntPoint(evelnp, funct, iel);
 
     // get normal vector (in x coordinates) to surface element at integration point
     LINALG::Matrix<3,1> n(true);

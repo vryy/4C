@@ -14,6 +14,7 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_xfem/xfem_enums.H"
+#include "../drt_xfem/xfem_element_utils.H"
 #include "../drt_geometry/intersection_service.H"
 #include <Epetra_SerialDenseSolver.h>
 
@@ -54,7 +55,7 @@ namespace XFLUID
         val_boundary(isd,inode+4) = myval[isd];
     }
 
-    return XFLUID::interpolateVectorFieldToIntPoint(val_boundary , funct_ST, numnode_slab);
+    return XFEM::interpolateVectorFieldToIntPoint(val_boundary , funct_ST, numnode_slab);
   }
 
   /// generate old velocity/acceleration values, if integration point was in a void during the last time step
@@ -153,7 +154,7 @@ namespace XFLUID
 //              val_boundary(isd,inode+numnode_boundary) = myval[isd];
 //          }
 //
-//          gpveln = XFLUID::interpolateVectorFieldToIntPoint(val_boundary , funct_ST, numnode_slab);
+//          gpveln = XFEM::interpolateVectorFieldToIntPoint(val_boundary , funct_ST, numnode_slab);
 
         }
         else

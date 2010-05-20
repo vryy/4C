@@ -87,6 +87,234 @@ namespace XFEM
     LINALG::Matrix<numparam,1>  dzdz;
   };
 
+  template<class M1, class M2>
+  void fill_tau(
+      const size_t         numparamtau,
+      const M1&            shp_tau,
+      const M2&            etau,
+      LINALG::Matrix<3,3>& tau
+  )
+  {
+    tau.Clear();
+    for (size_t i = 0; i < numparamtau; ++i)
+    {
+      const double fac = shp_tau(i);
+      tau(0,0) += fac*etau(0,i);
+      tau(1,1) += fac*etau(1,i);
+      tau(2,2) += fac*etau(2,i);
+      tau(0,1) += fac*etau(3,i);
+      tau(0,2) += fac*etau(4,i);
+      tau(1,2) += fac*etau(5,i);
+    }
+    tau(1,0) = tau(0,1);
+    tau(2,0) = tau(0,2);
+    tau(2,1) = tau(1,2);
+  }
+
+  /*!
+ \brief get optimal gaussrule for given discretization type
+        template version
+ \return enum with optimal gaussrule for this element
+   */
+  inline DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule(DRT::Element::DiscretizationType  distype)
+  {
+    DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
+    switch (distype)
+    {
+    case DRT::Element::hex8:
+      rule = DRT::UTILS::intrule_hex_8point;
+      break;
+    case DRT::Element::hex20: case DRT::Element::hex27:
+      rule = DRT::UTILS::intrule_hex_27point;
+      break;
+    case DRT::Element::tet4:
+      rule = DRT::UTILS::intrule_tet_4point;
+      break;
+    case DRT::Element::tet10:
+      rule = DRT::UTILS::intrule_tet_24point;
+      break;
+    default:
+      dserror("unknown distype for gaussrule initialization");
+    }
+    return rule;
+  }
+
+  /*!
+ \brief get optimal gaussrule for given discretization type
+
+ \return enum with optimal gausrule for this element
+   */
+  template<DRT::Element::DiscretizationType XELEDISTYPE, class M>
+  DRT::UTILS::GaussRule3D getXFEMGaussrule(
+      const DRT::Element*                     xele,
+      const M&                                xyze_element,
+      const bool                              intersected,
+      const DRT::Element::DiscretizationType  celldistype
+  )
+  {
+    DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
+    if (not intersected)
+    {
+      rule = getOptimalVelocityGaussrule(celldistype);
+    }
+    else
+    {
+      const GEO::EleGeoType xeleGeoType = GEO::checkGeoTypeT<XELEDISTYPE>(xele,xyze_element);
+
+      if (celldistype == DRT::Element::tet4 or celldistype == DRT::Element::tet10)
+      {
+        switch (XELEDISTYPE)
+        {
+        case DRT::Element::hex8:
+        {
+          if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_24point;
+          else                               rule = DRT::UTILS::intrule_tet_24point;
+          break;
+        }
+        case DRT::Element::hex20:
+        {
+          if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_45point;
+          else                               rule = DRT::UTILS::intrule_tet_45point;
+          break;
+        }
+        case DRT::Element::hex27:
+        {
+          if (xeleGeoType == GEO::CARTESIAN) rule = DRT::UTILS::intrule_tet_343point_peano;
+          else                               rule = DRT::UTILS::intrule_tet_343point_peano;
+          break;
+        }
+        case DRT::Element::tet4:
+        {
+          rule = DRT::UTILS::intrule_tet_4point;
+          break;
+        }
+        case DRT::Element::tet10:
+        {
+          rule = DRT::UTILS::intrule_tet_24point;
+          break;
+        }
+        default:
+          dserror("no rule defined for this xele");
+        }
+      }
+      // TODO: Clarify this! hex integration cells for uncut refinement cells in an element
+      else if (celldistype == DRT::Element::hex8)
+      {
+        switch (XELEDISTYPE)
+        {
+        case DRT::Element::hex8:
+        {
+          rule = getOptimalVelocityGaussrule(celldistype);
+          // Ich habe xeleGeoType == GEO::LINEAR
+          //            if (xeleGeoType == GEO::CARTESIAN) // constant jacobian
+          //              rule = DRT::UTILS::intrule_hex_8point; //27point?
+          //            else
+          //              rule = DRT::UTILS::intrule_hex_8point;
+          break;
+        }
+        default:
+          dserror("no rule defined for this xele");
+        }
+      }
+      else
+      {
+        dserror("gaussrule only for tetrahedral integration cells defined. Please add additional rules here!");
+      }
+    }
+
+    if (not DRT::UTILS::IntRuleIsOpen(rule))
+      dserror("You have to use an open integration rule for XFEM volume integrals!");
+
+    return rule;
+  }
+
+
+  /*!
+ \brief get optimal gaussrule for given discretization type
+
+ \return enum with optimal gausrule for this element
+
+ for kink enrichment
+
+ \author rasthofer 08/09
+   */
+  template<DRT::Element::DiscretizationType XELEDISTYPE, class M>
+  DRT::UTILS::GaussRule3D getXFEMGaussruleKinkEnr(
+      const DRT::Element*                     xele,
+      const M&                                xyze_element,
+      const bool                              intersected,
+      const DRT::Element::DiscretizationType  celldistype
+  )
+  {
+    DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
+    if (not intersected)
+    {
+      rule = getOptimalVelocityGaussrule(celldistype);
+    }
+    else
+    {
+      const GEO::EleGeoType xeleGeoType = GEO::checkGeoTypeT<XELEDISTYPE>(xele,xyze_element);
+
+      if (celldistype == DRT::Element::tet4)
+      {
+        switch (XELEDISTYPE)
+        {
+        case DRT::Element::hex8:
+        {
+          if (xeleGeoType == GEO::CARTESIAN) // constant jacobian
+            rule = DRT::UTILS::intrule_tet_45point;
+          //rule = DRT::UTILS::intrule_tet_24point;
+          //rule = DRT::UTILS::intrule_tet_343point_peano;
+          else
+            rule = DRT::UTILS::intrule_tet_45point;
+          //rule = DRT::UTILS::intrule_tet_24point;
+          //rule = DRT::UTILS::intrule_tet_343point_peano;
+          break;
+        }
+        default:
+          dserror("no rule defined for this xele");
+        }
+      }
+      // TODO: Clarify this! hex integration cells for uncut refinement cells in an element
+      else if (celldistype == DRT::Element::hex8)
+      {
+        switch (XELEDISTYPE)
+        {
+        case DRT::Element::hex8:
+        {
+          //rule = getOptimalVelocityGaussrule(celldistype);
+          rule = DRT::UTILS::intrule_hex_27point;
+          break;
+        }
+        default:
+          dserror("no rule defined for this xele");
+        }
+      }
+      else
+      {
+        dserror("gaussrule only for tetrahedral and hexahedral integration cells defined. Please add additional rules here!");
+      }
+    }
+
+    return rule;
+  }
+
+  //! interpolate from nodal vector array to integration point vector using the shape function
+  template <class M, class VS>
+  LINALG::Matrix<3,1> interpolateVectorFieldToIntPoint(
+      const M&  eleVectorField,       ///< array with nodal vector values
+      const VS& shp,                  ///< array with nodal shape function
+      const int numparam              ///< number of parameters
+      )
+  {
+    LINALG::Matrix<3,1> v(true);
+    const int nsd = 3;
+    for (int iparam = 0; iparam < numparam; ++iparam)
+      for (int isd = 0; isd < nsd; ++isd)
+        v(isd) += eleVectorField(isd,iparam)*shp(iparam);
+    return v;
+  }
+
 }
 
 #endif

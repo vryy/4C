@@ -521,18 +521,18 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       const bool instationary = (timealgo != timeint_stationary);
 
       DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,instationary);
-            
+
       const bool newton = params.get<bool>("include reactive terms for linearisation");
       const bool pstab  = true;
       const bool supg   = true;
       const bool cstab  = true;
 
       const bool monolithic_FSI = params.get<bool>("monolithic_FSI");
-      
+
       const RCP<const vector<int> > ifacepatchlm = params.get<RCP<vector<int> > >("ifacepatchlm");
-                      
+
       if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
-      { 
+      {
         if (ih_->ElementIntersected(Id()))
         {
           const size_t nui = ifacepatchlm->size();
@@ -540,7 +540,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), nui));
           fluidfluidmatrices_.rhsui_uncond = rcp(new Epetra_SerialDenseVector(nui));
         }
-            
+
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
             *eleDofManager_, NumNode(), NodeIds());
 
@@ -548,7 +548,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
             this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1,
             mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_);
-        
+
         if (ih_->ElementIntersected(Id()))
         {
           const size_t nui = ifacepatchlm->size();
@@ -575,7 +575,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
         Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
         Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
-        
+
         RCP<Epetra_SerialDenseMatrix> Cud;
         RCP<Epetra_SerialDenseMatrix> Cdu;
         RCP<Epetra_SerialDenseMatrix> Cdd;
@@ -595,12 +595,12 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
                            *eleDofManager_uncondensed_, NumNode(), NodeIds());
-        
+
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
             this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond,
             mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_);
-        
+
         // condensation
         CondenseElementStressAndStoreOldIterationStep(
             elemat1_uncond, elevec1_uncond,
@@ -612,7 +612,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             *ifacepatchlm,
             true
         );
-       
+
         if (ih_->ElementIntersected(Id()))
         {
           params.set("Cdu",Cdu);
@@ -1201,7 +1201,7 @@ void integrateShapefunctionT(
         dofman,
         cellcenter_xyz, false, -1);
 
-    const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
+    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
 
     // gaussian points
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);

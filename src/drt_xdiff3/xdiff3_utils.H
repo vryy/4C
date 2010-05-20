@@ -21,21 +21,21 @@ namespace XDIFF
 {
 
 template<class M1, class M2>
-void fill_tau(
+void fill_flux(
     const size_t         numparamtau,
     const M1&            shp_tau,
     const M2&            eflux,
     LINALG::Matrix<3,1>& flux
-    )
+)
 {
-    flux.Clear();
-    for (size_t i = 0; i < numparamtau; ++i)
-    {
-        const double fac = shp_tau(i);
-        flux(0,0) += fac*eflux(0,i);
-        flux(1,0) += fac*eflux(1,i);
-        flux(2,0) += fac*eflux(2,i);
-    }
+  flux.Clear();
+  for (size_t i = 0; i < numparamtau; ++i)
+  {
+    const double fac = shp_tau(i);
+    flux(0,0) += fac*eflux(0,i);
+    flux(1,0) += fac*eflux(1,i);
+    flux(2,0) += fac*eflux(2,i);
+  }
 }
 
 /*!
@@ -123,125 +123,6 @@ LINALG::SerialDenseMatrix BodyForce(DRT::Node** nodes, const double pseudotime)
   }
 
   return edeadng_;
-}
-
-
-/*!
- \brief get optimal gaussrule for given discretization type
-        template version
- \return enum with optimal gausrule for this element
- */
-inline DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule(DRT::Element::DiscretizationType  distype)
-{
-    DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
-    switch (distype)
-    {
-    case DRT::Element::hex8:
-        rule = DRT::UTILS::intrule_hex_8point;
-        break;
-    case DRT::Element::hex20: case DRT::Element::hex27:
-        rule = DRT::UTILS::intrule_hex_27point;
-        break;
-    case DRT::Element::tet4:
-        rule = DRT::UTILS::intrule_tet_4point;
-        break;
-    case DRT::Element::tet10:
-        rule = DRT::UTILS::intrule_tet_24point;
-        break;
-    default:
-        dserror("unknown distype for gaussrule initialization");
-  }
-  return rule;
-}
-
-/*!
- \brief get optimal gaussrule for given discretization type
-
- \return enum with optimal gausrule for this element
- */
-template<DRT::Element::DiscretizationType XELEDISTYPE, class M>
-DRT::UTILS::GaussRule3D getXFEMGaussrule(
-    const DRT::Element*                     xele,
-    const M&                                xyze_element,
-    const bool                              intersected,
-    const DRT::Element::DiscretizationType  celldistype
-    )
-{
-  DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
-  if (not intersected)
-  {
-    rule = getOptimalVelocityGaussrule(celldistype);
-  }
-  else
-  {
-    const GEO::EleGeoType xeleGeoType = GEO::checkGeoTypeT<XELEDISTYPE>(xele,xyze_element);
-
-    if (celldistype == DRT::Element::tet4 or celldistype == DRT::Element::tet10)
-    {
-      switch (XELEDISTYPE)
-      {
-        case DRT::Element::hex8:
-        {
-          if (xeleGeoType == GEO::CARTESIAN) // constant jacobian
-            rule = DRT::UTILS::intrule_tet_4point;
-          else
-            rule = DRT::UTILS::intrule_tet_4point;
-          break;
-        }
-        case DRT::Element::hex20:
-        {
-          if (xeleGeoType == GEO::CARTESIAN) // constant jacobian
-            rule = DRT::UTILS::intrule_tet_11point;
-          else
-            rule = DRT::UTILS::intrule_tet_11point;
-          break;
-        }
-        case DRT::Element::hex27:
-        {
-          if (xeleGeoType == GEO::CARTESIAN) // constant jacobian
-            rule = DRT::UTILS::intrule_tet_11point;
-          else
-            rule = DRT::UTILS::intrule_tet_11point;
-          break;
-        }
-        case DRT::Element::tet4:
-        {
-          rule = DRT::UTILS::intrule_tet_4point;
-          break;
-        }
-        case DRT::Element::tet10:
-        {
-          rule = DRT::UTILS::intrule_tet_24point;
-          break;
-        }
-        default:
-          dserror("no rule defined for this xele");
-      }
-    }
-    else
-    {
-      dserror("gaussrule only for tetrahedral integration cells defined. Please add additional rules here!");
-    }
-  }
-
-  return rule;
-}
-
-
-//! interpolate from nodal vector array to integration point vector using the shape function
-template <class M, class VS>
-LINALG::Matrix<3,1> interpolateVectorFieldToIntPoint(
-    const M&  eleVectorField,       ///< array with nodal vector values
-    const VS& shp,                  ///< array with nodal shape function
-    const int numparam              ///< number of parameters
-    )
-{
-  const int nsd = 3;
-  LINALG::Matrix<nsd,1> v(true);
-  for (int iparam = 0; iparam < numparam; ++iparam)
-    for (int isd = 0; isd < nsd; ++isd)
-      v(isd) += eleVectorField(isd,iparam)*shp(iparam);
-  return v;
 }
 
 //! interpolate from nodal vector array to integration point vector using the shape function

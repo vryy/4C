@@ -325,7 +325,7 @@ void SysmatDomainProjection(
               dofman,
               cellcenter_xyz, false, -1);
 
-        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
+        const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
 
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
@@ -436,11 +436,11 @@ void SysmatDomainProjection(
             }
 
             // get velocities and accelerations at integration point
-//            const LINALG::Matrix<nsd,1> gpvelnp = XFLUID::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
-            LINALG::Matrix<nsd,1> u2_proj  = XFLUID::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
+//            const LINALG::Matrix<nsd,1> gpvelnp = XFEM::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
+            LINALG::Matrix<nsd,1> u2_proj  = XFEM::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
 //            cout << u2_proj << endl;
-//            LINALG::Matrix<nsd,1> gpvelnm = XFLUID::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
-            LINALG::Matrix<nsd,1> a2_proj  = XFLUID::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
+//            LINALG::Matrix<nsd,1> gpvelnm = XFEM::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
+            LINALG::Matrix<nsd,1> a2_proj  = XFEM::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
 
 
 //            const bool was_in_fluid = (ih->PositionWithinConditionN(posx_gp) == 0);

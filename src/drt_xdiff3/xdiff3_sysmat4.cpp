@@ -283,7 +283,7 @@ void SysmatDomain4(
               dofman,
               cellcenter_xyz, false, -1);
 
-        const DRT::UTILS::GaussRule3D gaussrule = XDIFF::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
+        const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
 
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
@@ -484,7 +484,7 @@ void SysmatDomain4(
             static LINALG::Matrix<nsd,1> heatflux;
             if (tauele_unknowns_present)
             {
-              XDIFF::fill_tau(numparamtauxx, shp_tau.d0, eflux, heatflux);
+              XDIFF::fill_flux(numparamtauxx, shp_tau.d0, eflux, heatflux);
             }
             else
             {
@@ -750,7 +750,7 @@ void SysmatBoundary4(
 
             // position of the gausspoint in physical coordinates
             // gauss_pos_xyz = funct_boundary(j)*xyze_boundary(i,j);
-            const LINALG::Matrix<nsd,1> gauss_pos_xyz = XDIFF::interpolateVectorFieldToIntPoint(xyze_boundary,funct_boundary,numnode_boundary);
+            const LINALG::Matrix<nsd,1> gauss_pos_xyz = XFEM::interpolateVectorFieldToIntPoint(xyze_boundary,funct_boundary,numnode_boundary);
 
             // get jacobian matrix d x / d \xi  (3x2)
             // dxyzdrs(i,j) = xyze_boundary(i,k)*deriv_boundary(j,k);
@@ -847,7 +847,7 @@ void SysmatBoundary4(
 
             // get viscous stress unknowns
             static LINALG::Matrix<nsd,1> heatflux;
-            XDIFF::fill_tau(numparamtauxx, shp_tau.d0, eflux, heatflux);
+            XDIFF::fill_flux(numparamtauxx, shp_tau.d0, eflux, heatflux);
 
             // integration factors and coefficients of single terms
             const double timefacfac = timefac * fac;

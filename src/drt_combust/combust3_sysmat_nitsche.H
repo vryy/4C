@@ -734,7 +734,7 @@ void SysmatDomainNitsche(
     //------------------------------------------------------------------------------------------
     // get Gaussian points for this integration cell
     //------------------------------------------------------------------------------------------
-    const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Intersected(), cell->Shape());
+    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Intersected(), cell->Shape());
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
     //------------------------------------------------------------------------------------------
     // integration loop over Gaussian points
@@ -880,10 +880,10 @@ void SysmatDomainNitsche(
       //--------------------------------------------------------------------------------------
       // get velocities and accelerations at integration point
       //--------------------------------------------------------------------------------------
-      const LINALG::Matrix<nsd,1> gpvelnp = COMBUST::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
-      const LINALG::Matrix<nsd,1> gpveln  = COMBUST::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
-      const LINALG::Matrix<nsd,1> gpvelnm = COMBUST::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
-      const LINALG::Matrix<nsd,1> gpaccn  = COMBUST::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
+      const LINALG::Matrix<nsd,1> gpvelnp = XFEM::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
+      const LINALG::Matrix<nsd,1> gpveln  = XFEM::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
+      const LINALG::Matrix<nsd,1> gpvelnm = XFEM::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
+      const LINALG::Matrix<nsd,1> gpaccn  = XFEM::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
 
       //--------------------------------------------------------------------------------------
       // get velocity derivatives at integration point
@@ -978,7 +978,7 @@ void SysmatDomainNitsche(
       // scale body force: body force * density^{n+1}
       bodyforce.Scale(densnp);
       //            // read body force from input file
-      //            LINALG::SerialDenseMatrix edeadng = XFLUID::BodyForceTwoPhaseFlow<DISTYPE>(ele, 0.0);
+      //            LINALG::SerialDenseMatrix edeadng = COMBUST::BodyForce<DISTYPE>(ele, 0.0);
       //            // remark: use BodyForce() instead?
       //            for (std::size_t isd = 0; isd < nsd; isd++)
       //            {
@@ -1491,12 +1491,12 @@ cout << jp << endl;
       // velocity jump
       static LINALG::Matrix<nsd,1> vjump(true);
       vjump.Clear();
-      vjump = COMBUST::interpolateVectorFieldToIntPoint(evelnp, shp_jump.d0, numparamvelx);
+      vjump = XFEM::interpolateVectorFieldToIntPoint(evelnp, shp_jump.d0, numparamvelx);
 
       // mean velocity
       static LINALG::Matrix<nsd,1> vmean(true);
       vmean.Clear();
-      vmean = COMBUST::interpolateVectorFieldToIntPoint(evelnp, shp_mean.d0, numparamvelx);
+      vmean = XFEM::interpolateVectorFieldToIntPoint(evelnp, shp_mean.d0, numparamvelx);
 
       // get velocity (np,i) derivatives at integration point
       // vderxy = enr_derxy(j,k)*evelnp(i,k);

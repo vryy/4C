@@ -147,10 +147,9 @@ void SysmatTwoPhaseFlow(
     // get the density \rho
     const double dens = mat->Density();
 
-    //        const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussrule<DISTYPE>(ele, xyze, ih->ElementIntersected(ele->Id()),cell->Shape());
     // special getXFEMGaussruleKinkEnr for kink enrichment is called as parabolic shape functions are obtained
     // after multipying N and Psi
-    const DRT::UTILS::GaussRule3D gaussrule = XFLUID::getXFEMGaussruleKinkEnr<DISTYPE>(ele, xyze, ele->Intersected(),cell->Shape());
+    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussruleKinkEnr<DISTYPE>(ele, xyze, ele->Intersected(),cell->Shape());
 
     // gaussian points
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
@@ -399,10 +398,10 @@ void SysmatTwoPhaseFlow(
       }
 
       // get velocities and accelerations at integration point
-      const LINALG::Matrix<nsd,1> gpvelnp = COMBUST::interpolateVectorFieldToIntPoint(evelnp, shpvel.d0, numparamvelx);
-      LINALG::Matrix<nsd,1> gpveln  = COMBUST::interpolateVectorFieldToIntPoint(eveln , shpvel.d0, numparamvelx);
-      LINALG::Matrix<nsd,1> gpvelnm = COMBUST::interpolateVectorFieldToIntPoint(evelnm, shpvel.d0, numparamvelx);
-      LINALG::Matrix<nsd,1> gpaccn  = COMBUST::interpolateVectorFieldToIntPoint(eaccn , shpvel.d0, numparamvelx);
+      const LINALG::Matrix<nsd,1> gpvelnp = XFEM::interpolateVectorFieldToIntPoint(evelnp, shpvel.d0, numparamvelx);
+      LINALG::Matrix<nsd,1> gpveln  = XFEM::interpolateVectorFieldToIntPoint(eveln , shpvel.d0, numparamvelx);
+      LINALG::Matrix<nsd,1> gpvelnm = XFEM::interpolateVectorFieldToIntPoint(evelnm, shpvel.d0, numparamvelx);
+      LINALG::Matrix<nsd,1> gpaccn  = XFEM::interpolateVectorFieldToIntPoint(eaccn , shpvel.d0, numparamvelx);
 
       // commenting this section out leads to problems with instationary calculations   henke 01/09
       //            if (ASSTYPE == XFEM::xfem_assembly and timealgo != timeint_stationary)
@@ -524,20 +523,21 @@ void SysmatTwoPhaseFlow(
       LINALG::Matrix<nsd,1> bodyforce;
       bodyforce.Clear();
       //std::cout << "BodyForce" << std::endl;
-      bodyforce(0) = 0.0;
-      //            bodyforce(1) = -0.01;
-      //            bodyforce(0) = 0.5/dens;
-      // --------------- DAS GEHT AUCH, WENN MAN EINE VOLUMENLAST IM DAT-FILE VORGIBT!!!!!!!!!!!!!! -------
-      //            LINALG::SerialDenseMatrix edeadng = XFLUID::BodyForceTwoPhaseFlow<DISTYPE>(ele, 0.0);
-      //            for (std::size_t isd = 0; isd < nsd; isd++)
-      //            {
-      //              for (std::size_t inode = 0; inode < numnode; inode++)
-      //                  bodyforce(isd) += edeadng(isd,inode) * funct(inode);
-      //            }
-      //            std::cout << "BodyForce " << std::endl;
-      //            std::cout << bodyforce(0) << std::endl;
-      //            std::cout << bodyforce(1) << std::endl;
-      //            std::cout << bodyforce(2) << std::endl;
+      //bodyforce(0) = 0.0;
+      //bodyforce(1) = -10.0;
+      //bodyforce(0) = 0.5/dens;
+
+      LINALG::SerialDenseMatrix edeadng = COMBUST::BodyForce<DISTYPE>(ele, 0.0);
+      for (std::size_t isd = 0; isd < nsd; isd++)
+      {
+        for (std::size_t inode = 0; inode < numnode; inode++)
+          bodyforce(isd) += edeadng(isd,inode) * funct(inode);
+      }
+      //std::cout << "BodyForce " << std::endl;
+      //std::cout << bodyforce(0) << std::endl;
+      //std::cout << bodyforce(1) << std::endl;
+      //std::cout << bodyforce(2) << std::endl;
+
       for (size_t isd = 0; isd < nsd; ++isd)
         rhsint(isd) = dens*histvec(isd) + bodyforce(isd)*timefac*dens;
 
