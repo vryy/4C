@@ -115,6 +115,14 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::FluidXFEM::SystemMatrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::FluidXFEM::GetDBCMapExtractor()
+{
+  return FluidField().GetDBCMapExtractor();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 std::map<std::string,Teuchos::RCP<LINALG::SparseMatrix> > ADAPTER::FluidXFEM::CouplingMatrices()
 {
   return XFluidField().CouplingMatrices();

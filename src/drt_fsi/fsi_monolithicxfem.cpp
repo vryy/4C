@@ -28,13 +28,11 @@ FSI::MonolithicBaseXFEM::MonolithicBaseXFEM(Epetra_Comm& comm)
     StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
     fluidfield_(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling")
 {
-  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-
   // structure to fluid
-  coupsf.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface().FSICondMap(),
-                                *FluidField().Discretization(),
-                                 FluidField().Interface().FSICondMap(),
+  coupsf_.SetupConditionCoupling(*StructureField().Discretization(),
+                                  StructureField().Interface().FSICondMap(),
+                                 *FluidField().Discretization(),
+                                  FluidField().Interface().FSICondMap(),
                                  "FSICoupling");
 
   // Use splitted structure matrix
@@ -46,7 +44,6 @@ FSI::MonolithicBaseXFEM::MonolithicBaseXFEM(Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps)
 {
-  cout << "FSI::MonolithicBaseXFEM::SetDofRowMaps" << endl;
   Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMapsKeepOrder(maps);
   extractor_.Setup(*fullmap,maps);
 }
@@ -246,9 +243,9 @@ void FSI::MonolithicXFEM::Newton()
   stepinc_ = Teuchos::null;
   systemmatrix_ = Teuchos::null;
 
-  for (int i =0;i<100;++i)
+  for (int i =0;i<20;++i)
   {
-    cout << "Newton step: " << i << endl;
+    cout << endl << YELLOW << "Newton step: " << i  << END_COLOR << endl;
     Evaluate();
 
     // setup global (full monolithic) map
@@ -256,7 +253,7 @@ void FSI::MonolithicXFEM::Newton()
 
     SetupRHS();
 
-    if (ConverganceTest())
+    if (Converged())
     {
       break;
     }
@@ -352,11 +349,10 @@ void FSI::MonolithicXFEM::SetupRHS()
 //  cout << *structboundarycoupleforce << endl;
   Extractor().AddStructureBoundaryVector(structboundarycoupleforce,rhs_);
 
-  const Teuchos::RCP<const Epetra_Map >& condmap = StructureField().GetDBCMapExtractor()->CondMap();
-  const Teuchos::RCP<const Epetra_Vector> zeros = LINALG::CreateVector(*condmap, true);
+  const Teuchos::RCP<const Epetra_Vector> zeros = LINALG::CreateVector(*Extractor().FullMap(), true);
   Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*Extractor().FullMap(), true);
 
-  LINALG::ApplyDirichlettoSystem(tmp, rhs_, zeros, *condmap);
+  LINALG::ApplyDirichlettoSystem(tmp, rhs_, zeros, *CombinedDBCMap());
 
 //  cout << "rhs_" << endl;
 //  cout << *rhs_ << endl;
@@ -366,7 +362,7 @@ void FSI::MonolithicXFEM::SetupRHS()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::MonolithicXFEM::ConverganceTest()
+bool FSI::MonolithicXFEM::Converged() const
 {
   cout << "FSI::MonolithicXFEM::ConverganceTest()" << endl;
 
@@ -409,20 +405,16 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   // direct access to coupling matrices
   const map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > cmats = FluidField().CouplingMatrices();
 
-//  Teuchos::RCP<LINALG::SparseMatrix> Cuu = cmats.find("Cuu")->second; // schon erledigt im Fluid
+  // Cuu schon erledigt im Fluid
   const Teuchos::RCP<LINALG::SparseMatrix> Cud = cmats.find("Cud")->second;
   const Teuchos::RCP<LINALG::SparseMatrix> Cdu = cmats.find("Cdu")->second;
   const Teuchos::RCP<LINALG::SparseMatrix> Cdd = cmats.find("Cdd")->second;
 
 
   /*----------------------------------------------------------------------*/
-
-//  double scale     = FluidField().ResidualScaling();
-//  double timescale = FluidField().TimeScaling();
-
   systemmatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(Extractor(),Extractor(),81,false));
 
-  s->Matrix(1,1).UnComplete(); // da kommt noch etwas dazu
+  s->Matrix(1,1).UnComplete(); // da kommt noch ein coupling block dazu
 
   systemmatrix_->Assign(0,0,View,s->Matrix(0,0)); // interior
   systemmatrix_->Assign(1,0,View,s->Matrix(1,0));
@@ -430,12 +422,11 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   systemmatrix_->Assign(1,1,View,s->Matrix(1,1)); // fsi boundary
   systemmatrix_->Assign(2,2,View,*f);
 
-  LINALG::PrintMatrixInMatlabFormat("S00",*s->Matrix(0,0).EpetraMatrix(),true);
-  LINALG::PrintMatrixInMatlabFormat("S10",*s->Matrix(1,0).EpetraMatrix(),true);
-  LINALG::PrintMatrixInMatlabFormat("S01",*s->Matrix(0,1).EpetraMatrix(),true);
-  LINALG::PrintMatrixInMatlabFormat("S11",*s->Matrix(1,1).EpetraMatrix(),true);
+//  LINALG::PrintMatrixInMatlabFormat("S00",*s->Matrix(0,0).EpetraMatrix(),true);
+//  LINALG::PrintMatrixInMatlabFormat("S10",*s->Matrix(1,0).EpetraMatrix(),true);
+//  LINALG::PrintMatrixInMatlabFormat("S01",*s->Matrix(0,1).EpetraMatrix(),true);
+//  LINALG::PrintMatrixInMatlabFormat("S11",*s->Matrix(1,1).EpetraMatrix(),true);
 
-////  matrix_->Matrix(1,0).Add(*Mud,false,1.0,0.0);
   sigtransform_(Cud->RowMap(),
                 Cud->ColMap(),
                 *Cud,
@@ -445,15 +436,11 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
                 true,
                 false);
 
-  //  matrix_->Matrix(0,1).Add(*Mdu,false,1.0,0.0);
   sgitransform_(*Cdu,
                 1.0,
                 ADAPTER::Coupling::SlaveConverter(coupsf),
                 systemmatrix_->Matrix(1,2),
                 true);
-
-//  cout << systemmatrix_->Matrix(1,2) << endl;
-  LINALG::PrintMatrixInMatlabFormat("M12",*systemmatrix_->Matrix(1,2).EpetraMatrix(),true);
 
   //  matrix_->Matrix(0,0).Add(*Cdd,false,1.0,1.0);
   sggtransform_(*Cdd,
@@ -466,29 +453,8 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
 
   // done. make sure all blocks are filled.
   systemmatrix_->Complete();
-
-  LINALG::PrintMatrixInMatlabFormat("M00",*systemmatrix_->Matrix(0,0).EpetraMatrix(),true);
-  LINALG::PrintMatrixInMatlabFormat("M10",*systemmatrix_->Matrix(1,0).EpetraMatrix(),true);
-  LINALG::PrintMatrixInMatlabFormat("M01",*systemmatrix_->Matrix(0,1).EpetraMatrix(),true);
-  LINALG::PrintMatrixInMatlabFormat("M11",*systemmatrix_->Matrix(1,1).EpetraMatrix(),true);
-
-  const Teuchos::RCP<const Epetra_Map >& condmap = StructureField().GetDBCMapExtractor()->CondMap();
-  systemmatrix_->ApplyDirichlet(*condmap, true);
-
-  cout << "systemmatrix_->Complete() ... Done!" << endl;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::InitialGuess");
-
-//  SetupVector(*ig,
-//              StructureField().InitialGuess(),
-//              FluidField().InitialGuess(),
-//              0.0);
+  // if DBC are on the interface, the DBC have to be applied again
+  systemmatrix_->ApplyDirichlet(*CombinedDBCMap(), true);
 }
 
 
@@ -549,6 +515,7 @@ void FSI::MonolithicXFEM::LinearSolve()
   {
     if (not stepinc_->Map().SameAs(iterinc->Map()))
     {
+      cout << RED_LIGHT << "Resetting global FSI stepinc_... " << END_COLOR << endl;
       Teuchos::RCP<Epetra_Vector> oldstepinc_ = stepinc_;
       stepinc_ = LINALG::CreateVector(*Extractor().FullMap(),true);
       // recover step vector as much as possible
@@ -575,30 +542,30 @@ void FSI::MonolithicXFEM::LinearSolve()
 //  cout << stepinc_->Map() << endl;
   cout << "  updated" << endl;
 
-  const Teuchos::RCP<const Epetra_Map >& condmap = StructureField().GetDBCMapExtractor()->CondMap();
-  Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*condmap, true);
+  const Teuchos::RCP<const Epetra_Vector> zeros = LINALG::CreateVector(*Extractor().FullMap(), true);
   Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*Extractor().FullMap(), true);
 
-  LINALG::ApplyDirichlettoSystem(tmp, stepinc_, zeros, *condmap);
+  LINALG::ApplyDirichlettoSystem(tmp, stepinc_, zeros, *CombinedDBCMap());
   cout << "  DBC applied" << endl;
 
 
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-//void FSI::MonolithicXFEM::SetupVector(Epetra_Vector &f,
-//                                      Teuchos::RCP<const Epetra_Vector> sv,
-//                                      Teuchos::RCP<const Epetra_Vector> fv,
-//                                      double fluidscale)
-//{
-//  Extractor().InsertVector(*sv,0,f);
-//  Extractor().InsertVector(*fv,1,f);
-//}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicXFEM::StructToFluid(const Teuchos::RCP<const Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Map> FSI::MonolithicXFEM::CombinedDBCMap()
+{
+  const Teuchos::RCP<const Epetra_Map >& scondmap = StructureField().GetDBCMapExtractor()->CondMap();
+  const Teuchos::RCP<const Epetra_Map >& fcondmap = FluidField().GetDBCMapExtractor()->CondMap();
+  Teuchos::RCP<Epetra_Map> condmap = LINALG::MergeMap(scondmap, fcondmap, false);
+  return condmap;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicXFEM::StructToFluid(const Teuchos::RCP<const Epetra_Vector> iv) const
 {
   const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   return coupsf.MasterToSlave(iv);
@@ -607,7 +574,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicXFEM::StructToFluid(const Teuchos::RC
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicXFEM::FluidToStruct(const Teuchos::RCP<const Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicXFEM::FluidToStruct(const Teuchos::RCP<const Epetra_Vector> iv) const
 {
   const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   return coupsf.SlaveToMaster(iv);

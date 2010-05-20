@@ -229,7 +229,7 @@ public:
   Teuchos::RCP<Epetra_Vector> Veln() { return state_.veln_; }
 
   /// provide access to the Dirichlet map
-  const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+  const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() const { return dbcmaps_; }
 
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   std::map<std::string, Teuchos::RCP<LINALG::SparseMatrix> > CouplingMatrices();
@@ -239,8 +239,8 @@ public:
   Teuchos::RCP<Epetra_Vector> RobinRHS() { return robinrhs_; }
 
   LINALG::MapExtractor& VelPresSplitter() { return velpressplitter_; }
-  Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.OtherMap(); }
-  Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.CondMap(); }
+  Teuchos::RCP<const Epetra_Map> VelocityRowMap() const { return velpressplitter_.OtherMap(); }
+  Teuchos::RCP<const Epetra_Map> PressureRowMap() const { return velpressplitter_.CondMap(); }
 
   double ResidualScaling() const { return 1.0; }
   double Dt() const { return dta_; }

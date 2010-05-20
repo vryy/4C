@@ -57,7 +57,7 @@ namespace FSI
     /// return instance of fluid time integration class
     const ADAPTER::FluidXFEM& FluidField() const { return fluidfield_; }
 
-    ADAPTER::Coupling& StructureFluidCoupling() { return coupsf_; }
+    const ADAPTER::Coupling& StructureFluidCoupling() const { return coupsf_; }
 
 
 
@@ -104,31 +104,17 @@ namespace FSI
     /// outer level FSI time loop
     void Timeloop();
 
-
-    /// Extract initial guess from fields
-    virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
-
     /// the composed system matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
 
-    /// extract the two field vectors from a given composed vector
-    /*!
-      x is the sum of all increments up to this point.
-
-      \param x  (i) composed vector that contains all field vectors
-      \param sx (o) structural displacements
-      \param fx (o) fluid velocities and pressure
-     */
-    void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
-                             Teuchos::RCP<const Epetra_Vector>& sx,
-                             Teuchos::RCP<const Epetra_Vector>& fx);
-
-
     /// extractor to communicate between full monolithic map and block maps
-    const MonolithicXFEMExtractor& Extractor(){return extractor_;};
+    const MonolithicXFEMExtractor& Extractor() const {return extractor_;};
 
     /// full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> DofRowMap() const { return extractor_.FullMap(); }
+
+    /// combined DBC map
+    Teuchos::RCP<Epetra_Map> CombinedDBCMap();
 
     /// set full monolithic dof row map
     /*!
@@ -156,14 +142,14 @@ namespace FSI
     /// setup composed system matrix from field solvers
     void SetupSystemMatrix();
 
-    bool ConverganceTest();
+    bool Converged() const;
 
     void LinearSolve();
 
     MonolithicXFEMExtractor extractor_;
 
-    Teuchos::RCP<Epetra_Vector> StructToFluid(const Teuchos::RCP<const Epetra_Vector> iv);
-    Teuchos::RCP<Epetra_Vector> FluidToStruct(const Teuchos::RCP<const Epetra_Vector> iv);
+    Teuchos::RCP<Epetra_Vector> StructToFluid(const Teuchos::RCP<const Epetra_Vector> iv) const;
+    Teuchos::RCP<Epetra_Vector> FluidToStruct(const Teuchos::RCP<const Epetra_Vector> iv) const;
 
     /// residual
     Teuchos::RCP<Epetra_Vector> rhs_;
