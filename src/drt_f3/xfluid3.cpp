@@ -328,6 +328,34 @@ DRT::ELEMENTS::XFluid3::DLMInfo::DLMInfo(const int nu, const int ns, const int n
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::XFluid3::DLMInfo::DLMInfo(
+    const int nu, const int ns, const int nui,
+    const DLMInfo& dlminfo_old
+    )
+: oldKssinv_(LINALG::SerialDenseMatrix(ns,ns,true)),
+  oldKGsu_(LINALG::SerialDenseMatrix(ns,nu,true)),
+  oldGsui_(LINALG::SerialDenseMatrix(ns,nui,true)),
+  oldrs_(LINALG::SerialDenseVector(ns,true)),
+  stressdofs_(LINALG::SerialDenseVector(ns,true))
+{
+  if (oldrs_.Length() == ns)
+  {
+    oldKssinv_  = dlminfo_old.oldKssinv_;
+    oldrs_      = dlminfo_old.oldrs_;
+    stressdofs_ = dlminfo_old.stressdofs_;
+//    cout << nu << " " << oldKGsu_.RowDim() << " " << oldKGsu_.ColDim() << endl;
+    if (oldKGsu_.ColDim() == nu)
+    {
+//      cout << "recovering oldKGsu_" << endl;
+      oldKGsu_ = dlminfo_old.oldKGsu_;
+    }
+  }
+
+  return;
+}
+
 
 
 #endif  // #ifdef CCADISCRET

@@ -220,6 +220,23 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                   )
               );
         }
+        else if (DLM_info_->oldGsui_.N() != (int)ifacepatchlm->size()) // different number of intersecting elements -> coupling matrices change size!
+        {
+          // todo: rescue stress instead of deleting
+//          cout << "DLM_info_->oldGsui_.N() != ifacepatchlm->size() -> reset" << DLM_info_->oldGsui_.N() << "  " << ifacepatchlm->size() << endl;
+          DLM_info_ = Teuchos::rcp(
+              new DLMInfo(
+                  eleDofManager_uncondensed_->NumNodeDof(),
+                  eleDofManager_uncondensed_->NumElemDof(),
+                  ifacepatchlm->size(),
+                  *DLM_info_
+                  )
+              );
+        }
+        else
+        {
+          cout << DLM_info_->oldGsui_.N() << "  " << DLM_info_->oldGsui_.M() << "  " << ifacepatchlm->size() << endl;
+        }
       }
       else
       {
@@ -257,8 +274,11 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // sanity checks
         SanityChecks(eleDofManager_, eleDofManager_uncondensed_);
 
+        const RCP<const Epetra_Vector>  iterincxdomain = discretization.GetState("nodal iterinc");
+        const RCP<const Epetra_Vector>  iterinciface   = ih_->cutterdis()->GetState("nodal iterinc");
+
         // stress update
-        UpdateOldDLMAndDLMRHS(discretization, *ih_->cutterdis(), lm, *ifacepatchlm, mystate, monolithic_FSI);
+        UpdateOldDLMAndDLMRHS(iterincxdomain, iterinciface, lm, *ifacepatchlm, mystate, monolithic_FSI);
 
       }
       break;
@@ -326,8 +346,11 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // sanity checks
         SanityChecks(eleDofManager_, eleDofManager_uncondensed_);
 
+        const RCP<const Epetra_Vector>  iterincxdomain = discretization.GetState("nodal iterinc");
+        const RCP<const Epetra_Vector>  iterinciface   = ih_->cutterdis()->GetState("nodal iterinc");
+
         // stress update
-        UpdateOldDLMAndDLMRHS(discretization, *ih_->cutterdis(), lm, *ifacepatchlm, mystate, monolithic_FSI);
+        UpdateOldDLMAndDLMRHS(iterincxdomain, iterinciface, lm, *ifacepatchlm, mystate, monolithic_FSI);
 
         // create uncondensed element matrix and vector
         const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
@@ -399,10 +422,15 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           params.set("Cdu",Cdu);
           params.set("Cdd",Cdd);
           params.set("rhsd",rhsd);
+#ifdef DEBUG
+          if (std::isnan(fluidfluidmatrices_.Guis_uncond->InfNorm())) { cout << *this << endl; dserror("NaNs in elemat1 detected! Quitting..."); }
+          if (std::isnan(fluidfluidmatrices_.Gsui_uncond->InfNorm())) { cout << *this << endl; dserror("NaNs in elemat1 detected! Quitting..."); }
+          if (std::isnan(fluidfluidmatrices_.rhsui_uncond->Norm2()))  { cout << *this << endl; dserror("NaNs in elevec1 detected! Quitting..."); }
+#endif
         }
       }
 
-#if DEBUG
+#ifdef DEBUG
       if (std::isnan(elevec1.Norm2()))   { cout << *this << endl; dserror("NaNs in elevec1 detected! Quitting..."); }
       if (std::isnan(elemat1.InfNorm())) { cout << *this << endl; dserror("NaNs in elemat1 detected! Quitting..."); }
 #endif
@@ -537,8 +565,11 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // sanity checks
         SanityChecks(eleDofManager_, eleDofManager_uncondensed_);
 
+        const RCP<const Epetra_Vector>  iterincxdomain = discretization.GetState("nodal iterinc");
+        const RCP<const Epetra_Vector>  iterinciface   = ih_->cutterdis()->GetState("nodal iterinc");
+
         // stress update
-        UpdateOldDLMAndDLMRHS(discretization, *ih_->cutterdis(), lm, *ifacepatchlm, mystate, true);
+        UpdateOldDLMAndDLMRHS(iterincxdomain, iterinciface, lm, *ifacepatchlm, mystate, true);
 
         // create uncondensed element matrix and vector
         const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
@@ -925,8 +956,8 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
 void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
-    const DRT::Discretization&      discretization,
-    const DRT::Discretization&      discretizationiface,
+    const RCP<const Epetra_Vector>  iterincxdomain,
+    const RCP<const Epetra_Vector>  iterinciface,
     const std::vector<int>&         lm,
     const std::vector<int>&         lmiface,
     MyState&                        mystate,
@@ -946,7 +977,7 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
     // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
 
     vector<double> iterinc_velnp(lm.size());
-    DRT::UTILS::ExtractMyValues(*discretization.GetState("nodal iterinc"),iterinc_velnp,lm);
+    DRT::UTILS::ExtractMyValues(*iterincxdomain,iterinc_velnp,lm);
 
     static const Epetra_BLAS blas;
     // update old iteration residual of the stresses from velocity and pressure increments
@@ -956,7 +987,7 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
     if (nui > 0 and interface_unknowns)
     {
       vector<double> iterinc_velnp_iface(nui);
-      DRT::UTILS::ExtractMyValues(*discretizationiface.GetState("nodal iterinc"),iterinc_velnp_iface,lmiface);
+      DRT::UTILS::ExtractMyValues(*iterinciface,iterinc_velnp_iface,lmiface);
 
       // update old iteration residual of the stresses from interface velocity increments
       // DLM_info_->oldrs_(i) += DLM_info_->oldGsui_(i,j)*inc_velnp_iface[j];

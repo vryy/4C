@@ -299,6 +299,10 @@ namespace DRT
 
           //! constructor
           explicit DLMInfo(const int nu, const int ns, const int nui);
+
+          //! constructor
+          explicit DLMInfo(const int nu, const int ns, const int nui, const DLMInfo& dlminfo_old);
+
         private:
           //! disabled standard constructor
           DLMInfo();
@@ -323,8 +327,8 @@ namespace DRT
 
         //! compute stresses from previous newton iteration and store them in dlm_info_
         void UpdateOldDLMAndDLMRHS(
-            const DRT::Discretization&      discretization,
-            const DRT::Discretization&      discretizationiface,
+            const RCP<const Epetra_Vector>  iterincxdomain,
+            const RCP<const Epetra_Vector>  iterinciface,
             const std::vector<int>&         lm,
             const std::vector<int>&         lmiface,
             MyState&                        mystate,
