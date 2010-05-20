@@ -1,3 +1,8 @@
+//
+// Maintainer: Axel Gerstenberger
+//
+// necessary defines: D_FLUID3 D_SOLID3 CCADISCRET BINIO QHULL
+//
 ==================================================================
         General Data File CCARAT
 ==================================================================
