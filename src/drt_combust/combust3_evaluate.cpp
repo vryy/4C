@@ -780,7 +780,7 @@ void DRT::ELEMENTS::Combust3::UpdateOldDLMAndDLMRHS(
 
     // extract local (element) increment from global vector
     vector<double> inc_velnp(lm.size());
-    DRT::UTILS::ExtractMyValues(*discretization.GetState("nodal iterinc"),inc_velnp,lm);
+    DRT::UTILS::ExtractMyValues(*discretization.GetState("velpres nodal iterinc"),inc_velnp,lm);
 
     static const Epetra_BLAS blas;
 
