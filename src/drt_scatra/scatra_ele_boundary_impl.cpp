@@ -387,35 +387,32 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     // determine normal to this element
     GetConstNormal(normal_,xyze_);
 
-    // compute fluxes on each node of the parent element
+    // extract temperature flux vector for each node of the parent element
     LINALG::SerialDenseMatrix eflux(3,nenparent);
     DRT::Element* peleptr = (DRT::Element*) parentele;
-
-    // set some parameters (temperature is always last degree of freedom in vector)
-    double frt=0.0;
-    string fluxtypestring("diffusiveflux");
-    int j=numscal_-1;
-
-    // compute elementwise flux
-    DRT::ELEMENTS::ScaTraImplInterface::Impl(parentele,scatratype)->CalculateFluxSerialDense(
-        eflux,
-        peleptr,
-        myphinp,
-        frt,
-        evel,
-        fluxtypestring,
-        j);
+    int k=numscal_-1;     // temperature is always last degree of freedom!!
+    ostringstream temp;
+    temp << k;
+    string name = "flux_phi_"+temp.str();
+    // try to get the pointer to the entry (and check if type is RCP<Epetra_MultiVector>)
+    RCP<Epetra_MultiVector>* f = params.getPtr< RCP<Epetra_MultiVector> >(name);
+    if (f!= NULL) // field has been set and is not of type Teuchos::null
+    {
+      DRT::UTILS::ExtractMyNodeBasedValues(peleptr,eflux,*f,3);
+    }
+    else
+      dserror("MultiVector %s has not been found!",name.c_str());
 
     for (int i=0; i<nen_; ++i)
     {
-      for(int k = 0; k<nenparent;++k)
+      for(int j = 0; j<nenparent;++j)
       {
         // calculate normal diffusive flux and velocity div. at present node
         mydiffflux[i] = 0.0;
         mydivu[i]     = 0.0;
         for (int l=0; l<nsd_+1; l++)
         {
-          mydiffflux[i] += eflux(l,k)*normal_(l);
+          mydiffflux[i] += eflux(l,j)*normal_(l);
           mydivu[i]     += evel[i*(nsd_+1)+l]*normal_(l);
         }
       }

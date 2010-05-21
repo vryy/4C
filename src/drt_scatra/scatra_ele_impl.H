@@ -61,17 +61,6 @@ public:
                        Epetra_SerialDenseVector&  elevec3_epetra
                        ) = 0;
 
-  //! calculate mass flux (variable number of nodes)
-  virtual void CalculateFluxSerialDense(
-      LINALG::SerialDenseMatrix&      flux,
-      DRT::Element*&            ele,
-      vector<double>&           ephinp,
-      double                    frt,
-      Epetra_SerialDenseVector& evel,
-      std::string&              fluxtypestring,
-      int                       dofindex
-  ) = 0;
-
   /// Internal implementation class for scalar transport elements
   static ScaTraImplInterface* Impl(
       const DRT::Element* ele,
@@ -146,17 +135,6 @@ public:
                        Epetra_SerialDenseVector&  elevec2_epetra,
                        Epetra_SerialDenseVector&  elevec3_epetra
                        );
-
-  //! calculate mass flux (variable number of nodes)
-  virtual void CalculateFluxSerialDense(
-      LINALG::SerialDenseMatrix&      flux,
-      DRT::Element*&                  ele,
-      vector<double>&                 ephinp,
-      double                          frt,
-      Epetra_SerialDenseVector&       evel,
-      std::string&                    fluxtypestring,
-      int                             dofindex
-  );
 
   private:
 
@@ -308,17 +286,6 @@ public:
 
     //! calculate flux vector for actual solution
     virtual void CalculateFlux(
-        LINALG::Matrix<3,nen_>&         flux,
-        const DRT::Element*             ele,
-        const vector<double>&           ephinp,
-        const double                    frt,
-        const Epetra_SerialDenseVector& evel,
-        const INPAR::SCATRA::FluxType   fluxtype,
-        const int                       dofindex
-    );
-
-    //! calculate flux vector for actual solution
-    virtual void CalculateFluxNew(
         LINALG::Matrix<3,nen_>&         flux,
         const DRT::Element*             ele,
         const vector<double>&           ephinp,

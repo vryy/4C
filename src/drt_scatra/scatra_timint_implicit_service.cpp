@@ -491,9 +491,9 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
   // define element parameter list
   ParameterList eleparams;
 
-  // DO THIS BEFORE PHINP IS SET (calls ClearState() internally!!!!)
+  // DO THIS BEFORE PHINP IS SET (ClearState() is called internally!!!!)
   // compute flux approximation and add it to the parameter list
-  //AddFluxApproxToParameterList(eleparams,INPAR::SCATRA::flux_diffusive_domain);
+  AddFluxApproxToParameterList(eleparams,INPAR::SCATRA::flux_diffusive_domain);
 
   // set scalar vector values needed by elements
   discret_->ClearState();
@@ -1287,7 +1287,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
 
   // we need a vector for the integrated shape functions
   Teuchos::RCP<Epetra_Vector> integratedshapefcts = LINALG::CreateVector(*dofrowmap,true);
-#if 0
+
   {
     ParameterList eleparams;
     eleparams.set("action","integrate_shape_functions");
@@ -1310,9 +1310,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
     // (e.g., for visualization of particle path-lines) or L2 projection for better consistency
     discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,integratedshapefcts,Teuchos::null,Teuchos::null);
   }
-#else
-  integratedshapefcts->PutScalar(1.0);
-#endif
+
   // set action for elements
   ParameterList params;
   params.set("action","calc_condif_flux");

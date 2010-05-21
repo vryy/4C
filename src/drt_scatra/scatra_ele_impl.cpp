@@ -750,22 +750,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     vector<double> myphinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
-    // assure, that the values are in the same order as the element nodes
-    for(int k=0;k<nen_;++k)
-    {
-      Node* node = (ele->Nodes())[k];
-      vector<int> dof = discretization.Dof(node);
-      int numdof = dof.size();
-      for (int i=0;i<numdof;++i)
-      {
-        if (dof[i]!=lm[k*numdof+i])
-        {
-          cout<<"dof[i]= "<<dof[i]<<"  lm[k*numdof+i]="<<lm[k*numdof+i]<<endl;
-          dserror("Dofs are not in the same order as the element nodes. Implement some resorting!");
-        }
-      }
-    }
-
     // access control parameter for flux calculation
     INPAR::SCATRA::FluxType fluxtype = params.get<INPAR::SCATRA::FluxType>("fluxtype");
 
@@ -788,19 +772,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     {
       // calculate flux vectors for actual scalar
       eflux.Clear();
-#if 1
       CalculateFlux(eflux,ele,myphinp,frt,evel,fluxtype,idof);
-      // assembly
-      for (int k=0;k<nen_;k++)
-      { // form arithmetic mean of assembled nodal flux vectors
-        // => factor is the number of adjacent elements for each node
-        double factor = ((ele->Nodes())[k])->NumElement();
-        elevec1_epetra[k*numdofpernode_+idof]+=eflux(0,k)/factor;
-        elevec2_epetra[k*numdofpernode_+idof]+=eflux(1,k)/factor;
-        elevec3_epetra[k*numdofpernode_+idof]+=eflux(2,k)/factor;
-      }
-#else
-      CalculateFluxNew(eflux,ele,myphinp,frt,evel,fluxtype,idof);
       // assembly
       for (int inode=0;inode<nen_;inode++)
       {
@@ -809,7 +781,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         elevec2_epetra[fvi]+=eflux(1,inode);
         elevec3_epetra[fvi]+=eflux(2,inode);
       }
-#endif
     } // loop over numscal
   }
   else if (action=="calc_mean_scalars")
@@ -1017,40 +988,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     dserror("Unknown type of action for Scatra Implementation: %s",action.c_str());
   // work is done
   return 0;
-}
-
-
-/*----------------------------------------------------------------------*
- |  calculate mass flux                              (private) gjb 06/08|
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFluxSerialDense(
-    LINALG::SerialDenseMatrix&      flux,
-    DRT::Element*&                  ele,
-    vector<double>&                 ephinp,
-    double                          frt,
-    Epetra_SerialDenseVector&       evel,
-    std::string&                    fluxtypestring,
-    int                             dofindex
-)
-{
-  // access control parameter
-  INPAR::SCATRA::FluxType fluxtype;
-  if (fluxtypestring == "totalflux")          fluxtype = INPAR::SCATRA::flux_total_domain;
-  else if (fluxtypestring == "diffusiveflux") fluxtype = INPAR::SCATRA::flux_diffusive_domain;
-  else                                        fluxtype = INPAR::SCATRA::flux_no;
-
-  // we always get an 3D flux vector for each node
-  LINALG::Matrix<3,nen_> eflux(true); //initialize!
-  CalculateFlux(eflux,ele,ephinp,frt,evel,fluxtype,dofindex);
-  for (int j = 0; j< nen_; j++)
-  {
-    flux(0,j) = eflux(0,j);
-    flux(1,j) = eflux(1,j);
-    flux(2,j) = eflux(2,j);
-  }
-
-  return;
 }
 
 
@@ -4634,294 +4571,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
 } // ScaTraImpl::CalErrorComparedToAnalytSolution
 
 
-/*----------------------------------------------------------------------*
- |  calculate mass flux (no reactive flux so far)    (private) gjb 06/08|
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
-    LINALG::Matrix<3,nen_>&          flux,
-    const DRT::Element*             ele,
-    const vector<double>&           ephinp,
-    const double                    frt,
-    const Epetra_SerialDenseVector& evel,
-    const INPAR::SCATRA::FluxType   fluxtype,
-    const int                       dofindex
-)
-{
-  // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
-
-  // in the ALE case add nodal displacements
-  if (isale_) xyze_ += edispnp_;
-
-  // set material variables
-  double diffus(0.0);
-  double dens(0.0);
-  double valence(0.0);
-  double diffus_valence_frt(0.0);
-
-  //GetMaterialParams(ele);
-
-  // get the material
-  RefCountPtr<MAT::Material> material = ele->Material();
-
-  // use one-point Gauss rule to do calculations at element center
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
-
-  // evaluate shape functions and derivatives at element center
-  EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
-
-  // get diffusivity and density
-  if (material->MaterialType() == INPAR::MAT::m_matlist)
-  {
-    const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
-
-    const int matid = actmat->MatID(dofindex);
-    Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
-
-    // set density to 1.0
-    dens = 1.0;
-
-    if (singlemat->MaterialType() == INPAR::MAT::m_scatra)
-    {
-      const MAT::ScatraMat* actsinglemat = static_cast<const MAT::ScatraMat*>(singlemat.get());
-      diffus = actsinglemat->Diffusivity();
-    }
-    else if (singlemat->MaterialType() == INPAR::MAT::m_ion)
-    {
-      const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
-      diffus = actsinglemat->Diffusivity();
-      valence = actsinglemat->Valence();
-      diffus_valence_frt = diffus*valence*frt;
-    }
-    else if (singlemat->MaterialType() == INPAR::MAT::m_arrhenius_spec)
-    {
-      const MAT::ArrheniusSpec* actsinglemat = static_cast<const MAT::ArrheniusSpec*>(singlemat.get());
-
-      // compute temperature
-      double temp = 0.0;
-      for (int i=0; i<nen_; ++i)
-      {
-        temp += funct_(i)*ephinp[i];
-      }
-
-      // compute diffusivity according to Sutherland law
-      diffus = actsinglemat->ComputeDiffusivity(temp);
-    }
-    else if (singlemat->MaterialType() == INPAR::MAT::m_arrhenius_temp)
-    {
-      const MAT::ArrheniusTemp* actsinglemat = static_cast<const MAT::ArrheniusTemp*>(singlemat.get());
-
-      // get specific heat capacity at constant pressure
-      shcacp_ = actsinglemat->Shc();
-
-      // compute temperature
-      double temp = 0.0;
-      for (int i=0; i<nen_; ++i)
-      {
-        temp += funct_(i)*ephinp[i];
-      }
-
-      // compute thermal conductivity according to Sutherland law
-      diffus = shcacp_*actsinglemat->ComputeDiffusivity(temp);
-
-      // compute density based on temperature and thermodynamic pressure
-      dens = actsinglemat->ComputeDensity(temp,thermpressnp_);
-    }
-    else dserror("type of material found in material list not supported");
-  }
-  else if (material->MaterialType() == INPAR::MAT::m_scatra)
-  {
-    const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(material.get());
-
-    // get constant diffusivity
-    diffus = actmat->Diffusivity();
-
-    // set density to 1.0
-    dens = 1.0;
-  }
-  else if (material->MaterialType() == INPAR::MAT::m_ion)
-  {
-    const MAT::Ion* actmat = static_cast<const MAT::Ion*>(material.get());
-
-    // get constant diffusivity (we only do convection-diffusion in this case!)
-    diffus = actmat->Diffusivity();
-
-    // set density to 1.0
-    dens = 1.0;
-  }
-  else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
-  {
-    const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
-
-    // compute mixture fraction
-    double mixfrac = 0.0;
-    for (int i=0; i<nen_; ++i)
-    {
-      mixfrac += funct_(i)*ephinp[i];
-    }
-
-    // compute dynamic diffusivity based on mixture fraction
-    diffus = actmat->ComputeDiffusivity(mixfrac);
-
-    // compute density based on mixture fraction
-    dens = actmat->ComputeDensity(mixfrac);
-  }
-  else if (material->MaterialType() == INPAR::MAT::m_sutherland)
-  {
-    const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
-
-    // get specific heat capacity at constant pressure
-    shcacp_ = actmat->Shc();
-
-    // compute temperature
-    double temp = 0.0;
-    for (int i=0; i<nen_; ++i)
-    {
-      temp += funct_(i)*ephinp[i];
-    }
-
-    // compute thermal conductivity according to Sutherland law
-    diffus = shcacp_*actmat->ComputeDiffusivity(temp);
-
-    // compute density based on temperature and thermodynamic pressure
-    dens = actmat->ComputeDensity(temp,thermpressnp_);
-  }
-  else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
-  {
-    const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
-
-    // compute progress variable
-    double provar = 0.0;
-    for (int i=0; i<nen_; ++i)
-    {
-      provar += funct_(i)*ephinp[i];
-    }
-
-    // get specific heat capacity at constant pressure and
-    // compute temperature based on progress variable
-    shcacp_ = actmat->ComputeShc(provar);
-    const double temp = actmat->ComputeTemperature(provar);
-
-    // compute thermal conductivity according to Sutherland law
-    diffus = shcacp_*actmat->ComputeDiffusivity(temp);
-
-    // compute density at n+1 or n+alpha_F
-    dens = actmat->ComputeDensity(provar);
-  }
-  else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
-  {
-    const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
-
-    // compute progress variable
-    double provar = 0.0;
-    for (int i=0; i<nen_; ++i)
-    {
-      provar += funct_(i)*ephinp[i];
-    }
-
-    // get specific heat capacity at constant pressure and
-    // compute temperature based on progress variable
-    shcacp_ = actmat->ComputeShc(provar);
-    const double temp = actmat->ComputeTemperature(provar);
-
-    // compute thermal conductivity according to Sutherland law
-    diffus = shcacp_*actmat->ComputeDiffusivity(temp);
-
-    // compute density at n+1 or n+alpha_F
-    dens = actmat->ComputeDensity(provar);
-  }
-  else dserror("Material type is not supported");
-
-  /*----------------------------------------- declaration of variables ---*/
-  LINALG::SerialDenseMatrix nodecoords;
-  nodecoords = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
-
-  if ((int) nodecoords.N() != nen_) dserror("number of nodes does not match");
-
-  // loop over all nodes
-  for (int iquad=0; iquad<nen_; ++iquad)
-  {
-    // reference coordinates of the current node
-    for (int idim=0;idim<nsd_;idim++)
-      {xsi_(idim) = nodecoords(idim, iquad);}
-
-    // first derivatives
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
-
-    // compute Jacobian matrix and determinant
-    // actually compute its transpose....
-    xjm_.MultiplyNT(deriv_,xyze_);
-    const double det = xij_.Invert(xjm_);
-
-    if (det < 1E-16)
-      dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f",ele->Id(), det);
-
-    // compute global derivatives
-    derxy_.Multiply(xij_,deriv_);
-
-    // gradient of electric potential
-    gradpot_.Clear();
-    if (frt > 0.0) // ELCH
-    {
-      for (int k=0;k<nen_;k++)
-      {
-        for (int idim=0; idim<nsd_ ;idim++)
-        {
-          gradpot_(idim) += derxy_(idim,k)*ephinp[k*numdofpernode_+numscal_];
-        }
-      }
-    }
-
-    const double ephinpatnode = ephinp[iquad*numdofpernode_+dofindex];
-    // add different flux contributions as specified by user input
-    switch (fluxtype)
-    {
-      case INPAR::SCATRA::flux_total_domain:
-        // convective flux terms
-        for (int idim=0; idim<nsd_ ;idim++)
-        {
-          flux(idim,iquad) -= dens*evel[idim+iquad*nsd_]*ephinpatnode;
-        }
-        // no break statement here!
-      case INPAR::SCATRA::flux_diffusive_domain:
-        //diffusive flux terms
-        for (int k=0;k<nen_;k++)
-        {
-          for (int idim=0; idim<nsd_ ;idim++)
-          {
-            flux(idim,iquad) += diffus*derxy_(idim,k)*ephinp[k*numdofpernode_+dofindex];
-          }
-        }
-        if (frt > 0.0) // ELCH
-        {
-          // migration flux terms
-          for (int idim=0; idim<nsd_ ;idim++)
-          {
-            flux(idim,iquad) += diffusvalence_[dofindex]*frt*ephinpatnode*gradpot_(idim);
-          }
-        }
-        break;
-      default:
-        dserror("received illegal flag inside flux evaluation for whole domain");
-    };
-
-    //set zeros for unused space dimenions
-    for (int idim=nsd_; idim<3; idim++)
-    {
-      flux(idim,iquad) = 0.0;
-    }
-  } // loop over nodes
-
-  return;
-} // ScaTraImpl::CalculateFlux
-
-
   /*----------------------------------------------------------------------*
    |  calculate mass flux (no reactive flux so far)    (private) gjb 06/08|
    *----------------------------------------------------------------------*/
   template <DRT::Element::DiscretizationType distype>
-  void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFluxNew(
+  void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
       LINALG::Matrix<3,nen_>&         flux,
       const DRT::Element*             ele,
       const vector<double>&           ephinp,
@@ -5154,7 +4808,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
       LINALG::Matrix<3,1> q(true);
 
       // add different flux contributions as specified by user input
-      // BE CAREFUL. WE COMPUTE THE NEGATIVE OF THE MASS FLUX!
+      // BE CAREFUL. WE COMPUTE HERE THE NEGATIVE OF THE MASS FLUX!
       switch (fluxtype)
       {
       case INPAR::SCATRA::flux_total_domain:
@@ -5180,7 +4834,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
           // migration flux terms
           for (int idim=0; idim<nsd_ ;idim++)
           {
-            q(idim) += diffusvalence_[dofindex]*frt*ephinpint*gradpot_(idim);
+            q(idim) += diffus_valence_frt*ephinpint*gradpot_(idim);
           }
         }
         break;
@@ -5210,7 +4864,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
     }
 
     return;
-  } // ScaTraImpl::CalculateFluxNew
+  } // ScaTraImpl::CalculateFlux
 
 /*----------------------------------------------------------------------*
  |  calculate scalar(s) and domain integral                     vg 09/08|

@@ -229,12 +229,16 @@ void SCATRA::TimIntBDF2::ComputeThermPressure()
   }
   else hist = thermpressn_;
 
+  // define element parameter list
+  ParameterList eleparams;
+
+  // DO THIS BEFORE PHINP IS SET (ClearState() is called internally!!!!)
+  // compute flux approximation and add it to the parameter list
+  AddFluxApproxToParameterList(eleparams,INPAR::SCATRA::flux_diffusive_domain);
+
   // set scalar values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
-
-  // define element parameter list
-  ParameterList eleparams;
 
   // provide velocity field (export to column map necessary for parallel evaluation)
   AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
