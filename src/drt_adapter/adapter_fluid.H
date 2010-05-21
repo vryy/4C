@@ -325,13 +325,13 @@ namespace ADAPTER {
     //! @name Extract mesh values
 
     /// tell the mesh displacement to the fluid solver
-    virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp) = 0;
+    virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) = 0;
 
     /// tell the mesh displacement step increment to the fluid solver
-    virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<Epetra_Vector> dispstepinc) = 0;
+    virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc) = 0;
 
     /// tell the mesh velocity to the fluid solver
-    virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel) = 0;
+    virtual void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel) = 0;
 
     //@}
 

@@ -472,7 +472,7 @@ void ADAPTER::FluidImpl::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> iv
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImpl::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp)
+void ADAPTER::FluidImpl::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
 {
   meshmap_.InsertCondVector(fluiddisp,fluid_.Dispnp());
 
@@ -483,7 +483,7 @@ void ADAPTER::FluidImpl::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluid
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImpl::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)
+void ADAPTER::FluidImpl::ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel)
 {
   meshmap_.InsertCondVector(gridvel,fluid_.GridVel());
 }

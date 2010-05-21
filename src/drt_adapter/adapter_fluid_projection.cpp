@@ -370,7 +370,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidProjection::ExtractFreeSurfaceVeln()
             return;
         }
 
-        void ADAPTER::FluidProjection::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp)
+        void ADAPTER::FluidProjection::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
         {
             meshmap_.InsertCondVector(fluiddisp,fluid_.Dispnp());
 
@@ -378,7 +378,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidProjection::ExtractFreeSurfaceVeln()
             fluid_.UpdateGridv();
         }
 
-        void ADAPTER::FluidProjection::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)
+        void ADAPTER::FluidProjection::ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel)
         {
             meshmap_.InsertCondVector(gridvel,fluid_.GridVel());
         }

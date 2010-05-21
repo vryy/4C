@@ -141,11 +141,11 @@ namespace ADAPTER
     { return fluid_->ExtractInterfaceForces(); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForcesRobin()
     { return fluid_->ExtractInterfaceForcesRobin(); }
-    virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp)
+    virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
     { return fluid_->ApplyMeshDisplacement(fluiddisp); }
-    virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<Epetra_Vector> dispstepinc)
+    virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc)
     { return fluid_->ApplyMeshDisplacementIncrement(dispstepinc); }
-    virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)
+    virtual void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel)
     { return fluid_->ApplyMeshVelocity(gridvel); }
     virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
     { return fluid_->DisplacementToVelocity(fcx); }

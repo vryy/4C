@@ -86,9 +86,9 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity(){ dserror("not implemented!");
                                                                          return Teuchos::null; };
 
-    virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp){ return; };
-    virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<Epetra_Vector> dispstepinc){dserror("not implemented!");};
-    virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)      { return; };
+    virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp){ return; };
+    virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc){dserror("not implemented!");};
+    virtual void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel)      { return; };
     virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> ivel,
                                           Teuchos::RCP<Epetra_Vector> iforce){ return; };
 
