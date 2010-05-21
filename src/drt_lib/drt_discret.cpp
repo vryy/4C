@@ -587,14 +587,21 @@ void DRT::Discretization::SetState(unsigned nds,const string& name,RCP<const Epe
     state_.resize(nds+1);
 
   // if it's already in column map just set a reference
-  // This is a rought test, but it might be ok at this place. It is an
+  // This is a rough test, but it might be ok at this place. It is an
   // error anyway to hand in a vector that is not related to our dof
   // maps.
   if (vecmap.PointSameAs(*colmap))
-    state_[nds][name] = state;
-  // if it's not in column map export and allocate
-  else
   {
+    state_[nds][name] = state;
+  }
+  else // if it's not in column map export and allocate
+  {
+#ifdef DEBUG
+    if (not DofRowMap()->SameAs(state->Map()))
+    {
+      dserror("row map of discretization and state vector are different. This is a fatal bug!");
+    }
+#endif
     RCP<Epetra_Vector> tmp = LINALG::CreateVector(*colmap,false);
     LINALG::Export(*state,*tmp);
     state_[nds][name] = tmp;
