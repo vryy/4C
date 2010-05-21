@@ -155,6 +155,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
   //const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
+  // if not available, the arrays for the subscale quantities have to
+  // be resized and initialised to zero
+  if(tds_)
+  {
+    ele->ActivateTDS(intpoints.IP().nquad,nsd_);
+  }
+
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
@@ -358,6 +365,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
     // -> only required for low-Mach-number flow
     // -> for incompressible flow, residual is velocity divergence only
     //--------------------------------------------------------------------
+
+    /*-------------------------------------------------------------------*
+     *                                                                   *
+     *                  get residual of momentum equation                *
+     *                                                                   *
+     *-------------------------------------------------------------------*/   
+
     if (is_genalpha_)
     {
       // rhs of momentum equation: density*bodyforce at n+alpha_F
@@ -369,25 +383,195 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       // evaluate momentum residual once for all stabilization right hand sides
       for (int rr=0;rr<nsd_;++rr)
       {
-        momres_old_(rr) = densam_*accint_(rr)+densaf_*conv_old_(rr)+gradp_(rr)-2*visceff_*visc_old_(rr)-densaf_*bodyforce_(rr);
+        momres_old_(rr) = 
+          densam_*accint_(rr)
+          +
+          densaf_*conv_old_(rr)
+          +
+          gradp_(rr)
+          -
+          2*visceff_*visc_old_(rr)
+          -
+          densaf_*bodyforce_(rr);
+      }
+    }
+    else
+    {
+      // rhs of momentum equation:
+      // density*timefac*bodyforce at n+1 + density*histmom at n
+
+      // in the case of a Boussinesq approximation: 
+      //
+      //                    f = (rho - rho_0)/rho_0 *g
+      //
+      // else: 		 
+      //  
+      //                           f = rho * g
+
+      if (physicaltype_ == INPAR::FLUID::boussinesq)
+      {
+        rhsmom_.Update(densn_,histmom_,deltadens_*timefac,bodyforce_);
+      }
+      else 
+      {
+        rhsmom_.Update(densn_,histmom_,densaf_*timefac,bodyforce_);
       }
 
+      // modify integration factor for Galerkin rhs
+      rhsfac *= timefac;
+
+      // evaluate momentum residual once for all stabilization right hand sides
+
+      // stationary  : momres_old = theta ( ... ) -  bodyforce_
+      // instationary: momres_old = u_(n+1) + theta ( ... ) - histmom_ - bodyforce_
+      for (int rr=0;rr<nsd_;++rr)
+      {
+        momres_old_(rr) = 
+          timefac*(densaf_*conv_old_(rr)+gradp_(rr)-2*visceff_*visc_old_(rr))
+          -
+          rhsmom_(rr);
+      }
+
+      if (is_stationary_ == false)
+      {
+        for (int rr=0;rr<nsd_;++rr)
+        {
+          momres_old_(rr) += densaf_*velint_(rr);
+        }
+      }
+    }
+
+    /*-------------------------------------------------------------------*
+     *                                                                   *
+     *                  update of SUBSCALE VELOCITY                      *
+     *                                                                   *
+     *-------------------------------------------------------------------*/
+    double fac1   =0.0;
+    double fac2   =0.0;
+    double fac3   =0.0;
+    double facMtau=0.0;
+
+    /*-------------------------------------------------------------------*
+     *                                                                   *
+     *               time dependent subgrid scale closure                *
+     *                                                                   *
+     *-------------------------------------------------------------------*/
+    if(tds_)
+    {
+      /*
+                                              1.0
+         facMtau =  -------------------------------------------------------
+                       n+aM                      n+aF
+                    rho     * alphaM * tauM + rho     * alphaF * gamma * dt
+      */
+      facMtau = alphaM_/(densam_*tau_(0)+densaf_*timefac);
+
+      /* 
+         factor for old subgrid velocities:
+
+                   n+aM                      n+aF
+         fac1 = rho     * alphaM * tauM + rho     * gamma * dt * (alphaF-1)
+      */
+      fac1=(densam_*alphaM_*tau_(0)+densaf_*gamma_*dt_*(alphaF_-1.0));
+      /*
+        factor for old subgrid accelerations
+
+                   n+aM
+         fac2 = rho     * tauM * dt * (alphaM-gamma)
+      */
+      fac2=(densam_*dt_*tau_(0)*(alphaM_-gamma_));
+      /*
+        factor for residual in current subgrid velocities:
+
+         fac3 = gamma * dt * tauM
+      */
+      fac3=(gamma_*dt_*tau_(0));
+
+      // if no generalised alpha time integration is used, the momres_old_
+      // contains a scaled residual
+      if (!is_genalpha_)
+      {
+        fac3/=timefac;
+      }
+
+      /*                 +-                                       -+
+        ~n+1             |        ~n           ~ n            n+1  |
+        u    = facMtau * | fac1 * u  + fac2 * acc  -fac3 * res     |  
+         (i)             |                                    (i)  |
+                         +-                                       -+
+      */
+
+      /* compute the intermediate value of subscale velocity
+
+              ~n+af            ~n+1                   ~n
+              u     = alphaF * u     + (1.0-alphaF) * u
+               (i)              (i)
+
+      */
+
+      for (int rr=0;rr<nsd_;++rr)
+      {
+        ele->UpdateSvelnpInOneDirection(
+          fac1           ,
+          fac2           ,
+          fac3           ,
+          facMtau        ,
+          momres_old_(rr),
+          alphaF_        ,
+          rr             ,
+          iquad          ,
+          sgvelint_(rr)  );
+      }
+    }
+    /*-------------------------------------------------------------------*
+     *                                                                   *
+     *                     classical subgrid closure                     *
+     *                                                                   *
+     *-------------------------------------------------------------------*/
+    else
+    {
       if (cross_    != INPAR::FLUID::cross_stress_stab_none or
           reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
       {
-        // compute subgrid-scale velocity
-        sgvelint_.Update(-tau_(1),momres_old_,0.0);
-
-        // compute subgrid-scale convective operator
-        sgconv_c_.MultiplyTN(derxy_,sgvelint_);
-
-        // re-calculate convective term from previous iteration if cross-stress
-        // is included
-        convvelint_.Update(1.0,sgvelint_,1.0);
-        conv_old_.Multiply(vderxy_,convvelint_);
+        if (is_genalpha_)
+        {
+          // compute subgrid-scale velocity
+          sgvelint_.Update(-tau_(1),momres_old_,0.0);
+        }
+        else
+        {
+          // compute subgrid-scale velocity
+          sgvelint_.Update(-(tau_(1)/timefac),momres_old_,0.0);
+          
+          // sgvelint_.Update(-(tau_(1)/dt_),momres_old_,0.0);
+        }
       }
-      else sgconv_c_.Clear();
+    }
 
+    if (cross_    != INPAR::FLUID::cross_stress_stab_none or
+        reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
+    {
+          
+          // compute subgrid-scale convective operator
+          sgconv_c_.MultiplyTN(derxy_,sgvelint_);
+          
+          // re-calculate convective term from previous iteration if cross-stress
+          // is included
+          convvelint_.Update(1.0,sgvelint_,1.0);
+          conv_old_.Multiply(vderxy_,convvelint_);
+    }
+    else 
+    {
+      sgconv_c_.Clear();
+    }
+
+    /*-------------------------------------------------------------------*
+     *                                                                   *
+     *                 get residual of continuity equation               *
+     *                                                                   *
+     *-------------------------------------------------------------------*/   
+    if (is_genalpha_)
+    {
       // "incompressible" part of continuity residual: velocity divergence
       conres_old_ = vdiv_;
 
@@ -429,53 +613,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
     }
     else
     {
-      // rhs of momentum equation:
-      // density*timefac*bodyforce at n+1 + density*histmom at n
-
-      // in the case of a Boussinesq approximation: f = (rho - rho_0)/rho_0 *g
-      // else: 										f = rho * g
-
-      if (physicaltype_ == INPAR::FLUID::boussinesq)
-        rhsmom_.Update(densn_,histmom_,deltadens_*timefac,bodyforce_);
-      else rhsmom_.Update(densn_,histmom_,densaf_*timefac,bodyforce_);
-
-      // modify integration factor for Galerkin rhs
-      rhsfac *= timefac;
-
-      // evaluate momentum residual once for all stabilization right hand sides
-      if (is_stationary_ == false)
-      {
-        // momres_old = u_(n+1) + theta ( ... ) - histmom_ - bodyforce_
-        for (int rr=0;rr<nsd_;++rr)
-        {
-          momres_old_(rr) = densaf_*velint_(rr)+timefac*(densaf_*conv_old_(rr)+gradp_(rr)-2*visceff_*visc_old_(rr))-rhsmom_(rr);
-        }
-      }
-      else
-      {
-        // momres_old = theta ( ... ) -  bodyforce_
-        for (int rr=0;rr<nsd_;++rr)
-        {
-          momres_old_(rr) = timefac*(densaf_*conv_old_(rr)+gradp_(rr)-2*visceff_*visc_old_(rr))-rhsmom_(rr);
-        }
-      }
-
-      if (cross_    != INPAR::FLUID::cross_stress_stab_none or
-          reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
-      {
-        // compute subgrid-scale velocity
-        sgvelint_.Update(-(tau_(1)/dt_),momres_old_,0.0);
-
-        // compute subgrid-scale convective operator
-        sgconv_c_.MultiplyTN(derxy_,sgvelint_);
-
-        // re-calculate convective term from previous iteration if cross-stress
-        // is included
-        convvelint_.Update(1.0,sgvelint_,1.0);
-        conv_old_.Multiply(vderxy_,convvelint_);
-      }
-      else sgconv_c_.Clear();
-
       // "incompressible" part of continuity residual: velocity divergence
       conres_old_ = timefac*vdiv_;
 

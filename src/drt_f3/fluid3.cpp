@@ -297,6 +297,51 @@ void DRT::ELEMENTS::Fluid3::ActivateTDS(int nquad,int nsd)
      return;
    }
 
+
+/*----------------------------------------------------------------------*
+ |  activate time dependend subscales (public)           gamnitzer 05/10|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Fluid3::UpdateSvelnpInOneDirection(
+    const double  fac1   ,
+    const double  fac2   ,
+    const double  fac3   ,
+    const double  facMtau,
+    const double  resM   ,
+    const double  alphaF ,
+    const int     dim    ,
+    const int     iquad  ,
+    double&       svelaf
+    )
+{
+
+    /*                   +-                                       -+
+        ~n+1             |        ~n           ~ n            n+1  |
+        u    = facMtau * | fac1 * u  + fac2 * acc  -fac3 * res     |
+         (i)             |                                    (i)  |
+                         +-                                       -+
+    */
+
+  svelnp_(dim,iquad)=(fac1*sveln_(dim,iquad)
+                      +
+                      (fac2*saccn_(dim,iquad)
+                       -
+                       fac3*resM));
+  
+  /* compute the intermediate value of subscale velocity
+
+              ~n+af            ~n+1                   ~n
+              u     = alphaF * u     + (1.0-alphaF) * u
+               (i)              (i)
+
+  */
+  svelaf=
+    alphaF      *svelnp_(dim,iquad)
+    +
+    (1.0-alphaF)*sveln_ (dim,iquad);
+
+  return;
+}
+
 /*----------------------------------------------------------------------*
  |  activate time dependend subscales (public)           gamnitzer 05/10|
  *----------------------------------------------------------------------*/
@@ -313,32 +358,17 @@ void DRT::ELEMENTS::Fluid3::UpdateSvelnpInOneDirection(
     double&       svelaf
     )
     {
-    /*                   +-                                       -+
-        ~n+1             |        ~n           ~ n            n+1  |
-        u    = facMtau * | fac1 * u  + fac2 * acc  -fac3 * res     |
-         (i)             |                                    (i)  |
-                         +-                                       -+
-    */
-
-      svelnp_(dim,iquad)=(fac1*sveln_(dim,iquad)
-                          +
-                          (fac2*saccn_(dim,iquad)
-                           -
-                           fac3*resM));
+      UpdateSvelnpInOneDirection(fac1   ,
+                                 fac2   ,
+                                 fac3   ,
+                                 facMtau,
+                                 resM   ,
+                                 alphaF ,
+                                 dim    ,
+                                 iquad  ,
+                                 svelaf );
 
       svelnp=svelnp_(dim,iquad);
-
-      /* compute the intermediate value of subscale velocity
-
-              ~n+af            ~n+1                   ~n
-              u     = alphaF * u     + (1.0-alphaF) * u
-               (i)              (i)
-
-      */
-      svelaf=
-        alphaF      *svelnp_(dim,iquad)
-        +
-        (1.0-alphaF)*sveln_ (dim,iquad);
 
       return;
     }

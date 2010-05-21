@@ -638,6 +638,11 @@ namespace ELEMENTS
     bool is_higher_order_ele_;
     //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
     INPAR::FLUID::PhysicalType physicaltype_;
+
+    //! Flag to (de)activate time-dependent subgrid stabilization
+    INPAR::FLUID::SubscalesTD tds_;
+    //! Flag to (de)activate time-dependent term in large-scale momentum equation
+    INPAR::FLUID::Transient transient_;
     //! Flag to (de)activate PSPG stabilization
     INPAR::FLUID::PSPG pspg_;
     //! Flag to (de)activate SUPG stabilization
@@ -650,6 +655,7 @@ namespace ELEMENTS
     INPAR::FLUID::CrossStress cross_;
     //! Flag to (de)activate Reynolds-stress term -> residual-based VMM
     INPAR::FLUID::ReynoldsStress reynolds_;
+
     //! Flag to define tau
     INPAR::FLUID::TauType whichtau_;
     //! flag to (de)activate fine-scale subgrid viscosity

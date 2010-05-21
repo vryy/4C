@@ -453,7 +453,22 @@ public:
 
   /*!
   \brief Nonlinear update for current subgrid velocities according to the current
-         residual
+         residual --- reduced version for afgenalpha and one-step-theta
+  */
+  void UpdateSvelnpInOneDirection(
+    const double  fac1   ,
+    const double  fac2   ,
+    const double  fac3   ,
+    const double  facMtau,
+    const double  resM   ,
+    const double  alphaF ,
+    const int     dim    ,
+    const int     iquad  ,
+    double&       svelaf );
+
+  /*!
+  \brief Nonlinear update for current subgrid velocities according to the current
+         residual --- svelnp as additional return value
   */
   void UpdateSvelnpInOneDirection(
     const double  fac1   ,

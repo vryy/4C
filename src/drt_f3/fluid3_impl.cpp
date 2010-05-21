@@ -3660,6 +3660,12 @@ const double DRT::ELEMENTS::Fluid3Impl<distype>::SetSolutionParameter(
       alphaF_=params.get<double>("alphaF");
       alphaM_=params.get<double>("alphaM");
     }
+    else
+    {
+      gamma_ =theta;
+      alphaF_=1.0;
+      alphaM_=1.0;
+    }
   }
   else
   {
@@ -3693,6 +3699,8 @@ const double DRT::ELEMENTS::Fluid3Impl<distype>::SetSolutionParameter(
   ParameterList& stablist = params.sublist("STABILIZATION");
 
   // no safety check necessary since all options are used
+  tds_      = Teuchos::getIntegralValue<INPAR::FLUID::SubscalesTD>(stablist,"TDS");
+  transient_= Teuchos::getIntegralValue<INPAR::FLUID::Transient>(stablist,"TRANSIENT");
   pspg_     = Teuchos::getIntegralValue<INPAR::FLUID::PSPG>(stablist,"PSPG");
   supg_     = Teuchos::getIntegralValue<INPAR::FLUID::SUPG>(stablist,"SUPG");
   vstab_    = Teuchos::getIntegralValue<INPAR::FLUID::VStab>(stablist,"VSTAB");
