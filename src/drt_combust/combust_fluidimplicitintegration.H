@@ -70,7 +70,7 @@ public:
   /// import geometrical information about the interface and incorporate it into the fluid field
   void IncorporateInterface(const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle);
 
-  ///
+  /// import the flame front from the combustion algorithm
   void StoreFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& flamefront);
 
   /// get convection velocity vector for transfer to scalar transport field
