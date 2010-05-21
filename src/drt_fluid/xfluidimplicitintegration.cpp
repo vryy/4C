@@ -48,6 +48,7 @@ Maintainer: Axel Gerstenberger
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_io/io_gmsh.H"
 #include <Teuchos_TimeMonitor.hpp>
+#include "../drt_fem_general/debug_nan.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -1588,11 +1589,20 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::Evaluate(
     const Teuchos::RCP<DRT::Discretization> cutterdiscret,
-    Teuchos::RCP<const Epetra_Vector> velpresiterinc)
+    const Teuchos::RCP<const Epetra_Vector> velpresiterinc)
 {
   cout << "FLD::XFluidImplicitTimeInt::Evaluate()" << endl;
 
   const bool firstFSINewtonStep = (velpresiterinc == Teuchos::null);
+
+  // store iteration increment
+  Teuchos::RCP<const Epetra_Vector> oldinc;
+  if (firstFSINewtonStep)
+    oldinc = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(),true));
+  else
+    oldinc = velpresiterinc;
+
+  DRT::DEBUGGING::NaNChecker(*oldinc);
 
   // set the new solution we just got
   if (firstFSINewtonStep)
@@ -1659,11 +1669,6 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   discret_->SetState("velnm",state_.velnm_);
   discret_->SetState("accn" ,state_.accn_);
 
-  Teuchos::RCP<const Epetra_Vector> oldinc;
-  if (velpresiterinc == Teuchos::null)
-    oldinc = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(),true));
-  else
-    oldinc = velpresiterinc;
   discret_->SetState("nodal iterinc",oldinc);
 //  cout << "*oldinc" << endl;
 //  cout << *oldinc << endl;
@@ -1676,7 +1681,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
 
   eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
   eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
-  eleparams.set<bool>("monolithic_FSI",true);
+  eleparams.set("monolithic_FSI",true);
   eleparams.set("EMBEDDED_BOUNDARY",xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"));
 
   // call loop over elements

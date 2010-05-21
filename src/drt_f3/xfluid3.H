@@ -349,7 +349,7 @@ namespace DRT
             Epetra_SerialDenseMatrix&       Cdd,
             Epetra_SerialDenseVector&       rhsd,
             const std::vector<int>&         lmiface,
-            const bool                      monolithic_FSI
+            const bool                      iface_unknown
             ) const;
 
         /*!

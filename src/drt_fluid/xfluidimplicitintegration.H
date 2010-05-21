@@ -117,7 +117,7 @@ public:
   */
   void Evaluate(
       const Teuchos::RCP<DRT::Discretization> cutterdiscret,
-      Teuchos::RCP<const Epetra_Vector> fluidvel);
+      const Teuchos::RCP<const Epetra_Vector> fluidvel);
 
   /*!
   \brief Update the solution after convergence of the nonlinear

@@ -31,6 +31,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/xdofmapcreation_fsi.H"
 #include "../drt_xfem/enrichment_utils.H"
+#include "../drt_fem_general/debug_nan.H"
 
 
 /*---------------------------------------------------------------------*
@@ -228,20 +229,20 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
               new DLMInfo(
                   eleDofManager_uncondensed_->NumNodeDof(),
                   eleDofManager_uncondensed_->NumElemDof(),
-                  ifacepatchlm->size(),
-                  *DLM_info_
+                  ifacepatchlm->size()
+//                  ,*DLM_info_
                   )
               );
         }
         else
         {
-          cout << DLM_info_->oldGsui_.N() << "  " << DLM_info_->oldGsui_.M() << "  " << ifacepatchlm->size() << endl;
+//          cout << DLM_info_->oldGsui_.N() << "  " << DLM_info_->oldGsui_.M() << "  " << ifacepatchlm->size() << endl;
         }
       }
       else
       {
-        eleDofManager_uncondensed_ = Teuchos::null;
-        DLM_info_ = Teuchos::null;
+//        eleDofManager_uncondensed_ = Teuchos::null;
+//        DLM_info_ = Teuchos::null;
       }
       break;
     }
@@ -302,6 +303,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       const bool instationary = (timealgo != timeint_stationary);
 
       DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,instationary);
+      DRT::DEBUGGING::NaNChecker(mystate.velnp);
 
       const bool newton = params.get<bool>("include reactive terms for linearisation");
       const bool pstab  = true;
@@ -317,9 +319,10 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       {
         if (ih_->ElementIntersected(Id()))
         {
+          const size_t nus = eleDofManager_uncondensed_->NumDofElemAndNode();
           const size_t nui = ifacepatchlm->size();
-          fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(nui, eleDofManager_uncondensed_->NumDofElemAndNode()));
-          fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), nui));
+          fluidfluidmatrices_.Guis_uncond  = rcp(new Epetra_SerialDenseMatrix(nui, nus));
+          fluidfluidmatrices_.Gsui_uncond  = rcp(new Epetra_SerialDenseMatrix(nus, nui));
           fluidfluidmatrices_.rhsui_uncond = rcp(new Epetra_SerialDenseVector(nui));
         }
 
@@ -391,9 +394,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         }
         else if (instationary_monolithic_FSI)
         {
-          const bool secondorder = params.get<bool>("interface second order");
           double theta_iface;
-          if (secondorder)
+          if (params.get<bool>("interface second order"))
           { theta_iface = 0.5; }
           else
           { theta_iface = 1.0; }
@@ -418,22 +420,18 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
         if (ih_->ElementIntersected(Id()))
         {
+          DRT::DEBUGGING::NaNChecker(*fluidfluidmatrices_.Guis_uncond);
+          DRT::DEBUGGING::NaNChecker(*fluidfluidmatrices_.Gsui_uncond);
+          DRT::DEBUGGING::NaNChecker(*fluidfluidmatrices_.rhsui_uncond);
           params.set("Cud",Cud);
           params.set("Cdu",Cdu);
           params.set("Cdd",Cdd);
           params.set("rhsd",rhsd);
-#ifdef DEBUG
-          if (std::isnan(fluidfluidmatrices_.Guis_uncond->InfNorm())) { cout << *this << endl; dserror("NaNs in elemat1 detected! Quitting..."); }
-          if (std::isnan(fluidfluidmatrices_.Gsui_uncond->InfNorm())) { cout << *this << endl; dserror("NaNs in elemat1 detected! Quitting..."); }
-          if (std::isnan(fluidfluidmatrices_.rhsui_uncond->Norm2()))  { cout << *this << endl; dserror("NaNs in elevec1 detected! Quitting..."); }
-#endif
         }
       }
 
-#ifdef DEBUG
-      if (std::isnan(elevec1.Norm2()))   { cout << *this << endl; dserror("NaNs in elevec1 detected! Quitting..."); }
-      if (std::isnan(elemat1.InfNorm())) { cout << *this << endl; dserror("NaNs in elemat1 detected! Quitting..."); }
-#endif
+      DRT::DEBUGGING::NaNChecker(elevec1);
+      DRT::DEBUGGING::NaNChecker(elemat1);
 
       params.set<double>("L2",L2);
 
@@ -973,25 +971,31 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
     if (nu != lm.size())
       dserror("mismatch in fluid velocity and pressure number of DOFs. This is a bug!");
 
+    static const Epetra_BLAS blas;
+
     // add Kda . inc_velnp to feas
     // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
+    {
+      vector<double> iterinc_velnp(lm.size());
+      DRT::UTILS::ExtractMyValues(*iterincxdomain,iterinc_velnp,lm);
+      DRT::DEBUGGING::NaNChecker(iterinc_velnp);
 
-    vector<double> iterinc_velnp(lm.size());
-    DRT::UTILS::ExtractMyValues(*iterincxdomain,iterinc_velnp,lm);
-
-    static const Epetra_BLAS blas;
-    // update old iteration residual of the stresses from velocity and pressure increments
-    // DLM_info_->oldrs_(i) += DLM_info_->oldKsu_(i,j)*inc_velnp[j];
-    blas.GEMV('N', ns, nu,-1.0, DLM_info_->oldKGsu_.A(), DLM_info_->oldKGsu_.LDA(), &iterinc_velnp[0], 1.0, DLM_info_->oldrs_.A());
+      // update old iteration residual of the stresses from velocity and pressure increments
+      // DLM_info_->oldrs_(i) += DLM_info_->oldKsu_(i,j)*inc_velnp[j];
+      blas.GEMV('N', ns, nu,-1.0, DLM_info_->oldKGsu_.A(), DLM_info_->oldKGsu_.LDA(), &iterinc_velnp[0], 1.0, DLM_info_->oldrs_.A());
+    }
 
     if (nui > 0 and interface_unknowns)
     {
       vector<double> iterinc_velnp_iface(nui);
       DRT::UTILS::ExtractMyValues(*iterinciface,iterinc_velnp_iface,lmiface);
+      DRT::DEBUGGING::NaNChecker(iterinc_velnp_iface);
 
       // update old iteration residual of the stresses from interface velocity increments
-      // DLM_info_->oldrs_(i) += DLM_info_->oldGsui_(i,j)*inc_velnp_iface[j];
-      blas.GEMV('N', ns, nui,-1.0, DLM_info_->oldGsui_.A(), DLM_info_->oldGsui_.LDA(), &iterinc_velnp_iface[0], 1.0, DLM_info_->oldrs_.A());
+      for (std::size_t i=0;i<ns;i++)
+        for (std::size_t j=0;j<nui;j++)
+          DLM_info_->oldrs_(i) += DLM_info_->oldGsui_(i,j)*iterinc_velnp_iface[j];
+//      blas.GEMV('N', ns, nui,-1.0, DLM_info_->oldGsui_.A(), DLM_info_->oldGsui_.LDA(), &iterinc_velnp_iface[0], 1.0, DLM_info_->oldrs_.A());
     }
 
     // compute element stresses
@@ -1000,6 +1004,7 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
 
     // increase size of element vector (old values stay and zeros are added)
     const std::size_t numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
+    DRT::DEBUGGING::NaNChecker(mystate.velnp);
     mystate.velnp.resize(numdof_uncond,0.0);
     mystate.veln .resize(numdof_uncond,0.0);
     mystate.velnm.resize(numdof_uncond,0.0);
@@ -1011,6 +1016,8 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
 //    cout << "DLM_info_->stressdofs_" << endl;
 //    cout << DLM_info_->stressdofs_ << endl;
   }
+  DRT::DEBUGGING::NaNChecker(DLM_info_->stressdofs_);
+  DRT::DEBUGGING::NaNChecker(mystate.velnp);
 }
 
 /*---------------------------------------------------------------------*
@@ -1028,9 +1035,11 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
     Epetra_SerialDenseMatrix& Cuiui,
     Epetra_SerialDenseVector& rhsui,
     const std::vector<int>&   lmiface,
-    const bool monolithic_FSI
+    const bool iface_unknown
 ) const
 {
+  // for matrix vector and matrix matrix computations
+  static const Epetra_BLAS blas;
 
   const size_t nu = eleDofManager_uncondensed_->NumNodeDof();
   const size_t ns = eleDofManager_uncondensed_->NumElemDof();
@@ -1053,8 +1062,6 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
     LINALG::SerialDenseMatrix Gus(nu,ns);
     LINALG::SerialDenseMatrix Kssinv(ns,ns);
     LINALG::SerialDenseMatrix KGsu(ns,nu);
-    LINALG::SerialDenseMatrix Gsui(ns,nui);
-    LINALG::SerialDenseMatrix Guis(nui,ns);
     LINALG::SerialDenseVector fs(ns);
 
     // copy data of uncondensed matrix into submatrices
@@ -1081,52 +1088,57 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
     solve_for_inverseKss.SetMatrix(Kssinv);
     solve_for_inverseKss.Invert();
 
-    static const Epetra_BLAS blas;
+
+    LINALG::SerialDenseMatrix GusKssinv(nu,ns,true); // temporary Gus.Kss^{-1}
+
+    // GusKssinv(i,j) = Gus(i,k)*Kssinv(k,j);
+    blas.GEMM('N','N',nu,ns,ns,1.0,Gus.A(),Gus.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,GusKssinv.A(),GusKssinv.LDA());
+
+    // elemat1(i,j) += - GusKssinv(i,k)*KGsu(k,j);   // note that elemat1 = Cuu below
+    blas.GEMM('N','N',nu,nu,ns,-1.0,GusKssinv.A(),GusKssinv.LDA(),KGsu.A(),KGsu.LDA(),1.0,elemat1.A(),elemat1.LDA());
+
+    // elevec1(i) += - GusKssinv(i,j)*fs(j);
+    blas.GEMV('N', nu, ns,-1.0, GusKssinv.A(), GusKssinv.LDA(), fs.A(), 1.0, elevec1.A());
+
+    if (iface_unknown)
     {
-      LINALG::SerialDenseMatrix GusKssinv(nu,ns,true); // temporary Gus.Kss^{-1}
-
-      // GusKssinv(i,j) = Gus(i,k)*Kssinv(k,j);
-      blas.GEMM('N','N',nu,ns,ns,1.0,Gus.A(),Gus.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,GusKssinv.A(),GusKssinv.LDA());
-
-      // elemat1(i,j) += - GusKssinv(i,k)*KGsu(k,j);   // note that elemat1 = Cuu below
-      blas.GEMM('N','N',nu,nu,ns,-1.0,GusKssinv.A(),GusKssinv.LDA(),KGsu.A(),KGsu.LDA(),1.0,elemat1.A(),elemat1.LDA());
-
-      // elevec1(i) += - GusKssinv(i,j)*fs(j);
-      blas.GEMV('N', nu, ns,-1.0, GusKssinv.A(), GusKssinv.LDA(), fs.A(), 1.0, elevec1.A());
-
-      if (monolithic_FSI)
+      if (nui == 0)
+        dserror("think");
+      LINALG::SerialDenseMatrix Gsui(ns,nui);
+      LINALG::SerialDenseMatrix Guis(nui,ns);
+      for (size_t i=0;i<nui;i++)
       {
-        for (size_t i=0;i<nui;i++)
+        rhsui(i) = rhsui_uncond(i);
+        for (size_t j=0;j<ns;j++)
         {
-          rhsui(i) = rhsui_uncond(i);
-          for (size_t j=0;j<ns;j++)
-          {
-            Gsui(j,i) = Gsui_uncond(nu+j, i);
-            Guis(i,j) = Guis_uncond(i, nu+j);
-          }
+          Gsui(j,i) = Gsui_uncond(nu+j, i);
+          Guis(i,j) = Guis_uncond(i, nu+j);
         }
-
-        LINALG::SerialDenseMatrix GuisKssinv(nui,ns,true);
-
-        // GuisKssinv(i,j) = Kuis(i,k)*Kssinv(k,j);
-        blas.GEMM('N','N',nui,ns,ns,1.0,Guis.A(),Guis.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,GuisKssinv.A(),GuisKssinv.LDA());
-
-        for (size_t i=0;i<nu;i++)
-          for (size_t j=0;j<nui;j++)
-            for (size_t k=0;k<ns;k++)
-              Cuui(i,j) += -GusKssinv(i,k)*Gsui(k,j);
-        for (size_t i=0;i<nui;i++)
-          for (size_t j=0;j<nu;j++)
-            for (size_t k=0;k<ns;k++)
-              Cuiu(i,j) += -GuisKssinv(i,k)*KGsu(k,j);
-        for (size_t i=0;i<nui;i++)
-          for (size_t j=0;j<nui;j++)
-            for (size_t k=0;k<ns;k++)
-              Cuiui(i,j) += -GuisKssinv(i,k)*Gsui(k,j);
-        for (size_t i=0;i<nui;i++)
-          for (size_t j=0;j<ns;j++)
-            rhsui(i) += - GuisKssinv(i,j)*fs(j);
       }
+
+      LINALG::SerialDenseMatrix GuisKssinv(nui,ns,true);
+
+      // GuisKssinv(i,j) = Kuis(i,k)*Kssinv(k,j);
+      blas.GEMM('N','N',nui,ns,ns,1.0,Guis.A(),Guis.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,GuisKssinv.A(),GuisKssinv.LDA());
+
+      for (size_t i=0;i<nu;i++)
+        for (size_t j=0;j<nui;j++)
+          for (size_t k=0;k<ns;k++)
+            Cuui(i,j) += -GusKssinv(i,k)*Gsui(k,j);
+      for (size_t i=0;i<nui;i++)
+        for (size_t j=0;j<nu;j++)
+          for (size_t k=0;k<ns;k++)
+            Cuiu(i,j) += -GuisKssinv(i,k)*KGsu(k,j);
+      for (size_t i=0;i<nui;i++)
+        for (size_t j=0;j<nui;j++)
+          for (size_t k=0;k<ns;k++)
+            Cuiui(i,j) += -GuisKssinv(i,k)*Gsui(k,j);
+      for (size_t i=0;i<nui;i++)
+        for (size_t j=0;j<ns;j++)
+          rhsui(i) += - GuisKssinv(i,j)*fs(j);
+
+      //DLM_info_->oldGsui_.Update(1.0,Gsui,0.0);
+      blas.COPY(DLM_info_->oldGsui_.M()*DLM_info_->oldGsui_.N(), Gsui.A(), DLM_info_->oldGsui_.A());
     }
 
     // store current DLM data in iteration history
@@ -1134,11 +1146,13 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
     blas.COPY(DLM_info_->oldKssinv_.M()*DLM_info_->oldKssinv_.N(), Kssinv.A(), DLM_info_->oldKssinv_.A());
     //DLM_info_->oldKsu_.Update(1.0,KGsu,0.0);
     blas.COPY(DLM_info_->oldKGsu_.M()*DLM_info_->oldKGsu_.N(), KGsu.A(), DLM_info_->oldKGsu_.A());
-    //DLM_info_->oldGsui_.Update(1.0,Gsui,0.0);
-    blas.COPY(DLM_info_->oldGsui_.M()*DLM_info_->oldGsui_.N(), Gsui.A(), DLM_info_->oldGsui_.A());
     //DLM_info_->oldrs_.Update(1.0,fa,0.0);
     blas.COPY(DLM_info_->oldrs_.M()*DLM_info_->oldrs_.N(), fs.A(), DLM_info_->oldrs_.A());
   }
+  DRT::DEBUGGING::NaNChecker(DLM_info_->oldKssinv_);
+  DRT::DEBUGGING::NaNChecker(DLM_info_->oldKGsu_);
+  DRT::DEBUGGING::NaNChecker(DLM_info_->oldGsui_);
+  DRT::DEBUGGING::NaNChecker(DLM_info_->oldrs_);
 }
 
 
