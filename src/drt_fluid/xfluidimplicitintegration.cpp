@@ -1191,7 +1191,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       FluidFluidboundarydis_->SetState("ivelnm" ,fluidfluidstate_.fivelnm_);
       FluidFluidboundarydis_->SetState("iaccn"  ,fluidfluidstate_.fiaccn_);
 
-      discret_->SetState("nodal iterinc",oldinc);
+      discret_->SetState("velpres nodal iterinc",oldinc);
 
       // reset interface force and let the elements fill it
       iforcecolnp->PutScalar(0.0);
@@ -1595,25 +1595,27 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
 
   const bool firstFSINewtonStep = (velpresiterinc == Teuchos::null);
 
-  // store iteration increment
-  Teuchos::RCP<const Epetra_Vector> oldinc;
-  if (firstFSINewtonStep)
-    oldinc = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(),true));
-  else
-    oldinc = velpresiterinc;
-
-  DRT::DEBUGGING::NaNChecker(*oldinc);
-
   // set the new solution we just got
-  if (firstFSINewtonStep)
+  if (firstFSINewtonStep) //
   {
     cout << "Resetting!!!!!!!!!!!!!!!!!!!" << endl;
     ParameterList eleparams;
     eleparams.set("action","reset");
     discret_->Evaluate(eleparams);
   }
+  else if (not discret_->DofRowMap()->SameAs(velpresiterinc->Map()))
+  {
+    cout << "using dummyvelpresiterinc..." << endl;
+    Teuchos::RCP<Epetra_Vector> dummyvelpresiterinc = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(),true));
+    // Take Dirichlet values from velnp and add iterinc to velnp for non-Dirichlet
+    // values.
+    Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+    aux->Update(1.0, *state_.velnp_, 1.0, *dummyvelpresiterinc, 0.0);
+    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), state_.velnp_);
+  }
   else
   {
+    cout << "real update..." << endl;
     // Take Dirichlet values from velnp and add iterinc to velnp for non-Dirichlet
     // values.
     Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*(discret_->DofRowMap()),true);
@@ -1622,6 +1624,24 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   }
 
   const Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = ComputeInterfaceAndSetDOFs(cutterdiscret);
+
+  // store iteration increment
+  Teuchos::RCP<const Epetra_Vector> oldinc;
+  if (firstFSINewtonStep)
+  {
+    oldinc = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(),true));
+  }
+  else if (not discret_->DofRowMap()->SameAs(velpresiterinc->Map()))
+  {
+    oldinc = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(),true));
+  }
+  else
+  {
+    dsassert(velpresiterinc->Map().SameAs(*discret_->DofRowMap()), "schimpf!");
+    oldinc = velpresiterinc;
+  }
+
+  DRT::DEBUGGING::NaNChecker(*oldinc);
 
   PrepareNonlinearSolve();
 
@@ -1669,9 +1689,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   discret_->SetState("velnm",state_.velnm_);
   discret_->SetState("accn" ,state_.accn_);
 
-  discret_->SetState("nodal iterinc",oldinc);
-//  cout << "*oldinc" << endl;
-//  cout << *oldinc << endl;
+  discret_->SetState("velpres nodal iterinc", oldinc);
 
   // reset interface force and let the elements fill it
   eleparams.set("interface force",iforcecolnp);

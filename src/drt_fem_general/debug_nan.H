@@ -55,6 +55,17 @@ namespace DRT
       }
     }
 
+    static void NaNChecker(const std::vector<int>& vec)
+    {
+      for (std::size_t i = 0; i < vec.size(); i++)
+      {
+        if (std::isnan(vec[i]))
+        {
+          dserror("NaNs detected! Quitting...");
+        }
+      }
+    }
+
     static void NaNChecker(const Epetra_Vector& vec)
     {
       double norm = 0;

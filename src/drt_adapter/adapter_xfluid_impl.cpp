@@ -30,6 +30,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_geometry/intersection_service.H"
 #include "../drt_geometry/element_volume.H"
+#include "../drt_fem_general/debug_nan.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -305,7 +306,7 @@ void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> velpresstep
 
   if (idispiterinc_ == Teuchos::null)
     dserror("should be set already");
-  boundarydis_->SetState("nodal iterinc", idispiterinc_);
+  boundarydis_->SetState("veliface nodal iterinc", idispiterinc_);
 
   // The field solver expects an iteration increment only. And
   // there are Dirichlet conditions that need to be preserved. So take
@@ -317,22 +318,27 @@ void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> velpresstep
   //
   // x^n+1_i+1 = x^n     + disstepinc
 
+  // reset iterative increment
   Teuchos::RCP<Epetra_Vector> velpresiterinc = Teuchos::null;
 
   if (velpresstepinc!=Teuchos::null)
   {
+    DRT::DEBUGGING::NaNChecker(*velpresstepinc);
+
     // iteration increments
-    velpresiterinc = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
-    if (velpresstepinc_==Teuchos::null)
+    if (velpresstepinc_==Teuchos::null) // first newton step
     {
       velpresstepinc_ = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
+      velpresiterinc = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
     }
-    else if (not velpresstepinc_->Map().SameAs(velpresstepinc->Map()))
+    else if (not velpresstepinc_->Map().SameAs(velpresstepinc->Map()))  // global map size has changed
     {
       velpresstepinc_ = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
+      velpresiterinc = Teuchos::rcp(new Epetra_Vector(*Discretization()->DofRowMap(), true));
     }
-    else
+    else // update stepinc and compute iterinc
     {
+      velpresiterinc = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
       velpresiterinc->Update(-1.0,*velpresstepinc_,1.0);
 
       // update incremental displacement member to provided step increments
@@ -340,6 +346,8 @@ void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> velpresstep
       velpresstepinc_->Update(1.0,*velpresstepinc,0.0);
     }
   }
+
+
 
   // do fluid evaluation provided residual displacements - iteration increment
   fluid_.Evaluate(boundarydis_, velpresiterinc);
@@ -620,7 +628,7 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
 
   PrepareBoundaryDis();
   idispiterinc_ = rcp(new Epetra_Vector(idispnp_->Map(),true));
-  boundarydis_->SetState("nodal iterinc", idispiterinc_);
+  boundarydis_->SetState("veliface nodal iterinc", idispiterinc_);
 
   // solve
   fluid_.NonlinearSolve(boundarydis_);
@@ -950,14 +958,14 @@ void ADAPTER::XFluidImpl::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> i
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> idisp)
+void ADAPTER::XFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> idisp)
 {
   interface_.InsertFSICondVector(idisp,idispnp_);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::ApplyMeshDisplacementIncrement(Teuchos::RCP<Epetra_Vector> idispstepinc)
+void ADAPTER::XFluidImpl::ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> idispstepinc)
 {
   // The field solver always expects an iteration increment only. And
   // there are Dirichlet conditions that need to be preserved. So take
@@ -986,12 +994,16 @@ void ADAPTER::XFluidImpl::ApplyMeshDisplacementIncrement(Teuchos::RCP<Epetra_Vec
     // shortly: disinc_^<i> := stepincdisp^<i+1>
     idispstepinc_->Update(1.0,*idispstepinc,0.0);
   }
+  DRT::DEBUGGING::NaNChecker(*idispn_);
+  DRT::DEBUGGING::NaNChecker(*idispnp_);
+  DRT::DEBUGGING::NaNChecker(*idispiterinc_);
+  DRT::DEBUGGING::NaNChecker(*idispstepinc_);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)
+void ADAPTER::XFluidImpl::ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel)
 {
   dserror("makes no sense here!");
 }

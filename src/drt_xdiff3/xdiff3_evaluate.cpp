@@ -694,7 +694,7 @@ void DRT::ELEMENTS::XDiff3::UpdateOldDLMAndDLMRHS(
     // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
 
     vector<double> inc_velnp(lm.size());
-    DRT::UTILS::ExtractMyValues(*discretization.GetState("nodal iterinc"),inc_velnp,lm);
+    DRT::UTILS::ExtractMyValues(*discretization.GetState("velpres nodal iterinc"),inc_velnp,lm);
 
     static const Epetra_BLAS blas;
 
