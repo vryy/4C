@@ -978,8 +978,6 @@ void DRT::ELEMENTS::XFluid3::UpdateOldDLMAndDLMRHS(
     {
       vector<double> iterinc_velnp(lm.size());
       DRT::UTILS::ExtractMyValues(*iterincxdomain,iterinc_velnp,lm);
-      DRT::DEBUGGING::NaNChecker(*iterincxdomain);
-      DRT::DEBUGGING::NaNChecker(lm);
       DRT::DEBUGGING::NaNChecker(iterinc_velnp);
 
       // update old iteration residual of the stresses from velocity and pressure increments
