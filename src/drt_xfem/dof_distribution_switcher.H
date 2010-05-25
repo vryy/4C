@@ -31,14 +31,14 @@ namespace XFEM
 
     //! constructor
     explicit DofDistributionSwitcher(
-        const RCP<XFEM::InterfaceHandle>     ih,
-        const RCP<XFEM::DofManager>          dofman,
-        const Epetra_Map&                    olddofrowmap,
-        const Epetra_Map&                    newdofrowmap,
-        const map<DofKey<onNode>, DofGID>&   oldNodalDofDistrib,
-        const map<DofKey<onNode>, DofGID>&   newNodalDofDistrib,
-        const map<DofKey<onElem>, DofGID>&   oldElementalDofDistrib,
-        const map<DofKey<onElem>, DofGID>&   newElementalDofDistrib
+        const Teuchos::RCP<InterfaceHandle>       ih,
+        const Teuchos::RCP<DofManager>            dofman,
+        const Epetra_Map&                         olddofrowmap,
+        const Epetra_Map&                         newdofrowmap,
+        const std::map<DofKey<onNode>, DofGID>&   oldNodalDofDistrib,
+        const std::map<DofKey<onNode>, DofGID>&   newNodalDofDistrib,
+        const std::map<DofKey<onElem>, DofGID>&   oldElementalDofDistrib,
+        const std::map<DofKey<onElem>, DofGID>&   newElementalDofDistrib
     ) :
       ih_(ih),
       dofman_(dofman),
@@ -73,25 +73,25 @@ namespace XFEM
     ) const;
 
     void extractDofKeysForInitialization(
-        std::map<int, set<XFEM::FieldEnr> >& unknownFieldEnr
+        std::map<int, std::set<FieldEnr> >& unknownFieldEnr
     ) const;
 
     void extrapolateOldTimeStepValues(
-        const RCP<DRT::Discretization>    bdis,
+        const Teuchos::RCP<DRT::Discretization>    bdis,
         const std::map<int,LINALG::Matrix<3,1> >&  cutterposnp,
-        const RCP<const Epetra_Vector>    ivector,
-        RCP<Epetra_Vector>                state_vector
+        const Teuchos::RCP<const Epetra_Vector>    ivector,
+        Teuchos::RCP<Epetra_Vector>                state_vector
     ) const;
 
     //! switch from old to new dof distribution
     void generateTransferInformation(
-        const RCP<Epetra_Vector>&     vector
+        const Teuchos::RCP<Epetra_Vector>&     vector
     ) const;
 
   private:
 
     //! disabled copy constructor
-    explicit DofDistributionSwitcher(const XFEM::DofDistributionSwitcher& dofdist);
+    explicit DofDistributionSwitcher(const DofDistributionSwitcher& dofdist);
 
     //! disabled assignment operator
     DofDistributionSwitcher operator = (const DofDistributionSwitcher& old);
@@ -100,25 +100,24 @@ namespace XFEM
     explicit DofDistributionSwitcher();
 
 
-    const RCP<XFEM::InterfaceHandle>     ih_;                      ///< interface information
-    const RCP<XFEM::DofManager>          dofman_;                  ///< dofmanager for this proc
-    const Epetra_Map                     olddofrowmap_;            ///< dofrowmap of the old state vector
-    const Epetra_Map                     newdofrowmap_;            ///< dofrowmap of the new state vector
-    const map<DofKey<onNode>, DofGID>    oldNodalDofDistrib_;      ///< old positions of dof in Epetra Vector per nodal dofkey
-    const map<DofKey<onNode>, DofGID>    newNodalDofDistrib_;      ///< new positions of dof in Epetra Vector per nodal dofkey
-    const map<DofKey<onElem>, DofGID>    oldElementalDofDistrib_;  ///< old positions of dof in Epetra Vector per element dofkey
-    const map<DofKey<onElem>, DofGID>    newElementalDofDistrib_;  ///< new positions of dof in Epetra Vector per element dofkey
+    const Teuchos::RCP<InterfaceHandle>       ih_;                      ///< interface information
+    const Teuchos::RCP<DofManager>            dofman_;                  ///< dofmanager for this proc
+    const Epetra_Map                          olddofrowmap_;            ///< dofrowmap of the old state vector
+    const Epetra_Map                          newdofrowmap_;            ///< dofrowmap of the new state vector
+    const std::map<DofKey<onNode>, DofGID>    oldNodalDofDistrib_;      ///< old positions of dof in Epetra Vector per nodal dofkey
+    const std::map<DofKey<onNode>, DofGID>    newNodalDofDistrib_;      ///< new positions of dof in Epetra Vector per nodal dofkey
+    const std::map<DofKey<onElem>, DofGID>    oldElementalDofDistrib_;  ///< old positions of dof in Epetra Vector per element dofkey
+    const std::map<DofKey<onElem>, DofGID>    newElementalDofDistrib_;  ///< new positions of dof in Epetra Vector per element dofkey
 
-    std::map<int, set<XFEM::FieldEnr> >      unknownFieldEnr_;
-    //    map<int,std::set<XFEM::FieldEnr> >   oldEnrFieldSetNode_;      ///< old enriched fields per node
+    std::map<int, std::set<FieldEnr> >  unknownFieldEnr_;
   };
 
 
   //! try to find another enrichment for this physical field
-  XFEM::Enrichment genAlternativeEnrichment(
-      const int                    gnodeid,
-      const XFEM::PHYSICS::Field   oldphysvar,
-      const RCP<XFEM::DofManager>& dofman
+  Enrichment genAlternativeEnrichment(
+      const int                             gnodeid,
+      const PHYSICS::Field            oldphysvar,
+      const Teuchos::RCP<DofManager>& dofman
   );
 
 
