@@ -57,9 +57,8 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   currentXAABBs_ = GEO::getCurrentXAABBs(*cutterdis, cutterposnp_);
 
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
-
-  const bool screen_out = false;
+  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
 
   if (gmshdebugout)
   {
@@ -467,9 +466,8 @@ void XFEM::InterfaceHandleXFSI::PrintStatistics() const
 void XFEM::InterfaceHandleXFSI::toGmsh(const int step) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
-
-  const bool screen_out = false;
+  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
 
   const bool gmsh_tree_output = false;
 
