@@ -2724,6 +2724,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("GMSH_DEBUG_OUT","Yes","Do you want to write extended Gmsh output for each timestep?",
                                yesnotuple,yesnovalue,&xfem_general);
+  setStringToIntegralParameter<int>("GMSH_DEBUG_OUT_SCREEN","No","Do you want to be informed, if Gmsh output is written?",
+                                 yesnotuple,yesnovalue,&xfem_general);
   setStringToIntegralParameter<int>("DLM_CONDENSATION","Yes","Do you want to condense the distributed Lagrange multiplier?",
                                  yesnotuple,yesnovalue,&xfem_general);
   setStringToIntegralParameter<int>("INCOMP_PROJECTION","No","Do you want to project the old velocity to an incompressible velocity field?",
