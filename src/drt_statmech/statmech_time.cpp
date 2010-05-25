@@ -172,8 +172,11 @@ void StatMechTime::Integrate()
       double time = params_.get<double>("total time",0.0);
       if(time + statmechmanager_->statmechparams_.get<double>("DELTA_T_NEW",dt) > statmechmanager_->statmechparams_.get<double>("STARTTIME", 0.0))
       {
-      	dt = statmechmanager_->statmechparams_.get<double>("DELTA_T_NEW",dt);
-      	params_.set("delta time", dt);
+      	if(statmechmanager_->statmechparams_.get<double>("DELTA_T_NEW",dt)>0.0)
+      	{
+      		dt = statmechmanager_->statmechparams_.get<double>("DELTA_T_NEW",dt);
+      		params_.set("delta time", dt);
+      	}
       }
 
       statmechmanager_->time_ = time + dt;
