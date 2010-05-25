@@ -239,14 +239,15 @@ void FSI::MonolithicXFEM::Newton()
 {
   cout << "FSI::MonolithicXFEM::Newton()" << endl;
 
-  rhs_ = Teuchos::null;
-  stepinc_ = Teuchos::null;
-  systemmatrix_ = Teuchos::null;
+  SetupExtractor();
+
+  stepinc_ = LINALG::CreateVector(*Extractor().FullMap(), true);
+  iterinc_ = LINALG::CreateVector(*Extractor().FullMap(), true);
 
   for (int i =0;i<20;++i)
   {
     cout << endl << YELLOW << "Newton step: " << i  << END_COLOR << endl;
-    Evaluate();
+    Evaluate(i==0);
 
     // setup global (full monolithic) map
     SetupExtractor();
@@ -264,21 +265,43 @@ void FSI::MonolithicXFEM::Newton()
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicXFEM::InitialGuess()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::InitialGuess");
+
+  // get rhs from fields
+//  const Teuchos::RCP<const Epetra_Vector> siterinc = StructureField().InitialGuess();
+//  const Teuchos::RCP<const Epetra_Vector> fiterinc = FluidField().InitialGuess();
+//
+//  const Teuchos::RCP<const Epetra_Vector> siterincinterior = StructureField().Interface().ExtractOtherVector(siterinc);
+//  const Teuchos::RCP<const Epetra_Vector> siterincboundary = StructureField().Interface().ExtractFSICondVector(siterinc);
+
+  // create full monolithic stepinc vector
+  iterinc_ = rcp(new Epetra_Vector(*Extractor().FullMap(), true));
+
+//  Extractor().InsertStructureInteriorVector(siterincinterior, iterinc_);  // structure interior
+//  Extractor().InsertStructureBoundaryVector(siterincboundary, iterinc_);  // structure boundary
+//  Extractor().InsertFluidVector(fiterinc, iterinc_);
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::Evaluate()
+void FSI::MonolithicXFEM::Evaluate(bool firstNewtonStep)
 {
   // take current increment and setup linear system
   cout << "FSI::MonolithicXFEM::Evaluate()" << endl;
 
-  if (stepinc_ == Teuchos::null)
-  {
-    FluidField().Evaluate(Teuchos::null, Teuchos::null);
-    StructureField().Evaluate(Teuchos::null);
-  }
-  else
-  {
+//  if (stepinc_ == Teuchos::null)
+//  {
+////    FluidField().Evaluate(Teuchos::null, Teuchos::null);
+//    FluidField().EvaluateUsingIterInc(Teuchos::null, Teuchos::null);
+//    StructureField().Evaluate(Teuchos::null);
+//  }
+//  else
+//  {
     // extract structure displacement
     const Teuchos::RCP<const Epetra_Vector> sxstepinc_interior = Extractor().ExtractStructureInteriorVector(stepinc_);
     const Teuchos::RCP<const Epetra_Vector> sxstepinc_boundary = Extractor().ExtractStructureBoundaryVector(stepinc_);
@@ -295,22 +318,27 @@ void FSI::MonolithicXFEM::Evaluate()
 //    cout << *sxstepinc_boundary << endl;
 //    cout << "fluid stepinc:" << endl;
 //    cout << *fxstepinc << endl;
+    if (firstNewtonStep)
+      StructureField().Evaluate(Teuchos::null);
+    else
+      StructureField().Evaluate(sxstepinc);
 
-    StructureField().Evaluate(sxstepinc);
-    FluidField().Evaluate(StructToFluid(sxstepinc_boundary), fxstepinc);
+
+    sxstepinc->Update(1.0, *StructureField().Dispnp(), -1.0, *StructureField().Dispn(), 0.0);
+    const Teuchos::RCP<const Epetra_Vector> stepinc_solid_boundary_2 =
+        StructureField().Interface().ExtractFSICondVector(sxstepinc);
+    FluidField().Evaluate(StructToFluid(stepinc_solid_boundary_2), fxstepinc);
 
 
-    if (sxstepinc_boundary->Comm().MyPID() == 0 && sxstepinc_boundary->MyLength() >= 3)
+    if (stepinc_solid_boundary_2->Comm().MyPID() == 0 && stepinc_solid_boundary_2->MyLength() >= 3)
     {
       std::ofstream f;
       const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
                               + ".outifacedispstepinc.txt";
       f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-      f << (*sxstepinc_boundary)[0] << "  " << "\n";
+      f << (*stepinc_solid_boundary_2)[0] << "  " << "\n";
       f.close();
     }
-  }
-
 }
 
 
@@ -381,7 +409,10 @@ bool FSI::MonolithicXFEM::Converged() const
 
   // test if rhs is zero (equilibrium)
   const bool converged = fullresnorm <= ittol;
-  cout << "fullresnorm = " << fullresnorm << endl;
+  if (converged)
+    std::cout << GREEN   << "fullresnorm = " << fullresnorm << END_COLOR << endl;
+  else
+    std::cout << RED     << "fullresnorm = " << fullresnorm << END_COLOR << endl;
 
   return converged;
 }
@@ -474,7 +505,8 @@ void FSI::MonolithicXFEM::LinearSolve()
   //Teuchos::RCP<const Epetra_Vector> sx = StructureField().InitialGuess();
 //  Teuchos::RCP<const Epetra_Vector> fx = FluidField().InitialGuess();
 
-  Teuchos::RCP<Epetra_Vector> iterinc = LINALG::CreateVector(*Extractor().FullMap(),true);
+//  iterinc_ = LINALG::CreateVector(*Extractor().FullMap(),true);
+  InitialGuess();
 
 //  Teuchos::RCP<const Epetra_Vector> sxi = StructureField().Interface().ExtractOtherVector(StructureField().InitialGuess());
 //  Teuchos::RCP<const Epetra_Vector> sxb = StructureField().Interface().ExtractFSICondVector(StructureField().InitialGuess());
@@ -483,71 +515,52 @@ void FSI::MonolithicXFEM::LinearSolve()
 //  Extractor().InsertStructureBoundaryVector(sxb, iterinc);
 //  Extractor().InsertFluidVector(fx, iterinc);
 
-//  cout << systemmatrix_->FullRowMap() << endl;
   Teuchos::RCP<LINALG::SparseMatrix> m = systemmatrix_->Merge();
   cout << "  merged" << endl;
-//  cout << m->RowMap() << endl;
-//  cout << rhs_->Map() << endl;
-//  LINALG::PrintMatrixInMatlabFormat("monomatrix.txt", *m->EpetraMatrix(), true);
 
   // get UMFPACK...
   Teuchos::ParameterList solverparams = DRT::Problem::Instance()->FluidSolverParams();
-
 
   Teuchos::RCP<LINALG::Solver> solver =
       rcp(new LINALG::Solver(solverparams,
                              Comm(),
                              DRT::Problem::Instance()->ErrorFile()->Handle()));
 
-//  cout << *rhs_ << endl;
-
-  solver->Solve(m->EpetraOperator(), iterinc, rhs_, true, true);
-//  state_.velnp_->Update(1.0,*incvel_,1.0);
-//  cout << *x_ << endl;
-
+  solver->Solve(m->EpetraOperator(), iterinc_, rhs_, true, true);
   cout << "  solved" << endl;
 
   if (stepinc_ == Teuchos::null)
+    dserror("bruell!");
+
+  if (not stepinc_->Map().SameAs(iterinc_->Map()))
   {
+    cout << RED_LIGHT << "  Resetting global FSI stepinc_... " << END_COLOR << endl;
+    Teuchos::RCP<Epetra_Vector> oldstepinc = stepinc_;
     stepinc_ = LINALG::CreateVector(*Extractor().FullMap(),true);
-  }
-  else
-  {
-    if (not stepinc_->Map().SameAs(iterinc->Map()))
+    // recover step vector as much as possible
+    for (int newLID = 0; newLID < stepinc_->Map().NumMyElements(); newLID++)
     {
-      cout << RED_LIGHT << "Resetting global FSI stepinc_... " << END_COLOR << endl;
-      Teuchos::RCP<Epetra_Vector> oldstepinc_ = stepinc_;
-      stepinc_ = LINALG::CreateVector(*Extractor().FullMap(),true);
-      // recover step vector as much as possible
-      cout << "  recovering" << endl;
-      for (int newLID = 0; newLID < stepinc_->Map().NumMyElements(); newLID++)
+      const int newGID = stepinc_->Map().GID(newLID);
+      const int oldLID = oldstepinc->Map().LID(newGID);
+      if (oldLID == -1)
       {
-        const int newGID = stepinc_->Map().GID(newLID);
-        const int oldLID = oldstepinc_->Map().LID(newGID);
-        if (oldLID == -1)
-        {
-          // not found
-        }
-        else
-        {
-          (*stepinc_)[newLID] = (*oldstepinc_)[oldLID];
-        }
+        // not found
       }
-
+      else
+      {
+        (*stepinc_)[newLID] = (*oldstepinc)[oldLID];
+      }
     }
+    cout << "  recovered" << endl;
   }
-
-  stepinc_->Update(1.0,*iterinc, 1.0);
-//  cout << iterinc->Map() << endl;
-//  cout << stepinc_->Map() << endl;
-  cout << "  updated" << endl;
 
   const Teuchos::RCP<const Epetra_Vector> zeros = LINALG::CreateVector(*Extractor().FullMap(), true);
   Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*Extractor().FullMap(), true);
-
-  LINALG::ApplyDirichlettoSystem(tmp, stepinc_, zeros, *CombinedDBCMap());
+  LINALG::ApplyDirichlettoSystem(iterinc_, tmp, zeros, *CombinedDBCMap());
   cout << "  DBC applied" << endl;
 
+  stepinc_->Update(1.0,*iterinc_, 1.0);
+  cout << "  updated" << endl;
 
 }
 

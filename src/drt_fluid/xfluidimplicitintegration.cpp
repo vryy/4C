@@ -393,7 +393,7 @@ void FLD::XFluidImplicitTimeInt::TimeLoop(
 
   while (step_<stepmax_ and time_<maxtime_)
   {
-    PrepareTimeStep();
+    PrepareTimeStep(cutterdiscret);
     // -------------------------------------------------------------------
     //                       output to screen
     // -------------------------------------------------------------------
@@ -474,9 +474,15 @@ void FLD::XFluidImplicitTimeInt::TimeLoop(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
+void FLD::XFluidImplicitTimeInt::PrepareTimeStep(const Teuchos::RCP<DRT::Discretization>  cutterdiscret)
 {
 
+  cout << "FLD::XFluidImplicitTimeInt::PrepareTimeStep()" << endl;
+
+  ComputeInterfaceAndSetDOFs(cutterdiscret);
+
+  if (state_.velnp_ == Teuchos::null)
+    state_.velnp_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   // update interface handle
   ih_n_ = ih_np_;
 
@@ -654,11 +660,12 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   }
 
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
+  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
 
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("Fluid_Fluid_Coupling", 1, 0, false, discret_->Comm().MyPID());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("Fluid_Fluid_Coupling", 1, 0, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     IO::GMSH::disToStream("FluidFluid", 0.0, FluidFluidboundarydis_,gmshfilecontent);
     IO::GMSH::disToStream("Fluid", 0.0, discret_, gmshfilecontent);
@@ -784,6 +791,7 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   // ---------------------------------
   residual_     = LINALG::CreateVector(newdofrowmap,true);
   trueresidual_ = LINALG::CreateVector(newdofrowmap,true);
+  incvel_       = LINALG::CreateVector(newdofrowmap,true);
 
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
@@ -1128,7 +1136,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*cutterdiscret->DofColMap(),true);
 
-  incvel_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+  incvel_->PutScalar(0.0);
   residual_->PutScalar(0.0);
 
   // increment of the old iteration step - used for update of condensed element stresses
@@ -1618,6 +1626,8 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
     cout << "real update..." << endl;
     // Take Dirichlet values from velnp and add iterinc to velnp for non-Dirichlet
     // values.
+    if (state_.velnp_ == Teuchos::null)
+      dserror("schimpf");
     Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*(discret_->DofRowMap()),true);
     aux->Update(1.0, *state_.velnp_, 1.0, *velpresiterinc, 0.0);
     dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), state_.velnp_);
@@ -1955,6 +1965,7 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
 
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
 
   const int output_test_step = 999999;
 
@@ -2030,8 +2041,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
-
-  const bool screen_out = true;
+  const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
 
   // get a copy on columnmn parallel distribution
   Teuchos::RCP<const Epetra_Vector> output_col_velnp = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_);
@@ -2196,17 +2206,17 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
   if (gmshdebugout)
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigma_disc", step, 5, screen_out, discret_->Comm().MyPID());
-    cout << endl;
+    if (screen_out) std::cout << endl;
     const std::string filenamexx = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxx_disc", step, 5, screen_out, discret_->Comm().MyPID());
-    cout << endl;
+    if (screen_out) std::cout << endl;
     const std::string filenameyy = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmayy_disc", step, 5, screen_out, discret_->Comm().MyPID());
-    cout << endl;
+    if (screen_out) std::cout << endl;
     const std::string filenamezz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmazz_disc", step, 5, screen_out, discret_->Comm().MyPID());
-    cout << endl;
+    if (screen_out) std::cout << endl;
     const std::string filenamexy = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxy_disc", step, 5, screen_out, discret_->Comm().MyPID());
-    cout << endl;
+    if (screen_out) std::cout << endl;
     const std::string filenamexz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxz_disc", step, 5, screen_out, discret_->Comm().MyPID());
-    cout << endl;
+    if (screen_out) std::cout << endl;
     const std::string filenameyz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmayz_disc", step, 5, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(  filename.c_str());
     std::ofstream gmshfilecontentxx(filenamexx.c_str());
@@ -2403,9 +2413,8 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 {
 
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
-
-  const bool screen_out = true;
+  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
 
   if (gmshdebugout)
   {
@@ -3768,8 +3777,9 @@ void FLD::XFluidImplicitTimeInt::PrintFluidFluidBoundaryVectorField(
     ) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
-  const bool screen_out = true;
+  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
+
   if (gmshdebugout)
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, Step(), 5, screen_out, FluidFluidboundarydis_->Comm().MyPID());
@@ -3832,8 +3842,7 @@ void FLD::XFluidImplicitTimeInt::MovingFluidOutput()
 
     const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
     const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
-
-    const bool screen_out = true;
+    const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
 
     PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, fluidfluidstate_.mfvelnp_),"sol_field_patch_vel_np","Patch Velocity Solution (Physical) n+1",true, step_, time_);
     

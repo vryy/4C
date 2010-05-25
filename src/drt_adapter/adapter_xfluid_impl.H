@@ -199,7 +199,8 @@ namespace ADAPTER {
 
     void PrepareBoundaryDis();
 
-    virtual void ComputeInterfaceAccelerationsAndVelocities();
+    virtual void ComputeInterfaceVelocities();
+    virtual void ComputeInterfaceAccelerations();
 
     void PrintInterfaceVectorField(
         const Teuchos::RCP<const Epetra_Vector>   displacementfield,

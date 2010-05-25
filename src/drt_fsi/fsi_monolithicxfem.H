@@ -107,6 +107,9 @@ namespace FSI
     /// the composed system matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
 
+    /// Extract initial guess from fields
+    virtual void InitialGuess();
+
     /// extractor to communicate between full monolithic map and block maps
     const MonolithicXFEMExtractor& Extractor() const {return extractor_;};
 
@@ -135,7 +138,7 @@ namespace FSI
 //        double fluidscale);
 
     void Newton();
-    void Evaluate();
+    void Evaluate(bool firstNewtonStep);
     /// setup composed right hand side from field solvers
     void SetupRHS();
 
@@ -155,6 +158,8 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> rhs_;
     /// increment between timestep n and n+1
     Teuchos::RCP<Epetra_Vector> stepinc_;
+    /// increment between Newton steps i and i+1
+    Teuchos::RCP<Epetra_Vector> iterinc_;
     /// system matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
   };

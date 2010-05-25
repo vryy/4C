@@ -108,6 +108,9 @@ ADAPTER::XFluidImpl::XFluidImpl(
   ivelnm_   = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
   iaccnp_   = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
   iaccn_    = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
+
+  idispstepinc_ = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
+  idispiterinc_ = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
 }
 
 
@@ -290,7 +293,15 @@ void ADAPTER::XFluidImpl::PrepareTimeStep()
   // update displacement n
   idispn_->Update(1.0,*idispnp_,0.0);
 
-  fluid_.PrepareTimeStep();
+  idispstepinc_->PutScalar(0.0);
+  idispiterinc_->PutScalar(0.0);
+
+  ComputeInterfaceVelocities();
+  ComputeInterfaceAccelerations();
+
+  PrepareBoundaryDis();
+
+  fluid_.PrepareTimeStep(boundarydis_);
 }
 
 
@@ -300,12 +311,13 @@ void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> velpresstep
 {
   cout << "ADAPTER::XFluidImpl::Evaluate()" << endl;
 
-  ComputeInterfaceAccelerationsAndVelocities();
+  ComputeInterfaceVelocities();
+  ComputeInterfaceAccelerations();
 
   PrepareBoundaryDis();
 
   if (idispiterinc_ == Teuchos::null)
-    dserror("should be set already");
+    dserror("idispiterinc_ == Teuchos::null");
   boundarydis_->SetState("veliface nodal iterinc", idispiterinc_);
 
   // The field solver expects an iteration increment only. And
@@ -321,32 +333,32 @@ void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> velpresstep
   // reset iterative increment
   Teuchos::RCP<Epetra_Vector> velpresiterinc = Teuchos::null;
 
-  if (velpresstepinc!=Teuchos::null)
+  if (velpresstepinc==Teuchos::null)
+    dserror("velpresstepinc==Teuchos::null");
+
+  DRT::DEBUGGING::NaNChecker(*velpresstepinc);
+
+  // iteration increments
+  if (velpresstepinc_==Teuchos::null) // first newton step
   {
-    DRT::DEBUGGING::NaNChecker(*velpresstepinc);
-
-    // iteration increments
-    if (velpresstepinc_==Teuchos::null) // first newton step
-    {
-      velpresstepinc_ = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
-      velpresiterinc = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
-    }
-    else if (not velpresstepinc_->Map().SameAs(velpresstepinc->Map()))  // global map size has changed
-    {
-      velpresstepinc_ = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
-      velpresiterinc = Teuchos::rcp(new Epetra_Vector(*Discretization()->DofRowMap(), true));
-    }
-    else // update stepinc and compute iterinc
-    {
-      velpresiterinc = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
-      velpresiterinc->Update(-1.0,*velpresstepinc_,1.0);
-
-      // update incremental displacement member to provided step increments
-      // shortly: disinc_^<i> := disp^<i+1>
-      velpresstepinc_->Update(1.0,*velpresstepinc,0.0);
-    }
+    velpresstepinc_ = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
+    velpresiterinc = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
   }
+  else if (not velpresstepinc_->Map().SameAs(velpresstepinc->Map()))  // global map size has changed
+  {
+    velpresstepinc_ = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
+    velpresiterinc = Teuchos::rcp(new Epetra_Vector(*Discretization()->DofRowMap(), true));
+//    velpresiterinc = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
+  }
+  else // update stepinc and compute iterinc
+  {
+    velpresiterinc = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
+    velpresiterinc->Update(-1.0,*velpresstepinc_,1.0);
 
+    // update incremental displacement member to provided step increments
+    // shortly: disinc_^<i> := disp^<i+1>
+    velpresstepinc_->Update(1.0,*velpresstepinc,0.0);
+  }
 
 
   // do fluid evaluation provided residual displacements - iteration increment
@@ -374,36 +386,60 @@ void ADAPTER::XFluidImpl::Update()
 {
   fluid_.TimeUpdate();
 
-  ComputeInterfaceAccelerationsAndVelocities();
+  ComputeInterfaceVelocities();
+  ComputeInterfaceAccelerations();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::ComputeInterfaceAccelerationsAndVelocities()
+void ADAPTER::XFluidImpl::ComputeInterfaceVelocities()
 {
-  // for interface acceleration, the SAME factor has to be used as for the fluid
-  // time discretization. This way, we can extrapolate the fluid
-  // material velocity and acceleration into the previously unknown
-  // fluid domain.
   // The displacement - velocity relation can be chosen freely and is used as defined
   // in the FSI parameter list (see "SECONDORDER")
-
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  const double dt = fsidyn.get<double>("TIMESTEP");
-
-  // compute acceleration at timestep n+1
-  const double theta = fluid_.Theta();
-  iaccnp_->Update(-(1.0-theta)/(theta),*iaccn_,0.0);
-  iaccnp_->Update(1.0/(theta*dt),*ivelnp_,-1.0/(theta*dt),*iveln_,1.0);
 
   if (fluid_.TimIntScheme() == timeint_stationary)
   {
     ivelnp_->PutScalar(0.0);
     iveln_->PutScalar(0.0);
     ivelnm_->PutScalar(0.0);
+    cout << "stationary FSI" << endl;
+  }
+  else
+  {
+    double thetaiface = 0.0;
+    if (params_->get<bool>("interface second order"))  thetaiface = 0.5;
+    else                                               thetaiface = 1.0;
+
+    ivelnp_->Update(1.0/(thetaiface*Dt()),*idispnp_,-1.0/(thetaiface*Dt()),*idispn_,0.0);
+    ivelnp_->Update(-(1.0-thetaiface)/thetaiface,*iveln_,1.0);
+
+    cout << "instationary FSI" << endl;
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::XFluidImpl::ComputeInterfaceAccelerations()
+{
+  // for interface acceleration, the SAME factor has to be used as for the fluid
+  // time discretization. This way, we can extrapolate the fluid
+  // material velocity and acceleration into the previously unknown
+  // fluid domain.
+
+  if (fluid_.TimIntScheme() == timeint_stationary)
+  {
     iaccnp_->PutScalar(0.0);
     iaccn_->PutScalar(0.0);
+  }
+  else
+  {
+    const double dt = Dt();
+    const double theta = fluid_.Theta();
+
+    // compute acceleration at timestep n+1
+    iaccnp_->Update(-(1.0-theta)/(theta),*iaccn_,0.0);
+    iaccnp_->Update(1.0/(theta*dt),*ivelnp_,-1.0/(theta*dt),*iveln_,1.0);
   }
 }
 
@@ -553,8 +589,8 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
     ) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
-  const bool screen_out = true;
+  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
   if (gmshdebugout)
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, Step(), 5, screen_out, boundarydis_->Comm().MyPID());
@@ -624,7 +660,8 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
 {
   cout << "ADAPTER::XFluidImpl::NonlinearSolve()" << endl;
 
-  ComputeInterfaceAccelerationsAndVelocities();
+  ComputeInterfaceVelocities();
+  ComputeInterfaceAccelerations();
 
   PrepareBoundaryDis();
   idispiterinc_ = rcp(new Epetra_Vector(idispnp_->Map(),true));
@@ -816,7 +853,7 @@ void ADAPTER::XFluidImpl::LiftDrag()
     f << s.str() << "\n";
     f.close();
 
-    std::cout << header.str() << endl << s.str() << endl;
+//    std::cout << header.str() << endl << s.str() << endl;
   }
 
   fluid_.LiftDrag();
@@ -967,6 +1004,7 @@ void ADAPTER::XFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> idispstepinc)
 {
+  cout << "ADAPTER::XFluidImpl::ApplyMeshDisplacementIncrement" << endl;
   // The field solver always expects an iteration increment only. And
   // there are Dirichlet conditions that need to be preserved. So take
   // the sum of increments (disstepinc) and compute disiterinc
@@ -978,6 +1016,7 @@ void ADAPTER::XFluidImpl::ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epet
 
   if (idispstepinc == Teuchos::null) // first step
   {
+    dserror("schimpf");
     idispnp_      = Teuchos::rcp(new Epetra_Vector(*idispn_));
     idispiterinc_ = Teuchos::rcp(new Epetra_Vector(idispn_->Map(),true));
     idispstepinc_ = Teuchos::rcp(new Epetra_Vector(idispn_->Map(),true));

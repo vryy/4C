@@ -62,14 +62,12 @@ void ADAPTER::FluidXFEM::Evaluate(
     Teuchos::RCP<Epetra_Vector> idispstepinc,
     Teuchos::RCP<const Epetra_Vector> fluidstepinc)
 {
-  std::cout << "ADAPTER::FluidXFEM::Evaluate()" << endl;
-//  if (idispstepinc!=Teuchos::null)
-  {
-    // if we have values at the interface we need to apply them
-    FluidField().ApplyMeshDisplacementIncrement(idispstepinc);
-//    FluidField().ApplyInterfaceVelocities(null);
-  }
+  if (idispstepinc == Teuchos::null)
+    dserror("idispstepinc == Teuchos::null");
+  if (fluidstepinc == Teuchos::null)
+    dserror("fluidstepinc == Teuchos::null");
 
+  FluidField().ApplyMeshDisplacementIncrement(idispstepinc);
   FluidField().Evaluate(fluidstepinc);
 }
 
@@ -77,7 +75,6 @@ void ADAPTER::FluidXFEM::Evaluate(
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidXFEM::Update()
 {
-  std::cout << "ADAPTER::FluidXFEM::Update()" << endl;
   FluidField().Update();
 }
 
