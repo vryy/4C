@@ -72,21 +72,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
   // get node coordinates and number of elements per node
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
-  //LINALG::Matrix<nen_,1>      preforce;
-  //LINALG::Matrix<nsd_,nen_>   velforce;
-
-  //LINALG::Matrix<nen_,nen_>   ppmat;
-
-  //LINALG::Matrix<nen_*nsd_,nen_*nsd_>    estif_(true);
   estif_.Clear();
-
   estif_p_v_.Clear();
   estif_q_u_.Clear();
+  ppmat.Clear();
 
   preforce.Clear();
   velforce.Clear();
-
-  ppmat.Clear();
 
   /*
   DRT::Node** nodes = ele->Nodes();
@@ -270,9 +262,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
      }
      else prefac = 1.0;
 
-     for (int inode=0; inode<nen_; ++inode)
+     if (nsd_==3)
      {
-       if (nsd_ == 3)
+       for (int inode=0; inode<nen_; ++inode)
        {
          double sum = (derxy2_(0,inode)+derxy2_(1,inode)+derxy2_(2,inode))/prefac;
          viscs2_(0,inode) = 0.5 * (sum + derxy2_(0,inode));
@@ -284,28 +276,38 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
          viscs2_(6,inode) = 0.5 *  derxy2_(4,inode);
          viscs2_(7,inode) = 0.5 *  derxy2_(5,inode);
          viscs2_(8,inode) = 0.5 * (sum + derxy2_(2,inode));
+
+         for (int idim=0; idim<nsd_; ++idim)
+         {
+           const int nsd_idim = idim*nsd_;
+           for (int jdim=0; jdim<nsd_; ++jdim)
+           {
+             visc_old_(idim) += viscs2_(nsd_idim+jdim,inode)*evelaf(jdim,inode);
+           }
+         }
        }
-       else if (nsd_==2)
+     }
+     else if (nsd_==2)
+     {
+       for (int inode=0; inode<nen_; ++inode)
        {
-         double sum = (derxy2_(0,inode)+derxy2_(1,inode))/prefac;
-         viscs2_(0,inode) = 0.5 * (sum + derxy2_(0,inode));
-         viscs2_(1,inode) = 0.5 * derxy2_(2,inode);
-         viscs2_(2,inode) = 0.5 * derxy2_(2,inode);
-         viscs2_(3,inode) = 0.5 * (sum + derxy2_(1,inode));
-       }
-       else dserror("Epsilon(N) is not implemented for the 1D case");
+       double sum = (derxy2_(0,inode)+derxy2_(1,inode))/prefac;
+       viscs2_(0,inode) = 0.5 * (sum + derxy2_(0,inode));
+       viscs2_(1,inode) = 0.5 * derxy2_(2,inode);
+       viscs2_(2,inode) = 0.5 * derxy2_(2,inode);
+       viscs2_(3,inode) = 0.5 * (sum + derxy2_(1,inode));
 
        for (int idim=0; idim<nsd_; ++idim)
        {
+         const int nsd_idim = idim*nsd_;
          for (int jdim=0; jdim<nsd_; ++jdim)
          {
-           visc_old_(idim) += viscs2_(jdim+(idim*nsd_),inode)*evelaf(jdim,inode);
+           visc_old_(idim) += viscs2_(nsd_idim+jdim,inode)*evelaf(jdim,inode);
          }
-         //visc_old_(0) += viscs2_(0,i)*evelaf(0,i)+viscs2_(1,i)*evelaf(1,i)+viscs2_(2,i)*evelaf(2,i);
-         //visc_old_(1) += viscs2_(3,i)*evelaf(0,i)+viscs2_(4,i)*evelaf(1,i)+viscs2_(5,i)*evelaf(2,i);
-         //visc_old_(2) += viscs2_(6,i)*evelaf(0,i)+viscs2_(7,i)*evelaf(1,i)+viscs2_(8,i)*evelaf(2,i);
+       }
        }
      }
+     else dserror("Epsilon(N) is not implemented for the 1D case");
     }
     else
     {
@@ -865,11 +867,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
             const int fvi_p_idim = fvi+idim;
 
             estif_(fvi_p_idim,fui+jdim) += temp*derxy_(idim, ui);
-
           } // end for (jdim)
         } // end for (idim)
       } // ui
     } //vi
+
     for (int vi=0; vi<nen_; ++vi)
     {
       const int fvi   = nsd_*vi;
@@ -887,7 +889,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
             const int fvi_p_idim = fvi+idim;
 
             estif_(fvi_p_idim,fui+idim) += temp*derxy_(jdim, ui);
-
           } // end for (jdim)
         } // end for (idim)
       } // ui
@@ -2329,22 +2330,34 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
   {
     const int fuippp = numdofpernode_*ui+nsd_;
 
-
     for (int vi=0; vi<nen_; ++vi)
     {
-      estif(numdofpernode_*vi+nsd_,fuippp)+=ppmat(vi,ui);
+      const int numdof_vi_p_nsd = numdofpernode_*vi+nsd_;
+
+      estif(numdof_vi_p_nsd,fuippp)+=ppmat(vi,ui);
     }
   }
 
   // sort estif_ into the global matrix
   for (int ui=0; ui<nen_; ++ui)
   {
-    for (int vi=0; vi<nen_; ++vi)
+    const int numdof_ui = numdofpernode_*ui;
+    const int nsd_ui = nsd_*ui;
+
+    for (int jdim=0; jdim < nsd_;++jdim)
     {
-      for (int idim=0; idim <nsd_; ++idim)
+      const int numdof_ui_jdim = numdof_ui+jdim;
+      const int nsd_ui_jdim = nsd_ui+jdim;
+
+      for (int vi=0; vi<nen_; ++vi)
       {
-        for (int jdim=0; jdim < nsd_;++jdim)
-          estif(numdofpernode_*vi+idim, numdofpernode_*ui+jdim) += estif_(nsd_*vi+idim, nsd_*ui+jdim);
+        const int numdof_vi = numdofpernode_*vi;
+        const int nsd_vi = nsd_*vi;
+
+        for (int idim=0; idim <nsd_; ++idim)
+        {
+          estif(numdof_vi+idim, numdof_ui_jdim) += estif_(nsd_vi+idim, nsd_ui_jdim);
+        }
       }
     }
   }
@@ -2352,22 +2365,76 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
   // sort estif_ into the global matrix
   for (int ui=0; ui<nen_; ++ui)
   {
+    const int numdof_ui_nsd = numdofpernode_*ui + nsd_;
+
     for (int vi=0; vi<nen_; ++vi)
     {
+      const int nsd_vi = nsd_*vi;
+      const int numdof_vi = numdofpernode_*vi;
+
       for (int idim=0; idim <nsd_; ++idim)
-        estif(numdofpernode_*vi+idim, numdofpernode_*ui+nsd_) += estif_p_v_(nsd_*vi+idim, ui);
+      {
+        estif(numdof_vi+idim, numdof_ui_nsd) += estif_p_v_(nsd_vi+idim, ui);
+      }
     }
   }
 
   // sort estif_ into the global matrix
   for (int ui=0; ui<nen_; ++ui)
   {
-    for (int vi=0; vi<nen_; ++vi)
+    const int numdof_ui = numdofpernode_*ui;
+    const int nsd_ui = nsd_*ui;
+
+    for (int jdim=0; jdim < nsd_;++jdim)
     {
-      for (int jdim=0; jdim < nsd_;++jdim)
-        estif(numdofpernode_*vi+nsd_, numdofpernode_*ui+jdim) += estif_q_u_(vi, nsd_*ui+jdim);
+      const int numdof_ui_jdim = numdof_ui+jdim;
+      const int nsd_ui_jdim = nsd_ui+jdim;
+
+      for (int vi=0; vi<nen_; ++vi)
+        estif(numdofpernode_*vi+nsd_, numdof_ui_jdim) += estif_q_u_(vi, nsd_ui_jdim);
     }
   }
+
+#if 0
+  // sort estif_ into the global matrix
+   for (int ui=0; ui<nen_; ++ui)
+   {
+     const int numdof_ui = numdofpernode_*ui;
+     const int nsd_ui = nsd_*ui;
+     for (int jdim=0; jdim < nsd_;++jdim)
+     {
+       const int numdof_ui_jdim= numdof_ui +jdim;
+       const int nsd_ui_jdim= nsd_ui +jdim;
+       for (int vi=0; vi<nen_; ++vi)
+       {
+         const int numdof_vi = numdofpernode_*vi;
+         const int nsd_vi = nsd_*vi;
+         for (int idim=0; idim <nsd_; ++idim)
+         {
+           estif(numdof_vi+idim, numdof_ui_jdim) += estif_(nsd_vi+idim, nsd_ui_jdim);
+         }
+         estif(numdof_vi+nsd_, numdof_ui+jdim) += estif_q_u_(vi, nsd_ui_jdim);
+       }
+     }
+   }
+
+   for (int ui=0; ui<nen_; ++ui)
+   {
+     const int numdof_ui = numdofpernode_*ui;
+
+     const int numdof_ui_nsd= numdof_ui +nsd_;
+     for (int vi=0; vi<nen_; ++vi)
+     {
+       const int numdof_vi = numdofpernode_*vi;
+       const int nsd_vi = nsd_*vi;
+       for (int idim=0; idim <nsd_; ++idim)
+       {
+         estif(numdof_vi+idim, numdof_ui_nsd) += estif_p_v_(nsd_vi+idim, ui);
+       }
+       estif(numdof_vi+nsd_,numdof_ui_nsd)+=ppmat(vi,ui);
+     }
+   }
+#endif
 
   return;
 }
