@@ -543,7 +543,9 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
   }
   else
   {
+#ifdef DEBUG
     bool completely_unchanged = true;
+#endif
     const RCP<Epetra_Vector> oldVector = vector;
     const Epetra_BlockMap& oldmap = oldVector->Map();
 //    std::cout << "olddofrowmap_" << endl;
