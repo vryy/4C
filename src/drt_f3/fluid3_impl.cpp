@@ -271,6 +271,7 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl(int numdofpernode)
     gamma_(0.0),
     alphaF_(0.0),
     alphaM_(0.0),
+    afgdt_(0.0),
     rhscon_(true),
     densaf_(1.0),         // initialized to 1.0 (filled in Fluid3::GetMaterialParams)
     densam_(1.0),         // initialized to 1.0 (filled in Fluid3::GetMaterialParams)
@@ -3666,6 +3667,8 @@ const double DRT::ELEMENTS::Fluid3Impl<distype>::SetSolutionParameter(
       alphaF_=1.0;
       alphaM_=1.0;
     }
+
+    afgdt_=alphaF_*gamma_*dt_;
   }
   else
   {
@@ -3722,8 +3725,6 @@ const double DRT::ELEMENTS::Fluid3Impl<distype>::SetSolutionParameter(
   // TODO: Adapt test cases, that it is necessary to use stationary tau definition in input file
   if (is_stationary_ == true)
     whichtau_ = INPAR::FLUID::tautype_stationary;
-
-
 
   // set flags for potential evaluation of tau and material law at int. point
   // default value: evaluation at element center
@@ -4488,6 +4489,116 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
     tau_(2) = sqrt(DSQR(visceff_)+DSQR(0.5*densaf_*vel_norm*hk));
   }
   break; // end Codina
+
+
+  case INPAR::FLUID::tautype_bazilevs_wo_dt:
+  {
+    /*
+    tau_M by Bazilevs et al. (2007) adapted for the time-dependent subgrid-scale
+    approach by Codina. Note that the density dependency is included in the ODE
+    for the unresolved scales
+
+                                                        1.0
+                 +-                                -+ - ---
+                 |                                  |   2.0
+                 |  n+1      n+1          2         |
+          tau  = | u     * Gu     + C * nu  * G : G |
+             M   |         -         I        -   - |
+                 |         -                  -   - |
+                 +-                                -+
+
+    */
+    /*            +-           -+   +-           -+   +-           -+
+                  |             |   |             |   |             |
+                  |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
+            G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
+             ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
+                  |    i     j  |   |    i     j  |   |    i     j  |
+                  +-           -+   +-           -+   +-           -+
+    */
+    /*            +----
+                   \
+          G : G =   +   G   * G
+          -   -    /     ij    ij
+          -   -   +----
+                   i,j
+    */
+    /*                        +----
+          n+af        n+af     \     n+af          n+af
+         u     * G * u      =   +   u     * G   * u
+                 -             /     i      -ij    j
+                 -            +----         -
+                               i,j
+    */
+
+    double G;
+    double normG = 0;
+    double Gnormu = 0;
+
+    for (int nn=0;nn<nsd_;++nn)
+    {
+      for (int rr=0;rr<nsd_;++rr)
+      {
+        G = xji_(nn,0)*xji_(rr,0);
+        for (int mm=1; mm<nsd_; ++mm)
+        {
+          G += xji_(nn,mm)*xji_(rr,mm);
+        }
+        normG+=G*G;
+        Gnormu+=velint_(nn)*G*velint_(rr);
+      }
+    }
+
+    const double dens_sqr = densaf_*densaf_;
+
+    // definition of constant:
+    // 12.0/m_k = 36.0 for linear elements and 144.0 for quadratic elements
+    // (differently defined, e.g., in Akkerman et al. (2008))
+    const double CI = 12.0/mk;
+
+    tau_(0) = 1.0/(sqrt(Gnormu+CI*(visceff_*visceff_/dens_sqr)*normG));
+    tau_(1) = tau_(0);
+
+    /*
+      tau_C: Bazilevs et al. (2007), derived from fine-scale complement Shur
+                                     operator of the pressure equation
+
+                                  1.0
+                    tau  = -----------------
+                       C            /     \
+                            tau  * | g * g |
+                               M    \-   -/
+    */
+    /*           +-     -+   +-     -+   +-     -+
+                 |       |   |       |   |       |
+                 |  dr   |   |  ds   |   |  dt   |
+            g  = |  ---  | + |  ---  | + |  ---  |
+             i   |  dx   |   |  dx   |   |  dx   |
+                 |    i  |   |    i  |   |    i  |
+                 +-     -+   +-     -+   +-     -+
+    */
+    /*           +----
+                  \
+         g * g =   +   g * g
+         -   -    /     i   i
+                 +----
+                   i
+    */
+    double g;
+    double normgsq = 0;
+    for (int rr=0;rr<nsd_;++rr)
+    {
+      g = xji_(rr,0);
+      for(int mm=1;mm<nsd_;++mm)
+      {
+        g += xji_(rr,mm);
+      }
+      normgsq += g*g;
+    }
+
+    tau_(2) = 1.0/(tau_(0)*normgsq);
+  }
+  break;  // end Bazilevs for tds
 
   default: dserror("unknown definition of tau\n");
   }  // end switch

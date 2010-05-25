@@ -90,6 +90,7 @@ namespace INPAR
     {
       tautype_franca_barrenechea_valentin_wall,   // combustion & Fluid3
       tautype_bazilevs,                           // combustion & Fluid3
+      tautype_bazilevs_wo_dt,                     // for time-dependent subgrid scales
       tautype_franca_barrenechea_valentin_codina, // Fluid3
       tautype_stationary,
       tau_not_defined

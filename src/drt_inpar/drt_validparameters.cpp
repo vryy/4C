@@ -1761,6 +1761,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "FBVW_without_dt",
                                  "Franca_Barrenechea_Valentin_Codina",
                                  "Bazilevs",
+                                 "Bazilevs_wo_dt",
                                  "Codina"),
                                tuple<std::string>(
                                  "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea; tau_C: Wall",
@@ -1777,6 +1778,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::FLUID::tau_not_defined,
                                    INPAR::FLUID::tautype_franca_barrenechea_valentin_codina,
                                    INPAR::FLUID::tautype_bazilevs,
+                                   INPAR::FLUID::tautype_bazilevs_wo_dt,
                                    INPAR::FLUID::tau_not_defined
                                     ),
                                &fdyn_stab);

@@ -519,6 +519,8 @@ namespace ELEMENTS
     //! viscous term including 2nd derivatives
     //! (This array once had three dimensions, now the first two are combined to one.)
     LINALG::Matrix<nsd_*nsd_,nen_> viscs2_;
+    //! residual of momentum equation, velocity part which is not integrated by parts (precomputed)
+    LINALG::Matrix<nsd_,1> resM_Du_;
     //! linearisation of residual of momentum equation wrt velocities (precomputed)
     LINALG::Matrix<nsd_*nsd_,nen_> lin_resM_Du_;
     //! linearisation of convection, convective part
@@ -580,6 +582,8 @@ namespace ELEMENTS
     double alphaF_;
     //! generalised-alpha parameter (acceleration)
     double alphaM_;
+    //! generalised-alpha parameter, alphaF_*gamma_*dt_
+    double afgdt_;
 
 
     //! LOMA-specific variables:

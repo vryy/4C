@@ -305,7 +305,6 @@ void DRT::ELEMENTS::Fluid3::UpdateSvelnpInOneDirection(
     const double  fac1   ,
     const double  fac2   ,
     const double  fac3   ,
-    const double  facMtau,
     const double  resM   ,
     const double  alphaF ,
     const int     dim    ,
@@ -314,18 +313,19 @@ void DRT::ELEMENTS::Fluid3::UpdateSvelnpInOneDirection(
     )
 {
 
-    /*                   +-                                       -+
-        ~n+1             |        ~n           ~ n            n+1  |
-        u    = facMtau * | fac1 * u  + fac2 * acc  -fac3 * res     |
-         (i)             |                                    (i)  |
-                         +-                                       -+
+    /*          
+        ~n+1           ~n           ~ n            n+1 
+        u    =  fac1 * u  + fac2 * acc  -fac3 * res    
+         (i)    
+                
     */
 
-  svelnp_(dim,iquad)=(fac1*sveln_(dim,iquad)
-                      +
-                      (fac2*saccn_(dim,iquad)
-                       -
-                       fac3*resM));
+  svelnp_(dim,iquad)=
+    fac1*sveln_(dim,iquad)
+    +
+    fac2*saccn_(dim,iquad)
+    -
+    fac3*resM;
   
   /* compute the intermediate value of subscale velocity
 
@@ -349,7 +349,6 @@ void DRT::ELEMENTS::Fluid3::UpdateSvelnpInOneDirection(
     const double  fac1   ,
     const double  fac2   ,
     const double  fac3   ,
-    const double  facMtau,
     const double  resM   ,
     const double  alphaF ,
     const int     dim    ,
@@ -361,7 +360,6 @@ void DRT::ELEMENTS::Fluid3::UpdateSvelnpInOneDirection(
       UpdateSvelnpInOneDirection(fac1   ,
                                  fac2   ,
                                  fac3   ,
-                                 facMtau,
                                  resM   ,
                                  alphaF ,
                                  dim    ,
