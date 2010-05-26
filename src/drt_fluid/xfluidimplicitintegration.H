@@ -367,9 +367,14 @@ protected:
       const double time
       ) const;
 
-  void KrylovSpaceProjection(const int & numdim);
+  void KrylovSpaceProjection(
+      const int & numdim,
+      LINALG::MapExtractor&      velpressplitter
+      );
 
-  void ProjectOldTimeStepValues();
+  void ProjectOldTimeStepValues(
+      LINALG::MapExtractor&      velpressplitter
+      );
 
   void MonolithicMultiDisEvaluate(
       Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih,
@@ -491,7 +496,7 @@ protected:
   //@}
 
   //! store dof distribution information for output
-  Teuchos::RCP<XFEM::DofManager>      dofmanagerForOutput_;
+  Teuchos::RCP<XFEM::DofManager>      dofmanager_np_;
   //! store dofset for unintersected domain
   DRT::DofSet                dofset_out_;
 

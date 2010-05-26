@@ -29,12 +29,11 @@ Maintainer: Axel Gerstenberger
 #include "xfluidimplicitintegration.H"
 #include "time_integration_scheme.H"
 
-#include "../drt_io/io_control.H"
-#include "../drt_inpar/inpar_xfem.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/linalg_ana.H"
-#include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_function.H"
+#include "../drt_lib/drt_condition_utils.H"
+#include "fluid_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
@@ -42,13 +41,15 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/element_ansatz.H"
 //#include "../drt_xfem/load_balancing.H"
 #include "../drt_geometry/position_array.H"
-#include "fluid_utils.H"
 #include "../drt_f3/xfluid3_interpolation.H"
 #include "../drt_xdiff3/xdiff3_interpolation.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_io/io_gmsh.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_fem_general/debug_nan.H"
+
+#include "../drt_io/io_control.H"
+#include "../drt_inpar/inpar_xfem.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -481,21 +482,16 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep(const Teuchos::RCP<DRT::Discret
 
   ComputeInterfaceAndSetDOFs(cutterdiscret);
 
-  if (state_.velnp_ == Teuchos::null)
-    state_.velnp_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   // update interface handle
   ih_n_ = ih_np_;
 
   // update old acceleration
-  if (state_.accn_ != Teuchos::null)
-    state_.accn_->Update(1.0,*state_.accnp_,0.0);
+  state_.accn_->Update(1.0,*state_.accnp_,0.0);
 
   // velocities/pressures of this step become most recent
   // velocities/pressures of the last step
-  if (state_.velnm_ != Teuchos::null)
-    state_.velnm_->Update(1.0,*state_.veln_ ,0.0);
-  if (state_.veln_ != Teuchos::null)
-    state_.veln_ ->Update(1.0,*state_.velnp_,0.0);
+  state_.velnm_->Update(1.0,*state_.veln_ ,0.0);
+  state_.veln_ ->Update(1.0,*state_.velnp_,0.0);
 
   // -------------------------------------------------------------------
   //              set time dependent parameters
@@ -637,7 +633,7 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
 //    eleparams.set("action","reset");
 //    discret_->Evaluate(eleparams);
 //  }
-  dofmanagerForOutput_ = Teuchos::null;
+  dofmanager_np_ = Teuchos::null;
 
   // within this routine, no parallel re-distribution is allowed to take place
   // before and after this function, it's ok to do that
@@ -686,17 +682,13 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   ih_np_->toGmsh(step_);
 
   // apply enrichments
-  const Teuchos::RCP<XFEM::DofManager> dofmanager =
-      rcp(new XFEM::DofManager(ih_np_, physprob_.fieldset_, *physprob_.elementAnsatz_, xparams_, fluidfluidstate_.MovingFluidNodeGIDs_));
-
-  // save dofmanager to be able to plot Gmsh stuff in Output()
-  dofmanagerForOutput_ = dofmanager;
+  dofmanager_np_ = rcp(new XFEM::DofManager(ih_np_, physprob_.fieldset_, *physprob_.elementAnsatz_, xparams_, fluidfluidstate_.MovingFluidNodeGIDs_));
 
   // tell elements about the dofs and the integration
-  TransferDofInformationToElements(ih_np_, dofmanager);
+  TransferDofInformationToElements(ih_np_, dofmanager_np_);
 
   // print global and element dofmanager to Gmsh
-  dofmanager->toGmsh(step_);
+  dofmanager_np_->toGmsh(step_);
 
 
   // get old dofmap, compute new one and get the new one, too
@@ -707,13 +699,13 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   {
     const std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
     const std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID> oldElementalDofDistributionMap(state_.elementalDofDistributionMap_);
-    dofmanager->fillDofDistributionMaps(
+    dofmanager_np_->fillDofDistributionMaps(
         state_.nodalDofDistributionMap_,
         state_.elementalDofDistributionMap_);
 
     // create switcher
     const XFEM::DofDistributionSwitcher dofswitch(
-            ih_np_, dofmanager,
+            ih_np_, dofmanager_np_,
             olddofrowmap, newdofrowmap,
             oldNodalDofDistributionMap, state_.nodalDofDistributionMap_,
             oldElementalDofDistributionMap, state_.elementalDofDistributionMap_
@@ -777,12 +769,12 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   // contains the velocity dofs and for one vector which only contains
   // pressure degrees of freedom.
   // -------------------------------------------------------------------
-  FLD::UTILS::SetupXFluidSplit(*discret_,dofmanager,velpressplitter_);
+  FLD::UTILS::SetupXFluidSplit(*discret_,dofmanager_np_,velpressplitter_);
 
   // project old interpolated velocity vector onto divergence free space
   if (xparams_.get<bool>("INCOMP_PROJECTION"))
     if (timealgo_ != timeint_stationary)
-      ProjectOldTimeStepValues();
+      ProjectOldTimeStepValues(velpressplitter_);
 
   neumann_loads_= LINALG::CreateVector(newdofrowmap,true);
 
@@ -802,67 +794,12 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   // initialize system matrix
   sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(newdofrowmap,0,false,true));
 
-#if 0
-
-  // rotation of matrix to improve matrix condition number
-
-  // find nodes connected to enrichments
-  std::set<int> enr_node_gids;
-  for (int iele=0; iele < discret_->NumMyRowElements(); iele++)
-  {
-    const DRT::Element* ele = discret_->lRowElement(iele);
-    if (ih->ElementIntersected(ele->Id()))
-    {
-      for (int inode=0;inode<ele->NumNode();inode++)
-      {
-        enr_node_gids.insert(ele->NodeIds()[inode]);
-      }
-    }
-  }
-
-  std::set<int> ext_enr_ele_gids;
-  for (std::set<int>::const_iterator nodeid = enr_node_gids.begin(); nodeid != enr_node_gids.end();nodeid++)
-  {
-    const DRT::Node* node = discret_->gNode(*nodeid);
-    for (int iele=0;iele<node->NumElement();iele++)
-    {
-      ext_enr_ele_gids.insert(node->Elements()[iele]->Id());
-    }
-  }
-
-  std::set<int> ext_enr_node_gids;
-  for (std::set<int>::const_iterator eleid = ext_enr_ele_gids.begin(); eleid != ext_enr_ele_gids.end();eleid++)
-  {
-    const DRT::Element* ele = discret_->lRowElement(*eleid);
-    for (int inode=0;inode<ele->NumNode();inode++)
-    {
-      ext_enr_node_gids.insert(ele->NodeIds()[inode]);
-    }
-  }
-
-  FLD::UTILS::SetupEnrichmentSplit(*discret_,dofmanager,ext_enr_node_gids, normalenrichedsplitter_);
-
-  const Teuchos::RCP<const Epetra_Map>& enrichmap = normalenrichedsplitter_.CondMap();
-  const Teuchos::RCP<const Epetra_Map>& normalmap = normalenrichedsplitter_.OtherMap();
-
-
-//  velpressplitter_.ExtractOtherVector(incvel_,onlyvel);
-
-  // create small dofmap
-//  Epetra_Map newdofrowmap;
-
-
-  // create smaller matrix A
-  enrichsysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*enrichmap,108,false,true));
-#endif
-
-
   // print information about dofs
   if (discret_->Comm().NumProc() == 1)
   {
     const int numdof = newdofrowmap.NumGlobalElements();
-    const int numnodaldof = dofmanager->NumNodalDof();
-    cout << " DOF report: numdof = " << numdof << ", numstressdof = "<< (numdof - numnodaldof) << endl;
+    const int numnodaldof = dofmanager_np_->NumNodalDof();
+    cout << " DOF report: numdof (nodal and elemental) = " << numdof << ", numstressdof = "<< (numdof - numnodaldof) << endl;
   }
   else
   {
@@ -871,13 +808,6 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
       cout << " DOF report: numdof = " << newdofrowmap.NumGlobalElements() << endl;
     }
   }
-
-//  cout0_ << *state_.accnp_ << endl;
-//  cout0_ << *state_.accn_ << endl;
-//
-//  cout0_ << *state_.velnp_ << endl;
-//  cout0_ << *state_.veln_ << endl;
-//  cout0_ << *state_.velnm_ << endl;
 
   cout0_ << "Setup phase done!" << endl;
 
@@ -894,7 +824,10 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::XFluidImplicitTimeInt::KrylovSpaceProjection(const int & numdim)
+void FLD::XFluidImplicitTimeInt::KrylovSpaceProjection(
+    const int & numdim,
+    LINALG::MapExtractor&      velpressplitter
+    )
 {
   if (project_)
   {
@@ -922,7 +855,7 @@ void FLD::XFluidImplicitTimeInt::KrylovSpaceProjection(const int & numdim)
 
       int predof = numdim;
 
-      Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
+      Teuchos::RCP<Epetra_Vector> presmode = velpressplitter.ExtractCondVector(*w_);
 
       presmode->PutScalar((*mode)[predof]);
 
@@ -983,7 +916,7 @@ void FLD::XFluidImplicitTimeInt::KrylovSpaceProjection(const int & numdim)
         }
       }
 
-      Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
+      Teuchos::RCP<Epetra_Vector> presmode = velpressplitter.ExtractCondVector(*w_);
 
       // export to vector of ones
       presmode->PutScalar(1.0);
@@ -1529,7 +1462,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       }
 
       const int numdim = 3;
-      KrylovSpaceProjection(numdim);
+      KrylovSpaceProjection(numdim, velpressplitter_);
       solver->Solve(sysmat_->EpetraOperator(), incvel_, residual_, true, itnum == 1, w_, c_, project_);
       solver->ResetTolerance();
 
@@ -1897,7 +1830,7 @@ void FLD::XFluidImplicitTimeInt::Output()
 
   if (write_visualization_data)  //write solution for visualization
   {
-    Teuchos::RCP<Epetra_Vector> velnp_out = dofmanagerForOutput_->fillPhysicalOutputVector(
+    Teuchos::RCP<Epetra_Vector> velnp_out = dofmanager_np_->fillPhysicalOutputVector(
         *state_.velnp_, dofset_out_, state_.nodalDofDistributionMap_, physprob_.fieldset_);
 
     // write physical fields on full domain including voids etc.
@@ -1962,10 +1895,8 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
     const Teuchos::RCP<DRT::Discretization> cutterdiscret
     )
 {
-
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
-  const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
 
   const int output_test_step = 999999;
 
@@ -1974,23 +1905,21 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
     ih_np_->toGmsh(output_test_step);
 
   // apply enrichments
-  const Teuchos::RCP<XFEM::DofManager> dofmanager =
+  dofmanager_np_ =
       rcp(new XFEM::DofManager(ih_np_, physprob_.fieldset_, *physprob_.elementAnsatz_, xparams_, fluidfluidstate_.MovingFluidNodeGIDs_));
 
-  // save dofmanager to be able to plot Gmsh stuff in Output()
-  dofmanagerForOutput_ = dofmanager;
-
   // tell elements about the dofs and the integration
-  TransferDofInformationToElements(ih_np_, dofmanager);
+  TransferDofInformationToElements(ih_np_, dofmanager_np_);
 
   // print global and element dofmanager to Gmsh
-  dofmanager->toGmsh(step_);
+  if (gmshdebugout)
+    dofmanager_np_->toGmsh(step_);
 
 
   // get old dofmap, compute new one and get the new one, too
   discret_->FillComplete();
 
-  dofmanager->fillDofDistributionMaps(
+  dofmanager_np_->fillDofDistributionMaps(
       state_.nodalDofDistributionMap_,
       state_.elementalDofDistributionMap_);
 
@@ -2000,16 +1929,16 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map& dofrowmap = *discret_->DofRowMap();
 
   // velocity/pressure at time n+1, n and n-1
-  state_.velnp_        = LINALG::CreateVector(*dofrowmap,true);
-  state_.veln_         = LINALG::CreateVector(*dofrowmap,true);
-  state_.velnm_        = LINALG::CreateVector(*dofrowmap,true);
+  state_.velnp_        = LINALG::CreateVector(dofrowmap,true);
+  state_.veln_         = LINALG::CreateVector(dofrowmap,true);
+  state_.velnm_        = LINALG::CreateVector(dofrowmap,true);
 
   // acceleration at time n+1 and n
-  state_.accnp_        = LINALG::CreateVector(*dofrowmap,true);
-  state_.accn_         = LINALG::CreateVector(*dofrowmap,true);
+  state_.accnp_        = LINALG::CreateVector(dofrowmap,true);
+  state_.accn_         = LINALG::CreateVector(dofrowmap,true);
 
   reader.ReadVector(state_.velnp_ ,"velnp");
   reader.ReadVector(state_.veln_  ,"veln");
@@ -2017,7 +1946,7 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
   reader.ReadVector(state_.accnp_ ,"accnp");
   reader.ReadVector(state_.accn_  ,"accn");
 
-  if (discret_->Comm().NumProc() == 1 and gmshdebugout)
+  if (gmshdebugout)
   {
     OutputToGmsh(output_test_step, time_);
   }
@@ -2062,7 +1991,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
         const DRT::Element* actele = discret_->lColElement(i);
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanager_np_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -2080,12 +2009,12 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
           elementvalues(iparam) = myvelnp[dofpos[iparam]];
 
         const GEO::DomainIntCells& domainintcells =
-          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
+          dofmanager_np_->getInterfaceHandle()->GetDomainIntCells(actele);
         for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
+          XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanager_np_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
           IO::GMSH::cellWithScalarFieldToStream(
               cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
@@ -2109,7 +2038,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
         const DRT::Element* actele = discret_->lColElement(i);
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanager_np_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -2127,12 +2056,12 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
           elementvalues(iparam) = myvelnp[dofpos[iparam]];
 
         const GEO::DomainIntCells& domainintcells =
-          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
+          dofmanager_np_->getInterfaceHandle()->GetDomainIntCells(actele);
         for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
+          XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanager_np_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
 
           IO::GMSH::cellWithScalarFieldToStream(
@@ -2160,7 +2089,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
         const DRT::Element* actele = discret_->lColElement(i);
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanager_np_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -2180,12 +2109,12 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
           elementvalues(iparam) = myvelnp[dofpos[iparam]];
 
         const GEO::DomainIntCells& domainintcells =
-          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
+          dofmanager_np_->getInterfaceHandle()->GetDomainIntCells(actele);
         for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanager_np_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
           IO::GMSH::cellWithScalarFieldToStream(
               cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
@@ -2268,7 +2197,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
         const DRT::Element* actele = discret_->lColElement(i);
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanager_np_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -2311,7 +2240,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 
 
         const GEO::DomainIntCells& domainintcells =
-          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
+          dofmanager_np_->getInterfaceHandle()->GetDomainIntCells(actele);
         for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
@@ -2322,39 +2251,39 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 
           {
           LINALG::SerialDenseMatrix cellvalues(9,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeTensorCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
+          XFEM::computeTensorCellNodeValuesFromElementUnknowns(*actele, dofmanager_np_->getInterfaceHandle(), eledofman,
               *cell, fieldxx, elementvalues, cellvalues);
            IO::GMSH::cellWithTensorFieldToStream(cell->Shape(), cellvalues, xyze_cell, gmshfilecontent);
           }
 
           {
           LINALG::SerialDenseVector cellvaluexx(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, fieldxx, elementvaluexx, cellvaluexx);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanager_np_->getInterfaceHandle(), eledofman, *cell, fieldxx, elementvaluexx, cellvaluexx);
           IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluexx, xyze_cell, gmshfilecontentxx);
           }
           {
           LINALG::SerialDenseVector cellvalueyy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, fieldyy, elementvalueyy, cellvalueyy);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanager_np_->getInterfaceHandle(), eledofman, *cell, fieldyy, elementvalueyy, cellvalueyy);
           IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvalueyy, xyze_cell, gmshfilecontentyy);
           }
           {
           LINALG::SerialDenseVector cellvaluezz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, fieldzz, elementvaluezz, cellvaluezz);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanager_np_->getInterfaceHandle(), eledofman, *cell, fieldzz, elementvaluezz, cellvaluezz);
           IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluezz, xyze_cell, gmshfilecontentzz);
           }
           {
           LINALG::SerialDenseVector cellvaluexy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, fieldxy, elementvaluexy, cellvaluexy);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanager_np_->getInterfaceHandle(), eledofman, *cell, fieldxy, elementvaluexy, cellvaluexy);
           IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluexy, xyze_cell, gmshfilecontentxy);
           }
           {
           LINALG::SerialDenseVector cellvaluexz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, fieldxz, elementvaluexz, cellvaluexz);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanager_np_->getInterfaceHandle(), eledofman, *cell, fieldxz, elementvaluexz, cellvaluexz);
           IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluexz, xyze_cell, gmshfilecontentxz);
           }
           {
           LINALG::SerialDenseVector cellvalueyz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, fieldyz, elementvalueyz, cellvalueyz);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanager_np_->getInterfaceHandle(), eledofman, *cell, fieldyz, elementvalueyz, cellvalueyz);
           IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvalueyz, xyze_cell, gmshfilecontentyz);
           }
         }
@@ -2428,7 +2357,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         const DRT::Element* actele = discret_->lColElement(i);
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele, physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()), *dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*actele, physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()), *dofmanager_np_);
 
         vector<int> lm;
         vector<int> lmowner;
@@ -2455,7 +2384,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         }
 
           const GEO::DomainIntCells& domainintcells =
-            dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
+            dofmanager_np_->getInterfaceHandle()->GetDomainIntCells(actele);
           for (GEO::DomainIntCells::const_iterator cell =
             domainintcells.begin(); cell != domainintcells.end(); ++cell)
           {
@@ -2492,7 +2421,7 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           }
 
 //        }
-        //if (dofmanagerForOutput_->getInterfaceHandle()->ElementIntersected(elegid) and not ele_to_textfile and ele_to_textfile2)
+        //if (dofmanager_np_->getInterfaceHandle()->ElementIntersected(elegid) and not ele_to_textfile and ele_to_textfile2)
 //        if (elegid == 14 and elementvalues.N() > 0 and plot_to_gnuplot)
         if (actele->Id() == 1 and elementvalues.N() > 0 and plot_to_gnuplot)
         {
@@ -3292,180 +3221,177 @@ static void EvaluateDirichletProjection(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
+    LINALG::MapExtractor&      velpressplitter
     )
 {
-  if (discret_->Comm().MyPID()==0)
+  if (not xparams_.get<bool>("DLM_condensation"))
   {
-    if (not xparams_.get<bool>("DLM_condensation"))
-    {
-      std::cout << RED_LIGHT << "DLM_condensation turned off!" << END_COLOR << endl;
-      dserror("projection only works with condensation!");
-    }
+    dserror("projection only works with condensation!");
   }
 
-  cout << " Project old velocity values" << endl;
+  cout0_ << " Project old velocity values" << endl;
 
   // get cpu time
   discret_->Comm().Barrier();
   const double tcpu=Teuchos::Time::wallTime();
 
-      Teuchos::RCP<LINALG::SparseOperator> sysmat_projection_veln = Teuchos::rcp(new LINALG::SparseMatrix(*discret_->DofRowMap(),0,false,true));
-      Teuchos::RCP<LINALG::SparseOperator> sysmat_projection_accn = Teuchos::rcp(new LINALG::SparseMatrix(*discret_->DofRowMap(),0,false,true));
-      Teuchos::RCP<Epetra_Vector>    residual_veln = LINALG::CreateVector(*discret_->DofRowMap(),true);
-      Teuchos::RCP<Epetra_Vector>    residual_accn = LINALG::CreateVector(*discret_->DofRowMap(),true);
-      {
-        const double telebegin=Teuchos::Time::wallTime();
-        ////////////////////////
-        // make a better veln //
-        ////////////////////////
-        TEUCHOS_FUNC_TIME_MONITOR("      + element projection");
+  Teuchos::RCP<LINALG::SparseOperator> sysmat_projection_veln = Teuchos::rcp(new LINALG::SparseMatrix(*discret_->DofRowMap(),0,false,true));
+  Teuchos::RCP<LINALG::SparseOperator> sysmat_projection_accn = Teuchos::rcp(new LINALG::SparseMatrix(*discret_->DofRowMap(),0,false,true));
+  Teuchos::RCP<Epetra_Vector>    residual_veln = LINALG::CreateVector(*discret_->DofRowMap(),true);
+  Teuchos::RCP<Epetra_Vector>    residual_accn = LINALG::CreateVector(*discret_->DofRowMap(),true);
+  {
+    const double telebegin=Teuchos::Time::wallTime();
+    ////////////////////////
+    // make a better veln //
+    ////////////////////////
+    TEUCHOS_FUNC_TIME_MONITOR("      + element projection");
 
-        // create the parameters for the discretization
-        ParameterList eleparams;
+    // create the parameters for the discretization
+    ParameterList eleparams;
 
-        // action for elements
-        eleparams.set("action","calc_fluid_projection_systemmat_and_residual");
+    // action for elements
+    eleparams.set("action","calc_fluid_projection_systemmat_and_residual");
 
-        // reset old pressure to zero
-        Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(state_.veln_);
-        onlypre->PutScalar(0.0);
-        velpressplitter_.InsertCondVector(onlypre,state_.veln_);
+    // reset old pressure to zero
+    Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter.ExtractCondVector(state_.veln_);
+    onlypre->PutScalar(0.0);
+    velpressplitter.InsertCondVector(onlypre,state_.veln_);
 
-        // set general vector values needed by elements
-        discret_->ClearState();
-        discret_->SetState("velnp",state_.velnp_);
-        discret_->SetState("veln" ,state_.veln_);
-        discret_->SetState("velnm",state_.velnm_);
-        discret_->SetState("accn" ,state_.accn_);
+    // set general vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("velnp",state_.velnp_);
+    discret_->SetState("veln" ,state_.veln_);
+    discret_->SetState("velnm",state_.velnm_);
+    discret_->SetState("accn" ,state_.accn_);
 
-        eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
+    eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
 
-        sysmat_projection_veln->Zero();
-        sysmat_projection_accn->Zero();
-        // call standard loop over elements (don't forget to build element stiffness matrix on the element level)
-        discret_->Evaluate(eleparams,sysmat_projection_veln,sysmat_projection_accn,residual_veln,residual_accn,Teuchos::null);
-        discret_->ClearState();
+    sysmat_projection_veln->Zero();
+    sysmat_projection_accn->Zero();
+    // call standard loop over elements (don't forget to build element stiffness matrix on the element level)
+    discret_->Evaluate(eleparams,sysmat_projection_veln,sysmat_projection_accn,residual_veln,residual_accn,Teuchos::null);
+    discret_->ClearState();
 
-        // tell me about unused parameters
-        // eleparams.unused(cout);
+    // tell me about unused parameters
+    // eleparams.unused(cout);
 
-        // finalize the complete matrix
-        sysmat_projection_veln->Complete();
-//        sysmat_projection_accn->Complete();
+    // finalize the complete matrix
+    sysmat_projection_veln->Complete();
+    //        sysmat_projection_accn->Complete();
 
-        discret_->Comm().Barrier();
-        const double dtele = Teuchos::Time::wallTime()-telebegin;
-        cout << " Time needed for element evaluation and matrix assembly: " << dtele << " s." << endl;
-      }
+    discret_->Comm().Barrier();
+    const double dtele = Teuchos::Time::wallTime()-telebegin;
+    cout0_ << " Time needed for element evaluation and matrix assembly: " << dtele << " s." << endl;
+  }
 
-      {
-        discret_->Comm().Barrier();
-        const double tDBCbegin = Teuchos::Time::wallTime();
-        // object holds maps/subsets for DOFs that are known from the old timestep and are discret incompressible
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps_projection = Teuchos::rcp(new LINALG::MapExtractor());
-        EvaluateDirichletProjection(discret_, *ih_np_, dbcmaps_projection);
+  {
+    discret_->Comm().Barrier();
+    const double tDBCbegin = Teuchos::Time::wallTime();
+    // object holds maps/subsets for DOFs that are known from the old timestep and are discret incompressible
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_projection = Teuchos::rcp(new LINALG::MapExtractor());
+    EvaluateDirichletProjection(discret_, *ih_np_, dbcmaps_projection);
 
-        // object holds maps/subsets for DOFs subjected to Dirichlet BCs and fixed values from old time step
-        Teuchos::RCP<Epetra_Map> combinedDBCmap = LINALG::MergeMap(*dbcmaps_projection->CondMap(), *dbcmaps_->CondMap());
-        Teuchos::RCP<LINALG::MapExtractor> combinedDBCmapextractor = Teuchos::rcp(new LINALG::MapExtractor(*(discret_->DofRowMap()), combinedDBCmap));
+    // object holds maps/subsets for DOFs subjected to Dirichlet BCs and fixed values from old time step
+    Teuchos::RCP<Epetra_Map> combinedDBCmap = LINALG::MergeMap(*dbcmaps_projection->CondMap(), *dbcmaps_->CondMap());
+    Teuchos::RCP<LINALG::MapExtractor> combinedDBCmapextractor = Teuchos::rcp(new LINALG::MapExtractor(*(discret_->DofRowMap()), combinedDBCmap));
 
-        // blank residual DOFs which are Dirichlet Conditions
-        combinedDBCmapextractor->InsertCondVector(combinedDBCmapextractor->ExtractCondVector(state_.veln_), residual_veln);
-//        combinedDBCmapextractor->InsertCondVector(combinedDBCmapextractor->ExtractCondVector(state_.accn_), residual_accn);
+    // blank residual DOFs which are Dirichlet Conditions
+    combinedDBCmapextractor->InsertCondVector(combinedDBCmapextractor->ExtractCondVector(state_.veln_), residual_veln);
+    //        combinedDBCmapextractor->InsertCondVector(combinedDBCmapextractor->ExtractCondVector(state_.accn_), residual_accn);
 
-        LINALG::ApplyDirichlettoSystem(sysmat_projection_veln,state_.veln_,residual_veln,state_.veln_,*(combinedDBCmapextractor->CondMap()));
-//        LINALG::ApplyDirichlettoSystem(sysmat_projection_accn,state_.accn_,residual_accn,state_.accn_,*(combinedDBCmapextractor->CondMap()));
-        discret_->Comm().Barrier();
-        const double dtDBC = Teuchos::Time::wallTime()-tDBCbegin;
-        cout << " Time needed for DBC computation and application: " << dtDBC << " s." << endl;
-      }
-      //-------solve for velocity
-      {
-        discret_->Comm().Barrier();
-        const double tsolvebegin = Teuchos::Time::wallTime();
+    LINALG::ApplyDirichlettoSystem(sysmat_projection_veln,state_.veln_,residual_veln,state_.veln_,*(combinedDBCmapextractor->CondMap()));
+    //        LINALG::ApplyDirichlettoSystem(sysmat_projection_accn,state_.accn_,residual_accn,state_.accn_,*(combinedDBCmapextractor->CondMap()));
+    discret_->Comm().Barrier();
+    const double dtDBC = Teuchos::Time::wallTime()-tDBCbegin;
+    cout0_ << " Time needed for DBC computation and application: " << dtDBC << " s." << endl;
+  }
+  //-------solve for velocity
+  {
+    discret_->Comm().Barrier();
+    const double tsolvebegin = Teuchos::Time::wallTime();
 
-        Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
+    Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
 
-//        solver = rcp(new LINALG::Solver(DRT::Problem::Instance()->XFluidProjectionSolverParams(),
-//            discret_->Comm(),
-//            DRT::Problem::Instance()->ErrorFile()->Handle()));
-//        discret_->ComputeNullSpaceIfNecessary(solver->Params());
-//        solver->Solve(sysmat_projection_accn->EpetraOperator(), state_.accn_, residual_accn, true, true);
-//        solver->ResetTolerance();
-//        solver = Teuchos::null;
+    //        solver = rcp(new LINALG::Solver(DRT::Problem::Instance()->XFluidProjectionSolverParams(),
+    //            discret_->Comm(),
+    //            DRT::Problem::Instance()->ErrorFile()->Handle()));
+    //        discret_->ComputeNullSpaceIfNecessary(solver->Params());
+    //        solver->Solve(sysmat_projection_accn->EpetraOperator(), state_.accn_, residual_accn, true, true);
+    //        solver->ResetTolerance();
+    //        solver = Teuchos::null;
 
-        solver = rcp(new LINALG::Solver(DRT::Problem::Instance()->XFluidProjectionSolverParams(),
-            discret_->Comm(),
-            DRT::Problem::Instance()->ErrorFile()->Handle()));
-        discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
-        solver->Solve(sysmat_projection_veln->EpetraOperator(), state_.veln_, residual_veln, true, true);
-        solver->ResetTolerance();
-        solver = Teuchos::null;
+    solver = rcp(new LINALG::Solver(DRT::Problem::Instance()->XFluidProjectionSolverParams(),
+        discret_->Comm(),
+        DRT::Problem::Instance()->ErrorFile()->Handle()));
+    discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
+    solver->Solve(sysmat_projection_veln->EpetraOperator(), state_.veln_, residual_veln, true, true);
+    solver->ResetTolerance();
+    solver = Teuchos::null;
 
-        discret_->Comm().Barrier();
-        const double dtsolve = Teuchos::Time::wallTime()-tsolvebegin;
-        cout << " Time needed for solution: " << dtsolve << " s." << endl;
-      }
+    discret_->Comm().Barrier();
+    const double dtsolve = Teuchos::Time::wallTime()-tsolvebegin;
+    cout0_ << " Time needed for solution: " << dtsolve << " s." << endl;
+  }
 
 #if 1 // Write debug informations...
 
-      // get a copy on column parallel distribution
-      Teuchos::RCP<const Epetra_Vector> output_col_veln = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_);
-      bool screen_out = true;
-      if ((this->physprob_.fieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.fieldset_.end()))
+  // get a copy on column parallel distribution
+  Teuchos::RCP<const Epetra_Vector> output_col_veln = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_);
+  bool screen_out = true;
+  if ((this->physprob_.fieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.fieldset_.end()))
+  {
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("sol_field_pres_projected", Step(), 5, screen_out, discret_->Comm().MyPID());
+    std::ofstream gmshfilecontent(filename.c_str());
+
+    const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
+
+    {
+      gmshfilecontent << "View \" " << "Projected Pressure Solution n (Physical) \" {\n";
+      for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
-        const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("sol_field_pres_projected", Step(), 5, screen_out, discret_->Comm().MyPID());
-        std::ofstream gmshfilecontent(filename.c_str());
+        const DRT::Element* actele = discret_->lColElement(i);
 
-        const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
+        // create local copy of information about dofs
+        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanager_np_);
 
+        vector<int> lm;
+        vector<int> lmowner;
+        actele->LocationVector(*(discret_), lm, lmowner);
+
+        // extract local values from the global vector
+        vector<double> myveln(lm.size());
+        DRT::UTILS::ExtractMyValues(*output_col_veln, myveln, lm);
+
+        const int numparam = eledofman.NumDofPerField(field);
+        const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
+
+        LINALG::SerialDenseVector elementvalues(numparam);
+        for (int iparam=0; iparam<numparam; ++iparam)
+          elementvalues(iparam) = myveln[dofpos[iparam]];
+
+        const GEO::DomainIntCells& domainintcells =
+            dofmanager_np_->getInterfaceHandle()->GetDomainIntCells(actele);
+        for (GEO::DomainIntCells::const_iterator cell =
+            domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
-          gmshfilecontent << "View \" " << "Projected Pressure Solution n (Physical) \" {\n";
-          for (int i=0; i<discret_->NumMyColElements(); ++i)
-          {
-            const DRT::Element* actele = discret_->lColElement(i);
-
-            // create local copy of information about dofs
-            const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
-
-            vector<int> lm;
-            vector<int> lmowner;
-            actele->LocationVector(*(discret_), lm, lmowner);
-
-            // extract local values from the global vector
-            vector<double> myveln(lm.size());
-            DRT::UTILS::ExtractMyValues(*output_col_veln, myveln, lm);
-
-            const int numparam = eledofman.NumDofPerField(field);
-            const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
-
-            LINALG::SerialDenseVector elementvalues(numparam);
-            for (int iparam=0; iparam<numparam; ++iparam)
-              elementvalues(iparam) = myveln[dofpos[iparam]];
-
-            const GEO::DomainIntCells& domainintcells =
-                dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
-            for (GEO::DomainIntCells::const_iterator cell =
-                domainintcells.begin(); cell != domainintcells.end(); ++cell)
-            {
-              LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-              XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
-                  *cell, field, elementvalues, cellvalues);
-              IO::GMSH::cellWithScalarFieldToStream(
-                  cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
-            }
-          }
-          gmshfilecontent << "};\n";
+          LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanager_np_->getInterfaceHandle(), eledofman,
+              *cell, field, elementvalues, cellvalues);
+          IO::GMSH::cellWithScalarFieldToStream(
+              cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
         }
-        gmshfilecontent.close();
-        if (screen_out) std::cout << " done" << endl;
       }
-      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_),  "sol_field_veln_projected","Velocity Solution (Physical) n",false, Step(), Time());
-//      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accn_),  "sol_field_accn_projected","Acceleration Solution (Physical) n",false, Step(), Time());
+      gmshfilecontent << "};\n";
+    }
+    gmshfilecontent.close();
+    if (screen_out) std::cout << " done" << endl;
+  }
+  PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_),  "sol_field_veln_projected","Velocity Solution (Physical) n",false, Step(), Time());
+  //      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accn_),  "sol_field_accn_projected","Acceleration Solution (Physical) n",false, Step(), Time());
 #endif
-      discret_->Comm().Barrier();
-      const double dtsolve = Teuchos::Time::wallTime()-tcpu;
-      cout << " Time needed for projection: " << dtsolve << " s." << endl;
+  discret_->Comm().Barrier();
+  const double dtsolve = Teuchos::Time::wallTime()-tcpu;
+  cout << " Time needed for projection: " << dtsolve << " s." << endl;
 }
 
 void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
@@ -3865,7 +3791,7 @@ void FLD::XFluidImplicitTimeInt::MovingFluidOutput()
             if (is_moving)
             {
               // create local copy of information about dofs 
-              const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+              const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanager_np_);
 
               // get a copy on columnmn parallel distribution
               Teuchos::RCP<Epetra_Vector> output_col_velnp = LINALG::CreateVector(*discret_->DofColMap(),true);
@@ -3887,11 +3813,11 @@ void FLD::XFluidImplicitTimeInt::MovingFluidOutput()
                 elementvalues(iparam) = myvelnp[dofpos[iparam]];          
 
               const GEO::DomainIntCells& domainintcells =
-              dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
+              dofmanager_np_->getInterfaceHandle()->GetDomainIntCells(actele);
               for (GEO::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
               {
                 LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-                XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
+                XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, dofmanager_np_->getInterfaceHandle(), eledofman,
                 *cell, field, elementvalues, cellvalues);
                 IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
               }
