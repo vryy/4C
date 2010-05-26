@@ -1149,10 +1149,13 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
         } 
     }
 
+    //calculating mass matrix (local version = global version)
+    //note: the mass matrix currently implemented is just a dummy and should not yet be used
     if (massmatrix != NULL)
     {
-      //pay attention: no mass matrix has been implemented so far for this elemetn (nor forces owing to inertia)
-  
+      for (int i=0; i<6*nnode; i++)
+        (*massmatrix)(i,i) = 1;
+
     }//if (massmatrix != NULL)
   
   }
@@ -1266,63 +1269,116 @@ void DRT::ELEMENTS::Beam3ii::EvaluatePTC(ParameterList& params,
    *
    * Length L: reduing
    */
+  
+  //get time step size
+  double dt = params.get<double>("delta time",0.0);
+  
+  //integration points for underintegration
+  DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussexactintegration));
+  
+  //auxiliary matrices 
+  LINALG::Matrix<3,3> sum;
+  LINALG::Matrix<3,3> auxmatrix;
+  
+  
+  //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
+  vector<LINALG::Matrix<1,nnode> > I(gausspoints.nquad);
+  
+  //vector whose numgp-th element is a 1xnnode-matrix with the derivatives of all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
+  vector<LINALG::Matrix<1,nnode> > Iprime(gausspoints.nquad);
+  
+  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at the numgp-the Gauss point according to according to (3.18), Jelenic 1999
+  vector<vector<LINALG::Matrix<3,3> > > Itilde(gausspoints.nquad);
+  
+  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^nnode at the numgp-the Gauss point according to according to (3.19), Jelenic 1999
+  vector<vector<LINALG::Matrix<3,3> > > Itildeprime(gausspoints.nquad);
+  
+  //vector with rotation matrices at all Gauss points
+  vector<LINALG::Matrix<3,3> > Lambda(gausspoints.nquad);
+  
 
 
+  //evaluate at all Gauss points basis functions of all nodes, their derivatives and the triad of the beam frame
+  evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda);
 
-  double basisdamp   = (20e-2)*PI*3; // in Actin3D_XXX input files with(!) stochastic torsional moments:: (20e-2)*PI for A = 1.9e-8, (20e-2)*PI*3 for A = 1.9e-6; for input of Thomas Knyrim without(!) stochastic torsional moments: (20e-2)*PI*20
-  double anisofactor = 50; //10 for A = 1.9e-8 and A = 1.9e-6
 
+  //damping coefficients for translational and rotatinal degrees of freedom
+  LINALG::Matrix<3,1> gamma(true);
+  gamma(2) = params.get<double>("dti",0.0)*8;
+  
 
-  //Get the applied integrationpoints for underintegration
-  DRT::UTILS::IntegrationPoints1D gausspointsptc(MyGaussRule(nnode,gaussunderintegration));
-  //Get discretization typ
-  const DRT::Element::DiscretizationType distype = Shape();
-  //matrix to store Ansatzfunktionen
-  LINALG::Matrix<1,nnode> funct;
-
-  for (int gp=0; gp<gausspointsptc.nquad; gp++)
+  for (int gp=0; gp<gausspoints.nquad; gp++)//loop through Gauss points
   {
 
-    //Get location and weight of GP in parameter space
-    const double xi = gausspointsptc.qxg[gp][0];
-    const double wgt = gausspointsptc.qwgt[gp];
+    //compute triad at Gauss point in quaternion form
+    LINALG::Matrix<4,1>  Qnewgauss;
+    triadtoquaternion(Lambda[gp],Qnewgauss);
 
-    DRT::UTILS::shape_function_1D(funct,xi,distype);
+    //rotation between last converged position and current position expressend as a quaternion
+    LINALG::Matrix<4,1>  deltaQ;
+    quaternionproduct(inversequaternion(Qconvgauss_[gp]),Qnewgauss,deltaQ);
 
-    //computing angle increment from current position in comparison with last converged position for damping
-    LINALG::Matrix<4,1> deltaQ;
-    quaternionproduct(inversequaternion(Qconv_[gp]),Qnew_[gp],deltaQ);
+    //rotation between last converged position and current position expressed as a three element rotation vector
     LINALG::Matrix<3,1> deltatheta;
     quaterniontoangle(deltaQ,deltatheta);
 
-    //computing special matrix for anisotropic damping
-    LINALG::Matrix<3,3> Tconv;
-    LINALG::Matrix<3,3> Theta;
-    quaterniontotriad(Qconv_[gp],Tconv);
+    //angular velocity at this Gauss point according to backward Euler scheme
+    LINALG::Matrix<3,1> omega(true);
+    omega += deltatheta;
+    omega.Scale(1/dt);
+
+    //compute matrix T*W*T^t
+    LINALG::Matrix<3,3> TWTt;
     for(int k=0; k<3; k++)
       for(int j = 0; j<3; j++)
-        Theta(k,j) = Tconv(k,0)*Tconv(j,0);
+        TWTt(k,j) = (Lambda[gp])(k,0)*(Lambda[gp])(j,0);
 
-    //isotropic artificial stiffness
-    LINALG::Matrix<3,3> artstiff;
-    artstiff = Tmatrix(deltatheta);
-    artstiff.Scale(basisdamp);
+    //compute vector T*W*T^t*\omega
+    LINALG::Matrix<3,1> TWTtomega;
+    TWTtomega.Multiply(TWTt,omega);
 
-    //anisotropic artificial stiffness
-    LINALG::Matrix<3,3> auxstiff;
-    auxstiff.Multiply(Theta,Tmatrix(deltatheta));
-    auxstiff.Scale(anisofactor*basisdamp);
-    artstiff += auxstiff;
+    //compute matrix T*W*T^t*H^(-1)
+    LINALG::Matrix<3,3> TWTtHinv;
+    TWTtHinv.Multiply(TWTt,Tmatrix(deltatheta));
 
-    //scale artificial damping with dti parameter for PTC method
-    artstiff.Scale( params.get<double>("dti",0.0) );
+    //compute spin matrix S(\omega)
+    LINALG::Matrix<3,3> Sofomega;
+    computespin(Sofomega,omega);
 
+    //compute matrix T*W*T^t*S(\omega)
+    LINALG::Matrix<3,3> TWTtSofomega;
+    TWTtSofomega.Multiply(TWTt,Sofomega);
+
+    //compute spin matrix S(T*W*T^t*\omega)
+    LINALG::Matrix<3,3> SofTWTtomega;
+    computespin(SofTWTtomega,TWTtomega);
+
+    //loop over all line nodes
     for(int i=0; i<nnode; i++)
-      for (int j=0; j<nnode; j++)
-        for(int k=0; k<3; k++)
+      //loop over three dimensions in line direction
+      for(int k=0; k<3; k++)
+      {
+        //loop over all column nodes
+        for (int j=0; j<nnode; j++)
+          //loop over three dimensions in column direction
           for (int l=0; l<3; l++)
-            elemat1(i*6+3+k,j*6+3+l) += artstiff(k,l)*funct(i)*funct(j)*wgt*jacobi_[gp];
+          {
+            sum.PutScalar(0);
+            sum += TWTtHinv;
+            sum.Scale(1/dt);
+            sum += TWTtSofomega;
+            sum -= SofTWTtomega;
+            
+            auxmatrix.Multiply(sum,(Itilde[gp])[j]);
+
+            elemat1(i*6+3+k,j*6+3+l) += gamma(2)*auxmatrix(k,l)*(I[gp])(i)*gausspoints.qwgt[gp]*jacobi_[gp];
+          }
+      }
   }
+  
+  
+  
+  
 
   return;
 } //DRT::ELEMENTS::Beam3ii::EvaluatePTC
@@ -1427,9 +1483,34 @@ inline void DRT::ELEMENTS::Beam3ii::MyRotationalDamping(ParameterList& params,  
 {
   //get time step size
   double dt = params.get<double>("delta time",0.0);
-
+  
   //integration points for underintegration
-  DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
+  DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussexactintegration));
+  
+  //auxiliary matrices 
+  LINALG::Matrix<3,3> sum;
+  LINALG::Matrix<3,3> auxmatrix;
+  
+  
+  //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
+  vector<LINALG::Matrix<1,nnode> > I(gausspoints.nquad);
+  
+  //vector whose numgp-th element is a 1xnnode-matrix with the derivatives of all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
+  vector<LINALG::Matrix<1,nnode> > Iprime(gausspoints.nquad);
+  
+  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at the numgp-the Gauss point according to according to (3.18), Jelenic 1999
+  vector<vector<LINALG::Matrix<3,3> > > Itilde(gausspoints.nquad);
+  
+  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^nnode at the numgp-the Gauss point according to according to (3.19), Jelenic 1999
+  vector<vector<LINALG::Matrix<3,3> > > Itildeprime(gausspoints.nquad);
+  
+  //vector with rotation matrices at all Gauss points
+  vector<LINALG::Matrix<3,3> > Lambda(gausspoints.nquad);
+  
+
+
+  //evaluate at all Gauss points basis functions of all nodes, their derivatives and the triad of the beam frame
+  evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda);
 
   //get friction model according to which forces and damping are applied
   INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
@@ -1437,36 +1518,33 @@ inline void DRT::ELEMENTS::Beam3ii::MyRotationalDamping(ParameterList& params,  
   //damping coefficients for translational and rotatinal degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
   MyDampingConstants(params,gamma,frictionmodel);
-
-
-  //matrix to store basis functions evaluated at a certain Gauss point
-  LINALG::Matrix<1,nnode> funct;
+  
 
   for (int gp=0; gp<gausspoints.nquad; gp++)//loop through Gauss points
   {
-    //get evaluated basis functions at current Gauss point
-    DRT::UTILS::shape_function_1D(funct,gausspoints.qxg[gp][0],Shape());
+
+    //compute triad at Gauss point in quaternion form
+    LINALG::Matrix<4,1>  Qnewgauss;
+    triadtoquaternion(Lambda[gp],Qnewgauss);
 
     //rotation between last converged position and current position expressend as a quaternion
     LINALG::Matrix<4,1>  deltaQ;
-    quaternionproduct(inversequaternion(Qconv_[gp]),Qnew_[gp],deltaQ);
+    quaternionproduct(inversequaternion(Qconvgauss_[gp]),Qnewgauss,deltaQ);
 
     //rotation between last converged position and current position expressed as a three element rotation vector
     LINALG::Matrix<3,1> deltatheta;
     quaterniontoangle(deltaQ,deltatheta);
 
-    //angular velocity at this Gauss point
+    //angular velocity at this Gauss point according to backward Euler scheme
     LINALG::Matrix<3,1> omega(true);
     omega += deltatheta;
     omega.Scale(1/dt);
 
     //compute matrix T*W*T^t
-    LINALG::Matrix<3,3> Tnew;
     LINALG::Matrix<3,3> TWTt;
-    quaterniontotriad(Qnew_[gp],Tnew);
     for(int k=0; k<3; k++)
       for(int j = 0; j<3; j++)
-        TWTt(k,j) = Tnew(k,0)*Tnew(j,0);
+        TWTt(k,j) = (Lambda[gp])(k,0)*(Lambda[gp])(j,0);
 
     //compute vector T*W*T^t*\omega
     LINALG::Matrix<3,1> TWTtomega;
@@ -1494,14 +1572,24 @@ inline void DRT::ELEMENTS::Beam3ii::MyRotationalDamping(ParameterList& params,  
       for(int k=0; k<3; k++)
       {
         if(force != NULL)
-          (*force)(i*6+3+k) += gamma(2)*TWTtomega(k)*funct(i)*gausspoints.qwgt[gp]*jacobi_[gp];
+          (*force)(i*6+3+k) += gamma(2)*TWTtomega(k)*(I[gp])(i)*gausspoints.qwgt[gp]*jacobi_[gp];
 
         if(stiffmatrix != NULL)
           //loop over all column nodes
           for (int j=0; j<nnode; j++)
             //loop over three dimensions in column direction
             for (int l=0; l<3; l++)
-              (*stiffmatrix)(i*6+3+k,j*6+3+l) += gamma(2)*( TWTtHinv(k,l) / dt + TWTtSofomega(k,l) - SofTWTtomega(k,l) )*funct(i)*funct(j)*gausspoints.qwgt[gp]*jacobi_[gp];
+            {
+              sum.PutScalar(0);
+              sum += TWTtHinv;
+              sum.Scale(1/dt);
+              sum += TWTtSofomega;
+              sum -= SofTWTtomega;
+              
+              auxmatrix.Multiply(sum,(Itilde[gp])[j]);
+
+              (*stiffmatrix)(i*6+3+k,j*6+3+l) += gamma(2)*auxmatrix(k,l)*(I[gp])(i)*gausspoints.qwgt[gp]*jacobi_[gp];
+            }
       }
   }
 
@@ -1708,6 +1796,31 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticMoments(ParameterList& params,  
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                               Epetra_SerialDenseVector* force)//!< element internal force vector
 {
+  
+  //integration points for underintegration
+  DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussexactintegration));
+  
+  //auxiliary matrix
+  LINALG::Matrix<3,3> auxmatrix;
+  
+  //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
+  vector<LINALG::Matrix<1,nnode> > I(gausspoints.nquad);
+  
+  //vector whose numgp-th element is a 1xnnode-matrix with the derivatives of all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
+  vector<LINALG::Matrix<1,nnode> > Iprime(gausspoints.nquad);
+  
+  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at the numgp-the Gauss point according to according to (3.18), Jelenic 1999
+  vector<vector<LINALG::Matrix<3,3> > > Itilde(gausspoints.nquad);
+  
+  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^nnode at the numgp-the Gauss point according to according to (3.19), Jelenic 1999
+  vector<vector<LINALG::Matrix<3,3> > > Itildeprime(gausspoints.nquad);
+  
+  //vector with rotation matrices at all Gauss points
+  vector<LINALG::Matrix<3,3> > Lambda(gausspoints.nquad);
+
+  //evaluate at all Gauss points basis functions of all nodes, their derivatives and the triad of the beam frame
+  evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda);
+  
 
   //get friction model according to which forces and damping are applied
   INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
@@ -1716,15 +1829,6 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticMoments(ParameterList& params,  
   LINALG::Matrix<3,1> gamma(true);
   MyDampingConstants(params,gamma,frictionmodel);
 
-  //determine type of numerical integration performed (note: underintegration applied as for related points triads already known from elasticity)
-  IntegrationType integrationtype = gaussunderintegration;
-
-  //get Gauss points and weights for evaluation of damping matrix
-  DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,integrationtype));
-
-  //matrix to store basis functions and their derivatives evaluated at a certain Gauss point
-  LINALG::Matrix<1,nnode> funct;
-
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
    * and standard deviation (2*kT / dt)^0.5; note carefully: a space between the two subsequal ">" signs is mandatory
    * for the C++ parser in order to avoid confusion with ">>" for streams*/
@@ -1732,17 +1836,10 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticMoments(ParameterList& params,  
 
   for(int gp=0; gp < gausspoints.nquad; gp++)
   {
-    //evaluate basis functions and their derivatives at current Gauss point
-    DRT::UTILS::shape_function_1D(funct,gausspoints.qxg[gp][0],Shape());
-
-    //get current triad at this Gauss point:
-    LINALG::Matrix<3,3> Tnew;
-    quaterniontotriad(Qnew_[gp],Tnew);
-
-    //get first column out of Tnew
+    //get first column out of current triad at Gauss point
     LINALG::Matrix<3,1> t1;
     for(int i=0; i<3; i++)
-      t1(i) = Tnew(i,0);
+      t1(i) = (Lambda[gp])(i,0);
 
     //compute spin matrix from first column of Tnew times random number
     LINALG::Matrix<3,3> S;
@@ -1756,14 +1853,17 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticMoments(ParameterList& params,  
       for(int k=0; k<3; k++)
       {
         if(force != NULL)
-          (*force)(i*6+3+k) -= funct(i)*t1(k)*(*randomnumbers)[gp*randompergauss+3][LID()]*sqrt(jacobi_[gp]*gausspoints.qwgt[gp]*gamma(2));
+          (*force)(i*6+3+k) -= I(i)*t1(k)*(*randomnumbers)[gp*randompergauss+3][LID()]*sqrt(jacobi_[gp]*gausspoints.qwgt[gp]*gamma(2));
 
         if(stiffmatrix != NULL)
           //loop over all column nodes
           for (int j=0; j<nnode; j++)
             //loop over three dimensions with respect to columns
             for(int l=0; l<3; l++)
-              (*stiffmatrix)(i*6+3+k,j*6+3+l) += funct(i)*funct(j)*S(k,l)*sqrt(jacobi_[gp]*gausspoints.qwgt[gp]*gamma(2));
+            {
+              auxmatrix.Multiply(S,(Itilde[gp])[j]);
+              (*stiffmatrix)(i*6+3+k,j*6+3+l) += I(i)*auxmatrix(k,l)*sqrt(jacobi_[gp]*gausspoints.qwgt[gp]*gamma(2));
+            }
 
     }
   }

@@ -54,6 +54,7 @@ DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  Qconv_(old.Qconv_),
  Qold_(old.Qold_),
  Qnew_(old.Qnew_),
+ Qconvgauss_(old.Qconvgauss_),
  dispthetaconv_(old.dispthetaconv_),
  dispthetaold_(old.dispthetaold_),
  dispthetanew_(old.dispthetanew_),
@@ -168,6 +169,7 @@ void DRT::ELEMENTS::Beam3ii::Pack(vector<char>& data) const
   AddtoPack<4,1>(data,Qconv_);
   AddtoPack<4,1>(data,Qnew_);
   AddtoPack<4,1>(data,Qold_);
+  AddtoPack<4,1>(data,Qconvgauss_);
   AddtoPack<3,1>(data,dispthetaconv_);
   AddtoPack<3,1>(data,dispthetaold_);
   AddtoPack<3,1>(data,dispthetanew_);
@@ -209,6 +211,7 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const vector<char>& data)
   ExtractfromPack<4,1>(position,data,Qconv_);
   ExtractfromPack<4,1>(position,data,Qnew_);
   ExtractfromPack<4,1>(position,data,Qold_);
+  ExtractfromPack<4,1>(position,data,Qconvgauss_); 
   ExtractfromPack<3,1>(position,data,dispthetaconv_);
   ExtractfromPack<3,1>(position,data,dispthetaold_);
   ExtractfromPack<3,1>(position,data,dispthetanew_);
@@ -438,6 +441,28 @@ void DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry(const vector<double>& xrefe,
     
     //Get the applied integrationpoints for exact integration of mass matrix
     DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
+    
+    //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
+    vector<LINALG::Matrix<1,nnode> > I(nnode);
+    
+    //vector whose numgp-th element is a 1xnnode-matrix with the derivatives of all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
+    vector<LINALG::Matrix<1,nnode> > Iprime(nnode);
+    
+    //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at the numgp-the Gauss point according to according to (3.18), Jelenic 1999
+    vector<vector<LINALG::Matrix<3,3> > > Itilde(nnode);
+    
+    //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^nnode at the numgp-the Gauss point according to according to (3.19), Jelenic 1999
+    vector<vector<LINALG::Matrix<3,3> > > Itildeprime(nnode);
+    
+    //vector with rotation matrices at all Gauss points
+    vector<LINALG::Matrix<3,3> > Lambda(nnode);
+
+    //evaluate at all Gauss points basis functions of all nodes, their derivatives and the triad of the beam frame at the Gauss points
+    evaluatebasisfunctionsandtriads<nnode>(gausspointsmass,I,Iprime,Itilde,Itildeprime,Lambda);
+    
+    //exact Gauss integration requires as many integration points as nodes
+    Qconvgauss_.resize(nnode);
+    
         
     //Loop through all GPs for exact integration and compute initial jacobi determinant
     for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
@@ -455,10 +480,12 @@ void DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry(const vector<double>& xrefe,
         for(int dof=0; dof<3; dof++)
           drdxi(dof)+=shapefuncderiv(node)*xrefe[3*node+dof];
       
-
       //Store Jacobi determinant with respect to reference configuration
       jacobimass_[numgp]= drdxi.Norm2();  
-    
+      
+      //save triads at Gauss points for exact integration as quaternions
+      triadtoquaternion(Lambda[numgp],Qconvgauss_[numgp]);
+      
     }//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
     
     

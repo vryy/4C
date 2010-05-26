@@ -31,6 +31,9 @@ Maintainer: Christian Cyron
 #ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
 #endif  // #ifdef D_BEAM3
+#ifdef D_BEAM3II
+#include "../drt_beam3ii/beam3ii.H"
+#endif  // #ifdef D_BEAM3II
 #ifdef D_TRUSS3
 #include "../drt_truss3/truss3.H"
 #endif  // #ifdef D_TRUSS3
@@ -1511,6 +1514,86 @@ void StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
 
   /*get reference configuration of beam3 element in proper format for later call of SetUpReferenceGeometry;
    * note that rotrefe for beam3 elements is related to the entry in the global total Lagrange displacement
+   * vector related to a certain rotational degree of freedom; as the displacement is initially zero also
+   * rotrefe is set to zero here*/
+  vector<double> xrefe(beam->NumNode()*ndim,0);
+  vector<double> rotrefe(beam->NumNode()*ndim,0);
+
+
+  for(int i=0;i<beam->NumNode();i++)
+    for(int dof=0; dof<ndim; dof++)
+    {
+      xrefe[3*i+dof] = beam->Nodes()[i]->X()[dof];
+      rotrefe[3*i+dof] = 0.0;
+    }
+
+  /*loop through all nodes except for the first node which remains fixed as reference node; all other nodes are
+   * shifted due to periodic boundary conditions if required*/
+  for(int i=1;i<beam->NumNode();i++)
+  {
+    for(int dof=0; dof<ndim; dof++)
+    {
+      /*if the distance in some coordinate direction between some node and the first node becomes smaller by adding or subtracting
+       * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
+       * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
+       * is smaller than half the periodic length*/
+      if( fabs( (beam->Nodes()[i]->X()[dof]) + statmechparams_.get<double>("PeriodLength",0.0) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
+        xrefe[3*i+dof] += statmechparams_.get<double>("PeriodLength",0.0);
+
+      if( fabs( (beam->Nodes()[i]->X()[dof]) - statmechparams_.get<double>("PeriodLength",0.0) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
+        xrefe[3*i+dof] -= statmechparams_.get<double>("PeriodLength",0.0);
+    }
+  }
+
+  /*SetUpReferenceGeometry is a templated function; note that the third argument "true" is necessary as all beam elements
+   * have already been initialized once upon reading input file*/
+  switch(beam->NumNode())
+  {
+    case 2:
+    {
+      beam->SetUpReferenceGeometry<2>(xrefe,rotrefe,true);
+      break;
+    }
+    case 3:
+    {
+      beam->SetUpReferenceGeometry<3>(xrefe,rotrefe,true);
+      break;
+    }
+    case 4:
+    {
+      beam->SetUpReferenceGeometry<4>(xrefe,rotrefe,true);
+      break;
+    }
+    case 5:
+    {
+      beam->SetUpReferenceGeometry<5>(xrefe,rotrefe,true);
+      break;
+    }
+    default:
+      dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+  }
+
+#endif
+}
+
+/*------------------------------------------------------------------------*
+ | This function loops through all the elements of the discretization and |
+ | tests whether beam3 are broken by periodic boundary conditions in the  |
+ | reference configuration; if yes initial values of curvature and jacobi |
+ | determinants are adapted in a proper way                    cyron 02/10|
+ *-----------------------------------------------------------------------*/
+void StatMechManager::PeriodicBoundaryBeam3iiInit(DRT::Element* element)
+{
+
+#ifdef D_BEAM3II
+
+  DRT::ELEMENTS::Beam3ii* beam = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element);
+
+  //3D beam elements are embeddet into R^3:
+  const int ndim = 3;
+
+  /*get reference configuration of beam3ii element in proper format for later call of SetUpReferenceGeometry;
+   * note that rotrefe for beam3ii elements is related to the entry in the global total Lagrange displacement
    * vector related to a certain rotational degree of freedom; as the displacement is initially zero also
    * rotrefe is set to zero here*/
   vector<double> xrefe(beam->NumNode()*ndim,0);

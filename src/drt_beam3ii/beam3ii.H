@@ -341,12 +341,14 @@ private:
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
 
-  //! nodal triads in quaternion form at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
+  //! nodal triads in quaternion form at the end of the preceeding time step 
   vector<LINALG::Matrix<4,1> > Qconv_;
-  //! nodal triads in quaternion form at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.65)
+  //! nodal triads in quaternion form at the end of the preceeding iteration step 
   vector<LINALG::Matrix<4,1> > Qold_;
-  //! nodal triads in quaternion form during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
+  //! nodal triads in quaternion form during the current iteration step 
   vector<LINALG::Matrix<4,1> > Qnew_;
+  //! triads at Gauss points for exact integration in quaternion at the end of the preceeding time step (required for computation of angular velocity)
+  vector<LINALG::Matrix<4,1> > Qconvgauss_;
 
   //!rotation angle displacement at nodes; relates to the end of the preceeding time step
   vector<LINALG::Matrix<3,1> > dispthetaconv_;

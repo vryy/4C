@@ -24,6 +24,9 @@ Maintainer: Christian Cyron
 #ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
 #endif  // #ifdef D_BEAM3
+#ifdef D_BEAM3II
+#include "../drt_beam3ii/beam3ii.H"
+#endif  // #ifdef D_BEAM3II
 #ifdef D_BEAM2
 #include "../drt_beam2/beam2.H"
 #endif  // #ifdef D_BEAM2
@@ -76,6 +79,18 @@ deltadbc_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
         break;
       }
 #endif  // #ifdef D_BEAM3
+#ifdef D_BEAM3II
+      case DRT::Element::element_beam3ii:
+      {
+        //see whether current element needs more random numbers per time step than any other before
+        randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3ii*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
+
+        //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
+        if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
+          statmechmanager_->PeriodicBoundaryBeam3iiInit(dis.lColElement(i));
+        break;
+      }
+#endif  // #ifdef D_BEAM3II
 #ifdef D_BEAM2
       case DRT::Element::element_beam2:
       {
