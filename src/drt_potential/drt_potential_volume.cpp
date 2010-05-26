@@ -1103,6 +1103,10 @@ void POTENTIAL::VolumePotential::GetGaussRule3D(
     case DRT::Element::hex8:
       rule_pot = DRT::UTILS::intrule_hex_8point;
       break;
+    case DRT::Element::hex20:
+    case DRT::Element::hex27:
+      rule_pot = DRT::UTILS::intrule_hex_27point;
+      break;
     default:
       dserror("unknown number of nodes for gaussrule initialization");
   }
@@ -1168,8 +1172,16 @@ void POTENTIAL::VolumePotential::TestEvaluatePotential(
   RefCountPtr<const Epetra_Vector>        disp_col = discret_.GetState("displacement");  
   // compute test results 
   std::map<int, std::set<int> > empty_set;
-  computeTestVanDerWaalsSpheres(Teuchos::null, elementsByLabel_, empty_set, disp_col, fint, 
+  
+  if( p.get<string>("solution type") == "Sphere" ) 
+    computeTestVanDerWaalsSpheres(Teuchos::null, elementsByLabel_, empty_set, disp_col, fint, 
                                 time, step, p.get("vdw_radius", 0.0), p.get("n_offset", 0.0));
+  else if( p.get<string>("solution type") == "Membrane" ) 
+    computeTestVanDerWaalsMembranes(Teuchos::null, elementsByLabel_, empty_set, disp_col, fint, 
+                                    time, step, p.get("vdw_radius", 0.0), p.get("n_offset", 0.0),
+                                    p.get("thickness", 0.0));
+  else
+    dserror("specify proper solution type");
   return;
 }
 

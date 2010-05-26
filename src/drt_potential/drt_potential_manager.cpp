@@ -118,15 +118,30 @@ void POTENTIAL::PotentialManager::ReadParameter()
   }
   
   // check if analytical solution should be computed
-  params_.set<bool>("analyt_sol",(not (intpot.get<std::string>("ANALYTICALSOLUTION") == "no"
-                                    or intpot.get<std::string>("ANALYTICALSOLUTION") == "No"
-                                    or intpot.get<std::string>("ANALYTICALSOLUTION") == "NO")));
+  switch(Teuchos::getIntegralValue<INPAR::POTENTIAL::SolutionType>(intpot,"ANALYTICALSOLUTION"))
+  {
+    case INPAR::POTENTIAL::solution_none:
+      params_.set<string>("solution type","None");
+    break;
+    case INPAR::POTENTIAL::solution_sphere:
+      params_.set<string>("solution type","Sphere");
+    break;
+    case INPAR::POTENTIAL::solution_membrane:
+      params_.set<string>("solution type","Membrane");
+    break;
+    default:
+      params_.set<string>("solution type","None");
+    break;
+  }
   
   // read radius of a sphere
   params_.set<double>("vdw_radius",intpot.get<double>("VDW_RADIUS"));
   
   // read number of atoms offset to account for spatial discretization errors
   params_.set<double>("n_offset",intpot.get<double>("N_OFFSET"));
+  
+  // read membrane thickness
+   params_.set<double>("thickness",intpot.get<double>("THICKNESS"));
   
   // parameters for search tree
   const Teuchos::ParameterList& search_tree   = DRT::Problem::Instance()->SearchtreeParams();
@@ -184,10 +199,30 @@ void POTENTIAL::PotentialManager::TestEvaluatePotential(  ParameterList&        
                                                           const double                      time,
                                                           const int                         step)
 {
+  cout << "EVALUATE" << endl;
   const double vdw_radius = params_.get<double>("vdw_radius",0.0);
   const double n_offset = params_.get<double>("n_offset",0.0);
+  const double thickness = params_.get<double>("thickness",0.0);
   p.set("vdw_radius", vdw_radius);
   p.set("n_offset", n_offset);
+  p.set("thickness", thickness);
+  
+  const Teuchos::ParameterList& intpot   = DRT::Problem::Instance()->InteractionPotentialParams();
+  switch(Teuchos::getIntegralValue<INPAR::POTENTIAL::SolutionType>(intpot,"ANALYTICALSOLUTION"))
+  {
+    case INPAR::POTENTIAL::solution_none:
+      p.set<string>("solution type","None");
+    break;
+    case INPAR::POTENTIAL::solution_sphere:
+      p.set<string>("solution type","Sphere");
+    break;
+    case INPAR::POTENTIAL::solution_membrane:
+      p.set<string>("solution type","Membrane");
+    break;
+    default:
+      p.set<string>("solution type","None");
+    break;
+  }
   
   if(surface_)
     surfacePotential_->TestEvaluatePotential(p, disp, fint, stiff, time, step);
@@ -275,6 +310,20 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
   //  surfacePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
     
   return;
+}
+
+
+/*-------------------------------------------------------------------*
+| (public)                                                umay  04/10|
+|                                                                    |
+| Check if analytical solution should be computed                    |
+*--------------------------------------------------------------------*/
+bool POTENTIAL::PotentialManager::ComputeAnalyticalSolution() 
+{
+  if( params_.get<string>("solution type") == "None" ) 
+    return false;
+
+  return true;
 }
 
 

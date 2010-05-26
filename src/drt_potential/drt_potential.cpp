@@ -279,9 +279,8 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition_Approx1(
            cond->Type()==DRT::Condition::VanDerWaals_Potential_Volume)
   {   
     const double lambda    = cond->GetDouble("lambda");    
-    EvaluateVanDerWaals_Approx1(lambda,x, y, potderiv1, potderiv2);
-    
-    
+    EvaluateVanDerWaals_Approx1(lambda, x, y, potderiv1, potderiv2);
+
   }
   else
   {
@@ -443,7 +442,7 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential_Approx1(
   // evaluate 1.derivative dphi/du_i
   //----------------------------------------------------------------------
   //dpotdr entspricht -Fs
-  double dpotdr = (12*depth*rootDist)*((1.0/20.0)*(pow((double)(rootDist/distance), 5))-(1.0/110.0)*pow((double)(rootDist/distance),11));
+  double dpotdr = (12.0*depth*rootDist)*((1.0/20.0)*(pow((double)(rootDist/distance), 5))-(1.0/110.0)*pow((double)(rootDist/distance),11));
   
   for(int i = 0; i < 3; i++)
     potderiv1(i) = dpotdr*distance_unit(i);
@@ -452,7 +451,7 @@ void POTENTIAL::Potential::EvaluateLennardJonesPotential_Approx1(
   // evaluate 2.derivative dphi/du_i d_uiI  (this is not a mistake !!!!)
   //----------------------------------------------------------------------
   //dpotdrdr entspricht -Fsdr
-  const double dpotdrdr = (12*depth)*((0.1*pow((double)(rootDist/distance),12))
+  const double dpotdrdr = (12.0*depth)*((0.1*pow((double)(rootDist/distance),12))
                 -(0.25*pow((double)(rootDist/distance), 6)));
                      
   for(int i = 0; i < 3; i++)
@@ -718,11 +717,13 @@ void POTENTIAL::Potential::EvaluateVanDerWaals_Approx1(
   // evaluate 1.derivative 
   //----------------------------------------------------------------------
   //dotdr entspricht -Fs
-  double dpotdr = (3.0/10.0)*lambda*(pow((double)(1.0/distance), 5));
+  double dpotdr = (3.0/10.0)*lambda*(pow((1.0/distance), 5));
   
   for(int i = 0; i < 3; i++)
+  {
     potderiv1(i) = dpotdr*distance_unit(i);
- 
+    cout << "potderiv1(i) = " << potderiv1(i) << endl;
+  }
   //----------------------------------------------------------------------
   // evaluate 2. derivative
   //----------------------------------------------------------------------
@@ -1212,8 +1213,12 @@ void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
         surf_ele_set = elementsByLabel_Surf.find(label)->second;
     
     if(label == 0 || label == 1)
+    {
+      cout << "force sphere = "  <<  label << endl;
       vol_sphere_local[label] = computeLocalForceAndCOG(potentialsurfdis, fpot[label], cog[label], fint, disp, 
 			elementsByLabel_Vol.find(label)->second, surf_ele_set);
+      cout << endl;
+    }
     else
       dserror("set label to zero and 1");
   }
@@ -1222,6 +1227,7 @@ void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
   std::vector< LINALG::Matrix<3,1> > fpot_global(2, LINALG::Matrix<3,1>(true));
   std::vector< LINALG::Matrix<3,1> > cog_global(2, LINALG::Matrix<3,1>(true));
   const double globalvolume = computeGlobalForceAndCOG(vol_sphere_local[0], fpot[0], cog[0], fpot_global[0], cog_global[0]);
+  cout << "force sphere 1"  << endl;
   computeGlobalForceAndCOG(vol_sphere_local[1], fpot[1], cog[1], fpot_global[1], cog_global[1]);
 
   if(discretRCP_->Comm().MyPID() == 0)
@@ -1255,7 +1261,7 @@ void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
                         ( 1.0/pow((x + 1.0),3) )
                         );
   
-    cout << endl << "The analytical solution = " << force_analytical << endl;
+    cout << endl << "The analytical sphere solution = " << force_analytical << endl;
     // write output
     cout<<"distance = "<< distance << endl;  
     cout<<"force sphere 1 = "<< force1 <<endl;
@@ -1263,7 +1269,150 @@ void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
     cout<<"force sphere 2 = "<< force2 <<endl;
     // fpot_global[1].Print(cout);
     //write output and test with paraview
-    WriteTestOutput(distance, force1, force2, force_analytical, time, step);
+    WriteTestOutput(distance, force1, force2, force_analytical, time, step, "Sphere");
+  }
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  test Van Der Waals membranes                             u.may 04/10|
+ *----------------------------------------------------------------------*/
+void POTENTIAL::Potential::computeTestVanDerWaalsMembranes(
+  const Teuchos::RCP<DRT::Discretization> potentialsurfdis,
+  const std::map<int,std::set<int> >&     elementsByLabel_Vol,
+  const std::map<int,std::set<int> >&     elementsByLabel_Surf,
+  const RefCountPtr<const Epetra_Vector>  disp,
+  const RefCountPtr<Epetra_Vector>        fint,
+  const double                            time,
+  const int                               step,
+  const double                            vdw_radius,
+  const double                            n_offset,
+  const double                            thickness)
+{    
+  // resulting potential force for each sphere
+  std::vector< LINALG::Matrix<3,1> > fpot(2, LINALG::Matrix<3,1>(true));
+  // center of gravity 
+  std::vector< LINALG::Matrix<3,1> > cog(2, LINALG::Matrix<3,1>(true));  
+
+  // compute local values for the center of gravity and potential force
+  vector<DRT::Condition*> potentialcond;
+  discretRCP_->GetCondition("Potential", potentialcond);
+  
+  
+  std::vector<double> vol_sphere_local(2,0.0);
+  for(vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++condIter)
+  {
+    const int label = (*condIter)->GetInt("label"); 
+    if( elementsByLabel_Vol.find(label) == elementsByLabel_Vol.end() )
+       continue;
+
+    std::set< int > surf_ele_set;
+    if(!elementsByLabel_Surf.empty())
+      if( elementsByLabel_Surf.find(label) != elementsByLabel_Surf.end() )
+        surf_ele_set = elementsByLabel_Surf.find(label)->second;
+    
+    if(label == 0 || label == 1)
+      vol_sphere_local[label] = computeLocalForceAndCOG(potentialsurfdis, fpot[label], cog[label], fint, disp, 
+      elementsByLabel_Vol.find(label)->second, surf_ele_set);
+    else
+      dserror("set label to zero and 1");
+  }
+  
+  // compute global values for the center of gravity and potential force
+  std::vector< LINALG::Matrix<3,1> > fpot_global(2, LINALG::Matrix<3,1>(true));
+  std::vector< LINALG::Matrix<3,1> > cog_global(2, LINALG::Matrix<3,1>(true));
+  cout << "force sphere 0"  << endl;
+  const double globalvolume = computeGlobalForceAndCOG(vol_sphere_local[0], fpot[0], cog[0], fpot_global[0], cog_global[0]);
+  cout << "force sphere 1"  << endl;
+  computeGlobalForceAndCOG(vol_sphere_local[1], fpot[1], cog[1], fpot_global[1], cog_global[1]);
+
+  if(discretRCP_->Comm().MyPID() == 0)
+  {   
+    // compute distance vector between two spheres
+    LINALG::Matrix<3,1> distance_vector (true);
+    for(int dim=0; dim<3; dim++)
+      distance_vector(dim) = cog_global[1](dim) - cog_global[0](dim);
+    
+    // compute distance and force
+    const double distance = distance_vector.Norm2();
+    const double force1 = fpot_global[0].Norm2();
+    const double force2 = fpot_global[1].Norm2();
+    
+    // compute analytical solution
+    // d = distance - 2* radius
+    const double radius = vdw_radius;
+    cout << "Analytical volume = " << 4.0*PI_POT*pow(radius,3)/3.0 -4.0*PI_POT*pow((radius-thickness),3)/3.0 << endl;
+    //double globalv = 63527.0;
+    // const double radius_test = pow( ((3*globalv)/(4*PI_POT) ) ,(1.0/3.0));
+    //cout << "radius_test = " << radius_test << endl;
+    const double d = distance - 2.0*radius;
+    const double x = d/(2.0*radius);
+    // A_ham = pi*pi*lambda*beta*beta
+    const double beta = (*potentialcond.begin())->GetDouble("beta");
+    const double lambda = (*potentialcond.begin())->GetDouble("lambda");
+    const double A_ham = PI_POT*PI_POT*(beta-n_offset)*(beta-n_offset)*lambda;
+    
+    // force between outer spheres o1 and o2
+    const double  force_o1o2 = (-1.0)*(A_ham/(2.0*radius*6.0))*(
+                        ( ( 2.0*(x + 1.0) )/(x*x + 2.0*x) ) -
+                        ( ( x + 1.0)/pow((x*x + 2.0*x), 2) ) -
+                        ( 2.0/(x + 1.0) ) -
+                        ( 1.0/pow((x + 1.0),3) )
+                        );
+    
+    cout << "force_o1o2 = " << force_o1o2 << endl;
+   
+    // force between inner spheres i1 and i2
+    const double radius_i = radius - thickness;
+    const double d_ii = d + 2.0*thickness;
+    const double x_i = d_ii/(2.0*radius_i);
+    const double  force_i1i2 = (-1.0)*(A_ham/(2.0*radius_i*6.0))*(
+                            ( ( 2.0*(x_i + 1.0) )/(x_i*x_i + 2.0*x_i) ) -
+                            ( ( x_i + 1.0)/pow((x_i*x_i + 2.0*x_i), 2) ) -
+                            ( 2.0/(x_i + 1.0) ) -
+                            ( 1.0/pow((x_i + 1.0),3) )
+                            );
+   
+    cout << "force_i1i2 = " << force_i1i2 << endl;
+    // force between inner sphere i1 and outer sphere o2 radius_i < radius
+    const double d_io = d + thickness;
+    double x_io = d_io/(2.0*radius_i);
+    double y_io = radius/radius_i;
+   
+    const double  force_i1o2 = (-1.0)*(A_ham/(2.0*radius_i*12.0))*(
+        ( ( 2.0*(2.0*x_io + (y_io + 1.0)) )/( x_io*x_io + x_io*(y_io + 1.0)) ) -
+        ( ( 2.0*(2.0*x_io + (y_io + 1.0)) )/( x_io*x_io + x_io*(y_io + 1.0) + y_io) ) -
+        ( ( y_io*(2.0*x_io + (y_io + 1.0)))/pow((x_io*x_io + x_io*(y_io + 1.0) + y_io),2) ) -
+        ( ( y_io*(2.0*x_io + (y_io + 1.0)) )/pow((x_io*x_io + x_io*(y_io + 1.0)),2))
+        );
+   
+    cout << "force_i1o2 = " << force_i1o2 << endl;
+    // force between outer sphere o1 and inner sphere i2
+    x_io = d_io/(2.0*radius);
+    y_io = radius_i/radius;
+    const double  force_o1i2 = (-1.0)*(A_ham/(2.0*radius*12.0))*(
+        ( ( 2.0*(2.0*x_io + (y_io + 1.0)) )/( x_io*x_io + x_io*(y_io + 1.0)) ) -
+        ( ( 2.0*(2.0*x_io + (y_io + 1.0)) )/( x_io*x_io + x_io*(y_io + 1.0) + y_io) ) -
+        ( ( y_io*(2.0*x_io + (y_io + 1.0)))/pow((x_io*x_io + x_io*(y_io + 1.0) + y_io),2) ) -
+        ( ( y_io*(2.0*x_io + (y_io + 1.0)) )/pow((x_io*x_io + x_io*(y_io + 1.0)),2))
+        );
+           
+    cout << "force_o1i2 = " << force_o1i2 << endl;
+    // total force
+    const double force_analytical = force_o1o2 - force_i1o2 - force_o1i2 + force_i1i2;
+  
+    cout << "The hamaker constant = "<< A_ham <<  endl;
+    cout << endl << "The analytical membrane solution = " << force_analytical << endl;
+    // write output
+    cout<<"distance = "<< distance << endl;  
+    cout<<"force sphere 1 = "<< force1 <<endl;
+    // fpot_global[0].Print(cout);
+    cout<<"force sphere 2 = "<< force2 <<endl;
+    // fpot_global[1].Print(cout);
+    //write output and test with paraview
+    WriteTestOutput(distance, force1, force2, force_analytical, time, step, "Membrane");
   }
   return;
 }
@@ -1304,7 +1453,7 @@ double POTENTIAL::Potential::computeLocalForceAndCOG(
 
     LINALG::SerialDenseMatrix xyze(3 , element->NumNode());      
     // get xyz of element
-    getPhysicalEleCoords(disp, element, xyze); 
+    getPhysicalEleCoords(discretRCP_,disp, element, xyze); 
 
     // element volume
     const double vol_element = GEO::ElementVolumeT<DRT::Element::hex8>(xyze);
@@ -1357,6 +1506,8 @@ double POTENTIAL::Potential::computeLocalForceAndCOG(
       {
         const int local_dofId = (discretRCP_->DofRowMap())->LID(dofId[dim]);
         fpot_sphere(dim) = fpot_sphere(dim)+ (*fint)[local_dofId];// [dofId[dim]];
+        if(dim == 0)
+        cout << " f = "  << (*fint)[local_dofId] <<  "     dof = " << local_dofId << endl;
       }
     } 
   }
@@ -1382,6 +1533,8 @@ double POTENTIAL::Potential::computeLocalForceAndCOG(
       {
         const int local_dofId = (discretRCP_->DofRowMap())->LID(dofId[dim]); 
         fpot_sphere(dim) = fpot_sphere(dim)+ (*fint)[local_dofId];// [dofId[dim]];
+        //if(dim == 0)
+        //        cout << " f = "  << (*fint)[local_dofId] <<  "     dof = " << local_dofId << endl;
 
       }
     }
@@ -1428,6 +1581,7 @@ double POTENTIAL::Potential::computeGlobalForceAndCOG(
  |  test get physical coordinates for an element             u.may 01/10|
  *----------------------------------------------------------------------*/
 void POTENTIAL::Potential::getPhysicalEleCoords(
+    Teuchos::RCP<DRT::Discretization>     dis,  
     Teuchos::RCP<const Epetra_Vector>     idisp_solid,
     const DRT::Element*                   element,
     LINALG::SerialDenseMatrix&            xyze)
@@ -1438,7 +1592,8 @@ void POTENTIAL::Potential::getPhysicalEleCoords(
   {
     vector<int> lm;
     lm.reserve(3);
-    discretRCP_->Dof(node[i], lm);
+    // discretRCP_->Dof(node[i], lm);
+    dis->Dof(node[i], lm);
     vector<double> mydisp(3);
     
     // update nodal positions and compute element coordinates
@@ -1456,17 +1611,18 @@ void POTENTIAL::Potential::getPhysicalEleCoords(
  |  test write output                                        u.may 01/10|
  *----------------------------------------------------------------------*/
 void POTENTIAL::Potential::WriteTestOutput(
-  const double    distance,
-  const double    force1,
-  const double    force2,
-  const double    force_analytical,
-  const double    time,
-  const int       step)
+  const double      distance,
+  const double      force1,
+  const double      force2,
+  const double      force_analytical,
+  const double      time,
+  const int         step,
+  const std::string name)
 {
   if(discret_.Comm().MyPID()==0)
   {
     const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
-                                          + ".VanDerWaalsSpheres_Output.txt";
+                                          + ".VanDerWaals_"+name+"_Output.txt";
     
     if (step < 1)
     {  

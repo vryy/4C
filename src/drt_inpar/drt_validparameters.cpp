@@ -1036,16 +1036,32 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                            INPAR::POTENTIAL::approximation_point),
                                 &interaction_potential);
 
-  // switches on the analytical soltion computation for two van der waals spheres
-  setStringToIntegralParameter<int>("ANALYTICALSOLUTION","no",
-                                 "computes analytical solution for two Van der Waals spheres ",
-                                  yesnotuple,yesnovalue,&interaction_potential);
+  // switches on the analytical solution computation for two van der waals spheres or membranes
+  setStringToIntegralParameter<INPAR::POTENTIAL::SolutionType>("ANALYTICALSOLUTION","None", "Type of analytical solution"
+                                 "computes analytical solutions for two Van der Waals spheres or membranes",
+                                 tuple<std::string>("None",
+                                                    "Sphere",
+                                                    "Membrane"),
+                                 tuple<INPAR::POTENTIAL::SolutionType>(
+                                            INPAR::POTENTIAL::solution_none,
+                                            INPAR::POTENTIAL::solution_sphere,
+                                            INPAR::POTENTIAL::solution_membrane),
+                                            &interaction_potential);
+  // use 2D integration for pseudo 3D
+  setStringToIntegralParameter<int>("PSEUDO3D","no",
+                                     "use 2D integration for pseudo 3D",
+                                     yesnotuple,yesnovalue,&interaction_potential);
 
   // radius of can der Waals spheres for analytical testing
   DoubleParameter(  "VDW_RADIUS",0.0,
                     "radius of van der Waals spheres",
                     &interaction_potential);
 
+  // thickness of sphericael Waals membranes for analytical testing
+  DoubleParameter(  "THICKNESS",0.0,
+                    "membrane thickness",
+                    &interaction_potential);
+  
   // number of atoms or molecules offset
   DoubleParameter(  "N_OFFSET",0.0,
                     "number of atoms or molecules offset",
@@ -2116,15 +2132,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "LowMachNumberFlow",
                                  "Elch_ENC",
                                  "Elch_ENC_PDE",
+                                 "Elch_Possion",
                                  "LevelSet"),
                                tuple<INPAR::SCATRA::ScaTraType>(
                                  INPAR::SCATRA::scatratype_undefined,
                                  INPAR::SCATRA::scatratype_condif,
                                  INPAR::SCATRA::scatratype_loma,
-                                 INPAR::SCATRA::scatratype_elch_enc,
+                                 INPAR::SCATRA::scatratype_elch_enc,                               
                                  INPAR::SCATRA::scatratype_elch_enc_pde,
+                                 INPAR::SCATRA::scatratype_elch_poisson,
                                  INPAR::SCATRA::scatratype_levelset),
-                               &scatradyn);
+                                 &scatradyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(

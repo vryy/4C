@@ -140,7 +140,7 @@ public:
       Epetra_SerialDenseVector&         fint
       );
   
-  bool ComputeAnalyticalSolution() {return params_.get<bool>("analyt_sol") ;}
+  bool ComputeAnalyticalSolution();
 
 private:
 

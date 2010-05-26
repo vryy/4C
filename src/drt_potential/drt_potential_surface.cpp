@@ -352,7 +352,7 @@ void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotentialApprox1(
   }
 
   // compute internal force and stiffness matrix  
-  computeFandK_Approx1(element, gaussrule, potentialElementIds, lm, K_surf, F_int, cond, label, curvefac);
+  computeFandK_Approx1_new(element, gaussrule, potentialElementIds, lm, K_surf, F_int, cond, label, curvefac);
   
   //K_surf.Print(cout);
   //F_int.Print(cout);
@@ -893,8 +893,11 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1_new(
     LINALG::Matrix<3,1>         x_gp(true);  
     LINALG::Matrix<3,1>         n_xsi(true);
     
+    cout << " act element" << endl;
+    actEle->Print(cout);
     const double fac = ComputeFactorApprox_new(actEle, funct, deriv, intpoints, gp, x_gp, n_xsi, curvefac); 
 
+    cout << "act fac = "<< fac << endl;
     // compute normal n_gp to act ele in x_gp
     LINALG::Matrix<3,1> n_gp = ComputeNormalInGP(actEle, x_gp);
    
@@ -907,6 +910,8 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1_new(
          const DRT::Element* element_pot = potentialdis_->gElement(*eleIter);
          const double beta_pot = GetAtomicDensity(element_pot->Id(), "Potential", labelByElement_);
 
+         cout << " influencing element" << endl;
+         element_pot->Print(cout);
          // obtain current potential dofs         
          vector<int> lmpot;
          vector<int> lmowner;
@@ -928,6 +933,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1_new(
            LINALG::Matrix<3,1>       x_pot_gp(true); 
            LINALG::Matrix<3,1>       n_xsi_pot(true);
            
+           cout << "fac_pot = "<< fac << endl;
            const double fac_pot = ComputeFactorApprox_new(element_pot,funct_pot, deriv_pot, 
                                                       intpoints_pot, gp_pot, x_pot_gp, 
                                                       n_xsi_pot, curvefac);
@@ -935,6 +941,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1_new(
            // compute normal of surface element in x_pot_gp
            LINALG::Matrix<3,1> n_pot_gp = ComputeNormalInGP(element_pot, x_pot_gp);
            
+           n_pot_gp.Print(cout);
            // evaluate Lennard Jones potential and its derivatives
            LINALG::Matrix<3,1>  potderiv1;
            LINALG::Matrix<3,3>  potderiv2;
@@ -942,7 +949,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1_new(
 
            bool validContribution = false;           
            // if contact
-           if(fabs(cond->GetDouble("exvollength")) > 1e-7)
+/*           if(fabs(cond->GetDouble("exvollength")) > 1e-7)
            {
              double exvollength = cond->GetDouble("exvollength");
              LINALG::Matrix<3,1> x_gp_con(true);
@@ -959,11 +966,12 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1_new(
            }          
            else
            { 
+           */
              EvaluatePotentialfromCondition_Approx1(cond, x_gp, x_pot_gp, potderiv1, potderiv2);
              //Testen ob die Elemente auf sich gegenüber liegenden Flächen liegen
              //Noch prüfen, ob das bei mir nötig ist!!!
              //validContribution = DetermineValidContribution(x_gp, x_pot_gp, n_gp, n_pot_gp);
-           }    
+        //   }    
            
           // if valid contribution           
           //if(validContribution)
@@ -973,13 +981,24 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1_new(
              // compute theta and theta_pot
              // TODO use LINALG MULTIPLY
              computeDistanceVector(x_gp, x_pot_gp,radius_unit);
+             
              double theta = 0.0;
              double theta_pot = 0.0;
              for(int i=0;i<3;i++)
              {
-               theta     +=  (-1)*radius_unit(i)*n_xsi(i);
+               theta     +=  (-1.0)*radius_unit(i)*n_xsi(i);
                theta_pot +=  radius_unit(i)*n_xsi_pot(i);
              }  
+             
+             theta = 1.0;
+             theta_pot = 1.0;
+             
+             cout << "theta  = "<< theta  <<  endl;
+             cout << "theta_pot  = "<< theta_pot  <<  endl;
+             cout << "beta = "<<  beta << endl;
+             cout << "beta_pot = "<<  beta_pot << endl;
+             cout << "fac = "<<  beta << endl;
+             cout << "fac_pot = "<<  beta_pot << endl;
              
              // computation of internal forces
              for (int inode = 0; inode < numnode; inode++)
@@ -999,7 +1018,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1_new(
                  for (int jnode = 0;jnode < numnode_pot; ++jnode)
                    for(int dim_pot = 0; dim_pot < 3; dim_pot++)
                       K_surf(inode*numdof+dim, GetLocalIndex(lm,lmpot[jnode*numdof+dim_pot]) ) +=
-                        funct(inode)*beta*fac*theta*(beta_pot*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot*theta_pot);
+                        funct(inode)*beta*fac*theta*(beta_pot*(-1.0)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot*theta_pot);
 
                 }             
              //}// valid contribution             
@@ -1224,6 +1243,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2_new(
   const double beta = cond->GetDouble("beta"); 
   const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
 
+  cout << "ELEMENT = "<< actEle->Id()<<  endl;
   
   //----------------------------------------------------------------------
   // loop over all gauss points of the actual element
@@ -1240,7 +1260,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2_new(
     
     LINALG::Matrix<3,1>         n_xsi(true); 
     const double fac = ComputeFactorApprox_new(actEle, funct, deriv, intpoints, gp, x_gp, n_xsi, curvefac); 
-    
+    cout << "fac = "  << fac << endl;
     // compute normal n_gp to act ele in x_gp
     //LINALG::Matrix<3,1> n_gp = ComputeNormalInGP(actEle, x_gp);
     //Normale auf das aktive Element in gp_X berechnen
@@ -1266,6 +1286,9 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2_new(
         //Compute normal on potential elment in xp 
         LINALG::Matrix<3,1> np;    
         ComputeNormalOnPotentialElement(element_pot,xp,np);
+        
+        cout << "Normal on potential element" << endl;
+        np.Print(cout);
   
         LINALG::Matrix<3,1>   Fs;
         LINALG::Matrix<3,3>   Fsderiv;
@@ -1276,6 +1299,10 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2_new(
         // contact
         //fabs(cond->GetDouble("exvollength")) > 1e-7    
         const LINALG::Matrix<3,1> n_gp = ComputeNormalInGP(actEle, x_gp);
+        
+        cout << "Normal in Gauss Point" << endl;
+        n_gp.Print(cout);
+        
         if(fabs(cond->GetDouble("exvollength")) > 1e-7)
         {
           double exvollength = cond->GetDouble("exvollength");
@@ -1308,6 +1335,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2_new(
           for(int i=0;i<3;i++)             
             theta += np(i)*n_xsi(i);               
   
+          cout << "theta = " << theta << endl;
           // computation of internal forces (possibly with non-local values)
           for (int inode = 0; inode < numnode; inode++)
             for(int dim = 0; dim < 3; dim++)                
@@ -1726,8 +1754,10 @@ double POTENTIAL::SurfacePotential::ComputeFactorApprox_new(
   n_xsi(1) = dxyzdrs(0,2)*dxyzdrs(1,0) - dxyzdrs(0,0)*dxyzdrs(1,2) ;
   n_xsi(2) = dxyzdrs(0,0)*dxyzdrs(1,1) - dxyzdrs(0,1)*dxyzdrs(1,0) ;
  
+ 
   // compute J_x_xsi = || n_xsi ||
   const double J_x_xsi = n_xsi.Norm2();
+  n_xsi.Scale(1.0/J_x_xsi);
 
   // compute N_xsi = X,r x X,s
   LINALG::Matrix<3,1> N_xsi(true);
@@ -1741,7 +1771,8 @@ double POTENTIAL::SurfacePotential::ComputeFactorApprox_new(
   const double J_x_X = J_x_xsi/J_X_xsi;
 
   // compute factor
-  double factor = intpoints.qwgt[gp] * (1.0/J_x_X) * curve_fac;
+  // (1.0/J_x_X) scales beta
+  double factor = intpoints.qwgt[gp] * (1.0/J_x_X) * curve_fac*J_x_xsi;
 
   x_gp = 0.0;
   // compute gauss point in physical coordinates
@@ -1849,6 +1880,7 @@ void POTENTIAL::SurfacePotential::computeDistanceVector(
   distance = dist_vec.Norm2();
   dist_unit = dist_vec;
   dist_unit.Scale(1.0/distance);
+  return;
 }
 
 
@@ -2096,9 +2128,18 @@ void POTENTIAL::SurfacePotential::TestEvaluatePotential(
   
   std::map<int, std::set<int> > elementsByLabel_Vol = computeEleByLabelVol(discret_.GetState("displacement") ,elementsByLabel_);
   // compute test results 
-  computeTestVanDerWaalsSpheres(potentialdis_, elementsByLabel_Vol, elementsByLabel_, 
-                                discret_.GetState("displacement")  , fint, time, step, 
-                                p.get("vdw_radius", 0.0), p.get("n_offset", 0.0));
+  if( p.get<string>("solution type") == "Sphere" ) 
+    computeTestVanDerWaalsSpheres(potentialdis_, elementsByLabel_Vol, elementsByLabel_, 
+                                  discret_.GetState("displacement")  , fint, time, step, 
+                                  p.get("vdw_radius", 0.0), p.get("n_offset", 0.0));
+  else if( p.get<string>("solution type") == "Sphere" ) 
+  computeTestVanDerWaalsMembranes(potentialdis_, elementsByLabel_Vol, elementsByLabel_, 
+                                  discret_.GetState("displacement")  , fint, time, step, 
+                                  p.get("vdw_radius", 0.0), p.get("n_offset", 0.0),
+                                  p.get("thickness", 0.0));
+  
+  else
+    dserror("specify proper solution type");
   return;
 }
 
@@ -2124,14 +2165,14 @@ std::map<int, std::set<int> > POTENTIAL::SurfacePotential::computeEleByLabelVol(
    const int eleId = *((labelIter->second).begin());
    const DRT::Element* element_in = potentialdis_->gElement(eleId);
    LINALG::SerialDenseMatrix xyze(3, element_in->NumNode());      
-   getPhysicalEleCoords(disp,element_in,xyze);
+   getPhysicalEleCoords(potentialdis_, disp,element_in,xyze);
    LINALG::Matrix<3,2> xaabb_label = GEO::computeFastXAABB(element_in->Shape(), xyze, GEO::EleGeoType(GEO::LINEAR));
    
    // run over set elements
    for (std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
    {
      const DRT::Element* element = potentialdis_->gElement(*eleIter);
-     getPhysicalEleCoords(disp,element,xyze);
+     getPhysicalEleCoords(potentialdis_,disp,element,xyze);
      LINALG::Matrix<3,2> xaabbEle = GEO::computeFastXAABB(element->Shape(), xyze, GEO::EleGeoType(GEO::LINEAR));
      xaabb_label = GEO::mergeAABB(xaabb_label, xaabbEle);
    }
@@ -2141,14 +2182,14 @@ std::map<int, std::set<int> > POTENTIAL::SurfacePotential::computeEleByLabelVol(
 
  for(int i_rowele = 0; i_rowele < discretRCP_->NumMyRowElements(); i_rowele++)
  {
-   const DRT::Element* element = discretRCP_->lRowElement(i_rowele);
-   LINALG::SerialDenseMatrix xyze(3, element->NumNode());      
-   getPhysicalEleCoords(disp,element,xyze);
-   LINALG::Matrix<3,2> xaabb_ele = GEO::computeFastXAABB(element->Shape(), xyze, GEO::EleGeoType(GEO::LINEAR));
+   const DRT::Element* element_row = discretRCP_->lRowElement(i_rowele);
+   LINALG::SerialDenseMatrix xyze(3, element_row->NumNode());      
+   getPhysicalEleCoords(discretRCP_, disp,element_row,xyze);
+   LINALG::Matrix<3,2> xaabb_ele = GEO::computeFastXAABB(element_row->Shape(), xyze, GEO::EleGeoType(GEO::LINEAR));
    
    for(std::map<int, LINALG::Matrix<3,2> >::const_iterator mapIter = label_AABBs.begin() ; mapIter != label_AABBs.end(); ++mapIter)
      if( GEO::intersectionOfXAABB<3>(mapIter->second, xaabb_ele) )
-       elementsByLabel_Vol[mapIter->first].insert(element->Id());
+       elementsByLabel_Vol[mapIter->first].insert(element_row->Id());
  }
  return elementsByLabel_Vol;
 }

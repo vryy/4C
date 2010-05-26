@@ -41,6 +41,15 @@ namespace INPAR
       approximation_surface,    ///< surface approximation
       approximation_point       ///< point approximation
     };
+    
+    /// Type of analytical solution
+    /// (this enum represents the input file parameter ANALYTICALSOLUTION)
+    enum SolutionType
+    {
+      solution_none,          ///< no analytical solution
+      solution_sphere,        ///< sphere analytical solution
+      solution_membrane       ///< membrane analytical solution
+    };
   }  // namespace POTENTIAL
 
 }  // namespace INPAR

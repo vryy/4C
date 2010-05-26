@@ -437,6 +437,20 @@ protected:
     );
   
   
+  void computeTestVanDerWaalsMembranes(
+    const Teuchos::RCP<DRT::Discretization> potentialsurfdis,
+    const std::map<int,std::set<int> >&     elementsByLabel_Vol,
+    const std::map<int,std::set<int> >&     elementsByLabel_Surf,
+    const RefCountPtr<const Epetra_Vector>  disp,
+    const RefCountPtr<Epetra_Vector>        fint,
+    const double                            time,
+    const int                               step,
+    const double                            vdw_radius,
+    const double                            n_offset,
+    const double                            thickness
+    );
+  
+  
   // compute local forces and center of gravity
   double computeLocalForceAndCOG(  
     const Teuchos::RCP<DRT::Discretization> potentialsurfdis,
@@ -469,20 +483,22 @@ protected:
   
   //! get physical eleCoords
   void getPhysicalEleCoords(
+      Teuchos::RCP<DRT::Discretization>     dis,  
       Teuchos::RCP<const Epetra_Vector>     idisp_solid,
-      const DRT::Element*             element,
-      LINALG::SerialDenseMatrix&      xyze
+      const DRT::Element*                   element,
+      LINALG::SerialDenseMatrix&            xyze
       );
   
   
   //! write output
   void WriteTestOutput(
-    const double    distance,
-    const double    force1,
-    const double    force2,
-    const double    force_analytical,
-    const double    time,
-    const int       step
+    const double        distance,
+    const double        force1,
+    const double        force2,
+    const double        force_analytical,
+    const double        time,
+    const int           step,
+    const std::string   name
     );
   
   
