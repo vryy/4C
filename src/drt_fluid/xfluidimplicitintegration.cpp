@@ -1157,7 +1157,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         // call standard loop over elements
         if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
         {
-          discret_->SetState("interface nodal iterinc",fluidfluidstate_.fluidfluidincvel_);
+          RCP<Epetra_Vector> tmp = LINALG::CreateVector(*discret_->DofColMap(),false);
+          LINALG::Export(*fluidfluidstate_.fluidfluidincvel_,*tmp);
+          discret_->SetState("interface nodal iterinc",tmp);
           
           BuildFluidFluidboundaryDofMap(ih_np_, discret_);
          
@@ -1489,7 +1491,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
        (*fluidfluidstate_.fluidfluidincvel_)[fluidfluidstate_.fluidfluidincvel_->Map().LID(iter->second)] = (*incvel_)[incvel_->Map().LID(iter->second)];
      }
      FluidFluidboundarydis_->SetState("ivelcolnp",fluidfluidstate_.fivelnp_);
-     discret_->SetState("interface nodal iterinc",fluidfluidstate_.fluidfluidincvel_);
+//     discret_->SetState("interface nodal iterinc",fluidfluidstate_.fluidfluidincvel_);
    }
   }
 
