@@ -80,16 +80,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
   preforce.Clear();
   velforce.Clear();
 
-  /*
-  DRT::Node** nodes = ele->Nodes();
-  for (int inode=0; inode<nen_; inode++)
-  {
-    const double* x = nodes[inode]->X();
-    xyze_(0,inode) = x[0];
-    xyze_(1,inode) = x[1];
-    xyze_(2,inode) = x[2];
-  }
-*/
   // add displacement when fluid nodes move in the ALE case
   if (ele->IsAle()) xyze_ += edispnp;
 
@@ -371,7 +361,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
      *                                                                   *
      *                  get residual of momentum equation                *
      *                                                                   *
-     *-------------------------------------------------------------------*/   
+     *-------------------------------------------------------------------*/
 
     if (is_genalpha_)
     {
@@ -384,7 +374,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       // evaluate momentum residual once for all stabilization right hand sides
       for (int rr=0;rr<nsd_;++rr)
       {
-        momres_old_(rr) = 
+        momres_old_(rr) =
           densam_*accint_(rr)
           +
           densaf_*conv_old_(rr)
@@ -401,19 +391,19 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       // rhs of momentum equation:
       // density*timefac*bodyforce at n+1 + density*histmom at n
 
-      // in the case of a Boussinesq approximation: 
+      // in the case of a Boussinesq approximation:
       //
       //                    f = (rho - rho_0)/rho_0 *g
       //
-      // else: 		 
-      //  
+      // else:
+      //
       //                           f = rho * g
 
       if (physicaltype_ == INPAR::FLUID::boussinesq)
       {
         rhsmom_.Update(densn_,histmom_,deltadens_*timefac,bodyforce_);
       }
-      else 
+      else
       {
         rhsmom_.Update(densn_,histmom_,densaf_*timefac,bodyforce_);
       }
@@ -427,7 +417,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       // instationary: momres_old = u_(n+1) + theta ( ... ) - histmom_ - bodyforce_
       for (int rr=0;rr<nsd_;++rr)
       {
-        momres_old_(rr) = 
+        momres_old_(rr) =
           timefac*(densaf_*conv_old_(rr)+gradp_(rr)-2*visceff_*visc_old_(rr))
           -
           rhsmom_(rr);
@@ -494,7 +484,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       */
       facMtau = 1.0/(densam_*alphaM_*tau_(1)+densaf_*afgdt_);
 
-      /* 
+      /*
          factor for old subgrid velocities:
 
                    n+aM                      n+aF
@@ -520,13 +510,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       // if no generalised alpha time integration is used, the momres_old_
       // contains a scaled residual
       if (!is_genalpha_)
-      {      
+      {
         scaling/=dt_;
       }
 
       /*                 +-                                       -+
         ~n+1             |        ~n           ~ n            n+1  |
-        u    = facMtau * | fac1 * u  + fac2 * acc  -fac3 * res     |  
+        u    = facMtau * | fac1 * u  + fac2 * acc  -fac3 * res     |
          (i)             |                                    (i)  |
                          +-                                       -+
       */
@@ -552,26 +542,26 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
           sgvelint_(rr)          );
       }
     } // end time dependent subgrid scale closure
-    
+
     /*-------------------------------------------------------------------*
      *                                                                   *
      *       include computed subgrid velocity in convective term        *
      *                                                                   *
-     *-------------------------------------------------------------------*/   
+     *-------------------------------------------------------------------*/
 
     if (cross_    != INPAR::FLUID::cross_stress_stab_none or
         reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
     {
-          
+
           // compute subgrid-scale convective operator
           sgconv_c_.MultiplyTN(derxy_,sgvelint_);
-          
+
           // re-calculate convective term from previous iteration if cross-stress
           // is included
           convvelint_.Update(1.0,sgvelint_,1.0);
           conv_old_.Multiply(vderxy_,convvelint_);
     }
-    else 
+    else
     {
       sgconv_c_.Clear();
     }
@@ -580,7 +570,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
      *                                                                   *
      *                 get residual of continuity equation               *
      *                                                                   *
-     *-------------------------------------------------------------------*/   
+     *-------------------------------------------------------------------*/
     if (is_genalpha_)
     {
       // "incompressible" part of continuity residual: velocity divergence
@@ -740,8 +730,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       }
     }
 
-    if(tds_      ==INPAR::FLUID::subscales_time_dependent 
-       && 
+    if(tds_      ==INPAR::FLUID::subscales_time_dependent
+       &&
        transient_==INPAR::FLUID::inertia_stab_keep)
     {
       // rescale Galerkin residual of all terms which have not been
@@ -761,7 +751,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
           }
         }
       }
-      
+
       // include all contributions which have been integrated by parts
       // and thus can not be rescaled
 
@@ -786,11 +776,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
         for (int idim = 0; idim <nsd_; ++idim)
         {
           const int nsd_idim=nsd_*idim;
-          
+
           for(int jdim=0;jdim<nsd_;++jdim)
           {
             const int nsd_idim_p_jdim=nsd_idim+jdim;
-            
+
             for (int ui=0; ui<nen_; ++ui)
             {
               lin_resM_Du_(nsd_idim_p_jdim,ui)+=v*viscs2_(nsd_idim_p_jdim, ui);
@@ -803,7 +793,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
                                   rhoaM*alphaM*tauM                gamma*dt
               alphaF * ---------------------------------------,  * --------
                        rhoaM*alphaM*tauM+rhoaF*alphaF*gamma*dt      alphaM
- 
+
                            /               \
                           |                 |
                           |  nabla Dp ,  v  |
@@ -826,11 +816,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
       /*  factor: +1
 
-               /                       \ 
+               /                       \
               |     n+am    ~ n+am      |
               |  rho     * acc     , v  |
               |               (i)       |
-               \                       / 
+               \                       /
 
 
              using
@@ -852,7 +842,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
                                  - rho     * f      |
                                                     |
                                                    /
-     
+
       */
       for(int idim = 0; idim <nsd_; ++idim)
       {
@@ -1081,7 +1071,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
           }
         }
       } // end for(idim)
-    } 
+    }
 
     for (int vi=0; vi<nen_; ++vi)
     {
@@ -1531,7 +1521,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
     if (pspg_ == INPAR::FLUID::pstab_use_pspg)
     {
       double scal_grad_q=0.0;
-      
+
       if(tds_==INPAR::FLUID::subscales_quasistatic)
       {
         scal_grad_q=tau_(1);
@@ -1645,7 +1635,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
         for (int idim = 0; idim <nsd_; ++idim)
         {
           const double temp= tau_Mp*momres_old_(idim);
-          
+
           for (int vi=0; vi<nen_; ++vi)
           {
             // pressure stabilisation
@@ -1659,7 +1649,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
         for (int idim = 0; idim <nsd_; ++idim)
         {
           const double temp= rhsfac*sgvelint_(idim);
-          
+
           for (int vi=0; vi<nen_; ++vi)
           {
             // pressure stabilisation
@@ -1682,7 +1672,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       {
         LINALG::Matrix<nsd_,1> temp;
         double supgfac;
-      
+
         if(tds_==INPAR::FLUID::subscales_quasistatic)
         {
           supgfac=densaf_*tau_(0);
@@ -1691,7 +1681,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
         {
           supgfac=densaf_*alphaF_*fac3;
         }
-        
+
         LINALG::Matrix<nen_,1> supg_test;
 
         for (int vi=0; vi<nen_; ++vi)
@@ -1839,7 +1829,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
         */
         if (is_newton_)
         {
-       
+
           if(tds_==INPAR::FLUID::subscales_quasistatic)
           {
             for(int jdim=0;jdim<nsd_;++jdim)
@@ -1879,7 +1869,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
         // NOTE: Here we have a difference to the previous version of this
         // element!  Before we did not care for the mesh velocity in this
         // term. This seems unreasonable and wrong.
-        
+
         if(tds_==INPAR::FLUID::subscales_quasistatic)
         {
           for(int jdim=0;jdim<nsd_;++jdim)
