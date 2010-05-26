@@ -420,7 +420,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
     // fs: subtract alphaf * old interface forces (t_n)
     RCP<Epetra_Vector> tempvecs = rcp(new Epetra_Vector(*gsdofrowmap_));
     dmatrix_->Multiply(false,*zold_,*tempvecs);
-    fs->Update(-alphaf_,*tempvecs,1.0);
+    tempvecs->Update(1.0,*fs,-alphaf_);
 
     // fm: add alphaf * old interface forces (t_n)
     RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
@@ -429,7 +429,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
     
     // fm: add T(mbar)*fs
     RCP<Epetra_Vector> fmmod = rcp(new Epetra_Vector(*gmdofrowmap_));
-    mhatmatrix_->Multiply(true,*fs,*fmmod);
+    mhatmatrix_->Multiply(true,*tempvecs,*fmmod);
     fmmod->Update(1.0,*fm,1.0);
 
     // fm: subtract kmsmod*inv(D)*g
@@ -581,7 +581,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
     // fs: subtract alphaf * old interface forces (t_n)
     RCP<Epetra_Vector> tempvecs = rcp(new Epetra_Vector(*gsdofrowmap_));
     dmatrix_->Multiply(false,*zold_,*tempvecs);
-    fs->Update(-alphaf_,*tempvecs,1.0);
+    tempvecs->Update(1.0,*fs,-alphaf_);
 
     // fm: add alphaf * old interface forces (t_n)
     RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
@@ -590,7 +590,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
     
     // fm: add T(mbar)*fs
     RCP<Epetra_Vector> fmmod = rcp(new Epetra_Vector(*gmdofrowmap_));
-    mhatmatrix_->Multiply(true,*fs,*fmmod);
+    mhatmatrix_->Multiply(true,*tempvecs,*fmmod);
     fmmod->Update(1.0,*fm,1.0);
 
     /**********************************************************************/
