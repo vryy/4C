@@ -16,6 +16,8 @@
 #include "../drt_io/io_control.H"
 
 
+
+
 /*----------------------------------------------------------------------*/
 // Note: The order of calling the three BaseAlgorithm-constructors is
 // important here! In here control file entries are written. And these
@@ -61,6 +63,8 @@ void FSI::MonolithicBaseXFEM::ReadRestart(int step)
 {
   StructureField().ReadRestart(step);
   FluidField()    .ReadRestart(step);
+
+  SetTimeStep(FluidField().Time(),FluidField().Step());
 }
 
 
@@ -68,7 +72,6 @@ void FSI::MonolithicBaseXFEM::ReadRestart(int step)
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicBaseXFEM::PrepareTimeStep()
 {
-  cout << "FSI::MonolithicBaseXFEM::PrepareTimeStep()" << endl;
   IncrementTimeAndStep();
 
   PrintHeader();
@@ -82,7 +85,6 @@ void FSI::MonolithicBaseXFEM::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicBaseXFEM::Update()
 {
-  cout << "FSI::MonolithicBaseXFEM::Update()" << endl;
   StructureField().Update();
   FluidField().    Update();
 }
@@ -96,7 +98,6 @@ void FSI::MonolithicBaseXFEM::Output()
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
-  cout << "FSI::MonolithicBaseXFEM::Output()" << endl;
   StructureField().Output();
   FluidField().    Output();
 }

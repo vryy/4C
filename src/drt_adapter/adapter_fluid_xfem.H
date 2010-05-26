@@ -76,6 +76,9 @@ namespace ADAPTER
     double ResidualScaling() { return FluidField().ResidualScaling(); }
     double TimeScaling() { return FluidField().TimeScaling(); }
 
+    virtual double Time() const {return FluidField().Time();};
+    virtual int Step() const  {return FluidField().Step();};
+
     virtual int Itemax() const { return FluidField().Itemax(); }
     virtual void SetItemax(int itemax) { FluidField().SetItemax(itemax); }
 
