@@ -727,15 +727,12 @@ void MORTAR::MortarInterface::SetState(const string& statename, const RCP<Epetra
 
   if (statename=="displacement")
   {
-    // set displacements in interface discretization
-    idiscret_->SetState(statename, vec);
-
-    // Get vec to full overlap
-    // RCP<const Epetra_Vector> global = idiscret_->GetState(statename);
-
     // alternative method to get vec to full overlap
-    Epetra_Vector global(*idiscret_->DofColMap(),false);
-    LINALG::Export(*vec,global);
+    RCP<Epetra_Vector> global = rcp(new Epetra_Vector(*idiscret_->DofColMap(),false));
+    LINALG::Export(*vec,*global);
+    
+    // set displacements in interface discretization
+    idiscret_->SetState(statename,global);
 
     // loop over all nodes to set current displacement
     // (use fully overlapping column map)
@@ -749,7 +746,7 @@ void MORTAR::MortarInterface::SetState(const string& statename, const RCP<Epetra
       for (int j=0;j<numdof;++j)
         lm[j]=node->Dofs()[j];
 
-      DRT::UTILS::ExtractMyValues(global,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(*global,mydisp,lm);
 
       // add mydisp[2]=0 for 2D problems
       if (mydisp.size()<3)
@@ -771,15 +768,12 @@ void MORTAR::MortarInterface::SetState(const string& statename, const RCP<Epetra
 
   if (statename=="olddisplacement")
   {
-    // set displacements in interface discretization
-    idiscret_->SetState(statename, vec);
-
-    // Get vec to full overlap
-    // RCP<const Epetra_Vector> global = idiscret_->GetState(statename);
-
     // alternative method to get vec to full overlap
-    Epetra_Vector global(*idiscret_->DofColMap(),false);
-    LINALG::Export(*vec,global);
+    RCP<Epetra_Vector> global = rcp(new Epetra_Vector(*idiscret_->DofColMap(),false));
+    LINALG::Export(*vec,*global);
+    
+    // set displacements in interface discretization
+    idiscret_->SetState(statename,global);
 
     // loop over all nodes to set current displacement
     // (use fully overlapping column map)
@@ -793,7 +787,7 @@ void MORTAR::MortarInterface::SetState(const string& statename, const RCP<Epetra
       for (int j=0;j<numdof;++j)
         lm[j]=node->Dofs()[j];
 
-      DRT::UTILS::ExtractMyValues(global,myolddisp,lm);
+      DRT::UTILS::ExtractMyValues(*global,myolddisp,lm);
 
       // add mydisp[2]=0 for 2D problems
       if (myolddisp.size()<3)
