@@ -432,7 +432,11 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
       const EXODUS::NodeSet slave_nodeset  = mesh.GetNodeSet(slave_nodeset_id);
       
       if(slave_nodeset.GetNumNodes() != master_nodeset.GetNumNodes() )
+      {
+        cout << "yz num master nodes = " << master_nodeset.GetNumNodes() << endl;
+        cout << "yz num slave nodes = " << slave_nodeset.GetNumNodes() << endl;
         dserror("num master nodes != num slave nodes before adjusting coords");
+      }
       
       const set<int> master_nodeset_ids = master_nodeset.GetNodeSet();
       const set<int> slave_nodeset_ids = slave_nodeset.GetNodeSet();
@@ -467,7 +471,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
             equal = true;
 
           if( (count_slavenodes == (int) slave_nodeset_ids.size()) &&  !equal )
-            dserror("no matching slave node found, adjust your tolerance");
+            dserror("no matching slave node %d found, adjust your tolerance", *m_node_id );
           
           if(!equal)
             continue;
@@ -483,7 +487,11 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
         } // loop all slave nodes
       } // loop all master nodes
       if(mesh.GetNodeSet(master_nodeset_id).GetNumNodes() != mesh.GetNodeSet(slave_nodeset_id).GetNumNodes() )
-      dserror("num master nodes != num slave nodes after adjusting coords");
+      {
+        cout << "yz num master nodes = " << mesh.GetNodeSet(master_nodeset_id).GetNumNodes() << endl;
+        cout << "yz num slave nodes = " << mesh.GetNodeSet(slave_nodeset_id).GetNumNodes() << endl;
+        dserror("num master nodes != num slave nodes after adjusting coords");
+      }
     }
   }
   return;
@@ -561,7 +569,11 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
       const EXODUS::NodeSet slave_nodeset  = mesh.GetNodeSet(slave_nodeset_id);
       
       if(slave_nodeset.GetNumNodes() != master_nodeset.GetNumNodes() )
-          dserror("num master nodes != num slave nodes before adjusting coords");
+      {
+         cout << "xz num master nodes = " << master_nodeset.GetNumNodes() << endl;
+         cout << "xz num slave nodes = " << slave_nodeset.GetNumNodes() << endl;
+         dserror("xz num master nodes != num slave nodes before adjusting coords");
+       }
       
       const set<int> master_nodeset_ids = master_nodeset.GetNodeSet();
       const set<int> slave_nodeset_ids = slave_nodeset.GetNodeSet();
@@ -596,7 +608,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
             equal = true;
 
           if( (count_slavenodes == (int) slave_nodeset_ids.size()) &&  !equal )
-            dserror("no matching slave node found, adjust your tolerance");
+            dserror("no matching slave node %d found, adjust your tolerance", *m_node_id );
           
           if(!equal)
             continue;
@@ -612,7 +624,11 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
         } // loop all slave nodes
       } // loop all master nodes
       if(mesh.GetNodeSet(master_nodeset_id).GetNumNodes() != mesh.GetNodeSet(slave_nodeset_id).GetNumNodes() )
-        dserror("num master nodes != num slave nodes after adjusting coords");
+      {
+        cout << "xz num master nodes = " << mesh.GetNodeSet(master_nodeset_id).GetNumNodes() << endl;
+        cout << "xz num slave nodes = " << mesh.GetNodeSet(slave_nodeset_id).GetNumNodes() << endl;
+        dserror("xz num master nodes != num slave nodes after adjusting coords");
+      }
     }
   }
   return;
@@ -689,7 +705,11 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
        const EXODUS::NodeSet slave_nodeset  = mesh.GetNodeSet(slave_nodeset_id);
        
        if(slave_nodeset.GetNumNodes() != master_nodeset.GetNumNodes() )
-         dserror("num master nodes != num slave nodes before adjusting coords");
+       {
+          cout << "xy num master nodes = " << master_nodeset.GetNumNodes() << endl;
+          cout << "xy num slave nodes = " << slave_nodeset.GetNumNodes() << endl;
+          dserror("xy num master nodes != num slave nodes before adjusting coords");
+        }
        
        const set<int> master_nodeset_ids = master_nodeset.GetNodeSet();
        const set<int> slave_nodeset_ids = slave_nodeset.GetNodeSet();
@@ -724,7 +744,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
              equal = true;
 
            if( (count_slavenodes == (int) slave_nodeset_ids.size()) &&  !equal )
-             dserror("no matching slave node found, adjust your tolerance");
+             dserror("no matching slave node %d found, adjust your tolerance", *m_node_id );
            
            if(!equal)
              continue;
@@ -740,7 +760,11 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
          } // loop all slave nodes
        } // loop all master nodes
        if(mesh.GetNodeSet(master_nodeset_id).GetNumNodes() != mesh.GetNodeSet(slave_nodeset_id).GetNumNodes() )
-         dserror("num master nodes != num slave nodes after adjusting coords");
+       {
+         cout << "xy num master nodes = " << mesh.GetNodeSet(master_nodeset_id).GetNumNodes() << endl;
+         cout << "xy num slave nodes = " << mesh.GetNodeSet(slave_nodeset_id).GetNumNodes() << endl;
+         dserror("xy num master nodes != num slave nodes after adjusting coords");
+       }
      }
    }
    return;
