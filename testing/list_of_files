@@ -261,6 +261,7 @@ Input/fluidfluidCoupling_simple.dat	                	x        -        x        
 Input/fluidfluidCoupling_mIter.dat	                	x        -        x        -        -        -
 Input/fluidfluidCoupling_hex20_constinflow.dat          x        -        x        -        -        -
 Input/fluidfluidCoupling_hex20_parainflow_ydir.dat      x        -        x        -        -        -
+Input/fluidfluidCoupling_hex20_parainflow_ydir_cond.dat x	 -        x        -        -        -		
 Input/potential_surf_surfaceapprox_VDW_3D.dat           x        x        x        x        -        -
 Input/potential_surf_pointapprox_VDW_3D.dat             x        x        x        x        -        -
 Input/mfsi_ow32x32_sti_drt_mtrss.dat                    x        x        x        x        -        -
