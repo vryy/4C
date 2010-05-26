@@ -73,8 +73,10 @@ namespace UTILS
         map<int,RCP<DRT::Discretization> >::iterator discrit;
         for(discrit=constraintdis_.begin();discrit!=constraintdis_.end();++discrit)
         {
+          RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(discrit->second)->DofColMap(),false);
+          LINALG::Export(*V,*tmp);
           (discrit->second)->ClearState();
-          (discrit->second)->SetState(state,V);
+          (discrit->second)->SetState(state,tmp);
         }
       }
     };
