@@ -1175,7 +1175,6 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
 
 
   double basisdamp   = (20e-2)*PI*3; // in Actin3D_XXX input files with(!) stochastic torsional moments:: (20e-2)*PI for A = 1.9e-8, (20e-2)*PI*3 for A = 1.9e-6; for input of Thomas Knyrim without(!) stochastic torsional moments: (20e-2)*PI*20
-  double anisofactor = 50; //10 for A = 1.9e-8 and A = 1.9e-6
 
 
   //Get the applied integrationpoints for underintegration
@@ -1200,24 +1199,11 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(ParameterList& params,
     LINALG::Matrix<3,1> deltatheta;
     quaterniontoangle(deltaQ,deltatheta);
 
-    //computing special matrix for anisotropic damping
-    LINALG::Matrix<3,3> Tconv;
-    LINALG::Matrix<3,3> Theta;
-    quaterniontotriad(Qconv_[gp],Tconv);
-    for(int k=0; k<3; k++)
-      for(int j = 0; j<3; j++)
-        Theta(k,j) = Tconv(k,0)*Tconv(j,0);
-
     //isotropic artificial stiffness
     LINALG::Matrix<3,3> artstiff;
     artstiff = Tmatrix(deltatheta);
     artstiff.Scale(basisdamp);
 
-    //anisotropic artificial stiffness
-    LINALG::Matrix<3,3> auxstiff;
-    auxstiff.Multiply(Theta,Tmatrix(deltatheta));
-    auxstiff.Scale(anisofactor*basisdamp);
-    artstiff += auxstiff;
 
     //scale artificial damping with dti parameter for PTC method
     artstiff.Scale( params.get<double>("dti",0.0) );
@@ -1246,7 +1232,7 @@ inline void DRT::ELEMENTS::Beam3::MyDampingConstants(ParameterList& params,LINAL
   /*damping coefficient of rigid straight rod spinning around its own axis according to Howard, p. 107, table 6.2;
    *as this coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
   double rsquare = pow((4*Iyy_/PI),0.5);
-  double artificial = 1920;//1920;  //1920 not bad for standard Actin3D_10.dat files; for 40 elements also 1 seems to work really well
+  double artificial = 1000;//1000;  //1000 not bad for standard Actin3D_10.dat files; for 40 elements also 1 seems to work really well
   gamma(2) = 4*PI*params.get<double>("ETA",0.0)*rsquare*artificial;
 
 

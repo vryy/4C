@@ -429,12 +429,16 @@ private:
   
   //!evaluates basis functions for a given type of Gauss rule  and triads at all Gauss points
   template<int nnode>
-  void evaluatebasisfunctionsandtriads(const DRT::UTILS::IntegrationPoints1D gausspoints,
+  void evaluatebasisfunctionsandtriads(const DRT::UTILS::IntegrationPoints1D& gausspoints,
                                        vector<LINALG::Matrix<1,nnode> >& I,
                                        vector<LINALG::Matrix<1,nnode> >& Iprime,
                                        vector<vector<LINALG::Matrix<3,3> > >& Itilde,
                                        vector<vector<LINALG::Matrix<3,3> > >& Itildeprime,
-                                       vector<LINALG::Matrix<3,3> >& Lambda);
+                                       vector<LINALG::Matrix<3,3> >& Lambda,
+                                       const DRT::UTILS::IntegrationPoints1D& gausspointsmass,
+                                       vector<LINALG::Matrix<1,nnode> >& Imass,
+                                       vector<vector<LINALG::Matrix<3,3> > >& Itildemass,
+                                       vector<LINALG::Matrix<3,3> >& Lambdamass);
   
   
   
@@ -482,7 +486,11 @@ private:
                      const vector<double>&           vel,  //!< element velocity vector
                      const vector<double>&           disp, //!<element disp vector
                      Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                     Epetra_SerialDenseVector* force);//!< element internal force vector  
+                     Epetra_SerialDenseVector* force,
+                     const DRT::UTILS::IntegrationPoints1D& gausspointsmass,
+                     vector<LINALG::Matrix<1,nnode> >& Imass,
+                     vector<vector<LINALG::Matrix<3,3> > >& Itildemass,
+                     vector<LINALG::Matrix<3,3> >& Lambdamass);//!< element internal force vector  
    
    //!computes damping coefficients for employed friction model
    void MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel);
@@ -496,7 +504,11 @@ private:
                            const vector<double>&           vel,  //!< element velocity vector
                            const vector<double>&           disp, //!<element disp vector
                            Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                           Epetra_SerialDenseVector* force);//!< element internal force vector
+                           Epetra_SerialDenseVector* force,
+                           const DRT::UTILS::IntegrationPoints1D& gausspointsmass,
+                           vector<LINALG::Matrix<1,nnode> >& Imass,
+                           vector<vector<LINALG::Matrix<3,3> > >& Itildemass,
+                           vector<LINALG::Matrix<3,3> >& Lambdamass);//!< element internal force vector
    
    //!computes translational damping forces and stiffness
    template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
@@ -504,7 +516,9 @@ private:
                              const vector<double>&           vel,  //!< element velocity vector
                              const vector<double>&           disp, //!<element disp vector
                              Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                             Epetra_SerialDenseVector* force);//!< element internal force vector
+                             Epetra_SerialDenseVector* force,
+                             const DRT::UTILS::IntegrationPoints1D& gausspointsmass,
+                             vector<LINALG::Matrix<1,nnode> >& Imass);//!< element internal force vector
    
    //!computes stochastic translational forces and resulting stiffness
    template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
@@ -512,7 +526,9 @@ private:
                          const vector<double>&           vel,  //!< element velocity vector
                          const vector<double>&           disp, //!<element disp vector
                          Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                         Epetra_SerialDenseVector* force);//!< element internal force vector
+                         Epetra_SerialDenseVector* force,
+                         const DRT::UTILS::IntegrationPoints1D& gausspointsmass,
+                         vector<LINALG::Matrix<1,nnode> >& Imass);//!< element internal force vector
    
    //!computes stochastic rotational moments and resulting stiffness
    template<int nnode, int randompergauss> //number of nodes, number of random numbers required per Gauss point
@@ -520,7 +536,11 @@ private:
                          const vector<double>&           vel,  //!< element velocity vector
                          const vector<double>&           disp, //!<element disp vector
                          Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                         Epetra_SerialDenseVector* force);//!< element internal force vector
+                         Epetra_SerialDenseVector* force,
+                         const DRT::UTILS::IntegrationPoints1D& gausspointsmass,
+                         vector<LINALG::Matrix<1,nnode> >& Imass,
+                         vector<vector<LINALG::Matrix<3,3> > >& Itildemass,
+                         vector<LINALG::Matrix<3,3> >& Lambdamass);//!< element internal force vector
    
    //!computes velocity of background fluid and gradient of that velocity at a certain evaluation point in the physical space and adds respective terms to internal forces and damping matrix
    template<int ndim> //number of dimensions of embedding space
