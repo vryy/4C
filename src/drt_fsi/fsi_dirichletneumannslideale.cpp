@@ -297,15 +297,19 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::InitialGuess()
 vector<double> FSI::DirichletNeumannSlideale::Centerdisp
 (
     Teuchos::RCP<Epetra_Vector> idisptotal,
-    Teuchos::RCP<Epetra_Vector>idispstep
+    Teuchos::RCP<Epetra_Vector> idispstep
 )
 {
   const int dim = genprob.ndim;
   // get structure and fluid discretizations  and set stated for element evaluation 
   RCP<DRT::Discretization> masterdis = (StructureField().Discretization());
   
-  masterdis->SetState("displacementtotal",idisptotal);     
-  masterdis->SetState("displacementincr",idispstep);
+  const RCP<Epetra_Vector> idisptotalcol = LINALG::CreateVector(*masterdis->DofColMap(),false);
+  LINALG::Export(*idisptotal,*idisptotalcol);
+  masterdis->SetState("displacementtotal",idisptotalcol);
+  const RCP<Epetra_Vector> idispstepcol = LINALG::CreateVector(*masterdis->DofColMap(),false);
+  LINALG::Export(*idispstep,*idispstepcol);
+  masterdis->SetState("displacementincr",idispstepcol);
   
   //define stuff needed by the elements
   Teuchos::ParameterList params;
