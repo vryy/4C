@@ -1136,8 +1136,12 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
 	 *
 	 * what you need in order to run this thing:
 	 * - a SURF LOCSYS definition with normal, tangent, origin and  Type==FunctionEvaluation
-	 * - a CURVE of the type Physiological Waveform
+	 * - a CURVE of the type PhysiologicalWaveform
 	 * - a FUNCT definition WOMERSLEY
+	 * further preparations in the FSI DYNAMIC section of your input file
+	 * - set SHAPEDERIVATIVES to 'no'
+	 * - select 'iter_monolithicstructuresplit' for COUPALGO
+	 * - select 'FSIAMG' for LINEARBLOCKSOLVER
    */
   // ONGOING IMPLEMENTATION
   //dserror("UNDER CONSTRUCTION: ONGOING IMPLEMENTATION of WomersleyFunction Evaluate");
@@ -1205,7 +1209,6 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
       	cout<<" with FSI-part activated! =="<<endl;
       else
       	cout<<" with FSI-part disabled! =="<<endl;
-
 
       //**************************************************************
       // non-circular cross section: get inflow surface edge nodes
@@ -1408,14 +1411,17 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
   // each time step applying the same procedure as during initialization
   if(t > tnminus1_)
     dotrafo_ = true;
-
   if(fsi_ && dotrafo_==true)
   {
-    const double *tempcoords;
     vector<double> xnode;
     vector<double> ynode;
     vector<double> znode;
     vector<DRT::Condition*> dirichlet;
+    // get current displacement vector from discretization
+    RCP<const Epetra_Vector> disp;
+
+    //disp = dis->GetState("displacement");
+
 
     dis->GetCondition("Dirichlet",dirichlet);
     if (!dirichlet.size())
@@ -1438,8 +1444,9 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
             int currentid = dirichlet.at(i)->Nodes()->at(j);
             bool havenode = dis->HaveGlobalNode(currentid);
             bool redundant = false;
+            if(!havenode)
+            	continue;
 
-            if(!havenode) continue;
             if(j>0)
               for(int k=0;k<j;k++)
                 if(currentid==nodeids_.at(k))
@@ -1447,19 +1454,29 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
                   redundant = true;
                   continue;
                 }
-                if(!redundant)
-                {
-                  tempcoords = dis->gNode(currentid)->X();
-                  xnode.push_back(tempcoords[0]);
-                  ynode.push_back(tempcoords[1]);
-                  znode.push_back(tempcoords[2]);
-                }
+
+						if(!redundant)
+						{
+							const double *coords = dis->gNode(currentid)->X();
+							vector<double> tempcoords;
+							vector<int> dofnode = dis->Dof(dis->gNode(currentid));
+							tempcoords.assign(3,0.0);
+							// determine current nodal position: reference position + displacement
+							for(int k=0; k<3; k++)
+							{
+								tempcoords.at(k) = coords[k];
+							//	if(t>0.0)
+							//		tempcoords.at(k) += (*disp)[dis->DofRowMap()->LID( dofnode[k] )];
+							}
+							xnode.push_back(tempcoords.at(0));
+							ynode.push_back(tempcoords.at(1));
+							znode.push_back(tempcoords.at(2));
+						}
           }
         }
         else
           continue;
       }
-
     vector<double> xpedge;
     vector<double> xpedgeloc;
 
