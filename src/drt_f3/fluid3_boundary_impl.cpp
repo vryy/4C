@@ -228,8 +228,8 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
     }
     case integ_pressure_calc:
     {
-        IntegratedPressureParameterCalculation(ele, params,discretization,lm);
-        break;
+      IntegratedPressureParameterCalculation(ele, params,discretization,lm);
+      break;
     }
     // general action to calculate the flow rate (replaces flowratecalc soon)
     case calc_flowrate:
@@ -1439,6 +1439,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::AreaCaculation(
                                                   DRT::Discretization&            discretization,
                                                   vector<int>&                    lm)
 {
+
   // allocate vector for shape functions and for derivatives
   LINALG::Matrix<iel,1> funct(true);
   LINALG::Matrix<bdrynsd_,iel> deriv(true);
@@ -1638,6 +1639,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateParameterCalculation(
 
 
 /*----------------------------------------------------------------------*
+ |                                                        ismail 04/2010|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalculation(
@@ -1646,6 +1648,12 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalc
   DRT::Discretization&              discretization,
   vector<int>&                      lm)
 {
+
+  //------------------------------------------------------------------
+  // This calculates the integrated the pressure from the 
+  // the actual pressure values
+  //------------------------------------------------------------------
+#if 1
   // allocate vector for shape functions and for derivatives
   LINALG::Matrix<iel,1> funct(true);
   LINALG::Matrix<bdrynsd_,iel> deriv(true);
@@ -1761,8 +1769,9 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalc
   // set new flow rate
 
   params.set<double>("Inlet integrated pressure", pressure);
-
+#endif
 }//DRT::ELEMENTS::Fluid3Surface::IntegratedPressureParameterCalculation
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -2209,7 +2218,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
 
-#if 0 //def D_ALE_BFLOW
+#ifdef D_ALE_BFLOW
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
   RCP<const Epetra_Vector>      dispnp;

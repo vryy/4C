@@ -283,7 +283,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
                 - BCin;
         // an escape routine to prevent infinit loop
         itrs++;
-        if(itrs>=30)
+        if(itrs>=100)
         {
           dserror("Inflow boundary condition for Newton-Raphson exceeded the maximum allowed iterations");
           exit(1);
@@ -337,6 +337,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
 
     if(BC=="flow")
     {
+      BCin*=-1.0;
       /*
        Prescribed Volumetric flow rate:
 
@@ -396,6 +397,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
     }
     else if(BC == "velocity")
     {
+      BCin*=-1.0;
       /*
        Prescribed Inlet Velocity
        Wb2 = 2*U - Wf2
@@ -479,6 +481,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
       double c = (Wfnp - Wbnp)/8.0;
       double A = pow(c,4)*4.0*pow(dens*Ao/beta,2);
       BC3d     = (Wfnp + Wbnp)/2.0*A;
+      cout<<"1D is returning flowrate = "<<BC3d<<endl;
     }
     else if (returnedBC == "pressure")
     {

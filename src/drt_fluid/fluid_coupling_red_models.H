@@ -90,6 +90,10 @@ public:
   */
   void UpdateResidual(RCP<Epetra_Vector>  residual );
 
+  void EvaluateDirichlet( RCP<Epetra_Vector>  velnp,
+                          const Epetra_Map &  condmap,
+                          double              time);
+
   /*!
   \brief Wrapper for Fluid_couplingWrapper::WriteRestart
   */
@@ -188,6 +192,7 @@ protected:
   */
   void ReadRestart( IO::DiscretizationReader& reader, int condnum );
 
+
   /*!
     \brief compute and store flow rate of all previous
     time steps belonging to one cycle
@@ -215,7 +220,20 @@ protected:
                        double theta,
                        int condid );
 
-  void UpdateResidual( RCP<Epetra_Vector> residual );
+  /*!
+    \brief compute apply inflow as a Dirichlet BC
+  */
+  void InflowBoundary(double flowrate, 
+                      double time,
+                      double dta,
+                      double theta,
+                      int condid );
+
+  void UpdateResidual ( RCP<Epetra_Vector> residual );
+
+  void EvaluateDirichlet( RCP<Epetra_Vector>  velnp,
+                          const Epetra_Map &  condmap,
+                          double              time);
 
 private:
   /*!
@@ -227,6 +245,7 @@ private:
 
 protected:
 
+  // coupled neumann BC
   RCP<Epetra_Vector> couplingbc_;
 
 private:
@@ -246,6 +265,9 @@ private:
   //! number of maximum allowable iterations at the boundary
   double max_itr_;
 
+  //! velocity
+  double velocity_;
+
   //! the processor ID from the communicator
   int                           myrank_;
 
@@ -263,6 +285,9 @@ private:
 
   //! pressure
   double pressure_;
+  
+  //! corrector variable for dirichlet velocity s.t. applied flowrate is correct
+  double alfa_;
 
 };  // class Fluid_couplingBc
 

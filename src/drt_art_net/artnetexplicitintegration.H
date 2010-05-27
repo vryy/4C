@@ -159,7 +159,8 @@ public:
   \brief update configuration and output to file/screen
 
   */
-  void Output();
+  void Output(bool               CoupledTo3D,
+              RCP<ParameterList> CouplingParams);
 
   /*!
   \brief Assembling of the RHS Vector and the LHS Matrix 

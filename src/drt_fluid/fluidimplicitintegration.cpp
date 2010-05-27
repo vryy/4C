@@ -187,15 +187,13 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
 
-  if(not params_.get<int>("Simple Preconditioner",0) &&
-     params_.get<INPAR::SOLVER::AzPrecType>("AMG(BS) Preconditioner") != INPAR::SOLVER::azprec_AMGBS)
+  if (not params_.get<int>("Simple Preconditioner",0) && not params_.get<int>("AMG BS Preconditioner",0))
   {
     // initialize standard (stabilized) system matrix
     sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
   }
   else
   {
-    // initialize block sparse system matrix (needed for SIMPLER or AMG(BS) fluid preconditioner)
     Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
       Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
     blocksysmat->SetNumdim(numdim_);
@@ -283,6 +281,32 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     eleparams.set("total time",time_);
     discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
                                 Teuchos::null, dbcmaps_);
+#ifdef D_ARTNET
+    // -----------------------------------------------------------------
+    // Initialize the reduced models
+    // -----------------------------------------------------------------
+    
+    ART_exp_timeInt_ = dyn_art_net_drt(true);
+    // Check if one-dimensional artery network problem exist
+    if (ART_exp_timeInt_ != Teuchos::null)
+    {
+      IO::DiscretizationWriter output_redD(ART_exp_timeInt_->Discretization());
+      discret_->ClearState();
+      discret_->SetState("velnp", zeros_);
+      if (alefluid_)
+      {
+        discret_->SetState("dispnp", dispnp_);
+      }
+      coupled3D_redDbc_= rcp(new UTILS::Fluid_couplingWrapper(discret_,
+                                                              ART_exp_timeInt_->Discretization(),
+                                                              ART_exp_timeInt_,
+                                                              output_redD,
+                                                              dta_,
+                                                              ART_exp_timeInt_->Dt()) );
+      
+    }
+#endif //D_ARTNET
+
     zeros_->PutScalar(0.0); // just in case of change
   }
 
@@ -500,28 +524,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
 
   Wk_optimization_  = rcp(new UTILS::FluidWkOptimizationWrapper(discret_,
                                                                output_,
-                                                               impedancebc_,
+                                                              impedancebc_,
                                                                dta_) );
-
-#ifdef D_ARTNET
-  // -------------------------------------------------------------------
-  // Initialize the reduced models
-  // -------------------------------------------------------------------
-
-  ART_exp_timeInt_ = dyn_art_net_drt(true);
-  // Check if one-dimensional artery network problem exist
-  if (ART_exp_timeInt_ != Teuchos::null)
-  {
-    IO::DiscretizationWriter output_redD(ART_exp_timeInt_->Discretization());
-    coupled3D_redDbc_= rcp(new UTILS::Fluid_couplingWrapper(discret_,
-                                                            ART_exp_timeInt_->Discretization(),
-                                                            ART_exp_timeInt_,
-                                                            output_redD,
-                                                            dta_,
-                                                            ART_exp_timeInt_->Dt()) );
-  }
-
-#endif //D_ARTNET
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
@@ -756,6 +760,22 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
     discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null);
+#ifdef D_ARTNET
+      // update the 3D-to-reduced_D coupling data
+      // Check if one-dimensional artery network problem exist
+      if (ART_exp_timeInt_ != Teuchos::null)
+      {
+        //        cout<<"|--------------1D Dirichlet Evaluate -------------|"<<endl;
+        //        cout<<"D_BC map: "<<endl<<*(dbcmaps_->CondMap())<<endl;
+#ifdef D_ALE_BFLOW
+        if (alefluid_)
+        {
+          discret_->SetState("dispnp", dispnp_);
+        }
+#endif // D_ALE_BFLOW
+        coupled3D_redDbc_->EvaluateDirichlet(velnp_, *(dbcmaps_->CondMap()), time_);
+      }
+#endif //D_ARTNET
     discret_->ClearState();
 
     // set all parameters and states required for Neumann conditions
@@ -918,6 +938,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       }
 #endif //D_ARTNET
 
+
       // Filter velocity for dynamic Smagorinsky model --- this provides
       // the necessary dynamic constant
       // //
@@ -946,7 +967,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("fs subgrid viscosity",fssgv_);
       eleparams.set("Linearisation",newton_);
       eleparams.set("Physical Type", physicaltype_);
-      eleparams.set("mixed_formulation", params_.get<bool>("mixed_formulation", false));
 
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -974,7 +994,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       if (timealgo_==timeint_stationary)
       {
         eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
-        //eleparams.set("action","calc_fluid_systemmat_and_residual");
         eleparams.set("using generalized-alpha time integration",false);
         eleparams.set("total time",time_);
         eleparams.set("is stationary", true);
@@ -987,9 +1006,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         eleparams.set("using generalized-alpha time integration",true);
         eleparams.set("total time",time_-(1-alphaF_)*dta_);
         eleparams.set("is stationary", false);
-        eleparams.set("alphaF",alphaF_);
-        eleparams.set("alphaM",alphaM_);
-        eleparams.set("gamma",gamma_);
 
         discret_->SetState("velaf",velaf_);
       }
@@ -2177,7 +2193,6 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   eleparams.set("fs subgrid viscosity",fssgv_);
   eleparams.set("Linearisation",newton_);
   eleparams.set("Physical Type", physicaltype_);
-  eleparams.set("mixed_formulation", params_.get<bool>("mixed_formulation", false));
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -2205,7 +2220,6 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   if (timealgo_==timeint_stationary)
   {
     eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
-    //eleparams.set("action","calc_fluid_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",false);
     eleparams.set("total time",time_);
     eleparams.set("is stationary", true);
@@ -2218,9 +2232,6 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     eleparams.set("using generalized-alpha time integration",true);
     eleparams.set("total time",time_-(1-alphaF_)*dta_);
     eleparams.set("is stationary", false);
-    eleparams.set("alphaF",alphaF_);
-    eleparams.set("alphaM",alphaM_);
-    eleparams.set("gamma",gamma_);
 
     discret_->SetState("velaf",velaf_);
   }
@@ -2346,19 +2357,19 @@ void FLD::FluidImplicitTimeInt::GenAlphaUpdateAcceleration()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
+void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 {
   sysmat_->Zero();
   if (shapederivatives_ != Teuchos::null)
     shapederivatives_->Zero();
 
   // set the new solution we just got
-  if (stepinc!=Teuchos::null)
+  if (vel!=Teuchos::null)
   {
-    // Take Dirichlet values from velnp and add stepinc to veln for non-Dirichlet
+    // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
     // values.
     Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-    aux->Update(1.0, *veln_, 1.0, *stepinc, 0.0);
+    aux->Update(1.0, *veln_, 1.0, *vel, 0.0);
     dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), velnp_);
   }
 
@@ -2518,42 +2529,6 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> stepi
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::TimeUpdate()
 {
-
-  ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
-
-  if(stabparams->get<string>("TDS") == "time_dependent")
-  {
-    const double tcpu=Teuchos::Time::wallTime();
-  
-    if(myrank_==0)
-    {
-      cout << "time update for subscales";
-    }
-
-    // call elements to calculate system matrix and rhs and assemble
-    // this is required for the time update of the subgrid scales and  
-    // makes sure that the current subgrid scales correspond to the 
-    // current residual
-    AssembleMatAndRHS();
-
-    // create the parameters for the discretization
-    ParameterList eleparams;
-    // action for elements
-    eleparams.set("action","time update for subscales");
-
-    // update time paramters
-    eleparams.set("gamma"  ,gamma_ );
-    eleparams.set("dt"     ,dta_    );
-
-    // call loop over elements to update subgrid scales
-    discret_->Evaluate(eleparams,null,null,null,null,null);
-
-    if(myrank_==0)
-    {
-      cout << "("<<Teuchos::Time::wallTime()-tcpu<<")\n";
-    }
-  }
-
   // compute accelerations
   TIMEINT_THETA_BDF2::CalculateAcceleration(velnp_, veln_, velnm_, accn_,
                             timealgo_, step_, theta_, dta_, dtp_, accnp_);
@@ -2609,6 +2584,12 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   // Check if one-dimensional artery network problem exist
   if (ART_exp_timeInt_ != Teuchos::null)
   {
+#ifdef D_ALE_BFLOW
+    if (alefluid_)
+    {
+      discret_->SetState("dispnp", dispnp_);
+    }
+#endif // D_ALE_BFLOW
     coupled3D_redDbc_->FlowRateCalculation(time_,dta_);
     coupled3D_redDbc_->ApplyBoundaryConditions(time_, dta_, theta_);
   }
@@ -2658,7 +2639,7 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   //          dumping of turbulence statistics if required
   // -------------------------------------------------------------------
   statisticsmanager_->DoOutput(output_,step_,eosfac);
-
+  
   return;
 } // FluidImplicitTimeInt::StatisticsAndOutput
 
@@ -2729,6 +2710,7 @@ void FLD::FluidImplicitTimeInt::Output()
 
       Wk_optimization_->WriteRestart(output_);
     }
+    
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ != 0 && step_%uprestart_ == 0)
@@ -2767,6 +2749,23 @@ void FLD::FluidImplicitTimeInt::Output()
     Wk_optimization_->WriteRestart(output_);
   }
 
+  // write reduced model problem
+#ifdef D_ARTNET
+  // Check if one-dimensional artery network problem exist
+  if (ART_exp_timeInt_ != Teuchos::null)
+  {
+    RCP<ParameterList> redD_export_params;
+    redD_export_params = rcp(new ParameterList());
+
+    redD_export_params->set<int>("step",step_);
+    redD_export_params->set<int>("upres",upres_);
+    redD_export_params->set<int>("uprestart",uprestart_);
+    redD_export_params->set<double>("time",time_);
+
+    ART_exp_timeInt_->Output(true, redD_export_params);
+  }
+#endif // D_ARTNET
+
   return;
 } // FluidImplicitTimeInt::Output
 
@@ -2804,6 +2803,15 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
   impedancebc_->ReadRestart(reader);
 
   Wk_optimization_->ReadRestart(reader);
+
+
+#ifdef D_ARTNET
+  // Check if one-dimensional artery network problem exist
+  if (ART_exp_timeInt_ != Teuchos::null)
+  {
+    ART_exp_timeInt_->ReadRestart(step_);
+  }
+#endif // D_ARTNET
 
   // Read restart of one-dimensional arterial network
 }
@@ -3637,6 +3645,22 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
       // predicted dirichlet values
       // velnp then also holds prescribed new dirichlet values
       discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null);
+#ifdef D_ARTNET
+      // update the 3D-to-reduced_D coupling data
+      // Check if one-dimensional artery network problem exist
+      if (ART_exp_timeInt_ != Teuchos::null)
+      {
+        //        cout<<"|--------------1D Dirichlet Evaluate -------------|"<<endl;
+        //        cout<<"D_BC map: "<<endl<<*(dbcmaps_->CondMap())<<endl;
+#ifdef D_ALE_BFLOW
+        if (alefluid_)
+        {
+          discret_->SetState("dispnp", dispnp_);
+        }
+#endif // D_ALE_BFLOW
+        coupled3D_redDbc_->EvaluateDirichlet(velnp_,*(dbcmaps_->CondMap()), time_);
+      }
+#endif //D_ARTNET
       discret_->ClearState();
 
       // evaluate Neumann b.c.

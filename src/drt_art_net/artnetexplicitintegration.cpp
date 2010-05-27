@@ -324,7 +324,10 @@ void ART::ArtNetExplicitTimeInt::TimeLoop(bool CoupledTo3D,
     //  lift'n'drag forces, statistics time sample and output of solution
     //  and statistics
     // -------------------------------------------------------------------
-    Output();
+    if (!CoupledTo3D)
+    {
+      Output(CoupledTo3D,CouplingTo3DParams);
+    }
 
     // -------------------------------------------------------------------
     //                       update time step sizes
@@ -622,8 +625,28 @@ void ART::ArtNetExplicitTimeInt::TimeUpdate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::ArtNetExplicitTimeInt::Output()
+void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
+                                        RCP<ParameterList> CouplingParams)
 {
+  int step, upres, uprestart;
+  double time_backup;
+  // -------------------------------------------------------------------
+  // if coupled to 3D problem, then get the export information from 
+  // the 3D problem
+  // -------------------------------------------------------------------
+  
+  if (CoupledTo3D)
+  {
+    step        = step_;
+    upres       = upres_;
+    uprestart   = uprestart_;
+    time_backup = time_;
+    step_      = CouplingParams->get<int>("step");
+    upres_     = CouplingParams->get<int>("upres");
+    uprestart_ = CouplingParams->get<int>("uprestart");
+    time_      = CouplingParams->get<double>("time");
+  }
+
   if (step_%upres_ == 0)
   {
     // step number and time
@@ -662,6 +685,11 @@ void ART::ArtNetExplicitTimeInt::Output()
     this->CalcPostprocessingValues();
     output_.WriteVector("one_d_artery_flow",qn_);
     output_.WriteVector("one_d_artery_pressure",pn_);
+    
+    if (CoupledTo3D)
+    {
+      output_.WriteDouble("Actual_RedD_step", step);
+    }
 
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
@@ -698,6 +726,23 @@ void ART::ArtNetExplicitTimeInt::Output()
     artgnu_->Write(params);
     discret_->ClearState();
 
+    if (CoupledTo3D)
+    {
+      output_.WriteDouble("Actual_RedD_step", step);
+    }
+
+  }
+
+  // -------------------------------------------------------------------
+  // if coupled to 3D problem, then retrieve the old information of the
+  // the reduced model problem
+  // -------------------------------------------------------------------
+  if (CoupledTo3D)
+  {
+    step_     = step;
+    upres_    = upres;
+    uprestart_= uprestart;
+    time_     = time_backup;
   }
 
   return;
@@ -719,7 +764,15 @@ void ART::ArtNetExplicitTimeInt::ReadRestart(int step)
   IO::DiscretizationReader reader(discret_,step);
   
   time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
+
+  if (coupledTo3D_)
+  {
+    step_ = reader.ReadInt("Actual_RedD_step");
+  }
+  else
+  {
+    step_ = reader.ReadInt("step");
+  }
 
   reader.ReadVector(qanp_,"qanp");
 

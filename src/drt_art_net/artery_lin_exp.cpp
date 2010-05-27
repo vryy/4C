@@ -832,23 +832,23 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
     dserror("An element with %d nodes is not supported", numnds);
 
   //check for the CFL number CFL = Max(abs(3/sqrt(3) * lambda2_i * dt/dx), abs(3/sqrt(3) * lambda1_i * dt/dx))
-  double c_0       = sqrt(sqrt(PI)*young_(0)*th_(0)/(1.0-pow(nue,2))*sqrt(earean(0))/(2.0*area0_(0)*dens));
-  double c_1       = sqrt(sqrt(PI)*young_(1)*th_(1)/(1.0-pow(nue,2))*sqrt(earean(1))/(2.0*area0_(1)*dens));
-  double lambda2_0 = eqn(0)/earean(0) - c_0;
-  double lambda2_1 = eqn(1)/earean(1) - c_1;
-  double lambda1_0 = eqn(0)/earean(0) + c_0;
-  double lambda1_1 = eqn(1)/earean(1) + c_1;
-  double lambda    = fabs(lambda2_0);
-  if(lambda<fabs(lambda2_1))
-    lambda = fabs(lambda2_1);
-  if(lambda<fabs(lambda1_0))
-    lambda = fabs(lambda1_0);
-  if(lambda<fabs(lambda1_1))
-    lambda = fabs(lambda1_1);
+  double c_0        = sqrt(sqrt(PI)*young_(0)*th_(0)/(1.0-pow(nue,2))*sqrt(earean(0))/(2.0*area0_(0)*dens));
+  double c_1        = sqrt(sqrt(PI)*young_(1)*th_(1)/(1.0-pow(nue,2))*sqrt(earean(1))/(2.0*area0_(1)*dens));
+  double lambda2_0  = eqn(0)/earean(0) - c_0;
+  double lambda2_1  = eqn(1)/earean(1) - c_1;
+  double lambda1_0  = eqn(0)/earean(0) + c_0;
+  double lambda1_1  = eqn(1)/earean(1) + c_1;
+  double lambda_max = fabs(lambda2_0);
+  if(lambda_max<fabs(lambda2_1))
+    lambda_max = fabs(lambda2_1);
+  if(lambda_max<fabs(lambda1_0))
+    lambda_max = fabs(lambda1_0);
+  if(lambda_max<fabs(lambda1_1))
+    lambda_max = fabs(lambda1_1);
 
-  if(sqrt(3.0)/3.0 * lambda*dt/L >= 1.0)
+  if(3.0/sqrt(3.0) * lambda_max*dt/L >= 1.0)
   {
-    dserror("CFL number at element %d is %f",ele->Id(),sqrt(3.0)/3.0 * lambda*dt/L);
+    dserror("CFL number at element %d is %f",ele->Id(),3.0/sqrt(3.0) * lambda_max*dt/L);
   }
 
   // Check whether node 0 or node 1 are described as inlet or outlet of an artery
@@ -888,35 +888,40 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
       // sound speed at node 1 = sqrt(beta/(2*Ao*rho)) and Lambda2 = Q/A - c
       const double c      = sqrt(sqrt(PI)*young_(i)*th_(i)/(1.0-pow(nue,2))*sqrt(earean(i))/(2.0*area0_(i)*dens));
       const double lambda = eqn(i)/earean(i) + TermIO*c;
-      const double N1     = (0.5*(-TermIO + 1.0)*L + dt*lambda)/L;
-      const double N2     = (0.5*( TermIO + 1.0)*L - dt*lambda)/L;
-      const double A_l    = N1*earean(0) + N2*earean(1);
-      const double beta_l = sqrt(PI)*(young_(0)*N1 + young_(1)*N2)*(th_(0)*N1 + th_(1)*N2)/(1.0-pow(nue,2));
-      const double Q_l    = N1*eqn(0)    + N2*eqn(1);
-      const double Ao_l   = N1*area0_(0) + N2*area0_(1);
+      //      const double N1     = (0.5*(-TermIO + 1.0)*L + dt*lambda)/L;
+      const double N1     = (  - TermIO*dt*lambda)/L;
+      //      const double N2     = (0.5*( TermIO + 1.0)*L - dt*lambda)/L;
+      const double N2     = (L + TermIO*dt*lambda)/L;
+      //      const double A_l    = N1*earean(0) + N2*earean(1);
+      const double A_l    = N1*earean(i) + N2*earean((i+1)%2);
+      //      const double beta_l = sqrt(PI)*(young_(0)*N1 + young_(1)*N2)*(th_(0)*N1 + th_(1)*N2)/(1.0-pow(nue,2));
+      const double beta_l = sqrt(PI)*(young_(i)*N1 + young_((i+1)%2)*N2)*(th_(i)*N1 + th_((i+1)%2)*N2)/(1.0-pow(nue,2));
+      //      const double Q_l    = N1*eqn(0)    + N2*eqn(1);
+      const double Q_l    = N1*eqn(i)    + N2*eqn((i+1)%2);
+      //      const double Ao_l   = N1*area0_(0) + N2*area0_(1);
+      const double Ao_l   = N1*area0_(i) + N2*area0_((i+1)%2);
       const double c_l    = sqrt(beta_l*sqrt(A_l)/(2.0*Ao_l*dens));
 
-    // defining W2n at dt*lambda2
-    const double Wn_l  =  Q_l/A_l + TermIO*4.0*c_l;
-    const double Won_l =  TermIO*4.0*sqrt(beta_l*sqrt(Ao_l)/(2.0*Ao_l*dens));
-    const double co    =  sqrt(sqrt(PI)*young_(i)*th_(i)/(1.0-pow(nue,2))*sqrt(area0_(i))/(2.0*area0_(i)*dens));
+      // defining W2n at dt*lambda2
+      const double Wn_l  =  Q_l/A_l + TermIO*4.0*c_l;
+      const double Won_l =  TermIO*4.0*sqrt(beta_l*sqrt(Ao_l)/(2.0*Ao_l*dens));
+      const double co    =  sqrt(sqrt(PI)*young_(i)*th_(i)/(1.0-pow(nue,2))*sqrt(area0_(i))/(2.0*area0_(i)*dens));
 
-    double Wnp  = Wn_l - Won_l +TermIO*4.0*co;
+      double Wnp  = Wn_l - Won_l +TermIO*4.0*co;
 
-
-    // -----------------------------------------------------------------------------
-    // Modify the global backkward characteristics speeds vector
-    // -----------------------------------------------------------------------------
-    int myrank  = discretization.Comm().MyPID();
-    if(myrank == ele->Nodes()[i]->Owner())
-    {
-      int    gid = ele->Nodes()[i]->Id();
-      double val = Wnp;
-      if(TermIO == -1.0)
-        Wbnp->ReplaceGlobalValues(1,&val,&gid);
-      else if (TermIO == 1.0)
-        Wfnp->ReplaceGlobalValues(1,&val,&gid);
-    }
+      // ---------------------------------------------------------------------------
+      // Modify the global backkward characteristics speeds vector
+      // ---------------------------------------------------------------------------
+      int myrank  = discretization.Comm().MyPID();
+      if(myrank == ele->Nodes()[i]->Owner())
+      {
+        int    gid = ele->Nodes()[i]->Id();
+        double val = Wnp;
+        if(TermIO == -1.0)
+          Wbnp->ReplaceGlobalValues(1,&val,&gid);
+        else if (TermIO == 1.0)
+          Wfnp->ReplaceGlobalValues(1,&val,&gid);
+      }
 
     // -----------------------------------------------------------------------------
     // Update the information needed for solving the junctions

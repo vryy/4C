@@ -108,8 +108,8 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   // create a solver
   // -------------------------------------------------------------------
   RCP<LINALG::Solver> solver = rcp( new LINALG::Solver(DRT::Problem::Instance()->ArteryNetworkSolverParams(),
-                                                   actdis->Comm(),
-                                                   DRT::Problem::Instance()->ErrorFile()->Handle()),
+                                                       actdis->Comm(),
+                                                       DRT::Problem::Instance()->ErrorFile()->Handle()),
                                     false);
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
@@ -151,7 +151,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
     Teuchos::rcp(new ART::ArtNetExplicitTimeInt(actdis,*solver,arterytimeparams,*output));
   // initial field from restart or calculated by given function
 
-  if (probtype.get<int>("RESTART"))
+  if (probtype.get<int>("RESTART") && !CoupledTo3D)
   {
     // read the restart information, set vectors and variables
     artnetexplicit->ReadRestart(probtype.get<int>("RESTART"));
