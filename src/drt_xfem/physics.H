@@ -70,10 +70,13 @@ enum Field
     Sigmayz,            ///< stress
     Sigmazx,            ///< stress
     Sigmazy,            ///< stress
-    Sigmazz,             ///< stress
-    Velxiface,            ///< moving fluid x velocity
-    Velyiface,            ///< moving fluid y velocity
-    Velziface            ///< moving fluid z velocity
+    Sigmazz,            ///< stress
+    Velxiface,          ///< x velocity interface
+    Velyiface,          ///< y velocity interface
+    Velziface,          ///< z velocity interface
+    Dispxiface,         ///< x displacement interface
+    Dispyiface,         ///< y displacement interface
+    Dispziface          ///< z displacement interface
 };
 
 //! return a string representation for each enum value in XFEM::PHYSICS::Field
