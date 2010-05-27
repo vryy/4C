@@ -60,6 +60,9 @@ namespace DRT
           std::vector<double> accn;  ///< time derivative of unknowns at n
         };
         
+        /// fluid-interface coupling matrices and vectors of uncondensed system at element level
+        ///
+        /// Here, "s" stands for the stress unknowns
         struct FluidFluidCouplingMatrices
         {
           RCP<Epetra_SerialDenseMatrix> Gsui_uncond;

@@ -36,6 +36,20 @@ struct EnrViscs2
   LINALG::Matrix<numparam,1> zz;
 };
 
+template <size_t numparam>
+struct DnDx
+{
+  LINALG::Matrix<numparam,1> dnxdx;
+  LINALG::Matrix<numparam,1> dnxdy;
+  LINALG::Matrix<numparam,1> dnxdz;
+  LINALG::Matrix<numparam,1> dnydx;
+  LINALG::Matrix<numparam,1> dnydy;
+  LINALG::Matrix<numparam,1> dnydz;
+  LINALG::Matrix<numparam,1> dnzdx;
+  LINALG::Matrix<numparam,1> dnzdy;
+  LINALG::Matrix<numparam,1> dnzdz;
+};
+
 /*!
  * \brief calculate the body force from the nodes condition
  *
