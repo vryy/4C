@@ -257,8 +257,7 @@ Input/mfsi-volconstr-structsplit.dat                    x        x        x     
 Input/mfsi-volconstr-fluidsplit.dat                     x        x        x        -        x        x
 Input/potential_vol_LJ_3D.dat                           x        x        x        x        -        -
 Input/potential_vol_LJ_2D.dat                           x        x        x        x        -        -
-Input/fluidfluidCoupling_simple.dat	                	x        -        x        -        -        -
-Input/fluidfluidCoupling_mIter.dat	                	x        -        x        -        -        -
+Input/fluidfluidCoupling_mIter.dat	                	 x        -        x        -        -        
 Input/fluidfluidCoupling_hex20_constinflow.dat          x        -        x        -        -        -
 Input/fluidfluidCoupling_hex20_parainflow_ydir.dat      x        -        x        -        -        -
 Input/fluidfluidCoupling_hex20_parainflow_ydir_cond.dat x	 -        x        -        -        -		
