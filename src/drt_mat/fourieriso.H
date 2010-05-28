@@ -129,7 +129,10 @@ namespace PAR
     double Capacity() const { return params_->capa_; }
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_th_fourier_iso; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_th_fourier_iso;
+    }
 
     //@}
 

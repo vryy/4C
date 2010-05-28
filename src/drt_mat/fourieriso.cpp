@@ -31,6 +31,7 @@ MAT::PAR::FourierIso::FourierIso(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
+  // be careful: capa_ := rho * C_V, e.g contains the density
   capa_(matdata->GetDouble("CAPA")),
   conduct_(matdata->GetDouble("CONDUCT"))
 {
