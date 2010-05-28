@@ -435,9 +435,12 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           DRT::DEBUGGING::NaNChecker(*fluidfluidmatrices_.Guis_uncond);
           DRT::DEBUGGING::NaNChecker(*fluidfluidmatrices_.Gsui_uncond);
           DRT::DEBUGGING::NaNChecker(*fluidfluidmatrices_.rhsui_uncond);
-          DRT::DEBUGGING::NaNChecker(*fluidfluidmatrices_.GNudi_uncond);
-          DRT::DEBUGGING::NaNChecker(*fluidfluidmatrices_.GNsdi_uncond);
-          DRT::DEBUGGING::NaNChecker(*fluidfluidmatrices_.GNdidi_uncond);
+          if (monolithic_FSI)
+          {
+            DRT::DEBUGGING::NaNChecker(*fluidfluidmatrices_.GNudi_uncond);
+            DRT::DEBUGGING::NaNChecker(*fluidfluidmatrices_.GNsdi_uncond);
+            DRT::DEBUGGING::NaNChecker(*fluidfluidmatrices_.GNdidi_uncond);
+          }
           params.set("Cud",Cfi);
           params.set("Cdu",Cif);
           params.set("Cdd",Cii);
