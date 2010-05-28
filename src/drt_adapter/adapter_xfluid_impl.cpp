@@ -302,6 +302,9 @@ void ADAPTER::XFluidImpl::PrepareTimeStep()
   PrepareBoundaryDis();
 
   fluid_.PrepareTimeStep(boundarydis_);
+
+  velpresstepinc_ = Teuchos::rcp(new Epetra_Vector(*Discretization()->DofRowMap(), true));
+  velpresiterinc_ = Teuchos::rcp(new Epetra_Vector(*Discretization()->DofRowMap(), true));
 }
 
 
@@ -309,8 +312,6 @@ void ADAPTER::XFluidImpl::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> velpresstepinc)
 {
-  cout << "ADAPTER::XFluidImpl::Evaluate()" << endl;
-
   ComputeInterfaceVelocities();
   ComputeInterfaceAccelerations();
 
@@ -338,22 +339,22 @@ void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> velpresstep
 
   DRT::DEBUGGING::NaNChecker(*velpresstepinc);
 
+  if (velpresstepinc_==Teuchos::null)
+    dserror("velpresstepinc_==Teuchos::null");
+  if (velpresiterinc_==Teuchos::null)
+    dserror("velpresiterinc_==Teuchos::null");
+
   // iteration increments
-  if (velpresstepinc_==Teuchos::null) // first newton step
+  if (not velpresstepinc_->Map().SameAs(velpresstepinc->Map()))  // global map size has changed
   {
+    cout << "dummy" << endl;
+    velpresiterinc_ = Teuchos::rcp(new Epetra_Vector(*fluid_.Discretization()->DofRowMap(), true));
     velpresstepinc_ = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
-    velpresiterinc = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
-  }
-  else if (not velpresstepinc_->Map().SameAs(velpresstepinc->Map()))  // global map size has changed
-  {
-    velpresstepinc_ = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
-    velpresiterinc = Teuchos::rcp(new Epetra_Vector(*Discretization()->DofRowMap(), true));
-//    velpresiterinc = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
   }
   else // update stepinc and compute iterinc
   {
-    velpresiterinc = Teuchos::rcp(new Epetra_Vector(*velpresstepinc));
-    velpresiterinc->Update(-1.0,*velpresstepinc_,1.0);
+    cout << "real" << endl;
+    velpresiterinc_->Update(1.0,*velpresstepinc,-1.0,*velpresstepinc_,0.0);
 
     // update incremental displacement member to provided step increments
     // shortly: disinc_^<i> := disp^<i+1>
@@ -362,7 +363,7 @@ void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> velpresstep
 
 
   // do fluid evaluation provided residual displacements - iteration increment
-  fluid_.Evaluate(boundarydis_, velpresiterinc);
+  fluid_.Evaluate(boundarydis_, velpresiterinc_);
 
   itrueresnp_ = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
 //  // get surface force
@@ -1004,7 +1005,6 @@ void ADAPTER::XFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> idispstepinc)
 {
-  cout << "ADAPTER::XFluidImpl::ApplyMeshDisplacementIncrement" << endl;
   // The field solver always expects an iteration increment only. And
   // there are Dirichlet conditions that need to be preserved. So take
   // the sum of increments (disstepinc) and compute disiterinc

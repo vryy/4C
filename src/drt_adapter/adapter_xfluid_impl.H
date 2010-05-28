@@ -256,6 +256,7 @@ namespace ADAPTER {
     Teuchos::RCP<Epetra_Vector> idispiterinc_;
 
     Teuchos::RCP<Epetra_Vector> velpresstepinc_;
+    Teuchos::RCP<Epetra_Vector> velpresiterinc_;
 
     //@}
   };
