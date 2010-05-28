@@ -34,6 +34,9 @@ struct IfaceFieldNum {static const std::size_t pos = IerrorCheckValue;};
 template<> struct IfaceFieldNum<XFEM::PHYSICS::Velxiface> {static const std::size_t pos = 0;};
 template<> struct IfaceFieldNum<XFEM::PHYSICS::Velyiface> {static const std::size_t pos = 1;};
 template<> struct IfaceFieldNum<XFEM::PHYSICS::Velziface> {static const std::size_t pos = 2;};
+template<> struct IfaceFieldNum<XFEM::PHYSICS::Dispxiface> {static const std::size_t pos = 0;};
+template<> struct IfaceFieldNum<XFEM::PHYSICS::Dispyiface> {static const std::size_t pos = 1;};
+template<> struct IfaceFieldNum<XFEM::PHYSICS::Dispziface> {static const std::size_t pos = 2;};
 
 //! for the viscous stress, replace shear stress components with symmetric part
 template <XFEM::PHYSICS::Field FIELD>
@@ -83,26 +86,44 @@ public:
 
       if (testfield == XFEM::PHYSICS::Velxiface or
           testfield == XFEM::PHYSICS::Velyiface or
-          testfield == XFEM::PHYSICS::Velziface)
+          testfield == XFEM::PHYSICS::Velziface or
+          testfield == XFEM::PHYSICS::Dispxiface or
+          testfield == XFEM::PHYSICS::Dispyiface or
+          testfield == XFEM::PHYSICS::Dispziface )
       {
-          if (trialfield == XFEM::PHYSICS::Sigmaxx or
-              trialfield == XFEM::PHYSICS::Sigmaxy or
-              trialfield == XFEM::PHYSICS::Sigmaxz or
-              trialfield == XFEM::PHYSICS::Sigmayx or
-              trialfield == XFEM::PHYSICS::Sigmayy or
-              trialfield == XFEM::PHYSICS::Sigmayz or
-              trialfield == XFEM::PHYSICS::Sigmazx or
-              trialfield == XFEM::PHYSICS::Sigmazy or
-              trialfield == XFEM::PHYSICS::Sigmazz )
-            {
-              Matrix_Guis_uncond<testfield,trialfield>(emat, testshape, fac, trialshape);              
-            }
-          else
-            {
-              dserror(" Wrong position! ");
-            }
+        if (trialfield == XFEM::PHYSICS::Velx or
+            trialfield == XFEM::PHYSICS::Vely or
+            trialfield == XFEM::PHYSICS::Velz or
+            trialfield == XFEM::PHYSICS::Sigmaxx or
+            trialfield == XFEM::PHYSICS::Sigmaxy or
+            trialfield == XFEM::PHYSICS::Sigmaxz or
+            trialfield == XFEM::PHYSICS::Sigmayx or
+            trialfield == XFEM::PHYSICS::Sigmayy or
+            trialfield == XFEM::PHYSICS::Sigmayz or
+            trialfield == XFEM::PHYSICS::Sigmazx or
+            trialfield == XFEM::PHYSICS::Sigmazy or
+            trialfield == XFEM::PHYSICS::Sigmazz )
+        {
+          Matrix_Guis_uncond<testfield,trialfield>(emat, testshape, fac, trialshape);
+        }
+        else if (trialfield == XFEM::PHYSICS::Velxiface or
+                 trialfield == XFEM::PHYSICS::Velyiface or
+                 trialfield == XFEM::PHYSICS::Velziface or
+                 trialfield == XFEM::PHYSICS::Dispxiface or
+                 trialfield == XFEM::PHYSICS::Dispyiface or
+                 trialfield == XFEM::PHYSICS::Dispziface )
+        {
+          Matrix_Guiui_uncond<testfield,trialfield>(emat, testshape, fac, trialshape);
+        }
+        else
+        {
+          dserror(" Wrong trial position! ");
+        }
       }
-      else if (testfield == XFEM::PHYSICS::Sigmaxx or
+      else if (testfield == XFEM::PHYSICS::Velx or
+               testfield == XFEM::PHYSICS::Vely or
+               testfield == XFEM::PHYSICS::Velz or
+               testfield == XFEM::PHYSICS::Sigmaxx or
                testfield == XFEM::PHYSICS::Sigmaxy or
                testfield == XFEM::PHYSICS::Sigmaxz or
                testfield == XFEM::PHYSICS::Sigmayx or
@@ -112,19 +133,22 @@ public:
                testfield == XFEM::PHYSICS::Sigmazy or
                testfield == XFEM::PHYSICS::Sigmazz )
       {
-          if (trialfield == XFEM::PHYSICS::Velxiface or
-              trialfield == XFEM::PHYSICS::Velyiface or
-              trialfield == XFEM::PHYSICS::Velziface )
-            {
-              Matrix_Gsui_uncond<testfield,trialfield>(emat, testshape, fac, trialshape);
-            }
-          else
-            {
-              dserror(" Wrong position! ");
-            }
-      } 
+        if (trialfield == XFEM::PHYSICS::Velxiface or
+            trialfield == XFEM::PHYSICS::Velyiface or
+            trialfield == XFEM::PHYSICS::Velziface or
+            trialfield == XFEM::PHYSICS::Dispxiface or
+            trialfield == XFEM::PHYSICS::Dispyiface or
+            trialfield == XFEM::PHYSICS::Dispziface )
+        {
+          Matrix_Gsui_uncond<testfield,trialfield>(emat, testshape, fac, trialshape);
+        }
+        else
+        {
+          dserror(" Wrong trial position! ");
+        }
+      }
       else
-        dserror(" Wrong position! ");
+        dserror(" Wrong test position! ");
     }
 
     template <XFEM::PHYSICS::Field testfield,
@@ -187,6 +211,32 @@ public:
       }
     }
     
+    template <XFEM::PHYSICS::Field testfield,
+              XFEM::PHYSICS::Field trialfield,
+              class V1,
+              class V2>
+    void Matrix_Guiui_uncond(
+        Epetra_SerialDenseMatrix& emat,
+        const V1&           testshape,
+        const double&       fac,
+        const V2&           trialshape
+    ) const
+    {
+      const std::size_t numdof = 3;
+      const std::size_t numnodetest = emat.M()/numdof;
+      const std::size_t numnodetrial = emat.N()/numdof;
+      for (std::size_t uinode=0; uinode<numnodetrial; ++uinode)
+      {
+        const std::size_t trialpos = numdof*uinode + IfaceFieldNum<trialfield>::pos;
+        const double multiply = fac * trialshape(uinode);
+        for (std::size_t vinode=0; vinode<numnodetest; ++vinode)
+        {
+          const std::size_t testpos = numdof*vinode + IfaceFieldNum<testfield>::pos;
+          emat(testpos, trialpos) += testshape(vinode)*multiply;
+        }
+      }
+    }
+
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield,
               class V1>
@@ -231,8 +281,6 @@ private:
     IFacePatchLocalAssembler(const IFacePatchLocalAssembler& old);
 
     const XFEM::ElementDofManager& dofman_;
-//    Epetra_SerialDenseMatrix& estif_;
-//    Epetra_SerialDenseVector& eforce_;
 };
 
 
