@@ -1672,11 +1672,12 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
 
   trueresidual_->Update(ResidualScaling(),*residual_,0.0);
-//
-//  // macht der FSI algorithmus
-//  iforcecolnp->Scale(ResidualScaling());
-//
-//  cutterdiscret->SetState("iforcenp", iforcecolnp);
+
+  // macht der FSI algorithmus
+  iforcecolnp->Scale(ResidualScaling());
+
+  // for output in adapter
+  cutterdiscret->SetState("iforcenp", iforcecolnp);
 }
 
 

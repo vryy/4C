@@ -369,17 +369,17 @@ void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> velpresstep
   fluid_.Evaluate(boundarydis_, velpresiterinc_);
 
   itrueresnp_ = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
-//  // get surface force
-//  Teuchos::RCP<const Epetra_Vector> itruerescol = boundarydis_->GetState("iforcenp");
-//
-//  // dump all vectors in the boundary discretization
-//  boundarydis_->ClearState();
-//
-//  // map back to solid parallel distribution
-//  Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp (new Epetra_Export(itruerescol->Map(),itrueresnp_->Map()));
-//
-//  itrueresnp_->PutScalar(0.0);
-//  itrueresnp_->Export(*itruerescol,*conimpo,Add);
+  // get surface force
+  Teuchos::RCP<const Epetra_Vector> itruerescol = boundarydis_->GetState("iforcenp");
+
+  // dump all vectors in the boundary discretization
+  boundarydis_->ClearState();
+
+  // map back to solid parallel distribution
+  Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp (new Epetra_Export(itruerescol->Map(),itrueresnp_->Map()));
+
+  itrueresnp_->PutScalar(0.0);
+  itrueresnp_->Export(*itruerescol,*conimpo,Add);
 
 }
 
