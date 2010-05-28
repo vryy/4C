@@ -786,9 +786,9 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
     ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time",time_);
-    discret_->EvaluateDirichletXFEM(eleparams, zeros_, state_.velnp_, Teuchos::null,
+    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(newdofrowmap,true);
+    discret_->EvaluateDirichletXFEM(eleparams, tmp, Teuchos::null, Teuchos::null,
                                 Teuchos::null, dbcmaps_);
-    zeros_->PutScalar(0.0); // just in case of change
   }
 
   // -------------------------------------------------------------------
@@ -1580,6 +1580,8 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
 
   const Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = ComputeInterfaceAndSetDOFs(cutterdiscret);
 
+  PrepareNonlinearSolve();
+
   // store iteration increment
   Teuchos::RCP<const Epetra_Vector> oldinc;
   if (not discret_->DofRowMap()->SameAs(velpresiterinc->Map()))
@@ -1592,8 +1594,6 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   }
 
   DRT::DEBUGGING::NaNChecker(*oldinc);
-
-  PrepareNonlinearSolve();
 
   const Epetra_Map& fluiddofrowmap = *discret_->DofRowMap();
   const Epetra_Map& ifacedofrowmap = *cutterdiscret->DofRowMap();
