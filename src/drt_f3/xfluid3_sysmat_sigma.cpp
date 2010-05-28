@@ -1752,6 +1752,8 @@ void SysmatSigma(
     static LINALG::Matrix<3,shpVecSize> evelnm;
     static LINALG::Matrix<3,shpVecSize> eaccn;
     static LINALG::Matrix<6,shpVecSizeStress> etau;
+    
+    static LINALG::Matrix<3,shpVecSize> egridv;
 
     fillElementUnknownsArrays<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, etau);
 

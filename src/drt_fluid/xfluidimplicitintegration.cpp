@@ -50,6 +50,7 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_io/io_control.H"
 #include "../drt_inpar/inpar_xfem.H"
+#include "../drt_constraint/mpcdofset.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -261,6 +262,11 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   conditions_to_copy.push_back("XFEMCoupling");
   FluidFluidboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(discret_, "FluidFluidCoupling", "FluidFluidboundary", "BELE3", conditions_to_copy);
 
+  //replace the Dofset of FluidFluidboundarydis with the part of Dofsets of discret. 
+  //Now the GID of FluidFluidboundarydis Dofset is a subset of the GID of discret's Dofset 
+  RCP<DRT::DofSet> newdofset = rcp(new ::UTILS::MPCDofSet(discret_));
+  FluidFluidboundarydis_->ReplaceDofSet(newdofset);
+    
   // create node and element distribution with elements and nodes ghosted on all processors
   const Epetra_Map ffnoderowmap = *FluidFluidboundarydis_->NodeRowMap();
   const Epetra_Map ffelemrowmap = *FluidFluidboundarydis_->ElementRowMap();
@@ -292,8 +298,13 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   fluidfluidstate_.fivelnm_   = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
   fluidfluidstate_.fiaccnp_   = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
   fluidfluidstate_.fiaccn_    = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
-  fluidfluidstate_.fluidfluidincvel_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+  fluidfluidstate_.fluidfluidincvel_ = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
   fluidfluidstate_.mfvelnp_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  
+  if (alefluid_ == true)
+  {
+    fluidfluidstate_.gridv_  = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
+  }
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
 
@@ -1131,6 +1142,12 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       FluidFluidboundarydis_->SetState("iveln"  ,fluidfluidstate_.fiveln_);
       FluidFluidboundarydis_->SetState("ivelnm" ,fluidfluidstate_.fivelnm_);
       FluidFluidboundarydis_->SetState("iaccn"  ,fluidfluidstate_.fiaccn_);
+      
+      if (alefluid_)
+      {
+        fluidfluidstate_.gridv_->PutScalar(0.0);
+        FluidFluidboundarydis_->SetState("gridv", fluidfluidstate_.gridv_);
+      }
 
       discret_->SetState("velpres nodal iterinc",oldinc);
 
@@ -1160,9 +1177,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
           RCP<Epetra_Vector> tmp = LINALG::CreateVector(*discret_->DofColMap(),false);
           LINALG::Export(*fluidfluidstate_.fluidfluidincvel_,*tmp);
           discret_->SetState("interface nodal iterinc",tmp);
-          
-          BuildFluidFluidboundaryDofMap(ih_np_, discret_);
-         
+                  
           const Epetra_Map& fluiddofrowmap = *discret_->DofRowMap();
           Cud_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
           Cdu_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
@@ -1181,11 +1196,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
           sysmat_->Add(*Cdd_,false,1.0,1.0);
           residual_->Update(1.0,*rhsd_,1.0);
 
-          //string GuisUncond = "/home/shahmiri/work_tmp/GuisUncond";
-          //string GsuiUncond = "/home/shahmiri/work_tmp/GsuiUncond";
           //string sysmat = "/home/shahmiri/work_tmp/sysmat";
-          //LINALG::PrintMatrixInMatlabFormat(GuisUncond,*GuisUncond_->EpetraMatrix(),true);
-          //LINALG::PrintMatrixInMatlabFormat(GsuiUncond,*(GsuiUncond_->EpetraMatrix()),true);
           //Teuchos::RCP<LINALG::SparseMatrix> sysmatmatrixmatlab = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix);
           //LINALG::PrintMatrixInMatlabFormat(sysmat,*sysmatmatrixmatlab->EpetraMatrix(),true);
         }
@@ -1483,17 +1494,13 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     //------------------- store nodal increment for element stress update
     oldinc->Update(1.0,*incvel_,0.0);
 
-   if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
-   {
-     for (std::map<int,int>::const_iterator iter = fluidfluidstate_.fluidboundarymap_.begin(); iter != fluidfluidstate_.fluidboundarymap_.end(); ++iter)
-     {
-       (*fluidfluidstate_.fivelnp_)[fluidfluidstate_.fivelnp_->Map().LID(iter->first)] = (*state_.velnp_)[state_.velnp_->Map().LID(iter->second)];
-       (*fluidfluidstate_.fluidfluidincvel_)[fluidfluidstate_.fluidfluidincvel_->Map().LID(iter->second)] = (*incvel_)[incvel_->Map().LID(iter->second)];
-     }
-     FluidFluidboundarydis_->SetState("ivelcolnp",fluidfluidstate_.fivelnp_);
-//     discret_->SetState("interface nodal iterinc",fluidfluidstate_.fluidfluidincvel_);
+    if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
+    {     
+      LINALG::Export(*state_.velnp_,*fluidfluidstate_.fivelnp_); 
+      LINALG::Export(*incvel_,*fluidfluidstate_.fluidfluidincvel_); 
+      FluidFluidboundarydis_->SetState("ivelcolnp",fluidfluidstate_.fivelnp_);
+    }
    }
-  }
 
   if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
     MovingFluidOutput();
@@ -3072,10 +3079,7 @@ void FLD::XFluidImplicitTimeInt::MonolithicMultiDisEvaluate(
     const RCP<vector<int> > ifacepatchlmowner = rcp(new vector<int>());
     if (intersected)
     {
-      if (fluidfluidcoupling)
-        GetInterfacepatchLocationVectorsFluidFluid(*xele, ifacepatchlm, ifacepatchlmowner);
-      else
-        ih->GetInterfacepatchLocationVectors(*xele, ifacepatchlm, ifacepatchlmowner);
+       ih->GetInterfacepatchLocationVectors(*xele, ifacepatchlm, ifacepatchlmowner);
     }
     params.set("ifacepatchlm",ifacepatchlm);
     params.set("ifacepatchlmowner",ifacepatchlmowner);

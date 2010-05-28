@@ -1821,6 +1821,8 @@ void SysmatTauPressure(
     static LINALG::Matrix<3,shpVecSize> eaccn;
     static LINALG::Matrix<6,shpVecSizeStress> etau;
     static LINALG::Matrix<shpVecSizeDiscPres,1> ediscpres;
+    
+    static LINALG::Matrix<3,shpVecSize> egridv;
 
     fillElementUnknownsArrays<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, etau, ediscpres);
 

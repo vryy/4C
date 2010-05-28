@@ -600,6 +600,10 @@ protected:
 	  Teuchos::RCP<Epetra_Vector>    mfvelnp_;
 	  /// Nonlinear iteration increment vector
 	  Teuchos::RCP<Epetra_Vector>    fluidfluidincvel_;
+	  
+	  /// grid velocity
+	  Teuchos::RCP<Epetra_Vector>    gridv_;
+	  
   }fluidfluidstate_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
