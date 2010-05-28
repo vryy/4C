@@ -90,6 +90,11 @@ public:
       );
 
   /// setup the variables to do a new time step
+  void PrepareTimeLoop(
+      const Teuchos::RCP<DRT::Discretization>  cutterdiscret
+      );
+
+  /// setup the variables to do a new time step
   void PrepareTimeStep(
       const Teuchos::RCP<DRT::Discretization>  cutterdiscret
       );

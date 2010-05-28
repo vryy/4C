@@ -55,7 +55,9 @@ DAMPING      No
 M_DAMP       0.5
 K_DAMP       0.5
 PREDICT      ConstDis
-CONV_CHECK   AbsRes_And_AbsDis
+NORM_RESF                Abs
+NORM_DISP                Abs
+NORMCOMBI_RESFDISP       And
 TOLDISP      1.0E-08
 TOLRES       1.0E-08
 TOLCONSTR    1.0E-06

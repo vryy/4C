@@ -111,6 +111,9 @@ ADAPTER::XFluidImpl::XFluidImpl(
 
   idispstepinc_ = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
   idispiterinc_ = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
+
+  PrepareBoundaryDis();
+  fluid_.PrepareTimeLoop(boundarydis_);
 }
 
 

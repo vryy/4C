@@ -481,15 +481,15 @@ void FLD::XFluidImplicitTimeInt::TimeLoop(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | setup the variables to do a new time step                 u.kue 06/07|
+ | setup the variables to do a new time loop                 u.kue 06/07|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::XFluidImplicitTimeInt::PrepareTimeStep(const Teuchos::RCP<DRT::Discretization>  cutterdiscret)
+void FLD::XFluidImplicitTimeInt::PrepareTimeLoop(const Teuchos::RCP<DRT::Discretization>  cutterdiscret)
 {
 
-  cout << "FLD::XFluidImplicitTimeInt::PrepareTimeStep()" << endl;
+  cout0_ << "FLD::XFluidImplicitTimeInt::PrepareTimeLoop()" << endl;
 
   {
     ParameterList eleparams;
@@ -498,6 +498,22 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep(const Teuchos::RCP<DRT::Discret
   }
 
   ComputeInterfaceAndSetDOFs(cutterdiscret);
+}
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | setup the variables to do a new time step                 u.kue 06/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::XFluidImplicitTimeInt::PrepareTimeStep(const Teuchos::RCP<DRT::Discretization>  cutterdiscret)
+{
+
+  cout0_ << "FLD::XFluidImplicitTimeInt::PrepareTimeStep()" << endl;
 
   // update interface handle
   ih_n_ = ih_np_;
@@ -1541,7 +1557,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
     const Teuchos::RCP<DRT::Discretization> cutterdiscret,
     const Teuchos::RCP<const Epetra_Vector> velpresiterinc)
 {
-  cout << "FLD::XFluidImplicitTimeInt::Evaluate()" << endl;
+  cout0_ << "FLD::XFluidImplicitTimeInt::Evaluate()" << endl;
 
   if (velpresiterinc == Teuchos::null)
     dserror("schimpf: velpresiterinc == Teuchos::null");

@@ -14,6 +14,7 @@
 #include "../drt_inpar/inpar_fsi.H"
 
 #include "../drt_io/io_control.H"
+#include "../drt_fem_general/debug_nan.H"
 
 
 
@@ -349,7 +350,9 @@ void FSI::MonolithicXFEM::SetupRHS()
 
   // get rhs from fields
   const Teuchos::RCP<const Epetra_Vector> srhs = StructureField().RHS();
+  DRT::DEBUGGING::NaNChecker(*srhs);
   const Teuchos::RCP<const Epetra_Vector> frhs = FluidField().RHS();
+  DRT::DEBUGGING::NaNChecker(*frhs);
 
   const Teuchos::RCP<const Epetra_Vector> srhsinterior = StructureField().Interface().ExtractOtherVector(srhs);
   const Teuchos::RCP<const Epetra_Vector> srhsboundary = StructureField().Interface().ExtractFSICondVector(srhs);
@@ -381,8 +384,7 @@ void FSI::MonolithicXFEM::SetupRHS()
 
   LINALG::ApplyDirichlettoSystem(tmp, rhs_, zeros, *CombinedDBCMap());
 
-//  cout << "rhs_" << endl;
-//  cout << *rhs_ << endl;
+  DRT::DEBUGGING::NaNChecker(*rhs_);
 
 }
 

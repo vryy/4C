@@ -340,16 +340,21 @@ DRT::ELEMENTS::XFluid3::DLMInfo::DLMInfo(
   oldrs_(LINALG::SerialDenseVector(ns,true)),
   stressdofs_(LINALG::SerialDenseVector(ns,true))
 {
-  if (oldrs_.Length() == ns)
+  if (dlminfo_old.oldrs_.Length() == oldrs_.Length())
   {
-    oldKssinv_  = dlminfo_old.oldKssinv_;
     oldrs_      = dlminfo_old.oldrs_;
     stressdofs_ = dlminfo_old.stressdofs_;
 //    cout << nu << " " << oldKGsu_.RowDim() << " " << oldKGsu_.ColDim() << endl;
-    if (oldKGsu_.ColDim() == nu)
+    if (dlminfo_old.oldKGsu_.ColDim() == oldKGsu_.ColDim() and
+        dlminfo_old.oldKGsu_.RowDim() == oldKGsu_.RowDim())
     {
 //      cout << "recovering oldKGsu_" << endl;
       oldKGsu_ = dlminfo_old.oldKGsu_;
+    }
+    if (dlminfo_old.oldKssinv_.ColDim() == oldKssinv_.ColDim() and
+        dlminfo_old.oldKssinv_.RowDim() == oldKssinv_.RowDim())
+    {
+      oldKssinv_  = dlminfo_old.oldKssinv_;
     }
   }
 

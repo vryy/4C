@@ -224,15 +224,17 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         else if (DLM_info_->oldGsui_.N() != (int)ifacepatchlm->size()) // different number of intersecting elements -> coupling matrices change size!
         {
           // todo: rescue stress instead of deleting
+          cout << "stress rescue" << endl;
 //          cout << "DLM_info_->oldGsui_.N() != ifacepatchlm->size() -> reset" << DLM_info_->oldGsui_.N() << "  " << ifacepatchlm->size() << endl;
-          DLM_info_ = Teuchos::rcp(
+          Teuchos::RCP<DLMInfo> DLM_info = Teuchos::rcp(
               new DLMInfo(
                   eleDofManager_uncondensed_->NumNodeDof(),
                   eleDofManager_uncondensed_->NumElemDof(),
                   ifacepatchlm->size()
-//                  ,*DLM_info_
+                  ,*DLM_info_
                   )
               );
+          DLM_info_ = DLM_info;
         }
         else
         {

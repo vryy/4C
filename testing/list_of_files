@@ -179,6 +179,7 @@ Input/xf3_pure_shear_forces.dat                         x        x        x     
 Input/xfsi_fluid_pusher_BE.dat                          x        -        x        -        x        -
 Input/xfsi_fluid_pusher_bdf2.dat                        x        -        x        -        x        -
 Input/xfsi_fluid_pusher_bdf2_monolithic.dat             x        -        x        -        x        -
+Input/xfsi_fluid_pusher_bdf2_monolithic_schmu.dat       x        -        x        -        x        -
 Input/xfsi_fluid_pusher_ost.dat                         x        -        x        -        x        -
 Input/xfsi_fluid_pusher_ost_monolithic.dat              x        -        x        -        x        -
 Input/xfsi_fluid_pusher_ost_densmod.dat                 x        -        x        -        x        -
