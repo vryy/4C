@@ -1495,22 +1495,35 @@ void SysmatBoundarySigma(
             const std::size_t dr = 0;
             const std::size_t ds = 1;
 
-            XFLUID::DnDx<9> normalderiv;
+            XFLUID::DnDx normalderiv(numnode_boundary*begids.size());
             // normal derivatives
-            for (std::size_t node=0;node<numnode_boundary;++node)
+            for (std::size_t node=0;node<(numnode_boundary*begids.size());++node)
             {
               normalderiv.dnxdx(node) =  0.;
-              normalderiv.dnxdy(node) =  shp_iface_dr(node)*dxyzdrs(ds,dz)-shp_iface_ds(node)*dxyzdrs(dr,dz);
-              normalderiv.dnxdz(node) =  shp_iface_ds(node)*dxyzdrs(dr,dy)-shp_iface_dr(node)*dxyzdrs(ds,dy);
-
-              normalderiv.dnydx(node) =  shp_iface_ds(node)*dxyzdrs(dr,dz)-shp_iface_dr(node)*dxyzdrs(ds,dz);
+              normalderiv.dnxdy(node) =  shp_iface_dr(node)*dxyzdrs(dz,ds)-shp_iface_ds(node)*dxyzdrs(dz,dr);
+              normalderiv.dnxdz(node) =  shp_iface_ds(node)*dxyzdrs(dy,dr)-shp_iface_dr(node)*dxyzdrs(dy,ds);
+              normalderiv.dnydx(node) =  shp_iface_ds(node)*dxyzdrs(dz,dr)-shp_iface_dr(node)*dxyzdrs(dz,ds);
               normalderiv.dnydy(node) =  0.;
-              normalderiv.dnydz(node) =  shp_iface_dr(node)*dxyzdrs(ds,dx)-shp_iface_ds(node)*dxyzdrs(dr,dx);
-
-              normalderiv.dnzdx(node) =  shp_iface_dr(node)*dxyzdrs(ds,dy)-shp_iface_ds(node)*dxyzdrs(dr,dy);
-              normalderiv.dnzdy(node) =  shp_iface_ds(node)*dxyzdrs(dr,dx)-shp_iface_dr(node)*dxyzdrs(ds,dx);
+              normalderiv.dnydz(node) =  shp_iface_dr(node)*dxyzdrs(dx,ds)-shp_iface_ds(node)*dxyzdrs(dx,dr);
+              normalderiv.dnzdx(node) =  shp_iface_dr(node)*dxyzdrs(dy,ds)-shp_iface_ds(node)*dxyzdrs(dy,dr);
+              normalderiv.dnzdy(node) =  shp_iface_ds(node)*dxyzdrs(dx,dr)-shp_iface_dr(node)*dxyzdrs(dx,ds);
               normalderiv.dnzdz(node) =  0.;
             }
+
+            XFLUID::TauDnDx tau_times_nderiv(numnode_boundary*begids.size());
+            for (std::size_t node=0;node<(numnode_boundary*begids.size());++node)
+            {
+              tau_times_nderiv.xx(node) = tau(0,0)*normalderiv.dnxdx(node) + tau(0,1)*normalderiv.dnydx(node) + tau(0,2)*normalderiv.dnzdx(node);
+              tau_times_nderiv.xy(node) = tau(0,0)*normalderiv.dnxdy(node) + tau(0,1)*normalderiv.dnydy(node) + tau(0,2)*normalderiv.dnzdy(node);
+              tau_times_nderiv.xz(node) = tau(0,0)*normalderiv.dnxdz(node) + tau(0,1)*normalderiv.dnydz(node) + tau(0,2)*normalderiv.dnzdz(node);
+              tau_times_nderiv.yx(node) = tau(1,0)*normalderiv.dnxdx(node) + tau(1,1)*normalderiv.dnydx(node) + tau(1,2)*normalderiv.dnzdx(node);
+              tau_times_nderiv.yy(node) = tau(1,0)*normalderiv.dnxdy(node) + tau(1,1)*normalderiv.dnydy(node) + tau(1,2)*normalderiv.dnzdy(node);
+              tau_times_nderiv.yz(node) = tau(1,0)*normalderiv.dnxdz(node) + tau(1,1)*normalderiv.dnydz(node) + tau(1,2)*normalderiv.dnzdz(node);
+              tau_times_nderiv.zx(node) = tau(2,0)*normalderiv.dnxdx(node) + tau(2,1)*normalderiv.dnydx(node) + tau(2,2)*normalderiv.dnzdx(node);
+              tau_times_nderiv.zy(node) = tau(2,0)*normalderiv.dnxdy(node) + tau(2,1)*normalderiv.dnydy(node) + tau(2,2)*normalderiv.dnzdy(node);
+              tau_times_nderiv.zz(node) = tau(2,0)*normalderiv.dnxdz(node) + tau(2,1)*normalderiv.dnydz(node) + tau(2,2)*normalderiv.dnzdz(node);
+            }
+
 
             //////////////////////////////////////
             // now build single stiffness terms //
@@ -1568,6 +1581,22 @@ void SysmatBoundarySigma(
             assembler.template Vector<Sigmazy>(shp_tau.d0, -fac*normalvec_fluid(1)*interface_gpvelnp(2));
             assembler.template Vector<Sigmazz>(shp_tau.d0, -fac*normalvec_fluid(2)*interface_gpvelnp(2));
 
+            if (monolithic_FSI)
+            {
+            const double facvelx = monolithic_FSI ? fac*(gpvelnp(0) - interface_gpvelnp(0)) : 0.0;
+            const double facvely = monolithic_FSI ? fac*(gpvelnp(1) - interface_gpvelnp(1)) : 0.0;
+            const double facvelz = monolithic_FSI ? fac*(gpvelnp(2) - interface_gpvelnp(2)) : 0.0;
+            patchassembler.template Matrix<Sigmaxx,Dispxiface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvelx, normalderiv.dnxdx);
+            patchassembler.template Matrix<Sigmaxy,Dispxiface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvelx, normalderiv.dnydx);
+            patchassembler.template Matrix<Sigmaxz,Dispxiface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvelx, normalderiv.dnzdx);
+            patchassembler.template Matrix<Sigmayx,Dispyiface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvely, normalderiv.dnxdy);
+            patchassembler.template Matrix<Sigmayy,Dispyiface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvely, normalderiv.dnydy);
+            patchassembler.template Matrix<Sigmayz,Dispyiface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvely, normalderiv.dnzdy);
+            patchassembler.template Matrix<Sigmazx,Dispziface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvelz, normalderiv.dnxdz);
+            patchassembler.template Matrix<Sigmazy,Dispziface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvelz, normalderiv.dnydz);
+            patchassembler.template Matrix<Sigmazz,Dispziface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvelz, normalderiv.dnzdz);
+            }
+
                /*               \
             - |  v , Dtau * n^f  |
                \               */
@@ -1581,6 +1610,20 @@ void SysmatBoundarySigma(
             assembler.template Matrix<Velz,Sigmazx>(shp.d0, -fac*normalvec_fluid(0), shp_tau.d0);
             assembler.template Matrix<Velz,Sigmazy>(shp.d0, -fac*normalvec_fluid(1), shp_tau.d0);
             assembler.template Matrix<Velz,Sigmazz>(shp.d0, -fac*normalvec_fluid(2), shp_tau.d0);
+
+            if (monolithic_FSI)
+            {
+            const double nfac1 = monolithic_FSI ? fac : 0.0;
+            patchassembler.template Matrix<Velx,Dispxiface>(*couplmats.GNudi_uncond, shp.d0, -nfac1, tau_times_nderiv.xx);
+            patchassembler.template Matrix<Velx,Dispyiface>(*couplmats.GNudi_uncond, shp.d0, -nfac1, tau_times_nderiv.xy);
+            patchassembler.template Matrix<Velx,Dispziface>(*couplmats.GNudi_uncond, shp.d0, -nfac1, tau_times_nderiv.xz);
+            patchassembler.template Matrix<Vely,Dispxiface>(*couplmats.GNudi_uncond, shp.d0, -nfac1, tau_times_nderiv.yx);
+            patchassembler.template Matrix<Vely,Dispyiface>(*couplmats.GNudi_uncond, shp.d0, -nfac1, tau_times_nderiv.yy);
+            patchassembler.template Matrix<Vely,Dispziface>(*couplmats.GNudi_uncond, shp.d0, -nfac1, tau_times_nderiv.yz);
+            patchassembler.template Matrix<Velz,Dispxiface>(*couplmats.GNudi_uncond, shp.d0, -nfac1, tau_times_nderiv.zx);
+            patchassembler.template Matrix<Velz,Dispyiface>(*couplmats.GNudi_uncond, shp.d0, -nfac1, tau_times_nderiv.zy);
+            patchassembler.template Matrix<Velz,Dispziface>(*couplmats.GNudi_uncond, shp.d0, -nfac1, tau_times_nderiv.zz);
+            }
 
             LINALG::Matrix<nsd,1> disctau_times_nf;
             disctau_times_nf.Multiply(tau,normalvec_fluid);
@@ -1606,6 +1649,19 @@ void SysmatBoundarySigma(
             patchassembler.template Matrix<Velziface,Sigmazy>(*(couplmats.Guis_uncond), shp_iface_d0, fac*normalvec_fluid(1), shp_tau.d0);
             patchassembler.template Matrix<Velziface,Sigmazz>(*(couplmats.Guis_uncond), shp_iface_d0, fac*normalvec_fluid(2), shp_tau.d0);
 
+            if (monolithic_FSI)
+            {
+            const double nfac1 = monolithic_FSI ? fac : 0.0;
+            patchassembler.template Matrix<Dispxiface,Dispxiface>(*couplmats.GNdidi_uncond, shp_iface_d0, -nfac1, tau_times_nderiv.xx);
+            patchassembler.template Matrix<Dispxiface,Dispyiface>(*couplmats.GNdidi_uncond, shp_iface_d0, -nfac1, tau_times_nderiv.xy);
+            patchassembler.template Matrix<Dispxiface,Dispziface>(*couplmats.GNdidi_uncond, shp_iface_d0, -nfac1, tau_times_nderiv.xz);
+            patchassembler.template Matrix<Dispyiface,Dispxiface>(*couplmats.GNdidi_uncond, shp_iface_d0, -nfac1, tau_times_nderiv.yx);
+            patchassembler.template Matrix<Dispyiface,Dispyiface>(*couplmats.GNdidi_uncond, shp_iface_d0, -nfac1, tau_times_nderiv.yy);
+            patchassembler.template Matrix<Dispyiface,Dispziface>(*couplmats.GNdidi_uncond, shp_iface_d0, -nfac1, tau_times_nderiv.yz);
+            patchassembler.template Matrix<Dispziface,Dispxiface>(*couplmats.GNdidi_uncond, shp_iface_d0, -nfac1, tau_times_nderiv.zx);
+            patchassembler.template Matrix<Dispziface,Dispyiface>(*couplmats.GNdidi_uncond, shp_iface_d0, -nfac1, tau_times_nderiv.zy);
+            patchassembler.template Matrix<Dispziface,Dispziface>(*couplmats.GNdidi_uncond, shp_iface_d0, -nfac1, tau_times_nderiv.zz);
+            }
 
             if (couplmats.rhsui_uncond == null)
               dserror("rhuis_uncond should not be Null!");

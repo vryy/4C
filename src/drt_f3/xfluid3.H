@@ -68,6 +68,12 @@ namespace DRT
           RCP<Epetra_SerialDenseMatrix> Gsui_uncond;
           RCP<Epetra_SerialDenseMatrix> Guis_uncond;
           RCP<Epetra_SerialDenseVector> rhsui_uncond;
+
+          /// for monolithic FSI, derivatives of the interface normals with respect to
+          /// interface displacement are required
+          RCP<Epetra_SerialDenseMatrix> GNudi_uncond;
+          RCP<Epetra_SerialDenseMatrix> GNsdi_uncond;
+          RCP<Epetra_SerialDenseMatrix> GNdidi_uncond;
         };
         
         FluidFluidCouplingMatrices fluidfluidmatrices_;
@@ -345,6 +351,9 @@ namespace DRT
             const Epetra_SerialDenseMatrix& Gsd_uncond,
             const Epetra_SerialDenseMatrix& Gds_uncond,
             const Epetra_SerialDenseVector& rhsd_uncond,
+            const Epetra_SerialDenseMatrix& GNudi_uncond,
+            const Epetra_SerialDenseMatrix& GNsdi_uncond,
+            const Epetra_SerialDenseMatrix& GNdidi_uncond,
             Epetra_SerialDenseMatrix&       elemat1,
             Epetra_SerialDenseVector&       elevec1,
             Epetra_SerialDenseMatrix&       Cud,
@@ -352,7 +361,8 @@ namespace DRT
             Epetra_SerialDenseMatrix&       Cdd,
             Epetra_SerialDenseVector&       rhsd,
             const std::vector<int>&         lmiface,
-            const bool                      iface_unknown
+            const bool iface_unknowns,
+            const bool monolithic_FSI
             ) const;
 
         /*!

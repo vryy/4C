@@ -36,18 +36,59 @@ struct EnrViscs2
   LINALG::Matrix<numparam,1> zz;
 };
 
-template <size_t numparam>
 struct DnDx
 {
-  LINALG::Matrix<numparam,1> dnxdx;
-  LINALG::Matrix<numparam,1> dnxdy;
-  LINALG::Matrix<numparam,1> dnxdz;
-  LINALG::Matrix<numparam,1> dnydx;
-  LINALG::Matrix<numparam,1> dnydy;
-  LINALG::Matrix<numparam,1> dnydz;
-  LINALG::Matrix<numparam,1> dnzdx;
-  LINALG::Matrix<numparam,1> dnzdy;
-  LINALG::Matrix<numparam,1> dnzdz;
+  Epetra_SerialDenseVector dnxdx;
+  Epetra_SerialDenseVector dnxdy;
+  Epetra_SerialDenseVector dnxdz;
+  Epetra_SerialDenseVector dnydx;
+  Epetra_SerialDenseVector dnydy;
+  Epetra_SerialDenseVector dnydz;
+  Epetra_SerialDenseVector dnzdx;
+  Epetra_SerialDenseVector dnzdy;
+  Epetra_SerialDenseVector dnzdz;
+
+  DnDx(int numparam) :
+    dnxdx(numparam),
+    dnxdy(numparam),
+    dnxdz(numparam),
+    dnydx(numparam),
+    dnydy(numparam),
+    dnydz(numparam),
+    dnzdx(numparam),
+    dnzdy(numparam),
+    dnzdz(numparam)
+  {
+    return;
+  }
+};
+
+// sigma_ik dn_k/dx_j with free counter i and j
+struct TauDnDx
+{
+  Epetra_SerialDenseVector xx;
+  Epetra_SerialDenseVector xy;
+  Epetra_SerialDenseVector xz;
+  Epetra_SerialDenseVector yx;
+  Epetra_SerialDenseVector yy;
+  Epetra_SerialDenseVector yz;
+  Epetra_SerialDenseVector zx;
+  Epetra_SerialDenseVector zy;
+  Epetra_SerialDenseVector zz;
+
+  TauDnDx(int numparam) :
+    xx(numparam),
+    xy(numparam),
+    xz(numparam),
+    yx(numparam),
+    yy(numparam),
+    yz(numparam),
+    zx(numparam),
+    zy(numparam),
+    zz(numparam)
+  {
+    return;
+  };
 };
 
 /*!

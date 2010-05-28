@@ -360,21 +360,29 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
         Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
 
-        RCP<Epetra_SerialDenseMatrix> Cud;
-        RCP<Epetra_SerialDenseMatrix> Cdu;
-        RCP<Epetra_SerialDenseMatrix> Cdd;
-        RCP<Epetra_SerialDenseVector> rhsd;
+        RCP<Epetra_SerialDenseMatrix> Cfi;
+        RCP<Epetra_SerialDenseMatrix> Cif;
+        RCP<Epetra_SerialDenseMatrix> Cii;
+        RCP<Epetra_SerialDenseVector> rhsi;
 
         if (ih_->ElementIntersected(Id()))
         {
           const size_t nui = ifacepatchlm->size();
-          fluidfluidmatrices_.Gsui_uncond  = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), nui));
-          fluidfluidmatrices_.Guis_uncond  = rcp(new Epetra_SerialDenseMatrix(nui, eleDofManager_uncondensed_->NumDofElemAndNode()));
+          const size_t nus = eleDofManager_uncondensed_->NumDofElemAndNode();
+
+          fluidfluidmatrices_.Gsui_uncond  = rcp(new Epetra_SerialDenseMatrix(nus, nui));
+          fluidfluidmatrices_.Guis_uncond  = rcp(new Epetra_SerialDenseMatrix(nui, nus));
           fluidfluidmatrices_.rhsui_uncond = rcp(new Epetra_SerialDenseVector(nui));
-          Cud  = rcp(new Epetra_SerialDenseMatrix(lm.size(), nui));
-          Cdu  = rcp(new Epetra_SerialDenseMatrix(nui, lm.size()));
-          Cdd  = rcp(new Epetra_SerialDenseMatrix(nui, nui));
-          rhsd = rcp(new Epetra_SerialDenseVector(nui));
+          if (monolithic_FSI)
+          {
+            fluidfluidmatrices_.GNudi_uncond  = rcp(new Epetra_SerialDenseMatrix(nus, nui));
+            fluidfluidmatrices_.GNsdi_uncond  = rcp(new Epetra_SerialDenseMatrix(nus, nui));
+            fluidfluidmatrices_.GNdidi_uncond = rcp(new Epetra_SerialDenseMatrix(nui, nui));
+          }
+          Cfi  = rcp(new Epetra_SerialDenseMatrix(lm.size(), nui));
+          Cif  = rcp(new Epetra_SerialDenseMatrix(nui, lm.size()));
+          Cii  = rcp(new Epetra_SerialDenseMatrix(nui, nui));
+          rhsi = rcp(new Epetra_SerialDenseVector(nui));
         }
 
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
@@ -412,9 +420,13 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             *fluidfluidmatrices_.Gsui_uncond,
             *fluidfluidmatrices_.Guis_uncond,
             *fluidfluidmatrices_.rhsui_uncond,
+            *fluidfluidmatrices_.GNudi_uncond,
+            *fluidfluidmatrices_.GNsdi_uncond,
+            *fluidfluidmatrices_.GNdidi_uncond,
             elemat1, elevec1,
-            *Cud, *Cdu, *Cdd, *rhsd,
+            *Cfi, *Cif, *Cii, *rhsi,
             *ifacepatchlm,
+            monolithic_FSI,
             monolithic_FSI
             );
 
@@ -423,10 +435,13 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           DRT::DEBUGGING::NaNChecker(*fluidfluidmatrices_.Guis_uncond);
           DRT::DEBUGGING::NaNChecker(*fluidfluidmatrices_.Gsui_uncond);
           DRT::DEBUGGING::NaNChecker(*fluidfluidmatrices_.rhsui_uncond);
-          params.set("Cud",Cud);
-          params.set("Cdu",Cdu);
-          params.set("Cdd",Cdd);
-          params.set("rhsd",rhsd);
+          DRT::DEBUGGING::NaNChecker(*fluidfluidmatrices_.GNudi_uncond);
+          DRT::DEBUGGING::NaNChecker(*fluidfluidmatrices_.GNsdi_uncond);
+          DRT::DEBUGGING::NaNChecker(*fluidfluidmatrices_.GNdidi_uncond);
+          params.set("Cud",Cfi);
+          params.set("Cdu",Cif);
+          params.set("Cdd",Cii);
+          params.set("rhsd",rhsi);
         }
       }
 
@@ -582,9 +597,17 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         if (ih_->ElementIntersected(Id()))
         {
           const size_t nui = ifacepatchlm->size();
-          fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(nui, eleDofManager_uncondensed_->NumDofElemAndNode()));
-          fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), nui));
+          const size_t nus = eleDofManager_uncondensed_->NumDofElemAndNode();
+
+          fluidfluidmatrices_.Guis_uncond  = rcp(new Epetra_SerialDenseMatrix(nui, nus));
+          fluidfluidmatrices_.Gsui_uncond  = rcp(new Epetra_SerialDenseMatrix(nus, nui));
           fluidfluidmatrices_.rhsui_uncond = rcp(new Epetra_SerialDenseVector(nui));
+          if (monolithic_FSI)
+          {
+            fluidfluidmatrices_.GNudi_uncond  = rcp(new Epetra_SerialDenseMatrix(nus, nui));
+            fluidfluidmatrices_.GNsdi_uncond  = rcp(new Epetra_SerialDenseMatrix(nus, nui));
+            fluidfluidmatrices_.GNdidi_uncond = rcp(new Epetra_SerialDenseMatrix(nui, nui));
+          }
           Cud = rcp(new Epetra_SerialDenseMatrix(lm.size(), nui));
           Cdu = rcp(new Epetra_SerialDenseMatrix(nui, lm.size()));
           Cdd = rcp(new Epetra_SerialDenseMatrix(nui, nui));
@@ -605,10 +628,14 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             *fluidfluidmatrices_.Gsui_uncond,
             *fluidfluidmatrices_.Guis_uncond,
             *fluidfluidmatrices_.rhsui_uncond,
+            *fluidfluidmatrices_.GNudi_uncond,
+            *fluidfluidmatrices_.GNsdi_uncond,
+            *fluidfluidmatrices_.GNdidi_uncond,
             elemat1, elevec1,
             *Cud, *Cdu, *Cdd, *rhsd,
             *ifacepatchlm,
-            true
+            true,
+            monolithic_FSI
         );
 
         if (ih_->ElementIntersected(Id()))
@@ -1028,6 +1055,9 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
     const Epetra_SerialDenseMatrix& Gsui_uncond,
     const Epetra_SerialDenseMatrix& Guis_uncond,
     const Epetra_SerialDenseVector& rhsui_uncond,
+    const Epetra_SerialDenseMatrix& GNudi_uncond,
+    const Epetra_SerialDenseMatrix& GNsdi_uncond,
+    const Epetra_SerialDenseMatrix& GNdidi_uncond,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix& Cuui,
@@ -1035,7 +1065,8 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
     Epetra_SerialDenseMatrix& Cuiui,
     Epetra_SerialDenseVector& rhsui,
     const std::vector<int>&   lmiface,
-    const bool iface_unknown
+    const bool iface_unknowns,
+    const bool monolithic_FSI
 ) const
 {
   // for matrix vector and matrix matrix computations
@@ -1100,7 +1131,7 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
     // elevec1(i) += - GusKssinv(i,j)*fs(j);
     blas.GEMV('N', nu, ns,-1.0, GusKssinv.A(), GusKssinv.LDA(), fs.A(), 1.0, elevec1.A());
 
-    if (iface_unknown)
+    if (iface_unknowns)
     {
       if (nui == 0)
         dserror("think");
@@ -1112,6 +1143,8 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
         for (size_t j=0;j<ns;j++)
         {
           Gsui(j,i) = Gsui_uncond(nu+j, i);
+          if (monolithic_FSI)
+            Gsui(j,i) += GNsdi_uncond(nu+j, i);
           Guis(i,j) = Guis_uncond(i, nu+j);
         }
       }
@@ -1123,16 +1156,24 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
 
       for (size_t i=0;i<nu;i++)
         for (size_t j=0;j<nui;j++)
+        {
+          if (monolithic_FSI)
+            Cuui(i,j) += GNudi_uncond(i,j);
           for (size_t k=0;k<ns;k++)
             Cuui(i,j) += -GusKssinv(i,k)*Gsui(k,j);
+        }
       for (size_t i=0;i<nui;i++)
         for (size_t j=0;j<nu;j++)
           for (size_t k=0;k<ns;k++)
             Cuiu(i,j) += -GuisKssinv(i,k)*KGsu(k,j);
       for (size_t i=0;i<nui;i++)
         for (size_t j=0;j<nui;j++)
+        {
+          if (monolithic_FSI)
+            Cuiui(i,j) += GNdidi_uncond(i,j);
           for (size_t k=0;k<ns;k++)
             Cuiui(i,j) += -GuisKssinv(i,k)*Gsui(k,j);
+        }
       for (size_t i=0;i<nui;i++)
         for (size_t j=0;j<ns;j++)
           rhsui(i) += - GuisKssinv(i,j)*fs(j);
