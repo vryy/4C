@@ -30,17 +30,26 @@ namespace DRT
 
     static void NaNChecker(const Epetra_SerialDenseVector& vec)
     {
-      if (std::isnan(vec.Norm2()))
+      for (int i = 0; i < vec.Length(); i++)
       {
-        dserror("NaNs detected! Quitting...");
+        if (std::isnan(vec(i)))
+        {
+          dserror("NaNs detected! Quitting...");
+        }
       }
     }
 
     static void NaNChecker(const Epetra_SerialDenseMatrix& mat)
     {
-      if (std::isnan(mat.InfNorm()))
+      for (int m = 0; m < mat.M(); m++)
       {
-        dserror("NaNs detected! Quitting...");
+        for (int n = 0; n < mat.N(); n++)
+        {
+          if (std::isnan(mat(m,n)))
+          {
+            dserror("NaNs detected! Quitting...");
+          }
+        }
       }
     }
 
@@ -68,11 +77,12 @@ namespace DRT
 
     static void NaNChecker(const Epetra_Vector& vec)
     {
-      double norm = 0;
-      vec.Norm1(&norm);
-      if (std::isnan(norm))
+      for (int i = 0; i < vec.MyLength(); i++)
       {
-        dserror("NaNs detected! Quitting...");
+        if (std::isnan(vec[i]))
+        {
+          dserror("NaNs detected! Quitting...");
+        }
       }
     }
 
