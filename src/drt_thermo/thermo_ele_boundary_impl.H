@@ -21,6 +21,7 @@ Maintainer: Caroline Danowski
 #ifndef THERMO_ELE_BOUNDARY_IMPL_H
 #define THERMO_ELE_BOUNDARY_IMPL_H
 
+
 /*----------------------------------------------------------------------*
  |  headers                                                  dano 09/09 |
  *----------------------------------------------------------------------*/
@@ -30,6 +31,7 @@ Maintainer: Caroline Danowski
 
 // forward declarations
 //struct _MATERIAL;
+
 
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
@@ -145,7 +147,7 @@ namespace ELEMENTS
     TemperBoundaryImpl(int numdofpernode);
 
     //! number of nodes
-    static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     //! number of space dimensions
     static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -163,7 +165,7 @@ namespace ELEMENTS
 //      Epetra_SerialDenseVector& elevec3_epetra
 //      );
 
-    //! Evaluate in case of multiple dofsets 01.02.10
+    //! Evaluate in case of multiple dofsets
     virtual int Evaluate(
       DRT::ELEMENTS::ThermoBoundary* ele,
       Teuchos::ParameterList& params,
@@ -206,21 +208,21 @@ namespace ELEMENTS
     //! Compute a constant normal vector for a boundary element
     void GetConstNormal(
       LINALG::Matrix<nsd_+1,1>& normal, ///< the constant normal vector
-      const LINALG::Matrix<nsd_+1,iel>& xyze    ///< element node coordinates
+      const LINALG::Matrix<nsd_+1,nen_>& xyze    ///< element node coordinates
       );
 
       //! number of dof per node
       const int numdofpernode_;
       //! node coordinates
-      LINALG::Matrix<nsd_+1,iel> xyze_;
+      LINALG::Matrix<nsd_+1,nen_> xyze_;
        //! coordinates of current integration point in reference coordinates
       LINALG::Matrix<nsd_,1> xsi_;
       //! array for shape functions
-      LINALG::Matrix<iel,1> funct_;
+      LINALG::Matrix<nen_,1> funct_;
       //! array for shape function derivatives w.r.t r,s,t
-      LINALG::Matrix<nsd_,iel> deriv_;
+      LINALG::Matrix<nsd_,nen_> deriv_;
       //! global derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<nsd_,iel> derxy_;
+      LINALG::Matrix<nsd_,nen_> derxy_;
       //! unit normal vector at integration point
       LINALG::Matrix<nsd_+1,1> normal_;
       //! metric tensor at integration point
@@ -233,6 +235,7 @@ namespace ELEMENTS
 } // ELEMENTS
 
 } // DRT
+
 
 /*----------------------------------------------------------------------*/
 #endif //THERMO_ELE_BOUNDARY_IMPL_H

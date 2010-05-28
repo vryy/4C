@@ -180,15 +180,25 @@ namespace ADAPTER {
 
     //@}
 
+    //! @name Extract coupling values for TSI
+
+    /// extract displacements
+    virtual Teuchos::RCP<Epetra_Vector> ExtractDispn();
+
+    /// extract displacements
+    virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp();
+
+    //@}
+
     //! @name Apply temperatures
 
-     /// apply temperatures to structural solver
-     ///
-     /// This prepares a new solve of the structural field within one time
-     /// step. The middle values are newly created. (like in FSI)
-     ///
-     /// \note This is not yet the most efficient implementation.
-     virtual void ApplyTemperatures(Teuchos::RCP<Epetra_Vector> itemp);
+    /// apply temperatures to structural solver
+    ///
+    /// This prepares a new solve of the structural field within one time
+    /// step. The middle values are newly created. (like in FSI)
+    ///
+    /// \note This is not yet the most efficient implementation.
+    virtual void ApplyTemperatures(Teuchos::RCP<Epetra_Vector> itemp);
 
      //@}
 

@@ -258,7 +258,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
       std::vector<double> mytempnp((la[1].lm_).size());
       // check if you can get the temperature state
       Teuchos::RCP<const Epetra_Vector> tempnp
-       = discretization.GetState(1,"temperature");
+        = discretization.GetState(1,"temperature");
       if (tempnp==Teuchos::null)
         dserror("Cannot get state vector 'tempnp'");
 
@@ -672,7 +672,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_temp(
   // All materials that have a pure LINALG::Matrix
   // interface go to the material law here.
   // the old interface does not exist anymore...
-  RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
     // st.venant-kirchhoff-material with temperature

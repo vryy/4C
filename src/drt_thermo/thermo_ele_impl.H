@@ -136,7 +136,7 @@ namespace ELEMENTS
     TemperImpl(int numdofpernode);
 
     //! number of nodes
-    static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     //! number of space dimensions
     static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -162,7 +162,7 @@ namespace ELEMENTS
 //      );
 
     // new method for volume coupling
-    //! Evaluate for multiple dofsets 01.02.10
+    //! Evaluate for multiple dofsets
     virtual int Evaluate(
       DRT::Element* ele,
       Teuchos::ParameterList& params,
@@ -191,22 +191,13 @@ namespace ELEMENTS
     void CalculateFintCondCapa(
       DRT::Element* ele,  ///< the element whose matrix is calculated
       const double& time,  ///< current time
-      LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_>* econd,  ///< conductivity matrix
-      LINALG::Matrix<iel*numdofpernode_,iel*numdofpernode_>* ecapa,  ///< capacity matrix
-      LINALG::Matrix<iel*numdofpernode_,1>* efint,  ///< internal force
-      LINALG::Matrix<iel*numdofpernode_,1>* efext,  ///< external force
+      LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  ///< conductivity matrix
+      LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa,  ///< capacity matrix
+      LINALG::Matrix<nen_*numdofpernode_,1>* efint,  ///< internal force
+      LINALG::Matrix<nen_*numdofpernode_,1>* efext,  ///< external force
       LINALG::Matrix<nquad_,nsd_>* eheatflux,  ///< heat fluxes at Gauss points
       LINALG::Matrix<nquad_,nsd_>* etempgrad  ///< temperature gradients at Gauss points
       );
-
-/*
-      //! calculate mass matrix and rhs for determining initial time derivative
-      virtual void InitialTimeDerivative(
-        DRT::Element* ele,  ///< the element
-        Epetra_SerialDenseMatrix& emat,  ///< element matrix to calculate
-        Epetra_SerialDenseVector& erhs  ///< element rhs to calculate
-        );
-*/
 
     //! get the body force
     virtual void Radiation(
@@ -227,16 +218,6 @@ namespace ELEMENTS
       const int eleid  ///< the element id
       );
 
-/*
-      //! calculate flux vector for actual solution
-      virtual void CalculateHeatFlux(
-        LINALG::Matrix<3,iel>& flux,
-        const DRT::Element* ele,
-        const vector<double>& etempnp,
-        const Epetra_SerialDenseVector& erate,
-        );
-*/
-
     //! integral of shape functions over the element
     void IntegrateShapeFunctions(
       const DRT::Element* ele,  ///< the actual element
@@ -247,32 +228,51 @@ namespace ELEMENTS
     void ExtrapolateFromGaussPointsToNodes(
       DRT::Element* ele,  ///< the actual element
       const LINALG::Matrix<nquad_,nsd_>& gpheatflux,
-      LINALG::Matrix<iel*numdofpernode_,1>& efluxx,
-      LINALG::Matrix<iel*numdofpernode_,1>& efluxy,
-      LINALG::Matrix<iel*numdofpernode_,1>& efluxz
+      LINALG::Matrix<nen_*numdofpernode_,1>& efluxx,
+      LINALG::Matrix<nen_*numdofpernode_,1>& efluxy,
+      LINALG::Matrix<nen_*numdofpernode_,1>& efluxz
       );
 
+    //! @name TSI related stuff
+
+    //! Calculate element vectors (internal/external) and a few matrices
+    //! considering current displacement solution
+    void CouplCalculateFintCondCapa(
+      DRT::Element* ele,  ///< the element whose matrix is calculated
+      const double& time,  ///< current time
+      vector<double>& disp,  // current displacements
+      vector<double>& vel,  // current velocities
+      LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  ///< conductivity matrix
+      LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa,  ///< capacity matrix
+      LINALG::Matrix<nen_*numdofpernode_,1>* efint,  ///< internal force
+      LINALG::Matrix<nen_*numdofpernode_,1>* efext,  ///< external force
+      LINALG::Matrix<nquad_,nsd_>* eheatflux,  ///< heat fluxes at Gauss points
+      LINALG::Matrix<nquad_,nsd_>* etempgrad  ///< temperature gradients at Gauss points
+      );
+
+    //@}
+
       //! actual values of temperatures
-      LINALG::Matrix<iel,1> etemp_;
+      LINALG::Matrix<nen_,1> etemp_;
       //! capacity matrix
-      LINALG::Matrix<iel,iel> ecapa_;
+      LINALG::Matrix<nen_,nen_> ecapa_;
 
       //! node coordinates
-      LINALG::Matrix<nsd_,iel> xyze_;
+      LINALG::Matrix<nsd_,nen_> xyze_;
       //! radiation in element nodes
       LINALG::Matrix<numdofpernode_,1> radiation_;
       //! coordinates of current integration point in reference coordinates
       LINALG::Matrix<nsd_,1> xsi_;
       //! array for shape functions
-      LINALG::Matrix<iel,1> funct_;
+      LINALG::Matrix<nen_,1> funct_;
       //! array for shape function derivatives w.r.t r,s,t
-      LINALG::Matrix<nsd_,iel> deriv_;
+      LINALG::Matrix<nsd_,nen_> deriv_;
       //! transposed jacobian "dx/ds"
       LINALG::Matrix<nsd_,nsd_> xjm_;
       //! inverse of transposed jacobian "ds/dx"
       LINALG::Matrix<nsd_,nsd_> xij_;
       //! global derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<nsd_,iel> derxy_;
+      LINALG::Matrix<nsd_,nen_> derxy_;
       //! global temperature rate derivatives in gausspoint w.r.t x,y,z
       LINALG::Matrix<nsd_,nsd_> rderxy_;
       //! integration factor for current GP: fac = GaussWeight * det(J)
@@ -286,11 +286,20 @@ namespace ELEMENTS
       //! capacity density
       double capacoeff_;
 
+      //! @name TSI related stuff
+
+      //! material tangent of the structure
+      LINALG::Matrix<6,1> ctemp_;
+
+      //@}
+
+
   }; //TemperImpl
 
 } // namespace ELEMENTS
 
 } // namespace DRT
+
 
 /*----------------------------------------------------------------------*/
 #endif // THERMO_ELE_IMPL_H

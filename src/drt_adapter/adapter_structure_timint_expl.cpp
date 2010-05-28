@@ -339,17 +339,6 @@ void ADAPTER::StructureTimIntExpl::ApplyInterfaceRobinValue(
 
 
 /*----------------------------------------------------------------------*/
-/* apply the current temperatures (FSI like)                 dano 03/10 */
-void ADAPTER::StructureTimIntExpl::ApplyTemperatures(
-  Teuchos::RCP<Epetra_Vector> itemp
-)
-{
-  // This will add the provided temperature to the structure problem
-  structure_->ApplyTemperatures(itemp);
-}
-
-
-/*----------------------------------------------------------------------*/
 /* structural result test */
 Teuchos::RCP<DRT::ResultTest> ADAPTER::StructureTimIntExpl::CreateFieldTest()
 {
@@ -363,5 +352,36 @@ void ADAPTER::StructureTimIntExpl::Integrate()
 {
   structure_->Integrate();
 }
+
+
+/*----------------------------------------------------------------------*/
+/* extract coupling values needed for TSI                    dano 05/10 */
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::ExtractDispn()
+{
+  dserror("not implemented");
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*/
+/* extract displacements D_{n+1} needed for TSI              dano 05/10 */
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::ExtractDispnp()
+{
+  dserror("not implemented");
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*/
+/* apply current temperatures (FSI like)                     dano 03/10 */
+void ADAPTER::StructureTimIntExpl::ApplyTemperatures(
+  Teuchos::RCP<Epetra_Vector> itemp
+)
+{
+  // This will add the provided temperature to the structure problem
+  structure_->ApplyTemperatures(itemp);
+}
+
+
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

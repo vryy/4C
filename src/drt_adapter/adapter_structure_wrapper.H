@@ -102,6 +102,11 @@ namespace ADAPTER
 
     virtual void ApplyTemperatures(Teuchos::RCP<Epetra_Vector> itemp)
     { structure_->ApplyTemperatures(itemp); }
+    virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp()
+    { return structure_->ExtractDispnp(); }
+    virtual Teuchos::RCP<Epetra_Vector> ExtractDispn()
+    { return structure_->ExtractDispn(); }
+
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest()
     { return structure_->CreateFieldTest(); }
 

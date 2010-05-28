@@ -24,7 +24,10 @@ Maintainer: Caroline Danowski
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
+// material headers
 #include "../drt_mat/fourieriso.H"
+#include "../drt_mat/thermostvenantkirchhoff.H"
+#include "../drt_mat/matlist.H"
 
 using namespace DRT::UTILS;
 

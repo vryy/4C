@@ -120,7 +120,7 @@ namespace ADAPTER {
 
     /// recalculate structural matrices for tsi simulations
     virtual void TSIMatrix() = 0;
-    
+
     /// return contact/meshtying manager
     virtual Teuchos::RCP<MORTAR::ManagerBase> ContactManager() = 0;
 
@@ -264,17 +264,30 @@ namespace ADAPTER {
 
     //@}
 
+
+    //! @name Extract coupling values (displacements) for TSI
+    //@{
+
+    /// extract displacements, stress and velocities for TSI
+    virtual Teuchos::RCP<Epetra_Vector> ExtractDispn() = 0;
+
+    /// extract displacements
+    virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp() = 0;
+
+    //@}
+
     //! @name Apply temperatures
+    //@{
 
-     /// apply temperatures to structural solver
-     ///
-     /// This prepares a new solve of the structural field within one time
-     /// step. The middle values are newly created.
-     ///
-     /// \note This is not yet the most efficient implementation.
-     virtual void ApplyTemperatures(Teuchos::RCP<Epetra_Vector> itemp) = 0;
+    /// apply temperatures to structural solver
+    ///
+    /// This prepares a new solve of the structural field within one time
+    /// step. The middle values are newly created.
+    ///
+    /// \note This is not yet the most efficient implementation.
+    virtual void ApplyTemperatures(Teuchos::RCP<Epetra_Vector> itemp) = 0;
 
-     //@}
+    //@}
 
 
     /// create result test for encapulated structure algorithm

@@ -87,6 +87,9 @@ namespace ADAPTER
     /// direct access to system matrix
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
 
+    /// recalculate thermal matrices for tsi simulations
+    void TSIMatrix();
+
     /// direct access to discretization
     Teuchos::RCP<DRT::Discretization> Discretization();
 
@@ -127,7 +130,7 @@ namespace ADAPTER
 
     /// update after one Newton step (tsi with contact)
     void UpdateNewton(Teuchos::RCP<Epetra_Vector> temp);
-    
+
     /// update at time step end
     void Update();
 
@@ -160,8 +163,17 @@ namespace ADAPTER
 
     //! @name Extract current temperature values needed for TSI
     //@{
-    /// extract fluid forces at the interface
-    virtual Teuchos::RCP<Epetra_Vector> ExtractTemperatures();
+    /// extract current temperatures for inserting in structure field
+    virtual Teuchos::RCP<Epetra_Vector> ExtractTempnp();
+    //@}
+
+    //! @name Apply current displacements and velocities (for TSI)
+    //@{
+    /// apply current displacements and velocities thermo field
+    void ApplyStructVariables(
+      Teuchos::RCP<Epetra_Vector> idisp,
+      Teuchos::RCP<Epetra_Vector> ivel
+      );
     //@}
 
     /// create result test for encapsulated thermo algorithm

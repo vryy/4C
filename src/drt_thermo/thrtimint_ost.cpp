@@ -335,7 +335,7 @@ void THR::TimIntOneStepTheta::ApplyForceTangInternal(
   const double dt,  //!< step size
   const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
   const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
-  Teuchos::RCP<Epetra_Vector> fcap,  //!< stored force
+  Teuchos::RCP<Epetra_Vector> fcap,  //!< stored force (like inertial force in STR)
   Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
   Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
   )

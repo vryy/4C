@@ -65,7 +65,7 @@ namespace ADAPTER
   time step until the interface equilibrium is reached. The thermal
   algorithm has to preserve its state until Update() is called.
 
-  After each Solve() you get the interface forces by ExtractInterfaceTempnp().
+  After each Solve() you get the interface forces by ExtractTempnp().
 
   <h3>Monolithic TSI</h3>
 
@@ -118,6 +118,9 @@ namespace ADAPTER
     /// direct access to system matrix
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
 
+    /// recalculate thermal matrices for tsi simulations
+    virtual void TSIMatrix() = 0;
+
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
 
@@ -155,7 +158,7 @@ namespace ADAPTER
 
     /// update after one Newton step (tsi with contact)
     virtual void UpdateNewton(Teuchos::RCP<Epetra_Vector> temp) = 0;
-    
+
     /// update at time step end
     virtual void Update() = 0;
 
@@ -186,8 +189,17 @@ namespace ADAPTER
 
     //! @name Extract temperature values needed for TSI
     //@{
-    /// extract fluid forces at the interface
-    virtual Teuchos::RCP<Epetra_Vector> ExtractTemperatures() = 0;
+    /// extract current temperatures for inserting in structure field
+    virtual Teuchos::RCP<Epetra_Vector> ExtractTempnp() = 0;
+    //@}
+
+    //! @name Apply current displacements and velocities needed for TSI
+    //@{
+    /// apply current displacements and velocities to thermo field
+    virtual void ApplyStructVariables(
+      Teuchos::RCP<Epetra_Vector> idisp,
+      Teuchos::RCP<Epetra_Vector> ivel
+      ) = 0;
     //@}
 
     /// create result test for encapulated thermo algorithm
@@ -225,6 +237,7 @@ namespace ADAPTER
   };  // class ThermoBaseAlgorithm
 
 }  // namespace ADAPTER
+
 
 /*----------------------------------------------------------------------*/
 #endif // ADAPTER_THERMO_H

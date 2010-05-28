@@ -264,6 +264,14 @@ namespace THR
 
     //@}
 
+    //! @name Thermo-structure-interaction specific methods
+    //@{
+
+    //! recalculate the thermal matrices for tsi simulations
+    void TSIMatrix();
+
+    //@}
+
     //! @name Access methods
     //@{
 

@@ -202,8 +202,14 @@ namespace ELEMENTS
     //! As this may vary along a simulation, the element can redecide the
     //! number of degrees of freedom per node along the way for each of it's nodes
     //! separately.
-    // 01.03.10 new method
-    virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const { return numdofpernode_;}
+    // adapt method for TSI
+    virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+    {
+      // in a 3D example (TSI only implemented for hex8 element)
+      if (nds==1){return 3;}
+      // for the temperature discretization
+      return NumDofPerNode(node);
+    }
 
     //!
     //! \brief Get number of degrees of freedom per element
@@ -232,8 +238,8 @@ namespace ELEMENTS
     //! The element fills the provided map with key names of
     //! visualization data the element wants to visualize AT THE CENTER
     //! of the element geometry. The value is supposed to be dimension of the
-    //! data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
-    //! or 9 (nonsym. tensor)
+    //! data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym.
+    //! tensor) or 9 (nonsym. tensor)
     //!
     //! Example:
     //! \code
@@ -244,8 +250,8 @@ namespace ELEMENTS
     //! \endcode
     //!
     //! \param names (out): On return, the derived class has filled names with
-    //!                     key names of data it wants to visualize and with int dimensions
-    //!                     of that data.
+    //!                     key names of data it wants to visualize and with int
+    //!                     dimensions of that data.
     virtual void VisNames(std::map<std::string,int>& names);
 
     //! \brief Query data to be visualized using BINIO of a given name
@@ -284,10 +290,9 @@ namespace ELEMENTS
 
     //! @name Evaluation
 
-    // 02.02.10 not used since Evaluate(la) is included
-//    //! \brief Evaluate an element, i.e. call the implementation to evaluate element
-//    //! tangent, capacity, internal forces or evaluate errors, statistics or updates
-//    //! etc. directly.
+//    //! \brief Evaluate an element, i.e. call the implementation to evaluate
+//    //! element tangent, capacity, internal forces or evaluate errors, statistics
+//    //! or updates etc. directly.
 //    //!
 //    //! Following implementations of the element are allowed:
 //    //! <pre>
@@ -374,8 +379,8 @@ namespace ELEMENTS
     //!
     //! this method evaluates a surfaces Neumann condition on the shell element
     //!
-    //! \param params (in/out)    : ParameterList for communication between control routine
-    //!                             and elements
+    //! \param params (in/out)    : ParameterList for communication between control
+    //!                             routine and elements
     //! \param discretization (in): A reference to the underlying discretization
     //! \param condition (in)     : The condition to be evaluated
     //! \param lm (in)            : location vector of this element
@@ -534,6 +539,19 @@ namespace ELEMENTS
       return parent_->NumDofPerNode(node);
     }
 
+    //! \brief Get number of degrees of freedom of a certain node
+    //!       (implements pure virtual DRT::Element)
+    //!
+    //! The element decides how many degrees of freedom its nodes must have.
+    //! As this may vary along a simulation, the element can redecide the
+    //! number of degrees of freedom per node along the way for each of it's nodes
+    //! separately.
+    //! extendes method for volume coupling (here: TSI)
+    virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+    {
+      return parent_->NumDofPerNode(nds,node);
+    }
+
     //! Return a pointer to the parent element of this boundary element
     virtual DRT::ELEMENTS::Thermo* ParentElement()
     {
@@ -682,6 +700,7 @@ namespace ELEMENTS
 } // namespace ELEMENTS
 
 } // namespace DRT
+
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef THERMO_ELEMENT_H

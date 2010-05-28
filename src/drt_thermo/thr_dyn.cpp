@@ -79,10 +79,15 @@ void thr_dyn_drt()
 
   // create marching time integrator
   Teuchos::RCP<ADAPTER::Thermo> atti
-    = Teuchos::rcp(new ADAPTER::ThermoTimInt(Teuchos::rcp(new Teuchos::ParameterList(ioflags)),
-                                             Teuchos::rcp(new Teuchos::ParameterList(tdyn)),
-                                             Teuchos::rcp(new Teuchos::ParameterList(xparams)),
-                                             actdis, solver, output));
+    = Teuchos::rcp(
+        new ADAPTER::ThermoTimInt(
+          Teuchos::rcp(new Teuchos::ParameterList(ioflags)),
+          Teuchos::rcp(new Teuchos::ParameterList(tdyn)),
+          Teuchos::rcp(new Teuchos::ParameterList(xparams)),
+          actdis, solver, output
+          )
+        );
+
   if (atti == Teuchos::null) dserror("Failed in creating integrator.");
 
   // do restart if demanded from input file

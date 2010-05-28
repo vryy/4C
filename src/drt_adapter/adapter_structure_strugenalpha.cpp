@@ -121,7 +121,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispn()
 
   if (pstype != INPAR::STR::prestress_none && time <= pstime)
     return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap(),true));
-  else 
+  else
     return structure_->Disp();
 }
 
@@ -143,7 +143,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnm()
 
   if (pstype != INPAR::STR::prestress_none && time <= pstime)
     return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap(),true));
-  else 
+  else
     return structure_->Dispm();
 }
 
@@ -204,7 +204,7 @@ Teuchos::RCP<MORTAR::ManagerBase> ADAPTER::StructureGenAlpha::ContactManager()
   // no contact with tsi in old time integration
   if (structure_->HaveContactMeshtying())
     dserror("TSI and contact only in new time integration");
-    
+
   return Teuchos::null;
 }
 
@@ -310,7 +310,7 @@ void ADAPTER::StructureGenAlpha::Update()
 void ADAPTER::StructureGenAlpha::Output()
 {
   structure_->Output();
-  
+
 }
 
 
@@ -569,9 +569,19 @@ void ADAPTER::StructureGenAlpha::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Ve
 
 
 /*----------------------------------------------------------------------*
- | Apply current temperature                                 dano 03/10 |
  *----------------------------------------------------------------------*/
-void ADAPTER::StructureGenAlpha::ApplyTemperatures(Teuchos::RCP<Epetra_Vector> iforce)
+Teuchos::RCP<DRT::ResultTest> ADAPTER::StructureGenAlpha::CreateFieldTest()
+{
+  return Teuchos::rcp(new StruResultTest(*structure_));
+}
+
+
+/*----------------------------------------------------------------------*
+ | Apply current temperature  (for TSI)                      dano 03/10 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::StructureGenAlpha::ApplyTemperatures(
+  Teuchos::RCP<Epetra_Vector> itemp
+  )
 {
   // Play it save. In the first iteration everything is already set up
   // properly. However, all following iterations need to calculate the
@@ -584,10 +594,22 @@ void ADAPTER::StructureGenAlpha::ApplyTemperatures(Teuchos::RCP<Epetra_Vector> i
 
 
 /*----------------------------------------------------------------------*
+ | Extract displacements needed for TSI                      dano 05/10 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ADAPTER::StructureGenAlpha::CreateFieldTest()
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractDispn()
 {
-  return Teuchos::rcp(new StruResultTest(*structure_));
+  dserror("no application here");
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*
+ | Extract current displacements needed for TSI              dano 05/10 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractDispnp()
+{
+  dserror("no application here");
+  return Teuchos::null;
 }
 
 

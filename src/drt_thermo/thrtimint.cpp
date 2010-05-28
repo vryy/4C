@@ -180,6 +180,10 @@ void THR::TimInt::DetermineCapaConsistTempRate()
     // SetState(0,...) in case of multiple dofsets (e.g. TSI)
     discret_->SetState(0, "residual temperature", zeros_);
     discret_->SetState(0, "temperature", (*temp_)(0));
+    // set displacements for the coupled TSI problem
+    if(disn_!=Teuchos::null) discret_->SetState(1,"displacement",disn_);
+    if(veln_!=Teuchos::null) discret_->SetState(1,"velocity",veln_);
+    // calculate the capacity matrix onto tang_, instead of buildung 2 matrices
     discret_->Evaluate(p, Teuchos::null, tang_, fint, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -301,7 +305,7 @@ void THR::TimInt::ReadRestart(const int step)
 
   // fix pointer to #dofrowmap_, which has not really changed, but is
   // located at different place
-  dofrowmap_ = discret_->DofRowMap(0);
+  dofrowmap_ = discret_->DofRowMap();
 }
 
 /*----------------------------------------------------------------------*
@@ -737,6 +741,15 @@ void THR::TimInt::ApplyForceTangInternal(
   // SetState(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->SetState(0, "residual temperature", tempi);
   discret_->SetState(0, "temperature", temp);
+  // set displacements and velocities for the coupled TSI problem
+  if(disn_!=Teuchos::null)
+  {
+    discret_->SetState(1,"displacement",disn_);
+  }
+  if(veln_!=Teuchos::null)
+  {
+    discret_->SetState(1,"velocity",veln_);
+  }
   discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
@@ -772,6 +785,16 @@ void THR::TimInt::ApplyForceTangInternal(
   // SetState(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->SetState(0,"residual temperature", tempi);
   discret_->SetState(0,"temperature", temp);
+  // set displacements and velocities for the coupled TSI problem
+  if(disn_!=Teuchos::null)
+  {
+    discret_->SetState(1,"displacement",disn_);
+  }
+  if(veln_!=Teuchos::null)
+  {
+    discret_->SetState(1,"velocity",veln_);
+  }
+
   discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, fcap);
   discret_->ClearState();
 
@@ -804,10 +827,35 @@ void THR::TimInt::ApplyForceInternal(
   // SetState(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->SetState(0, "residual temperature", tempi);  // these are incremental
   discret_->SetState(0, "temperature", temp);
+  // set displacements and velocities for the coupled TSI problem
+  if(disn_!=Teuchos::null)
+  {
+    discret_->SetState(1,"displacement",disn_);
+  }
+  if(veln_!=Teuchos::null)
+  {
+    discret_->SetState(1,"velocity",veln_);
+  }
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
+  // where the fun starts
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  get current displacements and  velocities from the       dano 05/10 |
+ |  structure discretization                                            |
+ *----------------------------------------------------------------------*/
+void THR::TimInt::ApplyStructVariables(
+  Teuchos::RCP<Epetra_Vector> idisp,  ///< the current velocities
+  Teuchos::RCP<Epetra_Vector> ivel  ///< the current velocities
+  )
+{
+  disn_ = idisp;
+  veln_ = ivel;
   // where the fun starts
   return;
 }

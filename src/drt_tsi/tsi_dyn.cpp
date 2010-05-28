@@ -77,9 +77,6 @@ void tsi_dyn_drt()
   // access the problem-specific parameter list
 //  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
 
-  // access the temperature parameter list: unused in the following 15.12.09
-//  const Teuchos::ParameterList& tdyn = DRT::Problem::Instance()->ThermalDynamicParams();
-
   // we use the structure discretization as layout for the temperature discretization
   if (structdis->NumGlobalNodes()==0) dserror("Structure discretization is empty!");
 
@@ -88,8 +85,12 @@ void tsi_dyn_drt()
   {
     Epetra_Time time(comm);
 
-    // fetch the desired material id for the transport elements
-    const int matid = -1;
+    // fetch the desired material id for the thermo elements
+//    const int matid = -1;
+    // access the temperature parameter list
+    const Teuchos::ParameterList& tdyn = DRT::Problem::Instance()->ThermalDynamicParams();
+    // get the id of the thermo material
+    const int matid = tdyn.get<int>("MATID");
     // create the thermo discretization
     {
       Teuchos::RCP<DRT::UTILS::DiscretizationCreator<TSI::UTILS::ThermoStructureCloneStrategy> > clonewizard =

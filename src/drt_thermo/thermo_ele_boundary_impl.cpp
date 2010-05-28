@@ -30,10 +30,12 @@ Maintainer: Caroline Danowski
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_geometry/position_array.H"
-#include "../drt_lib/linalg_serialdensematrix.H"
-
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/drt_function.H"
+
+// material headers
+#include "../drt_mat/matlist.H"
 
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
@@ -151,13 +153,13 @@ DRT::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl(
 //    if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
 //
 //    // get node coordinates (we have a nsd_+1 dimensional domain!)
-//    GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+//    GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
 //
 //    // determine constant normal to this element
 //    GetConstNormal(normal_,xyze_);
 //
 //    // loop over the element nodes
-//    for (int j=0;j<iel;j++)
+//    for (int j=0;j<nen_;j++)
 //    {
 //      const int nodegid = (ele->Nodes()[j])->Id();
 //      if (normals->Map().MyGID(nodegid) )
@@ -187,7 +189,7 @@ DRT::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl(
 //  return 0;
 //} // Evaluate
 
-// 01.02.10
+
 /*----------------------------------------------------------------------*
  | Evaluate the element in case of volume coupling           dano 02/10 |
  *----------------------------------------------------------------------*/
@@ -219,13 +221,13 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
 
     // get node coordinates (we have a nsd_+1 dimensional domain!)
-    GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+    GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
 
     // determine constant normal to this element
     GetConstNormal(normal_,xyze_);
 
     // loop over the element nodes
-    for (int j=0;j<iel;j++)
+    for (int j=0;j<nen_;j++)
     {
       const int nodegid = (ele->Nodes()[j])->Id();
       if (normals->Map().MyGID(nodegid) )
@@ -255,6 +257,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
   return 0;
 } // Evaluate
 
+
 /*----------------------------------------------------------------------*
  |  Integrate a Surface/Line Neumann boundary condition       gjb 01/09 |
  *----------------------------------------------------------------------*/
@@ -269,7 +272,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
   )
 {
   // get node coordinates (we have a nsd_+1 dimensional domain!)
-  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
 
   // integration points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
@@ -308,7 +311,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
     for (int i = 0; i< nsd_; i++)
     {
       coordgp[i] = 0.0;
-      for (int j = 0; j < iel; j++)
+      for (int j = 0; j < nen_; j++)
       {
         coordgp[i] += xyze_(i,j) * funct_(j);
       }
@@ -335,7 +338,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
 
         const double val_fac_functfac = (*val)[dof]*fac_*functfac;
 
-        for (int node=0;node<iel;++node)
+        for (int node=0;node<nen_;++node)
         {
           elevec1[node*numdofpernode_+dof] += funct_(node)*val_fac_functfac;
         }
@@ -345,6 +348,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
 
   return 0;
 }
+
 
 /*----------------------------------------------------------------------*
  |  evaluate shape functions and int. factor at int. point    gjb 01/09 |
@@ -376,13 +380,14 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  get constant normal                                       gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
   LINALG::Matrix<nsd_+1,1>& normal,
-  const LINALG::Matrix<nsd_+1,iel>& xyze
+  const LINALG::Matrix<nsd_+1,nen_>& xyze
   )
 {
   // determine normal to this element
@@ -420,6 +425,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  Integrate shapefunctions over surface (private)           gjb 02/09 |
  *----------------------------------------------------------------------*/
@@ -435,7 +441,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(
   double boundaryint = params.get<double>("boundaryint");
 
   // get node coordinates (we have a nsd_+1 dimensional domain!)
-  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,iel> >(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
 
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
@@ -446,7 +452,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(
     EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
 
     // compute integral of shape functions
-    for (int node=0;node<iel;++node)
+    for (int node=0; node<nen_; ++node)
     {
       for (int k=0; k< numdofpernode_; k++)
       {
@@ -468,6 +474,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(
   return;
 
 } //TemperBoundaryImpl<distype>::IntegrateShapeFunction
+
 
 /*----------------------------------------------------------------------*/
 #endif // D_THERMO

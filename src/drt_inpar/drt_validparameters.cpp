@@ -1191,6 +1191,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    IntParameter("RESEVRYGLOB",1,"save temperature and other global quantities every RESEVRYGLOB steps",&tdyn);
    IntParameter("RESEVRYELEM",1,"save heat fluxes and other element quantities every RESEVRYELEM steps",&tdyn);
    IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tdyn);
+   IntParameter("MATID",-1,"Material Id for automatic mesh creation",&tdyn);
    // Time loop control
    DoubleParameter("TIMESTEP",0.05,"time step size",&tdyn);
    IntParameter("NUMSTEP",200,"maximum number of steps",&tdyn);
@@ -1316,6 +1317,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
      "Thermo Structure Interaction\n"
      "Partitioned TSI solver with various coupling methods"
      );
+
+   // 18.05.10
+   // decide in partitioned TSI which one-way coupling should be used
+   setStringToIntegralParameter<int>("COUPVARIABLE","Displacement",
+                                "Coupling variable",
+                                tuple<std::string>("Displacement","Temperature"),
+                                tuple<int>(0,1),
+                                &tsidyn);
 
    // Output type
    IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tsidyn);

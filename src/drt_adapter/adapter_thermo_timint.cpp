@@ -193,6 +193,14 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::ThermoTimInt::SystemMatrix()
   return thermo_->Tang();
 }
 
+/*----------------------------------------------------------------------*
+ | recalculate thermal matrices for tsi simulations          dano 05/10 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::ThermoTimInt::TSIMatrix()
+{
+  thermo_->TSIMatrix();
+}
+
 
 /*----------------------------------------------------------------------*
  | get discretisation                                       bborn 08/09 |
@@ -263,6 +271,7 @@ void ADAPTER::ThermoTimInt::Evaluate(Teuchos::RCP<const Epetra_Vector> temp)
   thermo_->EvaluateRhsTangResidual();
   thermo_->PrepareSystemForNewtonSolve();
 }
+
 
 /*----------------------------------------------------------------------*
  | Update after one Newton step (tsi with contact)            mgit 08/09 |
@@ -357,9 +366,19 @@ void ADAPTER::ThermoTimInt::Solve()
 
 
 /*----------------------------------------------------------------------*
- | extract current temperature values for TSI                dano 03/10 |
+ | thermal result test                                      bborn 08/09 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::ThermoTimInt::ExtractTemperatures()
+Teuchos::RCP<DRT::ResultTest> ADAPTER::ThermoTimInt::CreateFieldTest()
+{
+  return Teuchos::rcp(new THR::ResultTest(*thermo_));
+}
+
+
+/*----------------------------------------------------------------------*
+ | extract current temperature T_{n+1} for TSI               dano 03/10 |
+ | (named like in FSI)                                                  |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::ThermoTimInt::ExtractTempnp()
 {
   // call the time integrator and get current temperature T_{n+1}
   return thermo_->TempNew();
@@ -367,11 +386,14 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::ThermoTimInt::ExtractTemperatures()
 
 
 /*----------------------------------------------------------------------*
- | thermal result test                                      bborn 08/09 |
+ | apply current displacements and velocities needed in TSI  dano 05/10 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ADAPTER::ThermoTimInt::CreateFieldTest()
+void ADAPTER::ThermoTimInt::ApplyStructVariables(
+  Teuchos::RCP<Epetra_Vector> idisp,
+  Teuchos::RCP<Epetra_Vector> ivel
+  )
 {
-  return Teuchos::rcp(new THR::ResultTest(*thermo_));
+  thermo_->ApplyStructVariables(idisp,ivel);
 }
 
 

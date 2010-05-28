@@ -162,8 +162,8 @@ namespace STR
 
     //! Check if contact / meshtying conditions are present and
     //! create manager object + initialize all relevant stuff if so
-    void PrepareContactMeshtying(const Teuchos::ParameterList& sdynparams); 
-    
+    void PrepareContactMeshtying(const Teuchos::ParameterList& sdynparams);
+
     //! Equilibrate the initial state by identifying the consistent
     //! initial accelerations and (if applicable) internal variables
     //! Make damping and mass matrix
@@ -341,7 +341,7 @@ namespace STR
     //! Apply the current temperatures to the structure problem
     void ApplyTemperatures
     (
-      Teuchos::RCP<Epetra_Vector> itemp  //!< the current temperature
+      Teuchos::RCP<Epetra_Vector> itemp  //!< current temperatures
     );
     //@}
 
@@ -512,10 +512,10 @@ namespace STR
     {
       return (locsysman_ != Teuchos::null) ? locsysman_->Trafo() : Teuchos::null;
     }
-    
+
     //! Return contact/meshtying manager
     Teuchos::RCP<MORTAR::ManagerBase> ContactManager() {return cmtman_;}
- 
+
     //@}
 
   protected:
@@ -627,7 +627,7 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> accn_;  //!< global accelerations
                                         //!< \f${A}_{n+1}\f$
                                         //!< at \f$t_{n+1}\f$
-    // call the current temperatures for TSI
+    // // global coupling variables of the thermo field
     Teuchos::RCP<Epetra_Vector> tempn_; //!< global temperatures
                                         //!< \f${T}_{n+1}\f$
                                         //!< at \f$t_{n+1}\f$

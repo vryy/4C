@@ -343,16 +343,6 @@ void ADAPTER::StructureTimIntAda::ApplyInterfaceRobinValue(
 
 
 /*----------------------------------------------------------------------*/
-/* apply the current temperatures (FSI like)                 dano 03/10 */
-void ADAPTER::StructureTimIntAda::ApplyTemperatures(
-  Teuchos::RCP<Epetra_Vector> itemp
-)
-{
-  dserror("not implemented");
-}
-
-
-/*----------------------------------------------------------------------*/
 /* structural result test */
 Teuchos::RCP<DRT::ResultTest> ADAPTER::StructureTimIntAda::CreateFieldTest()
 {
@@ -366,5 +356,35 @@ void ADAPTER::StructureTimIntAda::Integrate()
 {
   structure_->Integrate();
 }
+
+
+/*----------------------------------------------------------------------*/
+/* apply the current temperatures (FSI like)                 dano 03/10 */
+void ADAPTER::StructureTimIntAda::ApplyTemperatures(
+  Teuchos::RCP<Epetra_Vector> itemp
+)
+{
+  dserror("not implemented");
+}
+
+
+/*----------------------------------------------------------------------*/
+/* extract displacements needed for coupling in TSI */
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntAda::ExtractDispn()
+{
+  dserror("not implemented");
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*/
+/* extract displacements D_{n+1} needed for coupling in TSI*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntAda::ExtractDispnp()
+{
+  dserror("not implemented");
+  return Teuchos::null;
+}
+
+
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

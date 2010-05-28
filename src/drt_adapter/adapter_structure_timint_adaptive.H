@@ -248,6 +248,17 @@ namespace ADAPTER {
 
     //@}
 
+
+    /// @name Extract coupling values for TSI
+
+    /// extract displacements
+    virtual Teuchos::RCP<Epetra_Vector> ExtractDispn();
+
+    /// extract displacements
+    virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp();
+
+    //@}
+
     /// @name Apply temperatures
 
     /// apply temperatures to structural solver
