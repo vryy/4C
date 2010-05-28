@@ -28,7 +28,8 @@
 FSI::MonolithicBaseXFEM::MonolithicBaseXFEM(Epetra_Comm& comm)
   : AlgorithmBase(comm,DRT::Problem::Instance()->FSIDynamicParams()),
     StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
-    fluidfield_(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling")
+    fluidfield_(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling"),
+    cout0_(fluidfield_.Discretization()->Comm(), std::cout)
 {
   // structure to fluid
   coupsf_.SetupConditionCoupling(*StructureField().Discretization(),
@@ -115,7 +116,7 @@ void FSI::MonolithicXFEM::SetupExtractor()
   if (maps[0]->NumGlobalElements()==0)
   {
 //    dserror("No inner structural equations. Splitting not possible. Panic.");
-    cout <<"No inner structural equations... All structure DOFs are surface DOFs, Axel?" << endl;
+    cout0_ <<"No inner structural equations... All structure DOFs are surface DOFs, Axel?" << endl;
   }
 
   SetDofRowMaps(maps);
@@ -136,7 +137,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::Timeloop()
 {
-  cout << "FSI::MonolithicXFEM::Timeloop()" << endl;
+  cout0_ << "FSI::MonolithicXFEM::Timeloop()" << endl;
 
 //  // Get the top level parameter list
 //  Teuchos::ParameterList& nlParams = NOXParameterList();
@@ -238,19 +239,23 @@ void FSI::MonolithicXFEM::Timeloop()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::Newton()
 {
-  cout << "FSI::MonolithicXFEM::Newton()" << endl;
+  cout0_ << "FSI::MonolithicXFEM::Newton()" << endl;
+
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const int itemax = fsidyn.get<int>("ITEMAX");
 
   SetupExtractor();
 
   stepinc_ = LINALG::CreateVector(*Extractor().FullMap(), true);
   iterinc_ = LINALG::CreateVector(*Extractor().FullMap(), true);
 
-  for (int i =0;i<20;++i)
+  for (int i =0;i<itemax;++i)
   {
-    cout << endl << YELLOW << "Newton step: " << i  << END_COLOR << endl;
-    Evaluate(i==0);
+    cout0_ << endl << YELLOW << "Newton step: " << i << "/" << itemax << END_COLOR << endl;
 
-    // setup global (full monolithic) map
+    Evaluate();
+
+    // setup global (full monolithic) map and the individual extractors
     SetupExtractor();
 
     SetupRHS();
@@ -290,56 +295,49 @@ void FSI::MonolithicXFEM::InitialGuess()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::Evaluate(bool firstNewtonStep)
+void FSI::MonolithicXFEM::Evaluate()
 {
   // take current increment and setup linear system
-  cout << "FSI::MonolithicXFEM::Evaluate()" << endl;
+  cout0_ << "FSI::MonolithicXFEM::Evaluate()" << endl;
 
-//  if (stepinc_ == Teuchos::null)
-//  {
-////    FluidField().Evaluate(Teuchos::null, Teuchos::null);
-//    FluidField().EvaluateUsingIterInc(Teuchos::null, Teuchos::null);
-//    StructureField().Evaluate(Teuchos::null);
-//  }
-//  else
-//  {
-    // extract structure displacement
-    const Teuchos::RCP<const Epetra_Vector> sxstepinc_interior = Extractor().ExtractStructureInteriorVector(stepinc_);
-    const Teuchos::RCP<const Epetra_Vector> sxstepinc_boundary = Extractor().ExtractStructureBoundaryVector(stepinc_);
+  // extract structure displacement
+  const Teuchos::RCP<const Epetra_Vector> sxstepinc_interior = Extractor().ExtractStructureInteriorVector(stepinc_);
+  const Teuchos::RCP<const Epetra_Vector> sxstepinc_boundary = Extractor().ExtractStructureBoundaryVector(stepinc_);
 
-    const Teuchos::RCP<Epetra_Vector> sxstepinc = LINALG::CreateVector(*StructureField().Interface().FullMap(),true);
-    StructureField().Interface().InsertOtherVector(sxstepinc_interior,sxstepinc);
-    StructureField().Interface().InsertFSICondVector(sxstepinc_boundary,sxstepinc);
+  const Teuchos::RCP<Epetra_Vector> sxstepinc = LINALG::CreateVector(*StructureField().Interface().FullMap(),true);
+  StructureField().Interface().InsertOtherVector(sxstepinc_interior,sxstepinc);
+  StructureField().Interface().InsertFSICondVector(sxstepinc_boundary,sxstepinc);
 
-    const Teuchos::RCP<const Epetra_Vector> fxstepinc = Extractor().ExtractFluidVector(stepinc_);
+  const Teuchos::RCP<const Epetra_Vector> fxstepinc = Extractor().ExtractFluidVector(stepinc_);
 
-//    cout << "solid interiour step inc" << endl;
-//    cout << *sxstepinc_interior << endl;
-//    cout << "solid boundary step inc" << endl;
-//    cout << *sxstepinc_boundary << endl;
-//    cout << "fluid stepinc:" << endl;
-//    cout << *fxstepinc << endl;
-    if (firstNewtonStep)
-      StructureField().Evaluate(Teuchos::null);
-    else
-      StructureField().Evaluate(sxstepinc);
+  //    cout << "solid interior step inc" << endl;
+  //    cout << *sxstepinc_interior << endl;
+  //    cout << "solid boundary step inc" << endl;
+  //    cout << *sxstepinc_boundary << endl;
+  //    cout << "fluid stepinc:" << endl;
+  //    cout << *fxstepinc << endl;
 
 
-    sxstepinc->Update(1.0, *StructureField().Dispnp(), -1.0, *StructureField().Dispn(), 0.0);
-    const Teuchos::RCP<const Epetra_Vector> stepinc_solid_boundary_2 =
-        StructureField().Interface().ExtractFSICondVector(sxstepinc);
-    FluidField().Evaluate(StructToFluid(stepinc_solid_boundary_2), fxstepinc);
+  StructureField().Evaluate(sxstepinc);
 
+  // compute step inc including the structure Dirichlet BC
+  sxstepinc->Update(1.0, *StructureField().Dispnp(), -1.0, *StructureField().Dispn(), 0.0);
+  // get surface displacement step inc
+  const Teuchos::RCP<const Epetra_Vector> stepinc_solid_boundary_2 =
+      StructureField().Interface().ExtractFSICondVector(sxstepinc);
+  // fluid requires step inc including Dirichlet conditions
+  FluidField().Evaluate(StructToFluid(stepinc_solid_boundary_2), fxstepinc);
 
-    if (stepinc_solid_boundary_2->Comm().MyPID() == 0 && stepinc_solid_boundary_2->MyLength() >= 3)
-    {
-      std::ofstream f;
-      const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
-                              + ".outifacedispstepinc.txt";
-      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-      f << (*stepinc_solid_boundary_2)[0] << "  " << "\n";
-      f.close();
-    }
+  // put the FSI interface displacement into a text file for debugging
+  if (stepinc_solid_boundary_2->Comm().MyPID() == 0 && stepinc_solid_boundary_2->MyLength() >= 3)
+  {
+    std::ofstream f;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                                  + ".outifacedispstepinc.txt";
+    f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+    f << (*stepinc_solid_boundary_2)[0] << "  " << "\n";
+    f.close();
+  }
 }
 
 
@@ -347,7 +345,7 @@ void FSI::MonolithicXFEM::Evaluate(bool firstNewtonStep)
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::SetupRHS()
 {
-  cout << "FSI::MonolithicXFEM::SetupRHS" << endl;
+  cout0_ << "FSI::MonolithicXFEM::SetupRHS" << endl;
 
   // get rhs from fields
   const Teuchos::RCP<const Epetra_Vector> srhs = StructureField().RHS();
@@ -391,29 +389,35 @@ void FSI::MonolithicXFEM::SetupRHS()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::MonolithicXFEM::Converged() const
+bool FSI::MonolithicXFEM::Converged()
 {
-  cout << "FSI::MonolithicXFEM::ConverganceTest()" << endl;
+  cout0_ << "FSI::MonolithicXFEM::ConverganceTest()" << endl;
 
 
-  const double ittol = 1.0e-8;
-
-  const RCP<const Epetra_Map> dofrowmap = Extractor().FullMap();
-  Epetra_Vector full(*dofrowmap);
-  Epetra_Import importer(*dofrowmap,rhs_->Map());
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const double ittol = fsidyn.get<double>("CONVTOL");
 
   double fullresnorm;
-
-  const int err = full.Import(*rhs_,importer,Insert);
-  if (err) dserror("Import using importer returned err=%d",err);
-  full.Norm2(&fullresnorm);
+  rhs_->Norm2(&fullresnorm);
+  fullresnorm /= rhs_->Map().NumGlobalElements();
 
   // test if rhs is zero (equilibrium)
   const bool converged = fullresnorm <= ittol;
   if (converged)
-    std::cout << GREEN   << "fullresnorm = " << fullresnorm << END_COLOR << endl;
+    cout0_ << GREEN   << "fullresnorm = " << fullresnorm << " / " << ittol << END_COLOR << endl;
   else
-    std::cout << RED     << "fullresnorm = " << fullresnorm << END_COLOR << endl;
+    cout0_ << RED     << "fullresnorm = " << fullresnorm << " / " << ittol << END_COLOR << endl;
+
+  // put the FSI interface displacement into a text file for debugging
+  if (stepinc_->Comm().MyPID() == 0)
+  {
+    std::ofstream f;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                                  + ".fullresnorm.txt";
+    f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+    f << fullresnorm << "  " << "\n";
+    f.close();
+  }
 
   return converged;
 }
@@ -423,7 +427,7 @@ bool FSI::MonolithicXFEM::Converged() const
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::SetupSystemMatrix()
 {
-  cout << "FSI::MonolithicXFEM::SetupSystemMatrix()" << endl;
+  cout0_ << "FSI::MonolithicXFEM::SetupSystemMatrix()" << endl;
   // build global block matrix
 
   // extract Jacobian matrices and put them into composite system
@@ -465,7 +469,7 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
                 1.0,
                 ADAPTER::Coupling::SlaveConverter(coupsf),
                 systemmatrix_->Matrix(2,1),
-                true,
+                false,
                 false);
 
   sgitransform_(*Cdu,
@@ -480,7 +484,7 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
                 ADAPTER::Coupling::SlaveConverter(coupsf),
                 ADAPTER::Coupling::SlaveConverter(coupsf),
                 systemmatrix_->Matrix(1,1),
-                true,
+                false,
                 true);
 
   // done. make sure all blocks are filled.
@@ -494,7 +498,7 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::LinearSolve()
 {
-  cout << "FSI::MonolithicXFEM::LinearSolve()" << endl;
+  cout0_ << "FSI::MonolithicXFEM::LinearSolve()" << endl;
 
   // get initial guess from fields
   // solve linear system
@@ -517,7 +521,7 @@ void FSI::MonolithicXFEM::LinearSolve()
 //  Extractor().InsertFluidVector(fx, iterinc);
 
   Teuchos::RCP<LINALG::SparseMatrix> m = systemmatrix_->Merge();
-  cout << "  merged" << endl;
+  cout0_ << "  merged" << endl;
 
   // get UMFPACK...
   Teuchos::ParameterList solverparams = DRT::Problem::Instance()->FluidSolverParams();
@@ -528,41 +532,68 @@ void FSI::MonolithicXFEM::LinearSolve()
                              DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   solver->Solve(m->EpetraOperator(), iterinc_, rhs_, true, true);
-  cout << "  solved" << endl;
+  cout0_ << "  solved" << endl;
 
   if (stepinc_ == Teuchos::null)
-    dserror("bruell!");
+    dserror("schimpf!");
 
   if (not stepinc_->Map().SameAs(iterinc_->Map()))
   {
-    cout << RED_LIGHT << "  Resetting global FSI stepinc_... " << END_COLOR << endl;
-    Teuchos::RCP<Epetra_Vector> oldstepinc = stepinc_;
-    stepinc_ = LINALG::CreateVector(*Extractor().FullMap(),true);
-    // recover step vector as much as possible
-    for (int newLID = 0; newLID < stepinc_->Map().NumMyElements(); newLID++)
-    {
-      const int newGID = stepinc_->Map().GID(newLID);
-      const int oldLID = oldstepinc->Map().LID(newGID);
-      if (oldLID == -1)
-      {
-        // not found
-      }
-      else
-      {
-        (*stepinc_)[newLID] = (*oldstepinc)[oldLID];
-      }
-    }
-    cout << "  recovered" << endl;
+    cout0_ << RED_LIGHT << "  Resetting global FSI stepinc_... " << END_COLOR << endl;
+    VectorRescue(stepinc_);
+    cout0_ << "  recovered" << endl;
   }
 
   const Teuchos::RCP<const Epetra_Vector> zeros = LINALG::CreateVector(*Extractor().FullMap(), true);
   Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*Extractor().FullMap(), true);
-  LINALG::ApplyDirichlettoSystem(iterinc_, tmp, zeros, *CombinedDBCMap());
-  cout << "  DBC applied" << endl;
+  LINALG::ApplyDirichlettoSystem(iterinc_, stepinc_, zeros, *CombinedDBCMap());
+  cout0_ << "  DBC applied" << endl;
 
   stepinc_->Update(1.0,*iterinc_, 1.0);
-  cout << "  updated" << endl;
+  cout0_ << "  updated" << endl;
 
+  double fulliterincnorm;
+  iterinc_->Norm2(&fulliterincnorm);
+  fulliterincnorm /= iterinc_->Map().NumGlobalElements();
+  // test if rhs is zero (equilibrium)
+  cout0_ << RED     << "fulliterincnorm = " << fulliterincnorm << END_COLOR << endl;
+
+  // put the FSI interface displacement into a text file for debugging
+  if (stepinc_->Comm().MyPID() == 0)
+  {
+    std::ofstream f;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                                  + ".fulliterincnorm.txt";
+    f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+    f << fulliterincnorm << "  " << "\n";
+    f.close();
+  }
+
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicXFEM::VectorRescue(
+    Teuchos::RCP<Epetra_Vector>& oldv
+    ) const
+{
+
+  Teuchos::RCP<Epetra_Vector> newv = LINALG::CreateVector(*Extractor().FullMap(),true);
+  // recover step vector as much as possible
+  for (int newLID = 0; newLID < newv->Map().NumMyElements(); newLID++)
+  {
+    const int newGID = newv->Map().GID(newLID);
+    const int oldLID = oldv->Map().LID(newGID);
+    if (oldLID == -1)
+    {
+      // not found
+    }
+    else
+    {
+      (*newv)[newLID] = (*oldv)[oldLID];
+    }
+  }
+  oldv = newv;
 }
 
 

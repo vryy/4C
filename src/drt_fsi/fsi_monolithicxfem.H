@@ -13,6 +13,8 @@
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "../drt_lib/linalg_mapextractor.H"
 
+#include "../drt_io/io_ostream0.H"
+
 #include "fsi_overlapprec.H"
 #include "fsi_matrixtransform.H"
 #include "fsi_statustest.H"
@@ -91,6 +93,8 @@ namespace FSI
     /// the very xfem fluid
     ADAPTER::FluidXFEM              fluidfield_;
 
+    //!< a singular stream to stdout in parallel environment
+    IO::Ostream0 cout0_;
 
   };
 
@@ -138,16 +142,20 @@ namespace FSI
 //        double fluidscale);
 
     void Newton();
-    void Evaluate(bool firstNewtonStep);
+    void Evaluate();
     /// setup composed right hand side from field solvers
     void SetupRHS();
 
     /// setup composed system matrix from field solvers
     void SetupSystemMatrix();
 
-    bool Converged() const;
+    bool Converged();
 
     void LinearSolve();
+
+    void VectorRescue(
+        Teuchos::RCP<Epetra_Vector>& oldv
+        ) const;
 
     MonolithicXFEMExtractor extractor_;
 

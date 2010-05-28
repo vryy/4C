@@ -480,6 +480,12 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep(const Teuchos::RCP<DRT::Discret
 
   cout << "FLD::XFluidImplicitTimeInt::PrepareTimeStep()" << endl;
 
+  {
+    ParameterList eleparams;
+    eleparams.set("action","reset");
+    discret_->Evaluate(eleparams);
+  }
+
   ComputeInterfaceAndSetDOFs(cutterdiscret);
 
   // update interface handle
@@ -627,12 +633,6 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
 {
   // dump old matrix to save memory while we construct a new matrix
   sysmat_ = Teuchos::null;
-
-//  {
-//    ParameterList eleparams;
-//    eleparams.set("action","reset");
-//    discret_->Evaluate(eleparams);
-//  }
   dofmanager_np_ = Teuchos::null;
 
   // within this routine, no parallel re-distribution is allowed to take place
@@ -677,7 +677,7 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
      ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, FluidFluidboundarydis_, fluidfluidstate_.MovingFluideleGIDs_));
    }
    else
-	  ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret, fluidfluidstate_.MovingFluideleGIDs_));
+	   ih_np_ = rcp(new XFEM::InterfaceHandleXFSI(discret_, cutterdiscret, fluidfluidstate_.MovingFluideleGIDs_));
 
   ih_np_->toGmsh(step_);
 
@@ -759,7 +759,7 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
     ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time",time_);
-    discret_->EvaluateDirichletXFEM(eleparams, zeros_, Teuchos::null, Teuchos::null,
+    discret_->EvaluateDirichletXFEM(eleparams, zeros_, state_.velnp_, Teuchos::null,
                                 Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0); // just in case of change
   }
@@ -1536,53 +1536,35 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
 {
   cout << "FLD::XFluidImplicitTimeInt::Evaluate()" << endl;
 
-  const bool firstFSINewtonStep = (velpresiterinc == Teuchos::null);
-
+  if (velpresiterinc == Teuchos::null)
+    dserror("schimpf: velpresiterinc == Teuchos::null");
+  if (state_.velnp_ == Teuchos::null)
+    dserror("schimpf");
   // set the new solution we just got
-  if (firstFSINewtonStep) //
+  Teuchos::RCP<const Epetra_Vector> tmpoldinc;
+  if (not discret_->DofRowMap()->SameAs(velpresiterinc->Map()))
   {
-    cout << "Resetting!!!!!!!!!!!!!!!!!!!" << endl;
-    ParameterList eleparams;
-    eleparams.set("action","reset");
-    discret_->Evaluate(eleparams);
-  }
-  else if (not discret_->DofRowMap()->SameAs(velpresiterinc->Map()))
-  {
+    dserror("jammer");
     cout << "using dummyvelpresiterinc..." << endl;
-    Teuchos::RCP<Epetra_Vector> dummyvelpresiterinc = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(),true));
-    // Take Dirichlet values from velnp and add iterinc to velnp for non-Dirichlet
-    // values.
-    Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-    aux->Update(1.0, *state_.velnp_, 1.0, *dummyvelpresiterinc, 0.0);
-    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), state_.velnp_);
+    tmpoldinc = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(),true));
   }
   else
   {
     cout << "real update..." << endl;
-    // Take Dirichlet values from velnp and add iterinc to velnp for non-Dirichlet
-    // values.
-    if (state_.velnp_ == Teuchos::null)
-      dserror("schimpf");
-    Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-    aux->Update(1.0, *state_.velnp_, 1.0, *velpresiterinc, 0.0);
-    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), state_.velnp_);
+    tmpoldinc = velpresiterinc;
   }
+  state_.velnp_->Update(1.0, *tmpoldinc, 1.0);
 
   const Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih = ComputeInterfaceAndSetDOFs(cutterdiscret);
 
   // store iteration increment
   Teuchos::RCP<const Epetra_Vector> oldinc;
-  if (firstFSINewtonStep)
-  {
-    oldinc = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(),true));
-  }
-  else if (not discret_->DofRowMap()->SameAs(velpresiterinc->Map()))
+  if (not discret_->DofRowMap()->SameAs(velpresiterinc->Map()))
   {
     oldinc = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(),true));
   }
   else
   {
-    dsassert(velpresiterinc->Map().SameAs(*discret_->DofRowMap()), "schimpf!");
     oldinc = velpresiterinc;
   }
 
@@ -1660,20 +1642,13 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   Cdu_->Complete(fluiddofrowmap, ifacedofrowmap); // check maps vs names
   Cdd_->Complete(ifacedofrowmap, ifacedofrowmap);
 
-  //TODO: Cud mit Dirichlet condition beehren!
-
-
-  LINALG::PrintMatrixInMatlabFormat("Cdu_",*Cdu_->EpetraMatrix(),true);
-
-  // blank residual DOFs which are on Dirichlet BC
-  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
-  trueresidual_->Update(ResidualScaling(),*residual_,0.0);
-
   // Apply dirichlet boundary conditions to system of equations
   // residual displacements are supposed to be zero at boundary
   // conditions
   RCP<Epetra_Vector> incvel = LINALG::CreateVector(fluiddofrowmap,true);
   LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
+
+  trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 //
 //  // macht der FSI algorithmus
 //  iforcecolnp->Scale(ResidualScaling());
