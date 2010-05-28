@@ -96,7 +96,7 @@ SIMPLER          No
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME      2.0
 TIMESTEP     0.01
-NUMSTEP      30
+NUMSTEP      130
 UPRES        1
 RESTARTEVRY  5
 IALE         Pseudo_Structure
@@ -104,10 +104,10 @@ COUPALGO     iter_monolithicxfem
 PREDICTOR    d(n)
 RELAX        1.0
 ITEMAX       100
-CONVTOL      1.0E-6
+CONVTOL      1.0E-8
 COUPMETHOD   conforming
 SECONDORDER  Yes
-COUPVARIABLE Force
+COUPVARIABLE Displacement
 ------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -----------------------------------------------------STRUCT SOLVER
@@ -1460,7 +1460,7 @@ NODE           92     COORD 0.000000000000000e+00     0.000000000000000e+00     
 // MAT_fluid
 MAT       1 MAT_fluid  VISCOSITY 0.01 DENSITY 1.0 GAMMA 1.0
 // MAT_Struct_StVenantKirchhoff
-MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
+MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 1.0 THEXPANS 0.0
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
