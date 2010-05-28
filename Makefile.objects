@@ -109,6 +109,9 @@ OBJS_DRT      = \
                 src/drt_lib/transfer_operator_pgamg.o \
                 src/drt_lib/transfer_operator_pgamg2.o \
                 src/drt_lib/braesssarazin_smoother.o \
+                src/drt_lib/aggregation_method.o \
+                src/drt_lib/aggregation_method_uncoupled.o \
+                src/drt_lib/aggregation_method_ml.o \
                 src/drt_lib/linalg_downwindmatrix.o
 #-------------------------------------------------------structural drivers
 OBJS_DRT_STRUCTURE      = \

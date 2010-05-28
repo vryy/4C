@@ -38,6 +38,7 @@ void LINALG::TentativeTransferOperator::GetPtent(const Epetra_Map& rowmap, const
   const int mylength = rowmap.NumMyElements();
 
   //////////////// build a domain map for Ptent
+#if 0
   // find first aggregate on proc
   int firstagg = -1;
   int offset = -1;
@@ -49,8 +50,22 @@ void LINALG::TentativeTransferOperator::GetPtent(const Epetra_Map& rowmap, const
     }
   offset *= nsdim;                      // calculate offset with dim of null space
   if (offset < 0) dserror("could not find any aggreagate on proc");
+#else
+  // we suppose the aggids to be ordered sequential on each proc
+  // search aggid with minimal value
+  int firstagg = 100000000;    // agg with minimal aggid on current proc
+  int offset = -1;
+  for (int i=0; i<mylength; ++i)
+  {
+    if (aggvec[i]>=0 && aggvec[i]<firstagg)
+    {
+      firstagg = aggvec[i];
+    }
+  }
+  offset = firstagg * nsdim;
+#endif
 
-  // calculate gids on coarse grid
+  // generate gids for coarse grid
   vector<int> coarsegids(naggs*nsdim);
   for (int i=0; i<naggs; ++i)
     for (int j=0; j<nsdim; ++j)

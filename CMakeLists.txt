@@ -868,6 +868,9 @@ set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
 )
 set(OBJS_LINALG
+  src/drt_lib/aggregation_method.cpp
+  src/drt_lib/aggregation_method_uncoupled.cpp
+  src/drt_lib/aggregation_method_ml.cpp
   src/drt_lib/braesssarazin_smoother.cpp
   src/drt_lib/linalg_ana.cpp
   src/drt_lib/linalg_blocksparsematrix.cpp

@@ -22,6 +22,8 @@
 #include "transfer_operator_saamg.H"
 #include "transfer_operator_pgamg.H"
 #include "braesssarazin_smoother.H"
+#include "aggregation_method_uncoupled.H"
+#include "aggregation_method_ml.H"
 
 #include "Teuchos_ParameterList.hpp"
 #include "Teuchos_StandardParameterEntryValidators.hpp"
@@ -314,10 +316,10 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
   ////////////////// store level 0 matrices (finest level)
   int curlevel = 0;
 
-  A11_[curlevel] = rcp(new SparseMatrix(Ainput_->Matrix(0,0),Copy));    // check me: copy or view only??
-  A12_[curlevel] = rcp(new SparseMatrix(Ainput_->Matrix(0,1),Copy));
-  A21_[curlevel] = rcp(new SparseMatrix(Ainput_->Matrix(1,0),Copy));
-  A22_[curlevel] = rcp(new SparseMatrix(Ainput_->Matrix(1,1),Copy));
+  A11_[curlevel] = rcp(new SparseMatrix(Ainput_->Matrix(0,0),View/*Copy*/));    // check me: copy or view only??
+  A12_[curlevel] = rcp(new SparseMatrix(Ainput_->Matrix(0,1),View/*Copy*/));
+  A21_[curlevel] = rcp(new SparseMatrix(Ainput_->Matrix(1,0),View/*Copy*/));
+  A22_[curlevel] = rcp(new SparseMatrix(Ainput_->Matrix(1,1),View/*Copy*/));
 
   MLAPI::Init();
 
@@ -325,18 +327,30 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
   {
     /////////////////////////////////////////////////////////
     /////////////////////// AGGREGATION PROCESS
-    RCP<Epetra_IntVector> velaggs = rcp(new Epetra_IntVector(A11_[curlevel]->RowMap(),true));
-    RCP<Epetra_IntVector> preaggs = rcp(new Epetra_IntVector(A22_[curlevel]->RowMap(),true));
+    RCP<Epetra_IntVector> velaggs = null; //rcp(new Epetra_IntVector(A11_[curlevel]->RowMap(),true));
 
     ////////////// determine aggregates using the velocity block matrix A11_[curlevel]
+    RCP<AggregationMethod> aggm = AggregationMethodFactory::Create("Uncoupled",NULL);
     int naggregates_local = 0;
-    int naggregates = GetGlobalAggregates(*A11_[curlevel],velparams->sublist("AMGBS Parameters"),*curvelNS,*velaggs,naggregates_local);
+    int naggregates = 0;
+    if(curlevel==0) velparams->sublist("AMGBS Parameters").set("Unamalgamated BlockSize",nv+1);
+    else            velparams->sublist("AMGBS Parameters").set("Unamalgamated BlockSize",nv);
+    aggm->GetGlobalAggregates(A11_[curlevel]->EpetraMatrix(),velparams->sublist("AMGBS Parameters"),velaggs,naggregates_local,curvelNS);
 
     ////////////// transform vector with velocity aggregates to pressure block
+    RCP<Epetra_IntVector> preaggs = rcp(new Epetra_IntVector(A22_[curlevel]->RowMap(),true));
     for(int i=0; i < preaggs->MyLength(); i++)
     {
       (*preaggs)[i] = (*velaggs)[i*nv];
     }
+
+#ifdef WRITEOUTAGGREGATES
+    // plot out aggregates
+    std::stringstream fileoutstream;
+    fileoutstream << "/home/wiesner/python/aggregates" << curlevel << ".vel";
+    aggm->PrintIntVectorInMatlabFormat(fileoutstream.str(),*velaggs);
+#endif
+
 
     /////////////////////////////////////////////////////////
     /////////////////////// CALCULATE TRANSFER OPERATORS
@@ -345,8 +359,6 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
     string velProlongSmoother = velparams->sublist("AMGBS Parameters").get("amgbs: prolongator smoother (vel)","PA-AMG");
     Tvel_[curlevel] = TransferOperatorFactory::Create(velProlongSmoother,A11_[curlevel],NULL); /* outfile */
     nextvelNS = Tvel_[curlevel]->buildTransferOperators(velaggs,naggregates_local,velparams->sublist("AMGBS Parameters"),curvelNS,0);
-
-
 
     //////////// pressure transfer operators
     string preProlongSmoother = preparams->sublist("AMGBS Parameters").get("amgbs: prolongator smoother (pre)","PA-AMG");
@@ -361,33 +373,6 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
       cout << "Rvel[" << curlevel << "]: " << Tvel_[curlevel]->Restrictor()->EpetraMatrix()->NumGlobalRows() << " x " << Tvel_[curlevel]->Restrictor()->EpetraMatrix()->NumGlobalCols() << " (" << Tvel_[curlevel]->Restrictor()->EpetraMatrix()->NumGlobalNonzeros() << ")" << endl;
       cout << "Rpre[" << curlevel << "]: " << Tpre_[curlevel]->Restrictor()->EpetraMatrix()->NumGlobalRows() << " x " << Tpre_[curlevel]->Restrictor()->EpetraMatrix()->NumGlobalCols() << " (" << Tpre_[curlevel]->Restrictor()->EpetraMatrix()->NumGlobalNonzeros() << ")" << endl;
     }
-
-#ifdef WRITEOUTAGGREGATES
-//    std::ofstream fileout;
-//    std::stringstream fileoutstream;
-//    fileoutstream << "/home/wiesner/fluid/cubits/dc/aggregates/dc/aggregates" << curlevel << ".vel";
-//    fileout.open(fileoutstream.str().c_str(),ios_base::out);
-//    velaggs->Print(fileout);
-//    fileout.flush();
-//    fileout.close();
-//
-//    std::stringstream fileoutstreamp;
-//    fileoutstreamp << "/home/wiesner/fluid/cubits/dc/aggregates/dc/aggregates" << curlevel << ".pre";
-//    fileout.open(fileoutstreamp.str().c_str(),ios_base::out);
-//    preaggs->Print(fileout);
-//    fileout.flush();
-//    fileout.close();
-
-
- /*   std::ofstream fileout2;
-    std::stringstream fileoutstream2;
-    fileoutstream2 << "/home/wiesner/Amat" << curlevel << ".txt";
-    fileout2.open(fileoutstream2.str().c_str(),ios_base::out);
-    fileout2 << *A11_[curlevel] << endl;
-    fileout2.flush();
-    fileout2.close();*/
-#endif
-
 
 
     /////////////////////////// calc RAP product for next level
@@ -444,7 +429,8 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
     nlevels_ = curlevel + 1;
 
     //////////////////// check if aggregation is complete
-    if ((A11_[curlevel+1]->EpetraMatrix()->NumGlobalRows() + A22_[curlevel+1]->EpetraMatrix()->NumGlobalRows()) < nmaxcoarsedim)
+    // TODO: handle aggm.getNumGlobalDirichletBlocks() in a more appropriate way
+    if ((A11_[curlevel+1]->EpetraMatrix()->NumGlobalRows() + A22_[curlevel+1]->EpetraMatrix()->NumGlobalRows() - aggm->getNumGlobalDirichletBlocks()*(nv+np)) < nmaxcoarsedim)
     {
       if(nVerbose_ > 4) cout << "dim A[" << curlevel+1 << "] < " << nmaxcoarsedim << ". -> end aggregation process" << endl;
       break;

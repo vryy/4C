@@ -70,7 +70,7 @@ void LINALG::PGAMGTransferOperator::PG_AMG(const RCP<SparseMatrix>& A, const RCP
   // TODO: compress DinvAP0 -> DinvAP0_subset
 
   ///////////////// prepare variables for column-based omegas
-  int NComputedOmegas = P_tent->EpetraMatrix()->DomainMap().NumGlobalElements();  // number of col-based omegas to be computed (depends on DinvAP0_subset)
+  //int NComputedOmegas = P_tent->EpetraMatrix()->DomainMap().NumGlobalElements();  // number of col-based omegas to be computed (depends on DinvAP0_subset)
 
   ///////////////// compute D^{-1} * A * D^{-1} * A * P0
   RCP<SparseMatrix> DinvADinvAP0 = LINALG::MLMultiply(*DinvA,*DinvAP0,true);
