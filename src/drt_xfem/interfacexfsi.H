@@ -181,7 +181,7 @@ namespace XFEM
     const Teuchos::RCP<DRT::Discretization>       cutterdis_;
 
     //! fluid fluid boundary discretization
-    Teuchos::RCP<DRT::Discretization>       FluidFluidboundarydis_;
+    const Teuchos::RCP<DRT::Discretization>       FluidFluidboundarydis_;
 
     //! moving fluid element ids
     const set<int> 								MovingFluideleGIDs_;
