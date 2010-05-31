@@ -1017,7 +1017,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
     //------------------------------------ PTC update of artificial time
 #if 1
     // SER step size control
-    dti *= (np/nc);
+    dti *= pow((np/nc),6.0);
     dti = max(dti,0.0);
     nc = np;
 
