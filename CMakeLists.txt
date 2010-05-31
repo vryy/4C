@@ -237,6 +237,7 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_dofset.cpp
   src/drt_lib/drt_dofset_base.cpp
   src/drt_lib/drt_dofset_proxy.cpp
+  src/drt_lib/drt_dofset_transparent.cpp
   src/drt_lib/drt_element.cpp
   src/drt_lib/drt_elementregister.cpp
   src/drt_lib/drt_function.cpp
@@ -869,8 +870,8 @@ set(OBJS_POST_DRT_S8CONVERT
 )
 set(OBJS_LINALG
   src/drt_lib/aggregation_method.cpp
-  src/drt_lib/aggregation_method_uncoupled.cpp
   src/drt_lib/aggregation_method_ml.cpp
+  src/drt_lib/aggregation_method_uncoupled.cpp
   src/drt_lib/braesssarazin_smoother.cpp
   src/drt_lib/linalg_ana.cpp
   src/drt_lib/linalg_blocksparsematrix.cpp
@@ -900,12 +901,13 @@ set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint.cpp
   src/drt_constraint/constraint_manager.cpp
   src/drt_constraint/constraintdofset.cpp
+  src/drt_constraint/constraintpenalty.cpp
   src/drt_constraint/constraintsolver.cpp
   src/drt_constraint/monitor.cpp
-  src/drt_constraint/mpcdofset.cpp
   src/drt_constraint/multipointconstraint.cpp
   src/drt_constraint/multipointconstraint2.cpp
   src/drt_constraint/multipointconstraint3.cpp
+  src/drt_constraint/multipointconstraint3penalty.cpp
 )
 set(OBJS_DRT_IO_LIB
   src/drt_io/io.cpp
@@ -1892,7 +1894,7 @@ if (QHULL)
   baci_test(fluidfluidCoupling_hex20_constinflow 1 "")
   baci_test(fluidfluidCoupling_hex20_parainflow_ydir 1 "")
   baci_test(fluidfluidCoupling_hex20_parainflow_ydir_cond 1 "")
-  baci_test(fluidfluidCoupling_simple.dat 1 "")
+  baci_test(fluidfluidCoupling_simple 1 "")
   baci_test(xf3_beltrami_tet4_drt 1 2)
   baci_test(xf3_beltrami_tet4_drt 2 2)
   baci_test(xf3_drivencavity_stat_drt 1 "")
@@ -1929,11 +1931,13 @@ if (QHULL)
   baci_test(xfsi_fluid_pusher_BE 1 15)
   baci_test(xfsi_fluid_pusher_bdf2 1 "")
   baci_test(xfsi_fluid_pusher_bdf2_monolithic 1 "")
+  baci_test(xfsi_fluid_pusher_bdf2_monolithic_schmu 1 "")
   baci_test(xfsi_fluid_pusher_ost 1 15)
   baci_test(xfsi_fluid_pusher_ost_densmod 1 15)
   baci_test(xfsi_fluid_pusher_ost_monolithic 1 15)
   baci_test(xfsi_fluid_pusher_ost_projection 1 15)
   baci_test(xfsi_fluid_pusher_stationary_hex8_monolithic 1 "")
+  baci_test(xfsi_fluid_pusher_stationary_hex8_monolithic 2 "")
   baci_test(xfsi_fluid_pusher_stationary_hex8_partit 1 "")
   baci_test(xfsi_fluid_pusher_stationary_hex8_partit 2 "")
   baci_test(xfsi_multibody_hex20 1 "")
