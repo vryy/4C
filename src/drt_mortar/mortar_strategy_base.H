@@ -134,7 +134,7 @@ class StrategyBase
 
     virtual bool ActiveSetConverged() = 0;
     virtual bool ActiveSetSemiSmoothConverged() = 0;
-    virtual void ApplyForceStiffCmt(const string& statename, RCP<Epetra_Vector> dis, RCP<LINALG::SparseOperator>& kt, RCP<Epetra_Vector>& f, RCP<Epetra_Vector> fcopy, bool predictor = false) = 0;
+    virtual void ApplyForceStiffCmt(RCP<Epetra_Vector> dis, RCP<LINALG::SparseOperator>& kt, RCP<Epetra_Vector>& f, bool predictor = false) = 0;
     virtual double ConstraintNorm() = 0;
     virtual RCP<Epetra_Vector> ContactNorStress() = 0;
     virtual RCP<Epetra_Vector> ContactTanStress() = 0;
@@ -147,7 +147,7 @@ class StrategyBase
     virtual void Initialize() = 0;
     virtual void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
     virtual double InitialPenalty() = 0;
-    virtual void InterfaceForces(RCP<Epetra_Vector> fresm, bool output = false) = 0;
+    virtual void InterfaceForces(bool output = false) = 0;
     virtual RCP<Epetra_Vector> LagrMultOld() = 0;  
     virtual void MeshInitialization() = 0;
     virtual void MortarCoupling(const RCP<Epetra_Vector> dis) = 0;

@@ -453,11 +453,8 @@ void CONTACT::CmtStruGenAlpha::ConsistentPredictor()
     }
   }
 
-  // keep a copy of fresm for contact forces / equilibrium check
-  RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-
   //------------------------------------ evaluate contact or meshtying
-  cmtmanager_->GetStrategy().ApplyForceStiffCmt("displacement",disn_,stiff_,fresm_,fresmcopy,true);
+  cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_,true);
   
 #ifdef CONTACTGMSH2
   int step  = params_.get<int>("step",0);
@@ -699,11 +696,8 @@ void CONTACT::CmtStruGenAlpha::ConstantPredictor()
     }
   }
 
-  // keep a copy of fresm for contact forces / equilibrium check
-  RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-
   //------------------------------------ evaluate contact or meshtying
-  cmtmanager_->GetStrategy().ApplyForceStiffCmt("displacement",disn_,stiff_,fresm_,fresmcopy,true);
+  cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_,true);
   
 #ifdef CONTACTGMSH2
   int step  = params_.get<int>("step",0);
@@ -943,11 +937,8 @@ void CONTACT::CmtStruGenAlpha::ApplyExternalForce(const STR::UTILS::MapExtractor
     }
   }
 
-  // keep a copy of fresm for contact forces / equilibrium check
-  RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-
   //------------------------------------ evaluate contact or meshtying
-  cmtmanager_->GetStrategy().ApplyForceStiffCmt("displacement",disn_,stiff_,fresm_,fresmcopy,true);
+  cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_,true);
   
 #ifdef CONTACTGMSH2
   int istep = step + 1;
@@ -1217,11 +1208,8 @@ void CONTACT::CmtStruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
       }
     }
         
-    // keep a copy of fresm for contact forces / equilibrium check
-    RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-
     //------------------------------------ evaluate contact or meshtying
-    cmtmanager_->GetStrategy().ApplyForceStiffCmt("displacement",disn_,stiff_,fresm_,fresmcopy);
+    cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_);
     
     //------------------------------------ ----complete stiffness matrix
     stiff_->Complete();
@@ -1530,14 +1518,12 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
       }
     }
 
-    // keep a copy of fresm for contact forces / equilibrium check
-    RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
 #ifdef CONTACTTIME
     const double t_start3 = Teuchos::Time::wallTime();
 #endif // #ifdef CONTACTTIME
 
     //------------------------------------ evaluate contact or meshtying
-    cmtmanager_->GetStrategy().ApplyForceStiffCmt("displacement",disn_,stiff_,fresm_,fresmcopy);
+    cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_);
   
 #ifdef CONTACTGMSH2
     int step  = params_.get<int>("step",0);
@@ -1885,11 +1871,8 @@ void CONTACT::CmtStruGenAlpha::FullNewtonLineSearch()
       }
     }
     
-    // keep a copy of fresm for contact forces / equilibrium check
-    RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-
     //------------------------------------ evaluate contact or meshtying
-    cmtmanager_->GetStrategy().ApplyForceStiffCmt("displacement",disn_,stiff_,fresm_,fresmcopy);
+    cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_);
     
     //------------------------------------ ----complete stiffness matrix
     stiff_->Complete();
@@ -2127,11 +2110,8 @@ void CONTACT::CmtStruGenAlpha::FullNewtonLineSearch()
         }
       }
 
-      // keep a copy of fresm for contact forces / equilibrium check
-      RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-
       //------------------------------------ evaluate contact or meshtying
-      cmtmanager_->GetStrategy().ApplyForceStiffCmt("displacement",disn_,stiff_,fresm_,fresmcopy);
+      cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_);
       
       // actually, we want NO update of the active set here, as this
       // would change the system and thus the residual! During line
@@ -2481,11 +2461,8 @@ void CONTACT::CmtStruGenAlpha::PTC()
       }
     }
     
-    // keep a copy of fresm for contact forces / equilibrium check
-    RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
-
     //------------------------------------ evaluate contact or meshtying
-    cmtmanager_->GetStrategy().ApplyForceStiffCmt("displacement",disn_,stiff_,fresm_,fresmcopy);
+    cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_);
     
 #ifdef CONTACTGMSH2
     dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
@@ -3083,8 +3060,7 @@ void CONTACT::CmtStruGenAlpha::OutputEnergyMomentum()
   }
   
   //-------------------------- Compute and output interface forces
-  Teuchos::RCP<Epetra_Vector> fresm = Teuchos::rcp(new Epetra_Vector(Getfresm()));
-  cmtmanager_->GetStrategy().InterfaceForces(fresm,true);
+  cmtmanager_->GetStrategy().InterfaceForces(true);
     
   return;
 } // CmtStruGenAlpha::OutputEnergyMomentum()

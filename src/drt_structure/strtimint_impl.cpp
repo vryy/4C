@@ -500,12 +500,9 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying
     // contact / meshtying modifications need -fres
     fresm->Scale(-1.0);
 
-    // keep a copy of fresm for interface forces / equilibrium check
-    Teuchos::RCP<Epetra_Vector> frescopy = Teuchos::rcp(new Epetra_Vector(*fres_));
-
     // make contact / meshtying modifications to lhs and rhs
     bool predictor = (iter_==0);
-    cmtman_->GetStrategy().ApplyForceStiffCmt("displacement",dis,stiff,fresm,frescopy,predictor);
+    cmtman_->GetStrategy().ApplyForceStiffCmt(dis,stiff,fresm,predictor);
 
     // scaling back
     fresm->Scale(-1.0);

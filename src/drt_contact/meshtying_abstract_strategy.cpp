@@ -486,7 +486,7 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
 /*----------------------------------------------------------------------*
  |  Compute interface forces (for debugging only)             popp 02/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm, bool output)
+void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
 {
   /*
   // Note that we ALWAYS use a TR-like approach to compute the interface
@@ -514,12 +514,6 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm, bool
   LINALG::Export(*fcmastertemp, *fcmaster);
   LINALG::Export(*fcslavetempend, *fcslaveend);
   LINALG::Export(*fcmastertempend, *fcmasterend);
-
-  // build slave and master interface force vector
-  RCP<Epetra_Vector> fresmslave  = rcp(new Epetra_Vector(dmatrix_->RowMap()));
-  RCP<Epetra_Vector> fresmmaster = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
-  LINALG::Export(*fresm,*fresmslave);
-  LINALG::Export(*fresm,*fresmmaster);
 
   // interface forces and moments
   vector<double> gfcs(3);
@@ -691,7 +685,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm, bool
     Comm().SumAll(&gmcmnew[i],&ggmcmnew[i],1);
   }
 
-  // CHECK OF CONTACT FORCE EQUILIBRIUM ----------------------------------
+  // CHECK OF MESHTYING FORCES AND MOMENTS ----------------------------------
   if (Comm().MyPID()==0)
   {
     cout << "Slave Meshtying Force Vector:       " << ggfcs[0] << " " << ggfcs[1] << " " << ggfcs[2] << endl;
@@ -705,8 +699,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm, bool
     cout << "Master Meshtying Moment Vector:      " << ggmcm[0] << " " << ggmcm[1] << " " << ggmcm[2] << endl;
     cout << "Master Meshtying Moment Vector (v2): " << ggmcmnew[0] << " " << ggmcmnew[1] << " " << ggmcmnew[2] << endl;
   }
-  // CHECK OF INTERFACE FORCE EQUILIBRIUM ----------------------------------
-  
+  // CHECK OF MESHTYING FORCES AND MOMENTS ----------------------------------
   
   // store results into an external .txt-file
   if (output && Comm().MyPID()==0)

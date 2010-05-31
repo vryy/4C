@@ -136,12 +136,11 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     \brief Global evaluation method called from time integrator
     
     */
-    void ApplyForceStiffCmt(const string& statename, RCP<Epetra_Vector> dis,
-                            RCP<LINALG::SparseOperator>& kt, RCP<Epetra_Vector>& f,
-                            RCP<Epetra_Vector> fcopy, bool predictor = false)
+    void ApplyForceStiffCmt(RCP<Epetra_Vector> dis, RCP<LINALG::SparseOperator>& kt,
+                            RCP<Epetra_Vector>& f, bool predictor = false)
     {
       // mortar initialization and evaluation
-      SetState(statename,dis);
+      SetState("displacement",dis);
       InitEvalInterface();
       InitEvalMortar();
       
@@ -155,7 +154,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
       // apply contact forces and stiffness
       Initialize();
       Evaluate(kt,f,dis);
-      InterfaceForces(fcopy);
+      InterfaceForces();
         
       return;
     }
@@ -300,7 +299,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     \param output (in): flag indicating whether force output shall be written
      
     */
-    void InterfaceForces(RCP<Epetra_Vector> fresm, bool output = false);
+    void InterfaceForces(bool output = false);
 
     /*!
     \brief Print interfaces

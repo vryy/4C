@@ -859,7 +859,7 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
 /*----------------------------------------------------------------------*
  |  Compute interface forces (for debugging only)             popp 02/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm, bool output)
+void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
 {
   /*
   // Note that we ALWAYS use a TR-like approach to compute the contact
@@ -905,12 +905,6 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm, bool
   LINALG::Export(*fcmastertemp, *fcmaster);
   LINALG::Export(*fcslavetempend, *fcslaveend);
   LINALG::Export(*fcmastertempend, *fcmasterend);
-
-  // build slave and master interface force vector
-  RCP<Epetra_Vector> fresmslave  = rcp(new Epetra_Vector(dmatrix_->RowMap()));
-  RCP<Epetra_Vector> fresmmaster = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
-  LINALG::Export(*fresm,*fresmslave);
-  LINALG::Export(*fresm,*fresmmaster);
 
   // contact forces and moments
   vector<double> gfcs(3);
@@ -1082,38 +1076,21 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm, bool
     Comm().SumAll(&gmcmnew[i],&ggmcmnew[i],1);
   }
 
-  // CHECK OF CONTACT FORCE EQUILIBRIUM ----------------------------------
-  double slavenorm = 0.0;
-  fcslavetemp->Norm2(&slavenorm);
-  double slavenormend = 0.0;
-  fcslavetempend->Norm2(&slavenormend);
-  double fresmslavenorm = 0.0;
-  fresmslave->Norm2(&fresmslavenorm);
+  // CHECK OF CONTACT FORCES AND MOMENTS ----------------------------------
   if (Comm().MyPID()==0)
   {
-    cout << "Slave Contact Force Norm (n+1):  " << slavenorm << endl;
-    cout << "Slave Contact Force Norm (n):  " << slavenormend << endl;
-    cout << "Slave Residual Force Norm: " << fresmslavenorm << endl;
-    cout << "Slave Contact Force Vector: " << ggfcs[0] << " " << ggfcs[1] << " " << ggfcs[2] << endl;
-    cout << "Slave Contact Moment Vector: " << ggmcs[0] << " " << ggmcs[1] << " " << ggmcs[2] << endl;
-    cout << "Slave Contact Moment Vector (2nd version): " << ggmcsnew[0] << " " << ggmcsnew[1] << " " << ggmcsnew[2] << endl;
+    cout << "Slave Contact Force Vector:       " << ggfcs[0] << " " << ggfcs[1] << " " << ggfcs[2] << endl;
+    cout << "Slave Contact Moment Vector:      " << ggmcs[0] << " " << ggmcs[1] << " " << ggmcs[2] << endl;
+    cout << "Slave Contact Moment Vector (v2): " << ggmcsnew[0] << " " << ggmcsnew[1] << " " << ggmcsnew[2] << endl;
   }
-  double masternorm = 0.0;
-  fcmastertemp->Norm2(&masternorm);
-  double masternormend = 0.0;
-  fcmastertempend->Norm2(&masternormend);
-  double fresmmasternorm = 0.0;
-  fresmmaster->Norm2(&fresmmasternorm);
+  
   if (Comm().MyPID()==0)
   {
-    cout << "Master Contact Force Norm (n+1): " << masternorm << endl;
-    cout << "Master Contact Force Norm (n): " << masternormend << endl;
-    cout << "Master Residual Force Norm " << fresmmasternorm << endl;
-    cout << "Master Contact Force Vector: " << ggfcm[0] << " " << ggfcm[1] << " " << ggfcm[2] << endl;
-    cout << "Master Contact Moment Vector: " << ggmcm[0] << " " << ggmcm[1] << " " << ggmcm[2] << endl;
-    cout << "Master Contact Moment Vector (2nd version): " << ggmcmnew[0] << " " << ggmcmnew[1] << " " << ggmcmnew[2] << endl;
+    cout << "Master Contact Force Vector:       " << ggfcm[0] << " " << ggfcm[1] << " " << ggfcm[2] << endl;
+    cout << "Master Contact Moment Vector:      " << ggmcm[0] << " " << ggmcm[1] << " " << ggmcm[2] << endl;
+    cout << "Master Contact Moment Vector (v2): " << ggmcmnew[0] << " " << ggmcmnew[1] << " " << ggmcmnew[2] << endl;
   }
-  // CHECK OF CONTACT FORCE EQUILIBRIUM ----------------------------------
+  // CHECK OF CONTACT FORCES AND MOMENTS ----------------------------------
 
   // store results into an external .txt-file
   if (output && Comm().MyPID()==0)
