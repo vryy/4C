@@ -554,8 +554,6 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
 
   else if (ele->Type() == DRT::Element::element_beam3 || ele->Type() == DRT::Element::element_beam3ii)
   {
-    dserror("No Algebraic Multigrid support for beam3 and beam3ii element");
-    /*
     //looping through all nodes
     for (int i=0; i<NumMyRowNodes(); ++i)
     {
@@ -631,7 +629,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
         } // switch (j)
       } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
     } // for (int i=0; i<NumMyRowNodes(); ++i)
-    */
+
   } // else if (ele->Type() == DRT::Element::element_beam3 || ele->Type() == DRT::Element::element_beam3ii)
 
 
