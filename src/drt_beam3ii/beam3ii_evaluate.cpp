@@ -1339,7 +1339,7 @@ void DRT::ELEMENTS::Beam3ii::EvaluatePTC(ParameterList& params,
 
   
   
-  double basisdamp   = (20e-2)*PI*3; // in Actin3D_XXX input files with(!) stochastic torsional moments:: (20e-2)*PI for A = 1.9e-8, (20e-2)*PI*3 for A = 1.9e-6; for input of Thomas Knyrim without(!) stochastic torsional moments: (20e-2)*PI*20
+  double basisdamp   = 1.885; // in Actin3D_XXX input files with(!) stochastic torsional moments:: (20e-2)*PI for A = 1.9e-8, (20e-2)*PI*3 for A = 1.9e-6; for input of Thomas Knyrim without(!) stochastic torsional moments: (20e-2)*PI*20
 
   //apply PTC rotation damping term using a Lobatto integration rule; implemented for 2 nodes only
   if(nnode > 2)
@@ -1816,7 +1816,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticMoments(ParameterList& params,  
       for(int k=0; k<3; k++)
       {
         if(force != NULL)
-          (*force)(i*6+3+k) -= Imass(i)*t1(k)*(*randomnumbers)[gp*randompergauss+3][LID()]*sqrt(jacobi_[gp]*gausspointsmass.qwgt[gp]*gamma(2));
+          (*force)(i*6+3+k) -= (Imass[gp])(i)*t1(k)*(*randomnumbers)[gp*randompergauss+3][LID()]*sqrt(jacobi_[gp]*gausspointsmass.qwgt[gp]*gamma(2));
 
         if(stiffmatrix != NULL)
           //loop over all column nodes
@@ -1825,7 +1825,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticMoments(ParameterList& params,  
             for(int l=0; l<3; l++)
             {
               auxmatrix.Multiply(S,(Itildemass[gp])[j]);
-              (*stiffmatrix)(i*6+3+k,j*6+3+l) += Imass(i)*auxmatrix(k,l)*sqrt(jacobi_[gp]*gausspointsmass.qwgt[gp]*gamma(2));
+              (*stiffmatrix)(i*6+3+k,j*6+3+l) += (Imass[gp])(i)*auxmatrix(k,l)*sqrt(jacobi_[gp]*gausspointsmass.qwgt[gp]*gamma(2));
             }
 
     }
