@@ -967,6 +967,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("fs subgrid viscosity",fssgv_);
       eleparams.set("Linearisation",newton_);
       eleparams.set("Physical Type", physicaltype_);
+      eleparams.set("mixed_formulation", params_.get<bool>("mixed_formulation", false));
 
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -1006,6 +1007,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         eleparams.set("using generalized-alpha time integration",true);
         eleparams.set("total time",time_-(1-alphaF_)*dta_);
         eleparams.set("is stationary", false);
+        eleparams.set("alphaF",alphaF_);
+        eleparams.set("alphaM",alphaM_);
+        eleparams.set("gamma",gamma_);
 
         discret_->SetState("velaf",velaf_);
       }
@@ -2193,6 +2197,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   eleparams.set("fs subgrid viscosity",fssgv_);
   eleparams.set("Linearisation",newton_);
   eleparams.set("Physical Type", physicaltype_);
+  eleparams.set("mixed_formulation", params_.get<bool>("mixed_formulation", false));
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -2232,6 +2237,9 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     eleparams.set("using generalized-alpha time integration",true);
     eleparams.set("total time",time_-(1-alphaF_)*dta_);
     eleparams.set("is stationary", false);
+    eleparams.set("alphaF",alphaF_);
+    eleparams.set("alphaM",alphaM_);
+    eleparams.set("gamma",gamma_);
 
     discret_->SetState("velaf",velaf_);
   }
@@ -2529,6 +2537,41 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::TimeUpdate()
 {
+  ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
+
+  if(stabparams->get<string>("TDS") == "time_dependent")
+  {
+    const double tcpu=Teuchos::Time::wallTime();
+  
+    if(myrank_==0)
+    {
+      cout << "time update for subscales";
+    }
+
+    // call elements to calculate system matrix and rhs and assemble
+    // this is required for the time update of the subgrid scales and  
+    // makes sure that the current subgrid scales correspond to the 
+    // current residual
+    AssembleMatAndRHS();
+
+    // create the parameters for the discretization
+    ParameterList eleparams;
+    // action for elements
+    eleparams.set("action","time update for subscales");
+
+    // update time paramters
+    eleparams.set("gamma"  ,gamma_ );
+    eleparams.set("dt"     ,dta_    );
+
+    // call loop over elements to update subgrid scales
+    discret_->Evaluate(eleparams,null,null,null,null,null);
+
+    if(myrank_==0)
+    {
+      cout << "("<<Teuchos::Time::wallTime()-tcpu<<")\n";
+    }
+  }
+
   // compute accelerations
   TIMEINT_THETA_BDF2::CalculateAcceleration(velnp_, veln_, velnm_, accn_,
                             timealgo_, step_, theta_, dta_, dtp_, accnp_);
