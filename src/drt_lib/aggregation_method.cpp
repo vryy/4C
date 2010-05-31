@@ -14,7 +14,8 @@
 #include <queue>
 
 LINALG::AggregationMethod::AggregationMethod(FILE* outfile) :
-  nGlobalDirichletBlocks(0)
+  nGlobalDirichletBlocks(0),
+  nVerbose_(0)
 {
 
 }

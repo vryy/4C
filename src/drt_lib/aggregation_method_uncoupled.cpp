@@ -13,7 +13,8 @@
 LINALG::AggregationMethod_Uncoupled::AggregationMethod_Uncoupled(FILE* outfile) :
   nGlobalDirichletBlocks(0),
   map_(null),
-  amal_map_(null)
+  amal_map_(null),
+  nVerbose_(0)
 {
 
 }
@@ -77,8 +78,8 @@ int LINALG::AggregationMethod_Uncoupled::AmalgamateMatrix(const RCP<Epetra_CrsMa
   amal_map_ = rcp(new Epetra_Map(-1,globalamalblockids_.size(),&globalamalblockids_[0],0,A->Comm()));
 #ifdef DEBUG
   if(nvblocks != amal_map_->NumMyElements()) dserror("nvblocks and NumMyElements of amalA_RowMap does not match");
-
-  cout << "PROC " << A->Comm().MyPID() << " " << globalamalblockids_.size() << " amalgamated rows, " << nRows << " normal rows " << endl;
+  if(nVerbose_ > 5)
+    cout << "PROC " << A->Comm().MyPID() << " " << globalamalblockids_.size() << " amalgamated rows, " << nRows << " normal rows " << endl;
 #endif
 
   ////////////// extract information from overlapping column map
@@ -91,14 +92,17 @@ int LINALG::AggregationMethod_Uncoupled::AmalgamateMatrix(const RCP<Epetra_CrsMa
   }
 
 #ifdef DEBUG
-  std::map<int,int> cnt_second_vals;
-  std::map<int,int>::const_iterator iter;
-  for(iter=globalcolid2globalamalblockid.begin(); iter!=globalcolid2globalamalblockid.end(); ++iter)
+  if(nVerbose_ > 5)
   {
-    cnt_second_vals[iter->second] = 1;
+    std::map<int,int> cnt_second_vals;
+    std::map<int,int>::const_iterator iter;
+    for(iter=globalcolid2globalamalblockid.begin(); iter!=globalcolid2globalamalblockid.end(); ++iter)
+    {
+      cnt_second_vals[iter->second] = 1;
+    }
+    int cnt_colblocks = cnt_second_vals.size();    // number of different block nids for cols
+    cout << "PROC " << A->Comm().MyPID() << " col blocks " << cnt_colblocks << " colmap elements " << A->ColMap().NumMyElements() << " domain map elments " << A->DomainMap().NumMyElements() << endl;
   }
-  int cnt_colblocks = cnt_second_vals.size();    // number of different block nids for cols
-  cout << "PROC " << A->Comm().MyPID() << " col blocks " << cnt_colblocks << " colmap elements " << A->ColMap().NumMyElements() << " domain map elments " << A->DomainMap().NumMyElements() << endl;
 #endif
 
   ////////////// find boundary blocks
@@ -192,15 +196,18 @@ int LINALG::AggregationMethod_Uncoupled::Coarsen(const RCP<Epetra_CrsGraph>& ama
   RCP<Epetra_IntVector> aggr_stat = rcp(new Epetra_IntVector(*bdry_array));
 
 #ifdef DEBUG
-  int m = 0;  // number of boundary nodes on cur proc
-  int mg = 0; // global number of boundary nodes
-  for(int i=0; i<aggr_stat->MyLength(); i++)
+  if(nVerbose_>5)
   {
-    if ((*aggr_stat)[i] == AGGR_BDRY)
-      m++;
+    int m = 0;  // number of boundary nodes on cur proc
+    int mg = 0; // global number of boundary nodes
+    for(int i=0; i<aggr_stat->MyLength(); i++)
+    {
+      if ((*aggr_stat)[i] == AGGR_BDRY)
+        m++;
+    }
+    amalA->Comm().SumAll(&m,&mg,1);
+    cout << "Aggregation (UC): Phase 0, " << aggr_stat->GlobalLength() - mg << " nodes + " << mg << " boundary nodes = " << aggr_stat->GlobalLength() << endl;
   }
-  amalA->Comm().SumAll(&m,&mg,1);
-  cout << "Aggregation (UC): Phase 0, " << aggr_stat->GlobalLength() - mg << " nodes + " << mg << " boundary nodes = " << aggr_stat->GlobalLength() << endl;
 #endif
 
 
@@ -219,14 +226,14 @@ int LINALG::AggregationMethod_Uncoupled::Coarsen(const RCP<Epetra_CrsGraph>& ama
       ret = Phase2_minrank(amalA,params,amal_Aggregates,aggr_stat,nLocalAggregates);
   }
 #ifdef DEBUG
-  else cout << "Aggregation (UC): Phase 1+, PROC " << amalA->Comm().MyPID() << " skip phase 2" << endl;
+  else if(nVerbose_ > 5) cout << "Aggregation (UC): Phase 1+, PROC " << amalA->Comm().MyPID() << " skip phase 2" << endl;
 #endif
 
   ////////////// phase 3
   if(ret > 0)
     ret = Phase3(amalA,params,amal_Aggregates,aggr_stat,nLocalAggregates);
 #ifdef DEBUG
-  else cout << "Aggregation (UC): Phase 2+, PROC " << amalA->Comm().MyPID() << " skip phase 3" << endl;
+  else if(nVerbose_ > 5) cout << "Aggregation (UC): Phase 2+, PROC " << amalA->Comm().MyPID() << " skip phase 3" << endl;
 #endif
 
   ////////////// phase 4
@@ -393,18 +400,21 @@ int LINALG::AggregationMethod_Uncoupled::Phase1(const RCP<Epetra_CrsGraph>& amal
   if(mg > 0)
     cout << "Aggregation (UC): Phase 1 (WARNING) " << mg << " unaggregated nodes left (status READY)" << endl;
 
-  m = 0;  // number of aggregated nodes on cur proc
-  mg = 0; // global number of aggregated nodes
-  for(int i=0; i<aggr_stat->MyLength(); i++)
+  if(nVerbose_>5)
   {
-    if ((*aggr_stat)[i] == AGGR_SELECTED)
-      m++;
+    m = 0;  // number of aggregated nodes on cur proc
+    mg = 0; // global number of aggregated nodes
+    for(int i=0; i<aggr_stat->MyLength(); i++)
+    {
+      if ((*aggr_stat)[i] == AGGR_SELECTED)
+        m++;
+    }
+    amalA->Comm().SumAll(&m,&mg,1);
+    int gk = 0; // number of global aggs
+    amalA->Comm().SumAll(&aggr_count,&gk,1);
+    cout << "Aggregation (UC): Phase 1, " << mg << " nodes out of " << aggr_stat->GlobalLength() << " nodes aggregated" << endl;
+    cout << "Aggregation (UC): Phase 1, PROC " << amalA->Comm().MyPID() << " " << aggr_count << " out of " << gk << " aggregates found" << endl;
   }
-  amalA->Comm().SumAll(&m,&mg,1);
-  int gk = 0; // number of global aggs
-  amalA->Comm().SumAll(&aggr_count,&gk,1);
-  cout << "Aggregation (UC): Phase 1, " << mg << " nodes out of " << aggr_stat->GlobalLength() << " nodes aggregated" << endl;
-  cout << "Aggregation (UC): Phase 1, PROC " << amalA->Comm().MyPID() << " " << aggr_count << " out of " << gk << " aggregates found" << endl;
 #endif
 
 
@@ -439,7 +449,8 @@ int LINALG::AggregationMethod_Uncoupled::Phase1(const RCP<Epetra_CrsGraph>& amal
       cntready++;
   }
 #ifdef DEBUG
-  cout << "Aggregation (UC): Phase 1, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << aggr_count << endl;
+  if(nVerbose_>5)
+    cout << "Aggregation (UC): Phase 1, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << aggr_count << endl;
 #endif
 
   /////////// return number of nodes, that are not aggregated (and also no dirichlet boundary nodes!)
@@ -516,18 +527,21 @@ int LINALG::AggregationMethod_Uncoupled::Phase2_maxlink(const RCP<Epetra_CrsGrap
   if(mg > 0)
     cout << "Aggregation (UC): Phase 2 (WARNING) " << mg << " unaggregated nodes left (status READY)" << endl;
 
-  m = 0;  // number of aggregated nodes on cur proc
-  mg = 0; // global number of aggregated nodes
-  for(int i=0; i<aggr_stat->MyLength(); i++)
+  if(nVerbose_>5)
   {
-    if ((*aggr_stat)[i] == AGGR_SELECTED)
-      m++;
+    m = 0;  // number of aggregated nodes on cur proc
+    mg = 0; // global number of aggregated nodes
+    for(int i=0; i<aggr_stat->MyLength(); i++)
+    {
+      if ((*aggr_stat)[i] == AGGR_SELECTED)
+        m++;
+    }
+    amalA->Comm().SumAll(&m,&mg,1);
+    int gk = 0; // number of global aggs
+    amalA->Comm().SumAll(&aggr_count,&gk,1);
+    cout << "Aggregation (UC): Phase 2, " << mg << " nodes out of " << aggr_stat->GlobalLength() << " nodes aggregated" << endl;
+    cout << "Aggregation (UC): Phase 2, PROC " << amalA->Comm().MyPID() << " " << aggr_count << " out of " << gk << " aggregates found" << endl;
   }
-  amalA->Comm().SumAll(&m,&mg,1);
-  int gk = 0; // number of global aggs
-  amalA->Comm().SumAll(&aggr_count,&gk,1);
-  cout << "Aggregation (UC): Phase 2, " << mg << " nodes out of " << aggr_stat->GlobalLength() << " nodes aggregated" << endl;
-  cout << "Aggregation (UC): Phase 2, PROC " << amalA->Comm().MyPID() << " " << aggr_count << " out of " << gk << " aggregates found" << endl;
 #endif
 
 
@@ -548,7 +562,8 @@ int LINALG::AggregationMethod_Uncoupled::Phase2_maxlink(const RCP<Epetra_CrsGrap
       cntready++;
   }
 #ifdef DEBUG
-  cout << "Aggregation (UC): Phase 2, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << aggr_count << endl;
+  if(nVerbose_>5)
+    cout << "Aggregation (UC): Phase 2, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << aggr_count << endl;
 #endif
 
   /////////// return number of nodes, that are not aggregated (and also no dirichlet boundary nodes!)
@@ -634,18 +649,21 @@ int LINALG::AggregationMethod_Uncoupled::Phase2_minrank(const RCP<Epetra_CrsGrap
   if(mg > 0)
     cout << "Aggregation (UC): Phase 2 (WARNING) " << mg << " unaggregated nodes left (status READY)" << endl;
 
-  m = 0;  // number of aggregated nodes on cur proc
-  mg = 0; // global number of aggregated nodes
-  for(int i=0; i<aggr_stat->MyLength(); i++)
+  if(nVerbose_>5)
   {
-    if ((*aggr_stat)[i] == AGGR_SELECTED)
-      m++;
+    m = 0;  // number of aggregated nodes on cur proc
+    mg = 0; // global number of aggregated nodes
+    for(int i=0; i<aggr_stat->MyLength(); i++)
+    {
+      if ((*aggr_stat)[i] == AGGR_SELECTED)
+        m++;
+    }
+    amalA->Comm().SumAll(&m,&mg,1);
+    int gk = 0; // number of global aggs
+    amalA->Comm().SumAll(&aggr_count,&gk,1);
+    cout << "Aggregation (UC): Phase 2, " << mg << " nodes out of " << aggr_stat->GlobalLength() << " nodes aggregated" << endl;
+    cout << "Aggregation (UC): Phase 2, PROC " << amalA->Comm().MyPID() << " " << aggr_count << " out of " << gk << " aggregates found" << endl;
   }
-  amalA->Comm().SumAll(&m,&mg,1);
-  int gk = 0; // number of global aggs
-  amalA->Comm().SumAll(&aggr_count,&gk,1);
-  cout << "Aggregation (UC): Phase 2, " << mg << " nodes out of " << aggr_stat->GlobalLength() << " nodes aggregated" << endl;
-  cout << "Aggregation (UC): Phase 2, PROC " << amalA->Comm().MyPID() << " " << aggr_count << " out of " << gk << " aggregates found" << endl;
 #endif
 
 
@@ -666,7 +684,8 @@ int LINALG::AggregationMethod_Uncoupled::Phase2_minrank(const RCP<Epetra_CrsGrap
       cntready++;
   }
 #ifdef DEBUG
-  cout << "Aggregation (UC): Phase 2, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << aggr_count << endl;
+  if(nVerbose_>5)
+    cout << "Aggregation (UC): Phase 2, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << aggr_count << endl;
 #endif
 
   /////////// return number of nodes, that are not aggregated (and also no dirichlet boundary nodes!)
@@ -731,7 +750,8 @@ int LINALG::AggregationMethod_Uncoupled::Phase3(const RCP<Epetra_CrsGraph>& amal
       cntready++;
   }
 #ifdef DEBUG
-  cout << "Aggregation (UC): Phase 3, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << nLocalAggregates << endl;
+  if(nVerbose_>5)
+    cout << "Aggregation (UC): Phase 3, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << nLocalAggregates << endl;
 #endif
 
   /////////// return number of nodes, that are not aggregated (and also no dirichlet boundary nodes!)
@@ -778,23 +798,25 @@ int LINALG::AggregationMethod_Uncoupled::Phase4(const RCP<Epetra_CrsGraph>& amal
   }
 
 #ifdef DEBUG
-  int cntselected = 0;
-  int cntbdry = 0;
-  int cntnotselected = 0;
-  int cntready = 0;
-  for (int inode=0; inode<aggr_stat->MyLength(); inode++)
+  if(nVerbose_ > 5)
   {
-    if((*aggr_stat)[inode] == AGGR_SELECTED)
-      cntselected++;
-    else if((*aggr_stat)[inode] == AGGR_BDRY)
-      cntbdry++;
-    else if((*aggr_stat)[inode] == AGGR_NOTSEL)
-      cntnotselected++;
-    else if((*aggr_stat)[inode] == AGGR_READY)
-      cntready++;
+    int cntselected = 0;
+    int cntbdry = 0;
+    int cntnotselected = 0;
+    int cntready = 0;
+    for (int inode=0; inode<aggr_stat->MyLength(); inode++)
+    {
+      if((*aggr_stat)[inode] == AGGR_SELECTED)
+        cntselected++;
+      else if((*aggr_stat)[inode] == AGGR_BDRY)
+        cntbdry++;
+      else if((*aggr_stat)[inode] == AGGR_NOTSEL)
+        cntnotselected++;
+      else if((*aggr_stat)[inode] == AGGR_READY)
+        cntready++;
+    }
+    cout << "Aggregation (UC): Phase 4, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << nLocalAggregates << endl;
   }
-  cout << "Aggregation (UC): Phase 4, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << nLocalAggregates << endl;
-
 #endif
 
   return 0;
@@ -835,6 +857,8 @@ int LINALG::AggregationMethod_Uncoupled::GetGlobalAggregates(const RCP<Epetra_Cr
   RCP<Epetra_CrsGraph> amal_graph = null; // graph of amalgamated A matrix (lives on amal_map_)
   RCP<Epetra_IntVector> bdry_array = null; // bdry array vector (lives on amal_map_)
   RCP<Epetra_IntVector> amal_aggs = null; // vector with aggregate ids (local aggregate ids)
+
+  nVerbose_ = params.get("ML output",0);  // store verbosity level
 
   AmalgamateMatrix(A,params,amal_graph,bdry_array);
   Coarsen(amal_graph,bdry_array,params,amal_aggs,naggregates_local);

@@ -147,58 +147,6 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
     int VCycle(const Epetra_MultiVector& Xvel, const Epetra_MultiVector& Xpre, Epetra_MultiVector& Yvel, Epetra_MultiVector& Ypre, const int level) const;
 
     /*!
-    \brief Call ML aggregation on A according to parameters supplied in List. Return
-           aggregates in aggrinfo
-
-           On input, map of aggrinfo has to map row map of A. On output, aggrinfo[i]
-           contains number of aggregate the row belongs to, where aggregates are
-           numbered starting from 0.
-           Return value is the processor-local number of aggregates build.
-           If aggrinfo[i] >= return-value, then i is a processor local row
-           of a row that ML has detected to be on a Dirichlet BC.
-
-    \param A (in): Matrix to be aggregated on
-    \param List (in): ParameterList containing ML options
-    \param ThisNS (in): MultiVector with null space of current level
-    \param aggrinfo(out): vector containing aggregation information
-
-    \note Map of aggrinfo has to match rowmap of A on input.
-
-    \return returns processor-local number of aggregates
-
-    \author Michael Gee (gee@lnm.mw.tum.de)
-    */
-    int GetAggregates(SparseMatrix& A, ParameterList& List, const Epetra_MultiVector& ThisNS, Epetra_IntVector& aggrinfo);
-
-    /*!
-    \brief Call ML aggregation on A according to parameters supplied in List. Return
-           aggregates in aggrinfo
-
-           On input, map of aggrinfo has to map row map of A. On output, aggrinfo[i]
-           contains number of global aggregate the row belongs to, where aggregates are
-           numbered starting from 0 globally.
-           Return value is the processor-local number of aggregates build.
-           If aggrinfo[i] < 0, then i is a processor local row
-           that ML has detected to be on a Dirichlet BC.
-           if aggrinfo[i] >= 0, then i is a processor local row and aggrinfo[i] is
-           a global aggregate id.
-
-    \param A (in): Matrix to be aggregated on
-    \param List (in): ParameterList containing ML options
-    \param ThisNS (in): MultiVector with null space of current level
-    \param aggrinfo(out): vector containing aggregation information in global numbering Epetra_IntVector with aggregate info (maps dof GID -> aggregate id)
-    \param naggregates_local(out): number of local aggregates (for current proc)
-
-    \note Map of aggrinfo has to match rowmap of A on input.
-
-    \return global number of aggregates (over all procs)
-
-    \author Michael Gee (gee@lnm.mw.tum.de)
-    \author Tobias Wiesner (wiesner@lnm.mw.tum.de)
-    */
-    int GetGlobalAggregates(SparseMatrix& A, ParameterList& List, const Epetra_MultiVector& ThisNS, Epetra_IntVector& aggrinfo, int& naggregates_local);
-
-    /*!
     \brief fast Matrix-Matrix-Matrix multiplication
 
            uses Michaels MLMultiply with ML routines for matrix-matrix multiplication

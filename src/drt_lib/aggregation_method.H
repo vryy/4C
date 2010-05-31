@@ -92,7 +92,7 @@ namespace LINALG
     protected:
 
       int nGlobalDirichletBlocks;         ///< number of Dirichlet boundary blocks
-
+      int nVerbose_;                      ///< verbosity level
   };
 
   class AggregationMethodFactory

@@ -193,6 +193,7 @@ namespace LINALG
 
       RCP<Epetra_Map> map_;               ///< row map of input matrix
       RCP<Epetra_Map> amal_map_;          ///< row map of amalgamated matrix
+      int nVerbose_;                      ///< verbosity level
   };
 }
 
