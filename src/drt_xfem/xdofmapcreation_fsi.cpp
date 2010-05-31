@@ -40,16 +40,19 @@ static bool ApplyElementEnrichments(
     const int&                                    label,
     const XFEM::Enrichment::EnrType               enrtype,
     const double                                  boundaryRatioLimit,
+    const double                                  volumeRatioLimit,
     std::set<XFEM::FieldEnr>&                     enrfieldset)
 {
   // check, how much area for integration we have (from BoundaryIntcells)
   const double boundarysize = XFEM::BoundaryCoverageRatio(*xfemele,ih.GetBoundaryIntCells(xfemele->Id()),ih);
   const bool almost_zero_surface = (fabs(boundarysize) < boundaryRatioLimit);
+  const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
+  const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeRatioLimit);
 
   bool skipped_element = false;
 
   const XFEM::Enrichment enr(enrtype, label);
-  if ( not almost_zero_surface)
+  if ( not almost_zero_surface and not almost_empty_element)
   {
       map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
       for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
@@ -171,6 +174,7 @@ static bool ApplyElementEnrichmentsVoidFSI(
     const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>&  element_ansatz,
     const XFEM::InterfaceHandleXFSI&              ih,
     const double                                  boundaryRatioLimit,
+    const double                                  volumeRatioLimit,
     std::set<XFEM::FieldEnr>&                     enrfieldset)
 {
 
@@ -196,7 +200,7 @@ static bool ApplyElementEnrichmentsVoidFSI(
     if (connected)
     {
       cout << "Elemental VoidFSI: connected patch" << endl;
-      skipped_element = ApplyElementEnrichments(xfemele, element_ansatz, ih, -1, XFEM::Enrichment::typeVoidFSI,  boundaryRatioLimit, enrfieldset);
+      skipped_element = ApplyElementEnrichments(xfemele, element_ansatz, ih, -1, XFEM::Enrichment::typeVoidFSI,  boundaryRatioLimit, volumeRatioLimit, enrfieldset);
     }
     else
     {
@@ -433,17 +437,19 @@ static bool ApplyElementVoidEnrichments(
     const int&                                    label,
     const XFEM::Enrichment::EnrType               enrtype,
     const double                                  boundaryRatioLimit,
+    const double                                  volumeRatioLimit,
     std::set<XFEM::FieldEnr>&                     enrfieldset)
 {
   // check, how much area for integration we have (from BoundaryIntcells)
   const double boundarysize = XFEM::BoundaryCoverageRatio(*xfemele,ih.GetBoundaryIntCells(xfemele->Id()),ih);
   const bool almost_zero_surface = (fabs(boundarysize) < boundaryRatioLimit);
-
+  const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
+  const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeRatioLimit);
   bool skipped_element = false;
 
   const XFEM::Enrichment enr(enrtype, label);
   //  const XFEM::Enrichment stdenr(0, XFEM::Enrichment::typeStandard);
-  if ( not almost_zero_surface)
+  if ( not almost_zero_surface and not almost_empty_element)
   {
     const bool VoidFSIenrichment_in_set = EnrichmentInDofSet(XFEM::Enrichment::typeVoidFSI, enrfieldset);
     if (not VoidFSIenrichment_in_set)
@@ -469,7 +475,6 @@ static bool ApplyElementVoidEnrichments(
  *----------------------------------------------------------------------*/
 static void processVoidFSIEnrichmentForElementNodes(
     const DRT::Element*                           xfemele,
-    const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>&  element_ansatz,
     const XFEM::InterfaceHandleXFSI&              ih,
     const set<int>&                               labels,
     const std::set<XFEM::PHYSICS::Field>&         fieldset,
@@ -489,7 +494,6 @@ static void processVoidFSIEnrichmentForElementNodes(
  *----------------------------------------------------------------------*/
 static void processVoidEnrichmentForElementNodes(
     const DRT::Element*                           xfemele,
-    const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>&  element_ansatz,
     const XFEM::InterfaceHandleXFSI&              ih,
     const set<int>&                               labels,
     const std::set<XFEM::PHYSICS::Field>&         fieldset,
@@ -528,6 +532,7 @@ void XFEM::processVoidEnrichmentForElement(
     const XFEM::InterfaceHandleXFSI&              ih,
     const set<int>&                               labels,
     const double                                  boundaryRatioLimit,
+    const double                                  volumeRatioLimit,
     std::set<XFEM::FieldEnr>&                     elementDofs,
     bool&                                         skipped_elem_enr
     )
@@ -537,7 +542,7 @@ void XFEM::processVoidEnrichmentForElement(
 
   if (ih.ElementIntersected(xele_gid))
   {
-    skipped_elem_enr = ApplyElementEnrichmentsVoidFSI(xfemele, element_ansatz, ih, boundaryRatioLimit, elementDofs);
+    skipped_elem_enr = ApplyElementEnrichmentsVoidFSI(xfemele, element_ansatz, ih, boundaryRatioLimit, volumeRatioLimit, elementDofs);
   }
 
   for(std::set<int>::const_iterator labeliter = labels.begin(); labeliter!=labels.end(); ++labeliter)
@@ -548,7 +553,7 @@ void XFEM::processVoidEnrichmentForElement(
     {
       if (ih.ElementHasLabel(xele_gid, label))
       {
-        skipped_elem_enr = ApplyElementVoidEnrichments(xfemele, element_ansatz, ih, label, XFEM::Enrichment::typeVoid, boundaryRatioLimit, elementDofs);
+        skipped_elem_enr = ApplyElementVoidEnrichments(xfemele, element_ansatz, ih, label, XFEM::Enrichment::typeVoid, boundaryRatioLimit, volumeRatioLimit, elementDofs);
       }
     }
   }
@@ -748,7 +753,7 @@ void XFEM::createDofMapFSI(
     bool skipped_node_enr = false;
 
     processVoidFSIEnrichmentForElementNodes(
-        xfemele, element_ansatz, ih, labels, fieldset,
+        xfemele, ih, labels, fieldset,
         volumeRatioLimit,
         nodalDofSet,
         skipped_node_enr);
@@ -782,13 +787,14 @@ void XFEM::createDofMapFSI(
     XFEM::processVoidEnrichmentForElement(
         xfemele, element_ansatz, ih, labels,
         boundaryRatioLimit,
+        volumeRatioLimit,
         elementalDofs[xfemele->Id()],
         skipped_elem_enr);
     if (skipped_elem_enr)
       skipped_elem_enr_count++;
 
     processVoidEnrichmentForElementNodes(
-        xfemele, element_ansatz, ih, labels, fieldset,
+        xfemele, ih, labels, fieldset,
         volumeRatioLimit,
         nodalDofSet,
         skipped_node_enr);

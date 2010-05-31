@@ -172,6 +172,7 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
         XFEM::processVoidEnrichmentForElement(
             this, element_ansatz_filled, *ih_, eleDofManager_->getUniqueEnrichmentLabels(),
             params.get<double>("boundaryRatioLimit"),
+            params.get<double>("volumeRatioLimit"),
             enrfieldset,
             skipped_elem_enr);
 

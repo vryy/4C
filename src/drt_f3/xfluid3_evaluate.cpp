@@ -198,6 +198,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         XFEM::processVoidEnrichmentForElement(
             this, element_ansatz_filled, *ih_, eleDofManager_->getUniqueEnrichmentLabels(),
             params.get<double>("boundaryRatioLimit"),
+            params.get<double>("volumeRatioLimit"),
             enrfieldset,
             skipped_elem_enr);
 
@@ -369,22 +370,28 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
         if (ih_->ElementIntersected(Id()))
         {
-          const size_t nui = ifacepatchlm->size();
-          const size_t nus = eleDofManager_uncondensed_->NumDofElemAndNode();
+          const size_t ndof_i = ifacepatchlm->size();
+          const size_t ndof_ups = eleDofManager_uncondensed_->NumDofElemAndNode();
 
-          fluidfluidmatrices_.Gsui_uncond  = rcp(new Epetra_SerialDenseMatrix(nus, nui));
-          fluidfluidmatrices_.Guis_uncond  = rcp(new Epetra_SerialDenseMatrix(nui, nus));
-          fluidfluidmatrices_.rhsui_uncond = rcp(new Epetra_SerialDenseVector(nui));
+          fluidfluidmatrices_.Gsui_uncond  = rcp(new Epetra_SerialDenseMatrix(ndof_ups, ndof_i));
+          fluidfluidmatrices_.Guis_uncond  = rcp(new Epetra_SerialDenseMatrix(ndof_i, ndof_ups));
+          fluidfluidmatrices_.rhsui_uncond = rcp(new Epetra_SerialDenseVector(ndof_i));
           if (monolithic_FSI)
           {
-            fluidfluidmatrices_.GNudi_uncond  = rcp(new Epetra_SerialDenseMatrix(nus, nui));
-            fluidfluidmatrices_.GNsdi_uncond  = rcp(new Epetra_SerialDenseMatrix(nus, nui));
-            fluidfluidmatrices_.GNdidi_uncond = rcp(new Epetra_SerialDenseMatrix(nui, nui));
+            fluidfluidmatrices_.GNudi_uncond  = rcp(new Epetra_SerialDenseMatrix(ndof_ups, ndof_i));
+            fluidfluidmatrices_.GNsdi_uncond  = rcp(new Epetra_SerialDenseMatrix(ndof_ups, ndof_i));
+            fluidfluidmatrices_.GNdidi_uncond = rcp(new Epetra_SerialDenseMatrix(ndof_i, ndof_i));
           }
-          Cfi  = rcp(new Epetra_SerialDenseMatrix(lm.size(), nui));
-          Cif  = rcp(new Epetra_SerialDenseMatrix(nui, lm.size()));
-          Cii  = rcp(new Epetra_SerialDenseMatrix(nui, nui));
-          rhsi = rcp(new Epetra_SerialDenseVector(nui));
+
+          const size_t ndof_up = lm.size();
+          if (ndof_up != eleDofManager_uncondensed_->NumNodeDof() or
+              ndof_up != eleDofManager_->NumNodeDof())
+            dserror("this is a inconsistency and considered a BUG!");
+
+          Cfi  = rcp(new Epetra_SerialDenseMatrix(ndof_up, ndof_i));
+          Cif  = rcp(new Epetra_SerialDenseMatrix(ndof_i, ndof_up));
+          Cii  = rcp(new Epetra_SerialDenseMatrix(ndof_i, ndof_i));
+          rhsi = rcp(new Epetra_SerialDenseVector(ndof_i));
         }
 
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(

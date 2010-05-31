@@ -30,6 +30,7 @@ namespace XFEM
       const XFEM::InterfaceHandleXFSI&              ih,
       const set<int>&                               labels,
       const double                                  boundaryRatioLimit,
+      const double                                  volumeRatioLimit,
       std::set<XFEM::FieldEnr>&                     elementDofs,
       bool&                                         skipped_elem_enr
       );

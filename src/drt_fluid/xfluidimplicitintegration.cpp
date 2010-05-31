@@ -647,6 +647,7 @@ void FLD::XFluidImplicitTimeInt::TransferDofInformationToElements(
   eleparams.set("dofmanager",dofmanager);
   eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
   eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
+  eleparams.set("volumeRatioLimit",xparams_.get<double>("volumeRatioLimit"));
   eleparams.set("EMBEDDED_BOUNDARY",xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"));
   eleparams.set("interfacehandle",ih);
   discret_->Evaluate(eleparams);
@@ -1649,6 +1650,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
 
   eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
   eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
+  eleparams.set("volumeRatioLimit",xparams_.get<double>("volumeRatioLimit"));
   eleparams.set("monolithic_FSI",true);
   eleparams.set("EMBEDDED_BOUNDARY",xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"));
 
@@ -1896,6 +1898,8 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
     const Teuchos::RCP<DRT::Discretization> cutterdiscret
     )
 {
+  cout0_ << MAGENTA << "FLD::XFluidImplicitTimeInt::ReadRestart" << END_COLOR << endl;
+
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
 
@@ -1930,6 +1934,8 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 
+  cout0_ << MAGENTA << " Read restart data from step: " << step_ << " (time t = " << time_ << ")" << END_COLOR << endl;
+
   const Epetra_Map& dofrowmap = *discret_->DofRowMap();
 
   // velocity/pressure at time n+1, n and n-1
@@ -1951,6 +1957,8 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
   {
     OutputToGmsh(output_test_step, time_);
   }
+
+  cout0_ << MAGENTA << "FLD::XFluidImplicitTimeInt::ReadRestart ...done!" << END_COLOR << endl;
 
 }
 
