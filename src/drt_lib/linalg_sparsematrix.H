@@ -296,7 +296,7 @@ class SparseMatrix : public SparseOperator
 
     void UnComplete();
 
-    void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock=true);
+    void ApplyDirichlet(const Teuchos::RCP<const Epetra_Vector> dbctoggle, bool diagonalblock=true);
 
     /// Apply dirichlet boundary condition to a matrix.
     ///

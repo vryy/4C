@@ -647,8 +647,8 @@ void LINALG::SparseMatrix::UnComplete()
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
 void LINALG::SparseMatrix::ApplyDirichlet(
-    const Teuchos::RCP<Epetra_Vector>   dbctoggle,
-    bool                                diagonalblock)
+    const Teuchos::RCP<const Epetra_Vector>   dbctoggle,
+    bool                                      diagonalblock)
 {
   // if matrix is filled, global assembly was called already and all nonlocal values are
   // distributed

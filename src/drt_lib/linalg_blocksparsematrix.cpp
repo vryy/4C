@@ -220,7 +220,7 @@ void LINALG::BlockSparseMatrixBase::UnComplete()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BlockSparseMatrixBase::ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock)
+void LINALG::BlockSparseMatrixBase::ApplyDirichlet(const Teuchos::RCP<const Epetra_Vector> dbctoggle, bool diagonalblock)
 {
   int rows = Rows();
   int cols = Cols();

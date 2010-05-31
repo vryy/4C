@@ -579,11 +579,11 @@ namespace LINALG
   \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
                               and 0.0 everywhere else
   */
-  void ApplyDirichlettoSystem(RCP<SparseOperator>      A,
-                              RCP<Epetra_Vector>&      x,
-                              RCP<Epetra_Vector>&      b,
-                              const RCP<Epetra_Vector> dbcval,
-                              const RCP<Epetra_Vector> dbctoggle);
+  void ApplyDirichlettoSystem(RCP<SparseOperator>            A,
+                              RCP<Epetra_Vector>&            x,
+                              RCP<Epetra_Vector>&            b,
+                              const RCP<const Epetra_Vector> dbcval,
+                              const RCP<const Epetra_Vector> dbctoggle);
 
   /*!
   \brief Apply dirichlet boundary condition to a linear system of equations
@@ -602,11 +602,11 @@ namespace LINALG
 
   \pre The map dbctoggle must be subset of the maps of the vectors.
   */
-  void ApplyDirichlettoSystem(RCP<LINALG::SparseOperator> A,
-                              RCP<Epetra_Vector>&         x,
-                              RCP<Epetra_Vector>&         b,
-                              const RCP<Epetra_Vector>&   dbcval,
-                              const Epetra_Map&           dbcmap);
+  void ApplyDirichlettoSystem(RCP<LINALG::SparseOperator>       A,
+                              RCP<Epetra_Vector>&               x,
+                              RCP<Epetra_Vector>&               b,
+                              const RCP<const Epetra_Vector>&   dbcval,
+                              const Epetra_Map&                 dbcmap);
 
   /*!
   \brief Apply dirichlet boundary condition to a linear system of equations
@@ -635,7 +635,7 @@ namespace LINALG
                               RCP<Epetra_Vector>&             x,
                               RCP<Epetra_Vector>&             b,
                               RCP<const LINALG::SparseMatrix> trafo,
-                              const RCP<Epetra_Vector>&       dbcval,
+                              const RCP<const Epetra_Vector>& dbcval,
                               const Epetra_Map&               dbcmap);
 
   /*!
@@ -648,10 +648,10 @@ namespace LINALG
   \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
                               and 0.0 everywhere else
   */
-  void ApplyDirichlettoSystem(RCP<Epetra_Vector>&      x,
-                              RCP<Epetra_Vector>&      b,
-                              const RCP<Epetra_Vector> dbcval,
-                              const RCP<Epetra_Vector> dbctoggle);
+  void ApplyDirichlettoSystem(RCP<Epetra_Vector>&            x,
+                              RCP<Epetra_Vector>&            b,
+                              const RCP<const Epetra_Vector> dbcval,
+                              const RCP<const Epetra_Vector> dbctoggle);
 
 
   /*!

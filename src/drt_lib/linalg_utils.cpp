@@ -647,10 +647,10 @@ void LINALG::SVD(const Epetra_SerialDenseMatrix& A,
 /*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&      x,
-                                    RCP<Epetra_Vector>&      b,
-                                    const RCP<Epetra_Vector> dbcval,
-                                    const RCP<Epetra_Vector> dbctoggle)
+void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&            x,
+                                    RCP<Epetra_Vector>&            b,
+                                    const RCP<const Epetra_Vector> dbcval,
+                                    const RCP<const Epetra_Vector> dbctoggle)
 {
   const Epetra_Vector& dbct = *dbctoggle;
   if (x != null && b != null)
@@ -673,10 +673,10 @@ void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&      x,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&      x,
-                                    RCP<Epetra_Vector>&      b,
-                                    RCP<const Epetra_Vector> dbcval,
-                                    const Epetra_Map&        dbcmap)
+void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&            x,
+                                    RCP<Epetra_Vector>&            b,
+                                    const RCP<const Epetra_Vector> dbcval,
+                                    const Epetra_Map&              dbcmap)
 {
   if (not dbcmap.UniqueGIDs())
     dserror("unique map required");
@@ -715,11 +715,11 @@ void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&      x,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator> A,
-                                    RCP<Epetra_Vector>&         x,
-                                    RCP<Epetra_Vector>&         b,
-                                    const RCP<Epetra_Vector>    dbcval,
-                                    const RCP<Epetra_Vector>    dbctoggle)
+void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator>       A,
+                                    RCP<Epetra_Vector>&               x,
+                                    RCP<Epetra_Vector>&               b,
+                                    const RCP<const Epetra_Vector>    dbcval,
+                                    const RCP<const Epetra_Vector>    dbctoggle)
 {
   A->ApplyDirichlet(dbctoggle);
   ApplyDirichlettoSystem(x,b,dbcval,dbctoggle);
@@ -727,11 +727,11 @@ void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator> A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator> A,
-                                    RCP<Epetra_Vector>&         x,
-                                    RCP<Epetra_Vector>&         b,
-                                    const RCP<Epetra_Vector>&   dbcval,
-                                    const Epetra_Map&           dbcmap)
+void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator>       A,
+                                    RCP<Epetra_Vector>&               x,
+                                    RCP<Epetra_Vector>&               b,
+                                    const RCP<const Epetra_Vector>&   dbcval,
+                                    const Epetra_Map&                 dbcmap)
 {
   A->ApplyDirichlet(dbcmap);
   ApplyDirichlettoSystem(x,b,dbcval,dbcmap);
@@ -739,12 +739,12 @@ void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator> A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator> A,
-                                    RCP<Epetra_Vector>&         x,
-                                    RCP<Epetra_Vector>&         b,
-                                    RCP<const LINALG::SparseMatrix> trafo,
-                                    const RCP<Epetra_Vector>&   dbcval,
-                                    const Epetra_Map&           dbcmap)
+void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator>       A,
+                                    RCP<Epetra_Vector>&               x,
+                                    RCP<Epetra_Vector>&               b,
+                                    RCP<const LINALG::SparseMatrix>   trafo,
+                                    const RCP<const Epetra_Vector>&   dbcval,
+                                    const Epetra_Map&                 dbcmap)
 {
   if (trafo != Teuchos::null)
     Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(A)->ApplyDirichletWithTrafo(trafo,dbcmap);
