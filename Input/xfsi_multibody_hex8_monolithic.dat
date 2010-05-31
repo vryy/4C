@@ -101,14 +101,12 @@ NUMSTEP      1
 UPRES        1
 RESTARTEVRY  20
 IALE         Pseudo_Structure
-// COUPALGO     iter_stagg_AITKEN_rel_param
 COUPALGO     iter_monolithicxfem
 PREDICTOR    d(n)
 RELAX        1.0
-ITEMAX       1
-CONVTOL      1.0E-6
+ITEMAX       100
+CONVTOL      1.0E-10
 COUPMETHOD   conforming
-COUPVARIABLE Displacement
 ------------------------------------------------------FLUID SOLVER
 SOLVER                          UMFPACK          // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                  // output every so often, 0 no output
