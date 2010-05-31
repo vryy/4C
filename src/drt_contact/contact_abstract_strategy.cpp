@@ -1081,14 +1081,14 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
   {
     cout << "Slave Contact Force Vector:       " << ggfcs[0] << " " << ggfcs[1] << " " << ggfcs[2] << endl;
     cout << "Slave Contact Moment Vector:      " << ggmcs[0] << " " << ggmcs[1] << " " << ggmcs[2] << endl;
-    cout << "Slave Contact Moment Vector (v2): " << ggmcsnew[0] << " " << ggmcsnew[1] << " " << ggmcsnew[2] << endl;
+    //cout << "Slave Contact Moment Vector (v2): " << ggmcsnew[0] << " " << ggmcsnew[1] << " " << ggmcsnew[2] << endl;
   }
   
   if (Comm().MyPID()==0)
   {
     cout << "Master Contact Force Vector:       " << ggfcm[0] << " " << ggfcm[1] << " " << ggfcm[2] << endl;
     cout << "Master Contact Moment Vector:      " << ggmcm[0] << " " << ggmcm[1] << " " << ggmcm[2] << endl;
-    cout << "Master Contact Moment Vector (v2): " << ggmcmnew[0] << " " << ggmcmnew[1] << " " << ggmcmnew[2] << endl;
+    //cout << "Master Contact Moment Vector (v2): " << ggmcmnew[0] << " " << ggmcmnew[1] << " " << ggmcmnew[2] << endl;
   }
   // CHECK OF CONTACT FORCES AND MOMENTS ----------------------------------
 
