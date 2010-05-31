@@ -50,7 +50,7 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_io/io_control.H"
 #include "../drt_inpar/inpar_xfem.H"
-#include "../drt_constraint/mpcdofset.H"
+#include "../drt_lib/drt_dofset_transparent.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -264,7 +264,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   //replace the Dofset of FluidFluidboundarydis with the part of Dofsets of discret. 
   //Now the GID of FluidFluidboundarydis Dofset is a subset of the GID of discret's Dofset 
-  RCP<DRT::DofSet> newdofset = rcp(new ::UTILS::MPCDofSet(discret_));
+  RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentDofSet(discret_));
   FluidFluidboundarydis_->ReplaceDofSet(newdofset);
     
   // create node and element distribution with elements and nodes ghosted on all processors

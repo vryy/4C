@@ -1851,7 +1851,8 @@ void DRT::UTILS::ExtractMyValues(const Epetra_Vector& global,
   for (size_t i=0; i<ldim; ++i)
   {
     const int lid = global.Map().LID(lm[i]);
-    if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",global.Comm().MyPID(),lm[i]);
+    if (lid<0) 
+      dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",global.Comm().MyPID(),lm[i]);
     local[i] = global[lid];
   }
   return;
@@ -2042,6 +2043,40 @@ Teuchos::RCP<const Epetra_Vector> DRT::UTILS::GetColVersionOfRowVector(
     return tmp;
   }
 }
+
+/*----------------------------------------------------------------------*
+ |(private)                                                   tk 06/10  |
+ |recompute nodecolmap of standard discretization to include all        |
+ |nodes as of subdicretization                                          |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> DRT::UTILS::ComputeNodeColMap(
+         const RCP<DRT::Discretization> sourcedis,  ///< standard discretization we want to redistribute
+         const RCP<DRT::Discretization> subdis ///< subdiscretization prescribing ghosting
+         )
+{
+  const Epetra_Map* oldcolnodemap = sourcedis->NodeColMap();
+
+  vector<int> mycolnodes(oldcolnodemap->NumMyElements());
+  oldcolnodemap->MyGlobalElements (&mycolnodes[0]);
+  for (int inode = 0; inode != subdis->NumMyColNodes(); ++inode)
+  {
+      const DRT::Node* newnode = subdis->lColNode(inode);
+      const int gid = newnode->Id();
+      if (!(sourcedis->HaveGlobalNode(gid)))
+      {
+          mycolnodes.push_back(gid);
+      }
+  }
+
+  // now reconstruct the extended colmap
+  RCP<Epetra_Map> newcolnodemap = rcp(new Epetra_Map(-1,
+                                     mycolnodes.size(),
+                                     &mycolnodes[0],
+                                     0,
+                                     sourcedis->Comm()));
+  return newcolnodemap;  
+}
+
 
 
 #endif  // #ifdef CCADISCRET

@@ -14,13 +14,12 @@ Maintainer: Thomas Kloeppel
 
 
 #include "multipointconstraint2.H"
-#include "mpcdofset.H"
-#include "constraint_element2.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_sparsematrix.H"
 #include <iostream>
+#include "../drt_lib/drt_dofset_transparent.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -44,9 +43,9 @@ UTILS::MPConstraint2::MPConstraint2(RCP<DRT::Discretization> discr,
     int dummy=0;
     //create constraint discretization and store it with label 0, within the map
     constraintdis_=CreateDiscretizationFromCondition(actdisc_,constrcond_,"ConstrDisc","CONSTRELE2", dummy);
-    RCP<Epetra_Map> newcolnodemap = ComputeNodeColMap(actdisc_, constraintdis_.find(0)->second);
+    RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(actdisc_, constraintdis_.find(0)->second);
     actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
-    RCP<DRT::DofSet> newdofset = rcp(new MPCDofSet(actdisc_));
+    RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentDofSet(actdisc_));
     (constraintdis_.find(0)->second)->ReplaceDofSet(newdofset);
     newdofset = null;
     (constraintdis_.find(0)->second)->FillComplete();

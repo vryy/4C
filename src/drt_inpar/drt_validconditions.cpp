@@ -736,6 +736,27 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(linefsi);
   condlist.push_back(surffsi);
+  
+  /*--------------------------------------------------------------------*/
+  // FSI
+
+  Teuchos::RCP<ConditionDefinition> linefsis =
+    Teuchos::rcp(new ConditionDefinition("DESIGN FSI COUPLING NO SLIDE LINE CONDITIONS",
+                                         "FSICouplingNoSlide",
+                                         "FSI Coupling No Slide",
+                                         DRT::Condition::FSICouplingNoSlide,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surffsis =
+    Teuchos::rcp(new ConditionDefinition("DESIGN FSI COUPLING NO SLIDE SURF CONDITIONS",
+                                         "FSICouplingNoSlide",
+                                         "FSI Coupling No Slide",
+                                         DRT::Condition::FSICouplingNoSlide,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  condlist.push_back(linefsis);
+  condlist.push_back(surffsis);
 
   /*--------------------------------------------------------------------*/
   // FREESURF
@@ -1317,6 +1338,28 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
       true)));
 
   condlist.push_back(volumeconstraint);
+  
+  /*--------------------------------------------------------------------*/
+  // volume constraint penalty
+
+  Teuchos::RCP<ConditionDefinition> volumeconstraintpen =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE VOLUME CONSTRAINT 3D PEN",
+                                         "VolumeConstraint_3D_Pen",
+                                         "Surface Volume Constraint Penalty",
+                                         DRT::Condition::VolumeConstraint_3D_pen,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  volumeconstraintpen->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  volumeconstraintpen->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  volumeconstraintpen->AddComponent(Teuchos::rcp(new RealConditionComponent("activTime")));
+  volumeconstraintpen->AddComponent(Teuchos::rcp(new RealConditionComponent("penalty")));
+  volumeconstraintpen->AddComponent(Teuchos::rcp(new StringConditionComponent("projection","none",
+      Teuchos::tuple<std::string>("none","xy","yz","xz"),
+      Teuchos::tuple<std::string>("none","xy","yz","xz"),
+      true)));
+
+  condlist.push_back(volumeconstraintpen);
 
   /*--------------------------------------------------------------------*/
   // area constraint
@@ -1335,6 +1378,29 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(areaconstraint);
 
+  /*--------------------------------------------------------------------*/
+  // area constraint penalty
+
+  Teuchos::RCP<ConditionDefinition> areaconstraintpen =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE AREA CONSTRAINT 3D PEN",
+                                         "AreaConstraint_3D_Pen",
+                                         "Surface Area Constraint Penalty",
+                                         DRT::Condition::AreaConstraint_3D_pen,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  areaconstraintpen->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  areaconstraintpen->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  areaconstraintpen->AddComponent(Teuchos::rcp(new RealConditionComponent("activTime")));
+  areaconstraintpen->AddComponent(Teuchos::rcp(new RealConditionComponent("penalty")));
+  areaconstraintpen->AddComponent(Teuchos::rcp(new StringConditionComponent("projection","none",
+      Teuchos::tuple<std::string>("none","xy","yz","xz"),
+      Teuchos::tuple<std::string>("none","xy","yz","xz"),
+      true)));
+
+  condlist.push_back(areaconstraintpen);
+
+  
   /*--------------------------------------------------------------------*/
   // volume monitor
 
@@ -1483,7 +1549,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 //  nodeonlineconst3D->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curveNodes",2)));
 //  condlist.push_back(nodeonlineconst3D);
 //
-//  /*--------------------------------------------------------------------*/
+  /*--------------------------------------------------------------------*/
   // Multi point constraint in 3D, moving all constraint nodes synchronously
 
    Teuchos::RCP<ConditionDefinition> nodemasterconst3D =
@@ -1509,7 +1575,34 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
        Teuchos::tuple<std::string>("rel","abs"),
        true)));
    condlist.push_back(nodemasterconst3D);
+   
+   /*--------------------------------------------------------------------*/
+   // Multi point constraint in 3D, moving all constraint nodes synchronously, penalty based
 
+    Teuchos::RCP<ConditionDefinition> nodemasterconst3Dpen =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D PEN",
+                                           "MPC_NormalComponent_3D_Pen",
+                                           "Node on Plane Constraint Penalty",
+                                           DRT::Condition::MPC_NormalComponent_3D_pen,
+                                           false,
+                                           DRT::Condition::Surface));
+
+    nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+    nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new RealConditionComponent("amplitude")));
+    nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+    nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new RealConditionComponent("activTime")));
+    nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new RealConditionComponent("penalty")));
+    nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new IntConditionComponent("masterNode")));
+    nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("direction",3)));
+    nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new StringConditionComponent("value","disp",
+        Teuchos::tuple<std::string>("disp","x"),
+        Teuchos::tuple<std::string>("disp","x"),
+        true)));
+    nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new StringConditionComponent("control","rel",
+        Teuchos::tuple<std::string>("rel","abs"),
+        Teuchos::tuple<std::string>("rel","abs"),
+        true)));
+    condlist.push_back(nodemasterconst3Dpen);
   /*--------------------------------------------------------------------*/
   // Multi point constraint in 2D for a node on a line
   Teuchos::RCP<ConditionDefinition> nodeonlineconst2D =

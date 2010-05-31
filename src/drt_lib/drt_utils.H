@@ -368,6 +368,14 @@ namespace UTILS
       const Teuchos::RCP<const DRT::Discretization> dis,
       const Teuchos::RCP<const Epetra_Vector> state);
 
+  
+  ///recompute nodecolmap of standard discretization to include all nodes as of subdicretization
+  RCP<Epetra_Map> ComputeNodeColMap
+  (
+      const RCP<DRT::Discretization> sourcedis,  ///< standard discretization we want to redistribute
+      const RCP<DRT::Discretization> subdis ///< subdiscretization prescribing ghosting
+  );
+  
 } // namespace UTILS
 } // namespace DRT
 

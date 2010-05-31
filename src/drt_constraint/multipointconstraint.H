@@ -143,11 +143,11 @@ namespace UTILS
     )=0;
 
 
-    /// find col node map so that we can evaluate the constraint elements
-    RCP<Epetra_Map> ComputeNodeColMap(
-             const RCP<DRT::Discretization> sourcedis,  ///< standard discretization we want to redistribute
-             const RCP<DRT::Discretization> constraintdis ///< constraint discretization prescribing ghosting
-             ) const;
+//    /// find col node map so that we can evaluate the constraint elements
+//    RCP<Epetra_Map> ComputeNodeColMap(
+//             const RCP<DRT::Discretization> sourcedis,  ///< standard discretization we want to redistribute
+//             const RCP<DRT::Discretization> constraintdis ///< constraint discretization prescribing ghosting
+//             ) const;
 
   }; //class
 }

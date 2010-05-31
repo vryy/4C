@@ -14,12 +14,12 @@ Maintainer: Thomas Kloeppel
 
 
 #include "multipointconstraint.H"
-#include "mpcdofset.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "iostream"
+#include "../drt_lib/drt_dofset_transparent.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -64,32 +64,32 @@ UTILS::MPConstraint::MPConstraint(RCP<DRT::Discretization> discr,
  |recompute nodecolmap of standard discretization to include constrained|
  |nodes as ghosted nodes                                                |
  *----------------------------------------------------------------------*/
-RCP<Epetra_Map> UTILS::MPConstraint::ComputeNodeColMap(
-        const RCP<DRT::Discretization> sourcedis,
-        const RCP<DRT::Discretization> constraintdis
-        ) const
-{
-    const Epetra_Map* oldcolnodemap = sourcedis->NodeColMap();
-
-    vector<int> mycolnodes(oldcolnodemap->NumMyElements());
-    oldcolnodemap->MyGlobalElements (&mycolnodes[0]);
-    for (int inode = 0; inode != constraintdis->NumMyColNodes(); ++inode)
-    {
-        const DRT::Node* newnode = constraintdis->lColNode(inode);
-        const int gid = newnode->Id();
-        if (!(sourcedis->HaveGlobalNode(gid)))
-        {
-            mycolnodes.push_back(gid);
-        }
-    }
-
-    // now reconstruct the extended colmap
-    RCP<Epetra_Map> newcolnodemap = rcp(new Epetra_Map(-1,
-                                       mycolnodes.size(),
-                                       &mycolnodes[0],
-                                       0,
-                                       sourcedis->Comm()));
-    return newcolnodemap;
-}
+//RCP<Epetra_Map> UTILS::MPConstraint::ComputeNodeColMap(
+//        const RCP<DRT::Discretization> sourcedis,
+//        const RCP<DRT::Discretization> constraintdis
+//        ) const
+//{
+//    const Epetra_Map* oldcolnodemap = sourcedis->NodeColMap();
+//
+//    vector<int> mycolnodes(oldcolnodemap->NumMyElements());
+//    oldcolnodemap->MyGlobalElements (&mycolnodes[0]);
+//    for (int inode = 0; inode != constraintdis->NumMyColNodes(); ++inode)
+//    {
+//        const DRT::Node* newnode = constraintdis->lColNode(inode);
+//        const int gid = newnode->Id();
+//        if (!(sourcedis->HaveGlobalNode(gid)))
+//        {
+//            mycolnodes.push_back(gid);
+//        }
+//    }
+//
+//    // now reconstruct the extended colmap
+//    RCP<Epetra_Map> newcolnodemap = rcp(new Epetra_Map(-1,
+//                                       mycolnodes.size(),
+//                                       &mycolnodes[0],
+//                                       0,
+//                                       sourcedis->Comm()));
+//    return newcolnodemap;
+//}
 
 #endif

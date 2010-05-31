@@ -14,13 +14,13 @@ Maintainer: Thomas Kloeppel
 
 
 #include "multipointconstraint3.H"
-#include "mpcdofset.H"
 #include "constraint_element3.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_sparsematrix.H"
 #include <iostream>
+#include "../drt_lib/drt_dofset_transparent.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -69,9 +69,9 @@ MPConstraint
     for (discriter=constraintdis_.begin(); discriter!=constraintdis_.end(); discriter++)
     {
       //ReplaceNumDof(actdisc_,discriter->second);
-      RCP<Epetra_Map> newcolnodemap = ComputeNodeColMap(actdisc_, discriter->second);
+      RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(actdisc_, discriter->second);
       actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
-      RCP<DRT::DofSet> newdofset=rcp(new MPCDofSet(actdisc_));
+      RCP<DRT::DofSet> newdofset=rcp(new DRT::TransparentDofSet(actdisc_));
       (discriter->second)->ReplaceDofSet(newdofset);
       newdofset=null;
       (discriter->second)->FillComplete();

@@ -372,33 +372,33 @@ FSI::ConstrMonolithic::CreateStatusTest(Teuchos::ParameterList& nlParams,
 
   converged->addStatusTest(structcombo);
 
-  // setup tests for interface
-
-  std::vector<Teuchos::RCP<const Epetra_Map> > interface;
-  interface.push_back(FluidField().Interface().FSICondMap());
-  interface.push_back(Teuchos::null);
-  LINALG::MultiMapExtractor interfaceextract(*DofRowMap(),interface);
-
-  Teuchos::RCP<NOX::StatusTest::Combo> interfacecombo =
-    Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
-
-  Teuchos::RCP<NOX::FSI::PartialNormF> interfaceTest =
-    Teuchos::rcp(new NOX::FSI::PartialNormF("interface",
-                                            interfaceextract,0,
-                                            nlParams.get("Norm abs vel", 1.0e-6),
-                                            NOX::Abstract::Vector::TwoNorm,
-                                            NOX::FSI::PartialNormF::Scaled));
-  Teuchos::RCP<NOX::FSI::PartialNormUpdate> interfaceTestUpdate =
-    Teuchos::rcp(new NOX::FSI::PartialNormUpdate("interface update",
-                                                 interfaceextract,0,
-                                                 nlParams.get("Norm abs vel", 1.0e-6),
-                                                 NOX::FSI::PartialNormUpdate::Scaled));
-
-  AddStatusTest(interfaceTest);
-  interfacecombo->addStatusTest(interfaceTest);
-  //interfacecombo->addStatusTest(interfaceTestUpdate);
-
-  converged->addStatusTest(interfacecombo);
+//  // setup tests for interface
+//
+//  std::vector<Teuchos::RCP<const Epetra_Map> > interface;
+//  interface.push_back(FluidField().Interface().FSICondMap());
+//  interface.push_back(Teuchos::null);
+//  LINALG::MultiMapExtractor interfaceextract(*DofRowMap(),interface);
+//
+//  Teuchos::RCP<NOX::StatusTest::Combo> interfacecombo =
+//    Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+//
+//  Teuchos::RCP<NOX::FSI::PartialNormF> interfaceTest =
+//    Teuchos::rcp(new NOX::FSI::PartialNormF("interface",
+//                                            interfaceextract,0,
+//                                            nlParams.get("Norm abs vel", 1.0e-6),
+//                                            NOX::Abstract::Vector::TwoNorm,
+//                                            NOX::FSI::PartialNormF::Scaled));
+//  Teuchos::RCP<NOX::FSI::PartialNormUpdate> interfaceTestUpdate =
+//    Teuchos::rcp(new NOX::FSI::PartialNormUpdate("interface update",
+//                                                 interfaceextract,0,
+//                                                 nlParams.get("Norm abs vel", 1.0e-6),
+//                                                 NOX::FSI::PartialNormUpdate::Scaled));
+//
+//  AddStatusTest(interfaceTest);
+//  interfacecombo->addStatusTest(interfaceTest);
+//  //interfacecombo->addStatusTest(interfaceTestUpdate);
+//
+//  converged->addStatusTest(interfacecombo);
 
   // setup tests for fluid velocities
 

@@ -44,20 +44,29 @@ actdisc_(discr)
   mpconline2d_=rcp(new MPConstraint2(actdisc_,"MPC_NodeOnLine_2D",offsetID_,maxConstrID));
   mpconplane3d_=rcp(new MPConstraint3(actdisc_,"MPC_NodeOnPlane_3D",offsetID_,maxConstrID));
   mpcnormcomp3d_=rcp(new MPConstraint3(actdisc_,"MPC_NormalComponent_3D",offsetID_,maxConstrID));
+  
+  volconstr3dpen_=rcp(new ConstraintPenalty(actdisc_,"VolumeConstraint_3D_Pen"));
+  areaconstr3dpen_=rcp(new ConstraintPenalty(actdisc_,"AreaConstraint_3D_Pen"));
+  mpcnormcomp3dpen_=rcp(new MPConstraint3Penalty(actdisc_,"MPC_NormalComponent_3D_Pen"));
 
+  havepenaconstr_ = (mpcnormcomp3dpen_->HaveConstraint()) 
+      or (volconstr3dpen_->HaveConstraint())
+      or (areaconstr3dpen_->HaveConstraint());
+  
   numConstrID_ = max(maxConstrID-offsetID_+1,0);
   constrdofset_ = rcp(new ConstraintDofSet());
   constrdofset_ ->AssignDegreesOfFreedom(actdisc_,numConstrID_,0);
-  offsetID_-= constrdofset_->FirstGID();
+  offsetID_ -= constrdofset_->FirstGID();
   //----------------------------------------------------
   //-----------include possible further constraints here
   //----------------------------------------------------
-  haveconstraint_= (areaconstr3d_->HaveConstraint())
+  havelagrconstr_= (areaconstr3d_->HaveConstraint())
     or (volconstr3d_->HaveConstraint())
     or (areaconstr2d_->HaveConstraint())
     or (mpconplane3d_->HaveConstraint())
     or (mpcnormcomp3d_->HaveConstraint())
     or (mpconline2d_->HaveConstraint());
+  haveconstraint_ = havepenaconstr_ or havelagrconstr_;
   if (haveconstraint_)
   {
     ParameterList p;
@@ -84,6 +93,8 @@ actdisc_(discr)
     volconstr3d_->Initialize(p,refbaseredundant);
     areaconstr3d_->Initialize(p,refbaseredundant);
     areaconstr2d_->Initialize(p,refbaseredundant);
+    volconstr3dpen_->Initialize(p,refbaseredundant);
+    areaconstr3dpen_->Initialize(p,refbaseredundant);
 
     mpconline2d_->SetConstrState("displacement",disp);
     mpconline2d_->Initialize(p,refbaseredundant);
@@ -195,11 +206,15 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   volconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   areaconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   areaconstr2d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
+  volconstr3dpen_->Evaluate(p,stiff,null,fint,null,null);
+  areaconstr3dpen_->Evaluate(p,stiff,null,fint,null,null);
 
   mpconplane3d_->SetConstrState("displacement",disp);
   mpconplane3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   mpcnormcomp3d_->SetConstrState("displacement",disp);
   mpcnormcomp3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
+  mpcnormcomp3dpen_->SetConstrState("displacement",disp);
+  mpcnormcomp3dpen_->Evaluate(p,stiff,null,fint,null,null);
   mpconline2d_->SetConstrState("displacement",disp);
   mpconline2d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   // Export redundant vectors into distributed ones

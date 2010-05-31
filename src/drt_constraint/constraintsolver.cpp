@@ -441,7 +441,7 @@ void UTILS::ConstraintSolver::SolveSimple
   RCP<Epetra_Vector> mergedrhs = rcp(new Epetra_Vector(*mergedrowmap));
   LINALG::Export(*rhsconstr,*mergedrhs);
   mergedrhs -> Scale(-1.0);
-  LINALG::Export(*rhsstand,*mergedrhs);
+  LINALG::Export(*rhscopy,*mergedrhs);
   
   // solution vector
   RCP<Epetra_Vector> mergedsol = rcp(new Epetra_Vector(*mergedrowmap));

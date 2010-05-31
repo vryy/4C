@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file constraint.cpp
+\file constraintpenalty.cpp
 
 \brief Basic constraint class, dealing with constraints living on boundaries
 <pre>
@@ -12,7 +12,7 @@ Maintainer: Thomas Kloeppel
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "constraint.H"
+#include "constraintpenalty.H"
 #include "iostream"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"
@@ -20,109 +20,53 @@ Maintainer: Thomas Kloeppel
 
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-UTILS::Constraint::Constraint(RCP<DRT::Discretization> discr,
-        const string& conditionname,
-        int& offsetID,
-        int& maxID):
-actdisc_(discr)
-{
-  actdisc_->GetCondition(conditionname,constrcond_);
-  if (constrcond_.size())
-  {
-    constrtype_=GetConstrType(conditionname);
-    for (unsigned int i=0; i<constrcond_.size();i++)
-    {
-      //constrcond_[i]->Print(cout);
-      int condID=(*(constrcond_[i]->Get<vector<int> >("ConditionID")))[0];
-      if (condID>maxID)
-      {
-        maxID=condID;
-      }
-      if (condID<offsetID)
-      {
-        offsetID=condID;
-      }
-
-      vector<double> myinittime=*(constrcond_[i]->Get<vector<double> >("activTime"));
-      if (myinittime.size())
-      {
-        inittimes_.insert(pair<int,double>(condID,myinittime[0]));
-        activecons_.insert(pair<int,bool>(condID,false));
-      }
-      else
-      {
-        inittimes_.insert(pair<int,double>(condID,0.0));
-        activecons_.insert(pair<int,bool>(condID,false));
-      }
-    }
-  }
-  else
-  {
-    constrtype_=none;
-  }
-}
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                               tk 07/08|
- *----------------------------------------------------------------------*/
-UTILS::Constraint::Constraint(RCP<DRT::Discretization> discr,
+UTILS::ConstraintPenalty::ConstraintPenalty(RCP<DRT::Discretization> discr,
         const string& conditionname):
-actdisc_(discr)
+Constraint(discr,conditionname)
 {
-  actdisc_->GetCondition(conditionname,constrcond_);
-  
   if (constrcond_.size())
   {
-    constrtype_=GetConstrType(conditionname);
     for (unsigned int i=0; i<constrcond_.size();i++)
     {
-      vector<double> myinittime=*(constrcond_[i]->Get<vector<double> >("activTime"));
+      vector<double> mypenalties=*(constrcond_[i]->Get<vector<double> >("penalty"));
       int condID=constrcond_[i]->GetInt("ConditionID");
-      if (myinittime.size())
+      if (mypenalties.size())
       {
-        inittimes_.insert(pair<int,double>(condID,myinittime[0]));
-        activecons_.insert(pair<int,bool>(condID,false));
+        penalties_.insert(pair<int,double>(condID,mypenalties[0]));
       }
       else
       {
-        inittimes_.insert(pair<int,double>(condID,0.0));
-        activecons_.insert(pair<int,bool>(condID,false));
+        dserror("you should not turn up in penalty controlled constraint!");
       }
     }
+    int nummyele=0;
+    int numele=penalties_.size();
+    if (!actdisc_->Comm().MyPID())
+    {
+      nummyele=numele;
+    }
+    // initialize maps and importer
+    errormap_=rcp(new Epetra_Map(numele,nummyele,0,actdisc_->Comm()));
+    rederrormap_ = LINALG::AllreduceEMap(*errormap_);
+    errorexport_ = rcp (new Epetra_Export(*rederrormap_,*errormap_));
+    errorimport_ = rcp (new Epetra_Import(*rederrormap_,*errormap_));
+    acterror_=rcp(new Epetra_Vector(*rederrormap_));
+    initerror_=rcp(new Epetra_Vector(*rederrormap_));
   }
   else
   {
     constrtype_=none;
   }
-}
-
-/*-----------------------------------------------------------------------*
-|(private)                                                       tk 07/08|
-*-----------------------------------------------------------------------*/
-UTILS::Constraint::ConstrType UTILS::Constraint::GetConstrType(const string& name)
-{
-  if (name=="VolumeConstraint_3D" or name=="VolumeConstraint_3D_Pen")
-    return volconstr3d;
-  else if (name=="AreaConstraint_3D" or name=="AreaConstraint_3D_Pen")
-    return areaconstr3d;
-  else if (name=="AreaConstraint_2D")
-    return areaconstr2d;
-  else if (name=="MPC_NodeOnPlane_3D")
-    return mpcnodeonplane3d;
-  else if (name=="MPC_NodeOnLine_2D")
-    return mpcnodeonline2d;
-  else if (name=="MPC_NormalComponent_3D" or name=="MPC_NormalComponent_3D_Pen")
-    return mpcnormalcomp3d;
-  return none;
+  
+  return;
 }
 
 /*------------------------------------------------------------------------*
 |(public)                                                       tk 08/08  |
 |Initialization routine computes ref base values and activates conditions |
 *------------------------------------------------------------------------*/
-void UTILS::Constraint::Initialize(
+void UTILS::ConstraintPenalty::Initialize(
     ParameterList&        params,
     RCP<Epetra_Vector>    systemvector3)
 {
@@ -144,7 +88,7 @@ void UTILS::Constraint::Initialize(
       dserror("Unknown constraint/monitor type to be evaluated in Constraint class!");
   }
   // start computing
-  InitializeConstraint(params,systemvector3);
+  EvaluateError(params,initerror_);
   return;
 }
 
@@ -152,7 +96,7 @@ void UTILS::Constraint::Initialize(
 |(public)                                                       tk 08/08  |
 |Initialization routine activates conditions (restart)                    |
 *------------------------------------------------------------------------*/
-void UTILS::Constraint::Initialize
+void UTILS::ConstraintPenalty::Initialize
 (
   const double& time
 )
@@ -180,7 +124,7 @@ void UTILS::Constraint::Initialize
 |(public)                                                        tk 07/08|
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
-void UTILS::Constraint::Evaluate(
+void UTILS::ConstraintPenalty::Evaluate(
     ParameterList&        params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
@@ -188,6 +132,27 @@ void UTILS::Constraint::Evaluate(
     RCP<Epetra_Vector>    systemvector2,
     RCP<Epetra_Vector>    systemvector3)
 {
+  // choose action
+  switch (constrtype_)
+  {
+    case volconstr3d:
+      params.set("action","calc_struct_constrvol");
+    break;
+    case areaconstr3d:
+      params.set("action","calc_struct_constrarea");
+    break;
+    case areaconstr2d:
+      params.set("action","calc_struct_constrarea");
+    break;
+    case none:
+      return;
+    default:
+      dserror("Unknown constraint/monitor type to be evaluated in Constraint class!");
+  }
+  // start computing
+  acterror_->Scale(0.0);
+  EvaluateError(params,acterror_);
+    
   switch (constrtype_)
   {
     case volconstr3d:
@@ -213,7 +178,7 @@ void UTILS::Constraint::Evaluate(
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void UTILS::Constraint::EvaluateConstraint(
+void UTILS::ConstraintPenalty::EvaluateConstraint(
     ParameterList&        params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
@@ -226,12 +191,6 @@ void UTILS::Constraint::EvaluateConstraint(
   // get the current time
   const double time = params.get("total time",-1.0);
 
-  const bool assemblemat1 = systemmatrix1!=Teuchos::null;
-  const bool assemblemat2 = systemmatrix2!=Teuchos::null;
-  const bool assemblevec1 = systemvector1!=Teuchos::null;
-  const bool assemblevec2 = systemvector2!=Teuchos::null;
-  const bool assemblevec3 = systemvector3!=Teuchos::null;
-
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
@@ -241,7 +200,6 @@ void UTILS::Constraint::EvaluateConstraint(
 
     // get values from time integrator to scale matrices with
     double scStiff = params.get("scaleStiffEntries",1.0);
-    double scConMat = params.get("scaleConstrMat",1.0);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
     int condID=cond.GetInt("ConditionID");
@@ -253,13 +211,7 @@ void UTILS::Constraint::EvaluateConstraint(
       // is conditions already labeled as active?
       if(activecons_.find(condID)->second==false)
       {
-        const string action = params.get<string>("action");
-        RCP<Epetra_Vector> displast=params.get<RCP<Epetra_Vector> >("old disp");
-        actdisc_->SetState("displacement",displast);
-        Initialize(params,systemvector2);
-        RCP<Epetra_Vector> disp=params.get<RCP<Epetra_Vector> >("new disp");
-        actdisc_->SetState("displacement",disp);
-        params.set("action",action);
+        Initialize(time);
       }
 
       // Evaluate loadcurve if defined. Put current load factor in parameterlist
@@ -270,18 +222,6 @@ void UTILS::Constraint::EvaluateConstraint(
       if (curvenum>=0 )
         curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
-      // global and local ID of this bc in the redundant vectors
-      const int offsetID = params.get<int>("OffsetID");
-      int gindex = condID-offsetID;
-      const int lindex = (systemvector3->Map()).LID(gindex);
-
-      // store loadcurve values
-      RCP<Epetra_Vector> timefact = params.get<RCP<Epetra_Vector> >("vector curve factors");
-      timefact->ReplaceGlobalValues(1,&curvefac,&gindex);
-
-      // Get the current lagrange multiplier value for this condition
-      const RCP<Epetra_Vector> lagramul = params.get<RCP<Epetra_Vector> >("LagrMultVector");
-      const double lagraval = (*lagramul)[lindex];
 
       // elements might need condition
       params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
@@ -309,47 +249,35 @@ void UTILS::Constraint::EvaluateConstraint(
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero
         const int eledim = (int)lm.size();
-        if (assemblemat1) elematrix1.Shape(eledim,eledim);
-        if (assemblemat2) elematrix2.Shape(eledim,eledim);
-        if (assemblevec1) elevector1.Size(eledim);
-        if (assemblevec2) elevector2.Size(eledim);
-        if (assemblevec3) elevector3.Size(1);
+        elematrix1.Shape(eledim,eledim);
+        elevector1.Size(eledim);
+        elevector3.Size(1);
 
         // call the element specific evaluate method
         int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,
             elevector1,elevector2,elevector3);
         if (err) dserror("error while evaluating elements");
-
+        
         // assembly
         int eid = curr->second->Id();
-        if (assemblemat1)
+        double diff = ((*initerror_)[condID-1]-(*acterror_)[condID-1]);
         {
           // scale with time integrator dependent value
-          elematrix1.Scale(scStiff*lagraval);
+          Epetra_SerialDenseMatrix tmpmat(eledim,eledim);
+          elematrix1.Scale(diff);
+          for(int i=0; i<eledim; i++)
+            for(int j=0; j<eledim; j++)
+              tmpmat(i,j) = elevector1(i)*elevector1(j);
+          elematrix1 = tmpmat;
+          elematrix1.Scale(2.*scStiff*penalties_[condID]);
+          
           systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
         }
-        if (assemblemat2)
         {
-          // assemble to rectangular matrix. The column corresponds to the constraint ID.
-          // scale with time integrator dependent value
-          vector<int> colvec(1);
-          colvec[0]=gindex;
-          elevector2.Scale(scConMat);
-          systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
-        }
-        if (assemblevec1)
-        {
-          elevector1.Scale(lagraval);
+          elevector1.Scale(2.*penalties_[condID]*diff);
           LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
         }
-        if (assemblevec3)
-        {
-          vector<int> constrlm;
-          vector<int> constrowner;
-          constrlm.push_back(gindex);
-          constrowner.push_back(curr->second->Owner());
-          LINALG::Assemble(*systemvector3,elevector3,constrlm,constrowner);
-        }
+        
       }
     }
   }
@@ -358,7 +286,7 @@ void UTILS::Constraint::EvaluateConstraint(
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::Constraint::InitializeConstraint(
+void UTILS::ConstraintPenalty::EvaluateError(
     ParameterList&        params,
     RCP<Epetra_Vector>    systemvector)
 {
@@ -380,7 +308,7 @@ void UTILS::Constraint::InitializeConstraint(
     params.set("ConditionID",condID);
 
     // if current time is larger than initialization time of the condition, start computing
-    if((inittimes_.find(condID)->second<=time) && (!(activecons_.find(condID)->second)))
+    if(inittimes_.find(condID)->second<=time)
     {
       params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
 
@@ -416,35 +344,24 @@ void UTILS::Constraint::InitializeConstraint(
 
         vector<int> constrlm;
         vector<int> constrowner;
-        int offsetID = params.get<int> ("OffsetID");
-        constrlm.push_back(condID-offsetID);
+        constrlm.push_back(condID-1);
         constrowner.push_back(curr->second->Owner());
         LINALG::Assemble(*systemvector,elevector3,constrlm,constrowner);
       }
       // remember next time, that this condition is already initialized, i.e. active
       activecons_.find(condID)->second=true;
 
-      if (actdisc_->Comm().MyPID()==0)
+      if (actdisc_->Comm().MyPID()==0 && (!(activecons_.find(condID)->second)))
       {
         cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
       }
     }
 
   }
+  RCP<Epetra_Vector> acterrdist = rcp(new Epetra_Vector(*errormap_));
+  acterrdist->Export(*systemvector,*errorexport_,Add);
+  systemvector->Import(*acterrdist,*errorimport_,Insert);
   return;
 } // end of Initialize Constraint
 
-/*-----------------------------------------------------------------------*
- *-----------------------------------------------------------------------*/
-vector<int> UTILS::Constraint::GetActiveCondID()
-{
-  vector<int> condID;
-  map<int,bool>::const_iterator mapit;
-  for(mapit = activecons_.begin();mapit!=activecons_.end();mapit++)
-  {
-    if (mapit->second)
-      condID.push_back(mapit->first);
-  }
-  return condID;
-}
 #endif

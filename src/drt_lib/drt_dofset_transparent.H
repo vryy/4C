@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file mpcdofset.H
+\file drt_dofset_transparent.H
 
 \brief A set of degrees of freedom special for contact
 
@@ -12,8 +12,8 @@ Maintainer: Thomas Kloeppel
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifndef MPCDOFSET_H
-#define MPCDOFSET_H
+#ifndef TRANSPARENTDOFSET_H
+#define TRANSPARENTDOFSET_H
 
 
 #include "../drt_lib/drt_dofset.H"
@@ -21,12 +21,17 @@ Maintainer: Thomas Kloeppel
 using namespace std;
 
 
-namespace UTILS
+namespace DRT
 {
   /*!
-  \brief A set of degrees of freedom special for contact
+  A special set of degrees of freedom, implemented in order to assign the same degrees of freedom to nodes 
+  belonging to two discretizations. This way two discretizations can assemble into the same position of the 
+  system matrix. 
+  As internal variable it holds a source discretization (Constructor). If such a nodeset is assigned to a 
+  sub-discretization, its dofs are assigned according to the dofs of the source.
+  
   */
-  class MPCDofSet : public DRT::DofSet
+  class TransparentDofSet : public DRT::DofSet
   {
   public:
 
@@ -34,16 +39,16 @@ namespace UTILS
     \brief Standard Constructor
 
     */
-    explicit MPCDofSet(RCP<DRT::Discretization> sourcedis);
+    explicit TransparentDofSet(RCP<DRT::Discretization> sourcedis);
 
     /*!
     \brief Destructor
 
     */
-    virtual ~MPCDofSet() { return; }
+    virtual ~TransparentDofSet() { return; }
 
     /// create a copy of this object
-    virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new MPCDofSet(*this)); }
+    virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new TransparentDofSet(*this)); }
 
     /// Assign dof numbers to all elements and nodes of the discretization.
     virtual int AssignDegreesOfFreedom(
@@ -63,8 +68,8 @@ namespace UTILS
     RCP<DRT::Discretization> sourcedis_; ///< source discretization
 
 
-  }; // class MPCDofSet
+  }; // class TransparentDofSet
 } //namespace
 
-#endif  // #ifndef DRT_CDOFSET_H
+#endif  // #ifndef DRT_TRANSPARENDOFSET_H
 #endif  // #ifdef CCADISCRET

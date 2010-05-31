@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file mpcdofset.cpp
+\file drt_dofset_transparent.cpp
 
 \brief A set of degrees of freedom special for contact
 
@@ -13,20 +13,16 @@ Maintainer: Thomas Kloeppel
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-//#include <iostream>
-//#include <algorithm>
-//#include <numeric>
+#include "drt_dofset_transparent.H"
 
-#include "mpcdofset.H"
-
-UTILS::MPCDofSet::MPCDofSet(RCP<DRT::Discretization> sourcedis) :
+DRT::TransparentDofSet::TransparentDofSet(RCP<DRT::Discretization> sourcedis) :
 DRT::DofSet(),
 sourcedis_(sourcedis)
 {
   return;
 }
 
-int UTILS::MPCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start)
+int DRT::TransparentDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
 
   // first, we call the standard AssignDegreesOfFreedom from the base class
@@ -41,7 +37,7 @@ int UTILS::MPCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, con
 }
 
 /// Assign dof numbers for new discretization using dof numbering from source discretization.
-void UTILS::MPCDofSet::TransferDegreesOfFreedom(
+void DRT::TransparentDofSet::TransferDegreesOfFreedom(
         const DRT::Discretization& sourcedis,
         const DRT::Discretization& newdis,
         const int start

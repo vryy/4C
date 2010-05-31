@@ -27,9 +27,11 @@ Maintainer: Thomas Kloeppel
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_sparsematrix.H"
 #include "constraint.H"
+#include "constraintpenalty.H"
 #include "monitor.H"
 #include "multipointconstraint2.H"
 #include "multipointconstraint3.H"
+#include "multipointconstraint3penalty.H"
 #include "constraintdofset.H"
 
 using namespace std;
@@ -209,6 +211,22 @@ namespace UTILS
     {
         return haveconstraint_;
     };
+    
+    /*!
+     \brief Return if there are constraints
+    */
+    bool HaveConstraintLagr() const
+    {
+        return havelagrconstr_;
+    };
+    
+    /*!
+     \brief Return if there are constraints
+    */
+    bool HaveConstraintPen() const
+    {
+        return havepenaconstr_;
+    };
 
     /*!
        \brief Return if there are monitors
@@ -304,15 +322,21 @@ namespace UTILS
     RCP<Epetra_Vector> lagrMultVecOld_;  ///< lagrange multipliers
     RCP<LINALG::SparseOperator> constrMatrix_;  ///< additional rectangular matrix
     bool haveconstraint_;  ///< are there constraints at all?
+    bool havelagrconstr_;  ///< are there constraints controlled by Lagrange multiplier?
+    bool havepenaconstr_;  ///< are there constraints controlled by Penalty approach?
     bool havemonitor_;  ///< are there monitor conditions?
     double uzawaparam_;  ///< parameter of Uzawa algorithm (only for the case the linear uzawa is not used)
 
     RCP<Constraint> volconstr3d_;  ///< 3d volume constraints defined on surfaces
     RCP<Constraint> areaconstr3d_;  ///< 3d area constraints defined on surfaces
     RCP<Constraint> areaconstr2d_;  ///< 2d area constraints defined on lines
+    RCP<ConstraintPenalty> volconstr3dpen_;
+    RCP<ConstraintPenalty> areaconstr3dpen_;
     RCP<MPConstraint3> mpconplane3d_;  ///< 3d multipoint constraint prescribing the motion of a node relatively to a plane
     RCP<MPConstraint3> mpcnormcomp3d_;  ///< 3d multipoint constraint prescribing the motion of a node to a plane masternode
     RCP<MPConstraint2> mpconline2d_; ///< 2d multipoint constraint prescribing the motion of a node relatively to a straight line
+    RCP<MPConstraint3Penalty> mpcnormcomp3dpen_;
+    
 
     RCP<Monitor> volmonitor3d_; ///< 3d volume monitors defined on surfaces
     RCP<Monitor> areamonitor3d_;  ///< 3d area monitors defined on surfaces
