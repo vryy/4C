@@ -453,6 +453,7 @@ protected:
     calc_struct_update_imrlike,
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                               //!< during iteration to last converged state
+    calc_struct_energy,       //!< compute internal energy
     calc_homog_dens,          //!< multi-scale: calculate homogenized density
     eas_init_multi,           //!< multi-scale: initialize EAS parameters on microscale
     eas_set_multi,            //!< multi-scale: set EAS parameters on microscale

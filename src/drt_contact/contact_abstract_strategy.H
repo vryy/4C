@@ -410,9 +410,10 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     matrices of the last converged time / load step n (TR-like interpolation).
      
     \param fresm (in): residual / force vector at state n+1 of current Newton step
+    \param output (in): flag indicating whether force output shall be written
 
     */
-    virtual void InterfaceForces(RCP<Epetra_Vector> fresm);
+    virtual void InterfaceForces(RCP<Epetra_Vector> fresm, bool output = false);
 
     /*!
     \brief Print interfaces

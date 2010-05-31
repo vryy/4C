@@ -2949,6 +2949,9 @@ void CONTACT::CmtStruGenAlpha::Output()
   // print active set
   cmtmanager_->GetStrategy().PrintActiveSet();
 
+  // output of energy and momentum quantities
+  //OutputEnergyMomentum();
+   
   //---------------------------------------------------------- print out
   if (!myrank_)
   {
@@ -2968,6 +2971,123 @@ void CONTACT::CmtStruGenAlpha::Output()
     }
   }
 } // CmtStruGenAlpha::Output()
+
+/*----------------------------------------------------------------------*
+ |  output of energy and momentum quantities (public)         popp 05/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::CmtStruGenAlpha::OutputEnergyMomentum()
+{
+  // get some parameters from parameter list
+  double timen = params_.get<double>("total time",0.0);
+  double dt    = params_.get<double>("delta time",0.01);
+  int dim      = cmtmanager_->GetStrategy().Dim();
+  
+  // global linear momentum (M*v)
+  RCP<Epetra_Vector> mv = LINALG::CreateVector(*(discret_.DofRowMap()), true);
+  mass_->Multiply(false, *vel_, *mv);
+  
+  // linear / angular momentum
+  vector<double> sumlinmom(3);
+  vector<double> sumangmom(3);
+  vector<double> angmom(3);
+  vector<double> linmom(3);
+  
+  // vectors of nodal properties
+  vector<double> nodelinmom(3);
+  vector<double> nodeangmom(3);
+  vector<double> position(3);
+  
+  // loop over all nodes belonging to the respective processor 
+  for (int k=0; k<(discret_.NodeRowMap())->NumMyElements();++k)
+  {
+    // get current node
+    int gid = (discret_.NodeRowMap())->GID(k);
+    DRT::Node* mynode = discret_.gNode(gid);
+    vector<int> globaldofs = discret_.Dof(mynode);
+  
+    // loop over all DOFs comprised by this node
+    for (int i=0;i<dim;i++)
+    {
+      nodelinmom[i] = (*mv)[mv->Map().LID(globaldofs[i])];
+      sumlinmom[i] += nodelinmom[i];
+      position[i]   = (mynode->X())[i] + (*dis_)[mv->Map().LID(globaldofs[i])];
+    }
+
+    // calculate vector product position x linmom
+    nodeangmom[0] = position[1]*nodelinmom[2] - position[2]*nodelinmom[1];
+    nodeangmom[1] = position[2]*nodelinmom[0] - position[0]*nodelinmom[2];
+    nodeangmom[2] = position[0]*nodelinmom[1] - position[1]*nodelinmom[0];
+    
+    // loop over all DOFs comprised by this node
+    for (int i=0; i<3; ++i) sumangmom[i] += nodeangmom[i];
+  }
+  
+  // global quantities (sum over all processors)
+  for (int i=0;i<3;++i)
+  {
+    cmtmanager_->Comm().SumAll(&sumangmom[i],&angmom[i],1);
+    cmtmanager_->Comm().SumAll(&sumlinmom[i],&linmom[i],1);
+  }
+  
+  //-------------------------Calculation of total kinetic energy
+  double kinen = 0.0;
+  mv->Dot(*vel_,&kinen);
+  kinen *= 0.5;
+  
+  //-------------------------Calculation of total internal energy
+  double inten = 0.0;
+  ParameterList p;
+  p.set("action", "calc_struct_energy");
+  discret_.ClearState();
+  discret_.SetState("displacement", dis_);
+  RCP<Epetra_SerialDenseVector> energies = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+  energies->Scale(0.0);
+  discret_.EvaluateScalars(p, energies);
+  discret_.ClearState();
+  inten = (*energies)(0);
+
+  //------------------------- Print results into txt-File
+  if (!myrank_)
+  {
+    // path and filename
+    std::ostringstream filename;
+    filename << "o/scilab_output/OutputMomentum.txt";
+    
+    // open file
+    FILE* MyFile = NULL;
+    if (timen < 2*dt)
+    {
+      MyFile = fopen(filename.str().c_str(),"wt");
+      
+      // initialize file pointer for writing contact interface forces/moments
+      FILE* MyConForce = NULL;
+      MyConForce = fopen("o/scilab_output/OutputInterface.txt", "wt");
+      if (MyConForce!=NULL) fclose(MyConForce);
+      else dserror("ERROR: File for writing contact interface forces/moments could not be generated.");
+    }
+    else  
+      MyFile = fopen(filename.str().c_str(),"at+");
+    
+    // add current values to file
+    if (MyFile!=NULL)
+    {
+     std::stringstream filec;
+     fprintf(MyFile, "%g\t", timen);
+     for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", linmom[i]);
+     for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", angmom[i]);
+     fprintf(MyFile, "%g\t%g\n",kinen,inten); 
+     fclose(MyFile);
+    }  
+    else
+      dserror("ERROR: File for writing momentum and energy data could not be opened.");
+  }
+  
+  //-------------------------- Compute and output interface forces
+  Teuchos::RCP<Epetra_Vector> fresm = Teuchos::rcp(new Epetra_Vector(Getfresm()));
+  cmtmanager_->GetStrategy().InterfaceForces(fresm,true);
+    
+  return;
+} // CmtStruGenAlpha::OutputEnergyMomentum()
 
 /*----------------------------------------------------------------------*
  |  nonlinear solution in one time step                      popp  03/10|

@@ -147,7 +147,7 @@ class StrategyBase
     virtual void Initialize() = 0;
     virtual void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
     virtual double InitialPenalty() = 0;
-    virtual void InterfaceForces(RCP<Epetra_Vector> fresm) = 0;
+    virtual void InterfaceForces(RCP<Epetra_Vector> fresm, bool output = false) = 0;
     virtual RCP<Epetra_Vector> LagrMultOld() = 0;  
     virtual void MeshInitialization() = 0;
     virtual void MortarCoupling(const RCP<Epetra_Vector> dis) = 0;

@@ -220,6 +220,12 @@ public:
   virtual void Output();
 
   /*!
+  \brief output linear+angular momentum and energies
+
+  */
+  void OutputEnergyMomentum();
+  
+  /*!
   \brief restart calculation from a given step
 
   */

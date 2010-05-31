@@ -859,15 +859,14 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
 /*----------------------------------------------------------------------*
  |  Compute interface forces (for debugging only)             popp 02/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm)
+void CONTACT::CoAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm, bool output)
 {
+  /*
   // Note that we ALWAYS use a TR-like approach to compute the contact
   // forces. This means we never explicitly compute fc at the generalized
   // mid-point n+1-alphaf, but use a linear combination of the old end-
   // point n and the new end-point n+1 instead:
   // F_{c;n+1-alpha_f} := (1-alphaf) * F_{c;n+1} +  alpha_f * F_{c;n}
-
-  /*// CHECK OF INTERFACE FORCE EQUILIBRIUM
 
   // compute two subvectors of fc each via Lagrange multipliers z_n+1, z_n
   RCP<Epetra_Vector> fcslavetemp = rcp(new Epetra_Vector(dmatrix_->RowMap()));
@@ -1069,10 +1068,6 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm)
         gmcsnew[d] += nodemoments[d];
         gmcmnew[d] -= nodemomentm[d];
       }
-
-      cout << "NORMAL: " << cnode->MoData().n()[0] << " " << cnode->MoData().n()[1] << " " << cnode->MoData().n()[2] << endl;
-      cout << "LM:     " << lm[0] << " " << lm[1] << " " << lm[2] << endl;
-      cout << "GAP:    " << nodegaps[0]-nodegapm[0] << " " << nodegaps[1]-nodegapm[1] << " " << nodegaps[2]-nodegapm[2] << endl;
     }
   }
 
@@ -1087,7 +1082,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm)
     Comm().SumAll(&gmcmnew[i],&ggmcmnew[i],1);
   }
 
-  // output
+  // CHECK OF CONTACT FORCE EQUILIBRIUM ----------------------------------
   double slavenorm = 0.0;
   fcslavetemp->Norm2(&slavenorm);
   double slavenormend = 0.0;
@@ -1119,8 +1114,29 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(RCP<Epetra_Vector> fresm)
     cout << "Master Contact Moment Vector (2nd version): " << ggmcmnew[0] << " " << ggmcmnew[1] << " " << ggmcmnew[2] << endl;
   }
   // CHECK OF CONTACT FORCE EQUILIBRIUM ----------------------------------
-  */
 
+  // store results into an external .txt-file
+  if (output && Comm().MyPID()==0)
+  {
+    FILE* MyFile = NULL;
+    MyFile = fopen("o/scilab_output/OutputInterface.txt", "at+");
+    
+    if (MyFile)
+    {
+      for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", ggfcs[i]);
+      for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", ggfcm[i]);
+      for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", ggmcs[i]);
+      for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", ggmcm[i]);
+      //for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", gsfgh[i]);
+      //for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", gsmgh[i]);
+      fprintf(MyFile, "\n");
+      fclose(MyFile);
+    }
+    else
+      dserror("ERROR: File for writing contact forces could not be opened.");
+  }
+  */
+  
   return;
 }
 
