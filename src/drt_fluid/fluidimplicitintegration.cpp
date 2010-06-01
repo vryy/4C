@@ -2437,6 +2437,9 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     eleparams.set("using generalized-alpha time integration",true);
     eleparams.set("total time",time_-(1-alphaF_)*dta_);
     eleparams.set("is stationary", false);
+    eleparams.set("alphaF",alphaF_);
+    eleparams.set("alphaM",alphaM_);
+    eleparams.set("gamma",gamma_);
 
     discret_->SetState("velaf",velaf_);
   }
@@ -2970,6 +2973,9 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
     eleparams.set("using generalized-alpha time integration",true);
     eleparams.set("total time",time_-(1-alphaF_)*dta_);
     eleparams.set("is stationary", false);
+    eleparams.set("alphaF",alphaF_);
+    eleparams.set("alphaM",alphaM_);
+    eleparams.set("gamma",gamma_);
 
     discret_->SetState("velaf",velaf_);
   }
@@ -4016,6 +4022,9 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
       eleparams.set("using generalized-alpha time integration",true);
       eleparams.set("total time",time_-(1-alphaF_)*dta_);
       eleparams.set("is stationary", false);
+      eleparams.set("alphaF",alphaF_);
+      eleparams.set("alphaM",alphaM_);
+      eleparams.set("gamma",gamma_);
 
       discret_->SetState("velaf",velaf_);
     }
