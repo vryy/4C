@@ -189,6 +189,7 @@ Input/xfsi_bending_2d_stationary_hex8.dat               x        x        x     
 Input/xfsi_fluid_pusher_stationary_hex8_monolithic.dat  x        x        x        x        -        -
 Input/xfsi_fluid_pusher_stationary_hex8_partit.dat      x        x        x        x        -        -
 Input/xfsi_multibody_hex20.dat                          x        x        x        x        -        -
+Input/xfsi_multibody_hex20_tp_DLM_yes.dat               x        x        x        x        -        -
 Input/xfsi_multibody_hex8_monolithic.dat                x        -        x        -        -        -
 Input/xfsi_RingInChannel3D.dat                          x        x        x        x        -        -
 Input/xfsi_shooter_thin.dat                             x        -        x        -        -        -
