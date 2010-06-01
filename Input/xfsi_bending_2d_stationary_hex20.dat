@@ -42,7 +42,7 @@ THERM_HEATFLUX         No
 FILESTEPS              1000
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP   Statics //Gen_Alfa
+DYNAMICTYP   Statics
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
@@ -60,9 +60,8 @@ M_DAMP       0.0000001
 K_DAMP       0.000001
 PREDICT      ConstDisVelAcc
 CONV_CHECK   AbsRes_And_AbsDis
-TOLDISP      1.0E-8
-TOLRES       1.0E-8
-TOLCONSTR    1.0E-06
+TOLDISP      1.0E-10
+TOLRES       1.0E-10
 ADAPTCONV        No
 ADAPTCONV_BETTER 0.1
 MAXITER      50
@@ -75,7 +74,7 @@ STARTINGALGO     One_Step_Theta
 NONLINITER       fixed_point_like //Newton
 ITEMAX           20
 CONVCHECK        L_2_norm
-CONVTOL          1.0E-6
+CONVTOL          1.0E-8
 UPRES            1
 RESTARTEVRY      5
 NUMSTEP          30
@@ -102,7 +101,7 @@ COUPALGO     iter_stagg_AITKEN_rel_param
 PREDICTOR    d(n)
 RELAX        1.0
 ITEMAX       20
-CONVTOL      1.0E-5
+CONVTOL      1.0E-7
 COUPMETHOD   conforming
 COUPVARIABLE Displacement
 ------------------------------------------------------FLUID SOLVER
@@ -113,6 +112,7 @@ SOLVER         UMFPACK    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Ame
 CONDEST                         No
 DLM_CONDENSATION                Yes
 GMSH_DEBUG_OUT                  YES
+volumeRatioLimit                1.0e-4
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid VISCOSITY 0.5 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_NeoHooke YOUNG 400 NUE 0.3  DENS 0.0
@@ -2528,10 +2528,10 @@ NODE 944  	COORD	6.66666701e-02	1.00000000e+00	-1.00000501e-02
 ------------------------------------------------TRANSPORT ELEMENTS
 ------------------------------------------------RESULT DESCRIPTION
 FLUID DIS 1 NODE 203 POSITION velx     NAME velx     VALUE 1.524289923e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 203 POSITION vely     NAME vely     VALUE -2.294419648e-02 TOLERANCE 1e-6
+FLUID DIS 1 NODE 203 POSITION vely     NAME vely     VALUE -2.294525107e-02 TOLERANCE 1e-6
 FLUID DIS 1 NODE 203 POSITION velz     NAME velz     VALUE 0.000000000e-00 TOLERANCE 1e-6
 FLUID DIS 1 NODE 203 POSITION pressure NAME pressure VALUE 2.408561854e-01 TOLERANCE 1e-4
-FLUID DIS 1 NODE 167 POSITION velx     NAME velx     VALUE 1.566934922e-01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 167 POSITION velx     NAME velx     VALUE 1.566961314e-01 TOLERANCE 1e-6
 FLUID DIS 1 NODE 167 POSITION vely     NAME vely     VALUE 6.096864397e-02 TOLERANCE 1e-6
 FLUID DIS 1 NODE 167 POSITION velz     NAME velz     VALUE 0.000000000e-00 TOLERANCE 1e-6
 FLUID DIS 1 NODE 167 POSITION pressure NAME pressure VALUE -1.414474682e-01 TOLERANCE 1e-4
