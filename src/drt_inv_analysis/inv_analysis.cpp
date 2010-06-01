@@ -96,14 +96,12 @@ STR::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
     double cpy0 = iap.get<double>("MC_Y_0");
     double cpy1 = iap.get<double>("MC_Y_1");
     double cpy2 = iap.get<double>("MC_Y_2");
-
     for (int i=0; i<nmp_; i++)
     {
-      mcurve_[i] = cpx0*(1-exp(-pow(cpx1*(i+1)*ttime_/nmp_, cpx2)));
+      mcurve_[i] = cpx0*(1-exp(-pow(((1000./ttime_)*cpx1*(i)*ttime_/nmp_), cpx2)));
       i=i+1;
-      mcurve_[i] = cpy0*(1-exp(-pow(cpy1*i*ttime_/nmp_, cpy2)));
+      mcurve_[i] = cpy0*(1-exp(-pow(((1000./ttime_)*cpy1*(i-1)*ttime_/nmp_), cpy2)));
      }
-
   }
   //dserror("Halt");
 
