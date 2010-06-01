@@ -84,8 +84,6 @@ private:
 
   double mu_;
   double tol_mu_;
-  double mup_;
-  double mum_;
 
   double error_;
   double error_o_;

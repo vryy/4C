@@ -66,11 +66,8 @@ STR::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   discret_->GetCondition("Dirichlet",surfdir_ );
   reset_out_count_=0;
 
-  if (surfneum_.size()==1)
-    problem_type_ = 0;
-  else if (surfneum_.size()==0)
-    problem_type_ = 1;
-  else dserror("The inverse analysis only works for 1 NBC with 2 DBC or for 2 DBC!");
+  if (surfneum_.size()>1)
+    dserror("The inverse analysis only works for 1 NBC with 2 DBC or for 2 DBC!");
 
   // input parameters structural dynamics
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -112,15 +109,11 @@ STR::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   // trainings parameter
   mu_  = 1.;
   tol_mu_ = tol_;
-  mum_ = .1;
-  mup_ = 1.;
-
-  kappa_multi_=1.0;
 
   // read material parameters from input file
   ReadInParameters();
 
-  // Number of moterial parameters
+  // Number of material parameters
   np_ = p_.Length();
 
   // controlling parameter
@@ -152,7 +145,7 @@ void STR::InvAnalysis::Integrate()
     for (int i=0; i<np_+1;i++)
     {
       if (discret_->Comm().MyPID()==0)
-        cout << "------------------------------- run "<< i+1 << " of: " << np_+1 <<"---------------------------------" <<endl;
+        cout << "------------------------------- run "<< i+1 << " of: " << np_+1 <<" ---------------------------------" <<endl;
       Epetra_SerialDenseVector p_cur = p_;
       if (i!= np_)
         p_cur[i]=p_[i] + inc[i];
@@ -183,7 +176,6 @@ void STR::InvAnalysis::Integrate()
     discret_->Comm().Broadcast(&numb_run_,1,0);
   }while(numb_run_<max_itter && error_>tol_) ;      // while (abs(error_o_-error_)>0.001 && error_>tol_ && numb_run_<max_itter);
 
-  cout << "Just before printout " << endl;
   discret_->Comm().Barrier();
   for (int proc=0; proc<discret_->Comm().NumProc(); ++proc)
     if (proc==discret_->Comm().MyPID())
@@ -191,8 +183,6 @@ void STR::InvAnalysis::Integrate()
 
         PrintFile();
   discret_->Comm().Barrier();
-
-  cout << "Just AFTER printout " << endl;
   return;
 }
 
@@ -272,7 +262,7 @@ Epetra_SerialDenseVector STR::InvAnalysis::CalcCvector()
     // after this call we will have disn_==dis_, etc
     sti_->UpdateStepState();
 
-    // gets the displacments/external forces per timestep
+    // gets the displacments per timestep
     {
       Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve();
       cvector[2*step]   = cvector_arg[0];
@@ -308,92 +298,78 @@ Epetra_SerialDenseVector STR::InvAnalysis::GetCalculatedCurve()
 {
   Epetra_SerialDenseVector cvector_arg(2);
 
-  if (problem_type_==0)
+  // current displacement vector
+  Teuchos::RCP<Epetra_Vector> disp = sti_->DisNew();
+
+  vector<DRT::Condition*> invanacond;
+  discret_->GetCondition("SurfInvAna",  invanacond);
+
+  //nodes of the pulling direction
+  const vector<int>* ia_nd_ps  = invanacond[0]->Nodes();
+
+  for (vector<int>::const_iterator inodegid = ia_nd_ps->begin();
+       inodegid !=ia_nd_ps->end();
+       ++inodegid)
   {
-    // current displacement vector
-    Teuchos::RCP<Epetra_Vector> disp = sti_->DisNew();
-
-    vector<DRT::Condition*> invanacond;
-    discret_->GetCondition("SurfInvAna",  invanacond);
-
-    //nodes of the pulling direction
-    const vector<int>* ia_nd_ps  = invanacond[0]->Nodes();
-
-    for (vector<int>::const_iterator inodegid = ia_nd_ps->begin();
-                                     inodegid !=ia_nd_ps->end();
-                                   ++inodegid)
+    if (discret_->HaveGlobalNode(*inodegid))
     {
-      if (discret_->HaveGlobalNode(*inodegid))
+      if (discret_->gNode(*inodegid)->Owner() == discret_->Comm().MyPID())
       {
-        if (discret_->gNode(*inodegid)->Owner() == discret_->Comm().MyPID())
-        {
-          const DRT::Node* node = discret_->gNode(*inodegid);
-          vector<int> lm = discret_->Dof(node);
-          const double disp_x = (*disp)[disp->Map().LID(lm[0])];
-          cvector_arg[0] += disp_x;
-        }
+        const DRT::Node* node = discret_->gNode(*inodegid);
+        vector<int> lm = discret_->Dof(node);
+        const double disp_x = (*disp)[disp->Map().LID(lm[0])];
+        cvector_arg[0] += disp_x;
       }
-    }
-
-    {
-      double test;
-      discret_->Comm().SumAll(&cvector_arg[0],&test,1);
-      cvector_arg[0] = test/(*ia_nd_ps).size();
-    }
-
-
-    //nodes to determine the compression
-    const vector<int>* ia_nd_fs_p = invanacond[1]->Nodes();
-    const vector<int>* ia_nd_fs_n = invanacond[2]->Nodes();
-
-    for (vector<int>::const_iterator inodegid = ia_nd_fs_p->begin();
-                                     inodegid !=ia_nd_fs_p->end();
-                                   ++inodegid)
-    {
-      if (discret_->HaveGlobalNode(*inodegid))
-      {
-        if (discret_->gNode(*inodegid)->Owner() == discret_->Comm().MyPID())
-        {
-          const DRT::Node* node = discret_->gNode(*inodegid);
-          vector<int> lm = discret_->Dof(node);
-          const double disp_y = (*disp)[disp->Map().LID(lm[1])];
-          cvector_arg[1] += disp_y;
-        }
-      }
-    }
-
-    for (vector<int>::const_iterator inodegid = ia_nd_fs_n->begin();
-                                     inodegid !=ia_nd_fs_n->end();
-                                   ++inodegid)
-    {
-      if (discret_->HaveGlobalNode(*inodegid))
-      {
-        if (discret_->gNode(*inodegid)->Owner() == discret_->Comm().MyPID())
-        {
-          const DRT::Node* node = discret_->gNode(*inodegid);
-          vector<int> lm = discret_->Dof(node);
-          const double disp_y = (*disp)[disp->Map().LID(lm[1])];
-          cvector_arg[1] -= disp_y;
-        }
-      }
-    }
-
-    {
-      double test;
-      discret_->Comm().SumAll(&cvector_arg[1],&test,1);
-      cvector_arg[1] = test/(2.*(*ia_nd_fs_p).size());
     }
   }
-  else
-  {
-    // external forces
-    Teuchos::RCP<Epetra_Vector> fext = sti_->Fext();
 
-    // current reaction forces
-    Teuchos::RCP<Epetra_Vector> freact = sti_->Freact();
-    // Loads have to be taken out of the predictor/correcter
-    // during the calculation the forces have to be summed up
-    dserror("Not implemented at the moment!");
+  {
+    double test;
+    discret_->Comm().SumAll(&cvector_arg[0],&test,1);
+    cvector_arg[0] = test/(*ia_nd_ps).size();
+  }
+
+
+  //nodes to determine the compression
+  const vector<int>* ia_nd_fs_p = invanacond[1]->Nodes();
+  const vector<int>* ia_nd_fs_n = invanacond[2]->Nodes();
+
+  for (vector<int>::const_iterator inodegid = ia_nd_fs_p->begin();
+       inodegid !=ia_nd_fs_p->end();
+       ++inodegid)
+  {
+    if (discret_->HaveGlobalNode(*inodegid))
+    {
+      if (discret_->gNode(*inodegid)->Owner() == discret_->Comm().MyPID())
+      {
+        const DRT::Node* node = discret_->gNode(*inodegid);
+        vector<int> lm = discret_->Dof(node);
+        const double disp_y = (*disp)[disp->Map().LID(lm[1])];
+        cvector_arg[1] += disp_y;
+      }
+    }
+  }
+
+  for (vector<int>::const_iterator inodegid = ia_nd_fs_n->begin();
+       inodegid !=ia_nd_fs_n->end();
+       ++inodegid)
+  {
+    if (discret_->HaveGlobalNode(*inodegid))
+    {
+      if (discret_->gNode(*inodegid)->Owner() == discret_->Comm().MyPID())
+      {
+        const DRT::Node* node = discret_->gNode(*inodegid);
+        vector<int> lm = discret_->Dof(node);
+        const double disp_y = (*disp)[disp->Map().LID(lm[1])];
+        cvector_arg[1] -= disp_y;
+      }
+    }
+  }
+
+  {
+    double test;
+    discret_->Comm().SumAll(&cvector_arg[1],&test,1);
+    cvector_arg[1] = test/(2.*(*ia_nd_fs_p).size());
   }
   return cvector_arg;
 }

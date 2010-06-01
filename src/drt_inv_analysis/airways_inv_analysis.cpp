@@ -465,115 +465,49 @@ void STR::AirwaysInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix,  Ep
 void STR::AirwaysInvAnalysis::PrintFile()
 {
 
-  FILE * gplot;
-  FILE * cxFile;
-  FILE * cyFile;
+  FILE * cFile;
   FILE * pFile;
 
   string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
   name.append(filename_);
-  string gp = name+"_plot.gp";
-  string xcurve = name+"_Curve_x.txt";
-  string ycurve = name+"_Curve_y.txt";
+
+  if (name.rfind("_run_")!=string::npos)
+  {
+    size_t pos = name.rfind("_run_");
+    if (pos==string::npos)
+      dserror("inconsistent file name");
+    name = name.substr(0, pos);
+  }
+
+  string curve =  name+"_Curve.txt";
   string para   = name+"_Para.txt";
 
-  cxFile = fopen((xcurve).c_str(), "w");
-  for (int i=0; i < nmp_/2.; i++)
+  cFile = fopen((curve).c_str(), "w");
+  for (int i=0; i < nmp_; i++)
   {
-    fprintf(cxFile, " %10.5f ",  mcurve_(i*2));
+    fprintf(cFile, " %10.5f ,",  mcurve_(i));
     for (int j=0; j<numb_run_+1; j++)
-      fprintf(cxFile, " %10.5f ",  ccurve_s_(i*2, j));
-    fprintf(cxFile, "\n");
+      fprintf(cFile, " %10.5f ,",  ccurve_s_(i, j));
+    fprintf(cFile, "\n");
   }
-  fclose(cxFile);
+  fclose(cFile);
 
-  cyFile = fopen((ycurve).c_str(), "w");
-  for (int i=0; i < nmp_/2.; i++)
-  {
-    fprintf(cyFile, " %10.5f ",  mcurve_((i)*2+1));
-    for (int j=0; j<numb_run_+1; j++)
-      fprintf(cyFile, " %10.5f ",  ccurve_s_((i)*2+1, j));
-    fprintf(cyFile, "\n");
-  }
-  fclose(cyFile);
 
   pFile  = fopen((para).c_str(), "w");
+  fprintf(pFile, "#Error       Parameter    Delta_p      mu \n");
   for (int i=0; i < numb_run_+1; i++)
   {
-    fprintf(pFile, "Error: ");
-    fprintf(pFile, "%10.3f", error_s_(i));
-    fprintf(pFile, "\tParameter: ");
+    fprintf(pFile, "%10.3f,", error_s_(i));
     for (int j=0; j < np_; j++)
-      fprintf(pFile, "%10.3f", p_s_(i, j));
-    fprintf(pFile, "\tDelta_p: ");
-    for (int j=0; j < np_; j++)     fprintf(pFile, "%10.3f", delta_p_s_(i, j));
-    fprintf(pFile, "\tmu: ");
+      fprintf(pFile, "%10.3f,", p_s_(i, j));
+    for (int j=0; j < np_; j++)
+      fprintf(pFile, "%10.3f,", delta_p_s_(i, j));
     fprintf(pFile, "%10.3f", mu_s_(i));
     fprintf(pFile, "\n");
   }
   fclose(pFile);
 
-  string bla = "";
-
   numb_run_=numb_run_-1;
-  gplot   = fopen((gp).c_str(), "w");
-
-  fprintf(gplot, "set terminal png \n ");
-  fprintf(gplot, "set output '%s'\n ", (bla+para+".png").c_str());
-  fprintf(gplot, "\n ");
-  fprintf(gplot, "set title 'Error over run'\n ");
-  fprintf(gplot, "set xlabel '# run'\n ");
-  fprintf(gplot, "set ylabel 'error'\n ");
-  fprintf(gplot, "plot '%s' u 2 w l\n ",  (bla+para).c_str());
-  fprintf(gplot, "reset\n ");
-  fprintf(gplot, "\n ");
-
-  fprintf(gplot, "set output '%s'\n ",  (bla+xcurve+".png").c_str());
-  fprintf(gplot, "\n ");
-  fprintf(gplot, "set title 'displacment in x-direction'\n ");
-  fprintf(gplot, "set xlabel '# run'\n ");
-  fprintf(gplot, "set ylabel 'displacement'\n ");
-  fprintf(gplot, "plot '%s' u 1 w l lw 2 title 'experiment', ", (bla+xcurve).c_str());
-  fprintf(gplot, "'%s' u %i w l title 'run %i', ", (bla+xcurve).c_str(), numb_run_%5*1, numb_run_%5*1);
-  fprintf(gplot, "'%s' u %i w l title 'run %i', ", (bla+xcurve).c_str(), numb_run_%5*2, numb_run_%5*2);
-  fprintf(gplot, "'%s' u %i w l title 'run %i', ", (bla+xcurve).c_str(), numb_run_%5*3, numb_run_%5*3);
-  fprintf(gplot, "'%s' u %i w l title 'run %i', ", (bla+xcurve).c_str(), numb_run_%5*4, numb_run_%5*4);
-  fprintf(gplot, "'%s' u %i w l title 'run %i' lw 2\n ",(bla+xcurve).c_str(), numb_run_, numb_run_);
-  fprintf(gplot, "\n ");
-
-  fprintf(gplot, "set output '%s'\n ", (bla+ycurve+".png").c_str());
-  fprintf(gplot, "\n ");
-  fprintf(gplot, "set title 'displacement in y direction'\n ");
-  fprintf(gplot, "set xlabel '# run'\n ");
-  fprintf(gplot, "set ylabel 'displacement'\n ");
-  fprintf(gplot, "plot '%s' u 1 w l lw 2 title 'experiment', ", (bla+ycurve).c_str());
-  fprintf(gplot, "'%s' u %i w l title 'run %i', ", (bla+ycurve).c_str(), numb_run_%5*1, numb_run_%5*1);
-  fprintf(gplot, "'%s' u %i w l title 'run %i', ", (bla+ycurve).c_str(), numb_run_%5*2, numb_run_%5*2);
-  fprintf(gplot, "'%s' u %i w l title 'run %i', ", (bla+ycurve).c_str(), numb_run_%5*3, numb_run_%5*3);
-  fprintf(gplot, "'%s' u %i w l title 'run %i', ", (bla+ycurve).c_str(), numb_run_%5*4, numb_run_%5*4);
-  fprintf(gplot, "'%s' u %i w l title 'run %i' lw 2\n ",(bla+ycurve).c_str(), numb_run_, numb_run_);
-  fprintf(gplot, "\n ");
-
-
-  fprintf(gplot, "set output '%s'\n ",  (bla+xcurve+"_short.png").c_str());
-  fprintf(gplot, "\n ");
-  fprintf(gplot, "set title 'displacment in x-direction'\n ");
-  fprintf(gplot, "set xlabel '# run'\n ");
-  fprintf(gplot, "set ylabel 'displacement'\n ");
-  fprintf(gplot, "plot '%s' u 1 w l lw 2 title 'experiment', ", (bla+xcurve).c_str());
-  fprintf(gplot, "'%s' u %i w l title 'run %i' lw 2\n ",(bla+xcurve).c_str(), numb_run_, numb_run_);
-  fprintf(gplot, "\n ");
-
-  fprintf(gplot, "set output '%s'\n ", (bla+ycurve+"_short.png").c_str());
-  fprintf(gplot, "\n ");
-  fprintf(gplot, "set title 'displacement in y direction'\n ");
-  fprintf(gplot, "set xlabel '# run'\n ");
-  fprintf(gplot, "set ylabel 'displacement'\n ");
-  fprintf(gplot, "plot '%s' u 1 w l lw 2 title 'experiment', ", (bla+ycurve).c_str());
-  fprintf(gplot, "'%s' u %i w l title 'run %i' lw 2\n ",(bla+ycurve).c_str(), numb_run_, numb_run_);
-  fprintf(gplot, "\n ");
-
-  fclose(gplot);
 
 }
 
