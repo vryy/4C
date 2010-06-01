@@ -779,8 +779,6 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   // --------------------------------------------------
   //hist_         = LINALG::CreateVector(newdofrowmap,true);
 
-  zeros_        = LINALG::CreateVector(newdofrowmap,true);
-
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
   {
@@ -1303,7 +1301,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     }
 
     // blank residual DOFs which are on Dirichlet BC
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
+    const Teuchos::RCP<const Epetra_Vector> zeros = LINALG::CreateVector(*discret_->DofRowMap(),true);
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros), residual_);
 
     double incvelnorm_L2;
     double velnorm_L2;
@@ -1456,7 +1455,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     {
       // time measurement: application of dbc
       TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
-      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
+      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros,*(dbcmaps_->CondMap()));
     }
 
     // estimate condition number of the tangent stiffness matrix
@@ -1538,7 +1537,6 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   residual_ = Teuchos::null;
   w_ = Teuchos::null;
   c_ = Teuchos::null;
-  zeros_ = Teuchos::null;
   sysmat_ = Teuchos::null;
 
 } // FluidImplicitTimeInt::NonlinearSolve
@@ -1662,16 +1660,19 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
 
   // finalize the system matrix
   sysmat_->Complete();
+  // finalize fluid-interface coupling matrices
 //  Cuu_->Complete(fluiddofrowmap, fluiddofrowmap);
   Cud_->Complete(ifacedofrowmap, fluiddofrowmap);
-  Cdu_->Complete(fluiddofrowmap, ifacedofrowmap); // check maps vs names
+  Cdu_->Complete(fluiddofrowmap, ifacedofrowmap);
   Cdd_->Complete(ifacedofrowmap, ifacedofrowmap);
 
-  // Apply dirichlet boundary conditions to system of equations
+  // Apply Dirichlet boundary conditions to system of equations
   // residual displacements are supposed to be zero at boundary
   // conditions
-  RCP<Epetra_Vector> incvel = LINALG::CreateVector(fluiddofrowmap,true);
-  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
+  incvel_ = Teuchos::null; // make sure, nobody uses it accidentally
+  RCP<Epetra_Vector> incvel = LINALG::CreateVector(fluiddofrowmap,false);
+  const Teuchos::RCP<const Epetra_Vector> zeros = LINALG::CreateVector(fluiddofrowmap,true);
+  LINALG::ApplyDirichlettoSystem(sysmat_,incvel,residual_,zeros,*(dbcmaps_->CondMap()));
 
   trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 

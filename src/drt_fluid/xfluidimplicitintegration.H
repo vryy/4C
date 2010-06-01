@@ -516,9 +516,6 @@ protected:
   /// maps for extracting Dirichlet and free DOF sets
   Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
 
-  /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  Teuchos::RCP<Epetra_Vector>    zeros_;
-
   /// the vector containing body and surface forces
   Teuchos::RCP<Epetra_Vector>    neumann_loads_;
 

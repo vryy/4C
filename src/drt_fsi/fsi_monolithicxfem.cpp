@@ -547,8 +547,9 @@ void FSI::MonolithicXFEM::LinearSolve()
   }
 
   const Teuchos::RCP<const Epetra_Vector> zeros = LINALG::CreateVector(*Extractor().FullMap(), true);
-  Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*Extractor().FullMap(), true);
-  LINALG::ApplyDirichlettoSystem(iterinc_, stepinc_, zeros, *CombinedDBCMap());
+  Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*Extractor().FullMap(), false);
+  LINALG::ApplyDirichlettoSystem(iterinc_, tmp, zeros, *CombinedDBCMap());
+  tmp = Teuchos::null;
   cout0_ << "  DBC applied" << endl;
 
   stepinc_->Update(1.0,*iterinc_, 1.0);
