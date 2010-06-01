@@ -2927,7 +2927,7 @@ void CONTACT::CmtStruGenAlpha::Output()
   cmtmanager_->GetStrategy().PrintActiveSet();
 
   // output of energy and momentum quantities
-  //OutputEnergyMomentum();
+  OutputEnergyMomentum();
    
   //---------------------------------------------------------- print out
   if (!myrank_)
@@ -2954,6 +2954,13 @@ void CONTACT::CmtStruGenAlpha::Output()
  *----------------------------------------------------------------------*/
 void CONTACT::CmtStruGenAlpha::OutputEnergyMomentum()
 {
+  // check chosen output option
+  INPAR::CONTACT::EmOutputType emtype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::EmOutputType>(cmtmanager_->GetStrategy().Params(),"EMOUTPUT");
+  
+  // get out of here if no output wanted
+  if (emtype==INPAR::CONTACT::output_none) return;
+  
   // get some parameters from parameter list
   double timen = params_.get<double>("total time",0.0);
   double dt    = params_.get<double>("delta time",0.01);
@@ -3006,7 +3013,7 @@ void CONTACT::CmtStruGenAlpha::OutputEnergyMomentum()
     cmtmanager_->Comm().SumAll(&sumlinmom[i],&linmom[i],1);
   }
   
-  //-------------------------Calculation of total kinetic energy
+  //--------------------------Calculation of total kinetic energy
   double kinen = 0.0;
   mv->Dot(*vel_,&kinen);
   kinen *= 0.5;
@@ -3023,40 +3030,76 @@ void CONTACT::CmtStruGenAlpha::OutputEnergyMomentum()
   discret_.ClearState();
   inten = (*energies)(0);
 
-  //------------------------- Print results into txt-File
-  if (!myrank_)
+  //-------------------------Calculation of total external energy
+  double exten = 0.0;
+  // WARNING: This will only work with dead loads!!!
+  //fext_->Dot(*dis_, &exten);
+  
+  //----------------------------------------Print results to file
+  if (emtype == INPAR::CONTACT::output_file ||
+      emtype == INPAR::CONTACT::output_both)
   {
-    // path and filename
-    std::ostringstream filename;
-    filename << "o/scilab_output/OutputMomentum.txt";
-    
-    // open file
-    FILE* MyFile = NULL;
-    if (timen < 2*dt)
+    // processor 0 does all the work
+    if (!myrank_)
     {
-      MyFile = fopen(filename.str().c_str(),"wt");
+      // path and filename
+      std::ostringstream filename;
+      filename << "o/scilab_output/OutputEnergyMomentum.txt";
       
-      // initialize file pointer for writing contact interface forces/moments
-      FILE* MyConForce = NULL;
-      MyConForce = fopen("o/scilab_output/OutputInterface.txt", "wt");
-      if (MyConForce!=NULL) fclose(MyConForce);
-      else dserror("ERROR: File for writing contact interface forces/moments could not be generated.");
+      // open file
+      FILE* MyFile = NULL;
+      if (timen < 2*dt)
+      {
+        MyFile = fopen(filename.str().c_str(),"wt");
+        
+        // initialize file pointer for writing contact interface forces/moments
+        FILE* MyConForce = NULL;
+        MyConForce = fopen("o/scilab_output/OutputInterface.txt", "wt");
+        if (MyConForce!=NULL) fclose(MyConForce);
+        else dserror("ERROR: File for writing contact interface forces/moments could not be generated.");
+      }
+      else  
+        MyFile = fopen(filename.str().c_str(),"at+");
+      
+      // add current values to file
+      if (MyFile!=NULL)
+      {
+       std::stringstream filec;
+       fprintf(MyFile, "%g\t", timen);
+       for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", linmom[i]);
+       for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", angmom[i]);
+       fprintf(MyFile, "%g\t%g\t%g\n",kinen,inten,exten); 
+       fclose(MyFile);
+      }  
+      else
+        dserror("ERROR: File for writing momentum and energy data could not be opened.");
     }
-    else  
-      MyFile = fopen(filename.str().c_str(),"at+");
-    
-    // add current values to file
-    if (MyFile!=NULL)
+  }
+  
+  //-------------------------------Print energy results to screen
+  if (emtype == INPAR::CONTACT::output_screen ||
+      emtype == INPAR::CONTACT::output_both)
+  {
+    // processor 0 does all the work
+    if (!myrank_)
     {
-     std::stringstream filec;
-     fprintf(MyFile, "%g\t", timen);
-     for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", linmom[i]);
-     for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", angmom[i]);
-     fprintf(MyFile, "%g\t%g\n",kinen,inten); 
-     fclose(MyFile);
-    }  
-    else
-      dserror("ERROR: File for writing momentum and energy data could not be opened.");
+      printf("\n******************************");
+      printf("\nMECHANICAL ENERGIES:");
+      printf("\nE_kinetic \t %e",kinen);
+      printf("\nE_internal \t %e",inten);
+      printf("\nE_external \t %e",exten);
+      printf("\n------------------------------");
+      printf("\nE_total \t %e",kinen+inten-exten);
+      printf("\n******************************");
+      
+      printf("\n\n********************************************");
+      printf("\nLINEAR / ANGULAR MOMENTUM:");
+      printf("\nL_x  % e \t H_x  % e",linmom[0],angmom[0]);
+      printf("\nL_y  % e \t H_y  % e",linmom[1],angmom[1]);
+      printf("\nL_z  % e \t H_z  % e",linmom[2],angmom[2]);
+      printf("\n********************************************\n\n");
+      fflush(stdout);
+    }
   }
   
   //-------------------------- Compute and output interface forces

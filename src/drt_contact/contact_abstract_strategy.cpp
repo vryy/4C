@@ -861,13 +861,19 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
 {
-  /*
   // Note that we ALWAYS use a TR-like approach to compute the contact
   // forces. This means we never explicitly compute fc at the generalized
   // mid-point n+1-alphaf, but use a linear combination of the old end-
   // point n and the new end-point n+1 instead:
   // F_{c;n+1-alpha_f} := (1-alphaf) * F_{c;n+1} +  alpha_f * F_{c;n}
 
+  // check chosen output option
+  INPAR::CONTACT::EmOutputType emtype =
+    Teuchos::getIntegralValue<INPAR::CONTACT::EmOutputType>(Params(),"EMOUTPUT");
+  
+  // get out of here if no output wanted
+  if (emtype==INPAR::CONTACT::output_none) return;
+  
   // compute two subvectors of fc each via Lagrange multipliers z_n+1, z_n
   RCP<Epetra_Vector> fcslavetemp = rcp(new Epetra_Vector(dmatrix_->RowMap()));
   RCP<Epetra_Vector> fcmastertemp = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
@@ -1076,43 +1082,50 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
     Comm().SumAll(&gmcmnew[i],&ggmcmnew[i],1);
   }
 
-  // CHECK OF CONTACT FORCES AND MOMENTS ----------------------------------
-  if (Comm().MyPID()==0)
+  // print interface results to file
+  if (emtype == INPAR::CONTACT::output_file ||
+      emtype == INPAR::CONTACT::output_both)
   {
-    cout << "Slave Contact Force Vector:       " << ggfcs[0] << " " << ggfcs[1] << " " << ggfcs[2] << endl;
-    cout << "Slave Contact Moment Vector:      " << ggmcs[0] << " " << ggmcs[1] << " " << ggmcs[2] << endl;
-    //cout << "Slave Contact Moment Vector (v2): " << ggmcsnew[0] << " " << ggmcsnew[1] << " " << ggmcsnew[2] << endl;
+    // do this at end of time step only (output==true)!
+    // processor 0 does all the work
+    if (output && Comm().MyPID()==0)
+    {
+      FILE* MyFile = NULL;
+      MyFile = fopen("o/scilab_output/OutputInterface.txt", "at+");
+      
+      if (MyFile)
+      {
+        for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", ggfcs[i]);
+        for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", ggfcm[i]);
+        for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", ggmcs[i]);
+        for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", ggmcm[i]);
+        //for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", gsfgh[i]);
+        //for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", gsmgh[i]);
+        fprintf(MyFile, "\n");
+        fclose(MyFile);
+      }
+      else
+        dserror("ERROR: File for writing meshtying forces could not be opened.");
+    } 
   }
   
-  if (Comm().MyPID()==0)
+  // print interface results to screen
+  if (emtype == INPAR::CONTACT::output_screen ||
+      emtype == INPAR::CONTACT::output_both)
   {
-    cout << "Master Contact Force Vector:       " << ggfcm[0] << " " << ggfcm[1] << " " << ggfcm[2] << endl;
-    cout << "Master Contact Moment Vector:      " << ggmcm[0] << " " << ggmcm[1] << " " << ggmcm[2] << endl;
-    //cout << "Master Contact Moment Vector (v2): " << ggmcmnew[0] << " " << ggmcmnew[1] << " " << ggmcmnew[2] << endl;
-  }
-  // CHECK OF CONTACT FORCES AND MOMENTS ----------------------------------
-
-  // store results into an external .txt-file
-  if (output && Comm().MyPID()==0)
-  {
-    FILE* MyFile = NULL;
-    MyFile = fopen("o/scilab_output/OutputInterface.txt", "at+");
-    
-    if (MyFile)
+    // do this during Newton steps only (output==false)!
+    // processor 0 does all the work
+    if (!output && Comm().MyPID()==0)
     {
-      for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", ggfcs[i]);
-      for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", ggfcm[i]);
-      for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", ggmcs[i]);
-      for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", ggmcm[i]);
-      //for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", gsfgh[i]);
-      //for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", gsmgh[i]);
-      fprintf(MyFile, "\n");
-      fclose(MyFile);
+      printf("Slave Contact Force:   % e  % e  % e\n",ggfcs[0],ggfcs[1],ggfcs[2]);
+      printf("Master Contact Force:  % e  % e  % e\n",ggfcm[0],ggfcm[1],ggfcm[2]);
+      printf("Slave Contact Moment:  % e  % e  % e\n",ggmcs[0],ggmcs[1],ggmcs[2]);
+      //printf("Slave Contact Moment:  % e  % e  % e\n",ggmcsnew[0],ggmcsnew[1],ggmcsnew[2]);
+      printf("Master Contact Moment: % e  % e  % e\n",ggmcm[0],ggmcm[1],ggmcm[2]);
+      //printf("Master Contact Moment: % e  % e  % e\n",ggmcmnew[0],ggmcmnew[1],ggmcmnew[2]);
+      fflush(stdout);
     }
-    else
-      dserror("ERROR: File for writing contact forces could not be opened.");
   }
-  */
   
   return;
 }
@@ -1179,14 +1192,14 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
         // print nodes of inactive set *************************************
         if (cnode->Active()==false)
         {
-          printf("INACTIVE: %d \t wgap: %e \t lm: %e \n",gid,wgap,nz);
+          printf("INACTIVE: %d \t wgap: % e \t lm: % e \n",gid,wgap,nz);
           fflush(stdout);
         }
 
         // print nodes of active set ***************************************
         else
         {
-          printf("ACTIVE:   %d \t wgap: %e \t lm: %e \n",gid,wgap,nz);
+          printf("ACTIVE:   %d \t wgap: % e \t lm: % e \n",gid,wgap,nz);
           fflush(stdout);
         }
 

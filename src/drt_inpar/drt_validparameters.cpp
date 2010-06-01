@@ -901,31 +901,32 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& scontact = list->sublist("MESHTYING AND CONTACT",false,"");
 
   setStringToIntegralParameter<INPAR::CONTACT::ApplicationType>("APPLICATION","None","Type of contact or meshtying app",
-                               tuple<std::string>("None","none",
-                                                  "MortarContact","mortarcontact",
-                                                  "MortarMeshtying","mortarmeshtying",
-                                                  "BeamContact","beamcontact"),
-                               tuple<INPAR::CONTACT::ApplicationType>(
-                                          INPAR::CONTACT::app_none,INPAR::CONTACT::app_none,
-                                          INPAR::CONTACT::app_mortarcontact,INPAR::CONTACT::app_mortarcontact,
-                                          INPAR::CONTACT::app_mortarmeshtying,INPAR::CONTACT::app_mortarmeshtying,
-                                          INPAR::CONTACT::app_beamcontact, INPAR::CONTACT::app_beamcontact),
-                               &scontact);
+       tuple<std::string>("None","none",
+                          "MortarContact","mortarcontact",
+                          "MortarMeshtying","mortarmeshtying",
+                          "BeamContact","beamcontact"),
+       tuple<INPAR::CONTACT::ApplicationType>(
+                  INPAR::CONTACT::app_none,INPAR::CONTACT::app_none,
+                  INPAR::CONTACT::app_mortarcontact,INPAR::CONTACT::app_mortarcontact,
+                  INPAR::CONTACT::app_mortarmeshtying,INPAR::CONTACT::app_mortarmeshtying,
+                  INPAR::CONTACT::app_beamcontact, INPAR::CONTACT::app_beamcontact),
+       &scontact);
 
   setStringToIntegralParameter<INPAR::CONTACT::FrictionType>("FRICTION","None","Type of friction law",
-                                tuple<std::string>("None","none",
-                                                   "Stick","stick",
-                                                   "Tresca","tresca",
-                                                   "Coulomb","coulomb"),
-                                tuple<INPAR::CONTACT::FrictionType>(
-                                           INPAR::CONTACT::friction_none,INPAR::CONTACT::friction_none,
-                                           INPAR::CONTACT::friction_stick,INPAR::CONTACT::friction_stick,
-                                           INPAR::CONTACT::friction_tresca,INPAR::CONTACT::friction_tresca,
-                                           INPAR::CONTACT::friction_coulomb,INPAR::CONTACT::friction_coulomb),
-                                &scontact);
+      tuple<std::string>("None","none",
+                         "Stick","stick",
+                         "Tresca","tresca",
+                         "Coulomb","coulomb"),
+      tuple<INPAR::CONTACT::FrictionType>(
+                 INPAR::CONTACT::friction_none,INPAR::CONTACT::friction_none,
+                 INPAR::CONTACT::friction_stick,INPAR::CONTACT::friction_stick,
+                 INPAR::CONTACT::friction_tresca,INPAR::CONTACT::friction_tresca,
+                 INPAR::CONTACT::friction_coulomb,INPAR::CONTACT::friction_coulomb),
+      &scontact);
 
   DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
   DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
+  DoubleParameter("HEATTRANSFERCOEFF",0.0,"Heat transfer coefficient for thermal contact",&scontact);
 
   setStringToIntegralParameter<INPAR::CONTACT::SolvingStrategy>("STRATEGY","LagrangianMultipliers","Type of employed solving strategy",
         tuple<std::string>("LagrangianMultipliers","lagrange", "Lagrange",
@@ -970,14 +971,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("SEMI_SMOOTH_CT",1.0,"Weighting factor ct for semi-smooth PDASS",&scontact);
 
   setStringToIntegralParameter<INPAR::MORTAR::SearchAlgorithm>("SEARCH_ALGORITHM","Binarytree","Type of contact search",
-                               tuple<std::string>("BruteForceNodeBased","bruteforcenodebased",
-                                                  "BruteForceEleBased","bruteforceelebased",
-                                                  "BinaryTree","Binarytree","binarytree"),
-                               tuple<INPAR::MORTAR::SearchAlgorithm>(INPAR::MORTAR::search_bfnode,INPAR::MORTAR::search_bfnode,
-                                          INPAR::MORTAR::search_bfele,INPAR::MORTAR::search_bfele,
-                                          INPAR::MORTAR::search_binarytree,INPAR::MORTAR::search_binarytree,
-                                          INPAR::MORTAR::search_binarytree),
-                               &scontact);
+       tuple<std::string>("BruteForceNodeBased","bruteforcenodebased",
+                          "BruteForceEleBased","bruteforceelebased",
+                          "BinaryTree","Binarytree","binarytree"),
+       tuple<INPAR::MORTAR::SearchAlgorithm>(INPAR::MORTAR::search_bfnode,INPAR::MORTAR::search_bfnode,
+                  INPAR::MORTAR::search_bfele,INPAR::MORTAR::search_bfele,
+                  INPAR::MORTAR::search_binarytree,INPAR::MORTAR::search_binarytree,
+                  INPAR::MORTAR::search_binarytree),
+       &scontact);
 
   DoubleParameter("SEARCH_PARAM",0.3,"Radius / Bounding volume inflation for contact search",&scontact);
 
@@ -985,25 +986,36 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,&scontact);
 
   setStringToIntegralParameter<INPAR::MORTAR::LagMultQuad3D>("LAGMULT_QUAD3D","undefined","Type of LM ansatz/testing fct.",
-                               tuple<std::string>("undefined",
-                                                  "quad_quad", "quadratic_quadratic",
-                                                  "quad_pwlin", "quadratic_piecewiselinear",
-                                                  "quad_lin", "quadratic_linear",
-                                                  "pwlin_pwlin", "piecewiselinear_piecewiselinear",
-                                                  "lin_lin","linear_linear"),
-                               tuple<INPAR::MORTAR::LagMultQuad3D>(
-                                          INPAR::MORTAR::lagmult_undefined,
-                                          INPAR::MORTAR::lagmult_quad_quad, INPAR::MORTAR::lagmult_quad_quad,
-                                          INPAR::MORTAR::lagmult_quad_pwlin, INPAR::MORTAR::lagmult_quad_pwlin,
-                                          INPAR::MORTAR::lagmult_quad_lin, INPAR::MORTAR::lagmult_quad_lin,
-                                          INPAR::MORTAR::lagmult_pwlin_pwlin, INPAR::MORTAR::lagmult_pwlin_pwlin,
-                                          INPAR::MORTAR::lagmult_lin_lin, INPAR::MORTAR::lagmult_lin_lin),
-                               &scontact);
+       tuple<std::string>("undefined",
+                          "quad_quad", "quadratic_quadratic",
+                          "quad_pwlin", "quadratic_piecewiselinear",
+                          "quad_lin", "quadratic_linear",
+                          "pwlin_pwlin", "piecewiselinear_piecewiselinear",
+                          "lin_lin","linear_linear"),
+       tuple<INPAR::MORTAR::LagMultQuad3D>(
+                  INPAR::MORTAR::lagmult_undefined,
+                  INPAR::MORTAR::lagmult_quad_quad, INPAR::MORTAR::lagmult_quad_quad,
+                  INPAR::MORTAR::lagmult_quad_pwlin, INPAR::MORTAR::lagmult_quad_pwlin,
+                  INPAR::MORTAR::lagmult_quad_lin, INPAR::MORTAR::lagmult_quad_lin,
+                  INPAR::MORTAR::lagmult_pwlin_pwlin, INPAR::MORTAR::lagmult_pwlin_pwlin,
+                  INPAR::MORTAR::lagmult_lin_lin, INPAR::MORTAR::lagmult_lin_lin),
+       &scontact);
 
   setStringToIntegralParameter<int>("CROSSPOINTS","No","If chosen, multipliers are removed from crosspoints / edge nodes",
                                yesnotuple,yesnovalue,&scontact);
 
-  DoubleParameter("HEATTRANSFERCOEFF",0.0,"Heat transfer coefficient for thermal contact",&scontact);
+  setStringToIntegralParameter<INPAR::CONTACT::EmOutputType>("EMOUTPUT","None","Type of energy and momentum output",
+      tuple<std::string>("None","none", "No", "no",
+                         "Screen", "screen",
+                         "File", "file",
+                         "Both", "both"),
+      tuple<INPAR::CONTACT::EmOutputType>(
+              INPAR::CONTACT::output_none, INPAR::CONTACT::output_none,
+              INPAR::CONTACT::output_none, INPAR::CONTACT::output_none,
+              INPAR::CONTACT::output_screen, INPAR::CONTACT::output_screen,
+              INPAR::CONTACT::output_file, INPAR::CONTACT::output_file,
+              INPAR::CONTACT::output_both, INPAR::CONTACT::output_both),
+      &scontact);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIAL",false,"");
