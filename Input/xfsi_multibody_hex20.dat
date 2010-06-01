@@ -147,6 +147,7 @@ ML_DAMPCOARSE     1.0       // damping coarse grid
 -------------------------------------------------------XFEM GENERAL
 DLM_CONDENSATION                Yes
 GMSH_DEBUG_OUT                  Yes
+volumeRatioLimit                1.0e-2
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid VISCOSITY 1.000 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff  YOUNG 10000.0 NUE 0.3 DENS 0.001 THEXPANS 0.0
@@ -5279,13 +5280,13 @@ NODE 2287   COORD   4.86815155e-01  8.31051648e-01  -1.25000000e-01
 ------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 203 POSITION velx     NAME velx     VALUE 2.150461899e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 203 POSITION vely     NAME vely     VALUE -1.959646477e-02 TOLERANCE 1e-6
+FLUID DIS 1 NODE 203 POSITION velx     NAME velx     VALUE 2.153168233e-01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 203 POSITION vely     NAME vely     VALUE -1.974924719e-02 TOLERANCE 1e-6
 FLUID DIS 1 NODE 203 POSITION velz     NAME velz     VALUE 0.000000000e-00 TOLERANCE 1e-6
-FLUID DIS 1 NODE 203 POSITION pressure NAME pressure VALUE 7.333978577e+01 TOLERANCE 1e-4
-FLUID DIS 1 NODE 803 POSITION velx     NAME velx     VALUE 5.712386010e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 803 POSITION vely     NAME vely     VALUE -2.939947125e-02 TOLERANCE 1e-6
+FLUID DIS 1 NODE 203 POSITION pressure NAME pressure VALUE 7.286195382e+01 TOLERANCE 1e-4
+FLUID DIS 1 NODE 803 POSITION velx     NAME velx     VALUE 5.755976486e-01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 803 POSITION vely     NAME vely     VALUE -2.903117227e-02 TOLERANCE 1e-6
 FLUID DIS 1 NODE 803 POSITION velz     NAME velz     VALUE 0.000000000e-00 TOLERANCE 1e-6
-FLUID DIS 1 NODE 803 POSITION pressure NAME pressure VALUE 6.733060063e+01 TOLERANCE 1e-4
+FLUID DIS 1 NODE 803 POSITION pressure NAME pressure VALUE 6.681971195e+01 TOLERANCE 1e-4
 ---------------------------------------------------------------END
 // END
