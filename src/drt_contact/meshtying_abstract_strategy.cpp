@@ -119,9 +119,6 @@ void CONTACT::MtAbstractStrategy::SetState(const string& statename,
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
 { 
-  // set state
-  SetState("displacement",dis);
-  
   //********************************************************************
   // initialize and evaluate interfaces
   //********************************************************************

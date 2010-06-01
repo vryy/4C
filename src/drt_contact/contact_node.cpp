@@ -168,8 +168,8 @@ void CONTACT::CoNode::Print(ostream& os) const
   // Print id and coordinates
   os << "Contact ";
   MORTAR::MortarNode::Print(os);
-  if (IsInitActive()) os << " InitActive ";
-    
+  if (IsSlave())
+    if (IsInitActive()) os << " InitActive ";
   return;
 }
 

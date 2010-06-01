@@ -115,7 +115,12 @@ StruGenAlpha(params,dis,solver,output)
     cout << RED << "WARNING: Contact and Meshtying are still experimental "
          << "for the chosen problem type \"" << probtype << "\"!\n" << END_COLOR << endl;
   }
-    
+  
+  //**********************************************************************
+  // set zero displacment state
+  //**********************************************************************
+  cmtmanager_->GetStrategy().SetState("displacement",zeros_);
+      
   //**********************************************************************
   // visualization of initial configuration
   //**********************************************************************
@@ -133,7 +138,7 @@ StruGenAlpha(params,dis,solver,output)
     cmtmanager_->GetStrategy().MortarCoupling(zeros_);
     cmtmanager_->GetStrategy().MeshInitialization();
     
-    // FOR FRICTIONAL CONTACT
+    // FOR FRICTIONAL CONTACT (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
     // (1) Mortar coupling in reference configuration 
     // for frictional contact we need history values (relative velocity) and
     // therefore we store the nodal entries of mortar matrices (reference
