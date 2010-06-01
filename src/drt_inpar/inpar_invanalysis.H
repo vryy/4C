@@ -27,6 +27,7 @@ namespace INPAR
     {
       inv_none,          // no inverse analysis
       inv_lung,          // sophies lung inverse analysis
+      inv_coll,       // sophie's collagenase inverse analysis
       inv_airways,       // sophies airways inverse analysis
       inv_generalized    // generalized inverse analysis
     };

@@ -862,11 +862,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "none",
                                  "lung",
+                                 "collagenase",
                                  "airways",
                                  "gen"),
                                tuple<INPAR::STR::InvAnalysisType>(
                                  INPAR::STR::inv_none,
                                  INPAR::STR::inv_lung,
+                                 INPAR::STR::inv_coll,
                                  INPAR::STR::inv_airways,
                                  INPAR::STR::inv_generalized),
                                &iap);
@@ -1073,7 +1075,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter(  "THICKNESS",0.0,
                     "membrane thickness",
                     &interaction_potential);
-  
+
   // number of atoms or molecules offset
   DoubleParameter(  "N_OFFSET",0.0,
                     "number of atoms or molecules offset",
@@ -2159,7 +2161,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::SCATRA::scatratype_undefined,
                                  INPAR::SCATRA::scatratype_condif,
                                  INPAR::SCATRA::scatratype_loma,
-                                 INPAR::SCATRA::scatratype_elch_enc,                               
+                                 INPAR::SCATRA::scatratype_elch_enc,
                                  INPAR::SCATRA::scatratype_elch_enc_pde,
                                  INPAR::SCATRA::scatratype_elch_poisson,
                                  INPAR::SCATRA::scatratype_levelset),
@@ -2911,23 +2913,23 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     "IFPACKOVERLAP", 0,
     "The amount of overlap used for the ifpack \"ilu\" and \"ilut\" preconditioners.",
     &list);
-    
+
   IntParameter(
     "IFPACKGFILL", 0,
     "The amount of fill allowed for the internal \"ilu\" preconditioner.",
     &list);
-    
+
   DoubleParameter(
     "IFPACKFILL", 1.0,
     "The amount of fill allowed for an internal \"ilut\" preconditioner.",
     &list);
-    
+
   setStringToIntegralParameter<int>(
     "IFPACKCOMBINE","Add","Combine mode for Ifpack Additive Schwarz",
     tuple<std::string>("Add","Insert","Zero"),
     tuple<int>(0,1,2),
     &list);
-    
+
   DoubleParameter(
     "AZDROP", 0.0,
     "The tolerance below which an entry from the factors of an internal \"ilut\"\n"
