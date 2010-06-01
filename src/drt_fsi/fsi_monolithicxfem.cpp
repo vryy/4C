@@ -318,7 +318,7 @@ void FSI::MonolithicXFEM::Evaluate()
   //    cout << "fluid stepinc:" << endl;
   //    cout << *fxstepinc << endl;
 
-
+  cout0_ << BLUE2_LIGHT << "Solid evaluation" << END_COLOR << endl;
   StructureField().Evaluate(sxstepinc);
 
   // compute step inc including the structure Dirichlet BC
@@ -327,6 +327,7 @@ void FSI::MonolithicXFEM::Evaluate()
   const Teuchos::RCP<const Epetra_Vector> stepinc_solid_boundary_2 =
       StructureField().Interface().ExtractFSICondVector(sxstepinc);
   // fluid requires step inc including Dirichlet conditions
+  cout0_ << BLUE2_LIGHT << "Fluid evaluation" << END_COLOR << endl;
   FluidField().Evaluate(StructToFluid(stepinc_solid_boundary_2), fxstepinc);
 
   // put the FSI interface displacement into a text file for debugging
