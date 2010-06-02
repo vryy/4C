@@ -323,6 +323,9 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
         dserror("ERROR: Multifield problems with AL strategy for meshtying/contact not yet implemented");
     }
 
+    // set zero displacment state
+    cmtman_->GetStrategy().SetState("displacement",zeros_);
+      
     // visualization of initial configuration
 #ifdef CONTACTGMSH3
     cmtman_->GetStrategy().VisualizeGmsh(0,0);
