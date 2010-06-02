@@ -223,6 +223,7 @@ set(OBJS_DRT_B2_LIB
   src/drt_beam2/beam2_input.cpp
 )
 set(OBJS_DRT_LIB
+  src/drt_fem_general/debug_nan.cpp
   src/drt_fluid/drt_pbcdofset.cpp
   src/drt_fluid/drt_periodicbc.cpp
   src/drt_lib/drt_condition.cpp
