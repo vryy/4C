@@ -43,6 +43,7 @@ Maintainer: Alexander Popp
 #include "contact_manager.H"
 #include "meshtying_defines.H"
 #include "meshtying_manager.H"
+#include "../drt_mortar/mortar_defines.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_inpar/inpar_structure.H"
@@ -124,9 +125,9 @@ StruGenAlpha(params,dis,solver,output)
   //**********************************************************************
   // visualization of initial configuration
   //**********************************************************************
-#ifdef CONTACTGMSH3
+#ifdef MORTARGMSH3
   cmtmanager_->GetStrategy().VisualizeGmsh(0,0);
-#endif // #ifdef CONTACTGMSH2
+#endif // #ifdef MORTARGMSH3
   
   //**********************************************************************
   // initialization of contact or meshting
@@ -461,11 +462,11 @@ void CONTACT::CmtStruGenAlpha::ConsistentPredictor()
   //------------------------------------ evaluate contact or meshtying
   cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_,true);
   
-#ifdef CONTACTGMSH2
+#ifdef MORTARGMSH2
   int step  = params_.get<int>("step",0);
   int istep = step + 1;
   cmtmanager_->GetStrategy().VisualizeGmsh(istep,0);
-#endif // #ifdef CONTACTGMSH2
+#endif // #ifdef MORTARGMSH2
 
   //---------------------------------------- complete stiffness matrix
   stiff_->Complete();
@@ -704,11 +705,11 @@ void CONTACT::CmtStruGenAlpha::ConstantPredictor()
   //------------------------------------ evaluate contact or meshtying
   cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_,true);
   
-#ifdef CONTACTGMSH2
+#ifdef MORTARGMSH2
   int step  = params_.get<int>("step",0);
   int istep = step + 1;
   cmtmanager_->GetStrategy().VisualizeGmsh(istep,0);
-#endif // #ifdef CONTACTGMSH2
+#endif // #ifdef MORTARGMSH2
 
   //------------------------------------ ----complete stiffness matrix
   stiff_->Complete();
@@ -945,10 +946,10 @@ void CONTACT::CmtStruGenAlpha::ApplyExternalForce(const STR::UTILS::MapExtractor
   //------------------------------------ evaluate contact or meshtying
   cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_,true);
   
-#ifdef CONTACTGMSH2
+#ifdef MORTARGMSH2
   int istep = step + 1;
   cmtmanager_->GetStrategy().VisualizeGmsh(istep,0);
-#endif // #ifdef CONTACTGMSH2
+#endif // #ifdef MORTARGMSH2
 
   //------------------------------------ ----complete stiffness matrix
   stiff_->Complete();
@@ -1530,11 +1531,11 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
     //------------------------------------ evaluate contact or meshtying
     cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_);
   
-#ifdef CONTACTGMSH2
+#ifdef MORTARGMSH2
     int step  = params_.get<int>("step",0);
     int istep = step + 1;
     cmtmanager_->GetStrategy().VisualizeGmsh(istep,numiter+1);
-#endif // #ifdef CONTACTGMSH2
+#endif // #ifdef MORTARGMSH2
 
 #ifdef CONTACTTIME
     const double t_end3 = Teuchos::Time::wallTime()-t_start3;
@@ -1882,11 +1883,11 @@ void CONTACT::CmtStruGenAlpha::FullNewtonLineSearch()
     //------------------------------------ ----complete stiffness matrix
     stiff_->Complete();
         
-#ifdef CONTACTGMSH2
+#ifdef MORTARGMSH2
     int step  = params_.get<int>("step",0);
     int istep = step + 1;
     cmtmanager_->GetStrategy().VisualizeGmsh(istep,numiter+1);
-#endif // #ifdef CONTACTGMSH2
+#endif // #ifdef MORTARGMSH2
 
     // blank residual DOFs that are on Dirichlet BC
     {
@@ -2123,11 +2124,11 @@ void CONTACT::CmtStruGenAlpha::FullNewtonLineSearch()
       // search the active set has to be kept constant!
       // (yet line search is disabled for semi-smooth case anyway)
       
-#ifdef CONTACTGMSH2
+#ifdef MORTARGMSH2
       int step  = params_.get<int>("step",0);
       int istep = step + 1;
       cmtmanager_->GetStrategy().VisualizeGmsh(istep,numiter+1);
-#endif // #ifdef CONTACTGMSH2
+#endif // #ifdef MORTARGMSH2
 
       //------------------------------------ ----complete stiffness matrix
       stiff_->Complete();
@@ -2469,9 +2470,9 @@ void CONTACT::CmtStruGenAlpha::PTC()
     //------------------------------------ evaluate contact or meshtying
     cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_);
     
-#ifdef CONTACTGMSH2
+#ifdef MORTARGMSH2
     dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
-#endif // #ifdef CONTACTGMSH2
+#endif // #ifdef MORTARGMSH2
 
     //------------------------------------ ----complete stiffness matrix
     stiff_->Complete();
@@ -2675,60 +2676,6 @@ void CONTACT::CmtStruGenAlpha::Update()
 
   // update contact
   cmtmanager_->GetStrategy().Update(istep,dis_);
-
-  /*
-  Teuchos::RCP<Epetra_Vector> linmom = LINALG::CreateVector(*(discret_.DofRowMap()), true);
-  mass_->Multiply(false, *vel_, *linmom);
-
-  int dim = cmtmanager_->GetStrategy().Dim();
-  vector<double> sumlinmom(3);
-  vector<double> sumangmom(3);
-
-  for (int k=0; k<(discret_.NodeRowMap())->NumMyElements();++k)
-  {
-    int gid = (discret_.NodeRowMap())->GID(k);
-    DRT::Node* mynode = discret_.gNode(gid);
-
-    vector<double> nodelinmom(3);
-    vector<double> position(3);
-
-    for (int d=0;d<dim;++d)
-    {
-      int dofid = (discret_.Dof(mynode))[d];
-      nodelinmom[d] = (*linmom)[dofid];
-      sumlinmom[d] += nodelinmom[d];
-      position[d] = mynode->X()[d] + (*dis_)[dofid];
-    }
-
-    vector<double> nodeangmom(3);
-    nodeangmom[0] = position[1]*nodelinmom[2]-position[2]*nodelinmom[1];
-    nodeangmom[1] = position[2]*nodelinmom[0]-position[0]*nodelinmom[2];
-    nodeangmom[2] = position[0]*nodelinmom[1]-position[1]*nodelinmom[0];
-
-    for (int d=0;d<3;++d)
-      sumangmom[d] += nodeangmom[d];
-
-    // vector product position x nodelinmom
-  }
-
-  // global calculation of kinetic energy
-  double kinergy = 0.0;  // total kinetic energy
-  {
-    linmom->Dot(*vel_,&kinergy);
-    kinergy *= 0.5;
-  }
-
-  cout << "\n************************************************************************" << endl;
-  cout << "CONTACT CONSERVATION QUANTITIES" << endl;
-  cout << "Linear Momentum x-direction:  " << sumlinmom[0] << endl;
-  cout << "Linear Momentum y-direction:  " << sumlinmom[1] << endl;
-  cout << "Linear Momentum z-direction:  " << sumlinmom[2] << endl << endl;
-  cout << "Angular Momentum x-direction: " << sumangmom[0] << endl;
-  cout << "Angular Momentum y-direction: " << sumangmom[1] << endl;
-  cout << "Angular Momentum z-direction: " << sumangmom[2] << endl << endl;
-  cout << "Kinetic Energy:               " << kinergy << endl;
-  cout << "************************************************************************" << endl;
-  */
 
 #ifdef PRESTRESS
   //----------- save the current green-lagrange strains in the material

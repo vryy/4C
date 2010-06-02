@@ -70,10 +70,5 @@ Maintainer: Alexander Popp
 // PENALTY DEBUGGING OPTIONS
 //#define CONTACTFDPENALTYTRAC      /* flag for FD check of penalty tractions */
 
-// GMSH DEBUGGING OPTIONS
-//#define CONTACTGMSH1              /* flag for gmsh output in each time step */
-//#define CONTACTGMSH2              /* flag for gmsh output in each iteration */
-//#define CONTACTGMSH3              /* flag for gmsh output at t = 0.0 */
-
 #endif  // #ifndef CONTACT_DEFINES_H
 #endif  // #ifdef CCADISCRET

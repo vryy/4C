@@ -311,12 +311,12 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
     // update tree in a bottom up way
     //binarytree_->UpdateTreeBottomUp();
 
-  #ifdef MORTARGMSHCTN
-    for (int i=0;i<(int)(binarytree_->ContactMap().size());i++)
-      binarytree_->ContactMap()[i].clear();
-    binarytree_->ContactMap().clear();
-    binarytree_->ContactMap().resize(2);
-  #endif // #ifdef MORTARGMSHCTN
+#ifdef MORTARGMSHCTN
+    for (int i=0;i<(int)(binarytree_->CouplingMap().size());i++)
+      binarytree_->CouplingMap()[i].clear();
+    binarytree_->CouplingMap().clear();
+    binarytree_->CouplingMap().resize(2);
+#endif // #ifdef MORTARGMSHCTN
 
     // search for contact with a separate algorithm
     //binarytree_->SearchSeparate();

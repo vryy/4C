@@ -70,6 +70,9 @@ using namespace std;
 /************************************************************************/
 
 // GMSH DEBUGGING OPTIONS
+//#define MORTARGMSH1          /* flag for gmsh output in each time step */
+//#define MORTARGMSH2          /* flag for gmsh output in each iteration */
+//#define MORTARGMSH3          /* flag for gmsh output at t = 0.0 */
 //#define MORTARGMSHTN         /* gmsh output of all treenodes */
 //#define MORTARGMSHCTN        /* gmsh output of coupling treenodes */
 

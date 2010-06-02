@@ -25,6 +25,7 @@ Maintainer: Burkhard Bornemann
 #include "strtimint.H"
 
 #include "../drt_contact/contact_defines.H"
+#include "../drt_mortar/mortar_defines.H"
 #include "../drt_io/io_control.H"
 #include "../drt_fluid/fluid_utils.H"
 
@@ -327,9 +328,9 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     cmtman_->GetStrategy().SetState("displacement",zeros_);
       
     // visualization of initial configuration
-#ifdef CONTACTGMSH3
+#ifdef MORTARGMSH3
     cmtman_->GetStrategy().VisualizeGmsh(0,0);
-#endif // #ifdef CONTACTGMSH2
+#endif // #ifdef MORTARGMSH3
 
     // initialization of contact or meshting
     {

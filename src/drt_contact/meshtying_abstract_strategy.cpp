@@ -42,6 +42,7 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_mortar/mortar_defines.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -448,6 +449,10 @@ void CONTACT::MtAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
   // binarytree contact search)
   SetState("olddisplacement",dis);
 
+#ifdef MORTARGMSH1  
+  VisualizeGmsh(istep);
+#endif // #ifdef MORTARGMSH1
+  
   return;
 }
 
@@ -792,6 +797,16 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet()
   Comm().Barrier();
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | Visualization of meshtying segments with gmsh              popp 08/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::MtAbstractStrategy::VisualizeGmsh(const int step, const int iter)
+{
+  // visualization with gmsh
+  for (int i=0; i<(int)interface_.size(); ++i)
+    interface_[i]->VisualizeGmsh(step, iter);
 }
 
 #endif // CCADISCRET

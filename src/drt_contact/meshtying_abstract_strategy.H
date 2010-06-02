@@ -313,6 +313,15 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     */
     void PrintActiveSet();
     
+    /*!
+    \brief Visualize contact stuff with gmsh
+
+    \param step (in): current time step index
+    \param iter (in): current iteration index
+
+    */
+    void VisualizeGmsh(const int step, const int iter = 0);
+    
     //@}
 
     //! @name Purely virtual functions
@@ -357,7 +366,6 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     void EvaluateReferenceState (const RCP<Epetra_Vector> vec){}
     void EvaluateRelMov() {}
     void EvaluateRelMovPredict() {}
-    void VisualizeGmsh(const int step, const int iter = 0) {}
     
     //@}
         

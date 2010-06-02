@@ -48,6 +48,7 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 #include "../drt_mortar/mortar_integrator.H"
+#include "../drt_mortar/mortar_defines.H"
 
 
 /*----------------------------------------------------------------------*
@@ -56,9 +57,11 @@ Maintainer: Alexander Popp
 void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
 {
   // get out of here if not participating in interface
-  if (!lComm())
-    return;
+  if (!lComm()) return;
   
+  //**********************************************************************
+  // GMSH output of all interface elements
+  //**********************************************************************
   // construct unique filename for gmsh output
   // first index = time step index
   std::ostringstream filename;
@@ -78,28 +81,37 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
 
   // construct unique filename for gmsh output
   // second index = Newton iteration index
-#ifdef CONTACTGMSH2
+#ifdef MORTARGMSH2
   filename << "_";
   if (iter<10)
     filename << 0;
   else if (iter>99)
     dserror("Gmsh output implemented for a maximum of 99 iterations");
   filename << iter;
-#endif // #ifdef CONTACTGMSH2
+#endif // #ifdef MORTARGMSH2
 
-#ifdef CONTACTGMSH3
+#ifdef MORTARGMSH3
   filename << "_";
   if (iter<10)
     filename << 0;
   else if (iter>99)
     dserror("Gmsh output implemented for a maximum of 99 iterations");
   filename << iter;
-#endif // #ifdef CONTACTGMSH3
+#endif // #ifdef MORTARGMSH3
 
-  filename << ".pos";
+  // create three files (slave, master and whole interface)
+  std::ostringstream filenameslave;
+  std::ostringstream filenamemaster;
+  filenameslave << filename.str();
+  filenamemaster << filename.str();
+  filename << "_iface.pos";
+  filenameslave << "_slave.pos";
+  filenamemaster << "_master.pos";
 
   // do output to file in c-style
   FILE* fp = NULL;
+  FILE* fps = NULL;
+  FILE* fpm = NULL;
 
   //**********************************************************************
   // Start GMSH output
@@ -108,13 +120,30 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
   {
     if (proc==lComm()->MyPID())
     {
-      // open file (overwrite if proc==0, else append)
-      if (proc==0) fp = fopen(filename.str().c_str(), "w");
-      else fp = fopen(filename.str().c_str(), "a");
+      // open files (overwrite if proc==0, else append)
+      if (proc==0)
+      {
+        fp = fopen(filename.str().c_str(), "w");
+        fps = fopen(filenameslave.str().c_str(), "w");
+        fpm = fopen(filenamemaster.str().c_str(), "w");
+      }
+      else 
+      {
+        fp = fopen(filename.str().c_str(), "a");
+        fps = fopen(filenameslave.str().c_str(), "a");
+        fpm = fopen(filenamemaster.str().c_str(), "a");
+      }
 
       // write output to temporary stringstream
       std::stringstream gmshfilecontent;
-      if (proc==0) gmshfilecontent << "View \" Step " << step << " Iter " << iter << " \" {" << endl;
+      std::stringstream gmshfilecontentslave;
+      std::stringstream gmshfilecontentmaster;
+      if (proc==0)
+      {
+        gmshfilecontent << "View \" Step " << step << " Iter " << iter << " Iface\" {" << endl;
+        gmshfilecontentslave << "View \" Step " << step << " Iter " << iter << " Slave\" {" << endl;
+        gmshfilecontentmaster << "View \" Step " << step << " Iter " << iter << " Master\" {" << endl;
+      }
 
       //******************************************************************
       // plot elements
@@ -125,7 +154,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         int nnodes = element->NumNode();
         LINALG::SerialDenseMatrix coord(3,nnodes);
         element->GetNodalCoords(coord);
-        double color = (double)element->IsSlave();
+        double color = (double)element->Owner();
 
         //local center
         double xi[2] = {0.0, 0.0};
@@ -133,129 +162,392 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         // 2D linear case (2noded line elements)
         if (element->Shape()==DRT::Element::line2)
         {
-          gmshfilecontent << "SL(" << scientific << coord(0,0) << "," << coord(1,0) << ","
-                              << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
-                              << coord(2,1) << ")";
-          gmshfilecontent << "{" << scientific << color << "," << color << "};" << endl;
+          if (element->IsSlave())
+          {
+            gmshfilecontent << "SL(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "SL(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << ")";
+            gmshfilecontentslave << "{" << scientific << color << "," << color << "};" << endl;
+          }
+          else
+          {
+            gmshfilecontent << "SL(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "SL(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << ")";
+            gmshfilecontentmaster << "{" << scientific << color << "," << color << "};" << endl;
+          }
+          
         }
 
         // 2D quadratic case (3noded line elements)
         if (element->Shape()==DRT::Element::line3)
         {
-          gmshfilecontent << "SL2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
-                              << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
-                              << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
-                              << coord(2,2) << ")";
-          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+          if (element->IsSlave())
+          {
+            gmshfilecontent << "SL2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "SL2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << ")";
+            gmshfilecontentslave << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+          }
+          else
+          {
+            gmshfilecontent << "SL2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "SL2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << ")";
+            gmshfilecontentmaster << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+          }
         }
 
         // 3D linear case (3noded triangular elements)
         if (element->Shape()==DRT::Element::tri3)
         {
-          gmshfilecontent << "ST(" << scientific << coord(0,0) << "," << coord(1,0) << ","
-                              << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
-                              << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
-                              << coord(2,2) << ")";
-          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+          if (element->IsSlave())
+          {
+            gmshfilecontent << "ST(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "ST(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << ")";
+            gmshfilecontentslave << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+          }
+          else
+          {
+            gmshfilecontent << "ST(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "ST(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << ")";
+            gmshfilecontentmaster << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+          }
           xi[0] = 1.0/3; xi[1] = 1.0/3;
         }
 
         // 3D bilinear case (4noded quadrilateral elements)
         if (element->Shape()==DRT::Element::quad4)
         {
-          gmshfilecontent << "SQ(" << scientific << coord(0,0) << "," << coord(1,0) << ","
-                              << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
-                              << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
-                              << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
-                              << coord(2,3) << ")";
-          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+          if (element->IsSlave())
+          {
+            gmshfilecontent << "SQ(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
+                                << coord(2,3) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "SQ(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
+                                << coord(2,3) << ")";
+            gmshfilecontentslave << "{" << scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+          }
+          else
+          {
+            gmshfilecontent << "SQ(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
+                                << coord(2,3) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "SQ(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
+                                << coord(2,3) << ")";
+            gmshfilecontentmaster << "{" << scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+          }
         }
 
         // 3D quadratic case (6noded triangular elements)
         if (element->Shape()==DRT::Element::tri6)
         {
-          gmshfilecontent << "ST2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
-                              << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
-                              << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
-                              << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
-                              << coord(2,3) << "," << coord(0,4) << "," << coord(1,4) << ","
-                              << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
-                              << coord(2,5) << ")";
-          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << ","
-                          << color << "," << color << "," << color <<"};" << endl;
+          if (element->IsSlave())
+          {
+            gmshfilecontent << "ST2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
+                                << coord(2,3) << "," << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << ","
+                            << color << "," << color << "," << color <<"};" << endl;
+            gmshfilecontentslave << "ST2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
+                                << coord(2,3) << "," << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << ")";
+            gmshfilecontentslave << "{" << scientific << color << "," << color << "," << color << ","
+                            << color << "," << color << "," << color <<"};" << endl;
+          }
+          else
+          {
+            gmshfilecontent << "ST2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
+                                << coord(2,3) << "," << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << ","
+                            << color << "," << color << "," << color <<"};" << endl;
+            gmshfilecontentmaster << "ST2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
+                                << coord(2,3) << "," << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << ")";
+            gmshfilecontentmaster << "{" << scientific << color << "," << color << "," << color << ","
+                            << color << "," << color << "," << color <<"};" << endl;
+          }
           xi[0] = 1.0/3; xi[1] = 1.0/3;
         }
 
         // 3D serendipity case (8noded quadrilateral elements)
         if (element->Shape()==DRT::Element::quad8)
         {
-          gmshfilecontent << "ST(" << scientific << coord(0,0) << "," << coord(1,0) << ","
-                              << coord(2,0) << "," << coord(0,4) << "," << coord(1,4) << ","
-                              << coord(2,4) << "," << coord(0,7) << "," << coord(1,7) << ","
-                              << coord(2,7) << ")";
-          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
-          gmshfilecontent << "ST(" << scientific << coord(0,1) << "," << coord(1,1) << ","
-                              << coord(2,1) << "," << coord(0,5) << "," << coord(1,5) << ","
-                              << coord(2,5) << "," << coord(0,4) << "," << coord(1,4) << ","
-                              << coord(2,4) << ")";
-          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
-          gmshfilecontent << "ST(" << scientific << coord(0,2) << "," << coord(1,2) << ","
-                              << coord(2,2) << "," << coord(0,6) << "," << coord(1,6) << ","
-                              << coord(2,6) << "," << coord(0,5) << "," << coord(1,5) << ","
-                              << coord(2,5) << ")";
-          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
-          gmshfilecontent << "ST(" << scientific << coord(0,3) << "," << coord(1,3) << ","
-                              << coord(2,3) << "," << coord(0,7) << "," << coord(1,7) << ","
-                              << coord(2,7) << "," << coord(0,6) << "," << coord(1,6) << ","
-                              << coord(2,6) << ")";
-          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
-          gmshfilecontent << "SQ(" << scientific << coord(0,4) << "," << coord(1,4) << ","
-                              << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
-                              << coord(2,5) << "," << coord(0,6) << "," << coord(1,6) << ","
-                              << coord(2,6) << "," << coord(0,7) << "," << coord(1,7) << ","
-                              << coord(2,7) << ")";
-          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+          if (element->IsSlave())
+          {
+            gmshfilecontent << "ST(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << "," << coord(0,7) << "," << coord(1,7) << ","
+                                << coord(2,7) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "ST(" << scientific << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << "," << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "ST(" << scientific << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << "," << coord(0,6) << "," << coord(1,6) << ","
+                                << coord(2,6) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "ST(" << scientific << coord(0,3) << "," << coord(1,3) << ","
+                                << coord(2,3) << "," << coord(0,7) << "," << coord(1,7) << ","
+                                << coord(2,7) << "," << coord(0,6) << "," << coord(1,6) << ","
+                                << coord(2,6) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "SQ(" << scientific << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << "," << coord(0,6) << "," << coord(1,6) << ","
+                                << coord(2,6) << "," << coord(0,7) << "," << coord(1,7) << ","
+                                << coord(2,7) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "ST(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << "," << coord(0,7) << "," << coord(1,7) << ","
+                                << coord(2,7) << ")";
+            gmshfilecontentslave << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "ST(" << scientific << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << "," << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << ")";
+            gmshfilecontentslave << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "ST(" << scientific << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << "," << coord(0,6) << "," << coord(1,6) << ","
+                                << coord(2,6) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << ")";
+            gmshfilecontentslave << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "ST(" << scientific << coord(0,3) << "," << coord(1,3) << ","
+                                << coord(2,3) << "," << coord(0,7) << "," << coord(1,7) << ","
+                                << coord(2,7) << "," << coord(0,6) << "," << coord(1,6) << ","
+                                << coord(2,6) << ")";
+            gmshfilecontentslave << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "SQ(" << scientific << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << "," << coord(0,6) << "," << coord(1,6) << ","
+                                << coord(2,6) << "," << coord(0,7) << "," << coord(1,7) << ","
+                                << coord(2,7) << ")";
+            gmshfilecontentslave << "{" << scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+          }
+          else
+          {
+            gmshfilecontent << "ST(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << "," << coord(0,7) << "," << coord(1,7) << ","
+                                << coord(2,7) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "ST(" << scientific << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << "," << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "ST(" << scientific << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << "," << coord(0,6) << "," << coord(1,6) << ","
+                                << coord(2,6) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "ST(" << scientific << coord(0,3) << "," << coord(1,3) << ","
+                                << coord(2,3) << "," << coord(0,7) << "," << coord(1,7) << ","
+                                << coord(2,7) << "," << coord(0,6) << "," << coord(1,6) << ","
+                                << coord(2,6) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "SQ(" << scientific << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << "," << coord(0,6) << "," << coord(1,6) << ","
+                                << coord(2,6) << "," << coord(0,7) << "," << coord(1,7) << ","
+                                << coord(2,7) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "ST(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << "," << coord(0,7) << "," << coord(1,7) << ","
+                                << coord(2,7) << ")";
+            gmshfilecontentmaster << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "ST(" << scientific << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << "," << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << ")";
+            gmshfilecontentmaster << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "ST(" << scientific << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << "," << coord(0,6) << "," << coord(1,6) << ","
+                                << coord(2,6) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << ")";
+            gmshfilecontentmaster << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "ST(" << scientific << coord(0,3) << "," << coord(1,3) << ","
+                                << coord(2,3) << "," << coord(0,7) << "," << coord(1,7) << ","
+                                << coord(2,7) << "," << coord(0,6) << "," << coord(1,6) << ","
+                                << coord(2,6) << ")";
+            gmshfilecontentmaster << "{" << scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "SQ(" << scientific << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << "," << coord(0,6) << "," << coord(1,6) << ","
+                                << coord(2,6) << "," << coord(0,7) << "," << coord(1,7) << ","
+                                << coord(2,7) << ")";
+            gmshfilecontentmaster << "{" << scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+          }
         }
 
         // 3D biquadratic case (9noded quadrilateral elements)
         if (element->Shape()==DRT::Element::quad9)
         {
-          gmshfilecontent << "SQ2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
-                              << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
-                              << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
-                              << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
-                              << coord(2,3) << "," << coord(0,4) << "," << coord(1,4) << ","
-                              << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
-                              << coord(2,5) << "," << coord(0,6) << "," << coord(1,6) << ","
-                              << coord(2,6) << "," << coord(0,7) << "," << coord(1,7) << ","
-                              << coord(2,7) << "," << coord(0,8) << "," << coord(1,8) << ","
-                              << coord(2,8) << ")";
-          gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "," << color << ","
-                          << color << "," << color << "," << color << "," << color << "," << color << "};" << endl;
+          if (element->IsSlave())
+          {
+            gmshfilecontent << "SQ2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
+                                << coord(2,3) << "," << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << "," << coord(0,6) << "," << coord(1,6) << ","
+                                << coord(2,6) << "," << coord(0,7) << "," << coord(1,7) << ","
+                                << coord(2,7) << "," << coord(0,8) << "," << coord(1,8) << ","
+                                << coord(2,8) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "," << color << ","
+                            << color << "," << color << "," << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "SQ2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
+                                << coord(2,3) << "," << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << "," << coord(0,6) << "," << coord(1,6) << ","
+                                << coord(2,6) << "," << coord(0,7) << "," << coord(1,7) << ","
+                                << coord(2,7) << "," << coord(0,8) << "," << coord(1,8) << ","
+                                << coord(2,8) << ")";
+            gmshfilecontentslave << "{" << scientific << color << "," << color << "," << color << "," << color << ","
+                            << color << "," << color << "," << color << "," << color << "," << color << "};" << endl;
+          }
+          else
+          {
+            gmshfilecontent << "SQ2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
+                                << coord(2,3) << "," << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << "," << coord(0,6) << "," << coord(1,6) << ","
+                                << coord(2,6) << "," << coord(0,7) << "," << coord(1,7) << ","
+                                << coord(2,7) << "," << coord(0,8) << "," << coord(1,8) << ","
+                                << coord(2,8) << ")";
+            gmshfilecontent << "{" << scientific << color << "," << color << "," << color << "," << color << ","
+                            << color << "," << color << "," << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "SQ2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                                << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                                << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                                << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
+                                << coord(2,3) << "," << coord(0,4) << "," << coord(1,4) << ","
+                                << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
+                                << coord(2,5) << "," << coord(0,6) << "," << coord(1,6) << ","
+                                << coord(2,6) << "," << coord(0,7) << "," << coord(1,7) << ","
+                                << coord(2,7) << "," << coord(0,8) << "," << coord(1,8) << ","
+                                << coord(2,8) << ")";
+            gmshfilecontentmaster << "{" << scientific << color << "," << color << "," << color << "," << color << ","
+                            << color << "," << color << "," << color << "," << color << "," << color << "};" << endl;
+          }
         }
 
         // plot element number in element center
         double elec[3];
         element->LocalToGlobal(xi,elec,0);
-        gmshfilecontent << "T3(" << scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
+        
         if (element->IsSlave())
+        {
+          gmshfilecontent << "T3(" << scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
           gmshfilecontent << "{" << "S" << element->Id() << "};" << endl;
+          gmshfilecontentslave << "T3(" << scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
+          gmshfilecontentslave << "{" << "S" << element->Id() << "};" << endl;
+        }
         else
+        {
+          gmshfilecontent << "T3(" << scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
           gmshfilecontent << "{" << "M" << element->Id() << "};" << endl;
+          gmshfilecontentmaster << "T3(" << scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
+          gmshfilecontentmaster << "{" << "M" << element->Id() << "};" << endl;
+        }
 
         // plot node numbers at the nodes
         for (int j=0;j<nnodes;++j)
         {
-          gmshfilecontent << "T3(" << scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
           if (element->IsSlave())
+          {
+            gmshfilecontent << "T3(" << scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
             gmshfilecontent << "{" << "SN" << element->NodeIds()[j] << "};" << endl;
+            gmshfilecontentslave << "T3(" << scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
+            gmshfilecontentslave << "{" << "SN" << element->NodeIds()[j] << "};" << endl;
+          }
           else
+          {
+            gmshfilecontent << "T3(" << scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
             gmshfilecontent << "{" << "MN" << element->NodeIds()[j] << "};" << endl;
+            gmshfilecontentmaster << "T3(" << scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
+            gmshfilecontentmaster << "{" << "MN" << element->NodeIds()[j] << "};" << endl;
+          }
         }
       }
 
       //******************************************************************
-      // plot normal, tangent, contact status and Lagr. mutlipliers
+      // plot normal vector, tangent vectors and contact status
       //******************************************************************
       for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
       {
@@ -269,9 +561,6 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         double nn[3];
         double nt1[3];
         double nt2[3];
-        double lmn = 0.0;
-        double lmt1 = 0.0;
-        double lmt2 = 0.0;
 
         for (int j=0;j<3;++j)
         {
@@ -279,23 +568,21 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
           nn[j]=cnode->MoData().n()[j];
           nt1[j]=cnode->CoData().txi()[j];
           nt2[j]=cnode->CoData().teta()[j];
-          lmn +=  (cnode->Active())*nn[j]* cnode->MoData().lm()[j];
-          lmt1 +=  (cnode->Active())*nt1[j]* cnode->MoData().lm()[j];
-          lmt2 +=  (cnode->Active())*nt2[j]* cnode->MoData().lm()[j];
         }
 
         //******************************************************************
-        // plot normal and tangent vectors (only 2D)
+        // plot normal and tangent vectors
         //******************************************************************
-        gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-        gmshfilecontent << "{" << scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << endl;
+        gmshfilecontentslave << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
+        gmshfilecontentslave << "{" << scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << endl;
 
         if (friction_)
         {
-          gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-          gmshfilecontent << "{" << scientific << nt1[0] << "," << nt1[1] << "," << nt1[2] << "};" << endl;
-          gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-          gmshfilecontent << "{" << scientific << nt2[0] << "," << nt2[1] << "," << nt2[2] << "};" << endl;
+          gmshfilecontentslave << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
+          gmshfilecontentslave << "{" << scientific << nt1[0] << "," << nt1[1] << "," << nt1[2] << "};" << endl;
+          gmshfilecontentslave << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
+          gmshfilecontentslave << "{" << scientific << nt2[0] << "," << nt2[1] << "," << nt2[2] << "};" << endl;
+          
         }
 
         //******************************************************************
@@ -304,8 +591,8 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         // frictionless contact, active node = {A}
         if (!friction_ && cnode->Active())
         {
-          gmshfilecontent << "T3(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
-          gmshfilecontent << "{" << "A" << "};" << endl;
+          gmshfilecontentslave << "T3(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
+          gmshfilecontentslave << "{" << "A" << "};" << endl;
         }
 
         // frictionless contact, inactive node = { }
@@ -317,65 +604,49 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         // frictional contact, slip node = {G}
         else if (friction_ && cnode->Active())
         {
-          if(static_cast<FriNode*>(cnode)->Data().Slip())
+          if (static_cast<FriNode*>(cnode)->Data().Slip())
           {  
-            gmshfilecontent << "T3(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
-            gmshfilecontent << "{" << "G" << "};" << endl;
+            gmshfilecontentslave << "T3(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
+            gmshfilecontentslave << "{" << "G" << "};" << endl;
           }
           else 
           {
-            gmshfilecontent << "T3(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
-            gmshfilecontent << "{" << "H" << "};" << endl;
+            gmshfilecontentslave << "T3(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
+            gmshfilecontentslave << "{" << "H" << "};" << endl;
           }
-        }
-
-        //******************************************************************
-        // plot Lagrange multipliers (normal+tang. contact stresses)
-        //******************************************************************
-        gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-        gmshfilecontent << "{" << scientific << lmn*nn[0] << "," << lmn*nn[1] << "," << lmn*nn[2] << "};" << endl;
-
-        if (friction_)
-        {
-          gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-          gmshfilecontent << "{" << scientific << lmt1*nt1[0]+lmt2*nt2[0] << "," << lmt1*nt1[1]+lmt2*nt2[1] << "," << lmt1*nt1[2]+lmt2*nt2[2] << "};" << endl;
         }
       }
 
-      if (proc==lComm()->NumProc()-1) gmshfilecontent << "};" << endl;
+      // end GMSH output section in all files
+      if (proc==lComm()->NumProc()-1)
+      {
+        gmshfilecontent << "};" << endl;
+        gmshfilecontentslave << "};" << endl;
+        gmshfilecontentmaster << "};" << endl;
+      }
 
-      // move everything to gmsh post-processing file and close it
+      // move everything to gmsh post-processing files and close them
       fprintf(fp,gmshfilecontent.str().c_str());
+      fprintf(fps,gmshfilecontentslave.str().c_str());
+      fprintf(fpm,gmshfilecontentmaster.str().c_str());
       fclose(fp);
+      fclose(fps);
+      fclose(fpm);
     }
     lComm()->Barrier();
   }
 
-#ifdef CONTACTGMSHTN
-
-  //******************************************************************
-  // plot dops of Binary Tree
-  //******************************************************************
-  //cout << endl << "im contact-interface-tools plot binarytree" << endl;
-  //binarytree_->VisualizeDops(filenametreenodes, step, iter);
+  
+  //**********************************************************************
+  // GMSH output of all treenodes (DOPs) on all layers
+  //**********************************************************************
+#ifdef MORTARGMSHTN
   // get max. number of layers for every proc.
-
-  //defines local and global number of treelayers for slave and master tree!
+  // (master elements are equal on each proc)
   int lnslayers=binarytree_->Streenodesmap().size();
   int gnmlayers=binarytree_->Mtreenodesmap().size();
-  //******************************************************************
-  // Master elements are equal on each proc!!
-  //******************************************************************
-
-  int gnslayers;
-  // bestimmung Anzahl globales max. an layern nochmal überprüfen!!!!!!
-
-  //cout << endl << lComm()->MyPID()  << "local number of slave layers: "<<lnslayers;
-
+  int gnslayers = 0;
   lComm()->MaxAll(&lnslayers, &gnslayers,1);
-
-  //cout << endl << lComm()->MyPID() << "global number of slave layers: "<< gnslayers;
-  //cout << endl << lComm()->MyPID() << "global number of master layers: "<< gnmlayers;
 
   // create files for visualization of slave dops for every layer
   std::ostringstream filenametn;
@@ -396,15 +667,24 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
 
   // construct unique filename for gmsh output
   // second index = Newton iteration index
-#ifdef CONTACTGMSH2
+#ifdef MORTARGMSH2
   filenametn << "_";
   if (iter<10)
     filenametn << 0;
   else if (iter>99)
     dserror("Gmsh output implemented for a maximum of 99 iterations");
   filenametn << iter;
-#endif // #ifdef CONTACTGMSH2
+#endif // #ifdef MORTARGMSH2
 
+#ifdef MORTARGMSH3
+  filenametn << "_";
+  if (iter<10)
+    filenametn << 0;
+  else if (iter>99)
+    dserror("Gmsh output implemented for a maximum of 99 iterations");
+  filenametn << iter;
+#endif // #ifdef MORTARGMSH3
+  
   if (lComm()->MyPID()==0)
   {
     for (int i=0; i<gnslayers;i++)
@@ -525,7 +805,6 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
       }
     }
 
-    //binarytree_->Mroot()->PrintDopsForGmsh(filenametn.str().c_str(), false);
     //close all master files
     for (int i=0; i<gnmlayers;i++)
     {
@@ -538,9 +817,13 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
       fclose(fp);
     }
   }
-#endif // ifdef CONTACTGMSHTN
+#endif // ifdef MORTARGMSHTN
 
-#ifdef CONTACTGMSHCTN
+  
+  //**********************************************************************
+  // GMSH output of all active treenodes (DOPs) on leaf level
+  //**********************************************************************
+#ifdef MORTARGMSHCTN
   std::ostringstream filenamectn;
   const std::string filebasectn = DRT::Problem::Instance()->OutputControlFile()->FileName();
   filenamectn << "o/gmsh_output/" << filebasectn << "_";
@@ -558,16 +841,16 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
 
   // construct unique filename for gmsh output
   // second index = Newton iteration index
-#ifdef CONTACTGMSH2
+#ifdef MORTARGMSH2
   filenamectn << "_";
   if (iter<10)
     filenamectn << 0;
   else if (iter>99)
     dserror("Gmsh output implemented for a maximum of 99 iterations");
   filenamectn << iter;
-#endif // #ifdef CONTACTGMSH2
+#endif // #ifdef MORTARGMSH2
 
-  int lcontactmapsize=(int)(binarytree_->ContactMap()[0].size());
+  int lcontactmapsize=(int)(binarytree_->CouplingMap()[0].size());
   int gcontactmapsize;
 
   lComm()->MaxAll(&lcontactmapsize, &gcontactmapsize,1);
@@ -587,41 +870,48 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
       fclose(fp);
     }
 
-    //every proc should plot its contacting treenodes!
+    // every proc should plot its contacting treenodes!
     for (int i=0;i<lComm()->NumProc();i++)
     {
       if (lComm()->MyPID()==i)
       {
-        if ( (int)(binarytree_->ContactMap()[0]).size() != (int)(binarytree_->ContactMap()[1]).size() )
-        dserror("ERROR: Binarytree ContactMap does not have right size!");
+        if ( (int)(binarytree_->CouplingMap()[0]).size() != (int)(binarytree_->CouplingMap()[1]).size() )
+        dserror("ERROR: Binarytree CouplingMap does not have right size!");
 
-        for (int j=0; j<(int)((binarytree_->ContactMap()[0]).size());j++)
+        for (int j=0; j<(int)((binarytree_->CouplingMap()[0]).size());j++)
         {
           std::ostringstream currentfilename;
-          currentfilename << filenamectn.str().c_str() << "_ct.pos";
-          (binarytree_->ContactMap()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
-
-          //create new sheet "Treenode" in gmsh
-          fp = fopen(currentfilename.str().c_str(), "a");
           std::stringstream gmshfile;
-          gmshfile << "};" << endl << "View \" CM-Treenode \" { " << endl;
-          fprintf(fp,gmshfile.str().c_str());
-          fclose(fp);
-
-          (binarytree_->ContactMap()[1][j])->PrintDopsForGmsh(currentfilename.str().c_str());
-
-          if (j<(int)((binarytree_->ContactMap()).size())-1)
+          std::stringstream newgmshfile;
+          
+          // create new sheet for slave
+          if (lComm()->MyPID()==0 && j==0)
           {
-            //create new sheet "Treenode" in gmsh
-            fp = fopen(currentfilename.str().c_str(), "a");
-            std::stringstream gmshfile;
-            gmshfile << "};" << endl << "View \" CS-Treenode \" { " << endl;
+            currentfilename << filenamectn.str().c_str() << "_ct.pos";
+            fp = fopen(currentfilename.str().c_str(), "w");
+            gmshfile << "View \" Step " << step << " Iter " << iter << " CS  \" {" << endl;
             fprintf(fp,gmshfile.str().c_str());
-            fclose(fp);
+            fclose(fp);     
+            (binarytree_->CouplingMap()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
           }
+          else
+          {
+            currentfilename << filenamectn.str().c_str() << "_ct.pos";
+            fp = fopen(currentfilename.str().c_str(), "a");
+            gmshfile << "};" << endl << "View \" Step " << step << " Iter " << iter << " CS  \" {" << endl;
+            fprintf(fp,gmshfile.str().c_str());
+            fclose(fp);     
+            (binarytree_->CouplingMap()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
+          }
+          
+          // create new sheet for master
+          fp = fopen(currentfilename.str().c_str(), "a");
+          newgmshfile << "};" << endl << "View \" Step " << step << " Iter " << iter << " CM  \" {" << endl;
+          fprintf(fp,newgmshfile.str().c_str());
+          fclose(fp);
+          (binarytree_->CouplingMap()[1][j])->PrintDopsForGmsh(currentfilename.str().c_str());
         }
       }
-
       lComm()->Barrier();
     }
 
@@ -638,7 +928,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
       fclose(fp);
     }
   }
-#endif //CONTACTGMSHCTN
+#endif //MORTARGMSHCTN
 
   return;
 }

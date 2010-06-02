@@ -44,6 +44,7 @@ Maintainer: Alexander Popp
 #include "../drt_lib/linalg_utils.H"
 #include "friction_node.H"
 #include "contact_defines.H"
+#include "../drt_mortar/mortar_defines.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -665,9 +666,9 @@ void CONTACT::CoAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
   // the auxiliary positions in binarytree contact search)
   SetState("olddisplacement",dis);
   
-#ifdef CONTACTGMSH1  
+#ifdef MORTARGMSH1  
   VisualizeGmsh(istep);
-#endif // #ifdef CONTACTGMSH1
+#endif // #ifdef MORTARGMSH1
 
   // double-check if active set is really converged
   // (necessary e.g. for monolithic FSI with Lagrange multiplier contact,

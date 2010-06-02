@@ -471,9 +471,9 @@ void MORTAR::MortarInterface::CreateSearchTree()
 #ifdef MORTARGMSHCTN
   if (Dim()==3 && Comm().MyPID()==0)
   {
-    cout << "\n******************************************************************\n";
-    cout << "GMSH output of all contact tree nodes in 3D needs a lot of memory!\n";
-    cout << "******************************************************************\n";
+    cout << "\n*****************************************************************\n";
+    cout << "GMSH output of all mortar tree nodes in 3D needs a lot of memory!\n";
+    cout << "*****************************************************************\n";
   }
 #endif //MORTARGMSHCTN
 

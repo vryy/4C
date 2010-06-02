@@ -573,10 +573,10 @@ public:
   //! @name Visualization and Debugging methods
 
   /*!
-  \brief Visualize contact stuff with gmsh
+  \brief Visualize mortar stuff with gmsh (may be overloaded)
 
   */
-  //virtual void VisualizeGmsh(const int step, const int iter, const bool fric);
+  virtual void VisualizeGmsh(const int step, const int iter);
 
   /*!
   \brief Print shape function type (enum)
