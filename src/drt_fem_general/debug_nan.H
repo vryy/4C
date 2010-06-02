@@ -22,69 +22,33 @@ Maintainer: Axel Gerstenberger
 #ifndef DEBUG_NAN_H
 #define DEBUG_NAN_H
 
+#include <vector>
+
+
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_SerialDenseMatrix.h>
+#include "Epetra_Vector.h"
+
 namespace DRT
 {
   /// namespace for debugging utilities
   namespace DEBUGGING
   {
 
-    static void NaNChecker(const Epetra_SerialDenseVector& vec)
-    {
-      for (int i = 0; i < vec.Length(); i++)
-      {
-        if (std::isnan(vec(i)))
-        {
-          dserror("NaNs detected! Quitting...");
-        }
-      }
-    }
+    /// check for any NaN within this array
+    void NaNChecker(const Epetra_SerialDenseVector& vec);
 
-    static void NaNChecker(const Epetra_SerialDenseMatrix& mat)
-    {
-      for (int m = 0; m < mat.M(); m++)
-      {
-        for (int n = 0; n < mat.N(); n++)
-        {
-          if (std::isnan(mat(m,n)))
-          {
-            dserror("NaNs detected! Quitting...");
-          }
-        }
-      }
-    }
+    /// check for any NaN within this array
+    void NaNChecker(const Epetra_SerialDenseMatrix& mat);
 
-    static void NaNChecker(const std::vector<double>& vec)
-    {
-      for (std::size_t i = 0; i < vec.size(); i++)
-      {
-        if (std::isnan(vec[i]))
-        {
-          dserror("NaNs detected! Quitting...");
-        }
-      }
-    }
+    /// check for any NaN within this array
+    void NaNChecker(const std::vector<double>& vec);
 
-    static void NaNChecker(const std::vector<int>& vec)
-    {
-      for (std::size_t i = 0; i < vec.size(); i++)
-      {
-        if (std::isnan(vec[i]))
-        {
-          dserror("NaNs detected! Quitting...");
-        }
-      }
-    }
+    /// check for any NaN within this array
+    void NaNChecker(const std::vector<int>& vec);
 
-    static void NaNChecker(const Epetra_Vector& vec)
-    {
-      for (int i = 0; i < vec.MyLength(); i++)
-      {
-        if (std::isnan(vec[i]))
-        {
-          dserror("NaNs detected! Quitting...");
-        }
-      }
-    }
+    /// check for any NaN within this array
+    void NaNChecker(const Epetra_Vector& vec);
 
   }
 }
