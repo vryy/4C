@@ -28,7 +28,7 @@ NUMTHERMDIS                     1
 ----------------------------------------------INTERACTION POTENTIAL
 APPROXIMATION_TYPE              Point_approx
 POTENTIAL_TYPE                  Surface
-ANALYTICALSOLUTION		          No
+ANALYTICALSOLUTION		None
 -----------------------------------------------------------------IO
 ALE_DISP                        No
 FILESTEPS                       1000
