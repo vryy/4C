@@ -775,6 +775,7 @@ set(OBJS_POST_DRT_COMMON
 )
 set(OBJS_INV_ANALYSIS
   src/drt_inv_analysis/airways_inv_analysis.cpp
+  src/drt_inv_analysis/coll_inv_analysis.cpp
   src/drt_inv_analysis/gen_inv_analysis.cpp
   src/drt_inv_analysis/inv_analysis.cpp
   src/drt_structure/str_invanalysis.cpp
@@ -1942,6 +1943,8 @@ if (QHULL)
   baci_test(xfsi_fluid_pusher_stationary_hex8_partit 2 "")
   baci_test(xfsi_multibody_hex20 1 "")
   baci_test(xfsi_multibody_hex20 2 "")
+  baci_test(xfsi_multibody_hex20_tp_DLM_yes 1 "")
+  baci_test(xfsi_multibody_hex20_tp_DLM_yes 2 "")
   baci_test(xfsi_multibody_hex8_monolithic 1 "")
   baci_test(xfsi_shooter_thin 1 "")
 endif (QHULL)
