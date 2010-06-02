@@ -100,7 +100,7 @@ ADAPTER::XFluidImpl::XFluidImpl(
 
   // create interface DOF vectors using the solid parallel distribution
   idispnp_    = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
-  ivelnp_     = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
+  ivelnp_     = LINALG::CreateVector(*boundarydis_->DofRowMap(),true); // physical fluid velocity
   itrueresnp_ = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
 
   idispn_   = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
@@ -444,6 +444,8 @@ void ADAPTER::XFluidImpl::ComputeInterfaceAccelerations()
     // compute acceleration at timestep n+1
     iaccnp_->Update(-(1.0-theta)/(theta),*iaccn_,0.0);
     iaccnp_->Update(1.0/(theta*dt),*ivelnp_,-1.0/(theta*dt),*iveln_,1.0);
+
+    // note: for BDF2, the acceleration is ignored, so no need for another if here
   }
 }
 
