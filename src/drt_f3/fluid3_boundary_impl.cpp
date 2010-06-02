@@ -1650,7 +1650,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalc
 {
 
   //------------------------------------------------------------------
-  // This calculates the integrated the pressure from the 
+  // This calculates the integrated the pressure from the
   // the actual pressure values
   //------------------------------------------------------------------
 #if 1
@@ -1890,6 +1890,9 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
                                                  Epetra_SerialDenseVector&        elevec2,
                                                  Epetra_SerialDenseVector&        elevec3)
 {
+  if(bdrynsd_!=2)
+    dserror("FlowRateDeriv is only implemented for 3D!");
+
   // get status of Ale
   const bool isale = ele->ParentElement()->IsAle();
 
@@ -1922,6 +1925,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
   LINALG::Matrix<bdrynsd_,1> xsi(true);
 
   // normal vector
+  LINALG::Matrix<nsd_,1> unitnormal(true);
   LINALG::Matrix<nsd_,1> normal(true);
 
   // get node coordinates
@@ -1964,193 +1968,189 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
 
 
   /*----------------------------------------------------------------------*
-  |               start loop over integration points                     |
-  *----------------------------------------------------------------------*/
+    |               start loop over integration points                     |
+    *----------------------------------------------------------------------*/
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    //TODO: normal computed at gausspoint or node??
-
     // integration factor * Gauss weights & local Gauss point coordinates
     // shape function at the Gauss point & derivative of the shape function at the Gauss point
     // normalized normal vector at gausspoint
-    const double fac = EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, &normal);
+    EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, &unitnormal);
+    const double fac = intpoints.IP().qwgt[gpid];
 
     // dxyzdrs vector
     LINALG::Matrix<bdrynsd_,nsd_> dxyzdrs(0.0);
     dxyzdrs.MultiplyNT(deriv,xyze);
+    normal(0,0) = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
+    normal(1,0) = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
+    normal(2,0) = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
 
-    if(bdrynsd_==2)
+    //-------------------------------------------------------------------
+    //  Q
+    blitz::Array<double,1> u(3);
+    u = 0.;
+    for (int dim=0;dim<3;++dim)
+      for (int node=0;node<iel;++node)
+        u(dim) += funct(node) * evelnp(dim,node);
+
+    for(int dim=0;dim<3;++dim)
+      elevec3[0] += u(dim) * normal(dim,0) * fac;
+
+    if (params.get<bool>("flowrateonly", false)==false)
     {
       //-------------------------------------------------------------------
-      //  Q
-      blitz::Array<double,1> u(3);
-      u = 0.;
-      for (int dim=0;dim<3;++dim)
-          for (int node=0;node<iel;++node)
-            u(dim) += funct(node) * evelnp(dim,node);
-
-      for(int dim=0;dim<3;++dim)
-        elevec3[0] += u(dim) * normal(dim) * fac;
-
-      if (params.get<bool>("flowrateonly", false)==false)
+      // dQ/du
+      for (int node=0;node<iel;++node)
       {
-        //-------------------------------------------------------------------
-        // dQ/du
-        for (int node=0;node<iel;++node)
+        for (int dim=0;dim<3;++dim)
+          elevec1[node*numdofpernode_+dim] += funct(node) * normal(dim,0) * fac;
+        elevec1[node*numdofpernode_+3] = 0.0;
+      }
+
+      //-------------------------------------------------------------------
+      // dQ/dd
+
+      // determine derivatives of surface normals wrt mesh displacements
+      blitz::Array<double,2> normalderiv(3,iel*3);
+
+      for (int node=0;node<iel;++node)
+      {
+        normalderiv(0,3*node)   = 0.;
+        normalderiv(0,3*node+1) = deriv(0,node)*dxyzdrs(1,2)-deriv(1,node)*dxyzdrs(0,2);
+        normalderiv(0,3*node+2) = deriv(1,node)*dxyzdrs(0,1)-deriv(0,node)*dxyzdrs(1,1);
+
+        normalderiv(1,3*node)   = deriv(1,node)*dxyzdrs(0,2)-deriv(0,node)*dxyzdrs(1,2);
+        normalderiv(1,3*node+1) = 0.;
+        normalderiv(1,3*node+2) = deriv(0,node)*dxyzdrs(1,0)-deriv(1,node)*dxyzdrs(0,0);
+
+        normalderiv(2,3*node)   = deriv(0,node)*dxyzdrs(1,1)-deriv(1,node)*dxyzdrs(0,1);
+        normalderiv(2,3*node+1) = deriv(1,node)*dxyzdrs(0,0)-deriv(0,node)*dxyzdrs(1,0);
+        normalderiv(2,3*node+2) = 0.;
+      }
+
+      for (int node=0;node<iel;++node)
+      {
+        for (int dim=0;dim<3;++dim)
+          for (int iterdim=0;iterdim<3;++iterdim)
+            elevec2[node*numdofpernode_+dim] += u(iterdim) * normalderiv(iterdim,3*node+dim) * fac;
+        elevec2[node*numdofpernode_+3] = 0.0;
+      }
+
+      // consideration of grid velocity
+      if (isale)
+      {
+        // get time step size
+        const double dt = params.get<double>("dt", -1.0);
+        if (dt < 0.) dserror("invalid time step size");
+
+        if (gridvel == 1)  // BE time discretization
         {
-          for (int dim=0;dim<3;++dim)
-            elevec1[node*numdofpernode_+dim] += funct(node) * normal(dim) * fac;
-          elevec1[node*numdofpernode_+3] = 0.0;
-        }
-
-        //-------------------------------------------------------------------
-        // dQ/dd
-
-        // determine derivatives of surface normals wrt mesh displacements
-        blitz::Array<double,2> normalderiv(3,iel*3);
-
-        for (int node=0;node<iel;++node)
-        {
-          normalderiv(0,3*node)   = 0.;
-          normalderiv(0,3*node+1) = deriv(0,node)*dxyzdrs(1,2)-deriv(1,node)*dxyzdrs(0,2);
-          normalderiv(0,3*node+2) = deriv(1,node)*dxyzdrs(0,1)-deriv(0,node)*dxyzdrs(1,1);
-
-          normalderiv(1,3*node)   = deriv(1,node)*dxyzdrs(0,2)-deriv(0,node)*dxyzdrs(1,2);
-          normalderiv(1,3*node+1) = 0.;
-          normalderiv(1,3*node+2) = deriv(0,node)*dxyzdrs(1,0)-deriv(1,node)*dxyzdrs(0,0);
-
-          normalderiv(2,3*node)   = deriv(0,node)*dxyzdrs(1,1)-deriv(1,node)*dxyzdrs(0,1);
-          normalderiv(2,3*node+1) = deriv(1,node)*dxyzdrs(0,0)-deriv(0,node)*dxyzdrs(1,0);
-          normalderiv(2,3*node+2) = 0.;
-        }
-
-        for (int node=0;node<iel;++node)
-        {
-          for (int dim=0;dim<3;++dim)
-            for (int iterdim=0;iterdim<3;++iterdim)
-              elevec2[node*numdofpernode_+dim] += u(iterdim) * normalderiv(iterdim,3*node+dim) * fac;
-          elevec2[node*numdofpernode_+3] = 0.0;
-        }
-
-        // consideration of grid velocity
-        if (isale)
-        {
-          // get time step size
-          const double dt = params.get<double>("dt", -1.0);
-          if (dt < 0.) dserror("invalid time step size");
-
-          if (gridvel == 1)  // BE time discretization
+          for (int node=0;node<iel;++node)
           {
-            for (int node=0;node<iel;++node)
-            {
-              for (int dim=0;dim<3;++dim)
-                elevec2[node*numdofpernode_+dim] -= 1.0/dt * funct(node) * normal(dim) * fac;
-            }
+            for (int dim=0;dim<3;++dim)
+              elevec2[node*numdofpernode_+dim] -= 1.0/dt * funct(node) * normal(dim,0) * fac;
           }
-          else
-            dserror("flowrate calculation: higher order of accuracy of grid velocity not implemented");
         }
+        else
+          dserror("flowrate calculation: higher order of accuracy of grid velocity not implemented");
+      }
 
-        //-------------------------------------------------------------------
-        // (d^2 Q)/(du dd)
+      //-------------------------------------------------------------------
+      // (d^2 Q)/(du dd)
 
-        for (int unode=0;unode<iel;++unode)
+      for (int unode=0;unode<iel;++unode)
+      {
+        for (int udim=0;udim<numdofpernode_;++udim)
         {
-          for (int udim=0;udim<numdofpernode_;++udim)
+          for (int nnode=0;nnode<iel;++nnode)
           {
-            for (int nnode=0;nnode<iel;++nnode)
+            for (int ndim=0;ndim<numdofpernode_;++ndim)
             {
-              for (int ndim=0;ndim<numdofpernode_;++ndim)
-              {
-                if (udim == 3 or ndim == 3)
-                  elemat1(unode*numdofpernode_+udim,nnode*numdofpernode_+ndim) = 0.0;
-                else
-                  elemat1(unode*numdofpernode_+udim,nnode*numdofpernode_+ndim) = funct(unode) * normalderiv(udim,3*nnode+ndim) * fac;
-              }
+              if (udim == 3 or ndim == 3)
+                elemat1(unode*numdofpernode_+udim,nnode*numdofpernode_+ndim) = 0.0;
+              else
+                elemat1(unode*numdofpernode_+udim,nnode*numdofpernode_+ndim) = funct(unode) * normalderiv(udim,3*nnode+ndim) * fac;
             }
           }
         }
+      }
 
-        //-------------------------------------------------------------------
-        // (d^2 Q)/(dd)^2
+      //-------------------------------------------------------------------
+      // (d^2 Q)/(dd)^2
 
-        // determine second derivatives of surface normals wrt mesh displacements
-        blitz::Array<double,3> normalderiv2(3,iel*3,iel*3);
-        normalderiv2 = 0.;
+      // determine second derivatives of surface normals wrt mesh displacements
+      blitz::Array<double,3> normalderiv2(3,iel*3,iel*3);
+      normalderiv2 = 0.;
 
-        for (int node1=0;node1<iel;++node1)
+      for (int node1=0;node1<iel;++node1)
+      {
+        for (int node2=0;node2<iel;++node2)
+        {
+          double temp = deriv(0,node1)*deriv(1,node2)-deriv(1,node1)*deriv(0,node2);
+
+          normalderiv2(0,node1*3+1,node2*3+2) = temp;
+          normalderiv2(0,node1*3+2,node2*3+1) = - temp;
+
+          normalderiv2(1,node1*3  ,node2*3+2) = - temp;
+          normalderiv2(1,node1*3+2,node2*3  ) = temp;
+
+          normalderiv2(2,node1*3  ,node2*3+1) = temp;
+          normalderiv2(2,node1*3+1,node2*3  ) = - temp;
+        }
+      }
+
+      for (int node1=0;node1<iel;++node1)
+      {
+        for (int dim1=0;dim1<numdofpernode_;++dim1)
         {
           for (int node2=0;node2<iel;++node2)
           {
-            double temp = deriv(0,node1)*deriv(1,node2)-deriv(1,node1)*deriv(0,node2);
-
-            normalderiv2(0,node1*3+1,node2*3+2) = temp;
-            normalderiv2(0,node1*3+2,node2*3+1) = - temp;
-
-            normalderiv2(1,node1*3  ,node2*3+2) = - temp;
-            normalderiv2(1,node1*3+2,node2*3  ) = temp;
-
-            normalderiv2(2,node1*3  ,node2*3+1) = temp;
-            normalderiv2(2,node1*3+1,node2*3  ) = - temp;
-          }
-        }
-
-        for (int node1=0;node1<iel;++node1)
-        {
-          for (int dim1=0;dim1<numdofpernode_;++dim1)
-          {
-            for (int node2=0;node2<iel;++node2)
+            for (int dim2=0;dim2<numdofpernode_;++dim2)
             {
-              for (int dim2=0;dim2<numdofpernode_;++dim2)
+              if (dim1 == 3 or dim2 == 3)
+                elemat2(node1*numdofpernode_+dim1,node2*numdofpernode_+dim2) = 0.0;
+              else
               {
-                if (dim1 == 3 or dim2 == 3)
-                  elemat2(node1*numdofpernode_+dim1,node2*numdofpernode_+dim2) = 0.0;
-                else
-                {
-                  for (int iterdim=0;iterdim<3;++iterdim)
-                    elemat2(node1*numdofpernode_+dim1,node2*numdofpernode_+dim2) +=
-                      u(iterdim) * normalderiv2(iterdim,node1*3+dim1,node2*3+dim2) * fac;
-                }
+                for (int iterdim=0;iterdim<3;++iterdim)
+                  elemat2(node1*numdofpernode_+dim1,node2*numdofpernode_+dim2) +=
+                    u(iterdim) * normalderiv2(iterdim,node1*3+dim1,node2*3+dim2) * fac;
               }
             }
           }
         }
-
-        // consideration of grid velocity
-        if (isale)
-        {
-          // get time step size
-          const double dt = params.get<double>("dt", -1.0);
-          if (dt < 0.) dserror("invalid time step size");
-
-          if (gridvel == 1)
-          {
-            for (int node1=0;node1<iel;++node1)
-            {
-              for (int dim1=0;dim1<3;++dim1)
-              {
-                for (int node2=0;node2<iel;++node2)
-                {
-                  for (int dim2=0;dim2<3;++dim2)
-                  {
-                    elemat2(node1*numdofpernode_+dim1,node2*numdofpernode_+dim2) -= (1.0/dt * funct(node1) * normalderiv(dim1, 3*node2+dim2)
-                                                                   + 1.0/dt * funct(node2) * normalderiv(dim2, 3*node1+dim1))
-                                                                  * fac;
-                  }
-                }
-              }
-            }
-          }
-          else
-            dserror("flowrate calculation: higher order of accuracy of grid velocity not implemented");
-        }
-
-
-        //-------------------------------------------------------------------
       }
+
+      // consideration of grid velocity
+      if (isale)
+      {
+        // get time step size
+        const double dt = params.get<double>("dt", -1.0);
+        if (dt < 0.) dserror("invalid time step size");
+
+        if (gridvel == 1)
+        {
+          for (int node1=0;node1<iel;++node1)
+          {
+            for (int dim1=0;dim1<3;++dim1)
+            {
+              for (int node2=0;node2<iel;++node2)
+              {
+                for (int dim2=0;dim2<3;++dim2)
+                {
+                  elemat2(node1*numdofpernode_+dim1,node2*numdofpernode_+dim2) -= (1.0/dt * funct(node1) * normalderiv(dim1, 3*node2+dim2)
+                                                                                   + 1.0/dt * funct(node2) * normalderiv(dim2, 3*node1+dim1))
+                                                                                  * fac;
+                }
+              }
+            }
+          }
+        }
+        else
+          dserror("flowrate calculation: higher order of accuracy of grid velocity not implemented");
+      }
+
+      //-------------------------------------------------------------------
     }
-    else
-      dserror("FlowRateDeriv is only implemented for 3D -> 2D with 1D boundary elements is still missing!! ");
   }
 }//DRT::ELEMENTS::Fluid3Surface::FlowRateDeriv
 
