@@ -22,7 +22,7 @@ Maintainer: Mahmoud Ismail
 
 #include "artery.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 
 namespace DRT

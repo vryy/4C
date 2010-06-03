@@ -18,7 +18,7 @@ Maintainer: Christian J. Cyron
 #ifndef BROWNIANROD_H_
 #define BROWNIANROD_H_
 
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 
 /************************************************************************/

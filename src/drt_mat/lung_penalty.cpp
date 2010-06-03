@@ -14,7 +14,7 @@ Maintainer: Lena Wiechert & Sophie Rausch
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
 #include "Epetra_SerialDenseSolver.h"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "lung_penalty.H"
 
 using namespace LINALG; // our linear algebra

@@ -42,7 +42,7 @@ Maintainer: Alexander Popp
 #include "contact_defines.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|

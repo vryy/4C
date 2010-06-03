@@ -27,7 +27,7 @@ Maintainer: Ulrich Kuettler
 
 #include <NOX_Epetra_Vector.H>
 
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 
 

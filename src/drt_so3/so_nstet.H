@@ -18,8 +18,8 @@ Maintainer: Michael Gee
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
-#include "../drt_lib/linalg_serialdensevector.H"
-#include "../drt_lib/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensematrix.H"
 using namespace std;
 using namespace Teuchos;
 
@@ -33,7 +33,7 @@ using namespace Teuchos;
 #include "so_surface.H"
 #include "so_line.H"
 
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 #define NUMNOD_NSTET       4    ///< number of nodes
 #define NODDOF_NSTET       3    ///< number of dofs per node

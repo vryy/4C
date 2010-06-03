@@ -37,7 +37,7 @@ using namespace std;
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_discret.H"
 
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 #include "../headers/define_sizes.h"
 

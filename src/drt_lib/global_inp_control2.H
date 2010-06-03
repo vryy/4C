@@ -33,7 +33,7 @@ Maintainer: Michael Gee
 #include "drt_exporter.H"
 #include "drt_condition.H"
 #include "drt_utils.H"
-#include "linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 using namespace std;
 using namespace Teuchos;

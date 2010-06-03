@@ -48,7 +48,7 @@ Maintainer: Axel Gerstenberger
 
 #include "drt_discret.H"
 #include "drt_discret_iterator.H"
-#include "linalg_mapextractor.H"
+#include "../linalg/linalg_mapextractor.H"
 
 namespace DRT
 {

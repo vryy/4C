@@ -34,7 +34,7 @@ using namespace Teuchos;
 
 #include "../drt_mat/material.H"
 
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 // Several parameters which are fixed for Solid Hex8
 const int NUMNOD_SOH8 = 8;      ///< number of nodes

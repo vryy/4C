@@ -32,7 +32,7 @@ Maintainer: Florian Henke
 #include "../drt_fluid/time_integration_scheme.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/linalg_ana.H"
+#include "../linalg/linalg_ana.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/standardtypes_cpp.H"

@@ -19,7 +19,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
-#include "../drt_lib/linalg_blocksparsematrix.H"
+#include "../linalg/linalg_blocksparsematrix.H"
 #include "Teuchos_ParameterList.hpp"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <stdio.h>

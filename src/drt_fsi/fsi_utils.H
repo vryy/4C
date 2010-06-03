@@ -15,7 +15,7 @@
 #include <Teuchos_RefCountPtr.hpp>
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_mapextractor.H"
+#include "../linalg/linalg_mapextractor.H"
 
 
 namespace FSI

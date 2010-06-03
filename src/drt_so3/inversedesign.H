@@ -19,9 +19,9 @@ Maintainer: Michael Gee
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_Vector.h"
-#include "../drt_lib/linalg_serialdensevector.H"
-#include "../drt_lib/linalg_serialdensematrix.H"
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 #include "so_hex8.H"
 #include "so_weg6.H"

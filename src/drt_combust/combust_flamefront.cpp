@@ -17,7 +17,7 @@ Maintainer: Florian Henke
 #include "combust_flamefront.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/linalg_utils.H"  // LINALG::Export
+#include "../linalg/linalg_utils.H"  // LINALG::Export
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 // #include "../drt_geometry/integrationcell.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"

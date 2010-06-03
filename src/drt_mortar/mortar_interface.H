@@ -47,7 +47,7 @@ Maintainer: Alexander Popp
 #include "mortar_binarytree.H"
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_sparsematrix.H"
+#include "../linalg/linalg_sparsematrix.H"
 #include "../drt_inpar/inpar_mortar.H"
 
 using namespace std;

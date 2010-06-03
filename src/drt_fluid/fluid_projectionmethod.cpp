@@ -15,7 +15,7 @@ wiesner@lnm.mw.tum.de
 #include "time_integration_scheme.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/linalg_ana.H"
+#include "../linalg/linalg_ana.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_function.H"
 #include "fluid_utils.H"

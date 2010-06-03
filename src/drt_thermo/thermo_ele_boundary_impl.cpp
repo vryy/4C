@@ -31,7 +31,7 @@ Maintainer: Caroline Danowski
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../drt_lib/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_lib/drt_function.H"
 
 // material headers

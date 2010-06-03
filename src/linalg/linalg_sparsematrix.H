@@ -48,7 +48,7 @@ Maintainer: Michael Gee
 
 #include "linalg_sparseoperator.H"
 #include "linalg_mapextractor.H"
-#include "drt_dserror.H"
+#include "../drt_lib/drt_dserror.H"
 
 
 

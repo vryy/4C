@@ -872,33 +872,33 @@ set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
 )
 set(OBJS_LINALG
-  src/drt_lib/aggregation_method.cpp
-  src/drt_lib/aggregation_method_ml.cpp
-  src/drt_lib/aggregation_method_uncoupled.cpp
-  src/drt_lib/braesssarazin_smoother.cpp
-  src/drt_lib/linalg_ana.cpp
-  src/drt_lib/linalg_blocksparsematrix.cpp
-  src/drt_lib/linalg_condest.cpp
-  src/drt_lib/linalg_downwindmatrix.cpp
-  src/drt_lib/linalg_krylov_projector.cpp
-  src/drt_lib/linalg_mapextractor.cpp
-  src/drt_lib/linalg_mlapi_operator.cpp
-  src/drt_lib/linalg_precond.cpp
-  src/drt_lib/linalg_projected_operator.cpp
-  src/drt_lib/linalg_projected_precond.cpp
-  src/drt_lib/linalg_serialdensematrix.cpp
-  src/drt_lib/linalg_serialdensevector.cpp
-  src/drt_lib/linalg_solver.cpp
-  src/drt_lib/linalg_solver_spooles.cpp
-  src/drt_lib/linalg_sparsematrix.cpp
-  src/drt_lib/linalg_utils.cpp
-  src/drt_lib/saddlepointpreconditioner.cpp
-  src/drt_lib/simpler_operator.cpp
-  src/drt_lib/transfer_operator.cpp
-  src/drt_lib/transfer_operator_pgamg.cpp
-  src/drt_lib/transfer_operator_pgamg2.cpp
-  src/drt_lib/transfer_operator_saamg.cpp
-  src/drt_lib/transfer_operator_tentative.cpp
+  src/linalg/aggregation_method.cpp
+  src/linalg/aggregation_method_ml.cpp
+  src/linalg/aggregation_method_uncoupled.cpp
+  src/linalg/braesssarazin_smoother.cpp
+  src/linalg/linalg_ana.cpp
+  src/linalg/linalg_blocksparsematrix.cpp
+  src/linalg/linalg_condest.cpp
+  src/linalg/linalg_downwindmatrix.cpp
+  src/linalg/linalg_krylov_projector.cpp
+  src/linalg/linalg_mapextractor.cpp
+  src/linalg/linalg_mlapi_operator.cpp
+  src/linalg/linalg_precond.cpp
+  src/linalg/linalg_projected_operator.cpp
+  src/linalg/linalg_projected_precond.cpp
+  src/linalg/linalg_serialdensematrix.cpp
+  src/linalg/linalg_serialdensevector.cpp
+  src/linalg/linalg_solver.cpp
+  src/linalg/linalg_solver_spooles.cpp
+  src/linalg/linalg_sparsematrix.cpp
+  src/linalg/linalg_utils.cpp
+  src/linalg/saddlepointpreconditioner.cpp
+  src/linalg/simpler_operator.cpp
+  src/linalg/transfer_operator.cpp
+  src/linalg/transfer_operator_pgamg.cpp
+  src/linalg/transfer_operator_pgamg2.cpp
+  src/linalg/transfer_operator_saamg.cpp
+  src/linalg/transfer_operator_tentative.cpp
 )
 set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint.cpp

@@ -16,7 +16,7 @@ Maintainer: Christian Cyron
 #include "torsion2.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 
 /*----------------------------------------------------------------------*/

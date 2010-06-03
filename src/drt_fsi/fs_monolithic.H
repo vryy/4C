@@ -15,11 +15,11 @@
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 
-#include "../drt_lib/linalg_sparsematrix.H"
-#include "../drt_lib/linalg_mapextractor.H"
-#include "../drt_lib/linalg_blocksparsematrix.H"
-#include "../drt_lib/linalg_precond.H"
-#include "../drt_lib/linalg_solver.H"
+#include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_mapextractor.H"
+#include "../linalg/linalg_blocksparsematrix.H"
+#include "../linalg/linalg_precond.H"
+#include "../linalg/linalg_solver.H"
 
 #include <NOX_Epetra_Group.H>
 #include <NOX_Epetra_Interface_Jacobian.H>

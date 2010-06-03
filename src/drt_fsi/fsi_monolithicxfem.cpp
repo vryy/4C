@@ -5,7 +5,7 @@
 #include "fsi_statustest.H"
 #include "fsi_nox_linearsystem_bgs.H"
 #include "fsi_monolithic_linearsystem.H"
-#include "../drt_lib/linalg_mapextractor.H"
+#include "../linalg/linalg_mapextractor.H"
 
 #include "fsi_nox_group.H"
 #include "fsi_nox_newton.H"

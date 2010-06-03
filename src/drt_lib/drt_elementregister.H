@@ -48,7 +48,7 @@ using namespace std;
 using namespace Teuchos;
 #include "drt_parobject.H"
 #include "drt_element.H"
-#include "linalg_sparsematrix.H"
+#include "../linalg/linalg_sparsematrix.H"
 
 
 

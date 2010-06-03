@@ -23,7 +23,7 @@ Maintainer: Georg Bauer
 
 #include <Epetra_SerialDenseMatrix.h>
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 

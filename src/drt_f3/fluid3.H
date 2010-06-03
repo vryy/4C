@@ -23,7 +23,7 @@ Maintainer: Georg Bauer
 #ifndef DRT_FLUID3_H
 #define DRT_FLUID3_H
 
-#include "../drt_lib/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensematrix.H"
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
 using namespace std;
@@ -33,7 +33,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 

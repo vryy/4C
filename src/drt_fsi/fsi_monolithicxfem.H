@@ -10,8 +10,8 @@
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 
-#include "../drt_lib/linalg_sparsematrix.H"
-#include "../drt_lib/linalg_mapextractor.H"
+#include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_mapextractor.H"
 
 #include "../drt_io/io_ostream0.H"
 

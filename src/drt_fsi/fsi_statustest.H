@@ -28,7 +28,7 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Vector.h>
 
 #include "../drt_adapter/adapter_coupling.H"
-#include "../drt_lib/linalg_mapextractor.H"
+#include "../linalg/linalg_mapextractor.H"
 
 namespace NOX
 {

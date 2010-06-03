@@ -49,7 +49,7 @@ Maintainer: Ulrrich Kuettler
 #include "drt_discret.H"
 #include "drt_utils.H"
 
-#include "linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 // list of all dof sets
 std::list<DRT::DofSetBase*> DRT::DofSetBase::static_dofsets_;

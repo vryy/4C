@@ -19,7 +19,7 @@ Maintainer: Michael Gee
 #endif
 
 #include "linalg_solver.H"
-#include "standardtypes_cpp.H"
+#include "../drt_lib/standardtypes_cpp.H"
 
 /*----------------------------------------------------------------------*
  |  solve (protected)                                        mwgee 02/07|

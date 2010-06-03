@@ -43,7 +43,7 @@ Maintainer: Alexander Popp
 #include "mortar_element.H"
 #include "mortar_node.H"
 #include "mortar_defines.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 01/08|

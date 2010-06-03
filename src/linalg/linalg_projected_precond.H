@@ -28,7 +28,7 @@ Maintainer: Peter Gamnitzer
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
-#include "drt_dserror.H"
+#include "../drt_lib/drt_dserror.H"
 #include "linalg_krylov_projector.H"
 
 

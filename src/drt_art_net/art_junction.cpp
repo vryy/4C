@@ -16,7 +16,7 @@ Maintainer: Mahmoud Ismail
 
 #include "art_junction.H"
 
-#include "../drt_lib/linalg_ana.H"
+#include "../linalg/linalg_ana.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

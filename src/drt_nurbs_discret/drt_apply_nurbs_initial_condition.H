@@ -31,8 +31,8 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_lib/linalg_solver.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 

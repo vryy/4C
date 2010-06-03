@@ -30,8 +30,8 @@ Maintainer: Caroline Danowski
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_geometry/position_array.H"
-#include "../drt_lib/linalg_serialdensematrix.H"
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_condition_utils.H"
 // material headers
 #include "../drt_mat/fourieriso.H"

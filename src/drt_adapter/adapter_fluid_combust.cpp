@@ -17,8 +17,8 @@ Maintainer: Florian Henke
 #include "adapter_fluid_combust.H"
 
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/linalg_blocksparsematrix.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_blocksparsematrix.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_globalproblem.H"

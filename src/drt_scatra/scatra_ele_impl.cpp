@@ -34,7 +34,7 @@ Maintainer: Georg Bauer
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_geometry/position_array.H"
-#include "../drt_lib/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensematrix.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_inpar/inpar_scatra.H"

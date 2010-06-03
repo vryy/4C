@@ -20,7 +20,7 @@ Maintainer: Peter Gamnitzer
 #include<iostream>
 #include<fstream>
 
-#include "../drt_lib/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensevector.H"
 
 
 namespace DRT

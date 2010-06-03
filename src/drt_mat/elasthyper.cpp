@@ -17,7 +17,7 @@ Maintainer: Burkhard Bornemann
 #include "elasthyper.H"
 #include "../drt_matelast/elast_summand.H"
 
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 

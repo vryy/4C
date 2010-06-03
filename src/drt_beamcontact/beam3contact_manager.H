@@ -20,7 +20,7 @@ Maintainer: Alexander Popp, Christian Cyron
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
-#include "../drt_lib/linalg_sparsematrix.H"
+#include "../linalg/linalg_sparsematrix.H"
 #include "../drt_lib/drt_discret.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

@@ -14,7 +14,7 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 
 #include "so_surface.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
 

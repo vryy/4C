@@ -3,9 +3,9 @@
 #ifndef FSI_OVERLAPPREC_H
 #define FSI_OVERLAPPREC_H
 
-#include "../drt_lib/linalg_blocksparsematrix.H"
-#include "../drt_lib/linalg_precond.H"
-#include "../drt_lib/linalg_solver.H"
+#include "../linalg/linalg_blocksparsematrix.H"
+#include "../linalg/linalg_precond.H"
+#include "../linalg/linalg_solver.H"
 
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid.H"

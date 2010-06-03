@@ -33,7 +33,7 @@ Maintainer: Alexander Popp
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
 #include "plasticneohooke.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 //#include <iostream>
 

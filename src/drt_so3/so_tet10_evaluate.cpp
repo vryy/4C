@@ -20,9 +20,9 @@ written by: Alexander Volf
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_serialdensematrix.H"
-#include "../drt_lib/linalg_serialdensevector.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
 //#include "Epetra_SerialDenseSolver.h"
 
 //#define VERBOSE_OUTPUT

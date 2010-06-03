@@ -28,7 +28,7 @@ Maintainer: Caroline Danowski
  |  headers                                                  dano 11/09 |
  *----------------------------------------------------------------------*/
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_mapextractor.H"
+#include "../linalg/linalg_mapextractor.H"
 #include "../drt_lib/drt_condition_utils.H"
 
 /*----------------------------------------------------------------------*

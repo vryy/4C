@@ -2,7 +2,7 @@
 #ifdef CCADISCRET
 
 #include "drt_condition_selector.H"
-#include "linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 
 /*----------------------------------------------------------------------*/

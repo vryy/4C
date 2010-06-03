@@ -18,7 +18,7 @@ Maintainer: Ulrich Kuettler
 
 #include "drt_inputreader.H"
 #include "drt_linedefinition.H"
-#include "linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "standardtypes_cpp.H"
 
 #include <Epetra_Time.h>

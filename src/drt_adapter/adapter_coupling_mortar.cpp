@@ -19,8 +19,8 @@
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
 
 using namespace std;
 extern struct _GENPROB genprob;

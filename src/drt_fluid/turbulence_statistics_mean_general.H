@@ -30,7 +30,7 @@ Maintainer: Peter Gamnitzer
 
 #include "Epetra_Vector.h"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
 
 using namespace std;

@@ -23,7 +23,7 @@ Maintainer: Peter Gamnitzer
 #define KNOTVECTOR_H
 
 #include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensevector.H"
 #include "../drt_lib/drt_dserror.H"
 
 #include "Teuchos_RefCountPtr.hpp"

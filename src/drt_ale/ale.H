@@ -27,11 +27,11 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Map.h>
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_solver.H"
-#include "../drt_lib/linalg_precond.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_precond.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/linalg_blocksparsematrix.H"
+#include "../linalg/linalg_blocksparsematrix.H"
 #include "../drt_io/io.H"
 
 #include <NOX_Epetra_Interface_Jacobian.H>

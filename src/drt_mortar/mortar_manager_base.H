@@ -42,7 +42,7 @@ Maintainer: Alexander Popp
 #include "Teuchos_RefCountPtr.hpp"
 #include "mortar_strategy_base.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_sparsematrix.H"
+#include "../linalg/linalg_sparsematrix.H"
 #include "../drt_io/io.H"
 
 using namespace std;

@@ -38,7 +38,7 @@ Maintainer: Michael Gee
 #include "MLAPI_Aggregation.h"
 #include "MLAPI_Eig.h"
 
-#include "drt_dserror.H"
+#include "../drt_lib/drt_dserror.H"
 
 using namespace std;
 using namespace Teuchos;

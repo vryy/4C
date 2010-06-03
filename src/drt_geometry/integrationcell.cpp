@@ -16,7 +16,7 @@ Maintainer: Ursula Mayer
 
 #include "integrationcell.H"
 #include "../drt_geometry/element_volume.H"
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_geometry/intersection_service_templates.H"
 #include "../drt_io/io_gmsh.H"
 

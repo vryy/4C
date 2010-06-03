@@ -24,8 +24,8 @@ Maintainer: Axel Gerstenberger
 #ifndef XFLUIDIMPLICITINTEGRATION_H
 #define XFLUIDIMPLICITINTEGRATION_H
 
-#include "../drt_lib/linalg_solver.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_ostream0.H"
 #include "../drt_io/io_control.H"

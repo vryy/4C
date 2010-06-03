@@ -22,7 +22,7 @@ Maintainer: Lena Wiechert
 #include <Epetra_SerialDenseVector.h>
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_material.H"
 #include "../drt_lib/drt_globalproblem.H"
 

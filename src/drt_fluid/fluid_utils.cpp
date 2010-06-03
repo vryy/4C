@@ -15,7 +15,7 @@ Maintainer: Axel Gerstenberger
 #include <stdio.h>
 
 #include "fluid_utils.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 

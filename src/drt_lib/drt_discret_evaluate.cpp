@@ -46,8 +46,8 @@ Maintainer: Michael Gee
 #include "drt_dserror.H"
 #include "drt_timecurve.H"
 #include "drt_function.H"
-#include "linalg_utils.H"
-#include "linalg_sparsematrix.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_sparsematrix.H"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 

@@ -19,7 +19,7 @@ Maintainer: Sophie Rausch & Thomas Kloeppel
 #include "../drt_inpar/inpar_material.H"
 #include "../drt_mat/matpar_parameter.H"
 #include "elast_summand.H"
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 namespace MAT
 {

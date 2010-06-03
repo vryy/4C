@@ -64,8 +64,8 @@ extern "C"
 #include <map>
 #include <string>
 
-#include "linalg_utils.H"
-#include "linalg_mapextractor.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_mapextractor.H"
 
 #include "drt_utils.H"
 #include "drt_node.H"

@@ -15,8 +15,8 @@ Maintainer: Florian Henke
 #ifndef COMBUST_FLUIDIMPLICITINTEGRATION_H
 #define COMBUST_FLUIDIMPLICITINTEGRATION_H
 
-#include "../drt_lib/linalg_solver.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_ostream0.H"
 #include "../drt_xfem/dof_management.H"

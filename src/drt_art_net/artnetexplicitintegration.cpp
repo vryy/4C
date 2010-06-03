@@ -23,9 +23,9 @@ Maintainer: Mahmoud Ismail
 
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/linalg_ana.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_solver.H"
+#include "../linalg/linalg_ana.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_function.H"

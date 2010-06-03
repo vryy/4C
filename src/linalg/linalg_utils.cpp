@@ -45,7 +45,7 @@ Maintainer: Michael Gee
 #include <vector>
 
 #include "linalg_utils.H"
-#include "drt_dserror.H"
+#include "../drt_lib/drt_dserror.H"
 #include "EpetraExt_Transpose_RowMatrix.h"
 #include "EpetraExt_MatrixMatrix.h"
 #include "Epetra_SerialDenseSolver.h"

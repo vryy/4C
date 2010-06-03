@@ -21,7 +21,7 @@ Maintainer: Sophie Rausch
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_io/io_hdf.H"
-#include "../drt_lib/linalg_ana.H"
+#include "../linalg/linalg_ana.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/lung_ogden.H"
 #include "../drt_mat/lung_penalty.H"

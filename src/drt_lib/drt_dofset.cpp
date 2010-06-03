@@ -50,7 +50,7 @@ Maintainer: Ulrrich Kuettler
 #include "drt_discret.H"
 #include "drt_utils.H"
 
-#include "linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 #include "../headers/define_sizes.h"
 

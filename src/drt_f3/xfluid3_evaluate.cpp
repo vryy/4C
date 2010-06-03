@@ -25,7 +25,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/xfem_element_utils.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "../drt_xfem/physics.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/dof_management.H"

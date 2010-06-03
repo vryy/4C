@@ -21,7 +21,7 @@ Maintainer: Volker Gravemeier
 
 #include "fluid2.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 #include "../drt_inpar/inpar_fluid.H"
 

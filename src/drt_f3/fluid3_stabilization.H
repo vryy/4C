@@ -23,7 +23,7 @@
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensevector.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_xfem/interfacexfsi.H"

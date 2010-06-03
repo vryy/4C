@@ -24,7 +24,7 @@ Maintainer: Ulrich Kuettler
 
 #include "io.H"
 #include "io_control.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_globalproblem.H"
 

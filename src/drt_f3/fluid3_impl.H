@@ -22,7 +22,7 @@ Maintainer: Ulrich Kuettler
 #include "fluid3.H"
 #include "fluid3_ele_impl_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_lib/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_lib/drt_utils.H"

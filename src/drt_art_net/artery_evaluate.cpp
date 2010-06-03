@@ -22,7 +22,7 @@ Maintainer: Mahmoud Ismail
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/cnst_1d_art.H"
 #include "../drt_mat/matlist.H"

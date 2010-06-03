@@ -22,7 +22,7 @@ Maintainer: Florian Henke
 #include "../drt_xfem/dof_management_element.H"
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 
 const static std::size_t errorCheckValue = 77777777;

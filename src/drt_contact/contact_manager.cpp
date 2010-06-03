@@ -44,7 +44,7 @@ Maintainer: Alexander Popp
 #include "contact_penalty_strategy.H"
 #include "contact_defines.H"
 #include "friction_node.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_mortar.H"

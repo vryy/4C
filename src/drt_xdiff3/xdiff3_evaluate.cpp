@@ -19,7 +19,7 @@ Maintainer: Axel Gerstenberger
 #include "xdiff3_sysmat.H"
 #include "xdiff3_interpolation.H"
 
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_xfem/dof_management.H"

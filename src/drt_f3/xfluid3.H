@@ -26,8 +26,8 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_management_element.H"
 #include "../drt_xfem/xfem_enums.H"
 #include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/linalg_serialdensematrix.H"
-#include "../drt_lib/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
 
 
 namespace DRT

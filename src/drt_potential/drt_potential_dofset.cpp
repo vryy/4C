@@ -14,7 +14,7 @@ Maintainer: Ursula Mayer
 #ifdef CCADISCRET
 
 #include "drt_potential_dofset.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 
 /// constructor

@@ -40,7 +40,7 @@ Maintainer: Alexander Popp
 
 #include "mortar_element.H"
 #include "mortar_defines.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
  |  1D/2D shape function repository                           popp 04/08|

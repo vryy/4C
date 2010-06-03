@@ -19,7 +19,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_mapextractor.H"
+#include "../linalg/linalg_mapextractor.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 

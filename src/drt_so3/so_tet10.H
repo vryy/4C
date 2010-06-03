@@ -33,7 +33,7 @@ using namespace Teuchos;
 #include "so_line.H"
 #include "../drt_inpar/inpar_structure.H"
 
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 // gee: note that these are also defined in so_integrator.H
 #define NUMNOD_SOTET10      10      ///< number of nodes

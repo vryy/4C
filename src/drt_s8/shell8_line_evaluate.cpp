@@ -14,7 +14,7 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 
 #include "shell8.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"

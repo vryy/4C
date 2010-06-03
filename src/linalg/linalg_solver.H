@@ -59,7 +59,7 @@ Maintainer: Michael Gee
 #endif
 #endif
 
-#include "drt_dserror.H"
+#include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_solver.H"
 
 #include "linalg_projected_precond.H"

@@ -24,8 +24,8 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_xfem/dof_management.H"
-#include "../drt_lib/linalg_mapextractor.H"
-#include "../drt_lib/linalg_blocksparsematrix.H"
+#include "../linalg/linalg_mapextractor.H"
+#include "../linalg/linalg_blocksparsematrix.H"
 #include <Teuchos_TimeMonitor.hpp>
 
 namespace FLD

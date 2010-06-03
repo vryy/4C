@@ -16,8 +16,8 @@ Maintainer: Axel Gerstenberger
 #include "dof_distribution_switcher.H"
 #include "dofkey.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_mapextractor.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_mapextractor.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_io/io_gmsh.H"
 #include <iostream>

@@ -41,7 +41,7 @@ Maintainer: Michael Gee
 #include "linalg_sparsematrix.H"
 #include "linalg_utils.H"
 #include "linalg_solver.H"
-#include "drt_dserror.H"
+#include "../drt_lib/drt_dserror.H"
 
 #include <EpetraExt_Transpose_RowMatrix.h>
 #include <EpetraExt_MatrixMatrix.h>

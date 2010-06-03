@@ -21,7 +21,7 @@ Maintainer: Ursula Mayer
 #endif
 
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 #include <vector>
 
 

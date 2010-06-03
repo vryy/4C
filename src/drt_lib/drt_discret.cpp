@@ -48,7 +48,7 @@ Maintainer: Michael Gee
 #include "drt_discret.H"
 #include "drt_exporter.H"
 #include "drt_dserror.H"
-#include "linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "drt_dofset_proxy.H"
 
 

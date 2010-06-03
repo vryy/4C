@@ -21,7 +21,7 @@ Maintainer: Axel Gerstenberger
 
 #include "drt_globalproblem.H"
 #include "drt_utils.H"
-#include "linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 #include <map>
 #include <set>

@@ -17,7 +17,7 @@ Maintainer: Florian Henke
 #include "combust_reinitializer.H"
 #include "combust_defines.H"
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 12/09 |

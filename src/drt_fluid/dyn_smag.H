@@ -42,7 +42,7 @@ Maintainer: Peter Gamnitzer
 
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 
 #include "Epetra_Vector.h"

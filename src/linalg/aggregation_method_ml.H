@@ -20,7 +20,7 @@
 
 #include "linalg_sparsematrix.H"
 
-#include "drt_dserror.H"
+#include "../drt_lib/drt_dserror.H"
 #include "linalg_sparsematrix.H"
 
 #include "MLAPI_Error.h"

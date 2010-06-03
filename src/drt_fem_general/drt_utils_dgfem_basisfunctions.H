@@ -21,7 +21,7 @@
 #define DRT_UTILS_DGFEM_BASISFUNCTIONS
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensevector.H"
 
 
 namespace DRT

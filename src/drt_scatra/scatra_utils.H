@@ -18,7 +18,7 @@ Maintainer: Georg Bauer
 #ifndef SCATRA_UTILS_H
 #define SCATRA_UTILS_H
 
-#include "../drt_lib/linalg_blocksparsematrix.H"
+#include "../linalg/linalg_blocksparsematrix.H"
 #include "../drt_lib/drt_condition_utils.H"
 
 

@@ -52,17 +52,17 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_parobject.o \
                 src/drt_lib/drt_exporter.o \
                 src/drt_lib/drt_dserror.o \
-                src/drt_lib/linalg_utils.o \
-                src/drt_lib/linalg_serialdensematrix.o \
-                src/drt_lib/linalg_serialdensevector.o \
+                src/linalg/linalg_utils.o \
+                src/linalg/linalg_serialdensematrix.o \
+                src/linalg/linalg_serialdensevector.o \
                 src/drt_lib/drt_nodematchingoctree.o \
                 src/drt_lib/drt_parser.o \
                 src/drt_lib/drt_timecurve.o \
                 src/drt_lib/drt_function.o \
                 src/drt_lib/drt_discret_evaluate.o \
-                src/drt_lib/linalg_mapextractor.o \
-                src/drt_lib/linalg_sparsematrix.o \
-                src/drt_lib/linalg_blocksparsematrix.o \
+                src/linalg/linalg_mapextractor.o \
+                src/linalg/linalg_sparsematrix.o \
+                src/linalg/linalg_blocksparsematrix.o \
                 src/drt_fluid/drt_pbcdofset.o \
                 src/drt_fluid/drt_periodicbc.o \
                 src/drt_fluid/fluid_rotsym_periodicbc_utils.o \
@@ -94,27 +94,27 @@ OBJS_DRT_NURBS_DISCRET = \
 OBJS_DRT      = \
                 src/drt_lib/drt_init_control.o \
                 src/drt_lib/global_inp_control2.o \
-                src/drt_lib/linalg_ana.o \
-                src/drt_lib/linalg_condest.o \
-                src/drt_lib/linalg_solver.o \
-                src/drt_lib/linalg_solver_spooles.o \
-                src/drt_lib/linalg_precond.o \
-                src/drt_lib/linalg_projected_precond.o \
-                src/drt_lib/linalg_projected_operator.o \
-                src/drt_lib/linalg_krylov_projector.o \
-                src/drt_lib/linalg_mlapi_operator.o \
-                src/drt_lib/simpler_operator.o \
-                src/drt_lib/saddlepointpreconditioner.o \
-                src/drt_lib/transfer_operator.o \
-                src/drt_lib/transfer_operator_tentative.o \
-                src/drt_lib/transfer_operator_saamg.o \
-                src/drt_lib/transfer_operator_pgamg.o \
-                src/drt_lib/transfer_operator_pgamg2.o \
-                src/drt_lib/braesssarazin_smoother.o \
-                src/drt_lib/aggregation_method.o \
-                src/drt_lib/aggregation_method_uncoupled.o \
-                src/drt_lib/aggregation_method_ml.o \
-                src/drt_lib/linalg_downwindmatrix.o
+                src/linalg/linalg_ana.o \
+                src/linalg/linalg_condest.o \
+                src/linalg/linalg_solver.o \
+                src/linalg/linalg_solver_spooles.o \
+                src/linalg/linalg_precond.o \
+                src/linalg/linalg_projected_precond.o \
+                src/linalg/linalg_projected_operator.o \
+                src/linalg/linalg_krylov_projector.o \
+                src/linalg/linalg_mlapi_operator.o \
+                src/linalg/simpler_operator.o \
+                src/linalg/saddlepointpreconditioner.o \
+                src/linalg/transfer_operator.o \
+                src/linalg/transfer_operator_tentative.o \
+                src/linalg/transfer_operator_saamg.o \
+                src/linalg/transfer_operator_pgamg.o \
+                src/linalg/transfer_operator_pgamg2.o \
+                src/linalg/braesssarazin_smoother.o \
+                src/linalg/aggregation_method.o \
+                src/linalg/aggregation_method_uncoupled.o \
+                src/linalg/aggregation_method_ml.o \
+                src/linalg/linalg_downwindmatrix.o
 #-------------------------------------------------------structural drivers
 OBJS_DRT_STRUCTURE      = \
                 src/drt_structure/stru_dyn_nln_drt.o \

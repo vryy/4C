@@ -15,7 +15,7 @@ Maintainer: Michael Gee
 
 #include "patspec.H"
 #include "../drt_mat/material.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
  |                                                             gee 03/10|

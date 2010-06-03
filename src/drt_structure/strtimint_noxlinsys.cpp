@@ -15,9 +15,9 @@
 #include <Epetra_VbrMatrix.h>
 #include <Epetra_Vector.h>
 
-#include "../drt_lib/linalg_sparsematrix.H"
+#include "../linalg/linalg_sparsematrix.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/linalg_solver.H"
+#include "../linalg/linalg_solver.H"
 
 #include "strtimint_noxlinsys.H"
 

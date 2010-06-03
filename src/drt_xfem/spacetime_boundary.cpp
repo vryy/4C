@@ -16,7 +16,7 @@ Maintainer: Axel Gerstenberger
 #include "spacetime_boundary.H"
 #include <string>
 #include <sstream>
-#include "../drt_lib/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensevector.H"
 #include "../drt_geometry/intersection_service.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"

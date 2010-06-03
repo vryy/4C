@@ -31,7 +31,7 @@ using namespace Teuchos;
 
 #include "../drt_mat/material.H"
 
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 /// Several parameters which are fixed for Solid Hex20
 const int NUMNOD_SOH20 = 20;      ///< number of nodes

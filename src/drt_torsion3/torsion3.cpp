@@ -18,7 +18,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 02/10|

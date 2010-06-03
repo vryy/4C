@@ -16,7 +16,7 @@ Maintainer: Ursula Mayer
 #ifndef INTERSECTION_MATH_H_
 #define INTERSECTION_MATH_H_
 
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "Epetra_SerialDenseVector.h"
 #include <math.h>
@@ -24,8 +24,8 @@ Maintainer: Ursula Mayer
 //#include <Epetra_Map.h>
 //#include <Epetra_Operator.h>
 //#include "Epetra_Import.h"
-#include "../drt_lib/linalg_serialdensematrix.H"
-//#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_serialdensematrix.H"
+//#include "../linalg/linalg_utils.H"
 
 namespace GEO
 {

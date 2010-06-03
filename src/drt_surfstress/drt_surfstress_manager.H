@@ -19,9 +19,9 @@ Maintainer: Lena Wiechert
 #include <Epetra_Vector.h>
 
 #include <Teuchos_ParameterList.hpp>
-#include "../drt_lib/linalg_sparsematrix.H"
+#include "../linalg/linalg_sparsematrix.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
 #include "../drt_inpar/inpar_structure.H"
 

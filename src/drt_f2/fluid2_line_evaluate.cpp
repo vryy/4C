@@ -15,7 +15,7 @@ Maintainer: Peter Gmanitzer
 
 #include "fluid2.H"
 #include "fluid2_weak_dbc.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_nurbs_discret/drt_control_point.H"

@@ -33,7 +33,7 @@ using namespace Teuchos;
 
 #include "../drt_mat/material.H"
 
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 /// Several parameters which are fixed for Solid nurbs27
 const int NUMNOD_SONURBS27 = 27;      ///< number of nodes

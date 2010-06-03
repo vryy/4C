@@ -21,9 +21,9 @@ Maintainer: Ursula Mayer
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_serialdensematrix.H"
-#include "../drt_lib/linalg_serialdensevector.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
 

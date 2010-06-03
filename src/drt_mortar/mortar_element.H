@@ -44,8 +44,8 @@ Maintainer: Alexander Popp
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
-#include "../drt_lib/linalg_serialdensevector.H"
-#include "../drt_lib/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_inpar/inpar_mortar.H"
 
 using namespace std;

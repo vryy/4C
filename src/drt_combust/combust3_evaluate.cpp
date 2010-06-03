@@ -19,7 +19,7 @@ Maintainer: Florian Henke
 #include "combust3_interpolation.H"
 #include "combust_defines.H"
 
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/xdofmapcreation_combust.H"

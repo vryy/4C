@@ -19,8 +19,8 @@ Maintainer: Peter Gamnitzer
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/linalg_serialdensematrix.H"
-#include "../drt_lib/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_bspline.H"
 
 

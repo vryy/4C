@@ -20,10 +20,10 @@ Maintainer: Axel Gerstenberger
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dofset.H"
-#include "../drt_lib/linalg_solver.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_mapextractor.H"
-#include "../drt_lib/linalg_sparsematrix.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_mapextractor.H"
+#include "../linalg/linalg_sparsematrix.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

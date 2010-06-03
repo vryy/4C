@@ -9,7 +9,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_fsi.H"
-#include "../drt_lib/linalg_solver.H"
+#include "../linalg/linalg_solver.H"
 
 #include "../drt_io/io_control.H"
 

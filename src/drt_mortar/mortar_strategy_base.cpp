@@ -41,13 +41,13 @@ Maintainer: Alexander Popp
 #include "Epetra_SerialComm.h"
 #include "mortar_strategy_base.H"
 #include "mortar_defines.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_sparsematrix.H"
-#include "../drt_lib/linalg_ana.H"
+#include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_ana.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_mortar.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 using namespace std;
 using namespace Teuchos;

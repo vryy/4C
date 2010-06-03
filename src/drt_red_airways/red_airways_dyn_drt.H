@@ -29,8 +29,8 @@ Maintainer: Mahmoud Ismail
 #include "Epetra_Time.h"
 #include "Teuchos_RefCountPtr.hpp"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_io/io.H"
 

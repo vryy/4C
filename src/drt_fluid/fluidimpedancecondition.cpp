@@ -16,7 +16,7 @@ Maintainer: Christiane Förster
 
 #include "fluidimpedancecondition.H"
 
-#include "../drt_lib/linalg_ana.H"
+#include "../linalg/linalg_ana.H"
 
 
 

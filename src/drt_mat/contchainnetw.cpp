@@ -16,8 +16,8 @@ Maintainer: Moritz Frenzel
 #include <Epetra_SerialDenseVector.h>
 #include "Epetra_SerialDenseSolver.h"
 #include "contchainnetw.H"
-#include "../drt_lib/linalg_serialdensevector.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_io/io_gmsh.H"

@@ -9,8 +9,8 @@
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 
-#include "../drt_lib/linalg_sparsematrix.H"
-#include "../drt_lib/linalg_mapextractor.H"
+#include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_mapextractor.H"
 
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>

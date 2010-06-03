@@ -32,7 +32,7 @@ Maintainer: Caroline Danowski
 #include <Epetra_Operator.h>
 
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/linalg_solver.H"
+#include "../linalg/linalg_solver.H"
 #include "../drt_thermo/thr_resulttest.H"
 
 /*----------------------------------------------------------------------*

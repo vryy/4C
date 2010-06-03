@@ -40,9 +40,9 @@ http://www.lnm.mw.tum.de
 
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_lib/linalg_serialdensevector.H"
-#include "../drt_lib/linalg_serialdensematrix.H"
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 
 namespace GEO

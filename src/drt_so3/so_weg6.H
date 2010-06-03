@@ -34,7 +34,7 @@ using namespace Teuchos;
 #include "so_line.H"
 #include "../drt_inpar/inpar_structure.H"
 
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 // Several parameters which are fixed for Solid Wedge6
 const int NUMNOD_WEG6 = 6;      ///< number of nodes

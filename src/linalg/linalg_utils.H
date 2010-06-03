@@ -55,7 +55,7 @@ Maintainer: Michael Gee
 #include "Epetra_LAPACK.h"
 #include "Teuchos_RefCountPtr.hpp"
 #include "Ifpack_AdditiveSchwarz.h"
-#include "drt_exporter.H"
+#include "../drt_lib/drt_exporter.H"
 #include "linalg_blocksparsematrix.H"
 
 using namespace std;

@@ -16,8 +16,8 @@ Maintainer: Thomas Kloeppel
 #include "multipointconstraint.H"
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_sparsematrix.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_sparsematrix.H"
 #include "iostream"
 #include "../drt_lib/drt_dofset_transparent.H"
 #include "../drt_lib/drt_condition_utils.H"

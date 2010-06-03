@@ -1,7 +1,7 @@
 #ifndef ALE_UTILS_MAPEXTRACTOR_H
 #define ALE_UTILS_MAPEXTRACTOR_H
 
-#include "../drt_lib/linalg_mapextractor.H"
+#include "../linalg/linalg_mapextractor.H"
 
 namespace DRT
 {

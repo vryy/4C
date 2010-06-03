@@ -26,7 +26,7 @@ Maintainer: Peter Gamnitzer
 #include "Epetra_Operator.h"
 
 #include "Teuchos_RefCountPtr.hpp"
-#include "drt_dserror.H"
+#include "../drt_lib/drt_dserror.H"
 
 
 namespace LINALG

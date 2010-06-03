@@ -35,7 +35,7 @@ Maintainer: Sophie Rausch
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_structure/strugenalpha.H"
 #include "../drt_structure/strtimint.H"
 #include "../drt_inpar/inpar_material.H"

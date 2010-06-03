@@ -18,9 +18,9 @@ Maintainer: Lena Wiechert
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_solver.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_sparsematrix.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_sparsematrix.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 
 #include "Epetra_Vector.h"

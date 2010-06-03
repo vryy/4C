@@ -21,7 +21,7 @@ Maintainer: Michael Gee
 
 #include "ml_MultiLevelPreconditioner.h"
 
-#include "drt_dserror.H"
+#include "../drt_lib/drt_dserror.H"
 #include "linalg_mapextractor.H"
 #include "linalg_blocksparsematrix.H"
 #include "linalg_solver.H"

@@ -28,11 +28,11 @@ Maintainer: Ursula Mayer
 #include <Epetra_Operator.h>
 #include "Epetra_Import.h"
 
-#include "../drt_lib/linalg_sparsematrix.H"
+#include "../linalg/linalg_sparsematrix.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_serialdensematrix.H"
-#include "../drt_lib/linalg_serialdensevector.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
 #include "../drt_io/io.H"
 #include "../drt_geometry/searchtree.H"
 #include "../drt_geometry/intersection_service.H"

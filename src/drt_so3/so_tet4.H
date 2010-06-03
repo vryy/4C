@@ -34,7 +34,7 @@ using namespace Teuchos;
 #include "so_line.H"
 #include "../drt_inpar/inpar_structure.H"
 
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 #define NUMNOD_SOTET4       4      ///< number of nodes
 #define NODDOF_SOTET4       3      ///< number of dofs per node

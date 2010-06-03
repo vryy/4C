@@ -15,7 +15,7 @@
 #ifndef BRAESSSARAZIN_SMOOTHER_H_
 #define BRAESSSARAZIN_SMOOTHER_H_
 
-#include "drt_dserror.H"
+#include "../drt_lib/drt_dserror.H"
 #include "linalg_mapextractor.H"
 #include "linalg_blocksparsematrix.H"
 #include "linalg_solver.H"

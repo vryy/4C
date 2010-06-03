@@ -43,7 +43,7 @@ Maintainer: Alexander Popp
 #include "contact_node.H"
 #include "contact_element.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
                      
 /*----------------------------------------------------------------------*

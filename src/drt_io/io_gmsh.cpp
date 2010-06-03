@@ -17,7 +17,7 @@ Maintainer: Axel Gerstenberger
 #include "io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/linalg_utils.H"  // LINALG::Export
+#include "../linalg/linalg_utils.H"  // LINALG::Export
 #include "../drt_geometry/intersection_service.H"
 
 

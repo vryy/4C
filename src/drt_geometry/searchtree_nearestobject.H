@@ -45,7 +45,7 @@ Maintainer: Ursula Mayer
 #define SEARCHTREE_NEARESTOBJECT_H_
 
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 
 namespace GEO

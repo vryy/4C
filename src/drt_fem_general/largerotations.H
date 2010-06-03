@@ -18,7 +18,7 @@ Maintainer: Christian J. Cyron
 #ifndef LARGEROTATIONS_DEFINES_H
 #define LARGEROTATIONS_DEFINES_H
 
-#include "../drt_lib/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 
 /************************************************************************/

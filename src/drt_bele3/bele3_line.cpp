@@ -13,7 +13,7 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "bele3.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"

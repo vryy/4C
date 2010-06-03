@@ -15,9 +15,9 @@ Maintainer: Michael Gee
 
 #include <vector>
 #include <string>
-#include "linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensematrix.H"
 #include <Epetra_SerialDenseVector.h>
-#include "linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 using namespace std;
 

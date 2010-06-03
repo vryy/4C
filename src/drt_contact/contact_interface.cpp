@@ -49,7 +49,7 @@ Maintainer: Alexander Popp
 #include "../drt_mortar/mortar_binarytree.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_inpar/inpar_mortar.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 
 /*----------------------------------------------------------------------*
