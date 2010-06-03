@@ -223,7 +223,6 @@ set(OBJS_DRT_B2_LIB
   src/drt_beam2/beam2_input.cpp
 )
 set(OBJS_DRT_LIB
-  src/drt_fem_general/debug_nan.cpp
   src/drt_fluid/drt_pbcdofset.cpp
   src/drt_fluid/drt_periodicbc.cpp
   src/drt_lib/drt_condition.cpp
@@ -532,6 +531,7 @@ set(OBJS_DRT_BELE3_LIB
   src/drt_bele3/vele3_surface_evaluate.cpp
 )
 set(OBJS_DRT_UTILS
+  src/drt_fem_general/debug_nan.cpp
   src/drt_fem_general/drt_utils_boundary_integration.cpp
   src/drt_fem_general/drt_utils_dgfem_basisfunctions.cpp
   src/drt_fem_general/drt_utils_fem_shapefunctions.cpp
