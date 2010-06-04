@@ -556,24 +556,23 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseVector delta_p)
 //-----------------------------------------------------------------------------------
 void STR::GenInvAnalysis::ReadInParameters()
 {
-  int myrank = discret_->Comm().MyPID();
+  const int myrank = discret_->Comm().MyPID();
   
   // loop all materials in problem
-  map<int,RCP<MAT::PAR::Material> >& mats = const_cast<map<int,RCP<MAT::PAR::Material> >& >
-                                        (*(DRT::Problem::Instance()->Materials()->Map()));
+  const map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
   
-  if (!myrank) printf("No. material laws considered : %d\n",mats.size());
+  if (myrank == 0) printf("No. material laws considered : %d\n",mats.size());
   map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
   for (curr=mats.begin(); curr != mats.end(); ++curr)
   {
-    RCP<MAT::PAR::Material> actmat = curr->second;
+    const RCP<MAT::PAR::Material> actmat = curr->second;
     switch(actmat->Type())
     {
       case INPAR::MAT::m_aaaneohooke:
       {
         MAT::PAR::AAAneohooke* params = dynamic_cast<MAT::PAR::AAAneohooke*>(actmat->Parameter());
         if (!params) dserror("Cannot cast material parameters");
-        int j = p_.Length();
+        const int j = p_.Length();
         p_.Resize(j+2);
         p_(j)   = params->youngs_;
         p_(j+1) = params->beta_;
@@ -584,7 +583,7 @@ void STR::GenInvAnalysis::ReadInParameters()
       {
         MAT::PAR::NeoHooke* params = dynamic_cast<MAT::PAR::NeoHooke*>(actmat->Parameter());
         if (!params) dserror("Cannot cast material parameters");
-        int j = p_.Length();
+        const int j = p_.Length();
         p_.Resize(j+2);
         p_(j)   = params->youngs_;
         p_(j+1) = params->poissonratio_;
@@ -598,15 +597,15 @@ void STR::GenInvAnalysis::ReadInParameters()
         const std::vector<int>* matids = params->matids_;
         for (int i=0; i<nummat; ++i)
         {
-          int id = (*matids)[i];
-          RCP<MAT::PAR::Material> actelastmat = mats[id];
+          const int id = (*matids)[i];
+          const RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
           switch (actelastmat->Type())
           {
             case INPAR::MAT::mes_isoyeoh:
             {
               MAT::ELASTIC::PAR::IsoYeoh* params = dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
               if (!params) dserror("Cannot cast material parameters");
-              int j = p_.Length();
+              const int j = p_.Length();
               p_.Resize(j+3);
               p_(j)   = params->c1_;
               p_(j+1) = params->c2_;
@@ -617,7 +616,7 @@ void STR::GenInvAnalysis::ReadInParameters()
             {
               MAT::ELASTIC::PAR::VolOgden* params = dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
               if (!params) dserror("Cannot cast material parameters");
-              int j = p_.Length();
+              const int j = p_.Length();
               p_.Resize(j+1);
               p_(j)   = params->kappa_;
               // p_(j+1) = params->beta_; // need also change resize above to invoke beta_
@@ -644,19 +643,18 @@ void STR::GenInvAnalysis::ReadInParameters()
 //--------------------------------------------------------------------------------------
 void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
 {
-  int myrank = discret_->Comm().MyPID();
+  const int myrank = discret_->Comm().MyPID();
 
   // parameters are evaluated on proc 0 only? This should not be neccessary....
   discret_->Comm().Broadcast(&p_cur[0],np_,0);
 
   // loop all materials in problem
-  map<int,RCP<MAT::PAR::Material> >& mats = const_cast<map<int,RCP<MAT::PAR::Material> >& >
-                                        (*(DRT::Problem::Instance()->Materials()->Map()));
+  const map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
   int count=0;
   map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
   for (curr=mats.begin(); curr != mats.end(); ++curr)
   {
-    RCP<MAT::PAR::Material> actmat = curr->second;
+    const RCP<MAT::PAR::Material> actmat = curr->second;
     switch(actmat->Type())
     {
       case INPAR::MAT::m_aaaneohooke:
@@ -667,7 +665,7 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
         const_cast<double&>(params->youngs_) = p_cur[count];
         const_cast<double&>(params->beta_)   = p_cur[count+1];
         //const_cast<double&>(params->nue_)    = p_cur[count+2];
-        if (!myrank) printf("MAT::PAR::AAAneohooke %20.15e %20.15e\n",p_cur[count],p_cur[count+1]);
+        if (myrank == 0) printf("MAT::PAR::AAAneohooke %20.15e %20.15e\n",p_cur[count],p_cur[count+1]);
         count += 2;
       }
       break;
@@ -678,7 +676,7 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
         // This is a tiny little bit brutal!!!
         const_cast<double&>(params->youngs_)       = p_cur[count];
         const_cast<double&>(params->poissonratio_) = p_cur[count+1];
-        if (!myrank) printf("MAT::PAR::NeoHooke %20.15e %20.15e\n",params->youngs_,params->poissonratio_);
+        if (myrank == 0) printf("MAT::PAR::NeoHooke %20.15e %20.15e\n",params->youngs_,params->poissonratio_);
         count += 2;
       }
       break;
@@ -690,8 +688,8 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
         const std::vector<int>* matids = params->matids_;
         for (int i=0; i<nummat; ++i)
         {
-          int id = (*matids)[i];
-          RCP<MAT::PAR::Material> actelastmat = mats[id];
+          const int id = (*matids)[i];
+          const RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
           switch (actelastmat->Type())
           {
             case INPAR::MAT::mes_isoyeoh:
@@ -701,7 +699,7 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
               const_cast<double&>(params->c1_) = p_cur[count];
               const_cast<double&>(params->c2_) = p_cur[count+1];
               const_cast<double&>(params->c3_) = p_cur[count+2];
-              if (!myrank) printf("MAT::ELASTIC::PAR::IsoYeoh %20.15e %20.15e %20.15e\n",params->c1_,params->c2_,params->c3_);
+              if (myrank == 0) printf("MAT::ELASTIC::PAR::IsoYeoh %20.15e %20.15e %20.15e\n",params->c1_,params->c2_,params->c3_);
               count += 3;
             }
             break;
@@ -711,7 +709,7 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
               if (!params) dserror("Cannot cast material parameters");
               const_cast<double&>(params->kappa_) = p_cur[count];
               //const_cast<double&>(params->beta_) = p_cur[count+1];
-              if (!myrank) printf("MAT::ELASTIC::PAR::VolOgden %20.15e %20.15e\n",params->kappa_,params->beta_);
+              if (myrank == 0) printf("MAT::ELASTIC::PAR::VolOgden %20.15e %20.15e\n",params->kappa_,params->beta_);
               count += 1;
             }
             break;
