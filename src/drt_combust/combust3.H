@@ -398,11 +398,6 @@ public:
 
   virtual DRT::ParObject* Create( const vector<char> & data );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
-                                             const int id,
-                                             const int owner );
-
 private:
 
   static Combust3RegisterType instance_;
