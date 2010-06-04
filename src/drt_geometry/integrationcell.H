@@ -136,14 +136,8 @@ class DomainIntCell : public IntCell
     //! return string representation of the DomainIntCell
     virtual void toGmsh(const std::string& filename) const;
 
-    //! return label of domain intcell
-    int getLabel() const {return label_; }
-
     //! return domain indicator
     bool getDomainPlus() const {return indomainplus_;}
-
-    //! set label of domain intcell
-    void setLabel(const int   label);
 
   private:
 
@@ -158,9 +152,6 @@ class DomainIntCell : public IntCell
 
     //! get geometric center of the cell in physical coordinates
     LINALG::Matrix<3,1>                             phys_center_;
-
-    // xfem label if fluid label = 0; otherwise label = solid id
-    int                                             label_;
 
     // boolean indicating that cell belongs to "+"-part of the domain
     bool indomainplus_;
@@ -235,7 +226,7 @@ class BoundaryIntCell : public IntCell
     LINALG::SerialDenseMatrix             nodalpos_xyz_domain_;
 
     //! get geometric center of the cell in physical coordinates
-    LINALG::Matrix<3,1>                             phys_center_;
+    LINALG::Matrix<3,1>                   phys_center_;
 
 };
 

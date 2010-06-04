@@ -141,7 +141,7 @@ XFEM::InterfaceHandleXFSI::~InterfaceHandleXFSI()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFEM::InterfaceHandleXFSI::FillCurrentCutterPositionMap(
-    const Teuchos::RCP<DRT::Discretization>& cutterdis,
+    const Teuchos::RCP<const DRT::Discretization>& cutterdis,
     const Epetra_Vector&                     idispcol,
     std::map<int,LINALG::Matrix<3,1> >&      currentcutterpositions
     ) const
@@ -179,15 +179,14 @@ void XFEM::InterfaceHandleXFSI::ClassifyIntegrationCells()
   std::map<int,GEO::DomainIntCells >::iterator entry;
   for (entry = elementalDomainIntCells_.begin(); entry != elementalDomainIntCells_.end(); ++entry)
   {
-    GEO::DomainIntCells& cells = entry->second;
+    const GEO::DomainIntCells& cells = entry->second;
     const DRT::Element* xfemele = xfemdis_->gElement(entry->first);
     std::set<int> labelset;
     bool one_cell_is_fluid = false;
-    for (GEO::DomainIntCells::iterator cell = cells.begin(); cell != cells.end(); ++cell)
+    for (GEO::DomainIntCells::const_iterator cell = cells.begin(); cell != cells.end(); ++cell)
     {
       const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition());
       const int current_label = PositionWithinConditionNP(cellcenter);
-      cell->setLabel(current_label);
       if (current_label == 0)
       {
         one_cell_is_fluid = true;

@@ -40,12 +40,12 @@ namespace XFEM
     //! return pointer to the intersecting discretization
     const Teuchos::RCP<DRT::Discretization> cutterdis() const {return cutterdis_;};
 
-    const std::map<int,LINALG::Matrix<3,1> >* cutterposnp()
+    const std::map<int,LINALG::Matrix<3,1> >* cutterposnp() const
     {
       return &cutterposnp_;
     }
 
-    const std::map<int,LINALG::Matrix<3,1> >* cutterposn()
+    const std::map<int,LINALG::Matrix<3,1> >* cutterposn() const
     {
       return &cutterposn_;
     }
@@ -161,7 +161,7 @@ namespace XFEM
 
     //! put a position into the map for each nodal id
     void FillCurrentCutterPositionMap(
-        const Teuchos::RCP<DRT::Discretization>& cutterdis,              ///< dis containing nodes
+        const Teuchos::RCP<const DRT::Discretization>& cutterdis,              ///< dis containing nodes
         const Epetra_Vector&                     idispcol,               ///< vector with displacements
         std::map<int,LINALG::Matrix<3,1> >&      currentcutterpositions  ///< map to be filled with positions
         ) const;

@@ -101,7 +101,6 @@ GEO::DomainIntCell::DomainIntCell(
             nodalpos_xi_domain_(xfemEleDomainCoordinates),
             nodalpos_xyz_domain_(physDomainCoordinates),
             phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates)),
-            label_(-1),
             indomainplus_(false)
 {}
 
@@ -119,7 +118,6 @@ GEO::DomainIntCell::DomainIntCell(
             nodalpos_xi_domain_(xfemEleDomainCoordinates),
             nodalpos_xyz_domain_(physDomainCoordinates),
             phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates)),
-            label_(-1),
             indomainplus_(indomainplus)
 {}
 
@@ -136,7 +134,6 @@ GEO::DomainIntCell::DomainIntCell(
             nodalpos_xi_domain_(DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype)),
             nodalpos_xyz_domain_(xyze_ele),
             phys_center_(ComputePhysicalCenterPosition(distype, xyze_ele)),
-            label_(-1),
             indomainplus_(false)
 {}
 
@@ -151,7 +148,6 @@ GEO::DomainIntCell::DomainIntCell(
           nodalpos_xi_domain_(old.nodalpos_xi_domain_),
           nodalpos_xyz_domain_(old.nodalpos_xyz_domain_),
           phys_center_(old.phys_center_),
-          label_(old.label_),
           indomainplus_(old.indomainplus_)
 {}
 
@@ -167,7 +163,6 @@ GEO::DomainIntCell& GEO::DomainIntCell::operator=(
   nodalpos_xi_domain_ = domainintcell.nodalpos_xi_domain_;
   nodalpos_xyz_domain_ = domainintcell.nodalpos_xyz_domain_;
   phys_center_ = domainintcell.phys_center_;
-  label_ = domainintcell.label_;
   indomainplus_ = domainintcell.indomainplus_;
   return *this;
 }
@@ -231,16 +226,6 @@ void GEO::DomainIntCell::toGmsh(const std::string& filename) const
   f_system << "};\n";
   f_system << "View[0].Axes = 3;\nView[0].AxesMikado = 1;\n";
   f_system.close();
-}
-
-
-
-/*----------------------------------------------------------------------*
- * set xfem label, if fluid label = 0; if solid label = solid id
- *----------------------------------------------------------------------*/
-void GEO::DomainIntCell::setLabel(const int   label)
-{
-  label_ = label;
 }
 
 
