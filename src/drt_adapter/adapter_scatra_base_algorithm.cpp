@@ -73,7 +73,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
     DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn);
     DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn.sublist("STABILIZATION"));
     DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn.sublist("NONLINEAR"));
-    DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn.sublist("LEVELSET"));
+//    DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn.sublist("LEVELSET"));
   }
   // -------------------------------------------------------------------
   // create a solver

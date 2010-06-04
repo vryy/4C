@@ -1378,91 +1378,97 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 //
 // 		 gradphi_gpscur.Multiply('N','N',1.0,expol_invert,gradphi_nodescur,0.0);
 //end REINHARD
-
-    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-    {
-      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-      //----------------------------------------------------------------------
-      // get material parameters (evaluation at integration point)
-      //----------------------------------------------------------------------
-      if (mat_gp_) GetMaterialParams(ele);
-
-      for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
-      {
-        // get velocity at integration point
-        velint_.Multiply(evelnp_,funct_);
-
-        // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-        conv_.MultiplyTN(derxy_,velint_);
-
-        // momentum divergence required for conservative form
-        if (conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
-
-        //--------------------------------------------------------------------
-        // calculation of subgrid diffusivity and stabilization parameter(s)
-        // at integration point
-        //--------------------------------------------------------------------
-        if (tau_gp_)
-        {
-          // calculation of all-scale subgrid diffusivity (artificial or due to
-          // constant-coefficient Smagorinsky model) at integration point
-          if (assgd or turbmodel)
-            CalcSubgrDiff(dt,timefac,whichassgd,assgd,turbmodel,Cs,tpn,vol,k);
-
-          // calculation of fine-scale artificial subgrid diffusivity
-          // at integration point
-          if (fssgd) CalcFineScaleSubgrDiff(ele,subgrdiff,whichfssgd,Cs,tpn,vol,k);
-
-          // generating copy of diffusivity for use in CalTau routine
-          double diffus = diffus_[k];
-
-          // calculation of stabilization parameter at integration point
-          CalTau(ele,diffus,dt,timefac,whichtau,vol,k);
-        }
-
-        // subgrid-scale velocity
-        if (sgvel_)
-        {
-          // calculate subgrid-scale velocity
-          CalcSubgrVelocity(ele,time,dt,timefac,k);
-
-          // calculate subgrid-scale convective part
-          sgconv_.MultiplyTN(derxy_,sgvelint_);
-        }
-        else
-        {
-          sgvelint_.Clear();
-          sgconv_.Clear();
-        }
-
-        // get history data (or acceleration)
-        hist_[k] = funct_.Dot(ehist_[k]);
-
-        // get bodyforce in gausspoint (divided by shcacp)
-        // (For temperature equation, time derivative of thermodynamic pressure
-        //  is added, if not constant, and for temperature equation of a reactive
-        //  equation system, a reaction-rate term is added.)
-        rhs_[k] = bodyforce_[k].Dot(funct_) / shcacp_;
-        rhs_[k] += thermpressdt_ / shcacp_;
-        rhs_[k] += reatemprhs_[k] / shcacp_;
-
-      // gradient of current scalar value
-
-//REINHARD
-//        for (int j=0; j<3; j++)
-//          gradphi_(j,0)=gradphi_gpscur(iquad,j);
-//end REINHARD
-
-        // compute matrix and rhs
-        CalMatAndRHS(sys_mat,
-                     residual,
-                     fac,
-                     fssgd,
-                     timefac,
-                     alphaF,
-                     k);
-      } // loop over each scalar
-    }
+//
+//    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+//    {
+//      EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+//      //----------------------------------------------------------------------
+//      // get material parameters (evaluation at integration point)
+//      //----------------------------------------------------------------------
+//      if (mat_gp_) GetMaterialParams(ele);
+//
+//      for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
+//      {
+//        // get velocity at integration point
+//        velint_.Multiply(evelnp_,funct_);
+//
+//        // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
+//        conv_.MultiplyTN(derxy_,velint_);
+//
+//        // momentum divergence required for conservative form
+//        if (conservative_) GetVelocityDivergence(vdiv_,evelnp_,derxy_);
+//
+//        //--------------------------------------------------------------------
+//        // calculation of subgrid diffusivity and stabilization parameter(s)
+//        // at integration point
+//        //--------------------------------------------------------------------
+//        if (tau_gp_)
+//        {
+//          // calculation of all-scale subgrid diffusivity (artificial or due to
+//          // constant-coefficient Smagorinsky model) at integration point
+//          if (assgd or turbmodel)
+//            CalcSubgrDiff(dt,timefac,whichassgd,assgd,turbmodel,Cs,tpn,vol,k);
+//
+//          // calculation of fine-scale artificial subgrid diffusivity
+//          // at integration point
+//          if (fssgd) CalcFineScaleSubgrDiff(ele,subgrdiff,whichfssgd,Cs,tpn,vol,k);
+//
+//          // generating copy of diffusivity for use in CalTau routine
+//          double diffus = diffus_[k];
+//
+//          // calculation of stabilization parameter at integration point
+//          CalTau(ele,diffus,dt,timefac,whichtau,vol,k);
+//        }
+//
+//        // subgrid-scale velocity
+//        if (sgvel_)
+//        {
+//          // calculate subgrid-scale velocity
+//          if (scatratype != INPAR::SCATRA::scatratype_levelset)
+//          {
+//            CalcSubgrVelocity(ele,time,dt,timefac,k);
+//          }
+//          else
+//          {
+//            CalcSubgrVelocityLevelSet(ele,time,dt,timefac,k);
+//          }
+//
+//          // calculate subgrid-scale convective part
+//          sgconv_.MultiplyTN(derxy_,sgvelint_);
+//        }
+//        else
+//        {
+//          sgvelint_.Clear();
+//          sgconv_.Clear();
+//        }
+//
+//        // get history data (or acceleration)
+//        hist_[k] = funct_.Dot(ehist_[k]);
+//
+//        // get bodyforce in gausspoint (divided by shcacp)
+//        // (For temperature equation, time derivative of thermodynamic pressure
+//        //  is added, if not constant, and for temperature equation of a reactive
+//        //  equation system, a reaction-rate term is added.)
+//        rhs_[k] = bodyforce_[k].Dot(funct_) / shcacp_;
+//        rhs_[k] += thermpressdt_ / shcacp_;
+//        rhs_[k] += reatemprhs_[k] / shcacp_;
+//
+//      // gradient of current scalar value
+//
+////REINHARD
+////        for (int j=0; j<3; j++)
+////          gradphi_(j,0)=gradphi_gpscur(iquad,j);
+////end REINHARD
+//
+//        // compute matrix and rhs
+//        CalMatAndRHS(sys_mat,
+//                     residual,
+//                     fssgd,
+//                     timefac,
+//                     alphaF,
+//                     k);
+//      } // loop over each scalar
+//    }
   }
   else // 'standard' scalar transport
   {
@@ -1512,8 +1518,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         if (sgvel_)
         {
           // calculate subgrid-scale velocity
-          CalcSubgrVelocity(ele,time,dt,timefac,k);
-
+          if (scatratype != INPAR::SCATRA::scatratype_levelset)
+          {
+            CalcSubgrVelocity(ele,time,dt,timefac,k);
+          }
+          else
+          {
+            CalcSubgrVelocityLevelSet(ele,time,dt,timefac,k);
+          }
+          
           // calculate subgrid-scale convective part
           sgconv_.MultiplyTN(derxy_,sgvelint_);
         }
@@ -2898,6 +2911,279 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
   return;
 } //ScaTraImpl::CalcSubgrVelocity
 
+/*-----------------------------------------------------------------------------------------------*
+ |  calculate subgrid-scale velocity for level set / two-phase flow problems      rasthofer 04/10|
+ *-----------------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocityLevelSet(
+    DRT::Element*  ele,
+    const double   time,
+    const double   dt,
+    const double   timefac,
+    const int      k
+  )
+{
+
+  std::cout << "* Warning! Check parameter of fluid field! *"<< std::endl;
+  // definitions
+  LINALG::Matrix<nsd_,1> acc;
+  LINALG::Matrix<nsd_,1> conv;
+  LINALG::Matrix<nsd_,1> gradp;
+  LINALG::Matrix<nsd_,1> visc;
+  LINALG::Matrix<nsd_,1> bodyforce;
+  LINALG::Matrix<nsd_,nen_> nodebodyforce;
+
+  // get acceleration or momentum history data
+  acc.Multiply(eaccnp_,funct_);
+
+  // get velocity derivatives
+  vderxy_.MultiplyNT(evelnp_,derxy_);
+
+  // compute convective fluid term
+  conv.Multiply(vderxy_,velint_);
+
+  // get pressure gradient
+  gradp.Multiply(derxy_,eprenp_);
+
+  //--------------------------------------------------------------------
+  // get nodal values of fluid body force
+  //--------------------------------------------------------------------
+  vector<DRT::Condition*> myfluidneumcond;
+
+  // check whether all nodes have a unique Fluid Neumann condition
+  switch(nsd_)
+  {
+  case 3:
+    DRT::UTILS::FindElementConditions(ele, "FluidVolumeNeumann", myfluidneumcond);
+  break;
+  case 2:
+    DRT::UTILS::FindElementConditions(ele, "FluidSurfaceNeumann", myfluidneumcond);
+  break;
+  case 1:
+    DRT::UTILS::FindElementConditions(ele, "FluidLineNeumann", myfluidneumcond);
+  break;
+  default:
+    dserror("Illegal number of space dimensions: %d",nsd_);
+  }
+
+  if (myfluidneumcond.size()>1)
+    dserror("more than one Fluid Neumann condition on one node");
+
+  if (myfluidneumcond.size()==1)
+  {
+    // find out whether we will use a time curve
+    const vector<int>* curve  = myfluidneumcond[0]->Get<vector<int> >("curve");
+    int curvenum = -1;
+
+    if (curve) curvenum = (*curve)[0];
+
+    // initialisation
+    double curvefac(0.0);
+
+    if (curvenum >= 0) // yes, we have a timecurve
+    {
+      // time factor for the intermediate step
+      // (negative time value indicates error)
+      if(time >= 0.0)
+        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+      else
+        dserror("Negative time value in body force calculation: time = %f",time);
+    }
+    else // we do not have a timecurve: timefactors are constant equal 1
+      curvefac = 1.0;
+
+    // get values and switches from the condition
+    const vector<int>*    onoff = myfluidneumcond[0]->Get<vector<int> >   ("onoff");
+    const vector<double>* val   = myfluidneumcond[0]->Get<vector<double> >("val"  );
+
+    // set this condition to the body force array
+    for(int isd=0;isd<nsd_;isd++)
+    {
+      for (int jnode=0; jnode<nen_; jnode++)
+      {
+        nodebodyforce(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac;
+      }
+    }
+  }
+  else nodebodyforce.Clear();
+
+  // get fluid body force
+  bodyforce.Multiply(nodebodyforce,funct_);
+  
+  //overwrite bodyforce
+  bodyforce(0) = 0.0;
+  bodyforce(1) = -10.0;
+  bodyforce(2) = 0.0;
+
+  // get viscous term
+  if (use2ndderiv_)
+  {
+    dserror("second order elements not supported");
+    /*--- viscous term: div(epsilon(u)) --------------------------------*/
+    /*   /                                                \
+         |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
+       1 |                                                |
+       - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
+       2 |                                                |
+         |  N_z,xx + N_x,zx + N_y,zy + N_z,yy + 2 N_z,zz  |
+         \                                                /
+//
+//         with N_x .. x-line of N
+//         N_y .. y-line of N                                             */
+//
+    /*--- subtraction for low-Mach-number flow: div((1/3)*(div u)*I) */
+    /*   /                            \
+         |  N_x,xx + N_y,yx + N_z,zx  |
+       1 |                            |
+    -  - |  N_x,xy + N_y,yy + N_z,zy  |
+       3 |                            |
+         |  N_x,xz + N_y,yz + N_z,zz  |
+         \                            /
+//
+//           with N_x .. x-line of N
+//           N_y .. y-line of N                                             */
+//
+//    double prefac = 1.0/3.0;
+//    derxy2_.Scale(prefac);
+//
+//    for (int i=0; i<iel; ++i)
+//    {
+//      double sum = (derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i))/prefac;
+//
+//      visc(0) = ((sum + derxy2_(0,i))*evelnp_(0,i) + derxy2_(3,i)*evelnp_(1,i) + derxy2_(4,i)*evelnp_(2,i))/2.0;
+//      visc(1) = (derxy2_(3,i)*evelnp_(0,i) + (sum + derxy2_(1,i))*evelnp_(1,i) + derxy2_(5,i)*evelnp_(2,i))/2.0;
+//      visc(2) = (derxy2_(4,i)*evelnp_(0,i) + derxy2_(5,i)*evelnp_(1,i) + (sum + derxy2_(2,i))*evelnp_(2,i))/2.0;
+//    }
+  }
+  else visc.Clear();
+
+  double tau = 0.0;
+  double dens = 0.0;
+  double viscosity = 0.0;
+
+  // theta_Scatra != theta_Fluid
+  double timefacmod = (timefac / 0.5) * 0.65;
+  //double timefacmod = timefac;
+
+  // compute phi at gausspoint
+  double phi = 0.0;
+  for (int i = 0; i < nen_; i++)
+  {
+     phi = phi + funct_(i) * ephin_[k](i,0);
+  }
+  // set density and viscosity depending on phi
+  if (phi == 0.0 or phi > 0.0)
+  {
+    dens = 1.5;
+    viscosity = 0.0033;
+    //dens = 1000.0;
+    //viscosity = 0.35;
+  }
+  else
+  {
+    dens = 1.0;
+    viscosity = 0.0022;
+    //dens = 1.0;
+    //viscosity = 0.00358;
+  }
+
+  // stabilization parameter definition according to Bazilevs et al. (2007)
+  // effective velocity at element center:
+  // (weighted) convective velocity
+  LINALG::Matrix<nsd_,1> veleff(velint_,false);
+  /*
+                                                                          1.0
+             +-                                                      -+ - ---
+             |        2                                               |   2.0
+             | 4.0*rho         n+1             n+1          2         |
+      tau  = | -------  + rho*u     * G * rho*u     + C * mu  * G : G |
+             |     2                  -                I        -   - |
+             |   dt                   -                         -   - |
+             +-                                                      -+
+
+  */
+  /*          +-           -+   +-           -+   +-           -+
+              |             |   |             |   |             |
+              |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
+        G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
+         ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
+              |    i     j  |   |    i     j  |   |    i     j  |
+              +-           -+   +-           -+   +-           -+
+  */
+  /*          +----
+               \
+      G : G =   +   G   * G
+      -   -    /     ij    ij
+      -   -   +----
+               i,j
+  */
+  /*                               +----
+           n+1             n+1     \         n+1              n+1
+      rho*u     * G * rho*u     =   +   rho*u    * G   * rho*u
+                  -                /         i     -ij        j
+                  -               +----        -
+                                    i,j
+  */
+  double G;
+  double normG(0.0);
+  double Gnormu(0.0);
+  const double dens_sqr = dens*dens;
+  for (int nn=0;nn<nsd_;++nn)
+  {
+    for (int rr=0;rr<nsd_;++rr)
+    {
+      G = xij_(nn,0)*xij_(rr,0);
+      for(int tt=1;tt<nsd_;tt++)
+      {
+        G += xij_(nn,tt)*xij_(rr,tt);
+      }
+      normG+=G*G;
+      Gnormu+=dens_sqr*veleff(nn,0)*G*veleff(rr,0);
+    }
+  }
+
+  // definition of constant:
+  // 12.0/m_k = 36.0 for linear elements and 144.0 for quadratic elements
+  // (differently defined, e.g., in Akkerman et al. (2008))
+  // get element-type constant for tau
+  const double mk = SCATRA::MK<distype>();
+  const double CI = 12.0/mk;
+
+  // stabilization parameters for stationary and instationary case, respectively
+  if (is_stationary_)
+    tau = 1.0/(sqrt(Gnormu+CI*viscosity*viscosity*normG));
+  else
+    tau = 1.0/(sqrt(dens_sqr*(4.0/(dt*dt))+Gnormu+CI*viscosity*viscosity*normG));
+
+  //--------------------------------------------------------------------
+  // calculation of subgrid-scale velocity based on momentum residual
+  // and stabilization parameter
+  // (different for generalized-alpha and other time-integration schemes)
+  //--------------------------------------------------------------------
+  if (is_genalpha_)
+  {
+	  dserror("genalpha not supported");
+//    for (int rr=0;rr<nsd_;++rr)
+//    {
+//      sgvelint_(rr) = -tau_[k]*(densam_[k]*acc(rr)+densnp_[k]*conv(rr)+gradp(rr)-2*visc_*visc(rr)-densnp_[k]*bodyforce(rr));
+//    }
+  }
+  else
+  {
+    for (int rr=0;rr<nsd_;++rr)
+    {
+       sgvelint_(rr) = -tau*(dens*velint_(rr)+timefacmod*(dens*conv(rr)+gradp(rr)-2*viscosity*visc(rr)-dens*bodyforce(rr))-dens*acc(rr))/dt;
+    }
+  }
+  
+  // TEST
+//  std::cout << "SCATRA" << std::endl;
+//  std::cout << "dens: " << dens<< std::endl;
+//  std::cout << "tau: " << tau<< std::endl;
+//  std::cout << "viscosity: " << viscosity<< std::endl;
+
+  return;
+} //ScaTraImpl::CalcSubgrVelocityLevelSet
 
 /*----------------------------------------------------------------------*
  | evaluate shape functions and derivatives at int. point     gjb 08/08 |

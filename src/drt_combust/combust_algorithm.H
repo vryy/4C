@@ -21,7 +21,6 @@ Maintainer: Florian Henke
 #include "combust_interface.H"
 #include "combust_flamefront.H"
 
-
 /// namespace of the combustion module in BACI
 namespace COMBUST
 {
@@ -60,6 +59,9 @@ namespace COMBUST
 
     /// algorithm for static combustion problem
     void SolveStationaryProblem();
+
+    /// restart combustion problem
+    void Restart(int step);
 
   protected:
 

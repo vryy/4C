@@ -220,7 +220,7 @@ namespace COMBUST
       if (conv > 1.0E-12)
       {
         alpha = 7777.7;
-        cout << "projection did not converge" << endl;
+//        cout << "projection did not converge" << endl;
         //dserror("projection did not converge!");
       }
       else

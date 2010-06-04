@@ -421,6 +421,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
   discret_->FillComplete(true,false,true);
   const Epetra_Map& newdofrowmap = *discret_->DofRowMap();
 
+  //discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
   discret_->ComputeNullSpaceIfNecessary(solver_.Params());
 
   {
@@ -1058,15 +1059,21 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   // write restart
   if (write_restart_data)
   {
+   std::cout << "Write restart" << std::endl;
+//   std::cout << state_.velnp_->GlobalLength() << std::endl;
     output_->WriteVector("velnp", state_.velnp_);
+//    std::cout << state_.veln_->GlobalLength() << std::endl;
     output_->WriteVector("veln" , state_.veln_);
+//    std::cout << state_.velnm_->GlobalLength() << std::endl;
     output_->WriteVector("velnm", state_.velnm_);
+//    std::cout << state_.accnp_->GlobalLength() << std::endl;
     output_->WriteVector("accnp", state_.accnp_);
+//    std::cout << state_.accn_->GlobalLength() << std::endl;
     output_->WriteVector("accn" , state_.accn_);
   }
 
 //  if (discret_->Comm().NumProc() == 1)
-  if (step_ % 1 == 0) // (step_ % 5 == 0) write every 5th time step only
+  if (step_ % 5 == 0 or step_== 1) //write every 5th time step only
   {
     OutputToGmsh(step_, time_);
   }
@@ -1164,7 +1171,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 }
 
 /*------------------------------------------------------------------------------------------------*
- | henke 08/08 |
+ |                                                                                rasthofer 05/10 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::ReadRestart(int step)
 {
@@ -1172,10 +1179,22 @@ void FLD::CombustFluidImplicitTimeInt::ReadRestart(int step)
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 
+//  std::cout << state_.velnp_->GlobalLength() << std::endl;
+//  std::cout << state_.veln_->GlobalLength() << std::endl;
+//  std::cout << state_.velnm_->GlobalLength() << std::endl;
+  
+  std::cout << "Read restart" << std::endl;
+
   reader.ReadVector(state_.velnp_,"velnp");
+//  std::cout << state_.velnp_->GlobalLength() << std::endl;
   reader.ReadVector(state_.veln_, "veln");
+//  std::cout << state_.veln_->GlobalLength() << std::endl;
   reader.ReadVector(state_.velnm_,"velnm");
+//  std::cout << state_.velnm_->GlobalLength() << std::endl;
+  reader.ReadVector(state_.accnp_ ,"accnp");
+//  std::cout << state_.accnp_->GlobalLength() << std::endl;
   reader.ReadVector(state_.accn_ ,"accn");
+//  std::cout << state_.accn_->GlobalLength() << std::endl;
 
 }
 
@@ -1605,7 +1624,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 500, screen_out, discret_->Comm().MyPID());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 110, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
     {

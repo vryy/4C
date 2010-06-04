@@ -107,7 +107,8 @@ void combust_dyn()
   if (genprob.restart)
   {
     // read the restart information, set vectors and variables
-    combust_->ReadRestart(genprob.restart);
+    //combust_->ReadRestart(genprob.restart);
+    combust_->Restart(genprob.restart);
   }
   //------------------------------------------------------------------------------------------------
   // call one of the available time integration schemes

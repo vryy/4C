@@ -338,6 +338,12 @@ void SCATRA::TimIntOneStepTheta::Update()
   // after the next command (time shift of solutions) do NOT call
   // ComputeTimeDerivative() anymore within the current time step!!!
 
+  // phinm is needed for restart of level set problems
+  if (scatratype_ == INPAR::SCATRA::scatratype_levelset)
+  {
+     phinm_ ->Update(1.0,*phin_,0.0);
+  }
+  
   // solution of this step becomes most recent solution of the last step
   phin_ ->Update(1.0,*phinp_,0.0);
 
@@ -355,6 +361,9 @@ void SCATRA::TimIntOneStepTheta::Update()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::UpdateReinit()
 {
+  //phinm is needed for restart of level set problems
+  phinm_ ->Update(1.0,*phin_,0.0);
+
   // solution of this step becomes most recent solution of the last step
   phin_ ->Update(1.0,*phinp_,0.0);
 
@@ -395,6 +404,12 @@ void SCATRA::TimIntOneStepTheta::OutputRestart()
   // additional state vectors that are needed for One-Step-Theta restart
   output_->WriteVector("phidtn", phidtn_);
   output_->WriteVector("phin", phin_);
+  
+  // phinm is needed to reconstruct the interface
+  if (scatratype_ == INPAR::SCATRA::scatratype_levelset)
+  {
+     output_->WriteVector("phinm", phinm_);
+  }
 
   // write additional restart data for galvanostatic applications
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
@@ -442,6 +457,12 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
   reader.ReadVector(phinp_, "phinp");
   reader.ReadVector(phin_,  "phin");
   reader.ReadVector(phidtn_,"phidtn");
+  
+  // phinm is needed for restart of level set problems
+  if (scatratype_ == INPAR::SCATRA::scatratype_levelset)
+  {
+     reader.ReadVector(phinm_,  "phinm");
+  }
 
   // restart for galvanostatic applications
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)

@@ -221,6 +221,9 @@ public:
 
   /// routine to return scalar field phi at time step n
   Teuchos::RCP<Epetra_Vector> Phin() { return phin_; }
+  
+  // routine to return scalar field phi at time step n-1
+  Teuchos::RCP<Epetra_Vector> Phinm() { return phinm_; }
 
   /// routine to return time derivative of scalar field phi at time step n+1
   Teuchos::RCP<Epetra_Vector> Phidtnp() { return phidtnp_; }
@@ -607,6 +610,9 @@ protected:
   /// phi at times n+1 and n
   RCP<Epetra_Vector>    phinp_;
   RCP<Epetra_Vector>    phin_;
+  
+  /// phi at times n-1; for level set
+  RCP<Epetra_Vector>    phinm_;
 
   /// time derivative of phi at times n+1 and n
   RCP<Epetra_Vector>  phidtnp_;

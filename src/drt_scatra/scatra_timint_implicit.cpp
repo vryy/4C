@@ -175,11 +175,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     FLD::UTILS::SetupFluidSplit(*discret_,numscal_-1,splitter_);
   }
 
-  if (scatratype_ == INPAR::SCATRA::scatratype_levelset)
-  {
-    reinitaction_ = Teuchos::getIntegralValue<INPAR::SCATRA::ReinitializationAction>(params_->sublist("LEVELSET"),"REINITIALIZATION");
-    masscalc_     = Teuchos::getIntegralValue<INPAR::SCATRA::MassCalculation>(params_->sublist("LEVELSET"),"MASSCALCULATION");
-  }
+//  if (scatratype_ == INPAR::SCATRA::scatratype_levelset)
+//  {
+//    reinitaction_ = Teuchos::getIntegralValue<INPAR::SCATRA::ReinitializationAction>(params_->sublist("LEVELSETDONOTUSE"),"REINITIALIZATION");
+//    masscalc_     = Teuchos::getIntegralValue<INPAR::SCATRA::MassCalculation>(params_->sublist("LEVELSETDONOTUSE"),"MASSCALCULATION");
+//  }
 
   if (Teuchos::getIntegralValue<int>(*params_,"BLOCKPRECOND"))
   {
@@ -213,6 +213,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // solutions at time n+1 and n
   phinp_ = LINALG::CreateVector(*dofrowmap,true);
   phin_  = LINALG::CreateVector(*dofrowmap,true);
+  
+  //solution at time n-1, for level set problems
+  phinm_  = LINALG::CreateVector(*dofrowmap,true);
 
   // temporal solution derivative at time n+1
   phidtnp_ = LINALG::CreateVector(*dofrowmap,true);
@@ -504,8 +507,8 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
     // -------------------------------------------------------------------
     //                reinitialize the level set function
     // -------------------------------------------------------------------
-    if ((scatratype_ == INPAR::SCATRA::scatratype_levelset) and (reinitaction_ != INPAR::SCATRA::reinitaction_none))
-      Reinitialize();
+//    if ((scatratype_ == INPAR::SCATRA::scatratype_levelset) and (reinitaction_ != INPAR::SCATRA::reinitaction_none))
+//      Reinitialize();
 //end REINHARD
 
     // -------------------------------------------------------------------
@@ -533,8 +536,8 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
     // -------------------------------------------------------------------
     // compute mass loss for level set function and print it to display
     // -------------------------------------------------------------------
-    if ((scatratype_ == INPAR::SCATRA::scatratype_levelset) and (masscalc_ != INPAR::SCATRA::masscalc_none))
-      CalculateMassLoss();
+//    if ((scatratype_ == INPAR::SCATRA::scatratype_levelset) and (masscalc_ != INPAR::SCATRA::masscalc_none))
+//      CalculateMassLoss();
 //end REINHARD
 
   } // while
@@ -1250,7 +1253,9 @@ void SCATRA::ScaTraTimIntImpl::Output()
     OutputState();
 
     // write output to Gmsh postprocessing files
-    if (outputgmsh_) OutputToGmsh(step_, time_);
+    //if (outputgmsh_ and step_ == 1 ) OutputToGmsh(step_, time_);
+    if (outputgmsh_ and (step_ % 5 == 0)) OutputToGmsh(step_, time_);
+    //if (outputgmsh_) OutputToGmsh(step_, time_); //(outputgmsh_ and (step_ % 50 == 0))
 
     // add restart data
     if (step_%uprestart_==0) OutputRestart();
@@ -1817,6 +1822,13 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::Reinitialize()
 {
+	dserror("Don't use this function!");
+	/*
+	 * This function is the result of a student project. Therefore, things have to be rearranged
+	 * to use this function. At the moment, the reinitialization of the level set problems is done
+	 * directly in the corresponding algorithm.
+	 */
+	
 	if (reinitaction_ == INPAR::SCATRA::reinitaction_directdistance)
 	{
 		//Reinitialization as distance calculation to some interfacial points

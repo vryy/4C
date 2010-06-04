@@ -250,6 +250,15 @@ public:
         const int     k
     );
 
+    //! calculate subgrid-scale velocity for level set / two-phase flow problems
+    virtual void CalcSubgrVelocityLevelSet(
+        DRT::Element* ele,
+        const double  time,
+        const double  dt,
+        const double  timefac,
+        const int     k
+    );
+
     //! evaluate shape functions and their derivatives at current integration point
     virtual double EvalShapeFuncAndDerivsAtIntPoint(
         const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, ///< integration points
