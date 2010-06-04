@@ -40,6 +40,7 @@ Maintainer: Alexander Popp
 #define CONTACT_NODE_H
 
 #include "../drt_mortar/mortar_node.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -52,12 +53,27 @@ using namespace Teuchos;
 namespace CONTACT
 {
 
+class CoNodeType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "CoNodeType"; }
+
+  static CoNodeType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static CoNodeType instance_;
+};
+
 /*!
 \brief A class containing additional data from contact nodes
 
 This class contains additional information from contact nodes which are
 are not needed for contact search and therefore are only available on the
-node's processor (ColMap). The class CoNodeDataContainer must be declared 
+node's processor (ColMap). The class CoNodeDataContainer must be declared
 before the CoNode itself.
 
 \author gitterle (gitterle@lnm.mw.tum.de)
@@ -113,11 +129,11 @@ public:
 
   */
   virtual void Unpack(int& position, const vector<char>& data);
-  
+
   //@}
 
   //! @name Access methods
-  
+
   /*!
   \brief Return current nodal tangent t_xi (only for slave side!) (length 3)
   */
@@ -132,7 +148,7 @@ public:
   \brief Return the weighted gap (scalar) of this node
   */
   virtual double& Getg() { return grow_; }
- 
+
   /*!
   \brief Return the 'DerivN' map (vector) of this node
 
@@ -170,7 +186,7 @@ public:
   It is a "map of maps", with the outer map containing all master
   node indices k adjacent to this node i and the inner map containing
   all directional derivatives l existing for D_ik.
-  
+
   Note: In earlier versions this was just a simple map accounting for the
   diagonality of D when using dual shape functions. Due to the extension to
   support arbitrary types of shape functions, this is not possible anymore.
@@ -205,7 +221,7 @@ public:
      dserror("ERROR: GetDerivD: No map entry existing for given index");
     return derivd_[k];
   }
-  
+
   /*!
   \brief Return one specific 'DerivM' map of this node
 
@@ -233,7 +249,7 @@ public:
 
   /*!
   \brief Return the 'DerivZ map of this node
-  
+
   This map contains the directional derivatives of the node's
   lagrange multiplier entries with respect to the slave/master displacements.
 
@@ -245,7 +261,7 @@ public:
   //@}
 
 protected:
-  
+
   double          txi_[3];         // nodal tangent t_xi for contact methods
   double          teta_[3];        // nodal tangent t_eta for contact methods
   double          grow_;           // nodal entry of g vector
@@ -328,7 +344,7 @@ public:
   top of drt_lib/drt_parobject.H.
 
   */
-  virtual int UniqueParObjectId() const { return ParObject_CoNode;}
+  virtual int UniqueParObjectId() const { return CoNodeType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -354,7 +370,7 @@ public:
   \brief Print this cnode
   */
   virtual void Print(ostream& os) const ;
-  
+
   /*!
   \brief Is Node initialized as active node (only slave nodes)
   */
@@ -393,7 +409,7 @@ public:
 
   */
   inline CONTACT::CoNodeDataContainer& CoData() { return *codata_; }
-  
+
   //@}
 
   //! @name Evaluation methods
@@ -408,22 +424,22 @@ public:
 
   */
   void AddgValue(double& val);
- 
+
   /*!
   \brief Add a value to the map of LM derivatives of this node
-     
+
   The 'DerivZ' map is later assembled to the global DerivZ matrix.
   Note that derivz_ here is a vector.
-  
+
   Note: This is only calculated when performing a penalty strategy
-     
+
   \param row : local dof row id to add to (rowwise)
   \param val : value to be added
   \param col : global dof column id of the value added
-  
+
   */
   void AddDerivZValue(int& row, const int& col, double val);
-  
+
   /*!
   \brief Build nodal normal
   */
@@ -447,7 +463,7 @@ public:
   */
   void DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
                            double length, double ltxi);
-  
+
   /*!
   \brief Initializes the data container of the node
 
@@ -456,16 +472,16 @@ public:
 
   */
   virtual void InitializeDataContainer();
-  
+
   //@}
-  
+
 protected:
 
   bool            active_;         // true if cnode is in contact (active set strategy)
   bool            initactive_;     // true if node is initialized as active node
-  
+
   RCP<CONTACT::CoNodeDataContainer> codata_;   // additional information of proc's contact nodes
-  
+
 }; // class CoNode
 } // namespace CONTACT
 

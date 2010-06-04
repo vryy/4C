@@ -21,6 +21,7 @@ Maintainer: Ursula Mayer
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 
 
@@ -34,8 +35,28 @@ class Discretization;
 namespace ELEMENTS
 {
 
+class Bele2Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Bele2Type"; }
+
+  static Bele2Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Bele2Type instance_;
+};
+
 /*!
- * A 2D boundary element 
+ * A 2D boundary element
  *
  * It can be used to have a boundary discretization
  * of surface/boundary elements. They can be of any 1d shape (line2,line3)
@@ -75,7 +96,7 @@ public:
   virtual int NumVolume() const {return -1;}
   virtual vector<RCP<DRT::Element> > Lines();
   virtual vector<RCP<DRT::Element> > Surfaces();
-  virtual int UniqueParObjectId() const { return ParObject_Bele2;}
+  virtual int UniqueParObjectId() const { return Bele2Type::Instance().UniqueParObjectId(); }
   virtual void Pack(vector<char>& data) const;
   virtual void Unpack(const vector<char>& data);
 
@@ -181,6 +202,21 @@ private:
 //=======================================================================
 //=======================================================================
 
+class Bele2RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Bele2RegisterType"; }
+
+  static Bele2RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Bele2RegisterType instance_;
+};
+
 
 /*!
 \brief A register for bele2 element
@@ -216,7 +252,7 @@ public:
   */
   DRT::ELEMENTS::Bele2Register* Clone() const;
 
-  virtual int UniqueParObjectId() const { return ParObject_Bele2Register;}
+  virtual int UniqueParObjectId() const { return Bele2RegisterType::Instance().UniqueParObjectId(); }
   virtual void Pack(vector<char>& data) const;
   virtual void Unpack(const vector<char>& data);
 

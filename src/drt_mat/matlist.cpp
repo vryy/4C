@@ -37,6 +37,17 @@ MAT::PAR::MatList::MatList(
 }
 
 
+MAT::MatListType MAT::MatListType::instance_;
+
+
+DRT::ParObject* MAT::MatListType::Create( const std::vector<char> & data )
+{
+  MAT::MatList* matlist = new MAT::MatList();
+  matlist->Unpack(data);
+  return matlist;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::MatList::MatList()

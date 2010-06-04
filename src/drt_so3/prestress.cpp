@@ -16,6 +16,8 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_dserror.H"
 
 
+DRT::ELEMENTS::PreStressType DRT::ELEMENTS::PreStressType::instance_;
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 07/08|

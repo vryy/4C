@@ -23,6 +23,7 @@ Maintainer: Lena Wiechert
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "so_hex8.H"
 #include "../drt_inpar/inpar_structure.H"
 
@@ -39,6 +40,26 @@ namespace ELEMENTS
 {
 // forward declarations
 class SoHex8P1J1Register;
+
+class So_Hex8P1J1Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "So_Hex8P1J1Type"; }
+
+  static So_Hex8P1J1Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static So_Hex8P1J1Type instance_;
+};
 
 /// The so-called 'Q1P0' element in 8-node hexahedron shape
 ///
@@ -104,7 +125,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_So_Hex8P1J1;}
+  virtual int UniqueParObjectId() const { return So_Hex8P1J1Type::Instance().UniqueParObjectId(); }
 
    /*!
   \brief Pack this class so it can be communicated
@@ -320,6 +341,22 @@ private:
 //=======================================================================
 
 
+class SoHex8P1J1RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "SoHex8P1J1RegisterType"; }
+
+  static SoHex8P1J1RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static SoHex8P1J1RegisterType instance_;
+};
+
+
 class SoHex8P1J1Register : public Soh8Register
 {
 public:
@@ -355,7 +392,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_SoHex8P1J1Register;}
+  virtual int UniqueParObjectId() const { return SoHex8P1J1RegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

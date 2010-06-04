@@ -1794,13 +1794,5 @@ inline GaussRule3D DRT::ELEMENTS::Ale3_Impl<distype>::getOptimalGaussrule()
 }
 
 
-//=======================================================================
-//=======================================================================
-
-int DRT::ELEMENTS::Ale3Register::Initialize(DRT::Discretization& dis)
-{
-  return 0;
-}
-
 #endif
 #endif

@@ -17,6 +17,7 @@ Maintainer: Mahmoud Ismail
 
 #include "matpar_parameter.H"
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
 {
@@ -64,6 +65,21 @@ namespace MAT
 
   }  // namespace PAR
 
+class Cnst_1d_artType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Cnst_1d_artType"; }
+
+  static Cnst_1d_artType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Cnst_1d_artType instance_;
+};
+
   /*----------------------------------------------------------------------*/
   /// Wrapper for constant 1D_Artery material
   ///
@@ -86,7 +102,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_Cnst_1d_art; }
+    virtual int UniqueParObjectId() const { return Cnst_1d_artType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated

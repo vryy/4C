@@ -23,10 +23,28 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 
 namespace POTENTIAL
 {
+
+class PecType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "PecType"; }
+
+  static PecType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static PecType instance_;
+};
+
+
 /*!
   \brief A set of degrees of freedom for potential discretization
  */
@@ -60,8 +78,8 @@ public:
 
    */
   PotentialElementContainer(const PotentialElementContainer& old);
-  
-  
+
+
   //! Assignment operator
   // explicit PotentialElementContainer& PotentialElementContainer operator = (const PotentialElementContainer& old);
 
@@ -71,46 +89,46 @@ public:
 
    */
   virtual ~PotentialElementContainer ();
-  
+
   //! unique par object
-  virtual int UniqueParObjectId() const {return ParObject_Pec;}
-  
+  virtual int UniqueParObjectId() const {return PecType::Instance().UniqueParObjectId(); }
+
   //! packs the potential element container in a vector<char>
   virtual void Pack(vector<char>& data) const;
-  
+
   //! unpacks the potential element container from a vector<char>
   virtual void Unpack(const vector<char>& data);
 
   //! unpacks the potential element container from a vector<char>
   void Unpack(const vector<char>& data, int& position);
-  
+
   //! print
   void Print();
 
   //! returns global Id of an element
   int Id() {return gid_;}
-  
+
   //! returns discretization type of an element
   DRT::Element::DiscretizationType Shape() {return distype_;}
-  
+
   //! returns body label of an element
   int Body_label(){return body_label_;}
-  
+
   //! returns atom density of an element
   double Beta(){return beta_;}
-  
+
   //! returns number of dofs of an element
   int NumDofs() {return (int) lm_.size();}
-  
+
   //! returns number of dofs of an element
   int NumNode() {return xyz_e_.M();}
-  
+
   //! returns spatial configuration
   Epetra_SerialDenseMatrix GetSpatialConfiguration(){return xyz_e_;}
 
   //! returns reference configuration
   Epetra_SerialDenseMatrix GetReferenceConfiguration(){return XYZ_e_;}
-  
+
   //! returns global degrees of freedom
   std::vector<int> GetLm(){return lm_;}
 
@@ -125,7 +143,7 @@ private:
 
   //! label of an element
   int                                         body_label_;
-  
+
   //! atom density
   double                                      beta_;
 

@@ -25,8 +25,9 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_parobject.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
-#include "Teuchos_RefCountPtr.hpp"
+#include <Teuchos_RCP.hpp>
 
 
 using namespace std;
@@ -41,6 +42,21 @@ namespace DRT
 
 namespace NURBS
 {
+
+class KnotvectorObjectType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "KnotvectorObjectType"; }
+
+  static KnotvectorObjectType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static KnotvectorObjectType instance_;
+};
 
 /*!
 \brief A class to manage a nurbs knotvector
@@ -94,7 +110,7 @@ public:
 	     method will return the base indices
 	     of the elements 'local' knotspans
 
-      \param npatch (o)	
+      \param npatch (o)
              The number of the patch this element
              belongs to.
 
@@ -106,26 +122,26 @@ public:
             cartesian structure of the knotspan.
             We assume a element/control point numbering
 	    as follows:
-	
+
       \verbatim
 
             patch local cartesian element index:
-	
+
 	             (num_u,num_v,num_w)
 
 	    gid = patchoffset+num_u+num_v*nele                 (2d)
 
 	    gid = patchoffset+num_u+num_v*nele+num_w*nele*mele (3d)
-	
+
       \endverbatim
 
       \note Here, all elements in a patch are assumed to be
             numbered consecutively and patchoffset is the nuber
             of all elements from previous patches.
-	
+
 	    Example: Element gid=7, linear element, 2D, npatch 1
-	
-                     domain size: nele=6,mele=2	
+
+                     domain size: nele=6,mele=2
 
                      The numbers in the picture are control
 		     point gids
@@ -160,7 +176,7 @@ public:
 /*!
       \brief convert an element local id + patch number to its corresponding gid
 
-      \param  npatch (i)	
+      \param  npatch (i)
               The number of the patch this element
               belongs to.
 
@@ -178,17 +194,17 @@ public:
             cartesian structure of the knotspan.
             We assume a element/control point numbering
 	    as follows:
-	
+
       \verbatim
 
             patch local cartesian element index:
-	
+
 	             (num_u,num_v,num_w)
 
 	    gid = patchoffset+num_u+num_v*nele                 (2d)
 
 	    gid = patchoffset+num_u+num_v*nele+num_w*nele*mele (3d)
-	
+
       \endverbatim
 
       \note This is the inverse method to ConvertEleGidToKnotIds. See its docu
@@ -217,7 +233,7 @@ public:
            cartesian structure of the knotspan
            and the consecutive order of elements/control
            points in the patches.
-	
+
 	   Example: Element gid=7, linear element, 2D
                     The numbers in the picture are control
 		    point gids (see above)
@@ -356,7 +372,7 @@ public:
   every class implementing ParObject needs a unique id defined in the
   ParObject header file
   */
-  virtual int UniqueParObjectId() const { return ParObject_Knotvector;}
+  virtual int UniqueParObjectId() const { return KnotvectorObjectType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -381,7 +397,7 @@ public:
   /*!
   \brief Return the degree of the nurbs patch
 
-      \param npatch (i)	
+      \param npatch (i)
              The number of the patch
 
   */
@@ -397,7 +413,7 @@ public:
   /*!
   \brief Return the knot sizes of the nurbs patch
 
-      \param npatch (i)	
+      \param npatch (i)
              The number of the patch
 
   */
@@ -438,7 +454,7 @@ public:
   /*!
   \brief Return the element sizes of the nurbs patch
 
-      \param npatch (i)	
+      \param npatch (i)
              The number of the patch
 
   */

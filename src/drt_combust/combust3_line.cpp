@@ -16,6 +16,8 @@ Maintainer: Florian Henke
 #include "combust3.H"
 
 
+DRT::ELEMENTS::Combust3LineType DRT::ELEMENTS::Combust3LineType::instance_;
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|

@@ -30,6 +30,43 @@ Maintainer: Moritz Frenzel
 // inverse design object
 #include "inversedesign.H"
 
+
+DRT::ELEMENTS::So_hex8Type DRT::ELEMENTS::So_hex8Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::So_hex8Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::So_hex8* object = new DRT::ELEMENTS::So_hex8(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="SOLIDH8" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_hex8(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+DRT::ELEMENTS::Soh8RegisterType DRT::ELEMENTS::Soh8RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Soh8RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Soh8Register* object =
+    new DRT::ELEMENTS::Soh8Register(DRT::Element::element_so_hex8);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
@@ -53,7 +90,7 @@ time_(0.0)
     pstype_ = getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
     pstime_ = pslist.get<double>("PRESTRESSTIME");
   }
-  
+
   if (pstype_==INPAR::STR::prestress_mulf)
     prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8,NUMGPT_SOH8));
 
@@ -203,7 +240,7 @@ void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,pstime_);
   ExtractfromPack(position,data,time_);
   if (pstype_==INPAR::STR::prestress_mulf)
-  {  
+  {
     vector<char> tmpprestress(0);
     ExtractfromPack(position,data,tmpprestress);
     if (prestress_ == Teuchos::null)
@@ -229,7 +266,7 @@ void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
   invJ_.resize(size, LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>(true));
   for (int i=0; i<size; ++i)
     ExtractfromPack(position,data,invJ_[i]);
-  
+
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;

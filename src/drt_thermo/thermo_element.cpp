@@ -31,6 +31,35 @@ Maintainer: Caroline Danowski
 
 using namespace DRT::UTILS;
 
+DRT::ELEMENTS::ThermoType DRT::ELEMENTS::ThermoType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::ThermoType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Thermo* object =
+    new DRT::ELEMENTS::Thermo(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoType::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="THERMO" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Thermo(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::ThermoBoundaryType DRT::ELEMENTS::ThermoBoundaryType::instance_;
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            dano 09/09 |
  *----------------------------------------------------------------------*/

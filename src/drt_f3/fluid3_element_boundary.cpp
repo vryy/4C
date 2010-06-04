@@ -21,6 +21,8 @@ Maintainer: Axel Gerstenberger
 
 using namespace DRT::UTILS;
 
+DRT::ELEMENTS::Fluid3BoundaryType DRT::ELEMENTS::Fluid3BoundaryType::instance_;
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |

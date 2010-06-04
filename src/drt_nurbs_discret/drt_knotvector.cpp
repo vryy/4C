@@ -13,6 +13,16 @@ Maintainer: Peter Gamnitzer
 
 #include "drt_knotvector.H"
 
+
+DRT::NURBS::KnotvectorObjectType DRT::NURBS::KnotvectorObjectType::instance_;
+
+
+DRT::ParObject* DRT::NURBS::KnotvectorObjectType::Create( const std::vector<char> & data )
+{
+  return NULL;
+}
+
+
 /*----------------------------------------------------------------------*
  |  empty ctor (public)                                      gammi 05/08|
  *----------------------------------------------------------------------*/
@@ -707,7 +717,7 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
 	    abs((*((knot_values_[np])[rr]))[                       mm]-firstval);
 	  double de =
 	    abs((*((knot_values_[np])[rr]))[(n_x_m_x_l_[np])[rr]-1-mm]-lastval );
-	
+
 	  if(de>1e-9||db>1e-9)
 	  {
 	    dserror("need multiple knots at the beginning and end of an interpolated knotvector\n");
@@ -728,7 +738,7 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
 	    (*((knot_values_[np])[rr]))[(n_x_m_x_l_[np])[rr]  -mm]
 	    -
 	    (*((knot_values_[np])[rr]))[(n_x_m_x_l_[np])[rr]-1-mm];
-	
+
 	  if(abs(de-db)>1e-9)
 	  {
 	    dserror("periodic knotvector doesn't obey periodicity\n");

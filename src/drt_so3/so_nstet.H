@@ -25,6 +25,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_inpar/inpar_structure.H"
 
@@ -63,6 +64,21 @@ class NStet;
     so_nstet4_vol,
     so_nstet4_dev
   };
+
+class NStetRegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "NStetRegisterType"; }
+
+  static NStetRegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static NStetRegisterType instance_;
+};
 
 //---------------------------------------------------------------------
 /*!
@@ -106,7 +122,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_NStetRegister;}
+  virtual int UniqueParObjectId() const { return NStetRegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -175,7 +191,7 @@ private:
 
   // map of row nodes adjacent to nstet elements
   map<int,DRT::Node*>                                 noderids_;
-  // map of column nstet elements 
+  // map of column nstet elements
   map<int,DRT::ELEMENTS::NStet*>                      elecids_;
   // map of nodal stresses
   map<int,vector<double> >                            nodestress_;
@@ -219,6 +235,27 @@ private:
 
 //=======================================================================
 //=======================================================================
+
+class NStetType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "NStetType"; }
+
+  static NStetType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static NStetType instance_;
+};
+
 
 /*!
 \brief A nodal-averaged strain 4-noded tet element according to Mike Puso
@@ -301,7 +338,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_NStet;}
+  virtual int UniqueParObjectId() const { return NStetType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -535,8 +572,8 @@ protected:
                                 vector<map<int,DRT::Node*> >&            nodaladjnode,
                                 LINALG::SerialDenseMatrix&               stiff,
                                 LINALG::SerialDenseVector&               force);
-  
-  
+
+
   //! almost standard displ. tet4 calc routine
   virtual void nstetnlnstiffmass(vector<int>&              lm,
                                 vector<double>&           disp,

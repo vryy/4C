@@ -17,6 +17,7 @@ Maintainer: Volker Gravemeier
 
 #include "matpar_parameter.H"
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
 {
@@ -62,6 +63,21 @@ namespace MAT
 
   }  // namespace PAR
 
+class SutherlandType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "SutherlandType"; }
+
+  static SutherlandType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static SutherlandType instance_;
+};
+
   /*----------------------------------------------------------------------*/
   /// scalar transport material with temperature dependence according to Sutherland law
   class Sutherland : public Material
@@ -83,7 +99,7 @@ namespace MAT
       top of drt_parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const { return ParObject_Sutherland; }
+    virtual int UniqueParObjectId() const { return SutherlandType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated

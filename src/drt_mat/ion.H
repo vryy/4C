@@ -15,13 +15,14 @@ Maintainer: Georg Bauer
 
 #include "matpar_parameter.H"
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
 {
 
   namespace PAR
   {
-   
+
     /*----------------------------------------------------------------------*/
     /// material parameters for convection-diffusion
     class Ion : public Parameter
@@ -52,6 +53,21 @@ namespace MAT
 
   } // namespace PAR
 
+class IonType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "IonType"; }
+
+  static IonType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static IonType instance_;
+};
+
   /*----------------------------------------------------------------------*/
   /// Wrapper for the material properties of an ion species in an electrolyte solution
   class Ion : public Material
@@ -72,7 +88,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_Ion; }
+    virtual int UniqueParObjectId() const { return IonType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -114,7 +130,7 @@ namespace MAT
 
   private:
 
-    /// my material parameters 
+    /// my material parameters
     MAT::PAR::Ion* params_;
   };
 

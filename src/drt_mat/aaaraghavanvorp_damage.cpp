@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
 \file aaaraghavanvorp_damage.cpp
 \brief
-This file contains the routines required for aneurysmatic artery wall 
+This file contains the routines required for aneurysmatic artery wall
 damaging following Simo approach explained in Holzapfel (p298).
-SEF by Raghavan and Vorp[2000](Isochoric) and Simo&Miehe version of 
+SEF by Raghavan and Vorp[2000](Isochoric) and Simo&Miehe version of
 Ogden (1972) (Volumetric) with beta=-2
 
 The material is a special case of a generalised pover law neo-Hookean material
@@ -31,7 +31,7 @@ MAT::PAR::AAAraghavanvorp_damage::AAAraghavanvorp_damage(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
-  
+
   bulk_(matdata->GetDouble("BULK")),	    /// Bulk's modulus (Volumetric)
   alpha_(matdata->GetDouble("ALPHA")),	    /// 1st parameter, alpha (Isochoric)
   beta_(matdata->GetDouble("BETA")),	    /// 2nd parameter, beta (Isochoric)
@@ -40,6 +40,18 @@ MAT::PAR::AAAraghavanvorp_damage::AAAraghavanvorp_damage(
   b_(matdata->GetDouble("B")),		    /// 2nd parameter, b
   density_(matdata->GetDouble("DENS"))	    /// Density
 {
+}
+
+
+
+MAT::AAAraghavanvorp_damageType MAT::AAAraghavanvorp_damageType::instance_;
+
+
+DRT::ParObject* MAT::AAAraghavanvorp_damageType::Create( const std::vector<char> & data )
+{
+  MAT::AAAraghavanvorp_damage* aaadamage = new MAT::AAAraghavanvorp_damage();
+  aaadamage->Unpack(data);
+  return aaadamage; //aaadam;
 }
 
 
@@ -72,7 +84,7 @@ MAT::AAAraghavanvorp_damage::AAAraghavanvorp_damage(MAT::PAR::AAAraghavanvorp_da
  |  Pack                                          (public)  ^_^gm 05/09 |
  *----------------------------------------------------------------------*/
 void MAT::AAAraghavanvorp_damage::Pack(vector<char>& data) const
-{ 
+{
   cout << "PACK \n";
   data.resize(0);
   // pack type of this instance of ParObject
@@ -82,7 +94,7 @@ void MAT::AAAraghavanvorp_damage::Pack(vector<char>& data) const
   int matid = -1;
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data,matid);
- 
+
   //  pack history data
   int histsize;
   if (!Initialized())
@@ -98,7 +110,7 @@ void MAT::AAAraghavanvorp_damage::Pack(vector<char>& data) const
     {
      AddtoPack(data,histglast_->at(var));
     }
-  return; 
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -144,7 +156,7 @@ void MAT::AAAraghavanvorp_damage::Unpack(const vector<char>& data)
 //  histglast_= rcp(new vector<double> );   ///< damage of last converged state
 
 
-  for (int var=0; var<twicehistsize; ++var) 
+  for (int var=0; var<twicehistsize; ++var)
   {
     LINALG::Matrix<1,1> tmp(true);
     //double tmp= 0.0;
@@ -152,7 +164,7 @@ void MAT::AAAraghavanvorp_damage::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,tmp);// last vectors are unpacked
     histglast_->push_back(tmp);
   }
- 
+
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 
@@ -163,7 +175,7 @@ void MAT::AAAraghavanvorp_damage::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 
 void MAT::AAAraghavanvorp_damage::Setup(const int numgp,const double strength)
-{ 
+{
   cout << "SETUP \n";
   histgcurr_=rcp(new vector<LINALG::Matrix<1,1> >);
   histglast_=rcp(new vector<LINALG::Matrix<1,1> >);
@@ -174,7 +186,7 @@ void MAT::AAAraghavanvorp_damage::Setup(const int numgp,const double strength)
   histeqstrmaxlast_=rcp(new vector<LINALG::Matrix<1,1> >);
 //  histeqstrmaxcurr_=rcp(new vector<double> );
 //  histeqstrmaxlast_=rcp(new vector<double> );
-  
+
   elstrength_=rcp(new double);
 //  double emptyvec=0.0;
 //  double emptyvec1=1.0;
@@ -186,7 +198,7 @@ void MAT::AAAraghavanvorp_damage::Setup(const int numgp,const double strength)
   histglast_->resize(numgp);
   histeqstrmaxcurr_->resize(numgp);
   histeqstrmaxlast_->resize(numgp);
-  
+
   for (int j=0; j<numgp; ++j)
   {
     histgcurr_->at(j) = emptyvec1;
@@ -194,7 +206,7 @@ void MAT::AAAraghavanvorp_damage::Setup(const int numgp,const double strength)
     histeqstrmaxcurr_->at(j) = 0.0;
     histeqstrmaxlast_->at(j) = params_->eqstrmin_;
   }
-  
+
   *elstrength_=strength; // uncomment when everything is working
 //  *elstrength_ = 1.0;
   isinit_=true;
@@ -251,14 +263,14 @@ void MAT::AAAraghavanvorp_damage::StressTensTransfSPKtoCauchy(LINALG::Matrix<NUM
                                                               LINALG::Matrix<NUM_STRESS_3D,1>& cstress ///< Cauchy-stress
                                                               )
 {
-  cstress(0) = (f(0)*pktwo(0)+f(3)*pktwo(3)+f(5)*pktwo(5))*f(0)	
+  cstress(0) = (f(0)*pktwo(0)+f(3)*pktwo(3)+f(5)*pktwo(5))*f(0)
   	+(f(0)*pktwo(3)+f(3)*pktwo(1)+f(5)*pktwo(4))*f(3)
         +(f(0)*pktwo(5)+f(3)*pktwo(4)+f(5)*pktwo(2))*f(5);	// cstress11
-  
+
   cstress(3) = (f(0)*pktwo(0)+f(3)*pktwo(3)+f(5)*pktwo(5))*f(3)
   	+(f(0)*pktwo(3)+f(3)*pktwo(1)+f(5)*pktwo(4))*f(1)
         +(f(0)*pktwo(5)+f(3)*pktwo(4)+f(5)*pktwo(2))*f(4);	// cstress12
-  
+
   cstress(5) = (f(0)*pktwo(0)+f(3)*pktwo(3)+f(5)*pktwo(5))*f(5)
   	+(f(0)*pktwo(3)+f(3)*pktwo(1)+f(5)*pktwo(4))*f(4)
         +(f(0)*pktwo(5)+f(3)*pktwo(4)+f(5)*pktwo(2))*f(2);	// cstress13
@@ -274,7 +286,7 @@ void MAT::AAAraghavanvorp_damage::StressTensTransfSPKtoCauchy(LINALG::Matrix<NUM
   cstress(2) = (f(5)*pktwo(0)+f(4)*pktwo(3)+f(2)*pktwo(5))*f(5)
   	+(f(5)*pktwo(3)+f(4)*pktwo(1)+f(2)*pktwo(4))*f(4)
         +(f(5)*pktwo(5)+f(4)*pktwo(4)+f(2)*pktwo(2))*f(2);	// cstress33
-                
+
   cstress.Scale(1.0/detf);
   return;
 }
@@ -299,7 +311,7 @@ void MAT::AAAraghavanvorp_damage::StressTensTransfCauchytoSPK(LINALG::Matrix<NUM
   pktwo(5) = 	 (invf(0)*cstress(0)+invf(3)*cstress(3)+invf(5)*cstress(5))*invf(5)
   		+(invf(0)*cstress(3)+invf(3)*cstress(1)+invf(5)*cstress(4))*invf(4)
                 +(invf(0)*cstress(5)+invf(3)*cstress(4)+invf(5)*cstress(2))*invf(2);	// p13
-   
+
   pktwo(1) = 	 (invf(3)*cstress(0)+invf(1)*cstress(3)+invf(4)*cstress(5))*invf(3)
   		+(invf(3)*cstress(3)+invf(1)*cstress(1)+invf(4)*cstress(4))*invf(1)
                 +(invf(3)*cstress(5)+invf(1)*cstress(4)+invf(4)*cstress(2))*invf(4);	// p22
@@ -347,7 +359,7 @@ void MAT::AAAraghavanvorp_damage::StressTensTransfCauchytoSPK(LINALG::Matrix<NUM
  K    .. bulk modulus
  beta2 = -2 a parameter according to Holzapfel (p244) ,Simo & Miehe (1991)
  J    .. det(F) determinante of the Jacobian matrix, IIIc^0.5
- 
+
   */
 void MAT::AAAraghavanvorp_damage::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain, ///< green lagrange strain
             	  			    const int gp,                        ///< current Gauss point
@@ -358,7 +370,7 @@ void MAT::AAAraghavanvorp_damage::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1
   // material parameters for volumetric part
   const double bulk  =  params_->bulk_; // Bulk's modulus(Volumetric)
   const double beta2 =  -2;             // parameter from Holzapfel (p244), Simo & Miehe (1991)
-  
+
   // material parameters for isochoric part
   const double alpha = params_->alpha_;   // 1st parameter (Isochoric)
   const double beta  = params_->beta_;    // 2nd parameter (Isochoric)
@@ -421,7 +433,7 @@ void MAT::AAAraghavanvorp_damage::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1
 
 
   LINALG::Matrix<NUM_STRESS_3D,1> f(true); // deformation gradient tensor F, init to 0
-  
+
   f(0)=sqrt(rcg(0)); 		// F11
   f(1)=sqrt(rcg(1)); 		// F22
   f(2)=sqrt(rcg(2));		// F33
@@ -430,35 +442,35 @@ void MAT::AAAraghavanvorp_damage::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1
   f(5)=sqrt(rcg(5)/2.0);	// F31
 
   LINALG::Matrix<NUM_STRESS_3D,1> invf(true); // inverse of deformation gradient tensor F, init to 0
-  
+
   invf(0) = f(1)*f(2) - f(4)*f(4);     // invF11
   invf(1) = f(0)*f(2) - f(5)*f(5);     // invF22
   invf(2) = f(0)*f(1) - f(3)*f(3);     // invF33
   invf(3) = f(5)*f(4) - f(3)*f(2);     // invF12
   invf(4) = f(3)*f(5) - f(0)*f(4);     // invF23
   invf(5) = f(3)*f(4) - f(5)*f(1);     // invF31
-  
+
 // LINALG::Matrix<NUM_STRESS_3D,1> fvol(true); // deformation gradient tensor F, init to 0
 // for(int i=0;i<3;i++)
 //  fvol(i)=pow(detf,third);
 // LINALG::Matrix<NUM_STRESS_3D,1> invfvol(true); // deformation gradient tensor F, init to 0
 // for(int i=0;i<3;i++)
 //  fvol(i)=pow(detf,-third);
-   
+
 // LINALG::Matrix<NUM_STRESS_3D,1> fiso(f); // deformation gradient tensor F, init to 0
 // fiso.Scale(pow(invdet,-third));
 // LINALG::Matrix<NUM_STRESS_3D,1> invfiso(invf); // deformation gradient tensor F, init to 0
 // fiso.Scale(pow(invdet,third));
-  
+
 
 
   //--- determine 2nd Piola Kirchhoff stresses pktwo -------------------------------------
-  
+
   // 1st step: volumetric part
   //==========================
   LINALG::Matrix<NUM_STRESS_3D,1> pktwovol(invc);
   double scalar = bulk/beta2 * (1.0-pow(detf,-beta2));
-  
+
   pktwovol.Scale(scalar);  // initialise PKtwo with volumetric part
 
 
@@ -472,7 +484,7 @@ void MAT::AAAraghavanvorp_damage::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1
   //=========================
   double isochor1 = 2.0*(alpha*pow(iiinv,third)
 			 + 2.0*beta*inv - 6.0*beta*pow(iiinv,third))*pow(iiinv,-twthi);
-                         
+
   double isochor2 = -twthi*inv*(alpha*pow(iiinv,third)
 				+ 2.0*beta*inv
 				- 6.0*beta*pow(iiinv,third))*pow(iiinv,-twthi);
@@ -489,7 +501,7 @@ void MAT::AAAraghavanvorp_damage::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1
 // sigmiso.Scale(strength);
 // StressTensTransfCauchytoSPK(invfiso,1.0,sigmvol,pktwoiso);
 
-    
+
   //--- do elasticity matrix -------------------------------------------------------------
   // ensure that cmat is zero when it enters the computation
   // It is an implicit law that cmat is zero upon input
@@ -500,19 +512,19 @@ void MAT::AAAraghavanvorp_damage::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatvol(true); // volumetric elasticity tensor
   double coeff1 = bulk * pow(detf,-beta2);  // coefficients
   double coeff2 = - 2.0 * scalar;
-    
+
   // contribution: Cinv \otimes Cinv
   for (int i = 0; i < 6; i++)
     for (int j = 0; j < 6; j++)
       cmatvol(i,j) = coeff1 * invc(i)*invc(j);
 
-  // contribution: boeppel-product 
+  // contribution: boeppel-product
   AddtoCmatHolzapfelProduct(cmatvol,invc,coeff2);
 
   // 4th step: isochoric part
   //=========================
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatiso(true); // isochoric elasticity tensor
-  
+
   // deltas (see also Holzapfel p.261)
   // note that these deltas serve for the isochoric part only
   double delta1 = 8.0 * beta * pow(iiinv,-twthi);
@@ -535,30 +547,30 @@ void MAT::AAAraghavanvorp_damage::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1
 
   // contribution: boeppel-product
   AddtoCmatHolzapfelProduct(cmatiso,invc,delta7);
-  
+
   // 5th step: damage evaluation
   //============================
 //  double sefvol=bulk*pow(beta2,-2)*(beta2*log(detf)+pow(detf,-beta2)-1);
   double sefiso = alpha * (inv * pow(iiinv,-third)-3)+ beta * pow((inv * pow(iiinv,-third)-3),2);
-   
-  if(sefiso < 0 )  
+
+  if(sefiso < 0 )
    sefiso = 0.0; // for the first step
 
   double eqstr = sqrt(2.0 * sefiso);
   double hgl = histglast_->at(gp)(0,0);
-  double hgc=1.0; 
+  double hgc=1.0;
   double hesml = histeqstrmaxlast_->at(gp)(0,0); // eqstrmin-log(1-(1-hgl)/a)/b;
 
-  if(eqstr <  hesml) 
+  if(eqstr <  hesml)
     {
      hgc=hgl;
-     
+
      histgcurr_->at(gp)= hgl;	        // storing of actual damage parameter value
      histeqstrmaxcurr_->at(gp)= hesml;  // storing of actual maximum equivalent strain
-     
+
      cmatiso.Scale(hgc);
-    } 
-  else 
+    }
+  else
      {
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisodam(true);// damage part of isochoric elasticity tensor
       double gdot = 0.0;
@@ -569,14 +581,14 @@ void MAT::AAAraghavanvorp_damage::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1
       histgcurr_->at(gp)(0,0)= hgc;     // storing of actual damage parameter value
       histeqstrmaxcurr_->at(gp)= eqstr; // storing of actual maximum equivalent strain
 
-      for (int i = 0; i < 6; i++) 		// dyadic product 
+      for (int i = 0; i < 6; i++) 		// dyadic product
         for (int j = 0; j < 6; j++)
           cmatisodam(i,j) = pktwoiso(i)*pktwoiso(j);
-         
+
       cmatiso.Scale(hgc);
       cmatisodam.Scale(gdot);
       cmatiso += cmatisodam;
-            
+
      }
 
   // 6th step: final step
@@ -584,21 +596,21 @@ void MAT::AAAraghavanvorp_damage::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1
 
  pktwovol.Scale(strength);
  pktwoiso.Scale(hgc*strength);
- 
+
  *stress = pktwovol;
  *stress += pktwoiso;
  cmatvol.Scale(strength);
- cmatiso.Scale(strength); 
+ cmatiso.Scale(strength);
  *cmat = cmatvol;
  *cmat += cmatiso;
 
 /*
-  // 7th step: rescaling step - DISASTER ZONE 
+  // 7th step: rescaling step - DISASTER ZONE
   //==========================
   LINALG::Matrix<NUM_STRESS_3D,1> pktwo(*stress); // Cauchy stress tensor, init to 0
 
   LINALG::Matrix<NUM_STRESS_3D,1> f(true); // deformation gradient tensor F, init to 0
-  
+
   f(0)=sqrt(rcg(0)); 		// F11
   f(1)=sqrt(rcg(1)); 		// F22
   f(2)=sqrt(rcg(2));		// F33
@@ -607,26 +619,26 @@ void MAT::AAAraghavanvorp_damage::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1
   f(5)=sqrt(rcg(5)/2.0);	// F31
 
   LINALG::Matrix<NUM_STRESS_3D,1> invf(true); // inverse of deformation gradient tensor F, init to 0
-  
+
   invf(0) = f(1)*f(2) - f(4)*f(4);     // invF11
   invf(1) = f(0)*f(2) - f(5)*f(5);     // invF22
   invf(2) = f(0)*f(1) - f(3)*f(3);     // invF33
   invf(3) = f(5)*f(4) - f(3)*f(2);     // invF12
   invf(4) = f(3)*f(5) - f(0)*f(4);     // invF23
   invf(5) = f(3)*f(4) - f(5)*f(1);     // invF31
-  
+
   LINALG::Matrix<NUM_STRESS_3D,1> fvol(true); // deformation gradient tensor F, init to 0
   for(int =0;i<3;i++)
    fvol(i)=pow(detf,third);
   LINALG::Matrix<NUM_STRESS_3D,1> invfvol(true); // deformation gradient tensor F, init to 0
   for(int =0;i<3;i++)
    fvol(i)=pow(detf,-third);
-   
+
   LINALG::Matrix<NUM_STRESS_3D,1> fiso(f); // deformation gradient tensor F, init to 0
   fiso.Scale(pow(invdet,-third));
   LINALG::Matrix<NUM_STRESS_3D,1> invfiso(invf); // deformation gradient tensor F, init to 0
   fiso.Scale(pow(invdet,third));
-  
+
 
   LINALG::Matrix<NUM_STRESS_3D,1> sigm(true); // Cauchy stress tensor, init to 0
 

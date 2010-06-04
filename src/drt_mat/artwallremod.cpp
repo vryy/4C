@@ -45,6 +45,17 @@ MAT::PAR::ArtWallRemod::ArtWallRemod(Teuchos::RCP<MAT::PAR::Material> matdata)
 }
 
 
+MAT::ArtWallRemodType MAT::ArtWallRemodType::instance_;
+
+
+DRT::ParObject* MAT::ArtWallRemodType::Create( const std::vector<char> & data )
+{
+  MAT::ArtWallRemod* remod = new MAT::ArtWallRemod();
+  remod->Unpack(data);
+  return remod;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)         06/08|
  *----------------------------------------------------------------------*/
@@ -434,7 +445,7 @@ void MAT::ArtWallRemod::Evaluate(
     Remodel(gp,time,defgrd);
   }
 
-  // switch between isotropic and anisotropic fiber material for initial iteration step 
+  // switch between isotropic and anisotropic fiber material for initial iteration step
   if (a1_->at(gp)[0]==0 && a1_->at(gp)[1]==0 && a1_->at(gp)[2]==0) {
     // isotropic fiber part: ***********************************************
     // W=(k1/(2.0*k2))*(exp(k2*pow((Ibar_1 - 3.0),2)-1.0)); fiber SEF

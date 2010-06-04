@@ -15,6 +15,7 @@ Maintainer: Moritz Frenzel
 
 #include "matpar_parameter.H"
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
 #include <Teuchos_RefCountPtr.hpp>
@@ -67,6 +68,21 @@ namespace MAT
 
   }  // namespace PAR
 
+class ContChainNetwType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ContChainNetwType"; }
+
+  static ContChainNetwType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static ContChainNetwType instance_;
+};
+
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Mooney-Rivlin material
@@ -88,7 +104,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_ContChainNetw; }
+    virtual int UniqueParObjectId() const { return ContChainNetwType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated

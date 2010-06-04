@@ -29,6 +29,7 @@ using namespace std;
 using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_condition.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -48,6 +49,27 @@ namespace DRT
 
 namespace ELEMENTS
 {
+
+class Truss2Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Truss2Type"; }
+
+  static Truss2Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Truss2Type instance_;
+};
+
 /*!
 \brief three dimensional total Lagrange truss element
 
@@ -107,7 +129,7 @@ public:
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
   */
-  virtual int UniqueParObjectId() const { return ParObject_Truss2; }
+  virtual int UniqueParObjectId() const { return Truss2Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -311,66 +333,66 @@ private:
     tr2_totlag,
     tr2_engstrain
   };
-  
+
   //! container containing all kind of Truss2 thisandthat
-  DRT::Container data_; 
-  
+  DRT::Container data_;
+
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
-  
+
   //!reference node position
   LINALG::Matrix<4,1> X_;
-  
+
   //! material type
   int material_;
-  
+
   //! length in reference configuration
   double lrefe_;
-  
+
   //! cross section area
   double crosssec_;
-  
+
   //! Kinematic type
   KinematicType kintype_;
-  
-  //! gaussrule_ will be initialized automatically to a 2 point integration rule 
+
+  //! gaussrule_ will be initialized automatically to a 2 point integration rule
   DRT::UTILS::GaussRule1D gaussrule_;
-  
+
   //! @name methods for initilization of the element
-  
+
   //!sets reference coordinates X_ and refenrence length lrefe_ for elements added to the discretization after simulation start
   void SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xrefe);
-  
+
   //@}
 
   //! @name Internal calculation methods
-              
+
   //!calculation of nonlinear stiffness and mass matrix switching between total lagrange and enginerring strains
-  void t2_nlnstiffmass(vector<double>&           disp, 
+  void t2_nlnstiffmass(vector<double>&           disp,
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
                        Epetra_SerialDenseVector* force);
-  
-  
+
+
   //!calculation of nonlinear stiffness and mass matrix
   void t2_nlnstiffmass_totlag( vector<double>& disp,
       Epetra_SerialDenseMatrix* stiffmatrix,
       Epetra_SerialDenseMatrix* massmatrix,
       Epetra_SerialDenseVector* force);
-  
-  /*! 
+
+  /*!
    * \brief calculate force, nonlinear stiffness and mass matrix using a engineering strain measure.
-   * 
+   *
    * Unlike the fully nonlinear implementation of #t2_nlnstiffmass_totlag, this function uses \f$\varepsilon=\Delta d / d\f$
-   * as strain measure. 
-   *  
-  */ 
+   * as strain measure.
+   *
+  */
   void t2_nlnstiffmass_engstr( vector<double>& disp,
       Epetra_SerialDenseMatrix* stiffmatrix,
       Epetra_SerialDenseMatrix* massmatrix,
       Epetra_SerialDenseVector* force
       );
-  
+
   //! lump mass matrix
   void t2_lumpmass(Epetra_SerialDenseMatrix* emass);
 
@@ -389,6 +411,21 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 
 
 //------------- class Truss2Register: -------------------------------------------
+
+class Truss2RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Truss2RegisterType"; }
+
+  static Truss2RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Truss2RegisterType instance_;
+};
 
 /*!
 \brief A register for Truss2 element
@@ -433,7 +470,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Truss2Register;}
+  virtual int UniqueParObjectId() const { return Truss2RegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

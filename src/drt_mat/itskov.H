@@ -37,6 +37,7 @@ Maintainer: Robert Metzke
 
 #include "material.H"
 #include "../drt_lib/drt_container.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
 
@@ -49,9 +50,9 @@ namespace MAT
     /*----------------------------------------------------------------------*/
     /*!
 	\brief material parameters for Itskov material law
-	
+
 	 MAT 1 MAT_ITSKOV  MU_GS 0.0 MU_FIBERS 2.026255352 ALPHA 20.0 BETA 20.0 EPSILON 100.0 GAMMA 10.0 C 0.0 DENS 1.0E-6
-	
+
 	*/
     class Itskov : public Parameter
     {
@@ -90,7 +91,22 @@ namespace MAT
     };  // class CHARMM
 
   }  // namespace PAR
-  	
+
+class ItskovType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ItskovType"; }
+
+  static ItskovType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static ItskovType instance_;
+};
+
   /*----------------------------------------------------------------------*/
   /*!
   \brief polyconvex Itskov material law including adaptive penalty approach
@@ -110,17 +126,17 @@ namespace MAT
   The input line should read like that:
 
   MAT 1 MAT_ITSKOV  MU_GS 0.0 MU_FIBERS 2.026255352 ALPHA 20.0 BETA 20.0 EPSILON 100.0 GAMMA 10.0 C 0.0 DENS 1.0E-6
-	
+
   References:
-	
+
   Itskov, M.; Ehret, A. & Mavrilas, D.
   A polyconvex anisotropic strain energy function for soft collagenous tissues
   Biomechanics and Modeling in Mechanobiology, 2006, 5, 17-26
-	
+
   Ehret, A. & Itskov, M.
   A polyconvex hyperelastic model for fiber-reinforced materials in application to soft tissues
   Journal of Materials Science, 2007, 42, 8853-8863
-	
+
   \author Robert Metzke
   \date 03/09
   */
@@ -142,7 +158,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_Itskov; }
+    virtual int UniqueParObjectId() const { return ItskovType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated

@@ -595,7 +595,7 @@ void DRT::ELEMENTS::Ale2::static_ke(
 	Epetra_SerialDenseVector gp(2);
 	gp(0)=e1;
 	gp(1)=e2;
-	
+
 	DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
 	  (funct  ,
 	   deriv  ,
@@ -825,7 +825,7 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(
 	Epetra_SerialDenseVector gp(2);
 	gp(0)=e1;
 	gp(1)=e2;
-	
+
 	DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
 	  (funct  ,
 	   deriv  ,
@@ -884,14 +884,6 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(
 
 
   }
-}
-
-//=======================================================================
-//=======================================================================
-
-int DRT::ELEMENTS::Ale2Register::Initialize(DRT::Discretization& dis)
-{
-  return 0;
 }
 
 #endif

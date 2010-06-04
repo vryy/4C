@@ -17,6 +17,9 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_utils.H"
 
 
+DRT::ELEMENTS::Combust3SurfaceType DRT::ELEMENTS::Combust3SurfaceType::instance_;
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |

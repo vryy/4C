@@ -14,6 +14,7 @@ Maintainer: Robert Metzke
 #ifdef CCADISCRET
 
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT {
 
@@ -48,6 +49,22 @@ namespace MAT {
 
     } // namespace PAR
 
+
+class ProteinType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ProteinType"; }
+
+  static ProteinType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static ProteinType instance_;
+};
+
     /*----------------------------------------------------------------------*/
 
     /*!
@@ -73,7 +90,7 @@ namespace MAT {
 	  top of drt_parobject.H (this file) and should return it in this method.
 	 */
 	virtual int UniqueParObjectId() const {
-	    return ParObject_Protein;
+          return ProteinType::Instance().UniqueParObjectId();
 	}
 
 	/*!

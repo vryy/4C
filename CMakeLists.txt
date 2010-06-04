@@ -245,6 +245,7 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_locsys.cpp
   src/drt_lib/drt_node.cpp
   src/drt_lib/drt_parobject.cpp
+  src/drt_lib/drt_parobjectfactory.cpp
   src/drt_lib/drt_timecurve.cpp
   src/drt_lib/drt_utils.cpp
   src/drt_lib/drt_utils_createdis.cpp

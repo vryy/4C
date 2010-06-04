@@ -11,11 +11,40 @@
 #ifdef CCADISCRET
 
 #include "ale2.H"
+#include "../drt_ale2/ale2_nurbs.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 
 using namespace DRT::UTILS;
+
+DRT::ELEMENTS::Ale2Type DRT::ELEMENTS::Ale2Type::instance_;
+
+DRT::ParObject* DRT::ELEMENTS::Ale2Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Ale2* object = new DRT::ELEMENTS::Ale2(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele;
+
+  if ( eletype=="ALE2" )
+  {
+    if (eledistype!="NURBS4" and eledistype!="NURBS9")
+    {
+      ele = rcp(new DRT::ELEMENTS::Ale2(id,owner));
+    }
+  }
+
+  return ele;
+}
 
 
 DRT::ELEMENTS::Ale2::Ale2(int id, int owner)
@@ -112,7 +141,7 @@ void DRT::ELEMENTS::Ale2::Print(ostream& os) const
 
 RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Ale2::ElementRegister() const
 {
-  return rcp(new DRT::ELEMENTS::Ale2Register(Type()));
+  return Teuchos::null;
 }
 
 
@@ -161,72 +190,6 @@ GaussRule2D DRT::ELEMENTS::Ale2::getOptimalGaussrule(const DiscretizationType& d
         dserror("unknown number of nodes for gaussrule initialization");
   }
   return rule;
-}
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-
-DRT::ELEMENTS::Ale2Register::Ale2Register(DRT::Element::ElementType etype)
-  : ElementRegister(etype)
-{
-}
-
-
-DRT::ELEMENTS::Ale2Register::Ale2Register(const DRT::ELEMENTS::Ale2Register& old)
-  : ElementRegister(old)
-{
-}
-
-
-DRT::ELEMENTS::Ale2Register* DRT::ELEMENTS::Ale2Register::Clone() const
-{
-  return new DRT::ELEMENTS::Ale2Register(*this);
-}
-
-
-void DRT::ELEMENTS::Ale2Register::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-}
-
-
-void DRT::ELEMENTS::Ale2Register::Unpack(const vector<char>& data)
-{
-  int position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != (int)data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-}
-
-
-DRT::ELEMENTS::Ale2Register::~Ale2Register()
-{
-}
-
-
-void DRT::ELEMENTS::Ale2Register::Print(ostream& os) const
-{
-  os << "Ale2Register ";
-  ElementRegister::Print(os);
 }
 
 

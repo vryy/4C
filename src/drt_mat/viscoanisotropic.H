@@ -14,6 +14,7 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #ifdef CCADISCRET
 
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include <Teuchos_ParameterList.hpp>
 
 using namespace Teuchos;
@@ -57,6 +58,21 @@ namespace MAT
 
   }  // namespace PAR
 
+class ViscoAnisotropicType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ViscoAnisotropicType"; }
+
+  static ViscoAnisotropicType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static ViscoAnisotropicType instance_;
+};
+
   /*----------------------------------------------------------------------*/
   /// Wrapper for Visco-NeoHooke material
   class ViscoAnisotropic : public Material
@@ -77,7 +93,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_ViscoAnisotropic; }
+    virtual int UniqueParObjectId() const { return ViscoAnisotropicType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -128,10 +144,10 @@ namespace MAT
 
     /// Update internal stress variables
     void Update();
-    
+
     void UpdateFiberDirs
     (
-      const int numgp, 
+      const int numgp,
       LINALG::Matrix<3,3>* defgrd
     );
 

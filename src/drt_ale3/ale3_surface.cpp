@@ -14,6 +14,8 @@
 #include "../drt_lib/drt_dserror.H"
 
 
+DRT::ELEMENTS::Ale3SurfaceType DRT::ELEMENTS::Ale3SurfaceType::instance_;
+
 
 DRT::ELEMENTS::Ale3Surface::Ale3Surface(int id,
                                         int owner,

@@ -20,6 +20,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_dserror.H"
 
 
+DRT::ELEMENTS::Fluid2LineType DRT::ELEMENTS::Fluid2LineType::instance_;
 
 
 /*----------------------------------------------------------------------*

@@ -15,6 +15,7 @@ Maintainer: Michael Gee
 #define PRESTRESS_H
 
 #include "../drt_lib/drt_parobject.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_SerialDenseMatrix.h"
@@ -25,6 +26,19 @@ namespace DRT
 {
 namespace ELEMENTS
 {
+
+class PreStressType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "PreStressType"; }
+
+  static PreStressType & Instance() { return instance_; };
+
+private:
+
+  static PreStressType instance_;
+};
 
 /*!
 \brief A class for handling the prestressing in finite deformations
@@ -57,7 +71,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_PreStress;}
+  virtual int UniqueParObjectId() const { return PreStressType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

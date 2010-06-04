@@ -17,6 +17,7 @@ Maintainer: Burkhard Bornemann
 
 #include "matpar_parameter.H"
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
 
@@ -58,6 +59,21 @@ namespace MAT
 
   }  // namespace PAR
 
+class CompOgdenType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "CompOgdenType"; }
+
+  static CompOgdenType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static CompOgdenType instance_;
+};
+
   /*----------------------------------------------------------------------*/
   /// Wrapper for compressible Ogden material
   class CompOgden : public Material
@@ -78,7 +94,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_CompOgden; }
+    virtual int UniqueParObjectId() const { return CompOgdenType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated

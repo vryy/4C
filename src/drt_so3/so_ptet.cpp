@@ -18,6 +18,41 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_dserror.H"
 
 
+DRT::ELEMENTS::PtetRegisterType DRT::ELEMENTS::PtetRegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::PtetRegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::PtetRegister* object =
+    new DRT::ELEMENTS::PtetRegister(DRT::Element::element_ptet);
+  object->Unpack(data);
+  return object;
+}
+
+
+DRT::ELEMENTS::PtetType DRT::ELEMENTS::PtetType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::PtetType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Ptet* object = new DRT::ELEMENTS::Ptet(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::PtetType::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="PTET4" )
+  {
+    RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Ptet(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
 
 
 /*-----------------------------------------------------------------------

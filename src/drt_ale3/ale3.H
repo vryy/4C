@@ -21,6 +21,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
@@ -55,6 +56,29 @@ namespace ELEMENTS
 class Ale3Surface;
 class Ale3_Impl_Interface;
 template <DRT::Element::DiscretizationType distype> class Ale3_Impl;
+
+
+class Ale3Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Ale3Type"; }
+
+  static Ale3Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Ale3Type instance_;
+};
+
+
 
 /*!
 \brief A C++ wrapper for the ale3 element
@@ -152,7 +176,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Ale3;}
+  virtual int UniqueParObjectId() const { return Ale3Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -454,109 +478,25 @@ private:
   Ale3_Impl<distype> operator=(const Ale3_Impl<distype> other);
 };
 
+
 //=======================================================================
 //=======================================================================
 //=======================================================================
 //=======================================================================
 
 
-/*!
-\brief A register for ale3 element
-
-\author gee (gee@lnm.mw.tum.de)
-*/
-class Ale3Register : public DRT::ElementRegister
+class Ale3SurfaceType : public DRT::ParObjectType
 {
 public:
 
-  //! @name Constructors and destructors and related methods
+  std::string Name() const { return "Ale3SurfaceType"; }
 
-  /*!
-  \brief Standard Constructor
-
-  */
-  Ale3Register(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an Ale3Register
-
-  */
-  Ale3Register(const DRT::ELEMENTS::Ale3Register& old);
-
-  /*!
-  \brief Deep copy this instance of Ale3Register and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::Ale3Register* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class imploementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return ParObject_Ale3Register;}
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~Ale3Register();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the ale3 elements. it e.g. calculates the
-  field of averaged directors at nodes.
-  */
-  int Initialize(DRT::Discretization& dis);
-
-  //@}
+  static Ale3SurfaceType & Instance() { return instance_; };
 
 private:
 
-
-}; // class Ale3Register
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
+  static Ale3SurfaceType instance_;
+};
 
 
 /*!
@@ -617,7 +557,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Ale3Surface;}
+  virtual int UniqueParObjectId() const { return Ale3SurfaceType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

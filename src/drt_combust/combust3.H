@@ -19,6 +19,7 @@ Maintainer: Florian Henke
 #define COMBUST3_H
 
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_xfem/dof_management_element.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -37,6 +38,26 @@ namespace DRT
 //    class Combust3Surface;
 //    class Combust3Line;
 //    class Combust3Register;
+
+class Combust3Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Combust3Type"; }
+
+  static Combust3Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Combust3Type instance_;
+};
 
     //! A combust3 element with combustion and XFEM
     class Combust3 : public DRT::Element
@@ -114,7 +135,7 @@ namespace DRT
 
         virtual std::vector<RCP<DRT::Element> > Volumes();
 
-        virtual int UniqueParObjectId() const { return ParObject_Combust3; }
+        virtual int UniqueParObjectId() const { return Combust3Type::Instance().UniqueParObjectId(); }
 
         virtual void Pack(std::vector<char>& data) const;
 
@@ -367,6 +388,26 @@ namespace DRT
 
     }; // class Combust3
 
+class Combust3RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Combust3RegisterType"; }
+
+  static Combust3RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Combust3RegisterType instance_;
+};
+
     /*!
      * \brief A register for Combust3 element
      *
@@ -386,7 +427,7 @@ namespace DRT
 
         DRT::ELEMENTS::Combust3Register* Clone() const;
 
-        virtual int UniqueParObjectId() const { return ParObject_Combust3Register; }
+        virtual int UniqueParObjectId() const { return Combust3RegisterType::Instance().UniqueParObjectId(); }
 
         virtual void Pack(std::vector<char>& data) const;
 
@@ -413,6 +454,18 @@ namespace DRT
 
     }; // class Combust3Register
 
+class Combust3SurfaceType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Combust3SurfaceType"; }
+
+  static Combust3SurfaceType & Instance() { return instance_; };
+
+private:
+
+  static Combust3SurfaceType instance_;
+};
 
     /*!
      * \brief An element representing a surface of a combust3 element
@@ -461,7 +514,7 @@ namespace DRT
 
         virtual std::vector<RCP<DRT::Element> > Lines();
 
-        virtual int UniqueParObjectId() const { return ParObject_Combust3Surface; }
+        virtual int UniqueParObjectId() const { return Combust3SurfaceType::Instance().UniqueParObjectId(); }
 
         virtual void Pack(std::vector<char>& data) const;
 
@@ -552,6 +605,18 @@ namespace DRT
 
     }; // class Fluid3Surface
 
+class Combust3LineType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Combust3LineType"; }
+
+  static Combust3LineType & Instance() { return instance_; };
+
+private:
+
+  static Combust3LineType instance_;
+};
 
     /*!
      * \brief An element representing a line of a combust3 element
@@ -594,7 +659,7 @@ namespace DRT
 
         DRT::Element* Clone() const;
 
-        virtual int UniqueParObjectId() const { return ParObject_Combust3Line; }
+        virtual int UniqueParObjectId() const { return Combust3LineType::Instance().UniqueParObjectId(); }
 
         virtual void Pack(std::vector<char>& data) const;
 

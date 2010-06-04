@@ -58,6 +58,18 @@ density_(matdata->GetDouble("DENS"))
 {
 }
 
+
+MAT::CHARMMType MAT::CHARMMType::instance_;
+
+
+DRT::ParObject* MAT::CHARMMType::Create( const std::vector<char> & data )
+{
+  MAT::CHARMM* charmm = new MAT::CHARMM();
+  charmm->Unpack(data);
+  return charmm;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::CHARMM::CHARMM()
@@ -361,7 +373,7 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	FCD_direction(2) = dir_eigenv[0](2, 2);
 	//printf("%f",FCD_ENDD);
 	//cout << "FCD: " << time << " STARTD: " << FCD_STARTD << " ENDD: " << FCD_ENDD << endl;
-	
+
 	// Compute the acceleration in FCD direction
 	double FCD_v;
 	double FCD_a;

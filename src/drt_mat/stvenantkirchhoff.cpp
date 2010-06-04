@@ -29,6 +29,17 @@ MAT::PAR::StVenantKirchhoff::StVenantKirchhoff(
 }
 
 
+MAT::StVenantKirchhoffType MAT::StVenantKirchhoffType::instance_;
+
+
+DRT::ParObject* MAT::StVenantKirchhoffType::Create( const std::vector<char> & data )
+{
+  MAT::StVenantKirchhoff* stvenantk = new MAT::StVenantKirchhoff();
+  stvenantk->Unpack(data);
+  return stvenantk;
+}
+
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/

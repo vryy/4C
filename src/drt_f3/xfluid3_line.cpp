@@ -16,6 +16,8 @@ Maintainer: Axel Gerstenberger
 #include "xfluid3.H"
 
 
+DRT::ELEMENTS::XFluid3LineType DRT::ELEMENTS::XFluid3LineType::instance_;
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|

@@ -23,6 +23,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "so_hex8.H"
 #include "../drt_inpar/inpar_structure.H"
@@ -40,6 +41,26 @@ namespace ELEMENTS
 {
 // forward declarations
 class Sosh8Register;
+
+class So_sh8Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "So_sh8Type"; }
+
+  static So_sh8Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static So_sh8Type instance_;
+};
 
 /*!
 \brief A C++ 8-node Solid-Shell element inherited from so_hex8
@@ -97,7 +118,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_So_sh8;}
+  virtual int UniqueParObjectId() const { return So_sh8Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -208,7 +229,7 @@ public:
     undefined,///< no clear direction identified
     none      ///< no rearrangement
   };
-  
+
   enum ANSType
   {
     anssosh8,
@@ -226,7 +247,7 @@ protected:
   static const int num_ans = 3;             ///< number of modified ANS strains (E_rt,E_st,E_tt), here 3
   //! shell-thickness direction
   ThicknessDirection                             thickdir_;
-  
+
   ANSType                                        anstype_;
 
   //! in case of changed "thin" direction this is true
@@ -284,7 +305,7 @@ protected:
   void sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8]);
 
   const vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > sosh8_derivs_sdc();
-  
+
 }; // class So_sh8
 
 
@@ -292,6 +313,21 @@ protected:
 //=======================================================================
 //=======================================================================
 //=======================================================================
+
+class Sosh8RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Sosh8RegisterType"; }
+
+  static Sosh8RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Sosh8RegisterType instance_;
+};
 
 
 /*!
@@ -334,7 +370,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Sosh8Register;}
+  virtual int UniqueParObjectId() const { return Sosh8RegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

@@ -19,6 +19,42 @@ Maintainer: Michael Gee
 
 
 
+DRT::ELEMENTS::NStetRegisterType DRT::ELEMENTS::NStetRegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::NStetRegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::NStetRegister* object =
+    new DRT::ELEMENTS::NStetRegister(DRT::Element::element_nstet);
+  object->Unpack(data);
+  return object;
+}
+
+
+DRT::ELEMENTS::NStetType DRT::ELEMENTS::NStetType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::NStetType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::NStet* object = new DRT::ELEMENTS::NStet(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStetType::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="NSTET4" )
+  {
+    RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::NStet(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
 
 /*-----------------------------------------------------------------------
  |  ctor (public)                                              gee 12/09|

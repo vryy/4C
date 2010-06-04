@@ -19,6 +19,10 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
+
+DRT::ELEMENTS::Shell8LineType DRT::ELEMENTS::Shell8LineType::instance_;
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |

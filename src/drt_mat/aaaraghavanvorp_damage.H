@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
 \file aaaraghavanvorp_damage.H
 \brief
-This file contains the routines required for aneurysmatic artery wall 
+This file contains the routines required for aneurysmatic artery wall
 damaging following Simo approach explained in Holzapfel (p298).
-SEF by Raghavan and Vorp[2000](Isochoric) and Simo&Miehe version of 
+SEF by Raghavan and Vorp[2000](Isochoric) and Simo&Miehe version of
 Ogden (1972) (Volumetric) with beta=-2
 
 The material is a special case of a generalised pover law neo-Hookean material
@@ -26,6 +26,7 @@ date: 26/05/2009
 
 #include "matpar_parameter.H"
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
 //#include <Teuchos_RefCountPtr.hpp>
@@ -62,7 +63,7 @@ namespace MAT
       const double beta_;       /// 2nd parameter, beta (Isochoric)
 
       /// damage parameters
-      
+
       const double eqstrmin_;   /// equivalent strain initial damage
       const double a_;       	/// 1st parameter, a
       const double b_;       	/// 2nd parameter, b
@@ -73,6 +74,21 @@ namespace MAT
     };  // class AAAraghavanvorp_damage
 
   }  // namespace PAR
+
+class AAAraghavanvorp_damageType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "AAAraghavanvorp_damageType"; }
+
+  static AAAraghavanvorp_damageType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static AAAraghavanvorp_damageType instance_;
+};
 
   /*----------------------------------------------------------------------*/
   /// aneurysm wall material with damage according Simo approach explained in Holzapfel (p298)
@@ -95,7 +111,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_AAAraghavanvorp_damage; }
+    virtual int UniqueParObjectId() const { return AAAraghavanvorp_damageType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -126,12 +142,12 @@ namespace MAT
     virtual void Unpack(const vector<char>& data);
 
     //@}
-    
+
     /// material mass density
     double Density() const { return params_->density_; }
 
     /// shear modulus
-    double ShearMod() const { 
+    double ShearMod() const {
     dserror("");
     return (6.0*params_->bulk_*params_->alpha_)/(3.0*params_->bulk_-2*params_->alpha_); }
 
@@ -164,7 +180,7 @@ namespace MAT
                                      LINALG::Matrix<NUM_STRESS_3D,1>& pktwo,  ///< 2nd PK-stress
                                      LINALG::Matrix<NUM_STRESS_3D,1>& cstress ///< Cauchy-stress
                                     );
-                                    
+
     void StressTensTransfCauchytoSPK(LINALG::Matrix<NUM_STRESS_3D,1>& invf,    ///< deformation gradient tensor
                                      const double detf,                        ///< determinant of deformation gradient tensor
                                      LINALG::Matrix<NUM_STRESS_3D,1>& cstress, ///< Cauchy-stress
@@ -193,7 +209,7 @@ namespace MAT
    Teuchos::RCP<vector<LINALG::Matrix<1,1> > > histeqstrmaxcurr_; ///< current damage parameter
    Teuchos::RCP<vector<LINALG::Matrix<1,1> > > histeqstrmaxlast_; ///< damage of last converged state
    Teuchos::RCP<double > elstrength_; ///< strength of the element
-   
+
    bool isinit_;  ///< indicates if material is initialized by calling the #Initialized routine
 
   };

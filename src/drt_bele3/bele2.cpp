@@ -18,6 +18,41 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_dserror.H"
 
 
+DRT::ELEMENTS::Bele2Type DRT::ELEMENTS::Bele2Type::instance_;
+
+DRT::ParObject* DRT::ELEMENTS::Bele2Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Bele2* object = new DRT::ELEMENTS::Bele2(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele2Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="BELE2" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Bele2(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::Bele2RegisterType DRT::ELEMENTS::Bele2RegisterType::instance_;
+
+DRT::ParObject* DRT::ELEMENTS::Bele2RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Bele2Register* object =
+    new DRT::ELEMENTS::Bele2Register(DRT::Element::element_bele2);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele2::Bele2(int id, int owner) :

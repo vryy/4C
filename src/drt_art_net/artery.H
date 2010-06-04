@@ -22,6 +22,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
@@ -41,7 +42,27 @@ namespace ELEMENTS
 // forward declarations
 class ArteryExpInterface;
 template <DRT::Element::DiscretizationType distype> class ArteryLinExp;
-class ArteryRegister;
+
+
+class ArteryType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ArteryType"; }
+
+  static ArteryType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static ArteryType instance_;
+};
 
 /*!
 \brief A C++ wrapper for the artery element
@@ -106,7 +127,7 @@ public:
   virtual int NumSurface() const {return -1;}
 
   /*!
-  \brief Return number of volumes of this element (always 1) 
+  \brief Return number of volumes of this element (always 1)
   */
   virtual int NumVolume() const {return -1;}
 
@@ -116,7 +137,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Artery;}
+  virtual int UniqueParObjectId() const { return ArteryType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -328,104 +349,6 @@ private:
 
 
 }; // class Artery
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-
-/*!
-\brief A register for artery element
-
-\author ismail (ismail@lnm.mw.tum.de)
-*/
-class ArteryRegister : public DRT::ElementRegister
-{
-public:
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  ArteryRegister(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an ArteryRegister
-
-  */
-  ArteryRegister(const DRT::ELEMENTS::ArteryRegister& old);
-
-  /*!
-  \brief Deep copy this instance of ArteryRegister and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::ArteryRegister* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class imploementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return ParObject_ArteryRegister;}
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~ArteryRegister();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the artery elements.
-  */
-  int Initialize(DRT::Discretization& dis);
-
-  //@}
-
-private:
-
-
-}; // class ArteryRegister
 
 
 //=======================================================================

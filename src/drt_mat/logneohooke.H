@@ -20,6 +20,7 @@ Maintainer: Burkhard Bornemann
 
 #include "matpar_parameter.H"
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
 
@@ -65,6 +66,21 @@ namespace MAT
 
   }  // namespace PAR
 
+class LogNeoHookeType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "LogNeoHookeType"; }
+
+  static LogNeoHookeType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static LogNeoHookeType instance_;
+};
+
   /*----------------------------------------------------------------------*/
   /// Logarithmic neo-Hooke material according to [1]
   ///
@@ -103,7 +119,7 @@ namespace MAT
     ///
     ///  every class implementing ParObject needs a unique id defined at the
     ///  top of drt_parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const { return ParObject_LogNeoHooke; }
+    virtual int UniqueParObjectId() const { return LogNeoHookeType::Instance().UniqueParObjectId(); }
 
     /// Pack this class so it can be communicated
     ///

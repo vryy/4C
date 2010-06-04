@@ -26,6 +26,17 @@ MAT::PAR::NewtonianFluid::NewtonianFluid(
 {
 }
 
+
+MAT::NewtonianFluidType MAT::NewtonianFluidType::instance_;
+
+
+DRT::ParObject* MAT::NewtonianFluidType::Create( const std::vector<char> & data )
+{
+  MAT::NewtonianFluid* fluid = new MAT::NewtonianFluid();
+  fluid->Unpack(data);
+  return fluid;
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::NewtonianFluid::NewtonianFluid()

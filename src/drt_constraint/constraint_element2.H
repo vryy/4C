@@ -21,6 +21,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -37,6 +38,26 @@ namespace ELEMENTS
 {
 // forward declarations
 //class ConstraintElementLine;
+
+class ConstraintElement2Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ConstraintElement2Type"; }
+
+  static ConstraintElement2Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static ConstraintElement2Type instance_;
+};
 
 /*!
 \brief A 2D constraint element with no physics attached
@@ -94,7 +115,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_ConstraintElement2;}
+  virtual int UniqueParObjectId() const { return ConstraintElement2Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -334,6 +355,21 @@ private:
 //=======================================================================
 //=======================================================================
 
+class ConstraintElement2RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ConstraintElement2RegisterType"; }
+
+  static ConstraintElement2RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static ConstraintElement2RegisterType instance_;
+};
+
 
 /*!
 \brief A register for 2D constraint element
@@ -375,7 +411,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_ConstraintElement2Register;}
+  virtual int UniqueParObjectId() const { return ConstraintElement2RegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

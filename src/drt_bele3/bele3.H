@@ -18,6 +18,7 @@
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
@@ -30,6 +31,26 @@ class Discretization;
 
 namespace ELEMENTS
 {
+
+class Bele3Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Bele3Type"; }
+
+  static Bele3Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Bele3Type instance_;
+};
 
 /*!
  * A 3D boundary element with no physics attached
@@ -81,7 +102,7 @@ public:
   virtual int NumVolume() const {return -1;}
   virtual vector<RCP<DRT::Element> > Lines();
   virtual vector<RCP<DRT::Element> > Surfaces();
-  virtual int UniqueParObjectId() const { return ParObject_Bele3;}
+  virtual int UniqueParObjectId() const { return Bele3Type::Instance().UniqueParObjectId(); }
   virtual void Pack(vector<char>& data) const;
   virtual void Unpack(const vector<char>& data);
 
@@ -196,6 +217,22 @@ private:
 //=======================================================================
 
 
+class Bele3RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Bele3RegisterType"; }
+
+  static Bele3RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Bele3RegisterType instance_;
+};
+
+
 /*!
 \brief A register for bele3 element
 
@@ -230,7 +267,7 @@ public:
   */
   DRT::ELEMENTS::Bele3Register* Clone() const;
 
-  virtual int UniqueParObjectId() const { return ParObject_Bele3Register;}
+  virtual int UniqueParObjectId() const { return Bele3RegisterType::Instance().UniqueParObjectId(); }
   virtual void Pack(vector<char>& data) const;
   virtual void Unpack(const vector<char>& data);
 
@@ -264,6 +301,19 @@ private:
 //=======================================================================
 //=======================================================================
 //=======================================================================
+
+class Bele3LineType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Bele3LineType"; }
+
+  static Bele3LineType & Instance() { return instance_; };
+
+private:
+
+  static Bele3LineType instance_;
+};
 
 
 /*!
@@ -301,7 +351,7 @@ public:
 
   DRT::Element* Clone() const;
   virtual DiscretizationType Shape() const;
-  virtual int UniqueParObjectId() const { return ParObject_Bele3Line;}
+  virtual int UniqueParObjectId() const { return Bele3LineType::Instance().UniqueParObjectId(); }
   virtual void Pack(vector<char>& data) const;
   virtual void Unpack(const vector<char>& data);
 

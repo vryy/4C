@@ -20,6 +20,44 @@ Maintainer: Peter Gamnitzer
 
 using namespace DRT::UTILS;
 
+
+DRT::ELEMENTS::Fluid2Type DRT::ELEMENTS::Fluid2Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Fluid2Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Fluid2* object = new DRT::ELEMENTS::Fluid2(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid2Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="FLUID2" )
+  {
+    if ( eledistype!="NURBS4" and eledistype!="NURBS9" )
+      return rcp(new DRT::ELEMENTS::Fluid2(id,owner));
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::Fluid2RegisterType DRT::ELEMENTS::Fluid2RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Fluid2RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Fluid2Register* object =
+    new DRT::ELEMENTS::Fluid2Register(DRT::Element::element_fluid2);
+  object->Unpack(data);
+  return object;
+}
+
+
 map<string,DRT::ELEMENTS::Fluid2::StabilisationAction> DRT::ELEMENTS::Fluid2::stabstrtoact_;
 
 /*----------------------------------------------------------------------*

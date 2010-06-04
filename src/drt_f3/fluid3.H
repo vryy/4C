@@ -31,6 +31,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -53,6 +54,26 @@ template<DRT::Element::DiscretizationType distype> class Fluid3GenalphaResVMM;
 class Fluid3Register;
 
 class Fluid3Boundary;
+
+class Fluid3Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Fluid3Type"; }
+
+  static Fluid3Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Fluid3Type instance_;
+};
 
 /*!
 \brief A C++ wrapper for the fluid3 element
@@ -245,7 +266,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Fluid3;}
+  virtual int UniqueParObjectId() const { return Fluid3Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -896,6 +917,22 @@ void f3_calc_smag_const_LijMij_and_MijMij(
 //=======================================================================
 
 
+class Fluid3RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Fluid3RegisterType"; }
+
+  static Fluid3RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Fluid3RegisterType instance_;
+};
+
+
 /*!
 \brief A register for fluid3 element
 
@@ -935,7 +972,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Fluid3Register;}
+  virtual int UniqueParObjectId() const { return Fluid3RegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -1003,6 +1040,20 @@ private:
       the DRT::Element::Evaluate method and does not have its own ElementRegister class.
 
 */
+
+
+class Fluid3BoundaryType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Fluid3BoundaryType"; }
+
+  static Fluid3BoundaryType & Instance() { return instance_; };
+
+private:
+
+  static Fluid3BoundaryType instance_;
+};
 
 
 // class Fluid3Boundary
@@ -1087,7 +1138,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Fluid3Boundary;}
+  virtual int UniqueParObjectId() const { return Fluid3BoundaryType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

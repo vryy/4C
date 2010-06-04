@@ -72,6 +72,8 @@ extern "C"
 #include "../drt_nurbs_discret/drt_control_point.H"
 #include "drt_dofset.H"
 #include "drt_discret.H"
+
+#if 0
 #include "../drt_beam2/beam2.H"
 #include "../drt_beam2r/beam2r.H"
 #include "../drt_beam3/beam3.H"
@@ -161,9 +163,12 @@ extern "C"
 #include "../drt_contact/contact_element.H"
 #include "../drt_art_net/artery.H"
 #include "../drt_red_airways/red_airway.H"
+#endif
+
 #include "drt_dserror.H"
 #include "standardtypes_cpp.H"
 
+#include "drt_parobjectfactory.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -179,6 +184,9 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
 {
+#if 1
+  return ParObjectFactory::Instance().Create( data );
+#else
   // mv ptr behind the size record
   const int* ptr = (const int*)(&data[0]);
   // get the type
@@ -1176,16 +1184,20 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
   }
 
   return NULL;
+#endif
 }
 
 /*----------------------------------------------------------------------*
  |  allocate an element of a specific type (public)          mwgee 03|07|
  *----------------------------------------------------------------------*/
-RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
+Teuchos::RCP<DRT::Element> DRT::UTILS::Factory(const string eletype,
                                               const string eledistype,
                                               const int id,
                                               const int owner)
 {
+#if 1
+  return ParObjectFactory::Instance().Create( eletype, eledistype, id, owner );
+#else
   enum TypeofElement
   {
     none,
@@ -1288,7 +1300,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_BEAM2
     case beam2:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam2(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam2(id,owner));
       return ele;
     }
     break;
@@ -1296,7 +1308,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_BEAM2R
     case beam2r:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam2r(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam2r(id,owner));
       return ele;
     }
     break;
@@ -1304,7 +1316,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_BEAM3
     case beam3:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam3(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam3(id,owner));
       return ele;
     }
     break;
@@ -1312,7 +1324,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_BEAM3II
     case beam3ii:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam3ii(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam3ii(id,owner));
       return ele;
     }
     break;
@@ -1320,7 +1332,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_TRUSS3
     case truss3:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Truss3(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Truss3(id,owner));
       return ele;
     }
     break;
@@ -1328,7 +1340,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_TRUSS2
     case truss2:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Truss2(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Truss2(id,owner));
       return ele;
     }
     break;
@@ -1336,7 +1348,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_TORSION3
     case torsion3:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Torsion3(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Torsion3(id,owner));
       return ele;
     }
     break;
@@ -1344,7 +1356,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_TORSION2
     case torsion2:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Torsion2(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Torsion2(id,owner));
       return ele;
     }
     break;
@@ -1352,7 +1364,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_SHELL8
     case shell8:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Shell8(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Shell8(id,owner));
       return ele;
     }
     break;
@@ -1360,7 +1372,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_FLUID2
     case fluid2:
     {
-      RefCountPtr<DRT::Element> ele;
+      Teuchos::RCP<DRT::Element> ele;
 
       if(eledistype=="NURBS4" || eledistype=="NURBS9")
       {
@@ -1377,7 +1389,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_FLUID3
     case fluid3:
     {
-      RefCountPtr<DRT::Element> ele;
+      Teuchos::RCP<DRT::Element> ele;
 
       if(eledistype=="NURBS8" || eledistype=="NURBS27")
       {
@@ -1392,19 +1404,19 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     break;
     case xfluid3:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::XFluid3(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::XFluid3(id,owner));
       return ele;
     }
     break;
     case xdiff3:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::XDiff3(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::XDiff3(id,owner));
       return ele;
     }
     break;
     case combust3:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Combust3(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Combust3(id,owner));
       return ele;
     }
     break;
@@ -1412,7 +1424,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_ALE
     case ale3:
     {
-      RefCountPtr<DRT::Element> ele;
+      Teuchos::RCP<DRT::Element> ele;
 
       if(eledistype=="NURBS27")
       {
@@ -1430,7 +1442,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_ALE
     case ale2:
     {
-      RefCountPtr<DRT::Element> ele;
+      Teuchos::RCP<DRT::Element> ele;
 
       if(eledistype=="NURBS4" || eledistype=="NURBS9")
       {
@@ -1447,38 +1459,38 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #endif
     case bele3:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Bele3(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Bele3(id,owner));
       return ele;
     }
     break;
     case vele3:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Vele3(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Vele3(id,owner));
       return ele;
     }
     break;
     case bele2:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Bele2(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Bele2(id,owner));
       return ele;
     }
     break;
     case constrele2:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::ConstraintElement2(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::ConstraintElement2(id,owner));
       return ele;
     }
     break;
     case constrele3:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::ConstraintElement3(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::ConstraintElement3(id,owner));
       return ele;
     }
     break;
 #ifdef D_WALL1
     case wall1:
     {
-      RefCountPtr<DRT::Element> ele;
+      Teuchos::RCP<DRT::Element> ele;
       if(eledistype=="NURBS4" || eledistype=="NURBS9")
       {
         ele = rcp(new DRT::ELEMENTS::NURBS::Wall1Nurbs(id,owner));
@@ -1494,61 +1506,61 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_SOLID3
     case so_hex8:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_hex8(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_hex8(id,owner));
       return ele;
     }
     break;
     case so_sh8:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_sh8(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_sh8(id,owner));
       return ele;
     }
     break;
     case so_sh8p8:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_sh8p8(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_sh8p8(id,owner));
       return ele;
     }
     break;
     case so_hex27:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_hex27(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_hex27(id,owner));
       return ele;
     }
     break;
     case so_nurbs27:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::NURBS::So_nurbs27(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::NURBS::So_nurbs27(id,owner));
       return ele;
     }
     break;
     case so_hex20:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_hex20(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_hex20(id,owner));
       return ele;
     }
     break;
     case so_weg6:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_weg6(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_weg6(id,owner));
       return ele;
     }
     break;
     case so_shw6:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_shw6(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_shw6(id,owner));
       return ele;
     }
     break;
     case sodisp:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::SoDisp(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::SoDisp(id,owner));
       return ele;
     }
     break;
     case so_tet4:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_tet4(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_tet4(id,owner));
       return ele;
     }
     break;
@@ -1566,13 +1578,13 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     break;
     case so_tet10:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_tet10(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_tet10(id,owner));
       return ele;
     }
     break;
     case so_hex8p1j1:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_Hex8P1J1(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_Hex8P1J1(id,owner));
       return ele;
     }
     break;
@@ -1580,7 +1592,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #if defined(D_FLUID2) || defined(D_FLUID3)
     case transport:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Transport(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Transport(id,owner));
       return ele;
     }
     break;
@@ -1588,7 +1600,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_ARTNET
     case art_ele:
     {
-       RefCountPtr<DRT::Element> ele =  rcp(new DRT::ELEMENTS::Artery(id,owner));
+       Teuchos::RCP<DRT::Element> ele =  rcp(new DRT::ELEMENTS::Artery(id,owner));
        return ele;
     }
     break;
@@ -1596,7 +1608,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_THERMO
     case thermo:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Thermo(id,owner));
+      Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Thermo(id,owner));
       return ele;
     }
     break;
@@ -1604,7 +1616,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_RED_AIRWAYS
     case red_airway_ele:
     {
-       RefCountPtr<DRT::Element> ele =  rcp(new DRT::ELEMENTS::RedAirway(id,owner));
+       Teuchos::RCP<DRT::Element> ele =  rcp(new DRT::ELEMENTS::RedAirway(id,owner));
        return ele;
     }
     break;
@@ -1616,13 +1628,14 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   }
 
   return null;
+#endif
 }
 
 
 /*----------------------------------------------------------------------*
  |  partition a graph using metis  (public)                  mwgee 11/06|
  *----------------------------------------------------------------------*/
-RefCountPtr<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
+Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
                                              const Epetra_CrsGraph& graph,
                                              const Epetra_Vector& weights)
 {
@@ -1631,7 +1644,7 @@ RefCountPtr<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
 
   if (numproc==1)
   {
-    RefCountPtr<Epetra_CrsGraph> outgraph = rcp(new Epetra_CrsGraph(graph));
+    Teuchos::RCP<Epetra_CrsGraph> outgraph = rcp(new Epetra_CrsGraph(graph));
     return outgraph;
   }
 
@@ -1826,7 +1839,7 @@ RefCountPtr<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
   Epetra_Map newmap(size,count,&part[0],0,graph.Comm());
 
   // create the output graph and export to it
-  RefCountPtr<Epetra_CrsGraph> outgraph =
+  Teuchos::RCP<Epetra_CrsGraph> outgraph =
                            rcp(new Epetra_CrsGraph(Copy,newmap,108,false));
   Epetra_Export exporter2(graph.RowMap(),newmap);
   err = outgraph->Export(graph,exporter2,Add);
@@ -1851,7 +1864,7 @@ void DRT::UTILS::ExtractMyValues(const Epetra_Vector& global,
   for (size_t i=0; i<ldim; ++i)
   {
     const int lid = global.Map().LID(lm[i]);
-    if (lid<0) 
+    if (lid<0)
       dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",global.Comm().MyPID(),lm[i]);
     local[i] = global[lid];
   }
@@ -2074,7 +2087,7 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ComputeNodeColMap(
                                      &mycolnodes[0],
                                      0,
                                      sourcedis->Comm()));
-  return newcolnodemap;  
+  return newcolnodemap;
 }
 
 

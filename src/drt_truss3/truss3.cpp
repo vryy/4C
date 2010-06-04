@@ -20,6 +20,43 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
+DRT::ELEMENTS::Truss3Type DRT::ELEMENTS::Truss3Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Truss3Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Truss3* object = new DRT::ELEMENTS::Truss3(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss3Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="TRUSS3" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Truss3(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::Truss3RegisterType DRT::ELEMENTS::Truss3RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Truss3RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Truss3Register* object =
+    new DRT::ELEMENTS::Truss3Register(DRT::Element::element_truss3);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 08/08|
  *----------------------------------------------------------------------*/
@@ -189,11 +226,11 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Truss3::Lines()
 DRT::UTILS::GaussRule1D DRT::ELEMENTS::Truss3::MyGaussRule(int nnode, IntegrationType integrationtype)
 {
   DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule1D_undefined;
-  
+
   switch(nnode)
   {
     case 2:
-    {     
+    {
       switch(integrationtype)
       {
         case gaussexactintegration:
@@ -281,7 +318,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Truss3::MyGaussRule(int nnode, Integratio
     default:
       dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
   }
-  
+
   return gaussrule;
 }
 
@@ -291,7 +328,7 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const vector<double>& xrefe, 
    *therefore after the first initilization the flag isinit is set to true and from then on this method does not take any action
    *when called again unless it is called on purpose with the additional parameter secondinit. If this parameter is passed into
    *the method and is true the element is initialized another time with respective xrefe;
-   *note: the isinit_ flag is important for avoiding reinitialization upon restart. However, it should be possible to conduct a 
+   *note: the isinit_ flag is important for avoiding reinitialization upon restart. However, it should be possible to conduct a
    *second initilization in principle (e.g. for periodic boundary conditions*/
   if(!isinit_ || secondinit)
   {
@@ -303,7 +340,7 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const vector<double>& xrefe, 
 
     //length in reference configuration
     lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5);
-    
+
     //set jacobi determinants for integration of mass matrix and at nodes
     jacobimass_.resize(2);
     jacobimass_[0] = lrefe_ / 2.0;
@@ -411,10 +448,10 @@ void DRT::ELEMENTS::Truss3Register::Print(ostream& os) const
 
 
 int DRT::ELEMENTS::Truss3Register::Initialize(DRT::Discretization& dis)
-{		
+{
   //reference node positions
   vector<double> xrefe;
-  
+
   //resize xrefe for the number of coordinates we need to store
   xrefe.resize(3*2);
 
@@ -444,7 +481,7 @@ int DRT::ELEMENTS::Truss3Register::Initialize(DRT::Discretization& dis)
 
   } //for (int i=0; i<dis_.NumMyColElements(); ++i)
 
-	
+
   return 0;
 }
 

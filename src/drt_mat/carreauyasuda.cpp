@@ -32,6 +32,16 @@ MAT::PAR::CarreauYasuda::CarreauYasuda(
 }
 
 
+MAT::CarreauYasudaType MAT::CarreauYasudaType::instance_;
+
+
+DRT::ParObject* MAT::CarreauYasudaType::Create( const std::vector<char> & data )
+{
+  MAT::CarreauYasuda* carYas = new MAT::CarreauYasuda();
+  carYas->Unpack(data);
+  return carYas;
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

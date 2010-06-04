@@ -39,6 +39,17 @@ MAT::PAR::AAAgasser::AAAgasser(
 }
 
 
+MAT::AAAgasserType MAT::AAAgasserType::instance_;
+
+
+DRT::ParObject* MAT::AAAgasserType::Create( const std::vector<char> & data )
+{
+  MAT::AAAgasser* aaa = new MAT::AAAgasser();
+  aaa->Unpack(data);
+  return aaa;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)              |
  *----------------------------------------------------------------------*/
@@ -108,7 +119,7 @@ void MAT::AAAgasser::Unpack(const vector<char>& data)
 
 /*----------------------------------------------------------------------*
  |  Evaluate Material                         (public)                  |
- *----------------------------------------------------------------------*/ 
+ *----------------------------------------------------------------------*/
 void MAT::AAAgasser::Evaluate(
   const LINALG::Matrix<6,1>& glstrain,
 	      LINALG::Matrix<6,6>& cmat,
@@ -137,7 +148,7 @@ void MAT::AAAgasser::Evaluate(
   // build second order identity tensor:
   LINALG::Matrix<6,1> id2(true);
   for (int i = 0; i < 3; i++) id2(i) = 1.0;
-    
+
   // build fourth order identity tensor S (see HOLZAPFEL p. 261):
   LINALG::Matrix<6,6> id4(true);
   for (int i=0; i<3; i++) id4(i,i) = 1.0;
@@ -196,7 +207,7 @@ void MAT::AAAgasser::Evaluate(
 
   //--- determine 2nd Piola Kirchhoff stresses pktwo -------------------------------------
   stress.Clear();
-  
+
   // 1st step: isochoric part (HOLZAPFEL S.248)
   //=========================
   double gamma1 = 0.0;
@@ -215,19 +226,19 @@ void MAT::AAAgasser::Evaluate(
   //==========================
   double pres = -999.0;
   double prestild = -999.0;
-  
+
   // choose volumetric strain energy form
   if (vol.compare("OSM") == 0)
   {
     pres = kappa*(1-pow(detf, -beta))/(detf*beta);
     prestild = kappa * pow(detf,-beta-1);
   }
-  else if (vol.compare("SuBa") == 0) 
+  else if (vol.compare("SuBa") == 0)
   {
     pres = kappa*(detf-1);
     prestild = kappa*(2*detf-1);
   }
-  else if (vol.compare("SiTa") == 0) 
+  else if (vol.compare("SiTa") == 0)
   {
     pres = kappa*(detf+(1/detf)*log(detf)-1)/2;
     prestild = kappa*(2*detf+(1/detf)-1)/2;
@@ -248,7 +259,7 @@ void MAT::AAAgasser::Evaluate(
   double delta6 =  16./9.*Cele*pow(iiinv,-2./3.)*(inv*inv - 2*iinv);
   double delta7 =   8./3.*Cele*pow(iiinv,-2./3.)*(inv*inv - 2*iinv);
   double delta8 =     8.0*Cele*pow(iiinv,-2./3.);
-  
+
   // contribution: (C \otimes Cinv + Cinv \otimes C)
   cmat.MultiplyNT(delta5, scg, invc, 1.0);
   cmat.MultiplyNT(delta5, invc, scg, 1.0);
@@ -258,7 +269,7 @@ void MAT::AAAgasser::Evaluate(
   AddtoCmatHolzapfelProduct(cmat, invc, delta7);
   // contribution: S
   cmat.Update(delta8, id4, 1.0);
-    
+
 
   // 2nd step: volumetric part (HOLZAPFEL S.254f)
   //==========================
@@ -266,8 +277,8 @@ void MAT::AAAgasser::Evaluate(
   cmat.MultiplyNT(detf*prestild,invc,invc,1.0);
   //contribution: -2 J*p Cinv \odot Cinv
   AddtoCmatHolzapfelProduct(cmat, invc, -2*detf*pres);
-  
-  
+
+
   return;
 }
 

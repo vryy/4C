@@ -14,6 +14,7 @@ Maintainer: Thomas Kloeppel
 #ifdef CCADISCRET
 
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
 
@@ -51,6 +52,21 @@ namespace MAT
 
   }  // namespace PAR
 
+class YeohType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "YeohType"; }
+
+  static YeohType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static YeohType instance_;
+};
+
   /*----------------------------------------------------------------------*/
   /// Wrapper for Yeoh material
   class Yeoh : public Material
@@ -71,7 +87,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_Yeoh; }
+    virtual int UniqueParObjectId() const { return YeohType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated

@@ -53,12 +53,28 @@ using namespace Teuchos;
 
 #include "drt_parobject.H"
 #include "drt_dserror.H"
+#include "drt_parobjectfactory.H"
 
 class Epetra_MultiVector;
 class Epetra_Vector;
 
 namespace DRT
 {
+
+class ContainerType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ContainerType"; }
+
+  static ContainerType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static ContainerType instance_;
+};
 
 // forward declarations
 
@@ -109,7 +125,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Container;}
+  virtual int UniqueParObjectId() const { return ContainerType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -274,7 +290,7 @@ public:
   \param data : rcp to Epetra_MultiVector to be added
 
   \note If record with name name already exists, it will be overwritten
-  
+
   \warning data stored in Epetra_MultiVector will not participate in
            Pack/Unpack functionality of the container but is deep-copied in
            the copy-constructor
@@ -288,7 +304,7 @@ public:
   \param data : rcp to Epetra_Vector to be added
 
   \note If record with name name already exists, it will be overwritten
-  
+
   \warning data stored in Epetra_Vector will not participate in
            Pack/Unpack functionality of the container but is deep-copied in
            the copy-constructor
@@ -406,7 +422,7 @@ public:
 
   //@}
 
-  //! @name Erase methods 
+  //! @name Erase methods
 
   /*!
   \brief Delete a record from the container
@@ -420,7 +436,7 @@ public:
   \brief Delete everything in this container
   */
   void Clear()
-  { 
+  {
     intdata_.clear(); doubledata_.clear(); stringdata_.clear(); matdata_.clear();
     return;
   }

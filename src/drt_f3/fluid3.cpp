@@ -20,6 +20,45 @@ Maintainer: Georg Bauer
 
 using namespace DRT::UTILS;
 
+DRT::ELEMENTS::Fluid3Type DRT::ELEMENTS::Fluid3Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Fluid3Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Fluid3* object = new DRT::ELEMENTS::Fluid3(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid3Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="FLUID3" )
+  {
+    if ( eledistype!="NURBS8" and eledistype!="NURBS27" )
+    {
+      return rcp(new DRT::ELEMENTS::Fluid3(id,owner));
+    }
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::Fluid3RegisterType DRT::ELEMENTS::Fluid3RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Fluid3RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Fluid3Register* object =
+    new DRT::ELEMENTS::Fluid3Register(DRT::Element::element_fluid3);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*/
 // map to convert strings to actions (stabilization)
 /*----------------------------------------------------------------------*/
@@ -313,11 +352,11 @@ void DRT::ELEMENTS::Fluid3::UpdateSvelnpInOneDirection(
     )
 {
 
-    /*          
-        ~n+1           ~n           ~ n            n+1 
-        u    =  fac1 * u  + fac2 * acc  -fac3 * res    
-         (i)    
-                
+    /*
+        ~n+1           ~n           ~ n            n+1
+        u    =  fac1 * u  + fac2 * acc  -fac3 * res
+         (i)
+
     */
 
   svelnp_(dim,iquad)=
@@ -326,7 +365,7 @@ void DRT::ELEMENTS::Fluid3::UpdateSvelnpInOneDirection(
     fac2*saccn_(dim,iquad)
     -
     fac3*resM;
-  
+
   /* compute the intermediate value of subscale velocity
 
               ~n+af            ~n+1                   ~n

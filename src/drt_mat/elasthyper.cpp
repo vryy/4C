@@ -47,6 +47,7 @@ MAT::PAR::ElastHyper::ElastHyper(
   }
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const MAT::ELASTIC::Summand> MAT::PAR::ElastHyper::MaterialById(const int id) const
@@ -62,6 +63,18 @@ Teuchos::RCP<const MAT::ELASTIC::Summand> MAT::PAR::ElastHyper::MaterialById(con
     return m->second;
   }
 }
+
+
+MAT::ElastHyperType MAT::ElastHyperType::instance_;
+
+
+DRT::ParObject* MAT::ElastHyperType::Create( const std::vector<char> & data )
+{
+  MAT::ElastHyper* elhy = new MAT::ElastHyper();
+  elhy->Unpack(data);
+  return elhy;
+}
+
 
 /*----------------------------------------------------------------------*
  |  initialise static arrays                                 bborn 08/09|

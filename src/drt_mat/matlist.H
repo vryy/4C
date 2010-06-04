@@ -15,6 +15,7 @@ Maintainer: Georg Bauer
 
 #include "matpar_parameter.H"
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
 {
@@ -69,6 +70,20 @@ namespace MAT
 
   }  // namespace PAR
 
+class MatListType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "MatListType"; }
+
+  static MatListType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static MatListType instance_;
+};
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for a list of materials
@@ -90,7 +105,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_MatList; }
+    virtual int UniqueParObjectId() const { return MatListType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated

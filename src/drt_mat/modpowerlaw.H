@@ -16,6 +16,7 @@ Maintainer: Ursula Mayer
 #ifdef CCADISCRET
 
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
 {
@@ -49,6 +50,21 @@ namespace MAT
 
   }  // namespace PAR
 
+class ModPowerLawType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ModPowerLawType"; }
+
+  static ModPowerLawType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static ModPowerLawType instance_;
+};
+
   /*----------------------------------------------------------------------*/
   /// Nonlinear viscosity according to a modified power law
   class ModPowerLaw : public Material
@@ -70,7 +86,7 @@ namespace MAT
       top of drt_parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const { return ParObject_ModPowerLaw; }
+    virtual int UniqueParObjectId() const { return ModPowerLawType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated

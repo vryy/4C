@@ -26,6 +26,16 @@ MAT::PAR::Ion::Ion(
 {
 }
 
+MAT::IonType MAT::IonType::instance_;
+
+
+DRT::ParObject* MAT::IonType::Create( const std::vector<char> & data )
+{
+  MAT::Ion* ion = new MAT::Ion();
+  ion->Unpack(data);
+  return ion;
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::Ion::Ion()

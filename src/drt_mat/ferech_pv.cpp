@@ -40,6 +40,17 @@ MAT::PAR::FerEchPV::FerEchPV(
 }
 
 
+MAT::FerEchPVType MAT::FerEchPVType::instance_;
+
+
+DRT::ParObject* MAT::FerEchPVType::Create( const std::vector<char> & data )
+{
+  MAT::FerEchPV* ferech_pv = new MAT::FerEchPV();
+  ferech_pv->Unpack(data);
+  return ferech_pv;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::FerEchPV::FerEchPV()

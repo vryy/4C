@@ -34,6 +34,18 @@ MAT::PAR::Cnst_1d_art::Cnst_1d_art(
 {
 }
 
+
+MAT::Cnst_1d_artType MAT::Cnst_1d_artType::instance_;
+
+
+DRT::ParObject* MAT::Cnst_1d_artType::Create( const std::vector<char> & data )
+{
+  MAT::Cnst_1d_art* cnst_art = new MAT::Cnst_1d_art();
+  cnst_art->Unpack(data);
+  return cnst_art;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::Cnst_1d_art::Cnst_1d_art()

@@ -18,6 +18,7 @@
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
@@ -30,6 +31,26 @@ class Discretization;
 
 namespace ELEMENTS
 {
+
+class Vele3Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Vele3Type"; }
+
+  static Vele3Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Vele3Type instance_;
+};
 
 /*!
  * A 3D volume element with no physics attached
@@ -140,7 +161,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Vele3;}
+  virtual int UniqueParObjectId() const { return Vele3Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -274,6 +295,20 @@ private:
 }; // class Bele3
 
 
+class Vele3RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Vele3RegisterType"; }
+
+  static Vele3RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Vele3RegisterType instance_;
+};
 
 
 //=======================================================================
@@ -314,7 +349,7 @@ public:
   */
   DRT::ELEMENTS::Vele3Register* Clone() const;
 
-  virtual int UniqueParObjectId() const { return ParObject_Vele3Register;}
+  virtual int UniqueParObjectId() const { return Vele3RegisterType::Instance().UniqueParObjectId(); }
   virtual void Pack(vector<char>& data) const;
   virtual void Unpack(const vector<char>& data);
 
@@ -345,6 +380,18 @@ private:
 
 
 
+class Vele3SurfaceType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Vele3SurfaceType"; }
+
+  static Vele3SurfaceType & Instance() { return instance_; };
+
+private:
+
+  static Vele3SurfaceType instance_;
+};
 
 //=======================================================================
 //=======================================================================
@@ -391,7 +438,7 @@ public:
   virtual int NumVolume() const {return -1;}
   virtual vector<RCP<DRT::Element> > Lines();
   virtual vector<RCP<DRT::Element> > Surfaces();
-  virtual int UniqueParObjectId() const { return ParObject_Vele3Surface;}
+  virtual int UniqueParObjectId() const { return Vele3SurfaceType::Instance().UniqueParObjectId(); }
   virtual void Pack(vector<char>& data) const;
   virtual void Unpack(const vector<char>& data);
 
@@ -498,6 +545,20 @@ private:
 //=======================================================================
 
 
+class Vele3LineType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Vele3LineType"; }
+
+  static Vele3LineType & Instance() { return instance_; };
+
+private:
+
+  static Vele3LineType instance_;
+};
+
+
 /*!
 \brief An element representing a line of a vele3 element
 
@@ -533,7 +594,7 @@ public:
 
   DRT::Element* Clone() const;
   virtual DiscretizationType Shape() const;
-  virtual int UniqueParObjectId() const { return ParObject_Vele3Line;}
+  virtual int UniqueParObjectId() const { return Vele3LineType::Instance().UniqueParObjectId(); }
   virtual void Pack(vector<char>& data) const;
   virtual void Unpack(const vector<char>& data);
 

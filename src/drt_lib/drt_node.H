@@ -50,6 +50,7 @@ using namespace Teuchos;
 
 #include "drt_parobject.H"
 #include "drt_condition.H"
+#include "drt_parobjectfactory.H"
 
 
 namespace DRT
@@ -57,6 +58,21 @@ namespace DRT
 
 // forward declarations
 class Element;
+
+class NodeType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "NodeType"; }
+
+  static NodeType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static NodeType instance_;
+};
 
 /*!
 \brief A virtual class all nodes that are used in DRT have to implement
@@ -114,7 +130,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Node;}
+  virtual int UniqueParObjectId() const { return NodeType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

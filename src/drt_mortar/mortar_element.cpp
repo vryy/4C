@@ -42,6 +42,19 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
 
+MORTAR::MortarElementType MORTAR::MortarElementType::instance_;
+
+
+DRT::ParObject* MORTAR::MortarElementType::Create( const std::vector<char> & data )
+{
+  MORTAR::MortarElement* ele = new MORTAR::MortarElement(0,
+                                                         DRT::Element::element_mortar,
+                                                         0,DRT::Element::dis_none,
+                                                         0,NULL,false);
+  ele->Unpack(data);
+  return ele;
+}
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|

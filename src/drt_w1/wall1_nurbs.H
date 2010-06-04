@@ -18,6 +18,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_nurbs_discret/drt_control_point.H"
 #include "../drt_fem_general/drt_utils_bspline.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 /*!
   \brief DRT: namespace of the ccarat discretization module
@@ -40,6 +41,25 @@ namespace ELEMENTS
 namespace NURBS
 {
 
+class Wall1NurbsType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Wall1NurbsType"; }
+
+  static Wall1NurbsType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Wall1NurbsType instance_;
+};
 
 
 class Wall1Nurbs : public DRT::ELEMENTS::Wall1
@@ -84,7 +104,7 @@ public:
 
   \return my parobject id
   */
-  virtual int UniqueParObjectId() const { return ParObject_Wall1Nurbs;}
+  virtual int UniqueParObjectId() const { return Wall1NurbsType::Instance().UniqueParObjectId(); }
 
 
   /// Print this element

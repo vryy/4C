@@ -23,6 +23,42 @@ Maintainer: Christian Cyron
 #include "../drt_inpar/drt_validparameters.H"
 
 
+DRT::ELEMENTS::Beam2Type DRT::ELEMENTS::Beam2Type::instance_;
+
+DRT::ParObject* DRT::ELEMENTS::Beam2Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Beam2* object = new DRT::ELEMENTS::Beam2(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam2Type::Create( const string eletype,
+                                                             const string eledistype,
+                                                             const int id,
+                                                             const int owner )
+{
+  if ( eletype=="BEAM2" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam2(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::Beam2RegisterType DRT::ELEMENTS::Beam2RegisterType::instance_;
+
+DRT::ParObject* DRT::ELEMENTS::Beam2RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Beam2Register* object =
+    new DRT::ELEMENTS::Beam2Register(DRT::Element::element_beam2);
+  object->Unpack(data);
+  return object;
+}
+
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 01/08|
  *----------------------------------------------------------------------*/
@@ -147,7 +183,7 @@ void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
   AddtoPack(data,alphanew_);
   AddtoPack(data,alphaold_);
   AddtoPack(data,alphaconv_);
-  AddtoPack(data,alpha0_); 
+  AddtoPack(data,alpha0_);
   AddtoPack(data,jacobi_);
   AddtoPack(data,jacobimass_);
   AddtoPack(data,jacobinode_);
@@ -174,7 +210,7 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  
+
   //whether element has already been initialized
   ExtractfromPack(position,data,isinit_);
   ExtractfromPack(position,data,lrefe_);
@@ -187,7 +223,7 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,alphanew_);
   ExtractfromPack(position,data,alphaold_);
   ExtractfromPack(position,data,alphaconv_);
-  ExtractfromPack(position,data,alpha0_); 
+  ExtractfromPack(position,data,alpha0_);
   ExtractfromPack(position,data,jacobi_);
   ExtractfromPack(position,data,jacobimass_);
   ExtractfromPack(position,data,jacobinode_);
@@ -220,7 +256,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam2::Lines()
 DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam2::MyGaussRule(int nnode, IntegrationType integrationtype)
 {
   DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule1D_undefined;
-  
+
   switch(integrationtype)
   {
     case gaussexactintegration:
@@ -249,16 +285,16 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam2::MyGaussRule(int nnode, Integration
 void DRT::ELEMENTS::Beam2::SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xrefe)
 {
   /*this method initializes geometric variables of the element; such an initialization can only be done one time when the element is
-   * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this 
-   * method will initialize the geometric variables iff the class variable isinit_ == false and afterwards set this variable to 
-   * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/ 
+   * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this
+   * method will initialize the geometric variables iff the class variable isinit_ == false and afterwards set this variable to
+   * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/
   if(!isinit_)
   {
     isinit_ = true;
 
     //length in reference configuration
     lrefe_  = pow( pow(xrefe(3)-xrefe(1),2) + pow(xrefe(2)-xrefe(0),2) , 0.5 );
-    
+
     //resize jacobi_, jacobimass_, jacobinode_  so they can each store for each Gauss point jacobi determinant lrefe_ / 2.0
 
     //underintegration in elasticity -> nnode - 1 Gauss points required
@@ -267,7 +303,7 @@ void DRT::ELEMENTS::Beam2::SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xre
     jacobimass_.resize(2,lrefe_ / 2.0);
     //for nodal quadrature as many Gauss points as nodes required
     jacobinode_.resize(2,lrefe_ / 2.0);
-    
+
 
     // beta is the rotation angle out of x-axis in a x-y-plane in reference configuration
     double cos_alpha0 = (xrefe(2)-xrefe(0))/lrefe_;
@@ -282,12 +318,12 @@ void DRT::ELEMENTS::Beam2::SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xre
       else
         alpha0_ = -acos(cos_alpha0);
      }
-    
+
     //initially the absolute rotation of the element frame equals the reference rotation alpha0_
     alphanew_  = alpha0_;
     alphaold_  = alpha0_;
     alphaconv_ = alpha0_;
-    
+
     /*the angle alpha0_ is exactly the angle beta gained from the coordinate positions by evaluation
      * of the sine- and cosine-functions without adding or substracting any multiple of 2*PI*/
     numperiodsnew_  = 0;
@@ -394,33 +430,33 @@ void DRT::ELEMENTS::Beam2Register::Print(ostream& os) const
 
 int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
 {
-  
+
   //reference node position
   LINALG::Matrix<4,1> xrefe;
- 
+
   //setting up geometric variables for beam3 elements
   for (int num=0; num<  dis.NumMyColElements(); ++num)
-  {    
+  {
     //in case that current element is not a beam2 element there is nothing to do and we go back
     //to the head of the loop
     if (dis.lColElement(num)->Type() != DRT::Element::element_beam2) continue;
-    
+
     //if we get so far current element is a beam2 element and  we get a pointer at it
     DRT::ELEMENTS::Beam2* currele = dynamic_cast<DRT::ELEMENTS::Beam2*>(dis.lColElement(num));
     if (!currele) dserror("cast to Beam2* failed");
-    
+
     //getting element's nodal coordinates and treating them as reference configuration
     if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
       dserror("Cannot get nodes in order to compute reference configuration'");
     else
-    {   
+    {
       for (int k=0; k<2; k++) //element has two nodes
         for(int l= 0; l < 2; l++)
           xrefe(k*2 + l) = currele->Nodes()[k]->X()[l];
     }
- 
+
     currele->SetUpReferenceGeometry(xrefe);
-       
+
   } //for (int num=0; num<dis_.NumMyColElements(); ++num)
 
   return 0;

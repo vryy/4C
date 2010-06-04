@@ -47,6 +47,16 @@ Maintainer: Michael Gee
 #include "Epetra_Vector.h"
 
 
+DRT::ContainerType DRT::ContainerType::instance_;
+
+
+DRT::ParObject* DRT::ContainerType::Create( const std::vector<char> & data )
+{
+  DRT::Container* object = new DRT::Container();
+  object->Unpack(data);
+  return object;
+}
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
@@ -233,7 +243,7 @@ void DRT::Container::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,value);
     Add(key,value);
   }
-  
+
   // on purpose the map<string,RCP<Epetra_MultiVector> > evecdata_
   // is NOT included in the Pack/Unpack stuff
 
@@ -431,7 +441,7 @@ void DRT::Container::Delete(const string& name)
 
 // specializations have to be in the same namespace as the template
 // compilers can be pedantic!
-// note that there exist no general implementation of this template, 
+// note that there exist no general implementation of this template,
 // there are specializations only! This means that nothing else works other
 // than explicitly implemented here
 namespace DRT
@@ -501,7 +511,7 @@ namespace DRT
     if (curr != evecdata_.end())
     {
       Epetra_Vector* fool = dynamic_cast<Epetra_Vector*>(curr->second.get());
-      if (!fool) 
+      if (!fool)
       {
         dserror("Object in container is NOT Epetra_Vector");
         return NULL;

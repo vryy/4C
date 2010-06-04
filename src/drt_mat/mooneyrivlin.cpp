@@ -35,6 +35,17 @@ MAT::PAR::MooneyRivlin::MooneyRivlin(
 }
 
 
+MAT::MooneyRivlinType MAT::MooneyRivlinType::instance_;
+
+
+DRT::ParObject* MAT::MooneyRivlinType::Create( const std::vector<char> & data )
+{
+  MAT::MooneyRivlin* moon = new MAT::MooneyRivlin();
+  moon->Unpack(data);
+  return moon;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)     maf 04/08|
  *----------------------------------------------------------------------*/

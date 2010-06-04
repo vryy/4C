@@ -50,11 +50,28 @@ using namespace std;
 using namespace Teuchos;
 
 #include "drt_container.H"
+#include "drt_parobjectfactory.H"
 #include "drt_dserror.H"
 
 
 namespace DRT
 {
+
+class ConditionObjectType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ConditionObjectType"; }
+
+  static ConditionObjectType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static ConditionObjectType instance_;
+};
+
 
 // forward declarations
 class Element;
@@ -245,7 +262,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Condition;}
+  virtual int UniqueParObjectId() const { return ConditionObjectType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

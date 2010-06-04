@@ -11,12 +11,42 @@
 #ifdef CCADISCRET
 
 #include "ale3.H"
+#include "ale3_nurbs.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 
 
 using namespace DRT::UTILS;
+
+DRT::ELEMENTS::Ale3Type::Ale3Type DRT::ELEMENTS::Ale3Type::instance_;
+
+DRT::ParObject* DRT::ELEMENTS::Ale3Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Ale3* object = new DRT::ELEMENTS::Ale3(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele;
+
+  if ( eletype=="ALE3" )
+  {
+    if(eledistype!="NURBS27")
+    {
+      ele = rcp(new DRT::ELEMENTS::Ale3(id,owner));
+    }
+  }
+
+  return ele;
+}
+
 
 DRT::ELEMENTS::Ale3::Ale3(int id, int owner)
   : DRT::Element(id,element_ale3,owner),
@@ -117,7 +147,7 @@ void DRT::ELEMENTS::Ale3::Print(ostream& os) const
 
 RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Ale3::ElementRegister() const
 {
-  return rcp(new DRT::ELEMENTS::Ale3Register(Type()));
+  return Teuchos::null;
 }
 
 
@@ -142,73 +172,6 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Ale3::Volumes()
   vector<RCP<Element> > volumes(1);
   volumes[0]= rcp(this, false);
   return volumes;
-}
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-
-DRT::ELEMENTS::Ale3Register::Ale3Register(DRT::Element::ElementType etype)
-  : ElementRegister(etype)
-{
-}
-
-
-DRT::ELEMENTS::Ale3Register::Ale3Register(const DRT::ELEMENTS::Ale3Register& old)
-  : ElementRegister(old)
-{
-}
-
-
-DRT::ELEMENTS::Ale3Register* DRT::ELEMENTS::Ale3Register::Clone() const
-{
-  return new DRT::ELEMENTS::Ale3Register(*this);
-}
-
-
-void DRT::ELEMENTS::Ale3Register::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-}
-
-
-void DRT::ELEMENTS::Ale3Register::Unpack(const vector<char>& data)
-{
-  int position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != (int)data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-}
-
-
-DRT::ELEMENTS::Ale3Register::~Ale3Register()
-{
-}
-
-
-void DRT::ELEMENTS::Ale3Register::Print(ostream& os) const
-{
-  os << "Ale3Register ";
-  ElementRegister::Print(os);
 }
 
 

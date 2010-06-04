@@ -34,6 +34,17 @@ MAT::PAR::ArrheniusSpec::ArrheniusSpec(
 }
 
 
+MAT::ArrheniusSpecType MAT::ArrheniusSpecType::instance_;
+
+
+DRT::ParObject* MAT::ArrheniusSpecType::Create( const std::vector<char> & data )
+{
+  MAT::ArrheniusSpec* arrhenius_spec = new MAT::ArrheniusSpec();
+  arrhenius_spec->Unpack(data);
+  return arrhenius_spec;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::ArrheniusSpec::ArrheniusSpec()

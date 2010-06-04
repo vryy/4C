@@ -28,6 +28,43 @@ writen by : Alexander Volf
 #include "inversedesign.H"
 
 
+DRT::ELEMENTS::So_tet4Type DRT::ELEMENTS::So_tet4Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::So_tet4Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::So_tet4* object = new DRT::ELEMENTS::So_tet4(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="SOLIDT4" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_tet4(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::Sotet4RegisterType DRT::ELEMENTS::Sotet4RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Sotet4RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Sotet4Register* object =
+    new DRT::ELEMENTS::Sotet4Register(DRT::Element::element_so_tet4);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------***
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
@@ -185,7 +222,7 @@ void DRT::ELEMENTS::So_tet4::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,pstime_);
   ExtractfromPack(position,data,time_);
   if (pstype_==INPAR::STR::prestress_mulf)
-  {  
+  {
     vector<char> tmpprestress(0);
     ExtractfromPack(position,data,tmpprestress);
     if (prestress_ == Teuchos::null)
@@ -387,7 +424,7 @@ bool DRT::ELEMENTS::So_tet4::VisData(const string& name, vector<double>& data)
   // Put the owner of this element into the file (use base class method for this)
   if (DRT::Element::VisData(name,data))
     return true;
-  
+
   if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
     MAT::HolzapfelCardio* art = static_cast <MAT::HolzapfelCardio*>(Material().get());
     vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
@@ -427,7 +464,7 @@ bool DRT::ELEMENTS::So_tet4::VisData(const string& name, vector<double>& data)
 
   return true;
 }
-  
+
 //=======================================================================
 //=======================================================================
 //=======================================================================

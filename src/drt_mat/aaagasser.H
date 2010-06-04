@@ -23,6 +23,7 @@ Maintainer: goe
 #include "material.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
+#include "../drt_lib/drt_parobjectfactory.H"
 
 
 namespace MAT
@@ -69,6 +70,21 @@ namespace MAT
 
   }  // namespace PAR
 
+class AAAgasserType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "AAAgasserType"; }
+
+  static AAAgasserType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static AAAgasserType instance_;
+};
+
   /*----------------------------------------------------------------------*/
   /// Be sure to include 'AAA' in your BACI configurations file!!! <br>
   ///
@@ -79,7 +95,7 @@ namespace MAT
   /// isochoric strain energy function is given by
   ///
   ///\f[
-  ///   \Psi_{iso} = c \sum\limits_{\alpha = 1}^{3} (\bar{\lambda}_{\alpha}^{4} - 1) = \ldots = 
+  ///   \Psi_{iso} = c \sum\limits_{\alpha = 1}^{3} (\bar{\lambda}_{\alpha}^{4} - 1) = \ldots =
   ///          c \left[ (\bar{I}_{\boldsymbol C})^2 - 2 \, \bar{II}_{\boldsymbol C} - 3 \right] =
   ///          c \left[ (I_{\boldsymbol C} \cdot III_{\boldsymbol C}^{-\frac{1}{3}})^2 - 2 \, II_{\boldsymbol C} \cdot III_{\boldsymbol C}^{-\frac{2}{3}} - 3 \right]
   ///\f]
@@ -135,9 +151,9 @@ namespace MAT
   ///
   /// <h3>Reference:</h3>
   /// <ul>
-  /// <li>[1] Gasser, T.C. and G&ouml;rg&uuml;l&uuml;, G. and Folkesson, M. and Swedenborg, J. : 
-  ///     Failure properties of intraluminal thrombus in abdominal aortic 
-  ///     aneurysm under static and pulsating mechanical load, Journal of 
+  /// <li>[1] Gasser, T.C. and G&ouml;rg&uuml;l&uuml;, G. and Folkesson, M. and Swedenborg, J. :
+  ///     Failure properties of intraluminal thrombus in abdominal aortic
+  ///     aneurysm under static and pulsating mechanical load, Journal of
   ///     Vascular Surgery, Volume 48, Number 1, July 2008 </li>
   /// <li>[2] Holzapfel G. A.: Nonlinear Solid Mechanics - A Continuum Approach For Engineering, (reprint) 2007</li>
   /// <li>[3] Doll, S. ; Schweizerhof, K.: On the Development of Volumetric Strain Energy Functions. In: Journal of Applied Mechanics 67 (2000), March</li>
@@ -163,7 +179,7 @@ namespace MAT
     ///
     ///  every class implementing ParObject needs a unique id defined at the
     ///  top of drt_parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const { return ParObject_AAAgasser; }
+    virtual int UniqueParObjectId() const { return AAAgasserType::Instance().UniqueParObjectId(); }
 
     ///  \brief Pack this class so it can be communicated
     ///
@@ -188,7 +204,7 @@ namespace MAT
     virtual void Unpack(const vector<char>& data);
 
     //@}
-    
+
 
     /// material mass density
     double Density() const { return params_->density_; }
@@ -198,7 +214,7 @@ namespace MAT
 
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_aaagasser; }
-    
+
     /// <h2>Calculation of location dependent stiffness parameter c in GASSER material formulation:</h2>
     ///
     /// follows...
@@ -249,18 +265,18 @@ namespace MAT
     ///
     /// entering Holzapfel Eq (6.32) results:
     ///\f[
-    ///   \mathbf{S}_{iso} = 2 \, \frac{\partial \Psi_{iso}(I_{\mathbf{C}},II_{\mathbf{C}},III_{\mathbf{C}})}{\partial \mathbf{C}} 
+    ///   \mathbf{S}_{iso} = 2 \, \frac{\partial \Psi_{iso}(I_{\mathbf{C}},II_{\mathbf{C}},III_{\mathbf{C}})}{\partial \mathbf{C}}
     ///   = \gamma_1\mathbf{I} + \gamma_2\mathbf{C} + \gamma_3\mathbf{C}^{-1}
     ///\f]
     ///
-    /// The isochoric elasticity tensor is reached in the same fashion. Firstly, the coefficients \f$\delta_j \, (j=1, \ldots ,8)\f$ 
+    /// The isochoric elasticity tensor is reached in the same fashion. Firstly, the coefficients \f$\delta_j \, (j=1, \ldots ,8)\f$
     /// are calculated:
     ///
     ///\f[
     ///   \delta_{1}
-    ///   = 4 \, \left( \frac{\partial^2 \Psi_{iso}}{\partial I_{\mathbf{C}}\partial I_{\mathbf{C}}} 
-    ///           + 2 \, I_{\mathbf{C}} \, \frac{\partial^2 \Psi_{iso}}{\partial I_{\mathbf{C}}\partial II_{\mathbf{C}}} 
-    ///           + \frac{\partial \Psi_{iso}}{\partial II_{\mathbf{C}}} 
+    ///   = 4 \, \left( \frac{\partial^2 \Psi_{iso}}{\partial I_{\mathbf{C}}\partial I_{\mathbf{C}}}
+    ///           + 2 \, I_{\mathbf{C}} \, \frac{\partial^2 \Psi_{iso}}{\partial I_{\mathbf{C}}\partial II_{\mathbf{C}}}
+    ///           + \frac{\partial \Psi_{iso}}{\partial II_{\mathbf{C}}}
     ///           + I_{\mathbf{C}}^2 \, \frac{\partial^2 \Psi_{iso}}{\partial II_{\mathbf{C}}\partial II_{\mathbf{C}}} \right) = \ldots
     ///   = 0
     ///\f]
@@ -353,7 +369,7 @@ namespace MAT
     ///   \mathbf{S}_{vol} = Jp\mathbf{C}^{-1}
     ///\f]
     ///
-    /// For the volumetric elasticity tensor the fictious pressure \f$\tilde{p}\f$ 
+    /// For the volumetric elasticity tensor the fictious pressure \f$\tilde{p}\f$
     /// has to be calculated:
     ///
     ///\f[

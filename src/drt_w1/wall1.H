@@ -26,6 +26,7 @@ Maintainer: Markus Gitterle
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_inpar/inpar_structure.H"
@@ -46,6 +47,26 @@ namespace ELEMENTS
 {
 // forward declarations
 class Wall1Line;
+
+class Wall1Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Wall1Type"; }
+
+  static Wall1Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Wall1Type instance_;
+};
 
 /*======================================================================*/
 /*!
@@ -143,7 +164,7 @@ public:
   ///
   /// every class implementing ParObject needs a unique id defined at the
   /// top of this file.
-  virtual int UniqueParObjectId() const { return ParObject_Wall1; }
+  virtual int UniqueParObjectId() const { return Wall1Type::Instance().UniqueParObjectId(); }
 
   /// Pack this class so it can be communicated
   ///
@@ -735,6 +756,21 @@ private:
 //=======================================================================
 //=======================================================================
 
+class Wall1RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Wall1RegisterType"; }
+
+  static Wall1RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Wall1RegisterType instance_;
+};
+
 
 /*======================================================================*/
 /*!
@@ -768,7 +804,7 @@ public:
   ///
   /// every class implementing ParObject needs a unique id defined at the
   /// top of this file.
-  virtual int UniqueParObjectId() const { return ParObject_Wall1Register; }
+  virtual int UniqueParObjectId() const { return Wall1RegisterType::Instance().UniqueParObjectId(); }
 
   /// Pack this class so it can be communicated
   ///
@@ -815,6 +851,19 @@ private:
 //=======================================================================
 //=======================================================================
 //=======================================================================
+
+class Wall1LineType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Wall1LineType"; }
+
+  static Wall1LineType & Instance() { return instance_; };
+
+private:
+
+  static Wall1LineType instance_;
+};
 
 
 /*======================================================================*/
@@ -867,7 +916,7 @@ public:
   ///
   /// every class implementing ParObject needs a unique id defined at the
   /// top of the drt_parobject.H file.
-  virtual int UniqueParObjectId() const { return ParObject_Wall1Line;}
+  virtual int UniqueParObjectId() const { return Wall1LineType::Instance().UniqueParObjectId(); }
 
   /// Pack this class so it can be communicated
   ///

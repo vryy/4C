@@ -29,6 +29,7 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 /*----------------------------------------------------------------------*/
@@ -41,6 +42,26 @@ namespace ELEMENTS
 {
   // forward declarations
   class ThermoBoundary;
+
+class ThermoType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ThermoType"; }
+
+  static ThermoType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static ThermoType instance_;
+};
 
   //!
   //! \brief A C++ wrapper for the thermo element
@@ -168,7 +189,7 @@ namespace ELEMENTS
     //!
     //! every class implementing ParObject needs a unique id defined at the
     //! top of this file.
-    virtual int UniqueParObjectId() const { return ParObject_Thermo;}
+    virtual int UniqueParObjectId() const { return ThermoType::Instance().UniqueParObjectId(); }
 
     //! \brief Pack this class so it can be communicated
     //! \ref Pack and \ref Unpack are used to communicate this element
@@ -423,6 +444,19 @@ namespace ELEMENTS
   ////=======================================================================
   ////=======================================================================
 
+class ThermoBoundaryType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ThermoBoundaryType"; }
+
+  static ThermoBoundaryType & Instance() { return instance_; };
+
+private:
+
+  static ThermoBoundaryType instance_;
+};
+
   //! \brief An element representing a boundary element of a thermo element
   //!
   //! \note This is a pure boundary condition element. It's only
@@ -508,7 +542,7 @@ namespace ELEMENTS
     //!
     //! every class implementing ParObject needs a unique id defined at the
     //! top of the drt_parobject.H file.
-    virtual int UniqueParObjectId() const { return ParObject_ThermoBoundary;}
+    virtual int UniqueParObjectId() const { return ThermoBoundaryType::Instance().UniqueParObjectId(); }
 
     //! \brief Pack this class so it can be communicated
     //!

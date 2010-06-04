@@ -51,6 +51,16 @@ MAT::PAR::Itskov::Itskov( Teuchos::RCP<MAT::PAR::Material> matdata )
 {
 }
 
+MAT::ItskovType MAT::ItskovType::instance_;
+
+
+DRT::ParObject* MAT::ItskovType::Create( const std::vector<char> & data )
+{
+  MAT::Itskov* its = new MAT::Itskov();
+  its->Unpack(data);
+  return its;
+}
+
 /*---------------------------------------------------------------------*/
 MAT::Itskov::Itskov()
   : params_(NULL)
@@ -135,7 +145,7 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 	int i,k;
 	double energy, energy_constr, delta1, delta2;
 	double epsilonPen_soll, W_soll;						//for adapted penalty parameter
-	
+
 	// get material parameters
  	double alpha = params_->alpha_;			//parameter
 	double beta = params_->beta_;				//parameter
@@ -148,14 +158,14 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 
 	//init container
 	if ((time==0.0) && (gp==0)){
-		vector<double>time_alt(8);	
+		vector<double>time_alt(8);
 		data_.Add("time", time_alt);
 		Epetra_SerialDenseMatrix I3_alt(8,2);
 		data_.Add("I3", I3_alt);
 		Epetra_SerialDenseMatrix WPen_alt(8,2);
 		data_.Add("WPen", WPen_alt);
 	}
-	
+
 	//Update container
 	vector<double>* his_time=data_.GetMutable<vector<double> >("time");
 	Epetra_SerialDenseMatrix* his_I3 = data_.GetMutable<Epetra_SerialDenseMatrix>("I3");
@@ -168,27 +178,27 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 
 //-----------------------------------------------------------------------------------------------
 	if(comp!=0)		//calculation of adapted parameters for the penalty function
-	{	
+	{
 		if((*his_WPen)(gp,1)==0)
 			epsilonPen_soll=1;
 		else
 		{
 			//Value for the energy kreated ba the penalty function so that |I3-1| equals the desired comp
 			W_soll=(*his_WPen)(gp,1)*comp/(fabs((*his_I3)(gp,1)-1));
-		
+
 			//parameter epsilonPen, for that W_soll is achieved
 			if((*his_I3)(gp,1)>1)
 			{   epsilonPen_soll=W_soll/(pow((1+comp),gammaPen)+pow((1+comp),-gammaPen)-2);		}
 			else
 			{	epsilonPen_soll=W_soll/(pow((1-comp),gammaPen)+pow((1-comp),-gammaPen)-2);}
-		}	
-	
+		}
+
 		if(epsilonPen_soll<1) epsilonPen=1;
 		else
 		{	epsilonPen=epsilonPen_soll;}
-	}	
-//---------------------------------------------------------------------------------------------------	
-	
+	}
+//---------------------------------------------------------------------------------------------------
+
 //Definition structural tensors Li (i=1,2,3) in x,y,z-direction
 	LINALG::Matrix<3,3> L1(true);
 	LINALG::Matrix<3,3> L2(true);
@@ -197,16 +207,16 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 	L1(0,0)=1.0;
 	L2(1,1)=1.0;
 	L3(2,2)=1.0;
-	
+
 	double w1=1.0/3.0;
 	double w2=1.0/3.0;
 	double w3=1-w1-w2;
-	
+
 //Definition structural tensor L (see Itskov-Paper Equation(37))
 	LINALG::Matrix<3,3> L(true);	//false
 	for (k=0; k<3; k++) {
 		for (i=0; i<3; i++) {
-			L(i,k)=w1*L1(i,k)+w2*L2(i,k)+w3*L3(i,k); } }	
+			L(i,k)=w1*L1(i,k)+w2*L2(i,k)+w3*L3(i,k); } }
 
 // Green-Lagrange Strain Tensor
 	LINALG::Matrix<3,3> E(true);		//false
@@ -223,7 +233,7 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 	C(0,0) += 1.0;
 	C(1,1) += 1.0;
 	C(2,2) += 1.0;
-	
+
 	//zum testen
 	/*C(0,0) = 1.410156;
 	C(1,1) = 1.0;
@@ -243,7 +253,7 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 //------------------------------------------------------GroundSubstance
 	double factors1[6];
 	LINALG::Matrix<3,3> PK2_1(true);
-	LINALG::Matrix<6,6> cmat_1(true);				
+	LINALG::Matrix<6,6> cmat_1(true);
 	calc_factors (C, Cinv, L, 0, 0, mu_GS, factors1);
 	calc_Itskov (C, Cinv, L, PK2_1, cmat_1, factors1);
 //---------------------------------------------------------------Fibers
@@ -251,7 +261,7 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 	LINALG::Matrix<3,3> PK2_2(true);
 	LINALG::Matrix<6,6> cmat_2(true);
 	calc_factors (C, Cinv, L, alpha, beta, mu_fibers, factors2);
-	calc_Itskov (C, Cinv, L, PK2_2, cmat_2, factors2);			
+	calc_Itskov (C, Cinv, L, PK2_2, cmat_2, factors2);
 
 //---------------------------------------------------------------------
 // Energy
@@ -264,10 +274,10 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 // PK2 Stresses
 //--------------------------------constraint function incompressibility
 	LINALG::Matrix<3,3> PK2_constr(Cinv);
-	PK2_constr.Scale(2.0*epsilonPen*gammaPen*(pow(I3,gammaPen)-pow(I3,(-gammaPen))));	
+	PK2_constr.Scale(2.0*epsilonPen*gammaPen*(pow(I3,gammaPen)-pow(I3,(-gammaPen))));
 //------------------------------------2nd Piola-Kirchhoff Stress tensor
 	LINALG::Matrix<3,3> PK2(PK2_constr);
-	PK2+=PK2_1;					
+	PK2+=PK2_1;
 	PK2+=PK2_2;
 // Transfer PK2 tensor to stress vector
 	(stress)(0) = PK2(0,0);
@@ -275,10 +285,10 @@ void MAT::Itskov::Unpack(const vector<char>& data)
   	(stress)(2) = PK2(2,2);
   	(stress)(3) = PK2(0,1);
   	(stress)(4) = PK2(1,2);
-  	(stress)(5) = PK2(0,2);	
-	
+  	(stress)(5) = PK2(0,2);
+
 //---------------------------------------------------------------------
-// Elasticity Tensor	
+// Elasticity Tensor
 //--------------------------------------------------constraint function
 	delta1=4.0*epsilonPen*pow(gammaPen,2)*(pow(I3,gammaPen)+pow(I3,-gammaPen));
 	delta2=-4.0*epsilonPen*gammaPen*(pow(I3,gammaPen)-pow(I3,-gammaPen));
@@ -290,8 +300,8 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 	cmat=cmat_constr;
 	cmat+=cmat_1;
 	cmat+=cmat_2;
-	
-	
+
+
 //zum testen
 if(gp==-1)
 {
@@ -299,11 +309,11 @@ if(gp==-1)
 	/*printf("\ntime: %f, element: %f \n", time, ele_ID);  */
 	printf("I3: %.10f   \n", I3);
 	printf("ePenSoll: %f   ePen: %f\n", epsilonPen_soll, epsilonPen);
-	
+
 	/*//printf("history %f   %f   %f   %f   %f   %f   %f   %f   \n",(*his_time)[0],(*his_time)[1],(*his_time)[2],(*his_time)[3],(*his_time)[4],(*his_time)[5],(*his_time)[6],(*his_time)[7]);
 	printf("history_I3[x][0]: %f   %f   %f   %f   %f   %f   %f   %f   \n",(*his_I3)(0,0),(*his_I3)(1,0),(*his_I3)(2,0),(*his_I3)(3,0),(*his_I3)(4,0),(*his_I3)(5,0),(*his_I3)(6,0),(*his_I3)(7,0));
 	printf("history_I3[x][1]: %f   %f   %f   %f   %f   %f   %f   %f   \n",(*his_I3)(0,1),(*his_I3)(1,1),(*his_I3)(2,1),(*his_I3)(3,1),(*his_I3)(4,1),(*his_I3)(5,1),(*his_I3)(6,1),(*his_I3)(7,1));*/
-	
+
 	//printf("\n\n");
 
 printf("\nRight cauchy green\n");
@@ -311,21 +321,21 @@ printf("\nRight cauchy green\n");
 		for (i=0; i<3; i++) {
 				printf("%.10f   ", C(i,k));}
 				printf("\n");}
-				
+
 printf("\nSecond Piola Kirchhhoff\n");
 	for (k=0; k<3; k++) {
 		for (i=0; i<3; i++) {
 				printf("%.10f   ", PK2(i,k));}
 				printf("\n");}
-				
+
 
 printf("\nSecond Piola Kirchhoff_Constr\n");
 	for (k=0; k<3; k++) {
 		for (i=0; i<3; i++) {
 				printf("%.10f   ", PK2_constr(i,k));}
 				printf("\n");}
-				
-/*printf("\nCelast\n");				
+
+/*printf("\nCelast\n");
 	for (k=0; k<6; k++) {
 	  for (i=0; i<6; i++) {
 			printf("%f  ", (cmat)(k,i));}
@@ -334,12 +344,12 @@ printf("\nSecond Piola Kirchhoff_Constr\n");
 //FILE *pDatei = fopen("test.txt", "at");
 //	fprintf(pDatei, "C11:%f    C22:%f   C33:%f   SPK11:%f    SPK22:%f     Cmat:%f\n", C(0,0), C(1,1), C(2,2), PK2(0,0), PK2(1,1), cmat(0,0));
 //	fclose(pDatei);
-}	
+}
 //------------------------------------------------------------------------------------
 //Write I3 and energy of the penalty function to history-variables
 	(*his_time)[gp]=time;
 	(*his_I3)(gp,0)=I3;
-	(*his_WPen)(gp,0)=energy_constr;	
+	(*his_WPen)(gp,0)=energy_constr;
 //-------------------------------------------------------------------------------------
 	//exit(0);
   return;
@@ -391,16 +401,16 @@ void MAT::Itskov::calc_Itskov (	LINALG::Matrix<3,3>&C,
 //--------------------------------------------Tensorproduct Cinv*L*Cinv
 	LINALG::Matrix<3,3> CinvL(true);  //false
 	CinvL.Multiply(1.0,Cinv,L,0.0);
-	
+
 	LINALG::Matrix<3,3> CinvLCinv(true);	//false
-	CinvLCinv.Multiply(1.0,CinvL,Cinv,0.0);	
+	CinvLCinv.Multiply(1.0,CinvL,Cinv,0.0);
 //---------------------------------------------------------------------
 //-------------------------------------------2nd Piola-Kirchhoff Stress
 //PK2=2*(fI*L-gI*CinvLCinv)
 //---------------------------------------------------------------------
 	PK2_=L;
-	PK2_.Scale(2.0*factors[2]);					
-	PK2_.Multiply(-2.0*factors[3],CinvL,Cinv,1.0);			
+	PK2_.Scale(2.0*factors[2]);
+	PK2_.Multiply(-2.0*factors[3],CinvL,Cinv,1.0);
 //---------------------------------------------------------------------
 //--------------------------------------------Tangent elasticity tensor
 //cmat=4*(m/4*fII*LxL+m/4*gII*CinvLCinvxCinvLCinv+m/4*gI*(CinvoCinvLCinv+CinvLCinvoCinv))

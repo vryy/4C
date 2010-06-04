@@ -14,6 +14,7 @@ Maintainer: ???
 
 #include "matpar_parameter.H"
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
 
@@ -56,6 +57,21 @@ namespace MAT
 
   }  // namespace PAR
 
+class StVenantKirchhoffType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "StVenantKirchhoffType"; }
+
+  static StVenantKirchhoffType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static StVenantKirchhoffType instance_;
+};
+
   /*----------------------------------------------------------------------*/
   /// Wrapper for St.-Venant-Kirchhoff material
   class StVenantKirchhoff : public Material
@@ -76,7 +92,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_StVenantKirchhoff; }
+    virtual int UniqueParObjectId() const { return StVenantKirchhoffType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated

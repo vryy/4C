@@ -17,6 +17,7 @@ Maintainer: Ursula Mayer
 
 #include "matpar_parameter.H"
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
 {
@@ -54,6 +55,21 @@ namespace MAT
 
   }  // namespace PAR
 
+class CarreauYasudaType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "CarreauYasudaType"; }
+
+  static CarreauYasudaType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static CarreauYasudaType instance_;
+};
+
   /// Nonlinear viscosity according to Carreau-Yasuda
   class CarreauYasuda : public Material
   {
@@ -74,7 +90,7 @@ namespace MAT
       top of drt_parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const { return ParObject_CarreauYasuda; }
+    virtual int UniqueParObjectId() const { return CarreauYasudaType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated

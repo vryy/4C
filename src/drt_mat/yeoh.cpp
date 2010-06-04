@@ -32,6 +32,16 @@ MAT::PAR::Yeoh::Yeoh(
 {
 }
 
+MAT::YeohType MAT::YeohType::instance_;
+
+
+DRT::ParObject* MAT::YeohType::Create( const std::vector<char> & data )
+{
+  MAT::Yeoh* yeoh = new MAT::Yeoh();
+  yeoh->Unpack(data);
+  return yeoh;
+}
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)      tk 01/09|
  *----------------------------------------------------------------------*/

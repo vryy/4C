@@ -44,6 +44,19 @@ Maintainer: Alexander Popp
 #include "contact_defines.H"
 
 
+CONTACT::CoNodeType CONTACT::CoNodeType::instance_;
+
+
+DRT::ParObject* CONTACT::CoNodeType::Create( const std::vector<char> & data )
+{
+  double x[3];
+  std::vector<int> dofs(0);
+  CONTACT::CoNode* node = new CONTACT::CoNode(0,x,0,0,dofs,false,false);
+  node->Unpack(data);
+  return node;
+}
+
+
 /*----------------------------------------------------------------------*/
 // METHODS RELATED TO CONODEDATACONTAINER
 /*----------------------------------------------------------------------*/
@@ -184,23 +197,23 @@ void CONTACT::CoNode::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  
+
   // add base class MORTAR::MortarNode
   vector<char> basedata(0);
   MORTAR::MortarNode::Pack(basedata);
   AddtoPack(data,basedata);
-  
+
   // add active_
   AddtoPack(data,active_);
   // add initactive_
   AddtoPack(data,initactive_);
-  
+
   // data_
   int hasdata = codata_!=Teuchos::null;
   AddtoPack(data,hasdata);
   if (hasdata)
     codata_->Pack(data);
-  
+
   return;
 }
 
@@ -212,22 +225,22 @@ void CONTACT::CoNode::Pack(vector<char>& data) const
 void CONTACT::CoNode::Unpack(const vector<char>& data)
 {
   int position = 0;
-  
+
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  
+
   // extract base class MORTAR::MortarNode
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   MORTAR::MortarNode::Unpack(basedata);
-  
+
   // active_
   ExtractfromPack(position,data,active_);
   // isslave_
   ExtractfromPack(position,data,initactive_);
-  
+
   // data_
   int hasdata;
   ExtractfromPack(position,data,hasdata);
@@ -276,15 +289,15 @@ void CONTACT::CoNode::AddDerivZValue(int& row, const int& col, double val)
     dserror("ERROR: AddZValue: function called for master node %i", Id());
   if (IsOnBound()==true)
     dserror("ERROR: AddZValue: function called for boundary node %i", Id());
-    
+
   // check if this has been called before
   if ((int)CoData().GetDerivZ().size()==0)
     CoData().GetDerivZ().resize(NumDof());
-    
+
   // check row index input
   if ((int)CoData().GetDerivZ().size() <= row)
     dserror("ERROR: AddDerivZValue: tried to access invalid row index!");
-    
+
   // add the pair (col,val) to the given row
   map<int,double>& zmap = CoData().GetDerivZ()[row];
   zmap[col] += val;

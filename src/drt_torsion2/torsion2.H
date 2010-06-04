@@ -29,6 +29,7 @@ using namespace std;
 using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_condition.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -48,6 +49,27 @@ namespace DRT
 
 namespace ELEMENTS
 {
+
+class Torsion2Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Torsion2Type"; }
+
+  static Torsion2Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Torsion2Type instance_;
+};
+
 /*!
 \brief two dimensional torsion element
 
@@ -84,13 +106,13 @@ public:
 
   /*!
   \brief Deep copy this instance of Torsion2 and return pointer to the copy
-    
+
   The Clone() method is used by the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
 .
   */
   virtual DRT::Element* Clone() const;
-  
+
    /*!
   \brief Get shape type of element
   */
@@ -103,7 +125,7 @@ public:
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
   */
-  virtual int UniqueParObjectId() const { return ParObject_Torsion2; }
+  virtual int UniqueParObjectId() const { return Torsion2Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -149,14 +171,14 @@ public:
   /*!
   \brief Get number of degrees of freedom of a single node
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const 
-  { 
-    /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only 
+  virtual int NumDofPerNode(const DRT::Node& node) const
+  {
+    /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only
      *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
      *number of DOF to this node requested by any element connected to this node*/
     return 2;
   }
-  
+
 
   /*!
   \brief Get number of degrees of freedom per element not including nodal degrees of freedom
@@ -167,7 +189,7 @@ public:
   \brief Print this element
   */
   virtual void Print(ostream& os) const;
-  
+
 
   //@}
 
@@ -227,7 +249,7 @@ public:
                        Epetra_SerialDenseVector& elevec1,
                        Epetra_SerialDenseVector& elevec2,
                        Epetra_SerialDenseVector& elevec3);
-  
+
 
 
   /*!
@@ -248,7 +270,7 @@ public:
   \param elevec1 (out)      : Force vector to be filled by element
 
   \return 0 if successful, negative otherwise
-  */ 
+  */
   virtual int EvaluateNeumann(ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
@@ -273,7 +295,7 @@ public:
                           Epetra_SerialDenseMatrix& elemat1);
   //@}
 
-  
+
 private:
 
   //! action parameters recognized by Torsion2
@@ -297,7 +319,7 @@ private:
     postprocess_stress,
     calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
   };
-  
+
   //! possible bending potentials
   enum BendingPotential
   {
@@ -305,43 +327,43 @@ private:
     cosine
   };
 
-  
+
   //! container containing all kind of Torsion2 thisandthat
-  DRT::Container data_; 
-    
+  DRT::Container data_;
+
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
-    
+
   //!reference angle
   double theta_;
-  
+
   //! springconstant
   double springconstant_;
-  
+
   //! Bending potential
   BendingPotential bendingpotential_;
 
-  
+
   //! @name methods for initilization of the element
-  
+
   //!sets reference coordinates X_ and refenrence angle theta_ for elements added to the discretization after simulation start
   void SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe);
-  
+
   //@}
 
   //! @name Internal calculation methods
-              
+
   //!calculation of nonlinear stiffness and mass matrix
-  void t2_nlnstiffmass(vector<double>&           disp, 
+  void t2_nlnstiffmass(vector<double>&           disp,
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
                        Epetra_SerialDenseVector* force);
- 
+
   //@}
-          
+
   // don't want = operator
   Torsion2& operator = (const Torsion2& old);
-  
+
 
 }; // class Torsion2
 
@@ -353,6 +375,21 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 
 //------------- class Torsion2Register: -------------------------------------------
 
+class Torsion2RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Torsion2RegisterType"; }
+
+  static Torsion2RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Torsion2RegisterType instance_;
+};
+
 /*!
 \brief A register for Torsion2 element
 
@@ -361,7 +398,7 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 class Torsion2Register : public DRT::ElementRegister
 {
 public:
-  
+
   //! @name Friends
   friend class Torsion2;
 
@@ -369,7 +406,7 @@ public:
 
   /*!
   \brief Standard Constructor
-  
+
   */
   Torsion2Register(DRT::Element::ElementType etype);
 
@@ -377,38 +414,38 @@ public:
   \brief Copy Constructor
 
   Makes a deep copy of an Torsion2Register
-  
+
   */
   Torsion2Register(const DRT::ELEMENTS::Torsion2Register& old);
 
   /*!
   \brief Deep copy this instance of Torsion2Register and return pointer to the copy
-  
+
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
-  
+
   */
   DRT::ELEMENTS::Torsion2Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
-  
+
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Torsion2Register;}
+  virtual int UniqueParObjectId() const { return Torsion2RegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
-  
+
   */
   virtual void Pack(vector<char>& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
@@ -435,7 +472,7 @@ public:
 
   /*!
   \brief Call Element init routines
-  
+
   The method performs all steps needed to init the torsion2 elements. it e.g. calculates the
   field of averaged directors at nodes.
   */

@@ -20,6 +20,45 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 
+
+DRT::ELEMENTS::NURBS::So_Nurbs27Test DRT::ELEMENTS::NURBS::So_Nurbs27Test::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::NURBS::So_Nurbs27Test::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::NURBS::So_nurbs27* object = new DRT::ELEMENTS::NURBS::So_nurbs27(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::So_Nurbs27Test::Create( const string eletype,
+                                                                         const string eledistype,
+                                                                         const int id,
+                                                                         const int owner )
+{
+  if ( eletype=="SONURBS27" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::NURBS::So_nurbs27(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::NURBS::So_Nurbs27_RegisterType DRT::ELEMENTS::NURBS::So_Nurbs27_RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::NURBS::So_Nurbs27_RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::NURBS::Sonurbs27Register* object =
+    new DRT::ELEMENTS::NURBS::Sonurbs27Register(DRT::Element::element_so_nurbs27);
+  object->Unpack(data);
+  return object;
+}
+
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                                       |
  |  id             (in)  this element's global id                       |

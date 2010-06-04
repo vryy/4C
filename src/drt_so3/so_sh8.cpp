@@ -20,6 +20,41 @@ Maintainer: Moritz Frenzel
 #include "so_hex8.H"
 
 
+DRT::ELEMENTS::So_sh8Type DRT::ELEMENTS::So_sh8Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::So_sh8Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::So_sh8* object = new DRT::ELEMENTS::So_sh8(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh8Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="SOLIDSH8" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_sh8(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+DRT::ELEMENTS::Sosh8RegisterType DRT::ELEMENTS::Sosh8RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Sosh8RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Sosh8Register* object =
+    new DRT::ELEMENTS::Sosh8Register(DRT::Element::element_sosh8);
+  object->Unpack(data);
+  return object;
+}
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
@@ -32,7 +67,7 @@ DRT::ELEMENTS::So_hex8(id,owner)
   thickdir_ = globx;
   nodes_rearranged_ = false;
   thickvec_.resize(3, 0.0);
-    
+
   return;
 }
 

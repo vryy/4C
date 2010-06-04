@@ -18,6 +18,44 @@ Maintainer: Florian Henke
 
 using namespace DRT::UTILS;
 
+
+DRT::ELEMENTS::Combust3Type DRT::ELEMENTS::Combust3Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Combust3Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Combust3* object = new DRT::ELEMENTS::Combust3(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Combust3Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="COMBUST3" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Combust3(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::Combust3RegisterType DRT::ELEMENTS::Combust3RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Combust3RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Combust3Register* object =
+    new DRT::ELEMENTS::Combust3Register(DRT::Element::element_combust3);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*/
 // map to convert strings to actions (stabilization)
 /*----------------------------------------------------------------------*/

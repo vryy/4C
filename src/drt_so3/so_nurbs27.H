@@ -24,6 +24,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 
 //@=
@@ -58,6 +59,26 @@ namespace ELEMENTS
 */
 namespace NURBS
 {
+
+class So_Nurbs27Test : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "So_Nurbs27Test"; }
+
+  static So_Nurbs27Test & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static So_Nurbs27Test instance_;
+};
 
 
 // forward declarations
@@ -151,7 +172,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_So_Nurbs27;}
+  virtual int UniqueParObjectId() const { return So_Nurbs27Test::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -383,6 +404,21 @@ protected:
 //=======================================================================
 //=======================================================================
 
+class So_Nurbs27_RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "So_Nurbs27_RegisterType"; }
+
+  static So_Nurbs27_RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static So_Nurbs27_RegisterType instance_;
+};
+
 
 /*!
 \brief Just another register
@@ -424,7 +460,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_So_Nurbs27_Register;}
+  virtual int UniqueParObjectId() const { return So_Nurbs27_RegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

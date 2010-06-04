@@ -15,6 +15,7 @@ Maintainer: Moritz Frenzel
 
 using namespace std;
 #include "so_weg6.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 namespace DRT
 {
@@ -25,6 +26,26 @@ namespace ELEMENTS
 {
 // forward declarations
 class Soshw6Register;
+
+class So_shw6Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "So_shw6Type"; }
+
+  static So_shw6Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static So_shw6Type instance_;
+};
 
 /*!
 \brief A C++ 6-node wedge Solid-Shell element inherited from so_weg6
@@ -83,7 +104,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_So_shw6;}
+  virtual int UniqueParObjectId() const { return So_shw6Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -269,6 +290,20 @@ private:
 //=======================================================================
 //=======================================================================
 
+class Soshw6RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Soshw6RegisterType"; }
+
+  static Soshw6RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Soshw6RegisterType instance_;
+};
 
 /*!
 \brief A register for Solid-Shell wedge6 element
@@ -310,7 +345,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Soshw6Register;}
+  virtual int UniqueParObjectId() const { return Soshw6RegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

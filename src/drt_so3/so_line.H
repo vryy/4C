@@ -22,6 +22,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
 
@@ -31,6 +32,19 @@ namespace DRT
 
 namespace ELEMENTS
 {
+
+class StructuralLineType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "StructuralLineType"; }
+
+  static StructuralLineType & Instance() { return instance_; };
+
+private:
+
+  static StructuralLineType instance_;
+};
 
 /*!
 \brief An element representing a line edge of any 3D structural element
@@ -82,7 +96,7 @@ public:
   top of the drt_parobject.H file.
   */
   virtual inline int UniqueParObjectId() const
-  { return ParObject_StructuralLine;}
+  { return StructuralLineType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

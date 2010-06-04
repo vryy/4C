@@ -21,6 +21,29 @@ Maintainer: Mahmoud Ismail
 
 using namespace DRT::UTILS;
 
+DRT::ELEMENTS::ArteryType DRT::ELEMENTS::ArteryType::instance_;
+
+DRT::ParObject* DRT::ELEMENTS::ArteryType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Artery* object = new DRT::ELEMENTS::Artery(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ArteryType::Create( const string eletype,
+                                                              const string eledistype,
+                                                              const int id,
+                                                              const int owner )
+{
+  if ( eletype=="ART" )
+  {
+    RCP<DRT::Element> ele =  rcp(new DRT::ELEMENTS::Artery(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           ismail 01/09|
  |  id             (in)  this element's global id                       |
@@ -155,103 +178,6 @@ void DRT::ELEMENTS::Artery::Print(ostream& os) const
   os << "Artery ";
   Element::Print(os);
 
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  allocate and return Artery2Register (public)            ismail 01/09|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Artery::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::ArteryRegister(Type()));
-}
-
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                           ismail 01/09|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ArteryRegister::ArteryRegister(DRT::Element::ElementType etype) :
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                      ismail 01/09|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ArteryRegister::ArteryRegister(
-                               const DRT::ELEMENTS::ArteryRegister& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                         ismail 01/09 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ArteryRegister* DRT::ELEMENTS::ArteryRegister::Clone() const
-{
-  return new DRT::ELEMENTS::ArteryRegister(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                         ismail 01/09 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ArteryRegister::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                         ismail 01/09 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ArteryRegister::Unpack(const vector<char>& data)
-{
-  int position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != (int)data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                          ismail 01/09 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ArteryRegister::~ArteryRegister()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                         ismail 01/09 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ArteryRegister::Print(ostream& os) const
-{
-  os << "ArteryRegister ";
-  ElementRegister::Print(os);
   return;
 }
 

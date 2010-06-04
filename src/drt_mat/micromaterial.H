@@ -33,6 +33,7 @@ Maintainer: Lena Wiechert
 
 #include "../drt_lib/drt_discret.H"
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 //#include "../drt_stru_multi/microstrugenalpha.H"
 #include "../drt_stru_multi/microstatic.H"
@@ -78,6 +79,20 @@ namespace MAT
 
   }  // namespace PAR
 
+class MicroMaterialType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "MicroMaterialType"; }
+
+  static MicroMaterialType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static MicroMaterialType instance_;
+};
 
   /*----------------------------------------------------------------------*/
   // forward
@@ -102,7 +117,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_MicroMaterial; }
+    virtual int UniqueParObjectId() const { return MicroMaterialType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated

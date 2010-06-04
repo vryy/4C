@@ -18,6 +18,8 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
 
+DRT::ELEMENTS::StructuralSurfaceType DRT::ELEMENTS::StructuralSurfaceType::instance_;
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              gee 04/08|
  *----------------------------------------------------------------------*/
@@ -48,10 +50,10 @@ gaussrule_(DRT::UTILS::intrule2D_undefined)
   case quad8:
     gaussrule_ = DRT::UTILS::intrule_quad_9point;
   break;
-  case quad9: 
+  case quad9:
     gaussrule_ = DRT::UTILS::intrule_quad_9point;
   break;
-  case nurbs9: 
+  case nurbs9:
     gaussrule_ = DRT::UTILS::intrule_quad_9point;
   break;
   default:

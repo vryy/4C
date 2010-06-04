@@ -27,6 +27,7 @@ using namespace std;
 using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_condition.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -46,6 +47,21 @@ namespace DRT
 
 namespace ELEMENTS
 {
+
+class SmoothrodType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "SmoothrodType"; }
+
+  static SmoothrodType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static SmoothrodType instance_;
+};
 
 class Smoothrod : public DRT::Element
 {
@@ -99,7 +115,7 @@ public:
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
   */
-  virtual int UniqueParObjectId() const { return ParObject_Smoothrod; }
+  virtual int UniqueParObjectId() const { return SmoothrodType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -277,7 +293,7 @@ private:
     calc_struct_reset_istep, //!< reset elementwise internal variables during iteration to last converged state
     calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
   };
-  
+
   //! kind of integration to be performed
   enum IntegrationType
   {
@@ -332,7 +348,7 @@ private:
 
   //! Vector holding value of Jacobi determinant jacobi for complete integration of massmatrix
   vector<double> jacobimass_;
-  
+
   //! Vector holding value of Jacobi determinant jacobi at nodes
   vector<double> jacobinode_;
 
@@ -366,12 +382,12 @@ private:
   //! lump mass matrix
   template<int nnode>
   void lumpmass(Epetra_SerialDenseMatrix* emass);
-  
+
   //!determine Gauss rule from required type of integration
   DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
 
   //@}
-  
+
 
 
   // don't want = operator
@@ -384,6 +400,22 @@ private:
 
 // << operator
 ostream& operator << (ostream& os, const DRT::Element& ele);
+
+
+class SmoothrodRegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "SmoothrodRegisterType"; }
+
+  static SmoothrodRegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static SmoothrodRegisterType instance_;
+};
 
 
 //------------- class SmoothrodRegister: -------------------------------------------
@@ -431,7 +463,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_SmoothrodRegister;}
+  virtual int UniqueParObjectId() const { return SmoothrodRegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

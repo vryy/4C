@@ -21,6 +21,43 @@ Maintainer: Mahmoud Ismail
 
 using namespace DRT::UTILS;
 
+DRT::ELEMENTS::RedAirwayType DRT::ELEMENTS::RedAirwayType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::RedAirwayType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::RedAirway* object = new DRT::ELEMENTS::RedAirway(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAirwayType::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="RED_AIRWAY" )
+  {
+    Teuchos::RCP<DRT::Element> ele =  rcp(new DRT::ELEMENTS::RedAirway(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::RedAirwayRegisterType DRT::ELEMENTS::RedAirwayRegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::RedAirwayRegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::RedAirwayRegister* object = new DRT::ELEMENTS::RedAirwayRegister(DRT::Element::element_red_airway);
+  object->Unpack(data);
+  return object;
+}
+
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           ismail 01/10|
  |  id             (in)  this element's global id                       |
@@ -123,7 +160,7 @@ void DRT::ELEMENTS::RedAirway::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  
+
   ExtractfromPack(position,data,elemType_);
 
   map<std::string,double> it;
@@ -288,7 +325,7 @@ void DRT::ELEMENTS::RedAirway::VisNames(map<string,int>& names)
   // in flow of volumetric flow profile
   string name = "flow_in";
   names.insert(pair<string,int>(name,1));
-  
+
   // out flow of volumetric flow profile
   name = "flow_out";
   names.insert(pair<string,int>(name,1));
@@ -330,7 +367,7 @@ bool DRT::ELEMENTS::RedAirway::VisData(const string& name, vector<double>& data)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::RedAirway::getVars(std::string name, double & var)
 {
-  
+
   map<std::string,double>::iterator it;
   it = elemVars_.find(name);
   if (it == elemVars_.end())
@@ -339,7 +376,7 @@ void DRT::ELEMENTS::RedAirway::getVars(std::string name, double & var)
     exit(1);
   }
   var = elemVars_[name];
-  
+
 }
 
 /*----------------------------------------------------------------------*
@@ -347,7 +384,7 @@ void DRT::ELEMENTS::RedAirway::getVars(std::string name, double & var)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::RedAirway::setVars(std::string name, double var)
 {
-  
+
   map<std::string,double>::iterator it;
   it = elemVars_.find(name);
   if (it == elemVars_.end())
@@ -356,7 +393,7 @@ void DRT::ELEMENTS::RedAirway::setVars(std::string name, double var)
     exit(1);
   }
   elemVars_[name] = var;
-  
+
 }
 
 
@@ -375,8 +412,8 @@ void DRT::ELEMENTS::RedAirway::getParams(std::string name, double & var)
     exit(1);
   }
   var = elemParams_[name];
-  
+
 }
-           
+
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_RED_AIRWAYS

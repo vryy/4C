@@ -19,6 +19,44 @@ Maintainer: Moritz Frenzel
 using namespace DRT::UTILS;
 
 
+DRT::ELEMENTS::So_shw6Type DRT::ELEMENTS::So_shw6Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::So_shw6Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::So_shw6* object =
+    new DRT::ELEMENTS::So_shw6(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_shw6Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="SOLIDSHW6" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_shw6(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::Soshw6RegisterType DRT::ELEMENTS::Soshw6RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Soshw6RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Soshw6Register* object =
+    new DRT::ELEMENTS::Soshw6Register(DRT::Element::element_so_shw6);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |

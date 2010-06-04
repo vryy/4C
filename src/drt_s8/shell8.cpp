@@ -20,6 +20,42 @@ Maintainer: Michael Gee
 
 
 
+DRT::ELEMENTS::Shell8Type DRT::ELEMENTS::Shell8Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Shell8Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Shell8* object = new DRT::ELEMENTS::Shell8(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Shell8Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="SHELL8" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Shell8(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::Shell8RegisterType DRT::ELEMENTS::Shell8RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Shell8RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Shell8Register* object =
+    new DRT::ELEMENTS::Shell8Register(DRT::Element::element_shell8);
+  object->Unpack(data);
+  return object;
+}
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|

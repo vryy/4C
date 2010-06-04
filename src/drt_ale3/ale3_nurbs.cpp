@@ -14,6 +14,33 @@ Maintainer: Peter Gamnitzer
 
 #include "ale3_nurbs.H"
 
+DRT::ELEMENTS::NURBS::Ale3_NurbsType DRT::ELEMENTS::NURBS::Ale3_NurbsType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::NURBS::Ale3_NurbsType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::NURBS::Ale3Nurbs* object = new DRT::ELEMENTS::NURBS::Ale3Nurbs(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale3_NurbsType::Create( const string eletype,
+                                                                         const string eledistype,
+                                                                         const int id,
+                                                                         const int owner )
+{
+  if ( eletype=="ALE3" )
+  {
+    if(eledistype=="NURBS27")
+    {
+      return rcp(new DRT::ELEMENTS::NURBS::Ale3Nurbs(id,owner));
+    }
+  }
+  return Teuchos::null;
+}
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 03/09|
  |  id             (in)  this element's global id                       |

@@ -53,6 +53,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/drt_container.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "matpar_parameter.H"
 
 /*----------------------------------------------------------------------*/
@@ -72,6 +73,18 @@ namespace MAT
 
   namespace PAR
   {
+class ParMaterialType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ParMaterialType"; }
+
+  static ParMaterialType & Instance() { return instance_; };
+
+private:
+
+  static ParMaterialType instance_;
+};
 
     /// Container for read-in materials
     ///
@@ -111,7 +124,7 @@ namespace MAT
       ///
       /// every class implementing ParObject needs a unique id defined at the
       /// top of this file.
-      virtual int UniqueParObjectId() const { return ParObject_ParMaterial; }
+      virtual int UniqueParObjectId() const { return ParMaterialType::Instance().UniqueParObjectId(); }
 
       /// Pack this class so it can be communicated
       ///

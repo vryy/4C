@@ -16,6 +16,14 @@ Maintainer: Ursula Mayer
 #include "../drt_potential/drt_potential_container.H"
 #include "../drt_lib/drt_element.H"
 
+POTENTIAL::PecType POTENTIAL::PecType::instance_;
+
+
+DRT::ParObject* POTENTIAL::PecType::Create( const std::vector<char> & data )
+{
+  return NULL;
+}
+
 
 /*----------------------------------------------------------------------*
  |  standard constructor                                       (public) |
@@ -60,7 +68,7 @@ POTENTIAL::PotentialElementContainer::PotentialElementContainer(
   return;
 }
 
-    
+
 /*----------------------------------------------------------------------*
  |  dtor (public)                                           u.may 12/09 |
  *----------------------------------------------------------------------*/
@@ -97,7 +105,7 @@ void POTENTIAL::PotentialElementContainer::Pack(vector<char>& data) const
 {
   // global id gid_
   AddtoPack(data, gid_);
-  // distype  
+  // distype
   AddtoPack(data, distype_);
   // body_label_
   AddtoPack(data, body_label_);
@@ -131,7 +139,7 @@ void POTENTIAL::PotentialElementContainer::Unpack(
  |                                                          u.may 12/09 |
  *----------------------------------------------------------------------*/
 void POTENTIAL::PotentialElementContainer::Unpack(
-	const vector<char>& 			data, 
+	const vector<char>& 			data,
 	int& 			              	position)
 {
   // gid
@@ -165,16 +173,16 @@ void POTENTIAL::PotentialElementContainer::Print()
   cout << "PEC: label = "                 << body_label_  << endl;
   cout << "PEC: beta = "                  << beta_  	  << endl;
   cout << "PEC: number of nodes = "       << xyz_e_.M()   << endl;
-  cout << endl; 
+  cout << endl;
   cout << "PEC: spatial configuration";
   xyz_e_.Print(cout); cout << endl;
   cout << "PEC: reference configuration";
   XYZ_e_.Print(cout); cout << endl;
-  
+
   cout << "PEC: global dof ids " << endl;
   for(int i_lm = 0; i_lm < (int) lm_.size(); i_lm++)
     cout << "lm[" << i_lm << "] =      " << lm_[i_lm] << endl;
-  cout << endl; 
+  cout << endl;
 }
 
 #endif  // #ifdef CCADISCRET

@@ -22,6 +22,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 
 #ifndef MAXNOD_SHELL8
@@ -43,6 +44,26 @@ namespace ELEMENTS
 // forward declarations
 class Shell8Line;
 class Shell8Register;
+
+class Shell8Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Shell8Type"; }
+
+  static Shell8Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Shell8Type instance_;
+};
 
 /*!
 \brief A C++ wrapper for the shell8 element
@@ -118,7 +139,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Shell8;}
+  virtual int UniqueParObjectId() const { return Shell8Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -616,6 +637,21 @@ private:
 //=======================================================================
 //=======================================================================
 
+class Shell8RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Shell8RegisterType"; }
+
+  static Shell8RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Shell8RegisterType instance_;
+};
+
 
 /*!
 \brief A register for shell8 element
@@ -657,7 +693,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Shell8Register;}
+  virtual int UniqueParObjectId() const { return Shell8RegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -715,6 +751,19 @@ private:
 //=======================================================================
 //=======================================================================
 
+class Shell8LineType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Shell8LineType"; }
+
+  static Shell8LineType & Instance() { return instance_; };
+
+private:
+
+  static Shell8LineType instance_;
+};
+
 
 /*!
 \brief An element representing a line edge of a shell8 element
@@ -769,7 +818,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Shell8Line;}
+  virtual int UniqueParObjectId() const { return Shell8LineType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

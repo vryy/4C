@@ -50,6 +50,9 @@ Maintainer: Burkhard Bornemann
 #include "matpar_material.H"
 
 
+MAT::PAR::ParMaterialType MAT::PAR::ParMaterialType::instance_;
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::Material::Material(

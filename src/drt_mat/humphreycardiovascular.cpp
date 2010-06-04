@@ -45,6 +45,17 @@ MAT::PAR::HumphreyCardio::HumphreyCardio(
 }
 
 
+MAT::HumphreyCardioType MAT::HumphreyCardioType::instance_;
+
+
+DRT::ParObject* MAT::HumphreyCardioType::Create( const std::vector<char> & data )
+{
+  MAT::HumphreyCardio* humcard = new MAT::HumphreyCardio();
+  humcard->Unpack(data);
+  return humcard;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)         11/09|
  *----------------------------------------------------------------------*/
@@ -151,7 +162,7 @@ void MAT::HumphreyCardio::Unpack(const vector<char>& data)
   ca2_ = rcp(new vector<vector<double> >(numgp));
   ca3_ = rcp(new vector<vector<double> >(numgp));
   ca4_ = rcp(new vector<vector<double> >(numgp));
-  
+
   for (int gp = 0; gp < numgp; ++gp) {
     vector<double> a;
     ExtractfromPack(position,data,a);
@@ -197,7 +208,7 @@ void MAT::HumphreyCardio::Setup(const int numgp, DRT::INPUT::LineDefinition* lin
   ca3_ = rcp(new vector<vector<double> > (numgp));
   ca4_ = rcp(new vector<vector<double> > (numgp));
   int initflag = params_->init_;
-  
+
   const double gamma = (45*PI)/180.; //angle for diagonal fibers
 
   if (initflag==0){
@@ -237,7 +248,7 @@ void MAT::HumphreyCardio::Setup(const int numgp, DRT::INPUT::LineDefinition* lin
       locsys(i,1) = axi[i]/axinorm;
       locsys(i,2) = cir[i]/cirnorm;
     }
-  
+
     LINALG::Matrix<3,3> Id(true);
     for (int i = 0; i < 3; i++) Id(i,i) = 1.0;
     for (int gp = 0; gp < numgp; gp++) {
@@ -319,11 +330,11 @@ void MAT::HumphreyCardio::UpdateFiberDirs(const int gp, LINALG::Matrix<3,3>* def
  The volumetric part is done by a volumetric strain energy function
 
  W_vol = 1/2 kappa (J-1)^2
- 
+
  important: Cardamone et al used a Lagrange multiplier method to enforce
  incompressibility, here we add a volumetric strain energy function
  and use modified invariants
-  
+
  */
 
 void MAT::HumphreyCardio::Evaluate
@@ -374,7 +385,7 @@ void MAT::HumphreyCardio::Evaluate
   Cinv(4) = 0.25*C(3)*C(5) - 0.5*C(0)*C(4);
   Cinv(5) = 0.25*C(3)*C(4) - 0.5*C(5)*C(1);
   Cinv.Scale(1.0/I3);
-  
+
   //--------------------------------------------------------------------------------------
   // structural tensors in voigt notation
   // A1 = a1 x a1, A2 = a2 x a2, A3 = a3 x a3, A4 = a4 x a4
@@ -404,7 +415,7 @@ void MAT::HumphreyCardio::Evaluate
                     + 1.*(A3(3)*C(3) + A3(4)*C(4) + A3(5)*C(5))); //J8 = trace(A3:C^dev)
   double J10 = incJ * ( A4(0)*C(0) + A4(1)*C(1) + A4(2)*C(2)
                     + 1.*(A4(3)*C(3) + A4(4)*C(4) + A4(5)*C(5))); //J10 = trace(A4:C^dev)
-  
+
   //--------------------------------------------------------------------------------------
   // collagen fibers behave as smooth muscle in compression
   // additional build in of fiber mass fractions
@@ -443,8 +454,8 @@ void MAT::HumphreyCardio::Evaluate
   //--- prepare some constants -----------------------------------------------------------
   const double third = 1./3.;
   const double p = kappa*(J-1); // dW_vol/dJ
-  
-  
+
+
   //--- determine 2nd Piola Kirchhoff stresses S -------------------------------------
   // 1st step: isotropic part
   //=========================
@@ -456,17 +467,17 @@ void MAT::HumphreyCardio::Evaluate
     // with Sbar = mue*Id
     Siso(i) += phie*incJ* (mue*Id(i) - third*mue*I1*Cinv(i));
   }
-  
+
   // 2nd step: anisotropic part
   //===========================
   // PK2 fiber part in splitted formulation, see Holzapfel p. 271
-  
+
   // collagen fiber families
   //------------------------
   LINALG::Matrix<NUM_STRESS_3D,1> Saniso_fib1(A1); // first compute Sfbar1 = 2 dW/dJ4 A1
   LINALG::Matrix<NUM_STRESS_3D,1> Saniso_fib2(A2); // first compute Sfbar2 = 2 dW/dJ6 A2
   LINALG::Matrix<NUM_STRESS_3D,1> Saniso_fib3(A3); // first compute Sfbar3 = 2 dW/dJ8 A3
-  LINALG::Matrix<NUM_STRESS_3D,1> Saniso_fib4(A4); // first compute Sfbar4 = 2 dW/dJ10 A4  
+  LINALG::Matrix<NUM_STRESS_3D,1> Saniso_fib4(A4); // first compute Sfbar4 = 2 dW/dJ10 A4
   const double exp1 = exp(k2c_fib1*(J4-1.)*(J4-1.));
   const double exp2 = exp(k2c_fib2*(J6-1.)*(J6-1.));
   const double exp3 = exp(k2c_fib3*(J8-1.)*(J8-1.));
@@ -495,7 +506,7 @@ void MAT::HumphreyCardio::Evaluate
     Saniso_fib3(i) = incJ * (Saniso_fib3(i) - third*traceCSfbar3*Cinv(i));
     Saniso_fib4(i) = incJ * (Saniso_fib4(i) - third*traceCSfbar4*Cinv(i));
   }
-  
+
   // smooth muscle fiber family
   //---------------------------
   LINALG::Matrix<NUM_STRESS_3D,1> Sm_fib(A1); // first compute Smbar = 2 dWm/dJ4 A1
@@ -507,7 +518,7 @@ void MAT::HumphreyCardio::Evaluate
   for (int i = 0; i < 6; i++) {
 	Sm_fib(i) = incJ * (Sm_fib(i) - third*traceCSmbar*Cinv(i));
   }
-  
+
   // isotropic fiber part
   //---------------------
   if (a1_->at(gp)[0]==0 && a1_->at(gp)[1]==0 && a1_->at(gp)[2]==0){
@@ -527,18 +538,18 @@ void MAT::HumphreyCardio::Evaluate
     for (int i = 0; i < 6; i++)
       Sm_fib(i) += incJ* facisom* (Id(i) - third*I1*Cinv(i));
   }
-  
-  
+
+
   // 3rd step: add everything up
   //============================
-  (*stress) = Siso;    
+  (*stress) = Siso;
   (*stress) += Saniso_fib1;
   (*stress) += Saniso_fib2;
   (*stress) += Saniso_fib3;
   (*stress) += Saniso_fib4;
   (*stress) += Sm_fib;
-  
-  
+
+
   //--- do elasticity matrix -------------------------------------------------------------
   // ensure that cmat is zero when it enters the computation
   // It is an implicit law that cmat is zero upon input
@@ -552,9 +563,9 @@ void MAT::HumphreyCardio::Evaluate
 
   AddtoCmatHolzapfelProduct((*cmat),Cinv,(-2*J*p));
   // the rest of cmatvol is computed during the loop
-  
+
   const double fac = 2*third*incJ*mue*I1;  // 2/3 J^{-2/3} Sbar:C
-  
+
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>  Psl(true);        // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
   AddtoCmatHolzapfelProduct(Psl,Cinv,1.0);  // first part Psl = Cinv o Cinv
 
@@ -575,9 +586,9 @@ void MAT::HumphreyCardio::Evaluate
   // 2nd step: anisotropic part
   //===========================
   // Elasticity fiber part in splitted formulation, see Holzapfel p. 255 and 272
-  
+
   // collagen fiber families
-  //------------------------  
+  //------------------------
   const double delta7bar1 = 4.*(k1c_fib1*exp1 + 2.*k1c_fib1*k2c_fib1*(J4-1.)*(J4-1.)*exp1); // 4 d^2Wf/dJ4dJ4
   const double delta7bar2 = 4.*(k1c_fib2*exp2 + 2.*k1c_fib2*k2c_fib2*(J6-1.)*(J6-1.)*exp2); // 4 d^2Wf/dJ6dJ6
   const double delta7bar3 = 4.*(k1c_fib3*exp3 + 2.*k1c_fib3*k2c_fib3*(J8-1.)*(J8-1.)*exp3); // 4 d^2Wf/dJ8dJ8
@@ -612,12 +623,12 @@ void MAT::HumphreyCardio::Evaluate
                         - 2.*third* (Cinv(i) * Saniso_fib4(j) + Cinv(j) * Saniso_fib4(i)); // -2/3 (Cinv x Sfiso4 + Sfiso4 x Cinv)
     }
   }
-  
+
   (*cmat) += Caniso_fib1;
   (*cmat) += Caniso_fib2;
   (*cmat) += Caniso_fib3;
   (*cmat) += Caniso_fib4;
-  
+
   // smooth muscle fiber family
   //---------------------------
   const double delta7barm = 4.*(k1m*exp1 + 2.*k1m*k2m*(J4-1.)*(J4-1.)*expm); // 4 d^2Wm/dJ4dJ4
@@ -631,9 +642,9 @@ void MAT::HumphreyCardio::Evaluate
                    - 2.*third* (Cinv(i) * Sm_fib(j) + Cinv(j) * Sm_fib(i)); // -2/3 (Cinv x Smiso + Smiso x Cinv)
     }
   }
-  
+
   (*cmat) += Cm_fib;
-  
+
   // isotropic fiber part
   //---------------------
   if (a1_->at(gp)[0]==0 && a1_->at(gp)[1]==0 && a1_->at(gp)[2]==0){
@@ -669,7 +680,7 @@ void MAT::HumphreyCardio::Evaluate
       }
     }
   }
-  
+
   return;
 }
 
@@ -686,7 +697,7 @@ void MAT::HumphreyCardio::EvaluateFiberVecs
   // If this function is called during Setup defgrd should be replaced by the Identity.
 
   const double gamma = (45*PI)/180.; //angle for diagonal fibers
-  
+
   for (int i = 0; i < 3; i++) {
     // a1 = e3, circumferential direction, used for collagen and smooth muscle
     ca1_->at(gp)[i] = locsys(i,2);
@@ -697,7 +708,7 @@ void MAT::HumphreyCardio::EvaluateFiberVecs
     // a4 = cos gamma e3 - sin gamma e2
     ca4_->at(gp)[i] = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
   }
-  
+
   // pull back in reference configuration
   vector<double> a1_0(3);
   vector<double> a2_0(3);

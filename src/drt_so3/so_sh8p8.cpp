@@ -24,6 +24,43 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/drt_dserror.H"
 
 
+DRT::ELEMENTS::So_sh8p8Type DRT::ELEMENTS::So_sh8p8Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::So_sh8p8Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::So_sh8p8* object = new DRT::ELEMENTS::So_sh8p8(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh8p8Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="SOLIDSH8P8" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_sh8p8(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::Sosh8p8RegisterType DRT::ELEMENTS::Sosh8p8RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Sosh8p8RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Sosh8p8Register* object =
+    new DRT::ELEMENTS::Sosh8p8Register(DRT::Element::element_sosh8p8);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*
  |  initialise static arrays                                 bborn 03/09|
  *----------------------------------------------------------------------*/

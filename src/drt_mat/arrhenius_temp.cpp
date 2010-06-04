@@ -38,6 +38,17 @@ MAT::PAR::ArrheniusTemp::ArrheniusTemp(
 }
 
 
+MAT::ArrheniusTempType MAT::ArrheniusTempType::instance_;
+
+
+DRT::ParObject* MAT::ArrheniusTempType::Create( const std::vector<char> & data )
+{
+  MAT::ArrheniusTemp* arrhenius_temp = new MAT::ArrheniusTemp();
+  arrhenius_temp->Unpack(data);
+  return arrhenius_temp;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::ArrheniusTemp::ArrheniusTemp()

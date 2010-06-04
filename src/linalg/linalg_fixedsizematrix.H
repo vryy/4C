@@ -2008,7 +2008,7 @@ namespace LINALG
       if (out==in) dserror("'out' and 'in' point to same memory location");
 #endif
       const double det = in[0];
-      if (det == 0.0) dserror("Determinant of 1x1 matrix is zero");
+      if (det > -1e-30 and det < 1e-30) dserror("Determinant of 1x1 matrix is zero");
       out[0] = 1.0/in[0];
       return det;
     }
@@ -2020,7 +2020,7 @@ namespace LINALG
       if (out==in) dserror("'out' and 'in' point to same memory location");
 #endif
       const double det = in[0]*in[1+1*2] - in[1]*in[1*2];
-      if (det == 0.0) dserror("Determinant of 2x2 matrix is zero");
+      if (det > -1e-30 and det < 1e-30) dserror("Determinant of 2x2 matrix is zero");
       const double invdet = 1.0/det;
       out[0    ] =  invdet*in[1+1*2];
       out[1    ] = -invdet*in[1    ];
@@ -2046,7 +2046,7 @@ namespace LINALG
       //                   in[0+3*2]*in[1+3*1]*in[2+3*0] -
       //                   in[0+3*0]*in[1+3*2]*in[2+3*1] -
       //                   in[0+3*1]*in[1+3*0]*in[2+3*2];
-      if (det == 0.0) dserror("Determinant of 3x3 matrix is zero");
+      if (det > -1e-30 and det < 1e-30) dserror("Determinant of 3x3 matrix is zero");
       const double invdet = 1.0/det;
       out[0    ] *= invdet;
       out[1    ] *= invdet;
@@ -2072,7 +2072,7 @@ namespace LINALG
     inline double invert<1,1>(double* mat)
     {
       const double det = mat[0];
-      if (det == 0.0) dserror("Determinant of 1x1 matrix is zero");
+      if (det > -1e-30 and det < 1e-30) dserror("Determinant of 1x1 matrix is zero");
       mat[0] = 1.0/mat[0];
       return det;
     }
@@ -2082,7 +2082,7 @@ namespace LINALG
     {
       double tmp;
       const double det = mat[0]*mat[1+1*2] - mat[1]*mat[1*2];
-      if (det == 0.0) dserror("Determinant of 2x2 matrix is zero");
+      if (det > -1e-30 and det < 1e-30) dserror("Determinant of 2x2 matrix is zero");
       const double invdet = 1.0/det;
       tmp = mat[0    ]; mat[0    ] = invdet*mat[1+1*2]; mat[1+1*2] = invdet*tmp;
       mat[1    ] *= -invdet;
@@ -2104,7 +2104,7 @@ namespace LINALG
       //                    mat[0+3*2]*mat[1+3*1]*mat[2+3*0] -
       //                    mat[0+3*0]*mat[1+3*2]*mat[2+3*1] -
       //                    mat[0+3*1]*mat[1+3*0]*mat[2+3*2];
-      if (det == 0.0) dserror("Determinant of 3x3 matrix is zero");
+      if (det > -1e-30 and det < 1e-30) dserror("Determinant of 3x3 matrix is zero");
       const double invdet = 1.0/det;
       const double tmp01 = mat[  1*3];
       const double tmp11 = mat[1+1*3];
@@ -2201,7 +2201,7 @@ namespace LINALG
 #ifdef DEBUG
       if (out==in) dserror("'out' and 'in' point to same memory location");
 #endif
-      if (outfac == 0.0) { // cannot handle this case here, because 0*nan==nan
+      if (outfac > -1e-30 and outfac < 1e-30) { // cannot handle this case here, because 0*nan==nan
         update<i,j>(out,infac,in);
         return;
       }
@@ -2248,7 +2248,7 @@ namespace LINALG
       if (out==left) dserror("'out' and 'left' point to same memory location");
       if (out==right) dserror("'out' and 'right' point to same memory location");
 #endif
-      if (outfac == 0.0) { // cannot handle this case here, because 0*nan==nan
+      if (outfac > -1e-30 and outfac < 1e-30) { // cannot handle this case here, because 0*nan==nan
         update<i,j>(out,leftfac,left,rightfac,right);
         return;
       }
@@ -2288,7 +2288,7 @@ namespace LINALG
 #ifdef DEBUG
       if (out==in) dserror("'out' and 'in' point to same memory location");
 #endif
-      if (outfac == 0.0) { // cannot handle this case here, because 0*nan==nan
+      if (outfac > -1e-30 and outfac < 1e-30) { // cannot handle this case here, because 0*nan==nan
         updateT<i,j>(out,infac,in);
         return;
       }
@@ -2353,7 +2353,7 @@ namespace LINALG
       if (out==left) dserror("'out' and 'left' point to same memory location");
       if (out==right) dserror("'out' and 'right' point to same memory location");
 #endif
-      if (outfac == 0.0) {
+      if (outfac > -1e-30 and outfac < 1e-30) {
         eMultiply<i,j>(out,infac,left,right);
         return;
       }
@@ -2419,7 +2419,7 @@ namespace LINALG
       if (out==left) dserror("'out' and 'left' point to same memory location");
       if (out==right) dserror("'out' and 'right' point to same memory location");
 #endif
-      if (outfac == 0.0) {
+      if (outfac > -1e-30 and outfac < 1e-30) {
         eDivide<i,j>(out,infac,left,right);
         return;
       }

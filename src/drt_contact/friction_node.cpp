@@ -44,6 +44,18 @@ Maintainer: Markus Gitterle
 #include "contact_element.H"
 #include "contact_defines.H"
 
+CONTACT::FriNodeType CONTACT::FriNodeType::instance_;
+
+
+DRT::ParObject* CONTACT::FriNodeType::Create( const std::vector<char> & data )
+{
+  double x[3];
+  std::vector<int> dofs(0);
+  CONTACT::FriNode* node = new CONTACT::FriNode(0,x,0,0,dofs,false,false);
+  node->Unpack(data);
+  return node;
+}
+
 /*----------------------------------------------------------------------*/
 // METHODS RELATED TO FRINODEDATACONTAINER
 /*----------------------------------------------------------------------*/
@@ -113,7 +125,7 @@ void CONTACT::FriNodeDataContainer::Pack(vector<char>& data) const
   DRT::ParObject::AddtoPack(data,traction_,3);
   // add tractionold_
   DRT::ParObject::AddtoPack(data,tractionold_,3);
-  
+
   return;
 }
 
@@ -190,7 +202,7 @@ void CONTACT::FriNode::Print(ostream& os) const
   os << "Contact ";
   CONTACT::CoNode::Print(os);
   if (IsInitActive()) os << " InitActive ";
-    
+
   return;
 }
 
@@ -205,18 +217,18 @@ void CONTACT::FriNode::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  
+
   // add base class MORTAR::MortarNode
   vector<char> basedata(0);
   CONTACT::CoNode::Pack(basedata);
   AddtoPack(data,basedata);
-  
+
   // data_
   int hasdata = fridata_!=Teuchos::null;
   AddtoPack(data,hasdata);
   if (hasdata)
     fridata_->Pack(data);
-  
+
   return;
 }
 
@@ -228,17 +240,17 @@ void CONTACT::FriNode::Pack(vector<char>& data) const
 void CONTACT::FriNode::Unpack(const vector<char>& data)
 {
   int position = 0;
-  
+
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  
+
   // extract base class MORTAR::MortarNode
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   CONTACT::CoNode::Unpack(basedata);
-  
+
   // data_
   int hasdata;
   ExtractfromPack(position,data,hasdata);
@@ -269,7 +281,7 @@ void CONTACT::FriNode::AddSNode(int node)
     dserror("ERROR: AddSNode: function called for boundary node %i", Id());
 
   Data().GetSNodes().insert(node);
-  
+
   return;
 }
 

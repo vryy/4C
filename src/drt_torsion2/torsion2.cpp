@@ -20,6 +20,42 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
+DRT::ELEMENTS::Torsion2Type DRT::ELEMENTS::Torsion2Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Torsion2Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Torsion2* object = new DRT::ELEMENTS::Torsion2(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Torsion2Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="TORSION2" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Torsion2(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+DRT::ELEMENTS::Torsion2RegisterType DRT::ELEMENTS::Torsion2RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Torsion2RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Torsion2Register* object =
+    new DRT::ELEMENTS::Torsion2Register(DRT::Element::element_torsion2);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
@@ -130,7 +166,7 @@ void DRT::ELEMENTS::Torsion2::Unpack(const vector<char>& data)
   Element::Unpack(basedata);
   ExtractfromPack(position,data,isinit_);
    ExtractfromPack(position,data,theta_);
-  ExtractfromPack(position,data,springconstant_); 
+  ExtractfromPack(position,data,springconstant_);
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
@@ -151,39 +187,39 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Torsion2::Lines()
 }
 
 void DRT::ELEMENTS::Torsion2::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& xrefe)
-{   
+{
   /*this method initialized geometric variables of the element; such an initialization can only be done one time when the element is
-   * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this 
-   * method will initialize the geometric variables iff the class variable isinit_ == false and afterwards set this variable to 
-   * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/ 
+   * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this
+   * method will initialize the geometric variables iff the class variable isinit_ == false and afterwards set this variable to
+   * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/
   if(!isinit_)
   {
     isinit_ = true;
-      
-    //calculation of the reference angle between the trusses    
-    theta_=acos( ( (xrefe(2)-xrefe(0))*(xrefe(4)-xrefe(2)) + (xrefe(3)-xrefe(1))*(xrefe(5)-xrefe(3)) ) 
+
+    //calculation of the reference angle between the trusses
+    theta_=acos( ( (xrefe(2)-xrefe(0))*(xrefe(4)-xrefe(2)) + (xrefe(3)-xrefe(1))*(xrefe(5)-xrefe(3)) )
        / sqrt( pow(xrefe(2)-xrefe(0),2)+pow(xrefe(3)-xrefe(1),2) ) / sqrt( pow(xrefe(4)-xrefe(2),2)+pow(xrefe(5)-xrefe(3),2) ) );
- 
-  
-  if(( ( (xrefe(2)-xrefe(0))*(xrefe(4)-xrefe(2)) + (xrefe(3)-xrefe(1))*(xrefe(5)-xrefe(3)) ) 
-         / sqrt( pow(xrefe(2)-xrefe(0),2)+pow(xrefe(3)-xrefe(1),2) ) 
+
+
+  if(( ( (xrefe(2)-xrefe(0))*(xrefe(4)-xrefe(2)) + (xrefe(3)-xrefe(1))*(xrefe(5)-xrefe(3)) )
+         / sqrt( pow(xrefe(2)-xrefe(0),2)+pow(xrefe(3)-xrefe(1),2) )
          / sqrt( pow(xrefe(4)-xrefe(2),2)+pow(xrefe(5)-xrefe(3),2) ) ) > 1){
-    if(( ( (xrefe(2)-xrefe(0))*(xrefe(4)-xrefe(2)) + (xrefe(3)-xrefe(1))*(xrefe(5)-xrefe(3)) ) 
-           / sqrt( pow(xrefe(2)-xrefe(0),2)+pow(xrefe(3)-xrefe(1),2) ) 
+    if(( ( (xrefe(2)-xrefe(0))*(xrefe(4)-xrefe(2)) + (xrefe(3)-xrefe(1))*(xrefe(5)-xrefe(3)) )
+           / sqrt( pow(xrefe(2)-xrefe(0),2)+pow(xrefe(3)-xrefe(1),2) )
            / sqrt( pow(xrefe(4)-xrefe(2),2)+pow(xrefe(5)-xrefe(3),2) ) -1  )<10e-7){
       theta_=0;
     }
     else
       std::cout<<"\n Fehler bei der Winkelberechnung";
   }
-   
-    
+
+
     //cross product to determine the algebraic sign of the reference angle
     if (( (xrefe(2)-xrefe(0))*(xrefe(5)-xrefe(3)) - (xrefe(3)-xrefe(1))*(xrefe(4)-xrefe(2)) ) <0)
-       theta_*=-1; 
- 
+       theta_*=-1;
+
   }
- 
+
   return;
 }
 
@@ -282,37 +318,37 @@ void DRT::ELEMENTS::Torsion2Register::Print(ostream& os) const
 
 
 int DRT::ELEMENTS::Torsion2Register::Initialize(DRT::Discretization& dis)
-{     
+{
   //reference node positions
   LINALG::Matrix<6,1> xrefe;
 
   //setting beam reference director correctly
   for (int i=0; i<  dis.NumMyColElements(); ++i)
-  {    
+  {
     //in case that current element is not a torsion2 element there is nothing to do and we go back
     //to the head of the loop
     if (dis.lColElement(i)->Type() != DRT::Element::element_torsion2) continue;
-    
+
     //if we get so far current element is a beam3 element and  we get a pointer at it
     DRT::ELEMENTS::Torsion2* currele = dynamic_cast<DRT::ELEMENTS::Torsion2*>(dis.lColElement(i));
     if (!currele) dserror("cast to Torsion2* failed");
-    
+
     //getting element's nodal coordinates and treating them as reference configuration
     if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
       dserror("Cannot get nodes in order to compute reference configuration'");
     else
-    {   
+    {
       for (int k=0; k<3; ++k) //element has three nodes
         for(int l= 0; l < 2; ++l)
           xrefe(k*2 + l) = currele->Nodes()[k]->X()[l];
     }
- 
+
     currele->SetUpReferenceGeometry(xrefe);
-    
-    
+
+
   } //for (int i=0; i<dis_.NumMyColElements(); ++i)
 
-  
+
   return 0;
 }
 

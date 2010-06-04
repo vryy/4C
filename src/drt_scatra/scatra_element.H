@@ -24,6 +24,7 @@ using namespace std;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 
@@ -36,6 +37,26 @@ namespace ELEMENTS
 {
 // forward declarations
 class TransportBoundary;
+
+class TransportType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "TransportType"; }
+
+  static TransportType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static TransportType instance_;
+};
 
 /*!
 \brief A C++ wrapper for the Transport element
@@ -151,7 +172,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Transport;}
+  virtual int UniqueParObjectId() const { return TransportType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -379,6 +400,19 @@ private:
 //=======================================================================
 //=======================================================================
 
+class TransportBoundaryType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "TransportBoundaryType"; }
+
+  static TransportBoundaryType & Instance() { return instance_; };
+
+private:
+
+  static TransportBoundaryType instance_;
+};
+
 
 /*!
 \brief An element representing a boundary element of a Transport element
@@ -482,7 +516,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_TransportBoundary;}
+  virtual int UniqueParObjectId() const { return TransportBoundaryType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

@@ -16,6 +16,8 @@ Maintainer: Axel Gerstenberger
 #include "xdiff3.H"
 
 
+DRT::ELEMENTS::XDiff3LineType DRT::ELEMENTS::XDiff3LineType::instance_;
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|

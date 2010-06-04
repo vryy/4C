@@ -24,6 +24,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 
 // prestressing object
@@ -54,6 +55,26 @@ namespace ELEMENTS
 // forward declarations
 class Sow6Register;
 class InvDesign;
+
+class So_weg6Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "So_weg6Type"; }
+
+  static So_weg6Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static So_weg6Type instance_;
+};
 
 /*!
 \brief A C++ version of the 6-node wedge solid element
@@ -138,7 +159,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual inline int UniqueParObjectId() const { return ParObject_So_weg6;}
+  virtual inline int UniqueParObjectId() const { return So_weg6Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -463,6 +484,21 @@ protected:
 //=======================================================================
 //=======================================================================
 
+class Sow6RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Sow6RegisterType"; }
+
+  static Sow6RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Sow6RegisterType instance_;
+};
+
 
 /*!
 \brief A register for wedge6 element
@@ -504,7 +540,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Sow6Register;}
+  virtual int UniqueParObjectId() const { return Sow6RegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

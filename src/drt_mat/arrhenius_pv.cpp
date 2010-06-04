@@ -40,6 +40,17 @@ MAT::PAR::ArrheniusPV::ArrheniusPV(
 }
 
 
+MAT::ArrheniusPVType MAT::ArrheniusPVType::instance_;
+
+
+DRT::ParObject* MAT::ArrheniusPVType::Create( const std::vector<char> & data )
+{
+  MAT::ArrheniusPV* arrhenius_pv = new MAT::ArrheniusPV();
+  arrhenius_pv->Unpack(data);
+  return arrhenius_pv;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::ArrheniusPV::ArrheniusPV()

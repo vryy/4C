@@ -44,6 +44,7 @@ Maintainer: Alexander Popp
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_inpar/inpar_mortar.H"
@@ -60,6 +61,21 @@ using namespace Teuchos;
 namespace MORTAR
 {
 
+class MortarElementType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "MortarElementType"; }
+
+  static MortarElementType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static MortarElementType instance_;
+};
+
 // forward declarations
 
 /*!
@@ -75,7 +91,7 @@ public:
 
   /*!
   \brief Enum for shape function types recognized by MortarElements
-  
+
   */
   enum ShapeType
   {
@@ -86,7 +102,7 @@ public:
     quad2D,                     // displacements / std LM quadratic 2D
     serendipity2D,              // displacements / std LM serendipity 2D
     biquad2D,                   // displacements / std LM biquadratic 2D
-    
+
     lindual1D,                  // dual LM linear 1D
     quaddual1D,                 // dual LM quadratic 1D
     lindual2D,                  // dual LM linear 2D
@@ -94,7 +110,7 @@ public:
     quaddual2D,                 // dual LM quadratic 2D
     serendipitydual2D,          // dual LM serendipity 2D
     biquaddual2D,               // dual LM biquadratic 2D
-     
+
     lin1D_edge0,                // crosspoint LM modification 1D
     lin1D_edge1,                // crosspoint LM modification 1D
     lindual1D_edge0,            // crosspoint LM modification 1D
@@ -105,7 +121,7 @@ public:
     quad1D_edge1,               // crosspoint LM modification 1D
     quaddual1D_edge0,           // crosspoint LM modification 1D
     quaddual1D_edge1,           // crosspoint LM modification 1D
-    
+
     quad2D_only_lin,            // quadratic LM modification 2D
     quaddual2D_only_lin,        // quadratic LM modification 2D
     serendipity2D_only_lin,     // quadratic LM modification 2D
@@ -162,7 +178,7 @@ public:
   top of drt_parobject.H
 
   */
-  virtual int UniqueParObjectId() const { return ParObject_MortarElement; }
+  virtual int UniqueParObjectId() const { return MortarElementType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -272,16 +288,16 @@ public:
 
   */
   virtual bool IsSlave() { return isslave_; }
-  
+
   /*!
   \brief Change slave (true) or master status
-  
+
   This changing of contact topology becomes necessary for self contact
   simulations, where slave and master status are assigned dynamically
-  
+
   */
   virtual bool& SetSlave() { return isslave_; }
-  
+
   /*!
   \brief Return ansatz type (true = quad) of element
 
@@ -369,7 +385,7 @@ public:
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL)
   { return 0; }
-  
+
   /*!
   \brief Get local coordinates for local node id
   */
@@ -379,7 +395,7 @@ public:
   \brief Get local numbering for global node id
   */
   virtual int GetLocalNodeId(int& nid);
-  
+
   /*!
   \brief Build element normal at node passed in
   */
@@ -391,7 +407,7 @@ public:
          integrated into the whole nodal normal calculation process.
   */
   virtual void ComputeNormalAtXi(double* xi, int& i, Epetra_SerialDenseMatrix& elens);
-  
+
   /*!
   \brief Compute unit element normal at local coordinate xi
          This function is a real stand-alone function to be called
@@ -399,7 +415,7 @@ public:
          Returns the length of the non-unit interpolated normal at xi.
   */
   virtual double ComputeUnitNormalAtXi(double* xi, double* n);
-  
+
   /*!
   \brief Compute element unit normal derivative at local coordinate xi
          This function is a real stand-alone function to be called
@@ -424,7 +440,7 @@ public:
   \brief Evaluate Jacobian determinant for parameter space integration
   */
   virtual double Jacobian(double* xi);
-  
+
   /*!
   \brief Compute Jacobian determinant derivative
   */
@@ -451,7 +467,7 @@ public:
   */
   void ShapeFunctionLinearizations(MortarElement::ShapeType shape,
                                    vector<vector<map<int,double> > >& derivdual);
-    
+
   /*!
   \brief Evaluate displacement shape functions and derivatives
   */
@@ -464,7 +480,7 @@ public:
   virtual bool EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype,
                                     const double* xi, LINALG::SerialDenseVector& val,
                                     LINALG::SerialDenseMatrix& deriv, const int& valdim);
- 
+
   /*!
   \brief Evaluate Lagrange multiplier shape functions and derivatives
   (special version for 3D quadratic mortar with linear Lagrange multipliers)
@@ -472,7 +488,7 @@ public:
   virtual bool EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFcn& lmtype,
                                        const double* xi, LINALG::SerialDenseVector& val,
                                        LINALG::SerialDenseMatrix& deriv, const int& valdim);
-  
+
   /*!
   \brief Evaluate 2nd derivative of shape functions
   */
@@ -537,7 +553,7 @@ public:
 
   */
   virtual bool AddSearchElements(const int& gid);
-  
+
   //@}
 
 private:
@@ -561,7 +577,7 @@ public:
 
   /*!
   \brief Standard constructor
-  
+
   */
   ElementIntegrator(DRT::Element::DiscretizationType eletype);
 
@@ -570,12 +586,12 @@ public:
 
   */
   virtual ~ElementIntegrator() {}
-    
+
   //! @name Access methods
 
   /*!
   \brief Return number of Gauss points
-  
+
   */
   int nGP() {return ngp_;}
 

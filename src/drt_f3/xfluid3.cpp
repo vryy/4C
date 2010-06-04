@@ -18,6 +18,43 @@ Maintainer: Axel Gerstenberger
 
 using namespace DRT::UTILS;
 
+DRT::ELEMENTS::XFluid3Type DRT::ELEMENTS::XFluid3Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::XFluid3Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::XFluid3* object = new DRT::ELEMENTS::XFluid3(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::XFluid3Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="XFLUID3" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::XFluid3(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::XFluid3RegisterType DRT::ELEMENTS::XFluid3RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::XFluid3RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::XFluid3Register* object =
+    new DRT::ELEMENTS::XFluid3Register(DRT::Element::element_xfluid3);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*/
 // map to convert strings to actions (stabilization)
 /*----------------------------------------------------------------------*/

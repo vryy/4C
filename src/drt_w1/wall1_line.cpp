@@ -18,6 +18,10 @@ Maintainer: Markus Gitterle
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
+
+DRT::ELEMENTS::Wall1LineType DRT::ELEMENTS::Wall1LineType::instance_;
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mgit 03/07|
   *----------------------------------------------------------------------*/

@@ -29,6 +29,7 @@ using namespace std;
 using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_condition.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -49,6 +50,27 @@ namespace DRT
 
 namespace ELEMENTS
 {
+
+class Truss3Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Truss3Type"; }
+
+  static Truss3Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Truss3Type instance_;
+};
+
 /*!
 \brief three dimensional total Lagrange truss element
 
@@ -111,7 +133,7 @@ public:
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
   */
-  virtual int UniqueParObjectId() const { return ParObject_Truss3; }
+  virtual int UniqueParObjectId() const { return Truss3Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -308,7 +330,7 @@ private:
     postprocess_stress,
     calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
   };
-  
+
   //! kind of integration to be performed
   enum IntegrationType
   {
@@ -338,10 +360,10 @@ private:
 
   //! length in reference configuration
   double lrefe_;
-  
+
   //! Vector holding value of Jacobi determinant jacobi for complete integration of massmatrix
   vector<double> jacobimass_;
-  
+
   //! Vector holding value of Jacobi determinant jacobi at nodes
   vector<double> jacobinode_;
 
@@ -362,7 +384,7 @@ private:
   //@}
 
   //! @name Internal calculation methods
-  
+
   //!determine Gauss rule from required type of integration
   DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
 
@@ -397,7 +419,7 @@ private:
   void t3_lumpmass(Epetra_SerialDenseMatrix* emass);
 
   //@}
-  
+
   //! @name Methods for Brownian dynamics simulations
 
    //!compute damping matrix and statistical forces according to fluctuation dissipation theorem
@@ -406,14 +428,14 @@ private:
                      const vector<double>&           vel,  //!< element velocity vector
                      const vector<double>&           disp, //!<element disp vector
                      Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                     Epetra_SerialDenseVector* force);//!< element internal force vector  
-   
+                     Epetra_SerialDenseVector* force);//!< element internal force vector
+
    //!computes damping coefficients for employed friction model
    void MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel);
-   
+
    //!computes the number of different random numbers required in each time step for generation of stochastic forces
    int HowManyRandomNumbersINeed();
-   
+
    //!computes translational damping forces and stiffness
    template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
    void MyTranslationalDamping(ParameterList& params,  //!<parameter list
@@ -421,7 +443,7 @@ private:
                              const vector<double>&           disp, //!<element disp vector
                              Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                              Epetra_SerialDenseVector* force);//!< element internal force vector
-   
+
    //!computes stochastic translational forces and resulting stiffness
    template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
    void MyStochasticForces(ParameterList& params,  //!<parameter list
@@ -429,7 +451,7 @@ private:
                          const vector<double>&           disp, //!<element disp vector
                          Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                          Epetra_SerialDenseVector* force);//!< element internal force vector
-   
+
    //!computes velocity of background fluid and gradient of that velocity at a certain evaluation point in the physical space and adds respective terms to internal forces and damping matrix
    template<int ndim> //number of dimensions of embedding space
    void MyBackgroundVelocity(ParameterList& params,  //!<parameter list
@@ -457,6 +479,21 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 
 
 //------------- class Truss3Register: -------------------------------------------
+
+class Truss3RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Truss3RegisterType"; }
+
+  static Truss3RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Truss3RegisterType instance_;
+};
 
 /*!
 \brief A register for Truss3 element
@@ -501,7 +538,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Truss3Register;}
+  virtual int UniqueParObjectId() const { return Truss3RegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

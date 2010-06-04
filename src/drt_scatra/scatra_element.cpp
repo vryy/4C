@@ -22,6 +22,36 @@ Maintainer: Georg Bauer
 
 using namespace DRT::UTILS;
 
+
+DRT::ELEMENTS::TransportType DRT::ELEMENTS::TransportType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::TransportType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Transport* object =
+    new DRT::ELEMENTS::Transport(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TransportType::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="TRANSP" or eletype=="CONDIF2" or eletype=="CONDIF3" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Transport(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::TransportBoundaryType DRT::ELEMENTS::TransportBoundaryType::instance_;
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             gjb 05/08 |
  *----------------------------------------------------------------------*/

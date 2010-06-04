@@ -22,6 +22,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
@@ -41,6 +42,26 @@ namespace ELEMENTS
 class RedAirwayImplInterface;
 template <DRT::Element::DiscretizationType distype> class AirwayImpl;
 class RedAirwayRegister;
+
+class RedAirwayType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "RedAirwayType"; }
+
+  static RedAirwayType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static RedAirwayType instance_;
+};
 
 /*!
 \brief A C++ wrapper for the airway element
@@ -105,7 +126,7 @@ public:
   virtual int NumSurface() const {return -1;}
 
   /*!
-  \brief Return number of volumes of this element (always 1) 
+  \brief Return number of volumes of this element (always 1)
   */
   virtual int NumVolume() const {return -1;}
 
@@ -115,7 +136,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_RedAirway;}
+  virtual int UniqueParObjectId() const { return RedAirwayType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -167,7 +188,7 @@ public:
         element dofs that are condensed internally should NOT be considered.
   */
   virtual int NumDofPerElement() const
-    { 
+    {
       if (elemType_ == "RLC")
       {
         return 1;
@@ -393,7 +414,7 @@ private:
 
   //! flow in
   //  double                                          qin_;
-  
+
   //! flow out
   //  double                                          qout_;
 
@@ -428,6 +449,22 @@ private:
 //=======================================================================
 //=======================================================================
 //=======================================================================
+
+
+class RedAirwayRegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "RedAirwayRegisterType"; }
+
+  static RedAirwayRegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static RedAirwayRegisterType instance_;
+};
 
 
 /*!
@@ -470,7 +507,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_RedAirwayRegister;}
+  virtual int UniqueParObjectId() const { return RedAirwayRegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

@@ -20,6 +20,44 @@ Maintainer: Thomas Kloeppel
 
 using namespace DRT::UTILS;
 
+
+DRT::ELEMENTS::ConstraintElement3Type DRT::ELEMENTS::ConstraintElement3Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::ConstraintElement3Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::ConstraintElement3* object = new DRT::ELEMENTS::ConstraintElement3(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ConstraintElement3Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="CONSTRELE3" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::ConstraintElement3(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::ConstraintElement3RegisterType DRT::ELEMENTS::ConstraintElement3RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::ConstraintElement3RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::ConstraintElement3Register* object =
+    new DRT::ELEMENTS::ConstraintElement3Register(DRT::Element::element_constraintelement3);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ConstraintElement3::ConstraintElement3(int id, int owner) :

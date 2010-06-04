@@ -17,6 +17,7 @@ Maintainer: Peter Gamnitzer
 #define ALE3_NURBS_H
 
 #include "ale3.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_nurbs_discret/drt_control_point.H"
 #include "../drt_fem_general/drt_utils_bspline.H"
 
@@ -42,6 +43,25 @@ namespace ELEMENTS
 namespace NURBS
 {
 
+class Ale3_NurbsType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Ale3_NurbsType"; }
+
+  static Ale3_NurbsType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Ale3_NurbsType instance_;
+};
 
 
 class Ale3Nurbs : public DRT::ELEMENTS::Ale3
@@ -80,7 +100,7 @@ public:
 
   \return my parobject id
   */
-  virtual int UniqueParObjectId() const { return ParObject_Ale3_Nurbs;}
+  virtual int UniqueParObjectId() const { return Ale3_NurbsType::Instance().UniqueParObjectId(); }
 
 
   /// Print this element

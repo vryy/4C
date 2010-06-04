@@ -16,6 +16,8 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_dserror.H"
 
 
+DRT::ELEMENTS::InvDesignType DRT::ELEMENTS::InvDesignType::instance_;
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 08/08|

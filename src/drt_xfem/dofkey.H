@@ -17,6 +17,7 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_parobject.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "field_enriched.H"
 
 
@@ -43,6 +44,33 @@ namespace XFEM
         exit(1);
     }
   }
+
+
+template <DofType doftype>
+class DofKeyType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const
+  {
+    //return "DofKeyType<doftype>";
+
+    // make the name unique but compiler dependent
+    // This is fine since DofKeyType<doftype> is never written to binary io.
+    const type_info & ti = typeid( *this );
+    return ti.name();
+  }
+
+  static DofKeyType & Instance() { return instance_; };
+
+private:
+
+  static DofKeyType instance_;
+};
+
+
+template <DofType doftype>
+DofKeyType<doftype> DofKeyType<doftype>::instance_;
 
 
   /*!
@@ -106,7 +134,7 @@ namespace XFEM
         return s.str();
       };
 
-      virtual int UniqueParObjectId() const { return ParObject_DofKey;}
+      virtual int UniqueParObjectId() const { return DofKeyType<doftype>::Instance().UniqueParObjectId(); }
 
       //! pack all content to char array
       virtual void Pack(vector<char>& data) const

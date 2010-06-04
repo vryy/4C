@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_dserror.H"
 
 
+DRT::ELEMENTS::Bele3LineType DRT::ELEMENTS::Bele3LineType::instance_;
 
 
 /*----------------------------------------------------------------------*

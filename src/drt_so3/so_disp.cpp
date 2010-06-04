@@ -23,6 +23,43 @@ Maintainer: Axel Gerstenberger
 
 using namespace DRT::UTILS;
 
+DRT::ELEMENTS::SoDispType DRT::ELEMENTS::SoDispType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::SoDispType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::SoDisp* object =
+    new DRT::ELEMENTS::SoDisp(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoDispType::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="SOLID3" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::SoDisp(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::SoDispRegisterType DRT::ELEMENTS::SoDispRegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::SoDispRegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::SoDispRegister* object =
+    new DRT::ELEMENTS::SoDispRegister(DRT::Element::element_sodisp);
+  object->Unpack(data);
+  return object;
+}
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|

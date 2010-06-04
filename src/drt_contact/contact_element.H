@@ -41,6 +41,7 @@ Maintainer: Alexander Popp
 
 
 #include "../drt_mortar/mortar_element.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "contact_node.H"
 
 using namespace std;
@@ -56,6 +57,21 @@ namespace CONTACT
 {
 
 // forward declarations
+
+class CoElementType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "CoElementType"; }
+
+  static CoElementType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static CoElementType instance_;
+};
 
 /*!
 \brief A contact element
@@ -114,7 +130,7 @@ public:
   top of drt_parobject.H
 
   */
-  virtual int UniqueParObjectId() const { return ParObject_CoElement; }
+  virtual int UniqueParObjectId() const { return CoElementType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -165,7 +181,7 @@ public:
 
   */
   virtual void Print(ostream& os) const;
-  
+
   //! @name Evaluation methods
 
   /*!

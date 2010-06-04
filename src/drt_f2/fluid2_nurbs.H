@@ -17,6 +17,7 @@ Maintainer: Peter Gamnitzer
 #include "fluid2.H"
 #include "../drt_nurbs_discret/drt_control_point.H"
 #include "../drt_fem_general/drt_utils_bspline.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 
 /*!
@@ -40,6 +41,25 @@ namespace ELEMENTS
 namespace NURBS
 {
 
+class Fluid2NurbsType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Fluid2NurbsType"; }
+
+  static Fluid2NurbsType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Fluid2NurbsType instance_;
+};
 
 
 class Fluid2Nurbs : public DRT::ELEMENTS::Fluid2
@@ -77,7 +97,7 @@ public:
 
   \return my parobject id
   */
-  virtual int UniqueParObjectId() const { return ParObject_Fluid2Nurbs;}
+  virtual int UniqueParObjectId() const { return Fluid2NurbsType::Instance().UniqueParObjectId(); }
 
 
   /*!

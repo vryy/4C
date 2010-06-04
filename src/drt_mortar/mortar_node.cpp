@@ -43,6 +43,19 @@ Maintainer: Alexander Popp
 #include "mortar_defines.H"
 #include "../drt_lib/drt_dserror.H"
 
+
+MORTAR::MortarNodeType MORTAR::MortarNodeType::instance_;
+
+
+DRT::ParObject* MORTAR::MortarNodeType::Create( const std::vector<char> & data )
+{
+  double x[3];
+  std::vector<int> dofs(0);
+  MORTAR::MortarNode* node = new MORTAR::MortarNode(0,x,0,0,dofs,false);
+  node->Unpack(data);
+  return node;
+}
+
 /*----------------------------------------------------------------------*/
 // METHODS RELATED TO MORTARNODEDATACONTAINER
 /*----------------------------------------------------------------------*/
@@ -59,7 +72,7 @@ MORTAR::MortarNodeDataContainer::MortarNodeDataContainer()
     lmold()[i]=0.0;
     lmuzawa()[i]=0.0;
   }
-  
+
   return;
 }
 
@@ -106,7 +119,7 @@ void MORTAR::MortarNodeDataContainer::Pack(vector<char>& data) const
   DRT::ParObject::AddtoPack(data,lmold_,3);
   // add lmuzawa_
   DRT::ParObject::AddtoPack(data,lmuzawa_,3);
-  
+
   return;
 }
 
@@ -124,7 +137,7 @@ void MORTAR::MortarNodeDataContainer::Unpack(int& position, const vector<char>& 
   DRT::ParObject::ExtractfromPack(position,data,lmold_,3);
   // lmuzawa_
   DRT::ParObject::ExtractfromPack(position,data,lmuzawa_,3);
-  
+
   return;
 }
 
@@ -151,7 +164,7 @@ kappa_(1.0)
     uold()[i]=0.0;
     xspatial()[i]=X()[i];
   }
-  
+
   return;
 }
 
@@ -173,7 +186,7 @@ kappa_(old.kappa_)
     uold()[i]=old.uold_[i];
     xspatial()[i]=old.xspatial_[i];
   }
-  
+
   return;
 }
 
@@ -204,13 +217,13 @@ void MORTAR::MortarNode::Print(ostream& os) const
   // Print id and coordinates
   os << "Mortar ";
   DRT::Node::Print(os);
-  
+
   if (IsSlave()) os << " Slave  ";
   else           os << " Master ";
-  
+
   if (IsOnBound()) os << " Boundary ";
   else             os << " Interior ";
-  
+
   return;
 }
 
@@ -248,7 +261,7 @@ void MORTAR::MortarNode::Pack(vector<char>& data) const
   // add kappa_
   AddtoPack(data,kappa_);
 
-  
+
   // data_
   int hasdata = modata_!=Teuchos::null;
   AddtoPack(data,hasdata);
@@ -292,7 +305,7 @@ void MORTAR::MortarNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,hasproj_);
   // kappa_
   DRT::ParObject::ExtractfromPack(position,data,kappa_);
-  
+
   // data_
   int hasdata;
   ExtractfromPack(position,data,hasdata);
@@ -490,7 +503,7 @@ bool MORTAR::MortarNode::CheckMeshDistortion(double& relocation, double& limit)
 {
   // initialize return parameter
   bool ok = true;
-  
+
   // loop over all adjacent elements of this node
   for (int i=0;i<NumElement();++i)
   {
@@ -498,10 +511,10 @@ bool MORTAR::MortarNode::CheckMeshDistortion(double& relocation, double& limit)
     DRT::Element* ele = Elements()[i];
     if (!ele) dserror("ERROR: Cannot find element with lid %",i);
     MortarElement* mrtrele = static_cast<MortarElement*>(ele);
-    
+
     // minimal edge size of the current element
     double minedgesize = mrtrele->MinEdgeSize();
-    
+
     // check whether relocation is not too large
     if (relocation > limit * minedgesize)
     {
@@ -511,14 +524,14 @@ bool MORTAR::MortarNode::CheckMeshDistortion(double& relocation, double& limit)
       cout << "Relocation distance:               " << relocation << endl;
       cout << "AdjEle: " << mrtrele->Id() << "\tLimit*MinEdgeSize: " << limit*minedgesize << endl;
       cout << "*****************WARNING***********************" << endl;
-      
+
       // set return parameter and stop
       ok = false;
       break;
     }
   }
-  
-  return ok; 
+
+  return ok;
 }
 
 #endif  // #ifdef CCADISCRET

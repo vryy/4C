@@ -21,6 +21,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -37,6 +38,26 @@ namespace ELEMENTS
 {
 // forward declarations
 //class ConstraintElement3Line;
+
+class ConstraintElement3Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ConstraintElement3Type"; }
+
+  static ConstraintElement3Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static ConstraintElement3Type instance_;
+};
 
 /*!
 \brief A 3D constraint element with no physics attached
@@ -94,7 +115,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_ConstraintElement3;}
+  virtual int UniqueParObjectId() const { return ConstraintElement3Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -273,7 +294,7 @@ private:
       }
       return;
   }
-  
+
   /*!
   \brief Create matrix with spatial configuration for 3 dimensions and 2 nodes
   */
@@ -338,7 +359,7 @@ private:
     Epetra_SerialDenseVector& elevector,  ///< vector to store results into
     const vector<double> direct   ///< direction to weight with
   );
-  
+
   /// Compute difference of spatial configuration to masternode in given direction
   double ComputeWeightedDistance
   (
@@ -352,6 +373,22 @@ private:
 //=======================================================================
 //=======================================================================
 //=======================================================================
+
+
+class ConstraintElement3RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ConstraintElement3RegisterType"; }
+
+  static ConstraintElement3RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static ConstraintElement3RegisterType instance_;
+};
 
 
 /*!
@@ -394,7 +431,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_ConstraintElement3Register;}
+  virtual int UniqueParObjectId() const { return ConstraintElement3RegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

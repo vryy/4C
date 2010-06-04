@@ -34,6 +34,17 @@ MAT::PAR::Sutherland::Sutherland(
 }
 
 
+MAT::SutherlandType MAT::SutherlandType::instance_;
+
+
+DRT::ParObject* MAT::SutherlandType::Create( const std::vector<char> & data )
+{
+  MAT::Sutherland* sutherland = new MAT::Sutherland();
+  sutherland->Unpack(data);
+  return sutherland;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::Sutherland::Sutherland()

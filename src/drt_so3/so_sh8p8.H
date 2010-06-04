@@ -27,6 +27,7 @@ Maintainer: Burkhard Bornemann
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "so_sh8.H"
 #include "../drt_inpar/inpar_structure.H"
@@ -47,6 +48,26 @@ namespace ELEMENTS
 // forward declarations
 class Sosh8p8Register;
 class So_sh8;
+
+class So_sh8p8Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "So_sh8p8Type"; }
+
+  static So_sh8p8Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static So_sh8p8Type instance_;
+};
 
 /// An incompressible 8-node solid shell element inherited from #DRT::ELEMENTS::so_sh8
 /// utilising a Bochev-stabilised equal-order approach for
@@ -204,7 +225,7 @@ public:
   ///
   /// every class implementing ParObject needs a unique id defined at the
   /// top of this file.
-  virtual int UniqueParObjectId() const { return ParObject_So_sh8p8; }
+  virtual int UniqueParObjectId() const { return So_sh8p8Type::Instance().UniqueParObjectId(); }
 
   /// Pack this class so it can be communicated
   ///
@@ -896,6 +917,21 @@ private:
 //=======================================================================
 //=======================================================================
 
+class Sosh8p8RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Sosh8p8RegisterType"; }
+
+  static Sosh8p8RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Sosh8p8RegisterType instance_;
+};
+
 
 /// A register for incompressible Solid-Shell8 element, inherited from Sosh8
 ///
@@ -926,7 +962,7 @@ public:
   ///
   /// every class imploementing ParObject needs a unique id defined at the
   /// top of this file.
-  virtual int UniqueParObjectId() const { return ParObject_Sosh8p8Register;}
+  virtual int UniqueParObjectId() const { return Sosh8p8RegisterType::Instance().UniqueParObjectId(); }
 
   /// Pack this class so it can be communicated
   ///

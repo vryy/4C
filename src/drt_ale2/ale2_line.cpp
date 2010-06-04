@@ -16,6 +16,8 @@
 #include "../drt_lib/drt_dserror.H"
 
 
+DRT::ELEMENTS::Ale2LineType DRT::ELEMENTS::Ale2LineType::instance_;
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 04/07|

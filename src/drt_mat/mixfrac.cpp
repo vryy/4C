@@ -28,6 +28,17 @@ MAT::PAR::MixFrac::MixFrac(
 }
 
 
+MAT::MixFracType MAT::MixFracType::instance_;
+
+
+DRT::ParObject* MAT::MixFracType::Create( const std::vector<char> & data )
+{
+  MAT::MixFrac* mixfrac = new MAT::MixFrac();
+  mixfrac->Unpack(data);
+  return mixfrac;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::MixFrac::MixFrac()

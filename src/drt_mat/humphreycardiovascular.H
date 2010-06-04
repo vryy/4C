@@ -23,6 +23,7 @@ Maintainer: Susanna Tinkl
 
 #include "material.H"
 #include "matpar_parameter.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 
 namespace MAT
@@ -75,6 +76,21 @@ namespace MAT
 
   }  // namespace PAR
 
+class HumphreyCardioType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "HumphreyCardioType"; }
+
+  static HumphreyCardioType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static HumphreyCardioType instance_;
+};
+
   /*----------------------------------------------------------------------*/
   /// Wrapper for anisotropic arterie material
   class HumphreyCardio : public Material
@@ -95,7 +111,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_HumphreyCardio; }
+    virtual int UniqueParObjectId() const { return HumphreyCardioType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -140,7 +156,7 @@ namespace MAT
     /// for visualisation of current fiber direction, can be called in so_material
     void UpdateFiberDirs
     (
-      const int numgp, 
+      const int numgp,
       LINALG::Matrix<3,3>* defgrd
     );
 
@@ -158,13 +174,13 @@ namespace MAT
 
     /// Return shear modulus
     double ShearMod() const {return params_->mue_;};
-    
+
     /// return a1s
     RCP<vector<vector<double> > > Geta1() const {return a1_;};
 
     /// return a2s
     RCP<vector<vector<double> > > Geta2() const {return a2_;};
-    
+
     /// return a3s
     RCP<vector<vector<double> > > Geta3() const {return a3_;};
 

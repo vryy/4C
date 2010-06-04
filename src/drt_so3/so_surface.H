@@ -21,12 +21,26 @@ using namespace Teuchos;
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
 namespace DRT
 {
 namespace ELEMENTS
 {
+
+class StructuralSurfaceType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "StructuralSurfaceType"; }
+
+  static StructuralSurfaceType & Instance() { return instance_; };
+
+private:
+
+  static StructuralSurfaceType instance_;
+};
 
 /*!
 \brief A general structural surface element (tri3/tri6/quad4/quad8/quad9/nurbs9)
@@ -83,7 +97,7 @@ public:
   top of the drt_parobject.H file.
   */
   virtual inline int UniqueParObjectId() const
-  { return ParObject_StructuralSurface;}
+  { return StructuralSurfaceType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

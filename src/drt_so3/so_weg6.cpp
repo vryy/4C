@@ -27,6 +27,44 @@ Maintainer: Moritz Frenzel
 // inverse design object
 #include "inversedesign.H"
 
+DRT::ELEMENTS::So_weg6Type DRT::ELEMENTS::So_weg6Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::So_weg6Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::So_weg6* object =
+    new DRT::ELEMENTS::So_weg6(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="SOLIDW6" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_weg6(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::Sow6RegisterType DRT::ELEMENTS::Sow6RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Sow6RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Sow6Register* object =
+    new DRT::ELEMENTS::Sow6Register(DRT::Element::element_so_weg6);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
@@ -191,7 +229,7 @@ void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,pstime_);
   ExtractfromPack(position,data,time_);
   if (pstype_==INPAR::STR::prestress_mulf)
-  {  
+  {
     vector<char> tmpprestress(0);
     ExtractfromPack(position,data,tmpprestress);
     if (prestress_ == Teuchos::null)
@@ -364,7 +402,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
       cout << name << endl;
       dserror("Unknown VisData!");
     }
-    
+
   }
   if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
     MAT::HolzapfelCardio* art = static_cast <MAT::HolzapfelCardio*>(Material().get());

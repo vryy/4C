@@ -23,6 +23,7 @@ Maintainer: Peter Gamnitzer
 using namespace std;
 
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 /*!
 \brief DRT: namespace of the ccarat discretization module
@@ -37,6 +38,21 @@ namespace DRT
 */
 namespace NURBS
 {
+
+class ControlPointType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ControlPointType"; }
+
+  static ControlPointType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static ControlPointType instance_;
+};
 
 /*!
 \brief Control points for nurbs surfaces/volumes
@@ -111,7 +127,7 @@ public:
 
   \return the parobject id
   */
-  virtual int UniqueParObjectId() const { return ParObject_ControlPoint;}
+  virtual int UniqueParObjectId() const { return ControlPointType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

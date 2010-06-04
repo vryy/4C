@@ -15,6 +15,35 @@ Maintainer: Peter Gamnitzer
 #include "fluid3_nurbs.H"
 #include "../drt_lib/drt_utils.H"
 
+DRT::ELEMENTS::NURBS::Fluid3NurbsType DRT::ELEMENTS::NURBS::Fluid3NurbsType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::NURBS::Fluid3NurbsType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::NURBS::Fluid3Nurbs* object = new DRT::ELEMENTS::NURBS::Fluid3Nurbs(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Fluid3NurbsType::Create( const string eletype,
+                                                                          const string eledistype,
+                                                                          const int id,
+                                                                          const int owner )
+{
+  if ( eletype=="FLUID3" )
+  {
+    if ( eledistype=="NURBS8" || eledistype=="NURBS27")
+    {
+      return rcp(new DRT::ELEMENTS::NURBS::Fluid3Nurbs(id,owner));
+    }
+  }
+  return Teuchos::null;
+}
+
+DRT::ELEMENTS::NURBS::Fluid3NurbsSurfaceType DRT::ELEMENTS::NURBS::Fluid3NurbsSurfaceType::instance_;
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 05/08|
  |  id             (in)  this element's global id                       |

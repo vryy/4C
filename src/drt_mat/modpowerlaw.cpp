@@ -29,6 +29,16 @@ MAT::PAR::ModPowerLaw::ModPowerLaw(
 {
 }
 
+MAT::ModPowerLawType MAT::ModPowerLawType::instance_;
+
+
+DRT::ParObject* MAT::ModPowerLawType::Create( const std::vector<char> & data )
+{
+  MAT::ModPowerLaw* powLaw = new MAT::ModPowerLaw();
+  powLaw->Unpack(data);
+  return powLaw;
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::ModPowerLaw::ModPowerLaw()

@@ -38,6 +38,17 @@ MAT::PAR::LogNeoHooke::LogNeoHooke(
 }
 
 
+MAT::LogNeoHookeType MAT::LogNeoHookeType::instance_;
+
+
+DRT::ParObject* MAT::LogNeoHookeType::Create( const std::vector<char> & data )
+{
+  MAT::LogNeoHooke* logneo = new MAT::LogNeoHooke();
+  logneo->Unpack(data);
+  return logneo;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/

@@ -24,6 +24,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "so_surface.H"
 #include "so_line.H"
@@ -55,6 +56,26 @@ namespace ELEMENTS
 // forward declarations
 class Soh8Register;
 class InvDesign;
+
+class So_hex8Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "So_hex8Type"; }
+
+  static So_hex8Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static So_hex8Type instance_;
+};
 
 /*!
 \brief A C++ version of the 8-node hex solid element
@@ -150,7 +171,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_So_hex8;}
+  virtual int UniqueParObjectId() const { return So_hex8Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -751,6 +772,22 @@ private:
 //=======================================================================
 
 
+class Soh8RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Soh8RegisterType"; }
+
+  static Soh8RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Soh8RegisterType instance_;
+};
+
+
 /*!
 \brief A register for shell8 element
 
@@ -791,7 +828,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Soh8Register;}
+  virtual int UniqueParObjectId() const { return Soh8RegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

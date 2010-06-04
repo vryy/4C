@@ -36,6 +36,17 @@ MAT::PAR::AAAneohooke::AAAneohooke(
 }
 
 
+MAT::AAAneohookeType MAT::AAAneohookeType::instance_;
+
+
+DRT::ParObject* MAT::AAAneohookeType::Create( const std::vector<char> & data )
+{
+  MAT::AAAneohooke* aaa = new MAT::AAAneohooke();
+  aaa->Unpack(data);
+  return aaa;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/

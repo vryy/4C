@@ -23,6 +23,7 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #include "matpar_parameter.H"
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
 
@@ -66,6 +67,21 @@ namespace PAR
 
 }  // namespace PAR
 
+class FourierIsoType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "FourierIsoType"; }
+
+  static FourierIsoType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static FourierIsoType instance_;
+};
+
   /*----------------------------------------------------------------------*/
   /// FourierIso material according to [1]
   ///
@@ -96,7 +112,7 @@ namespace PAR
     ///
     ///  every class implementing ParObject needs a unique id defined at the
     ///  top of drt_parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const { return ParObject_FourierIso; }
+    virtual int UniqueParObjectId() const { return FourierIsoType::Instance().UniqueParObjectId(); }
 
     /// Pack this class so it can be communicated
     ///

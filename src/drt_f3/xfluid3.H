@@ -22,6 +22,7 @@ Maintainer: Axel Gerstenberger
 
 
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_xfem/dof_management_element.H"
 #include "../drt_xfem/xfem_enums.H"
@@ -37,6 +38,25 @@ namespace DRT
 
   namespace ELEMENTS
   {
+class XFluid3Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "XFluid3Type"; }
+
+  static XFluid3Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static XFluid3Type instance_;
+};
 
     //! A fluid3 element with XFEM capabilities
     class XFluid3 : public DRT::Element
@@ -59,7 +79,7 @@ namespace DRT
           std::vector<double> velnm; ///< unknowns at n-1
           std::vector<double> accn;  ///< time derivative of unknowns at n
         };
-        
+
         /// fluid-interface coupling matrices and vectors of uncondensed system at element level
         ///
         /// Here, "s" stands for the stress unknowns
@@ -75,7 +95,7 @@ namespace DRT
           RCP<Epetra_SerialDenseMatrix> GNsdi_uncond;
           RCP<Epetra_SerialDenseMatrix> GNdidi_uncond;
         };
-        
+
         FluidFluidCouplingMatrices fluidfluidmatrices_;
 
         //! @name Constructors and destructors and related methods
@@ -115,7 +135,7 @@ namespace DRT
 
         virtual std::vector<RCP<DRT::Element> > Volumes();
 
-        virtual int UniqueParObjectId() const { return ParObject_XFluid3;}
+      virtual int UniqueParObjectId() const { return XFluid3Type::Instance().UniqueParObjectId(); }
 
         virtual void Pack(std::vector<char>& data) const;
 
@@ -398,6 +418,20 @@ namespace DRT
     //=======================================================================
     //=======================================================================
 
+class XFluid3RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "XFluid3RegisterType"; }
+
+  static XFluid3RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static XFluid3RegisterType instance_;
+};
 
     /*!
      * \brief A register for xfluid3 element
@@ -418,7 +452,7 @@ namespace DRT
 
         DRT::ELEMENTS::XFluid3Register* Clone() const;
 
-        virtual int UniqueParObjectId() const { return ParObject_XFluid3Register;}
+      virtual int UniqueParObjectId() const { return XFluid3RegisterType::Instance().UniqueParObjectId(); }
 
         virtual void Pack(std::vector<char>& data) const;
 
@@ -447,6 +481,18 @@ namespace DRT
     }; // class XFluid3Register
 
 
+class XFluid3SurfaceType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "XFluid3SurfaceType"; }
+
+  static XFluid3SurfaceType & Instance() { return instance_; };
+
+private:
+
+  static XFluid3SurfaceType instance_;
+};
 
     /*!
      * \brief An element representing a surface of a xfluid3 element
@@ -488,7 +534,7 @@ namespace DRT
 
         virtual std::vector<RCP<DRT::Element> > Lines();
 
-        virtual int UniqueParObjectId() const { return ParObject_XFluid3Surface;}
+        virtual int UniqueParObjectId() const { return XFluid3SurfaceType::Instance().UniqueParObjectId(); }
 
         virtual void Pack(std::vector<char>& data) const;
 
@@ -627,6 +673,18 @@ namespace DRT
 
     }; // class Fluid3Surface
 
+class XFluid3LineType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "XFluid3LineType"; }
+
+  static XFluid3LineType & Instance() { return instance_; };
+
+private:
+
+  static XFluid3LineType instance_;
+};
 
     /*!
      * \brief An element representing a line of a xfluid3 element
@@ -669,7 +727,7 @@ namespace DRT
 
         DRT::Element* Clone() const;
 
-        virtual int UniqueParObjectId() const { return ParObject_XFluid3Line;}
+        virtual int UniqueParObjectId() const { return XFluid3LineType::Instance().UniqueParObjectId(); }
 
         virtual void Pack(std::vector<char>& data) const;
 

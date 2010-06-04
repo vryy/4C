@@ -47,6 +47,16 @@ MAT::PAR::ContChainNetw::ContChainNetw(
 {
 }
 
+MAT::ContChainNetwType MAT::ContChainNetwType::instance_;
+
+
+DRT::ParObject* MAT::ContChainNetwType::Create( const std::vector<char> & data )
+{
+  MAT::ContChainNetw* chain = new MAT::ContChainNetw();
+  chain->Unpack(data);
+  return chain;
+}
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)         06/08|
  *----------------------------------------------------------------------*/

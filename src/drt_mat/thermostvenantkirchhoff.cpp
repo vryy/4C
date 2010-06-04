@@ -40,6 +40,15 @@ MAT::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(
 {
 }
 
+MAT::ThermoStVenantKirchhoffType MAT::ThermoStVenantKirchhoffType::instance_;
+
+
+DRT::ParObject* MAT::ThermoStVenantKirchhoffType::Create( const std::vector<char> & data )
+{
+  MAT::ThermoStVenantKirchhoff* thrstvenantk = new MAT::ThermoStVenantKirchhoff();
+  thrstvenantk->Unpack(data);
+  return thrstvenantk;
+}
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     dano 02/10 |

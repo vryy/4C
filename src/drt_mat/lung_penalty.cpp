@@ -35,6 +35,17 @@ MAT::PAR::LungPenalty::LungPenalty(
 }
 
 
+MAT::LungPenaltyType MAT::LungPenaltyType::instance_;
+
+
+DRT::ParObject* MAT::LungPenaltyType::Create( const std::vector<char> & data )
+{
+  MAT::LungPenalty* lungpen = new MAT::LungPenalty();
+  lungpen->Unpack(data);
+  return lungpen;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)     maf 07/07|
  *----------------------------------------------------------------------*/

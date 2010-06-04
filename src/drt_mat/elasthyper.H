@@ -18,6 +18,7 @@ Maintainer: Burkhard Bornemann
 
 #include "matpar_parameter.H"
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_matelast/elast_summand.H"
 
 namespace MAT
@@ -83,6 +84,21 @@ namespace MAT
 
   }  // namespace PAR
 
+class ElastHyperType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ElastHyperType"; }
+
+  static ElastHyperType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static ElastHyperType instance_;
+};
+
 
   /*----------------------------------------------------------------------*/
   /// Collection of hyperelastic materials
@@ -128,7 +144,7 @@ namespace MAT
     ///
     /// every class implementing ParObject needs a unique id defined at the
     /// top of drt_parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const { return ParObject_ElastHyper; }
+    virtual int UniqueParObjectId() const { return ElastHyperType::Instance().UniqueParObjectId(); }
 
     /// \brief Pack this class so it can be communicated
     ///

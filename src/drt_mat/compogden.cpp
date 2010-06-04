@@ -48,6 +48,16 @@ MAT::PAR::CompOgden::CompOgden(
   l_[2] = 0;
 }
 
+
+MAT::CompOgdenType MAT::CompOgdenType::instance_;
+
+
+DRT::ParObject* MAT::CompOgdenType::Create( const std::vector<char> & data )
+{
+  return NULL;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*---------------------------------------------------------------------*/
 MAT::CompOgden::CompOgden()

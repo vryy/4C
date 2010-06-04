@@ -41,6 +41,18 @@ MAT::PAR::ViscoAnisotropic::ViscoAnisotropic(
   relax_[1] = matdata->GetDouble("RELAX_ANISO");
 }
 
+
+MAT::ViscoAnisotropicType MAT::ViscoAnisotropicType::instance_;
+
+
+DRT::ParObject* MAT::ViscoAnisotropicType::Create( const std::vector<char> & data )
+{
+  MAT::ViscoAnisotropic* visco = new MAT::ViscoAnisotropic();
+  visco->Unpack(data);
+  return visco;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)         05/08|
  *----------------------------------------------------------------------*/
@@ -149,7 +161,7 @@ void MAT::ViscoAnisotropic::Unpack(const vector<char>& data)
   a2_ = rcp(new vector<vector<double> >(numgp));
   ca1_ = rcp(new vector<vector<double> >(numgp));
   ca2_ = rcp(new vector<vector<double> >(numgp));
-  
+
   for (int gp = 0; gp < numgp; ++gp) {
     vector<double> a;
     ExtractfromPack(position,data,a);
@@ -161,7 +173,7 @@ void MAT::ViscoAnisotropic::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,a);
     ca2_->at(gp) = a;
   }
-  
+
 
   // unpack history
   ExtractfromPack(position,data,numhist);
@@ -201,10 +213,10 @@ void MAT::ViscoAnisotropic::Setup(const int numgp, DRT::INPUT::LineDefinition* l
     related to a local element cosy which has to be specified in the element line */
 
   a1_ = rcp(new vector<vector<double> > (numgp));
-  a2_ = rcp(new vector<vector<double> > (numgp)); 
+  a2_ = rcp(new vector<vector<double> > (numgp));
   ca1_ = rcp(new vector<vector<double> > (numgp));
   ca2_ = rcp(new vector<vector<double> > (numgp));
-  
+
   if ((params_->gamma_<0) || (params_->gamma_ >90)) dserror("Fiber angle not in [0,90]");
   const double gamma = (params_->gamma_*PI)/180.; //convert
 
@@ -286,7 +298,7 @@ void MAT::ViscoAnisotropic::Setup(const int numgp, const vector<double> thickvec
     a2_ = rcp(new vector<vector<double> > (numgp));
     ca1_ = rcp(new vector<vector<double> > (numgp));
     ca2_ = rcp(new vector<vector<double> > (numgp));
-    
+
     if (abs(params_->gamma_)>=1.0E-6) dserror("Fibers can only be aligned in thickness direction for gamma = 0.0!");
     const double gamma = (params_->gamma_*PI)/180.; //convert
 

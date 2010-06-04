@@ -29,6 +29,19 @@ MAT::PAR::ViscoNeoHooke::ViscoNeoHooke(
   theta_(matdata->GetDouble("THETA"))
 {
 }
+
+
+MAT::ViscoNeoHookeType MAT::ViscoNeoHookeType::instance_;
+
+
+DRT::ParObject* MAT::ViscoNeoHookeType::Create( const std::vector<char> & data )
+{
+  MAT::ViscoNeoHooke* visco = new MAT::ViscoNeoHooke();
+  visco->Unpack(data);
+  return visco;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)         05/08|
  *----------------------------------------------------------------------*/

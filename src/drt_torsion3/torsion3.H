@@ -29,6 +29,7 @@ using namespace std;
 using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_condition.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -48,6 +49,27 @@ namespace DRT
 
 namespace ELEMENTS
 {
+
+class Torsion3Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Torsion3Type"; }
+
+  static Torsion3Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Torsion3Type instance_;
+};
+
 /*!
 \brief three dimensional torsion element
 
@@ -86,13 +108,13 @@ public:
 
   /*!
   \brief Deep copy this instance of Torsion3 and return pointer to the copy
-    
+
   The Clone() method is used by the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
 .
   */
   virtual DRT::Element* Clone() const;
-  
+
    /*!
   \brief Get shape type of element
   */
@@ -105,7 +127,7 @@ public:
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
   */
-  virtual int UniqueParObjectId() const { return ParObject_Torsion3; }
+  virtual int UniqueParObjectId() const { return Torsion3Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -151,14 +173,14 @@ public:
   /*!
   \brief Get number of degrees of freedom of a single node
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const 
-  { 
-    /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only 
+  virtual int NumDofPerNode(const DRT::Node& node) const
+  {
+    /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only
      *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
      *number of DOF to this node requested by any element connected to this node*/
     return 3;
   }
-  
+
 
   /*!
   \brief Get number of degrees of freedom per element not including nodal degrees of freedom
@@ -169,7 +191,7 @@ public:
   \brief Print this element
   */
   virtual void Print(ostream& os) const;
-  
+
 
   //@}
 
@@ -258,7 +280,7 @@ public:
 
   //@}
 
-  
+
 private:
 
   //! action parameters recognized by Torsion3
@@ -282,35 +304,35 @@ private:
     postprocess_stress,
     calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
   };
-  
+
   //! possible bending potentials
   enum BendingPotential
   {
     quadratic,
     cosine
   };
-  
+
   //container containing all kind of Torsion3 thisandthat
-  DRT::Container data_; 
-  
+  DRT::Container data_;
+
   //springconstant
   double springconstant_;
-  
+
   //! Bending potential
   BendingPotential bendingpotential_;
-  
+
   //! @name Internal calculation methods
-              
+
   //!calculation of nonlinear stiffness and mass matrix
-  void t3_nlnstiffmass(vector<double>&           disp, 
+  void t3_nlnstiffmass(vector<double>&           disp,
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
                        Epetra_SerialDenseVector* force);
 
 
   //@}
-  
-  
+
+
   //! @name Methods for Brownian dynamics simulations
 
    //!shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
@@ -319,10 +341,10 @@ private:
                  vector<double>&           disp); //!<element disp vector
 
    //@}
-          
+
   // don't want = operator
   Torsion3& operator = (const Torsion3& old);
-  
+
 
 }; // class Torsion3
 
@@ -334,6 +356,21 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 
 //------------- class Torsion3Register: -------------------------------------------
 
+class Torsion3RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Torsion3RegisterType"; }
+
+  static Torsion3RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Torsion3RegisterType instance_;
+};
+
 /*!
 \brief A register for Torsion3 element
 
@@ -342,7 +379,7 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 class Torsion3Register : public DRT::ElementRegister
 {
 public:
-  
+
   //! @name Friends
   friend class Torsion3;
 
@@ -350,7 +387,7 @@ public:
 
   /*!
   \brief Standard Constructor
-  
+
   */
   Torsion3Register(DRT::Element::ElementType etype);
 
@@ -358,38 +395,38 @@ public:
   \brief Copy Constructor
 
   Makes a deep copy of an Torsion3Register
-  
+
   */
   Torsion3Register(const DRT::ELEMENTS::Torsion3Register& old);
 
   /*!
   \brief Deep copy this instance of Torsion3Register and return pointer to the copy
-  
+
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
-  
+
   */
   DRT::ELEMENTS::Torsion3Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
-  
+
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Torsion3Register;}
+  virtual int UniqueParObjectId() const { return Torsion3RegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
-  
+
   */
   virtual void Pack(vector<char>& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
@@ -416,7 +453,7 @@ public:
 
   /*!
   \brief Call Element init routines
-  
+
   The method performs all steps needed to init the Torsion3 elements. it e.g. calculates the
   field of averaged directors at nodes.
   */

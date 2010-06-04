@@ -36,6 +36,18 @@ MAT::PAR::NeoHooke::NeoHooke(
 {
 }
 
+
+MAT::NeoHookeType MAT::NeoHookeType::instance_;
+
+
+DRT::ParObject* MAT::NeoHookeType::Create( const std::vector<char> & data )
+{
+  MAT::NeoHooke* neo = new MAT::NeoHooke();
+  neo->Unpack(data);
+  return neo;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*---------------------------------------------------------------------*/
 MAT::NeoHooke::NeoHooke()
@@ -125,7 +137,7 @@ void MAT::NeoHooke::Evaluate(
            - 0.25 * rcg(1)*rcg(5)*rcg(5)
            - 0.25 * rcg(2)*rcg(3)*rcg(3)
            - 0.25 * rcg(0)*rcg(4)*rcg(4);    // 3rd invariant, determinante
-  
+
   //--------------------------------------------------------------------------------------
   // invert C
   LINALG::Matrix<6,1> invc(false);
@@ -148,14 +160,14 @@ void MAT::NeoHooke::Evaluate(
   // energy function
   // Psi = c1/beta (I3^{-beta} - 1) + c1 ( I1-3 )
   // S = -2 c1 I3^{-beta} C^{-1} + 2 c1 Identity
-  
+
   stress = invc;
   stress.Scale(-2.0*c1*pow(I3,-beta)); // volumetric part
   const double iso = 2.0*c1;  // isochoric part
   stress(0) += iso;
   stress(1) += iso;
   stress(2) += iso;
-  
+
   // material tensor:
   // C = 4 c1 beta I3^{-beta} C^{-1} dyad C^{-1} + 4 c1 I3^{-beta} C^{-1} boeppel C^{-1}
   // where `boeppel' is called `Holzapfelproduct' below

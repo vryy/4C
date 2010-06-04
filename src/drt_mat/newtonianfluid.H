@@ -14,6 +14,7 @@ Maintainer: ???
 
 #include "material.H"
 #include "matpar_parameter.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
 {
@@ -53,6 +54,21 @@ namespace MAT
 
   }  // namespace PAR
 
+class NewtonianFluidType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "NewtonianFluidType"; }
+
+  static NewtonianFluidType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static NewtonianFluidType instance_;
+};
+
   /*----------------------------------------------------------------------*/
   /// Wrapper for Newtonian fluid material
   ///
@@ -75,7 +91,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_NewtonianFluid; }
+    virtual int UniqueParObjectId() const { return NewtonianFluidType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated

@@ -27,6 +27,7 @@ using namespace std;
 using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_condition.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -47,6 +48,27 @@ namespace DRT
 
 namespace ELEMENTS
 {
+
+class Beam2rType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Beam2rType"; }
+
+  static Beam2rType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Beam2rType instance_;
+};
+
 /*!
 \brief two dimensional nonlinear beam element using Reissner`s beam theory according to Crisfield, Vol.1, section 7.4
 \The element is capable of using higher order functions from linear to quartic. Please make sure you put the nodes in the right order
@@ -110,7 +132,7 @@ public:
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
   */
-  virtual int UniqueParObjectId() const { return ParObject_Beam2r; }
+  virtual int UniqueParObjectId() const { return Beam2rType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -290,7 +312,7 @@ private:
     calc_struct_reset_istep, //!< reset elementwise internal variables during iteration to last converged state
     calc_struct_ptcstiff
   };
-  
+
   //! kind of integration to be performed
   enum IntegrationType
   {
@@ -304,10 +326,10 @@ private:
 
    //! cross section area including shear correction factor
   double crosssecshear_;
-  
+
   //! gaussrule_ will be initialized automatically to an underintegration rule in input.cpp
   DRT::UTILS::GaussRule1D gaussrule_;
-  
+
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
 
@@ -319,17 +341,17 @@ private:
 
   //! Vector holding jacobi for each gausspoint for complete integration of massmatrix
   vector<double> jacobimass_;
-  
+
   //! Vector holding value of Jacobi determinant jacobi at nodes
   vector<double> jacobinode_;
 
-  /*! Vector holding theta0 for each gausspoint. The current implementation sets the initial 
+  /*! Vector holding theta0 for each gausspoint. The current implementation sets the initial
   director angles to zero, which can be done without loss of generality since any initial rotation
   cancels out in the equations (7.131). As a consequence the current nodal directors do not appear
   in the element, but only the values of the current directorat the GP*/
   vector<double> theta0_;
-  
-  
+
+
   //!internal geometric calculations according to Crisfield Vol.1 (7.118)-(7.121)
   //note: this and a few more functions are templated so we can use the same element as a
   //    higher order element. For templating cf. Practical C++ Programming p.419++
@@ -356,7 +378,7 @@ private:
   //!this function transforms the consistent massmatrix into a lumped massmatrix. Only called when needed
   template<int nnode>
   void lumpedmass(Epetra_SerialDenseMatrix* massmatrix);
-  
+
   //! determine Gauss rule from required type of integration
   DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
 
@@ -374,14 +396,14 @@ private:
                      const vector<double>&           vel,  //!< element velocity vector
                      const vector<double>&           disp, //!<element disp vector
                      Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                     Epetra_SerialDenseVector* force);//!< element internal force vector  
-   
+                     Epetra_SerialDenseVector* force);//!< element internal force vector
+
    //!computes damping coefficients for employed friction model
    void MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel, const DRT::UTILS::IntegrationPoints1D gausspoints, const vector<double> jacobi);
-   
+
    //!computes the number of different random numbers required in each time step for generation of stochastic forces
    int HowManyRandomNumbersINeed();
-   
+
    //!computes translational damping forces and stiffness
    template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
    void MyTranslationalDamping(ParameterList& params,  //!<parameter list
@@ -389,7 +411,7 @@ private:
                              const vector<double>&           disp, //!<element disp vector
                              Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                              Epetra_SerialDenseVector* force);//!< element internal force vector
-   
+
    //!computes stochastic translational forces and resulting stiffness
    template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
    void MyStochasticForces(ParameterList& params,  //!<parameter list
@@ -397,7 +419,7 @@ private:
                          const vector<double>&           disp, //!<element disp vector
                          Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                          Epetra_SerialDenseVector* force);//!< element internal force vector
-   
+
    //!computes velocity of background fluid and gradient of that velocity at a certain evaluation point in the physical space and adds respective terms to internal forces and damping matrix
    template<int ndim> //number of dimensions of embedding space
    void MyBackgroundVelocity(ParameterList& params,  //!<parameter list
@@ -421,6 +443,22 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 
 
 //------------- class Beam2rRegister: -------------------------------------------
+
+
+class Beam2rRegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Beam2rRegisterType"; }
+
+  static Beam2rRegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Beam2rRegisterType instance_;
+};
 
 /*!
 \brief A register for the Beam2r element
@@ -465,7 +503,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Beam2rRegister;}
+  virtual int UniqueParObjectId() const { return Beam2rRegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

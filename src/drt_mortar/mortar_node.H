@@ -42,6 +42,7 @@ Maintainer: Alexander Popp
 
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -54,12 +55,27 @@ using namespace Teuchos;
 namespace MORTAR
 {
 
+class MortarNodeType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "MortarNodeType"; }
+
+  static MortarNodeType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static MortarNodeType instance_;
+};
+
 /*!
 \brief A class containing additional data from mortar nodes
 
 This class contains additional information from mortar nodes which are
 are not needed for contact search and therefore are only available on the
-node's processor (ColMap). The class MortarNodeDataContainer must be declared 
+node's processor (ColMap). The class MortarNodeDataContainer must be declared
 before the MortarNode itself.
 
 \author gitterle (gitterle@lnm.mw.tum.de)
@@ -115,16 +131,16 @@ public:
 
   */
   virtual void Unpack(int& position, const vector<char>& data);
-  
+
   //@}
 
   //! @name Access methods
-  
+
   /*!
   \brief Return current nodal normal (only for slave side!) (length 3)
   */
   virtual double* n() { return n_; }
-  
+
   /*!
   \brief Return current Lagrange mutliplier in step n+1 (only for slave side!) (length 3)
   */
@@ -134,7 +150,7 @@ public:
   \brief Return old Lagrange mutliplier from step n (only for slave side!) (length 3)
   */
   virtual double* lmold() { return lmold_; }
-  
+
   /*!
   \brief Return Lagrange mutliplier from last Uzawa step (only for slave side!) (length 3)
   */
@@ -154,7 +170,7 @@ public:
   \brief Return the 'Mmod' map (vector) of this node
   */
   virtual vector<map<int,double> >& GetMmod() { return mmodrows_; }
-    
+
   //@}
 
 protected:
@@ -167,7 +183,7 @@ protected:
   vector<map<int,double> >      drows_;      // nodal rows of D matrix
   vector<map<int,double> >      mrows_;      // nodal rows of M matrix
   vector<map<int,double> >      mmodrows_;   // nodal rows of Mmod matrix
-  
+
 }; // class MortarNodeDataContainer
 
 
@@ -234,7 +250,7 @@ public:
   top of drt_lib/drt_parobject.H.
 
   */
-  virtual int UniqueParObjectId() const { return ParObject_MortarNode;}
+  virtual int UniqueParObjectId() const { return MortarNodeType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -271,7 +287,7 @@ public:
 
   This changing of topology becomes necessary for self contact
   simulations, where slave and master status are assigned dynamically
-  
+
   This belated modification is also necessary to be able to deal with
   boundary nodes on the slave side of the interface. Their status is
   changed to master, thy do NOT carry Lagrange multipliers and their
@@ -293,7 +309,7 @@ public:
   \brief Return D.B.C. status of this node (true if at least one dof with D.B.C)
   */
   virtual bool IsDbc() const { return isdbc_; }
-  
+
   /*!
   \brief Set D.B.C. status of current node
   */
@@ -323,7 +339,7 @@ public:
   \brief Return projection status of this node (only for slave side!)
   */
   virtual bool& HasProj() { return hasproj_; }
-  
+
   /*!
   \brief Return of data container of this node
 
@@ -332,7 +348,7 @@ public:
 
   */
   inline MORTAR::MortarNodeDataContainer& MoData() { return *modata_; }
-    
+
   //@}
 
   //! @name Evaluation methods
@@ -395,23 +411,23 @@ public:
   virtual MORTAR::MortarNode* FindClosestNode(const RCP<DRT::Discretization> intdis,
                                           const RCP<Epetra_Map> nodesearchmap,
                                           double& mindist);
-  
+
   /*!
   \brief Check if mesh re-initialization for this node was feasible
-  
+
   This method checks whether mesh distortion due to the applied relocation
   of the current node stays below a certain limit. This check is very
   empirical, of course!
-  
+
   The mesh distortion status is returned via a boolean parameter.
   (TRUE indicates that mesh distortion is acceptable!)
-  
+
   \param relocation (in):    relocation distance
   \param limit      (in):    limit in percent of edge length
-  
+
   */
   virtual bool CheckMeshDistortion(double& relocation, double& limit);
-  
+
   /*!
   \brief Initializes the data container of the node
 
@@ -422,16 +438,16 @@ public:
   virtual void InitializeDataContainer();
 
   //@}
-  
+
   //! @name Empty functions (contact or friction)
-  
+
   // All these functions only have functionality for contact or friction nodes, thus they
   // are defined as empty here in the gerenal mortar node. They can be called whenever you like.
-  
+
   virtual void AddgValue(double& val) {}
   virtual void AddSNode(int node) {}
   virtual void AddMNode(int node) {}
-   
+
   //@}
 
 protected:
@@ -445,9 +461,9 @@ protected:
   double          uold_[3];        // old displacement (last converged state)
   bool            hasproj_;        // true if feasible projection within search set (slave nodes only)
   double          kappa_;          // gap-scaling factor (penalty contact only)
-  
+
   RCP<MORTAR::MortarNodeDataContainer> modata_;   // additional information of proc's mortar nodes
- 
+
 }; // class MortarNode
 } // namespace MORTAR
 

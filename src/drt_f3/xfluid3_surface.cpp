@@ -17,6 +17,9 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_utils.H"
 
 
+DRT::ELEMENTS::XFluid3SurfaceType DRT::ELEMENTS::XFluid3SurfaceType::instance_;
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |

@@ -20,6 +20,43 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
+DRT::ELEMENTS::Truss2Type DRT::ELEMENTS::Truss2Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Truss2Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Truss2* object = new DRT::ELEMENTS::Truss2(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss2Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="TRUSS2" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Truss2(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::Truss2RegisterType DRT::ELEMENTS::Truss2RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Truss2RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Truss2Register* object =
+    new DRT::ELEMENTS::Truss2Register(DRT::Element::element_truss2);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
@@ -130,7 +167,7 @@ void DRT::ELEMENTS::Truss2::Pack(vector<char>& data) const
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   //kinematic type
-  AddtoPack(data,kintype_);  
+  AddtoPack(data,kintype_);
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
@@ -190,22 +227,22 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Truss2::Lines()
 }
 
 void DRT::ELEMENTS::Truss2::SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xrefe)
-{   
+{
   /*this method initialized geometric variables of the element; such an initialization can only be done one time when the element is
-   * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this 
-   * method will initialize the geometric variables iff the class variable isinit_ == false and afterwards set this variable to 
-   * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/ 
+   * generated and never again (especially not in the frame of a restart); to make sure that this requirement is not violated this
+   * method will initialize the geometric variables iff the class variable isinit_ == false and afterwards set this variable to
+   * isinit_ = true; if this method is called and finds alreday isinit_ == true it will just do nothing*/
   if(!isinit_)
   {
     isinit_ = true;
-    
+
     //setting reference coordinates
     X_ = xrefe;
-    
+
     //length in reference configuration
-    lrefe_ = pow(pow(X_(2)-X_(0),2)+pow(X_(3)-X_(1),2),0.5); 
+    lrefe_ = pow(pow(X_(2)-X_(0),2)+pow(X_(3)-X_(1),2),0.5);
   }
- 
+
   return;
 }
 
@@ -274,7 +311,7 @@ void DRT::ELEMENTS::Truss2Register::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId())
     dserror("wrong instance type data");
-  
+
   // base class ElementRegister
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
@@ -306,37 +343,37 @@ void DRT::ELEMENTS::Truss2Register::Print(ostream& os) const
 
 
 int DRT::ELEMENTS::Truss2Register::Initialize(DRT::Discretization& dis)
-{     
+{
   //reference node positions
   LINALG::Matrix<4,1> xrefe;
 
   //setting beam reference director correctly
   for (int i=0; i<  dis.NumMyColElements(); ++i)
-  {    
+  {
     //in case that current element is not a truss2 element there is nothing to do and we go back
     //to the head of the loop
     if (dis.lColElement(i)->Type() != DRT::Element::element_truss2) continue;
-    
+
     //if we get so far current element is a truss2 element and  we get a pointer at it
     DRT::ELEMENTS::Truss2* currele = dynamic_cast<DRT::ELEMENTS::Truss2*>(dis.lColElement(i));
     if (!currele) dserror("cast to Truss2* failed");
-    
+
     //getting element's nodal coordinates and treating them as reference configuration
     if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
       dserror("Cannot get nodes in order to compute reference configuration'");
     else
-    {   
+    {
       for (int k=0; k<2; k++) //element has two nodes
         for(int l= 0; l < 2; l++)
           xrefe(k*2 + l) = currele->Nodes()[k]->X()[l];
     }
- 
+
     currele->SetUpReferenceGeometry(xrefe);
-    
-    
+
+
   } //for (int i=0; i<dis_.NumMyColElements(); ++i)
 
-  
+
   return 0;
 }
 

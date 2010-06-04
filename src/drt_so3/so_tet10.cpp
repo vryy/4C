@@ -23,6 +23,41 @@ writen by : Alexander Volf
 #include "../drt_mat/humphreycardiovascular.H"
 
 
+DRT::ELEMENTS::So_tet10Type DRT::ELEMENTS::So_tet10Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::So_tet10Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::So_tet10* object = new DRT::ELEMENTS::So_tet10(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="SOLIDT10" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_tet10(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::Sotet10RegisterType DRT::ELEMENTS::Sotet10RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Sotet10RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Sotet10Register* object =
+    new DRT::ELEMENTS::Sotet10Register(DRT::Element::element_so_tet10);
+  object->Unpack(data);
+  return object;
+}
 
 
 /*----------------------------------------------------------------------***
@@ -357,7 +392,7 @@ bool DRT::ELEMENTS::So_tet10::VisData(const string& name, vector<double>& data)
   // Put the owner of this element into the file (use base class method for this)
   if (DRT::Element::VisData(name,data))
     return true;
-  
+
   if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
     MAT::HolzapfelCardio* art = static_cast <MAT::HolzapfelCardio*>(Material().get());
     vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp

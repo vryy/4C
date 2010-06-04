@@ -21,7 +21,7 @@ Maintainer: Michael Gee
 
 using namespace std;
 
-
+#if 0
 // These defines are used to have a unique identifier for every class
 // that implements the pure virtual ParObject class.
 // The unique identifier is stored in a communcation array as an integer
@@ -207,6 +207,8 @@ using namespace std;
 #define ParObject_SmoothrodRegister     (int)192
 #define ParObject_Beam3ii               (int)193
 #define ParObject_Beam3iiRegister       (int)194
+#endif
+
 namespace DRT
 {
 

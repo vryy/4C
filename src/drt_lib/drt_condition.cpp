@@ -46,6 +46,16 @@ Maintainer: Michael Gee
 #include "drt_element.H"
 
 
+DRT::ConditionObjectType DRT::ConditionObjectType::instance_;
+
+
+DRT::ParObject* DRT::ConditionObjectType::Create( const std::vector<char> & data )
+{
+  DRT::Condition* object = new DRT::Condition();
+  object->Unpack(data);
+  return object;
+}
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|

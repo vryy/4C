@@ -20,6 +20,43 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
+DRT::ELEMENTS::Torsion3Type DRT::ELEMENTS::Torsion3Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Torsion3Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Torsion3* object = new DRT::ELEMENTS::Torsion3(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Torsion3Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="TORSION3" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Torsion3(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::Torsion3RegisterType DRT::ELEMENTS::Torsion3RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Torsion3RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Torsion3Register* object =
+    new DRT::ELEMENTS::Torsion3Register(DRT::Element::element_torsion3);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
@@ -236,9 +273,9 @@ void DRT::ELEMENTS::Torsion3Register::Print(ostream& os) const
 
 
 int DRT::ELEMENTS::Torsion3Register::Initialize(DRT::Discretization& dis)
-{     
+{
   //no special initilization required for this element
-  
+
   return 0;
 }
 

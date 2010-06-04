@@ -8,6 +8,42 @@
 #include "so_hex8.H"
 
 
+DRT::ELEMENTS::So_Hex8P1J1Type DRT::ELEMENTS::So_Hex8P1J1Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::So_Hex8P1J1Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::So_Hex8P1J1* object = new DRT::ELEMENTS::So_Hex8P1J1(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_Hex8P1J1Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="SOLIDH8P1J1" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_Hex8P1J1(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::SoHex8P1J1RegisterType DRT::ELEMENTS::SoHex8P1J1RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::SoHex8P1J1RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::SoHex8P1J1Register* object =
+    new DRT::ELEMENTS::SoHex8P1J1Register(DRT::Element::element_so_hex8p1j1);
+  object->Unpack(data);
+  return object;
+}
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               lw 12/08|

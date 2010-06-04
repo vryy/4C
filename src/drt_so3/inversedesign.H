@@ -15,6 +15,7 @@ Maintainer: Michael Gee
 #define INVERSEDESIGN_H
 
 #include "../drt_lib/drt_parobject.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
@@ -33,6 +34,19 @@ namespace DRT
 
 namespace ELEMENTS
 {
+
+class InvDesignType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "InvDesignType"; }
+
+  static InvDesignType & Instance() { return instance_; };
+
+private:
+
+  static InvDesignType instance_;
+};
 
 /*!
 \brief A class for handling the prestressing in finite deformations
@@ -65,7 +79,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_InvDesign;}
+  virtual int UniqueParObjectId() const { return InvDesignType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

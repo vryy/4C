@@ -28,6 +28,17 @@ MAT::PAR::BioCell::BioCell(
 }
 
 
+MAT::BioCellType MAT::BioCellType::instance_;
+
+
+DRT::ParObject* MAT::BioCellType::Create( const std::vector<char> & data )
+{
+  MAT::BioCell* biocell = new MAT::BioCell();
+  biocell->Unpack(data);
+  return biocell;
+}
+
+
 /*---------------------------------------------------------------------*/
 MAT::BioCell::BioCell()
   : params_(NULL)
@@ -318,7 +329,7 @@ void MAT::BioCell::Evaluate(
                   Celas_ap[6] = (delta_an[6]+delta_af[6]) * CinvoCinv(i+k,j+l);
                   Celas_ap[7] = (delta_an[7]+delta_af[7]) * II(i+k,j+l);
                   Celasticity(i+k,j+l) = Celas_ap[0]+Celas_ap[1]+Celas_ap[2]+Celas_ap[3]+Celas_ap[4]+Celas_ap[5]+Celas_ap[6]+Celas_ap[7];
-              } } } }	
+              } } } }
 
   // copy to Voigt notation
   (*cmat)(0,0)=Celasticity(0,0);

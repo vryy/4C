@@ -17,6 +17,7 @@ Maintainer: Volker Gravemeier
 
 #include "matpar_parameter.H"
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
 {
@@ -74,6 +75,21 @@ namespace MAT
 
   }  // namespace PAR
 
+class ArrheniusPVType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ArrheniusPVType"; }
+
+  static ArrheniusPVType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static ArrheniusPVType instance_;
+};
+
   /*----------------------------------------------------------------------*/
   /// wrapper for scalar transport material with Arrhenius-type chemical kinetics (progress variable)
   class ArrheniusPV : public Material
@@ -95,7 +111,7 @@ namespace MAT
       top of drt_parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const { return ParObject_ArrheniusPV; }
+    virtual int UniqueParObjectId() const { return ArrheniusPVType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated

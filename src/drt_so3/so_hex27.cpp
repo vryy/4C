@@ -25,6 +25,44 @@ Maintainer: Thomas Kloeppel
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
+
+DRT::ELEMENTS::So_hex27Type DRT::ELEMENTS::So_hex27Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::So_hex27Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::So_hex27* object = new DRT::ELEMENTS::So_hex27(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="SOLIDH27" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_hex27(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+DRT::ELEMENTS::Soh27RegisterType DRT::ELEMENTS::Soh27RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Soh27RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Soh27Register* object =
+    new DRT::ELEMENTS::Soh27Register(DRT::Element::element_so_hex27);
+  object->Unpack(data);
+  return object;
+}
+
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                                       |
  |  id             (in)  this element's global id                       |
@@ -139,7 +177,7 @@ void DRT::ELEMENTS::So_hex27::Unpack(const vector<char>& data)
   invJ_.resize(size,LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27>(true) );
   for (int i=0; i<size; ++i)
     ExtractfromPack(position,data,invJ_[i]);
-  
+
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -190,7 +228,7 @@ void DRT::ELEMENTS::So_hex27::soh27_expol
   {
     // get gaussian points
     const DRT::UTILS::IntegrationPoints3D intpoints(DRT::UTILS::intrule_hex_27point);
-    
+
     // loop over all nodes
     for (int ip=0; ip<NUMNOD_SOH27; ++ip)
     {
@@ -205,23 +243,23 @@ void DRT::ELEMENTS::So_hex27::soh27_expol
       double e3expol;
 
       if (e1!=0) e1expol = 1/e1;
-      else       e1expol = 0;  
+      else       e1expol = 0;
       if (e2!=0) e2expol = 1/e2;
-      else       e2expol = 0;  
+      else       e2expol = 0;
       if (e3!=0) e3expol = 1/e3;
-      else       e3expol = 0;  
+      else       e3expol = 0;
 
       // shape functions for the extrapolated coordinates
       LINALG::Matrix<NUMGPT_SOH27,1> funct;
       DRT::UTILS::shape_function_3D(funct,e1expol,e2expol,e3expol,hex27);
-      
+
       // extrapolation matrix
       for (int i=0;i<NUMGPT_SOH27;++i) expol(ip,i) = funct(i);
     }
-    
+
     // do extrapolation
     nodalstresses.Multiply(expol, stresses);
-          
+
     isfilled = true;
   }
 }

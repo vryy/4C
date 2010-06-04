@@ -310,7 +310,7 @@ public:
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
   */
-  virtual int UniqueParObjectId() const { return ParObject_Element; }
+  virtual int UniqueParObjectId() const = 0;
 
   /*!
   \brief Pack this class so it can be communicated

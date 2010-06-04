@@ -17,6 +17,7 @@ Maintainer: Volker Gravemeier
 
 #include "matpar_parameter.H"
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
 {
@@ -76,6 +77,22 @@ namespace MAT
 
   }  // namespace PAR
 
+
+class FerEchPVType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "FerEchPVType"; }
+
+  static FerEchPVType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static FerEchPVType instance_;
+};
+
   /*----------------------------------------------------------------------*/
   /// wrapper for scalar transport material with simplified chemical
   /// kinetics due to Ferziger and Echekki (1993) (original version and
@@ -99,7 +116,7 @@ namespace MAT
       top of drt_parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const { return ParObject_FerEchPV; }
+    virtual int UniqueParObjectId() const { return FerEchPVType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated

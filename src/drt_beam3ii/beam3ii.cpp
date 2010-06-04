@@ -26,6 +26,41 @@ Maintainer: Christian Cyron
 //namespace with utility functions for operations with large rotations used
 using namespace LARGEROTATIONS;
 
+DRT::ELEMENTS::Beam3iiType DRT::ELEMENTS::Beam3iiType::instance_;
+
+DRT::ParObject* DRT::ELEMENTS::Beam3iiType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Beam3ii* object = new DRT::ELEMENTS::Beam3ii(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3iiType::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="BEAM3II" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam3ii(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::Beam3iiRegisterType DRT::ELEMENTS::Beam3iiRegisterType::instance_;
+
+DRT::ParObject* DRT::ELEMENTS::Beam3iiRegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Beam3iiRegister* object =
+    new DRT::ELEMENTS::Beam3iiRegister(DRT::Element::element_beam3ii);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 01/08|
  *----------------------------------------------------------------------*/
@@ -131,10 +166,10 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3ii::Shape() const
   		break;
   	default:
 			dserror("Only Line2, Line3 and Line4 elements are implemented.");
-			break;  	
+			break;
   }
 
-  return dis_none;	
+  return dis_none;
 }
 
 
@@ -143,7 +178,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3ii::Shape() const
  |                                                           cyron 01/08/
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3ii::Pack(vector<char>& data) const
-{ 
+{
   data.resize(0);
 
   // pack type of this instance of ParObject
@@ -153,7 +188,7 @@ void DRT::ELEMENTS::Beam3ii::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  
+
   //add all class variables of beam2r element
   AddtoPack(data,jacobi_);
   AddtoPack(data,jacobimass_);
@@ -161,7 +196,7 @@ void DRT::ELEMENTS::Beam3ii::Pack(vector<char>& data) const
   AddtoPack(data,nodeI_);
   AddtoPack(data,nodeJ_);
   AddtoPack(data,crosssec_);
-  AddtoPack(data,crosssecshear_); 
+  AddtoPack(data,crosssecshear_);
   AddtoPack(data,isinit_);
   AddtoPack(data,Irr_);
   AddtoPack(data,Iyy_);
@@ -194,9 +229,9 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  
-  
-  //extract all class variables of beam3ii element 
+
+
+  //extract all class variables of beam3ii element
   ExtractfromPack(position,data,jacobi_);
   ExtractfromPack(position,data,jacobimass_);
   ExtractfromPack(position,data,jacobinode_);
@@ -207,11 +242,11 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,isinit_);
   ExtractfromPack(position,data,Irr_);
   ExtractfromPack(position,data,Iyy_);
-  ExtractfromPack(position,data,Izz_); 
+  ExtractfromPack(position,data,Izz_);
   ExtractfromPack<4,1>(position,data,Qconv_);
   ExtractfromPack<4,1>(position,data,Qnew_);
   ExtractfromPack<4,1>(position,data,Qold_);
-  ExtractfromPack<4,1>(position,data,Qconvgauss_); 
+  ExtractfromPack<4,1>(position,data,Qconvgauss_);
   ExtractfromPack<3,1>(position,data,dispthetaconv_);
   ExtractfromPack<3,1>(position,data,dispthetaold_);
   ExtractfromPack<3,1>(position,data,dispthetanew_);
@@ -240,11 +275,11 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam3ii::Lines()
 DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3ii::MyGaussRule(int nnode, IntegrationType integrationtype)
 {
   DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule1D_undefined;
-  
+
   switch(nnode)
   {
     case 2:
-    {     
+    {
       switch(integrationtype)
       {
         case gaussexactintegration:
@@ -332,7 +367,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3ii::MyGaussRule(int nnode, Integrati
     default:
       dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
   }
-  
+
   return gaussrule;
 }
 
@@ -350,20 +385,20 @@ void DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry(const vector<double>& xrefe,
    *therefore after the first initilization the flag isinit is set to true and from then on this method does not take any action
    *when called again unless it is called on purpose with the additional parameter secondinit. If this parameter is passed into
    *the method and is true the element is initialized another time with respective xrefe and rotrefe;
-   *note: the isinit_ flag is important for avoiding reinitialization upon restart. However, it should be possible to conduct a 
+   *note: the isinit_ flag is important for avoiding reinitialization upon restart. However, it should be possible to conduct a
    *second initilization in principle (e.g. for periodic boundary conditions*/
 
   if(!isinit_ || secondinit)
   {
     isinit_ = true;
-    
+
     /*first the nodes for the reference triad \Lambda_r of the element are chosen according to eq. (6.2), Crisfield 1999;
      *note that the first node of the element in BACI is node 0 so that we need -1 in the end to convert from the notation
      *in Crisfield 1999 to the BACI convention*/
     nodeI_ = (int)floor(0.5*(NumNode()+1)) - 1;
     nodeJ_ = (int)floor(0.5*(NumNode()+2)) - 1;
-    
-    
+
+
     //resize and initialized STL vectors for rotational displacements so that they can store one value at each node
     dispthetaconv_.resize(nnode);
     dispthetaold_.resize(nnode);
@@ -375,8 +410,8 @@ void DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry(const vector<double>& xrefe,
         dispthetaold_[i](j) = 0;
         dispthetanew_[i](j) = 0;
       }
-      
-    
+
+
     //resize STL vectors for Jacobi determinants so that they can store one value at each Gauss point
     jacobi_.resize(nnode-1);
     kapparef_.resize(nnode-1);
@@ -385,28 +420,28 @@ void DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry(const vector<double>& xrefe,
 
     //create Matrix for the derivates of the shapefunctions at the GP
     LINALG::Matrix<1,nnode> shapefuncderiv;
-    
+
     //create Matrix for the shapefunctions at the GP
     LINALG::Matrix<1,nnode> funct;
-    
+
     //derivative of curve in physical space with respect to curve parameter xi \in [-1;1] on element level
     LINALG::Matrix<3,1> drdxi;
-    
+
     //Get DiscretizationType
     DRT::Element::DiscretizationType distype = Shape();
-    
+
     //Get the applied integrationpoints for underintegration
     DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
-    
+
     //Loop through all GPs for underintegration and calculate jacobi determinants and initial curvature at the GPs
     for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-    {   
+    {
       //Get position xi of GP
       const double xi = gausspoints.qxg[numgp][0];
-      
+
       //Get derivatives of shapefunctions at GP
       DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
-      
+
       //Get shapefunctions at GP
       DRT::UTILS::shape_function_1D(funct,xi,distype);
 
@@ -419,67 +454,67 @@ void DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry(const vector<double>& xrefe,
 
       //Store Jacobi determinant with respect to reference configuration
       jacobi_[numgp]= drdxi.Norm2();
-      
-      
-      /*the below curvature computation is possible for 2-noded elements only; for higher order elements one might replace it by 
+
+
+      /*the below curvature computation is possible for 2-noded elements only; for higher order elements one might replace it by
        *a computation according to eq. (2.12), Jelenic 1999*/
       if(NumNode()>2)
         dserror("computation of curvature in beam3ii element implemented only for 2 nodes!");
-      
+
       //compute local rotational vectors phi according to Crisfield 1999,(4.6) in quaterion form
       LINALG::Matrix<4,1> phi12;
-      quaternionproduct(Qnew_[1],inversequaternion(Qnew_[0]),phi12); 
-      
+      quaternionproduct(Qnew_[1],inversequaternion(Qnew_[0]),phi12);
+
       //according o Crisfield 1999, eq. (4.9), kappa equals the vector corresponding to phi12 divided by the element reference length
       quaterniontoangle(phi12,kapparef_[0]);
       kapparef_[0].Scale(0.5/jacobi_[0]);
-      
-   
-    }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-    
 
-    
+
+    }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+
+
+
     //Get the applied integrationpoints for exact integration of mass matrix
     DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
-    
+
     //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
     vector<LINALG::Matrix<1,nnode> > I(nnode-1);
-    
+
     //vector whose numgp-th element is a 1xnnode-matrix with the derivatives of all Lagrange polynomial basis functions evaluated at nnode-1 Gauss points for elasticity
     vector<LINALG::Matrix<1,nnode> > Iprime(nnode-1);
-    
+
     //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at nnode-1 Gauss points for elasticity according to according to (3.18), Jelenic 1999
     vector<vector<LINALG::Matrix<3,3> > > Itilde(nnode-1);
-    
+
     //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^nnode at nnode-1 Gauss points for elasticity according to according to (3.19), Jelenic 1999
     vector<vector<LINALG::Matrix<3,3> > > Itildeprime(nnode-1);
-    
+
     //vector with rotation matrices at nnode-1 Gauss points for elasticity
     vector<LINALG::Matrix<3,3> > Lambda(nnode-1);
-    
+
     //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the nnode Gauss points for mass matrix
     vector<LINALG::Matrix<1,nnode> > Imass(nnode);
-    
+
     //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at the nnode Gauss points for mass matrix according to according to (3.18), Jelenic 1999
     vector<vector<LINALG::Matrix<3,3> > > Itildemass(nnode);
-    
+
     //vector with rotation matrices at the nnode Gauss points for mass matrix
     vector<LINALG::Matrix<3,3> > Lambdamass(nnode);
 
     //evaluate basis functions
     evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass,Lambdamass);
- 
+
     //exact Gauss integration requires as many integration points as nodes
     Qconvgauss_.resize(nnode);
-    
-        
+
+
     //Loop through all GPs for exact integration and compute initial jacobi determinant
     for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
     {
-        
+
       //Get position xi of GP
       const double xi = gausspointsmass.qxg[numgp][0];
-      
+
       //Get derivatives of shapefunctions at GP
       DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
 
@@ -488,22 +523,22 @@ void DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry(const vector<double>& xrefe,
       for(int node=0; node<nnode; node++)
         for(int dof=0; dof<3; dof++)
           drdxi(dof)+=shapefuncderiv(node)*xrefe[3*node+dof];
-      
+
       //Store Jacobi determinant with respect to reference configuration
-      jacobimass_[numgp]= drdxi.Norm2();  
-      
+      jacobimass_[numgp]= drdxi.Norm2();
+
       //save triads at Gauss points for exact integration as quaternions
       triadtoquaternion(Lambdamass[numgp],Qconvgauss_[numgp]);
-      
+
     }//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
-    
-    
+
+
     //compute Jacobi determinant at gauss points for Lobatto quadrature (i.e. at nodes)
     for(int numgp=0; numgp< nnode; numgp++)
-    {  
+    {
       //Get position xi of nodes
       const double xi = -1.0 + 2*numgp / (nnode - 1);
-      
+
       //Get derivatives of shapefunctions at GP
       DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
 
@@ -512,16 +547,16 @@ void DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry(const vector<double>& xrefe,
       for(int node=0; node<nnode; node++)
         for(int dof=0; dof<3; dof++)
           drdxi(dof)+=shapefuncderiv(node)*xrefe[3*node+dof];
-      
+
       //Store Jacobi determinant for each node (Jacobi determinant refers by definition always to the reference configuration)
-      jacobinode_[numgp]= drdxi.Norm2(); 
-    
+      jacobinode_[numgp]= drdxi.Norm2();
+
     }//for(int numgp=0; numgp< nnode; numgp++)
-    
+
   }//if(!isinit_)
 
 	return;
-	
+
 }//DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry()
 
 //------------- class Beam3iiRegister: -------------------------------------
@@ -618,28 +653,28 @@ void DRT::ELEMENTS::Beam3iiRegister::Print(ostream& os) const
  |  Initialize (public)                                      cyron 01/08|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Beam3iiRegister::Initialize(DRT::Discretization& dis)
-{		
+{
 	  //setting up geometric variables for beam3ii elements
-	
+
 	  for (int num=0; num<  dis.NumMyColElements(); ++num)
 	  {
 	    //in case that current element is not a beam3ii element there is nothing to do and we go back
 	    //to the head of the loop
 	    if (dis.lColElement(num)->Type() != DRT::Element::element_beam3ii) continue;
-	
+
 	    //if we get so far current element is a beam3ii element and  we get a pointer at it
 	    DRT::ELEMENTS::Beam3ii* currele = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(dis.lColElement(num));
 	    if (!currele) dserror("cast to Beam3ii* failed");
-	
+
 	    //reference node position
 	    vector<double> xrefe;
 	    vector<double> rotrefe;
 	    const int nnode= currele->NumNode();
-	
+
 	    //resize xrefe for the number of coordinates we need to store
 	    xrefe.resize(3*nnode);
 	    rotrefe.resize(3*nnode);
-	
+
 	    //getting element's nodal coordinates and treating them as reference configuration
 	    if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
 	      dserror("Cannot get nodes in order to compute reference configuration'");
@@ -650,14 +685,14 @@ int DRT::ELEMENTS::Beam3iiRegister::Initialize(DRT::Discretization& dis)
 	        {
 	        	xrefe[node*3 + dof] = currele->Nodes()[node]->X()[dof];
 	        	rotrefe[node*3 + dof]= 0.0;
-	        }	
+	        }
 	    }
 
 	    //SetUpReferenceGeometry is a templated function
 	    switch(nnode)
 	    {
-	  		case 2:  		
-	  		{	
+	  		case 2:
+	  		{
 	  			currele->SetUpReferenceGeometry<2>(xrefe,rotrefe);
 	  			break;
 	  		}
@@ -675,11 +710,11 @@ int DRT::ELEMENTS::Beam3iiRegister::Initialize(DRT::Discretization& dis)
 	  		{
 	  			currele->SetUpReferenceGeometry<5>(xrefe,rotrefe);
 	  			break;
-	  		}   		
+	  		}
 	  		default:
-	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");	
+	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
 	  	}
-	
+
 	  } //for (int num=0; num<dis_.NumMyColElements(); ++num)
 
 	  return 0;

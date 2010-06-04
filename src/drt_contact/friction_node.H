@@ -40,6 +40,7 @@ Maintainer: Markus Gitterle
 #define FRICTION_NODE_H
 
 #include "../drt_mortar/mortar_node.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "contact_node.H"
 
 using namespace std;
@@ -52,6 +53,21 @@ using namespace Teuchos;
 */
 namespace CONTACT
 {
+
+class FriNodeType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "FriNodeType"; }
+
+  static FriNodeType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static FriNodeType instance_;
+};
 
 /*!
 \brief A class containing additional data from frictional contact nodes
@@ -114,11 +130,11 @@ public:
 
   */
   virtual void Unpack(int& position, const vector<char>& data);
-  
+
   //@}
 
   //! @name Access methods
-  
+
   /*!
   \brief Return jump per time step (only for slave side!) (length 3)
   */
@@ -133,7 +149,7 @@ public:
   \brief Return friction status of this node (slip=true)
   */
   virtual inline bool& Slip() { return slip_; }
-  
+
   /*!
   \brief Return the old 'D' map (vector) of this node (last converged state)
   */
@@ -143,7 +159,7 @@ public:
   \brief Return the old 'M' map (vector) of this node (last converged state)
   */
   virtual inline vector<map<int,double> >& GetMOld() { return mrowsold_; }
- 
+
   /*!
   \brief Return the map with according master nodes
   */
@@ -158,7 +174,7 @@ public:
   \brief Return the old map with according master nodes
   */
   virtual inline set<int>& GetMNodesOld() { return mnodesold_; }
-  
+
    /*!
   \brief Return the 'DerivJump' map (vector) of this node
 
@@ -168,7 +184,7 @@ public:
 
   */
   virtual inline vector<map<int,double> >& GetDerivJump() { return derivjump_; }
-  
+
   /*!
   \brief Return current penalty traction (length 3)
   */
@@ -267,7 +283,7 @@ public:
   top of drt_lib/drt_parobject.H.
 
   */
-  virtual int UniqueParObjectId() const { return ParObject_FriNode;}
+  virtual int UniqueParObjectId() const { return FriNodeType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -293,7 +309,7 @@ public:
   \brief Print this cnode
   */
   virtual void Print(ostream& os) const ;
-  
+
   /*!
   \brief Return of data container of this node
 
@@ -306,7 +322,7 @@ public:
   //@}
 
   //! @name Evaluation methods
- 
+
   /*!
   \brief Add a value to the SNode set of this node
 
@@ -318,7 +334,7 @@ public:
 
   */
   void AddMNode (int node);
-  
+
   /*!
   \brief Add a value to the map of Jump derivatives of this node
 
@@ -330,7 +346,7 @@ public:
 
   */
   void AddDerivJumpValue(int& row, const int& col, double val);
-  
+
   /*!
   \brief Write nodal entries of D and M to Dold and Mold
 
@@ -357,13 +373,13 @@ public:
 
   */
   virtual void InitializeDataContainer();
-  
+
   //@}
 
 protected:
-  
+
   RCP<CONTACT::FriNodeDataContainer> fridata_;       // additional information of proc's contact nodes
-  
+
 }; // class FriNode
 
 } // namespace CONTACT

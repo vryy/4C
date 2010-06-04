@@ -18,6 +18,43 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_utils.H"
 
 
+DRT::ELEMENTS::Bele3Type DRT::ELEMENTS::Bele3Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Bele3Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Bele3* object = new DRT::ELEMENTS::Bele3(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3Type::Create( const string eletype,
+                                                             const string eledistype,
+                                                             const int id,
+                                                             const int owner )
+{
+  if ( eletype=="BELE3" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Bele3(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::Bele3RegisterType DRT::ELEMENTS::Bele3RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Bele3RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Bele3Register* object =
+    new DRT::ELEMENTS::Bele3Register(DRT::Element::element_bele3);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele3::Bele3(int id, int owner) :

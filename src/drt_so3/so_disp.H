@@ -25,6 +25,7 @@ using namespace Teuchos;
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
@@ -46,6 +47,26 @@ namespace ELEMENTS
 // forward declarations
 class SoDispVolume;
 class SoDispRegister;
+
+class SoDispType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "SoDispType"; }
+
+  static SoDispType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static SoDispType instance_;
+};
 
 /*!
 \brief A general quadratic displacement based solid element
@@ -129,7 +150,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_SoDisp;}
+  virtual int UniqueParObjectId() const { return SoDispType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -366,6 +387,21 @@ protected:
 //=======================================================================
 //=======================================================================
 
+class SoDispRegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "SoDispRegisterType"; }
+
+  static SoDispRegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static SoDispRegisterType instance_;
+};
+
 
 /*!
 \brief A register for solid3 element
@@ -407,7 +443,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_SoDispRegister;}
+  virtual int UniqueParObjectId() const { return SoDispRegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

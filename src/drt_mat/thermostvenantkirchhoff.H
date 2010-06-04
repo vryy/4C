@@ -22,6 +22,7 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #include "matpar_parameter.H"
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
 
@@ -68,6 +69,20 @@ namespace PAR
 
 }  // namespace PAR
 
+class ThermoStVenantKirchhoffType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ThermoStVenantKirchhoffType"; }
+
+  static ThermoStVenantKirchhoffType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static ThermoStVenantKirchhoffType instance_;
+};
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for St.-Venant-Kirchhoff material with temperature term
@@ -91,7 +106,7 @@ namespace PAR
     */
     virtual int UniqueParObjectId() const
     {
-      return ParObject_ThermoStVenantKirchhoff;
+      return ThermoStVenantKirchhoffType::Instance().UniqueParObjectId();
     }
 
     /*!

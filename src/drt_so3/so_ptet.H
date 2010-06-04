@@ -25,6 +25,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_inpar/inpar_structure.H"
 
@@ -54,6 +55,21 @@ namespace ELEMENTS
 {
 class StructuralVolume;
 class Ptet;
+
+class PtetRegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "PtetRegisterType"; }
+
+  static PtetRegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static PtetRegisterType instance_;
+};
 
 //---------------------------------------------------------------------
 /*!
@@ -97,7 +113,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_PtetRegister;}
+  virtual int UniqueParObjectId() const { return PtetRegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -212,6 +228,26 @@ private:
 //=======================================================================
 //=======================================================================
 
+class PtetType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "PtetType"; }
+
+  static PtetType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static PtetType instance_;
+};
+
 /*!
 \brief A nodal-averaged strain 4-noded tet element according to Mike Puso
 
@@ -293,7 +329,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Ptet;}
+  virtual int UniqueParObjectId() const { return PtetType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

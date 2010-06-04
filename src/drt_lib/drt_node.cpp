@@ -44,6 +44,17 @@ Maintainer: Michael Gee
 #include "drt_dserror.H"
 
 
+DRT::NodeType DRT::NodeType::instance_;
+
+
+DRT::ParObject* DRT::NodeType::Create( const std::vector<char> & data )
+{
+  double dummycoord[3] = {999.,999.,999.};
+  DRT::Node* object = new DRT::Node(-1,dummycoord,-1);
+  object->Unpack(data);
+  return object;
+}
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|

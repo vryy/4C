@@ -21,6 +21,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
@@ -50,6 +51,26 @@ class Fluid2THInterface;	// for Taylor-Hood element
 template <DRT::Element::DiscretizationType distype> class Fluid2TH;
 
 template<DRT::Element::DiscretizationType distype,DRT::Element::DiscretizationType pdistype> class Fluid2LineWeakDBC;
+
+class Fluid2Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Fluid2Type"; }
+
+  static Fluid2Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Fluid2Type instance_;
+};
 
 /*!
 \brief A C++ wrapper for the fluid2 element
@@ -159,7 +180,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Fluid2;}
+  virtual int UniqueParObjectId() const { return Fluid2Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -474,6 +495,22 @@ private:
 //=======================================================================
 
 
+class Fluid2RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Fluid2RegisterType"; }
+
+  static Fluid2RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Fluid2RegisterType instance_;
+};
+
+
 /*!
 \brief A register for fluid2 element
 
@@ -514,7 +551,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Fluid2Register;}
+  virtual int UniqueParObjectId() const { return Fluid2RegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -571,6 +608,20 @@ private:
 //=======================================================================
 //=======================================================================
 //=======================================================================
+
+
+class Fluid2LineType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Fluid2LineType"; }
+
+  static Fluid2LineType & Instance() { return instance_; };
+
+private:
+
+  static Fluid2LineType instance_;
+};
 
 
 /*!
@@ -635,7 +686,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Fluid2Line;}
+  virtual int UniqueParObjectId() const { return Fluid2LineType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

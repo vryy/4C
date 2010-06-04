@@ -14,6 +14,33 @@ Maintainer: Peter Gamnitzer
 
 #include "fluid2_nurbs.H"
 
+DRT::ELEMENTS::NURBS::Fluid2NurbsType DRT::ELEMENTS::NURBS::Fluid2NurbsType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::NURBS::Fluid2NurbsType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::NURBS::Fluid2Nurbs* object = new DRT::ELEMENTS::NURBS::Fluid2Nurbs(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Fluid2NurbsType::Create( const string eletype,
+                                                                          const string eledistype,
+                                                                          const int id,
+                                                                          const int owner )
+{
+  if ( eletype=="FLUID2" )
+  {
+    if ( eledistype=="NURBS4" || eledistype=="NURBS9" )
+    {
+      return rcp(new DRT::ELEMENTS::NURBS::Fluid2Nurbs(id,owner));
+    }
+  }
+  return Teuchos::null;
+}
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 11/06|
  |  id             (in)  this element's global id                       |

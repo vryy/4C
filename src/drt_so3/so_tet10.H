@@ -26,6 +26,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 
 #include "../drt_mat/material.H"
@@ -55,6 +56,26 @@ namespace ELEMENTS
 {
 // forward declarations
 class Sotet10Register;
+
+class So_tet10Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "So_tet10Type"; }
+
+  static So_tet10Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static So_tet10Type instance_;
+};
 
 /*!
 \brief A C++ version of the 10-node tet solid element
@@ -141,7 +162,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_So_tet10;}
+  virtual int UniqueParObjectId() const { return So_tet10Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -526,6 +547,21 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
 
 }; // class So_tet10
 
+class Sotet10RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Sotet10RegisterType"; }
+
+  static Sotet10RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Sotet10RegisterType instance_;
+};
+
 /*!
 \brief A register for tet10 element
 
@@ -566,7 +602,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Sotet10Register;}
+  virtual int UniqueParObjectId() const { return Sotet10RegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

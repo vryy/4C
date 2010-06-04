@@ -1750,14 +1750,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "no_cross",
                                  "yes_cross",
-                                 "cross_rhs",
-                                 "cross_complete"
+                                 "cross_rhs"
+                                 //"cross_complete"
                                  ),
                                tuple<std::string>(
                                  "No cross-stress term",
                                  "Include the cross-stress term with a linearization of the convective part",
-                                 "Include cross-stress term, but only explicitly on right hand side",
-                                 ""
+                                 "Include cross-stress term, but only explicitly on right hand side"
+                                 //""
                                  ),
                                tuple<INPAR::FLUID::CrossStress>(
                                    INPAR::FLUID::cross_stress_stab_none,
@@ -1772,14 +1772,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "no_reynolds",
                                  "yes_reynolds",
-                                 "reynolds_rhs",
-                                 "reynolds_complete"
+                                 "reynolds_rhs"
+                                 //"reynolds_complete"
                                  ),
                                tuple<std::string>(
                                  "No Reynolds-stress term",
                                  "Include Reynolds-stress term explicitly on right hand side",
-                                 "Include Reynolds-stress term with linearisation",
-                                 ""
+                                 "Include Reynolds-stress term with linearisation"
+                                 //""
                                  ),
                                tuple<INPAR::FLUID::ReynoldsStress>(
                                    INPAR::FLUID::reynolds_stress_stab_none,
@@ -1802,6 +1802,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Bazilevs",
                                  "Bazilevs_wo_dt",
                                  "Codina"),
+#if 0
                                tuple<std::string>(
                                  "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea; tau_C: Wall",
                                  "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea; tau_C: Wall, gradien based element length",
@@ -1810,6 +1811,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea; tau_C: Codina"  ,
                                  "tau_M and tau_C (Bazilevs, based on G_ij and g_i)",
                                  "tau_M and tau_C: Codina")  ,
+#endif
                                tuple<INPAR::FLUID::TauType>(
                                    INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
                                    INPAR::FLUID::tau_not_defined,

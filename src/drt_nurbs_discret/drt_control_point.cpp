@@ -20,6 +20,18 @@ Maintainer: Peter Gamnitzer
 
 #include "drt_control_point.H"
 
+DRT::NURBS::ControlPointType DRT::NURBS::ControlPointType::instance_;
+
+
+DRT::ParObject* DRT::NURBS::ControlPointType::Create( const std::vector<char> & data )
+{
+  double dummycoord[3] = {999.,999.,999.};
+  double dummyweight   =  999.;
+  DRT::NURBS::ControlPoint* object = new DRT::NURBS::ControlPoint(-1,dummycoord,dummyweight,-1);
+  object->Unpack(data);
+  return object;
+}
+
 /*
   Standard ctor
  */

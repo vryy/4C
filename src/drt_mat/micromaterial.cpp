@@ -46,6 +46,18 @@ MAT::PAR::MicroMaterial::MicroMaterial(
 {
 }
 
+
+MAT::MicroMaterialType MAT::MicroMaterialType::instance_;
+
+
+DRT::ParObject* MAT::MicroMaterialType::Create( const std::vector<char> & data )
+{
+  MAT::MicroMaterial* micro = new MAT::MicroMaterial();
+  micro->Unpack(data);
+  return micro;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::MicroMaterial::MicroMaterial()

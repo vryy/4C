@@ -38,6 +38,17 @@ MAT::PAR::HolzapfelCardio::HolzapfelCardio(
 }
 
 
+MAT::HolzapfelCardioType MAT::HolzapfelCardioType::instance_;
+
+
+DRT::ParObject* MAT::HolzapfelCardioType::Create( const std::vector<char> & data )
+{
+  MAT::HolzapfelCardio* holzapfelcard = new MAT::HolzapfelCardio();
+  holzapfelcard->Unpack(data);
+  return holzapfelcard;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)         11/09|
  *----------------------------------------------------------------------*/
@@ -136,7 +147,7 @@ void MAT::HolzapfelCardio::Unpack(const vector<char>& data)
   a2_ = rcp(new vector<vector<double> >(numgp));
   ca1_ = rcp(new vector<vector<double> >(numgp));
   ca2_ = rcp(new vector<vector<double> >(numgp));
-  
+
   for (int gp = 0; gp < numgp; ++gp) {
     vector<double> a;
     ExtractfromPack(position,data,a);
@@ -166,14 +177,14 @@ void MAT::HolzapfelCardio::Setup(const int numgp, DRT::INPUT::LineDefinition* li
     specified in the element line */
 
   a1_ = rcp(new vector<vector<double> > (numgp));
-  a2_ = rcp(new vector<vector<double> > (numgp)); 
+  a2_ = rcp(new vector<vector<double> > (numgp));
   ca1_ = rcp(new vector<vector<double> > (numgp));
   ca2_ = rcp(new vector<vector<double> > (numgp));
   int initflag = params_->init_;
-  
+
   if ((params_->gamma_<0) || (params_->gamma_ >90)) dserror("Fiber angle not in [0,90]");
   const double gamma = (params_->gamma_*PI)/180.; //convert
-  
+
   if (initflag==0){
     // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
     LINALG::Matrix<3,3> id(true);
@@ -255,7 +266,7 @@ void MAT::HolzapfelCardio::UpdateFiberDirs(const int gp, LINALG::Matrix<3,3>* de
  taken from
  G.A. Holzapfel, T.C. Gasser, R.W. Ogden: A new constitutive framework for arterial wall mechanics
  and a comparative study of material models, J. of Elasticity 61 (2000) 1-48.
- 
+
 
  here
 
@@ -266,7 +277,7 @@ void MAT::HolzapfelCardio::UpdateFiberDirs(const int gp, LINALG::Matrix<3,3>* de
  The volumetric part is done by a volumetric strain energy function
 
  W_vol = 1/2 kappa (J-1)^2
-  
+
  */
 
 void MAT::HolzapfelCardio::Evaluate
@@ -313,7 +324,7 @@ void MAT::HolzapfelCardio::Evaluate
   Cinv(4) = 0.25*C(3)*C(5) - 0.5*C(0)*C(4);
   Cinv(5) = 0.25*C(3)*C(4) - 0.5*C(5)*C(1);
   Cinv.Scale(1.0/I3);
-  
+
   //--------------------------------------------------------------------------------------
   // structural tensors in voigt notation
   // A1 = a1 x a1, A2 = a2 x a2
@@ -333,7 +344,7 @@ void MAT::HolzapfelCardio::Evaluate
                     + 1.*(A1(3)*C(3) + A1(4)*C(4) + A1(5)*C(5))); //J4 = trace(A1:C^dev)
   double J6 = incJ * ( A2(0)*C(0) + A2(1)*C(1) + A2(2)*C(2)
                     + 1.*(A2(3)*C(3) + A2(4)*C(4) + A2(5)*C(5))); //J6 = trace(A2:C^dev)
-  
+
   //--------------------------------------------------------------------------------------
   // fibers can only stretch/compress down to a minimal value
   // for no compression minstretch has to be 1
@@ -355,8 +366,8 @@ void MAT::HolzapfelCardio::Evaluate
   //--- prepare some constants -----------------------------------------------------------
   const double third = 1./3.;
   const double p = kappa*(J-1); // dW_vol/dJ
-  
-  
+
+
   //--- determine 2nd Piola Kirchhoff stresses S -------------------------------------
   // 1st step: isotropic part
   //=========================
@@ -368,7 +379,7 @@ void MAT::HolzapfelCardio::Evaluate
     // with Sbar = mue*Id
     Siso(i) += incJ* (mue*Id(i) - third*mue*I1*Cinv(i));
   }
-  
+
   // 2nd step: anisotropic part
   //===========================
   // PK2 fiber part in splitted formulation, see Holzapfel p. 271
@@ -390,7 +401,7 @@ void MAT::HolzapfelCardio::Evaluate
     Saniso_fib1(i) = incJ * (Saniso_fib1(i) - third*traceCSfbar1*Cinv(i));
     Saniso_fib2(i) = incJ * (Saniso_fib2(i) - third*traceCSfbar2*Cinv(i));
   }
-  
+
   if (a1_->at(gp)[0]==0 && a1_->at(gp)[1]==0 && a1_->at(gp)[2]==0){
     // isotropic fiber part for initial iteration step
     // W=(k1/(2.0*k2))*(exp(k2*pow((Ibar_1 - 3.0),2)-1.0));
@@ -400,14 +411,14 @@ void MAT::HolzapfelCardio::Evaluate
     for (int i = 0; i < 6; i++)
       Saniso_fib1(i) += incJ* faciso* (Id(i) - third*I1*Cinv(i));
   }
-  
+
   // 3rd step: add everything up
   //============================
-  (*stress) = Siso;    
+  (*stress) = Siso;
   (*stress) += Saniso_fib1;
   (*stress) += Saniso_fib2;
-  
-  
+
+
   //--- do elasticity matrix -------------------------------------------------------------
   // ensure that cmat is zero when it enters the computation
   // It is an implicit law that cmat is zero upon input
@@ -421,9 +432,9 @@ void MAT::HolzapfelCardio::Evaluate
 
   AddtoCmatHolzapfelProduct((*cmat),Cinv,(-2*J*p));
   // the rest of cmatvol is computed during the loop
-  
+
   const double fac = 2*third*incJ*mue*I1;  // 2/3 J^{-2/3} Sbar:C
-  
+
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>  Psl(true);        // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
   AddtoCmatHolzapfelProduct(Psl,Cinv,1.0);  // first part Psl = Cinv o Cinv
 
@@ -464,10 +475,10 @@ void MAT::HolzapfelCardio::Evaluate
                         - 2.*third* (Cinv(i) * Saniso_fib2(j) + Cinv(j) * Saniso_fib2(i)); // -2/3 (Cinv x Sfiso2 + Sfiso2 x Cinv)
     }
   }
-  
+
   (*cmat) += Caniso_fib1;
   (*cmat) += Caniso_fib2;
-  
+
   if (a1_->at(gp)[0]==0 && a1_->at(gp)[1]==0 && a1_->at(gp)[2]==0){
     // isotropic fiber part for initial iteration step
     // W=(k1/(2.0*k2))*(exp(k2*pow((Ibar_1 - 3.0),2)-1.0));
@@ -488,7 +499,7 @@ void MAT::HolzapfelCardio::Evaluate
       }
     }
   }
-  
+
   return;
 }
 
@@ -510,7 +521,7 @@ void MAT::HolzapfelCardio::EvaluateFiberVecs
     // a2 = cos gamma e1 - sin gamma e2 with e1 related to maximal princ stress, e2 2nd largest
     ca2_->at(gp)[i] = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
   }
-  
+
   // pull back in reference configuration
   vector<double> a1_0(3);
   vector<double> a2_0(3);

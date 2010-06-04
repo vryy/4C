@@ -15,6 +15,7 @@ Maintainer: Peter Gamnitzer
 #define FLUID3_NURBS_H
 
 #include "fluid3.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_nurbs_discret/drt_control_point.H"
 #include "../drt_fem_general/drt_utils_bspline.H"
 
@@ -39,6 +40,26 @@ namespace ELEMENTS
 */
 namespace NURBS
 {
+
+class Fluid3NurbsType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Fluid3NurbsType"; }
+
+  static Fluid3NurbsType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Fluid3NurbsType instance_;
+};
 
 // forward declarations
 class Fluid3NurbsSurface;
@@ -87,7 +108,7 @@ public:
 
   \return my parobject id
   */
-  virtual int UniqueParObjectId() const { return ParObject_Fluid3Nurbs;}
+  virtual int UniqueParObjectId() const { return Fluid3NurbsType::Instance().UniqueParObjectId(); }
 
 
   /*!
@@ -148,6 +169,20 @@ public:
 private:
 
 };
+
+class Fluid3NurbsSurfaceType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Fluid3NurbsSurfaceType"; }
+
+  static Fluid3NurbsSurfaceType & Instance() { return instance_; };
+
+private:
+
+  static Fluid3NurbsSurfaceType instance_;
+};
+
 /*----------------------------------------------------------------------
 
   \brief Fluid3Surface class. this is a warning. Nurbs surfaces are only
@@ -212,7 +247,7 @@ public:
 
   \return my parobject id
   */
-  virtual int UniqueParObjectId() const { return ParObject_Fluid3NurbsSurface;}
+  virtual int UniqueParObjectId() const { return Fluid3NurbsSurfaceType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Get shape type of element

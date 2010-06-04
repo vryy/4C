@@ -14,6 +14,32 @@ Maintainer: Peter Gamnitzer
 
 #include "wall1_nurbs.H"
 
+DRT::ELEMENTS::NURBS::Wall1NurbsType DRT::ELEMENTS::NURBS::Wall1NurbsType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::NURBS::Wall1NurbsType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::NURBS::Wall1Nurbs* object = new DRT::ELEMENTS::NURBS::Wall1Nurbs(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create( const string eletype,
+                                                                         const string eledistype,
+                                                                         const int id,
+                                                                         const int owner )
+{
+  if ( eletype=="WALL" )
+  {
+    if(eledistype=="NURBS4" || eledistype=="NURBS9")
+    {
+      return rcp(new DRT::ELEMENTS::NURBS::Wall1Nurbs(id,owner));
+    }
+  }
+  return Teuchos::null;
+}
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 02/09|
  |  id             (in)  this element's global id                       |

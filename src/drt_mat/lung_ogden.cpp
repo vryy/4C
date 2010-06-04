@@ -35,6 +35,17 @@ MAT::PAR::LungOgden::LungOgden(
 }
 
 
+MAT::LungOgdenType MAT::LungOgdenType::instance_;
+
+
+DRT::ParObject* MAT::LungOgdenType::Create( const std::vector<char> & data )
+{
+  MAT::LungOgden* lungog = new MAT::LungOgden();
+  lungog->Unpack(data);
+  return lungog;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                      (public)  lw 04/08 |
  *----------------------------------------------------------------------*/

@@ -16,6 +16,10 @@ Maintainer: Michael Gee
 #include "so_line.H"
 #include "../drt_lib/drt_dserror.H"
 
+
+DRT::ELEMENTS::StructuralLineType DRT::ELEMENTS::StructuralLineType::instance_;
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              gee 04/08|
  *----------------------------------------------------------------------*/

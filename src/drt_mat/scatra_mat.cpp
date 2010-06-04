@@ -26,6 +26,17 @@ MAT::PAR::ScatraMat::ScatraMat(
 }
 
 
+MAT::ScatraMatType MAT::ScatraMatType::instance_;
+
+
+DRT::ParObject* MAT::ScatraMatType::Create( const std::vector<char> & data )
+{
+  MAT::ScatraMat* scatra_mat = new MAT::ScatraMat();
+  scatra_mat->Unpack(data);
+  return scatra_mat;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::ScatraMat::ScatraMat()

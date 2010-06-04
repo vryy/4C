@@ -20,6 +20,16 @@ MAT::PAR::PROTEIN::PROTEIN(Teuchos::RCP<MAT::PAR::Material> matdata)
 density_(matdata->GetDouble("DENS")) {
 }
 
+
+MAT::ProteinType MAT::ProteinType::instance_;
+
+
+DRT::ParObject* MAT::ProteinType::Create( const std::vector<char> & data )
+{
+  return NULL;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PROTEIN::PROTEIN()

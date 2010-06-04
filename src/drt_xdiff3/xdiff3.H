@@ -22,6 +22,7 @@ Maintainer: Axel Gerstenberger
 
 
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_xfem/dof_management_element.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -36,6 +37,26 @@ namespace DRT
 
   namespace ELEMENTS
   {
+
+class XDiff3Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "XDiff3Type"; }
+
+  static XDiff3Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static XDiff3Type instance_;
+};
 
     //! A fluid3 element with XFEM capabilities
     class XDiff3 : public DRT::Element
@@ -96,7 +117,7 @@ namespace DRT
 
         virtual std::vector<RCP<DRT::Element> > Volumes();
 
-        virtual int UniqueParObjectId() const { return ParObject_XDiff3;}
+      virtual int UniqueParObjectId() const { return XDiff3Type::Instance().UniqueParObjectId(); }
 
         virtual void Pack(std::vector<char>& data) const;
 
@@ -344,6 +365,21 @@ namespace DRT
     //=======================================================================
     //=======================================================================
 
+class XDiff3RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "XDiff3RegisterType"; }
+
+  static XDiff3RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static XDiff3RegisterType instance_;
+};
+
 
     /*!
      * \brief A register for xfluid3 element
@@ -364,7 +400,7 @@ namespace DRT
 
         DRT::ELEMENTS::XDiff3Register* Clone() const;
 
-        virtual int UniqueParObjectId() const { return ParObject_XDiff3Register;}
+      virtual int UniqueParObjectId() const { return XDiff3RegisterType::Instance().UniqueParObjectId(); }
 
         virtual void Pack(std::vector<char>& data) const;
 
@@ -392,6 +428,18 @@ namespace DRT
 
     }; // class XDiff3Register
 
+class XDiff3SurfaceType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "XDiff3SurfaceType"; }
+
+  static XDiff3SurfaceType & Instance() { return instance_; };
+
+private:
+
+  static XDiff3SurfaceType instance_;
+};
 
 
     /*!
@@ -434,7 +482,7 @@ namespace DRT
 
         virtual std::vector<RCP<DRT::Element> > Lines();
 
-        virtual int UniqueParObjectId() const { return ParObject_XDiff3Surface;}
+        virtual int UniqueParObjectId() const { return XDiff3SurfaceType::Instance().UniqueParObjectId(); }
 
         virtual void Pack(std::vector<char>& data) const;
 
@@ -535,6 +583,19 @@ namespace DRT
 
     }; // class Fluid3Surface
 
+class XDiff3LineType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "XDiff3LineType"; }
+
+  static XDiff3LineType & Instance() { return instance_; };
+
+private:
+
+  static XDiff3LineType instance_;
+};
+
 
     /*!
      * \brief An element representing a line of a xfluid3 element
@@ -577,7 +638,7 @@ namespace DRT
 
         DRT::Element* Clone() const;
 
-        virtual int UniqueParObjectId() const { return ParObject_XDiff3Line;}
+      virtual int UniqueParObjectId() const { return XDiff3LineType::Instance().UniqueParObjectId(); }
 
         virtual void Pack(std::vector<char>& data) const;
 

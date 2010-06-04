@@ -42,6 +42,20 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
 
+CONTACT::CoElementType CONTACT::CoElementType::instance_;
+
+
+DRT::ParObject* CONTACT::CoElementType::Create( const std::vector<char> & data )
+{
+  CONTACT::CoElement* ele = new CONTACT::CoElement(0,
+                                                   DRT::Element::element_contact,
+                                                   0,DRT::Element::dis_none,
+                                                   0,NULL,false);
+  ele->Unpack(data);
+  return ele;
+}
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
@@ -53,7 +67,7 @@ CONTACT::CoElement::CoElement(int id, ElementType etype, int owner,
 MORTAR::MortarElement(id,etype,owner,shape,numnode,nodeids,isslave)
 {
   // empty constructor
-  
+
   return;
 }
 
@@ -64,7 +78,7 @@ CONTACT::CoElement::CoElement(const CONTACT::CoElement& old) :
 MORTAR::MortarElement(old)
 {
   // empty copy-constructor
-  
+
   return;
 }
 
@@ -95,7 +109,7 @@ void CONTACT::CoElement::Print(ostream& os) const
 {
   os << "Contact ";
   MORTAR::MortarElement::Print(os);
-  
+
   return;
 }
 
@@ -110,7 +124,7 @@ void CONTACT::CoElement::Pack(vector<char>& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  
+
   // add base class MORTAR::MortarElement
   vector<char> basedata(0);
   MORTAR::MortarElement::Pack(basedata);
@@ -126,17 +140,17 @@ void CONTACT::CoElement::Pack(vector<char>& data) const
 void CONTACT::CoElement::Unpack(const vector<char>& data)
 {
   int position = 0;
-  
+
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  
+
   // extract base class MORTAR::MortarElement
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   MORTAR::MortarElement::Unpack(basedata);
-  
+
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;

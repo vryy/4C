@@ -21,6 +21,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
@@ -31,13 +32,32 @@ namespace DRT
 {
 
 class Discretization;
-class Ale2Register;
 
 namespace ELEMENTS
 {
 
 class Ale2Line;
 
+
+class Ale2Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Ale2Type"; }
+
+  static Ale2Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Ale2Type instance_;
+};
 
 
 /*!
@@ -48,7 +68,6 @@ class Ale2 : public DRT::Element
 public:
 
   //! @name Friends
-  friend class Ale2Register;
   friend class Ale2Surface;
 
   //@}
@@ -123,7 +142,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Ale2;}
+  virtual int UniqueParObjectId() const { return Ale2Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -331,109 +350,18 @@ private:
 //=======================================================================
 
 
-/*!
-\brief A register for ale2 element
-
-\author gee (gee@lnm.mw.tum.de)
-*/
-class Ale2Register : public DRT::ElementRegister
+class Ale2LineType : public DRT::ParObjectType
 {
 public:
 
-  //! @name Constructors and destructors and related methods
+  std::string Name() const { return "Ale2LineType"; }
 
-  /*!
-  \brief Standard Constructor
-
-  */
-  Ale2Register(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an Ale2Register
-
-  */
-  Ale2Register(const DRT::ELEMENTS::Ale2Register& old);
-
-  /*!
-  \brief Deep copy this instance of Ale2Register and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::Ale2Register* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class imploementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return ParObject_Ale2Register;}
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~Ale2Register();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the ale2 elements. it e.g. calculates the
-  field of averaged directors at nodes.
-  */
-  int Initialize(DRT::Discretization& dis);
-
-  //@}
+  static Ale2LineType & Instance() { return instance_; };
 
 private:
 
-
-}; // class Ale2Register
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
+  static Ale2LineType instance_;
+};
 
 
 /*!
@@ -487,7 +415,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Ale2Line;}
+  virtual int UniqueParObjectId() const { return Ale2LineType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

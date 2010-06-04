@@ -44,6 +44,18 @@ Maintainer: Michael Gee
 #include "drt_dserror.H"
 
 
+DRT::ElementRegisterType DRT::ElementRegisterType::instance_;
+
+
+DRT::ParObject* DRT::ElementRegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ElementRegister* object =
+    new DRT::ElementRegister(DRT::Element::element_none);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/

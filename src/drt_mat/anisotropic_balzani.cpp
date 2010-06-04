@@ -47,6 +47,16 @@ MAT::PAR::AnisotropicBalzani::AnisotropicBalzani(
   a2_[2] = matdata->GetDouble("A2Z");
 }
 
+MAT::AnisotropicBalzaniType MAT::AnisotropicBalzaniType::instance_;
+
+
+DRT::ParObject* MAT::AnisotropicBalzaniType::Create( const std::vector<char> & data )
+{
+  MAT::AnisotropicBalzani* anba = new MAT::AnisotropicBalzani();
+  anba->Unpack(data);
+  return anba;
+}
+
 
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)     maf 07/07|

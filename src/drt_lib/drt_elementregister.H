@@ -48,12 +48,28 @@ using namespace std;
 using namespace Teuchos;
 #include "drt_parobject.H"
 #include "drt_element.H"
+#include "drt_parobjectfactory.H"
 #include "../linalg/linalg_sparsematrix.H"
 
 
 
 namespace DRT
 {
+
+class ElementRegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "ElementRegisterType"; }
+
+  static ElementRegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static ElementRegisterType instance_;
+};
 
 // forward declarations
 
@@ -115,7 +131,7 @@ public:
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
   */
-  virtual int UniqueParObjectId() const { return ParObject_ElementRegister; }
+  virtual int UniqueParObjectId() const { return ElementRegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

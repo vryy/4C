@@ -18,6 +18,8 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_utils.H"
 
 
+DRT::ELEMENTS::Vele3SurfaceType DRT::ELEMENTS::Vele3SurfaceType::instance_;
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 05/09|

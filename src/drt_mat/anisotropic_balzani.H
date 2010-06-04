@@ -14,9 +14,10 @@ Maintainer: Moritz Frenzel
 #ifdef CCADISCRET
 
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 
 
 namespace MAT
@@ -60,6 +61,21 @@ namespace MAT
 
   }  // namespace PAR
 
+class AnisotropicBalzaniType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "AnisotropicBalzaniType"; }
+
+  static AnisotropicBalzaniType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static AnisotropicBalzaniType instance_;
+};
+
   /*----------------------------------------------------------------------*/
   /// Wrapper for hyperelastic polyconvex anisotropic material
   class AnisotropicBalzani : public Material
@@ -80,7 +96,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_AnisotropicBalzani; }
+    virtual int UniqueParObjectId() const { return AnisotropicBalzaniType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated

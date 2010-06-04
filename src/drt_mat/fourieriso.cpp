@@ -37,6 +37,18 @@ MAT::PAR::FourierIso::FourierIso(
 {
 }
 
+
+MAT::FourierIsoType MAT::FourierIsoType::instance_;
+
+
+DRT::ParObject* MAT::FourierIsoType::Create( const std::vector<char> & data )
+{
+  MAT::FourierIso* fourieriso = new MAT::FourierIso();
+  fourieriso->Unpack(data);
+  return fourieriso;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/

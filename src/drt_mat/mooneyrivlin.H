@@ -16,6 +16,7 @@ Maintainer: Moritz Frenzel
 #include "material.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
+#include "../drt_lib/drt_parobjectfactory.H"
 
 
 namespace MAT
@@ -51,6 +52,20 @@ namespace MAT
 
   }  // namespace PAR
 
+class MooneyRivlinType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "MooneyRivlinType"; }
+
+  static MooneyRivlinType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static MooneyRivlinType instance_;
+};
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Mooney-Rivlin material
@@ -72,7 +87,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_MooneyRivlin; }
+    virtual int UniqueParObjectId() const { return MooneyRivlinType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated

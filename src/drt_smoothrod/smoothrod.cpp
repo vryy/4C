@@ -22,6 +22,30 @@ Maintainer: Christian Cyron
 #include "../drt_inpar/drt_validparameters.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
+
+DRT::ELEMENTS::SmoothrodType DRT::ELEMENTS::SmoothrodType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::SmoothrodType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Smoothrod* object = new DRT::ELEMENTS::Smoothrod(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+DRT::ELEMENTS::SmoothrodRegisterType DRT::ELEMENTS::SmoothrodRegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::SmoothrodRegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::SmoothrodRegister* object =
+    new DRT::ELEMENTS::SmoothrodRegister(DRT::Element::element_smoothrod);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 01/08|
  *----------------------------------------------------------------------*/
@@ -125,10 +149,10 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Smoothrod::Shape() const
   		break;
   	default:
 			dserror("Only Line2, Line3 and Line4 elements are implemented.");
-			break;  	
+			break;
   }
 
-  return dis_none;	
+  return dis_none;
 }
 
 
@@ -137,7 +161,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Smoothrod::Shape() const
  |                                                           cyron 01/08/
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Smoothrod::Pack(vector<char>& data) const
-{ 
+{
   data.resize(0);
 
   // pack type of this instance of ParObject
@@ -147,7 +171,7 @@ void DRT::ELEMENTS::Smoothrod::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  
+
   //add all class variables of beam2r element
   AddtoPack(data,jacobi_);
   AddtoPack(data,jacobimass_);
@@ -188,9 +212,9 @@ void DRT::ELEMENTS::Smoothrod::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  
-  
-  //extract all class variables of beam3 element 
+
+
+  //extract all class variables of beam3 element
   ExtractfromPack(position,data,jacobi_);
   ExtractfromPack(position,data,jacobimass_);
   ExtractfromPack(position,data,jacobinode_);
@@ -201,7 +225,7 @@ void DRT::ELEMENTS::Smoothrod::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,isinit_);
   ExtractfromPack(position,data,Irr_);
   ExtractfromPack(position,data,Iyy_);
-  ExtractfromPack(position,data,Izz_); 
+  ExtractfromPack(position,data,Izz_);
   ExtractfromPack<4,1>(position,data,Qconv_);
   ExtractfromPack<4,1>(position,data,Qnew_);
   ExtractfromPack<4,1>(position,data,Qold_);
@@ -234,11 +258,11 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Smoothrod::Lines()
 DRT::UTILS::GaussRule1D DRT::ELEMENTS::Smoothrod::MyGaussRule(int nnode, IntegrationType integrationtype)
 {
   DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule1D_undefined;
-  
+
   switch(nnode)
   {
     case 2:
-    {     
+    {
       switch(integrationtype)
       {
         case gaussexactintegration:
@@ -326,7 +350,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Smoothrod::MyGaussRule(int nnode, Integra
     default:
       dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
   }
-  
+
   return gaussrule;
 }
 
@@ -344,13 +368,13 @@ void DRT::ELEMENTS::Smoothrod::SetUpReferenceGeometry(const vector<double>& xref
    *therefore after the first initilization the flag isinit is set to true and from then on this method does not take any action
    *when called again unless it is called on purpose with the additional parameter secondinit. If this parameter is passed into
    *the method and is true the element is initialized another time with respective xrefe and rotrefe;
-   *note: the isinit_ flag is important for avoiding reinitialization upon restart. However, it should be possible to conduct a 
+   *note: the isinit_ flag is important for avoiding reinitialization upon restart. However, it should be possible to conduct a
    *second initilization in principle (e.g. for periodic boundary conditions*/
 
   if(!isinit_ || secondinit)
   {
     isinit_ = true;
-    
+
 
   //resize all class STL vectors so that they can each store 1 value at each GP
   jacobi_.resize(nnode-1);
@@ -368,34 +392,34 @@ void DRT::ELEMENTS::Smoothrod::SetUpReferenceGeometry(const vector<double>& xref
   thetaprimeconv_.resize((nnode-1));
   thetaprimeold_.resize((nnode-1));
   thetaprimenew_.resize((nnode-1));
-  
+
   //create Matrix for the derivates of the shapefunctions at the GP
 	LINALG::Matrix<1,nnode> shapefuncderiv;
-	
+
 	//create Matrix for the shapefunctions at the GP
 	LINALG::Matrix<1,nnode> funct;
-	
+
 	//Get DiscretizationType
 	DRT::Element::DiscretizationType distype = Shape();
-	
+
 	//Get the applied integrationpoints for underintegration
 	DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
-	
+
     //Loop through all GPs and calculate jacobi the triads at the GPs
 	for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-	{  	
+	{
 		//Get position xi of GP
 		const double xi = gausspoints.qxg[numgp][0];
-		
+
 		//Get derivatives of shapefunctions at GP
 		DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
-		
+
 		//Get shapefunctions at GP
 		DRT::UTILS::shape_function_1D(funct,xi,distype);
-	
+
 		//triad in reference configuration at GP
 		LINALG::Matrix<3,3> Tref;
-	
+
     /*initial triad Tref = [t1,t2,t3] is set in a way for which we don`t have strains in reference configuration*/
     LINALG::Matrix<3,1> dxdxi;
 
@@ -410,10 +434,10 @@ void DRT::ELEMENTS::Smoothrod::SetUpReferenceGeometry(const vector<double>& xref
     	{
 	    	dxdxi(dof) += shapefuncderiv(node) * xrefe[3*node+dof];
 		    thetaconv_[numgp](dof) += funct(node) * rotrefe[3*node+dof];
-		    thetaprimeconv_[numgp](dof) += shapefuncderiv(node) * rotrefe[3*node+dof]; 		
+		    thetaprimeconv_[numgp](dof) += shapefuncderiv(node) * rotrefe[3*node+dof];
     	}//for(int dof=0; dof<3 ; dof++)
     }//for(int node=0; node<nnode; node++)
-    
+
 
 
     //Store length factor for every GP
@@ -442,8 +466,8 @@ void DRT::ELEMENTS::Smoothrod::SetUpReferenceGeometry(const vector<double>& xref
       double lin1norm = pow(pow(Tref(1,0),2)+pow(Tref(2,0),2),0.5);
       Tref(1,1) = -Tref(2,0)/lin1norm;
       Tref(2,1) =  Tref(1,0)/lin1norm;
-    }	
-           	
+    }
+
     //calculating t3 by crossproduct t1 x t2
     Tref(0,2) = Tref(1,0)*Tref(2,1)-Tref(1,1)*Tref(2,0);
     Tref(1,2) = Tref(2,0)*Tref(0,1)-Tref(2,1)*Tref(0,0);
@@ -458,7 +482,7 @@ void DRT::ELEMENTS::Smoothrod::SetUpReferenceGeometry(const vector<double>& xref
 
     curvconv_[numgp].Clear();
   }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-	
+
 	//Now all triads have been calculated and Qold_ and Qnew_ can be updated
   Qold_ = Qconv_;
   Qnew_ = Qconv_;
@@ -471,20 +495,20 @@ void DRT::ELEMENTS::Smoothrod::SetUpReferenceGeometry(const vector<double>& xref
 
   thetaprimeold_ = thetaprimeconv_;
   thetaprimenew_ = thetaprimeconv_;
-	
+
 	//Get the applied integrationpoints for exact integration of mass matrix
 	DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
-	  	
+
 	//Loop through all GPs and calculate jacobi and theta0
 	for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
 	{
-	  	
+
 		//Get position xi of GP
 		const double xi = gausspointsmass.qxg[numgp][0];
-		
+
 		//Get derivatives of shapefunctions at GP
 		DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
-	
+
     LINALG::Matrix<3,1> dxdximass;
 
     dxdximass.Clear();
@@ -492,25 +516,25 @@ void DRT::ELEMENTS::Smoothrod::SetUpReferenceGeometry(const vector<double>& xref
     for(int node=0; node<nnode; node++)
       for(int dof=0; dof<3; dof++)
         dxdximass(dof)+=shapefuncderiv(node)*xrefe[3*node+dof];
-    
+
 
     //Store length factor for every GP
     //note: the length factor jacobi replaces the determinant and refers by definition always to the reference configuration
-    jacobimass_[numgp]= dxdximass.Norm2();	
-	
+    jacobimass_[numgp]= dxdximass.Norm2();
+
 	}//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
-	
-	
+
+
 	//compute Jacobi determinant at gauss points for Lobatto quadrature (i.e. at nodes)
   for(int numgp=0; numgp< nnode; numgp++)
   {
-      
+
     //Get position xi of nodes
     const double xi = -1.0 + 2*numgp / (nnode - 1);
-    
+
     //Get derivatives of shapefunctions at GP
     DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
-  
+
     LINALG::Matrix<3,1> dxdxi;
 
     dxdxi.Clear();
@@ -518,12 +542,12 @@ void DRT::ELEMENTS::Smoothrod::SetUpReferenceGeometry(const vector<double>& xref
     for(int node=0; node<nnode; node++)
       for(int dof=0; dof<3; dof++)
         dxdxi(dof)+=shapefuncderiv(node)*xrefe[3*node+dof];
-    
+
     //Store Jacobi determinant for each node (Jacobi determinant refers by definition always to the reference configuration)
-    jacobinode_[numgp]= dxdxi.Norm2(); 
-  
+    jacobinode_[numgp]= dxdxi.Norm2();
+
   }//for(int numgp=0; numgp< nnode; numgp++)
-	
+
 	return;
 
   }//if(!isinit_)
@@ -624,28 +648,28 @@ void DRT::ELEMENTS::SmoothrodRegister::Print(ostream& os) const
  |  Initialize (public)                                      cyron 01/08|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::SmoothrodRegister::Initialize(DRT::Discretization& dis)
-{		
+{
 	  //setting up geometric variables for beam3 elements
-	
+
 	  for (int num=0; num<  dis.NumMyColElements(); ++num)
 	  {
 	    //in case that current element is not a beam3 element there is nothing to do and we go back
 	    //to the head of the loop
 	    if (dis.lColElement(num)->Type() != DRT::Element::element_beam3) continue;
-	
+
 	    //if we get so far current element is a beam3 element and  we get a pointer at it
 	    DRT::ELEMENTS::Smoothrod* currele = dynamic_cast<DRT::ELEMENTS::Smoothrod*>(dis.lColElement(num));
 	    if (!currele) dserror("cast to Smoothrod* failed");
-	
+
 	    //reference node position
 	    vector<double> xrefe;
 	    vector<double> rotrefe;
 	    const int nnode= currele->NumNode();
-	
+
 	    //resize xrefe for the number of coordinates we need to store
 	    xrefe.resize(3*nnode);
 	    rotrefe.resize(3*nnode);
-	
+
 	    //getting element's nodal coordinates and treating them as reference configuration
 	    if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
 	      dserror("Cannot get nodes in order to compute reference configuration'");
@@ -656,14 +680,14 @@ int DRT::ELEMENTS::SmoothrodRegister::Initialize(DRT::Discretization& dis)
 	        {
 	        	xrefe[node*3 + dof] = currele->Nodes()[node]->X()[dof];
 	        	rotrefe[node*3 + dof]= 0.0;
-	        }	
+	        }
 	    }
 
 	    //SetUpReferenceGeometry is a templated function
 	    switch(nnode)
 	    {
-	  		case 2:  		
-	  		{	
+	  		case 2:
+	  		{
 	  			currele->SetUpReferenceGeometry<2>(xrefe,rotrefe);
 	  			break;
 	  		}
@@ -681,11 +705,11 @@ int DRT::ELEMENTS::SmoothrodRegister::Initialize(DRT::Discretization& dis)
 	  		{
 	  			currele->SetUpReferenceGeometry<5>(xrefe,rotrefe);
 	  			break;
-	  		}   		
+	  		}
 	  		default:
-	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");	
+	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
 	  	}
-	
+
 	  } //for (int num=0; num<dis_.NumMyColElements(); ++num)
 
 	  return 0;

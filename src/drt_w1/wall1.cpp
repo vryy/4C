@@ -20,6 +20,45 @@ Maintainer: Markus Gitterle
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 
+DRT::ELEMENTS::Wall1Type DRT::ELEMENTS::Wall1Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Wall1Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Wall1* object = new DRT::ELEMENTS::Wall1(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="WALL" )
+  {
+    if ( eledistype!="NURBS4" and eledistype!="NURBS9" )
+    {
+      return rcp(new DRT::ELEMENTS::Wall1(id,owner));
+    }
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::Wall1RegisterType DRT::ELEMENTS::Wall1RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::Wall1RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Wall1Register* object =
+    new DRT::ELEMENTS::Wall1Register(DRT::Element::element_wall1);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mgit 01/08/|
  *----------------------------------------------------------------------*/
@@ -249,10 +288,10 @@ void DRT::ELEMENTS::Wall1::w1_expol
   static bool isfilled;
 
   if (isfilled==false)
-  {  
+  {
     const DiscretizationType dt = Shape();
     Epetra_SerialDenseVector funct(numgp);
-      
+
   	// quad4, quad8 and quad9
     if (dt==quad4 or dt==quad8 or dt==quad9)
     {
@@ -269,8 +308,8 @@ void DRT::ELEMENTS::Wall1::w1_expol
 
         if (e1!=0) e1expol = 1/e1;
         else       e1expol = 0;
-        if (e2!=0) e2expol = 1/e2;	
-        else       e2expol = 0;	
+        if (e2!=0) e2expol = 1/e2;
+        else       e2expol = 0;
 
         // shape functions for the extrapolated coordinates
         switch(numgp)
@@ -296,7 +335,7 @@ void DRT::ELEMENTS::Wall1::w1_expol
         for(int i=0;i<numgp;++i) expol(ip,i) = funct(i);
       }
     }
-    
+
     // tri3
     else if (dt==tri3)
     {
@@ -305,7 +344,7 @@ void DRT::ELEMENTS::Wall1::w1_expol
         for(int i=0;i<numgp;++i)
           expol(ip,i) = 1.0/numgp;
     }
-    
+
     // tri6
     else if (dt==tri6)
     {
@@ -315,11 +354,11 @@ void DRT::ELEMENTS::Wall1::w1_expol
         // gaussian coordinates
         const double e1 = intpoints.qxg[ip][0];
         const double e2 = intpoints.qxg[ip][1];
-        
+
         // coordinates of node in the fictitious GP element
         double e1expol = 2*e1 - 1.0/3.0;
         double e2expol = 2*e2 - 1.0/3.0;
-        
+
         // shape functions for the extrapolated coordinates
         switch(numgp)
         {
@@ -334,15 +373,15 @@ void DRT::ELEMENTS::Wall1::w1_expol
             break;
           }
         }
-        
+
         // extrapolation matrix
         for(int i=0;i<numgp;++i) expol(ip,i) = funct(i);
       }
     }
- 
+
     // else
     else dserror("extrapolation not implemented for this element type");
-    
+
     // set isfilled
     isfilled = true;
   }

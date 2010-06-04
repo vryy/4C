@@ -18,6 +18,43 @@ Maintainer: Axel Gerstenberger
 
 using namespace DRT::UTILS;
 
+DRT::ELEMENTS::XDiff3Type DRT::ELEMENTS::XDiff3Type::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::XDiff3Type::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::XDiff3* object = new DRT::ELEMENTS::XDiff3(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::XDiff3Type::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="XDIFF3" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::XDiff3(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+
+DRT::ELEMENTS::XDiff3RegisterType DRT::ELEMENTS::XDiff3RegisterType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::XDiff3RegisterType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::XDiff3Register* object =
+    new DRT::ELEMENTS::XDiff3Register(DRT::Element::element_xdiff3);
+  object->Unpack(data);
+  return object;
+}
+
+
 /*----------------------------------------------------------------------*/
 // map to convert strings to actions (stabilization)
 /*----------------------------------------------------------------------*/

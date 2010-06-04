@@ -23,6 +23,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 
 // prestressing object
@@ -56,6 +57,26 @@ namespace ELEMENTS
 // forward declarations
 class Sotet4Register;
 class InvDesign;
+
+class So_tet4Type : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "So_tet4Type"; }
+
+  static So_tet4Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static So_tet4Type instance_;
+};
 
 /*!
 \brief A C++ version of the 4-node tet solid element
@@ -141,7 +162,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_So_tet4;}
+  virtual int UniqueParObjectId() const { return So_tet4Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -252,7 +273,7 @@ public:
   \param data (out):  data to be filled by element if element recognizes the name
   */
   virtual bool VisData(const string& name, vector<double>& data);
-  
+
   //@}
 
   //! @name Input and Creation
@@ -467,6 +488,21 @@ protected:
 
 }; // class So_tet4
 
+class Sotet4RegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Sotet4RegisterType"; }
+
+  static Sotet4RegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Sotet4RegisterType instance_;
+};
+
 /*!
 \brief A register for tet4 element
 
@@ -508,7 +544,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Sotet4Register;}
+  virtual int UniqueParObjectId() const { return Sotet4RegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

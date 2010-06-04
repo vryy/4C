@@ -55,6 +55,16 @@ MAT::PAR::PlasticNeoHooke::PlasticNeoHooke(
 {
 }
 
+MAT::PlasticNeoHookeType MAT::PlasticNeoHookeType::instance_;
+
+
+DRT::ParObject* MAT::PlasticNeoHookeType::Create( const std::vector<char> & data )
+{
+  MAT::PlasticNeoHooke* plastic = new MAT::PlasticNeoHooke();
+  plastic->Unpack(data);
+  return plastic;
+}
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                          12/09 |
  *----------------------------------------------------------------------*/

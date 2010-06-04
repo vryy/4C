@@ -29,6 +29,7 @@ using namespace std;
 using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_condition.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -48,8 +49,29 @@ namespace DRT
 
 namespace ELEMENTS
 {
+
+class Beam3iiType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Beam3iiType"; }
+
+  static Beam3iiType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+private:
+
+  static Beam3iiType instance_;
+};
+
 /*!
-\brief 3D nonlinear Reissner beam element implemented according to the following sources: 
+\brief 3D nonlinear Reissner beam element implemented according to the following sources:
 Jelenic, Crisfield, 1999, "Geometrically exact 3D beam theory: implementations of a strain-invariant finite element for statics and dynamics",
 Crisfield, Jelenic, 1998, "Objectivity of strain measures in the geometrically exact three dimensional beam theory and its finite element implementation",
 Romero, 2004, "The interpolation of rotations and its application to finite element models of geometrically exact rods",
@@ -72,8 +94,8 @@ public:
   friend void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid);
   friend void StatMechTime::Integrate();
   friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
-  
-  
+
+
 
   //! @name Constructors and destructors and related methods
 
@@ -119,7 +141,7 @@ public:
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
   */
-  virtual int UniqueParObjectId() const { return ParObject_Beam3ii; }
+  virtual int UniqueParObjectId() const { return Beam3iiType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -182,17 +204,17 @@ public:
   \brief Print this element
   */
   virtual void Print(ostream& os) const;
-  
+
   /*!
   \brief Get moment of inertia of area Iyy_ of this element
   */
   const double& Iyy() const { return Iyy_;};
-  
+
   /*!
   \brief Get moment of inertia of area Izz_ of this element
   */
   const double& Izz() const { return Izz_;}
-  
+
   /*!
   \brief Get polar moment of inertia of area Irr_ of this element
   */
@@ -329,7 +351,7 @@ private:
     calc_struct_reset_istep, //!< reset elementwise internal variables during iteration to last converged state
     calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
   };
-  
+
   //! kind of integration to be performed
   enum IntegrationType
   {
@@ -341,11 +363,11 @@ private:
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
 
-  //! nodal triads in quaternion form at the end of the preceeding time step 
+  //! nodal triads in quaternion form at the end of the preceeding time step
   vector<LINALG::Matrix<4,1> > Qconv_;
-  //! nodal triads in quaternion form at the end of the preceeding iteration step 
+  //! nodal triads in quaternion form at the end of the preceeding iteration step
   vector<LINALG::Matrix<4,1> > Qold_;
-  //! nodal triads in quaternion form during the current iteration step 
+  //! nodal triads in quaternion form during the current iteration step
   vector<LINALG::Matrix<4,1> > Qnew_;
   //! triads at Gauss points for exact integration in quaternion at the end of the preceeding time step (required for computation of angular velocity)
   vector<LINALG::Matrix<4,1> > Qconvgauss_;
@@ -356,13 +378,13 @@ private:
   vector<LINALG::Matrix<3,1> > dispthetaold_;
   //!rotation angle displacement at nodes; relates to current configuration
   vector<LINALG::Matrix<3,1> > dispthetanew_;
-  
+
   //!initial curvature at Gauss points for elasticity (corresponding to \Lambda_0^t \Labmda'_0 in eq. (3.5), Crisfield 1999
   vector<LINALG::Matrix<3,1> > kapparef_;
-  
+
   //!node I for determination of reference triad, eq. (3.9), (3.10), Jelenic 1999
   int nodeI_;
-  
+
   //!node J for determination of reference triad, eq. (3.9), (3.10), Jelenic 1999
   int nodeJ_;
 
@@ -387,7 +409,7 @@ private:
 
   //! Vector holding value of Jacobi determinant jacobi for complete integration of massmatrix
   vector<double> jacobimass_;
-  
+
   //! Vector holding value of Jacobi determinant jacobi at nodes
   vector<double> jacobinode_;
 
@@ -405,16 +427,16 @@ private:
   //!compute derivative r' (rprime) of line of centroids at Gauss point x with respect to Jelenic 1999 , eq. (2.12)
   template<int nnode, int dof>
   void curvederivative(const vector<double>& disp, const LINALG::Matrix<1,nnode> deriv, LINALG::Matrix<3,1>& rprime, const double& jacobi);
-  
-  //!compute convected strain at a certain Gauss point with triad rotmat according to Crisfield 1999, eq. (3.4) and eq. (4.9) 
+
+  //!compute convected strain at a certain Gauss point with triad rotmat according to Crisfield 1999, eq. (3.4) and eq. (4.9)
   void computestrain(const LINALG::Matrix<3,1>& rprime, const LINALG::Matrix<3,3>& Lambda,
                      LINALG::Matrix<3,1>& gamma, LINALG::Matrix<3,1>& kappa);
-  
+
   //!computing convected stresses from convected strains vector and returing also convected constitutive matrix between both
   void strainstress(const LINALG::Matrix<3,1>& gamma, const LINALG::Matrix<3,1>& kappa,
                     LINALG::Matrix<3,1>& stressN, LINALG::Matrix<3,3>& CN,
                     LINALG::Matrix<3,1>& stressM, LINALG::Matrix<3,3>& CM);
-  
+
   //!push forward strains, stresses and constitutive matrices to their spatial counterparts by rotation matrix Lambda according to Romero 2004, eq. (3.10)
   void pushforward(const LINALG::Matrix<3,3>& Lambda,
                   const LINALG::Matrix<3,1>& stressN , const LINALG::Matrix<3,3>& CN,
@@ -426,7 +448,7 @@ private:
   void computestrain(const LINALG::Matrix<3,1> Psil, const LINALG::Matrix<3,1> Psilprime,
                      const double& xi, const LINALG::Matrix<3,1>& rprime, const LINALG::Matrix<3,3>& rotmat,
                      LINALG::Matrix<3,1>& gamma, LINALG::Matrix<3,1>& kappa);
-  
+
   //!evaluates basis functions for a given type of Gauss rule  and triads at all Gauss points
   template<int nnode>
   void evaluatebasisfunctionsandtriads(const DRT::UTILS::IntegrationPoints1D& gausspoints,
@@ -439,24 +461,24 @@ private:
                                        vector<LINALG::Matrix<1,nnode> >& Imass,
                                        vector<vector<LINALG::Matrix<3,3> > >& Itildemass,
                                        vector<LINALG::Matrix<3,3> >& Lambdamass);
-  
-  
-  
+
+
+
   //!compute \tilde{I}^i in (3.18), page 152, Jelenic 1999, for all nodes i at a certaom Gauss point
   template<int nnode>
   void computeItilde(const LINALG::Matrix<3,1>& Psil, const LINALG::Matrix<3,1>& Psilprime, vector<LINALG::Matrix<3,3> >& Itilde,
                      const LINALG::Matrix<3,1>& phiIJ, const LINALG::Matrix<3,3>& Lambdar,
                      const vector<LINALG::Matrix<3,1> >& Psili, const LINALG::Matrix<1,nnode>& funct);
-  
+
   //!compute \tilde{I}^{i'} in (3.19), page 152, Jelenic 1999, for all nodes i at a certaom Gauss point
   template<int nnode>
   void computeItildeprime(const LINALG::Matrix<3,1>& Psil, const LINALG::Matrix<3,1>& Psilprime, vector<LINALG::Matrix<3,3> >& Itildeprime,
                           const LINALG::Matrix<3,1>& phiIJ, const LINALG::Matrix<3,3>& Lambdar,
                           const vector<LINALG::Matrix<3,1> >& Psili, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv);
-  
+
   //!compute matrix v_I as outlined in the equations above (3.15) on page 152 of Jelenic 1999
   LINALG::Matrix<3,3> vI(const LINALG::Matrix<3,1>& phiIJ);
-  
+
   //!compute matrix v_J as outlined in the equations above (3.15) on page 152 of Jelenic 1999
   LINALG::Matrix<3,3> vJ(const LINALG::Matrix<3,1>& phiIJ);
 
@@ -472,12 +494,12 @@ private:
   //! lump mass matrix
   template<int nnode>
   void lumpmass(Epetra_SerialDenseMatrix* emass);
-  
+
   //!determine Gauss rule from required type of integration
   DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
 
   //@}
-  
+
   //! @name Methods for Brownian dynamics simulations
 
    //!compute damping matrix and statistical forces according to fluctuation dissipation theorem
@@ -490,14 +512,14 @@ private:
                      const DRT::UTILS::IntegrationPoints1D& gausspointsmass,
                      vector<LINALG::Matrix<1,nnode> >& Imass,
                      vector<vector<LINALG::Matrix<3,3> > >& Itildemass,
-                     vector<LINALG::Matrix<3,3> >& Lambdamass);//!< element internal force vector  
-   
+                     vector<LINALG::Matrix<3,3> >& Lambdamass);//!< element internal force vector
+
    //!computes damping coefficients for employed friction model
    void MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel);
-   
+
    //!computes the number of different random numbers required in each time step for generation of stochastic forces
    int HowManyRandomNumbersINeed();
-   
+
    //!computes rotational damping forces and stiffness
    template<int nnode> //number of nodes
    void MyRotationalDamping(ParameterList& params,  //!<parameter list
@@ -509,7 +531,7 @@ private:
                            vector<LINALG::Matrix<1,nnode> >& Imass,
                            vector<vector<LINALG::Matrix<3,3> > >& Itildemass,
                            vector<LINALG::Matrix<3,3> >& Lambdamass);//!< element internal force vector
-   
+
    //!computes translational damping forces and stiffness
    template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
    void MyTranslationalDamping(ParameterList& params,  //!<parameter list
@@ -519,7 +541,7 @@ private:
                              Epetra_SerialDenseVector* force,
                              const DRT::UTILS::IntegrationPoints1D& gausspointsmass,
                              vector<LINALG::Matrix<1,nnode> >& Imass);//!< element internal force vector
-   
+
    //!computes stochastic translational forces and resulting stiffness
    template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
    void MyStochasticForces(ParameterList& params,  //!<parameter list
@@ -529,7 +551,7 @@ private:
                          Epetra_SerialDenseVector* force,
                          const DRT::UTILS::IntegrationPoints1D& gausspointsmass,
                          vector<LINALG::Matrix<1,nnode> >& Imass);//!< element internal force vector
-   
+
    //!computes stochastic rotational moments and resulting stiffness
    template<int nnode, int randompergauss> //number of nodes, number of random numbers required per Gauss point
    void MyStochasticMoments(ParameterList& params,  //!<parameter list
@@ -541,14 +563,14 @@ private:
                          vector<LINALG::Matrix<1,nnode> >& Imass,
                          vector<vector<LINALG::Matrix<3,3> > >& Itildemass,
                          vector<LINALG::Matrix<3,3> >& Lambdamass);//!< element internal force vector
-   
+
    //!computes velocity of background fluid and gradient of that velocity at a certain evaluation point in the physical space and adds respective terms to internal forces and damping matrix
    template<int ndim> //number of dimensions of embedding space
    void MyBackgroundVelocity(ParameterList& params,  //!<parameter list
                              const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
                              LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
                              LINALG::Matrix<ndim,ndim>& velbackgroundgrad); //!<gradient of velocity of background fluid
-   
+
    //!shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
    template<int nnode, int ndim> //number of nodes, number of dimensions
    void NodeShift(ParameterList& params,  //!<parameter list
@@ -570,6 +592,21 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 
 
 //------------- class Beam3iiRegister: -------------------------------------------
+
+class Beam3iiRegisterType : public DRT::ParObjectType
+{
+public:
+
+  std::string Name() const { return "Beam3iiRegisterType"; }
+
+  static Beam3iiRegisterType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+private:
+
+  static Beam3iiRegisterType instance_;
+};
 
 /*!
 \brief A register for Beam3ii element
@@ -614,7 +651,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Beam3iiRegister;}
+  virtual int UniqueParObjectId() const { return Beam3iiRegisterType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
