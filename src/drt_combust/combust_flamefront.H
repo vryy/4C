@@ -23,6 +23,7 @@ Maintainer: Florian Henke
 #endif
 #include "../drt_geometry/intersection.H"
 #include "../drt_geometry/integrationcell.H"
+#include "../drt_inpar/inpar_combust.H"
 
 namespace COMBUST
 {
@@ -207,6 +208,25 @@ namespace COMBUST
             const DRT::Element::DiscretizationType  cell_distype
             );
 
+    /// not documented yet
+    bool GetIntCellHexDomain(
+            const LINALG::SerialDenseMatrix         IntCellCoord,
+            const std::vector<double>&              gfuncvalue,
+            const DRT::Element::DiscretizationType  xfem_distype,
+            const DRT::Element::DiscretizationType  cell_distype
+            );
+
+    /// output to Gmsh
+    void FlamefrontToGmsh(
+    const COMBUST::RefinementCell*              cell,
+    const std::vector<std::vector<double> >&    pointlist,
+    const std::multimap<int,std::vector<int> >& segmentlist,
+    const std::vector<std::vector<int> >&       trianglelist
+    );
+
+    /// Test for numerical integration of discontinous fuctions
+    void Evaluate(const Teuchos::RCP<const COMBUST::RefinementCell> cell);
+
     /// pointer to fluid discretization
     const Teuchos::RCP<const DRT::Discretization> fluiddis_;
 
@@ -218,6 +238,9 @@ namespace COMBUST
 
     /// variable holding the number of refinement steps
     int maxRefinementLevel_;
+
+    /// variable defining the type of the domain integration cells for intersected elements
+    INPAR::COMBUST::XFEMIntegration intcelltype_;
 
     // integration cells for each element
     std::map<int,GEO::DomainIntCells> myelementintcells_;

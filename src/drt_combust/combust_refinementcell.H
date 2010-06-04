@@ -54,6 +54,9 @@ namespace COMBUST
     //! remote access method to intersection state
     bool Intersected() const { return intersected_; }
 
+    //! remote access method to intersection state
+    bool Touched() const { return touched_; }
+
     //! remote access method to G-function values; could be spared by declaring "gfuncvalues" protected/public
     void SetGfuncValues(std::vector<double> gfuncvalues);
 
@@ -78,6 +81,12 @@ namespace COMBUST
     //! remote access method to rootcell
     const COMBUST::RefinementCell* ReturnRootCell() const;
 
+    //TEST
+    void Clear();
+
+    //! create Gmsh output of rootcell
+    void RootCellToGmsh() const;
+
     //! public: map of cell edge ID and intersection point coodinates (zero G-function)
     std::map<int,std::vector<double> > intersectionpoints_;
 
@@ -100,6 +109,9 @@ namespace COMBUST
 
     //! boolean indicating whether a refinement cell is intersected by the interface
     bool intersected_;
+
+    //! boolean indicating whether a refinement cell is touched by the interface
+    bool touched_;
 
     //! pointer to parent node
     const COMBUST::RefinementCell* parent_;

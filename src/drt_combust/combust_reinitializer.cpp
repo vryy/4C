@@ -78,11 +78,11 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
 {
   // get communicator (for output)
   const Epetra_Comm& comm = scatra_.Discretization()->Comm();
-  if (comm.MyPID()==0)
-  {
-    std::cout << "\n--- reinitializing G-function with signed distance function ..." << std::flush;
-    //std::cout << "\n /!\\ warning === third component or normal vector set to 0 to keep 2D-character!" << std::endl;
-  }
+//  if (comm.MyPID()==0)
+//  {
+//    std::cout << "\n--- reinitializing G-function with signed distance function ..." << std::flush;
+//    std::cout << "\n /!\\ warning === third component or normal vector set to 0 to keep 2D-character!" << std::endl;
+//  }
   // get a pointer to the G-function discretization
   Teuchos::RCP<DRT::Discretization> gfuncdis = scatra_.Discretization();
 
@@ -134,12 +134,15 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
       // smallest distance to flame front
       double mindist = 5555.5; // default value
 
+      if (flamefront_.empty())
+         dserror("no flamefront patches available");
       // loop groups (vectors) of flamefront patches of all elements
       for(std::map<int,GEO::BoundaryIntCells>::const_iterator elepatches = flamefront_.begin(); elepatches != flamefront_.end(); ++elepatches)
       {
         // number of flamefront patches for this element
         const std::vector<GEO::BoundaryIntCell> patches = elepatches->second;
         const int numpatch = patches.size();
+        
 
         //-----------------------------------------
         // loop flame front patches of this element
@@ -306,7 +309,7 @@ void COMBUST::Reinitializer::FindFacingPatchProjCellSpace(
     {
       facenode = true;
       patchdist = alpha;
-      cout << "facing patch found (quad4 patch)!" << endl;
+//      cout << "facing patch found (quad4 patch)!" << endl;
     }
     break;
   }

@@ -36,6 +36,13 @@ namespace INPAR
       reinitaction_byfunction,
       reinitaction_signeddistancefunction
     };
+
+    /// type of reinitialization for level set function (G-function)
+    enum XFEMIntegration
+    {
+      xfemintegration_tetrahedra,
+      xfemintegration_hexahedra
+    };
   }  // namespace COMBUST
 
 }  // namespace INPAR
