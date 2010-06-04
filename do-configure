@@ -7,7 +7,6 @@ EXTRA_ARGS=$@
 BUILD_TYPE="RELEASE"
 
 /lnm/programs/cmake-2.8.0/bin/cmake \
-    -G "Eclipse CDT4 - Unix Makefiles" \
     -D CMAKE_BUILD_TYPE:STRING=$BUILD_TYPE \
     -D CMAKE_CXX_FLAGS:STRING="-Wall -march=i686 -Wconversion -msse3 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE" \
     -D CMAKE_CXX_FLAGS_RELEASE:STRING="-O3" \
