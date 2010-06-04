@@ -15,6 +15,8 @@ Maintainer: Florian Henke
 
 #include "combust_refinementcell.H"
 
+#include "../drt_io/io_gmsh.H"
+
 /*------------------------------------------------------------------------------------------------*
  | constructor: create refinement cell from element                                   henke 12/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -26,6 +28,7 @@ refinementlevel_(0),
 vertexcoord_(DRT::UTILS::getNumberOfElementNodes(distype_),std::vector<double>(3,0.0)),
 gfuncvalues_(DRT::UTILS::getNumberOfElementNodes(distype_),1.0),
 intersected_(false),
+touched_(false),
 parent_(NULL)
 {
   const int numnode = DRT::UTILS::getNumberOfElementNodes(distype_);
@@ -33,7 +36,8 @@ parent_(NULL)
   // fill matrix holding coordinates of vertices of cell with local node coordinates of element
   switch (distype_)
   {
-    case DRT::Element::hex8: // hex20, hex27 genauso!
+    case DRT::Element::hex8: // hex27 genauso!
+    case DRT::Element::hex20:
     {
       for(int inode = 0; inode < numnode; ++inode)
       {
@@ -66,6 +70,7 @@ refinementlevel_(cell->RefinementLevel()+1),
 vertexcoord_(vertexcoord),
 gfuncvalues_(DRT::UTILS::getNumberOfElementNodes(distype_),1.0),
 intersected_(false),
+touched_(false),
 parent_(cell)
 {
 //  std::cout << "Constructor Refinementcell" << std::endl;
@@ -86,8 +91,84 @@ void COMBUST::RefinementCell::SetGfuncValues(std::vector<double> gfuncvalues)
   IdentifyIntersectionStatus();
 }
 
+///*------------------------------------------------------------------------------------------------*
+// | find out, whether refinement cell is intersected by the interface                  henke 03/09 |
+// *------------------------------------------------------------------------------------------------*/
+//void COMBUST::RefinementCell::IdentifyIntersectionStatus()
+//{
+//
+////URSULA 270709
+//  /* When the scatra-field is initialized, nodes may be not exactly equal zero.
+//   * This can lead to incorrect intersection points and , hence, to a failure of the intersection
+//   * algorithm.
+//   * --------------------------------------------------------------------------------------------
+//   * Kann man das vielleicht schon bei der Initialisierung abfangen?
+//   * --------------------------------------------------------------------------------------------
+//   * Moreover, very small G-Function values can yield intersection points which are approximately
+//   * equal the vertices. This can lead small element parts as well as problems with TetGen. It remains
+//   * to find a definition of very small G-Function values which can then be reset to 0.
+//   * Preliminary,to avoid these problems, G-funcion values smaller than 10E-8 (?) are reset to zero.
+//   * ----------------------------------------------------------------------------------------------
+//   * G-Function < 10E-8 ist möglicherweise noch nicht optimal, erfüllt aber im Moment seinen Zweck
+//   * ----------------------------------------------------------------------------------------------
+//   */
+//  //TEST
+////  std::cout << "G-Func" << std::endl;
+////  for (std::size_t i=0; i<gfuncvalues_.size(); i++ )
+////	  std::cout << gfuncvalues_[i] << std::endl;
+//
+//  // tolerance for small G-function values
+//  for (std::size_t i=0; i<gfuncvalues_.size(); i++ )
+//  {
+//    if (fabs(gfuncvalues_[i])<1.0E-6)
+//    {
+//      gfuncvalues_[i] = 0.0;
+//      //std::cout << " G-Function value  reset to 0 " << std::endl;
+//    }
+//  }
+//
+//
+//  // idea: Since the interface is defined by the zero iso-surface of the G-function, we look for
+//  // sign changes among the G-function values at the vertices of the refinement cell.
+//  unsigned counter = 0;
+//
+//  // advance to first non-zero G-function value
+//  while ((gfuncvalues_[counter] == 0.0) and (counter < (gfuncvalues_.size()-1)))
+//  {
+//    counter++;
+//    intersected_ = true;
+//  }
+//
+//  // first non-zero G-function value is negative
+//  if (gfuncvalues_[counter] < 0.0)
+//  {
+//    while (counter < (gfuncvalues_.size()-1) and (intersected_ == false))
+//    {
+//      counter++;
+//      // if next G-function value is positive
+//      if(gfuncvalues_[counter] >= 0.0)
+//        intersected_ = true;
+//    }
+//  }
+//  // first non-zero G-function value is positive
+//  else if (gfuncvalues_[counter] > 0.0)
+//  {
+//    while (counter < (gfuncvalues_.size()-1) and (intersected_ == false))
+//   {
+//      counter++;
+//      // if next G-function value is negative
+//      if(gfuncvalues_[counter] <= 0.0)
+//        intersected_ = true;
+//    }
+//  }
+//  else
+//    dserror("impossible!");
+//}
+
+
 /*------------------------------------------------------------------------------------------------*
  | find out, whether refinement cell is intersected by the interface                  henke 03/09 |
+ | modified                                                                       rasthofer 05/10 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::RefinementCell::IdentifyIntersectionStatus()
 {
@@ -117,22 +198,25 @@ void COMBUST::RefinementCell::IdentifyIntersectionStatus()
   {
     if (fabs(gfuncvalues_[i])<1.0E-6)
     {
-      std::cout << " G-Function value " << gfuncvalues_[i] << " reset to 0.0 for cell in element " << this->Ele()->Id() << std::endl;
       gfuncvalues_[i] = 0.0;
+      //std::cout << " G-Function value  reset to 0 " << std::endl;
     }
   }
+
 
   // idea: Since the interface is defined by the zero iso-surface of the G-function, we look for
   // sign changes among the G-function values at the vertices of the refinement cell.
   unsigned counter = 0;
+  bool zeros = false;
 
   // advance to first non-zero G-function value
   while ((gfuncvalues_[counter] == 0.0) and (counter < (gfuncvalues_.size()-1)))
   {
     counter++;
-    intersected_ = true;
+    zeros = true;
   }
 
+  if (counter < (gfuncvalues_.size()-1)){
   // first non-zero G-function value is negative
   if (gfuncvalues_[counter] < 0.0)
   {
@@ -141,7 +225,15 @@ void COMBUST::RefinementCell::IdentifyIntersectionStatus()
       counter++;
       // if next G-function value is positive
       if(gfuncvalues_[counter] >= 0.0)
-        intersected_ = true;
+      {
+        if (gfuncvalues_[counter] > 0.0)
+        {
+          intersected_ = true;
+          touched_ = true;
+        }
+        else
+          zeros = true;
+      }
     }
   }
   // first non-zero G-function value is positive
@@ -152,11 +244,34 @@ void COMBUST::RefinementCell::IdentifyIntersectionStatus()
       counter++;
       // if next G-function value is negative
       if(gfuncvalues_[counter] <= 0.0)
-        intersected_ = true;
+      {
+        if (gfuncvalues_[counter] < 0.0)
+        {
+          intersected_ = true;
+          touched_ = true;
+        }
+        else
+          zeros = true;
+      }
     }
   }
   else
+  {
+    std::cout << gfuncvalues_[counter] << std::endl;
     dserror("impossible!");
+  }
+  }
+  
+  // element is not intersected but interface touchs the element
+  if((zeros == true) and (intersected_ == false))
+  {
+    touched_ = true;
+//    std::cout << "Interface berührt Element: " << ele_->Id() << std::endl;
+  }
+//  if (intersected_ == true)
+//    std::cout << "Element ist geschnitten: " << ele_->Id() << std::endl;
+  
+  return;
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -325,6 +440,24 @@ const COMBUST::RefinementCell* COMBUST::RefinementCell::ReturnRootCell() const
   return tmp;
 }
 
+//TEST
+void COMBUST::RefinementCell::Clear()
+{
+  if (children_.size()>0)
+  {
+    for (size_t i=0; i<children_.size(); i++)
+    {
+      if (children_[i]->NumOfChildren()>0)
+      {
+        children_[i]->Clear();
+      }
+    }
+//    std::cout << children_.size() << " Cells deleted" << std::endl;
+    children_.clear();
+  }
+  return;
+}
+
 /*------------------------------------------------------------------------------------------------*
  | returns the refinement cell of refined cell                                    rasthofer 08/09 |
  *---------------------------------------------------------------------- -------------------------*/
@@ -333,5 +466,46 @@ const Teuchos::RCP<COMBUST::RefinementCell> COMBUST::RefinementCell::GetRefineme
   return children_[index];
 }
 
+void COMBUST::RefinementCell::RootCellToGmsh() const
+{
+  if (parent_ != NULL)
+     dserror("Gmsh output only for rootcells!");
+
+  const bool screen_out = false;
+
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("Rootcell_and_Intersectionpoints", 999, 5, screen_out, 0);
+  std::ofstream gmshfilecontent(filename.c_str());
+  {
+    gmshfilecontent << "View \" " << "Rootcell \" {\n";
+    int Id = ele_->Id();
+    int numnode = ele_->NumNode();
+    LINALG::SerialDenseMatrix Pos(3,numnode);
+    for (int i=0; i<numnode; i++)
+    {
+      for (size_t k=0; k<3; k++)
+      {
+        Pos(k,i) = vertexcoord_[i][k];
+      }
+    }
+    IO::GMSH::cellWithScalarToStream(distype_, Id, Pos, gmshfilecontent);
+    gmshfilecontent << "};\n";
+  }
+  {
+    gmshfilecontent << "View \" " << "Intersectionpoints \" {\n";
+    for(std::map<int,std::vector<double> >::const_iterator iter = intersectionpoints_.begin(); iter != intersectionpoints_.end(); ++iter)
+    {
+      int id = iter->first;
+      const std::vector<double> point = iter->second;
+      LINALG::Matrix<3,1> pos;
+      for (size_t k=0; k<point.size(); k++)
+         pos(k) = point[k];
+      
+      IO::GMSH::cellWithScalarToStream(DRT::Element::point1, id, pos, gmshfilecontent);
+    }
+    gmshfilecontent << "};\n";
+  }
+
+  return;
+}
 
 #endif // #ifdef CCADISCRET
