@@ -470,6 +470,16 @@ void XFEM::DofManager::toGmsh(
       gmshfilecontent << "};\n";
     }
     {
+      gmshfilecontent << "View \" " << "Node->Id() \" {\n";
+      for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
+      {
+        const DRT::Node* actnode = ih_->xfemdis()->lColNode(i);
+        const LINALG::Matrix<3,1> pos(actnode->X());
+        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, gmshfilecontent);
+      }
+      gmshfilecontent << "};\n";
+    }
+    {
       gmshfilecontent << "View \" " << " Stress unknowns in element \" {\n";
       for (int i=0; i<ih_->xfemdis()->NumMyColElements(); ++i)
       {
