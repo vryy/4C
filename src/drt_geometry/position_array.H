@@ -61,8 +61,8 @@ namespace GEO
    */
   template <class M>
   void fillInitialPositionArray(
-      const DRT::Element*      ele,
-      M&                       xyze
+      const DRT::Element* const ele,
+      M&                        xyze
   )
   {
     const int numnode = ele->NumNode();
@@ -95,8 +95,8 @@ namespace GEO
    */
   template <DRT::Element::DiscretizationType distype, class M>
   void fillInitialPositionArray(
-          const DRT::Element*      ele,
-          M&                       xyze
+          const DRT::Element* const ele,
+          M&                        xyze
           )
   {
       dsassert(distype == ele->Shape(), "mismatch in distype");
@@ -131,8 +131,8 @@ namespace GEO
    */
   template <DRT::Element::DiscretizationType distype, int dim, class M>
   void fillInitialPositionArray(
-          const DRT::Element*      ele,
-          M&                       xyze
+          const DRT::Element* const ele,
+          M&                        xyze
           )
   {
       dsassert(distype == ele->Shape(), "mismatch in distype");
@@ -166,7 +166,7 @@ namespace GEO
     * \date 02/08
     */
    LINALG::SerialDenseMatrix InitialPositionArray(
-       const DRT::Element* ele           ///< pointer to element, whose nodes we evaluate for their position
+       const DRT::Element* const ele           ///< pointer to element, whose nodes we evaluate for their position
        );
 
 
@@ -181,7 +181,7 @@ namespace GEO
    * \date 02/08
    */
   LINALG::SerialDenseMatrix getCurrentNodalPositions(
-      const DRT::Element*                     ele,                   ///< element with nodal pointers
+      const DRT::Element* const               ele,                   ///< element with nodal pointers
       const map<int,LINALG::Matrix<3,1> >&    currentcutterpositions ///< current positions of all cutter nodes
       );
   
@@ -197,7 +197,7 @@ namespace GEO
    * \date 09/09
    */
   LINALG::SerialDenseMatrix getCurrentNodalPositions(
-	  const RCP<DRT::Element>               ele,					      ///< pointer on element
+	  const RCP<const DRT::Element>         ele,					      ///< pointer on element
 	  const map<int,LINALG::Matrix<3,1> >&  currentpositions		///< current positions of all cutter nodes
       );
   
@@ -212,7 +212,7 @@ namespace GEO
    */
   template<class M>
   void fillCurrentNodalPositions(
-      const DRT::Element*                   ele,                ///< element with nodal pointers
+      const DRT::Element* const             ele,                ///< element with nodal pointers
       const map<int,LINALG::Matrix<3,1> >&  currentpositions,   ///< current positions of all cutter nodes
       M&                                    xyze                ///< position array (3,numnode) to be filled
       )
