@@ -60,13 +60,13 @@ namespace ELEMENTS
 namespace NURBS
 {
 
-class So_Nurbs27Test : public DRT::ParObjectType
+class So_nurbs27Type : public DRT::ParObjectType
 {
 public:
 
-  std::string Name() const { return "So_Nurbs27Test"; }
+  std::string Name() const { return "So_nurbs27Type"; }
 
-  static So_Nurbs27Test & Instance() { return instance_; };
+  static So_nurbs27Type & Instance() { return instance_; };
 
   virtual DRT::ParObject* Create( const vector<char> & data );
 
@@ -77,7 +77,7 @@ public:
 
 private:
 
-  static So_Nurbs27Test instance_;
+  static So_nurbs27Type instance_;
 };
 
 
@@ -172,7 +172,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return So_Nurbs27Test::Instance().UniqueParObjectId(); }
+  virtual int UniqueParObjectId() const { return So_nurbs27Type::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated

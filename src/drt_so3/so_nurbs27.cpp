@@ -21,10 +21,10 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_dserror.H"
 
 
-DRT::ELEMENTS::NURBS::So_Nurbs27Test DRT::ELEMENTS::NURBS::So_Nurbs27Test::instance_;
+DRT::ELEMENTS::NURBS::So_nurbs27Type DRT::ELEMENTS::NURBS::So_nurbs27Type::instance_;
 
 
-DRT::ParObject* DRT::ELEMENTS::NURBS::So_Nurbs27Test::Create( const std::vector<char> & data )
+DRT::ParObject* DRT::ELEMENTS::NURBS::So_nurbs27Type::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::NURBS::So_nurbs27* object = new DRT::ELEMENTS::NURBS::So_nurbs27(-1,-1);
   object->Unpack(data);
@@ -32,7 +32,7 @@ DRT::ParObject* DRT::ELEMENTS::NURBS::So_Nurbs27Test::Create( const std::vector<
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::So_Nurbs27Test::Create( const string eletype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::So_nurbs27Type::Create( const string eletype,
                                                                          const string eledistype,
                                                                          const int id,
                                                                          const int owner )
