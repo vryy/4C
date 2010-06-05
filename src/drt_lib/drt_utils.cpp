@@ -73,7 +73,7 @@ extern "C"
 #include "drt_dofset.H"
 #include "drt_discret.H"
 
-#if 0
+#if 1
 #include "../drt_beam2/beam2.H"
 #include "../drt_beam2r/beam2r.H"
 #include "../drt_beam3/beam3.H"
@@ -185,7 +185,186 @@ extern struct _GENPROB     genprob;
 DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
 {
 #if 1
+  static int linker_hack;
+  if ( linker_hack==0 )
+  {
+    linker_hack = 1;
+    //DRT::ELEMENTS::So_hex8Type::Instance();
+
+    DRT::ContainerType::Instance();
+    DRT::ConditionObjectType::Instance();
+    DRT::NodeType::Instance();
+    DRT::NURBS::ControlPointType::Instance();
+#ifdef D_BEAM2
+    DRT::ELEMENTS::Beam2Type::Instance();
+    DRT::ELEMENTS::Beam2RegisterType::Instance();
+#endif
+#ifdef D_BEAM2R
+    DRT::ELEMENTS::Beam2rType::Instance();
+    DRT::ELEMENTS::Beam2rRegisterType::Instance();
+#endif
+#ifdef D_BEAM3
+    DRT::ELEMENTS::Beam3Type::Instance();
+    DRT::ELEMENTS::Beam3RegisterType::Instance();
+#endif
+#ifdef D_BEAM3II
+    DRT::ELEMENTS::Beam3iiType::Instance();
+    DRT::ELEMENTS::Beam3iiRegisterType::Instance();
+#endif
+#ifdef D_SMOOTHROD
+    DRT::ELEMENTS::SmoothrodType::Instance();
+    DRT::ELEMENTS::SmoothrodRegisterType::Instance();
+#endif
+#ifdef D_TRUSS3
+    DRT::ELEMENTS::Truss3Type::Instance();
+    DRT::ELEMENTS::Truss3RegisterType::Instance();
+#endif
+#ifdef D_TRUSS2
+    DRT::ELEMENTS::Truss2Type::Instance();
+    DRT::ELEMENTS::Truss2RegisterType::Instance();
+#endif
+#ifdef D_TORSION3
+    DRT::ELEMENTS::Torsion3Type::Instance();
+    DRT::ELEMENTS::Torsion3RegisterType::Instance();
+#endif
+#ifdef D_TORSION2
+    DRT::ELEMENTS::Torsion2Type::Instance();
+    DRT::ELEMENTS::Torsion2RegisterType::Instance();
+#endif
+#ifdef D_SHELL8
+    DRT::ELEMENTS::Shell8Type::Instance();
+    DRT::ELEMENTS::Shell8RegisterType::Instance();
+#endif
+#ifdef D_WALL1
+    DRT::ELEMENTS::Wall1Type::Instance();
+    DRT::ELEMENTS::Wall1RegisterType::Instance();
+    DRT::ELEMENTS::NURBS::Wall1NurbsType::Instance();
+#endif
+#ifdef D_FLUID2
+    DRT::ELEMENTS::Fluid2Type::Instance();
+    DRT::ELEMENTS::NURBS::Fluid2NurbsType::Instance();
+    DRT::ELEMENTS::Fluid2RegisterType::Instance();
+#endif
+#ifdef D_FLUID3
+    DRT::ELEMENTS::Fluid3Type::Instance();
+    DRT::ELEMENTS::NURBS::Fluid3NurbsType::Instance();
+    DRT::ELEMENTS::Fluid3RegisterType::Instance();
+    DRT::ELEMENTS::XFluid3Type::Instance();
+    DRT::ELEMENTS::XFluid3RegisterType::Instance();
+    DRT::ELEMENTS::XDiff3Type::Instance();
+    DRT::ELEMENTS::XDiff3RegisterType::Instance();
+    DRT::ELEMENTS::Combust3Type::Instance();
+    DRT::ELEMENTS::Combust3RegisterType::Instance();
+#endif
+#ifdef D_ALE
+    DRT::ELEMENTS::Ale3Type::Instance();
+    DRT::ELEMENTS::NURBS::Ale3_NurbsType::Instance();
+#endif
+#ifdef D_ALE
+    DRT::ELEMENTS::Ale2Type::Instance();
+    DRT::ELEMENTS::NURBS::Ale2_NurbsType::Instance();
+#endif
+    DRT::ELEMENTS::Bele3Type::Instance();
+    DRT::ELEMENTS::Bele3RegisterType::Instance();
+    DRT::ELEMENTS::Vele3Type::Instance();
+    DRT::ELEMENTS::Vele3RegisterType::Instance();
+    DRT::ELEMENTS::Bele2Type::Instance();
+    DRT::ELEMENTS::Bele2RegisterType::Instance();
+#ifdef D_SOLID3
+    DRT::ELEMENTS::So_hex8Type::Instance();
+    DRT::ELEMENTS::Soh8RegisterType::Instance();
+    DRT::ELEMENTS::So_sh8Type::Instance();
+    DRT::ELEMENTS::Sosh8RegisterType::Instance();
+    DRT::ELEMENTS::So_sh8p8Type::Instance();
+    DRT::ELEMENTS::Sosh8p8RegisterType::Instance();
+    DRT::ELEMENTS::So_hex27Type::Instance();
+    DRT::ELEMENTS::Soh27RegisterType::Instance();
+    DRT::ELEMENTS::NURBS::So_nurbs27Type::Instance();
+    DRT::ELEMENTS::NURBS::So_Nurbs27_RegisterType::Instance();
+    DRT::ELEMENTS::So_hex20Type::Instance();
+    DRT::ELEMENTS::Soh20RegisterType::Instance();
+    DRT::ELEMENTS::So_weg6Type::Instance();
+    DRT::ELEMENTS::Sow6RegisterType::Instance();
+    DRT::ELEMENTS::So_shw6Type::Instance();
+    DRT::ELEMENTS::Soshw6RegisterType::Instance();
+    DRT::ELEMENTS::SoDispType::Instance();
+    DRT::ELEMENTS::SoDispRegisterType::Instance();
+    DRT::ELEMENTS::So_tet10Type::Instance();
+    DRT::ELEMENTS::Sotet10RegisterType::Instance();
+    DRT::ELEMENTS::So_tet4Type::Instance();
+    DRT::ELEMENTS::Sotet4RegisterType::Instance();
+    DRT::ELEMENTS::PtetType::Instance();
+    DRT::ELEMENTS::PtetRegisterType::Instance();
+    DRT::ELEMENTS::NStetType::Instance();
+    DRT::ELEMENTS::NStetRegisterType::Instance();
+    DRT::ELEMENTS::So_Hex8P1J1Type::Instance();
+    DRT::ELEMENTS::SoHex8P1J1RegisterType::Instance();
+#endif
+#ifdef D_ARTNET //_1D_ARTERY_
+    DRT::ELEMENTS::ArteryType::Instance();
+    MAT::Cnst_1d_artType::Instance();
+#endif
+    DRT::ElementRegisterType::Instance();
+    MAT::NewtonianFluidType::Instance();
+    MAT::StVenantKirchhoffType::Instance();
+    MAT::ThermoStVenantKirchhoffType::Instance();
+    MAT::LungPenaltyType::Instance();
+    MAT::LungOgdenType::Instance();
+    MAT::AnisotropicBalzaniType::Instance();
+    MAT::MooneyRivlinType::Instance();
+    MAT::YeohType::Instance();
+    MAT::ViscoNeoHookeType::Instance();
+    MAT::ViscoAnisotropicType::Instance();
+    MAT::ContChainNetwType::Instance();
+    MAT::ArtWallRemodType::Instance();
+    MAT::MicroMaterialType::Instance();
+    MAT::NeoHookeType::Instance();
+    MAT::LogNeoHookeType::Instance();
+    MAT::AAAneohookeType::Instance();
+    MAT::AAAraghavanvorp_damageType::Instance();
+    MAT::AAAgasserType::Instance();
+    MAT::ScatraMatType::Instance();
+    MAT::IonType::Instance();
+    MAT::MixFracType::Instance();
+    MAT::SutherlandType::Instance();
+    MAT::ArrheniusSpecType::Instance();
+    MAT::ArrheniusTempType::Instance();
+    MAT::ArrheniusPVType::Instance();
+    MAT::FerEchPVType::Instance();
+    MAT::CarreauYasudaType::Instance();
+    MAT::ModPowerLawType::Instance();
+    MAT::BioCellType::Instance();
+    MAT::CHARMMType::Instance();
+    MAT::ItskovType::Instance();
+    MAT::MatListType::Instance();
+    MAT::ElastHyperType::Instance();
+    MAT::FourierIsoType::Instance();
+    MAT::HolzapfelCardioType::Instance();
+    MAT::HumphreyCardioType::Instance();
+    MORTAR::MortarNodeType::Instance();
+    MORTAR::MortarElementType::Instance();
+    CONTACT::CoNodeType::Instance();
+    CONTACT::FriNodeType::Instance();
+    CONTACT::CoElementType::Instance();
+    DRT::ELEMENTS::ConstraintElement2Type::Instance();
+    DRT::ELEMENTS::ConstraintElement2RegisterType::Instance();
+    DRT::ELEMENTS::ConstraintElement3Type::Instance();
+    DRT::ELEMENTS::ConstraintElement3RegisterType::Instance();
+#if defined(D_FLUID2) || defined(D_FLUID3)
+    DRT::ELEMENTS::TransportType::Instance();
+#endif
+#ifdef D_THERMO
+    DRT::ELEMENTS::ThermoType::Instance();
+#endif
+    MAT::PlasticNeoHookeType::Instance();
+#ifdef D_RED_AIRWAYS
+    DRT::ELEMENTS::RedAirwayType::Instance();
+    DRT::ELEMENTS::RedAirwayRegisterType::Instance();
+#endif
+  }
+
   return ParObjectFactory::Instance().Create( data );
+
 #else
   // mv ptr behind the size record
   const int* ptr = (const int*)(&data[0]);
