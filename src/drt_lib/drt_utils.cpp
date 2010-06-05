@@ -264,7 +264,7 @@ void ReferenceParObjectTypes()
     DRT::ELEMENTS::Bele2Type::Instance().Name();
     DRT::ELEMENTS::Bele2RegisterType::Instance().Name();
 #ifdef D_SOLID3
-    DRT::ELEMENTS::So_hex8Type::Instance().Name();
+    //DRT::ELEMENTS::So_hex8Type::Instance().Name();
     DRT::ELEMENTS::Soh8RegisterType::Instance().Name();
     DRT::ELEMENTS::So_sh8Type::Instance().Name();
     DRT::ELEMENTS::Sosh8RegisterType::Instance().Name();

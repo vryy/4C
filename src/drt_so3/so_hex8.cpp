@@ -32,7 +32,9 @@ Maintainer: Moritz Frenzel
 
 
 DRT::ELEMENTS::So_hex8Type DRT::ELEMENTS::So_hex8Type::instance_;
-
+namespace {
+  const std::string name = DRT::ELEMENTS::So_hex8Type::Instance().Name();
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_hex8Type::Create( const std::vector<char> & data )
 {

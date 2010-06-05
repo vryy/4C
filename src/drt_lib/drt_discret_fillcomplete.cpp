@@ -176,7 +176,8 @@ void DRT::Discretization::BuildElementRegister()
     rcurr = tmpmap.find(actele->Type());
     if (rcurr != tmpmap.end()) continue;
     RefCountPtr<DRT::ElementRegister> tmp = actele->ElementRegister();
-    tmpmap[actele->Type()] = tmp;
+    if ( tmp!=Teuchos::null )
+      tmpmap[actele->Type()] = tmp;
     mygid.push_back(actele->Type());
   }
 
