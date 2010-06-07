@@ -304,6 +304,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_isoexpo.cpp
   src/drt_matelast/elast_isomooneyrivlin.cpp
   src/drt_matelast/elast_isoneohooke.cpp
+  src/drt_matelast/elast_varisoneohooke.cpp
   src/drt_matelast/elast_isoquad.cpp
   src/drt_matelast/elast_isovarga.cpp
   src/drt_matelast/elast_isoyeoh.cpp
