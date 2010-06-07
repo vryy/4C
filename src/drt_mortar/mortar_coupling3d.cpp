@@ -1615,9 +1615,98 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
       // dserror, if not, simply continue with the next pair!
       cout << "***WARNING*** Input polygon 2 not convex!" << endl;
       bool nearcheck = RoughCheckNodes();
+      if (nearcheck && out)
+      {
+        //cout << "***WARNING*** Input polygon 2 not convex, but close pair!" << endl;
+        std::ostringstream filename;
+        static int problemcount=0;
+        filename << "o/gmsh_output/" << "problem_";
+        if (problemcount<10)
+          filename << 0 << 0 << 0 << 0;
+        else if (problemcount<100)
+          filename << 0 << 0 << 0;
+        else if (problemcount<1000)
+          filename << 0 << 0;
+        else if (problemcount<10000)
+          filename << 0;
+        else
+          dserror("Gmsh output implemented for a maximum of 9.999 problem polygons");
+        filename << problemcount << ".pos";
+        problemcount++;
       
-      if (nearcheck) dserror("ERROR: Input polygon 2 not convex, but close pair!");
-      else return false;
+        // do output to file in c-style
+        FILE* fp = NULL;
+        fp = fopen(filename.str().c_str(), "w");
+        std::stringstream gmshfilecontent;
+        gmshfilecontent << "View \" ProblemClipping \" {" << endl;
+      
+        // get slave and master nodes
+        int nsnodes = SlaveIntElement().NumNode();
+        DRT::Node** mysnodes = SlaveIntElement().Nodes();
+        if (!mysnodes) dserror("ERROR: Null pointer!");
+        vector<MortarNode*> mycsnodes(nsnodes);
+        for (int i=0;i<nsnodes;++i)
+          mycsnodes[i] = static_cast<MortarNode*> (mysnodes[i]);
+        int nmnodes = MasterIntElement().NumNode();
+        DRT::Node** mymnodes = MasterIntElement().Nodes();
+        if (!mymnodes) dserror("ERROR: Null pointer!");
+        vector<MortarNode*> mycmnodes(nmnodes);
+        for (int i=0;i<nmnodes;++i)
+          mycmnodes[i] = static_cast<MortarNode*> (mymnodes[i]);
+          
+        for (int i=0;i<nsnodes;++i)
+        {
+          if (i!=nsnodes-1)
+          {
+            gmshfilecontent << "SL(" << scientific << mycsnodes[i]->xspatial()[0] << "," << mycsnodes[i]->xspatial()[1] << ","
+                                     << mycsnodes[i]->xspatial()[2] << "," << mycsnodes[i+1]->xspatial()[0] << "," << mycsnodes[i+1]->xspatial()[1] << ","
+                                     << mycsnodes[i+1]->xspatial()[2] << ")";
+            gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
+          }
+          else
+          {
+            gmshfilecontent << "SL(" << scientific << mycsnodes[i]->xspatial()[0] << "," << mycsnodes[i]->xspatial()[1] << ","
+                                     << mycsnodes[i]->xspatial()[2] << "," << mycsnodes[0]->xspatial()[0] << "," << mycsnodes[0]->xspatial()[1] << ","
+                                     <<mycsnodes[0]->xspatial()[2] << ")";
+            gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
+      
+          }
+          gmshfilecontent << "T3(" << scientific << mycsnodes[i]->xspatial()[0] << "," << mycsnodes[i]->xspatial()[1] << "," << mycsnodes[i]->xspatial()[2] << "," << 17 << ")";
+          gmshfilecontent << "{" << "S" << i << "};" << endl;
+        }
+      
+        for (int i=0;i<nmnodes;++i)
+        {
+          if (i!=nmnodes-1)
+          {
+            gmshfilecontent << "SL(" << scientific << mycmnodes[i]->xspatial()[0] << "," << mycmnodes[i]->xspatial()[1] << ","
+                                     << mycmnodes[i]->xspatial()[2] << "," << mycmnodes[i+1]->xspatial()[0] << "," << mycmnodes[i+1]->xspatial()[1] << ","
+                                     << mycmnodes[i+1]->xspatial()[2] << ")";
+            gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
+          }
+          else
+          {
+            gmshfilecontent << "SL(" << scientific << mycmnodes[i]->xspatial()[0] << "," << mycmnodes[i]->xspatial()[1] << ","
+                                     << mycmnodes[i]->xspatial()[2] << "," << mycmnodes[0]->xspatial()[0] << "," << mycmnodes[0]->xspatial()[1] << ","
+                                     <<mycmnodes[0]->xspatial()[2] << ")";
+            gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
+      
+          }
+          gmshfilecontent << "T3(" << scientific << mycmnodes[i]->xspatial()[0] << "," << mycmnodes[i]->xspatial()[1] << "," << mycmnodes[i]->xspatial()[2] << "," << 17 << ")";
+          gmshfilecontent << "{" << "M" << i << "};" << endl;
+        }
+        
+        gmshfilecontent << "};" << endl;
+      
+        // move everything to gmsh post-processing file and close it
+        fprintf(fp,gmshfilecontent.str().c_str());
+        fclose(fp);
+      }
+      
+      return false;
+      
+      //if (nearcheck) dserror("ERROR: Input polygon 2 not convex, but close pair!");
+      //else return false;
     }
   }
 
