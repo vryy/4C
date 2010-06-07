@@ -102,7 +102,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   if ((scatratype_ == INPAR::SCATRA::scatratype_undefined) or (prbtype_ != "elch"))
   {
     if (prbtype_ == "elch")            scatratype_ = INPAR::SCATRA::scatratype_elch_enc;
-    else if (prbtype_ == "combustion") scatratype_ = INPAR::SCATRA::scatratype_condif;
+    else if (prbtype_ == "combustion") scatratype_ = INPAR::SCATRA::scatratype_levelset;
     else if (prbtype_ == "loma")       scatratype_ = INPAR::SCATRA::scatratype_loma;
     else if (prbtype_ == "scatra")     scatratype_ = INPAR::SCATRA::scatratype_condif;
     else
@@ -213,9 +213,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // solutions at time n+1 and n
   phinp_ = LINALG::CreateVector(*dofrowmap,true);
   phin_  = LINALG::CreateVector(*dofrowmap,true);
-  
-  //solution at time n-1, for level set problems
-  phinm_  = LINALG::CreateVector(*dofrowmap,true);
 
   // temporal solution derivative at time n+1
   phidtnp_ = LINALG::CreateVector(*dofrowmap,true);

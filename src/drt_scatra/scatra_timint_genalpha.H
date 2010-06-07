@@ -70,6 +70,9 @@ public:
   /// read restart data
   void ReadRestart(int step);
 
+  // routine to return scalar field phi at time step n-1
+  Teuchos::RCP<Epetra_Vector> Phinm() { return null; }
+
   /// routine to return scalar field phi at time step n+alpha_F
   Teuchos::RCP<Epetra_Vector> Phiaf() { return phiaf_; }
 

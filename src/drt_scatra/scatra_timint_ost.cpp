@@ -41,6 +41,10 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   // temporal solution derivative at time n
   phidtn_ = LINALG::CreateVector(*dofrowmap,true);
 
+  //solution at time n-1, for level set problems
+  if (scatratype_ == INPAR::SCATRA::scatratype_levelset)
+     phinm_  = LINALG::CreateVector(*dofrowmap,true);
+
   // ELCH with natural convection
   if (prbtype_ == "elch")
   {

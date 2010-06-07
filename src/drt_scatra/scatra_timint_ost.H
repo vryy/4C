@@ -82,6 +82,9 @@ public:
   /// read restart data
   void ReadRestart(int step);
 
+  // routine to return scalar field phi at time step n-1
+  Teuchos::RCP<Epetra_Vector> Phinm() { return phinm_; }
+
   /// routine to return scalar field phi at time step n+alpha_F
   Teuchos::RCP<Epetra_Vector> Phiaf(){return null;}
 
@@ -155,6 +158,9 @@ private:
 
   /// fine-scale solution vector at time n+1
   RCP<Epetra_Vector>  fsphinp_;
+
+  /// solution vector phi at time n-1
+  RCP<Epetra_Vector>    phinm_;
 
 }; // class TimIntOneStepTheta
 
