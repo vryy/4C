@@ -46,8 +46,10 @@ Input/beam3contact_augmented.dat                        x        x        x     
 Input/force_sensor_test.dat                             -        -        -        -        -        -
 Input/truss2test1.dat                                   x        -        -        -        -        -
 Input/truss3test1.dat                                   x        -        -        -        -        -
-Input/torsion2test.dat                                  x        x        x        -        -        -
-Input/torsion3test.dat                                  x        x        x        -        -        -
+Input/torsion2quadratic.dat                             x        x        x        -        -        -
+Input/torsion3quadratic.dat                             x        x        x        -        -        -
+Input/torsion2cosine.dat                                x        x        x        -        -        -
+Input/torsion3cosine.dat                                x        x        x        -        -        -
 Input/condif3_straight_convection.dat                   x        x        x        x        -        -
 Input/condif2_straight_convection_direct.dat            x        x        x        x        -        -
 Input/condif2_straight_convection_vm3gls.dat            -        x        -        -        -        -
