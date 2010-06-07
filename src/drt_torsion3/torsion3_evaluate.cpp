@@ -272,8 +272,9 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(vector<double>&           disp,
   //variation of theta (equation 3.4)
   LINALG::Matrix<9,1> grtheta;
   
-  for (int j=0; j<3; ++j){    //virual displacement of node 1 and 3
-    grtheta(  j)  = -aux(3+j)/lcurr(0)/lcurr(1)+dotprod*aux(  j)/pow(lcurr(0),3)/lcurr(1);    
+  for (int j=0; j<3; ++j)
+  {    //virual displacement of node 1 and 3
+    grtheta(  j)  = -aux(3+j)/lcurr(0)/lcurr(1)+dotprod*aux(  j)/pow(lcurr(0),3)/lcurr(1);   
     grtheta(6+j)  =  aux(  j)/lcurr(0)/lcurr(1)-dotprod*aux(3+j)/lcurr(0)/pow(lcurr(1),3);
   }
   
@@ -284,8 +285,10 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(vector<double>&           disp,
   LINALG::Matrix<6,3> A;
   LINALG::Matrix<6,3> B;
   
-  for(int j=0; j<3;++j){
-    for(int i=0; i<3; ++i){
+  for(int j=0; j<3;++j)
+  {
+    for(int i=0; i<3; ++i)
+    {
       A(  j,i)= aux(3+j)*aux(  i)/pow(lcurr(0),3)/lcurr(1) + aux(3+i)*aux(  j)/pow(lcurr(0),3)/lcurr(1)-3*dotprod*aux(  j)*aux(  i)/pow(lcurr(0),5)/lcurr(1);
       A(3+j,i)= aux(  j)*aux(3+i)/lcurr(0)/pow(lcurr(1),3) + aux(  i)*aux(3+j)/lcurr(0)/pow(lcurr(1),3)-3*dotprod*aux(3+j)*aux(3+i)/lcurr(0)/pow(lcurr(1),5);
     }
@@ -303,70 +306,123 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(vector<double>&           disp,
     B(3+j,j)+= 1/lcurr(0)/lcurr(1);
   }
   
+  //bending potential quadratic
+  if (bendingpotential_==quadratic)
+  {
+	  
+ 
+	  if((1-s)<=0.00000000001)
+	  {
+	    //calculation of the linear stiffness matrix (if the angle between the trusses is almost zero)
+	    
+	    //internal forces (equation 3.17)
+	    if (force != NULL)
+	    {
+	      for (int j=0; j<9; ++j)
+	        (*force)(j) = -springconstant_*grtheta(j);      
+	    }
+	    
+	    
+	    //stiffness matrix (equation 3.19)
+	    if (stiffmatrix != NULL) 
+	    {
+	      for (int j=0; j<3; ++j) 
+	      { 
+	        for (int i=0; i<3; ++i)
+	        {
+	          (*stiffmatrix)(  j,  i) =-springconstant_*( -A(j  ,i) );
+	          (*stiffmatrix)(  j,3+i) =-springconstant_*(  A(j  ,i)+B(j+3,i) );
+	          (*stiffmatrix)(  j,6+i) =-springconstant_*( -B(j+3,i) );
+	          (*stiffmatrix)(3+j,  i) =-springconstant_*(  A(j  ,i)+B(j  ,i) );
+	          (*stiffmatrix)(3+j,3+i) =-springconstant_*( -A(j  ,i)-A(j+3,i)-B(j ,i)-B(j+3,i) );
+	          (*stiffmatrix)(3+j,6+i) =-springconstant_*(  A(j+3,i)+B(j+3,i) );
+	          (*stiffmatrix)(6+j,  i) =-springconstant_*( -B(j  ,i) );
+	          (*stiffmatrix)(6+j,3+i) =-springconstant_*(  A(j+3,i)+B(j  ,i) );
+	          (*stiffmatrix)(6+j,6+i) =-springconstant_*( -A(j+3,i) );
+	        }
+	      }
+	    } 
+	  } // if (linear stiffness matrix)
+	  
+	  else
+	  {
+	    //internal forces (equation 3.6) (if the angle between the trusses is NOT almost zero)
+	    if (force != NULL)
+	    {
+	      for (int j=0; j<9; ++j)
+	        (*force)(j) = -1/sqrt(1-s*s)*deltatheta*springconstant_*grtheta(j);     
+	    }
+	    
+	    
+	    //stiffness matrix (equation 3.8)
+	    if (stiffmatrix != NULL) 
+	    {
+	      for (int i=0; i<9; ++i)
+	      {
+	        for (int j=0; j<9; ++j)
+	          (*stiffmatrix)(i,j)=1/(1-s*s)*springconstant_*grtheta(i)*grtheta(j)
+	                              -s/pow(sqrt(1-s*s),3)*deltatheta*springconstant_*grtheta(i)*grtheta(j);
+	      }
+	    
+	      for (int j=0; j<3; ++j) //equation 3.13
+	      { 
+	        for (int i=0; i<3; ++i)
+	        {
+	          (*stiffmatrix)(  j,  i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*( -A(j  ,i) );
+	          (*stiffmatrix)(  j,3+i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*(  A(j  ,i)+B(j+3,i) );
+	          (*stiffmatrix)(  j,6+i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*( -B(j+3,i) );
+	          (*stiffmatrix)(3+j,  i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*(  A(j  ,i)+B(j  ,i) );
+	          (*stiffmatrix)(3+j,3+i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*( -A(j  ,i)-A(j+3,i)-B(j ,i)-B(j+3,i) );
+	          (*stiffmatrix)(3+j,6+i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*(  A(j+3,i)+B(j+3,i) );
+	          (*stiffmatrix)(6+j,  i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*( -B(j  ,i) );
+	          (*stiffmatrix)(6+j,3+i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*(  A(j+3,i)+B(j  ,i) );
+	          (*stiffmatrix)(6+j,6+i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*( -A(j+3,i) );
+	        }
+	      }
+	    } //stiffness matrix
+	  
+	  } //else (theta NOT almost zero)
+	
+  } //bending potetial quadratic
+	  
+  else
+	  //bending potential cosine
+	  if (bendingpotential_==cosine)
+	  {
+		    //internal forces (equation 3.16, same as for theta almost zero)
+		    if (force != NULL)
+		    {
+		      for (int j=0; j<9; ++j)
+		        (*force)(j) = -springconstant_*grtheta(j);      
+		    }
+		    
+		    
+		    //stiffness matrix (equation 3.17, same as for theta almost zero)
+		    if (stiffmatrix != NULL) 
+		    {
+		      for (int j=0; j<3; ++j) 
+		      { 
+		        for (int i=0; i<3; ++i)
+		        {
+		          (*stiffmatrix)(  j,  i) =-springconstant_*( -A(j  ,i) );
+		          (*stiffmatrix)(  j,3+i) =-springconstant_*(  A(j  ,i)+B(j+3,i) );
+		          (*stiffmatrix)(  j,6+i) =-springconstant_*( -B(j+3,i) );
+		          (*stiffmatrix)(3+j,  i) =-springconstant_*(  A(j  ,i)+B(j  ,i) );
+		          (*stiffmatrix)(3+j,3+i) =-springconstant_*( -A(j  ,i)-A(j+3,i)-B(j ,i)-B(j+3,i) );
+		          (*stiffmatrix)(3+j,6+i) =-springconstant_*(  A(j+3,i)+B(j+3,i) );
+		          (*stiffmatrix)(6+j,  i) =-springconstant_*( -B(j  ,i) );
+		          (*stiffmatrix)(6+j,3+i) =-springconstant_*(  A(j+3,i)+B(j  ,i) );
+		          (*stiffmatrix)(6+j,6+i) =-springconstant_*( -A(j+3,i) );
+		        }
+		      }
+		    }  //stiffness matrix
+	  } //bending potential cosine
   
-  if((1-s)<=0.00000000001){
-    //calculation of the linear stiffness matrix (if the angle between the trusses is almost zero)
-    
-    //internal forces (equation 3.17)
-    if (force != NULL){
-      for (int j=0; j<9; ++j)
-        (*force)(j) = -springconstant_*grtheta(j);      
-    }
-    
-    
-    //stiffness matrix (equation 3.19)
-    if (stiffmatrix != NULL) {
-      for (int j=0; j<3; ++j) { 
-        for (int i=0; i<3; ++i){
-          (*stiffmatrix)(  j,  i) =-springconstant_*( -A(j  ,i) );
-          (*stiffmatrix)(  j,3+i) =-springconstant_*(  A(j  ,i)+B(j+3,i) );
-          (*stiffmatrix)(  j,6+i) =-springconstant_*( -B(j+3,i) );
-          (*stiffmatrix)(3+j,  i) =-springconstant_*(  A(j  ,i)+B(j  ,i) );
-          (*stiffmatrix)(3+j,3+i) =-springconstant_*( -A(j  ,i)-A(j+3,i)-B(j ,i)-B(j+3,i) );
-          (*stiffmatrix)(3+j,6+i) =-springconstant_*(  A(j+3,i)+B(j+3,i) );
-          (*stiffmatrix)(6+j,  i) =-springconstant_*( -B(j  ,i) );
-          (*stiffmatrix)(6+j,3+i) =-springconstant_*(  A(j+3,i)+B(j  ,i) );
-          (*stiffmatrix)(6+j,6+i) =-springconstant_*( -A(j+3,i) );
-        }
-      }
-    } 
-  } // if (linear stiffness matrix)
+  else
+		std::cout<<"\n No such bending potential. Possible bending potentials: \n quadratic \n cosine"<<endl;  
   
-  else{
-    //internal forces (equation 3.6)
-    if (force != NULL){
-      for (int j=0; j<9; ++j)
-        (*force)(j) = -1/sqrt(1-s*s)*deltatheta*springconstant_*grtheta(j);     
-    }
-    
-    
-    //stiffness matrix (equation 3.8)
-    if (stiffmatrix != NULL) {
-      for (int i=0; i<9; ++i){
-        for (int j=0; j<9; ++j)
-          (*stiffmatrix)(i,j)=1/(1-s*s)*springconstant_*grtheta(i)*grtheta(j)
-                              -s/pow(sqrt(1-s*s),3)*deltatheta*springconstant_*grtheta(i)*grtheta(j);
-      }
-    
-      for (int j=0; j<3; ++j) { //equation 3.13
-        for (int i=0; i<3; ++i){
-          (*stiffmatrix)(  j,  i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*( -A(j  ,i) );
-          (*stiffmatrix)(  j,3+i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*(  A(j  ,i)+B(j+3,i) );
-          (*stiffmatrix)(  j,6+i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*( -B(j+3,i) );
-          (*stiffmatrix)(3+j,  i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*(  A(j  ,i)+B(j  ,i) );
-          (*stiffmatrix)(3+j,3+i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*( -A(j  ,i)-A(j+3,i)-B(j ,i)-B(j+3,i) );
-          (*stiffmatrix)(3+j,6+i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*(  A(j+3,i)+B(j+3,i) );
-          (*stiffmatrix)(6+j,  i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*( -B(j  ,i) );
-          (*stiffmatrix)(6+j,3+i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*(  A(j+3,i)+B(j  ,i) );
-          (*stiffmatrix)(6+j,6+i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*( -A(j+3,i) );
-        }
-      }
-    } //stiffness matrix
-  
-  } //else
-
-
-}//stiffmatrix
+	  
+}//nlnstiffmass
 
 /*-----------------------------------------------------------------------------------------------------------*
  | shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions; if two   |

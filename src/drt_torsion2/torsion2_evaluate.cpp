@@ -114,6 +114,88 @@ int DRT::ELEMENTS::Torsion2::Evaluate(ParameterList& params,
       else if (act == Torsion2::calc_struct_internalforce)
         t2_nlnstiffmass(mydisp,NULL,NULL,&elevec1);
     
+      
+      /*
+      //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
+      //correctly or not by means of a numerically approximated stiffness matrix
+      //The code block will work for all higher order elements.
+      //if(Id() == 3) //limiting the following tests to certain element numbers
+      {
+        //assuming the same number of DOF for all nodes
+        int numdof = NumDofPerNode(*(Nodes()[0]));
+        int nnode  = NumNode();
+        
+        //variable to store numerically approximated stiffness matrix
+        Epetra_SerialDenseMatrix stiff_approx;
+        stiff_approx.Shape(numdof*nnode,numdof*nnode);
+
+
+        //relative error of numerically approximated stiffness matrix
+        Epetra_SerialDenseMatrix stiff_relerr;
+        stiff_relerr.Shape(numdof*nnode,numdof*nnode);
+
+        //characteristic length for numerical approximation of stiffness
+        double h_rel = 1e-6;                                                       // evtl. Größenordnung anpassen
+
+        //flag indicating whether approximation leads to significant relative error
+        int outputflag = 0;
+
+        //calculating strains in new configuration
+        for(int i=0; i<numdof; i++) //for all dof
+        {
+          for(int k=0; k<nnode; k++)//for all nodes
+          {
+
+            Epetra_SerialDenseVector force_aux;
+            force_aux.Size(numdof*nnode);
+
+            //create new displacement and velocity vectors in order to store artificially modified displacements
+            //vector<double> vel_aux(myvel);
+            vector<double> disp_aux(mydisp);
+
+            //modifying displacement artificially (for numerical derivative of internal forces):
+            disp_aux[numdof*k + i] += h_rel;
+            //vel_aux[numdof*k + i]  += h_rel / params.get<double>("delta time",0.01);
+
+            t2_nlnstiffmass(disp_aux,NULL,NULL,&force_aux);  
+
+            //computing derivative d(fint)/du numerically by finite difference
+            for(int u = 0 ; u < numdof*nnode ; u++ )
+              stiff_approx(u,k*numdof+i) = ( pow(force_aux[u],2) - pow(elevec1(u),2) )/ (h_rel * (force_aux[u] + elevec1(u) ) );
+
+          } //for(int k=0; k<nnode; k++)//for all nodes
+        } //for(int i=0; i<numdof; i++) //for all dof
+
+
+        for(int line=0; line<numdof*nnode; line++)
+        {
+          for(int col=0; col<numdof*nnode; col++)
+          {
+            stiff_relerr(line,col)= fabs( ( pow(elemat1(line,col),2) - pow(stiff_approx(line,col),2) )/ ( (elemat1(line,col) + stiff_approx(line,col)) * elemat1(line,col) ));
+
+            //suppressing small entries whose effect is only confusing and NaN entires (which arise due to zero entries)
+            if ( fabs( stiff_relerr(line,col) ) < h_rel*500 || isnan( stiff_relerr(line,col)) || elemat1(line,col) == 0) //isnan = is not a number
+              stiff_relerr(line,col) = 0;
+
+            if ( stiff_relerr(line,col) > 0)
+              outputflag = 1;
+              
+          } //for(int col=0; col<numdof*nnode; col++)
+        } //for(int line=0; line<numdof*nnode; line++)
+
+        if(outputflag ==1)
+        {
+          std::cout<<"\n\n acutally calculated stiffness matrix in Element "<<Id()<<": "<< elemat1;
+          std::cout<<"\n\n approximated stiffness matrix in Element "<<Id()<<": "<< stiff_approx;
+          std::cout<<"\n\n rel error stiffness matrix in Element "<<Id()<<": "<< stiff_relerr;
+        }
+
+      } //end of section in which numerical approximation for stiffness matrix is computed
+      
+      
+      */      
+      
+      
     }
     break;
     case calc_struct_update_istep:
@@ -218,8 +300,10 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass( vector<double>& disp,
   double thetacurr=0.0;
   
   thetacurr=acos( ( aux(0)*aux(2) + aux(1)*aux(3) ) / lcurr(0) / lcurr(1) );
-  if(( ( aux(0)*aux(2) + aux(1)*aux(3) )/ lcurr(0) / lcurr(1) ) > 1){
-    if(( ( aux(0)*aux(2) + aux(1)*aux(3) )/ lcurr(0) / lcurr(1) -1)<10e-7){
+  if(( ( aux(0)*aux(2) + aux(1)*aux(3) )/ lcurr(0) / lcurr(1) ) > 1)
+  {
+    if(( ( aux(0)*aux(2) + aux(1)*aux(3) )/ lcurr(0) / lcurr(1) -1)<10e-7)
+    {
       thetacurr=0;
     }
     else
@@ -230,53 +314,151 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass( vector<double>& disp,
     thetacurr*=-1;
   
   deltatheta=thetacurr - theta_;
-    
-  //global internal forces (equation 2.12)
-  if (force != NULL)
-    for (int i=0; i<6; ++i)
-      (*force)(i) =  springconstant_*deltatheta*grtheta(i);
   
-  //stiffness matrix (equation 2.15)
-  if (stiffmatrix != NULL){
-    for (int i=0; i<6; ++i){
-      for (int j=0; j<6; ++j)
-        (*stiffmatrix)(i,j)=springconstant_*grtheta(i)*grtheta(j);    //first part of the stiffness matrix
-    }
-    
-    LINALG::Matrix<2,2> tmp;
-    tmp( 0, 0)= 0.0;
-    tmp( 0, 1)=-1.0;
-    tmp( 1, 0)= 1.0;
-    tmp( 1, 1)= 0.0;
-    
-    LINALG::Matrix<2,2> A;    //equation 2.16
-    LINALG::Matrix<2,2> B;    //equation 2.17
-    for (int i=0;i<2;++i)
-    {
-      for (int j=0;j<2;++j)
-      {
-        A(i,j)=springconstant_*deltatheta/pow(lcurr(0),2)*( tmp(i,j)-2*perp(  i)*unit(  j) );
-        B(i,j)=springconstant_*deltatheta/pow(lcurr(1),2)*( tmp(i,j)-2*perp(2+i)*unit(2+j) );
-      }
-    }
-        
-    //second part of the stiffness matrix (equation 2.18)
-    for (int i=0; i<2; ++i)
-    {
-      for (int j=0; j<2; ++j)
-      {
-        (*stiffmatrix)(  i,  j)+=-A(i,j);
-        (*stiffmatrix)(  i,2+j)+= A(i,j);
-        (*stiffmatrix)(2+i,  j)+= A(i,j);
-        (*stiffmatrix)(2+i,2+j)+=-A(i,j)+B(i,j);
-        (*stiffmatrix)(2+i,4+j)+=-B(i,j);
-        (*stiffmatrix)(4+i,2+j)+=-B(i,j);
-        (*stiffmatrix)(4+i,4+j)+= B(i,j);
-      }
-    }
-  }//stiffness matrix
-   
+  //__________________________________________________________________________________________
+  // bending potential quadratic
+  
+  if (bendingpotential_==quadratic)
+  {
+  
+	  //global internal forces (equation 2.12)
+	  if (force != NULL)
+	    for (int i=0; i<6; ++i)
+	      (*force)(i) =  springconstant_*deltatheta*grtheta(i);
+	  
+	  //stiffness matrix (equation 2.15)
+	  if (stiffmatrix != NULL)
+	  {
+	    for (int i=0; i<6; ++i)
+	    {
+	      for (int j=0; j<6; ++j)
+	        (*stiffmatrix)(i,j)=springconstant_*grtheta(i)*grtheta(j);    //first part of the stiffness matrix
+	    }
+	    
+	    LINALG::Matrix<2,2> tmp;
+	    tmp( 0, 0)= 0.0;
+	    tmp( 0, 1)=-1.0;
+	    tmp( 1, 0)= 1.0;
+	    tmp( 1, 1)= 0.0;
+	    
+	    LINALG::Matrix<2,2> A;    //equation 2.16
+	    LINALG::Matrix<2,2> B;    //equation 2.17
+	    for (int i=0;i<2;++i)
+	    {
+	      for (int j=0;j<2;++j)
+	      {
+	        A(i,j)=springconstant_*deltatheta/pow(lcurr(0),2)*( tmp(i,j)-2*perp(  i)*unit(  j) );
+	        B(i,j)=springconstant_*deltatheta/pow(lcurr(1),2)*( tmp(i,j)-2*perp(2+i)*unit(2+j) );
+	      }
+	    }
+	    
+	    
+	    //second part of the stiffness matrix (equation 2.18)
+	    for (int i=0; i<2; ++i)
+	    {
+	      for (int j=0; j<2; ++j)
+	      {
+	        (*stiffmatrix)(  i,  j)+=-A(i,j);
+	        (*stiffmatrix)(  i,2+j)+= A(i,j);
+	        (*stiffmatrix)(2+i,  j)+= A(i,j);
+	        (*stiffmatrix)(2+i,2+j)+=-A(i,j)+B(i,j);
+	        (*stiffmatrix)(2+i,4+j)+=-B(i,j);
+	        (*stiffmatrix)(4+i,2+j)+=-B(i,j);
+	        (*stiffmatrix)(4+i,4+j)+= B(i,j);
+	      }
+	    }
+	  }//stiffness matrix
+  
+  } //bending potential quadratic
+  
+  //==================================================================================================================================================
+  //____________________________________________________________________________________
+  else
+	//bending potetial cosine
+	if (bendingpotential_==cosine) 
+	{	    
+	    double dotprod=0.0;
+			  
+			  for (int j=0; j<2; ++j)
+			    dotprod +=  aux(j) * aux(2+j);
+	  
 
+			  //variation of theta (equation 3.4)
+			  LINALG::Matrix<6,1> grtheta2;
+			  
+			  for (int j=0; j<2; ++j)
+			  {    //virtual displacement of node 1 and 3, in vector b (3.4)
+			    grtheta2(  j)  = -aux(2+j)/lcurr(0)/lcurr(1)+dotprod*aux(  j)/pow(lcurr(0),3)/lcurr(1);   
+			    grtheta2(4+j)  =  aux(  j)/lcurr(0)/lcurr(1)-dotprod*aux(2+j)/lcurr(0)/pow(lcurr(1),3);
+			  }
+			  
+			  for (int j=0; j<2; ++j)     //virtual displacement of node 2, in vector b (3.4)
+			    grtheta2(2+j) = -grtheta2(j)-grtheta2(j+4);	
+			  
+			  //auxiliary matrix for stiffness matrix (equation 3.9 and equation 3.10)
+			  LINALG::Matrix<4,2> A;
+			  LINALG::Matrix<4,2> B;
+			
+			  for(int j=0; j<2;++j)
+			  {
+			    for(int i=0; i<2; ++i)  //auxiliary matrix A is A1 above A2
+			    {
+			      A(  j,i)= aux(2+j)*aux(  i)/pow(lcurr(0),3)/lcurr(1) + aux(2+i)*aux(  j)/pow(lcurr(0),3)/lcurr(1)-3*dotprod*aux(  j)*aux(  i)/pow(lcurr(0),5)/lcurr(1); //3->2? 3*dotprod
+			      A(2+j,i)= aux(  j)*aux(2+i)/lcurr(0)/pow(lcurr(1),3) + aux(  i)*aux(2+j)/lcurr(0)/pow(lcurr(1),3)-3*dotprod*aux(2+j)*aux(2+i)/lcurr(0)/pow(lcurr(1),5);
+			    }
+			    A(j,j)  += dotprod/pow(lcurr(0),3)/lcurr(1);  //aus A1, Anteil auf Diagonale
+			    A(2+j,j)+= dotprod/lcurr(0)/pow(lcurr(1),3);  //aus A2
+			  }
+			      
+			  for(int j=0; j<2; ++j)  //auviliary matrix B is C2 above C1
+			  {
+			    for(int i=0; i<2;++i)
+			    {
+			      B(  j,i)= -aux(  j)*aux(  i)/pow(lcurr(0),3)/lcurr(1) - aux(2+i)*aux(2+j)/lcurr(0)/pow(lcurr(1),3)+dotprod*aux(2+j)*aux(  i)/pow(lcurr(0),3)/pow(lcurr(1),3);
+			      B(2+j,i)= -aux(2+j)*aux(2+i)/lcurr(0)/pow(lcurr(1),3) - aux(  i)*aux(  j)/pow(lcurr(0),3)/lcurr(1)+dotprod*aux(  j)*aux(2+i)/pow(lcurr(0),3)/pow(lcurr(1),3);
+			    }
+			    B(j,j)  += 1/lcurr(0)/lcurr(1);
+			    B(2+j,j)+= 1/lcurr(0)/lcurr(1);
+			  }
+			  
+			  
+			  double cos_theta=0.0;
+			  cos_theta=(aux(0)*aux(2)+aux(1)*aux(3))/lcurr(0)/lcurr(1);
+			  
+			  
+			    //internal forces (equation 3.16, same as for theta almost zero)
+			    if (force != NULL)
+			    {
+			      for (int j=0; j<6; ++j)
+			        (*force)(j) = -springconstant_*grtheta2(j);      //-
+			    }
+			    
+			    
+			    //stiffness matrix (equation 3.17, same as for theta almost zero)
+			    if (stiffmatrix != NULL) 
+			    {
+			      for (int j=0; j<2; ++j) 
+			      { 
+			        for (int i=0; i<2; ++i)
+			        {
+			          (*stiffmatrix)(  j,  i) =-springconstant_*( -A(j  ,i) );
+			          (*stiffmatrix)(  j,2+i) =-springconstant_*(  A(j  ,i)+B(j+2,i) );
+			          (*stiffmatrix)(  j,4+i) =-springconstant_*( -B(j+2,i) );
+			          (*stiffmatrix)(2+j,  i) =-springconstant_*(  A(j  ,i)+B(j  ,i) );
+			          (*stiffmatrix)(2+j,2+i) =-springconstant_*( -A(j  ,i)-A(j+2,i)-B(j ,i)-B(j+2,i) );
+			          (*stiffmatrix)(2+j,4+i) =-springconstant_*(  A(j+2,i)+B(j+2,i) );
+			          (*stiffmatrix)(4+j,  i) =-springconstant_*( -B(j  ,i) );
+			          (*stiffmatrix)(4+j,2+i) =-springconstant_*(  A(j+2,i)+B(j  ,i) );
+			          (*stiffmatrix)(4+j,4+i) =-springconstant_*( -A(j+2,i) );
+			        }
+			      }
+			    }
+		
+		
+	}//bending potetial cosine
+  else 
+	  std::cout<<"\n No such bending potential. Possible bending potentials: \n cosine \n quadratic"<<endl;
+ 
   return;
 } // DRT::ELEMENTS::Torsion2::t2_nlnstiffmass
 
