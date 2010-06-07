@@ -32,7 +32,6 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "stru_resulttest.H"
-#include "../drt_inv_analysis/inv_analysis.H"
 
 #include "../drt_adapter/adapter_structure_timint.H"
 

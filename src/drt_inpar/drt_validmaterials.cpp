@@ -434,7 +434,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
       = Teuchos::rcp(new MaterialDefinition("MAT_Struct_AAAGasser",
                                             "AAA thrombus material according to GASSER [2008]",
                                             INPAR::MAT::m_aaagasser));
-    
+
     AddNamedReal(m,"DENS","mass density");
     AddNamedString(m,"VOL","Type of volumetric Strain Energy Density (OSM,SuBa,SiTa)","OSM");
     AddNamedReal(m,"NUE","Poisson's ratio (0.49)");
@@ -442,8 +442,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"CLUM","luminal stiffness parameter (2.62e3)");
     AddNamedReal(m,"CMED","medial stiffness parameter (2.62e3)");
     AddNamedReal(m,"CABLUM","abluminal stiffness parameter (2.62e3)");
-    
-    /*   
+
+    /*
     AddNamedReal(m,"DENS","mass density");
     AddNamedReal(m,"KAPPA","dilatation modulus");
     AddNamedReal(m,"BETA","empiric constant");
@@ -1037,6 +1037,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+  /*--------------------------------------------------------------------*/
+
+  // isochoric contribution of Var Neo-Hooke
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_VarIsoNeoHooke",
+                                            "variation of the isochoric part of  neo-Hooke material acc. to Holzapfel",
+                                            INPAR::MAT::mes_varisoneohooke));
+
+    AddNamedReal(m,"FRAC","fraction after collagenase/elastase");
+    AddNamedReal(m,"MUE","Shear modulus");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
 
   /*--------------------------------------------------------------------*/
   // isochoric contribution of Yeoh
@@ -1261,7 +1276,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
-  
+
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   // anisotropic material for arteries cf Humphrey

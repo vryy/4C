@@ -875,6 +875,25 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
 
 
+  // type for experiment inv_analysis
+  setStringToIntegralParameter<INPAR::STR::InvAnalysisExpType>("INV_ANA_EXP_TYPE","none",
+                               "type of the experiments used for the inverse analysis",
+                               tuple<std::string>(
+                                 "none",
+                                 "col",
+                                 "ela",
+                                 "colfull",
+                                 "elafull",
+                                 "full"),
+                               tuple<INPAR::STR::InvAnalysisExpType>(
+                                 INPAR::STR::inv_exp_none,
+                                 INPAR::STR::inv_exp_col,
+                                 INPAR::STR::inv_exp_ela,
+                                 INPAR::STR::inv_exp_colfull,
+                                 INPAR::STR::inv_exp_elafull,
+                                 INPAR::STR::inv_exp_full),
+                               &iap);
+
   // Measured displacement/load curve during the experiments  a1*(1-exp(-pow((a2*t), a3)))
   DoubleParameter("MC_X_0",0.0,"measured displacment of the tension testing in x dir",&iap);
   DoubleParameter("MC_X_1",0.0,"measured displacment of the tension testing in x dir",&iap);
@@ -882,6 +901,27 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("MC_Y_0",0.0,"measured displacment of the tension testing in y dir",&iap);
   DoubleParameter("MC_Y_1",0.0,"measured displacment of the tension testing in y dir",&iap);
   DoubleParameter("MC_Y_2",0.0,"measured displacment of the tension testing in y dir",&iap);
+
+  DoubleParameter("CMC_X_0",0.0,"measured displacment of the tension testing in x dir",&iap);
+  DoubleParameter("CMC_X_1",0.0,"measured displacment of the tension testing in x dir",&iap);
+  DoubleParameter("CMC_X_2",0.0,"measured displacment of the tension testing in x dir",&iap);
+  DoubleParameter("CMC_Y_0",0.0,"measured displacment of the tension testing in y dir",&iap);
+  DoubleParameter("CMC_Y_1",0.0,"measured displacment of the tension testing in y dir",&iap);
+  DoubleParameter("CMC_Y_2",0.0,"measured displacment of the tension testing in y dir",&iap);
+
+  DoubleParameter("EMC_X_0",0.0,"measured displacment of the tension testing in x dir",&iap);
+  DoubleParameter("EMC_X_1",0.0,"measured displacment of the tension testing in x dir",&iap);
+  DoubleParameter("EMC_X_2",0.0,"measured displacment of the tension testing in x dir",&iap);
+  DoubleParameter("EMC_Y_0",0.0,"measured displacment of the tension testing in y dir",&iap);
+  DoubleParameter("EMC_Y_1",0.0,"measured displacment of the tension testing in y dir",&iap);
+  DoubleParameter("EMC_Y_2",0.0,"measured displacment of the tension testing in y dir",&iap);
+
+  DoubleParameter("CEMC_X_0",0.0,"measured displacment of the tension testing in x dir",&iap);
+  DoubleParameter("CEMC_X_1",0.0,"measured displacment of the tension testing in x dir",&iap);
+  DoubleParameter("CEMC_X_2",0.0,"measured displacment of the tension testing in x dir",&iap);
+  DoubleParameter("CEMC_Y_0",0.0,"measured displacment of the tension testing in y dir",&iap);
+  DoubleParameter("CEMC_Y_1",0.0,"measured displacment of the tension testing in y dir",&iap);
+  DoubleParameter("CEMC_Y_2",0.0,"measured displacment of the tension testing in y dir",&iap);
 
   // tolerance for inv_analysis
   DoubleParameter("INV_ANA_TOL",1.0,"tolerance for inverse analysis",&iap);

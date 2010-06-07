@@ -58,6 +58,7 @@ class CollInvAnalysis {
 
 private:
 
+
   /// my structure discretisation to work at
   Teuchos::RCP<DRT::Discretization> discret_;
 
@@ -73,14 +74,25 @@ private:
   ///  time integrator for structural dynamics
   Teuchos::RCP<STR::TimInt> sti_;
 
+  ///parameter List
+  //Teuchos::ParameterList& iap_;
+
+
   ///  number of measurment points the
   double tstep_;                          // timestep
+  double ttime_;                          // timestep
 
   int problem_type_;		        // Neumann or Dirichlet Problem
   int np_;                                // number of fitted parameters (default 3, 4 with kappa)
   int nmp_;                                // number of fitted parameters (default 3, 4 with kappa)
 
-  Epetra_SerialDenseVector mcurve_;	// measured displacment of the experiments (target value)
+  //four options for the measured curve
+  Epetra_SerialDenseVector mcurve_;	// measured displacment
+  Epetra_SerialDenseVector cmcurve_;	// measured displacment collagenase
+  Epetra_SerialDenseVector emcurve_;	// measured displacment elastase
+  Epetra_SerialDenseVector cemcurve_;	// measured displacment
+                                        // collagenase and elastase
+
 
   double mu_;
   double tol_mu_;
@@ -90,8 +102,6 @@ private:
   double tol_;
 
   string filename_;
-
-  double kappa_multi_;
 
   int numb_run_;
 
@@ -121,8 +131,20 @@ public:
     Teuchos::RCP<IO::DiscretizationWriter> output  ///< outputer
     );
 
+
+  /// Read in routine for the experimentally determined curves
+  void  ReadUnTreatedCurve();
+  void  ReadColTreatedCurve();
+  void  ReadElaTreatedCurve();
+  void  ReadColFullTreatedCurve();
+  void  ReadElaFullTreatedCurve();
+  void  ReadFullTreatedCurve();
+
+
   /// Read in routine for the material parameters
   void ReadInParameters();
+
+
 
   /// Set material parameters
   void SetParameters(Epetra_SerialDenseVector p_cur);

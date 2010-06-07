@@ -40,6 +40,8 @@ Maintainer: Sophie Rausch
 #include "../drt_matelast/elast_volpenalty.H"
 #include "../drt_matelast/elast_vologden.H"
 #include "../drt_matelast/elast_volsussmanbathe.H"
+#include "../drt_inpar/inpar_invanalysis.H"
+
 
 //using namespace LINALG::ANA;
 using namespace std;
@@ -61,14 +63,15 @@ STR::CollInvAnalysis::CollInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
     sti_(Teuchos::null)
 {
 
+  cout << "--------------------------------------------------------------------------------------" << endl;
+  cout << "-------------------------- Inverse Analyse based on the ------------------------------" << endl;
+  cout << "---------------------- Collagenase and Elastase Experiments --------------------------" << endl;
+  cout << "--------------------------------------------------------------------------------------" << endl;
+
   // Getting boundary conditions
   discret_->GetCondition("SurfaceNeumann",surfneum_ );
   discret_->GetCondition("Dirichlet",surfdir_ );
   reset_out_count_=0;
-  cout << "----------------------------------------------------------------------------------------------" << endl;
-  cout << "----------------------------- Inverse Analyse based on the -----------------------------------" << endl;
-  cout << "------------------------- Collagenase and Elastase Experiments -------------------------------" << endl;
-  cout << "----------------------------------------------------------------------------------------------" << endl;
   if (surfneum_.size()>1)
     dserror("The inverse analysis only works for 1 NBC with 2 DBC or for 2 DBC!");
 
@@ -80,29 +83,60 @@ STR::CollInvAnalysis::CollInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   nmp_   = 2*sdyn.get<int>("NUMSTEP");
   tstep_ = sdyn.get<double>("TIMESTEP");
   // get total timespan of simulation 0.5 due to factor 2 in nmp_
-  double ttime_ = nmp_*tstep_*0.5;
+  ttime_ = nmp_*tstep_*0.5;
   // input parameters inverse analysis
-  const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
+  //iap = DRT::Problem::Instance()->InverseAnalysisParams();
+
+  const Teuchos::ParameterList& iap=DRT::Problem::Instance()->InverseAnalysisParams();
 
   //  tolerance for the curve fitting
   tol_ = iap.get<double>("INV_ANA_TOL");
 
-  // experimentally measured curve
+  // determining which experiments shell be included in the analysis
+  // collagenase, elastase or both
+
+  switch(Teuchos::getIntegralValue<INPAR::STR::InvAnalysisExpType>(iap,"INV_ANA_EXP_TYPE"))
   {
-    mcurve_   = Epetra_SerialDenseVector(nmp_);  //
-    double cpx0 = iap.get<double>("MC_X_0");
-    double cpx1 = iap.get<double>("MC_X_1");
-    double cpx2 = iap.get<double>("MC_X_2");
-    double cpy0 = iap.get<double>("MC_Y_0");
-    double cpy1 = iap.get<double>("MC_Y_1");
-    double cpy2 = iap.get<double>("MC_Y_2");
-    for (int i=0; i<nmp_; i++)
-    {
-      mcurve_[i] = cpx0*(1-exp(-pow(((1000./ttime_)*cpx1*(i)*ttime_/nmp_), cpx2)));
-      i=i+1;
-      mcurve_[i] = cpy0*(1-exp(-pow(((1000./ttime_)*cpy1*(i-1)*ttime_/nmp_), cpy2)));
-     }
+  case INPAR::STR::inv_exp_none:
+  {
+    ReadUnTreatedCurve();
   }
+  break;
+  case INPAR::STR::inv_exp_col:
+  {
+    ReadUnTreatedCurve();
+    ReadColTreatedCurve();
+  }
+  case INPAR::STR::inv_exp_ela:
+  {
+    ReadUnTreatedCurve();
+    ReadElaTreatedCurve();
+  }
+  break;
+  case INPAR::STR::inv_exp_colfull:
+  {
+    ReadUnTreatedCurve();
+    ReadColTreatedCurve();
+    ReadFullTreatedCurve();
+  }
+  case INPAR::STR::inv_exp_elafull:
+  {
+    ReadUnTreatedCurve();
+    ReadElaTreatedCurve();
+    ReadFullTreatedCurve();
+  }
+  break;
+  case INPAR::STR::inv_exp_full:
+  {
+    ReadUnTreatedCurve();
+    ReadFullTreatedCurve();
+  }
+  break;
+  default:
+    dserror("Unknown type of inverse analysis");
+  break;
+  }
+
   //dserror("Halt");
 
   // error: diference of the measured to the calculated curve
@@ -120,15 +154,102 @@ STR::CollInvAnalysis::CollInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   np_ = p_.Length();
 
   // controlling parameter
-  numb_run_ =  0;         // counter of how many runs were made in the inverse analysis
+  numb_run_ =  0;         //
+                          // counter of how many runs were made in the inverse analysis
+
+
+  return;
 }
 
 
-/*----------------------------------------------------------------------*/
-/* analyse */
+
+void STR::CollInvAnalysis::ReadUnTreatedCurve()
+{
+
+  const Teuchos::ParameterList& iap=DRT::Problem::Instance()->InverseAnalysisParams();
+  mcurve_   = Epetra_SerialDenseVector(nmp_);  //
+  double cpx0 = iap.get<double>("MC_X_0");
+  double cpx1 = iap.get<double>("MC_X_1");
+  double cpx2 = iap.get<double>("MC_X_2");
+  double cpy0 = iap.get<double>("MC_Y_0");
+  double cpy1 = iap.get<double>("MC_Y_1");
+  double cpy2 = iap.get<double>("MC_Y_2");
+  for (int i=0; i<nmp_; i++)
+  {
+    mcurve_[i] = cpx0*(1-exp(-pow(((1000./ttime_)*cpx1*(i)*ttime_/nmp_), cpx2)));
+    i=i+1;
+    mcurve_[i] = cpy0*(1-exp(-pow(((1000./ttime_)*cpy1*(i-1)*ttime_/nmp_), cpy2)));
+  }
+
+  return;
+
+}
+void STR::CollInvAnalysis::ReadColTreatedCurve()
+{
+  const Teuchos::ParameterList& iap=DRT::Problem::Instance()->InverseAnalysisParams();
+  cmcurve_   = Epetra_SerialDenseVector(nmp_);  //
+  double cpx0 = iap.get<double>("CMC_X_0");
+  double cpx1 = iap.get<double>("CMC_X_1");
+  double cpx2 = iap.get<double>("CMC_X_2");
+  double cpy0 = iap.get<double>("CMC_Y_0");
+  double cpy1 = iap.get<double>("CMC_Y_1");
+  double cpy2 = iap.get<double>("CMC_Y_2");
+  for (int i=0; i<nmp_; i++)
+  {
+    cmcurve_[i] = cpx0*(1-exp(-pow(((1000./ttime_)*cpx1*(i)*ttime_/nmp_), cpx2)));
+    i=i+1;
+    cmcurve_[i] = cpy0*(1-exp(-pow(((1000./ttime_)*cpy1*(i-1)*ttime_/nmp_), cpy2)));
+  }
+
+  return;
+}
+void STR::CollInvAnalysis::ReadElaTreatedCurve()
+{
+  const Teuchos::ParameterList& iap=DRT::Problem::Instance()->InverseAnalysisParams();
+  emcurve_   = Epetra_SerialDenseVector(nmp_);  //
+  double cpx0 = iap.get<double>("EMC_X_0");
+  double cpx1 = iap.get<double>("EMC_X_1");
+  double cpx2 = iap.get<double>("EMC_X_2");
+  double cpy0 = iap.get<double>("EMC_Y_0");
+  double cpy1 = iap.get<double>("EMC_Y_1");
+  double cpy2 = iap.get<double>("EMC_Y_2");
+  for (int i=0; i<nmp_; i++)
+  {
+    emcurve_[i] = cpx0*(1-exp(-pow(((1000./ttime_)*cpx1*(i)*ttime_/nmp_), cpx2)));
+    i=i+1;
+    emcurve_[i] = cpy0*(1-exp(-pow(((1000./ttime_)*cpy1*(i-1)*ttime_/nmp_), cpy2)));
+  }
+
+  return;
+
+}
+
+
+void STR::CollInvAnalysis::ReadFullTreatedCurve()
+{
+  const Teuchos::ParameterList& iap=DRT::Problem::Instance()->InverseAnalysisParams();
+  cemcurve_   = Epetra_SerialDenseVector(nmp_);  //
+  double cpx0 = iap.get<double>("CEMC_X_0");
+  double cpx1 = iap.get<double>("CEMC_X_1");
+  double cpx2 = iap.get<double>("CEMC_X_2");
+  double cpy0 = iap.get<double>("CEMC_Y_0");
+  double cpy1 = iap.get<double>("CEMC_Y_1");
+  double cpy2 = iap.get<double>("CEMC_Y_2");
+  for (int i=0; i<nmp_; i++)
+  {
+    cemcurve_[i] = cpx0*(1-exp(-pow(((1000./ttime_)*cpx1*(i)*ttime_/nmp_), cpx2)));
+    i=i+1;
+    cemcurve_[i] = cpy0*(1-exp(-pow(((1000./ttime_)*cpy1*(i-1)*ttime_/nmp_), cpy2)));
+  }
+
+  return;
+}
+
+
+
 void STR::CollInvAnalysis::Integrate()
 {
-  const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
+  const Teuchos::ParameterList& iap=DRT::Problem::Instance()->InverseAnalysisParams();
   double alpha  = iap.get<double>("INV_ALPHA");
   double beta   = iap.get<double>("INV_BETA");
   int max_itter = iap.get<int>("INV_ANA_MAX_RUN");
@@ -474,7 +595,6 @@ void STR::CollInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix,  Epetr
 void STR::CollInvAnalysis::PrintFile()
 {
 
-  FILE * gplot;
   FILE * cxFile;
   FILE * cyFile;
   FILE * pFile;

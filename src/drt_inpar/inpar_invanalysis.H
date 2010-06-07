@@ -18,18 +18,33 @@ Maintainer: Michael Gee
 namespace INPAR
 {
 
-  /// Input parameters for FSI
+  /// Input parameters for Inverse Analysis
   namespace STR
   {
 
-    /// Type of partitioned coupling for FSI problems
+    /// Type of Inverse Analysis
     enum InvAnalysisType
     {
       inv_none,          // no inverse analysis
       inv_lung,          // sophies lung inverse analysis
-      inv_coll,       // sophie's collagenase inverse analysis
+      inv_coll,          // sophie's collagenase inverse analysis
       inv_airways,       // sophies airways inverse analysis
       inv_generalized    // generalized inverse analysis
+    };
+
+
+
+    /// Type of experiment
+    enum InvAnalysisExpType
+    {
+      inv_exp_none,      // no treatment
+      inv_exp_col,       // collagenase treated
+      inv_exp_ela,       // elastase trested
+      inv_exp_colfull,   // first trested with collagenase and
+                         // afterwards with elastase
+      inv_exp_elafull,   // first trested with elastase and
+                         // afterwards with collagenase
+      inv_exp_full       // treated with both right away
     };
 
   }  // namespace STR

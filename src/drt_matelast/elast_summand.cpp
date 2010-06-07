@@ -22,6 +22,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_couplogneohooke.H"
 #include "elast_coupblatzko.H"
 #include "elast_isoneohooke.H"
+#include "elast_varisoneohooke.H"
 #include "elast_isoyeoh.H"
 #include "elast_isoquad.H"
 #include "elast_isocub.H"
@@ -75,6 +76,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::IsoNeoHooke(curmat));
     MAT::ELASTIC::PAR::IsoNeoHooke* params = static_cast<MAT::ELASTIC::PAR::IsoNeoHooke*>(curmat->Parameter());
     return Teuchos::rcp(new IsoNeoHooke(params));
+  }
+  case INPAR::MAT::mes_varisoneohooke:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::VarIsoNeoHooke(curmat));
+    MAT::ELASTIC::PAR::VarIsoNeoHooke* params = static_cast<MAT::ELASTIC::PAR::VarIsoNeoHooke*>(curmat->Parameter());
+    return Teuchos::rcp(new VarIsoNeoHooke(params));
   }
   case INPAR::MAT::mes_isoyeoh:
   {
