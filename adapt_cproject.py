@@ -94,6 +94,8 @@ def adapt(do_configure_file):
         symbollist.sort()
 
         # iterate over all entries named 'option'
+        found_path = False
+        found_symbol = False 
         for option in project.iter("option"):
             superClass = option.get("superClass")
 
@@ -104,6 +106,7 @@ def adapt(do_configure_file):
                 for entry in pathlist:
                     option.append(etree.Element("listOptionValue", builtIn="false", value=entry ))
                 #print(etree.tostring(option, pretty_print=True))
+                found_path = True
 
             if superClass == "gnu.cpp.compiler.option.preprocessor.def" or superClass == "gnu.c.compiler.option.preprocessor.def.symbols":
                 #print(etree.tostring(option, pretty_print=True))
@@ -112,6 +115,12 @@ def adapt(do_configure_file):
                 for entry in symbollist:
                     option.append(etree.Element("listOptionValue", builtIn="false", value=entry ))
                 #print(etree.tostring(option, pretty_print=True))
+                found_symbol = True
+                
+        if not found_path:
+        	print "Please add manually any path to the project's include path section to create an initial entry in '.cproject'"
+        if not found_symbol:
+        	print "Please add manually any symbol to the project's symbol section to create an initial entry in '.cproject'"
 
         #print(etree.tostring(root, pretty_print=True))
         fo = open(".cproject","w")
