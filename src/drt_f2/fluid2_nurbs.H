@@ -41,7 +41,7 @@ namespace ELEMENTS
 namespace NURBS
 {
 
-class Fluid2NurbsType : public DRT::ParObjectType
+class Fluid2NurbsType : public DRT::ElementObjectType
 {
 public:
 
@@ -99,6 +99,8 @@ public:
   */
   virtual int UniqueParObjectId() const { return Fluid2NurbsType::Instance().UniqueParObjectId(); }
 
+  virtual Fluid2NurbsType & ElementObjectType() const
+  { return Fluid2NurbsType::Instance(); }
 
   /*!
   \brief Get shape type of element

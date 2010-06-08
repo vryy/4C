@@ -3881,7 +3881,7 @@ int DRT::ELEMENTS::Shell8Type::Initialize(DRT::Discretization& dis)
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     // shell8 cannot be mixed with other elements!
-    if (dis.lColElement(i)->Type() != DRT::Element::element_shell8) 
+    if (dis.lColElement(i)->ElementObjectType() != *this)
       return 0;
     DRT::ELEMENTS::Shell8* actele = dynamic_cast<DRT::ELEMENTS::Shell8*>(dis.lColElement(i));
     if (!actele) dserror("cast to Shell8* failed");
@@ -3972,7 +3972,7 @@ int DRT::ELEMENTS::Shell8Type::Initialize(DRT::Discretization& dis)
     for (int j=0; j<numele; ++j)
     {
       DRT::Element* tmpele = actnode->Elements()[j];
-      if (tmpele->Type()!=DRT::Element::element_shell8) continue;
+      if (tmpele->ElementObjectType()!=*this) continue;
       DRT::ELEMENTS::Shell8* actele = dynamic_cast<DRT::ELEMENTS::Shell8*>(tmpele);
       if (!actele) dserror("Element is not Shell8");
       for (int k=0; k<actele->NumNode(); ++k)
@@ -4026,7 +4026,7 @@ int DRT::ELEMENTS::Shell8Type::Initialize(DRT::Discretization& dis)
     {
       DRT::Element* tmpele = actnode->Elements()[j];
       if (!tmpele) continue;
-      if (tmpele->Type()!=DRT::Element::element_shell8) continue;
+      if (tmpele->ElementObjectType()!=*this) continue;
       DRT::ELEMENTS::Shell8* actele = dynamic_cast<DRT::ELEMENTS::Shell8*>(tmpele);
       if (!actele) dserror("Element is not Shell8");
       for (int k=0; k<actele->NumNode(); ++k)

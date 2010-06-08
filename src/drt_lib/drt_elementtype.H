@@ -31,6 +31,9 @@ public:
   bool operator==( const ElementObjectType & other ) const
   { return this == &other; }
 
+  bool operator!=( const ElementObjectType & other ) const
+  { return this != &other; }
+
   virtual int Initialize(DRT::Discretization& dis);
 
   virtual inline void PreEvaluate(DRT::Discretization& dis,

@@ -49,7 +49,7 @@ namespace ELEMENTS
 class Sosh8p8Register;
 class So_sh8;
 
-class So_sh8p8Type : public DRT::ParObjectType
+class So_sh8p8Type : public DRT::ElementObjectType
 {
 public:
 
@@ -248,6 +248,9 @@ public:
   /// an DRT::ElementRegister. This method allocates and returns
   /// an instance of a matching DRT::ElementRegister.
   virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const;
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return So_sh8p8Type::Instance(); }
 
   //@}
 

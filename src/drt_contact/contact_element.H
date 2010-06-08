@@ -58,7 +58,7 @@ namespace CONTACT
 
 // forward declarations
 
-class CoElementType : public DRT::ParObjectType
+class CoElementType : public DRT::ElementObjectType
 {
 public:
 
@@ -148,15 +148,8 @@ public:
   */
   virtual void Unpack(const vector<char>& data);
 
-  /*!
-  \brief Allocate and return a ElementRegister class
-
-  Assuming the contact elements do not need initialization, we return a
-  dummy base class here.
-
-  */
-  virtual RCP<DRT::ElementRegister> ElementRegister() const
-  { return rcp(new DRT::ElementRegister(Type())); }
+  virtual CoElementType & ElementObjectType() const
+  { return CoElementType::Instance(); }
 
   //@}
 
