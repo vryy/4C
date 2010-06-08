@@ -3880,7 +3880,9 @@ int DRT::ELEMENTS::Shell8Type::Initialize(DRT::Discretization& dis)
   //-------------------- loop all my column elements and init directors at nodes
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
-    if (dis.lColElement(i)->Type() != DRT::Element::element_shell8) continue;
+    // shell8 cannot be mixed with other elements!
+    if (dis.lColElement(i)->Type() != DRT::Element::element_shell8) 
+      return 0;
     DRT::ELEMENTS::Shell8* actele = dynamic_cast<DRT::ELEMENTS::Shell8*>(dis.lColElement(i));
     if (!actele) dserror("cast to Shell8* failed");
 
