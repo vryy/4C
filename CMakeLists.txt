@@ -556,6 +556,7 @@ set(OBJS_DRT_UTILS
   src/drt_lib/drt_condition_selector.cpp
   src/drt_lib/drt_condition_utils.cpp
   src/drt_lib/drt_dserror.cpp
+  src/drt_lib/drt_elementtype.cpp
   src/drt_lib/drt_exporter.cpp
   src/drt_lib/drt_nodematchingoctree.cpp
   src/drt_lib/drt_parser.cpp
