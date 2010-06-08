@@ -48,4 +48,4 @@ Trilinos_DIR="/lnm/lib/fc8/openmpi/trilinos"
     ${BACI_HOME}
 
 cd $BACI_HOME
-./adapt_cproject.py `basename $0`
+if [ -f .cproject ]; then ./adapt_cproject.py `basename $0`; fi

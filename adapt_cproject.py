@@ -1,9 +1,15 @@
 #!/usr/bin/env python
 
-from lxml import etree
-from sets import Set
 import os
 import sys
+
+try:
+    from lxml import etree
+except ImportError:
+    print "\n Error: python-lxml is not installed. For installation type as root:"
+    print "   yum install python-lxml "
+    print " exiting now...\n"
+    sys.exit(1)
 
 import random
 import string
@@ -27,7 +33,7 @@ def getCompilerPaths():
     # parse output file and store compiler paths in set
     f = open(complicated_name_output,"r")
     paths_are_comming=False
-    comppath=Set()
+    comppath=set()
     for l in f.readlines():
         if l.find("#include <...> search starts here:") == 0:
             paths_are_comming=True
@@ -45,7 +51,7 @@ def getPaths(fname):
     f = open(fname,"r")
     
     # get paths from do-configure file
-    pathlist = Set()
+    pathlist = set()
     for l in f.readlines():
         found = l.find("INCLUDE_INSTALL_DIR=") == 0 \
              or l.find("Trilinos_DIR=") == 0
@@ -55,14 +61,14 @@ def getPaths(fname):
             pathlist.add(l.split("=")[1][1:-2]+"/include")
     
     # add compiler paths
-    pathlist.union_update(getCompilerPaths())
+    pathlist.update(getCompilerPaths())
     
     return pathlist
 
 def getSymbols(fname):
     """Get all defines flags from do-configure file"""
     f = open(fname,"r")
-    symbollist = Set()
+    symbollist = set()
     for l in f.readlines():
         words = l.split()
         if len(words) > 1:
@@ -92,6 +98,7 @@ def adapt(do_configure_file):
         symbolset=getSymbols(do_configure_file)
         symbollist = [x for x in symbolset]
         symbollist.sort()
+        #print symbollist
 
         # iterate over all entries named 'option'
         found_path = False
