@@ -2326,12 +2326,12 @@ void COMBUST::FlameFront::unpackBoundaryIntCells(
     std::map<int, GEO::BoundaryIntCells>&   intcellmap)
 {
   // pointer to current position of group of cells in global string (counts bytes)
-  int posofgroup = 0;
+	vector<char>::size_type posofgroup = 0;
 
-  while (posofgroup < (int) dataRecv.size())
+  while (posofgroup < dataRecv.size())
   {
     // pointer to current position in a group of cells in local string (counts bytes)
-    int posingroup = 0;
+  	vector<char>::size_type posingroup = 0;
     vector<char> data;
     DRT::ParObject::ExtractfromPack(posofgroup, dataRecv, data);
 
@@ -2379,11 +2379,11 @@ void COMBUST::FlameFront::unpackBoundaryIntCells(
     intcellmap.insert(make_pair(elegid,intcellvector));
 
     // check correct reading
-    if (posingroup != (int)data.size())
+    if (posingroup != data.size())
       dserror("mismatch in size of data %d <-> %d",(int)data.size(),posingroup);
   }
   // check correct reading
-  if (posofgroup != (int)dataRecv.size())
+  if (posofgroup != dataRecv.size())
     dserror("mismatch in size of data %d <-> %d",(int)dataRecv.size(),posofgroup);
 }
 

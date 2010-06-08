@@ -153,7 +153,7 @@ void MORTAR::MortarElement::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::Unpack(const vector<char>& data)
 {
-  int position = 0;
+  vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -171,7 +171,7 @@ void MORTAR::MortarElement::Unpack(const vector<char>& data)
   // searchelements_
   ExtractfromPack(position,data,&searchelements_,(int)searchelements_.size());
 
-  if (position != (int)data.size())
+  if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 }

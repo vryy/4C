@@ -130,7 +130,7 @@ public:
   class exists.
 
   */
-  virtual void Unpack(int& position, const vector<char>& data);
+  virtual void Unpack(vector<char>::size_type& position, const vector<char>& data);
 
   //@}
 

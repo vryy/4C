@@ -103,8 +103,8 @@ void XFEM::unpackDofKeys(
     const vector<char>&                     dataRecv,
     set<XFEM::DofKey<XFEM::onNode> >&       dofkeyset )
 {
-  int index = 0;
-  while (index < (int) dataRecv.size())
+	vector<char>::size_type index = 0;
+  while (index < dataRecv.size())
   {
     vector<char> data;
     DRT::ParObject::ExtractfromPack(index, dataRecv, data);

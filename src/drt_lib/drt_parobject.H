@@ -249,7 +249,7 @@ Here is how this data can be unpacked again:<br>
 \code
 Fool::Unpack(const vector< char > &data)
 {
-  int position = 0;                      // used to mark current reading position in data
+  vector<char>::size_type position = 0;                      // used to mark current reading position in data
   int tmp;
   ExtractfromPack(position,data,tmp);    // unpack the unique id
   if (tmp != UniqueParObjectId()) dserror("data does not belong to this class");
@@ -257,7 +257,7 @@ Fool::Unpack(const vector< char > &data)
   ExtractfromPack(position,data,b);      // extract b
   ExtractfromPack(position,data,bla);    // extract bla
   ExtractfromPack(position,data,matrix); // extract matrix
-  if (position != (int)data.size()) dserror("Mismatch in size of data");
+  if (position != data.size()) dserror("Mismatch in size of data");
   return;
 }
 \endcode
@@ -538,7 +538,7 @@ public:
   \param stuff (out)       : basic data type (float int double char ...) to extract from data
 
   */
-  template<typename kind> static void ExtractfromPack(int& position, const vector<char>& data, kind& stuff)
+  template<typename kind> static void ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, kind& stuff)
   {
     int size = sizeof(kind);
     memcpy(&stuff,&data[position],size);
@@ -556,7 +556,7 @@ public:
   \param stuff (out)       : vector<int> to extract from data
 
   */
-  static void ExtractfromPack(int& position, const vector<char>& data, vector<int>& stuff);
+  static void ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, vector<int>& stuff);
 
   /*!
   \brief Extract stuff from a char vector data and increment position
@@ -568,7 +568,7 @@ public:
   \param stuff (out)       : vector<double> to extract from data
 
   */
-  static void ExtractfromPack(int& position, const vector<char>& data, vector<double>& stuff);
+  static void ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, vector<double>& stuff);
 
   /*!
   \brief Extract stuff from a char vector data and increment position
@@ -580,7 +580,7 @@ public:
   \param stuff (out)       : vector<char> to extract from data
 
   */
-  static void ExtractfromPack(int& position, const vector<char>& data, vector<char>& stuff);
+  static void ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, vector<char>& stuff);
 
   /*!
   \brief Extract stuff from a char vector data and increment position
@@ -592,7 +592,7 @@ public:
   \param stuff (out)       : Epetra_SerialDenseMatrix to extract from data
 
   */
-  static void ExtractfromPack(int& position, const vector<char>& data, Epetra_SerialDenseMatrix& stuff);
+  static void ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, Epetra_SerialDenseMatrix& stuff);
 
 
   /*!
@@ -605,7 +605,7 @@ public:
   \param stuff (out)       : Epetra_SerialDenseVector to extract from data
 
   */
-  static void ExtractfromPack(int& position, const vector<char>& data, Epetra_SerialDenseVector& stuff);
+  static void ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, Epetra_SerialDenseVector& stuff);
 
   /*!
   \brief Extract stuff from a char vector data and increment position
@@ -627,10 +627,10 @@ public:
   \param stuff (out)       : LINALG::SerialDenseMatrix to extract from data
 
   */
-  static void ExtractfromPack(int& position, const vector<char>& data, LINALG::SerialDenseMatrix& stuff);
+  static void ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, LINALG::SerialDenseMatrix& stuff);
 
   template <unsigned int i, unsigned int j>
-  static void ExtractfromPack(int& position, const vector<char>& data, LINALG::Matrix<i,j>& stuff)
+  static void ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, LINALG::Matrix<i,j>& stuff)
   {
     int m = 0;
     ExtractfromPack(position,data,m);
@@ -654,7 +654,7 @@ public:
 
   */
   template <unsigned int i, unsigned int j>
-  static void ExtractfromPack(int& position, const vector<char>& data, vector<LINALG::Matrix<i,j> > & stuff)
+  static void ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, vector<LINALG::Matrix<i,j> > & stuff)
   {
     //get length of vector to be extracted and allocate according amount of memory for all extracted data
     int vectorlength;
@@ -684,7 +684,7 @@ public:
   \param stuff (out)       : string to extract from data
 
   */
-  static void ExtractfromPack(int& position, const vector<char>& data, string& stuff);
+  static void ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, string& stuff);
 
   /*!
   \brief Extract stuff from a char vector data and increment position
@@ -695,7 +695,7 @@ public:
   \param stuff (out)       : array of total length stuffsize (in byte)
   \param stuffsize (in)    : length of stuff in byte
   */
-  template<typename kind> static void ExtractfromPack(int& position, const vector<char>& data, kind* stuff, const int stuffsize)
+  template<typename kind> static void ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, kind* stuff, const int stuffsize)
   {
     memcpy(stuff,&data[position],stuffsize);
     position += stuffsize;

@@ -117,7 +117,7 @@ void CONTACT::CoNodeDataContainer::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNodeDataContainer::Unpack(int& position, const vector<char>& data)
+void CONTACT::CoNodeDataContainer::Unpack(vector<char>::size_type& position, const vector<char>& data)
 {
   // txi_
   DRT::ParObject::ExtractfromPack(position,data,txi_,3);
@@ -224,7 +224,7 @@ void CONTACT::CoNode::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void CONTACT::CoNode::Unpack(const vector<char>& data)
 {
-  int position = 0;
+  vector<char>::size_type position = 0;
 
   // extract type
   int type = 0;
@@ -254,7 +254,7 @@ void CONTACT::CoNode::Unpack(const vector<char>& data)
     codata_ = Teuchos::null;
   }
 
-  if (position != (int)data.size())
+  if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 }

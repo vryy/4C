@@ -186,7 +186,7 @@ void DRT::Container::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Container::Unpack(const vector<char>& data)
 {
-  int position = 0;
+	vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -247,7 +247,7 @@ void DRT::Container::Unpack(const vector<char>& data)
   // on purpose the map<string,RCP<Epetra_MultiVector> > evecdata_
   // is NOT included in the Pack/Unpack stuff
 
-  if (position != (int)data.size())
+  if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 }

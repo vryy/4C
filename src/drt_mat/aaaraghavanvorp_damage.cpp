@@ -120,7 +120,7 @@ void MAT::AAAraghavanvorp_damage::Unpack(const vector<char>& data)
 {
   cout << "UNPACK \n";
   //isinit_=true; // corretto ore 14:27
-  int position = 0;
+  vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -165,8 +165,8 @@ void MAT::AAAraghavanvorp_damage::Unpack(const vector<char>& data)
     histglast_->push_back(tmp);
   }
 
-  if (position != (int)data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  if (position != data.size())
+    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 
  return;
 }
@@ -576,7 +576,7 @@ void MAT::AAAraghavanvorp_damage::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1
       double gdot = 0.0;
 
       hgc  = 1 - a *(1-exp(- b * (eqstr-eqstrmin)));  // damage parameter evaluation
-      gdot= - a * b * exp(- b * (eqstr-eqstrmin))/eqstr;    // derivative of damage function, it´s used to scale cmatisodam
+      gdot= - a * b * exp(- b * (eqstr-eqstrmin))/eqstr;    // derivative of damage function, itï¿½s used to scale cmatisodam
 
       histgcurr_->at(gp)(0,0)= hgc;     // storing of actual damage parameter value
       histeqstrmaxcurr_->at(gp)= eqstr; // storing of actual maximum equivalent strain

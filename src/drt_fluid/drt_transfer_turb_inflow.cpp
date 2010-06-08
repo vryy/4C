@@ -490,7 +490,7 @@ void TransferTurbulentInflowCondition::UnpackLocalMasterValues(
   }
 
   // position to extract
-  int position = 0;
+  vector<char>::size_type position = 0;
 
   // extract size 
   int size=0;

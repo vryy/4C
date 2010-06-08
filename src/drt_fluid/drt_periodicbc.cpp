@@ -840,8 +840,8 @@ void PeriodicBoundaryConditions::AddConnectivity(
           // Unpack received block.
           multiplecouplings.clear();
 
-          int index = 0;
-          while (index < (int)rblock.size())
+          vector<char>::size_type index = 0;
+          while (index < rblock.size())
           {
             vector<int> onecoup;
             DRT::ParObject::ExtractfromPack(index,rblock,onecoup);

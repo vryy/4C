@@ -150,14 +150,14 @@ void DRT::ElementRegister::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::ElementRegister::Unpack(const vector<char>& data)
 {
-  int position = 0;
+	vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   ExtractfromPack(position,data,etype_);
 
-  if (position != (int)data.size())
+  if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 }

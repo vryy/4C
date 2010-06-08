@@ -157,7 +157,7 @@ void DRT::ParObject::AddtoPack(vector<char>& data, const string& stuff)
  | a int vector specialization                                 (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data, vector<int>& stuff)
+void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, vector<int>& stuff)
 {
   int dim = 0;
   ExtractfromPack(position,data,dim);
@@ -170,7 +170,7 @@ void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data, ve
  | a double vector specialization                                 (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data, vector<double>& stuff)
+void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, vector<double>& stuff)
 {
   int dim = 0;
   ExtractfromPack(position,data,dim);
@@ -183,7 +183,7 @@ void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data, ve
  | a char vector specialization                                 (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data, vector<char>& stuff)
+void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, vector<char>& stuff)
 {
   int dim = 0;
   ExtractfromPack(position,data,dim);
@@ -196,7 +196,7 @@ void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data, ve
  | a Epetra_SerialDenseMatrix specialization                   (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data,
+void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data,
                                      Epetra_SerialDenseMatrix& stuff)
 {
   int m = 0;
@@ -213,7 +213,7 @@ void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data,
  | a Epetra_SerialDenseVector specialization                   (public) |
  |                                                     TK & MAF  05/08  |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data,
+void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data,
                                      Epetra_SerialDenseVector& stuff)
 {
   int m = 0;
@@ -229,7 +229,7 @@ void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data,
  | a LINALG::SerialDenseMatrix specialization                  (public) |
  |                                                          henke 12/09 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data,
+void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data,
                                      LINALG::SerialDenseMatrix& stuff)
 {
   int m = 0;
@@ -247,7 +247,7 @@ void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data,
  | a string specialization                                     (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data, string& stuff)
+void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, string& stuff)
 {
   int dim = 0;
   ExtractfromPack(position,data,dim);

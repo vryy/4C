@@ -139,7 +139,7 @@ void CONTACT::CoElement::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void CONTACT::CoElement::Unpack(const vector<char>& data)
 {
-  int position = 0;
+  vector<char>::size_type position = 0;
 
   // extract type
   int type = 0;
@@ -151,7 +151,7 @@ void CONTACT::CoElement::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   MORTAR::MortarElement::Unpack(basedata);
 
-  if (position != (int)data.size())
+  if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 }

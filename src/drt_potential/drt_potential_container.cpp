@@ -140,7 +140,7 @@ void POTENTIAL::PotentialElementContainer::Unpack(
  *----------------------------------------------------------------------*/
 void POTENTIAL::PotentialElementContainer::Unpack(
 	const vector<char>& 			data,
-	int& 			              	position)
+	vector<char>::size_type&  position)
 {
   // gid
   ExtractfromPack(position,data, gid_);

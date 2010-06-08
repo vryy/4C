@@ -240,8 +240,8 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
 
     //--------------------------------------------------
     // Unpack block.
-    int index = 0;
-    while (index < (int)rblockofnodes.size())
+    vector<char>::size_type index = 0;
+    while (index < rblockofnodes.size())
     {
       // extract node data from blockofnodes
       vector<char> data;
@@ -497,8 +497,8 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slaved
 
     //--------------------------------------------------
     // Unpack block.
-    int index = 0;
-    while (index < static_cast<int>(rblockofnodes.size()))
+    vector<char>::size_type index = 0;
+    while (index < rblockofnodes.size())
     {
       // extract node data from blockofnodes
       vector<char> data;

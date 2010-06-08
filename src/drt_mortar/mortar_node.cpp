@@ -127,7 +127,7 @@ void MORTAR::MortarNodeDataContainer::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNodeDataContainer::Unpack(int& position, const vector<char>& data)
+void MORTAR::MortarNodeDataContainer::Unpack(vector<char>::size_type& position, const vector<char>& data)
 {
   // n_
   DRT::ParObject::ExtractfromPack(position,data,n_,3);
@@ -278,7 +278,7 @@ void MORTAR::MortarNode::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::Unpack(const vector<char>& data)
 {
-  int position = 0;
+  vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -319,7 +319,7 @@ void MORTAR::MortarNode::Unpack(const vector<char>& data)
     modata_ = Teuchos::null;
   }
 
-  if (position != (int)data.size())
+  if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 }

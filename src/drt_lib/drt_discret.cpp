@@ -725,8 +725,8 @@ RCP<vector<char> > DRT::Discretization::PackCondition(const string condname) con
  *----------------------------------------------------------------------*/
 void DRT::Discretization::UnPackMyElements(RCP<vector<char> > e)
 {
-  int index = 0;
-  while (index < static_cast<int>(e->size()))
+  vector<char>::size_type index = 0;
+  while (index < e->size())
   {
     vector<char> data;
     ParObject::ExtractfromPack(index,*e,data);
@@ -749,8 +749,8 @@ void DRT::Discretization::UnPackMyElements(RCP<vector<char> > e)
  *----------------------------------------------------------------------*/
 void DRT::Discretization::UnPackMyNodes(RCP<vector<char> > e)
 {
-  int index = 0;
-  while (index < static_cast<int>(e->size()))
+	vector<char>::size_type index = 0;
+  while (index < e->size())
   {
     vector<char> data;
     ParObject::ExtractfromPack(index,*e,data);
@@ -775,8 +775,8 @@ void DRT::Discretization::UnPackCondition(
         const RCP<vector<char> > e,
         const string condname)
 {
-  int index = 0;
-  while (index < static_cast<int>(e->size()))
+	vector<char>::size_type index = 0;
+  while (index < e->size())
   {
     vector<char> data;
     DRT::ParObject::ExtractfromPack(index,*e,data);

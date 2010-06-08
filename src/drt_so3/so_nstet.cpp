@@ -126,7 +126,7 @@ void DRT::ELEMENTS::NStet::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStet::Unpack(const vector<char>& data)
 {
-  int position = 0;
+  vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -144,7 +144,7 @@ void DRT::ELEMENTS::NStet::Unpack(const vector<char>& data)
   // V_
   ExtractfromPack(position,data,V_);
 
-  if (position != (int)data.size())
+  if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 }
@@ -312,7 +312,7 @@ void DRT::ELEMENTS::NStetRegister::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStetRegister::Unpack(const vector<char>& data)
 {
-  int position = 0;
+  vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -321,7 +321,7 @@ void DRT::ELEMENTS::NStetRegister::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   ElementRegister::Unpack(basedata);
-  if (position != (int)data.size())
+  if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 }

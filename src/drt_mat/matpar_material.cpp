@@ -159,7 +159,7 @@ void MAT::PAR::Material::Pack(std::vector<char>& data) const
 /*----------------------------------------------------------------------*/
 void MAT::PAR::Material::Unpack(const std::vector<char>& data)
 {
-  int position = 0;
+  vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -175,8 +175,8 @@ void MAT::PAR::Material::Unpack(const std::vector<char>& data)
   // name_
   ExtractfromPack(position,data,name_);
 
-  if (position != (int)data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  if (position != data.size())
+    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
   return;
 }
 

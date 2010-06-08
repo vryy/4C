@@ -110,7 +110,7 @@ void MAT::HolzapfelCardio::Pack(vector<char>& data) const
 void MAT::HolzapfelCardio::Unpack(const vector<char>& data)
 {
   isinit_=true;
-  int position = 0;
+  vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -138,8 +138,8 @@ void MAT::HolzapfelCardio::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,numgp);
   if (numgp == 0){ // no history data to unpack
     isinit_=false;
-    if (position != (int)data.size())
-      dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+    if (position != data.size())
+      dserror("Mismatch in size of data %d <-> %d",data.size(),position);
     return;
   }
   // unpack fiber internal variables
@@ -160,8 +160,8 @@ void MAT::HolzapfelCardio::Unpack(const vector<char>& data)
     ca2_->at(gp) = a;
   }
 
-  if (position != (int)data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  if (position != data.size())
+    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 
   return;
 }

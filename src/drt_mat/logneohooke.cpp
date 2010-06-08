@@ -88,7 +88,7 @@ void MAT::LogNeoHooke::Pack(std::vector<char>& data) const
  *----------------------------------------------------------------------*/
 void MAT::LogNeoHooke::Unpack(const std::vector<char>& data)
 {
-  int position = 0;
+  vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -112,8 +112,8 @@ void MAT::LogNeoHooke::Unpack(const std::vector<char>& data)
     params_ = NULL;
   }
 
-  if (position != (int)data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  if (position != data.size())
+    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 }
 
 /*----------------------------------------------------------------------*/

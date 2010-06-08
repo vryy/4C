@@ -220,7 +220,7 @@ void DRT::ELEMENTS::Beam3ii::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3ii::Unpack(const vector<char>& data)
 {
-  int position = 0;
+  vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -253,7 +253,7 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const vector<char>& data)
   ExtractfromPack<3,1>(position,data,kapparef_);
 
 
-  if (position != (int)data.size())
+  if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 }
@@ -427,7 +427,7 @@ void DRT::ELEMENTS::Beam3iiRegister::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3iiRegister::Unpack(const vector<char>& data)
 {
-  int position = 0;
+  vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -437,7 +437,7 @@ void DRT::ELEMENTS::Beam3iiRegister::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   ElementRegister::Unpack(basedata);
 
-  if (position != (int)data.size())
+  if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 }

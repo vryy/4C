@@ -487,9 +487,9 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
     ReceiveAny(source,tag,recvgid,length);
     if (tag!=3) dserror("Messages got mixed up");
 
-    int index = 0;
+    vector<char>::size_type index = 0;
     int j = 0;
-    while (index < static_cast<int>(recvblock.size()))
+    while (index < recvblock.size())
     {
       int gid = recvgid[j];
       helper.UnpackObject(gid, index, recvblock);

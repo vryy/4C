@@ -152,7 +152,7 @@ DofKeyType<doftype> DofKeyType<doftype>::instance_;
       //! unpack all content from char array
       virtual void Unpack(const vector<char>& data)
       {
-        int position = 0;
+        vector<char>::size_type position = 0;
         // extract type
         int type = 0;
         ExtractfromPack(position,data,type);
@@ -173,7 +173,7 @@ DofKeyType<doftype> DofKeyType<doftype>::instance_;
         ExtractfromPack(position,data,label);
 
         // check correct reading
-        if (position != (int)data.size())
+        if (position != data.size())
           dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 
         // create my enriched field

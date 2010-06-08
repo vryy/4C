@@ -388,7 +388,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       avg_w.clear();
       avg_p.clear();
 
-      int position=0;
+      vector<char>::size_type position=0;
 
       // size
       int size;
@@ -687,7 +687,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       avg_w.clear();
       avg_p.clear();
 
-      int position=0;
+      vector<char>::size_type position=0;
 
       // size
       int size;

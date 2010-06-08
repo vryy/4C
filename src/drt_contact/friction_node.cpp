@@ -133,7 +133,7 @@ void CONTACT::FriNodeDataContainer::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 01/10|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNodeDataContainer::Unpack(int& position, const vector<char>& data)
+void CONTACT::FriNodeDataContainer::Unpack(vector<char>::size_type& position, const vector<char>& data)
 {
   // jump_
   DRT::ParObject::ExtractfromPack(position,data,jump_,3);
@@ -239,7 +239,7 @@ void CONTACT::FriNode::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::Unpack(const vector<char>& data)
 {
-  int position = 0;
+  vector<char>::size_type position = 0;
 
   // extract type
   int type = 0;
@@ -264,7 +264,7 @@ void CONTACT::FriNode::Unpack(const vector<char>& data)
     fridata_ = Teuchos::null;
   }
 
-  if (position != (int)data.size())
+  if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 }

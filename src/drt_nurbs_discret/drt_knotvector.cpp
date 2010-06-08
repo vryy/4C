@@ -847,7 +847,7 @@ void DRT::NURBS::Knotvector::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::NURBS::Knotvector::Unpack(const vector<char>& data)
 {
-  int position = 0;
+  vector<char>::size_type position = 0;
 
   filled_=false;
 

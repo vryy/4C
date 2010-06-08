@@ -179,7 +179,7 @@ void DRT::Node::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Node::Unpack(const vector<char>& data)
 {
-  int position = 0;
+	vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -191,7 +191,7 @@ void DRT::Node::Unpack(const vector<char>& data)
   // x_
   ExtractfromPack(position,data,x_,3*sizeof(double));
 
-  if (position != (int)data.size())
+  if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 }

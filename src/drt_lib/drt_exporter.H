@@ -507,7 +507,7 @@ private:
       at position index in recvblock. index must be incremented by the objects
       size.
      */
-    virtual void UnpackObject(int gid, int& index, const vector<char>& recvblock) = 0;
+    virtual void UnpackObject(int gid, vector<char>::size_type& index, const vector<char>& recvblock) = 0;
 
     /// after communication remove all objects that are not in the target map
     virtual void PostExportCleanup(Exporter* exporter) = 0;
@@ -549,7 +549,7 @@ private:
       return false;
     }
 
-    virtual void UnpackObject(int gid, int& index, const vector<char>& recvblock)
+    virtual void UnpackObject(int gid, vector<char>::size_type& index, const vector<char>& recvblock)
     {
       vector<char> data;
       ParObject::ExtractfromPack(index,recvblock,data);
@@ -610,7 +610,7 @@ private:
       return false;
     }
 
-    virtual void UnpackObject(int gid, int& index, const vector<char>& recvblock)
+    virtual void UnpackObject(int gid, vector<char>::size_type& index, const vector<char>& recvblock)
     {
       RCP<T> obj = rcp(new T);
       ParObject::ExtractfromPack(index,recvblock,*obj);
@@ -663,7 +663,7 @@ private:
       return false;
     }
 
-    virtual void UnpackObject(int gid, int& index, const vector<char>& recvblock)
+    virtual void UnpackObject(int gid, vector<char>::size_type& index, const vector<char>& recvblock)
     {
       memcpy(&objects_[gid],&recvblock[index],sizeof(T));
       index += sizeof(T);
@@ -710,7 +710,7 @@ private:
       return false;
     }
 
-    virtual void UnpackObject(int gid, int& index, const vector<char>& recvblock)
+    virtual void UnpackObject(int gid, vector<char>::size_type& index, const vector<char>& recvblock)
     {
       ParObject::ExtractfromPack(index,recvblock,objects_[gid]);
     }

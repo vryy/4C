@@ -133,7 +133,7 @@ void MAT::ArtWallRemod::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void MAT::ArtWallRemod::Unpack(const vector<char>& data)
 {
-  int position = 0;
+  vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -195,8 +195,8 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
         ExtractfromPack(position,data,a);
       }
     }
-    if (position != (int)data.size())
-      dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+    if (position != data.size())
+      dserror("Mismatch in size of data %d <-> %d",data.size(),position);
   }
   else  // we are in analysis mode
   {
@@ -251,8 +251,8 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
     }
 
     // check if everything was savely unpacked
-    if (position != (int)data.size())
-      dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+    if (position != data.size())
+      dserror("Mismatch in size of data %d <-> %d",data.size(),position);
   }
 
   // get away from this

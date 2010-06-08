@@ -93,7 +93,7 @@ void IO::DiscretizationReader::ReadSerialDenseMatrix(RefCountPtr<std::map<int, R
   RefCountPtr<std::vector<char> > data = reader_->ReadResultDataVecChar(id_path, value_path, columns,
                                                                         dis_->Comm(), elemap);
 
-  int position=0;
+  vector<char>::size_type position=0;
   for (int i=0;i<elemap->NumMyElements();++i)
   {
     RefCountPtr<Epetra_SerialDenseMatrix> matrix = rcp(new Epetra_SerialDenseMatrix);

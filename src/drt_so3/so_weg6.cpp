@@ -208,7 +208,7 @@ void DRT::ELEMENTS::So_weg6::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
 {
-  int position = 0;
+  vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -259,7 +259,7 @@ void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,invJ_[i]);
   }
 
-  if (position != (int)data.size())
+  if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 }
@@ -555,7 +555,7 @@ void DRT::ELEMENTS::Sow6Register::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Sow6Register::Unpack(const vector<char>& data)
 {
-  int position = 0;
+  vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -565,7 +565,7 @@ void DRT::ELEMENTS::Sow6Register::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   ElementRegister::Unpack(basedata);
 
-  if (position != (int)data.size())
+  if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 }

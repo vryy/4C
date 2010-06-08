@@ -83,7 +83,7 @@ void DRT::UTILS::UnpackLocalConnectivity(
   lcon.clear();
 
   // position to extract
-  int position = 0;
+  vector<char>::size_type position = 0;
 
   // extract size (number of nodes we have a connectivity for)
   int size=0;

@@ -177,8 +177,8 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
 
         coordsvec.clear();
 
-        int index = 0;
-        while (index < (int)rblock.size())
+        vector<char>::size_type index = 0;
+        while (index < rblock.size())
         {
           double onecoord;
           DRT::ParObject::ExtractfromPack(index,rblock,onecoord);
@@ -242,8 +242,8 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
 
         coordsvec.clear();
 
-        int index = 0;
-        while (index < (int)rblock.size())
+        vector<char>::size_type index = 0;
+        while (index < rblock.size())
         {
           double onecoord;
           DRT::ParObject::ExtractfromPack(index,rblock,onecoord);
@@ -307,8 +307,8 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
 
         coordsvec.clear();
 
-        int index = 0;
-        while (index < (int)rblock.size())
+        vector<char>::size_type index = 0;
+        while (index < rblock.size())
         {
           double onecoord;
           DRT::ParObject::ExtractfromPack(index,rblock,onecoord);

@@ -521,7 +521,7 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
     dserror("dummy element obtained potential elements");
 
   nonlocalPecs_.clear();
-  int position = 1;  // jump over dummy
+  vector<char>::size_type position = 1;  // jump over dummy
   for(int i_ele = 0; i_ele < numEle_send; ++i_ele)
   {
     RCP<PotentialElementContainer> pec = rcp( new PotentialElementContainer());
@@ -536,7 +536,7 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
     }
   }
  
-  if(position != (int) data_send.size())
+  if(position != data_send.size())
     dserror("something is wrong with the data vector on proc %d", myrank);
   
   if(((label == -1) && (int) nonlocalPecs_.size() != 0) )//|| (label != label_recv))
