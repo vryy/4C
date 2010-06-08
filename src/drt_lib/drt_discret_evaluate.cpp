@@ -92,11 +92,6 @@ void DRT::Discretization::Evaluate(
   // that does nothing
   {
     TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate PreEvaluate");
-    map<int,RCP<ElementRegister> >::iterator curr;
-    for (curr=elementregister_.begin(); curr != elementregister_.end(); ++curr)
-      curr->second->PreEvaluate(*this,params,systemmatrix1,systemmatrix2,
-                                systemvector1,systemvector2,systemvector3);
-
     ParObjectFactory::Instance().PreEvaluate(*this,params,systemmatrix1,systemmatrix2,
                                              systemvector1,systemvector2,systemvector3);
   }

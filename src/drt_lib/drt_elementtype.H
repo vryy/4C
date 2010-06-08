@@ -20,9 +20,16 @@ namespace DRT
 
 class ElementObjectType : public ParObjectType
 {
+protected:
+
+  // only derived classes might create an instance
+  ElementObjectType();
+
 public:
 
-  ElementObjectType();
+  /// test equality by comparing pointers as there are just singletons allowed
+  bool operator==( const ElementObjectType & other ) const
+  { return this == &other; }
 
   virtual int Initialize(DRT::Discretization& dis);
 
@@ -34,9 +41,6 @@ public:
                                   Teuchos::RCP<Epetra_Vector>          systemvector2,
                                   Teuchos::RCP<Epetra_Vector>          systemvector3)
   { return; }
-
-  // do we need this?
-  //virtual inline DRT::Element::ElementType Type() const { return DRT::Element::element_none; }
 
 };
 

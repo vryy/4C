@@ -370,7 +370,7 @@ public:
   */
   virtual int NumDof(unsigned nds, const Element* element) const
   { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); return dofsets_[nds]->NumDof(element); }
-  
+
   /*!
   \brief Get the gid of a dof for given node.
 
@@ -425,10 +425,10 @@ public:
   \param element (in)      : the element
   */
   virtual vector<int> Dof(unsigned nds, const Element* element) const
-  { 
+  {
     dsassert(nds<dofsets_.size(),"undefined dof set");
-    dsassert(havedof_,"no dofs assigned"); 
-    return dofsets_[nds]->Dof(element); 
+    dsassert(havedof_,"no dofs assigned");
+    return dofsets_[nds]->Dof(element);
   }
 
   /*!
@@ -1746,18 +1746,6 @@ private:
   \note This is a collective call
   */
   virtual void BuildElementToElementPointers();
-
-  /*!
-  \brief (Re)create a map of ElementRegister objects
-
-  (Re)creates the map elementregister_ containing ONE register class
-  for each type of element present in this discretization.
-  The register class will be called from FillComplete() to initialize
-  the finite elements of a certain type.
-
-  */
-  virtual void BuildElementRegister();
-
 
   /*!
   \brief Assign degrees of freedom to discretization (Filled()==true prerequisite)
