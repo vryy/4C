@@ -550,10 +550,10 @@ void EnsightWriter::WriteNodeConnectivityPar(
     // Unpack received block and write the data
     if (myrank_==0)
     {
-      int index = 0;
+      std::vector<char>::size_type index = 0;
       vector<int> nodeids;
       // extract data from recieved package
-      while (index < (int)rblock.size())
+      while (index < rblock.size())
       {
         DRT::ParObject::ExtractfromPack(index,rblock,nodeids);
       }
@@ -767,12 +767,11 @@ EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
       // Unpack received block and write the data
       if (myrank_==0)
       {
-        int index = 0;
+        std::vector<char>::size_type index = 0;
         vector<int> elegids;
         // extract data from recieved package
-        while (index < (int)rblock.size())
+        while (index < rblock.size())
         {
-
           DRT::ParObject::ExtractfromPack(index,rblock,elegids);
         }
         for(int i=0;i<(int) elegids.size();++i)

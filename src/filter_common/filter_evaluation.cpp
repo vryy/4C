@@ -94,9 +94,8 @@ extern "C" void input_ReadGlobalParameterList()
 /*----------------------------------------------------------------------*/
 
 #ifdef D_SHELL8
-int ELEMENTS::Shell8Register::Initialize(Discretization&)
+int ELEMENTS::Shell8Type::Initialize(Discretization&)
 {
-  // dserror("ELEMENTS::Shell8Register::Initialize undefined");
   return 0;
 }
 

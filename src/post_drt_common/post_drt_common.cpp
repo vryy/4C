@@ -1010,7 +1010,7 @@ PostResult::read_result_serialdensematrix(const string name)
                                                                      *comm, elemap);
 
   RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > mapdata = rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
-  int position=0;
+  std::vector<char>::size_type position=0;
 //   cout << "elemap:\n" << *elemap << endl;
 //   cout << "myelenum: " << elemap->NumMyElements() << endl;
   for (int i=0;i<elemap->NumMyElements();++i)
