@@ -17,7 +17,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "Epetra_SerialDenseSolver.h"
 
 #if 0
