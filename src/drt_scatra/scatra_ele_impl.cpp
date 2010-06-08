@@ -2710,20 +2710,21 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       const double cfl = vel_norm * dt / h;
 
       // compute k_bar
-      const double pp = exp(epe/20.0);
-      const double pm = exp(-epe/20.0);
-      const double k_bar = 1.0 + (8.0*((pp-pm)/(pp+pm))/(1.0+((pp-pm)/(pp+pm))));
+      const double pp = exp(epe/200.0);
+      const double pm = exp(-epe/200.0);
+      const double k_bar = epe*(1.0 + 8.0*((pp-pm)/(pp+pm))/(1.0+((pp-pm)/(pp+pm))));
 
       // compute factors gamma, kappa, alpha and mu
       const double kp = exp(k_bar);
       const double km = exp(-k_bar);
       const double fac_gamma = exp(k_bar*cfl*(1.0-(k_bar/epe)));
       const double fac_kappa = (2.0/(kp+km))-1.0;
-      const double fac_alpha = (kp-km)/(kp+km);
+      double fac_alpha = 1.0;
+      if (k_bar < 700.0) fac_alpha = (kp-km)/(kp+km);
       const double fac_mu    = (2.0*(2.0/(kp+km))+1.0)/3.0;
 
       // compute tau
-      tau_[k] = fac_mu*(fac_gamma-1.0)-(fac_gamma+1.0)*cfl*((fac_alpha/2.0)+(fac_kappa/epe))/(fac_alpha*(fac_gamma-1.0)+cfl*fac_kappa*(fac_gamma+1.0));
+      tau_[k] = (fac_mu*(fac_gamma-1.0)-(fac_gamma+1.0)*cfl*((fac_alpha/2.0)+(fac_kappa/epe)))/(fac_alpha*(fac_gamma-1.0)+cfl*fac_kappa*(fac_gamma+1.0));
     }
     break;
     case INPAR::SCATRA::tau_zero:
