@@ -65,7 +65,7 @@ fsisurface_(NULL)
     dserror("Cannot do STRUGENALPHA_STRONGDBC with prestressing");
 #endif
   }
-  
+
   // -------------------------------------------------------------------
   // check sanity of static analysis set-up
   // -------------------------------------------------------------------
@@ -1218,6 +1218,10 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
 #endif
     // blank residual DOFs that are on Dirichlet BC
     {
+    	// in case of existing local coordinate systems: forward rotation
+      if(locsysmanager_ != null)
+      	locsysmanager_->RotateGlobalToLocal(fresm_);
+
       Epetra_Vector fresmcopy(*fresm_);
       fresm_->Multiply(1.0, *invtoggle_, fresmcopy,  0.0);
     }
@@ -1249,8 +1253,19 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   stiff_->Complete();
 
   //----------------------- apply dirichlet BCs to system of equations
+  // in case of existing local coordinate systems: forward rotation
+  if(locsysmanager_ != null)
+  	locsysmanager_->RotateGlobalToLocal(SystemMatrix());
+
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
   LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
+  // in case of existing local coordinate systems: backward rotation
+  if(locsysmanager_ != null)
+  {
+  	locsysmanager_->RotateLocalToGlobal(fresm_);
+  	locsysmanager_->RotateLocalToGlobal(SystemMatrix());
+  }
+
 
 } // StruGenAlpha::Evaluate()
 

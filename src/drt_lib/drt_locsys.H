@@ -157,6 +157,12 @@ public:
     );
 
   /*!
+   * \brief Apply forward transformation of a single matrix
+   *
+   */
+  void RotateGlobalToLocal(RCP<LINALG::SparseMatrix> sysmat);
+
+  /*!
    * \brief Apply forward transformation of a single vector
    *
    */
@@ -173,6 +179,12 @@ public:
    *
    */
   void RotateLocalToGlobal(RCP<Epetra_Vector> vec);
+
+  /*!
+	 * \brief Apply backward transformation of a matrix
+	 *
+	 */
+  void RotateLocalToGlobal(RCP<LINALG::SparseMatrix> sysmat);
 
   //@}
 
@@ -300,6 +312,7 @@ protected:
   /// local system normals / tangents
   Epetra_SerialDenseMatrix                 normals_;
   Epetra_SerialDenseMatrix                 tangents_;
+  Epetra_SerialDenseMatrix								 origins_;
   Epetra_SerialDenseMatrix                 thirddir_;
 
   /// assignment of local systems to nodes
@@ -307,6 +320,9 @@ protected:
 
   /// maps containing the DOFs affected by locsys
   RCP<Epetra_Map>                          locsysdofmap_;
+
+  /// store OriginRadialSliding locsys IDs
+  vector<int>                              radslideids_;
 
   /// Transformation matrix which maps globally oriented components
   /// into locally oriented components (dubbed 'forward' transformation)
