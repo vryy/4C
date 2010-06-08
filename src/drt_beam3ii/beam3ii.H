@@ -40,6 +40,10 @@ using namespace Teuchos;
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_statmech.H"
+#include "../drt_fem_general/largerotations.H"
+
+//namespace with utility functions for operations with large rotations used
+using namespace LARGEROTATIONS;
 
 
 
@@ -416,9 +420,188 @@ private:
   //! @name methods for initilization of the element
 
   //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
-  //this function is templated and receives nnode from Beam3iiRegister::Initialize
   template<int nnode>
-  void SetUpReferenceGeometry(const vector<double>& xrefe,const vector<double>& rotrefe, const bool secondinit = false);
+  void SetUpReferenceGeometry(const vector<double>& xrefe,
+                              const vector<double>& rotrefe, 
+                              const bool secondinit = false)
+  {
+    /*this method initializes geometric variables of the element; the initilization can usually be applied to elements only once;
+     *therefore after the first initilization the flag isinit is set to true and from then on this method does not take any action
+     *when called again unless it is called on purpose with the additional parameter secondinit. If this parameter is passed into
+     *the method and is true the element is initialized another time with respective xrefe and rotrefe;
+     *note: the isinit_ flag is important for avoiding reinitialization upon restart. However, it should be possible to conduct a
+     *second initilization in principle (e.g. for periodic boundary conditions*/
+
+    if(!isinit_ || secondinit)
+    {
+      isinit_ = true;
+
+      /*first the nodes for the reference triad \Lambda_r of the element are chosen according to eq. (6.2), Crisfield 1999;
+       *note that the first node of the element in BACI is node 0 so that we need -1 in the end to convert from the notation
+       *in Crisfield 1999 to the BACI convention*/
+      nodeI_ = (int)floor(0.5*(NumNode()+1)) - 1;
+      nodeJ_ = (int)floor(0.5*(NumNode()+2)) - 1;
+
+
+      //resize and initialized STL vectors for rotational displacements so that they can store one value at each node
+      dispthetaconv_.resize(nnode);
+      dispthetaold_.resize(nnode);
+      dispthetanew_.resize(nnode);
+      for(int i=0; i<nnode; i++)
+        for(int j=0; j<3; j++)
+        {
+          dispthetaconv_[i](j) = 0;
+          dispthetaold_[i](j) = 0;
+          dispthetanew_[i](j) = 0;
+        }
+
+
+      //resize STL vectors for Jacobi determinants so that they can store one value at each Gauss point
+      jacobi_.resize(nnode-1);
+      kapparef_.resize(nnode-1);
+      jacobimass_.resize(nnode);
+      jacobinode_.resize(nnode);
+
+      //create Matrix for the derivates of the shapefunctions at the GP
+      LINALG::Matrix<1,nnode> shapefuncderiv;
+
+      //create Matrix for the shapefunctions at the GP
+      LINALG::Matrix<1,nnode> funct;
+
+      //derivative of curve in physical space with respect to curve parameter xi \in [-1;1] on element level
+      LINALG::Matrix<3,1> drdxi;
+
+      //Get DiscretizationType
+      DRT::Element::DiscretizationType distype = Shape();
+
+      //Get the applied integrationpoints for underintegration
+      DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
+
+      //Loop through all GPs for underintegration and calculate jacobi determinants and initial curvature at the GPs
+      for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+      {
+        //Get position xi of GP
+        const double xi = gausspoints.qxg[numgp][0];
+
+        //Get derivatives of shapefunctions at GP
+        DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
+
+        //Get shapefunctions at GP
+        DRT::UTILS::shape_function_1D(funct,xi,distype);
+
+        drdxi.Clear();
+
+        //calculate vector dxdxi
+        for(int node=0; node<nnode; node++)
+          for(int dof=0; dof<3 ; dof++)
+            drdxi(dof) += shapefuncderiv(node) * xrefe[3*node+dof];
+
+        //Store Jacobi determinant with respect to reference configuration
+        jacobi_[numgp]= drdxi.Norm2();
+
+
+        /*the below curvature computation is possible for 2-noded elements only; for higher order elements one might replace it by
+         *a computation according to eq. (2.12), Jelenic 1999*/
+        if(NumNode()>2)
+          dserror("computation of curvature in beam3ii element implemented only for 2 nodes!");
+
+        //compute local rotational vectors phi according to Crisfield 1999,(4.6) in quaterion form
+        LINALG::Matrix<4,1> phi12;
+        quaternionproduct(Qnew_[1],inversequaternion(Qnew_[0]),phi12);
+
+        //according o Crisfield 1999, eq. (4.9), kappa equals the vector corresponding to phi12 divided by the element reference length
+        quaterniontoangle(phi12,kapparef_[0]);
+        kapparef_[0].Scale(0.5/jacobi_[0]);
+
+
+      }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+
+
+
+      //Get the applied integrationpoints for exact integration of mass matrix
+      DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
+
+      //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
+      vector<LINALG::Matrix<1,nnode> > I(nnode-1);
+
+      //vector whose numgp-th element is a 1xnnode-matrix with the derivatives of all Lagrange polynomial basis functions evaluated at nnode-1 Gauss points for elasticity
+      vector<LINALG::Matrix<1,nnode> > Iprime(nnode-1);
+
+      //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at nnode-1 Gauss points for elasticity according to according to (3.18), Jelenic 1999
+      vector<vector<LINALG::Matrix<3,3> > > Itilde(nnode-1);
+
+      //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^nnode at nnode-1 Gauss points for elasticity according to according to (3.19), Jelenic 1999
+      vector<vector<LINALG::Matrix<3,3> > > Itildeprime(nnode-1);
+
+      //vector with rotation matrices at nnode-1 Gauss points for elasticity
+      vector<LINALG::Matrix<3,3> > Lambda(nnode-1);
+
+      //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the nnode Gauss points for mass matrix
+      vector<LINALG::Matrix<1,nnode> > Imass(nnode);
+
+      //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at the nnode Gauss points for mass matrix according to according to (3.18), Jelenic 1999
+      vector<vector<LINALG::Matrix<3,3> > > Itildemass(nnode);
+
+      //vector with rotation matrices at the nnode Gauss points for mass matrix
+      vector<LINALG::Matrix<3,3> > Lambdamass(nnode);
+
+      //evaluate basis functions
+      evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass,Lambdamass);
+
+      //exact Gauss integration requires as many integration points as nodes
+      Qconvgauss_.resize(nnode);
+
+
+      //Loop through all GPs for exact integration and compute initial jacobi determinant
+      for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
+      {
+
+        //Get position xi of GP
+        const double xi = gausspointsmass.qxg[numgp][0];
+
+        //Get derivatives of shapefunctions at GP
+        DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
+
+        drdxi.Clear();
+        //calculate dx/dxi and dz/dxi
+        for(int node=0; node<nnode; node++)
+          for(int dof=0; dof<3; dof++)
+            drdxi(dof)+=shapefuncderiv(node)*xrefe[3*node+dof];
+
+        //Store Jacobi determinant with respect to reference configuration
+        jacobimass_[numgp]= drdxi.Norm2();
+
+        //save triads at Gauss points for exact integration as quaternions
+        triadtoquaternion(Lambdamass[numgp],Qconvgauss_[numgp]);
+
+      }//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
+
+
+      //compute Jacobi determinant at gauss points for Lobatto quadrature (i.e. at nodes)
+      for(int numgp=0; numgp< nnode; numgp++)
+      {
+        //Get position xi of nodes
+        const double xi = -1.0 + 2*numgp / (nnode - 1);
+
+        //Get derivatives of shapefunctions at GP
+        DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
+
+        drdxi.Clear();
+        //calculate dx/dxi and dz/dxi
+        for(int node=0; node<nnode; node++)
+          for(int dof=0; dof<3; dof++)
+            drdxi(dof)+=shapefuncderiv(node)*xrefe[3*node+dof];
+
+        //Store Jacobi determinant for each node (Jacobi determinant refers by definition always to the reference configuration)
+        jacobinode_[numgp]= drdxi.Norm2();
+
+      }//for(int numgp=0; numgp< nnode; numgp++)
+
+    }//if(!isinit_)
+
+    return;
+
+  }//DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry()
 
   //@}
 
