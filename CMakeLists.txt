@@ -304,11 +304,11 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_isoexpo.cpp
   src/drt_matelast/elast_isomooneyrivlin.cpp
   src/drt_matelast/elast_isoneohooke.cpp
-  src/drt_matelast/elast_varisoneohooke.cpp
   src/drt_matelast/elast_isoquad.cpp
   src/drt_matelast/elast_isovarga.cpp
   src/drt_matelast/elast_isoyeoh.cpp
   src/drt_matelast/elast_summand.cpp
+  src/drt_matelast/elast_varisoneohooke.cpp
   src/drt_matelast/elast_vologden.cpp
   src/drt_matelast/elast_volpenalty.cpp
   src/drt_matelast/elast_volsussmanbathe.cpp
@@ -474,6 +474,7 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_nstet_evaluate.cpp
   src/drt_so3/so_nstet_input.cpp
   src/drt_so3/so_nstet_nodalstrain.cpp
+  src/drt_so3/so_nstet_stabilization.cpp
   src/drt_so3/so_nurbs27.cpp
   src/drt_so3/so_nurbs27_evaluate.cpp
   src/drt_so3/so_nurbs27_input.cpp
@@ -1860,14 +1861,14 @@ baci_test(thermo3D_FBC_ost 1 "")
 baci_test(thermo3D_FBC_ost 2 "")
 baci_test(thermo3D_FBC_statics 1 "")
 baci_test(thermo3D_FBC_statics 2 "")
-baci_test(torsion2quadratic 1 "")
-baci_test(torsion2quadratic 2 "")
-baci_test(torsion3quadratic 1 "")
-baci_test(torsion3quadratic 2 "")
 baci_test(torsion2cosine 1 "")
 baci_test(torsion2cosine 2 "")
+baci_test(torsion2quadratic 1 "")
+baci_test(torsion2quadratic 2 "")
 baci_test(torsion3cosine 1 "")
 baci_test(torsion3cosine 2 "")
+baci_test(torsion3quadratic 1 "")
+baci_test(torsion3quadratic 2 "")
 baci_test(truss2test1 1 "")
 baci_test(truss3test1 1 "")
 baci_test(tsi_lindilatation_geolin 1 "")
