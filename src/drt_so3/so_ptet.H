@@ -25,6 +25,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_inpar/inpar_structure.H"
@@ -156,19 +157,19 @@ public:
   The method performs all steps needed to init the shell8 elements. it e.g. calculates the
   field of averaged directors at nodes.
   */
-  int Initialize(DRT::Discretization& dis);
+  //int Initialize(DRT::Discretization& dis);
 
   /*!
   \brief Call Element pre-evaluation
 
   */
-  virtual void PreEvaluate(DRT::Discretization& dis,
-                           Teuchos::ParameterList& p,
-                           RCP<LINALG::SparseOperator> systemmatrix1,
-                           RCP<LINALG::SparseOperator> systemmatrix2,
-                           RCP<Epetra_Vector>          systemvector1,
-                           RCP<Epetra_Vector>          systemvector2,
-                           RCP<Epetra_Vector>          systemvector3);
+//   virtual void PreEvaluate(DRT::Discretization& dis,
+//                            Teuchos::ParameterList& p,
+//                            RCP<LINALG::SparseOperator> systemmatrix1,
+//                            RCP<LINALG::SparseOperator> systemmatrix2,
+//                            RCP<Epetra_Vector>          systemvector1,
+//                            RCP<Epetra_Vector>          systemvector2,
+//                            RCP<Epetra_Vector>          systemvector3);
 
   //@}
 
@@ -176,6 +177,44 @@ public:
   friend class DRT::ELEMENTS::Ptet;
 
 private:
+
+
+}; // class PtetRegister
+
+
+//=======================================================================
+//=======================================================================
+
+class PtetType : public DRT::ElementObjectType
+{
+  //! allow Ptet element to access the nodal data
+  friend class DRT::ELEMENTS::Ptet;
+
+public:
+
+  std::string Name() const { return "PtetType"; }
+
+  static PtetType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
+
+  virtual void PreEvaluate(DRT::Discretization& dis,
+                           Teuchos::ParameterList& p,
+                           RCP<LINALG::SparseOperator> systemmatrix1,
+                           RCP<LINALG::SparseOperator> systemmatrix2,
+                           RCP<Epetra_Vector>          systemvector1,
+                           RCP<Epetra_Vector>          systemvector2,
+                           RCP<Epetra_Vector>          systemvector3);
+private:
+
+  static PtetType instance_;
 
   // map of row nodes adjacent to Ptet elements
   map<int,DRT::Node*>                    noderids_;
@@ -221,31 +260,6 @@ private:
                                LINALG::Matrix<NUMSTR_PTET,NUMSTR_PTET>& CC,
                                const LINALG::Matrix<NUMSTR_PTET,1>& S,
                                const LINALG::Matrix<NUMDIM_PTET,NUMDIM_PTET>& C);
-
-}; // class PtetRegister
-
-
-//=======================================================================
-//=======================================================================
-
-class PtetType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "PtetType"; }
-
-  static PtetType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
-                                             const int id,
-                                             const int owner );
-
-private:
-
-  static PtetType instance_;
 };
 
 /*!
@@ -257,7 +271,7 @@ class Ptet : public DRT::Element
 {
 public:
 
-  friend class PtetRegister;
+  friend class PtetType;
 
 
   /*!
@@ -392,6 +406,9 @@ public:
   virtual inline RCP<DRT::ElementRegister> ElementRegister() const
   { return rcp(new DRT::ELEMENTS::PtetRegister(Type())); }
 
+  virtual PtetType & ElementObjectType() const
+  { return PtetType::Instance(); }
+
   /*!
   \brief Read input for this element
   */
@@ -507,8 +524,6 @@ protected:
   //! element's def-gradient and flag indicating age of it
   bool                                                     FisNew_;
   LINALG::Matrix<NUMDIM_PTET,NUMDIM_PTET>                  F_;
-  //! ptr to this element's register class
-  DRT::ELEMENTS::PtetRegister*                             myregister_;
 
   // internal calculation methods
 
@@ -517,7 +532,7 @@ protected:
 
   // init the inverse of the jacobian and its determinant
   // in the material configuration
-  virtual void InitElement(DRT::ELEMENTS::PtetRegister* myregister);
+  virtual void InitElement();
 
   // return volume of element
   virtual inline double Volume() { return V_; }

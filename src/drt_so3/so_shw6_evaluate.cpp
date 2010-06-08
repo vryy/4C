@@ -1130,7 +1130,7 @@ int DRT::ELEMENTS::So_shw6::soshw6_findoptparmap()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  maf 11/08|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Soshw6Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::So_shw6Type::Initialize(DRT::Discretization& dis)
 {
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {

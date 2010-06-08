@@ -57,7 +57,12 @@ public:
                                              const int id,
                                              const int owner );
 
+  virtual int Initialize(DRT::Discretization& dis);
+
 private:
+
+  //! debug plot for defining thickness direction
+  void sosh8_gmshplotdis(const DRT::Discretization& dis);
 
   static So_sh8Type instance_;
 };
@@ -80,7 +85,7 @@ class So_sh8 : public So_hex8
 public:
 
   //! @name Friends
-  friend class Sosh8Register;
+  friend class So_sh8Type;
   friend class Soh8Surface;
   friend class Soh8Line;
 
@@ -412,13 +417,13 @@ public:
   complicated because a "not-thin" So_sh8 is morphed to a So_hex8 where the
   discretization is not filled-complete anymore.
   */
-  int Initialize(DRT::Discretization& dis);
+  //int Initialize(DRT::Discretization& dis);
 
   //@}
 
 
   //! debug plot for defining thickness direction
-  void sosh8_gmshplotdis(const DRT::Discretization& dis);
+  //void sosh8_gmshplotdis(const DRT::Discretization& dis);
 
 }; // class Sosh8Register
 

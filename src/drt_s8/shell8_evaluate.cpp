@@ -3875,7 +3875,7 @@ static void s8_averagedirector(Epetra_SerialDenseMatrix& dir_list,
 /*----------------------------------------------------------------------*
  |  init the element (public)                                mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Shell8Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Shell8Type::Initialize(DRT::Discretization& dis)
 {
   //-------------------- loop all my column elements and init directors at nodes
   for (int i=0; i<dis.NumMyColElements(); ++i)

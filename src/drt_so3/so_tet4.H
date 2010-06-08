@@ -23,6 +23,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 
@@ -58,7 +59,7 @@ namespace ELEMENTS
 class Sotet4Register;
 class InvDesign;
 
-class So_tet4Type : public DRT::ParObjectType
+class So_tet4Type : public DRT::ElementObjectType
 {
 public:
 
@@ -72,6 +73,8 @@ public:
                                              const string eledistype,
                                              const int id,
                                              const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
 
 private:
 
@@ -88,7 +91,7 @@ class So_tet4 : public DRT::Element
 public:
 
   //! @name Friends
-  friend class Sotet4Register;
+  friend class So_tet4Type;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -227,6 +230,9 @@ public:
   an instance of a matching DRT::ElementRegister.
   */
   virtual RCP<DRT::ElementRegister> ElementRegister() const;
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return So_tet4Type::Instance(); }
 
   //@}
 
@@ -587,7 +593,7 @@ public:
   The method performs all steps needed to init the shell8 elements. it e.g. calculates the
   field of averaged directors at nodes.
   */
-  int Initialize(DRT::Discretization& dis);
+  //int Initialize(DRT::Discretization& dis);
 
   //@}
 

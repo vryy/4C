@@ -589,7 +589,7 @@ void DRT::ELEMENTS::Beam2rRegister::Print(ostream& os) const
 /*-----------------------------------------------------------------------*
  | Initialize (public) Setting up geometric variables for beam2r elements|
  *-----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam2rRegister::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Beam2rType::Initialize(DRT::Discretization& dis)
 {
 
  //loop through all elements

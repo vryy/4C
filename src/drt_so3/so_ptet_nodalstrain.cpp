@@ -37,9 +37,9 @@ using namespace std;
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 05/08|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::PtetRegister::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::PtetType::Initialize(DRT::Discretization& dis)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::PtetRegister::Initialize");
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::PtetType::Initialize");
 
   const int myrank = dis.Comm().MyPID();
 
@@ -51,8 +51,8 @@ int DRT::ELEMENTS::PtetRegister::Initialize(DRT::Discretization& dis)
     DRT::ELEMENTS::Ptet* actele = dynamic_cast<DRT::ELEMENTS::Ptet*>(dis.lColElement(i));
     if (!actele) dserror("cast to Ptet* failed");
 
-    // init the element (also set pointer to this register class)
-    actele->InitElement(this);
+    // init the element
+    actele->InitElement();
 
     // register element in list of column Ptet elements
     elecids_[actele->Id()] = actele;
@@ -120,15 +120,15 @@ int DRT::ELEMENTS::PtetRegister::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  pre-evaluation of elements (public)                        gee 05/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
-                                              Teuchos::ParameterList& p,
-                                              RCP<LINALG::SparseOperator> systemmatrix1,
-                                              RCP<LINALG::SparseOperator> systemmatrix2,
-                                              RCP<Epetra_Vector>          systemvector1,
-                                              RCP<Epetra_Vector>          systemvector2,
-                                              RCP<Epetra_Vector>          systemvector3)
+void DRT::ELEMENTS::PtetType::PreEvaluate(DRT::Discretization& dis,
+                                          Teuchos::ParameterList& p,
+                                          RCP<LINALG::SparseOperator> systemmatrix1,
+                                          RCP<LINALG::SparseOperator> systemmatrix2,
+                                          RCP<Epetra_Vector>          systemvector1,
+                                          RCP<Epetra_Vector>          systemvector2,
+                                          RCP<Epetra_Vector>          systemvector3)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::PtetRegister::PreEvaluate");
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::PtetType::PreEvaluate");
 
   // nodal integration for nlnstiff and internal forces only
   // (this method does not compute stresses/strains/element updates)
@@ -379,16 +379,16 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
 /*----------------------------------------------------------------------*
  |  do nodal integration (public)                              gee 05/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*     stiff,
-                                                   Epetra_SerialDenseVector*     force,
-                                                   map<int,DRT::Node*>&          nodepatch,
-                                                   vector<DRT::ELEMENTS::Ptet*>& adjele,
-                                                   vector<double>*               nodalstress,
-                                                   vector<double>*               nodalstrain,
-                                                   const INPAR::STR::StressType  iostress,
-                                                   const INPAR::STR::StrainType  iostrain)
+void DRT::ELEMENTS::PtetType::NodalIntegration(Epetra_SerialDenseMatrix*     stiff,
+                                               Epetra_SerialDenseVector*     force,
+                                               map<int,DRT::Node*>&          nodepatch,
+                                               vector<DRT::ELEMENTS::Ptet*>& adjele,
+                                               vector<double>*               nodalstress,
+                                               vector<double>*               nodalstrain,
+                                               const INPAR::STR::StressType  iostress,
+                                               const INPAR::STR::StrainType  iostrain)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::PtetRegister::NodalIntegration");
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::PtetType::NodalIntegration");
 
   const int nnodeinpatch = (int)nodepatch.size();
   const int ndofinpatch  = nnodeinpatch*3;
@@ -436,13 +436,13 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
   {
     // current element
     DRT::ELEMENTS::Ptet* actele = adjele[ele];
-    
+
     // spatial deriv of that element
     LINALG::Matrix<NUMNOD_PTET,NUMDIM_PTET>& nxyz = actele->nxyz_;
-    
+
     // volume of that element assigned to node L
     double V = actele->Volume()/NUMNOD_PTET;
-    
+
     // def-gradient of the element
     LINALG::Matrix<NUMDIM_PTET,NUMDIM_PTET>& F = actele->F_;
 
@@ -705,7 +705,7 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*    
 /*----------------------------------------------------------------------*
  | material laws for Ptet (protected)                          gee 10/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PtetRegister::SelectMaterial(
+void DRT::ELEMENTS::PtetType::SelectMaterial(
                       RCP<MAT::Material> mat,
                       LINALG::Matrix<6,1>& stress,
                       LINALG::Matrix<6,6>& cmat,
@@ -767,7 +767,7 @@ void DRT::ELEMENTS::PtetRegister::SelectMaterial(
 /*----------------------------------------------------------------------*
  |  compute deviatoric tangent and stresses (private/static)   gee 06/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PtetRegister::DevStressTangent(
+void DRT::ELEMENTS::PtetType::DevStressTangent(
   LINALG::Matrix<NUMSTR_PTET,1>& Sdev,
   LINALG::Matrix<NUMSTR_PTET,NUMSTR_PTET>& CCdev,
   LINALG::Matrix<NUMSTR_PTET,NUMSTR_PTET>& CC,

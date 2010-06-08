@@ -21,6 +21,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -39,7 +40,7 @@ namespace ELEMENTS
 // forward declarations
 //class ConstraintElement3Line;
 
-class ConstraintElement3Type : public DRT::ParObjectType
+class ConstraintElement3Type : public DRT::ElementObjectType
 {
 public:
 
@@ -181,6 +182,9 @@ public:
   an instance of a matching DRT::ElementRegister.
   */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return ConstraintElement3Type::Instance(); }
 
   //@}
 

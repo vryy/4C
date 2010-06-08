@@ -26,6 +26,7 @@ Maintainer: Markus Gitterle
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -48,7 +49,7 @@ namespace ELEMENTS
 // forward declarations
 class Wall1Line;
 
-class Wall1Type : public DRT::ParObjectType
+class Wall1Type : public DRT::ElementObjectType
 {
 public:
 
@@ -213,6 +214,9 @@ public:
   /// an DRT::ElementRegister. This method allocates and returns
   /// an instance of a matching DRT::ElementRegister.
   virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const;
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return Wall1Type::Instance(); }
 
   //@}
 
@@ -852,7 +856,7 @@ private:
 //=======================================================================
 //=======================================================================
 
-class Wall1LineType : public DRT::ParObjectType
+class Wall1LineType : public DRT::ElementObjectType
 {
 public:
 
@@ -965,6 +969,9 @@ public:
   /// an DRT::ElementRegister. This method allocates and returns
   /// an instance of a matching DRT::ElementRegister.
   virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const { return Teuchos::null; }
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return Wall1LineType::Instance(); }
 
   //@}
 

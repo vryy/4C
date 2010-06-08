@@ -44,6 +44,7 @@ Maintainer: Alexander Popp
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -61,7 +62,7 @@ using namespace Teuchos;
 namespace MORTAR
 {
 
-class MortarElementType : public DRT::ParObjectType
+class MortarElementType : public DRT::ElementObjectType
 {
 public:
 
@@ -205,6 +206,9 @@ public:
   */
   virtual RCP<DRT::ElementRegister> ElementRegister() const
   { return rcp(new DRT::ElementRegister(Type())); }
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return MortarElementType::Instance(); }
 
   //@}
 

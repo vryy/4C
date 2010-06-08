@@ -21,6 +21,7 @@ Maintainer: Ursula Mayer
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 
@@ -35,7 +36,7 @@ class Discretization;
 namespace ELEMENTS
 {
 
-class Bele2Type : public DRT::ParObjectType
+class Bele2Type : public DRT::ElementObjectType
 {
 public:
 
@@ -114,6 +115,9 @@ public:
   virtual int NumDofPerElement() const { return 0; }
   void Print(ostream& os) const;
   virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const;
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return Bele2Type::Instance(); }
 
   //@}
 

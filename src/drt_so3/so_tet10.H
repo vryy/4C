@@ -26,6 +26,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 
@@ -57,7 +58,7 @@ namespace ELEMENTS
 // forward declarations
 class Sotet10Register;
 
-class So_tet10Type : public DRT::ParObjectType
+class So_tet10Type : public DRT::ElementObjectType
 {
 public:
 
@@ -227,6 +228,9 @@ public:
   an instance of a matching DRT::ElementRegister.
   */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return So_tet10Type::Instance(); }
 
   //@}
 

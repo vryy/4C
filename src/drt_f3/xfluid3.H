@@ -22,6 +22,7 @@ Maintainer: Axel Gerstenberger
 
 
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_xfem/dof_management_element.H"
@@ -38,7 +39,7 @@ namespace DRT
 
   namespace ELEMENTS
   {
-class XFluid3Type : public DRT::ParObjectType
+class XFluid3Type : public DRT::ElementObjectType
 {
 public:
 
@@ -191,6 +192,9 @@ private:
         void Print(ostream& os) const;
 
         virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const;
+
+        virtual DRT::ElementObjectType & ElementObjectType() const
+        { return XFluid3Type::Instance(); }
 
         //@}
 
@@ -481,7 +485,7 @@ private:
     }; // class XFluid3Register
 
 
-class XFluid3SurfaceType : public DRT::ParObjectType
+class XFluid3SurfaceType : public DRT::ElementObjectType
 {
 public:
 
@@ -555,6 +559,9 @@ private:
         void Print(ostream& os) const;
 
         virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const { return null; }
+
+        virtual DRT::ElementObjectType & ElementObjectType() const
+        { return XFluid3SurfaceType::Instance(); }
 
         //@}
 
@@ -673,7 +680,7 @@ private:
 
     }; // class Fluid3Surface
 
-class XFluid3LineType : public DRT::ParObjectType
+class XFluid3LineType : public DRT::ElementObjectType
 {
 public:
 
@@ -750,6 +757,9 @@ private:
         void Print(ostream& os) const;
 
         virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const { return null; }
+
+        virtual DRT::ElementObjectType & ElementObjectType() const
+        { return XFluid3LineType::Instance(); }
 
         //! @name Evaluation
         virtual int Evaluate(

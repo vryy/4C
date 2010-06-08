@@ -342,7 +342,7 @@ void DRT::ELEMENTS::Truss2Register::Print(ostream& os) const
 }
 
 
-int DRT::ELEMENTS::Truss2Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Truss2Type::Initialize(DRT::Discretization& dis)
 {
   //reference node positions
   LINALG::Matrix<4,1> xrefe;

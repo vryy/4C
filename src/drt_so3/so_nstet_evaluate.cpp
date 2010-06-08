@@ -34,10 +34,8 @@ using namespace std;
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 05/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet::InitElement(DRT::ELEMENTS::NStetRegister* myregister)
+void DRT::ELEMENTS::NStet::InitElement()
 {
-  myregister_ = myregister;
-
   LINALG::Matrix<NUMNOD_NSTET,NUMDIM_NSTET> xrefe;
   LINALG::Matrix<NUMNOD_NSTET,NUMDIM_NSTET+1> J;
   {
@@ -188,8 +186,8 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
       if (straindata==null) dserror("Cannot get strain 'data'");
       LINALG::Matrix<NUMNOD_NSTET,NUMSTR_NSTET> stress;
       LINALG::Matrix<NUMNOD_NSTET,NUMSTR_NSTET> strain;
-      map<int,vector<double> >& nodestress = myregister_->nodestress_;
-      map<int,vector<double> >& nodestrain = myregister_->nodestrain_;
+      map<int,vector<double> >& nodestress = ElementObjectType().nodestress_;
+      map<int,vector<double> >& nodestrain = ElementObjectType().nodestrain_;
       for (int i=0; i<NumNode(); ++i)
       {
         int gid = Nodes()[i]->Id();
@@ -278,31 +276,31 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
       int gid = Id();
       LINALG::Matrix<NUMGPT_NSTET,NUMSTR_NSTET> gpstress(((*gpstressmap)[gid])->A(),true);
 
-      if (stresstype=="ndxyz") 
+      if (stresstype=="ndxyz")
       {
         // extrapolate stresses/strains at Gauss points to nodes
         so_tet4_expol(gpstress, elevec1, elevec2);
       }
-      else if (stresstype=="cxyz") 
+      else if (stresstype=="cxyz")
       {
         RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
         if (elestress==null)
           dserror("No element stress/strain vector available");
         const Epetra_BlockMap elemap = elestress->Map();
         int lid = elemap.LID(Id());
-        if (lid!=-1) 
+        if (lid!=-1)
         {
-          for (int i = 0; i < NUMSTR_NSTET; ++i) 
+          for (int i = 0; i < NUMSTR_NSTET; ++i)
           {
             double& s = (*((*elestress)(i)))[lid];
             s = 0.;
-            for (int j = 0; j < NUMGPT_NSTET; ++j) 
+            for (int j = 0; j < NUMGPT_NSTET; ++j)
               s += gpstress(j,i);
             s /= NUMGPT_NSTET;
           }
         }
       }
-      else if (stresstype=="cxyz_ndxyz") 
+      else if (stresstype=="cxyz_ndxyz")
       {
         // extrapolate stresses/strains at Gauss points to nodes
         so_tet4_expol(gpstress, elevec1, elevec2);
@@ -313,11 +311,11 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
         const Epetra_BlockMap elemap = elestress->Map();
         int lid = elemap.LID(Id());
         if (lid!=-1) {
-          for (int i = 0; i < NUMSTR_NSTET; ++i) 
+          for (int i = 0; i < NUMSTR_NSTET; ++i)
           {
             double& s = (*((*elestress)(i)))[lid];
             s = 0.;
-            for (int j = 0; j < NUMGPT_NSTET; ++j) 
+            for (int j = 0; j < NUMGPT_NSTET; ++j)
               s += gpstress(j,i);
             s /= NUMGPT_NSTET;
           }
@@ -404,7 +402,7 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
   //--------------------------------------------------- geometry update
   if (!FisNew_) DeformationGradient(disp);
   LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& defgrd = F_;
-    
+
   // reset the bool indicating that the stored deformation gradient is 'fresh'
   FisNew_ = false;
 
@@ -727,7 +725,7 @@ void DRT::ELEMENTS::NStet::calcstress(vector<int>&              lm,
                           LINALG::Matrix<NUMGPT_NSTET,NUMSTR_NSTET>* stresses,
                           LINALG::Matrix<NUMGPT_NSTET,NUMSTR_NSTET>* elestrain,
                           const INPAR::STR::StressType     iostress,
-                          const INPAR::STR::StrainType     iostrain) 
+                          const INPAR::STR::StrainType     iostrain)
 {
   //--------------------------------------------------- geometry update
   if (!FisNew_) DeformationGradient(disp);
@@ -913,7 +911,7 @@ void DRT::ELEMENTS::NStet::VolStabilization(
                     LINALG::SerialDenseMatrix&               stiff,
                     LINALG::SerialDenseVector&               force)
 {
-  
+
   //---------------------------------------------------------------------
   // build averaged deformation gradient and volume for each node
   const int                    ndofperpatch=(int)adjlm.size();
@@ -936,7 +934,7 @@ void DRT::ELEMENTS::NStet::VolStabilization(
     J[i] = Fnode[i].Determinant();
     if (J[i]<1.0e-8) dserror("Nodal detF almost zero or negative. detF %15.10e",J[i]);
   }
-  
+
   //-----------------------------------------------------------------------
   // do positioning map node -> dofsinpatch
   map<int,int>  node_pos;
@@ -947,7 +945,7 @@ void DRT::ELEMENTS::NStet::VolStabilization(
     node_pos[pnode->first] = count;
     count++;
   }
-  
+
 
   //----------------------------------------------------------------------
   // build nodal quantities strains,stresses, pressure, Grad(\delta u) and assemble them
@@ -969,7 +967,7 @@ void DRT::ELEMENTS::NStet::VolStabilization(
     double density = 0.0;
     RCP<MAT::Material> mat = nodaladjele[node].begin()->second->Material();
     // maybe do this with volumetric strain only????
-    myregister_->SelectMaterial(mat,stressnode,cmatnode,density,gl,Fnode[node],0);
+    ElementObjectType().SelectMaterial(mat,stressnode,cmatnode,density,gl,Fnode[node],0);
     // compute p at node I: p = -1/3 * J^-1 * S:C
     p(node) = 0.0;
     p(node) += cg(0,0) * stressnode(0);
@@ -1008,7 +1006,7 @@ void DRT::ELEMENTS::NStet::VolStabilization(
         Bl(7,NODDOF_NSTET*i+1) = nxyz(i,0);
         Bl(8,NODDOF_NSTET*i+2) = nxyz(i,1);
       }
-      
+
       // element transposed inverse deformation gradient F^{-T}
       LINALG::Matrix<9,1> FinvT;
       {
@@ -1032,9 +1030,9 @@ void DRT::ELEMENTS::NStet::VolStabilization(
       for (int i=0; i<ele->NumNode(); ++i)
       {
         const int pos = node_pos[ele->Nodes()[i]->Id()];
-        G(node,NODDOF_NSTET*pos+0) += Gele(i*NODDOF_NSTET+0); 
-        G(node,NODDOF_NSTET*pos+1) += Gele(i*NODDOF_NSTET+1); 
-        G(node,NODDOF_NSTET*pos+2) += Gele(i*NODDOF_NSTET+2); 
+        G(node,NODDOF_NSTET*pos+0) += Gele(i*NODDOF_NSTET+0);
+        G(node,NODDOF_NSTET*pos+1) += Gele(i*NODDOF_NSTET+1);
+        G(node,NODDOF_NSTET*pos+2) += Gele(i*NODDOF_NSTET+2);
       }
     } // for (fool = nodaladjele[node].begin(); fool != nodaladjele[node].end(); ++fool)
   } // for (int node=0; node<NumNode(); ++node)
@@ -1069,21 +1067,21 @@ void DRT::ELEMENTS::NStet::VolStabilization(
 
   //----------------------------------------------------------------------
   LINALG::Matrix<NUMNOD_NSTET,1>            phat;
-  LINALG::Matrix<NUMNOD_NSTET,NUMNOD_NSTET> MmEDE; 
+  LINALG::Matrix<NUMNOD_NSTET,NUMNOD_NSTET> MmEDE;
   MmEDE.MultiplyTN(E,E);
   MmEDE.Update(1.0,M,-1.0/Volume());
   phat.Multiply(MmEDE,p);
   //printf("Id %d p %15.10e %15.10e %15.10e %15.10e \n",Id(),p(0),p(1),p(2),p(3));
   //printf("phat %15.10e %15.10e %15.10e %15.10e \n\n",phat(0),phat(1),phat(2),phat(3));
   //fflush(stdout);
-  
+
   //----------------------------------------------------------------------
   // Multiply nodal Grad \delta u operator with projection and pressure and element volume
   Epetra_SerialDenseVector ephat(View,phat.A(),NUMNOD_NSTET);
   force.Multiply('T','N',-Jele*Volume(),G,ephat,0.0);
 
 #if 0
-  //--------------------------------------------------------------------- 
+  //---------------------------------------------------------------------
   // build projected pressure
   // pbar = D^-1 E p = 1/V * E p
   // (note that pbar is just the average of the nodal values ;-) )
@@ -1120,13 +1118,13 @@ void DRT::ELEMENTS::NStet::VolStabilization(
     pele += cg(2,0) * stress(5);
     pele += cg(2,1) * stress(4);
     pele += cg(2,2) * stress(2);
-    
+
     pele *= ((-1.0/3.0)/F.Determinant());
-    
+
     printf("ele %10d pbar %15.10e pele %15.10e\n",Id(),pbar(0),pele);
     fflush(stdout);
   }
-#endif  
+#endif
 
 
 
@@ -1134,12 +1132,12 @@ void DRT::ELEMENTS::NStet::VolStabilization(
 
   return;
 } // DRT::ELEMENTS::NStet::VolStabilization
-                                
-                                
-                                
-                                
-                                
-                                
+
+
+
+
+
+
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

@@ -87,12 +87,12 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
   else if (action=="eas_set_multi")               act = So_hex8::eas_set_multi;
   else if (action=="calc_homog_dens")             act = So_hex8::calc_homog_dens;
   else if (action=="multi_readrestart")           act = So_hex8::multi_readrestart;
-  else if (action=="calc_stc_matrix")            act = So_hex8::calc_stc_matrix;  
+  else if (action=="calc_stc_matrix")            act = So_hex8::calc_stc_matrix;
   else if (action=="calc_potential_stiff")        act = So_hex8::calc_potential_stiff;
-  else 
+  else
     {
       cout<<action<<endl;
-      dserror("Unknown type of action for So_hex8"); 
+      dserror("Unknown type of action for So_hex8");
     }
   // what should the element do
   switch(act) {
@@ -542,27 +542,27 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       const INPAR::STR::STC_Scale stc_scaling = params.get<INPAR::STR::STC_Scale>("stc_scaling");
       if (stc_scaling==INPAR::STR::stc_none)
         dserror("To scale or not to scale, that's the querry!");
-      
+
       const double stc_fact = params.get<double>("stc_factor");
-      
+
       if (stc_scaling==INPAR::STR::stc_para or stc_scaling==INPAR::STR::stc_parasym)
       {
         RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vector 'displacement'");
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        
+
         LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
         DRT::Node** nodes = Nodes();
         for (int i=0; i<NUMNOD_SOH8; ++i)
         {
           const double* x = nodes[i]->X();
-          
+
           xcurr(i,0) = x[0] + mydisp[i*NODDOF_SOH8+0];
           xcurr(i,1) = x[1] + mydisp[i*NODDOF_SOH8+1];
           xcurr(i,2) = x[2] + mydisp[i*NODDOF_SOH8+2];
         }
-        
+
         LINALG::Matrix<NUMDOF_,NUMDOF_> TotJac(true);
         LINALG::Matrix<NUMDOF_,NUMDOF_> TotJacInv(true);
         vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs_X = sosh8_derivs_sdc();
@@ -572,12 +572,12 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
           jac.Multiply(derivs_X[i],xcurr);
           LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jacInv(jac);
           LINALG::FixedSizeSerialDenseSolver<NUMDIM_SOH8,NUMDIM_SOH8,1> solve_for_inverseJ;
-          
+
           solve_for_inverseJ.SetMatrix(jacInv);
           int err2 = solve_for_inverseJ.Factor();
           int err = solve_for_inverseJ.Invert();
           if ((err != 0) && (err2!=0)) dserror("Inversion of Tinv (Jacobian) failed");
-            
+
           for (int k=0; k<NUMDIM_SOH8; k++)
             for (int l=0; l<NUMDIM_SOH8; l++)
             {
@@ -587,8 +587,8 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
           TotJac(i*NUMDIM_SOH8+3,i*NUMDIM_SOH8+3) = 1.0;
           TotJacInv(i*NUMDIM_SOH8+3,i*NUMDIM_SOH8+3) = 1.0;
         }
-  
-        
+
+
         for(int ind1=0; ind1< NUMDOF_; ind1++)
         {
           elemat1(ind1,ind1)+=1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact);
@@ -598,7 +598,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
             elemat1(ind1+16,ind1)+=(stc_fact-1.0)/(2.0*stc_fact);
           }
         }
-        
+
         LINALG::Matrix<NUMDOF_,NUMDOF_> tmp;
         tmp.Multiply(TotJacInv,elemat1);
         elemat1.Multiply(tmp,TotJac);
@@ -624,7 +624,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         params.get<RefCountPtr<PotentialManager> >("pot_man", null);
       if (potentialmanager==null)
         dserror("No PotentialManager in sh8p8 available");
-      
+
       RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
       if (cond==null)
         dserror("Condition not available in sh8p8");
@@ -1934,7 +1934,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       // -1./shearmod * (-Eem . inv(Dem)) . (ep^T . Eem_{,d})^T
       // +1/shearmod * a^{-1} * w^T . (p^T . w^T_,d)
       dargmatrix->MultiplyNN(+1.0/(shearmod*stabAA(0,0)),stabHA,prestimesstabHAbydisp,1.0);
-      // 
+      //
       if (stab_ == stab_spatial) {
         if (stiffmatrix != NULL) {
           // -(w.p) * (-a^{-2}) * J_,d . a_,d
@@ -2394,7 +2394,7 @@ double DRT::ELEMENTS::So_sh8p8::ShearMod() const
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  maf 07/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Sosh8p8Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::So_sh8p8Type::Initialize(DRT::Discretization& dis)
 {
   //sosh8_gmshplotdis(dis);
 

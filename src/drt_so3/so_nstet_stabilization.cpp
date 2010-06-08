@@ -41,7 +41,7 @@ void DRT::ELEMENTS::NStet::VolDevStabLinear(
                         LINALG::Matrix<NUMDOF_NSTET,1>* force)
 {
   if (!force) return;
-  
+
   //------------------------------------ get nodal pressure, J and defgrd
   const int numnode = NumNode();
   vector<double> npressure(numnode);
@@ -50,16 +50,16 @@ void DRT::ELEMENTS::NStet::VolDevStabLinear(
   vector<LINALG::Matrix<3,3> > nF(numnode);
   for (int i=0; i<numnode; ++i)
   {
-    const int lid = myregister_->pnodecol_->Map().LID(Nodes()[i]->Id());
-    npressure[i] = (*myregister_->pnodecol_)[lid];
-    nJ[i]        = (*myregister_->Jnodecol_)[lid];
+    const int lid = ElementObjectType().pnodecol_->Map().LID(Nodes()[i]->Id());
+    npressure[i] = (*ElementObjectType().pnodecol_)[lid];
+    nJ[i]        = (*ElementObjectType().Jnodecol_)[lid];
     //for (int j=0; j<9; ++j) Fvec(j) = (*(*myregister_->Fnodecol_)(j))[lid];
     //myregister_->VectortoMatrix(Fvec,nF[i]);
     //nF[i].Clear(); nF[i](0,0) = 1.0; nF[i](1,1) = 1.0; nF[i](2,2) = 1.0;
     //nF[i].Scale(pow(nJ[i],1./3.));
     //cout << nF[i];
   }
-  
+
   //------------------------------------- compute average pressure
   //double averJ = 0.0;
   double averpressure = 0.0;
@@ -70,13 +70,13 @@ void DRT::ELEMENTS::NStet::VolDevStabLinear(
   }
   //averJ /= numnode;
   averpressure /= numnode;
-  
+
   //------------------------------------------------------- get (p - P p)
   vector<double> nPpressure(npressure);
   for (int i=0; i<numnode; ++i)
     nPpressure[i] -= averpressure;
   //cout << averpressure << " linear " << nPpressure[0] << " " << nPpressure[1] << " " << nPpressure[2] << " " << nPpressure[3] << endl;
-  
+
   //-------------------------------------------- prepare integration loop
   const double alpha  = (5.0 + 3.0*sqrt(5.0))/20.0;
   const double beta   = (5.0 - sqrt(5.0))/20.0;
@@ -97,7 +97,7 @@ void DRT::ELEMENTS::NStet::VolDevStabLinear(
     double J = 0.0;
     LINALG::Matrix<3,3> F;
     F.Clear();
-    for (int i=0; i<numnode; ++i) 
+    for (int i=0; i<numnode; ++i)
     {
       p += nPpressure[i] * funct(i);
       J += nJ[i]         * funct(i);
@@ -105,7 +105,7 @@ void DRT::ELEMENTS::NStet::VolDevStabLinear(
     }
     F.Clear(); F(0,0) = 1.0; F(1,1) = 1.0; F(2,2) = 1.0;
     F.Scale(pow(J,1./3.));
-    
+
     // righ cauchy green and its inverse
     LINALG::Matrix<3,3> cg;
     cg.MultiplyTN(F,F);
@@ -119,7 +119,7 @@ void DRT::ELEMENTS::NStet::VolDevStabLinear(
     stress(3) = cg(0,1);
     stress(4) = cg(1,2);
     stress(5) = cg(0,2);
-    
+
     LINALG::Matrix<NUMSTR_NSTET,NUMDOF_NSTET> bop;
     for (int i=0; i<NUMNOD_NSTET; i++)
     {
@@ -143,14 +143,14 @@ void DRT::ELEMENTS::NStet::VolDevStabLinear(
       bop(5,NODDOF_NSTET*i+1) = F(1,2)*nxyz_(i,0) + F(1,0)*nxyz_(i,2);
       bop(5,NODDOF_NSTET*i+2) = F(2,2)*nxyz_(i,0) + F(2,0)*nxyz_(i,2);
     }
-    
+
     force->MultiplyTN(fac,bop,stress,1.0);
-    
-    
+
+
   } // for (int gp=0; gp<4; ++gp)
   cout << *force;
-  
-  
+
+
 
   return;
 }
@@ -158,7 +158,7 @@ void DRT::ELEMENTS::NStet::VolDevStabLinear(
 /*----------------------------------------------------------------------*
  | voldev stabilization (protected)                           gee 05/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStetRegister::VolDevStab(
+void DRT::ELEMENTS::NStetType::VolDevStab(
                   LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& cauchygreen,
                   LINALG::Matrix<NUMSTR_NSTET,1>& stress,
                   LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& cmat,
@@ -213,8 +213,8 @@ void DRT::ELEMENTS::NStet::VolDevStab(
 
   // do separation of deviatoric/volumetric components
   double elepressure = 0.0;
-  NStetRegister::DevStressTangent(stressdev,cmatdev,cmat,stress,
-                                  cauchygreen,elepressure);
+  NStetType::DevStressTangent(stressdev,cmatdev,cmat,stress,
+                              cauchygreen,elepressure);
   stress.Update(ALPHA_NSTET,stressdev,0.0);
   cmat.Update(ALPHA_NSTET,cmatdev,0.0);
 
@@ -238,7 +238,7 @@ void DRT::ELEMENTS::NStet::VolDevStab(
   Cbar.Scale(pow(J,-2./3.));
   Cbar.Scale(pow(averJ,2./3.));
   //printf("Owner %d Id %d Nodal/Ele/Delta J %10.5e %10.5e       %10.5e\n",Owner(),Id(),averJ,J,averJ-J);
-  
+
   LINALG::Matrix<3,3> Fbar(false);
   Fbar.SetCopy(defgrd.A());
   Fbar.Scale(pow(J,-1./3.));
@@ -276,17 +276,17 @@ void DRT::ELEMENTS::NStet::VolDevStab(
 
   stress.Update(ALPHA_NSTET,stressvol,1.0);
   cmat.Update(ALPHA_NSTET,cmatvol,1.0);
-  
+
   //printf("Nodal/Ele/Delta %10.5e %10.5e       %10.5e\n",averpressure,elepressure,averpressure-elepressure);
   //printf("Nodal/Ele/Delta J %10.5e %10.5e       %10.5e\n",averJ,J,averJ-J);
 #endif
   return;
 }
-                                
+
 /*----------------------------------------------------------------------*
  | voldev stabilization (protected)                           gee 05/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStetRegister::DevStab(
+void DRT::ELEMENTS::NStetType::DevStab(
                   LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& cauchygreen,
                   LINALG::Matrix<NUMSTR_NSTET,1>& stress,
                   LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& cmat)
@@ -340,19 +340,19 @@ void DRT::ELEMENTS::NStet::DevStab(
 
   // do separation of deviatoric/volumetric components
   double elepressure = 0.0;
-  NStetRegister::DevStressTangent(stressdev,cmatdev,cmat,stress,
-                                  cauchygreen,elepressure);
+  NStetType::DevStressTangent(stressdev,cmatdev,cmat,stress,
+                              cauchygreen,elepressure);
   stress.Update(ALPHA_NSTET,stressdev,0.0);
   cmat.Update(ALPHA_NSTET,cmatdev,0.0);
- 
+
 
   return;
 }
-                                
-                                
-                                
-                                
-                                
+
+
+
+
+
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

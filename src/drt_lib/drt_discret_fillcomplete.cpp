@@ -44,6 +44,7 @@ Maintainer: Michael Gee
 #include "drt_discret.H"
 #include "drt_exporter.H"
 #include "drt_dserror.H"
+#include "drt_parobjectfactory.H"
 #include "../linalg/linalg_utils.H"
 
 
@@ -147,6 +148,8 @@ void DRT::Discretization::InitializeElements()
     int err = fool->second->Initialize(*this);
     if (err) dserror("Element Initialize returned err=%d",err);
   }
+
+  ParObjectFactory::Instance().InitializeElements( *this );
 
   return;
 }

@@ -24,6 +24,7 @@ using namespace std;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
@@ -38,7 +39,7 @@ namespace ELEMENTS
 // forward declarations
 class TransportBoundary;
 
-class TransportType : public DRT::ParObjectType
+class TransportType : public DRT::ElementObjectType
 {
 public:
 
@@ -242,6 +243,9 @@ public:
   */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
 
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return TransportType::Instance(); }
+
   /*!
   \brief Query names of element data to be visualized using BINIO
 
@@ -400,7 +404,7 @@ private:
 //=======================================================================
 //=======================================================================
 
-class TransportBoundaryType : public DRT::ParObjectType
+class TransportBoundaryType : public DRT::ElementObjectType
 {
 public:
 
@@ -588,6 +592,9 @@ public:
   */
   virtual RCP<DRT::ElementRegister> ElementRegister() const
   { return rcp(new DRT::ElementRegister(Type())); }
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return TransportBoundaryType::Instance(); }
 
   //@}
 

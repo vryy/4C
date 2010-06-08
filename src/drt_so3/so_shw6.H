@@ -15,7 +15,7 @@ Maintainer: Moritz Frenzel
 
 using namespace std;
 #include "so_weg6.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "../drt_lib/drt_elementtype.H"
 
 namespace DRT
 {
@@ -27,7 +27,7 @@ namespace ELEMENTS
 // forward declarations
 class Soshw6Register;
 
-class So_shw6Type : public DRT::ParObjectType
+class So_shw6Type : public DRT::ElementObjectType
 {
 public:
 
@@ -41,6 +41,8 @@ public:
                                              const string eledistype,
                                              const int id,
                                              const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
 
 private:
 
@@ -66,7 +68,7 @@ class So_shw6 : public So_weg6
 {
 public:
   //! @name Friends
-  friend class Soshw6Register;
+  friend class So_shw6Type;
   friend class Soweg6Surface;
   friend class Soweg6Line;
 
@@ -146,6 +148,9 @@ public:
   an instance of a matching DRT::ElementRegister.
   */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return So_shw6Type::Instance(); }
 
   //@}
 
@@ -387,7 +392,7 @@ public:
   The method performs all steps needed to init the sosh-wedge elements
 
   */
-  virtual int Initialize(DRT::Discretization& dis);
+  //virtual int Initialize(DRT::Discretization& dis);
 
   //@}
 

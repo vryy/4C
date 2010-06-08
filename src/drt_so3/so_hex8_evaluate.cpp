@@ -487,29 +487,29 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     {
       // check length of elevec1
       if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
-      
+
       // not yet implemented for EAS case
       if (eastype_ != soh8_easnone) dserror("Internal energy not yet implemented for EAS.");
-      
+
       // check material law and strains
       RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_stvenant || mat->MaterialType() == INPAR::MAT::m_neohooke) 
+      if (mat->MaterialType() == INPAR::MAT::m_stvenant || mat->MaterialType() == INPAR::MAT::m_neohooke)
       {
         // declaration of variables
         double intenergy = 0.0;
 
         // shape functions and Gauss weights
         const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
-        const static std::vector<double> weights = soh8_weights(); 
-             
+        const static std::vector<double> weights = soh8_weights();
+
         // get displacements of this processor
         RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state displacement vector");
-        
+
         // get displacements of this element
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        
+
         // update element geometry
         LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
         LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
@@ -524,11 +524,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
           xcurr(i,0) = xrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
           xcurr(i,1) = xrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
           xcurr(i,2) = xrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
-        } 
-        
+        }
+
         // loop over all Gauss points
         for (int gp=0; gp<NUMGPT_SOH8; gp++)
-        {    
+        {
           // Gauss weights and Jacobian determinant
           double fac = detJ_[gp] * weights[gp];
 
@@ -559,20 +559,20 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
           glstrain(3) = cauchygreen(0,1);
           glstrain(4) = cauchygreen(1,2);
           glstrain(5) = cauchygreen(2,0);
-                  
+
           // compute Second Piola Kirchhoff Stress Vector and Constitutive Matrix
           double density = 0.0;
           LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
           LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
           soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
-          
+
           // compute GP contribution to internal energy
           intenergy += 0.5 * fac * stress.Dot(glstrain);
         }
-        
+
         // return result
         elevec1_epetra(0) = intenergy;
-        
+
         // print internal energy of this element
         //cout << endl << "Internal energy of element # " << this->Id() << ":" << IntEn << endl;
       }
@@ -580,7 +580,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         dserror("ERROR: Internal energy for this material type has not been implemented yet.");
     }
     break;
-        
+
     //==================================================================================
     case calc_homog_dens:
     {
@@ -1581,7 +1581,7 @@ void DRT::ELEMENTS::So_hex8::soh8_shapederiv(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 04/08|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Soh8Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::So_hex8Type::Initialize(DRT::Discretization& dis)
 {
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {

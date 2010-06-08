@@ -447,7 +447,7 @@ void DRT::ELEMENTS::Truss3Register::Print(ostream& os) const
 }
 
 
-int DRT::ELEMENTS::Truss3Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
 {
   //reference node positions
   vector<double> xrefe;

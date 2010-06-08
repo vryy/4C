@@ -24,6 +24,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 
@@ -56,7 +57,7 @@ namespace ELEMENTS
 class Sow6Register;
 class InvDesign;
 
-class So_weg6Type : public DRT::ParObjectType
+class So_weg6Type : public DRT::ElementObjectType
 {
 public:
 
@@ -70,6 +71,8 @@ public:
                                              const string eledistype,
                                              const int id,
                                              const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
 
 private:
 
@@ -85,7 +88,7 @@ class So_weg6 : public DRT::Element
 {
 public:
   //! @name Friends
-  friend class Sow6Register;
+  friend class So_weg6Type;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -225,6 +228,9 @@ public:
   an instance of a matching DRT::ElementRegister.
   */
   virtual RCP<DRT::ElementRegister> ElementRegister() const;
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return So_weg6Type::Instance(); }
 
   //@}
 
@@ -582,7 +588,7 @@ public:
   The method performs all steps needed to init the wedge elements,
   e.g. defines shell-thickness direction
   */
-  virtual int Initialize(DRT::Discretization& dis);
+  //virtual int Initialize(DRT::Discretization& dis);
 
   //@}
 

@@ -27,6 +27,7 @@ using namespace std;
 using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_condition.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -49,7 +50,7 @@ namespace DRT
 namespace ELEMENTS
 {
 
-class Beam2rType : public DRT::ParObjectType
+class Beam2rType : public DRT::ElementObjectType
 {
 public:
 
@@ -63,6 +64,8 @@ public:
                                              const string eledistype,
                                              const int id,
                                              const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
 
 private:
 
@@ -84,7 +87,7 @@ class Beam2r : public DRT::Element
 public:
 
   //! @name Friends
-  friend class Beam2rRegister;
+  friend class Beam2rType;
   friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
 
 
@@ -160,6 +163,9 @@ public:
   elements are in one discretization.
   */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return Beam2rType::Instance(); }
 
   //@}
 
@@ -546,7 +552,7 @@ public:
   The method performs all steps needed to init the Beam2r elements. it e.g. calculates the
   field of averaged directors at nodes.
   */
-  int Initialize(DRT::Discretization& dis);
+  //int Initialize(DRT::Discretization& dis);
 
   //@}
 

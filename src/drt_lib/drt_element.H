@@ -65,10 +65,12 @@ namespace INPUT
 class LineDefinition;
 }
 
+
 // forward declarations
 class Discretization;
 class Node;
 class ElementRegister;
+class ElementObjectType;
 
 /*!
 \brief A virtual class all elements that are used in DRT have to implement
@@ -338,6 +340,8 @@ public:
   elements are in one discretization.
   */
   virtual RCP<DRT::ElementRegister> ElementRegister() const = 0;
+
+  virtual DRT::ElementObjectType & ElementObjectType() const = 0;
 
   //@}
 

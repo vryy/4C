@@ -247,7 +247,7 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
     {
       p_o_(0,0)= p_(0,0);
       t_o_(0,0)= t_(0,0);
-      
+
       // Update of history for plastic material
       RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
@@ -263,7 +263,7 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
       double alphaf = params.get<double>("alpha f", 0.0);  // generalised-alpha TIS parameter alpha_f
       p_o_(0,0) = (1.0 - alphaf) * p_(0,0) + alphaf * p_o_(0,0);
       t_o_(0,0) = (1.0 - alphaf) * t_(0,0) + alphaf * t_o_(0,0);
-      
+
       // Update of history for plastic material
       RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
@@ -277,7 +277,7 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
     case calc_struct_reset_istep:
     {
       // do something with internal parameters
-      
+
       // Update of history for plastic material
       RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
@@ -1275,7 +1275,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::test_stiffmat(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                   lw 12/08|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoHex8P1J1Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::So_Hex8P1J1Type::Initialize(DRT::Discretization& dis)
 {
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {

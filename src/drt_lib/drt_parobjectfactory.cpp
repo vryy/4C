@@ -3,6 +3,7 @@
 #include "drt_element.H"
 #include "drt_parobject.H"
 #include "drt_parobjectfactory.H"
+#include "drt_elementtype.H"
 
 
 DRT::ParObjectType::ParObjectType()
@@ -164,6 +165,54 @@ void DRT::ParObjectFactory::FinalizeRegistration()
 
       type_map_[hash] = object_type;
       object_type->objectid_ = hash;
+    }
+  }
+}
+
+
+void DRT::ParObjectFactory::InitializeElements( DRT::Discretization & dis )
+{
+  FinalizeRegistration();
+
+  // This is element specific code. Thus we need a down cast.
+
+  for ( std::map<int, ParObjectType*>::iterator i=type_map_.begin();
+        i!=type_map_.end();
+        ++i )
+  {
+    ParObjectType * pot = i->second;
+    ElementObjectType * eot = dynamic_cast<ElementObjectType*>( pot );
+    if ( eot!=NULL )
+    {
+      int err = eot->Initialize( dis );
+      if (err) dserror("Element Initialize returned err=%d",err);
+    }
+  }
+}
+
+
+void DRT::ParObjectFactory::PreEvaluate(DRT::Discretization& dis,
+                                        Teuchos::ParameterList& p,
+                                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+                                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+                                        Teuchos::RCP<Epetra_Vector> systemvector1,
+                                        Teuchos::RCP<Epetra_Vector> systemvector2,
+                                        Teuchos::RCP<Epetra_Vector> systemvector3)
+{
+  FinalizeRegistration();
+
+  // This is element specific code. Thus we need a down cast.
+
+  for ( std::map<int, ParObjectType*>::iterator i=type_map_.begin();
+        i!=type_map_.end();
+        ++i )
+  {
+    ParObjectType * pot = i->second;
+    ElementObjectType * eot = dynamic_cast<ElementObjectType*>( pot );
+    if ( eot!=NULL )
+    {
+      eot->PreEvaluate( dis, p, systemmatrix1, systemmatrix2,
+                        systemvector1, systemvector2, systemvector3 );
     }
   }
 }

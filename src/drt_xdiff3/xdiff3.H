@@ -22,6 +22,7 @@ Maintainer: Axel Gerstenberger
 
 
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_xfem/dof_management_element.H"
@@ -38,7 +39,7 @@ namespace DRT
   namespace ELEMENTS
   {
 
-class XDiff3Type : public DRT::ParObjectType
+class XDiff3Type : public DRT::ElementObjectType
 {
 public:
 
@@ -173,6 +174,9 @@ private:
         void Print(ostream& os) const;
 
         virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const;
+
+        virtual DRT::ElementObjectType & ElementObjectType() const
+        { return XDiff3Type::Instance(); }
 
         //@}
 
@@ -428,7 +432,7 @@ private:
 
     }; // class XDiff3Register
 
-class XDiff3SurfaceType : public DRT::ParObjectType
+class XDiff3SurfaceType : public DRT::ElementObjectType
 {
 public:
 
@@ -503,6 +507,9 @@ private:
         void Print(ostream& os) const;
 
         virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const { return null; }
+
+        virtual DRT::ElementObjectType & ElementObjectType() const
+        { return XDiff3SurfaceType::Instance(); }
 
         //@}
 
@@ -583,7 +590,7 @@ private:
 
     }; // class Fluid3Surface
 
-class XDiff3LineType : public DRT::ParObjectType
+class XDiff3LineType : public DRT::ElementObjectType
 {
 public:
 
@@ -661,6 +668,9 @@ private:
         void Print(ostream& os) const;
 
         virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const { return null; }
+
+        virtual DRT::ElementObjectType & ElementObjectType() const
+        { return XDiff3LineType::Instance(); }
 
         //! @name Evaluation
         virtual int Evaluate(

@@ -46,6 +46,7 @@ Maintainer: Michael Gee
 #include "drt_dserror.H"
 #include "drt_timecurve.H"
 #include "drt_function.H"
+#include "drt_parobjectfactory.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "Epetra_SerialDenseMatrix.h"
@@ -95,6 +96,9 @@ void DRT::Discretization::Evaluate(
     for (curr=elementregister_.begin(); curr != elementregister_.end(); ++curr)
       curr->second->PreEvaluate(*this,params,systemmatrix1,systemmatrix2,
                                 systemvector1,systemvector2,systemvector3);
+
+    ParObjectFactory::Instance().PreEvaluate(*this,params,systemmatrix1,systemmatrix2,
+                                             systemvector1,systemvector2,systemvector3);
   }
 
 #ifdef THROWELEMENTERRORS

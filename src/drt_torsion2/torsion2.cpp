@@ -317,7 +317,7 @@ void DRT::ELEMENTS::Torsion2Register::Print(ostream& os) const
 }
 
 
-int DRT::ELEMENTS::Torsion2Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Torsion2Type::Initialize(DRT::Discretization& dis)
 {
   //reference node positions
   LINALG::Matrix<6,1> xrefe;

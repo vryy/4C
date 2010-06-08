@@ -29,6 +29,7 @@ using namespace std;
 using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_condition.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -50,7 +51,7 @@ namespace DRT
 namespace ELEMENTS
 {
 
-class Truss2Type : public DRT::ParObjectType
+class Truss2Type : public DRT::ElementObjectType
 {
 public:
 
@@ -64,6 +65,8 @@ public:
                                              const string eledistype,
                                              const int id,
                                              const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
 
 private:
 
@@ -80,7 +83,7 @@ class Truss2 : public DRT::Element
 public:
 
   //! @name Friends
-  friend class Truss2Register;
+  friend class Truss2Type;
   friend class StatMechManager;
   friend void StatMechTime::Integrate();
 
@@ -157,6 +160,9 @@ public:
   elements are in one discretization.
   */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return Truss2Type::Instance(); }
 
   //@}
 
@@ -513,7 +519,7 @@ public:
   The method performs all steps needed to init the Truss2 elements. it e.g. calculates the
   field of averaged directors at nodes.
   */
-  int Initialize(DRT::Discretization& dis);
+  //int Initialize(DRT::Discretization& dis);
 
   //@}
 

@@ -647,7 +647,7 @@ void DRT::ELEMENTS::SmoothrodRegister::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  Initialize (public)                                      cyron 01/08|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SmoothrodRegister::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::SmoothrodType::Initialize(DRT::Discretization& dis)
 {
 	  //setting up geometric variables for beam3 elements
 

@@ -320,8 +320,8 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
 
   LINALG::Matrix<27,1> funct;
   LINALG::Matrix<3,27> deriv;
-  
-  for (int gp=0; gp<numgp; ++gp) 
+
+  for (int gp=0; gp<numgp; ++gp)
   {
 
     gpa(0)=intpoints.qxg[gp][0];
@@ -781,7 +781,7 @@ const vector<double> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_gpweights()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::NURBS::Sonurbs27Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::NURBS::So_nurbs27Type::Initialize(DRT::Discretization& dis)
 {
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {

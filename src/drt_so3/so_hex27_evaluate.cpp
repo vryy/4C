@@ -245,7 +245,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
           elevec2(NODDOF_SOH27*i+1)=nodalstresses(i,4);
           elevec2(NODDOF_SOH27*i+2)=nodalstresses(i,5);
         }
-        
+
         RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
         if (elestress==null)
           dserror("No element stress/strain vector available");
@@ -890,7 +890,7 @@ void DRT::ELEMENTS::So_hex27::soh27_shapederiv(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Soh27Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::So_hex27Type::Initialize(DRT::Discretization& dis)
 {
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {

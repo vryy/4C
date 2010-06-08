@@ -278,7 +278,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMN
   return;
 }
 
-void DRT::ELEMENTS::Sosh8Register::sosh8_gmshplotdis(const DRT::Discretization& dis)
+void DRT::ELEMENTS::So_sh8Type::sosh8_gmshplotdis(const DRT::Discretization& dis)
 {
   ofstream f_system("solidelements.gmsh");
   stringstream gmshfilecontent;

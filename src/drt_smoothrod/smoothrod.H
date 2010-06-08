@@ -27,6 +27,7 @@ using namespace std;
 using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_condition.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -48,7 +49,7 @@ namespace DRT
 namespace ELEMENTS
 {
 
-class SmoothrodType : public DRT::ParObjectType
+class SmoothrodType : public DRT::ElementObjectType
 {
 public:
 
@@ -57,6 +58,8 @@ public:
   static SmoothrodType & Instance() { return instance_; };
 
   virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual int Initialize(DRT::Discretization& dis);
 
 private:
 
@@ -68,7 +71,7 @@ class Smoothrod : public DRT::Element
 public:
 
   //! @name Friends
-  friend class SmoothrodRegister;
+  friend class SmoothrodType;
 
 
   //! @name Constructors and destructors and related methods
@@ -143,6 +146,9 @@ public:
   elements are in one discretization.
   */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return SmoothrodType::Instance(); }
 
   //@}
 
@@ -506,7 +512,7 @@ public:
   The method performs all steps needed to init the Smoothrod elements. it e.g. calculates the
   field of averaged directors at nodes.
   */
-  int Initialize(DRT::Discretization& dis);
+  //int Initialize(DRT::Discretization& dis);
 
   //@}
 

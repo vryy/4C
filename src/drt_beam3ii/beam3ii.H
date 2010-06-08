@@ -29,6 +29,7 @@ using namespace std;
 using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_condition.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -54,7 +55,7 @@ namespace DRT
 namespace ELEMENTS
 {
 
-class Beam3iiType : public DRT::ParObjectType
+class Beam3iiType : public DRT::ElementObjectType
 {
 public:
 
@@ -68,6 +69,8 @@ public:
                                              const string eledistype,
                                              const int id,
                                              const int owner );
+
+  int Initialize(DRT::Discretization& dis);
 
 private:
 
@@ -90,7 +93,7 @@ class Beam3ii : public DRT::Element
 public:
 
   //! @name Friends
-  friend class Beam3iiRegister;
+  friend class Beam3iiType;
   friend class StatMechManager;
   friend void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
   friend void StatMechManager::PeriodicBoundaryBeam3iiInit(DRT::Element* element);
@@ -173,6 +176,9 @@ public:
   elements are in one discretization.
   */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return Beam3iiType::Instance(); }
 
   //@}
 
@@ -877,7 +883,7 @@ public:
   The method performs all steps needed to init the Beam3ii elements. it e.g. calculates the
   field of averaged directors at nodes.
   */
-  int Initialize(DRT::Discretization& dis);
+  //int Initialize(DRT::Discretization& dis);
 
   //@}
 

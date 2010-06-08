@@ -21,6 +21,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -58,7 +59,7 @@ class Ale3_Impl_Interface;
 template <DRT::Element::DiscretizationType distype> class Ale3_Impl;
 
 
-class Ale3Type : public DRT::ParObjectType
+class Ale3Type : public DRT::ElementObjectType
 {
 public:
 
@@ -242,6 +243,9 @@ public:
   an instance of a matching DRT::ElementRegister.
   */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return Ale3Type::Instance(); }
 
   //@}
 
@@ -485,7 +489,7 @@ private:
 //=======================================================================
 
 
-class Ale3SurfaceType : public DRT::ParObjectType
+class Ale3SurfaceType : public DRT::ElementObjectType
 {
 public:
 
@@ -623,6 +627,9 @@ public:
   an instance of a matching DRT::ElementRegister.
   */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return Ale3SurfaceType::Instance(); }
 
   //@}
 

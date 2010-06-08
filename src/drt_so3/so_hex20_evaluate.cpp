@@ -190,7 +190,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(ParameterList& params,
         // extrapolate stresses/strains at Gauss points to nodes
         LINALG::Matrix<NUMNOD_SOH20,NUMSTR_SOH20> nodalstresses;
         soh20_expol(gpstress,nodalstresses);
-        
+
         // separate normal and shear stresses in element vectors
         for (int i=0;i<NUMNOD_SOH20;++i)
         {
@@ -243,7 +243,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(ParameterList& params,
           elevec2(NODDOF_SOH20*i+1)=nodalstresses(i,4);
           elevec2(NODDOF_SOH20*i+2)=nodalstresses(i,5);
         }
-        
+
         RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
         if (elestress==null)
           dserror("No element stress/strain vector available");
@@ -888,7 +888,7 @@ void DRT::ELEMENTS::So_hex20::soh20_shapederiv(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Soh20Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::So_hex20Type::Initialize(DRT::Discretization& dis)
 {
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {

@@ -64,6 +64,8 @@ public:
                                              const int id,
                                              const int owner );
 
+  virtual int Initialize(DRT::Discretization& dis);
+
 private:
 
   static So_sh8p8Type instance_;
@@ -98,7 +100,7 @@ public:
 
   /// @name Friends
   //@{
-  friend class Sosh8p8Register;
+  friend class So_sh8p8Type;
   friend class Soh8Surface;
   friend class Soh8Line;
   //@}
@@ -992,7 +994,7 @@ public:
   /// at its geometric shape in reference configuration. Thus, the loop looks a bit
   /// complicated because a "not-thin" So_sh8p8 is morphed to a So_hex8 where the
   /// discretization is not filled-complete anymore.
-  int Initialize(DRT::Discretization& dis);
+  //int Initialize(DRT::Discretization& dis);
 
   //@}
 

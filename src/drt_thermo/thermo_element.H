@@ -29,6 +29,7 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
@@ -43,7 +44,7 @@ namespace ELEMENTS
   // forward declarations
   class ThermoBoundary;
 
-class ThermoType : public DRT::ParObjectType
+class ThermoType : public DRT::ElementObjectType
 {
 public:
 
@@ -254,6 +255,9 @@ private:
     //! an instance of a matching DRT::ElementRegister.
     virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const;
 
+    virtual DRT::ElementObjectType & ElementObjectType() const
+    { return ThermoType::Instance(); }
+
     //! \brief Query names of element data to be visualized using BINIO
     //!
     //! The element fills the provided map with key names of
@@ -444,7 +448,7 @@ private:
   ////=======================================================================
   ////=======================================================================
 
-class ThermoBoundaryType : public DRT::ParObjectType
+class ThermoBoundaryType : public DRT::ElementObjectType
 {
 public:
 
@@ -615,6 +619,9 @@ private:
     {
       return Teuchos::rcp(new DRT::ElementRegister(Type()));
     }
+
+    virtual DRT::ElementObjectType & ElementObjectType() const
+    { return ThermoBoundaryType::Instance(); }
 
     //@}
 

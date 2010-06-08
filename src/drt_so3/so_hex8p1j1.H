@@ -56,6 +56,8 @@ public:
                                              const int id,
                                              const int owner );
 
+  virtual int Initialize(DRT::Discretization& dis);
+
 private:
 
   static So_Hex8P1J1Type instance_;
@@ -87,7 +89,7 @@ class So_Hex8P1J1 : public So_hex8
 public:
 
   //! @name Friends
-  friend class SoHex8P1J1Register;
+  friend class So_Hex8P1J1Type;
   friend class Soh8Surface;
   friend class Soh8Line;
 
@@ -428,7 +430,7 @@ public:
   /*!
   \brief Call Element init routines
   */
-  int Initialize(DRT::Discretization& dis);
+  //int Initialize(DRT::Discretization& dis);
 
 
 }; // class SoHex8P1J1Register

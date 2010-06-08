@@ -78,7 +78,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
   else if (action=="eas_set_multi")               act = So_hex8::eas_set_multi;
   else if (action=="calc_homog_dens")             act = So_hex8::calc_homog_dens;
   else if (action=="multi_readrestart")           act = So_hex8::multi_readrestart;
-  else if (action=="calc_stc_matrix")             act = So_hex8::calc_stc_matrix;  
+  else if (action=="calc_stc_matrix")             act = So_hex8::calc_stc_matrix;
   else if (action=="calc_potential_stiff")        act = So_hex8::calc_potential_stiff;
   else dserror("Unknown type of action for So_hex8");
 
@@ -415,27 +415,27 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       const INPAR::STR::STC_Scale stc_scaling = params.get<INPAR::STR::STC_Scale>("stc_scaling");
       if (stc_scaling==INPAR::STR::stc_none)
         dserror("To scale or not to scale, that's the querry!");
-      
+
       const double stc_fact = params.get<double>("stc_factor");
-      
+
       if(stc_scaling==INPAR::STR::stc_para or stc_scaling==INPAR::STR::stc_parasym)
       {
         RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vector 'displacement'");
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        
+
         LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
         DRT::Node** nodes = Nodes();
         for (int i=0; i<NUMNOD_SOH8; ++i)
         {
           const double* x = nodes[i]->X();
-          
+
           xcurr(i,0) = x[0] + mydisp[i*NODDOF_SOH8+0];
           xcurr(i,1) = x[1] + mydisp[i*NODDOF_SOH8+1];
           xcurr(i,2) = x[2] + mydisp[i*NODDOF_SOH8+2];
         }
-        
+
         LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> TotJac(true);
         LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> TotJacInv(true);
         vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs_X = sosh8_derivs_sdc();
@@ -446,12 +446,12 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
           jac.Multiply(derivs_X[i],xcurr);
           LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jacInv(jac);
           LINALG::FixedSizeSerialDenseSolver<NUMDIM_SOH8,NUMDIM_SOH8,1> solve_for_inverseJ;
-          
+
           solve_for_inverseJ.SetMatrix(jacInv);
           int err2 = solve_for_inverseJ.Factor();
           int err = solve_for_inverseJ.Invert();
           if ((err != 0) && (err2!=0)) dserror("Inversion of Tinv (Jacobian) failed");
-            
+
           for (int k=0; k<NUMDIM_SOH8; k++)
           {
             for (int l=0; l<NUMDIM_SOH8; l++)
@@ -464,8 +464,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
           adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
           adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
         }
-  
-        
+
+
         for(int ind1=0; ind1< NUMDOF_SOH8; ind1++)
         {
           elemat1(ind1,ind1)+=(1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact))/adjele(ind1,0);
@@ -475,7 +475,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
             elemat1(ind1+12,ind1)+=(stc_fact-1.0)/(2.0*stc_fact)/adjele(ind1,0);
           }
         }
-        
+
         LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> tmp;
         tmp.Multiply(TotJacInv,elemat1);
         elemat1.Multiply(tmp,TotJac);
@@ -489,7 +489,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
           adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
           adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
           adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
-              
+
         }
         for(int ind1=0; ind1< NUMDOF_SOH8; ind1++)
         {
@@ -503,7 +503,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       }
 //      else if (stc_scaling==INPAR::STR::sdc_rot or stc_scaling==INPAR::STR::sdc_rotsym)
 //      {
-//        
+//
 //        LINALG::Matrix<NUMDOF_SOH8,1> adjele(true);
 //        DRT::Node** nodes = Nodes();
 //        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -511,24 +511,24 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
 //        vector<double> mydisp(lm.size());
 //        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 //        LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
-//        
+//
 //        for (int i=0; i<NUMNOD_SOH8; ++i)
 //        {
 //          const double* x = nodes[i]->X();
-//          
+//
 //          xcurr(i,0) = x[0] + mydisp[i*NODDOF_SOH8+0];
 //          xcurr(i,1) = x[1] + mydisp[i*NODDOF_SOH8+1];
 //          xcurr(i,2) = x[2] + mydisp[i*NODDOF_SOH8+2];
-//    
+//
 //          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
 //          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
 //          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
 //        }
-//        
+//
 //        LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> tmp_elemat(true);
 //        Epetra_SerialDenseMatrix tmpmat1(NUMDOF_SOH8,NUMDOF_SOH8);
 //        Epetra_SerialDenseMatrix tmpmat2(NUMDOF_SOH8,NUMDOF_SOH8);
-//        
+//
 //        //compute direction of fixpoint
 //        LINALG::Matrix<NUMNOD_SOH8/2,NUMDIM_SOH8> fixpoints;
 //        for (int i =0; i<NUMNOD_SOH8/2; ++i)
@@ -539,25 +539,25 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
 //          dist(0,0) = xcurr(i,0)-xcurr(i+NUMNOD_SOH8/2,0);
 //          dist(1,0) = xcurr(i,1)-xcurr(i+NUMNOD_SOH8/2,1);
 //          dist(2,0) = xcurr(i,2)-xcurr(i+NUMNOD_SOH8/2,2);
-//          
+//
 //          //make dir1 linearly independent of tmp
 //          if (fabs(dist(0,0))<1E-9)
 //            dir1(0,0)=1.0;
 //          else
 //            dir1(0,0)=0.0;
-//          
+//
 //          dir1(1,0)=dist(1,0);
 //          dir1(2,0)=dist(2,0);
-//          
+//
 //          //make dir2 orthogonal to tmp
 //          dir2(0,0)=dist(1,0)*dir1(2,0)-dist(2,0)*dir1(1,0);
 //          dir2(1,0)=dist(2,0)*dir1(0,0)-dist(0,0)*dir1(2,0);
 //          dir2(2,0)=dist(0,0)*dir1(1,0)-dist(1,0)*dir1(0,0);
-//          
+//
 //          dir2(0,0)=1.0;
 //          dir2(1,0)=0.0;
 //          dir2(2,0)=1.0;
-//          
+//
 //          dir2.Scale(dist.Norm2()/dir2.Norm2());
 //
 //          fixpoints(i,0)=xcurr(i,0)-0.5*dist(0,0)+dir2(0,0);
@@ -565,33 +565,33 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
 //          fixpoints(i,2)=xcurr(i,2)-0.5*dist(2,0)+dir2(2,0);
 //
 //          double scale=1.;///dist.Norm2();
-//          
+//
 //          //fill row by row
 //          elemat1(i*NUMDIM_SOH8+0,i*NUMDIM_SOH8+0) = 1.0;
 //          elemat1(i*NUMDIM_SOH8+0,i*NUMDIM_SOH8+NUMDOF_SOH8/2+1)+=scale*(xcurr(i,2)-fixpoints(i,2));
 //          elemat1(i*NUMDIM_SOH8+0,i*NUMDIM_SOH8+NUMDOF_SOH8/2+2)-=scale*(xcurr(i,1)-fixpoints(i,1));
-//          
+//
 //          elemat1(i*NUMDIM_SOH8+1,i*NUMDIM_SOH8+1) = 1.0;
 //          elemat1(i*NUMDIM_SOH8+1,i*NUMDIM_SOH8+NUMDOF_SOH8/2+0)-=scale*(xcurr(i,2)-fixpoints(i,2));
 //          elemat1(i*NUMDIM_SOH8+1,i*NUMDIM_SOH8+NUMDOF_SOH8/2+2)+=scale*(xcurr(i,0)-fixpoints(i,0));
-//          
+//
 //          elemat1(i*NUMDIM_SOH8+2,i*NUMDIM_SOH8+2) = 1.0;
 //          elemat1(i*NUMDIM_SOH8+2,i*NUMDIM_SOH8+NUMDOF_SOH8/2+0)+=scale*(xcurr(i,1)-fixpoints(i,1));
 //          elemat1(i*NUMDIM_SOH8+2,i*NUMDIM_SOH8+NUMDOF_SOH8/2+1)-=scale*(xcurr(i,0)-fixpoints(i,0));
-//          
+//
 //          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+0,i*NUMDIM_SOH8+0) = 1.0;
 //          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+0,i*NUMDIM_SOH8+NUMDOF_SOH8/2+1)+=scale*(xcurr(i+NUMNOD_SOH8/2,2)-fixpoints(i,2));
 //          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+0,i*NUMDIM_SOH8+NUMDOF_SOH8/2+2)-=scale*(xcurr(i+NUMNOD_SOH8/2,1)-fixpoints(i,1));
-//           
+//
 //          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+1,i*NUMDIM_SOH8+1) = 1.0;
 //          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+1,i*NUMDIM_SOH8+NUMDOF_SOH8/2+0)-=scale*(xcurr(i+NUMNOD_SOH8/2,2)-fixpoints(i,2));
 //          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+1,i*NUMDIM_SOH8+NUMDOF_SOH8/2+2)+=scale*(xcurr(i+NUMNOD_SOH8/2,0)-fixpoints(i,0));
-//           
+//
 //          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+2,i*NUMDIM_SOH8+2) = 1.0;
 //          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+2,i*NUMDIM_SOH8+NUMDOF_SOH8/2+0)+=scale*(xcurr(i+NUMNOD_SOH8/2,1)-fixpoints(i,1));
 //          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+2,i*NUMDIM_SOH8+NUMDOF_SOH8/2+1)-=scale*(xcurr(i+NUMNOD_SOH8/2,0)-fixpoints(i,0));
-//   
-//                   
+//
+//
 //        }
 //        tmp_elemat.Update(elemat1);
 //        Epetra_LAPACK lapack;
@@ -825,7 +825,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
           //          = (1-s)/2 * B_ans(SP A) + (1+s)/2 * B_ans(SP C)
           bop_loc(5,inode*3+dim) = 0.5*(1.0-s[gp]) * B_ans_loc(2+0*num_ans,inode*3+dim)  // A
                                   +0.5*(1.0+s[gp]) * B_ans_loc(2+2*num_ans,inode*3+dim);  // C
- 
+
         }
         else if (anstype_==ansnone)
         {
@@ -868,7 +868,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
        +(jac_cur(0,0)*jac_cur(1,0) + jac_cur(0,1)*jac_cur(1,1) + jac_cur(0,2)*jac_cur(1,2))
        -(jac(0,0)*jac(1,0)         + jac(0,1)*jac(1,1)         + jac(0,2)*jac(1,2)));
 
-    
+
     // do the ANS related stuff if wanted!
     if (anstype_==anssosh8)
     {
@@ -877,12 +877,12 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       double dydt_B = 0.0; double dYdt_B = 0.0;
       double dxdt_C = 0.0; double dXdt_C = 0.0;
       double dydt_D = 0.0; double dYdt_D = 0.0;
-  
+
       double dzdt_E = 0.0; double dZdt_E = 0.0;
       double dzdt_F = 0.0; double dZdt_F = 0.0;
       double dzdt_G = 0.0; double dZdt_G = 0.0;
       double dzdt_H = 0.0; double dZdt_H = 0.0;
-  
+
       // vector product of rows of jacobians at corresponding sampling point    cout << jac_cur_sps;
       for (int dim = 0; dim < NUMDIM_SOH8; ++dim) {
         dxdt_A += jac_cur_sps[0](0,dim) * jac_cur_sps[0](2,dim);  // g_13^A
@@ -893,7 +893,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
         dXdt_C += jac_sps[2](0,dim)     * jac_sps[2](2,dim);      // G_13^C
         dydt_D += jac_cur_sps[3](1,dim) * jac_cur_sps[3](2,dim);  // g_23^D
         dYdt_D += jac_sps[3](1,dim)     * jac_sps[3](2,dim);      // G_23^D
-  
+
         dzdt_E += jac_cur_sps[4](2,dim) * jac_cur_sps[4](2,dim);
         dZdt_E += jac_sps[4](2,dim)     * jac_sps[4](2,dim);
         dzdt_F += jac_cur_sps[5](2,dim) * jac_cur_sps[5](2,dim);
@@ -1039,7 +1039,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
           G_ij(1) = derivs[gp](1, inod) * derivs[gp](1, jnod); // ss-dir
           G_ij(3) = derivs[gp](0, inod) * derivs[gp](1, jnod)
                   + derivs[gp](1, inod) * derivs[gp](0, jnod); // rs-dir
-          
+
           // do the ANS related stuff if wanted!
           if (anstype_==anssosh8)
           {
@@ -1058,7 +1058,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
                                        +(*deriv_sp)[0](2,inod) * (*deriv_sp)[0](0,jnod))
                           +(1+s[gp]) * ((*deriv_sp)[2](0,inod) * (*deriv_sp)[2](2,jnod)
                                        +(*deriv_sp)[2](2,inod) * (*deriv_sp)[2](0,jnod)));
-            
+
           }
           else if (anstype_==ansnone)
           {
@@ -1070,7 +1070,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
           }
           else
             dserror("Cannot build geometric stiffness matrix on your ANS-choice!");
-          
+
           // transformation of local(parameter) space 'back' to global(material) space
           LINALG::Matrix<NUMSTR_SOH8,1> G_ij_glob;
           G_ij_glob.Multiply(TinvT, G_ij);
@@ -1432,7 +1432,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  maf 07/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
 {
   //sosh8_gmshplotdis(dis);
 

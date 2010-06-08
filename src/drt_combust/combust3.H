@@ -19,6 +19,7 @@ Maintainer: Florian Henke
 #define COMBUST3_H
 
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_xfem/dof_management_element.H"
@@ -39,7 +40,7 @@ namespace DRT
 //    class Combust3Line;
 //    class Combust3Register;
 
-class Combust3Type : public DRT::ParObjectType
+class Combust3Type : public DRT::ElementObjectType
 {
 public:
 
@@ -195,6 +196,9 @@ private:
         void Print(ostream& os) const;
 
         virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const;
+
+        virtual DRT::ElementObjectType & ElementObjectType() const
+        { return Combust3Type::Instance(); }
 
         //@}
 
@@ -449,7 +453,7 @@ private:
 
     }; // class Combust3Register
 
-class Combust3SurfaceType : public DRT::ParObjectType
+class Combust3SurfaceType : public DRT::ElementObjectType
 {
 public:
 
@@ -531,6 +535,9 @@ private:
 
         virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const { return null; }
 
+        virtual DRT::ElementObjectType & ElementObjectType() const
+        { return Combust3SurfaceType::Instance(); }
+
         //@}
 
         //! @name Evaluation
@@ -600,7 +607,7 @@ private:
 
     }; // class Fluid3Surface
 
-class Combust3LineType : public DRT::ParObjectType
+class Combust3LineType : public DRT::ElementObjectType
 {
 public:
 
@@ -677,6 +684,9 @@ private:
         void Print(ostream& os) const;
 
         virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const { return null; }
+
+        virtual DRT::ElementObjectType & ElementObjectType() const
+        { return Combust3LineType::Instance(); }
 
         //! @name Evaluation
         virtual int Evaluate(

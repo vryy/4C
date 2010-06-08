@@ -428,7 +428,7 @@ void DRT::ELEMENTS::Beam2Register::Print(ostream& os) const
 }
 
 
-int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Beam2Type::Initialize(DRT::Discretization& dis)
 {
 
   //reference node position

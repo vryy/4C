@@ -18,6 +18,8 @@
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -32,7 +34,7 @@ class Discretization;
 namespace ELEMENTS
 {
 
-class Vele3Type : public DRT::ParObjectType
+class Vele3Type : public DRT::ElementObjectType
 {
 public:
 
@@ -217,6 +219,10 @@ public:
 
   virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const;
 
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return Vele3Type::Instance(); }
+
+
   //@}
 
   //! @name Input and Creation
@@ -380,7 +386,7 @@ private:
 
 
 
-class Vele3SurfaceType : public DRT::ParObjectType
+class Vele3SurfaceType : public DRT::ElementObjectType
 {
 public:
 
@@ -456,6 +462,8 @@ public:
   virtual int NumDofPerElement() const { return 0; }
   void Print(ostream& os) const;
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return Vele3SurfaceType::Instance(); }
 
   //@}
 
@@ -545,7 +553,7 @@ private:
 //=======================================================================
 
 
-class Vele3LineType : public DRT::ParObjectType
+class Vele3LineType : public DRT::ElementObjectType
 {
 public:
 
@@ -622,6 +630,9 @@ public:
   void Print(ostream& os) const;
 
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return Vele3LineType::Instance(); }
 
   //@}
 

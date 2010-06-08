@@ -18,6 +18,7 @@ Maintainer: Peter Gamnitzer
 
 #include "ale3.H"
 #include "../drt_lib/drt_parobjectfactory.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_nurbs_discret/drt_control_point.H"
 #include "../drt_fem_general/drt_utils_bspline.H"
 
@@ -43,7 +44,7 @@ namespace ELEMENTS
 namespace NURBS
 {
 
-class Ale3_NurbsType : public DRT::ParObjectType
+class Ale3_NurbsType : public DRT::ElementObjectType
 {
 public:
 
@@ -102,6 +103,8 @@ public:
   */
   virtual int UniqueParObjectId() const { return Ale3_NurbsType::Instance().UniqueParObjectId(); }
 
+  virtual DRT::ElementObjectType & ElementObjectType()
+  { return Ale3_NurbsType::Instance(); }
 
   /// Print this element
   void Print(ostream& os) const;

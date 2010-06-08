@@ -25,6 +25,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_inpar/inpar_structure.H"
@@ -166,12 +167,54 @@ public:
   The method performs all steps needed to init the shell8 elements. it e.g. calculates the
   field of averaged directors at nodes.
   */
-  int Initialize(DRT::Discretization& dis);
+  //int Initialize(DRT::Discretization& dis);
 
   /*!
   \brief Call Element pre-evaluation
 
   */
+//   virtual void PreEvaluate(DRT::Discretization& dis,
+//                            Teuchos::ParameterList& p,
+//                            RCP<LINALG::SparseOperator> systemmatrix1,
+//                            RCP<LINALG::SparseOperator> systemmatrix2,
+//                            RCP<Epetra_Vector>          systemvector1,
+//                            RCP<Epetra_Vector>          systemvector2,
+//                            RCP<Epetra_Vector>          systemvector3);
+
+  //@}
+
+  //! allow nstet element to access the nodal data
+  friend class DRT::ELEMENTS::NStet;
+
+private:
+
+
+}; // class NStetRegister
+
+
+//=======================================================================
+//=======================================================================
+
+class NStetType : public DRT::ElementObjectType
+{
+  //! allow nstet element to access the nodal data
+  friend class DRT::ELEMENTS::NStet;
+
+public:
+
+  std::string Name() const { return "NStetType"; }
+
+  static NStetType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
+
   virtual void PreEvaluate(DRT::Discretization& dis,
                            Teuchos::ParameterList& p,
                            RCP<LINALG::SparseOperator> systemmatrix1,
@@ -180,12 +223,9 @@ public:
                            RCP<Epetra_Vector>          systemvector2,
                            RCP<Epetra_Vector>          systemvector3);
 
-  //@}
-
-  //! allow nstet element to access the nodal data
-  friend class DRT::ELEMENTS::NStet;
-
 private:
+
+  static NStetType instance_;
 
   // type of stabilization used
   NStet_StabType                                      stabtype_;
@@ -258,12 +298,12 @@ private:
                   LINALG::Matrix<NUMSTR_NSTET,1>& stress,
                   LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& cmat,
                   double& pressure);
-  
+
   /// isochoric stabilization methods
   void DevStab(LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& cauchygreen,
                LINALG::Matrix<NUMSTR_NSTET,1>& stress,
                LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& cmat);
-               
+
 
   /// little helper routine
   inline void MatrixtoVector(const LINALG::Matrix<3,3>& F, LINALG::Matrix<9,1>& Fvec)
@@ -299,26 +339,6 @@ private:
 //=======================================================================
 //=======================================================================
 
-class NStetType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "NStetType"; }
-
-  static NStetType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
-                                             const int id,
-                                             const int owner );
-
-private:
-
-  static NStetType instance_;
-};
-
 
 /*!
 \brief A nodal-averaged strain 4-noded tet element according to Mike Puso
@@ -329,7 +349,7 @@ class NStet : public DRT::Element
 {
 public:
 
-  friend class NStetRegister;
+  friend class NStetType;
 
 
   /*!
@@ -464,6 +484,9 @@ public:
   virtual inline RCP<DRT::ElementRegister> ElementRegister() const
   { return rcp(new DRT::ELEMENTS::NStetRegister(Type())); }
 
+  virtual NStetType & ElementObjectType() const
+  { return NStetType::Instance(); }
+
   /*!
   \brief Read input for this element
   */
@@ -584,8 +607,6 @@ protected:
   //! element's def-gradient and flag indicating age of it
   bool                                                     FisNew_;
   LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>                F_;
-  //! ptr to this element's register class
-  DRT::ELEMENTS::NStetRegister*                            myregister_;
 
   // internal calculation methods
 
@@ -597,20 +618,20 @@ protected:
                   double& density);
   void VolDevStabLinear(LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& defgrd,
                         LINALG::Matrix<NUMDOF_NSTET,1>* force);
-  
+
   /// isochoric stabilization methods
   void DevStab(LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& defgrd,
                LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& cauchygreen,
                LINALG::Matrix<NUMSTR_NSTET,1>& stress,
                LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& cmat,
                double& density);
-  
+
   // don't want = operator
   NStet& operator = (const NStet& old);
 
   // init the inverse of the jacobian and its determinant
   // in the material configuration
-  virtual void InitElement(DRT::ELEMENTS::NStetRegister* myregister);
+  virtual void InitElement();
 
   // return volume of element
   virtual inline double Volume() { return V_; }

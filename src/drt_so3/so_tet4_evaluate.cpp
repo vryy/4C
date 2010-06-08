@@ -949,7 +949,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_lumpmass(LINALG::Matrix<NUMDOF_SOTET4,NUMDO
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 05/08|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Sotet4Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::So_tet4Type::Initialize(DRT::Discretization& dis)
 {
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {

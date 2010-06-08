@@ -24,6 +24,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 
@@ -60,7 +61,7 @@ namespace ELEMENTS
 namespace NURBS
 {
 
-class So_nurbs27Type : public DRT::ParObjectType
+class So_nurbs27Type : public DRT::ElementObjectType
 {
 public:
 
@@ -74,6 +75,8 @@ public:
                                              const string eledistype,
                                              const int id,
                                              const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
 
 private:
 
@@ -98,7 +101,7 @@ class So_nurbs27 : public DRT::Element
 public:
 
   //! @name Friends
-  friend class Sonurbs27Register;
+  friend class So_nurbs27Type;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -238,6 +241,9 @@ public:
   an instance of a matching DRT::ElementRegister.
   */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return So_nurbs27Type::Instance(); }
 
   //! @name Input and Creation
 
@@ -502,7 +508,7 @@ public:
   The method performs all steps needed to init the elements.
 
   */
-  int Initialize(DRT::Discretization& dis);
+  //int Initialize(DRT::Discretization& dis);
 
   //@}
 

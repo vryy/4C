@@ -24,6 +24,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "so_surface.H"
@@ -54,7 +55,7 @@ namespace ELEMENTS
 class Soh20Register;
 class InvDesign;
 
-class So_hex20Type : public DRT::ParObjectType
+class So_hex20Type : public DRT::ElementObjectType
 {
 public:
 
@@ -68,6 +69,8 @@ public:
                                              const string eledistype,
                                              const int id,
                                              const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
 
 private:
 
@@ -89,7 +92,7 @@ class So_hex20 : public DRT::Element
 public:
 
   //! @name Friends
-  friend class Soh20Register;
+  friend class So_hex20Type;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -229,6 +232,9 @@ public:
   an instance of a matching DRT::ElementRegister.
   */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return So_hex20Type::Instance(); }
 
   //@}
 
@@ -603,7 +609,7 @@ public:
   The method performs all steps needed to init the elements,
   e.g. defines shell-thickness direction
   */
-  int Initialize(DRT::Discretization& dis);
+  //int Initialize(DRT::Discretization& dis);
 
   //@}
 

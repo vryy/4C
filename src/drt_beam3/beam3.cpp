@@ -467,7 +467,7 @@ void DRT::ELEMENTS::Beam3Register::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  Initialize (public)                                      cyron 01/08|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Beam3Type::Initialize(DRT::Discretization& dis)
 {
 	  //setting up geometric variables for beam3 elements
 

@@ -22,6 +22,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 
@@ -45,7 +46,7 @@ namespace ELEMENTS
 class Shell8Line;
 class Shell8Register;
 
-class Shell8Type : public DRT::ParObjectType
+class Shell8Type : public DRT::ElementObjectType
 {
 public:
 
@@ -59,6 +60,8 @@ public:
                                              const string eledistype,
                                              const int id,
                                              const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
 
 private:
 
@@ -75,7 +78,7 @@ class Shell8 : public DRT::Element
 public:
 
   //! @name Friends
-  friend class Shell8Register;
+  friend class Shell8Type;
   friend class Shell8Line;
 
   //@}
@@ -205,6 +208,9 @@ public:
   an instance of a matching DRT::ElementRegister.
   */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return Shell8Type::Instance(); }
 
   /*!
   \brief Query names of element data to be visualized using BINIO
@@ -736,7 +742,7 @@ public:
   The method performs all steps needed to init the shell8 elements. it e.g. calculates the
   field of averaged directors at nodes.
   */
-  int Initialize(DRT::Discretization& dis);
+  //int Initialize(DRT::Discretization& dis);
 
   //@}
 
@@ -751,7 +757,7 @@ private:
 //=======================================================================
 //=======================================================================
 
-class Shell8LineType : public DRT::ParObjectType
+class Shell8LineType : public DRT::ElementObjectType
 {
 public:
 
@@ -889,6 +895,9 @@ public:
   an instance of a matching DRT::ElementRegister.
   */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
+
+  virtual DRT::ElementObjectType & ElementObjectType() const
+  { return Shell8LineType::Instance(); }
 
   //@}
 

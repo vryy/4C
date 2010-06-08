@@ -34,10 +34,8 @@ using namespace std;
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 05/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ptet::InitElement(DRT::ELEMENTS::PtetRegister* myregister)
+void DRT::ELEMENTS::Ptet::InitElement()
 {
-  myregister_ = myregister;
-
   LINALG::Matrix<NUMNOD_PTET,NUMDIM_PTET> xrefe;
   LINALG::Matrix<NUMNOD_PTET,NUMDIM_PTET+1> J;
   {
@@ -187,8 +185,8 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
       if (straindata==null) dserror("Cannot get strain 'data'");
       LINALG::Matrix<NUMNOD_PTET,NUMSTR_PTET> stress;
       LINALG::Matrix<NUMNOD_PTET,NUMSTR_PTET> strain;
-      map<int,vector<double> >& nodestress = myregister_->nodestress_;
-      map<int,vector<double> >& nodestrain = myregister_->nodestrain_;
+      map<int,vector<double> >& nodestress = ElementObjectType().nodestress_;
+      map<int,vector<double> >& nodestrain = ElementObjectType().nodestrain_;
       for (int i=0; i<NumNode(); ++i)
       {
         int gid = Nodes()[i]->Id();
@@ -411,7 +409,7 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
     LINALG::Matrix<6,1> stressdev;
 
     // do just the deviatoric components
-    PtetRegister::DevStressTangent(stressdev,cmatdev,cmat,stress,cauchygreen);
+    PtetType::DevStressTangent(stressdev,cmatdev,cmat,stress,cauchygreen);
     stress = stressdev;
     cmat = cmatdev;
     stress.Scale(ALPHA_PTET);

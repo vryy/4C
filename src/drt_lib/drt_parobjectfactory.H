@@ -6,12 +6,20 @@
 #include <string>
 
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
+#include <Epetra_Vector.h>
+
+namespace LINALG
+{
+  class SparseOperator;
+}
 
 namespace DRT
 {
 
 class ParObject;
 class Element;
+class Discretization;
 
 
 /// abstract ParObject type information
@@ -26,11 +34,11 @@ public:
 
   int UniqueParObjectId();
 
-  virtual DRT::ParObject* Create( const vector<char> & data )
+  virtual DRT::ParObject* Create( const std::vector<char> & data )
   { return NULL; }
 
-  virtual Teuchos::RCP<Element> Create( const string eletype,
-                                        const string eledistype,
+  virtual Teuchos::RCP<Element> Create( const std::string eletype,
+                                        const std::string eledistype,
                                         const int id,
                                         const int owner )
   { return Teuchos::null; }
@@ -51,12 +59,22 @@ public:
 
   static ParObjectFactory& Instance();
 
-  ParObject* Create( const vector<char> & data );
+  ParObject* Create( const std::vector<char> & data );
 
-  Teuchos::RCP<Element> Create( const string eletype,
-                                const string eledistype,
+  Teuchos::RCP<Element> Create( const std::string eletype,
+                                const std::string eledistype,
                                 const int id,
                                 const int owner );
+
+  void InitializeElements( DRT::Discretization & dis );
+
+  void PreEvaluate(DRT::Discretization& dis,
+                   Teuchos::ParameterList& p,
+                   Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+                   Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+                   Teuchos::RCP<Epetra_Vector>          systemvector1,
+                   Teuchos::RCP<Epetra_Vector>          systemvector2,
+                   Teuchos::RCP<Epetra_Vector>          systemvector3);
 
 private:
 
