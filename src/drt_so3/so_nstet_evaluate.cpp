@@ -163,8 +163,8 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
     case calc_struct_nlnstiff:
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -360,8 +360,8 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
     case calc_struct_internalforce:
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -394,16 +394,17 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
  |  evaluate the element (private)                             gee 05/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
-      vector<int>&              lm,                                                // location matrix
-      vector<double>&           disp,                                              // current displacements
-      vector<double>&           residual,                                          // current residuum
+      vector<int>&              lm,                              // location matrix
+      vector<double>&           disp,                            // current displacements
+      vector<double>&           residual,                        // current residuum
       LINALG::Matrix<NUMDOF_NSTET,NUMDOF_NSTET>* stiffmatrix,    // element stiffness matrix
       LINALG::Matrix<NUMDOF_NSTET,NUMDOF_NSTET>* massmatrix,     // element mass matrix
-      LINALG::Matrix<NUMDOF_NSTET,          1>* force)          // stress output options
+      LINALG::Matrix<NUMDOF_NSTET,          1>* force)           // stress output options
 {
   //--------------------------------------------------- geometry update
   if (!FisNew_) DeformationGradient(disp);
   LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& defgrd = F_;
+    
   // reset the bool indicating that the stored deformation gradient is 'fresh'
   FisNew_ = false;
 
@@ -469,41 +470,20 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
 
   //------------------------------------------------- call material law
   //------------------------------------------------------ stabilization
-  LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET> cmat(true); // Views
+  LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET> cmat(true);
   LINALG::Matrix<NUMSTR_NSTET,1> stress(true);
   double density = -999.99;
   switch(stabtype_)
   {
     case DRT::ELEMENTS::so_nstet4_voldev:
+    {
+      VolDevStab(defgrd,cauchygreen,stress,cmat,density);
+      if (force) VolDevStabLinear(defgrd,force);
+    }
+    break;
     case DRT::ELEMENTS::so_nstet4_dev:
     {
-      // do deviatoric F, C, E
-      const double J = defgrd.Determinant();
-      LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET> Cbar(cauchygreen);
-      Cbar.Scale(pow(J,-2./3.));
-      LINALG::Matrix<6,1> glstrainbar(false);
-      glstrainbar(0) = 0.5 * (Cbar(0,0) - 1.0);
-      glstrainbar(1) = 0.5 * (Cbar(1,1) - 1.0);
-      glstrainbar(2) = 0.5 * (Cbar(2,2) - 1.0);
-      glstrainbar(3) = Cbar(0,1);
-      glstrainbar(4) = Cbar(1,2);
-      glstrainbar(5) = Cbar(2,0);
-      LINALG::Matrix<3,3> Fbar(false);
-      Fbar.SetCopy(defgrd.A());
-      Fbar.Scale(pow(J,-1./3.));
-
-      SelectMaterial(stress,cmat,density,glstrainbar,Fbar,0);
-
-      // define stuff we need to do the split
-      LINALG::Matrix<6,6> cmatdev; // set to zero?
-      LINALG::Matrix<6,1> stressdev;
-
-      // do just the deviatoric components
-      NStetRegister::DevStressTangent(stressdev,cmatdev,cmat,stress,cauchygreen);
-      stress = stressdev;
-      cmat = cmatdev;
-      stress.Scale(ALPHA_NSTET);
-      cmat.Scale(ALPHA_NSTET);
+      DevStab(defgrd,cauchygreen,stress,cmat,density);
     }
     break;
     case DRT::ELEMENTS::so_nstet4_puso:
@@ -568,11 +548,11 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
     xsi[1][0] = beta ;   xsi[1][1] = alpha;   xsi[1][2] = beta ;   xsi[1][3] = beta ;
     xsi[2][0] = beta ;   xsi[2][1] = beta ;   xsi[2][2] = alpha;   xsi[2][3] = beta ;
     xsi[3][0] = beta ;   xsi[3][1] = beta ;   xsi[3][2] = beta ;   xsi[3][3] = alpha;
+    const double f = density * V * weight;
     for (int gp=0; gp<4; ++gp)
     {
       LINALG::Matrix<NUMNOD_NSTET,1> funct;
       ShapeFunction(funct,xsi[gp][0],xsi[gp][1],xsi[gp][2],xsi[gp][3]);
-      const double f = density * V * weight;
       for (int i=0; i<NUMNOD_NSTET; ++i)
         for (int j=0; j<NUMNOD_NSTET; ++j)
         {
@@ -722,49 +702,6 @@ void DRT::ELEMENTS::NStet::SelectMaterial(
   return;
 }  // DRT::ELEMENTS::NStet::SelectMaterial
 
-/*----------------------------------------------------------------------*
- | material laws for NStet (protected)                          gee 05/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet::SelectMaterial(
-                                Epetra_SerialDenseVector& stress,
-                                Epetra_SerialDenseMatrix& cmat,
-                                double& density,
-                                const Epetra_SerialDenseVector& glstrain,
-                                const Epetra_SerialDenseMatrix& defgrd,
-                                int gp)
-{
-  RCP<MAT::Material> mat = Material();
-  switch (mat->MaterialType())
-  {
-    case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
-    {
-      MAT::StVenantKirchhoff* stvk = static_cast<MAT::StVenantKirchhoff*>(mat.get());
-      stvk->Evaluate(&glstrain,&cmat,&stress);
-      density = stvk->Density();
-    }
-    break;
-    case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
-    {
-      MAT::NeoHooke* neo = static_cast<MAT::NeoHooke*>(mat.get());
-      neo->Evaluate(&glstrain,&cmat,&stress);
-      density = neo->Density();
-    }
-    break;
-    case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
-    {
-      MAT::AAAneohooke* aaa = static_cast<MAT::AAAneohooke*>(mat.get());
-      aaa->Evaluate(&glstrain,&cmat,&stress);
-      density = aaa->Density();
-    }
-    break;
-    default:
-      dserror("Illegal type %d of material for element NStet tet4", mat->MaterialType());
-    break;
-  }
-
-  /*--------------------------------------------------------------------*/
-  return;
-}  // DRT::ELEMENTS::NStet::SelectMaterial
 
 
 /*----------------------------------------------------------------------*

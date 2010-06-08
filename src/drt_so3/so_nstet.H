@@ -44,7 +44,8 @@ using namespace Teuchos;
 #define NUMDIM_NSTET       3    ///< number of dimensions
 #define NUMCOORD_NSTET     4    ///< number of shape function cooordinates (ksi1-ksi4)
 
-#define ALPHA_NSTET      0.1    ///< stabilization parameter
+#define ALPHA_NSTET      0.2    ///< stabilization parameter
+#define BETA_NSTET       0.2    ///< stabilization parameter
 
 namespace DRT
 {
@@ -205,6 +206,13 @@ private:
   // map of location vectors for patch around a node
   map<int,vector<int> >                               adjlm_;
 
+  // vector of nodal pressures in nodal col map
+  RCP<Epetra_Vector>                                  pnodecol_;
+  // vector of nodal J in nodal col map
+  RCP<Epetra_Vector>                                  Jnodecol_;
+  // vector of nodal F in nodal col map
+  RCP<Epetra_MultiVector>                             Fnodecol_;
+
   void NodalIntegration(Epetra_SerialDenseMatrix*       stiff,
                         Epetra_SerialDenseVector*       force,
                         map<int,DRT::Node*>&            nodepatch,
@@ -212,7 +220,10 @@ private:
                         vector<double>*                 nodalstress,
                         vector<double>*                 nodalstrain,
                         const INPAR::STR::StressType    iostress,
-                        const INPAR::STR::StrainType    iostrain);
+                        const INPAR::STR::StrainType    iostrain,
+                        double&                         J,
+                        double&                         pressure,
+                        LINALG::Matrix<9,1>&            Fvec);
 
 
   void SelectMaterial(RCP<MAT::Material> mat,
@@ -228,7 +239,59 @@ private:
                                LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& CCdev,
                                LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& CC,
                                const LINALG::Matrix<NUMSTR_NSTET,1>& S,
-                               const LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& C);
+                               const LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& C,
+                               double& pressure);
+
+   // compute deviatoric and volumetric stresses and tangent
+  static void DevVolStressTangent(
+                               LINALG::Matrix<NUMSTR_NSTET,1>& Sdev,
+                               LINALG::Matrix<NUMSTR_NSTET,1>& Svol,
+                               LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& CCdev,
+                               LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& CCvol,
+                               LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& CC,
+                               const LINALG::Matrix<NUMSTR_NSTET,1>& S,
+                               const LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& C,
+                               double& elepressure);
+
+  /// volumetric and isochoric stabilization methods
+  void VolDevStab(LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& cauchygreen,
+                  LINALG::Matrix<NUMSTR_NSTET,1>& stress,
+                  LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& cmat,
+                  double& pressure);
+  
+  /// isochoric stabilization methods
+  void DevStab(LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& cauchygreen,
+               LINALG::Matrix<NUMSTR_NSTET,1>& stress,
+               LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& cmat);
+               
+
+  /// little helper routine
+  inline void MatrixtoVector(const LINALG::Matrix<3,3>& F, LINALG::Matrix<9,1>& Fvec)
+  {
+    Fvec(0) = F(0,0);
+    Fvec(1) = F(0,1);
+    Fvec(2) = F(0,2);
+    Fvec(3) = F(1,0);
+    Fvec(4) = F(1,1);
+    Fvec(5) = F(1,2);
+    Fvec(6) = F(2,0);
+    Fvec(7) = F(2,1);
+    Fvec(8) = F(2,2);
+    return;
+  }
+  inline void VectortoMatrix(const LINALG::Matrix<9,1>& Fvec, LINALG::Matrix<3,3>& F)
+  {
+    F(0,0) = Fvec(0);
+    F(0,1) = Fvec(1);
+    F(0,2) = Fvec(2);
+    F(1,0) = Fvec(3);
+    F(1,1) = Fvec(4);
+    F(1,2) = Fvec(5);
+    F(2,0) = Fvec(6);
+    F(2,1) = Fvec(7);
+    F(2,2) = Fvec(8);
+    return;
+  }
 
 }; // class NStetRegister
 
@@ -526,6 +589,22 @@ protected:
 
   // internal calculation methods
 
+  /// volumetric and isochoric stabilization methods
+  void VolDevStab(LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& defgrd,
+                  LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& cauchygreen,
+                  LINALG::Matrix<NUMSTR_NSTET,1>& stress,
+                  LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& cmat,
+                  double& density);
+  void VolDevStabLinear(LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& defgrd,
+                        LINALG::Matrix<NUMDOF_NSTET,1>* force);
+  
+  /// isochoric stabilization methods
+  void DevStab(LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& defgrd,
+               LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& cauchygreen,
+               LINALG::Matrix<NUMSTR_NSTET,1>& stress,
+               LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& cmat,
+               double& density);
+  
   // don't want = operator
   NStet& operator = (const NStet& old);
 
@@ -609,13 +688,6 @@ protected:
                      LINALG::Matrix<NUMNOD_NSTET,NUMSTR_NSTET>& nodalstresses);
 
 
-
-  void SelectMaterial(Epetra_SerialDenseVector& stress,
-                      Epetra_SerialDenseMatrix& cmat,
-                      double& density,
-                      const Epetra_SerialDenseVector& glstrain,
-                      const Epetra_SerialDenseMatrix& defgrd,
-                      int gp);
 
   void SelectMaterial(LINALG::Matrix<6,1>& stress,
                       LINALG::Matrix<6,6>& cmat,

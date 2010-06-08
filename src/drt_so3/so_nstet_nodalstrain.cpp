@@ -41,13 +41,17 @@ int DRT::ELEMENTS::NStetRegister::Initialize(DRT::Discretization& dis)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStetRegister::Initialize");
   const int myrank = dis.Comm().MyPID();
-  const int numproc = dis.Comm().NumProc();
   const int numele = dis.NumMyColElements();
   
-#ifndef EXTENDEDPARALLELOVERLAP
-  if (numproc>1)
-    dserror("NStet elements need extended parallel overlap, use define EXTENDEDPARALLELOVERLAP");
-#endif
+  pnodecol_ = rcp(new Epetra_Vector(*dis.NodeColMap(),false));
+  Jnodecol_ = rcp(new Epetra_Vector(*dis.NodeColMap(),false));
+  Fnodecol_ = rcp(new Epetra_MultiVector(*dis.NodeColMap(),9,false));
+  
+//#ifndef EXTENDEDPARALLELOVERLAP
+//  const int numproc = dis.Comm().NumProc();
+//  if (numproc>1)
+//    dserror("NStet elements need extended parallel overlap, use define EXTENDEDPARALLELOVERLAP");
+//#endif
 
   //---------------------------------------------------------------------
   // check for first nstet element and define type of stabilization
@@ -203,13 +207,18 @@ void DRT::ELEMENTS::NStetRegister::PreEvaluate(DRT::Discretization& dis,
 
   RCP<Epetra_FECrsMatrix> stifftmp;
   RCP<LINALG::SparseMatrix> systemmatrix = rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix1);
-  if (systemmatrix != null and systemmatrix->Filled())
+  if (systemmatrix != null && systemmatrix->Filled())
     stifftmp = rcp(new Epetra_FECrsMatrix(Copy,systemmatrix->EpetraMatrix()->Graph()));
   else
     stifftmp = rcp(new Epetra_FECrsMatrix(Copy,rmap,256,false));
 
   // create temporary vector in column map to assemble to
   Epetra_Vector forcetmp1(*dis.DofColMap(),true);
+  
+  // create temporary vector in nodal row map to store pressure and J
+  Epetra_Vector      pvectmp(*dis.NodeRowMap(),true);
+  Epetra_Vector      Jvectmp(*dis.NodeRowMap(),true);
+  Epetra_MultiVector Fvectmp(*dis.NodeRowMap(),9,true);
 
   //-------------------------------------------------do nodal stiffness
   std::map<int,DRT::Node*>::iterator node;
@@ -233,12 +242,17 @@ void DRT::ELEMENTS::NStetRegister::PreEvaluate(DRT::Discretization& dis,
     // location and ownership vector of nodal patch
     vector<int>& lm = adjlm_[nodeLid];
 
+    // store nodal pressure and volume change
+    double J = 0.0;
+    double pressure = 0.0;
+    LINALG::Matrix<9,1> Fvec(false);
+    
     if (action != "calc_struct_stress")
     {
       // do nodal integration of stiffness and internal force
       stiff.LightShape(ndofperpatch,ndofperpatch);
       force1.LightSize(ndofperpatch);
-      NodalIntegration(&stiff,&force1,nodepatch,adjele,NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
+      NodalIntegration(&stiff,&force1,nodepatch,adjele,NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none,J,pressure,Fvec);
     }
     else
     {
@@ -246,11 +260,15 @@ void DRT::ELEMENTS::NStetRegister::PreEvaluate(DRT::Discretization& dis,
       INPAR::STR::StrainType iostrain = p.get<INPAR::STR::StrainType>("iostrain",INPAR::STR::strain_none);
       vector<double> nodalstress(6);
       vector<double> nodalstrain(6);
-      NodalIntegration(NULL,NULL,nodepatch,adjele,&nodalstress,&nodalstrain,iostress,iostrain);
+      NodalIntegration(NULL,NULL,nodepatch,adjele,&nodalstress,&nodalstrain,iostress,iostrain,J,pressure,Fvec);
       nodestress_[nodeLid] = nodalstress;
       nodestrain_[nodeLid] = nodalstrain;
     }
 
+    // store pressure and J in nodal row map
+    pvectmp[pvectmp.Map().LID(nodeLid)] = pressure;
+    Jvectmp[Jvectmp.Map().LID(nodeLid)] = J;
+    for (int i=0; i<9; ++i) (*Fvectmp(i))[Jvectmp.Map().LID(nodeLid)] = Fvec(i);
 
     //---------------------- do assembly of stiffness and internal force
     // (note: this is non-standard-baci assembly and therefore a do it all yourself version!)
@@ -286,8 +304,8 @@ void DRT::ELEMENTS::NStetRegister::PreEvaluate(DRT::Discretization& dis,
 
   //---------------------------------------------------------------------
   } // for (node=noderids_.begin(); node != noderids_.end(); ++node)
-
-#if 1
+  
+#if 0
   //--------------------------------------------- do volumetric stabilization 
   if (stabtype_==DRT::ELEMENTS::so_nstet4_vol ||
       stabtype_==DRT::ELEMENTS::so_nstet4_voldev)
@@ -407,6 +425,10 @@ void DRT::ELEMENTS::NStetRegister::PreEvaluate(DRT::Discretization& dis,
     int err = tmp.Export(forcetmp1,exporter,Add);
     if (err) dserror("Export using exporter returned err=%d",err);
     systemvector1->Update(1.0,tmp,1.0);
+    
+    LINALG::Export(pvectmp,*pnodecol_);
+    LINALG::Export(Jvectmp,*Jnodecol_);
+    LINALG::Export(Fvectmp,*Fnodecol_);
   }
   if (assemblemat1)
   {
@@ -476,7 +498,10 @@ void DRT::ELEMENTS::NStetRegister::NodalIntegration(Epetra_SerialDenseMatrix*   
                                                     vector<double>*                nodalstress,
                                                     vector<double>*                nodalstrain,
                                                     const INPAR::STR::StressType   iostress,
-                                                    const INPAR::STR::StrainType   iostrain)
+                                                    const INPAR::STR::StrainType   iostrain,
+                                                    double&                        J,
+                                                    double&                        pressure,
+                                                    LINALG::Matrix<9,1>&           Fvec)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStetRegister::NodalIntegration");
 
@@ -507,7 +532,12 @@ void DRT::ELEMENTS::NStetRegister::NodalIntegration(Epetra_SerialDenseMatrix*   
     FnodeL.Update(V,adjele[i]->F_,1.0);
   }
   FnodeL.Scale(1.0/VnodeL);
+  J = FnodeL.Determinant();
 
+  //-----------------------------------------------------------------------
+  // return F for storage
+  MatrixtoVector(FnodeL,Fvec);
+  
 #if 0
   //-----------------------------------------------------------------------
   // build nodal deformed volume
@@ -526,7 +556,6 @@ void DRT::ELEMENTS::NStetRegister::NodalIntegration(Epetra_SerialDenseMatrix*   
   const double othird = 1./3.;
   FnodeL.Scale(pow(Jv,othird)*pow(JF,-othird));
 #endif    
-   
 
   //-----------------------------------------------------------------------
   // do positioning map global nodes -> position in B-Operator
@@ -737,20 +766,13 @@ void DRT::ELEMENTS::NStetRegister::NodalIntegration(Epetra_SerialDenseMatrix*   
   switch(adjele[0]->stabtype_)
   {
     case DRT::ELEMENTS::so_nstet4_voldev:
+    {
+      VolDevStab(cauchygreen,stress,cmat,pressure);
+    }
+    break;
     case DRT::ELEMENTS::so_nstet4_dev:
     {
-      LINALG::Matrix<6,6> cmatdev;
-      LINALG::Matrix<6,1> stressdev;
-      // compute deviatoric stress and tangent
-#if 0
-      DevStressTangent(stressdev,cmatdev,cmat,stress,cauchygreen);
-#else
-      MAT::VolumetrifyAndIsochorify(NULL,NULL,&stressdev,&cmatdev,glstrain,stress,cmat);
-#endif
-      // reduce deviatoric stresses
-      stress.Update(-ALPHA_NSTET,stressdev,1.0);
-      // reduce deviatoric tangent
-      cmat.Update(-ALPHA_NSTET,cmatdev,1.0);
+      DevStab(cauchygreen,stress,cmat);
     }
     break;
     case DRT::ELEMENTS::so_nstet4_puso:
@@ -894,7 +916,8 @@ void DRT::ELEMENTS::NStetRegister::DevStressTangent(
   LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& CCdev,
   LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& CC,
   const LINALG::Matrix<NUMSTR_NSTET,1>& S,
-  const LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& C)
+  const LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& C,
+  double& pressure)
 {
 
   //---------------------------------- things that we'll definitely need
@@ -923,6 +946,7 @@ void DRT::ELEMENTS::NStetRegister::DevStressTangent(
     for (int j=0; j<3; ++j)
       p += Smat(i,j)*C(i,j);
   p *= (-1./(3.*J));
+  pressure = p;
 
   //-------------------------------- compute volumetric PK2 Svol = -p J Cinv
   //-------------------------------------------------------- Sdev = S - Svol
@@ -938,7 +962,7 @@ void DRT::ELEMENTS::NStetRegister::DevStressTangent(
   LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET> CCvol(true); // fill with zeros
 
   //--------------------------------------- CCvol += 2pJ (Cinv boeppel Cinv)
-  MAT::ElastSymTensor_o_Multiply(CCvol,-2.0*fac,Cinv,Cinv,0.0);
+  MAT::ElastSymTensor_o_Multiply(CCvol,2.0*p*J,Cinv,Cinv,0.0);
 
   //------------------------------------------ CCvol += 2/3 * Cinv dyad S
   MAT::ElastSymTensorMultiply(CCvol,2.0/3.0,Cinv,Smat,1.0);
@@ -977,6 +1001,107 @@ void DRT::ELEMENTS::NStetRegister::DevStressTangent(
 }
 
 
+/*----------------------------------------------------------------------*
+ |  compute deviatoric tangent and stresses (private/static)   gee 06/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::NStetRegister::DevVolStressTangent(
+                               LINALG::Matrix<NUMSTR_NSTET,1>& Sdev,
+                               LINALG::Matrix<NUMSTR_NSTET,1>& Svol,
+                               LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& CCdev,
+                               LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& CCvol,
+                               LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET>& CC,
+                               const LINALG::Matrix<NUMSTR_NSTET,1>& S,
+                               const LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET>& C,
+                               double& elepressure)
+{
+
+  //---------------------------------- things that we'll definitely need
+  // inverse of C
+  LINALG::Matrix<3,3> Cinv;
+  const double detC = Cinv.Invert(C);
+
+  // J = det(F) = sqrt(detC)
+  const double J = sqrt(detC);
+
+  // S as a 3x3 matrix
+  LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET> Smat;
+  Smat(0,0) = S(0);
+  Smat(0,1) = S(3);
+  Smat(0,2) = S(5);
+  Smat(1,0) = Smat(0,1);
+  Smat(1,1) = S(1);
+  Smat(1,2) = S(4);
+  Smat(2,0) = Smat(0,2);
+  Smat(2,1) = Smat(1,2);
+  Smat(2,2) = S(2);
+
+  //--------------------------------------------- pressure p = -1/(3J) S:C
+  double p = 0.0;
+  for (int i=0; i<3; ++i)
+    for (int j=0; j<3; ++j)
+      p += Smat(i,j)*C(i,j);
+  p *= (-1./(3.*J));
+  elepressure = p;
+
+  //-------------------------------- compute volumetric PK2 Svol = -p J Cinv
+  //-------------------------------------------------------- Sdev = S - Svol
+  const double fac = -p*J;
+  Svol(0) = fac*Cinv(0,0);
+  Svol(1) = fac*Cinv(1,1);
+  Svol(2) = fac*Cinv(2,2);
+  Svol(3) = fac*Cinv(0,1);
+  Svol(4) = fac*Cinv(1,2);
+  Svol(5) = fac*Cinv(0,2);
+
+  Sdev(0) = Smat(0,0) - Svol(0);
+  Sdev(1) = Smat(1,1) - Svol(1);
+  Sdev(2) = Smat(2,2) - Svol(2);
+  Sdev(3) = Smat(0,1) - Svol(3);
+  Sdev(4) = Smat(1,2) - Svol(4);
+  Sdev(5) = Smat(0,2) - Svol(5);
+  
+  //======================================== volumetric tangent matrix CCvol
+  //LINALG::Matrix<NUMSTR_NSTET,NUMSTR_NSTET> CCvol(true); // fill with zeros
+  CCvol.Clear(); // fill with zeros
+
+  //--------------------------------------- CCvol += 2pJ (Cinv boeppel Cinv)
+  MAT::ElastSymTensor_o_Multiply(CCvol,2.0*p*J,Cinv,Cinv,0.0);
+
+  //------------------------------------------ CCvol += 2/3 * Cinv dyad S
+  MAT::ElastSymTensorMultiply(CCvol,2.0/3.0,Cinv,Smat,1.0);
+
+  //-------------------------------------- CCvol += 1/3 Cinv dyad ( CC : C )
+  {
+    // C as Voigt vector
+    LINALG::Matrix<NUMSTR_NSTET,1> Cvec;
+    Cvec(0) = C(0,0);
+    Cvec(1) = C(1,1);
+    Cvec(2) = C(2,2);
+    Cvec(3) = 2.0*C(0,1);
+    Cvec(4) = 2.0*C(1,2);
+    Cvec(5) = 2.0*C(0,2);
+
+    LINALG::Matrix<NUMSTR_NSTET,1> CCcolonC;
+    CCcolonC.Multiply(CC,Cvec);
+
+    LINALG::Matrix<NUMDIM_NSTET,NUMDIM_NSTET> CCcC;
+    CCcC(0,0) = CCcolonC(0);
+    CCcC(0,1) = CCcolonC(3);
+    CCcC(0,2) = CCcolonC(5);
+    CCcC(1,0) = CCcC(0,1);
+    CCcC(1,1) = CCcolonC(1);
+    CCcC(1,2) = CCcolonC(4);
+    CCcC(2,0) = CCcC(0,2);
+    CCcC(2,1) = CCcC(1,2);
+    CCcC(2,2) = CCcolonC(2);
+    MAT::ElastSymTensorMultiply(CCvol,1./3.,Cinv,CCcC,1.0);
+  }
+
+  //----------------------------------------------------- CCdev = CC - CCvol
+  CCdev.Update(1.0,CC,-1.0,CCvol);
+
+  return;
+}
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3
