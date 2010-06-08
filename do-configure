@@ -6,6 +6,10 @@ BACI_HOME=`dirname $0`
 EXTRA_ARGS=$@
 BUILD_TYPE="RELEASE"
 
+INCLUDE_INSTALL_DIR="/lnm/lib/fc8/openmpi/include"
+LIB_INSTALL_DIR="/lnm/lib/fc8/openmpi/lib"
+Trilinos_DIR="/lnm/lib/fc8/openmpi/trilinos"
+
 /lnm/programs/cmake-2.8.0/bin/cmake \
     -D CMAKE_BUILD_TYPE:STRING=$BUILD_TYPE \
     -D CMAKE_CXX_FLAGS:STRING="-Wall -march=i686 -Wconversion -msse3 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE" \
@@ -37,8 +41,10 @@ BUILD_TYPE="RELEASE"
     -D D_TRUSS2:BOOL=ON \
     -D D_TRUSS3:BOOL=ON \
     -D D_WALL1:BOOL=ON \
-    -D INCLUDE_INSTALL_DIR:FILEPATH="/lnm/lib/fc8/openmpi/include" \
-    -D LIB_INSTALL_DIR:FILEPATH="/lnm/lib/fc8/openmpi/lib" \
-    -D Trilinos_DIR:FILEPATH="/lnm/lib/fc8/openmpi/trilinos" \
+    -D INCLUDE_INSTALL_DIR:FILEPATH=$INCLUDE_INSTALL_DIR \
+    -D LIB_INSTALL_DIR:FILEPATH=$LIB_INSTALL_DIR \
+    -D Trilinos_DIR:FILEPATH=$Trilinos_DIR \
     $EXTRA_ARGS \
     ${BACI_HOME}
+
+./adapt_cproject.py `basename $0`
