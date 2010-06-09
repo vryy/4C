@@ -188,11 +188,13 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     etypeset.insert(&discret_->lColElement(i)->ElementType());
   }
 
+#ifdef D_FLUID3
   if (etypeset.count(&DRT::ELEMENTS::XDiff3Type::Instance()) > 0)
   {
     diffusion_problem_ = true;
   }
   else
+#endif
   {
     diffusion_problem_ = false;
   }
