@@ -553,7 +553,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     //string blockname = "extr";
     switch(extrusion_types.find(i_extr->first)->second){
     case eblock:{ // Eblocks have only one type of eles
-      int numnodes = newconn->find(0)->second.size();
+      const int numnodes = newconn->find(0)->second.size();
       ElementBlock::Shape newshape = ElementBlock::dis_none;
       if (numnodes == 6) newshape = ElementBlock::wedge6;
       else if (numnodes == 8) newshape = ElementBlock::hex8;
@@ -988,8 +988,7 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
           }
         }
         else {
-        // we need a new node
-          int newid= highestnid+1;
+          // we need a new node
 
           // layer case rework layer elements within enclosing one
           const vector<int> layereles = layerstack.find(i_encl->first)->second;
@@ -1003,22 +1002,22 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
             vector<double> newlayercoords = ExtrudeNodeCoords(coords.find(repairbasenode)->second,actthickness,i_layer,numlayers,repairnormal);
 
             // replace also the base for inner inner
-            if (i_layer >1) newconn.find(*i_layerele)->second.at(repairnodepos-nnodes/2) = newid;
+            if (i_layer >1) newconn.find(*i_layerele)->second.at(repairnodepos-nnodes/2) = highestnid;
 
             // create new node
-            newid = highestnid+1; ++ highestnid;
+            ++ highestnid;
             ++newnodesbyrepair;
             // put new coords into newnode map
-            newnodes.insert(pair<int,vector<double> >(newid,newlayercoords));
-            coords.insert(pair<int,vector<double> >(newid,newlayercoords)); // coords update
+            newnodes.insert(pair<int,vector<double> >(highestnid,newlayercoords));
+            coords.insert(pair<int,vector<double> >(highestnid,newlayercoords)); // coords update
 
             // replace previously connected node corresponding to repairnode with new node in actlayerele
-            newconn.find(*i_layerele)->second.at(repairnodepos) = newid;
+            newconn.find(*i_layerele)->second.at(repairnodepos) = highestnid;
 
             ++i_layer;
           }
           // update actual enclosing element for following double check
-          actele.at(repairnodepos) = newid;
+          actele.at(repairnodepos) = highestnid;
           // update ext_node_conn
           ext_node_conn.find(repairnode)->second.erase(i_encl->first);
         }
