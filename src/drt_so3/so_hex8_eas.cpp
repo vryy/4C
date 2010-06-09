@@ -290,8 +290,8 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       if (!M_sosh8_eval){ // if true M already evaluated
         // (r,s,t) gp-locations of fully integrated linear 8-node Hex
         const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
-        const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
-        const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
+        //const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
+        //const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
         const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
         // fill up M at each gp
         for (int i=0; i<NUMGPT_SOH8; ++i) {
