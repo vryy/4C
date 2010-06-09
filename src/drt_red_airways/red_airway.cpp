@@ -46,18 +46,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAirwayType::Create( const string el
 }
 
 
-DRT::ELEMENTS::RedAirwayRegisterType DRT::ELEMENTS::RedAirwayRegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::RedAirwayRegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::RedAirwayRegister* object = new DRT::ELEMENTS::RedAirwayRegister(DRT::Element::element_red_airway);
-  object->Unpack(data);
-  return object;
-}
-
-
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           ismail 01/10|
  |  id             (in)  this element's global id                       |
@@ -211,104 +199,6 @@ void DRT::ELEMENTS::RedAirway::Print(ostream& os) const
 
   return;
 }
-
-/*----------------------------------------------------------------------*
- |  allocate and return RedAirway2Register (public)            ismail 01/10|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::RedAirway::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::RedAirwayRegister(Type()));
-}
-
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                           ismail 01/10|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAirwayRegister::RedAirwayRegister(DRT::Element::ElementType etype) :
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                      ismail 01/10|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAirwayRegister::RedAirwayRegister(
-                               const DRT::ELEMENTS::RedAirwayRegister& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                         ismail 01/10 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAirwayRegister* DRT::ELEMENTS::RedAirwayRegister::Clone() const
-{
-  return new DRT::ELEMENTS::RedAirwayRegister(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                         ismail 01/10 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirwayRegister::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                         ismail 01/10 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirwayRegister::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                          ismail 01/10 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAirwayRegister::~RedAirwayRegister()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                         ismail 01/10 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirwayRegister::Print(ostream& os) const
-{
-  os << "RedAirwayRegister ";
-  ElementRegister::Print(os);
-  return;
-}
-
 
 /*----------------------------------------------------------------------*
  |  Return names of visualization data                     ismail 01/10 |

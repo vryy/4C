@@ -28,7 +28,6 @@ Maintainer: Caroline Danowski
  |  headers                                                    gjb 01/08|
  *----------------------------------------------------------------------*/
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
@@ -44,7 +43,7 @@ namespace ELEMENTS
   // forward declarations
   class ThermoBoundary;
 
-class ThermoType : public DRT::ElementObjectType
+class ThermoType : public DRT::ElementType
 {
 public:
 
@@ -252,7 +251,7 @@ private:
     //! \brief Print this element
     void Print(std::ostream& os) const;
 
-    virtual DRT::ElementObjectType & ElementObjectType() const
+    virtual DRT::ElementType & ElementType() const
     { return ThermoType::Instance(); }
 
     //! \brief Query names of element data to be visualized using BINIO
@@ -445,7 +444,7 @@ private:
   ////=======================================================================
   ////=======================================================================
 
-class ThermoBoundaryType : public DRT::ElementObjectType
+class ThermoBoundaryType : public DRT::ElementType
 {
 public:
 
@@ -611,7 +610,7 @@ private:
     //! \brief Print this element
     void Print(std::ostream& os) const;
 
-    virtual DRT::ElementObjectType & ElementObjectType() const
+    virtual DRT::ElementType & ElementType() const
     { return ThermoBoundaryType::Instance(); }
 
     //@}

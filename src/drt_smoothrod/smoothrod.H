@@ -26,7 +26,6 @@ Maintainer: Christian Cyron
 using namespace std;
 using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_condition.H"
@@ -49,7 +48,7 @@ namespace DRT
 namespace ELEMENTS
 {
 
-class SmoothrodType : public DRT::ElementObjectType
+class SmoothrodType : public DRT::ElementType
 {
 public:
 
@@ -140,7 +139,7 @@ public:
   */
   virtual void Unpack(const vector<char>& data);
 
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return SmoothrodType::Instance(); }
 
   //@}
@@ -401,118 +400,6 @@ private:
 ostream& operator << (ostream& os, const DRT::Element& ele);
 
 
-class SmoothrodRegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "SmoothrodRegisterType"; }
-
-  static SmoothrodRegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static SmoothrodRegisterType instance_;
-};
-
-
-//------------- class SmoothrodRegister: -------------------------------------------
-
-/*!
-\brief A register for Smoothrod element
-
-\author cyron (cyron@lnm.mw.tum.de)
-*/
-class SmoothrodRegister : public DRT::ElementRegister
-{
-public:
-
-  //! @name Friends
-  friend class Smoothrod;
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  SmoothrodRegister(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an SmoothrodRegister
-
-  */
-  SmoothrodRegister(const DRT::ELEMENTS::SmoothrodRegister& old);
-
-  /*!
-  \brief Deep copy this instance of SmoothrodRegister and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::SmoothrodRegister* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class implementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return SmoothrodRegisterType::Instance().UniqueParObjectId(); }
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~SmoothrodRegister();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the Smoothrod elements. it e.g. calculates the
-  field of averaged directors at nodes.
-  */
-  //int Initialize(DRT::Discretization& dis);
-
-  //@}
-
-private:
-
-
-}; // class smoothrodRegister
 } // namespace Elements
 } // namespace DRT
 

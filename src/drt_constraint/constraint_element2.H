@@ -20,7 +20,6 @@ using namespace std;
 using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
@@ -31,14 +30,13 @@ namespace DRT
 {
 // forward declarations
 class Discretization;
-class ConstraintElement2Register;
 
 namespace ELEMENTS
 {
 // forward declarations
 //class ConstraintElementLine;
 
-class ConstraintElement2Type : public DRT::ElementObjectType
+class ConstraintElement2Type : public DRT::ElementType
 {
 public:
 
@@ -72,7 +70,6 @@ class ConstraintElement2 : public DRT::Element
 public:
 
   //! @name Friends
-  friend class ConstraintElement2Register;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -176,7 +173,7 @@ public:
   */
   void Print(ostream& os) const;
 
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return ConstraintElement2Type::Instance(); }
 
   //@}
@@ -352,112 +349,6 @@ private:
 //=======================================================================
 //=======================================================================
 
-class ConstraintElement2RegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "ConstraintElement2RegisterType"; }
-
-  static ConstraintElement2RegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static ConstraintElement2RegisterType instance_;
-};
-
-
-/*!
-\brief A register for 2D constraint element
-
-\author tk (kloeppel@lnm.mw.tum.de)
-*/
-class ConstraintElement2Register : public DRT::ElementRegister
-{
-public:
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  ConstraintElement2Register(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an ConstraintElement2Register
-
-  */
-  ConstraintElement2Register(const DRT::ELEMENTS::ConstraintElement2Register& old);
-
-  /*!
-  \brief Deep copy this instance of ConstraintElement2Register and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::ConstraintElement2Register* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class imploementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return ConstraintElement2RegisterType::Instance().UniqueParObjectId(); }
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~ConstraintElement2Register();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the fluid2 elements. it e.g. calculates the
-  field of averaged directors at nodes.
-  */
-  int Initialize(DRT::Discretization& dis);
-
-  //@}
-
-private:
-
-}; // class ConstraintElement2Register
 
 } // namespace ELEMENTS
 } // namespace DRT

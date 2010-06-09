@@ -59,18 +59,6 @@ void DRT::ELEMENTS::NURBS::So_nurbs27Type::ComputeNullSpace( DRT::Discretization
 }
 
 
-DRT::ELEMENTS::NURBS::So_Nurbs27_RegisterType DRT::ELEMENTS::NURBS::So_Nurbs27_RegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::NURBS::So_Nurbs27_RegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::NURBS::Sonurbs27Register* object =
-    new DRT::ELEMENTS::NURBS::Sonurbs27Register(DRT::Element::element_so_nurbs27);
-  object->Unpack(data);
-  return object;
-}
-
-
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                                       |
@@ -258,96 +246,6 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Lines()
   return DRT::UTILS::ElementBoundaryFactory<StructuralLine,So_nurbs27>(DRT::UTILS::buildLines,this);
 }
 
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                                       |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::Sonurbs27Register::Sonurbs27Register(DRT::Element::ElementType etype) :
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                                  |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::Sonurbs27Register::Sonurbs27Register(
-                               const DRT::ELEMENTS::NURBS::Sonurbs27Register& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::Sonurbs27Register* DRT::ELEMENTS::NURBS::Sonurbs27Register::Clone() const
-{
-  return new DRT::ELEMENTS::NURBS::Sonurbs27Register(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::Sonurbs27Register::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::Sonurbs27Register::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                                       |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::Sonurbs27Register::~Sonurbs27Register()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                                      |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::Sonurbs27Register::Print(ostream& os) const
-{
-  os << "Sonurbs27Register ";
-  ElementRegister::Print(os);
-  return;
-}
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

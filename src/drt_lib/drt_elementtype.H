@@ -19,20 +19,20 @@ namespace DRT
   class Element;
   class Discretization;
 
-class ElementObjectType : public ParObjectType
+class ElementType : public ParObjectType
 {
 protected:
 
   // only derived classes might create an instance
-  ElementObjectType();
+  ElementType();
 
 public:
 
   /// test equality by comparing pointers as there are just singletons allowed
-  bool operator==( const ElementObjectType & other ) const
+  bool operator==( const ElementType & other ) const
   { return this == &other; }
 
-  bool operator!=( const ElementObjectType & other ) const
+  bool operator!=( const ElementType & other ) const
   { return this != &other; }
 
   virtual int Initialize(DRT::Discretization& dis);

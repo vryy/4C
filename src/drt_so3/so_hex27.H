@@ -23,7 +23,6 @@ using namespace std;
 using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
@@ -52,10 +51,9 @@ class Discretization;
 namespace ELEMENTS
 {
 // forward declarations
-class Soh27Register;
 class InvDesign;
 
-class So_hex27Type : public DRT::ElementObjectType
+class So_hex27Type : public DRT::ElementType
 {
 public:
 
@@ -228,7 +226,7 @@ public:
   */
   void Print(ostream& os) const;
 
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return So_hex27Type::Instance(); }
 
   //@}
@@ -500,119 +498,6 @@ protected:
 
 }; // class So_hex27
 
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-class Soh27RegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "Soh27RegisterType"; }
-
-  static Soh27RegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static Soh27RegisterType instance_;
-};
-
-
-/*!
-\brief A register for shell8 element
-
-\author gee (gee@lnm.mw.tum.de)
-*/
-class Soh27Register : public DRT::ElementRegister
-{
-public:
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  Soh27Register(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an Soh27Register
-
-  */
-  Soh27Register(const DRT::ELEMENTS::Soh27Register& old);
-
-  /*!
-  \brief Deep copy this instance of Soh27Register and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::Soh27Register* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class imploementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return Soh27RegisterType::Instance().UniqueParObjectId(); }
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~Soh27Register();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the elements,
-  e.g. defines shell-thickness direction
-  */
-  //int Initialize(DRT::Discretization& dis);
-
-  //@}
-
-
-private:
-
-
-}; // class Soh27Register
 
 
 //=======================================================================

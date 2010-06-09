@@ -63,18 +63,6 @@ void DRT::ELEMENTS::So_sh8p8Type::ComputeNullSpace( DRT::Discretization & dis, s
 }
 
 
-DRT::ELEMENTS::Sosh8p8RegisterType DRT::ELEMENTS::Sosh8p8RegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::Sosh8p8RegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::Sosh8p8Register* object =
-    new DRT::ELEMENTS::Sosh8p8Register(DRT::Element::element_sosh8p8);
-  object->Unpack(data);
-  return object;
-}
-
-
 /*----------------------------------------------------------------------*
  |  initialise static arrays                                 bborn 03/09|
  *----------------------------------------------------------------------*/
@@ -112,7 +100,6 @@ const int DRT::ELEMENTS::So_sh8p8::PRESTODISPPRES_[NUMPRES_]
 DRT::ELEMENTS::So_sh8p8::So_sh8p8(int id, int owner) :
 DRT::ELEMENTS::So_sh8(id,owner)
 {
-  SetType(element_sosh8p8);
   return;
 }
 
@@ -288,102 +275,6 @@ void DRT::ELEMENTS::So_sh8p8::sosh8p8_expol
     elevec2(NODDOF_*i+2)=nodalstresses(i,5);
   }
 
-}
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            bborn 03/09|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Sosh8p8Register::Sosh8p8Register(
-  DRT::Element::ElementType etype
-  )
-  : DRT::ELEMENTS::Sosh8Register::Sosh8Register(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       bborn 03/09|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Sosh8p8Register::Sosh8p8Register(
-  const DRT::ELEMENTS::Sosh8p8Register& old
-  )
-  : DRT::ELEMENTS::Sosh8Register::Sosh8Register(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                          bborn 03/09 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Sosh8p8Register* DRT::ELEMENTS::Sosh8p8Register::Clone() const
-{
-  return new DRT::ELEMENTS::Sosh8p8Register(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                          bborn 03/09 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Sosh8p8Register::Pack(std::vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class So_sh8 Element
-  std::vector<char> basedata(0);
-  DRT::ELEMENTS::Sosh8Register::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                          bborn 03/09 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Sosh8p8Register::Unpack(const std::vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  std::vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  DRT::ELEMENTS::Sosh8Register::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                           bborn 03/09|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Sosh8p8Register::Print(std::ostream& os) const
-{
-  os << "Sosh8p8Register ";
-  ElementRegister::Print(os);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            bborn 03/09|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Sosh8p8Register::~Sosh8p8Register()
-{
-  return;
 }
 
 

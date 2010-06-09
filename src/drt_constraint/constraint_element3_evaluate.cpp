@@ -84,7 +84,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
         RCP<DRT::Condition> condition = params.get<RCP<DRT::Condition> >("condition");
         const vector<double>*  direct = condition->Get<vector<double> > ("direction");
         const string* value = condition-> Get<string>("value");
-        if (*value == "disp") 
+        if (*value == "disp")
           elevec3[0] = ComputeWeightedDistance(mydisp,*direct);
         else if (*value == "x")
         {
@@ -92,7 +92,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
           SpatialConfiguration(xscurr,mydisp);
           elevec3[0] = ComputeWeightedDistance(xscurr,*direct);
         }
-        else 
+        else
           dserror("MPC cannot compute state!");
        }
     }
@@ -136,9 +136,9 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
         //Compute weighted difference between masternode and other node and it's derivative
         ComputeFirstDerivWeightedDistance(elevec1,*direct);
         elevec2=elevec1;
-        
+
         const string* value = condition-> Get<string>("value");
-        if (*value == "disp") 
+        if (*value == "disp")
           elevec3[0] = ComputeWeightedDistance(mydisp,*direct);
         else if (*value == "x")
         {
@@ -146,9 +146,9 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
           SpatialConfiguration(xscurr,mydisp);
           elevec3[0] = ComputeWeightedDistance(xscurr,*direct);
         }
-        else 
+        else
           dserror("MPC cannot compute state!");
-        
+
       }
 
     }
@@ -1887,16 +1887,6 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeFirstDerivWeightedDistance
   }
 
   return;
-}
-
-//=======================================================================
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ConstraintElement3Register::Initialize(DRT::Discretization& dis)
-{
-  return 0;
 }
 
 #endif  // #ifdef CCADISCRET

@@ -22,7 +22,6 @@ Maintainer: Lena Wiechert
 #include "Epetra_SerialDenseMatrix.h"
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "so_hex8.H"
 #include "../drt_inpar/inpar_structure.H"
@@ -38,10 +37,8 @@ class Discretization;
 
 namespace ELEMENTS
 {
-// forward declarations
-class SoHex8P1J1Register;
 
-class So_Hex8P1J1Type : public DRT::ElementObjectType
+class So_Hex8P1J1Type : public DRT::ElementType
 {
 public:
 
@@ -167,7 +164,7 @@ public:
                   LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8>& D_T_bar,
                   const double t);
 
-  virtual So_Hex8P1J1Type & ElementObjectType() const
+  virtual So_Hex8P1J1Type & ElementType() const
   { return So_Hex8P1J1Type::Instance(); }
 
   //@}
@@ -334,109 +331,6 @@ private:
 
 };
 
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-
-class SoHex8P1J1RegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "SoHex8P1J1RegisterType"; }
-
-  static SoHex8P1J1RegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static SoHex8P1J1RegisterType instance_;
-};
-
-
-class SoHex8P1J1Register : public Soh8Register
-{
-public:
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  SoHex8P1J1Register(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an SoHex8P1J1Register
-
-  */
-  SoHex8P1J1Register(const DRT::ELEMENTS::SoHex8P1J1Register& old);
-
-  /*!
-  \brief Deep copy this instance of SoHex8P1J1Register and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::SoHex8P1J1Register* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class imploementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return SoHex8P1J1RegisterType::Instance().UniqueParObjectId(); }
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~SoHex8P1J1Register();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  /*!
-  \brief Call Element init routines
-  */
-  //int Initialize(DRT::Discretization& dis);
-
-
-}; // class SoHex8P1J1Register
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
 
 } // namespace ELEMENTS
 } // namespace DRT

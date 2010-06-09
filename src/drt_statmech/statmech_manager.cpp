@@ -730,7 +730,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
       //if no periodic boundary conditions are to be applied, we just plot the current element
       if(statmechparams_.get<double>("PeriodLength",0.0) == 0)
       {
-        const DRT::ElementObjectType & eot = element->ElementObjectType();
+        const DRT::ElementType & eot = element->ElementType();
 #ifdef D_BEAM3
       	if(eot==DRT::ELEMENTS::Beam3Type::Instance())
       	{
@@ -887,7 +887,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
   DRT::Element* element = discret_.gElement(eleid);
 
   // draw colored lines between two nodes of a beam3 or truss3 element (meant for filaments/crosslinks/springs)
-  const DRT::ElementObjectType & eot = element->ElementObjectType();
+  const DRT::ElementType & eot = element->ElementType();
   bool dotline = false;
 
 #ifdef D_BEAM3

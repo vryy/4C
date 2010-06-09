@@ -27,7 +27,6 @@ Maintainer: Burkhard Bornemann
 #include "Epetra_SerialDenseSolver.h"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
 #include "so_sh8p8.H"
 #include "../drt_inpar/inpar_structure.H"

@@ -23,7 +23,6 @@ Maintainer: Georg Bauer
 using namespace std;
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
@@ -39,7 +38,7 @@ namespace ELEMENTS
 // forward declarations
 class TransportBoundary;
 
-class TransportType : public DRT::ElementObjectType
+class TransportType : public DRT::ElementType
 {
 public:
 
@@ -238,7 +237,7 @@ public:
   */
   void Print(ostream& os) const;
 
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return TransportType::Instance(); }
 
   /*!
@@ -399,7 +398,7 @@ private:
 //=======================================================================
 //=======================================================================
 
-class TransportBoundaryType : public DRT::ElementObjectType
+class TransportBoundaryType : public DRT::ElementType
 {
 public:
 
@@ -582,7 +581,7 @@ public:
   */
   void Print(ostream& os) const;
 
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return TransportBoundaryType::Instance(); }
 
   //@}

@@ -53,7 +53,6 @@ using namespace std;
 using namespace Teuchos;
 
 #include "drt_element.H"
-#include "drt_elementregister.H"
 #include "drt_node.H"
 #include "drt_dofset.H"
 #include "drt_dserror.H"
@@ -62,6 +61,7 @@ using namespace Teuchos;
 namespace LINALG
 {
   class SparseOperator;
+  class MapExtractor;
 }
 
 
@@ -1767,10 +1767,6 @@ private:
   /*!
   \brief Initialize element routines
 
-  Loops through the ElementRegister map elementregister_ and call the
-  initialize method of each of the ElementRegister classes present.
-
-
   \note InitializeElements might be called more then once!
 
   */
@@ -1830,7 +1826,6 @@ protected:
   map<int,RCP<DRT::Node> >              node_;              // map from nodal Gid to node pointers
 
   vector<map<string,RCP<const Epetra_Vector> > > state_;    // map of references to solution states
-  map<int,RCP<ElementRegister> >        elementregister_;   // register for types of elements in this discretization
 
   multimap<string,RCP<Condition> >      condition_;         // some conditions e.g. BCs
 

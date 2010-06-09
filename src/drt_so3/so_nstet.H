@@ -24,7 +24,6 @@ using namespace std;
 using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
@@ -67,135 +66,11 @@ class NStet;
     so_nstet4_dev
   };
 
-class NStetRegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "NStetRegisterType"; }
-
-  static NStetRegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static NStetRegisterType instance_;
-};
-
-//---------------------------------------------------------------------
-/*!
-\brief A register for nstet element
-
-\author gee (gee@lnm.mw.tum.de)
-*/
-
-class NStetRegister : public DRT::ElementRegister
-{
-public:
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  NStetRegister(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an Soh8Register
-
-  */
-  NStetRegister(const DRT::ELEMENTS::NStetRegister& old);
-
-  /*!
-  \brief Deep copy this instance of Soh8Register and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::NStetRegister* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class imploementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return NStetRegisterType::Instance().UniqueParObjectId(); }
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~NStetRegister();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the shell8 elements. it e.g. calculates the
-  field of averaged directors at nodes.
-  */
-  //int Initialize(DRT::Discretization& dis);
-
-  /*!
-  \brief Call Element pre-evaluation
-
-  */
-//   virtual void PreEvaluate(DRT::Discretization& dis,
-//                            Teuchos::ParameterList& p,
-//                            RCP<LINALG::SparseOperator> systemmatrix1,
-//                            RCP<LINALG::SparseOperator> systemmatrix2,
-//                            RCP<Epetra_Vector>          systemvector1,
-//                            RCP<Epetra_Vector>          systemvector2,
-//                            RCP<Epetra_Vector>          systemvector3);
-
-  //@}
-
-  //! allow nstet element to access the nodal data
-  friend class DRT::ELEMENTS::NStet;
-
-private:
-
-
-}; // class NStetRegister
-
 
 //=======================================================================
 //=======================================================================
 
-class NStetType : public DRT::ElementObjectType
+class NStetType : public DRT::ElementType
 {
   //! allow nstet element to access the nodal data
   friend class DRT::ELEMENTS::NStet;
@@ -337,7 +212,7 @@ private:
     return;
   }
 
-}; // class NStetRegister
+};
 
 
 //=======================================================================
@@ -478,7 +353,7 @@ public:
   */
   void Print(ostream& os) const;
 
-  virtual NStetType & ElementObjectType() const
+  virtual NStetType & ElementType() const
   { return NStetType::Instance(); }
 
   /*!

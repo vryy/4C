@@ -17,7 +17,6 @@
 #include "Epetra_Vector.h"
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
@@ -34,7 +33,7 @@ class Discretization;
 namespace ELEMENTS
 {
 
-class Bele3Type : public DRT::ElementObjectType
+class Bele3Type : public DRT::ElementType
 {
 public:
 
@@ -125,7 +124,7 @@ public:
   virtual int NumDofPerNode(const DRT::Node&) const {return 3;}
   virtual int NumDofPerElement() const { return 0; }
   void Print(ostream& os) const;
-  virtual DRT::ElementObjectType & ElementObjectType() const { return Bele3Type::Instance(); }
+  virtual DRT::ElementType & ElementType() const { return Bele3Type::Instance(); }
 
   //@}
 
@@ -217,98 +216,13 @@ private:
 }; // class Bele3
 
 
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-
-class Bele3RegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "Bele3RegisterType"; }
-
-  static Bele3RegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static Bele3RegisterType instance_;
-};
-
-
-/*!
-\brief A register for bele3 element
-
-\author axelchen (gerstenberger@lnm.mw.tum.de)
-*/
-class Bele3Register : public DRT::ElementRegister
-{
-public:
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  explicit Bele3Register(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an Bele3Register
-
-  */
-  Bele3Register(const DRT::ELEMENTS::Bele3Register& old);
-
-  /*!
-  \brief Deep copy this instance of Bele3Register and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::Bele3Register* Clone() const;
-
-  virtual int UniqueParObjectId() const { return Bele3RegisterType::Instance().UniqueParObjectId(); }
-  virtual void Pack(vector<char>& data) const;
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~Bele3Register();
-
-  //@}
-
-  //! @name Access methods
-
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-
-  int Initialize(DRT::Discretization& dis);
-
-  //@}
-
-private:
-
-
-}; // class Bele3Register
-
 
 //=======================================================================
 //=======================================================================
 //=======================================================================
 //=======================================================================
 
-class Bele3LineType : public DRT::ElementObjectType
+class Bele3LineType : public DRT::ElementType
 {
 public:
 
@@ -388,9 +302,7 @@ public:
 
   void Print(ostream& os) const;
 
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
-
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return Bele3LineType::Instance(); }
 
   //@}

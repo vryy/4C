@@ -21,7 +21,6 @@ using namespace std;
 using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -41,7 +40,6 @@ namespace ELEMENTS
 // forward declarations
 class RedAirwayImplInterface;
 template <DRT::Element::DiscretizationType distype> class AirwayImpl;
-class RedAirwayRegister;
 
 class RedAirwayType : public DRT::ParObjectType
 {
@@ -73,7 +71,6 @@ class RedAirway : public DRT::Element
 public:
 
   //! @name Friends
-  friend class RedAirwayRegister;
   friend class RedAirwayImplInterface;
   friend class AirwayImpl<DRT::Element::line2>;
 
@@ -203,15 +200,6 @@ public:
   \brief Print this element
   */
   void Print(ostream& os) const;
-
-  /*!
-  \brief Allocate and return a DesignElementRegister class
-
-  Every implementation of DRT::Element must also implement
-  an DRT::ElementRegister. This method allocates and returns
-  an instance of a matching DRT::ElementRegister.
-  */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
 
   //@}
 
@@ -451,112 +439,6 @@ private:
 //=======================================================================
 
 
-class RedAirwayRegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "RedAirwayRegisterType"; }
-
-  static RedAirwayRegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static RedAirwayRegisterType instance_;
-};
-
-
-/*!
-\brief A register for airway element
-
-\author ismail (ismail@lnm.mw.tum.de)
-*/
-class RedAirwayRegister : public DRT::ElementRegister
-{
-public:
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  RedAirwayRegister(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an RedAirwayRegister
-
-  */
-  RedAirwayRegister(const DRT::ELEMENTS::RedAirwayRegister& old);
-
-  /*!
-  \brief Deep copy this instance of RedAirwayRegister and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::RedAirwayRegister* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class imploementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return RedAirwayRegisterType::Instance().UniqueParObjectId(); }
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~RedAirwayRegister();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the airway elements.
-  */
-  int Initialize(DRT::Discretization& dis);
-
-  //@}
-
-private:
-
-
-}; // class RedAirwayRegister
 
 
 //=======================================================================

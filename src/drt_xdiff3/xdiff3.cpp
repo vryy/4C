@@ -56,18 +56,6 @@ void DRT::ELEMENTS::XDiff3Type::ComputeNullSpace( DRT::Discretization & dis, std
 }
 
 
-DRT::ELEMENTS::XDiff3RegisterType DRT::ELEMENTS::XDiff3RegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::XDiff3RegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::XDiff3Register* object =
-    new DRT::ELEMENTS::XDiff3Register(DRT::Element::element_xdiff3);
-  object->Unpack(data);
-  return object;
-}
-
-
 /*----------------------------------------------------------------------*/
 // map to convert strings to actions (stabilization)
 /*----------------------------------------------------------------------*/
@@ -259,101 +247,6 @@ DRT::ELEMENTS::XDiff3::MyState::MyState(
     DRT::UTILS::ExtractMyValues(*discret.GetState("velnm"),velnm,lm);
     DRT::UTILS::ExtractMyValues(*discret.GetState("accn") ,accn ,lm);
   }
-}
-
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 12/06|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::XDiff3Register::XDiff3Register(DRT::Element::ElementType etype) :
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mwgee 12/06|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::XDiff3Register::XDiff3Register(
-                               const DRT::ELEMENTS::XDiff3Register& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                            gee 12/06 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::XDiff3Register* DRT::ELEMENTS::XDiff3Register::Clone() const
-{
-  return new DRT::ELEMENTS::XDiff3Register(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            gee 02/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::XDiff3Register::Pack(std::vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                            gee 02/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::XDiff3Register::Unpack(const std::vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 12/06|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::XDiff3Register::~XDiff3Register()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                           mwgee 12/06|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::XDiff3Register::Print(ostream& os) const
-{
-  os << "XDiff3Register ";
-  ElementRegister::Print(os);
-  return;
 }
 
 

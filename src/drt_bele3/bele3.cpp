@@ -51,18 +51,6 @@ void DRT::ELEMENTS::Bele3Type::ComputeNullSpace( DRT::Discretization & dis, std:
 }
 
 
-DRT::ELEMENTS::Bele3RegisterType DRT::ELEMENTS::Bele3RegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::Bele3RegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::Bele3Register* object =
-    new DRT::ELEMENTS::Bele3Register(DRT::Element::element_bele3);
-  object->Unpack(data);
-  return object;
-}
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele3::Bele3(int id, int owner) :
@@ -207,102 +195,6 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule(const DRT::Ele
   }
   return rule;
 }
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 12/06|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Bele3Register::Bele3Register(DRT::Element::ElementType etype) :
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mwgee 12/06|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Bele3Register::Bele3Register(
-                               const DRT::ELEMENTS::Bele3Register& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                            gee 12/06 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Bele3Register* DRT::ELEMENTS::Bele3Register::Clone() const
-{
-  return new DRT::ELEMENTS::Bele3Register(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            gee 02/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Bele3Register::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                            gee 02/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Bele3Register::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 12/06|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Bele3Register::~Bele3Register()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                           mwgee 12/06|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Bele3Register::Print(ostream& os) const
-{
-  os << "Bele3Register ";
-  ElementRegister::Print(os);
-  return;
-}
-
-
-
 
 
 #endif  // #ifdef CCADISCRET

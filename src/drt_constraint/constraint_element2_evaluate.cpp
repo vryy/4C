@@ -1301,15 +1301,4 @@ void DRT::ELEMENTS::ConstraintElement2::ComputeSecondDerivAngle
   elematrix.Scale(-1.0);
 }
 
-
-//=======================================================================
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ConstraintElement2Register::Initialize(DRT::Discretization& dis)
-{
-  return 0;
-}
-
 #endif  // #ifdef CCADISCRET

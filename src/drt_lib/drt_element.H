@@ -69,7 +69,7 @@ class LineDefinition;
 // forward declarations
 class Discretization;
 class Node;
-class ElementObjectType;
+class ElementType;
 
 /*!
 \brief A virtual class all elements that are used in DRT have to implement
@@ -87,84 +87,6 @@ class Element : public DRT::ParObject
 public:
 
   //! @name Enums and Friends
-
-  /*!
-  \brief Type of element
-
-  */
-  // TODO: Clean up
-  enum ElementType
-  {
-    element_none,
-    element_shell8,
-    element_shell8line,
-    element_wall1,
-    element_wall1line,
-    element_fluid2,
-    element_fluid2line,
-    element_fluid3,
-    element_fluid3surface,
-    element_fluid3line,
-    element_xfluid3,
-    element_xfluid3surface,
-    element_xfluid3line,
-    element_xdiff3,
-    element_xdiff3surface,
-    element_xdiff3line,
-    element_combust3,
-    element_combust3surface,
-    element_combust3line,
-    element_ale3,
-    element_ale3surface,
-    element_bele3,
-    element_bele3line,
-    element_vele3,
-    element_vele3surface,
-    element_vele3line,
-    element_bele2,
-    element_so_hex8,
-    element_so_hex27,
-    element_so_hex20,
-    element_so_nurbs27,
-    element_sosh8,
-    element_sosh8p8,
-    element_ale2,
-    element_ale2line,
-    element_so_tet4,
-    element_ptet,
-    element_nstet,
-    element_so_tet10,
-    element_so_weg6,
-    element_sodisp,
-    element_structuralsurface,
-    element_structuralline,
-    element_mortar,
-    element_contact,
-    element_so_shw6,
-    element_beam2,
-    element_beam2r,
-    element_beam3,
-    element_beam3ii,
-    element_smoothrod,
-    element_truss3,
-    element_truss2,
-    element_torsion3,
-    element_torsion2,
-    element_dgfluid2,
-    element_dgfluid2interface,
-    element_dgfluid3,
-    element_dgfluid3interface,
-    element_constraintelement2,
-    element_constraintelement3,
-    element_transport,
-    element_transportboundary,
-    element_thermo,
-    element_thermoboundary,
-    element_artery,             //_1D_ARTERY_
-    element_so_hex8p1j1,
-    element_red_airway,
-    element_fluid3boundary
-  };
 
   /*!
    \brief Element shape type
@@ -275,7 +197,6 @@ public:
   \brief Standard Constructor
 
   \param id    (in): A globally unique element id
-  \param etype (in): Type of element
   \param owner (in): owner processor of the element
   */
   Element(int id, int owner);
@@ -329,8 +250,8 @@ public:
   */
   virtual void Unpack(const vector<char>& data);
 
-  /// return ElementObjectType instance
-  virtual DRT::ElementObjectType & ElementObjectType() const = 0;
+  /// return ElementType instance
+  virtual DRT::ElementType & ElementType() const = 0;
 
   //@}
 
@@ -350,11 +271,6 @@ public:
   \brief Return owner of this element
   */
   virtual inline int Owner() const { return owner_; }
-
-  /*!
-  \brief Get type of element
-  */
-  //inline ElementType Type() const { return etype_; }
 
   /*!
   \brief Get shape type of element
@@ -697,17 +613,6 @@ public:
   virtual inline void SetOwner(const int owner) { owner_ = owner; return; }
 
   /*!
-  \brief Set Type
-
-  This method is used by the DRT::Discretiztion to change the type of
-  an element.
-
-  \param type: elementtype to be set
-
-  */
-  virtual inline void SetType(const ElementType type) { etype_ = type; return; }
-
-  /*!
   \brief Set a list of node ids this element is connected to
 
   Sets the nodal ids of the nodes adjacent to this element and the number
@@ -1039,9 +944,6 @@ private:
 
   //! \brief owner processor of this element
   int owner_;
-
-  //! \brief Type of element
-  ElementType etype_;
 
   //! \brief List of my nodal ids, length NumNode()
   vector<int> nodeid_;

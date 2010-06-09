@@ -23,7 +23,6 @@ using namespace std;
 using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
@@ -54,10 +53,9 @@ class Discretization;
 namespace ELEMENTS
 {
 // forward declarations
-class Sow6Register;
 class InvDesign;
 
-class So_weg6Type : public DRT::ElementObjectType
+class So_weg6Type : public DRT::ElementType
 {
 public:
 
@@ -224,7 +222,7 @@ public:
   */
   void Print(ostream& os) const;
 
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return So_weg6Type::Instance(); }
 
   //@}
@@ -479,125 +477,6 @@ protected:
 
 
 }; // class So_weg6
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-class Sow6RegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "Sow6RegisterType"; }
-
-  static Sow6RegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static Sow6RegisterType instance_;
-};
-
-
-/*!
-\brief A register for wedge6 element
-
-\author frenzel (frenzel@lnm.mw.tum.de)
-*/
-class Sow6Register : public DRT::ElementRegister
-{
-public:
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  Sow6Register(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an Soh8Register
-
-  */
-  Sow6Register(const DRT::ELEMENTS::Sow6Register& old);
-
-  /*!
-  \brief Deep copy this instance of Soh8Register and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::Sow6Register* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class imploementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return Sow6RegisterType::Instance().UniqueParObjectId(); }
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~Sow6Register();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the wedge elements,
-  e.g. defines shell-thickness direction
-  */
-  //virtual int Initialize(DRT::Discretization& dis);
-
-  //@}
-
-
-private:
-
-
-}; // class Sow6Register
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-
 
 
 } // namespace ELEMENTS

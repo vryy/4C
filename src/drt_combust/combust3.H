@@ -18,7 +18,6 @@ Maintainer: Florian Henke
 #ifndef COMBUST3_H
 #define COMBUST3_H
 
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -38,9 +37,8 @@ namespace DRT
     // forward declarations
 //    class Combust3Surface;
 //    class Combust3Line;
-//    class Combust3Register;
 
-class Combust3Type : public DRT::ElementObjectType
+class Combust3Type : public DRT::ElementType
 {
 public:
 
@@ -70,7 +68,6 @@ private:
       public:
 
         //! @name Friends
-//        friend class Combust3Register;
 //        friend class Combust3Surface;
 //        friend class Combust3Line;
         //@}
@@ -199,7 +196,7 @@ private:
 
         void Print(ostream& os) const;
 
-        virtual DRT::ElementObjectType & ElementObjectType() const
+        virtual DRT::ElementType & ElementType() const
         { return Combust3Type::Instance(); }
 
         //@}
@@ -394,68 +391,8 @@ private:
 
     }; // class Combust3
 
-class Combust3RegisterType : public DRT::ParObjectType
-{
-public:
 
-  std::string Name() const { return "Combust3RegisterType"; }
-
-  static Combust3RegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static Combust3RegisterType instance_;
-};
-
-    /*!
-     * \brief A register for Combust3 element
-     *
-     * \author gerstenberger (gerstenberger@lnm.mw.tum.de)
-     */
-    class Combust3Register : public DRT::ElementRegister
-    {
-      public:
-
-        //! @name Constructors and destructors and related methods
-
-        //! Standard Constructor
-        explicit Combust3Register(DRT::Element::ElementType etype);
-
-        //! Copy Constructor
-        explicit Combust3Register(const DRT::ELEMENTS::Combust3Register& old);
-
-        DRT::ELEMENTS::Combust3Register* Clone() const;
-
-        virtual int UniqueParObjectId() const { return Combust3RegisterType::Instance().UniqueParObjectId(); }
-
-        virtual void Pack(std::vector<char>& data) const;
-
-        virtual void Unpack(const std::vector<char>& data);
-
-        //! Destructor
-        virtual ~Combust3Register();
-
-        //@}
-
-        //! @name Access methods
-
-        void Print(ostream& os) const;
-
-        //@}
-
-        //! @name Construction
-
-        int Initialize(DRT::Discretization& dis);
-
-        //@}
-
-      private:
-
-    }; // class Combust3Register
-
-class Combust3SurfaceType : public DRT::ElementObjectType
+class Combust3SurfaceType : public DRT::ElementType
 {
 public:
 
@@ -539,9 +476,7 @@ private:
 
         void Print(ostream& os) const;
 
-        virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const { return null; }
-
-        virtual DRT::ElementObjectType & ElementObjectType() const
+        virtual DRT::ElementType & ElementType() const
         { return Combust3SurfaceType::Instance(); }
 
         //@}
@@ -613,7 +548,7 @@ private:
 
     }; // class Fluid3Surface
 
-class Combust3LineType : public DRT::ElementObjectType
+class Combust3LineType : public DRT::ElementType
 {
 public:
 
@@ -693,9 +628,7 @@ private:
 
         void Print(ostream& os) const;
 
-        virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const { return null; }
-
-        virtual DRT::ElementObjectType & ElementObjectType() const
+        virtual DRT::ElementType & ElementType() const
         { return Combust3LineType::Instance(); }
 
         //! @name Evaluation

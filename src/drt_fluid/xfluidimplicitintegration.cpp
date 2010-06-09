@@ -181,11 +181,11 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // print information about elements
   // (to double-check and log that correct input has been read)
   std::set<DRT::Element::DiscretizationType> distypeset;
-  std::set<DRT::ElementObjectType*> etypeset;
+  std::set<DRT::ElementType*> etypeset;
   for (int i=0; i<discret_->NumMyColElements(); ++i)
   {
     distypeset.insert(discret_->lColElement(i)->Shape());
-    etypeset.insert(&discret_->lColElement(i)->ElementObjectType());
+    etypeset.insert(&discret_->lColElement(i)->ElementType());
   }
 
   if (etypeset.count(&DRT::ELEMENTS::XDiff3Type::Instance()) > 0)
@@ -245,7 +245,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     cout0_ << "Element types in xfluid discretization: ";
     discret_->Comm().Barrier();
     bool moreThanOnee = false;
-    for (std::set<DRT::ElementObjectType*>::const_iterator iter = etypeset.begin(); iter != etypeset.end(); ++iter)
+    for (std::set<DRT::ElementType*>::const_iterator iter = etypeset.begin(); iter != etypeset.end(); ++iter)
     {
       if (moreThanOnee)  cout << ", ";
       cout << ( *iter )->Name();

@@ -66,18 +66,6 @@ void DRT::ELEMENTS::So_tet4Type::ComputeNullSpace( DRT::Discretization & dis, st
 }
 
 
-DRT::ELEMENTS::Sotet4RegisterType DRT::ELEMENTS::Sotet4RegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::Sotet4RegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::Sotet4Register* object =
-    new DRT::ELEMENTS::Sotet4Register(DRT::Element::element_so_tet4);
-  object->Unpack(data);
-  return object;
-}
-
-
 /*----------------------------------------------------------------------***
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
@@ -468,100 +456,6 @@ bool DRT::ELEMENTS::So_tet4::VisData(const string& name, vector<double>& data)
   }
 
   return true;
-}
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-/*----------------------------------------------------------------------***
- |  ctor (public)                                              maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Sotet4Register::Sotet4Register(DRT::Element::ElementType etype) :
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------***
- |  copy-ctor (public)                                         maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Sotet4Register::Sotet4Register(
-                               const DRT::ELEMENTS::Sotet4Register& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------***
- |  Deep copy this instance return pointer to it               (public) |
- |                                                            maf 04/07 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Sotet4Register* DRT::ELEMENTS::Sotet4Register::Clone() const
-{
-//  return new DRT::ELEMENTS::Soh8Register(*this);
-  return new DRT::ELEMENTS::Sotet4Register(*this);
-}
-
-/*----------------------------------------------------------------------***
- |  Pack data                                                  (public) |
- |                                                            maf 04/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Sotet4Register::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------***
- |  Unpack data                                                (public) |
- |                                                            maf 04/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Sotet4Register::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------***
- |  dtor (public)                                              maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Sotet4Register::~Sotet4Register()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------***
- |  print (public)                                             maf 04/07|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Sotet4Register::Print(ostream& os) const
-{
-  os << "Sotet4Register ";
-  ElementRegister::Print(os);
-  return;
 }
 
 #endif  // #ifdef CCADISCRET

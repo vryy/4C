@@ -21,7 +21,6 @@ Maintainer: Axel Gerstenberger
 #define DRT_XFLUID3_H
 
 
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -39,7 +38,7 @@ namespace DRT
 
   namespace ELEMENTS
   {
-class XFluid3Type : public DRT::ElementObjectType
+class XFluid3Type : public DRT::ElementType
 {
 public:
 
@@ -195,7 +194,7 @@ private:
 
         void Print(ostream& os) const;
 
-        virtual DRT::ElementObjectType & ElementObjectType() const
+        virtual DRT::ElementType & ElementType() const
         { return XFluid3Type::Instance(); }
 
         //@}
@@ -424,70 +423,8 @@ private:
     //=======================================================================
     //=======================================================================
 
-class XFluid3RegisterType : public DRT::ParObjectType
-{
-public:
 
-  std::string Name() const { return "XFluid3RegisterType"; }
-
-  static XFluid3RegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static XFluid3RegisterType instance_;
-};
-
-    /*!
-     * \brief A register for xfluid3 element
-     *
-     * \author gerstenberger (gerstenberger@lnm.mw.tum.de)
-     */
-    class XFluid3Register : public DRT::ElementRegister
-    {
-      public:
-
-        //! @name Constructors and destructors and related methods
-
-        //! Standard Constructor
-        explicit XFluid3Register(DRT::Element::ElementType etype);
-
-        //! Copy Constructor
-        explicit XFluid3Register(const DRT::ELEMENTS::XFluid3Register& old);
-
-        DRT::ELEMENTS::XFluid3Register* Clone() const;
-
-      virtual int UniqueParObjectId() const { return XFluid3RegisterType::Instance().UniqueParObjectId(); }
-
-        virtual void Pack(std::vector<char>& data) const;
-
-        virtual void Unpack(const std::vector<char>& data);
-
-        //! Destructor
-        virtual ~XFluid3Register();
-
-        //@}
-
-        //! @name Access methods
-
-        void Print(ostream& os) const;
-
-        //@}
-
-        //! @name Construction
-
-        int Initialize(DRT::Discretization& dis);
-
-        //@}
-
-      private:
-
-
-    }; // class XFluid3Register
-
-
-class XFluid3SurfaceType : public DRT::ElementObjectType
+class XFluid3SurfaceType : public DRT::ElementType
 {
 public:
 
@@ -564,9 +501,7 @@ private:
 
         void Print(ostream& os) const;
 
-        virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const { return null; }
-
-        virtual DRT::ElementObjectType & ElementObjectType() const
+        virtual DRT::ElementType & ElementType() const
         { return XFluid3SurfaceType::Instance(); }
 
         //@}
@@ -686,7 +621,7 @@ private:
 
     }; // class Fluid3Surface
 
-class XFluid3LineType : public DRT::ElementObjectType
+class XFluid3LineType : public DRT::ElementType
 {
 public:
 
@@ -766,9 +701,7 @@ private:
 
         void Print(ostream& os) const;
 
-        virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const { return null; }
-
-        virtual DRT::ElementObjectType & ElementObjectType() const
+        virtual DRT::ElementType & ElementType() const
         { return XFluid3LineType::Instance(); }
 
         //! @name Evaluation

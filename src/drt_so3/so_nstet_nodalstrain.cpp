@@ -58,13 +58,13 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
   // make sure all use the same stabilization
   for (int i=0; i<numele; ++i)
   {
-    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
+    if (dis.lColElement(i)->ElementType() != *this) continue;
     stabtype_ = static_cast<DRT::ELEMENTS::NStet*>(dis.lColElement(i))->stabtype_;
     break;
   }
   for (int i=0; i<numele; ++i)
   {
-    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
+    if (dis.lColElement(i)->ElementType() != *this) continue;
     if (stabtype_ != static_cast<DRT::ELEMENTS::NStet*>(dis.lColElement(i))->stabtype_)
       dserror("All NStet elements have to use same stabilization");
   }
@@ -73,7 +73,7 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
   // map of row nodes adjacent to nstet elements
   for (int i=0; i<numele; ++i)
   {
-    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
+    if (dis.lColElement(i)->ElementType() != *this) continue;
 
     DRT::ELEMENTS::NStet* actele = (DRT::ELEMENTS::NStet*)(dis.lColElement(i));
 

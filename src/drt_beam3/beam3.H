@@ -26,7 +26,6 @@ Maintainer: Christian Cyron
 using namespace std;
 using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_condition.H"
@@ -52,7 +51,7 @@ namespace DRT
 
 namespace ELEMENTS
 {
-class Beam3Type : public DRT::ElementObjectType
+class Beam3Type : public DRT::ElementType
 {
 public:
 
@@ -173,7 +172,7 @@ public:
   */
   virtual void Unpack(const vector<char>& data);
 
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return Beam3Type::Instance(); }
 
   //@}
@@ -739,117 +738,6 @@ private:
 ostream& operator << (ostream& os, const DRT::Element& ele);
 
 
-//------------- class Beam3Register: -------------------------------------------
-
-class Beam3RegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "Beam3RegisterType"; }
-
-  static Beam3RegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static Beam3RegisterType instance_;
-};
-
-/*!
-\brief A register for Beam3 element
-
-\author cyron (cyron@lnm.mw.tum.de)
-*/
-class Beam3Register : public DRT::ElementRegister
-{
-public:
-
-  //! @name Friends
-  friend class Beam3;
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  Beam3Register(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an Beam3Register
-
-  */
-  Beam3Register(const DRT::ELEMENTS::Beam3Register& old);
-
-  /*!
-  \brief Deep copy this instance of Beam3Register and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::Beam3Register* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class implementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return Beam3RegisterType::Instance().UniqueParObjectId(); }
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~Beam3Register();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the Beam3 elements. it e.g. calculates the
-  field of averaged directors at nodes.
-  */
-  //int Initialize(DRT::Discretization& dis);
-
-  //@}
-
-private:
-
-
-}; // class Beam3Register
 } // namespace Elements
 } // namespace DRT
 

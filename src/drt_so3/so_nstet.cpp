@@ -19,18 +19,6 @@ Maintainer: Michael Gee
 
 
 
-DRT::ELEMENTS::NStetRegisterType DRT::ELEMENTS::NStetRegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::NStetRegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::NStetRegister* object =
-    new DRT::ELEMENTS::NStetRegister(DRT::Element::element_nstet);
-  object->Unpack(data);
-  return object;
-}
-
-
 DRT::ELEMENTS::NStetType DRT::ELEMENTS::NStetType::instance_;
 
 
@@ -259,96 +247,6 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet::Lines()
   return DRT::UTILS::ElementBoundaryFactory<StructuralLine,DRT::Element>(DRT::UTILS::buildLines,this);
 }
 
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                              gee 12/09|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NStetRegister::NStetRegister(DRT::Element::ElementType etype) :
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                         gee 12/09|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NStetRegister::NStetRegister(const DRT::ELEMENTS::NStetRegister& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                              gee 12/09|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NStetRegister::~NStetRegister()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                            gee 12/09|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NStetRegister* DRT::ELEMENTS::NStetRegister::Clone() const
-{
-  return new DRT::ELEMENTS::NStetRegister(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            gee 12/09|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStetRegister::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                             gee 12/09|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStetRegister::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  print (public)                                             gee 12/09|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStetRegister::Print(ostream& os) const
-{
-  os << "NStetRegister ";
-  ElementRegister::Print(os);
-  return;
-}
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

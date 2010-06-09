@@ -24,7 +24,6 @@ using namespace std;
 using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
@@ -57,135 +56,11 @@ namespace ELEMENTS
 class StructuralVolume;
 class Ptet;
 
-class PtetRegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "PtetRegisterType"; }
-
-  static PtetRegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static PtetRegisterType instance_;
-};
-
-//---------------------------------------------------------------------
-/*!
-\brief A register for ptet element
-
-\author gee (gee@lnm.mw.tum.de)
-*/
-
-class PtetRegister : public DRT::ElementRegister
-{
-public:
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  PtetRegister(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an Soh8Register
-
-  */
-  PtetRegister(const DRT::ELEMENTS::PtetRegister& old);
-
-  /*!
-  \brief Deep copy this instance of Soh8Register and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::PtetRegister* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class imploementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return PtetRegisterType::Instance().UniqueParObjectId(); }
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~PtetRegister();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the shell8 elements. it e.g. calculates the
-  field of averaged directors at nodes.
-  */
-  //int Initialize(DRT::Discretization& dis);
-
-  /*!
-  \brief Call Element pre-evaluation
-
-  */
-//   virtual void PreEvaluate(DRT::Discretization& dis,
-//                            Teuchos::ParameterList& p,
-//                            RCP<LINALG::SparseOperator> systemmatrix1,
-//                            RCP<LINALG::SparseOperator> systemmatrix2,
-//                            RCP<Epetra_Vector>          systemvector1,
-//                            RCP<Epetra_Vector>          systemvector2,
-//                            RCP<Epetra_Vector>          systemvector3);
-
-  //@}
-
-  //! allow Ptet element to access the nodal data
-  friend class DRT::ELEMENTS::Ptet;
-
-private:
-
-
-}; // class PtetRegister
-
 
 //=======================================================================
 //=======================================================================
 
-class PtetType : public DRT::ElementObjectType
+class PtetType : public DRT::ElementType
 {
   //! allow Ptet element to access the nodal data
   friend class DRT::ELEMENTS::Ptet;
@@ -401,7 +276,7 @@ public:
   */
   void Print(ostream& os) const;
 
-  virtual PtetType & ElementObjectType() const
+  virtual PtetType & ElementType() const
   { return PtetType::Instance(); }
 
   /*!

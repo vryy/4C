@@ -25,7 +25,6 @@ Maintainer: Burkhard Bornemann
 #include "Epetra_SerialDenseSolver.h"
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"

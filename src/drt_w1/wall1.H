@@ -25,7 +25,6 @@ Maintainer: Markus Gitterle
 #include "Epetra_SerialDenseMatrix.h"
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
@@ -42,14 +41,13 @@ namespace DRT
 {
 // forward declarations
 class Discretization;
-class Wall1Register;
 
 namespace ELEMENTS
 {
 // forward declarations
 class Wall1Line;
 
-class Wall1Type : public DRT::ElementObjectType
+class Wall1Type : public DRT::ElementType
 {
 public:
 
@@ -112,7 +110,6 @@ public:
 
   /// @name Friends
   //@{
-  friend class Wall1Register;
   friend class Wall1Line;
   //@}
 
@@ -212,7 +209,7 @@ public:
   /// Print this element
   void Print(ostream& os) const;
 
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return Wall1Type::Instance(); }
 
   //@}
@@ -752,108 +749,13 @@ private:
 }; // class Wall1
 
 
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-class Wall1RegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "Wall1RegisterType"; }
-
-  static Wall1RegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static Wall1RegisterType instance_;
-};
-
-
-/*======================================================================*/
-/*!
- * \brief A register for Wall1 element
- *
- * \author gitterle (gitterle@lnm.mw.tum.de)
- */
-class Wall1Register : public DRT::ElementRegister
-{
-public:
-
-  /// @name Constructors and destructors and related methods
-  //@{
-
-  /// Standard Constructor
-  Wall1Register(DRT::Element::ElementType etype);
-
-  /// Copy Constructor
-  ///
-  /// Makes a deep copy of an Wall1Register
-  Wall1Register(const DRT::ELEMENTS::Wall1Register& old);
-
-
-  /// Deep copy this instance of Wall1Register and return pointer to the copy
-  ///
-  /// The Clone() method is used from the virtual base class Element in cases
-  /// where the type of the derived class is unknown and a copy-ctor is needed
-  DRT::ELEMENTS::Wall1Register* Clone() const;
-
-  /// Return unique ParObject id
-  ///
-  /// every class implementing ParObject needs a unique id defined at the
-  /// top of this file.
-  virtual int UniqueParObjectId() const { return Wall1RegisterType::Instance().UniqueParObjectId(); }
-
-  /// Pack this class so it can be communicated
-  ///
-  /// \ref Pack and \ref Unpack are used to communicate this element
-  virtual void Pack(std::vector<char>& data) const;
-
-  /// Unpack data from a char vector into this class
-  ///
-  /// \ref Pack and \ref Unpack are used to communicate this element
-  virtual void Unpack(const std::vector<char>& data);
-
-  /// Destructor
-  ///
-  virtual ~Wall1Register();
-
-  //@}
-
-  /// @name Acess methods
-  //@{
-
-  /// Print this element
-  void Print(ostream& os) const;
-
-  //@}
-
-  /// @name Construction
-  //@{
-
-  /// Call Element init routines
-  ///
-  /// The method performs all steps needed to init the Wall1 elements. it e.g. calculates the
-  /// field of averaged directors at nodes.
-  int Initialize(DRT::Discretization& dis);
-
-  //@}
-
-private:
-
-
-}; // class Wall1Register
-
 
 //=======================================================================
 //=======================================================================
 //=======================================================================
 //=======================================================================
 
-class Wall1LineType : public DRT::ElementObjectType
+class Wall1LineType : public DRT::ElementType
 {
 public:
 
@@ -964,14 +866,7 @@ public:
   /// Print this element
   void Print(ostream& os) const;
 
-  /// Allocate and return a ElementRegister class
-  ///
-  /// Every implementation of DRT::Element must also implement
-  /// an DRT::ElementRegister. This method allocates and returns
-  /// an instance of a matching DRT::ElementRegister.
-  virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const { return Teuchos::null; }
-
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return Wall1LineType::Instance(); }
 
   //@}

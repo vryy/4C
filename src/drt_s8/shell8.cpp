@@ -58,18 +58,6 @@ void DRT::ELEMENTS::Shell8Type::ComputeNullSpace( DRT::Discretization & dis, std
 }
 
 
-DRT::ELEMENTS::Shell8RegisterType DRT::ELEMENTS::Shell8RegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::Shell8RegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::Shell8Register* object =
-    new DRT::ELEMENTS::Shell8Register(DRT::Element::element_shell8);
-  object->Unpack(data);
-  return object;
-}
-
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  |  id             (in)  this element's global id                       |
@@ -268,104 +256,6 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Shell8::Surfaces()
   surfaces[0]= rcp(this, false);
   return surfaces;
 }
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 12/06|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Shell8Register::Shell8Register(DRT::Element::ElementType etype) :
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mwgee 12/06|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Shell8Register::Shell8Register(
-                               const DRT::ELEMENTS::Shell8Register& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                            gee 12/06 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Shell8Register* DRT::ELEMENTS::Shell8Register::Clone() const
-{
-  return new DRT::ELEMENTS::Shell8Register(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            gee 02/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Shell8Register::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                            gee 02/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Shell8Register::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 12/06|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Shell8Register::~Shell8Register()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                           mwgee 12/06|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Shell8Register::Print(ostream& os) const
-{
-  os << "Shell8Register ";
-  ElementRegister::Print(os);
-  return;
-}
-
-
-
-
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SHELL8

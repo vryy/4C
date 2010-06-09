@@ -71,18 +71,6 @@ void DRT::ELEMENTS::So_hex8Type::ComputeNullSpace( DRT::Discretization & dis, st
 }
 
 
-DRT::ELEMENTS::Soh8RegisterType DRT::ELEMENTS::Soh8RegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::Soh8RegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::Soh8Register* object =
-    new DRT::ELEMENTS::Soh8Register(DRT::Element::element_so_hex8);
-  object->Unpack(data);
-  return object;
-}
-
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
@@ -742,100 +730,6 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
   return true;
 }
 
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                              maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Soh8Register::Soh8Register(DRT::Element::ElementType etype) :
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                         maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Soh8Register::Soh8Register(
-                               const DRT::ELEMENTS::Soh8Register& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                            maf 04/07 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Soh8Register* DRT::ELEMENTS::Soh8Register::Clone() const
-{
-  return new DRT::ELEMENTS::Soh8Register(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            maf 04/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Soh8Register::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                            maf 04/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Soh8Register::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                              maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Soh8Register::~Soh8Register()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                             maf 04/07|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Soh8Register::Print(ostream& os) const
-{
-  os << "Soh8Register ";
-  ElementRegister::Print(os);
-  return;
-}
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

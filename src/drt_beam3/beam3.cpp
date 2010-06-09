@@ -15,7 +15,6 @@ Maintainer: Christian Cyron
 
 #include "beam3.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -60,17 +59,6 @@ void DRT::ELEMENTS::Beam3Type::NodalBlockInformation( Element * dwele, int & num
 void DRT::ELEMENTS::Beam3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeBeam3DNullSpace( dis, ns, x0, numdf, dimns );
-}
-
-
-DRT::ELEMENTS::Beam3RegisterType DRT::ELEMENTS::Beam3RegisterType::instance_;
-
-DRT::ParObject* DRT::ELEMENTS::Beam3RegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::Beam3Register* object =
-    new DRT::ELEMENTS::Beam3Register(DRT::Element::element_beam3);
-  object->Unpack(data);
-  return object;
 }
 
 
@@ -379,96 +367,6 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3::MyGaussRule(int nnode, Integration
 }
 
 
-//------------- class Beam3Register: -------------------------------------
-
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            cyron 01/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3Register::Beam3Register(DRT::Element::ElementType etype):
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       cyron 01/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3Register::Beam3Register(
-                               const DRT::ELEMENTS::Beam3Register& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                            cyron 01/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3Register* DRT::ELEMENTS::Beam3Register::Clone() const
-{
-  return new DRT::ELEMENTS::Beam3Register(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            cyron 01/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Register::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*-----------------------------------------------------------------------*
- |  Unpack data (public)                                      cyron 01/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Register::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            cyron 01/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3Register::~Beam3Register()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                           cyron 01/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Register::Print(ostream& os) const
-{
-  os << "Beam3Register ";
-  ElementRegister::Print(os);
-  return;
-}
-
 /*----------------------------------------------------------------------*
  |  Initialize (public)                                      cyron 01/08|
  *----------------------------------------------------------------------*/
@@ -480,7 +378,7 @@ int DRT::ELEMENTS::Beam3Type::Initialize(DRT::Discretization& dis)
 	  {
 	    //in case that current element is not a beam3 element there is nothing to do and we go back
 	    //to the head of the loop
-	    if (dis.lColElement(num)->ElementObjectType() != *this) continue;
+	    if (dis.lColElement(num)->ElementType() != *this) continue;
 
 	    //if we get so far current element is a beam3 element and  we get a pointer at it
 	    DRT::ELEMENTS::Beam3* currele = dynamic_cast<DRT::ELEMENTS::Beam3*>(dis.lColElement(num));

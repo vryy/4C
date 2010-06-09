@@ -21,7 +21,6 @@ Maintainer: Axel Gerstenberger
 #define DRT_XDIFF3_H
 
 
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -39,7 +38,7 @@ namespace DRT
   namespace ELEMENTS
   {
 
-class XDiff3Type : public DRT::ElementObjectType
+class XDiff3Type : public DRT::ElementType
 {
 public:
 
@@ -177,7 +176,7 @@ private:
 
         void Print(ostream& os) const;
 
-        virtual DRT::ElementObjectType & ElementObjectType() const
+        virtual DRT::ElementType & ElementType() const
         { return XDiff3Type::Instance(); }
 
         //@}
@@ -366,75 +365,8 @@ private:
     }; // class XDiff3
 
 
-    //=======================================================================
-    //=======================================================================
-    //=======================================================================
-    //=======================================================================
 
-class XDiff3RegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "XDiff3RegisterType"; }
-
-  static XDiff3RegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static XDiff3RegisterType instance_;
-};
-
-
-    /*!
-     * \brief A register for xfluid3 element
-     *
-     * \author gerstenberger (gerstenberger@lnm.mw.tum.de)
-     */
-    class XDiff3Register : public DRT::ElementRegister
-    {
-      public:
-
-        //! @name Constructors and destructors and related methods
-
-        //! Standard Constructor
-        explicit XDiff3Register(DRT::Element::ElementType etype);
-
-        //! Copy Constructor
-        explicit XDiff3Register(const DRT::ELEMENTS::XDiff3Register& old);
-
-        DRT::ELEMENTS::XDiff3Register* Clone() const;
-
-      virtual int UniqueParObjectId() const { return XDiff3RegisterType::Instance().UniqueParObjectId(); }
-
-        virtual void Pack(std::vector<char>& data) const;
-
-        virtual void Unpack(const std::vector<char>& data);
-
-        //! Destructor
-        virtual ~XDiff3Register();
-
-        //@}
-
-        //! @name Access methods
-
-        void Print(ostream& os) const;
-
-        //@}
-
-        //! @name Construction
-
-        int Initialize(DRT::Discretization& dis);
-
-        //@}
-
-      private:
-
-
-    }; // class XDiff3Register
-
-class XDiff3SurfaceType : public DRT::ElementObjectType
+class XDiff3SurfaceType : public DRT::ElementType
 {
 public:
 
@@ -512,9 +444,7 @@ private:
 
         void Print(ostream& os) const;
 
-        virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const { return null; }
-
-        virtual DRT::ElementObjectType & ElementObjectType() const
+        virtual DRT::ElementType & ElementType() const
         { return XDiff3SurfaceType::Instance(); }
 
         //@}
@@ -596,7 +526,7 @@ private:
 
     }; // class Fluid3Surface
 
-class XDiff3LineType : public DRT::ElementObjectType
+class XDiff3LineType : public DRT::ElementType
 {
 public:
 
@@ -677,9 +607,7 @@ private:
 
         void Print(ostream& os) const;
 
-        virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const { return null; }
-
-        virtual DRT::ElementObjectType & ElementObjectType() const
+        virtual DRT::ElementType & ElementType() const
         { return XDiff3LineType::Instance(); }
 
         //! @name Evaluation

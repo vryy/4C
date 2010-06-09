@@ -186,8 +186,8 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
       if (straindata==null) dserror("Cannot get strain 'data'");
       LINALG::Matrix<NUMNOD_NSTET,NUMSTR_NSTET> stress;
       LINALG::Matrix<NUMNOD_NSTET,NUMSTR_NSTET> strain;
-      map<int,vector<double> >& nodestress = ElementObjectType().nodestress_;
-      map<int,vector<double> >& nodestrain = ElementObjectType().nodestrain_;
+      map<int,vector<double> >& nodestress = ElementType().nodestress_;
+      map<int,vector<double> >& nodestrain = ElementType().nodestrain_;
       for (int i=0; i<NumNode(); ++i)
       {
         int gid = Nodes()[i]->Id();
@@ -967,7 +967,7 @@ void DRT::ELEMENTS::NStet::VolStabilization(
     double density = 0.0;
     RCP<MAT::Material> mat = nodaladjele[node].begin()->second->Material();
     // maybe do this with volumetric strain only????
-    ElementObjectType().SelectMaterial(mat,stressnode,cmatnode,density,gl,Fnode[node],0);
+    ElementType().SelectMaterial(mat,stressnode,cmatnode,density,gl,Fnode[node],0);
     // compute p at node I: p = -1/3 * J^-1 * S:C
     p(node) = 0.0;
     p(node) += cg(0,0) * stressnode(0);

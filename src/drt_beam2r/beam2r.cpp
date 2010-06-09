@@ -15,7 +15,6 @@ Maintainer: Christian Cyron
 
 #include "beam2r.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -59,16 +58,6 @@ void DRT::ELEMENTS::Beam2rType::ComputeNullSpace( DRT::Discretization & dis, std
   DRT::UTILS::ComputeBeam2DNullSpace( dis, ns, x0, numdf, dimns );
 }
 
-
-DRT::ELEMENTS::Beam2rRegisterType DRT::ELEMENTS::Beam2rRegisterType::instance_;
-
-DRT::ParObject* DRT::ELEMENTS::Beam2rRegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::Beam2rRegister* object =
-    new DRT::ELEMENTS::Beam2rRegister(DRT::Element::element_beam2r);
-  object->Unpack(data);
-  return object;
-}
 
 
 /*----------------------------------------------------------------------*
@@ -501,95 +490,6 @@ void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const vector<double>& xrefe)
 
 
 
-//------------- class Beam2rRegister: -------------------------------------
-
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            cyron 01/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam2rRegister::Beam2rRegister(DRT::Element::ElementType etype):
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       cyron 01/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam2rRegister::Beam2rRegister(
-                               const DRT::ELEMENTS::Beam2rRegister& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                            cyron 01/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam2rRegister* DRT::ELEMENTS::Beam2rRegister::Clone() const
-{
-  return new DRT::ELEMENTS::Beam2rRegister(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            cyron 01/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam2rRegister::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*-----------------------------------------------------------------------*
- |  Unpack data (public)                                      cyron 01/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam2rRegister::Unpack(const vector<char>& data)
-{
-	vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            cyron 01/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam2rRegister::~Beam2rRegister()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                           cyron 01/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam2rRegister::Print(ostream& os) const
-{
-  os << "Beam2rRegister ";
-  ElementRegister::Print(os);
-  return;
-}
 /*-----------------------------------------------------------------------*
  | Initialize (public) Setting up geometric variables for beam2r elements|
  *-----------------------------------------------------------------------*/
@@ -601,7 +501,7 @@ int DRT::ELEMENTS::Beam2rType::Initialize(DRT::Discretization& dis)
   {
     //in case that current element is not a beam2r element there is nothing to do and we go back
     //to the head of the loop
-    if (dis.lColElement(num)->ElementObjectType() != *this) continue;
+    if (dis.lColElement(num)->ElementType() != *this) continue;
     //if we get so far current element is a beam2r element and  we get a pointer at it
     DRT::ELEMENTS::Beam2r* currele = dynamic_cast<DRT::ELEMENTS::Beam2r*>(dis.lColElement(num));
     if (!currele) dserror("cast to Beam2r* failed");

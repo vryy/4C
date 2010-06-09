@@ -41,7 +41,7 @@ namespace ELEMENTS
 namespace NURBS
 {
 
-class Fluid2NurbsType : public DRT::ElementObjectType
+class Fluid2NurbsType : public DRT::ElementType
 {
 public:
 
@@ -103,7 +103,7 @@ public:
   */
   virtual int UniqueParObjectId() const { return Fluid2NurbsType::Instance().UniqueParObjectId(); }
 
-  virtual Fluid2NurbsType & ElementObjectType() const
+  virtual Fluid2NurbsType & ElementType() const
   { return Fluid2NurbsType::Instance(); }
 
   /*!

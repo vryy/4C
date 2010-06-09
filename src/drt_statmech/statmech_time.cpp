@@ -66,7 +66,7 @@ deltadbc_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
   /*check maximal number of nodes of an element with stochastic forces on this processor*/
   for (int i=0; i<  dis.NumMyColElements(); ++i)
   {
-    const DRT::ElementObjectType & eot = dis.lColElement(i)->ElementObjectType();
+    const DRT::ElementType & eot = dis.lColElement(i)->ElementType();
     /*stochastic forces implemented so far only for the following elements:*/
 #ifdef D_BEAM3
     if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )

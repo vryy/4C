@@ -50,18 +50,6 @@ void DRT::ELEMENTS::ConstraintElement2Type::ComputeNullSpace( DRT::Discretizatio
 }
 
 
-DRT::ELEMENTS::ConstraintElement2RegisterType DRT::ELEMENTS::ConstraintElement2RegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::ConstraintElement2RegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::ConstraintElement2Register* object =
-    new DRT::ELEMENTS::ConstraintElement2Register(DRT::Element::element_constraintelement2);
-  object->Unpack(data);
-  return object;
-}
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ConstraintElement2::ConstraintElement2(int id, int owner) :
@@ -154,87 +142,6 @@ void DRT::ELEMENTS::ConstraintElement2::Print(ostream& os) const
   cout << data_;
   return;
 }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ConstraintElement2Register::ConstraintElement2Register(DRT::Element::ElementType etype) :
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ConstraintElement2Register::ConstraintElement2Register(
-                               const DRT::ELEMENTS::ConstraintElement2Register& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ConstraintElement2Register* DRT::ELEMENTS::ConstraintElement2Register::Clone() const
-{
-  return new DRT::ELEMENTS::ConstraintElement2Register(*this);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ConstraintElement2Register::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ConstraintElement2Register::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ConstraintElement2Register::~ConstraintElement2Register()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ConstraintElement2Register::Print(ostream& os) const
-{
-  os << "ConstraintElement2Register ";
-  ElementRegister::Print(os);
-  return;
-}
-
-
 
 
 

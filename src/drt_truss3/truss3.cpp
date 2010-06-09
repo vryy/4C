@@ -15,7 +15,6 @@ Maintainer: Christian Cyron
 
 #include "truss3.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -55,18 +54,6 @@ void DRT::ELEMENTS::Truss3Type::NodalBlockInformation( DRT::Element * dwele, int
 void DRT::ELEMENTS::Truss3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
-}
-
-
-DRT::ELEMENTS::Truss3RegisterType DRT::ELEMENTS::Truss3RegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::Truss3RegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::Truss3Register* object =
-    new DRT::ELEMENTS::Truss3Register(DRT::Element::element_truss3);
-  object->Unpack(data);
-  return object;
 }
 
 
@@ -359,99 +346,6 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const vector<double>& xrefe, 
 }
 
 
-
-
-//------------- class Truss3Register: -------------------------------------
-
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            cyron 08/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Truss3Register::Truss3Register(DRT::Element::ElementType etype):
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       cyron 08/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Truss3Register::Truss3Register(
-                               const DRT::ELEMENTS::Truss3Register& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                            cyron 08/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Truss3Register* DRT::ELEMENTS::Truss3Register::Clone() const
-{
-  return new DRT::ELEMENTS::Truss3Register(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            cyron 08/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3Register::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*-----------------------------------------------------------------------*
- |  Unpack data (public)                                      cyron 08/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3Register::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            cyron 08/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Truss3Register::~Truss3Register()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                           cyron 08/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3Register::Print(ostream& os) const
-{
-  os << "Truss3Register ";
-  ElementRegister::Print(os);
-  return;
-}
-
-
 int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
 {
   //reference node positions
@@ -465,7 +359,7 @@ int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
   {
     //in case that current element is not a beam3 element there is nothing to do and we go back
     //to the head of the loop
-    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
+    if (dis.lColElement(i)->ElementType() != *this) continue;
 
     //if we get so far current element is a beam3 element and  we get a pointer at it
     DRT::ELEMENTS::Truss3* currele = dynamic_cast<DRT::ELEMENTS::Truss3*>(dis.lColElement(i));

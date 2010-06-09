@@ -172,7 +172,7 @@ void COMBUST::FlameFront::ProcessFlameFront(
     const DRT::Element *ele = fluiddis_->lColElement(iele);
 
 #ifdef DEBUG
-    if(ele->ElementObjectType() != DRT::ELEMENTS::Combust3Type::Instance())
+    if(ele->ElementType() != DRT::ELEMENTS::Combust3Type::Instance())
       // this is not compulsory, but combust3 elements are expected here!
       dserror("unexpected element type: this should be of combust3 type!");
 #endif

@@ -77,7 +77,7 @@ Here must add the steps for evaluating an element
   switch(act)
   {
     case calc_sys_matrix_rhs:
-    {                       
+    {
       return DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->Evaluate(this,
                                                                          params,
                                                                          discretization,
@@ -192,20 +192,6 @@ bool DRT::ELEMENTS::RedAirway::isHigherOrderElement(
   return hoel;
 }
 
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-
-/*----------------------------------------------------------------------*
- |  init the element (public)                               ismail 01/10|
- *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::RedAirwayRegister::Initialize(DRT::Discretization& dis)
-{
-  return 0;
-}
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_RED_AIRWAYS

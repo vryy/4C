@@ -17,6 +17,10 @@ Maintainer: Alexander Popp
 #include "Teuchos_RefCountPtr.hpp"
 #include "../drt_lib/drt_discret.H"
 
+namespace LINALG {
+  class SparseMatrix;
+}
+
 namespace DRT {
 namespace UTILS {
 

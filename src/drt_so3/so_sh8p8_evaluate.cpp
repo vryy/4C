@@ -2404,7 +2404,7 @@ int DRT::ELEMENTS::So_sh8p8Type::Initialize(DRT::Discretization& dis)
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     // get the actual element
-    if (dis.lColElement(i)->ElementObjectType() != *this)
+    if (dis.lColElement(i)->ElementType() != *this)
       continue;
     // go on for So_sh8p elements
     DRT::ELEMENTS::So_sh8p8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8p8*>(dis.lColElement(i));
@@ -2534,7 +2534,7 @@ int DRT::ELEMENTS::So_sh8p8Type::Initialize(DRT::Discretization& dis)
   // loop again to init Jacobian for Sosh8p8's
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
-    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
+    if (dis.lColElement(i)->ElementType() != *this) continue;
     DRT::ELEMENTS::So_sh8p8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8p8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8p8* failed");
     actele->InitJacobianMapping();  // this sets #invJ_ in So_hex8

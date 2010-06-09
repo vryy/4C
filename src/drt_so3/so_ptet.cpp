@@ -18,18 +18,6 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_dserror.H"
 
 
-DRT::ELEMENTS::PtetRegisterType DRT::ELEMENTS::PtetRegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::PtetRegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::PtetRegister* object =
-    new DRT::ELEMENTS::PtetRegister(DRT::Element::element_ptet);
-  object->Unpack(data);
-  return object;
-}
-
-
 DRT::ELEMENTS::PtetType DRT::ELEMENTS::PtetType::instance_;
 
 
@@ -253,98 +241,6 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Ptet::Lines()
   return DRT::UTILS::ElementBoundaryFactory<StructuralLine,DRT::Element>(DRT::UTILS::buildLines,this);
 }
 
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                              gee 05/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PtetRegister::PtetRegister(DRT::Element::ElementType etype) :
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                         gee 05/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PtetRegister::PtetRegister(const DRT::ELEMENTS::PtetRegister& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                              gee 05/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PtetRegister::~PtetRegister()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                            gee 05/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PtetRegister* DRT::ELEMENTS::PtetRegister::Clone() const
-{
-  return new DRT::ELEMENTS::PtetRegister(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            gee 05/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PtetRegister::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                             gee 05/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PtetRegister::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  print (public)                                             gee 05/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PtetRegister::Print(ostream& os) const
-{
-  os << "PtetRegister ";
-  ElementRegister::Print(os);
-  return;
-}
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

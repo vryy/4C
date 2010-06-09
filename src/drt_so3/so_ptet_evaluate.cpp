@@ -185,8 +185,8 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
       if (straindata==null) dserror("Cannot get strain 'data'");
       LINALG::Matrix<NUMNOD_PTET,NUMSTR_PTET> stress;
       LINALG::Matrix<NUMNOD_PTET,NUMSTR_PTET> strain;
-      map<int,vector<double> >& nodestress = ElementObjectType().nodestress_;
-      map<int,vector<double> >& nodestrain = ElementObjectType().nodestrain_;
+      map<int,vector<double> >& nodestress = ElementType().nodestress_;
+      map<int,vector<double> >& nodestrain = ElementType().nodestrain_;
       for (int i=0; i<NumNode(); ++i)
       {
         int gid = Nodes()[i]->Id();

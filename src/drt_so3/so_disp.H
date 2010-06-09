@@ -24,7 +24,6 @@ using namespace Teuchos;
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
@@ -47,9 +46,8 @@ namespace ELEMENTS
 {
 // forward declarations
 class SoDispVolume;
-class SoDispRegister;
 
-class SoDispType : public DRT::ElementObjectType
+class SoDispType : public DRT::ElementType
 {
 public:
 
@@ -82,7 +80,6 @@ class SoDisp : public DRT::Element
 {
 public:
   //! @name Friends
-  friend class SoDispRegister;
   //@}
   //! @name Constructors and destructors and related methods
 
@@ -213,7 +210,7 @@ public:
   */
   void Print(ostream& os) const;
 
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return SoDispType::Instance(); }
 
   //@}
@@ -380,118 +377,6 @@ protected:
 
 
 }; // class SoDisp
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-class SoDispRegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "SoDispRegisterType"; }
-
-  static SoDispRegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static SoDispRegisterType instance_;
-};
-
-
-/*!
-\brief A register for solid3 element
-
-\author frenzel (frenzel@lnm.mw.tum.de)
-*/
-class SoDispRegister : public DRT::ElementRegister
-{
-public:
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  SoDispRegister(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an Soh8Register
-
-  */
-  SoDispRegister(const DRT::ELEMENTS::SoDispRegister& old);
-
-  /*!
-  \brief Deep copy this instance of Soh8Register and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::SoDispRegister* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class imploementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return SoDispRegisterType::Instance().UniqueParObjectId(); }
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~SoDispRegister();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the element. it e.g. calculates the
-  field of averaged directors at nodes.
-  */
-  int Initialize(DRT::Discretization& dis);
-
-
-private:
-
-
-}; // class SoDispRegister
 
 
 } // namespace ELEMENTS

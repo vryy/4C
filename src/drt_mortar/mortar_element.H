@@ -43,7 +43,6 @@ Maintainer: Alexander Popp
 #include "mortar_node.H"
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -62,7 +61,7 @@ using namespace Teuchos;
 namespace MORTAR
 {
 
-class MortarElementType : public DRT::ElementObjectType
+class MortarElementType : public DRT::ElementType
 {
 public:
 
@@ -201,7 +200,7 @@ public:
   */
   virtual void Unpack(const vector<char>& data);
 
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return MortarElementType::Instance(); }
 
   //@}

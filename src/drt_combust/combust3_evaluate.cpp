@@ -904,14 +904,5 @@ void DRT::ELEMENTS::Combust3::CondenseElementStressAndStoreOldIterationStep(
     dserror("You should never have come here in the first place!");
 }
 
-
-/*----------------------------------------------------------------------*
- |  init the element (public)                                mwgee 12/06|
- *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Combust3Register::Initialize(DRT::Discretization&)
-{
-  return 0;
-}
-
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_FLUID3

@@ -1585,7 +1585,7 @@ int DRT::ELEMENTS::So_hex8Type::Initialize(DRT::Discretization& dis)
 {
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
-    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
+    if (dis.lColElement(i)->ElementType() != *this) continue;
     DRT::ELEMENTS::So_hex8* actele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8* failed");
     actele->InitJacobianMapping();

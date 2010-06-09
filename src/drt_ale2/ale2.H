@@ -20,7 +20,6 @@ using namespace std;
 using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
@@ -40,7 +39,7 @@ namespace ELEMENTS
 class Ale2Line;
 
 
-class Ale2Type : public DRT::ElementObjectType
+class Ale2Type : public DRT::ElementType
 {
 public:
 
@@ -205,16 +204,7 @@ public:
   */
   void Print(ostream& os) const;
 
-  /*!
-  \brief Allocate and return a DesignElementRegister class
-
-  Every implementation of DRT::Element must also implement
-  an DRT::ElementRegister. This method allocates and returns
-  an instance of a matching DRT::ElementRegister.
-  */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
-
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return Ale2Type::Instance(); }
 
   //@}
@@ -358,7 +348,7 @@ private:
 //=======================================================================
 
 
-class Ale2LineType : public DRT::ElementObjectType
+class Ale2LineType : public DRT::ElementType
 {
 public:
 
@@ -486,16 +476,7 @@ public:
   */
   void Print(ostream& os) const;
 
-  /*!
-  \brief Allocate and return a ElementRegister class
-
-  Every implementation of DRT::Element must also implement
-  an DRT::ElementRegister. This method allocates and returns
-  an instance of a matching DRT::ElementRegister.
-  */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
-
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return Ale2LineType::Instance(); }
 
   //@}

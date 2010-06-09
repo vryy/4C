@@ -15,7 +15,6 @@ Maintainer: Christian Cyron
 
 #include "torsion2.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -55,18 +54,6 @@ void DRT::ELEMENTS::Torsion2Type::ComputeNullSpace( DRT::Discretization & dis, s
 {
   DRT::UTILS::ComputeStructure2DNullSpace( dis, ns, x0, numdf, dimns );
 }
-
-DRT::ELEMENTS::Torsion2RegisterType DRT::ELEMENTS::Torsion2RegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::Torsion2RegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::Torsion2Register* object =
-    new DRT::ELEMENTS::Torsion2Register(DRT::Element::element_torsion2);
-  object->Unpack(data);
-  return object;
-}
-
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 02/10|
@@ -228,99 +215,6 @@ void DRT::ELEMENTS::Torsion2::SetUpReferenceGeometry(const LINALG::Matrix<6,1>& 
 }
 
 
-
-
-//------------- class Torsion2Register: -------------------------------------
-
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            cyron 02/10|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Torsion2Register::Torsion2Register(DRT::Element::ElementType etype):
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       cyron 02/10|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Torsion2Register::Torsion2Register(
-                               const DRT::ELEMENTS::Torsion2Register& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                           cyron 02/10|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Torsion2Register* DRT::ELEMENTS::Torsion2Register::Clone() const
-{
-  return new DRT::ELEMENTS::Torsion2Register(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                           cyron 02/10|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Torsion2Register::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*-----------------------------------------------------------------------*
- |  Unpack data (public)                                     cyron 02/10|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Torsion2Register::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            cyron 02/10|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Torsion2Register::~Torsion2Register()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                           cyron 02/10|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Torsion2Register::Print(ostream& os) const
-{
-  os << "Torsion2Register ";
-  ElementRegister::Print(os);
-  return;
-}
-
-
 int DRT::ELEMENTS::Torsion2Type::Initialize(DRT::Discretization& dis)
 {
   //reference node positions
@@ -331,7 +225,7 @@ int DRT::ELEMENTS::Torsion2Type::Initialize(DRT::Discretization& dis)
   {
     //in case that current element is not a torsion2 element there is nothing to do and we go back
     //to the head of the loop
-    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
+    if (dis.lColElement(i)->ElementType() != *this) continue;
 
     //if we get so far current element is a beam3 element and  we get a pointer at it
     DRT::ELEMENTS::Torsion2* currele = dynamic_cast<DRT::ELEMENTS::Torsion2*>(dis.lColElement(i));

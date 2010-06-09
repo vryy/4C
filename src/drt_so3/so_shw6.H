@@ -24,10 +24,8 @@ class Discretization;
 
 namespace ELEMENTS
 {
-// forward declarations
-class Soshw6Register;
 
-class So_shw6Type : public DRT::ElementObjectType
+class So_shw6Type : public DRT::ElementType
 {
 public:
 
@@ -144,7 +142,7 @@ public:
   */
   void Print(ostream& os) const;
 
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return So_shw6Type::Instance(); }
 
   //@}
@@ -285,117 +283,6 @@ private:
 
 }; // class So_shw6
 
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-class Soshw6RegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "Soshw6RegisterType"; }
-
-  static Soshw6RegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static Soshw6RegisterType instance_;
-};
-
-/*!
-\brief A register for Solid-Shell wedge6 element
-
-\author frenzel (frenzel@lnm.mw.tum.de)
-*/
-class Soshw6Register : public Sow6Register
-{
-public:
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  Soshw6Register(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an WEG6Register
-
-  */
-  Soshw6Register(const DRT::ELEMENTS::Soshw6Register& old);
-
-  /*!
-  \brief Deep copy this instance of WEG6Register and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::Soshw6Register* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class imploementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return Soshw6RegisterType::Instance().UniqueParObjectId(); }
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~Soshw6Register();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the sosh-wedge elements
-
-  */
-  //virtual int Initialize(DRT::Discretization& dis);
-
-  //@}
-
-
-private:
-
-
-}; // class Sow6Register
 
 } // namespace ELEMENTS
 } // namespace DRT

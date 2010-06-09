@@ -65,18 +65,6 @@ void DRT::ELEMENTS::So_weg6Type::ComputeNullSpace( DRT::Discretization & dis, st
 }
 
 
-DRT::ELEMENTS::Sow6RegisterType DRT::ELEMENTS::Sow6RegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::Sow6RegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::Sow6Register* object =
-    new DRT::ELEMENTS::Sow6Register(DRT::Element::element_so_weg6);
-  object->Unpack(data);
-  return object;
-}
-
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
@@ -498,99 +486,6 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Lines()
   return DRT::UTILS::ElementBoundaryFactory<StructuralLine,DRT::Element>(DRT::UTILS::buildLines,this);
 }
 
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                              maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Sow6Register::Sow6Register(DRT::Element::ElementType etype) :
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                         maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Sow6Register::Sow6Register(
-                               const DRT::ELEMENTS::Sow6Register& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                            maf 04/07 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Sow6Register* DRT::ELEMENTS::Sow6Register::Clone() const
-{
-  return new DRT::ELEMENTS::Sow6Register(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            maf 04/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Sow6Register::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                            maf 04/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Sow6Register::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                              maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Sow6Register::~Sow6Register()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                             maf 04/07|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Sow6Register::Print(ostream& os) const
-{
-  os << "Sow6Register ";
-  ElementRegister::Print(os);
-  return;
-}
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

@@ -26,7 +26,6 @@ Maintainer: Christian Cyron
 using namespace std;
 using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_condition.H"
@@ -50,7 +49,7 @@ namespace DRT
 namespace ELEMENTS
 {
 
-class Beam2rType : public DRT::ElementObjectType
+class Beam2rType : public DRT::ElementType
 {
 public:
 
@@ -157,7 +156,7 @@ public:
   */
   virtual void Unpack(const vector<char>& data);
 
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return Beam2rType::Instance(); }
 
   //@}
@@ -441,118 +440,6 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 
 
 
-//------------- class Beam2rRegister: -------------------------------------------
-
-
-class Beam2rRegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "Beam2rRegisterType"; }
-
-  static Beam2rRegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static Beam2rRegisterType instance_;
-};
-
-/*!
-\brief A register for the Beam2r element
-
-\author cyron (cyron@lnm.mw.tum.de)
-*/
-class Beam2rRegister : public DRT::ElementRegister
-{
-public:
-
-  //! @name Friends
-  friend class Beam2r;
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  Beam2rRegister(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an Beam2rRegister
-
-  */
-  Beam2rRegister(const DRT::ELEMENTS::Beam2rRegister& old);
-
-  /*!
-  \brief Deep copy this instance of Beam2rRegister and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::Beam2rRegister* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class implementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return Beam2rRegisterType::Instance().UniqueParObjectId(); }
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~Beam2rRegister();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the Beam2r elements. it e.g. calculates the
-  field of averaged directors at nodes.
-  */
-  //int Initialize(DRT::Discretization& dis);
-
-  //@}
-
-private:
-
-
-}; // class Beam2rRegister
 } // namespace Elements
 } // namespace DRT
 

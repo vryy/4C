@@ -152,12 +152,6 @@ void DRT::ELEMENTS::Ale2::Print(ostream& os) const
 }
 
 
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Ale2::ElementRegister() const
-{
-  return Teuchos::null;
-}
-
-
 //
 // get vector of lines
 //

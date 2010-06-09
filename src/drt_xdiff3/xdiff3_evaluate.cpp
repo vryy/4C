@@ -804,14 +804,5 @@ void DRT::ELEMENTS::XDiff3::CondenseDLMAndStoreOldIterationStep(
   }
 }
 
-
-/*----------------------------------------------------------------------*
- |  init the element (public)                                mwgee 12/06|
- *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::XDiff3Register::Initialize(DRT::Discretization&)
-{
-  return 0;
-}
-
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_FLUID3

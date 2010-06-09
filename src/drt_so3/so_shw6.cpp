@@ -58,18 +58,6 @@ void DRT::ELEMENTS::So_shw6Type::ComputeNullSpace( DRT::Discretization & dis, st
 }
 
 
-DRT::ELEMENTS::Soshw6RegisterType DRT::ELEMENTS::Soshw6RegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::Soshw6RegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::Soshw6Register* object =
-    new DRT::ELEMENTS::Soshw6Register(DRT::Element::element_so_shw6);
-  object->Unpack(data);
-  return object;
-}
-
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
@@ -77,7 +65,6 @@ DRT::ParObject* DRT::ELEMENTS::Soshw6RegisterType::Create( const std::vector<cha
 DRT::ELEMENTS::So_shw6::So_shw6(int id, int owner) :
 DRT::ELEMENTS::So_weg6(id,owner)
 {
-  SetType(element_so_shw6);
   eastype_ = soshw6_easnone;
   neas_ = 0;
   optimal_parameterspace_map_ = false;
@@ -183,100 +170,6 @@ void DRT::ELEMENTS::So_shw6::Print(ostream& os) const
   return;
 }
 
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                              maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Soshw6Register::Soshw6Register(DRT::Element::ElementType etype) :
-DRT::ELEMENTS::Sow6Register::Sow6Register(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                         maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Soshw6Register::Soshw6Register(
-                               const DRT::ELEMENTS::Soshw6Register& old) :
-DRT::ELEMENTS::Sow6Register::Sow6Register(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                            maf 04/07 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Soshw6Register* DRT::ELEMENTS::Soshw6Register::Clone() const
-{
-  return new DRT::ELEMENTS::Soshw6Register(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            maf 04/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Soshw6Register::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class Sow6Register
-  vector<char> basedata(0);
-  DRT::ELEMENTS::Sow6Register::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                            maf 04/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Soshw6Register::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class Sow6Register
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  DRT::ELEMENTS::Sow6Register::Unpack(basedata);
-
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                              maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Soshw6Register::~Soshw6Register()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                             maf 04/07|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Soshw6Register::Print(ostream& os) const
-{
-  os << "Soshw6Register ";
-  ElementRegister::Print(os);
-  return;
-}
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

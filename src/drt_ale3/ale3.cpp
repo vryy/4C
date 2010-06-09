@@ -158,12 +158,6 @@ void DRT::ELEMENTS::Ale3::Print(ostream& os) const
 }
 
 
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Ale3::ElementRegister() const
-{
-  return Teuchos::null;
-}
-
-
 //
 // get vector of surfaces
 //

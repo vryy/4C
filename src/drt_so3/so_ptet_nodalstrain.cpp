@@ -46,7 +46,7 @@ int DRT::ELEMENTS::PtetType::Initialize(DRT::Discretization& dis)
   const int numele = dis.NumMyColElements();
   for (int i=0; i<numele; ++i)
   {
-    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
+    if (dis.lColElement(i)->ElementType() != *this) continue;
 
     DRT::ELEMENTS::Ptet* actele = dynamic_cast<DRT::ELEMENTS::Ptet*>(dis.lColElement(i));
     if (!actele) dserror("cast to Ptet* failed");

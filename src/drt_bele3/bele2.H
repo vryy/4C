@@ -20,7 +20,6 @@ Maintainer: Ursula Mayer
 #include "Epetra_Vector.h"
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
@@ -36,7 +35,7 @@ class Discretization;
 namespace ELEMENTS
 {
 
-class Bele2Type : public DRT::ElementObjectType
+class Bele2Type : public DRT::ElementType
 {
 public:
 
@@ -119,7 +118,7 @@ public:
   virtual int NumDofPerElement() const { return 0; }
   void Print(ostream& os) const;
 
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return Bele2Type::Instance(); }
 
   //@}
@@ -203,90 +202,6 @@ private:
 
 }; // class Bele2
 
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-class Bele2RegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "Bele2RegisterType"; }
-
-  static Bele2RegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static Bele2RegisterType instance_;
-};
-
-
-/*!
-\brief A register for bele2 element
-
-\author mayer (mayer@lnm.mw.tum.de)
-*/
-class Bele2Register : public DRT::ElementRegister
-{
-public:
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  explicit Bele2Register(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an Bele3Register
-
-  */
-  Bele2Register(const DRT::ELEMENTS::Bele2Register& old);
-
-  /*!
-  \brief Deep copy this instance of Bele2Register and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::Bele2Register* Clone() const;
-
-  virtual int UniqueParObjectId() const { return Bele2RegisterType::Instance().UniqueParObjectId(); }
-  virtual void Pack(vector<char>& data) const;
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~Bele2Register();
-
-  //@}
-
-  //! @name Access methods
-
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-
-  int Initialize(DRT::Discretization& dis);
-
-  //@}
-
-private:
-
-
-}; // class Bele2Register
 
 
 } // namespace ELEMENTS

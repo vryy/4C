@@ -7,6 +7,11 @@
 #include "drt_condition.H"
 #include "drt_discret.H"
 
+namespace LINALG
+{
+  class MultiMapExtractor;
+}
+
 namespace DRT
 {
 namespace UTILS

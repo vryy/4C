@@ -92,10 +92,10 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (ElementObjectType() == So_sh8Type::Instance()){
+      if (ElementType() == So_sh8Type::Instance()){
         sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
-      } else if (ElementObjectType() == So_hex8Type::Instance()){
+      } else if (ElementType() == So_hex8Type::Instance()){
         soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
@@ -113,10 +113,10 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (ElementObjectType() == So_sh8Type::Instance()){
+      if (ElementType() == So_sh8Type::Instance()){
         sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
-      } else if (ElementObjectType() == So_hex8Type::Instance()){
+      } else if (ElementType() == So_hex8Type::Instance()){
         soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
@@ -136,10 +136,10 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> myemat(true);
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (ElementObjectType() == So_sh8Type::Instance()){
+      if (ElementType() == So_sh8Type::Instance()){
         sosh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
-      } else if (ElementObjectType() == So_hex8Type::Instance()) {
+      } else if (ElementType() == So_hex8Type::Instance()) {
         soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
@@ -163,10 +163,10 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (ElementObjectType() == So_sh8Type::Instance()){
+      if (ElementType() == So_sh8Type::Instance()){
         sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
-      } else if (ElementObjectType() == So_hex8Type::Instance()){
+      } else if (ElementType() == So_hex8Type::Instance()){
         soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
@@ -195,9 +195,9 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
 
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (ElementObjectType() == So_sh8Type::Instance()){
+      if (ElementType() == So_sh8Type::Instance()){
         sosh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
-      } else if (ElementObjectType() == So_hex8Type::Instance()){
+      } else if (ElementType() == So_hex8Type::Instance()){
         soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
       }
       AddtoPack(*stressdata, stress);
@@ -1443,7 +1443,7 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     // get the actual element
-    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
+    if (dis.lColElement(i)->ElementType() != *this) continue;
     DRT::ELEMENTS::So_sh8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8* failed");
 
@@ -1546,13 +1546,15 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
       case DRT::ELEMENTS::So_sh8::undefined: {
         if (actele->eastype_ == DRT::ELEMENTS::So_sh8::soh8_eassosh8){
           // here comes plan B: morph So_sh8 to So_hex8
-          actele->SetType(DRT::Element::element_so_hex8);
+          //actele->SetType(DRT::Element::element_so_hex8);
+          dserror( "WTF?" );
           actele->soh8_reiniteas(DRT::ELEMENTS::So_hex8::soh8_easmild);
           actele->InitJacobianMapping();
           num_morphed_so_hex8_easmild++;
         } else if (actele->eastype_ == DRT::ELEMENTS::So_sh8::soh8_easnone){
           // here comes plan B: morph So_sh8 to So_hex8
-          actele->SetType(DRT::Element::element_so_hex8);
+          //actele->SetType(DRT::Element::element_so_hex8);
+          dserror( "WTF?" );
           actele->soh8_reiniteas(DRT::ELEMENTS::So_hex8::soh8_easnone);
           actele->InitJacobianMapping();
           num_morphed_so_hex8_easnone++;
@@ -1583,7 +1585,7 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
   // loop again to init Jacobian for Sosh8's
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
-    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
+    if (dis.lColElement(i)->ElementType() != *this) continue;
     DRT::ELEMENTS::So_sh8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8* failed");
     actele->InitJacobianMapping();

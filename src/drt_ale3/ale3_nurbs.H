@@ -44,7 +44,7 @@ namespace ELEMENTS
 namespace NURBS
 {
 
-class Ale3_NurbsType : public DRT::ElementObjectType
+class Ale3_NurbsType : public DRT::ElementType
 {
 public:
 
@@ -107,7 +107,7 @@ public:
   */
   virtual int UniqueParObjectId() const { return Ale3_NurbsType::Instance().UniqueParObjectId(); }
 
-  virtual DRT::ElementObjectType & ElementObjectType()
+  virtual DRT::ElementType & ElementType()
   { return Ale3_NurbsType::Instance(); }
 
   /// Print this element

@@ -51,17 +51,6 @@ void DRT::ELEMENTS::Bele2Type::ComputeNullSpace( DRT::Discretization & dis, std:
 }
 
 
-DRT::ELEMENTS::Bele2RegisterType DRT::ELEMENTS::Bele2RegisterType::instance_;
-
-DRT::ParObject* DRT::ELEMENTS::Bele2RegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::Bele2Register* object =
-    new DRT::ELEMENTS::Bele2Register(DRT::Element::element_bele2);
-  object->Unpack(data);
-  return object;
-}
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele2::Bele2(int id, int owner) :
@@ -173,103 +162,6 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Bele2::Surfaces()
   vector<RCP<DRT::Element> > surfaces(0);
   return surfaces;
 }
-
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            u.may 12/09|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Bele2Register::Bele2Register(DRT::Element::ElementType etype) :
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       u.may 12/09|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Bele2Register::Bele2Register(
-                               const DRT::ELEMENTS::Bele2Register& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                          u.may 12/09 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Bele2Register* DRT::ELEMENTS::Bele2Register::Clone() const
-{
-  return new DRT::ELEMENTS::Bele2Register(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                          u.may 02/09 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Bele2Register::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                          u.may 02/09 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Bele2Register::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            u.may 12/09|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Bele2Register::~Bele2Register()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                           u.may 12/09|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Bele2Register::Print(ostream& os) const
-{
-  os << "Bele2Register ";
-  ElementRegister::Print(os);
-  return;
-}
-
-
 
 
 

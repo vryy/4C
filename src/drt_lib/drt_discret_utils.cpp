@@ -44,7 +44,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   int nv=0; // number of velocity dofs
   int np=0; // number of pressure dofs
 #if 1
-  dwele->ElementObjectType().NodalBlockInformation( dwele, numdf, dimns, nv, np );
+  dwele->ElementType().NodalBlockInformation( dwele, numdf, dimns, nv, np );
   if (DRT::Problem::Instance(0)->ProblemType() == "elch")
   {
     if (nv > 1) // only when we have more than 1 dof per node!
@@ -276,7 +276,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   Comm().SumAll(x0send,x0,3);
   for (int i=0; i<3; ++i) x0[i] /= NumGlobalNodes();
 
-  dwele->ElementObjectType().ComputeNullSpace( *this, *ns, x0, numdf, dimns );
+  dwele->ElementType().ComputeNullSpace( *this, *ns, x0, numdf, dimns );
 }
 
 #endif  // #ifdef CCADISCRET

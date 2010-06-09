@@ -30,7 +30,6 @@ using namespace std;
 using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
@@ -52,11 +51,10 @@ template<DRT::Element::DiscretizationType distype> class Fluid3Impl;
 template<DRT::Element::DiscretizationType distype> class Fluid3StationaryImpl;
 template<DRT::Element::DiscretizationType distype> class Fluid3lin_Impl;
 template<DRT::Element::DiscretizationType distype> class Fluid3GenalphaResVMM;
-class Fluid3Register;
 
 class Fluid3Boundary;
 
-class Fluid3Type : public DRT::ElementObjectType
+class Fluid3Type : public DRT::ElementType
 {
 public:
 
@@ -90,7 +88,6 @@ class Fluid3 : public DRT::Element
 public:
 
   //! @name Friends
-  friend class Fluid3Register;
   friend class Fluid3Boundary;
 
   // TODO: StationaryImpl will be deleted and this friendships will vanish
@@ -366,7 +363,7 @@ public:
   */
   void Print(ostream& os) const;
 
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return Fluid3Type::Instance(); }
 
   //@}
@@ -916,113 +913,6 @@ void f3_calc_smag_const_LijMij_and_MijMij(
 //=======================================================================
 
 
-class Fluid3RegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "Fluid3RegisterType"; }
-
-  static Fluid3RegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static Fluid3RegisterType instance_;
-};
-
-
-/*!
-\brief A register for fluid3 element
-
-*/
-class Fluid3Register : public DRT::ElementRegister
-{
-public:
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  Fluid3Register(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an Fluid3Register
-
-  */
-  Fluid3Register(const DRT::ELEMENTS::Fluid3Register& old);
-
-  /*!
-  \brief Deep copy this instance of Fluid3Register and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::Fluid3Register* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class imploementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return Fluid3RegisterType::Instance().UniqueParObjectId(); }
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~Fluid3Register();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the fluid3 elements. it e.g. calculates the
-  field of averaged directors at nodes.
-  */
-  int Initialize(DRT::Discretization& dis);
-
-  //@}
-
-private:
-
-
-}; // class Fluid3Register
-
 
 //=======================================================================
 //=======================================================================
@@ -1041,7 +931,7 @@ private:
 */
 
 
-class Fluid3BoundaryType : public DRT::ElementObjectType
+class Fluid3BoundaryType : public DRT::ElementType
 {
 public:
 
@@ -1202,16 +1092,7 @@ public:
   */
   void Print(ostream& os) const;
 
-  /*!
-  \brief Allocate and return a ElementRegister class
-
-  Every implementation of DRT::Element must also implement
-  an DRT::ElementRegister. This method allocates and returns
-  an instance of a matching DRT::ElementRegister.
-  */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
-
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return Fluid3BoundaryType::Instance(); }
 
   //@}

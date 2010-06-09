@@ -58,7 +58,7 @@ namespace CONTACT
 
 // forward declarations
 
-class CoElementType : public DRT::ElementObjectType
+class CoElementType : public DRT::ElementType
 {
 public:
 
@@ -151,7 +151,7 @@ public:
   */
   virtual void Unpack(const vector<char>& data);
 
-  virtual CoElementType & ElementObjectType() const
+  virtual CoElementType & ElementType() const
   { return CoElementType::Instance(); }
 
   //@}

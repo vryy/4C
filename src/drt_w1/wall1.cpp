@@ -60,18 +60,6 @@ void DRT::ELEMENTS::Wall1Type::ComputeNullSpace( DRT::Discretization & dis, std:
 }
 
 
-DRT::ELEMENTS::Wall1RegisterType DRT::ELEMENTS::Wall1RegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::Wall1RegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::Wall1Register* object =
-    new DRT::ELEMENTS::Wall1Register(DRT::Element::element_wall1);
-  object->Unpack(data);
-  return object;
-}
-
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mgit 01/08/|
  *----------------------------------------------------------------------*/
@@ -405,106 +393,6 @@ void DRT::ELEMENTS::Wall1::w1_expol
     elevec2(noddof_*i+1)=nodalstresses(i,3);
   }
 
-}
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            mgit 03/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Wall1Register::Wall1Register(DRT::Element::ElementType etype) :
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mgit 03/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Wall1Register::Wall1Register(
-                               const DRT::ELEMENTS::Wall1Register& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                            mgit 03/07 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Wall1Register* DRT::ELEMENTS::Wall1Register::Clone() const
-{
-  return new DRT::ELEMENTS::Wall1Register(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            mgit 03/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1Register::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                            mgit 03/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1Register::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mgit 03/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Wall1Register::~Wall1Register()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                           mgit 03/07|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1Register::Print(ostream& os) const
-{
-  os << "Wall1Register ";
-  ElementRegister::Print(os);
-  return;
-}
-
-
-int DRT::ELEMENTS::Wall1Register::Initialize(DRT::Discretization& dis)
-{
-  return 0;
 }
 
 

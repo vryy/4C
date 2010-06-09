@@ -192,7 +192,7 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(
   DRT::Element* ele = fdis->lRowElement(0);
 
   // this is not the way it should be done
-  const DRT::ElementObjectType & eot = ele->ElementObjectType();
+  const DRT::ElementType & eot = ele->ElementType();
   bool is3d = false;
   if ( eot==DRT::ELEMENTS::Fluid3Type::Instance() or
        eot==DRT::ELEMENTS::NURBS::Fluid3NurbsType::Instance() or

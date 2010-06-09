@@ -112,7 +112,6 @@ ParObject(old),
 id_(old.id_),
 lid_(old.lid_),
 owner_(old.owner_),
-etype_(old.etype_),
 nodeid_(old.nodeid_),
 node_(old.node_)
 {
@@ -247,8 +246,6 @@ void DRT::Element::Pack(vector<char>& data) const
   AddtoPack(data,id_);
   // add owner
   AddtoPack(data,owner_);
-  // add type of element
-  AddtoPack(data,etype_);
   // add vector nodeid_
   AddtoPack(data,nodeid_);
   // add material
@@ -278,8 +275,6 @@ void DRT::Element::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,id_);
   // owner_
   ExtractfromPack(position,data,owner_);
-  // etype_
-  ExtractfromPack(position,data,etype_);
   // nodeid_
   ExtractfromPack(position,data,nodeid_);
   // mat_

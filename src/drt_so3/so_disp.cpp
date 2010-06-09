@@ -61,18 +61,6 @@ void DRT::ELEMENTS::SoDispType::ComputeNullSpace( DRT::Discretization & dis, std
 }
 
 
-DRT::ELEMENTS::SoDispRegisterType DRT::ELEMENTS::SoDispRegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::SoDispRegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::SoDispRegister* object =
-    new DRT::ELEMENTS::SoDispRegister(DRT::Element::element_sodisp);
-  object->Unpack(data);
-  return object;
-}
-
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
@@ -260,107 +248,6 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::SoDisp::Volumes()
   return volumes;
 }
 
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                              maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoDispRegister::SoDispRegister(DRT::Element::ElementType etype) :
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                         maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoDispRegister::SoDispRegister(
-                               const DRT::ELEMENTS::SoDispRegister& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                            maf 04/07 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoDispRegister* DRT::ELEMENTS::SoDispRegister::Clone() const
-{
-  return new DRT::ELEMENTS::SoDispRegister(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            maf 04/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoDispRegister::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                            maf 04/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoDispRegister::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                              maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoDispRegister::~SoDispRegister()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                             maf 04/07|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoDispRegister::Print(ostream& os) const
-{
-  os << "SoDispRegister ";
-  ElementRegister::Print(os);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  init the element (public)                                      12/06|
- *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoDispRegister::Initialize(DRT::Discretization& dis)
-{
-  return 0;
-}
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

@@ -45,18 +45,6 @@ void DRT::ELEMENTS::So_Hex8P1J1Type::ComputeNullSpace( DRT::Discretization & dis
 }
 
 
-DRT::ELEMENTS::SoHex8P1J1RegisterType DRT::ELEMENTS::SoHex8P1J1RegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::SoHex8P1J1RegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::SoHex8P1J1Register* object =
-    new DRT::ELEMENTS::SoHex8P1J1Register(DRT::Element::element_so_hex8p1j1);
-  object->Unpack(data);
-  return object;
-}
-
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               lw 12/08|
  |  id             (in)  this element's global id                       |
@@ -64,8 +52,6 @@ DRT::ParObject* DRT::ELEMENTS::SoHex8P1J1RegisterType::Create( const std::vector
 DRT::ELEMENTS::So_Hex8P1J1::So_Hex8P1J1(int id, int owner) :
 DRT::ELEMENTS::So_hex8(id,owner)
 {
-  SetType(element_so_hex8p1j1);
-
   K_pu_.PutScalar(0.0);
   K_tu_.PutScalar(0.0);
 
@@ -188,98 +174,6 @@ void DRT::ELEMENTS::So_Hex8P1J1::Print(ostream& os) const
   Element::Print(os);
   cout << endl;
   cout << data_;
-  return;
-}
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                               lw 12/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoHex8P1J1Register::SoHex8P1J1Register(DRT::Element::ElementType etype) :
-DRT::ELEMENTS::Soh8Register::Soh8Register(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                          lw 12/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoHex8P1J1Register::SoHex8P1J1Register(const DRT::ELEMENTS::SoHex8P1J1Register& old) :
-DRT::ELEMENTS::Soh8Register::Soh8Register(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                              lw 12/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoHex8P1J1Register* DRT::ELEMENTS::SoHex8P1J1Register::Clone() const
-{
-  return new DRT::ELEMENTS::SoHex8P1J1Register(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                              lw 12/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8P1J1Register::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class So_hex8 Element
-  vector<char> basedata(0);
-  DRT::ELEMENTS::Soh8Register::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                              lw 12/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8P1J1Register::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  DRT::ELEMENTS::Soh8Register::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                              lw 12/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8P1J1Register::Print(ostream& os) const
-{
-  os << "SoHex8P1J1Register ";
-  ElementRegister::Print(os);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                              maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoHex8P1J1Register::~SoHex8P1J1Register()
-{
   return;
 }
 

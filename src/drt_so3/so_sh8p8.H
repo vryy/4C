@@ -26,7 +26,6 @@ Maintainer: Burkhard Bornemann
 #include "Epetra_SerialDenseMatrix.h"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 #include "so_sh8.H"
@@ -46,7 +45,6 @@ namespace ELEMENTS
 {
 
 // forward declarations
-class Sosh8p8Register;
 class So_sh8;
 
 class So_sh8p8Type : public So_sh8Type
@@ -246,7 +244,7 @@ public:
   /// Print this element
   void Print(std::ostream& os) const;
 
-  virtual So_sh8p8Type & ElementObjectType() const
+  virtual So_sh8p8Type & ElementType() const
   { return So_sh8p8Type::Instance(); }
 
   //@}
@@ -912,100 +910,6 @@ private:
   //@}
 
 }; // class So_sh8p8
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-class Sosh8p8RegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "Sosh8p8RegisterType"; }
-
-  static Sosh8p8RegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static Sosh8p8RegisterType instance_;
-};
-
-
-/// A register for incompressible Solid-Shell8 element, inherited from Sosh8
-///
-/// \author bborn
-/// \date 03/09
-class Sosh8p8Register : public Sosh8Register
-{
-public:
-
-  /// @name Constructors and destructors and related methods
-  //@{
-
-  /// Standard Constructor
-  Sosh8p8Register(DRT::Element::ElementType etype);
-
-  /// Copy Constructor
-  ///
-  /// Makes a deep copy of an Soh8Register
-  Sosh8p8Register(const DRT::ELEMENTS::Sosh8p8Register& old);
-
-  /// Deep copy this instance of Sosh8p8Register and return pointer to the copy
-  ///
-  /// The Clone() method is used from the virtual base class Element in cases
-  /// where the type of the derived class is unknown and a copy-ctor is needed
-  DRT::ELEMENTS::Sosh8p8Register* Clone() const;
-
-  /// Return unique ParObject id
-  ///
-  /// every class imploementing ParObject needs a unique id defined at the
-  /// top of this file.
-  virtual int UniqueParObjectId() const { return Sosh8p8RegisterType::Instance().UniqueParObjectId(); }
-
-  /// Pack this class so it can be communicated
-  ///
-  /// \ref Pack and \ref Unpack are used to communicate this element
-  virtual void Pack(std::vector<char>& data) const;
-
-  /// Unpack data from a char vector into this class
-  ///
-  /// \ref Pack and \ref Unpack are used to communicate this element
-  virtual void Unpack(const std::vector<char>& data);
-
-  /// Destructor
-  virtual ~Sosh8p8Register();
-
-  //@}
-
-  /// @name Acess methods
-  //@{
-
-  /// Print this element
-  void Print(std::ostream& os) const;
-
-  /// Call Element init routines
-  ///
-  /// The method performs all steps needed to init the solid-shell8 elements.
-  /// This includes defining the thickness direction of the solid-shell by looking
-  /// at its geometric shape in reference configuration. Thus, the loop looks a bit
-  /// complicated because a "not-thin" So_sh8p8 is morphed to a So_hex8 where the
-  /// discretization is not filled-complete anymore.
-  //int Initialize(DRT::Discretization& dis);
-
-  //@}
-
-}; // class Sosh8p8Register
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
 
 
 } // namespace ELEMENTS

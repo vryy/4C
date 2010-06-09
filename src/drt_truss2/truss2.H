@@ -28,7 +28,6 @@ Maintainer: Christian Cyron
 using namespace std;
 using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_condition.H"
@@ -51,7 +50,7 @@ namespace DRT
 namespace ELEMENTS
 {
 
-class Truss2Type : public DRT::ElementObjectType
+class Truss2Type : public DRT::ElementType
 {
 public:
 
@@ -154,7 +153,7 @@ public:
   */
   virtual void Unpack(const vector<char>& data);
 
-  virtual DRT::ElementObjectType & ElementObjectType() const
+  virtual DRT::ElementType & ElementType() const
   { return Truss2Type::Instance(); }
 
   //@}
@@ -409,117 +408,6 @@ private:
 ostream& operator << (ostream& os, const DRT::Element& ele);
 
 
-//------------- class Truss2Register: -------------------------------------------
-
-class Truss2RegisterType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "Truss2RegisterType"; }
-
-  static Truss2RegisterType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const vector<char> & data );
-
-private:
-
-  static Truss2RegisterType instance_;
-};
-
-/*!
-\brief A register for Truss2 element
-
-\author cyron (cyron@lnm.mw.tum.de)
-*/
-class Truss2Register : public DRT::ElementRegister
-{
-public:
-
-  //! @name Friends
-  friend class Truss2;
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  Truss2Register(DRT::Element::ElementType etype);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an Truss2Register
-
-  */
-  Truss2Register(const DRT::ELEMENTS::Truss2Register& old);
-
-  /*!
-  \brief Deep copy this instance of Truss2Register and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::ELEMENTS::Truss2Register* Clone() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class implementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return Truss2RegisterType::Instance().UniqueParObjectId(); }
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~Truss2Register();
-
-  //@}
-
-  //! @name Acess methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  //@}
-
-  //! @name Construction
-
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the Truss2 elements. it e.g. calculates the
-  field of averaged directors at nodes.
-  */
-  //int Initialize(DRT::Discretization& dis);
-
-  //@}
-
-private:
-
-
-}; // class Truss2Register
 } // namespace Elements
 } // namespace DRT
 

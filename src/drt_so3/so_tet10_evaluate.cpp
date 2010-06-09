@@ -1026,11 +1026,5 @@ void DRT::ELEMENTS::So_tet10::so_tet10_lumpmass(LINALG::Matrix<NUMDOF_SOTET10,NU
 }
 
 
-int DRT::ELEMENTS::Sotet10Register::Initialize(DRT::Discretization& dis)
-{
-  return 0;
-}
-
-
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

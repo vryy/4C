@@ -64,19 +64,6 @@ void DRT::ELEMENTS::So_hex27Type::ComputeNullSpace( DRT::Discretization & dis, s
 }
 
 
-DRT::ELEMENTS::Soh27RegisterType DRT::ELEMENTS::Soh27RegisterType::instance_;
-
-
-DRT::ParObject* DRT::ELEMENTS::Soh27RegisterType::Create( const std::vector<char> & data )
-{
-  DRT::ELEMENTS::Soh27Register* object =
-    new DRT::ELEMENTS::Soh27Register(DRT::Element::element_so_hex27);
-  object->Unpack(data);
-  return object;
-}
-
-
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                                       |
  |  id             (in)  this element's global id                       |
@@ -570,97 +557,6 @@ bool DRT::ELEMENTS::So_hex27::VisData(const string& name, vector<double>& data)
   return true;
 }
 
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                                       |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Soh27Register::Soh27Register(DRT::Element::ElementType etype) :
-ElementRegister(etype)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                                  |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Soh27Register::Soh27Register(
-                               const DRT::ELEMENTS::Soh27Register& old) :
-ElementRegister(old)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Soh27Register* DRT::ELEMENTS::Soh27Register::Clone() const
-{
-  return new DRT::ELEMENTS::Soh27Register(*this);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Soh27Register::Pack(vector<char>& data) const
-{
-  data.resize(0);
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class ElementRegister
-  vector<char> basedata(0);
-  ElementRegister::Pack(basedata);
-  AddtoPack(data,basedata);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Soh27Register::Unpack(const vector<char>& data)
-{
-  vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                                       |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Soh27Register::~Soh27Register()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print (public)                                                      |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Soh27Register::Print(ostream& os) const
-{
-  os << "Soh27Register ";
-  ElementRegister::Print(os);
-  return;
-}
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

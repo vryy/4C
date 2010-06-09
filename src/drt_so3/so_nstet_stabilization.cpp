@@ -50,9 +50,9 @@ void DRT::ELEMENTS::NStet::VolDevStabLinear(
   vector<LINALG::Matrix<3,3> > nF(numnode);
   for (int i=0; i<numnode; ++i)
   {
-    const int lid = ElementObjectType().pnodecol_->Map().LID(Nodes()[i]->Id());
-    npressure[i] = (*ElementObjectType().pnodecol_)[lid];
-    nJ[i]        = (*ElementObjectType().Jnodecol_)[lid];
+    const int lid = ElementType().pnodecol_->Map().LID(Nodes()[i]->Id());
+    npressure[i] = (*ElementType().pnodecol_)[lid];
+    nJ[i]        = (*ElementType().Jnodecol_)[lid];
     //for (int j=0; j<9; ++j) Fvec(j) = (*(*myregister_->Fnodecol_)(j))[lid];
     //myregister_->VectortoMatrix(Fvec,nF[i]);
     //nF[i].Clear(); nF[i](0,0) = 1.0; nF[i](1,1) = 1.0; nF[i](2,2) = 1.0;
@@ -267,9 +267,9 @@ void DRT::ELEMENTS::NStet::VolDevStab(
 
   // do separation of deviatoric/volumetric components
   double elepressure = 0.0;
-  NStetRegister::DevVolStressTangent(stressdev,stressvol,
-                                     cmatdev,cmatvol,cmat,stress,
-                                     cauchygreen,elepressure);
+  NStetType::DevVolStressTangent(stressdev,stressvol,
+                                 cmatdev,cmatvol,cmat,stress,
+                                 cauchygreen,elepressure);
 
   stress.Update(ALPHA_NSTET,stressdev,0.0);
   cmat.Update(ALPHA_NSTET,cmatdev,0.0);

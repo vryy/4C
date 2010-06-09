@@ -605,7 +605,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         RCP<Epetra_SerialDenseMatrix> Cdu;
         RCP<Epetra_SerialDenseMatrix> Cdd;
         RCP<Epetra_SerialDenseVector> rhsd;
-        
+
         if (ih_->ElementIntersected(Id()))
         {
           const size_t nui = ifacepatchlm->size();
@@ -1406,15 +1406,6 @@ void DRT::ELEMENTS::XFluid3::integrateShapefunction(
         dserror("xfem_assembly integrateShapefunctionT not templated yet");
     };
   }
-}
-
-
-/*----------------------------------------------------------------------*
- |  init the element (public)                                mwgee 12/06|
- *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::XFluid3Register::Initialize(DRT::Discretization&)
-{
-  return 0;
 }
 
 #endif  // #ifdef CCADISCRET

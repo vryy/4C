@@ -181,7 +181,7 @@ void DRT::ParObjectFactory::InitializeElements( DRT::Discretization & dis )
         ++i )
   {
     ParObjectType * pot = i->second;
-    ElementObjectType * eot = dynamic_cast<ElementObjectType*>( pot );
+    ElementType * eot = dynamic_cast<ElementType*>( pot );
     if ( eot!=NULL )
     {
       int err = eot->Initialize( dis );
@@ -208,7 +208,7 @@ void DRT::ParObjectFactory::PreEvaluate(DRT::Discretization& dis,
         ++i )
   {
     ParObjectType * pot = i->second;
-    ElementObjectType * eot = dynamic_cast<ElementObjectType*>( pot );
+    ElementType * eot = dynamic_cast<ElementType*>( pot );
     if ( eot!=NULL )
     {
       eot->PreEvaluate( dis, p, systemmatrix1, systemmatrix2,
