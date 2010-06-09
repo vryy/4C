@@ -48,6 +48,7 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_colors.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_constraint/constraint_manager.H"
 
 #include <Teuchos_Time.hpp>
 #include <iostream>

@@ -22,6 +22,7 @@ Maintainer: Thomas Kloeppel
 #include "adapter_structure_constr_merged.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_constraint/constraint_manager.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

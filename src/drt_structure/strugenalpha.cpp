@@ -19,6 +19,8 @@ Maintainer: Michael Gee
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_constraint/constraint_manager.H"
+#include "../drt_constraint/constraintsolver.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 03/07|
@@ -4328,6 +4330,20 @@ void StruGenAlpha::TSIMatrix()
   // close mass and stiffness matrix
   mass_->Complete();
   stiff_->Complete();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool StruGenAlpha::HaveConstraint() { return constrMan_->HaveConstraint(); }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::UpdateIterIncrConstr
+(
+    Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
+)
+{
+  constrMan_->UpdateLagrMult(lagrincr);
 }
 
 #endif  // #ifdef CCADISCRET

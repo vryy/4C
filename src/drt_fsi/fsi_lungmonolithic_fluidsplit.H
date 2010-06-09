@@ -5,7 +5,6 @@
 
 #include "fsi_lungmonolithic.H"
 #include "fsi_matrixtransform.H"
-#include "../drt_constraint/constraintdofset.H"
 
 namespace FSI
 {

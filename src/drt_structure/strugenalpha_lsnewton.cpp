@@ -18,6 +18,8 @@ Maintainer: Michael Gee
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_constraint/constraint_manager.H"
+#include "../drt_constraint/constraintsolver.H"
 
 
 

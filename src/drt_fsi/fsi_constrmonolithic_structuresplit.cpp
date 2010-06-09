@@ -8,6 +8,8 @@
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid.H"
 
+#include "../drt_constraint/constraint_manager.H"
+
 #define FLUIDSPLITAMG
 
 /*----------------------------------------------------------------------*/

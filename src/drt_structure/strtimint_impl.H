@@ -433,10 +433,7 @@ namespace STR
     }
 
     //! Update step for constraints
-    void UpdateStepConstraint()
-    {
-      if (conman_ -> HaveConstraint()) conman_->Update();
-    }
+    void UpdateStepConstraint();
 
     //! Update step for contact / meshtying
     void UpdateStepContactMeshtying()
@@ -509,10 +506,7 @@ namespace STR
     virtual double MethodLinErrCoeffVel() = 0;
 
     //! Return bool indicating if constraints are defined
-    virtual bool HaveConstraint()
-    {
-      return conman_->HaveConstraint();
-    }
+    virtual bool HaveConstraint();
 
     //! Return rcp to ConstraintManager conman_
     virtual const RCP< ::UTILS::ConstrManager> GetConstraintManager()
@@ -525,10 +519,7 @@ namespace STR
     virtual void UpdateIterIncrConstr
     (
       Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
-    )
-    {
-      conman_->UpdateLagrMult(lagrincr);
-    }
+    );
 
 
     //@}

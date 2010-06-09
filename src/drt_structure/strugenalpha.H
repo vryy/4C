@@ -22,8 +22,6 @@ Maintainer: Michael Gee
 #include "../drt_io/io.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_mapextractor.H"
-#include "../drt_constraint/constraint_manager.H"
-#include "../drt_constraint/constraintsolver.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_lib/drt_locsys.H"
@@ -61,6 +59,13 @@ Maintainer: Michael Gee
 
 using namespace std;
 using namespace Teuchos;
+
+//forward declarations
+namespace UTILS
+{
+  class ConstrManager;
+  class ConstraintSolver;
+}
 class NoxInterface;
 
 /*!
@@ -435,16 +440,13 @@ public:
   virtual bool HaveContactMeshtying() { return false; }
 
   //! Return bool indicating if constraints are defined
-  bool HaveConstraint() { return constrMan_->HaveConstraint(); }
+  bool HaveConstraint();
 
   //! Update lagrange multipliers stored in Constraint manager
   virtual void UpdateIterIncrConstr
   (
       Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
-  )
-  {
-    constrMan_->UpdateLagrMult(lagrincr);
-  }
+  );
 
   //! Return rcp to ConstraintManager conman_
   virtual const RCP< UTILS::ConstrManager> GetConstraintManager()

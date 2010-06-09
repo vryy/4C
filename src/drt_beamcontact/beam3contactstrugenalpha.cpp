@@ -14,6 +14,7 @@ Maintainer: Alexander Popp, Christian Cyron
 
 #include "beam3contactstrugenalpha.H"
 #include <iostream>
+#include "../drt_constraint/constraint_manager.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 04/10|

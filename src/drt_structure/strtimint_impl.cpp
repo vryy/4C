@@ -22,6 +22,8 @@ Maintainer: Burkhard Bornemann
 #include "strtimint.H"
 #include "strtimint_impl.H"
 #include "str_aux.H"
+#include "../drt_constraint/constraint_manager.H"
+#include "../drt_constraint/constraintsolver.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -893,6 +895,30 @@ void STR::TimIntImpl::UzawaNonLinearNewtonFull()
 
   // for output
   iter_ = uziter + 1;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void STR::TimIntImpl::UpdateStepConstraint()
+{
+  if (conman_ -> HaveConstraint()) conman_->Update();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool STR::TimIntImpl::HaveConstraint()
+{
+  return conman_->HaveConstraint();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void STR::TimIntImpl::UpdateIterIncrConstr
+(
+  Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
+)
+{
+  conman_->UpdateLagrMult(lagrincr);
 }
 
 /*----------------------------------------------------------------------*/

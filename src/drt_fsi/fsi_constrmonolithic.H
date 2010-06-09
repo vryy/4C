@@ -6,8 +6,12 @@
 #include "../drt_inpar/inpar_fsi.H"
 #include "fsi_overlapprec.H"
 #include "fsi_monolithic.H"
-#include "../drt_constraint/constraintdofset.H"
-#include "../drt_constraint/constraint_manager.H"
+
+//forward declarations
+namespace UTILS
+{
+  class ConstrManager;
+}
 
 namespace FSI
 {

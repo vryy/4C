@@ -21,6 +21,7 @@ Maintainer: Burkhard Bornemann
 
 #include "strtimint.H"
 #include "strtimint_expl.H"
+#include "../drt_constraint/constraint_manager.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor */

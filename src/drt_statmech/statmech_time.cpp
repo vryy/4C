@@ -18,6 +18,8 @@ Maintainer: Christian Cyron
 #include "../drt_statmech/statmech_manager.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_io/io_control.H"
+#include "../drt_constraint/constraint_manager.H"
+#include "../drt_constraint/constraintsolver.H"
 
 #include <random/normal.h>
 

@@ -22,19 +22,19 @@ Maintainer: Burkhard Bornemann
 #include <iostream>
 #include <fstream>
 
-#include "Teuchos_RefCountPtr.hpp"
+#include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Epetra_Vector.h"
-#include "Epetra_Operator.h"
-#include "Epetra_RowMatrix.h"
+#include <Epetra_Vector.h>
+#include <Epetra_Operator.h>
+#include <Epetra_RowMatrix.h>
 #include <NOX.H>
 #include <NOX_Epetra.H>
-#include "ml_common.h"
-#include "ml_include.h"
-#include "nlnml_preconditioner.H"
-#include "nlnml_linearsystem.H"
-#include "nlnml_finelevelnoxinterface.H"
+#include <ml_common.h>
+#include <ml_include.h>
+#include <nlnml_preconditioner.H>
+#include <nlnml_linearsystem.H>
+#include <nlnml_finelevelnoxinterface.H>
 
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_discret.H"
@@ -43,8 +43,6 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_io/io.H"
-#include "../drt_constraint/constraint_manager.H"
-#include "../drt_constraint/constraintsolver.H"
 #include "../drt_lib/drt_locsys.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_potential/drt_potential_manager.H"
@@ -54,6 +52,13 @@ Maintainer: Burkhard Bornemann
 #include "../drt_fluid/drt_periodicbc.H"
 
 #include "strtimint_mstep.H"
+
+//forward declarations
+namespace UTILS
+{
+  class ConstrManager;
+  class ConstraintSolver;
+}
 
 /*----------------------------------------------------------------------*/
 //! Structural Dynamics

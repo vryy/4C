@@ -29,6 +29,9 @@ Maintainer: Burkhard Bornemann
 #include "../drt_io/io_control.H"
 #include "../drt_fluid/fluid_utils.H"
 
+#include "../drt_constraint/constraint_manager.H"
+#include "../drt_constraint/constraintsolver.H"
+
 #include "../drt_so3/so_sh8p8.H"
 
 /*----------------------------------------------------------------------*/

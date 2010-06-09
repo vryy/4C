@@ -14,6 +14,7 @@
 
 #include "../drt_adapter/adapter_structure_lung.H"
 #include "../drt_adapter/adapter_fluid_lung.H"
+#include "../drt_constraint/constraintdofset.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
