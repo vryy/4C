@@ -81,6 +81,7 @@ def getSymbols(fname):
                 if valid_flag == True and status == "ON":
                     symbollist.add(flag.split(":")[0])
     symbollist.add("CCADISCRET")
+    symbollist.add("PARALLEL")
     return symbollist
 
 def adapt(do_configure_file):
