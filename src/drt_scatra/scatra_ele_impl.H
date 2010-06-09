@@ -297,9 +297,7 @@ public:
     virtual void CalculateFlux(
         LINALG::Matrix<3,nen_>&         flux,
         const DRT::Element*             ele,
-        const vector<double>&           ephinp,
         const double                    frt,
-        const Epetra_SerialDenseVector& evel,
         const INPAR::SCATRA::FluxType   fluxtype,
         const int                       dofindex
     );

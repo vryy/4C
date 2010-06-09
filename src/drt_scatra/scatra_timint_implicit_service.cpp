@@ -1335,6 +1335,9 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   if (isale_)
     AddMultiVectorToParameterList(params,"dispnp",dispnp_);
 
+  // parameters for stabilization
+  params.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);

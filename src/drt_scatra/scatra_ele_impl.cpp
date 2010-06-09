@@ -697,8 +697,9 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     else epotnp_.Clear();
 
     // set control parameters to avoid that some actually unused variables are
-    // falsely set, on the one hand, and unnecessary subgrid-scale velocity is
-    // computed, on the other hand
+    // falsely set, on the one hand, and viscosity for unnecessary calculation
+    // of subgrid-scale velocity is computed, on the other hand, in
+    // GetMaterialParams
     is_genalpha_    = false;
     is_incremental_ = true;
     sgvel_          = false;
@@ -744,8 +745,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   {
     // get velocity values at the nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
-    Epetra_SerialDenseVector evel(nsd_*nen_);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity,nsd_);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
 
     // need current values of transported scalar
     // -> extract local values from global vectors
@@ -754,29 +754,57 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     vector<double> myphinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
+    // fill all element arrays
+    for (int i=0;i<nen_;++i)
+    {
+      for (int k = 0; k< numscal_; ++k)
+      {
+        // split for each transported scalar, insert into element arrays
+        ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
+      }
+    } // for i
+
     // access control parameter for flux calculation
     INPAR::SCATRA::FluxType fluxtype = params.get<INPAR::SCATRA::FluxType>("fluxtype");
 
-    // set number of scalars and frt for ELCH
-    int numscal = numdofpernode_;
+    // set flag for potential evaluation of material law at int. point
+    ParameterList& stablist = params.sublist("STABILIZATION");
+    const INPAR::SCATRA::EvalMat matloc = Teuchos::getIntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
+    mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
+
+    // initialize frt for ELCH
     double frt(0.0);
 
+    // set values for ELCH
     if (scatratype ==INPAR::SCATRA::scatratype_elch_enc)
     {
-      numscal -= 1; // ELCH case: last dof is for el. potential
+      // get values for el. potential at element nodes
+      for (int i=0;i<nen_;++i)
+      {
+        epotnp_(i) = myphinp[i*numdofpernode_+numscal_];
+      }
+
       // get parameter F/RT
       frt = params.get<double>("frt");
     }
+
+    // set control parameters to avoid that some actually unused variables are
+    // falsely set, on the one hand, and viscosity for unnecessary calculation
+    // of subgrid-scale velocity is computed, on the other hand, in
+    // GetMaterialParams
+    is_genalpha_    = false;
+    is_incremental_ = true;
+    sgvel_          = false;
 
     // we always get an 3D flux vector for each node
     LINALG::Matrix<3,nen_> eflux(true);
 
     // do a loop for systems of transported scalars
-    for (int idof = 0; idof<numscal; ++idof)
+    for (int idof = 0; idof<numscal_; ++idof)
     {
       // calculate flux vectors for actual scalar
       eflux.Clear();
-      CalculateFlux(eflux,ele,myphinp,frt,evel,fluxtype,idof);
+      CalculateFlux(eflux,ele,frt,fluxtype,idof);
       // assembly
       for (int inode=0;inode<nen_;inode++)
       {
@@ -4868,9 +4896,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
       LINALG::Matrix<3,nen_>&         flux,
       const DRT::Element*             ele,
-      const vector<double>&           ephinp,
       const double                    frt,
-      const Epetra_SerialDenseVector& evel,
       const INPAR::SCATRA::FluxType   fluxtype,
       const int                       dofindex
   )
@@ -4881,185 +4907,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
     // in the ALE case add nodal displacements
     if (isale_) xyze_ += edispnp_;
 
-    // set material variables
-    // GetMaterialParams(ele);  // how could we use this here?
-
-    // get the material
-    RefCountPtr<MAT::Material> material = ele->Material();
-
-    // use one-point Gauss rule to do calculations at element center
-    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
-
-    // evaluate shape functions and derivatives at element center
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
-
-    // set material variables
-    double diffus(0.0);
-    double dens(0.0);
-    double valence(0.0);
-    double diffus_valence_frt(0.0);
-
-    // get diffusivity and density
-    if (material->MaterialType() == INPAR::MAT::m_matlist)
-    {
-      const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
-
-      const int matid = actmat->MatID(dofindex);
-      Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
-
-      // set density to 1.0
-      dens = 1.0;
-
-      if (singlemat->MaterialType() == INPAR::MAT::m_scatra)
-      {
-        const MAT::ScatraMat* actsinglemat = static_cast<const MAT::ScatraMat*>(singlemat.get());
-        diffus = actsinglemat->Diffusivity();
-      }
-      else if (singlemat->MaterialType() == INPAR::MAT::m_ion)
-      {
-        const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
-        diffus = actsinglemat->Diffusivity();
-        valence = actsinglemat->Valence();
-        diffus_valence_frt = diffus*valence*frt;
-      }
-      else if (singlemat->MaterialType() == INPAR::MAT::m_arrhenius_spec)
-      {
-        const MAT::ArrheniusSpec* actsinglemat = static_cast<const MAT::ArrheniusSpec*>(singlemat.get());
-
-        // compute temperature
-        double temp = 0.0;
-        for (int i=0; i<nen_; ++i)
-        {
-          temp += funct_(i)*ephinp[i];
-        }
-
-        // compute diffusivity according to Sutherland law
-        diffus = actsinglemat->ComputeDiffusivity(temp);
-      }
-      else if (singlemat->MaterialType() == INPAR::MAT::m_arrhenius_temp)
-      {
-        const MAT::ArrheniusTemp* actsinglemat = static_cast<const MAT::ArrheniusTemp*>(singlemat.get());
-
-        // get specific heat capacity at constant pressure
-        shcacp_ = actsinglemat->Shc();
-
-        // compute temperature
-        double temp = 0.0;
-        for (int i=0; i<nen_; ++i)
-        {
-          temp += funct_(i)*ephinp[i];
-        }
-
-        // compute thermal conductivity according to Sutherland law
-        diffus = shcacp_*actsinglemat->ComputeDiffusivity(temp);
-
-        // compute density based on temperature and thermodynamic pressure
-        dens = actsinglemat->ComputeDensity(temp,thermpressnp_);
-      }
-      else dserror("type of material found in material list not supported");
-    }
-    else if (material->MaterialType() == INPAR::MAT::m_scatra)
-    {
-      const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(material.get());
-
-      // get constant diffusivity
-      diffus = actmat->Diffusivity();
-
-      // set density to 1.0
-      dens = 1.0;
-    }
-    else if (material->MaterialType() == INPAR::MAT::m_ion)
-    {
-      const MAT::Ion* actmat = static_cast<const MAT::Ion*>(material.get());
-
-      // get constant diffusivity (we only do convection-diffusion in this case!)
-      diffus = actmat->Diffusivity();
-
-      // set density to 1.0
-      dens = 1.0;
-    }
-    else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
-    {
-      const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
-
-      // compute mixture fraction
-      double mixfrac = 0.0;
-      for (int i=0; i<nen_; ++i)
-      {
-        mixfrac += funct_(i)*ephinp[i];
-      }
-
-      // compute dynamic diffusivity based on mixture fraction
-      diffus = actmat->ComputeDiffusivity(mixfrac);
-
-      // compute density based on mixture fraction
-      dens = actmat->ComputeDensity(mixfrac);
-    }
-    else if (material->MaterialType() == INPAR::MAT::m_sutherland)
-    {
-      const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
-
-      // get specific heat capacity at constant pressure
-      shcacp_ = actmat->Shc();
-
-      // compute temperature
-      double temp = 0.0;
-      for (int i=0; i<nen_; ++i)
-      {
-        temp += funct_(i)*ephinp[i];
-      }
-
-      // compute thermal conductivity according to Sutherland law
-      diffus = shcacp_*actmat->ComputeDiffusivity(temp);
-
-      // compute density based on temperature and thermodynamic pressure
-      dens = actmat->ComputeDensity(temp,thermpressnp_);
-    }
-    else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
-    {
-      const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
-
-      // compute progress variable
-      double provar = 0.0;
-      for (int i=0; i<nen_; ++i)
-      {
-        provar += funct_(i)*ephinp[i];
-      }
-
-      // get specific heat capacity at constant pressure and
-      // compute temperature based on progress variable
-      shcacp_ = actmat->ComputeShc(provar);
-      const double temp = actmat->ComputeTemperature(provar);
-
-      // compute thermal conductivity according to Sutherland law
-      diffus = shcacp_*actmat->ComputeDiffusivity(temp);
-
-      // compute density at n+1 or n+alpha_F
-      dens = actmat->ComputeDensity(provar);
-    }
-    else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
-    {
-      const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
-
-      // compute progress variable
-      double provar = 0.0;
-      for (int i=0; i<nen_; ++i)
-      {
-        provar += funct_(i)*ephinp[i];
-      }
-
-      // get specific heat capacity at constant pressure and
-      // compute temperature based on progress variable
-      shcacp_ = actmat->ComputeShc(provar);
-      const double temp = actmat->ComputeTemperature(provar);
-
-      // compute thermal conductivity according to Sutherland law
-      diffus = shcacp_*actmat->ComputeDiffusivity(temp);
-
-      // compute density at n+1 or n+alpha_F
-      dens = actmat->ComputeDensity(provar);
-    }
-    else dserror("Material type is not supported");
+    // get material parameters (evaluation at element center)
+    if (not mat_gp_) GetMaterialParams(ele);
 
     // integration rule
     DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -5070,32 +4919,23 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
       // evaluate shape functions and derivatives at integration point
       const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
-      // gradient of electric potential
-      gradpot_.Clear();
-      if (frt > 0.0) // ELCH
-      {
-        for (int k=0;k<nen_;k++)
-        {
-          for (int idim=0; idim<nsd_ ;idim++)
-          {
-            gradpot_(idim) += derxy_(idim,k)*ephinp[k*numdofpernode_+numscal_];
-          }
-        }
-      }
+      // get material parameters (evaluation at integration point)
+      if (mat_gp_) GetMaterialParams(ele);
 
-      double ephinpint(0.0);
-      LINALG::Matrix<3,1> velint(true);
-      for (int vi=0; vi<nen_;vi++)
-      {
-        ephinpint += funct_(vi)*ephinp[vi*numdofpernode_+dofindex];
-        for (int idim=0; idim<nsd_ ;idim++)
-        {
-          velint(idim) += funct_(vi)*evel[idim+vi*nsd_];
-        }
-      }
+      // get velocity at integration point
+      velint_.Multiply(evelnp_,funct_);
+
+      // get scalar at integration point
+      const double phi = funct_.Dot(ephinp_[dofindex]);
+
+      // get gradient of scalar at integration point
+      gradphi_.Multiply(derxy_,ephinp_[dofindex]);
+
+      // get gradient of electric potential at integration point if required
+      if (frt > 0.0) gradpot_.Multiply(derxy_,epotnp_);
 
       // allocate and initialize!
-      LINALG::Matrix<3,1> q(true);
+      LINALG::Matrix<nsd_,1> q(true);
 
       // add different flux contributions as specified by user input
       // BE CAREFUL. WE COMPUTE HERE THE NEGATIVE OF THE MASS FLUX!
@@ -5104,29 +4944,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
       case INPAR::SCATRA::flux_total_domain:
 
         // convective flux terms
-        for (int idim=0; idim<nsd_ ;idim++)
-        {
-          q(idim) -= dens*velint(idim)*ephinpint;
-        }
+        q.Update(-densnp_[dofindex]*phi,velint_);
+
         // no break statement here!
       case INPAR::SCATRA::flux_diffusive_domain:
         //diffusive flux terms
-        for (int vi=0;vi<nen_;vi++)
-        {
-          for (int idim=0; idim<nsd_ ;idim++)
-          {
-            q(idim) += diffus*derxy_(idim,vi)*ephinp[vi*numdofpernode_+dofindex];
-          }
-        }
+        q.Update(diffus_[dofindex],gradphi_,1.0);
 
-        if (frt > 0.0) // ELCH
-        {
-          // migration flux terms
-          for (int idim=0; idim<nsd_ ;idim++)
-          {
-            q(idim) += diffus_valence_frt*ephinpint*gradpot_(idim);
-          }
-        }
+        // ELCH
+        if (frt > 0.0) q.Update(diffusvalence_[dofindex]*frt*phi,gradpot_,1.0);
+
         break;
       default:
         dserror("received illegal flag inside flux evaluation for whole domain");
