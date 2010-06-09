@@ -70,7 +70,11 @@ public:
                                              const int id,
                                              const int owner );
 
-  int Initialize(DRT::Discretization& dis);
+  virtual int Initialize(DRT::Discretization& dis);
+
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
 
 private:
 
@@ -165,17 +169,6 @@ public:
 
   */
   virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Allocate and return an ElementRegister class
-
-  Every implementation of DRT::Element must also implement
-  an DRT::ElementRegister. This method allocates and returns
-  an instance of a matching DRT::ElementRegister.
-  The ElementRegister class is then used to hold track of what type of
-  elements are in one discretization.
-  */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
 
   virtual DRT::ElementObjectType & ElementObjectType() const
   { return Beam3iiType::Instance(); }
@@ -428,7 +421,7 @@ private:
   //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
   template<int nnode>
   void SetUpReferenceGeometry(const vector<double>& xrefe,
-                              const vector<double>& rotrefe, 
+                              const vector<double>& rotrefe,
                               const bool secondinit = false)
   {
     /*this method initializes geometric variables of the element; the initilization can usually be applied to elements only once;

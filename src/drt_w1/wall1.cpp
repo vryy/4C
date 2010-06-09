@@ -47,6 +47,19 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1Type::Create( const string eletyp
 }
 
 
+void DRT::ELEMENTS::Wall1Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 2;
+  dimns = 3;
+  nv = 2;
+}
+
+void DRT::ELEMENTS::Wall1Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeStructure2DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::Wall1RegisterType DRT::ELEMENTS::Wall1RegisterType::instance_;
 
 
@@ -63,7 +76,7 @@ DRT::ParObject* DRT::ELEMENTS::Wall1RegisterType::Create( const std::vector<char
  |  ctor (public)                                            mgit 01/08/|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Wall1::Wall1(int id, int owner) :
-DRT::Element(id,element_wall1,owner),
+DRT::Element(id,owner),
 data_(),
 material_(0),
 thickness_(0.0),
@@ -231,15 +244,6 @@ void DRT::ELEMENTS::Wall1::Print(ostream& os) const
   os << " gaussrule_: " << gaussrule_ << " ";
   return;
 }
-
-/*----------------------------------------------------------------------*
- |  allocate and return Wall1Register (public)              mgit 03/07|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Wall1::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Wall1Register(Type()));
-}
-
 
 
 /*----------------------------------------------------------------------*

@@ -29,6 +29,8 @@ Maintainer: Burkhard Bornemann
 #include "../drt_io/io_control.H"
 #include "../drt_fluid/fluid_utils.H"
 
+#include "../drt_so3/so_sh8p8.H"
+
 /*----------------------------------------------------------------------*/
 /* print tea time logo */
 void STR::TimInt::Logo()
@@ -236,7 +238,7 @@ STR::TimInt::TimInt
     for (int i=0; i<discret_->NumMyColElements(); ++i)
     {
       // get the actual element
-      if (discret_->lColElement(i)->Type() == DRT::Element::element_sosh8p8)
+      if (discret_->lColElement(i)->ElementObjectType() == DRT::ELEMENTS::So_sh8p8Type::Instance())
         locnumsosh8p8 += 1;
     }
     // Was at least one SoSh8P8 found on one processor?
@@ -326,7 +328,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
     // set zero displacment state
     cmtman_->GetStrategy().SetState("displacement",zeros_);
-      
+
     // visualization of initial configuration
 #ifdef MORTARGMSH3
     cmtman_->GetStrategy().VisualizeGmsh(0,0);

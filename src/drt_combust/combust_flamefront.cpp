@@ -15,6 +15,7 @@ Maintainer: Florian Henke
 #ifdef CCADISCRET
 
 #include "combust_flamefront.H"
+#include "../drt_combust/combust3.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"  // LINALG::Export
@@ -171,7 +172,7 @@ void COMBUST::FlameFront::ProcessFlameFront(
     const DRT::Element *ele = fluiddis_->lColElement(iele);
 
 #ifdef DEBUG
-    if(ele->Type() != DRT::Element::element_combust3)
+    if(ele->ElementObjectType() != DRT::ELEMENTS::Combust3Type::Instance())
       // this is not compulsory, but combust3 elements are expected here!
       dserror("unexpected element type: this should be of combust3 type!");
 #endif
@@ -201,7 +202,7 @@ void COMBUST::FlameFront::ProcessFlameFront(
 
     // generate interface (flame front) surface
     CaptureFlameFront(rootcell);
-    
+
     //TEST
     if (Teuchos::getIntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENT") == true)
     {
@@ -417,7 +418,7 @@ void COMBUST::FlameFront::FindFlameFront(
 //       phis[6]=3.0;
 //       phis[7]=-3.0;
 //        cell->SetGfuncValues(phis);
-      
+
       //Ausgabe
 //      for (int l=0;l<8;l++)
 //      {
@@ -673,7 +674,7 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
 
   // store intersection points in refinement cell
   cell->intersectionpoints_ = intersectionpoints;
-  
+
 // possible Gmsh output to visualize the rootcell and its intersectionpoints
 //  cell->RootCellToGmsh();
   return;
@@ -711,8 +712,8 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   for (std::size_t icell = 0; icell < RefinementCells.size(); icell++)
   {
     //--------------------------------------------
-    // cell is intersected                        
-    // and                                        
+    // cell is intersected
+    // and
     // we want to get tetrahedral integrationcells
     //--------------------------------------------
     //if (RefinementCells[icell]->Intersected())
@@ -725,8 +726,8 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
       buildPLC(RefinementCells[icell], gfuncvalues, listDomainIntCellsperEle, listBoundaryIntCellsperEle);
     }
     //-------------------------------------------
-    // cell is not intersected                   
-    // or                                        
+    // cell is not intersected
+    // or
     // we want to get hexahedral integrationcells
     //-------------------------------------------
     // remark: if the refinement cell is not cut, it will be an integration cell of either side of
@@ -826,7 +827,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   // if there exist boundary integration cells
   if(listBoundaryIntCellsperEle.size() > 0)
     myboundaryintcells_[cell->Ele()->Id()] = listBoundaryIntCellsperEle;
-  
+
   //TEST
 //  if(listBoundaryIntCellsperEle.size() > 0)
 //    std::cout << "Anzahl BoundaryIntCellsperEle: " <<listBoundaryIntCellsperEle.size() << std::endl;
@@ -1573,7 +1574,7 @@ void COMBUST::FlameFront::buildPLC(
     dserror("Set QHULL flag to use Tetgen!");
 #endif
     }
-    
+
     //----------------------------------
     // store boundary integration cells
     //----------------------------------
@@ -1647,7 +1648,7 @@ void COMBUST::FlameFront::buildPLC(
 //    }
        domainintcelllist.push_back(GEO::DomainIntCell(distype, cellcoord, physcellcoord, inGplus));
      }
- 
+
     //----------------------------------
     // store boundary integration cells
     //----------------------------------
@@ -1987,7 +1988,7 @@ bool COMBUST::FlameFront::GetIntCellHexDomain(
   {
      cellcenter(i) = 0.5 * (IntCellCoord(i,6) - IntCellCoord(i,0)) + IntCellCoord(i,0);
   }
-  
+
   //compute g-funct value at cell center
   double gvalcellcenter = 0.0;
 //  std::vector<double> gvalcellnodes (numcellnodes);
@@ -2427,7 +2428,7 @@ void COMBUST::FlameFront::FlamefrontToGmsh(
       LINALG::Matrix<3,1> pos;
       for (size_t k=0; k<point.size(); k++)
          pos(k) = point[k];
-      
+
       IO::GMSH::cellWithScalarToStream(DRT::Element::point1, id, pos, gmshfilecontent);
     }
     gmshfilecontent << "};\n";
@@ -2470,7 +2471,7 @@ void COMBUST::FlameFront::FlamefrontToGmsh(
 }
 
 /*
- * 
+ *
  */
 void COMBUST::FlameFront::Evaluate(const Teuchos::RCP<const COMBUST::RefinementCell> rootcell)
 {
@@ -2479,11 +2480,11 @@ void COMBUST::FlameFront::Evaluate(const Teuchos::RCP<const COMBUST::RefinementC
    double integral=0.0;
    //here: rootcell == element
    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-   
+
    const GEO::DomainIntCells& domainIntCells(myelementintcells_[rootcell->Ele()->Id()]);
 
    //--------------------------------------------
-   // loop over all refinement cells of element  
+   // loop over all refinement cells of element
    //--------------------------------------------
    int counter = 0;
    for (GEO::DomainIntCells::const_iterator icell = domainIntCells.begin(); icell != domainIntCells.end(); ++icell)
@@ -2494,7 +2495,7 @@ void COMBUST::FlameFront::Evaluate(const Teuchos::RCP<const COMBUST::RefinementC
        const DRT::UTILS::IntegrationPoints3D intpoints(DRT::UTILS::intrule_tet_24point); //1, 4, 5, 10, 11, 15, 24, 45
 
        //--------------------------------------------
-       // loop over loop over Gauss points           
+       // loop over loop over Gauss points
        //--------------------------------------------
        for(int iquad=0; iquad<intpoints.nquad; ++iquad)
        {
@@ -2525,9 +2526,9 @@ void COMBUST::FlameFront::Evaluate(const Teuchos::RCP<const COMBUST::RefinementC
            }
            default: dserror("add your 3D distype to this switch!");
            }
-           
+
            double fac = detcell * intpoints.qwgt[iquad];
-           
+
 //           if (icell->getDomainPlus())
 //           {
 //              fac = fac*1;

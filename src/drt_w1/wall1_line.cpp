@@ -30,7 +30,7 @@ DRT::ELEMENTS::Wall1Line::Wall1Line(int id, int owner,
                               DRT::Node** nodes,
                               DRT::ELEMENTS::Wall1* parent,
                               const int lline) :
-DRT::Element(id,element_wall1line,owner),
+DRT::Element(id,owner),
 parent_(parent),
 lline_(lline)
 {

@@ -50,6 +50,20 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27Type::Create( const string ele
   return Teuchos::null;
 }
 
+
+void DRT::ELEMENTS::So_hex27Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 6;
+  nv = 3;
+}
+
+void DRT::ELEMENTS::So_hex27Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::Soh27RegisterType DRT::ELEMENTS::Soh27RegisterType::instance_;
 
 
@@ -68,7 +82,7 @@ DRT::ParObject* DRT::ELEMENTS::Soh27RegisterType::Create( const std::vector<char
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex27::So_hex27(int id, int owner) :
-DRT::Element(id,element_so_hex27,owner),
+DRT::Element(id,owner),
 data_()
 {
   kintype_ = soh27_totlag;
@@ -262,14 +276,6 @@ void DRT::ELEMENTS::So_hex27::soh27_expol
 
     isfilled = true;
   }
-}
-
-/*----------------------------------------------------------------------*
- |  allocate and return So_hex27Register (public)                       |
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_hex27::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Soh27Register(Type()));
 }
 
 
@@ -658,4 +664,3 @@ void DRT::ELEMENTS::Soh27Register::Print(ostream& os) const
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3
-

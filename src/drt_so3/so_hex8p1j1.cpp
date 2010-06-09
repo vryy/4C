@@ -32,6 +32,18 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_Hex8P1J1Type::Create( const string 
   return Teuchos::null;
 }
 
+void DRT::ELEMENTS::So_Hex8P1J1Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+//   numdf = 3;
+//   dimns = 6;
+//   nv = 3;
+}
+
+void DRT::ELEMENTS::So_Hex8P1J1Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+//   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
 
 DRT::ELEMENTS::SoHex8P1J1RegisterType DRT::ELEMENTS::SoHex8P1J1RegisterType::instance_;
 

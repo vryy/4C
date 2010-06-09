@@ -41,6 +41,22 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Fluid3NurbsType::Create( const 
   return Teuchos::null;
 }
 
+
+void DRT::ELEMENTS::NURBS::Fluid3NurbsType::NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
+  dimns = numdf;
+  nv = numdf-1;
+  np = 1;
+}
+
+
+void DRT::ELEMENTS::NURBS::Fluid3NurbsType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeFluid3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::NURBS::Fluid3NurbsSurfaceType DRT::ELEMENTS::NURBS::Fluid3NurbsSurfaceType::instance_;
 
 

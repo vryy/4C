@@ -49,6 +49,10 @@ public:
                                              const int id,
                                              const int owner );
 
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+
 private:
 
   static Vele3Type instance_;
@@ -216,8 +220,6 @@ public:
   virtual int NumDofPerElement() const { return 0; }
 
   void Print(ostream& os) const;
-
-  virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const;
 
   virtual DRT::ElementObjectType & ElementObjectType() const
   { return Vele3Type::Instance(); }
@@ -394,6 +396,10 @@ public:
 
   static Vele3SurfaceType & Instance() { return instance_; };
 
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
+
 private:
 
   static Vele3SurfaceType instance_;
@@ -560,6 +566,10 @@ public:
   std::string Name() const { return "Vele3LineType"; }
 
   static Vele3LineType & Instance() { return instance_; };
+
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
 
 private:
 

@@ -28,7 +28,7 @@ DRT::ELEMENTS::Ale2Line::Ale2Line(int id, int owner,
                               DRT::Node** nodes,
                               DRT::ELEMENTS::Ale2* parent,
                               const int lline) :
-DRT::Element(id,element_ale2line,owner),
+DRT::Element(id,owner),
 parent_(parent),
 lline_(lline)
 {

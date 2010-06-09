@@ -51,6 +51,10 @@ public:
                                              const int id,
                                              const int owner );
 
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+
 private:
 
   static Bele2Type instance_;
@@ -114,7 +118,6 @@ public:
   virtual int NumDofPerNode(const DRT::Node&) const {return 2;}
   virtual int NumDofPerElement() const { return 0; }
   void Print(ostream& os) const;
-  virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const;
 
   virtual DRT::ElementObjectType & ElementObjectType() const
   { return Bele2Type::Instance(); }

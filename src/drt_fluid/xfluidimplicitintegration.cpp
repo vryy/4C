@@ -52,6 +52,8 @@ Maintainer: Axel Gerstenberger
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_lib/drt_dofset_transparent.H"
 
+#include "../drt_lib/drt_elementtype.H"
+#include "../drt_xdiff3/xdiff3.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -179,14 +181,14 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // print information about elements
   // (to double-check and log that correct input has been read)
   std::set<DRT::Element::DiscretizationType> distypeset;
-  std::set<DRT::Element::ElementType> etypeset;
+  std::set<DRT::ElementObjectType*> etypeset;
   for (int i=0; i<discret_->NumMyColElements(); ++i)
   {
     distypeset.insert(discret_->lColElement(i)->Shape());
-    etypeset.insert(discret_->lColElement(i)->Type());
+    etypeset.insert(&discret_->lColElement(i)->ElementObjectType());
   }
 
-  if (etypeset.count(DRT::Element::element_xdiff3) > 0)
+  if (etypeset.count(&DRT::ELEMENTS::XDiff3Type::Instance()) > 0)
   {
     diffusion_problem_ = true;
   }
@@ -243,10 +245,10 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     cout0_ << "Element types in xfluid discretization: ";
     discret_->Comm().Barrier();
     bool moreThanOnee = false;
-    for (std::set<DRT::Element::ElementType>::const_iterator iter = etypeset.begin(); iter != etypeset.end(); ++iter)
+    for (std::set<DRT::ElementObjectType*>::const_iterator iter = etypeset.begin(); iter != etypeset.end(); ++iter)
     {
       if (moreThanOnee)  cout << ", ";
-      cout << (*iter);
+      cout << ( *iter )->Name();
       moreThanOnee = true;
     }
     if (actdis->Comm().MyPID()==0)
@@ -262,11 +264,11 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   conditions_to_copy.push_back("XFEMCoupling");
   FluidFluidboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(discret_, "FluidFluidCoupling", "FluidFluidboundary", "BELE3", conditions_to_copy);
 
-  //replace the Dofset of FluidFluidboundarydis with the part of Dofsets of discret. 
-  //Now the GID of FluidFluidboundarydis Dofset is a subset of the GID of discret's Dofset 
+  //replace the Dofset of FluidFluidboundarydis with the part of Dofsets of discret.
+  //Now the GID of FluidFluidboundarydis Dofset is a subset of the GID of discret's Dofset
   RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentDofSet(discret_));
   FluidFluidboundarydis_->ReplaceDofSet(newdofset);
-    
+
   // create node and element distribution with elements and nodes ghosted on all processors
   const Epetra_Map ffnoderowmap = *FluidFluidboundarydis_->NodeRowMap();
   const Epetra_Map ffelemrowmap = *FluidFluidboundarydis_->ElementRowMap();
@@ -300,7 +302,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   fluidfluidstate_.fiaccn_    = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
   fluidfluidstate_.fluidfluidincvel_ = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
   fluidfluidstate_.mfvelnp_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
-  
+
   if (alefluid_ == true)
   {
     fluidfluidstate_.gridv_  = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
@@ -1157,7 +1159,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       FluidFluidboundarydis_->SetState("iveln"  ,fluidfluidstate_.fiveln_);
       FluidFluidboundarydis_->SetState("ivelnm" ,fluidfluidstate_.fivelnm_);
       FluidFluidboundarydis_->SetState("iaccn"  ,fluidfluidstate_.fiaccn_);
-      
+
       if (alefluid_)
       {
         fluidfluidstate_.gridv_->PutScalar(0.0);
@@ -1192,7 +1194,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
           RCP<Epetra_Vector> tmp = LINALG::CreateVector(*discret_->DofColMap(),false);
           LINALG::Export(*fluidfluidstate_.fluidfluidincvel_,*tmp);
           discret_->SetState("interface nodal iterinc",tmp);
-                  
+
           const Epetra_Map& fluiddofrowmap = *discret_->DofRowMap();
           Cud_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
           Cdu_ = Teuchos::rcp(new LINALG::SparseMatrix(fluiddofrowmap,0,false,false));
@@ -1511,9 +1513,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     oldinc->Update(1.0,*incvel_,0.0);
 
     if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
-    {     
-      LINALG::Export(*state_.velnp_,*fluidfluidstate_.fivelnp_); 
-      LINALG::Export(*incvel_,*fluidfluidstate_.fluidfluidincvel_); 
+    {
+      LINALG::Export(*state_.velnp_,*fluidfluidstate_.fivelnp_);
+      LINALG::Export(*incvel_,*fluidfluidstate_.fluidfluidincvel_);
       FluidFluidboundarydis_->SetState("ivelcolnp",fluidfluidstate_.fivelnp_);
     }
    }
@@ -3778,7 +3780,7 @@ void FLD::XFluidImplicitTimeInt::MovingFluidOutput()
     const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
 
     PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, fluidfluidstate_.mfvelnp_),"sol_field_patch_vel_np","Patch Velocity Solution (Physical) n+1",true, step_, time_);
-    
+
     if (gmshdebugout)
       {
         const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("sol_field_patch_pres", step_, 5, screen_out, discret_->Comm().MyPID());
@@ -3794,16 +3796,16 @@ void FLD::XFluidImplicitTimeInt::MovingFluidOutput()
 
             std::set<int>::const_iterator eiter = fluidfluidstate_.MovingFluideleGIDs_.find(actele->Id());
             const bool is_moving = (eiter != fluidfluidstate_.MovingFluideleGIDs_.end());
-         
+
             if (is_moving)
             {
-              // create local copy of information about dofs 
+              // create local copy of information about dofs
               const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanager_np_);
 
               // get a copy on columnmn parallel distribution
               Teuchos::RCP<Epetra_Vector> output_col_velnp = LINALG::CreateVector(*discret_->DofColMap(),true);
               LINALG::Export(*fluidfluidstate_.mfvelnp_,*(output_col_velnp));
-          
+
               vector<int> lm;
               vector<int> lmowner;
               actele->LocationVector(*(discret_), lm, lmowner);
@@ -3817,7 +3819,7 @@ void FLD::XFluidImplicitTimeInt::MovingFluidOutput()
 
               LINALG::SerialDenseVector elementvalues(numparam);
               for (int iparam=0; iparam<numparam; ++iparam)
-                elementvalues(iparam) = myvelnp[dofpos[iparam]];          
+                elementvalues(iparam) = myvelnp[dofpos[iparam]];
 
               const GEO::DomainIntCells& domainintcells =
               dofmanager_np_->getInterfaceHandle()->GetDomainIntCells(actele);

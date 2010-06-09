@@ -43,6 +43,21 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::XFluid3Type::Create( const string elet
 }
 
 
+void DRT::ELEMENTS::XFluid3Type::NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 4;
+  dimns = 4;
+  nv = 3;
+  np = 1;
+}
+
+
+void DRT::ELEMENTS::XFluid3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeXFluid3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::XFluid3RegisterType DRT::ELEMENTS::XFluid3RegisterType::instance_;
 
 
@@ -65,7 +80,7 @@ map<string,DRT::ELEMENTS::XFluid3::StabilisationAction> DRT::ELEMENTS::XFluid3::
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::XFluid3::XFluid3(int id, int owner) :
-DRT::Element(id,element_xfluid3,owner),
+DRT::Element(id,owner),
 eleDofManager_(Teuchos::null),
 eleDofManager_uncondensed_(Teuchos::null),
 output_mode_(false)
@@ -183,15 +198,6 @@ void DRT::ELEMENTS::XFluid3::Print(ostream& os) const
   Element::Print(os);
   cout << endl;
   return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  allocate and return Fluid3Register (public)              mwgee 02/08|
- *----------------------------------------------------------------------*/
-RCP<DRT::ElementRegister> DRT::ELEMENTS::XFluid3::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::XFluid3Register(Type()));
 }
 
 

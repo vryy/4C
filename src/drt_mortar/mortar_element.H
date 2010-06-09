@@ -72,6 +72,10 @@ public:
 
   virtual DRT::ParObject* Create( const vector<char> & data );
 
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+
 private:
 
   static MortarElementType instance_;
@@ -146,7 +150,7 @@ public:
   \param nodeids (in): ids of nodes adjacent to this element
   \param isslave (in): flag indicating whether element is slave or master side
   */
-  MortarElement(int id, ElementType etype, int owner,
+  MortarElement(int id, int owner,
                 const DRT::Element::DiscretizationType& shape,
                 const int numnode,
                 const int* nodeids,
@@ -196,16 +200,6 @@ public:
 
   */
   virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Allocate and return a ElementRegister class
-
-  Assuming the contact elements do not need initialization, we return a
-  dummy base class here.
-
-  */
-  virtual RCP<DRT::ElementRegister> ElementRegister() const
-  { return rcp(new DRT::ElementRegister(Type())); }
 
   virtual DRT::ElementObjectType & ElementObjectType() const
   { return MortarElementType::Instance(); }

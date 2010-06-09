@@ -78,7 +78,6 @@ public:
 
   \param lid   (in):    A locally unique element id
   \param id    (in):    Parent element global id
-  \param etype (in):    Type of element
   \param owner (in):    owner processor of the element
   \param parshape (in): shape of parent element
   \param shape (in):    shape of this element
@@ -87,7 +86,7 @@ public:
   \param nodes (in):    pointers to nodes adjacent to this element
   \param isslave (in):  flag indicating whether element is slave or master side
   */
-  IntElement(int lid, int id, ElementType etype, int owner,
+  IntElement(int lid, int id, int owner,
              const DRT::Element::DiscretizationType& parshape,
              const DRT::Element::DiscretizationType& shape,
              const int numnode,
@@ -328,7 +327,7 @@ protected:
   double                     area_;            // integration cell area
   Epetra_SerialDenseMatrix   coords_;          // coords of cell vertices
   double                     auxn_[3];         // normal of auxiliary plane (3D)
-  
+
   bool                               auxplane_;  // flag indicating coupling strategy (true = aux. plane)
   DRT::Element::DiscretizationType   shape_;     // shape of this element (always tri3)
   vector<vector<map<int,double> > >  linvertex_; // derivatives of the 3 vertices

@@ -114,7 +114,7 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
   // this ID is later needed when setting up the Lagrange multiplier
   // dof map, which of course must not overlap with existing dof ranges
   maxdofglobal_ = maxdof;
-  
+
   // we'd like to call idiscret_.FillComplete(true,false,false) but this
   // will assign all nodes new degrees of freedom which we don't want.
   // We would like to use the degrees of freedom that were stored in the
@@ -134,13 +134,13 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
   //**********************************************************************
   // check whether crosspoints / edge nodes shall be considered or not
   bool crosspoints = Teuchos::getIntegralValue<int>(IParams(),"CROSSPOINTS");
-  
+
   // modify crosspoints / edge nodes
   if (crosspoints)
   {
     // only applicable for 2D problems up to now
     if (Dim()==3) dserror("ERROR: Crosspoint / edge node modification not yet impl. for 3D");
-  
+
     // ---------------------------------------------------------------------
     // Detect relevant nodes on slave side
     // ---------------------------------------------------------------------
@@ -161,11 +161,11 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
     // way, the mortar operator entries of the crosspoints / edge nodes are
     // transfered to the neighboring slave nodes!
     // ---------------------------------------------------------------------
-    
+
     for (int i=0; i<(Discret().NodeRowMap())->NumMyElements();++i)
     {
       MORTAR::MortarNode* node = static_cast<MORTAR::MortarNode*>(idiscret_->lRowNode(i));
-  
+
       // candidates are slave nodes with only 1 adjacent MortarElement
       if (node->IsSlave() && node->NumElement()==1)
       {
@@ -185,46 +185,46 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
     }
   }
   //**********************************************************************
-  
+
   //**********************************************************************
   // check for linear interpolation of 3D quadratic Lagrange multipliers
   bool lagmultlin = (Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D")
                      == INPAR::MORTAR::lagmult_lin_lin);
-  
+
   // modify crosspoints / edge nodes
   if (lagmultlin)
   {
     // if dimension is not 3 dont change anything
     if (Dim()!=3) dserror("ERROR: Lin/Lin interpolation of LM only for 3D quadratic mortar");
-    
+
     // modification for different DiscretizationTypes on slave side: search all node->Elements()[k]
     // if there is one element of type tri6 or quad8 then prove for one of these elements
     // ------> not implemented jet!!!
     // TODO: mixed (hex27,hex20,tet10) discretizations !!!
-            
+
     // modified treatment of vertex nodes and edge nodes
     // detect middle nodes (quadratic nodes) on slave side
     // set status of middle nodes -> MASTER
     // set status of vertex nodes -> SLAVE
-       
-    // loop over all elements  
+
+    // loop over all elements
     for (int i=0; i<Discret().NodeRowMap()->NumMyElements(); ++i)
     {
       // get node and cast to cnode
       MORTAR::MortarNode* node = static_cast<MORTAR::MortarNode*>(idiscret_->lRowNode(i));
-      
+
       // candiates are slave nodes with shape tri6 and quad8
       if (node->IsSlave())
       {
         //search the first adjacent element
         MORTAR::MortarElement::DiscretizationType shape = (node->Elements()[0])->Shape();
-        
+
         // which discretization type
         switch(shape)
         {
           // tri6 contact elements (= tet10 discretizations)
           case MORTAR::MortarElement::tri6:
-          {     
+          {
             // case1: vertex nodes remain SLAVE
             if (node->Id() == (node->Elements()[0])->NodeIds()[0]
              || node->Id() == (node->Elements()[0])->NodeIds()[1]
@@ -232,17 +232,17 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
             {
               // do nothing
             }
-  
+
             // case2: middle nodes must be set to MASTER
             else
             {
               node->SetBound() = true;
               node->SetSlave() = false;
             }
-  
+
             break;
           }
-          
+
           // quad8 contact elements (= hex20 discretizations)
           case MORTAR::MortarElement::quad8:
           {
@@ -252,16 +252,16 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
              || node->Id() == (node->Elements()[0])->NodeIds()[2]
              || node->Id() == (node->Elements()[0])->NodeIds()[3])
             {
-              // do nothing  
+              // do nothing
             }
-            
+
             // case2: middle nodes must be set to MASTER
             else
             {
               node->SetBound() = true;
               node->SetSlave() = false;
             }
-            
+
             break;
           }
 
@@ -274,19 +274,19 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
              || node->Id() == (node->Elements()[0])->NodeIds()[2]
              || node->Id() == (node->Elements()[0])->NodeIds()[3])
             {
-              // do nothing  
+              // do nothing
             }
-            
+
             // case2: middle nodes must be set to MASTER
             else
             {
               node->SetBound() = true;
               node->SetSlave() = false;
             }
-            
+
             break;
           }
-                    
+
           // other cases
           default:
           {
@@ -645,7 +645,7 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
   //********************************************************************
   // temporary vector
   vector<int> lmdof;
-  
+
   // loop over all slave dofs
   for (int i=0; i<sdofrowmap_->NumMyElements(); ++i)
   {
@@ -679,7 +679,7 @@ void MORTAR::MortarInterface::Initialize()
     // reset feasible projection status
     node->HasProj() = false;
   }
-  
+
   // loop over procs modes nodes to reset (column map)
   for (int i=0;i<OldColNodes()->NumMyElements();++i)
   {
@@ -691,7 +691,7 @@ void MORTAR::MortarInterface::Initialize()
     //reset nodal normal
     for (int j=0;j<3;++j)
       monode->MoData().n()[j]=0.0;
-    
+
     // reset nodal Mortar maps
     for (int j=0;j<(int)((monode->MoData().GetD()).size());++j)
       (monode->MoData().GetD())[j].clear();
@@ -699,7 +699,7 @@ void MORTAR::MortarInterface::Initialize()
       (monode->MoData().GetM())[j].clear();
     for (int j=0;j<(int)((monode->MoData().GetMmod()).size());++j)
       (monode->MoData().GetMmod())[j].clear();
-    
+
     (monode->MoData().GetD()).resize(0);
     (monode->MoData().GetM()).resize(0);
     (monode->MoData().GetMmod()).resize(0);
@@ -730,7 +730,7 @@ void MORTAR::MortarInterface::SetState(const string& statename, const RCP<Epetra
     // alternative method to get vec to full overlap
     RCP<Epetra_Vector> global = rcp(new Epetra_Vector(*idiscret_->DofColMap(),false));
     LINALG::Export(*vec,*global);
-    
+
     // set displacements in interface discretization
     idiscret_->SetState(statename,global);
 
@@ -771,7 +771,7 @@ void MORTAR::MortarInterface::SetState(const string& statename, const RCP<Epetra
     // alternative method to get vec to full overlap
     RCP<Epetra_Vector> global = rcp(new Epetra_Vector(*idiscret_->DofColMap(),false));
     LINALG::Export(*vec,*global);
-    
+
     // set displacements in interface discretization
     idiscret_->SetState(statename,global);
 
@@ -834,7 +834,7 @@ void MORTAR::MortarInterface::Evaluate()
 
   // get out of here if not participating in interface
   if (!lComm()) return;
-  
+
   // loop over proc's slave nodes of the interface
   // use standard column map to include processor's ghosted nodes
   // use boundary map to include slave side boundary nodes
@@ -1326,7 +1326,7 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
       vector<RCP<MORTAR::IntElement> > mauxelements(0);
       SplitIntElements(sele,sauxelements);
       SplitIntElements(mele,mauxelements);
-      
+
       // get LM interpolation and testing type
       INPAR::MORTAR::LagMultQuad3D lmtype =
         Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D");
@@ -1393,7 +1393,7 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[2] = ele.Nodes()[8];
     nodes[3] = ele.Nodes()[7];
 
-    auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Type(),ele.Owner(),
+    auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Owner(),
         ele.Shape(),dt,numnode,nodeids,nodes,ele.IsSlave())));
 
     // second integration element
@@ -1408,7 +1408,7 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[2] = ele.Nodes()[5];
     nodes[3] = ele.Nodes()[8];
 
-    auxele.push_back(rcp(new IntElement(1,ele.Id(),ele.Type(),ele.Owner(),
+    auxele.push_back(rcp(new IntElement(1,ele.Id(),ele.Owner(),
         ele.Shape(),dt,numnode,nodeids,nodes,ele.IsSlave())));
 
     // third integration element
@@ -1423,7 +1423,7 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[2] = ele.Nodes()[2];
     nodes[3] = ele.Nodes()[6];
 
-    auxele.push_back(rcp(new IntElement(2,ele.Id(),ele.Type(),ele.Owner(),
+    auxele.push_back(rcp(new IntElement(2,ele.Id(),ele.Owner(),
         ele.Shape(),dt,numnode,nodeids,nodes,ele.IsSlave())));
 
     // fourth integration element
@@ -1438,7 +1438,7 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[2] = ele.Nodes()[6];
     nodes[3] = ele.Nodes()[3];
 
-    auxele.push_back(rcp(new IntElement(3,ele.Id(),ele.Type(),ele.Owner(),
+    auxele.push_back(rcp(new IntElement(3,ele.Id(),ele.Owner(),
         ele.Shape(),dt,numnode,nodeids,nodes,ele.IsSlave())));
   }
 
@@ -1465,7 +1465,7 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[1] = ele.Nodes()[4];
     nodes[2] = ele.Nodes()[7];
 
-    auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Type(),ele.Owner(),
+    auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Owner(),
         ele.Shape(),dttri,numnodetri,nodeids,nodes,ele.IsSlave())));
 
     // second integration element
@@ -1478,7 +1478,7 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[1] = ele.Nodes()[5];
     nodes[2] = ele.Nodes()[4];
 
-    auxele.push_back(rcp(new IntElement(1,ele.Id(),ele.Type(),ele.Owner(),
+    auxele.push_back(rcp(new IntElement(1,ele.Id(),ele.Owner(),
         ele.Shape(),dttri,numnodetri,nodeids,nodes,ele.IsSlave())));
 
     // third integration element
@@ -1491,7 +1491,7 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[1] = ele.Nodes()[6];
     nodes[2] = ele.Nodes()[5];
 
-    auxele.push_back(rcp(new IntElement(2,ele.Id(),ele.Type(),ele.Owner(),
+    auxele.push_back(rcp(new IntElement(2,ele.Id(),ele.Owner(),
         ele.Shape(),dttri,numnodetri,nodeids,nodes,ele.IsSlave())));
 
     // fourth integration element
@@ -1504,7 +1504,7 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[1] = ele.Nodes()[7];
     nodes[2] = ele.Nodes()[6];
 
-    auxele.push_back(rcp(new IntElement(3,ele.Id(),ele.Type(),ele.Owner(),
+    auxele.push_back(rcp(new IntElement(3,ele.Id(),ele.Owner(),
         ele.Shape(),dttri,numnodetri,nodeids,nodes,ele.IsSlave())));
 
     // fifth integration element
@@ -1521,7 +1521,7 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
     nodesquad[2] = ele.Nodes()[6];
     nodesquad[3] = ele.Nodes()[7];
 
-    auxele.push_back(rcp(new IntElement(4,ele.Id(),ele.Type(),ele.Owner(),
+    auxele.push_back(rcp(new IntElement(4,ele.Id(),ele.Owner(),
         ele.Shape(),dtquad,numnodequad,nodeidsquad,nodesquad,ele.IsSlave())));
   }
 
@@ -1546,7 +1546,7 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[1] = ele.Nodes()[3];
     nodes[2] = ele.Nodes()[5];
 
-    auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Type(),ele.Owner(),
+    auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Owner(),
         ele.Shape(),dt,numnode,nodeids,nodes,ele.IsSlave())));
 
     // second integration element
@@ -1559,7 +1559,7 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[1] = ele.Nodes()[1];
     nodes[2] = ele.Nodes()[4];
 
-    auxele.push_back(rcp(new IntElement(1,ele.Id(),ele.Type(),ele.Owner(),
+    auxele.push_back(rcp(new IntElement(1,ele.Id(),ele.Owner(),
         ele.Shape(),dt,numnode,nodeids,nodes,ele.IsSlave())));
 
     // third integration element
@@ -1572,7 +1572,7 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[1] = ele.Nodes()[4];
     nodes[2] = ele.Nodes()[2];
 
-    auxele.push_back(rcp(new IntElement(2,ele.Id(),ele.Type(),ele.Owner(),
+    auxele.push_back(rcp(new IntElement(2,ele.Id(),ele.Owner(),
         ele.Shape(),dt,numnode,nodeids,nodes,ele.IsSlave())));
 
     // fourth integration element
@@ -1585,7 +1585,7 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[1] = ele.Nodes()[5];
     nodes[2] = ele.Nodes()[3];
 
-    auxele.push_back(rcp(new IntElement(3,ele.Id(),ele.Type(),ele.Owner(),
+    auxele.push_back(rcp(new IntElement(3,ele.Id(),ele.Owner(),
         ele.Shape(),dt,numnode,nodeids,nodes,ele.IsSlave())));
   }
 
@@ -1599,7 +1599,7 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[2] = ele.Nodes()[2];
     nodes[3] = ele.Nodes()[3];
 
-    auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Type(),ele.Owner(),
+    auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Owner(),
        ele.Shape(),ele.Shape(),ele.NumNode(),ele.NodeIds(),nodes,ele.IsSlave())));
   }
 
@@ -1612,7 +1612,7 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[1] = ele.Nodes()[1];
     nodes[2] = ele.Nodes()[2];
 
-    auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Type(),ele.Owner(),
+    auxele.push_back(rcp(new IntElement(0,ele.Id(),ele.Owner(),
        ele.Shape(),ele.Shape(),ele.NumNode(),ele.NodeIds(),nodes,ele.IsSlave())));
   }
 

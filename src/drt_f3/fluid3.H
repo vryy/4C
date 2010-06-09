@@ -71,6 +71,10 @@ public:
                                              const int id,
                                              const int owner );
 
+  virtual void NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np );
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+
 private:
 
   static Fluid3Type instance_;
@@ -361,15 +365,6 @@ public:
   \brief Print this element
   */
   void Print(ostream& os) const;
-
-  /*!
-  \brief Allocate and return a DesignElementRegister class
-
-  Every implementation of DRT::Element must also implement
-  an DRT::ElementRegister. This method allocates and returns
-  an instance of a matching DRT::ElementRegister.
-  */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
 
   virtual DRT::ElementObjectType & ElementObjectType() const
   { return Fluid3Type::Instance(); }
@@ -1053,6 +1048,10 @@ public:
   std::string Name() const { return "Fluid3BoundaryType"; }
 
   static Fluid3BoundaryType & Instance() { return instance_; };
+
+  virtual void NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
 
 private:
 

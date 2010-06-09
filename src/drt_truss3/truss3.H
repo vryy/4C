@@ -69,6 +69,10 @@ public:
 
   virtual int Initialize(DRT::Discretization& dis);
 
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+
 private:
 
   static Truss3Type instance_;
@@ -153,17 +157,6 @@ public:
 
   */
   virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Allocate and return an ElementRegister class
-
-  Every implementation of DRT::Element must also implement
-  an DRT::ElementRegister. This method allocates and returns
-  an instance of a matching DRT::ElementRegister.
-  The ElementRegister class is then used to hold track of what type of
-  elements are in one discretization.
-  */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
 
   virtual DRT::ElementObjectType & ElementObjectType() const
   { return Truss3Type::Instance(); }

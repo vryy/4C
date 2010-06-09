@@ -32,7 +32,7 @@ DRT::ELEMENTS::XDiff3Surface::XDiff3Surface(
     DRT::Node** nodes,
     DRT::ELEMENTS::XDiff3* parent,
     const int lsurface) :
-DRT::Element(id,element_xdiff3surface,owner),
+DRT::Element(id,owner),
 parent_(parent),
 lsurface_(lsurface)
 {

@@ -57,6 +57,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoType::Create( const string elety
 }
 
 
+void DRT::ELEMENTS::ThermoType::NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+}
+
+void DRT::ELEMENTS::ThermoType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+}
+
+
 DRT::ELEMENTS::ThermoBoundaryType DRT::ELEMENTS::ThermoBoundaryType::instance_;
 
 
@@ -64,7 +73,7 @@ DRT::ELEMENTS::ThermoBoundaryType DRT::ELEMENTS::ThermoBoundaryType::instance_;
  |  ctor (public)                                            dano 09/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Thermo::Thermo(int id, int owner) :
-DRT::Element(id,element_thermo,owner),
+DRT::Element(id,owner),
 data_(),
 distype_(dis_none)
 {
@@ -176,16 +185,6 @@ void DRT::ELEMENTS::Thermo::Print(std::ostream& os) const
   cout << endl;
   cout << data_;
   return;
-}
-
-/*----------------------------------------------------------------------*
- |  allocate and return register element (public)            dano 09/09 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ElementRegister> DRT::ELEMENTS::Thermo::ElementRegister() const
-{
-  //Assuming that this element do not need initialization, we return a
-  //dummy base class here.
-  return Teuchos::rcp(new DRT::ElementRegister(Type()));
 }
 
 /*----------------------------------------------------------------------*
@@ -322,7 +321,7 @@ DRT::ELEMENTS::ThermoBoundary::ThermoBoundary(
   DRT::ELEMENTS::Thermo* parent,
   const int lbeleid
   ) :
-  DRT::Element(id,element_thermoboundary,owner),
+  DRT::Element(id,owner),
   parent_(parent),
   lbeleid_(lbeleid)
 {

@@ -45,6 +45,19 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Shell8Type::Create( const string elety
 }
 
 
+void DRT::ELEMENTS::Shell8Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 6;
+  dimns = 6;
+  nv = 6;
+}
+
+void DRT::ELEMENTS::Shell8Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::Shell8RegisterType DRT::ELEMENTS::Shell8RegisterType::instance_;
 
 
@@ -62,7 +75,7 @@ DRT::ParObject* DRT::ELEMENTS::Shell8RegisterType::Create( const std::vector<cha
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Shell8::Shell8(int id, int owner) :
-DRT::Element(id,element_shell8,owner),
+DRT::Element(id,owner),
 forcetype_(s8_none),
 thickness_(0.0),
 ngptri_(0),
@@ -229,14 +242,6 @@ void DRT::ELEMENTS::Shell8::Print(ostream& os) const
   cout << endl;
   cout << data_;
   return;
-}
-
-/*----------------------------------------------------------------------*
- |  allocate and return Shell8Register (public)              mwgee 12/06|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Shell8::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Shell8Register(Type()));
 }
 
 /*----------------------------------------------------------------------*

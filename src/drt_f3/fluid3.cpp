@@ -47,6 +47,21 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid3Type::Create( const string elety
 }
 
 
+void DRT::ELEMENTS::Fluid3Type::NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
+  dimns = numdf;
+  nv = numdf-1;
+  np = 1;
+}
+
+
+void DRT::ELEMENTS::Fluid3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeFluid3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::Fluid3RegisterType DRT::ELEMENTS::Fluid3RegisterType::instance_;
 
 
@@ -69,7 +84,7 @@ map<string,DRT::ELEMENTS::Fluid3::StabilisationAction> DRT::ELEMENTS::Fluid3::st
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3::Fluid3(int id, int owner) :
-DRT::Element(id,element_fluid3,owner),
+DRT::Element(id,owner),
 is_ale_(false),
 data_()
 {
@@ -222,15 +237,6 @@ void DRT::ELEMENTS::Fluid3::Print(ostream& os) const
   //cout << endl;
   cout << data_;
   return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  allocate and return Fluid3Register (public)              mwgee 02/08|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Fluid3::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Fluid3Register(Type()));
 }
 
 

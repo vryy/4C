@@ -43,6 +43,19 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::XDiff3Type::Create( const string elety
 }
 
 
+void DRT::ELEMENTS::XDiff3Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 1;
+  dimns = 1;
+  nv = 1;
+}
+
+void DRT::ELEMENTS::XDiff3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+
+}
+
+
 DRT::ELEMENTS::XDiff3RegisterType DRT::ELEMENTS::XDiff3RegisterType::instance_;
 
 
@@ -65,7 +78,7 @@ map<string,DRT::ELEMENTS::XDiff3::StabilisationAction> DRT::ELEMENTS::XDiff3::st
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::XDiff3::XDiff3(int id, int owner) :
-DRT::Element(id,element_xdiff3,owner),
+DRT::Element(id,owner),
 eleDofManager_(Teuchos::null),
 eleDofManager_uncondensed_(Teuchos::null),
 output_mode_(false)
@@ -183,15 +196,6 @@ void DRT::ELEMENTS::XDiff3::Print(ostream& os) const
   Element::Print(os);
   cout << endl;
   return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  allocate and return Fluid3Register (public)              mwgee 02/08|
- *----------------------------------------------------------------------*/
-RCP<DRT::ElementRegister> DRT::ELEMENTS::XDiff3::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::XDiff3Register(Type()));
 }
 
 

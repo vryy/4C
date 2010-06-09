@@ -48,6 +48,18 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TransportType::Create( const string el
   return Teuchos::null;
 }
 
+void DRT::ELEMENTS::TransportType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
+  dimns = numdf;
+  nv = numdf;
+}
+
+void DRT::ELEMENTS::TransportType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeFluid3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
 
 DRT::ELEMENTS::TransportBoundaryType DRT::ELEMENTS::TransportBoundaryType::instance_;
 
@@ -56,7 +68,7 @@ DRT::ELEMENTS::TransportBoundaryType DRT::ELEMENTS::TransportBoundaryType::insta
  |  ctor (public)                                             gjb 05/08 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Transport::Transport(int id, int owner) :
-DRT::Element(id,element_transport,owner),
+DRT::Element(id,owner),
 data_(),
 numdofpernode_(-1),
 distype_(dis_none)
@@ -222,16 +234,6 @@ void DRT::ELEMENTS::Transport::Print(ostream& os) const
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  allocate and return register element (public)             gjb 05/08 |
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Transport::ElementRegister() const
-{
-  //Assuming that this element do not need initialization, we return a
-  //dummy base class here.
-  return rcp(new DRT::ElementRegister(Type()));
-}
-
 
 /*----------------------------------------------------------------------*
  |  get vector of lines            (public)                  g.bau 03/07|
@@ -391,7 +393,7 @@ DRT::ELEMENTS::TransportBoundary::TransportBoundary(int id, int owner,
                               DRT::Node** nodes,
                               DRT::ELEMENTS::Transport* parent,
                               const int lbeleid) :
-DRT::Element(id,element_transportboundary,owner),
+DRT::Element(id,owner),
 parent_(parent),
 lbeleid_(lbeleid)
 {

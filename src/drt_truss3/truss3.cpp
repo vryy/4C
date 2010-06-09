@@ -45,6 +45,19 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss3Type::Create( const string elety
 }
 
 
+void DRT::ELEMENTS::Truss3Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 6;
+  nv = 3;
+}
+
+void DRT::ELEMENTS::Truss3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::Truss3RegisterType DRT::ELEMENTS::Truss3RegisterType::instance_;
 
 
@@ -61,7 +74,7 @@ DRT::ParObject* DRT::ELEMENTS::Truss3RegisterType::Create( const std::vector<cha
  |  ctor (public)                                            cyron 08/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Truss3::Truss3(int id, int owner) :
-DRT::Element(id,element_truss3,owner),
+DRT::Element(id,owner),
 data_(),
 isinit_(false),
 material_(0),
@@ -120,14 +133,6 @@ void DRT::ELEMENTS::Truss3::Print(ostream& os) const
   Element::Print(os);
   os << " gaussrule_: " << gaussrule_ << " ";
   return;
-}
-
-/*----------------------------------------------------------------------*
- |  allocate and return Truss3Register (public)               cyron 08/08|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Truss3::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Truss3Register(Type()));
 }
 
 
@@ -460,7 +465,7 @@ int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
   {
     //in case that current element is not a beam3 element there is nothing to do and we go back
     //to the head of the loop
-    if (dis.lColElement(i)->Type() != DRT::Element::element_truss3) continue;
+    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
 
     //if we get so far current element is a beam3 element and  we get a pointer at it
     DRT::ELEMENTS::Truss3* currele = dynamic_cast<DRT::ELEMENTS::Truss3*>(dis.lColElement(i));

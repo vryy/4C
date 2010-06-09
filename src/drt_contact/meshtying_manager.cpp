@@ -58,9 +58,9 @@ discret_(discret)
 {
   // overwrite base class communicator
   comm_ = rcp(Discret().Comm().Clone());
-  
+
   // welcome message
-  
+
   // create some local variables (later to be stored in strategy)
   RCP<Epetra_Map> problemrowmap = rcp(new Epetra_Map(*(Discret().DofRowMap())));
   const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
@@ -89,10 +89,10 @@ discret_(discret)
     cout << "Building meshtying interface(s)...............";
     fflush(stdout);
   }
-  
+
   vector<DRT::Condition*> contactconditions(0);
   Discret().GetCondition("Contact",contactconditions);
-  
+
   // there must be more than one meshtying condition
   if ((int)contactconditions.size()<2)
     dserror("Not enough contact conditions in discretization");
@@ -106,7 +106,7 @@ discret_(discret)
   // later we want to create NEW Lagrange multiplier degrees of
   // freedom, which of course must not overlap with displacement dofs
   int maxdof = Discret().DofRowMap()->MaxAllGID();
-  
+
   for (int i=0; i<(int)contactconditions.size(); ++i)
   {
     // initialize vector for current group of conditions and temp condition
@@ -119,7 +119,7 @@ discret_(discret)
     if (!group1v) dserror("Contact Conditions does not have value 'contact id'");
     int groupid1 = (*group1v)[0];
     bool foundit = false;
-        
+
     for (int j=0; j<(int)contactconditions.size(); ++j)
     {
       if (j==i) continue; // do not detect contactconditions[i] again
@@ -176,7 +176,7 @@ discret_(discret)
 
     if (!hasslave) dserror("Slave side missing in contact condition group!");
     if (!hasmaster) dserror("Master side missing in contact condition group!");
-  
+
     // find out which sides are initialized as Active
     vector<const string*> active((int)currentgroup.size());
     vector<bool> isactive((int)currentgroup.size());
@@ -204,7 +204,7 @@ discret_(discret)
 
     // create an empty meshtying interface and store it in this Manager
     interfaces.push_back(rcp(new MORTAR::MortarInterface(groupid1,Comm(),dim,mtparams)));
-    
+
     // get it again
     RCP<MORTAR::MortarInterface> interface = interfaces[(int)interfaces.size()-1];
 
@@ -266,7 +266,6 @@ discret_(discret)
       {
         RCP<DRT::Element> ele = fool->second;
         RCP<MORTAR::MortarElement> mtele = rcp(new MORTAR::MortarElement(ele->Id()+ggsize,
-                                                                   DRT::Element::element_mortar,
                                                                    ele->Owner(),
                                                                    ele->Shape(),
                                                                    ele->NumNode(),
@@ -280,13 +279,13 @@ discret_(discret)
 
     //-------------------- finalize the meshtying interface construction
     interface->FillComplete(maxdof);
-    
+
     //---------------------------------------- create binary search tree
     interface->CreateSearchTree();
 
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
   if(Comm().MyPID()==0) cout << "done!" << endl;
-  
+
   // create the solver strategy object
   // and pass all necessary data to it
   if(Comm().MyPID()==0)
@@ -297,7 +296,7 @@ discret_(discret)
   INPAR::CONTACT::SolvingStrategy stype =
       Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(mtparams,"STRATEGY");
   if (stype == INPAR::CONTACT::solution_lagmult)
-    strategy_ = rcp(new MtLagrangeStrategy(Discret(),problemrowmap,mtparams,interfaces,dim,comm_,alphaf)); 
+    strategy_ = rcp(new MtLagrangeStrategy(Discret(),problemrowmap,mtparams,interfaces,dim,comm_,alphaf));
   else if (stype == INPAR::CONTACT::solution_penalty)
     strategy_ = rcp(new MtPenaltyStrategy(Discret(),problemrowmap,mtparams,interfaces,dim,comm_,alphaf));
   else if (stype == INPAR::CONTACT::solution_auglag)
@@ -306,12 +305,12 @@ discret_(discret)
     dserror("Unrecognized strategy");
   if(Comm().MyPID()==0) cout << "done!" << endl << endl;
   // **** initialization of row/column maps moved to AbstractStrategy **** //
-  // since the manager does not operate over nodes, elements, dofs anymore 
+  // since the manager does not operate over nodes, elements, dofs anymore
   // ********************************************************************* //
 
   // print parameter list to screen
   //if (Comm().MyPID()==0) cout << GetStrategy().Params() << endl;
-  
+
   return;
 }
 
@@ -325,32 +324,32 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
   const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
   int dim = psize.get<int>("DIM");
-  
+
   // *********************************************************************
   // this is mortar meshtying
   // *********************************************************************
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(input,"APPLICATION") != INPAR::CONTACT::app_mortarmeshtying)
     dserror("You should not be here...");
-  
+
   // *********************************************************************
   // invalid parameter combinations
   // *********************************************************************
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
                                                  input.get<double>("PENALTYPARAM") <= 0.0)
     dserror("Penalty parameter eps = 0, must be greater than 0");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
                                                  input.get<double>("PENALTYPARAM") <= 0.0)
     dserror("Penalty parameter eps = 0, must be greater than 0");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
                                                    input.get<int>("UZAWAMAXSTEPS") <  2)
     dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
                                                input.get<double>("UZAWACONSTRTOL") <= 0.0)
     dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(input,"APPLICATION") == INPAR::CONTACT::app_mortarmeshtying &&
             Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none)
     dserror("Friction law supplied for mortar meshtying");
@@ -358,18 +357,18 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   if (Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::MORTAR::search_bfnode &&
                                                         input.get<double>("SEARCH_PARAM") == 0.0)
     dserror("Search radius sp = 0, must be greater than 0 for node-based search");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
       Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
       Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(input,"SYSTEM") == INPAR::CONTACT::system_condensed)
     dserror("Condensation of linear system only possible for dual Lagrange multipliers");
-  
+
   // *********************************************************************
   // not (yet) implemented combinations
-  // *********************************************************************  
+  // *********************************************************************
   if (Teuchos::getIntegralValue<int>(input,"CROSSPOINTS") == true && dim == 3)
     dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
-  
+
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
   // *********************************************************************
@@ -377,14 +376,14 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
        Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_lin) &&
        Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard)
     dserror("No Petrov-Galerkin approach (for LM) implemented for 3D quadratic meshtying with STANDARD shape fct.");
-  
+
   if ((Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_pwlin_pwlin ||
        Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_lin_lin ||
        Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_pwlin ||
        Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_lin) &&
        Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_dual)
     dserror("Only quadratic/quadratic approach (for LM) implemented for 3D quadratic meshtying with DUAL shape fct.");
-  
+
   // *********************************************************************
   // warnings
   // *********************************************************************
@@ -419,7 +418,7 @@ void CONTACT::MtManager::ReadRestart(IO::DiscretizationReader& reader,
   // this is meshtying, thus we need zeros for restart
   // let strategy object do all the work
   GetStrategy().DoReadRestart(reader, zero);
-  
+
   return;
 }
 
@@ -433,10 +432,10 @@ void CONTACT::MtManager::PostprocessTractions(IO::DiscretizationWriter& output)
   RCP<Epetra_Vector> traction = rcp(new Epetra_Vector(*(GetStrategy().LagrMultOld())));
   RCP<Epetra_Vector> tractionexp = rcp(new Epetra_Vector(*problem));
   LINALG::Export(*traction, *tractionexp);
-  
+
   // write to output
   output.WriteVector("interfacetraction",tractionexp);
-  
+
   return;
 }
 

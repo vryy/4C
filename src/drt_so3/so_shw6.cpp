@@ -15,6 +15,7 @@ Maintainer: Moritz Frenzel
 
 #include "so_shw6.H"
 #include "so_weg6.H"
+#include "../drt_lib/drt_utils.H"
 
 using namespace DRT::UTILS;
 
@@ -42,6 +43,18 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_shw6Type::Create( const string elet
     return ele;
   }
   return Teuchos::null;
+}
+
+void DRT::ELEMENTS::So_shw6Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 6;
+  nv = 3;
+}
+
+void DRT::ELEMENTS::So_shw6Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
 }
 
 
@@ -168,14 +181,6 @@ void DRT::ELEMENTS::So_shw6::Print(ostream& os) const
   cout << endl;
   cout << data_;
   return;
-}
-
-/*----------------------------------------------------------------------*
- |  allocate and return So_weg6Register (public)                maf 04/07|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_shw6::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Soshw6Register(Type()));
 }
 
 

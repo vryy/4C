@@ -48,7 +48,6 @@ CONTACT::CoElementType CONTACT::CoElementType::instance_;
 DRT::ParObject* CONTACT::CoElementType::Create( const std::vector<char> & data )
 {
   CONTACT::CoElement* ele = new CONTACT::CoElement(0,
-                                                   DRT::Element::element_contact,
                                                    0,DRT::Element::dis_none,
                                                    0,NULL,false);
   ele->Unpack(data);
@@ -56,15 +55,25 @@ DRT::ParObject* CONTACT::CoElementType::Create( const std::vector<char> & data )
 }
 
 
+void CONTACT::CoElementType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+}
+
+
+void CONTACT::CoElementType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+}
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::CoElement::CoElement(int id, ElementType etype, int owner,
+CONTACT::CoElement::CoElement(int id, int owner,
                             const DRT::Element::DiscretizationType& shape,
                             const int numnode,
                             const int* nodeids,
                             const bool isslave) :
-MORTAR::MortarElement(id,etype,owner,shape,numnode,nodeids,isslave)
+MORTAR::MortarElement(id,owner,shape,numnode,nodeids,isslave)
 {
   // empty constructor
 

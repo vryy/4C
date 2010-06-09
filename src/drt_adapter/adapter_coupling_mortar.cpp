@@ -35,7 +35,7 @@ ADAPTER::CouplingMortar::CouplingMortar()
 void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
     const DRT::Discretization& slavedis, Epetra_Comm& comm)
 {
-  // initialize maps for row nodes 
+  // initialize maps for row nodes
   map<int, DRT::Node*> masternodes;
   map<int, DRT::Node*> slavenodes;
 
@@ -77,8 +77,8 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
     RCP<MORTAR::MortarNode> mrtrnode = rcp(
                 new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
                     dim, masterdis.Dof(node), false));
-    
-    interface->AddMortarNode(mrtrnode);    
+
+    interface->AddMortarNode(mrtrnode);
   }
 
   // build master dof row map
@@ -86,7 +86,7 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   {
     DRT::Node* node = nodeiter->second;
     vector<int> dofs = masterdis.Dof(node);
- 
+
     dofs.resize(dim);
     masterdofs.insert(masterdofs.end(), dofs.begin(), dofs.end());
 
@@ -108,7 +108,7 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
                     dim, slavedis.Dof(node), true));
 
     interface->AddMortarNode(mrtrnode);
-    
+
     vector<int> dofs = slavedis.Dof(node);
     dofs.resize(dim);
     slavecoldofs.insert(slavecoldofs.end(), dofs.begin(), dofs.end());
@@ -130,7 +130,7 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
       new Epetra_Map(-1, slaverowdofs.size(), &slaverowdofs[0], 0, comm));
   slavedofcolmap_ = rcp(
       new Epetra_Map(-1, slavecoldofs.size(), &slavecoldofs[0], 0, comm));
-  
+
   //feeding master elements to the interface
   map<int, RefCountPtr<DRT::Element> >::const_iterator elemiter;
 
@@ -145,7 +145,7 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
     RCP<MORTAR::MortarElement>
         mrtrele =
             rcp(
-                new MORTAR::MortarElement(ele->Id(), DRT::Element::element_mortar, ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), false));
+                new MORTAR::MortarElement(ele->Id(), ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), false));
 
     interface->AddMortarElement(mrtrele);
 
@@ -158,14 +158,14 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
     RCP<MORTAR::MortarElement>
         mrtrele =
             rcp(
-                new MORTAR::MortarElement(ele->Id() + EleOffset, DRT::Element::element_mortar, ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), true));
+                new MORTAR::MortarElement(ele->Id() + EleOffset, ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), true));
 
     interface->AddMortarElement(mrtrele);
   }
 
   // finalize the contact interface construction
   interface->FillComplete();
-  
+
   // create binary search tree
   interface->CreateSearchTree();
 
@@ -203,7 +203,7 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
 
   //Build Dinv
   Dinv_ = rcp(new LINALG::SparseMatrix(*D_));
-  
+
   RCP<Epetra_Vector> diag = LINALG::CreateVector(*slavedofrowmap,true);
 
   // extract diagonal of invd into diag
@@ -216,11 +216,11 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
   // scalar inversion of diagonal values
   diag->Reciprocal(*diag);
   Dinv_->ReplaceDiagonalValues(*diag);
-  
+
   Dinv_->Complete( D_->RangeMap(), D_->DomainMap() );
 
   DinvM_ = MLMultiply(*Dinv_,*M_,false,false,true);
-  
+
   //store interface
   interface_ = interface;
 
@@ -232,10 +232,10 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
 void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idisp)
 {
   interface_->SetState("displacement", idisp);
-  //in the following two steps MORTAR does all the work for new interface displacements 
+  //in the following two steps MORTAR does all the work for new interface displacements
   interface_->Initialize();
   interface_->Evaluate();
-  
+
   //Preparation for AssembleDMG
   RCP<Epetra_Map> slavedofrowmap = interface_->SlaveRowDofs();
   RCP<Epetra_Map> masterdofrowmap = interface_->MasterRowDofs();
@@ -258,7 +258,7 @@ void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idisp)
 
   //Build Dinv
   Dinv_ = rcp(new LINALG::SparseMatrix(*D_));
-  
+
   RCP<Epetra_Vector> diag = LINALG::CreateVector(*slavedofrowmap,true);
 
   // extract diagonal of invd into diag
@@ -271,9 +271,9 @@ void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idisp)
   // scalar inversion of diagonal values
   diag->Reciprocal(*diag);
   Dinv_->ReplaceDiagonalValues(*diag);
-  
+
   Dinv_->Complete( D_->RangeMap(), D_->DomainMap() );
-  
+
   DinvM_ = MLMultiply(*Dinv_,*M_,false,false,true);
 
   return;

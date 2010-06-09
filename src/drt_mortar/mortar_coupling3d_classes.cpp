@@ -48,14 +48,14 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/09|
  *----------------------------------------------------------------------*/
-MORTAR::IntElement::IntElement(int lid, int id, ElementType etype, int owner,
+MORTAR::IntElement::IntElement(int lid, int id, int owner,
                                const DRT::Element::DiscretizationType& parshape,
                                const DRT::Element::DiscretizationType& shape,
                                const int numnode,
                                const int* nodeids,
                                vector<DRT::Node*> nodes,
                                const bool isslave) :
-MORTAR::MortarElement(id,etype,owner,shape,numnode,nodeids,isslave),
+MORTAR::MortarElement(id,owner,shape,numnode,nodeids,isslave),
 lid_(lid),
 parshape_(parshape)
 {

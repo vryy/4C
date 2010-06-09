@@ -44,6 +44,18 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Torsion2Type::Create( const string ele
   return Teuchos::null;
 }
 
+
+void DRT::ELEMENTS::Torsion2Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 2;
+  dimns = 3;
+}
+
+void DRT::ELEMENTS::Torsion2Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeStructure2DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
 DRT::ELEMENTS::Torsion2RegisterType DRT::ELEMENTS::Torsion2RegisterType::instance_;
 
 
@@ -60,7 +72,7 @@ DRT::ParObject* DRT::ELEMENTS::Torsion2RegisterType::Create( const std::vector<c
  |  ctor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Torsion2::Torsion2(int id, int owner) :
-DRT::Element(id,element_torsion2,owner),
+DRT::Element(id,owner),
 data_(),
 isinit_(false),
 theta_(0.0),
@@ -105,14 +117,6 @@ DRT::ELEMENTS::Torsion2::~Torsion2()
 void DRT::ELEMENTS::Torsion2::Print(ostream& os) const
 {
 
-}
-
-/*----------------------------------------------------------------------*
- |  allocate and return Torsion2Register (public)             cyron 02/10|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Torsion2::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Torsion2Register(Type()));
 }
 
 
@@ -327,7 +331,7 @@ int DRT::ELEMENTS::Torsion2Type::Initialize(DRT::Discretization& dis)
   {
     //in case that current element is not a torsion2 element there is nothing to do and we go back
     //to the head of the loop
-    if (dis.lColElement(i)->Type() != DRT::Element::element_torsion2) continue;
+    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
 
     //if we get so far current element is a beam3 element and  we get a pointer at it
     DRT::ELEMENTS::Torsion2* currele = dynamic_cast<DRT::ELEMENTS::Torsion2*>(dis.lColElement(i));

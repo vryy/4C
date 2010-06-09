@@ -95,12 +95,11 @@ DRT::Element::DiscretizationType DRT::StringToDistype(std::string name)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Element::Element(int id, ElementType etype, int owner) :
+DRT::Element::Element(int id, int owner) :
 ParObject(),
 id_(id),
 lid_(-1),
-owner_(owner),
-etype_(etype)
+owner_(owner)
 {
   return;
 }

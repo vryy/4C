@@ -56,11 +56,24 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStetType::Create( const string eletyp
 }
 
 
+void DRT::ELEMENTS::NStetType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 6;
+  nv = 3;
+}
+
+void DRT::ELEMENTS::NStetType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 /*-----------------------------------------------------------------------
  |  ctor (public)                                              gee 12/09|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::NStet::NStet(int id, int owner) :
-DRT::Element(id,element_nstet,owner),
+DRT::Element(id,owner),
 material_(0),
 V_(-1.0),
 nxyz_(),

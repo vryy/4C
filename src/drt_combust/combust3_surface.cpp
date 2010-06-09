@@ -32,7 +32,7 @@ DRT::ELEMENTS::Combust3Surface::Combust3Surface(
     DRT::Node** nodes,
     DRT::ELEMENTS::Combust3* parent,
     const int lsurface) :
-DRT::Element(id,element_combust3surface,owner),
+DRT::Element(id,owner),
 parent_(parent),
 lsurface_(lsurface)
 {

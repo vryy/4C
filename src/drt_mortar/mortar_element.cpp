@@ -48,7 +48,6 @@ MORTAR::MortarElementType MORTAR::MortarElementType::instance_;
 DRT::ParObject* MORTAR::MortarElementType::Create( const std::vector<char> & data )
 {
   MORTAR::MortarElement* ele = new MORTAR::MortarElement(0,
-                                                         DRT::Element::element_mortar,
                                                          0,DRT::Element::dis_none,
                                                          0,NULL,false);
   ele->Unpack(data);
@@ -56,15 +55,24 @@ DRT::ParObject* MORTAR::MortarElementType::Create( const std::vector<char> & dat
 }
 
 
+void MORTAR::MortarElementType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+}
+
+void MORTAR::MortarElementType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+}
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-MORTAR::MortarElement::MortarElement(int id, ElementType etype, int owner,
+MORTAR::MortarElement::MortarElement(int id, int owner,
                            const DRT::Element::DiscretizationType& shape,
                            const int numnode,
                            const int* nodeids,
                            const bool isslave) :
-DRT::Element(id,etype,owner),
+DRT::Element(id,owner),
 shape_(shape),
 isslave_(isslave)
 {

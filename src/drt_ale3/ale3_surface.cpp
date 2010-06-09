@@ -24,7 +24,7 @@ DRT::ELEMENTS::Ale3Surface::Ale3Surface(int id,
                                         DRT::Node** nodes,
                                         DRT::ELEMENTS::Ale3* parent,
                                         const int lsurface)
-  : DRT::Element(id,element_ale3surface,owner),
+  : DRT::Element(id,owner),
     parent_(parent),
     lsurface_(lsurface)
 {

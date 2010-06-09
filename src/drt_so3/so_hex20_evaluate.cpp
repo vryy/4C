@@ -892,7 +892,7 @@ int DRT::ELEMENTS::So_hex20Type::Initialize(DRT::Discretization& dis)
 {
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
-    if (dis.lColElement(i)->Type() != DRT::Element::element_so_hex20) continue;
+    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
     DRT::ELEMENTS::So_hex20* actele = dynamic_cast<DRT::ELEMENTS::So_hex20*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex20* failed");
     actele->InitJacobianMapping();

@@ -48,8 +48,21 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3Type::Create( const string eletype
 }
 
 
+void DRT::ELEMENTS::Ale3Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 6;
+  nv = 3;
+}
+
+void DRT::ELEMENTS::Ale3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::Ale3::Ale3(int id, int owner)
-  : DRT::Element(id,element_ale3,owner),
+  : DRT::Element(id,owner),
     data_()
 {
 }

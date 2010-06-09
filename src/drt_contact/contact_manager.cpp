@@ -114,7 +114,7 @@ discret_(discret)
   // later we want to create NEW Lagrange multiplier degrees of
   // freedom, which of course must not overlap with displacement dofs
   int maxdof = Discret().DofRowMap()->MaxAllGID();
-  
+
   for (int i=0; i<(int)contactconditions.size(); ++i)
   {
     // initialize vector for current group of conditions and temp condition
@@ -285,7 +285,7 @@ discret_(discret)
 
         // create CoNode object or FriNode object in the frictional case
         INPAR::CONTACT::FrictionType ftype = Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(cparams,"FRICTION");
-        
+
         // for the boolean variable initactive we use isactive[j]+foundinitialactive,
         // as this is true for BOTH initial active nodes found for the first time
         // and found for the second, third, ... time!
@@ -346,7 +346,6 @@ discret_(discret)
       {
         RCP<DRT::Element> ele = fool->second;
         RCP<CONTACT::CoElement> cele = rcp(new CONTACT::CoElement(ele->Id()+ggsize,
-                                                                DRT::Element::element_contact,
                                                                 ele->Owner(),
                                                                 ele->Shape(),
                                                                 ele->NumNode(),
@@ -360,7 +359,7 @@ discret_(discret)
 
     //-------------------- finalize the contact interface construction
     interface->FillComplete(maxdof);
-    
+
     //---------------------------------------- create binary search tree
     interface->CreateSearchTree();
 
@@ -405,7 +404,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
   const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
   int dim = psize.get<int>("DIM");
-  
+
   // *********************************************************************
   // this is mortar contact
   // *********************************************************************
@@ -418,7 +417,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
                                                  input.get<double>("PENALTYPARAM") <= 0.0)
     dserror("Penalty parameter eps = 0, must be greater than 0");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
                                                  input.get<double>("PENALTYPARAM") <= 0.0)
     dserror("Penalty parameter eps = 0, must be greater than 0");
@@ -446,7 +445,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::MORTAR::search_bfnode &&
                                                         input.get<double>("SEARCH_PARAM") == 0.0)
     dserror("Search radius sp = 0, must be greater than 0 for node-based search");
-  
+
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
       Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
       Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(input,"SYSTEM") == INPAR::CONTACT::system_condensed)
@@ -472,7 +471,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 
   if (Teuchos::getIntegralValue<int>(input,"CROSSPOINTS") == true && dim == 3)
     dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
-  
+
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
   // *********************************************************************
@@ -480,14 +479,14 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
        Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_lin) &&
        Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard)
     dserror("No Petrov-Galerkin approach (for LM) implemented for 3D quadratic contact with STANDARD shape fct.");
-  
+
   if ((Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_pwlin_pwlin ||
       Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_lin_lin ||
       Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_pwlin ||
       Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_lin) &&
       Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_dual)
     dserror("Only quadratic/quadratic approach (for LM) implemented for 3D quadratic contact with DUAL shape fct.");
-    
+
   // *********************************************************************
   // warnings
   // *********************************************************************
@@ -510,14 +509,14 @@ void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output)
   // quantities to be written for restart
   RCP<Epetra_Vector> activetoggle;
   RCP<Epetra_Vector> sliptoggle;
-    
+
   // quantities to be written for restart
   GetStrategy().DoWriteRestart(activetoggle,sliptoggle);
 
   // write restart information for contact
   output.WriteVector("lagrmultold",GetStrategy().LagrMultOld());
   output.WriteVector("activetoggle",activetoggle);
-  
+
   // friction
   if(GetStrategy().Friction())
     output.WriteVector("sliptoggle",sliptoggle);

@@ -18,6 +18,12 @@ Maintainer: Michael Gee
 #include "simpler_operator.H"
 #include "../drt_lib/drt_node.H"
 
+#include "../drt_f2/fluid2.H"
+#include "../drt_f2/fluid2_nurbs.H"
+#include "../drt_f3/fluid3.H"
+#include "../drt_f3/fluid3_nurbs.H"
+#include "../drt_f3/xfluid3.H"
+#include "../drt_combust/combust3.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -184,20 +190,25 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(
   int newnsdim = nsdim;
 
   DRT::Element* ele = fdis->lRowElement(0);
+
+  // this is not the way it should be done
+  const DRT::ElementObjectType & eot = ele->ElementObjectType();
   bool is3d = false;
-  switch (ele->Type()) // only fluid elements accepted here
+  if ( eot==DRT::ELEMENTS::Fluid3Type::Instance() or
+       eot==DRT::ELEMENTS::NURBS::Fluid3NurbsType::Instance() or
+       eot==DRT::ELEMENTS::XFluid3Type::Instance() or
+       eot==DRT::ELEMENTS::Combust3Type::Instance() )
   {
-    case DRT::Element::element_fluid3:
-    case DRT::Element::element_xfluid3:
-    case DRT::Element::element_combust3:
-      is3d = true;
-    break;
-    case DRT::Element::element_fluid2:
-    break;
-    case DRT::Element::element_none:
-    default:
-      dserror("Element type not supported by ML");
-    break;
+    is3d = true;
+  }
+  else if ( eot==DRT::ELEMENTS::Fluid2Type::Instance() or
+            eot==DRT::ELEMENTS::NURBS::Fluid2NurbsType::Instance() )
+  {
+    is3d = false;
+  }
+  else
+  {
+    dserror("Element type not supported by ML");
   }
 
   if (nsdim==3 && !is3d)      // add one rotation in case of 2D

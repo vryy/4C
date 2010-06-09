@@ -54,6 +54,10 @@ public:
                                              const int id,
                                              const int owner );
 
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+
 private:
 
   static XDiff3Type instance_;
@@ -172,8 +176,6 @@ private:
         }
 
         void Print(ostream& os) const;
-
-        virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const;
 
         virtual DRT::ElementObjectType & ElementObjectType() const
         { return XDiff3Type::Instance(); }
@@ -440,6 +442,10 @@ public:
 
   static XDiff3SurfaceType & Instance() { return instance_; };
 
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
+
 private:
 
   static XDiff3SurfaceType instance_;
@@ -597,6 +603,10 @@ public:
   std::string Name() const { return "XDiff3LineType"; }
 
   static XDiff3LineType & Instance() { return instance_; };
+
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
 
 private:
 

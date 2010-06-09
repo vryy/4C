@@ -785,7 +785,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27Type::Initialize(DRT::Discretization& dis)
 {
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
-    if (dis.lColElement(i)->Type() != DRT::Element::element_so_nurbs27) continue;
+    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
     DRT::ELEMENTS::NURBS::So_nurbs27* actele = dynamic_cast<DRT::ELEMENTS::NURBS::So_nurbs27*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_nurbs27* failed");
     actele->InitJacobianMapping(dis);

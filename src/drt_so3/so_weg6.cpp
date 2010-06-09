@@ -52,6 +52,18 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6Type::Create( const string elet
   return Teuchos::null;
 }
 
+void DRT::ELEMENTS::So_weg6Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 6;
+  nv = 3;
+}
+
+void DRT::ELEMENTS::So_weg6Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
 
 DRT::ELEMENTS::Sow6RegisterType DRT::ELEMENTS::Sow6RegisterType::instance_;
 
@@ -70,7 +82,7 @@ DRT::ParObject* DRT::ELEMENTS::Sow6RegisterType::Create( const std::vector<char>
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_weg6::So_weg6(int id, int owner) :
-DRT::Element(id,element_so_weg6,owner),
+DRT::Element(id,owner),
 data_(),
 pstype_(INPAR::STR::prestress_none),
 pstime_(0.0),
@@ -442,15 +454,6 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
   }
 
   return true;
-}
-
-
-/*----------------------------------------------------------------------*
- |  allocate and return So_weg6Register (public)                maf 04/07|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_weg6::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Sow6Register(Type()));
 }
 
 

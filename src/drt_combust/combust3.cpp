@@ -44,6 +44,21 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Combust3Type::Create( const string ele
 }
 
 
+void DRT::ELEMENTS::Combust3Type::NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 4;
+  dimns = 4;
+  nv = 3;
+  np = 1;
+}
+
+
+void DRT::ELEMENTS::Combust3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeXFluid3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::Combust3RegisterType DRT::ELEMENTS::Combust3RegisterType::instance_;
 
 
@@ -66,7 +81,7 @@ map<string,DRT::ELEMENTS::Combust3::StabilisationAction> DRT::ELEMENTS::Combust3
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3::Combust3(int id, int owner) :
-DRT::Element(id,element_combust3,owner),
+DRT::Element(id,owner),
 eleDofManager_(Teuchos::null),
 output_mode_(false),
 intersected_(false)
@@ -187,15 +202,6 @@ void DRT::ELEMENTS::Combust3::Print(ostream& os) const
   Element::Print(os);
   cout << endl;
   return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  allocate and return Fluid3Register (public)              mwgee 02/08|
- *----------------------------------------------------------------------*/
-RCP<DRT::ElementRegister> DRT::ELEMENTS::Combust3::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Combust3Register(Type()));
 }
 
 

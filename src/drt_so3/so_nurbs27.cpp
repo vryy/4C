@@ -46,6 +46,19 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::So_nurbs27Type::Create( const s
 }
 
 
+void DRT::ELEMENTS::NURBS::So_nurbs27Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 6;
+  nv = 3;
+}
+
+void DRT::ELEMENTS::NURBS::So_nurbs27Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::NURBS::So_Nurbs27_RegisterType DRT::ELEMENTS::NURBS::So_Nurbs27_RegisterType::instance_;
 
 
@@ -64,7 +77,7 @@ DRT::ParObject* DRT::ELEMENTS::NURBS::So_Nurbs27_RegisterType::Create( const std
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::NURBS::So_nurbs27::So_nurbs27(int id, int owner) :
-DRT::Element(id,element_so_nurbs27,owner),
+DRT::Element(id,owner),
 data_()
 {
   kintype_ = sonurbs27_totlag;
@@ -199,15 +212,6 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Print(ostream& os) const
   cout << endl;
   cout << data_;
   return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  allocate and return So_nurbs27Register (public)                     |
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::NURBS::So_nurbs27::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::NURBS::Sonurbs27Register(Type()));
 }
 
 
@@ -347,4 +351,3 @@ void DRT::ELEMENTS::NURBS::Sonurbs27Register::Print(ostream& os) const
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3
-

@@ -42,6 +42,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Vele3Type::Create( const string eletyp
 }
 
 
+void DRT::ELEMENTS::Vele3Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+}
+
+void DRT::ELEMENTS::Vele3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+}
+
+
 DRT::ELEMENTS::Vele3RegisterType DRT::ELEMENTS::Vele3RegisterType::instance_;
 
 
@@ -57,7 +66,7 @@ DRT::ParObject* DRT::ELEMENTS::Vele3RegisterType::Create( const std::vector<char
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Vele3::Vele3(int id, int owner) :
-DRT::Element(id,element_vele3,owner)
+DRT::Element(id,owner)
 {
   return;
 }
@@ -158,13 +167,6 @@ void DRT::ELEMENTS::Vele3::Print(ostream& os) const
   os << "Vele3 " << DRT::DistypeToString(Shape());
   Element::Print(os);
   return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Vele3::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Vele3Register(Type()));
 }
 
 /*----------------------------------------------------------------------*

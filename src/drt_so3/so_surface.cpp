@@ -28,7 +28,7 @@ DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner,
                                                     DRT::Node** nodes,
                                                     DRT::Element* parent,
                                                     const int lsurface) :
-DRT::Element(id,element_structuralsurface,owner),
+DRT::Element(id,owner),
 parent_(parent),
 lsurface_(lsurface),
 gaussrule_(DRT::UTILS::intrule2D_undefined)

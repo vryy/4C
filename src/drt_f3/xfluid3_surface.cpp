@@ -32,7 +32,7 @@ DRT::ELEMENTS::XFluid3Surface::XFluid3Surface(
     DRT::Node** nodes,
     DRT::ELEMENTS::XFluid3* parent,
     const int lsurface) :
-DRT::Element(id,element_xfluid3surface,owner),
+DRT::Element(id,owner),
 parent_(parent),
 lsurface_(lsurface)
 {

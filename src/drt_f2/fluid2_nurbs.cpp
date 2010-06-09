@@ -13,6 +13,7 @@ Maintainer: Peter Gamnitzer
 #ifdef CCADISCRET
 
 #include "fluid2_nurbs.H"
+#include "../drt_lib/drt_utils.H"
 
 DRT::ELEMENTS::NURBS::Fluid2NurbsType DRT::ELEMENTS::NURBS::Fluid2NurbsType::instance_;
 
@@ -38,6 +39,20 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Fluid2NurbsType::Create( const 
     }
   }
   return Teuchos::null;
+}
+
+
+void DRT::ELEMENTS::NURBS::Fluid2NurbsType::NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 3;
+  nv = 2;
+  np = 1;
+}
+
+void DRT::ELEMENTS::NURBS::Fluid2NurbsType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeFluid2DNullSpace( dis, ns, x0, numdf, dimns );
 }
 
 

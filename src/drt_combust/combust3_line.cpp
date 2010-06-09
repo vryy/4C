@@ -30,7 +30,7 @@ DRT::ELEMENTS::Combust3Line::Combust3Line(
     DRT::Node** nodes,
     DRT::Element* parent,
     const int lline) :
-DRT::Element(id,element_combust3line,owner),
+DRT::Element(id,owner),
 parent_(parent),
 lline_(lline)
 {

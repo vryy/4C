@@ -34,6 +34,19 @@ DRT::ParObject* DRT::ELEMENTS::SmoothrodType::Create( const std::vector<char> & 
 }
 
 
+void DRT::ELEMENTS::SmoothrodType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 4;
+  dimns = 4;
+  nv = 4;
+}
+
+void DRT::ELEMENTS::SmoothrodType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeXFluid3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::SmoothrodRegisterType DRT::ELEMENTS::SmoothrodRegisterType::instance_;
 
 
@@ -50,7 +63,7 @@ DRT::ParObject* DRT::ELEMENTS::SmoothrodRegisterType::Create( const std::vector<
  |  ctor (public)                                            cyron 01/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Smoothrod::Smoothrod(int id, int owner) :
-DRT::Element(id,element_beam3,owner),
+DRT::Element(id,owner),
 isinit_(false),
 crosssec_(0),
 Iyy_(0),

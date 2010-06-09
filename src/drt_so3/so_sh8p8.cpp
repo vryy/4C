@@ -49,6 +49,20 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh8p8Type::Create( const string ele
 }
 
 
+void DRT::ELEMENTS::So_sh8p8Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 4;
+  dimns = 4;
+  nv = 3;
+  np = 1;
+}
+
+void DRT::ELEMENTS::So_sh8p8Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeXFluid3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::Sosh8p8RegisterType DRT::ELEMENTS::Sosh8p8RegisterType::instance_;
 
 
@@ -274,15 +288,6 @@ void DRT::ELEMENTS::So_sh8p8::sosh8p8_expol
     elevec2(NODDOF_*i+2)=nodalstresses(i,5);
   }
 
-}
-
-
-/*----------------------------------------------------------------------*
- |  allocate and return Sosh8p8Register (public)             bborn 03/09|
- *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ElementRegister> DRT::ELEMENTS::So_sh8p8::ElementRegister() const
-{
-  return Teuchos::rcp(new DRT::ELEMENTS::Sosh8p8Register(Type()));
 }
 
 

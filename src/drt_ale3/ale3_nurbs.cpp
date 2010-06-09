@@ -13,6 +13,7 @@ Maintainer: Peter Gamnitzer
 #ifdef CCADISCRET
 
 #include "ale3_nurbs.H"
+#include "../drt_lib/drt_utils.H"
 
 DRT::ELEMENTS::NURBS::Ale3_NurbsType DRT::ELEMENTS::NURBS::Ale3_NurbsType::instance_;
 
@@ -38,6 +39,18 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale3_NurbsType::Create( const s
     }
   }
   return Teuchos::null;
+}
+
+void DRT::ELEMENTS::NURBS::Ale3_NurbsType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 6;
+  nv = 3;
+}
+
+void DRT::ELEMENTS::NURBS::Ale3_NurbsType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
 }
 
 

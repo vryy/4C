@@ -30,7 +30,7 @@ DRT::ELEMENTS::XDiff3Line::XDiff3Line(
     DRT::Node** nodes,
     DRT::Element* parent,
     const int lline) :
-DRT::Element(id,element_xdiff3line,owner),
+DRT::Element(id,owner),
 parent_(parent),
 lline_(lline)
 {

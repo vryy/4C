@@ -47,6 +47,19 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam2rType::Create( const string elety
 }
 
 
+void DRT::ELEMENTS::Beam2rType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 3;
+  nv = 3;
+}
+
+void DRT::ELEMENTS::Beam2rType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeBeam2DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::Beam2rRegisterType DRT::ELEMENTS::Beam2rRegisterType::instance_;
 
 DRT::ParObject* DRT::ELEMENTS::Beam2rRegisterType::Create( const std::vector<char> & data )
@@ -62,7 +75,7 @@ DRT::ParObject* DRT::ELEMENTS::Beam2rRegisterType::Create( const std::vector<cha
  |  ctor (public)                                            cyron 01/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam2r::Beam2r(int id, int owner) :
-DRT::Element(id,element_beam2r,owner),
+DRT::Element(id,owner),
 crosssec_(0),
 crosssecshear_(0),
 gaussrule_(DRT::UTILS::intrule1D_undefined),
@@ -117,15 +130,6 @@ void DRT::ELEMENTS::Beam2r::Print(ostream& os) const
   os << " gaussrule_: " << gaussrule_ << " ";
   return;
 }
-
-/*----------------------------------------------------------------------*
- |  allocate and return Beam2rRegister (public)               cyron 01/08|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Beam2r::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Beam2rRegister(Type()));
-}
-
 
 
 /*----------------------------------------------------------------------*
@@ -597,7 +601,7 @@ int DRT::ELEMENTS::Beam2rType::Initialize(DRT::Discretization& dis)
   {
     //in case that current element is not a beam2r element there is nothing to do and we go back
     //to the head of the loop
-    if (dis.lColElement(num)->Type() != DRT::Element::element_beam2r) continue;
+    if (dis.lColElement(num)->ElementObjectType() != *this) continue;
     //if we get so far current element is a beam2r element and  we get a pointer at it
     DRT::ELEMENTS::Beam2r* currele = dynamic_cast<DRT::ELEMENTS::Beam2r*>(dis.lColElement(num));
     if (!currele) dserror("cast to Beam2r* failed");

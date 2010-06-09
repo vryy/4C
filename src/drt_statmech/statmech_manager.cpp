@@ -38,6 +38,8 @@ Maintainer: Christian Cyron
 #include "../drt_truss3/truss3.H"
 #endif  // #ifdef D_TRUSS3
 
+#include "../drt_torsion3/torsion3.H"
+
 #include <iostream>
 #include <iomanip>
 #include <cstdio>
@@ -728,7 +730,8 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
       //if no periodic boundary conditions are to be applied, we just plot the current element
       if(statmechparams_.get<double>("PeriodLength",0.0) == 0)
       {
-      	if(element->Type()==DRT::Element::element_beam3 || element->Type()==DRT::Element::element_truss3)
+        const DRT::ElementObjectType & eot = element->ElementObjectType();
+      	if(eot==DRT::ELEMENTS::Beam3Type::Instance() || eot==DRT::ELEMENTS::Truss3Type::Instance())
       	{
 					for(int j=0; j<element->NumNode()-1; j++)
 					{
@@ -743,7 +746,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 						gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
 					}
       	}
-				else if(element->Type()==DRT::Element::element_torsion3)
+        else if(eot==DRT::ELEMENTS::Torsion3Type::Instance())
 				{
 					double beadcolor = 0.75;
 					for(int j=0; j<element->NumNode(); j++)
@@ -859,7 +862,8 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
   DRT::Element* element = discret_.gElement(eleid);
 
   // draw colored lines between two nodes of a beam3 or truss3 element (meant for filaments/crosslinks/springs)
-  if(element->Type()==DRT::Element::element_beam3 || element->Type()==DRT::Element::element_truss3)
+  const DRT::ElementObjectType & eot = element->ElementObjectType();
+  if(eot==DRT::ELEMENTS::Beam3Type::Instance() || eot==DRT::ELEMENTS::Truss3Type::Instance())
   {
 		/*detect and save in vector "cut", at which boundaries the element is broken due to periodic boundary conditions;
 		 * the entries of cut have the following meaning: 0: element not broken in respective coordinate direction, 1:
@@ -966,7 +970,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 		}
   }
   // draw spheres at node positions ("beads" of the bead spring model)
-  else if(element->Type()==DRT::Element::element_torsion3)
+  else if(eot==DRT::ELEMENTS::Torsion3Type::Instance())
   {
   	double beadcolor = 0.75;
   		for(int i=0; i<element->NumNode(); i++)

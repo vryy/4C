@@ -46,6 +46,21 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid2Type::Create( const string elety
 }
 
 
+void DRT::ELEMENTS::Fluid2Type::NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  nv = 2;
+  np = 1;
+  numdf = 3;
+  dimns = 3;
+}
+
+
+void DRT::ELEMENTS::Fluid2Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeFluid2DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::Fluid2RegisterType DRT::ELEMENTS::Fluid2RegisterType::instance_;
 
 
@@ -65,7 +80,7 @@ map<string,DRT::ELEMENTS::Fluid2::StabilisationAction> DRT::ELEMENTS::Fluid2::st
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid2::Fluid2(int id, int owner) :
-DRT::Element(id,element_fluid2,owner),
+DRT::Element(id,owner),
 is_ale_(false),
 dismode_(dismod_equalorder),
 data_()
@@ -239,14 +254,6 @@ void DRT::ELEMENTS::Fluid2::Print(ostream& os) const
   cout << endl;
   cout << data_;
   return;
-}
-
-/*----------------------------------------------------------------------*
- |  allocate and return Fluid2Register (public)              gammi 04/07|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Fluid2::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Fluid2Register(Type()));
 }
 
 /*----------------------------------------------------------------------*

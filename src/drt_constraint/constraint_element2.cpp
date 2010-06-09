@@ -45,6 +45,16 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ConstraintElement2Type::Create( const 
 }
 
 
+
+void DRT::ELEMENTS::ConstraintElement2Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+}
+
+void DRT::ELEMENTS::ConstraintElement2Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+}
+
+
 DRT::ELEMENTS::ConstraintElement2RegisterType DRT::ELEMENTS::ConstraintElement2RegisterType::instance_;
 
 
@@ -60,7 +70,7 @@ DRT::ParObject* DRT::ELEMENTS::ConstraintElement2RegisterType::Create( const std
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ConstraintElement2::ConstraintElement2(int id, int owner) :
-DRT::Element(id, element_constraintelement2, owner),
+DRT::Element(id, owner),
 data_()
 {
   return;
@@ -149,15 +159,6 @@ void DRT::ELEMENTS::ConstraintElement2::Print(ostream& os) const
   cout << data_;
   return;
 }
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::ConstraintElement2::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::ConstraintElement2Register(Type()));
-}
-
-
 
 
 /*----------------------------------------------------------------------*

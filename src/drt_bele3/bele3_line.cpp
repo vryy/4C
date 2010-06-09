@@ -31,7 +31,7 @@ DRT::ELEMENTS::Bele3Line::Bele3Line(int id, int owner,
                               DRT::Node** nodes,
                               DRT::ELEMENTS::Bele3* parent,
                               const int lline) :
-DRT::Element(id,element_bele3line,owner),
+DRT::Element(id,owner),
 parent_(parent),
 lline_(lline)
 {

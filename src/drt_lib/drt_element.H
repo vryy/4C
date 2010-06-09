@@ -278,7 +278,7 @@ public:
   \param etype (in): Type of element
   \param owner (in): owner processor of the element
   */
-  Element(int id, ElementType etype, int owner);
+  Element(int id, int owner);
 
   /*!
   \brief Copy Constructor
@@ -354,7 +354,7 @@ public:
   /*!
   \brief Get type of element
   */
-  inline ElementType Type() const { return etype_; }
+  //inline ElementType Type() const { return etype_; }
 
   /*!
   \brief Get shape type of element

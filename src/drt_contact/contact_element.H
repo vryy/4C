@@ -68,6 +68,10 @@ public:
 
   virtual DRT::ParObject* Create( const vector<char> & data );
 
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+
 private:
 
   static CoElementType instance_;
@@ -89,14 +93,13 @@ public:
   \brief Standard Constructor
 
   \param id    (in): A globally unique element id
-  \param etype (in): Type of element
   \param owner (in): owner processor of the element
   \param shape (in): shape of this element
   \param numnode (in): Number of nodes to this element
   \param nodeids (in): ids of nodes adjacent to this element
   \param isslave (in): flag indicating whether element is slave or master side
   */
-  CoElement(int id, ElementType etype, int owner,
+  CoElement(int id, int owner,
             const DRT::Element::DiscretizationType& shape,
             const int numnode,
             const int* nodeids,

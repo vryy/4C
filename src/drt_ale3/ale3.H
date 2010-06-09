@@ -74,6 +74,10 @@ public:
                                              const int id,
                                              const int owner );
 
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+
 private:
 
   static Ale3Type instance_;
@@ -496,6 +500,10 @@ public:
   std::string Name() const { return "Ale3SurfaceType"; }
 
   static Ale3SurfaceType & Instance() { return instance_; };
+
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
 
 private:
 

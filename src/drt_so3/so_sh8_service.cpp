@@ -286,7 +286,7 @@ void DRT::ELEMENTS::So_sh8Type::sosh8_gmshplotdis(const DRT::Discretization& dis
   // plot elements
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
-    if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
+    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
     DRT::ELEMENTS::So_sh8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8* failed");
     // plot elements
@@ -306,7 +306,7 @@ void DRT::ELEMENTS::So_sh8Type::sosh8_gmshplotdis(const DRT::Discretization& dis
   // plot elements
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
-    if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
+    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
     DRT::ELEMENTS::So_sh8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8* failed");
     // plot elements
@@ -317,7 +317,7 @@ void DRT::ELEMENTS::So_sh8Type::sosh8_gmshplotdis(const DRT::Discretization& dis
   gmshfilecontent << "View \" Thickness Vectors \" {" << endl;
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
-    if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
+    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
     DRT::ELEMENTS::So_sh8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8* failed");
     // plot vector in center of elements
@@ -332,7 +332,7 @@ void DRT::ELEMENTS::So_sh8Type::sosh8_gmshplotdis(const DRT::Discretization& dis
   gmshfilecontent << "View \" Fiber Direction Vectors \" {" << endl;
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
-    if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
+    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
     DRT::ELEMENTS::So_hex8* actele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8* failed");
     // plot vector in center of elements

@@ -57,6 +57,20 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8Type::Create( const string elet
   return Teuchos::null;
 }
 
+
+void DRT::ELEMENTS::So_hex8Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 6;
+  nv = 3;
+}
+
+void DRT::ELEMENTS::So_hex8Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::Soh8RegisterType DRT::ELEMENTS::Soh8RegisterType::instance_;
 
 
@@ -74,7 +88,7 @@ DRT::ParObject* DRT::ELEMENTS::Soh8RegisterType::Create( const std::vector<char>
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner) :
-DRT::Element(id,element_so_hex8,owner),
+DRT::Element(id,owner),
 data_(),
 pstype_(INPAR::STR::prestress_none),
 pstime_(0.0),
@@ -376,14 +390,6 @@ void DRT::ELEMENTS::So_hex8::soh8_expol
     elevec2(NODDOF_SOH8*i+1) = nodalstresses(i,4);
     elevec2(NODDOF_SOH8*i+2) = nodalstresses(i,5);
   }
-}
-
-/*----------------------------------------------------------------------*
- |  allocate and return So_hex8Register (public)                maf 04/07|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_hex8::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Soh8Register(Type()));
 }
 
   /*====================================================================*/
@@ -833,4 +839,3 @@ void DRT::ELEMENTS::Soh8Register::Print(ostream& os) const
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3
-

@@ -900,7 +900,7 @@ int DRT::ELEMENTS::So_weg6Type::Initialize(DRT::Discretization& dis)
 {
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
-    if (dis.lColElement(i)->Type() != DRT::Element::element_so_weg6) continue;
+    if (dis.lColElement(i)->ElementObjectType() != *this) continue;
     DRT::ELEMENTS::So_weg6* actele = dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_weg6* failed");
     actele->InitJacobianMapping();

@@ -50,6 +50,19 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3iiType::Create( const string elet
 }
 
 
+void DRT::ELEMENTS::Beam3iiType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 6;
+  dimns = 6;
+  nv = 6;
+}
+
+void DRT::ELEMENTS::Beam3iiType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeBeam3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::Beam3iiRegisterType DRT::ELEMENTS::Beam3iiRegisterType::instance_;
 
 DRT::ParObject* DRT::ELEMENTS::Beam3iiRegisterType::Create( const std::vector<char> & data )
@@ -65,7 +78,7 @@ DRT::ParObject* DRT::ELEMENTS::Beam3iiRegisterType::Create( const std::vector<ch
  |  ctor (public)                                            cyron 01/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3ii::Beam3ii(int id, int owner) :
-DRT::Element(id,element_beam3ii,owner),
+DRT::Element(id,owner),
 isinit_(false),
 nodeI_(0),
 nodeJ_(0),
@@ -132,14 +145,6 @@ DRT::ELEMENTS::Beam3ii::~Beam3ii()
 void DRT::ELEMENTS::Beam3ii::Print(ostream& os) const
 {
   return;
-}
-
-/*----------------------------------------------------------------------*
- |  allocate and return Beam3iiRegister (public)               cyron 01/08|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Beam3ii::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Beam3iiRegister(Type()));
 }
 
 
@@ -472,7 +477,7 @@ int DRT::ELEMENTS::Beam3iiType::Initialize(DRT::Discretization& dis)
 	  {
 	    //in case that current element is not a beam3ii element there is nothing to do and we go back
 	    //to the head of the loop
-	    if (dis.lColElement(num)->Type() != DRT::Element::element_beam3ii) continue;
+	    if (dis.lColElement(num)->ElementObjectType() != *this) continue;
 
 	    //if we get so far current element is a beam3ii element and  we get a pointer at it
 	    DRT::ELEMENTS::Beam3ii* currele = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(dis.lColElement(num));

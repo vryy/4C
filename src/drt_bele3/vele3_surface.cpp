@@ -30,7 +30,7 @@ DRT::ELEMENTS::Vele3Surface::Vele3Surface(int id, int owner,
                               DRT::Node** nodes,
                               DRT::ELEMENTS::Vele3* parent,
                               const int lsurface) :
-DRT::Element(id,element_vele3surface,owner),
+DRT::Element(id,owner),
 parent_(parent),
 lsurface_(lsurface)
 {

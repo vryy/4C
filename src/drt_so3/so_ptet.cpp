@@ -54,12 +54,24 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::PtetType::Create( const string eletype
   return Teuchos::null;
 }
 
+void DRT::ELEMENTS::PtetType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 6;
+  nv = 3;
+}
+
+void DRT::ELEMENTS::PtetType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
 
 /*-----------------------------------------------------------------------
  |  ctor (public)                                              gee 05/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Ptet::Ptet(int id, int owner) :
-DRT::Element(id,element_ptet,owner),
+DRT::Element(id,owner),
 material_(0),
 V_(-1.0),
 nxyz_(),

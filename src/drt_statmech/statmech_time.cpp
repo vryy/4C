@@ -64,11 +64,10 @@ deltadbc_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
   /*check maximal number of nodes of an element with stochastic forces on this processor*/
   for (int i=0; i<  dis.NumMyColElements(); ++i)
   {
+    const DRT::ElementObjectType & eot = dis.lColElement(i)->ElementObjectType();
     /*stochastic forces implemented so far only for the following elements:*/
-    switch(dis.lColElement(i)->Type())
-    {
 #ifdef D_BEAM3
-      case DRT::Element::element_beam3:
+    if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
       {
         //see whether current element needs more random numbers per time step than any other before
         randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
@@ -76,11 +75,11 @@ deltadbc_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
         //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
         if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
           statmechmanager_->PeriodicBoundaryBeam3Init(dis.lColElement(i));
-        break;
       }
+    else
 #endif  // #ifdef D_BEAM3
 #ifdef D_BEAM3II
-      case DRT::Element::element_beam3ii:
+      if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
       {
         //see whether current element needs more random numbers per time step than any other before
         randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3ii*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
@@ -88,27 +87,27 @@ deltadbc_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
         //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
         if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
           statmechmanager_->PeriodicBoundaryBeam3iiInit(dis.lColElement(i));
-        break;
       }
+    else
 #endif  // #ifdef D_BEAM3II
 #ifdef D_BEAM2
-      case DRT::Element::element_beam2:
+      if ( eot == DRT::ELEMENTS::Beam2Type::Instance() )
       {
         //see whether current element needs more random numbers per time step than any other before
         randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam2*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
-        break;
       }
+    else
 #endif  // #ifdef D_BEAM2
 #ifdef D_BEAM2R
-      case DRT::Element::element_beam2r:
+      if ( eot == DRT::ELEMENTS::Beam2rType::Instance() )
       {
         //see whether current element needs more random numbers per time step than any other before
         randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam2r*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
-        break;
       }
+    else
 #endif  // #ifdef D_BEAM2R
 #ifdef D_TRUSS3
-      case DRT::Element::element_truss3:
+      if ( eot == DRT::ELEMENTS::Truss3Type::Instance() )
       {
         //see whether current element needs more random numbers per time step than any other before
         randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Truss3*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
@@ -116,12 +115,10 @@ deltadbc_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
         //in case of periodic boundary conditions truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
         if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
           statmechmanager_->PeriodicBoundaryTruss3Init(dis.lColElement(i));
-        break;
       }
-#endif  // #ifdef D_BEAM2
-      default:
+      else
+#endif  // #ifdef D_TRUSS3
         continue;
-    }
   } //for (int i=0; i<dis_.NumMyColElements(); ++i)
 
   /*so far the maximal number of random numbers required per element has been checked only locally on this processor;

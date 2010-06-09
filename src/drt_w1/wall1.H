@@ -64,6 +64,10 @@ public:
                                              const int id,
                                              const int owner );
 
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+
 private:
 
   static Wall1Type instance_;
@@ -207,13 +211,6 @@ public:
 
   /// Print this element
   void Print(ostream& os) const;
-
-  /// Allocate and return an ElementRegister class
-  ///
-  /// Every implementation of DRT::Element must also implement
-  /// an DRT::ElementRegister. This method allocates and returns
-  /// an instance of a matching DRT::ElementRegister.
-  virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const;
 
   virtual DRT::ElementObjectType & ElementObjectType() const
   { return Wall1Type::Instance(); }
@@ -863,6 +860,10 @@ public:
   std::string Name() const { return "Wall1LineType"; }
 
   static Wall1LineType & Instance() { return instance_; };
+
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
 
 private:
 

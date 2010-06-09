@@ -368,14 +368,24 @@ namespace UTILS
       const Teuchos::RCP<const DRT::Discretization> dis,
       const Teuchos::RCP<const Epetra_Vector> state);
 
-  
+
   ///recompute nodecolmap of standard discretization to include all nodes as of subdicretization
   RCP<Epetra_Map> ComputeNodeColMap
   (
       const RCP<DRT::Discretization> sourcedis,  ///< standard discretization we want to redistribute
       const RCP<DRT::Discretization> subdis ///< subdiscretization prescribing ghosting
   );
-  
+
+
+  void ComputeStructure3DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+  void ComputeStructure2DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+  void ComputeBeam2DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+  void ComputeBeam3DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+  void ComputeXFluid3DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+  void ComputeFluid2DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+  void ComputeFluid3DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+
+
 } // namespace UTILS
 } // namespace DRT
 

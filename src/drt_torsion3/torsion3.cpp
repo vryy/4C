@@ -45,6 +45,18 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Torsion3Type::Create( const string ele
 }
 
 
+void DRT::ELEMENTS::Torsion3Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 6;
+}
+
+void DRT::ELEMENTS::Torsion3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::Torsion3RegisterType DRT::ELEMENTS::Torsion3RegisterType::instance_;
 
 
@@ -61,7 +73,7 @@ DRT::ParObject* DRT::ELEMENTS::Torsion3RegisterType::Create( const std::vector<c
  |  ctor (public)                                            cyron 02/10|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Torsion3::Torsion3(int id, int owner) :
-DRT::Element(id,element_torsion3,owner),
+DRT::Element(id,owner),
 data_(),
 springconstant_(0.0)
 {
@@ -103,14 +115,6 @@ DRT::ELEMENTS::Torsion3::~Torsion3()
 void DRT::ELEMENTS::Torsion3::Print(ostream& os) const
 {
   return;
-}
-
-/*----------------------------------------------------------------------*
- |  allocate and return Torsion3Register (public)             cyron 02/10|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Torsion3::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Torsion3Register(Type()));
 }
 
 
@@ -282,4 +286,3 @@ int DRT::ELEMENTS::Torsion3Register::Initialize(DRT::Discretization& dis)
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_TORSION3
-

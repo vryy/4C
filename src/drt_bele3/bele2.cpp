@@ -42,6 +42,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele2Type::Create( const string eletyp
 }
 
 
+void DRT::ELEMENTS::Bele2Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+}
+
+void DRT::ELEMENTS::Bele2Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+}
+
+
 DRT::ELEMENTS::Bele2RegisterType DRT::ELEMENTS::Bele2RegisterType::instance_;
 
 DRT::ParObject* DRT::ELEMENTS::Bele2RegisterType::Create( const std::vector<char> & data )
@@ -56,7 +65,7 @@ DRT::ParObject* DRT::ELEMENTS::Bele2RegisterType::Create( const std::vector<char
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele2::Bele2(int id, int owner) :
-DRT::Element(id,element_bele2,owner)
+DRT::Element(id,owner)
 {
   return;
 }
@@ -143,13 +152,6 @@ void DRT::ELEMENTS::Bele2::Print(ostream& os) const
   os << "Bele2 " << DRT::DistypeToString(Shape());
   Element::Print(os);
   return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Bele2::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Bele2Register(Type()));
 }
 
 /*----------------------------------------------------------------------*

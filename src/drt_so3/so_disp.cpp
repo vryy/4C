@@ -48,6 +48,18 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoDispType::Create( const string elety
   return Teuchos::null;
 }
 
+void DRT::ELEMENTS::SoDispType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 6;
+  nv = 3;
+}
+
+void DRT::ELEMENTS::SoDispType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
 
 DRT::ELEMENTS::SoDispRegisterType DRT::ELEMENTS::SoDispRegisterType::instance_;
 
@@ -66,7 +78,7 @@ DRT::ParObject* DRT::ELEMENTS::SoDispRegisterType::Create( const std::vector<cha
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::SoDisp::SoDisp(int id, int owner) :
-DRT::Element(id,element_sodisp,owner),
+DRT::Element(id,owner),
 kintype_(sodisp_totlag),
 stresstype_(sodisp_stress_none),
 gaussrule_(intrule3D_undefined),
@@ -203,14 +215,6 @@ void DRT::ELEMENTS::SoDisp::Print(ostream& os) const
   Element::Print(os);
   cout << endl;
   return;
-}
-
-/*----------------------------------------------------------------------*
- |  allocate and return SoDispRegister (public)                maf 04/07|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::SoDisp::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::SoDispRegister(Type()));
 }
 
 

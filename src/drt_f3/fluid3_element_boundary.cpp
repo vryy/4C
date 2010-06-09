@@ -32,7 +32,7 @@ DRT::ELEMENTS::Fluid3Boundary::Fluid3Boundary(int id, int owner,
                               DRT::Node** nodes,
                               DRT::ELEMENTS::Fluid3* parent,
                               const int lsurface) :
-DRT::Element(id,element_fluid3boundary,owner),
+DRT::Element(id,owner),
 parent_(parent),
 lsurface_(lsurface)
 {

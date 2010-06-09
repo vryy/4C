@@ -28,7 +28,7 @@ DRT::ELEMENTS::StructuralLine::StructuralLine(int id, int owner,
                                               DRT::Node** nodes,
                                               DRT::Element* parent,
                                               const int lline) :
-DRT::Element(id,element_structuralline,owner),
+DRT::Element(id,owner),
 parent_(parent),
 lline_(lline)
 {

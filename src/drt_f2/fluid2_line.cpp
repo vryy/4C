@@ -32,7 +32,7 @@ DRT::ELEMENTS::Fluid2Line::Fluid2Line(int id, int owner,
                               DRT::Node** nodes,
                               DRT::ELEMENTS::Fluid2* parent,
                               const int lline) :
-DRT::Element(id,element_fluid2line,owner),
+DRT::Element(id,owner),
 parent_(parent),
 lline_(lline)
 {

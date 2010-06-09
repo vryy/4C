@@ -48,6 +48,19 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10Type::Create( const string ele
 }
 
 
+void DRT::ELEMENTS::So_tet10Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 6;
+  nv = 3;
+}
+
+void DRT::ELEMENTS::So_tet10Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::Sotet10RegisterType DRT::ELEMENTS::Sotet10RegisterType::instance_;
 
 
@@ -65,7 +78,7 @@ DRT::ParObject* DRT::ELEMENTS::Sotet10RegisterType::Create( const std::vector<ch
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_tet10::So_tet10(int id, int owner) :
-DRT::Element(id,element_so_tet10,owner),
+DRT::Element(id,owner),
 material_(0),
 data_()
 {
@@ -277,14 +290,6 @@ void DRT::ELEMENTS::So_tet10::Print(ostream& os) const
   cout << endl;
   cout << data_;
   return;
-}
-
-/*------------------------------------------------------------------------***
- |  allocate and return So_tet10Register (public)               volf 06/07|
- *------------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_tet10::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Sotet10Register(Type()));
 }
 
   /*====================================================================*/

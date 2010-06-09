@@ -47,6 +47,19 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam2Type::Create( const string eletyp
 }
 
 
+void DRT::ELEMENTS::Beam2Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 3;
+  nv = 3;
+}
+
+void DRT::ELEMENTS::Beam2Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeBeam2DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 DRT::ELEMENTS::Beam2RegisterType DRT::ELEMENTS::Beam2RegisterType::instance_;
 
 DRT::ParObject* DRT::ELEMENTS::Beam2RegisterType::Create( const std::vector<char> & data )
@@ -63,7 +76,7 @@ DRT::ParObject* DRT::ELEMENTS::Beam2RegisterType::Create( const std::vector<char
  |  ctor (public)                                            cyron 01/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam2::Beam2(int id, int owner) :
-DRT::Element(id,element_beam2,owner),
+DRT::Element(id,owner),
 isinit_(false),
 lrefe_(0),
 crosssec_(0),
@@ -135,15 +148,6 @@ void DRT::ELEMENTS::Beam2::Print(ostream& os) const
   os << " gaussrule_: " << gaussrule_ << " ";
   return;
 }
-
-/*----------------------------------------------------------------------*
- |  allocate and return Beam2Register (public)               cyron 01/08|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Beam2::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Beam2Register(Type()));
-}
-
 
 
 /*----------------------------------------------------------------------*
@@ -439,7 +443,7 @@ int DRT::ELEMENTS::Beam2Type::Initialize(DRT::Discretization& dis)
   {
     //in case that current element is not a beam2 element there is nothing to do and we go back
     //to the head of the loop
-    if (dis.lColElement(num)->Type() != DRT::Element::element_beam2) continue;
+    if (dis.lColElement(num)->ElementObjectType() != *this) continue;
 
     //if we get so far current element is a beam2 element and  we get a pointer at it
     DRT::ELEMENTS::Beam2* currele = dynamic_cast<DRT::ELEMENTS::Beam2*>(dis.lColElement(num));
