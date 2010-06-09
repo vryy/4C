@@ -117,14 +117,6 @@ void DRT::ELEMENTS::Smoothrod::Print(ostream& os) const
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  allocate and return SmoothrodRegister (public)               cyron 01/08|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Smoothrod::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::SmoothrodRegister(Type()));
-}
-
 
 /*----------------------------------------------------------------------*
  |                                                             (public) |
@@ -655,7 +647,7 @@ int DRT::ELEMENTS::SmoothrodType::Initialize(DRT::Discretization& dis)
 	  {
 	    //in case that current element is not a beam3 element there is nothing to do and we go back
 	    //to the head of the loop
-	    if (dis.lColElement(num)->Type() != DRT::Element::element_beam3) continue;
+	    if (dis.lColElement(num)->ElementObjectType() != *this) continue;
 
 	    //if we get so far current element is a beam3 element and  we get a pointer at it
 	    DRT::ELEMENTS::Smoothrod* currele = dynamic_cast<DRT::ELEMENTS::Smoothrod*>(dis.lColElement(num));

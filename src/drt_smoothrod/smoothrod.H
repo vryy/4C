@@ -136,17 +136,6 @@ public:
   */
   virtual void Unpack(const vector<char>& data);
 
-  /*!
-  \brief Allocate and return an ElementRegister class
-
-  Every implementation of DRT::Element must also implement
-  an DRT::ElementRegister. This method allocates and returns
-  an instance of a matching DRT::ElementRegister.
-  The ElementRegister class is then used to hold track of what type of
-  elements are in one discretization.
-  */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
-
   virtual DRT::ElementObjectType & ElementObjectType() const
   { return SmoothrodType::Instance(); }
 
