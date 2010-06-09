@@ -69,6 +69,6 @@ void UTILS::MPConstraint::SetConstrState
       (discrit->second)->SetState(state,tmp);
     }
   }
-};
+}
 
 #endif

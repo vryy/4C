@@ -171,6 +171,6 @@ void UTILS::Monitor::SetState
 )
 {
   actdisc_->SetState(state,V);
-};
+}
 
 #endif
