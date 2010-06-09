@@ -162,13 +162,6 @@ void DRT::ELEMENTS::So_sh8::Print(ostream& os) const
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  allocate and return Sosh8Register (public)                 maf 04/07|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_sh8::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::Sosh8Register(Type()));
-}
 
 //=======================================================================
 //=======================================================================

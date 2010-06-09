@@ -42,7 +42,7 @@ namespace ELEMENTS
 // forward declarations
 class Sosh8Register;
 
-class So_sh8Type : public DRT::ParObjectType
+class So_sh8Type : public So_hex8Type
 {
 public:
 
@@ -146,14 +146,8 @@ public:
   */
   void Print(ostream& os) const;
 
-  /*!
-  \brief Allocate and return a DesignElementRegister class
-
-  Every implementation of DRT::Element must also implement
-  an DRT::ElementRegister. This method allocates and returns
-  an instance of a matching DRT::ElementRegister.
-  */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+  virtual So_sh8Type & ElementObjectType() const
+  { return So_sh8Type::Instance(); }
 
   //@}
 
