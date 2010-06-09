@@ -458,6 +458,6 @@ void UTILS::Constraint::SetState
 )
 {
   actdisc_->SetState(state,V);
-};
+}
 
 #endif
