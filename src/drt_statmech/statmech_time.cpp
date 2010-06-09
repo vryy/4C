@@ -314,10 +314,12 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     // determine evaluation mode
     if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) <= 0.0 &&
     	 Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC"))
-    	dserror("Proper PeriodLength is required if periodic DBCs are to be applied");
-    // in case of activated periodic boundary conditions
+    	dserror("Set PeriodLength > 0.0 if periodic DBCs are to be applied");
     if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0 &&
-			 Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC"))
+    	 Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"CONVENTIONALDBC"))
+    	dserror("Set PeriodLength to Zero if conventional DBCs are to be applied");
+    // in case of activated periodic boundary conditions
+    if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC"))
     {
     	/* Reinitialize disn_ and dirichtoggle_ once.
     	 * Now, why is this done? For t==0, disn_ and dirichtoggle_ are initialized in strugenalpha.cpp.
@@ -342,7 +344,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     	//cout<<"disn_ post DBC Eval: \n"<<*disn_<<endl;
     }
 		// "common" case without periodic boundary conditions
-    if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"CONVENTIONALDBC"))
+    if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"CONVENTIONALDBC") )
     {
     	discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
 			//cout<<"Conventional: \n"<<*dirichtoggle_<<endl;

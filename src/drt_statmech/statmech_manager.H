@@ -158,6 +158,9 @@ protected:
   //! \brief storing for each row map node the column map LIDs of nodes to which a crosslinker has been established
   std::vector< std::vector<int> >  crosslinkerpartner_;
 
+  //! \brief storing for each col map node the number of crosslinks / neighbour nodes of different filaments
+  RCP<Epetra_Vector> crosslinkcount_;
+
   //! \brief storing for each node column map LID number of filament to which it belongs
   RCP<Epetra_Vector> filamentnumber_;
 
