@@ -41,7 +41,7 @@ namespace ELEMENTS
 // forward declarations
 class SoHex8P1J1Register;
 
-class So_Hex8P1J1Type : public DRT::ParObjectType
+class So_Hex8P1J1Type : public DRT::ElementObjectType
 {
 public:
 
@@ -163,14 +163,8 @@ public:
                   LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8>& D_T_bar,
                   const double t);
 
-  /*!
-  \brief Allocate and return a DesignElementRegister class
-
-  Every implementation of DRT::Element must also implement
-  an DRT::ElementRegister. This method allocates and returns
-  an instance of a matching DRT::ElementRegister.
-  */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+  virtual So_Hex8P1J1Type & ElementObjectType() const
+  { return So_Hex8P1J1Type::Instance(); }
 
   //@}
 

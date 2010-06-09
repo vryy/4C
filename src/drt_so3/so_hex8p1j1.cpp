@@ -179,13 +179,6 @@ void DRT::ELEMENTS::So_Hex8P1J1::Print(ostream& os) const
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  allocate and return SoHex8P1J1Register (public)             lw 12/08|
- *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_Hex8P1J1::ElementRegister() const
-{
-  return rcp(new DRT::ELEMENTS::SoHex8P1J1Register(Type()));
-}
 
 //=======================================================================
 //=======================================================================
