@@ -25,6 +25,9 @@ Maintainer: Caroline Danowski
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_mortar/mortar_manager_base.H"
+#include "../drt_contact/meshtying_manager.H"
+#include "../drt_contact/contact_manager.H"
 #include "../drt_contact/contact_abstract_strategy.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

@@ -44,6 +44,7 @@ Maintainer: Alexander Popp
 
 #include "mortar_dofset.H"
 #include "mortar_node.H"
+#include "../drt_lib/drt_discret.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|

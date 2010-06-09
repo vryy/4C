@@ -22,6 +22,9 @@ Maintainer: Burkhard Bornemann
 #include "strtimint.H"
 #include "strtimint_impl.H"
 #include "str_aux.H"
+#include "../drt_mortar/mortar_manager_base.H"
+#include "../drt_contact/meshtying_manager.H"
+#include "../drt_contact/contact_manager.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 
@@ -895,6 +898,13 @@ void STR::TimIntImpl::UzawaNonLinearNewtonFull()
 
   // for output
   iter_ = uziter + 1;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void STR::TimIntImpl::UpdateStepContactMeshtying()
+{
+	 if (cmtman_ != Teuchos::null) cmtman_->GetStrategy().Update(stepn_,disn_);
 }
 
 /*----------------------------------------------------------------------*/

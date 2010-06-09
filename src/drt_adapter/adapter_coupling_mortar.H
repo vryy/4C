@@ -19,8 +19,13 @@ Maintainer: Thomas Kloeppel
 
 #include <Teuchos_RefCountPtr.hpp>
 #include <Epetra_Map.h>
-#include "../drt_mortar/mortar_interface.H"
 #include "../drt_lib/drt_discret.H"
+
+// forward declarations
+namespace MORTAR
+{
+  class MortarInterface;
+}
 
 namespace ADAPTER
 {

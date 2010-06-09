@@ -41,7 +41,6 @@ Maintainer: Alexander Popp
 
 
 #include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
 using namespace std;

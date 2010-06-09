@@ -4,6 +4,7 @@
 #include "fsi_dirichletneumannslideale.H"
 #include "fsi_debugwriter.H"
 #include "../drt_geometry/searchtree.H"
+#include "../drt_mortar/mortar_interface.H"
 
 extern struct _GENPROB genprob;
 

@@ -42,9 +42,14 @@ Maintainer: Alexander Popp
 #define MORTAR_DOFSET_H
 
 #include "../drt_lib/drt_dofset.H"
-#include "../drt_lib/drt_discret.H"
 
 using namespace std;
+
+// forward declarations
+namespace DRT
+{
+  class Discretization;
+}
 
 /*!
 \brief MORTAR: namespace of the BACI mortar coupling algorithms

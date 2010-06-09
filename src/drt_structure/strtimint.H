@@ -46,18 +46,20 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/drt_locsys.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_potential/drt_potential_manager.H"
-#include "../drt_mortar/mortar_manager_base.H"
-#include "../drt_contact/meshtying_manager.H"
-#include "../drt_contact/contact_manager.H"
 #include "../drt_fluid/drt_periodicbc.H"
 
 #include "strtimint_mstep.H"
 
-//forward declarations
+// forward declarations
 namespace UTILS
 {
   class ConstrManager;
   class ConstraintSolver;
+}
+
+namespace MORTAR
+{
+  class ManagerBase;
 }
 
 /*----------------------------------------------------------------------*/

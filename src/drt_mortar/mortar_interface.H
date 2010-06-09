@@ -43,9 +43,6 @@ Maintainer: Alexander Popp
 #include "Epetra_Comm.h"
 #include "mortar_node.H"
 #include "mortar_element.H"
-#include "mortar_coupling3d_classes.H"
-#include "mortar_binarytree.H"
-
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_inpar/inpar_mortar.H"
@@ -61,6 +58,8 @@ namespace MORTAR
 {
 
 // forward declarations
+class IntElement;
+class BinaryTree;
 
 /*!
 \brief One mortar coupling interface

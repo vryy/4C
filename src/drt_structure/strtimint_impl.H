@@ -436,10 +436,7 @@ namespace STR
     void UpdateStepConstraint();
 
     //! Update step for contact / meshtying
-    void UpdateStepContactMeshtying()
-    {
-      if (cmtman_ != Teuchos::null) cmtman_->GetStrategy().Update(stepn_,disn_);
-    }
+    void UpdateStepContactMeshtying();
 
     //! @name Output
     //@{

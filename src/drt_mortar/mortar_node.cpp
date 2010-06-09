@@ -42,6 +42,7 @@ Maintainer: Alexander Popp
 #include "mortar_element.H"
 #include "mortar_defines.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_discret.H"
 
 
 MORTAR::MortarNodeType MORTAR::MortarNodeType::instance_;
