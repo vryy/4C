@@ -22,6 +22,12 @@ Maintainer: Thomas Kloeppel
 #include "../drt_lib/drt_discret.H"
 
 // forward declarations
+
+namespace LINALG
+{
+  class SparseMatrix;
+}
+
 namespace MORTAR
 {
   class MortarInterface;
@@ -66,7 +72,7 @@ namespace ADAPTER
     (
         RefCountPtr<Epetra_Vector> mv ///< structural interface displacements
     ) const;
-    
+
     /// const version
     RefCountPtr<Epetra_Vector> MasterToSlave
     (
@@ -78,7 +84,7 @@ namespace ADAPTER
     (
         RefCountPtr<Epetra_Vector> sv   ///< fluid interface loads
     ) const;
-    
+
     /// const version
     RefCountPtr<Epetra_Vector> SlaveToMaster
     (
@@ -90,18 +96,18 @@ namespace ADAPTER
 
     /// the interface dof map of the slave side
     RefCountPtr<Epetra_Map> SlaveDofRowMap()  const { return slavedofrowmap_; }
-    
+
     /// the interface dof map of the slave side
     RefCountPtr<Epetra_Map> SlaveDofColMap()  const { return slavedofcolmap_; }
-    
+
     RCP<MORTAR::MortarInterface> Interface() const { return interface_;}
-    
+
     RCP<LINALG::SparseMatrix> GetMortarTrafo();
 
-    
+
 
   private:
-	
+
     RCP<MORTAR::MortarInterface>  interface_;       ///< interface
     RefCountPtr<Epetra_Map>       masterdofrowmap_; ///< map of master row dofs
     RefCountPtr<Epetra_Map>       slavedofrowmap_;  ///< map of slave row dofs without pressure
