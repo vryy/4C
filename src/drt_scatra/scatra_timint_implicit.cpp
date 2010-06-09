@@ -1805,6 +1805,43 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
     }
     break;
   }
+  // initial field for skew convection of L-shaped domain
+  case INPAR::SCATRA::initfield_Lshapeddomain:
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+      // the set of degrees of freedom associated with the node
+      vector<int> nodedofset = discret_->Dof(lnode);
+
+      // get x1- and x2-coordinate
+      const double x1 = lnode->X()[0];
+      const double x2 = lnode->X()[1];
+
+      int numdofs = nodedofset.size();
+      for (int k=0;k< numdofs;++k)
+      {
+        const int dofgid = nodedofset[k];
+        int doflid = dofrowmap->LID(dofgid);
+
+        // compute initial values 0.0 or 1.0 depending on geometrical location
+        double initialval = 0.0;
+        if ((x1 <= 0.25 and x2 <= 0.5) or (x1 <= 0.5 and x2 <= 0.25))
+          initialval = 1.0;
+
+        phin_->ReplaceMyValues(1,&initialval,&doflid);
+        // initialize also the solution vector. These values are a pretty good
+        // guess for the solution after the first time step (much better than
+        // starting with a zero vector)
+        phinp_->ReplaceMyValues(1,&initialval,&doflid);
+      }
+    }
+    break;
+  }
   default:
     dserror("Unknown option for initial field: %d", init);
   } // switch(init)
