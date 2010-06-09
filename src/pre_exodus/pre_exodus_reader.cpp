@@ -161,8 +161,8 @@ EXODUS::Mesh::Mesh(const string exofilename)
      * They are assigned by ICEM and provide recognition */
     int num_props;
     float fdum;
-    char *cdum;
-    error = ex_inquire (exoid_, EX_INQ_NS_PROP, &num_props, &fdum, cdum);
+    char cdum; //dummy argument
+    error = ex_inquire (exoid_, EX_INQ_NS_PROP, &num_props, &fdum, &cdum);
     // allocate memory for NodeSet property names
     char** prop_names = new char*[num_props];
     for (int i=0; i<num_props; ++i)
@@ -851,10 +851,10 @@ void EXODUS::Mesh::WriteMesh(const string newexofilename) const
   /* Write QA record based on original exofile */
   int num_qa_rec;
   char* qa_record[MAX_STR_LENGTH][4]; // should be MAX_QA_REC][4], but this is nowhere defined!;
-  char *cdum;
+  char cdum; //dummy variable
   float fdum;
   /* read QA records */
-  ex_inquire (exoid_, EX_INQ_QA, &num_qa_rec, &fdum, cdum);/* write QA records */
+  ex_inquire (exoid_, EX_INQ_QA, &num_qa_rec, &fdum, &cdum);/* write QA records */
   for (int i=0; i<num_qa_rec; i++)
     for (int j=0; j<4; j++) qa_record[i][j] = (char *) calloc ((MAX_STR_LENGTH+1), sizeof(char));
     //for (int j=0; j<4; j++) qa_record[i][j] = new (char)[MAX_STR_LENGTH+1];
