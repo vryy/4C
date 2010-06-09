@@ -16,7 +16,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-
+#include "../drt_lib/drt_linedefinition.H"
 
 DRT::ELEMENTS::PtetType DRT::ELEMENTS::PtetType::instance_;
 
@@ -52,6 +52,16 @@ void DRT::ELEMENTS::PtetType::NodalBlockInformation( DRT::Element * dwele, int &
 void DRT::ELEMENTS::PtetType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::PtetType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["PTET4"];
+
+  defs["TET4"]
+    .AddIntVector("TET4",4)
+    .AddNamedInt("MAT")
+    ;
 }
 
 

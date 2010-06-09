@@ -24,6 +24,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -68,6 +69,22 @@ void DRT::ELEMENTS::So_hex8Type::NodalBlockInformation( DRT::Element * dwele, in
 void DRT::ELEMENTS::So_hex8Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::So_hex8Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH8"];
+
+  defs["HEX8"]
+    .AddIntVector("HEX8",8)
+    .AddNamedInt("MAT")
+    .AddNamedString("EAS")
+    .AddNamedString("KINTYP")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDouble("STRENGTH")
+    ;
 }
 
 

@@ -16,6 +16,7 @@ Maintainer: Moritz Frenzel
 #include "so_shw6.H"
 #include "so_weg6.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 using namespace DRT::UTILS;
 
@@ -55,6 +56,22 @@ void DRT::ELEMENTS::So_shw6Type::NodalBlockInformation( DRT::Element * dwele, in
 void DRT::ELEMENTS::So_shw6Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::So_shw6Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["SOLIDSHW6"];
+
+  defs["WEDGE6"]
+    .AddIntVector("WEDGE6",6)
+    .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
+    .AddNamedString("EAS")
+    .AddOptionalTag("OPTORDER")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    ;
 }
 
 

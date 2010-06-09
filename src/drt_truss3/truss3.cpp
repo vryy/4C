@@ -18,6 +18,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 DRT::ELEMENTS::Truss3Type DRT::ELEMENTS::Truss3Type::instance_;
 
@@ -54,6 +55,25 @@ void DRT::ELEMENTS::Truss3Type::NodalBlockInformation( DRT::Element * dwele, int
 void DRT::ELEMENTS::Truss3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::Truss3Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["TRUSS3"];
+
+  defs["LINE2"]
+    .AddIntVector("LINE2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedString("KINEM")
+    ;
+
+  defs["LIN2"]
+    .AddIntVector("LIN2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedString("KINEM")
+    ;
 }
 
 

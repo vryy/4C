@@ -17,6 +17,11 @@ namespace LINALG
 namespace DRT
 {
 
+namespace INPUT
+{
+  class LineDefinition;
+}
+
 class ParObject;
 class Element;
 class Discretization;
@@ -75,6 +80,8 @@ public:
                    Teuchos::RCP<Epetra_Vector>          systemvector1,
                    Teuchos::RCP<Epetra_Vector>          systemvector2,
                    Teuchos::RCP<Epetra_Vector>          systemvector3);
+
+  void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
 
 private:
 

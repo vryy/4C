@@ -17,6 +17,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_linedefinition.H"
 #include "so_hex8.H"
 
 
@@ -55,6 +56,23 @@ void DRT::ELEMENTS::So_sh8Type::NodalBlockInformation( DRT::Element * dwele, int
 void DRT::ELEMENTS::So_sh8Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::So_sh8Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["SOLIDSH8"];
+
+  defs["HEX8"]
+    .AddIntVector("HEX8",8)
+    .AddNamedInt("MAT")
+    .AddNamedString("EAS")
+    .AddNamedString("ANS")
+    .AddNamedString("THICKDIR")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDouble("STRENGTH")
+    ;
 }
 
 

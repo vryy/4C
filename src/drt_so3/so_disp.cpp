@@ -20,6 +20,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 using namespace DRT::UTILS;
 
@@ -58,6 +59,92 @@ void DRT::ELEMENTS::SoDispType::NodalBlockInformation( DRT::Element * dwele, int
 void DRT::ELEMENTS::SoDispType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::SoDispType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["SOLID3"];
+
+  defs["HEX8"]
+    .AddIntVector("HEX8",8)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_PYRAMID")
+    .AddNamedInt("GP_TET")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("KINEM")
+    ;
+
+  defs["HEX20"]
+    .AddIntVector("HEX20",20)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_PYRAMID")
+    .AddNamedInt("GP_TET")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("KINEM")
+    ;
+
+  defs["HEX27"]
+    .AddIntVector("HEX27",27)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_PYRAMID")
+    .AddNamedInt("GP_TET")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("KINEM")
+    ;
+
+  defs["TET4"]
+    .AddIntVector("TET4",4)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_PYRAMID")
+    .AddNamedInt("GP_TET")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("KINEM")
+    ;
+
+  defs["TET10"]
+    .AddIntVector("TET10",10)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_PYRAMID")
+    .AddNamedInt("GP_TET")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("KINEM")
+    ;
+
+  defs["WEDGE6"]
+    .AddIntVector("WEDGE6",6)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_PYRAMID")
+    .AddNamedInt("GP_TET")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("KINEM")
+    ;
+
+  defs["WEDGE15"]
+    .AddIntVector("WEDGE15",15)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_PYRAMID")
+    .AddNamedInt("GP_TET")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("KINEM")
+    ;
+
+  defs["PYRAMID5"]
+    .AddIntVector("PYRAMID5",5)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_PYRAMID")
+    .AddNamedInt("GP_TET")
+    .AddNamedString("GP_ALT")
+    .AddNamedString("KINEM")
+    ;
+
 }
 
 

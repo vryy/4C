@@ -19,7 +19,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-
+#include "../drt_lib/drt_linedefinition.H"
 
 DRT::ELEMENTS::NURBS::So_nurbs27Type DRT::ELEMENTS::NURBS::So_nurbs27Type::instance_;
 
@@ -56,6 +56,17 @@ void DRT::ELEMENTS::NURBS::So_nurbs27Type::NodalBlockInformation( DRT::Element *
 void DRT::ELEMENTS::NURBS::So_nurbs27Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::NURBS::So_nurbs27Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["SONURBS27"];
+
+  defs["NURBS27"]
+    .AddIntVector("NURBS27",27)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",3)
+    ;
 }
 
 

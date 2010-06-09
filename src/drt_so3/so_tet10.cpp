@@ -21,6 +21,7 @@ writen by : Alexander Volf
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 
 DRT::ELEMENTS::So_tet10Type DRT::ELEMENTS::So_tet10Type::instance_;
@@ -58,6 +59,20 @@ void DRT::ELEMENTS::So_tet10Type::NodalBlockInformation( DRT::Element * dwele, i
 void DRT::ELEMENTS::So_tet10Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::So_tet10Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["SOLIDT10"];
+
+  defs["TET10"]
+    .AddIntVector("TET10",10)
+    .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    ;
 }
 
 

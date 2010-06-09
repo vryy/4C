@@ -18,6 +18,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 DRT::ELEMENTS::Truss2Type DRT::ELEMENTS::Truss2Type::instance_;
 
@@ -52,6 +53,25 @@ void DRT::ELEMENTS::Truss2Type::NodalBlockInformation( DRT::Element * dwele, int
 
 void DRT::ELEMENTS::Truss2Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
+}
+
+void DRT::ELEMENTS::Truss2Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["TRUSS2"];
+
+  defs["LINE2"]
+    .AddIntVector("LINE2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedString("KINEM")
+    ;
+
+  defs["LIN2"]
+    .AddIntVector("LIN2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedString("KINEM")
+    ;
 }
 
 

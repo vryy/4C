@@ -41,7 +41,7 @@ namespace ELEMENTS
 class RedAirwayImplInterface;
 template <DRT::Element::DiscretizationType distype> class AirwayImpl;
 
-class RedAirwayType : public DRT::ParObjectType
+class RedAirwayType : public DRT::ElementType
 {
 public:
 
@@ -55,6 +55,12 @@ public:
                                              const string eledistype,
                                              const int id,
                                              const int owner );
+
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
+
+  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
 
 private:
 
@@ -200,6 +206,9 @@ public:
   \brief Print this element
   */
   void Print(ostream& os) const;
+
+  virtual RedAirwayType & ElementType() const
+  { return RedAirwayType::Instance(); }
 
   //@}
 

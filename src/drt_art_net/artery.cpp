@@ -44,6 +44,23 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ArteryType::Create( const string elety
   return Teuchos::null;
 }
 
+void DRT::ELEMENTS::ArteryType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["ART"];
+
+  defs["LINE2"]
+    .AddIntVector("LINE2",2)
+    .AddNamedInt("MAT")
+    .AddNamedInt("GP")
+    ;
+
+  defs["LIN2"]
+    .AddIntVector("LIN2",2)
+    .AddNamedInt("MAT")
+    .AddNamedInt("GP")
+    ;
+}
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           ismail 01/09|
  |  id             (in)  this element's global id                       |

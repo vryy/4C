@@ -17,6 +17,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 using namespace DRT::UTILS;
 
@@ -58,6 +59,59 @@ void DRT::ELEMENTS::Fluid2Type::NodalBlockInformation( Element * dwele, int & nu
 void DRT::ELEMENTS::Fluid2Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeFluid2DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::Fluid2Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["FLUID2"];
+
+  defs["QUAD4"]
+    .AddIntVector("QUAD4",4)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["QUAD8"]
+    .AddIntVector("QUAD8",8)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["QUAD9"]
+    .AddIntVector("QUAD9",9)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["TRI3"]
+    .AddIntVector("TRI3",3)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["TRI6"]
+    .AddIntVector("TRI6",6)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["NURBS4"]
+    .AddIntVector("NURBS4",4)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["NURBS9"]
+    .AddIntVector("NURBS9",9)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["THQ9"]
+    .AddIntVector("THQ9",9)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
 }
 
 

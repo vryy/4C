@@ -15,6 +15,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 using namespace DRT::UTILS;
 
@@ -57,6 +58,36 @@ void DRT::ELEMENTS::Ale2Type::NodalBlockInformation( DRT::Element * dwele, int &
 void DRT::ELEMENTS::Ale2Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure2DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::Ale2Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["ALE2"];
+
+  defs["QUAD4"]
+    .AddIntVector("QUAD4",4)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["QUAD8"]
+    .AddIntVector("QUAD8",8)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["QUAD9"]
+    .AddIntVector("QUAD9",9)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TRI3"]
+    .AddIntVector("TRI3",3)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TRI6"]
+    .AddIntVector("TRI6",6)
+    .AddNamedInt("MAT")
+    ;
 }
 
 

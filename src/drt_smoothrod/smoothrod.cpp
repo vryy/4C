@@ -20,6 +20,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 
 DRT::ELEMENTS::SmoothrodType DRT::ELEMENTS::SmoothrodType::instance_;
@@ -43,6 +44,83 @@ void DRT::ELEMENTS::SmoothrodType::NodalBlockInformation( DRT::Element * dwele, 
 void DRT::ELEMENTS::SmoothrodType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeXFluid3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::SmoothrodType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["SMOOTHROD"];
+
+  defs["LINE2"]
+    .AddIntVector("LINE2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
+
+  defs["LIN2"]
+    .AddIntVector("LIN2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
+
+  defs["LINE3"]
+    .AddIntVector("LINE3",3)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
+
+  defs["LIN3"]
+    .AddIntVector("LIN3",3)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
+
+  defs["LINE4"]
+    .AddIntVector("LINE4",4)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
+
+  defs["LIN4"]
+    .AddIntVector("LIN4",4)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
+
+  defs["LINE5"]
+    .AddIntVector("LINE5",5)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
+
+  defs["LIN5"]
+    .AddIntVector("LIN5",5)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
 }
 
 

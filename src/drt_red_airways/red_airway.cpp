@@ -45,6 +45,21 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAirwayType::Create( const string el
   return Teuchos::null;
 }
 
+void DRT::ELEMENTS::RedAirwayType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,LineDefinition>& defs = definitions_["RED_AIRWAY"];
+
+  defs["LINE2"]
+    .AddIntVector("LINE2",2)
+    .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
+    .AddNamedDouble("WallCompliance")
+    .AddNamedDouble("AirCompliance")
+    .AddNamedDouble("WallThickness")
+    .AddNamedDouble("Area")
+    ;
+}
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           ismail 01/10|

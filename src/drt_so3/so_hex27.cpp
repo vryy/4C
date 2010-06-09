@@ -24,7 +24,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-
+#include "../drt_lib/drt_linedefinition.H"
 
 DRT::ELEMENTS::So_hex27Type DRT::ELEMENTS::So_hex27Type::instance_;
 
@@ -61,6 +61,22 @@ void DRT::ELEMENTS::So_hex27Type::NodalBlockInformation( DRT::Element * dwele, i
 void DRT::ELEMENTS::So_hex27Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::So_hex27Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH27"];
+
+  defs["HEX27"]
+    .AddIntVector("HEX27",27)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",3)
+    .AddNamedString("KINEM")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDouble("STRENGTH")
+    ;
 }
 
 

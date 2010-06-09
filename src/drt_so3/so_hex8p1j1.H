@@ -59,6 +59,8 @@ public:
 
   virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
 
+  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+
 private:
 
   static So_Hex8P1J1Type instance_;

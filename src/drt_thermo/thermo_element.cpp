@@ -28,6 +28,7 @@ Maintainer: Caroline Danowski
 #include "../drt_mat/fourieriso.H"
 #include "../drt_mat/thermostvenantkirchhoff.H"
 #include "../drt_mat/matlist.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 using namespace DRT::UTILS;
 
@@ -63,6 +64,96 @@ void DRT::ELEMENTS::ThermoType::NodalBlockInformation( Element * dwele, int & nu
 
 void DRT::ELEMENTS::ThermoType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
+}
+
+void DRT::ELEMENTS::ThermoType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["THERMO"];
+
+  defs["HEX8"]
+    .AddIntVector("HEX8",8)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["HEX20"]
+    .AddIntVector("HEX20",20)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["HEX27"]
+    .AddIntVector("HEX27",27)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TET4"]
+    .AddIntVector("TET4",4)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TET10"]
+    .AddIntVector("TET10",10)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["WEDGE6"]
+    .AddIntVector("WEDGE6",6)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["WEDGE15"]
+    .AddIntVector("WEDGE15",15)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["PYRAMID5"]
+    .AddIntVector("PYRAMID5",5)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["QUAD4"]
+    .AddIntVector("QUAD4",4)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["QUAD8"]
+    .AddIntVector("QUAD8",8)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["QUAD9"]
+    .AddIntVector("QUAD9",9)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TRI3"]
+    .AddIntVector("TRI3",3)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TRI6"]
+    .AddIntVector("TRI6",6)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["NURBS4"]
+    .AddIntVector("NURBS4",4)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["NURBS9"]
+    .AddIntVector("NURBS9",9)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["LINE2"]
+    .AddIntVector("LINE2",2)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["LINE3"]
+    .AddIntVector("LINE3",3)
+    .AddNamedInt("MAT")
+    ;
 }
 
 

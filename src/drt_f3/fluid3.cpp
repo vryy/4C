@@ -17,6 +17,7 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 using namespace DRT::UTILS;
 
@@ -59,6 +60,114 @@ void DRT::ELEMENTS::Fluid3Type::NodalBlockInformation( Element * dwele, int & nu
 void DRT::ELEMENTS::Fluid3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeFluid3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::Fluid3Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["FLUID3"];
+
+  defs["HEX8"]
+    .AddIntVector("HEX8",8)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["HEX20"]
+    .AddIntVector("HEX20",20)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["HEX27"]
+    .AddIntVector("HEX27",27)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["TET4"]
+    .AddIntVector("TET4",4)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["TET10"]
+    .AddIntVector("TET10",10)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["WEDGE6"]
+    .AddIntVector("WEDGE6",6)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["WEDGE15"]
+    .AddIntVector("WEDGE15",15)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["PYRAMID5"]
+    .AddIntVector("PYRAMID5",5)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["NURBS8"]
+    .AddIntVector("NURBS8",8)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["NURBS27"]
+    .AddIntVector("NURBS27",27)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  // 2D elements
+  defs["QUAD4"]
+    .AddIntVector("QUAD4",4)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["QUAD8"]
+    .AddIntVector("QUAD8",8)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["QUAD9"]
+    .AddIntVector("QUAD9",9)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["TRI3"]
+    .AddIntVector("TRI3",3)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["TRI6"]
+    .AddIntVector("TRI6",6)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["NURBS4"]
+    .AddIntVector("NURBS4",4)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+
+  defs["NURBS9"]
+    .AddIntVector("NURBS9",9)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
 }
 
 

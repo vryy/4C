@@ -21,6 +21,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -62,6 +63,20 @@ void DRT::ELEMENTS::So_weg6Type::NodalBlockInformation( DRT::Element * dwele, in
 void DRT::ELEMENTS::So_weg6Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::So_weg6Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["SOLIDW6"];
+
+  defs["WEDGE6"]
+    .AddIntVector("WEDGE6",6)
+    .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    ;
 }
 
 

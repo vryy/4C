@@ -216,3 +216,22 @@ void DRT::ParObjectFactory::PreEvaluate(DRT::Discretization& dis,
     }
   }
 }
+
+void DRT::ParObjectFactory::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  FinalizeRegistration();
+
+  // This is element specific code. Thus we need a down cast.
+
+  for ( std::map<int, ParObjectType*>::iterator i=type_map_.begin();
+        i!=type_map_.end();
+        ++i )
+  {
+    ParObjectType * pot = i->second;
+    ElementType * eot = dynamic_cast<ElementType*>( pot );
+    if ( eot!=NULL )
+    {
+      eot->SetupElementDefinition( definitions );
+    }
+  }
+}

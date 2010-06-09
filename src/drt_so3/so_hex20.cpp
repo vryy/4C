@@ -24,6 +24,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 DRT::ELEMENTS::So_hex20Type DRT::ELEMENTS::So_hex20Type::instance_;
 
@@ -60,6 +61,22 @@ void DRT::ELEMENTS::So_hex20Type::NodalBlockInformation( DRT::Element * dwele, i
 void DRT::ELEMENTS::So_hex20Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::So_hex20Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH20"];
+
+  defs["HEX20"]
+    .AddIntVector("HEX20",20)
+    .AddNamedInt("MAT")
+    .AddNamedIntVector("GP",3)
+    .AddNamedString("KINEM")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDouble("STRENGTH")
+    ;
 }
 
 

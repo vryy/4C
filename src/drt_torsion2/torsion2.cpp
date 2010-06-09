@@ -18,6 +18,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 DRT::ELEMENTS::Torsion2Type DRT::ELEMENTS::Torsion2Type::instance_;
 
@@ -53,6 +54,23 @@ void DRT::ELEMENTS::Torsion2Type::NodalBlockInformation( DRT::Element * dwele, i
 void DRT::ELEMENTS::Torsion2Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure2DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::Torsion2Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["TORSION2"];
+
+  defs["LINE3"]
+    .AddIntVector("LINE3",3)
+    .AddNamedDouble("SPRING")
+    .AddNamedString("BENDINGPOTENTIAL")
+    ;
+
+  defs["LIN3"]
+    .AddIntVector("LIN3",3)
+    .AddNamedDouble("SPRING")
+    .AddNamedString("BENDINGPOTENTIAL")
+    ;
 }
 
 /*----------------------------------------------------------------------*

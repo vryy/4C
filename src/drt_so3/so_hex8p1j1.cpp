@@ -6,7 +6,7 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "so_hex8.H"
-
+#include "../drt_lib/drt_linedefinition.H"
 
 DRT::ELEMENTS::So_Hex8P1J1Type DRT::ELEMENTS::So_Hex8P1J1Type::instance_;
 
@@ -43,6 +43,17 @@ void DRT::ELEMENTS::So_Hex8P1J1Type::ComputeNullSpace( DRT::Discretization & dis
 {
 //   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
 }
+
+void DRT::ELEMENTS::So_Hex8P1J1Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH8P1J1"];
+
+  defs["HEX8"]
+    .AddIntVector("HEX8",8)
+    .AddNamedInt("MAT")
+    ;
+}
+
 
 
 /*----------------------------------------------------------------------*
@@ -180,4 +191,3 @@ void DRT::ELEMENTS::So_Hex8P1J1::Print(ostream& os) const
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3
-

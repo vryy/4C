@@ -20,6 +20,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 
 DRT::ELEMENTS::Beam2Type DRT::ELEMENTS::Beam2Type::instance_;
@@ -58,6 +59,26 @@ void DRT::ELEMENTS::Beam2Type::ComputeNullSpace( DRT::Discretization & dis, std:
   DRT::UTILS::ComputeBeam2DNullSpace( dis, ns, x0, numdf, dimns );
 }
 
+void DRT::ELEMENTS::Beam2Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["BEAM2"];
+
+  defs["LINE2"]
+    .AddIntVector("LINE2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("INERMOM")
+    ;
+
+  defs["LIN2"]
+    .AddIntVector("LIN2",2)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("INERMOM")
+    ;
+}
 
 
 

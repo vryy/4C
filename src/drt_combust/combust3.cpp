@@ -15,6 +15,7 @@ Maintainer: Florian Henke
 
 #include "combust3.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 using namespace DRT::UTILS;
 
@@ -56,6 +57,51 @@ void DRT::ELEMENTS::Combust3Type::NodalBlockInformation( Element * dwele, int & 
 void DRT::ELEMENTS::Combust3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeXFluid3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::Combust3Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["COMBUST3"];
+
+  defs["HEX8"]
+    .AddIntVector("HEX8",8)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["HEX20"]
+    .AddIntVector("HEX20",20)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["HEX27"]
+    .AddIntVector("HEX27",27)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TET4"]
+    .AddIntVector("TET4",4)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["TET10"]
+    .AddIntVector("TET10",10)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["WEDGE6"]
+    .AddIntVector("WEDGE6",6)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["WEDGE15"]
+    .AddIntVector("WEDGE15",15)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["PYRAMID5"]
+    .AddIntVector("PYRAMID5",5)
+    .AddNamedInt("MAT")
+    ;
 }
 
 

@@ -18,7 +18,7 @@ Maintainer: Markus Gitterle
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-
+#include "../drt_lib/drt_linedefinition.H"
 
 DRT::ELEMENTS::Wall1Type DRT::ELEMENTS::Wall1Type::instance_;
 
@@ -57,6 +57,88 @@ void DRT::ELEMENTS::Wall1Type::NodalBlockInformation( DRT::Element * dwele, int 
 void DRT::ELEMENTS::Wall1Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure2DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::Wall1Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["WALL"];
+
+  defs["QUAD4"]
+    .AddIntVector("QUAD4",4)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",2)
+    .AddString("STRESS_STRAIN")
+    .AddString("LAGRANGE")
+    .AddString("EAS")
+    //.AddNamedString("STRESSES")
+    ;
+
+  defs["QUAD8"]
+    .AddIntVector("QUAD8",8)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",2)
+    .AddString("STRESS_STRAIN")
+    .AddString("LAGRANGE")
+    .AddString("EAS")
+    //.AddNamedString("STRESSES")
+    ;
+
+  defs["QUAD9"]
+    .AddIntVector("QUAD9",9)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",2)
+    .AddString("STRESS_STRAIN")
+    .AddString("LAGRANGE")
+    .AddString("EAS")
+    //.AddNamedString("STRESSES")
+    ;
+
+  defs["TRI3"]
+    .AddIntVector("TRI3",3)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",2)
+    .AddString("STRESS_STRAIN")
+    .AddString("LAGRANGE")
+    .AddString("EAS")
+    //.AddNamedString("STRESSES")
+    ;
+
+  defs["TRI6"]
+    .AddIntVector("TRI6",6)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",2)
+    .AddString("STRESS_STRAIN")
+    .AddString("LAGRANGE")
+    .AddString("EAS")
+    //.AddNamedString("STRESSES")
+    ;
+
+  defs["NURBS4"]
+    .AddIntVector("NURBS4",4)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",2)
+    .AddString("STRESS_STRAIN")
+    .AddString("LAGRANGE")
+    .AddString("EAS")
+    //.AddNamedString("STRESSES")
+    ;
+
+  defs["NURBS9"]
+    .AddIntVector("NURBS9",9)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",2)
+    .AddString("STRESS_STRAIN")
+    .AddString("LAGRANGE")
+    .AddString("EAS")
+    //.AddNamedString("STRESSES")
+    ;
 }
 
 

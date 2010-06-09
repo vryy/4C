@@ -17,7 +17,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-
+#include "../drt_lib/drt_linedefinition.H"
 
 
 DRT::ELEMENTS::Shell8Type DRT::ELEMENTS::Shell8Type::instance_;
@@ -55,6 +55,91 @@ void DRT::ELEMENTS::Shell8Type::NodalBlockInformation( DRT::Element * dwele, int
 void DRT::ELEMENTS::Shell8Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+void DRT::ELEMENTS::Shell8Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["SHELL8"];
+
+  defs["QUAD4"]
+    .AddIntVector("QUAD4",4)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("FORCES")
+    .AddNamedString("EAS")
+    .AddString("EAS2")
+    .AddString("EAS3")
+    .AddString("EAS4")
+    .AddString("EAS5")
+    .AddNamedString("ANS")
+    .AddNamedDouble("SDC")
+    ;
+
+  defs["QUAD8"]
+    .AddIntVector("QUAD8",8)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("FORCES")
+    .AddNamedString("EAS")
+    .AddString("EAS2")
+    .AddString("EAS3")
+    .AddString("EAS4")
+    .AddString("EAS5")
+    .AddNamedString("ANS")
+    .AddNamedDouble("SDC")
+    ;
+
+  defs["QUAD9"]
+    .AddIntVector("QUAD9",9)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("FORCES")
+    .AddNamedString("EAS")
+    .AddString("EAS2")
+    .AddString("EAS3")
+    .AddString("EAS4")
+    .AddString("EAS5")
+    .AddNamedString("ANS")
+    .AddNamedDouble("SDC")
+    ;
+
+  defs["TRI3"]
+    .AddIntVector("TRI3",3)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("FORCES")
+    .AddNamedString("EAS")
+    .AddString("EAS2")
+    .AddString("EAS3")
+    .AddString("EAS4")
+    .AddString("EAS5")
+    .AddNamedString("ANS")
+    .AddNamedDouble("SDC")
+    ;
+
+  defs["TRI6"]
+    .AddIntVector("TRI6",6)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("THICK")
+    .AddNamedIntVector("GP",3)
+    .AddNamedInt("GP_TRI")
+    .AddNamedString("FORCES")
+    .AddNamedString("EAS")
+    .AddString("EAS2")
+    .AddString("EAS3")
+    .AddString("EAS4")
+    .AddString("EAS5")
+    .AddNamedString("ANS")
+    .AddNamedDouble("SDC")
+    ;
 }
 
 
