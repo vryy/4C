@@ -19,14 +19,19 @@ Maintainer: Thomas Kloeppel
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_sparsematrix.H"
-
-
 using namespace std;
 using namespace Teuchos;
+
+//forward declarations
+namespace DRT
+{
+  class Condition;
+  class Discretization;
+}
+namespace LINALG
+{
+  class SparseOperator;
+}
 
 /*!
 \brief UTILS: namespace containing general utils for BACI, as constraints, potentials, surface stress, ...
@@ -102,10 +107,8 @@ namespace UTILS
     (
       const string& state,  ///< name of state to set
       RCP<Epetra_Vector> V  ///< values to set
-    )
-    {
-      actdisc_->SetState(state,V);
-    };
+    );
+
 
     /// initialization routine called by the manager ctor to get correct reference base values and activating the right conditions at the beginning
     void Initialize

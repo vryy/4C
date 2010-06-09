@@ -19,26 +19,34 @@ Maintainer: Thomas Kloeppel
 #include <Epetra_Vector.h>
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
-
-
 #include <Teuchos_ParameterList.hpp>
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "constraint.H"
-#include "constraintpenalty.H"
-#include "monitor.H"
-#include "multipointconstraint2.H"
-#include "multipointconstraint3.H"
-#include "multipointconstraint3penalty.H"
-#include "constraintdofset.H"
 
 using namespace std;
 using namespace Teuchos;
 
+namespace DRT
+{
+  class Discretization;
+}
+
+namespace LINALG
+{
+  class SparseOperator;
+  class MultiMapExtractor;
+}
+
 namespace UTILS
 {
+
+  //forward declarations
+  class Constraint;
+  class ConstraintPenalty;
+  class MPConstraint3;
+  class MPConstraint3Penalty;
+  class MPConstraint2;
+  class Monitor;
+  class ConstraintDofSet;
+  
   /*!
   \brief Class controlling constraints and containing the necessary data
 

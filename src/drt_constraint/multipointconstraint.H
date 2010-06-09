@@ -66,20 +66,7 @@ namespace UTILS
     (
       const string& state,  ///< name of state to set
       RCP<Epetra_Vector> V  ///< values to set
-    )
-    {
-      if (constrtype_!=none)
-      {
-        map<int,RCP<DRT::Discretization> >::iterator discrit;
-        for(discrit=constraintdis_.begin();discrit!=constraintdis_.end();++discrit)
-        {
-          RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(discrit->second)->DofColMap(),false);
-          LINALG::Export(*V,*tmp);
-          (discrit->second)->ClearState();
-          (discrit->second)->SetState(state,tmp);
-        }
-      }
-    };
+    );
 
     /// initialization routine called by the manager ctor to get correct reference base values and activating the right conditions at the beginning
     virtual void Initialize

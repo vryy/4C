@@ -45,13 +45,6 @@ Maintainer: Thomas Kloeppel
 #include <numeric>
 
 #include "constraintdofset.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
-
-#include "../linalg/linalg_utils.H"
-
-#include "../headers/define_sizes.h"
-
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
@@ -85,7 +78,12 @@ void UTILS::ConstraintDofSet::Reset()
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-int UTILS::ConstraintDofSet::AssignDegreesOfFreedom(const RCP<DRT::Discretization> dis, const int ndofs, const int start)
+int UTILS::ConstraintDofSet::AssignDegreesOfFreedom
+(
+    const RCP<DRT::Discretization> dis, 
+    const int ndofs, 
+    const int start
+)
 {
   // A definite offset is currently not supported.
   if (start!=0)

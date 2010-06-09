@@ -19,18 +19,25 @@ Maintainer: Thomas Kloeppel
 #include <Epetra_Vector.h>
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
-
-
 #include <Teuchos_ParameterList.hpp>
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../drt_inpar/inpar_structure.H"
 
+#include "../drt_inpar/inpar_structure.H"
 
 using namespace std;
 using namespace Teuchos;
+
+//forward declarations
+namespace DRT
+{
+  class Discretization;
+}
+namespace LINALG
+{
+  class MapExtractor;
+  class Solver;
+  class SparseMatrix;
+  class SparseOperator;
+}
 
 namespace UTILS
 {
@@ -42,8 +49,6 @@ namespace UTILS
   class ConstraintSolver
   {
   public:
-
-
 
     /*!
     \brief Constructor

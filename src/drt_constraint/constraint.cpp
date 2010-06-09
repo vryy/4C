@@ -12,11 +12,12 @@ Maintainer: Thomas Kloeppel
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+
+#include <iostream>
+
 #include "constraint.H"
-#include "iostream"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../linalg/linalg_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -447,4 +448,16 @@ vector<int> UTILS::Constraint::GetActiveCondID()
   }
   return condID;
 }
+
+/*-----------------------------------------------------------------------*
+ *-----------------------------------------------------------------------*/
+void UTILS::Constraint::SetState
+(
+  const string& state,  ///< name of state to set
+  RCP<Epetra_Vector> V  ///< values to set
+)
+{
+  actdisc_->SetState(state,V);
+};
+
 #endif

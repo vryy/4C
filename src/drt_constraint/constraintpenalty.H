@@ -20,12 +20,7 @@ Maintainer: Thomas Kloeppel
 #include <Epetra_Operator.h>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_sparsematrix.H"
 #include "constraint.H"
-
 
 using namespace std;
 using namespace Teuchos;

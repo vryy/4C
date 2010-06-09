@@ -13,16 +13,16 @@ Maintainer: Thomas Kloeppel
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "constraintsolver.H"
-#include "iostream"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <stdio.h>
+#include <iostream>
+
+#include "constraintsolver.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 11/07|

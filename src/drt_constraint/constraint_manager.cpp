@@ -12,11 +12,18 @@ Maintainer: Thomas Kloeppel
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <iostream>
+
+#include "../linalg/linalg_utils.H"
+
 #include "constraint_manager.H"
-#include "iostream"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_timecurve.H"
+#include "constraint.H"
+#include "constraintpenalty.H"
+#include "monitor.H"
+#include "multipointconstraint2.H"
+#include "multipointconstraint3.H"
+#include "multipointconstraint3penalty.H"
+#include "constraintdofset.H"
 
 
 /*----------------------------------------------------------------------*

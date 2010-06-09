@@ -19,10 +19,16 @@ Maintainer: Thomas Kloeppel
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_sparsematrix.H"
+//forward declarations
+namespace DRT
+{
+  class Condition;
+  class Discretization;
+}
+namespace LINALG
+{
+  class SparseOperator;
+}
 
 
 using namespace std;
@@ -84,10 +90,7 @@ namespace UTILS
     (
       const string& state,  ///< name of state to set
       RCP<Epetra_Vector> V  ///< values to set
-    )
-    {
-      actdisc_->SetState(state,V);
-    };
+    );
 
     //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateMonitor routine is called
     void Evaluate

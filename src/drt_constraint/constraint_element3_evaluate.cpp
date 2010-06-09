@@ -12,14 +12,11 @@ Maintainer: Thomas Kloeppel
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <Epetra_SerialDenseSolver.h>
 #include "constraint_element3.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "Epetra_SerialDenseSolver.h"
+
 
 using namespace DRT::UTILS;
 

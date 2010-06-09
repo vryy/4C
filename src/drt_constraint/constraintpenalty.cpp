@@ -12,12 +12,11 @@ Maintainer: Thomas Kloeppel
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "constraintpenalty.H"
-#include "iostream"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include <iostream>
 
+#include "constraintpenalty.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

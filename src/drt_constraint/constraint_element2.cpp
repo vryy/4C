@@ -13,12 +13,7 @@ Maintainer: Thomas Kloeppel
 #ifdef CCADISCRET
 
 #include "constraint_element2.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_utils.H"
 
-using namespace DRT::UTILS;
 
 DRT::ELEMENTS::ConstraintElement2Type DRT::ELEMENTS::ConstraintElement2Type::instance_;
 

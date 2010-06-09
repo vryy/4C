@@ -14,8 +14,8 @@ Maintainer: Thomas Kloeppel
 #define CONSTRAINT_ELEMENT2_H
 
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
+#include <Teuchos_RefCountPtr.hpp>
+#include <Epetra_Vector.h>
 using namespace std;
 using namespace Teuchos;
 
@@ -24,8 +24,6 @@ using namespace Teuchos;
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
 
