@@ -17,6 +17,7 @@ Maintainer: Michael Gee
 #include "drt_dserror.H"
 #include "../linalg/linalg_utils.H"
 #include "drt_globalproblem.H"
+#include "drt_elementtype.H"
 #ifdef D_SHELL8
 #include "../drt_s8/shell8.H"
 #endif
