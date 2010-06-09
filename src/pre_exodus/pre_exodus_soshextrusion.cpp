@@ -84,7 +84,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   }
 
   set<int> nodes_from_sideset;
-  int extrusion_sideset_id;
+  int extrusion_sideset_id=-1;
   // loop through all SideSets to check for extrusion
   for (i_sss = sss.begin(); i_sss != sss.end(); ++i_sss ){
     bool toextrude = CheckExtrusion(i_sss->second); // currently no rule is applied, the one (and only) sideset is extruded
@@ -269,7 +269,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       if (i_layer==layers-1){
         vector<int> ss(3);  // third pos for later eblockid
         ss.at(0) = newele;  // first entry is element id
-        if (newelenodes.size()==8) ss.at(1) = 6 ; // hexcase: top face id = 6 // bottom face ID = 5
+        if (newelenodes.size()==8) ss.at(1) = 6 ; // hexcase: top face id = 6 // bottom face ID = 5 //TODO
         else if (newelenodes.size()==6) ss.at(1) = 5; // wedgecase: top face id
         else dserror("wrong number of elenodes!");
         newsideset.insert(pair<int,vector<int> >(newele,ss));
@@ -508,7 +508,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             if (i_layer==layers-1){
               vector<int> ss(3);  // third pos for later eblockid
               ss.at(0) = newele;  // first entry is element id
-              if (newelenodes.size()==8) ss.at(1) = 6; // hexcase: top face id = 6, bottom = 5
+              if (newelenodes.size()==8) ss.at(1) = 6; // hexcase: top face id = 6, bottom = 5 //TODO
               else if (newelenodes.size()==6) ss.at(1) = 5; // wedgecase: top face id
               else dserror("wrong number of elenodes!");
               newsideset.insert(pair<int,vector<int> >(newele,ss));
@@ -554,7 +554,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     switch(extrusion_types.find(i_extr->first)->second){
     case eblock:{ // Eblocks have only one type of eles
       int numnodes = newconn->find(0)->second.size();
-      ElementBlock::Shape newshape;
+      ElementBlock::Shape newshape = ElementBlock::dis_none;
       if (numnodes == 6) newshape = ElementBlock::wedge6;
       else if (numnodes == 8) newshape = ElementBlock::hex8;
       else dserror("Number of basenodes for extrusion not supported");
@@ -576,7 +576,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       int hexcounter2 = 0;
       RCP<map<int,vector<int> > > wegconn2 = rcp(new map<int,vector<int> >);
       int wegcounter2 = 0;
-      int innerelecounter;
+      int innerelecounter = -1;
       // =====================================================================
 
       for (i_ele = newconn->begin(); i_ele != newconn->end(); ++i_ele){
@@ -708,7 +708,8 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     highestns ++;
 
   } // end of extruding
-
+  
+  //Won't work a second time if extruded in "wrong direction"! //TODO
   // create 2 NodeSets consisting of the inner extrusion face and the outer extrusion face respectively
   set<int> nodes_extrusion_base;
   set<int> nodes_extrusion_roof;
@@ -760,7 +761,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       }
     }
   }
-
+  // rest works fine! */ //TODO
   // check and make flat extrusion surfaces for symmetry or other boundary conditions
   // loop through all NodeSets to check for flat extrusion
   for (i_nss = nss.begin(); i_nss != nss.end(); ++i_nss ){
@@ -988,7 +989,7 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
         }
         else {
         // we need a new node
-          int newid;
+          int newid= highestnid+1;
 
           // layer case rework layer elements within enclosing one
           const vector<int> layereles = layerstack.find(i_encl->first)->second;
