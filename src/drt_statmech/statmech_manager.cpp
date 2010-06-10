@@ -1767,8 +1767,10 @@ void StatMechManager::SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > 
   //update the number of times the function SearchNeighbours has already been called
   nsearch_++;
 
-  //maximal distance bridged by a crosslinker
+  //mean distance bridged by a crosslinker
   double rlink = statmechparams_.get<double>("R_LINK",0.0);
+  //absolute value of difference between maximal/minimal and mean distance bridged by crosslinkers
+  double deltarlink = statmechparams_.get<double>("DeltaR_LINK",0.0);
 
   //each processor looks for each of its row nodes for neighbours; loop index i is the local row node Id
   for(int i = 0; i < discret_.NumMyRowNodes(); i++)
@@ -1794,7 +1796,7 @@ void StatMechManager::SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > 
       for(int k = 0; k<3; k++)
         difference(k) = (posi->second)(k) - (posj->second)(k);
 
-      if(difference.Norm2() < rlink)
+      if(difference.Norm2() < rlink + deltarlink && difference.Norm2() > rlink - deltarlink )
         neighboursLID.push_back(posj->first);
     }
 

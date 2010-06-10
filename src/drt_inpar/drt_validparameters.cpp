@@ -1194,8 +1194,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("N_CROSSMAX",-1,"Maximal number of crosslinkers a node can establish to other nodes",&statmech);
   //average time between searching new neighbours for setting crosslinkers
   DoubleParameter("Delta_t_search",0.0,"average time between searching new neighbours for setting crosslinkers",&statmech);
-  //Reading double parameter for maximal cross linker protein length
-  DoubleParameter("R_LINK",0.0,"Maximal distance between two nodes connected by a crosslinker",&statmech);
+  //Reading double parameter for crosslinker protein mean length
+  DoubleParameter("R_LINK",0.0,"Mean distance between two nodes connected by a crosslinker",&statmech);
+  //Absolute value of difference between maximal/minimal and mean cross linker length
+  DoubleParameter("DeltaR_LINK",0.0,"Absolute value of difference between maximal/minimal and mean cross linker length",&statmech);
   //Reading double parameter for concentration of crosslinking protein
   DoubleParameter("C_CROSSLINKER",0.0,"Molar concentration of crosslinking protein",&statmech);
   //Edge length of cube for periodic boundary conditions problem
