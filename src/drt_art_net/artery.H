@@ -22,6 +22,7 @@ using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_parobjectfactory.H"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
@@ -43,7 +44,7 @@ class ArteryExpInterface;
 template <DRT::Element::DiscretizationType distype> class ArteryLinExp;
 
 
-class ArteryType : public DRT::ParObjectType
+class ArteryType : public DRT::ElementType
 {
 public:
 
@@ -198,6 +199,9 @@ public:
   \brief Print this element
   */
   void Print(ostream& os) const;
+
+  virtual ArteryType & ElementType() const
+  { return ArteryType::Instance(); }
 
   //@}
 

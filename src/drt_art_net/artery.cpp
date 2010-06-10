@@ -18,6 +18,7 @@ Maintainer: Mahmoud Ismail
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 using namespace DRT::UTILS;
 
@@ -46,7 +47,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ArteryType::Create( const string elety
 
 void DRT::ELEMENTS::ArteryType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
-  std::map<std::string,LineDefinition>& defs = definitions_["ART"];
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["ART"];
 
   defs["LINE2"]
     .AddIntVector("LINE2",2)
@@ -66,7 +67,7 @@ void DRT::ELEMENTS::ArteryType::SetupElementDefinition( std::map<std::string,std
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Artery::Artery(int id, int owner) :
-DRT::Element(id,element_artery,owner),
+DRT::Element(id,owner),
 is_ale_(false),
 data_()
 {

@@ -603,20 +603,20 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   }
   else
   {
+    stream1 << "flowratesId" << condnum;
+    stream2 << "flowratesposId" << condnum;
+
+    // read in flow rates
+    reader.ReadRedundantDoubleVector(flowrates_ ,stream1.str());
+    flowratespos_ = reader.ReadInt(stream2.str());
+
     // Get old flowrates Vector size
-    int oQSize = (int)pressures_->size();
+    int oQSize = (int)flowrates_->size();
     
     // Calculate new flowrates Vector size
     int nQSize = (int)(double(oQSize)*odta/ndta);
 
-    stream1 << "flowratesId" << condnum;
-    stream2 << "flowratesposId" << condnum;
-
-    flowratespos_ = reader.ReadInt(stream2.str());
-    
-    // read in flow rates
-    reader.ReadRedundantDoubleVector(flowrates_ ,stream1.str());
-
+  
     // check if vector of flowrates is not empty
     if (flowrates_->size() == 0)
     dserror("could not re-read vector of flowrates");
@@ -628,6 +628,7 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
     {
       if (!myrank_)
         printf("Impedance restart old and new time step are the same - life is good\n");
+
       OutflowBoundary(t,ndta,0.66,condnum);
       return;
     }
