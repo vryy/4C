@@ -1372,8 +1372,12 @@ add_library(filter_common ${OBJS_FILTER_COMMON})
 # linear algebra objects
 add_library(linalg ${OBJS_LINALG})
 
+string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
+set(baciname baci-${BUILD_TYPE})
+#set(baciname baci)
+
 # the baci executable
-add_executable (baci ${OBJS_BACI_MAIN})
+add_executable (${baciname} ${OBJS_BACI_MAIN})
 
 add_executable (post_drt_gid     ${OBJS_POST_DRT_GID} ${OBJS_POST_GID_TXT})
 add_executable (post_drt_ensight ${OBJS_POST_DRT_ENSIGHT})
@@ -1383,7 +1387,7 @@ add_executable (post_drt_q9neconvert ${OBJS_POST_DRT_Q9NECONVERT})
 
 add_executable (pre_curve ${OBJS_PRE_CURVE})
 
-target_link_libraries (baci 
+target_link_libraries (${baciname} 
   ${MULTIFIELD_LIBRARIES} 
   drt_adapter 
   ${SINGLEFIELD_LIBRARIES}
@@ -1433,14 +1437,14 @@ include(CTest)
 macro (baci_test arg nproc restart)
   add_test(NAME ${arg}-${nproc}
     #CONFIGURATIONS Debug
-    COMMAND mpirun -np ${nproc} $<TARGET_FILE:baci> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx)
+    COMMAND mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx)
   set_tests_properties (${arg}-${nproc} 
     PROPERTIES PASS_REGULAR_EXPRESSION "processor 0 finished normally")
 
   if (${restart})
     add_test(NAME ${arg}-${nproc}-r
       #CONFIGURATIONS Debug
-      COMMAND mpirun -np ${nproc} $<TARGET_FILE:baci> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart})
+      COMMAND mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart})
     set_tests_properties (${arg}-${nproc}-r
       PROPERTIES PASS_REGULAR_EXPRESSION "processor 0 finished normally")
   endif (${restart})

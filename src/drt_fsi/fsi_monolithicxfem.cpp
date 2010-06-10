@@ -16,8 +16,8 @@
 #include "../drt_io/io_control.H"
 #include "../drt_fem_general/debug_nan.H"
 
-
-
+#include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*/
 // Note: The order of calling the three BaseAlgorithm-constructors is
