@@ -147,6 +147,7 @@ void DRT::ELEMENTS::Torsion3::Pack(vector<char>& data) const
   Element::Pack(basedata);
   AddtoPack(data,basedata);
   AddtoPack(data,springconstant_);
+  AddtoPack(data,bendingpotential_);
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
@@ -170,6 +171,7 @@ void DRT::ELEMENTS::Torsion3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   ExtractfromPack(position,data,springconstant_);
+  ExtractfromPack(position,data,bendingpotential_);
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);

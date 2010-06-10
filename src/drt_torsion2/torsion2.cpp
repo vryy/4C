@@ -151,6 +151,7 @@ void DRT::ELEMENTS::Torsion2::Pack(vector<char>& data) const
   AddtoPack(data,isinit_);
    AddtoPack(data,theta_);
   AddtoPack(data,springconstant_);
+  AddtoPack(data,bendingpotential_);
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
@@ -176,6 +177,7 @@ void DRT::ELEMENTS::Torsion2::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,isinit_);
    ExtractfromPack(position,data,theta_);
   ExtractfromPack(position,data,springconstant_);
+  ExtractfromPack(position,data,bendingpotential_);
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
