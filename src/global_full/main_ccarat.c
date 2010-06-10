@@ -107,6 +107,11 @@ int main(INT argc, char *argv[])
 #else
            "*          sequential version          *\n"
 #endif
+#ifdef DEBUG
+           "*            debug version             *\n"
+#else
+           "*             fast version             *\n"
+#endif
            "*                                      *\n"
            "*  Lehrstuhl fuer Numerische Mechanik  *\n"
            "*                 LNM                  *\n"
