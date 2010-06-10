@@ -18,7 +18,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
     map<int,EXODUS::NodeSet> nss = mymesh.GetNodeSets();
     map<int,EXODUS::NodeSet>::const_iterator i_ns;
     // check for Centerline or Centerpoint Nodeset
-    bool clbool;
+    bool clbool=true;
     for(i_ns=nss.begin();i_ns!=nss.end();++i_ns){
       const string myname = i_ns->second.GetName();
       if (myname.find("centerline") != string::npos)
@@ -73,7 +73,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
     map<int,EXODUS::NodeSet> nss = centerlinemesh.GetNodeSets();
     map<int,EXODUS::NodeSet>::const_iterator i_ns;
     // check for Centerline or Centerpoint Nodeset
-    bool clbool;
+    bool clbool=true;
     for(i_ns=nss.begin();i_ns!=nss.end();++i_ns){
       const string myname = i_ns->second.GetName();
       if (myname.find("centerline") != string::npos)
@@ -209,7 +209,7 @@ map<int,double> EXODUS::NdCenterlineThickness(string cline,const set<int>& nodes
     vector<double> nodecoords = mesh.GetNode(*i_node);
 
     double min_distance = EXODUS::distance3d(nodecoords,clpoints.begin()->second);
-    int clID;
+    int clID=-1;
 
     //loop over all points of the centerline to find closest
     for(map<int,vector<double> >::const_iterator cl_iter = clpoints.begin(); cl_iter != clpoints.end(); ++cl_iter)
@@ -538,7 +538,8 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
   //conn_mp_cp will contain (midpoint-ID, centerpoint-ID_1, centerpoint-ID_2)
   map<int,vector<int> > conn_mp_cp;
   //auxiliary variables
-  int clID, clID_2;
+  int clID=-1;
+  int clID_2=-1;
   vector<int> ids(2,0);
   double min_distance,temp;
   map<int,vector<double> > clpoints = *(mycline.GetPoints());
@@ -672,7 +673,8 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
 	//conn_mp_cp will contain (midpoint-ID, centerpoint-ID_1, centerpoint-ID_2)
 	map<int,vector<int> > conn_mp_cp;
 	//auxiliary variables
-	int clID, clID_2;
+	int clID=-1;
+	int clID_2=-1;
 	vector<int> ids(2,0);
 	double min_distance,temp;
 
@@ -783,7 +785,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_degcosys
   //conn_mp_cp will contain (midpoint-ID, centerpoint-ID)
   map<int,int > conn_mp_cp;
   //auxiliary variables
-  int clID;
+  int clID=-1;
   double min_distance,temp;
 
   map<int,vector<double> > clpoints = *(mycline.GetPoints());
@@ -884,7 +886,8 @@ void EXODUS::PlotCosys(EXODUS::Centerline& mycline,const EXODUS::Mesh& mymesh, c
 	//conn_mp_cp will contain (midpoint-ID, centerpoint-ID_1, centerpoint-ID_2)
 	map<int,vector<int> > conn_mp_cp;
 	//auxiliary variables
-	int clID, clID_2;
+	int clID=-1;
+	int clID_2=-1;
 	vector<int> ids(2,0);
 	double min_distance,temp;
 
