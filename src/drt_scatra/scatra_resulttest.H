@@ -19,10 +19,12 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "../drt_lib/drt_resulttest.H"
-#include "scatra_timint_implicit.H"
 
 
 namespace SCATRA{
+
+// forward declaration
+class ScaTraTimIntImpl;
 
 /*!
   \brief scalar-transport specific result test class

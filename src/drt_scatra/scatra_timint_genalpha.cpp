@@ -16,6 +16,7 @@ Maintainer: Volker Gravemeier
 
 #include "scatra_timint_genalpha.H"
 #include <Teuchos_TimeMonitor.hpp>
+#include "../drt_io/io.H"
 
 
 /*----------------------------------------------------------------------*

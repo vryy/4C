@@ -17,6 +17,8 @@ Maintainer: Georg Bauer
 #include "scatra_timint_ost.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_inpar/inpar_elch.H"
+#include "../drt_io/io.H"
+#include "../linalg/linalg_solver.H"
 
 
 /*----------------------------------------------------------------------*
@@ -347,7 +349,7 @@ void SCATRA::TimIntOneStepTheta::Update()
   {
      phinm_ ->Update(1.0,*phin_,0.0);
   }
-  
+
   // solution of this step becomes most recent solution of the last step
   phin_ ->Update(1.0,*phinp_,0.0);
 
@@ -408,7 +410,7 @@ void SCATRA::TimIntOneStepTheta::OutputRestart()
   // additional state vectors that are needed for One-Step-Theta restart
   output_->WriteVector("phidtn", phidtn_);
   output_->WriteVector("phin", phin_);
-  
+
   // phinm is needed to reconstruct the interface
   if (scatratype_ == INPAR::SCATRA::scatratype_levelset)
   {
@@ -461,7 +463,7 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
   reader.ReadVector(phinp_, "phinp");
   reader.ReadVector(phin_,  "phin");
   reader.ReadVector(phidtn_,"phidtn");
-  
+
   // phinm is needed for restart of level set problems
   if (scatratype_ == INPAR::SCATRA::scatratype_levelset)
   {

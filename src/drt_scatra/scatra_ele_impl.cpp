@@ -1558,7 +1558,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           {
             CalcSubgrVelocityLevelSet(ele,time,dt,timefac,k);
           }
-          
           // calculate subgrid-scale convective part
           sgconv_.MultiplyTN(derxy_,sgvelint_);
         }
@@ -1735,6 +1734,7 @@ RefCountPtr<MAT::Material> material = ele->Material();
 if (material->MaterialType() == INPAR::MAT::m_matlist)
 {
   const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
+  if (actmat->NumMat() < numscal_) dserror("Not enough materials in MatList.");
 
   for (int k = 0;k<numscal_;++k)
   {
@@ -3041,7 +3041,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocityLevelSet(
 
   // get fluid body force
   bodyforce.Multiply(nodebodyforce,funct_);
-  
+
   //overwrite bodyforce
   bodyforce(0) = 0.0;
   bodyforce(1) = -10.0;
@@ -3207,7 +3207,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocityLevelSet(
        sgvelint_(rr) = -tau*(dens*velint_(rr)+timefacmod*(dens*conv(rr)+gradp(rr)-2*viscosity*visc(rr)-dens*bodyforce(rr))-dens*acc(rr))/dt;
     }
   }
-  
+
   // TEST
 //  std::cout << "SCATRA" << std::endl;
 //  std::cout << "dens: " << dens<< std::endl;

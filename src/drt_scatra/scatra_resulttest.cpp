@@ -15,6 +15,7 @@ Maintainer: Georg Bauer
 
 #ifdef CCADISCRET
 
+#include "scatra_timint_implicit.H"
 #include "scatra_resulttest.H"
 
 #ifdef PARALLEL
@@ -26,8 +27,8 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 SCATRA::ScaTraResultTest::ScaTraResultTest(ScaTraTimIntImpl& scatra)
 {
-  dis_    = scatra.discret_;
-  mysol_  = scatra.phinp_ ;
+  dis_    = scatra.Discretization();
+  mysol_  = scatra.Phinp();
   myflux_ = scatra.CalcFlux();
 }
 

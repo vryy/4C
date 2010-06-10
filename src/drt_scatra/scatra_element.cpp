@@ -20,6 +20,7 @@ Maintainer: Georg Bauer
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 using namespace DRT::UTILS;
 
@@ -299,6 +300,32 @@ void DRT::ELEMENTS::Transport::Unpack(const vector<char>& data)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Return number of lines of this element (public)           gjb 07/08 |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::Transport::NumLine() const
+{
+  return DRT::UTILS::getNumberOfElementLines(distype_);
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Return number of surfaces of this element (public)        gjb 07/08 |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::Transport::NumSurface() const
+{
+  return DRT::UTILS::getNumberOfElementSurfaces(distype_);
+}
+
+
+/*----------------------------------------------------------------------*
+ | Return number of volumes of this element (public)          gjb 07/08 |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::Transport::NumVolume() const
+{
+  return DRT::UTILS::getNumberOfElementVolumes(distype_);
+}
+
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                             gjb 05/08 |
@@ -558,6 +585,40 @@ void DRT::ELEMENTS::TransportBoundary::Print(ostream& os) const
   os << "TransportBoundary ";
   Element::Print(os);
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | Return number of lines of boundary element (public)        gjb 01/09 |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::TransportBoundary::NumLine() const
+{
+  // get spatial dimension of boundary
+  const int nsd = DRT::UTILS::getDimension(parent_->Shape()) - 1;
+
+  if (NumNode()==4 || NumNode()==8 || NumNode()==9) return 4;
+  else if (NumNode()==6) return 3;
+  else if (NumNode()==3 && nsd ==2) return 3;
+  else if (NumNode()==3 && nsd ==1) return 1;
+  else if (NumNode()==2) return 1;
+  else
+  {
+    dserror("Could not determine number of lines");
+    return -1;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |  Return number of surfaces of boundary element (public)    gjb 01/09 |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::TransportBoundary::NumSurface() const
+{
+  // get spatial dimension of parent element
+  const int nsd = DRT::UTILS::getDimension(parent_->Shape());
+
+  if (nsd == 3)
+    return 1;
+  else
+    return 0;
 }
 
 /*----------------------------------------------------------------------*

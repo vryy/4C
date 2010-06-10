@@ -19,7 +19,14 @@ Maintainer: Georg Bauer
 #define ADAPTER_SCATRA_BASE_ALGORITHM_H
 
 #include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_scatra/scatra_resulttest.H"
+
+
+// forward declarations
+namespace DRT
+{
+  class ResultTest;
+  class ScaTraResultTest;
+}
 
 // Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER {
@@ -46,13 +53,10 @@ namespace ADAPTER {
     virtual ~ScaTraBaseAlgorithm();
 
     /// access to the scalar transport field solver
-    SCATRA::ScaTraTimIntImpl& ScaTraField() { return *scatra_;};
+    SCATRA::ScaTraTimIntImpl& ScaTraField();
 
     /// create result test for scalar transport field
-    Teuchos::RCP<DRT::ResultTest> CreateScaTraFieldTest()
-    {
-      return Teuchos::rcp(new SCATRA::ScaTraResultTest::ScaTraResultTest(*scatra_));
-    };
+    Teuchos::RCP<DRT::ResultTest> CreateScaTraFieldTest();
 
   private:
 

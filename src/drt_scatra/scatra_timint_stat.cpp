@@ -16,6 +16,7 @@ Maintainer: Georg Bauer
 
 #include "scatra_timint_stat.H"
 #include <Teuchos_TimeMonitor.hpp>
+#include "../drt_io/io.H"
 
 
 /*----------------------------------------------------------------------*
@@ -139,7 +140,7 @@ void SCATRA::TimIntStationary::ReadRestart(int step)
   if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
   {
     std::stringstream stream1, stream2, stream3;
-    // define a vector with all electro kinetic BC 
+    // define a vector with all electro kinetic BC
     vector<DRT::Condition*> cond;
     discret_->GetCondition("ElectrodeKinetics",cond);
     if (!cond.empty())
@@ -172,14 +173,14 @@ void SCATRA::TimIntStationary::OutputRestart()
   {
   if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
   {
-    // define a vector with all electro kinetic BC 
+    // define a vector with all electro kinetic BC
     vector<DRT::Condition*> cond;
     discret_->GetCondition("ElectrodeKinetics",cond);
     if (!cond.empty())
     {
       // electrode potential of the first electro kinetic BC
       double pot = cond[0]->GetDouble("pot");
-      // write electrode potential to the .case file	
+      // write electrode potential to the .case file
       output_->WriteDouble("pot",pot);
     }
   }

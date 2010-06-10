@@ -19,6 +19,7 @@ Maintainer: Georg Bauer
 #include <cstdlib>
 #include "scatra_ele_boundary_impl.H"
 #include "scatra_ele_impl.H"
+#include "scatra_element.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_utils.H"

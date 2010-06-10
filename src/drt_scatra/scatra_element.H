@@ -25,7 +25,6 @@ using namespace std;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 
 namespace DRT
@@ -136,26 +135,18 @@ public:
   /*!
   \brief Return number of lines of this element
   */
-  virtual int NumLine() const
-  {
-    return DRT::UTILS::getNumberOfElementLines(distype_);
-  }
+  virtual int NumLine() const;
+
 
   /*!
   \brief Return number of surfaces of this element
   */
-  virtual int NumSurface() const
-  {
-    return DRT::UTILS::getNumberOfElementSurfaces(distype_);
-  }
+  virtual int NumSurface() const;
 
   /*!
   \brief Return number of volumes of this element
   */
-  virtual int NumVolume() const
-  {
-    return DRT::UTILS::getNumberOfElementVolumes(distype_);
-  }
+  virtual int NumVolume() const;
 
   /*!
   \brief Get vector of RefCountPtrs to the lines of this element
@@ -472,36 +463,12 @@ public:
   /*!
   \brief Return number of lines of boundary element
   */
-  virtual int NumLine() const
-  {
-    // get spatial dimension of boundary
-    const int nsd = DRT::UTILS::getDimension(parent_->Shape()) - 1;
-
-    if (NumNode()==4 || NumNode()==8 || NumNode()==9) return 4;
-    else if (NumNode()==6) return 3;
-    else if (NumNode()==3 && nsd ==2) return 3;
-    else if (NumNode()==3 && nsd ==1) return 1;
-    else if (NumNode()==2) return 1;
-    else
-    {
-      dserror("Could not determine number of lines");
-      return -1;
-    }
-  }
+  virtual int NumLine() const;
 
   /*!
   \brief Return number of surfaces of boundary element
    */
-  virtual int NumSurface() const
-  {
-    // get spatial dimension of parent element
-    const int nsd = DRT::UTILS::getDimension(parent_->Shape());
-
-    if (nsd == 3)
-      return 1;
-    else
-      return 0;
-  }
+  virtual int NumSurface() const;
 
   /*!
   \brief Get vector of RefCountPtrs to the lines of this element

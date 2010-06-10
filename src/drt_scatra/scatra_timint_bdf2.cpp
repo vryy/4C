@@ -17,6 +17,7 @@ Maintainer: Georg Bauer
 #include "scatra_timint_bdf2.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_inpar/inpar_elch.H"
+#include "../drt_io/io.H"
 
 
 /*----------------------------------------------------------------------*

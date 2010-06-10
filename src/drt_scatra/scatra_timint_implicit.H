@@ -30,19 +30,26 @@ Maintainer: Georg Bauer
 #include "Epetra_SerialComm.h"
 #endif /* PARALLEL */
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 #include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../drt_io/io.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_scatra.H"
 
 //forward declarations
 class PeriodicBoundaryConditions;
-
+namespace DRT
+{
+  class Discretization;
+}
+namespace IO
+{
+  class DiscretizationWriter;
+}
+namespace LINALG
+{
+  class Solver;
+}
 
 using namespace std;
 using namespace Teuchos;
@@ -57,7 +64,6 @@ namespace SCATRA{
 */
 class ScaTraTimIntImpl
 {
-  friend class ScaTraResultTest;
 
 public:
 
@@ -221,7 +227,7 @@ public:
 
   /// routine to return scalar field phi at time step n
   Teuchos::RCP<Epetra_Vector> Phin() { return phin_; }
-  
+
   // routine to return scalar field phi at time step n-1
   virtual Teuchos::RCP<Epetra_Vector> Phinm() = 0;
 
@@ -355,6 +361,9 @@ public:
   /// check for negative values of concentrations (ELCH)
   INPAR::SCATRA::ScaTraType ScaTraType() const {return scatratype_;};
 
+  /// routine to calculate mass/heat flux vectors (in domain / at boundary)
+  Teuchos::RCP<Epetra_MultiVector> CalcFlux();
+
 protected:
 
   /// don't want = operator and cctor
@@ -442,9 +451,6 @@ protected:
 
   /// write additional data required for restart
   virtual void OutputRestart() = 0;
-
-  /// routine to calculate mass/heat flux vectors (in domain / at boundary)
-  Teuchos::RCP<Epetra_MultiVector> CalcFlux();
 
   /// compute contribution of electrode kinetics to eq. system
   void EvaluateElectrodeKinetics(

@@ -24,11 +24,13 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "scatra_timint_implicit.H"
+#include "../linalg/linalg_solver.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_fluid/fluid_utils.H" // for splitter
 #include "scatra_utils.H" // for splitstrategy
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
+#include "../drt_io/io.H"
 //REINHARD
 #include "../drt_geometry/element_volume.H"
 //end REINHARD
@@ -1862,7 +1864,7 @@ void SCATRA::ScaTraTimIntImpl::Reinitialize()
 	 * to use this function. At the moment, the reinitialization of the level set problems is done
 	 * directly in the corresponding algorithm.
 	 */
-	
+
 	if (reinitaction_ == INPAR::SCATRA::reinitaction_directdistance)
 	{
 		//Reinitialization as distance calculation to some interfacial points

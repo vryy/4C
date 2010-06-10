@@ -14,6 +14,7 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "scatra_timint_implicit.H"
+#include "../linalg/linalg_solver.H"
 #include "../drt_lib/drt_timecurve.H"
 #include <Teuchos_TimeMonitor.hpp>
 // for AVM3 solver:
@@ -31,6 +32,7 @@ Maintainer: Georg Bauer
 #include <MLAPI_Eig.h>
 // for printing electrode status to file
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
 //access to the material data (ELCH)

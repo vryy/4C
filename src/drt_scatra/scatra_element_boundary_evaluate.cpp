@@ -14,6 +14,7 @@ Maintainer: Georg Bauer
 #if defined(D_FLUID2) || defined(D_FLUID3)
 #ifdef CCADISCRET
 
+#include "scatra_element.H"
 #include "scatra_ele_boundary_impl.H"
 
 /*----------------------------------------------------------------------*

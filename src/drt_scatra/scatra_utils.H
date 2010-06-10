@@ -19,8 +19,15 @@ Maintainer: Georg Bauer
 #define SCATRA_UTILS_H
 
 #include "../linalg/linalg_blocksparsematrix.H"
-#include "../drt_lib/drt_condition_utils.H"
+#include <Teuchos_RCP.hpp>
 
+using namespace std;
+using namespace Teuchos;
+
+namespace DRT
+{
+class Element;
+}
 
 namespace SCATRA
 {
@@ -42,17 +49,17 @@ public:
 protected:
 
   /// determine element type string and whether element is copied or not
-  bool DetermineEleType(DRT::Element* actele, const bool ismyele, vector<string>& eletype);
+  bool DetermineEleType(DRT::Element* actele, const bool ismyele, std::vector<string>& eletype);
 
   /// set element-specific data (material etc.)
   void SetElementData(
-      RCP<DRT::Element> newele,
+      Teuchos::RCP<DRT::Element> newele,
       DRT::Element* oldele,
       const int matid,
       const bool isnurbs);
 
   /// returns conditions names to be copied (source and target name)
-  map<string,string> ConditionsToCopy();
+  map<std::string,std::string> ConditionsToCopy();
 
   /// check for correct material
   void CheckMaterialType(const int matid);
@@ -150,11 +157,11 @@ private:
         std::vector<double> values0(numscal_*nnode);
         std::vector<double> values1(nnode);
         std::vector<double> values00(nnode);
-        std::map<int,vector<int> > localcol00map;
+        std::map<int,std::vector<int> > localcol00map;
         for (int i = 0; i < numscal_ ; i++)
         {
-          vector<int> vec(nnode);
-          localcol00map.insert(pair<int,vector<int>  >(i,vec));
+          std::vector<int> vec(nnode);
+          localcol00map.insert(std::pair<int,std::vector<int>  >(i,vec));
         }
         std::vector<int> localcol01(nnode);
         std::vector<int> localcol10(numscal_*nnode);

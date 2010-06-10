@@ -15,15 +15,19 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "../drt_io/io_control.H"
+#include "../drt_io/io.H"
 #include "adapter_scatra_base_algorithm.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../linalg/linalg_solver.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_elch.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_stat.H"
 #include "../drt_scatra/scatra_timint_ost.H"
 #include "../drt_scatra/scatra_timint_bdf2.H"
 #include "../drt_scatra/scatra_timint_genalpha.H"
+#include "../drt_scatra/scatra_resulttest.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -193,6 +197,22 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   return;
 
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+SCATRA::ScaTraTimIntImpl& ADAPTER::ScaTraBaseAlgorithm::ScaTraField()
+{
+  return *scatra_;
+};
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTest()
+{
+  return Teuchos::rcp(new SCATRA::ScaTraResultTest::ScaTraResultTest(*scatra_));
+};
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

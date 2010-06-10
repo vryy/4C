@@ -22,15 +22,17 @@ Maintainer: Georg Bauer
 
 #include "scatra_ele_impl_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "scatra_element.H"
 #include "../drt_inpar/inpar_scatra.H"
-
 
 
 namespace DRT
 {
 namespace ELEMENTS
 {
+
+// forward declarations
+class Transport;
+class TransportBoundary;
 
 /// Interface base class for ScaTraImpl
 /*!
