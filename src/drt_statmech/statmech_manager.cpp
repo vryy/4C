@@ -1482,9 +1482,7 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
     // Re-export to column map format
     Epetra_Export rowtocolumn(*discret_.NodeRowMap(),*discret_.NodeColMap());
     // INSERT new counter vector values, overwrite old values
-    crosslinkcount_->Export(crosslinkcountrow,rowtocolumn,InsertAdd);
-
-    cout<<"\n"<<*crosslinkcount_<<endl;
+    crosslinkcount_->Export(crosslinkcountrow, rowtocolumn, Add);
 
 #ifdef MEASURETIME
     cout << "\n***\nadministration time: " << Teuchos::Time::wallTime() - t_admin<< " seconds\n***\n";
@@ -1859,7 +1857,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
    * on all processors, respectively*/
   int maxaddcrosslinkslocal = 0;
   int maxaddcrosslinksglobal = 0;
-
+  //cout<<"set LIDs: ";
   //we loop through all row nodes and save the crosslinkers to be set without actually setting them yet; note that i is a row map LID
   for(int i = 0; i < noderowmap.NumMyElements(); i++)
   {
@@ -1870,12 +1868,13 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
       if(UniformGen.random() < plink)
       {
       	// conversion from row map LID to column map LID
-      	int sourcecollid = nodecolmap.LID(noderowmap.GID(i));
+      	int sourcecolid = nodecolmap.LID(noderowmap.GID(i));
       	// update the crosslink counter if maximum number of crosslinks per node is not yet reached
-      	if((*crosslinkcount_)[sourcecollid] < statmechparams_.get<int>("N_CROSSMAX",0) && (*crosslinkcount_)[(crosslinkerneighbours_[i])[j]] < statmechparams_.get<int>("N_CROSSMAX",0))
+      	if((*crosslinkcount_)[sourcecolid] < statmechparams_.get<int>("N_CROSSMAX",0) && (*crosslinkcount_)[(crosslinkerneighbours_[i])[j]] < statmechparams_.get<int>("N_CROSSMAX",0))
       	{
+      		//cout<<sourcecolid<<"/"<<(crosslinkerneighbours_[i])[j]<<"  ";
       		// increment crosslink count of source node (note: conversion of row map LID to column map LID via GID)
-      		(*crosslinkcount_)[sourcecollid] += 1;
+      		(*crosslinkcount_)[sourcecolid] += 1;
       		// increment crosslink count of target node
       		(*crosslinkcount_)[(crosslinkerneighbours_[i])[j]] += 1;
       	}
@@ -2035,7 +2034,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
       }
     }
   }
-  cout<<counter<<" CROSSLINKERS SET"<<endl;
+  //cout<<"\n"<<counter<<" CROSSLINKERS SET"<<endl;
 }//void SetCrosslinkers(const Epetra_Vector& setcrosslinkercol)
 
 /*----------------------------------------------------------------------*
@@ -2133,6 +2132,7 @@ void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& nodero
   /*at this point the information which crosslinkers are to be deleted to a certain node is present on each processor which knows a certain node at least in
    *its column map; now each processor loops through all column map nodes and checks for the crosslinker to be deleted whether it exists on this processor (at
    *least as a ghost element); if yes, the crosslinker element is actually deleted*/
+  //cout<<"deleted LIDs: ";
   for(int i = 0; i < crosslinkerstobedeletedglobalcol.MyLength(); i++)
   {
     for(int j = 0; j < crosslinkerstobedeletedglobalcol.NumVectors(); j++)
@@ -2148,14 +2148,20 @@ void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& nodero
 					counter++;
 					// update the counter vector: reduce crosslinker count for the column map LIDs of the crosslinker nodes by 1
 					for(int k = 0; k < discret_.gElement(crosslinkerid)->NumNode(); k++)
+					{
+						//cout<<nodecolmap.LID(discret_.gElement(crosslinkerid)->Nodes()[k]->Id());
+						//if(k!=discret_.gElement(crosslinkerid)->NumNode()-1)
+							//cout<<"/";
 						(*crosslinkcount_)[nodecolmap.LID(discret_.gElement(crosslinkerid)->Nodes()[k]->Id())] -= 1;
+					}
+					//cout<<" ";
 					// delete crosslinker
 					discret_.DeleteElement(crosslinkerid);
       	}
       }
     }
   }
-  cout<<counter<<" CROSSLINKERS DELETED"<<endl;
+  //cout<<"\n"<<counter<<" CROSSLINKERS DELETED"<<endl;
 }//void DelCrosslinkers(const Epetra_Vector& delcrosslinkercol)
 
 /*----------------------------------------------------------------------*
