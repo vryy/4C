@@ -18,6 +18,7 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "strtimint_genalpha.H"
+#include "str_aux.H"
 
 /*----------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::VerifyCoeff()

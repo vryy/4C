@@ -23,13 +23,16 @@ Maintainer: Burkhard Bornemann
 #include <NOX_Epetra_Group.H>
 
 #include "strtimint.H"
-#include "str_aux.H"
-#include "structure_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
 namespace STR
 {
+
+  namespace UTILS
+  {
+    class MapExtractor;
+  }
 
   /*====================================================================*/
   /*!

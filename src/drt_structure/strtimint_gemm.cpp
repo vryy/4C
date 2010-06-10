@@ -18,6 +18,7 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "strtimint_gemm.H"
+#include "str_aux.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor */

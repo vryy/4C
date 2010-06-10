@@ -31,7 +31,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_contact/contact_manager.H"
 #include "../drt_io/io_control.H"
 #include "../drt_fluid/fluid_utils.H"
-
+#include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 

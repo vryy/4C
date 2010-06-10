@@ -18,6 +18,7 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "strtimint_statics.H"
+#include "str_aux.H"
 
 /*======================================================================*/
 /* constructor */

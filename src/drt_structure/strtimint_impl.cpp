@@ -27,7 +27,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_contact/contact_manager.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
-
+#include "structure_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor */
