@@ -71,13 +71,13 @@ RefCountPtr<Epetra_Vector> LINALG::CreateVector(const Epetra_Map& rowmap, const 
  *----------------------------------------------------------------------*/
 void LINALG::Export(const Epetra_MultiVector& source, Epetra_MultiVector& target)
 {
-  try 
+  try
   {
     const bool sourceunique = source.Map().UniqueGIDs();
     const bool targetunique = target.Map().UniqueGIDs();
 
     // both are unique, does not matter whether ex- or import
-    if (sourceunique && targetunique && 
+    if (sourceunique && targetunique &&
         source.Comm().NumProc()==1   &&
         target.Comm().NumProc()==1 )
     {
@@ -1549,7 +1549,7 @@ bool LINALG::SplitVector(const Epetra_Map& xmap,
 {
   // map extractor with fullmap(xmap) and two other maps (x1map and x2map)
   LINALG::MapExtractor extractor (xmap,x1map,x2map);
-  
+
   // ectract subvectors from fullvector
   x1 = extractor.ExtractVector(x,1);
   x2 = extractor.ExtractVector(x,0);
@@ -1732,6 +1732,29 @@ int LINALG::FindMyPos(int nummyelements, const Epetra_Comm& comm)
   comm.SumAll(&snum[0],&rnum[0],numproc);
 
   return std::accumulate(&rnum[0], &rnum[myrank], 0);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void LINALG::AllreduceVector( const std::vector<int> & src, std::vector<int> & dest, const Epetra_Comm& comm )
+{
+  // communicate size
+  int localsize = static_cast<int>( src.size() );
+  int globalsize;
+  comm.SumAll( &localsize, &globalsize, 1 );
+
+  // communicate values
+  int pos = FindMyPos( localsize, comm );
+  std::vector<int> sendglobal( globalsize, 0 );
+  dest.resize( globalsize );
+  std::copy( src.begin(), src.end(), &sendglobal[pos] );
+  comm.SumAll( &sendglobal[0], &dest[0], globalsize );
+
+  // sort & unique
+  std::sort( dest.begin(), dest.end() );
+  std::vector<int>::iterator i = std::unique( dest.begin(), dest.end() );
+  dest.erase( i, dest.end() );
 }
 
 

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <map>
+#include <set>
 #include <string>
 
 #include <Teuchos_RCP.hpp>
@@ -24,10 +25,22 @@ namespace INPUT
 
 class ParObject;
 class Element;
+class ElementType;
 class Discretization;
 
 
 /// abstract ParObject type information
+/*!
+  There needs to be one ParObjectType subclass for every ParObject. The
+  ParObjectType subclass must be a singleton, that is there must be just one
+  instance and it must be created at startup.
+
+  ParObjectType is responsible to register with ParObjectFactory and provide
+  means to create its ParObject.
+
+  \author u.kue
+  \date 06/10
+ */
 class ParObjectType
 {
   friend class ParObjectFactory;
@@ -37,18 +50,22 @@ public:
 
   virtual ~ParObjectType() {}
 
+  /// Unique ParObject id. Automatically determined.
   int UniqueParObjectId();
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data )
-  { return NULL; }
+  /// Create ParObject from packed data
+  virtual DRT::ParObject* Create( const std::vector<char> & data ) { return NULL; }
 
-  virtual Teuchos::RCP<Element> Create( const std::string eletype,
-                                        const std::string eledistype,
-                                        const int id,
-                                        const int owner )
-  { return Teuchos::null; }
+  /// internal name of this ParObjectType.
+  virtual std::string Name() const = 0;
 
-  virtual std::string Name() const;
+  /// test equality by comparing pointers as there are just singletons allowed
+  bool operator==( const ParObjectType & other ) const
+  { return this == &other; }
+
+  /// test inequality by comparing pointers as there are just singletons allowed
+  bool operator!=( const ParObjectType & other ) const
+  { return this != &other; }
 
 private:
 
@@ -57,6 +74,14 @@ private:
 
 
 /// Singleton ParObject factory class
+/*!
+  Central ParObject factory. A singleton class. Each ParObjectType registers
+  itself here. The factory is able to loop all ParObjectType objects and call
+  the appropriate creation methods.
+
+  \author u.kue
+  \date 06/10
+ */
 class ParObjectFactory
 {
   friend class ParObjectType;
@@ -64,15 +89,19 @@ public:
 
   static ParObjectFactory& Instance();
 
+  /// create a parobject from its data stream
   ParObject* Create( const std::vector<char> & data );
 
+  /// create an element from its name (and dis type if needed)
   Teuchos::RCP<Element> Create( const std::string eletype,
                                 const std::string eledistype,
                                 const int id,
                                 const int owner );
 
+  /// initialize all element types
   void InitializeElements( DRT::Discretization & dis );
 
+  /// preevaluate elements (via element types)
   void PreEvaluate(DRT::Discretization& dis,
                    Teuchos::ParameterList& p,
                    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
@@ -81,6 +110,7 @@ public:
                    Teuchos::RCP<Epetra_Vector>          systemvector2,
                    Teuchos::RCP<Epetra_Vector>          systemvector3);
 
+  /// setup definition of element input file lines
   void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
 
 private:
@@ -96,11 +126,17 @@ private:
 
   /// list of parobject types
 
+  /// Id to type object map. The central beast.
   std::map<int, ParObjectType*> type_map_;
 
-  std::map<std::string, ParObjectType*> element_cache_;
+  /// element name cache
+  std::map<std::string, ElementType*> element_cache_;
 
+  /// preregistered types
   std::vector<ParObjectType*> types_;
+
+  /// element types that are actually used
+  std::set<ElementType*> active_elements_;
 
   // no copying
 

@@ -809,14 +809,14 @@ namespace LINALG
 
   /*!
   \brief split a vector into 2 non-overlapping pieces (RCP version)
-  
+
   \param xmap    : map of vector to be split
   \param x       : vector to be split
   \param x1map   : map of first vector to be extracted
   \param x1      : first vector to be extracted
   \param x2map   : map of second vector to be extracted
   \param x2      : second vector to be extracted
-    
+
   */
   bool SplitVector(const Epetra_Map& xmap,
                    const Epetra_Vector& x,
@@ -1057,6 +1057,9 @@ namespace LINALG
     \date 05/07
    */
   int FindMyPos(int nummyelements, const Epetra_Comm& comm);
+
+  /// create an allreduced sorted copy of the source vectors
+  void AllreduceVector( const std::vector<int> & src, std::vector<int> & dest, const Epetra_Comm& comm );
 
   /// Communication between all pairs of processes, with distinct data for each.
   /*!

@@ -19,6 +19,19 @@ namespace DRT
   class Element;
   class Discretization;
 
+/// Subclass of ParObjectType that adds element type specific methods
+/*!
+  Element types need to be initialized. Furthermore, there is a PreEvaluate
+  method and the ability to read elements from dat files. And finally the
+  element specific setup of null spaces for multi grid preconditioning is
+  here, too.
+
+  \note There are boundary elements that do not need all of this
+  functionality.
+
+  \author u.kue
+  \date 06/10
+ */
 class ElementType : public ParObjectType
 {
 protected:
@@ -28,15 +41,20 @@ protected:
 
 public:
 
-  /// test equality by comparing pointers as there are just singletons allowed
-  bool operator==( const ElementType & other ) const
-  { return this == &other; }
+  /// setup the dat file input line definitions for this type of element
+  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions ) {}
 
-  bool operator!=( const ElementType & other ) const
-  { return this != &other; }
+  /// create an element from a dat file specifier
+  virtual Teuchos::RCP<Element> Create( const std::string eletype,
+                                        const std::string eledistype,
+                                        const int id,
+                                        const int owner )
+  { return Teuchos::null; }
 
+  /// initialize the element type
   virtual int Initialize(DRT::Discretization& dis);
 
+  /// preevaluation
   virtual inline void PreEvaluate(DRT::Discretization& dis,
                                   Teuchos::ParameterList& p,
                                   Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
@@ -46,11 +64,11 @@ public:
                                   Teuchos::RCP<Epetra_Vector>          systemvector3)
   { return; }
 
+  /// nodal block information to create a null space description
   virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np ) = 0;
 
+  /// do the null space computation
   virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) = 0;
-
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions ) {}
 
 };
 

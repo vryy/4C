@@ -1,9 +1,13 @@
 
+#include <Epetra_Comm.h>
+
 #include "drt_dserror.H"
+#include "drt_discret.H"
 #include "drt_element.H"
 #include "drt_parobject.H"
 #include "drt_parobjectfactory.H"
 #include "drt_elementtype.H"
+#include "../linalg/linalg_utils.H"
 
 
 DRT::ParObjectType::ParObjectType()
@@ -23,18 +27,6 @@ int DRT::ParObjectType::UniqueParObjectId()
     ParObjectFactory::Instance().FinalizeRegistration();
   }
   return objectid_;
-}
-
-
-std::string DRT::ParObjectType::Name() const
-{
-#if 0
-  const type_info & ti = typeid( *this );
-  return ti.name();
-#else
-  dserror( "ParObjectType without name" );
-  return "";
-#endif
 }
 
 
@@ -93,21 +85,28 @@ Teuchos::RCP<DRT::Element> DRT::ParObjectFactory::Create( const string eletype,
 {
   FinalizeRegistration();
 
-  std::map<std::string, ParObjectType*>::iterator c = element_cache_.find( eletype );
+  std::map<std::string, ElementType*>::iterator c = element_cache_.find( eletype );
   if ( c!=element_cache_.end() )
   {
     return c->second->Create( eletype, eledistype, id, owner );
   }
 
+  // This is element specific code. Thus we need a down cast.
+
   for ( std::map<int, ParObjectType*>::iterator i = type_map_.begin();
         i != type_map_.end();
         ++i )
   {
-    Teuchos::RCP<DRT::Element> ele = i->second->Create( eletype, eledistype, id, owner );
-    if ( ele!=Teuchos::null )
+    ParObjectType * pot = i->second;
+    ElementType * eot = dynamic_cast<ElementType*>( pot );
+    if ( eot!=NULL )
     {
-      element_cache_[eletype] = i->second;
-      return ele;
+      Teuchos::RCP<DRT::Element> ele = eot->Create( eletype, eledistype, id, owner );
+      if ( ele!=Teuchos::null )
+      {
+        element_cache_[eletype] = eot;
+        return ele;
+      }
     }
   }
 
@@ -174,18 +173,40 @@ void DRT::ParObjectFactory::InitializeElements( DRT::Discretization & dis )
 {
   FinalizeRegistration();
 
+  // find participating element types such that only those element types are initialized
+
+  std::set<int> ids;
+  int numelements = dis.NumMyColElements();
+  for (int i=0; i<numelements; ++i)
+  {
+    ids.insert(dis.lColElement(i)->ElementType().UniqueParObjectId() );
+  }
+
+  std::vector<int> localtypeids;
+  std::vector<int> globaltypeids;
+
+  localtypeids.reserve( ids.size() );
+  localtypeids.assign( ids.begin(), ids.end() );
+
+  LINALG::AllreduceVector( localtypeids, globaltypeids, dis.Comm() );
+
   // This is element specific code. Thus we need a down cast.
 
-  for ( std::map<int, ParObjectType*>::iterator i=type_map_.begin();
-        i!=type_map_.end();
-        ++i )
+  active_elements_.clear();
+
+  for ( std::vector<int>::iterator i=globaltypeids.begin(); i!=globaltypeids.end(); ++i )
   {
-    ParObjectType * pot = i->second;
+    ParObjectType * pot = type_map_[*i];
     ElementType * eot = dynamic_cast<ElementType*>( pot );
     if ( eot!=NULL )
     {
+      active_elements_.insert( eot );
       int err = eot->Initialize( dis );
       if (err) dserror("Element Initialize returned err=%d",err);
+    }
+    else
+    {
+      dserror( "illegal element type id %d", *i );
     }
   }
 }
@@ -201,26 +222,22 @@ void DRT::ParObjectFactory::PreEvaluate(DRT::Discretization& dis,
 {
   FinalizeRegistration();
 
-  // This is element specific code. Thus we need a down cast.
-
-  for ( std::map<int, ParObjectType*>::iterator i=type_map_.begin();
-        i!=type_map_.end();
+  for ( std::set<ElementType*>::iterator i=active_elements_.begin();
+        i!=active_elements_.end();
         ++i )
   {
-    ParObjectType * pot = i->second;
-    ElementType * eot = dynamic_cast<ElementType*>( pot );
-    if ( eot!=NULL )
-    {
-      eot->PreEvaluate( dis, p, systemmatrix1, systemmatrix2,
-                        systemvector1, systemvector2, systemvector3 );
-    }
+    ( *i )->PreEvaluate( dis, p, systemmatrix1, systemmatrix2,
+                         systemvector1, systemvector2, systemvector3 );
   }
 }
+
 
 void DRT::ParObjectFactory::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
   FinalizeRegistration();
 
+  // Here we want to visit all elements known to the factory.
+  //
   // This is element specific code. Thus we need a down cast.
 
   for ( std::map<int, ParObjectType*>::iterator i=type_map_.begin();
