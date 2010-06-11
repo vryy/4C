@@ -42,14 +42,15 @@ namespace COMBUST
    *
    *  \author rasthofer 08/09
    */
-  template <DRT::Element::DiscretizationType DISTYPE>
-  LINALG::SerialDenseMatrix BodyForce(
+  template <DRT::Element::DiscretizationType DISTYPE,
+            class M>
+  void BodyForce(
       const DRT::Element* ele,
-      const double time)
+      const double time,
+      M& edead)
   {
     const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-    LINALG::SerialDenseMatrix edeadng(3,numnode);
-    edeadng.Zero();
+
     vector<DRT::Condition*> myneumcond;
 
     // check whether all nodes have a unique VolumeNeumann condition
@@ -116,12 +117,10 @@ namespace COMBUST
           }
           else functionfac = 1.0;
 
-          edeadng(isd,jnode) = num*functionfac;
+          edead(isd,jnode) = num*functionfac;
         }
       }
     }
-
-    return edeadng;
   }
 
 } // namespace COMBUST

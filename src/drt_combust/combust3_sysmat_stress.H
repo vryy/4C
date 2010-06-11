@@ -290,8 +290,9 @@ void SysmatDomainStress(
   static LINALG::Matrix<nsd,numnode> xyze;
   GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
-  // dead load in element nodes
-  //LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
+  // read body force (dead load) from input file and apply it to element nodes
+  LINALG::Matrix<nsd,numnode> edead(true);
+  COMBUST::BodyForce<DISTYPE>(ele, 0.0, edead);
 
 #ifdef DEBUG
   // check if we really got a list of materials
@@ -707,22 +708,16 @@ void SysmatDomainStress(
       histvec.Scale(densn);
 
       // body force vector
-      // remark: unit has to be acceleration; that is, not density weighted
+      // remark: unit is acceleration (not density weighted)
       static LINALG::Matrix<nsd,1> bodyforce;
       bodyforce.Clear();
-      bodyforce(0) = -10.0;
-      bodyforce(1) = 0.0;
-      bodyforce(2) = 0.0;
+      for (std::size_t isd = 0; isd < nsd; isd++)
+      {
+        for (std::size_t inode = 0; inode < numnode; inode++)
+          bodyforce(isd) += edead(isd,inode) * funct(inode);
+      }
       // scale body force: body force * density^{n+1}
       bodyforce.Scale(densnp);
-      //            // read body force from input file
-      //            LINALG::SerialDenseMatrix edeadng = COMBUST::BodyForce<DISTYPE>(ele, 0.0);
-      //            // remark: use BodyForce() instead?
-      //            for (std::size_t isd = 0; isd < nsd; isd++)
-      //            {
-      //              for (std::size_t inode = 0; inode < numnode; inode++)
-      //                  bodyforce(isd) += edeadng(isd,inode) * funct(inode);
-      //            }
 
       for (size_t isd = 0; isd < nsd; ++isd)
         rhsint(isd) = histvec(isd) + timefac*bodyforce(isd);

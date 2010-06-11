@@ -89,8 +89,9 @@ void SysmatTwoPhaseFlow(
   static LINALG::Matrix<nsd,numnode> xyze;
   GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
-  // dead load in element nodes
-  //////////////////////////////////////////////////// , LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
+  // read body force (dead load) from input file and apply it to element nodes
+  LINALG::Matrix<nsd,numnode> edead(true);
+  COMBUST::BodyForce<DISTYPE>(ele, 0.0, edead);
 
   // check if we really got a list of materials
   dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
@@ -520,26 +521,32 @@ void SysmatTwoPhaseFlow(
 
       /*------------------------- evaluate rhs vector at integration point ---*/
       LINALG::Matrix<nsd,1> rhsint;
-      LINALG::Matrix<nsd,1> bodyforce;
+
+
+      // body force vector
+      // remark: unit is acceleration (not density weighted)
+      static LINALG::Matrix<nsd,1> bodyforce;
       bodyforce.Clear();
+      for (std::size_t isd = 0; isd < nsd; isd++)
+      {
+        for (std::size_t inode = 0; inode < numnode; inode++)
+          bodyforce(isd) += edead(isd,inode) * funct(inode);
+      }
+      // apply body force manually on Gauss point
+      // remark: unit has to be acceleration (not density weighted)
       //std::cout << "BodyForce" << std::endl;
       //bodyforce(0) = 0.0;
       //bodyforce(1) = -10.0;
       //bodyforce(0) = 0.5/dens;
-
-      LINALG::SerialDenseMatrix edeadng = COMBUST::BodyForce<DISTYPE>(ele, 0.0);
-      for (std::size_t isd = 0; isd < nsd; isd++)
-      {
-        for (std::size_t inode = 0; inode < numnode; inode++)
-          bodyforce(isd) += edeadng(isd,inode) * funct(inode);
-      }
+      // scale body force: body force * density^{n+1}
       //std::cout << "BodyForce " << std::endl;
       //std::cout << bodyforce(0) << std::endl;
       //std::cout << bodyforce(1) << std::endl;
       //std::cout << bodyforce(2) << std::endl;
+      bodyforce.Scale(dens);
 
       for (size_t isd = 0; isd < nsd; ++isd)
-        rhsint(isd) = dens*histvec(isd) + bodyforce(isd)*timefac*dens;
+        rhsint(isd) = dens*histvec(isd) + bodyforce(isd)*timefac;
 
       /*----------------- get numerical representation of single operators ---*/
       /* Convective term  u_old * grad u_old: */
