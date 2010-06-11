@@ -75,6 +75,14 @@ namespace THR
     }
   }
 
+  /// initial field for scalar transport problem
+  enum InitialField
+  {
+    initfield_zero_field,
+    initfield_field_by_function,
+    initfield_field_by_condition
+  };
+
   /// Mid-average type of internal forces for generalised-alpha-like
   /// time integration schemes
   ///
@@ -94,6 +102,7 @@ namespace THR
                      ///<  \f$= (1-\alpha_f)*F_{int}(D_{n+1}) + \alpha_f*F_{int}(D_n)\f$
                      ///<  (TR means trapezoidal rule.)
   };
+
   //@}
 
   /// @name Solution technique and related

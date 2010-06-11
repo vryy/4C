@@ -1247,7 +1247,22 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    IntParameter("RESEVRYGLOB",1,"save temperature and other global quantities every RESEVRYGLOB steps",&tdyn);
    IntParameter("RESEVRYELEM",1,"save heat fluxes and other element quantities every RESEVRYELEM steps",&tdyn);
    IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tdyn);
-   IntParameter("MATID",-1,"Material Id for automatic mesh creation",&tdyn);
+
+   setStringToIntegralParameter<INPAR::THR::InitialField>("INITIALFIELD","zero_field",
+                                "Initial Field for thermal problem",
+                                tuple<std::string>(
+                                  "zero_field",
+                                  "field_by_function",
+                                  "field_by_condition"
+                                  ),
+                                tuple<INPAR::THR::InitialField>(
+                                    INPAR::THR::initfield_zero_field,
+                                    INPAR::THR::initfield_field_by_function,
+                                    INPAR::THR::initfield_field_by_condition
+                                    ),
+                                &tdyn);
+   IntParameter("INITFUNCNO",-1,"function number for thermal initial field",&tdyn);
+
    // Time loop control
    DoubleParameter("TIMESTEP",0.05,"time step size",&tdyn);
    IntParameter("NUMSTEP",200,"maximum number of steps",&tdyn);

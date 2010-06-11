@@ -83,7 +83,7 @@ namespace THR
     //! @name Life
     //@{
 
-    //! Print tea time logo
+    //! Print thermo time logo
     void Logo();
 
     //! Constructor
@@ -157,6 +157,13 @@ namespace THR
     //! for current time step. This applies only to elemet-wise
     //! quantities
     void ResetStep();
+
+    // 09.06.10
+    /// set the initial thermal field
+    void SetInitialField(
+      const INPAR::THR::InitialField,  ///< type of initial field
+      const int startfuncno  ///< number of spatial function
+      );
 
     //@}
 

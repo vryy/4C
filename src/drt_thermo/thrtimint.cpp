@@ -138,6 +138,18 @@ THR::TimInt::TimInt(
   tang_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
 //  capa_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
 
+  // 08.06.10
+  // -------------------------------------------------------------------
+  // set initial field
+  // -------------------------------------------------------------------
+  const int startfuncno = tdynparams.get<int>("INITFUNCNO");
+  cout << "startfuncno" << startfuncno << endl;
+
+  SetInitialField(
+    Teuchos::getIntegralValue<INPAR::THR::InitialField>(tdynparams,"INITIALFIELD"),
+    startfuncno
+    );
+
   // stay with us
   return;
 }
@@ -859,6 +871,115 @@ void THR::TimInt::ApplyStructVariables(
   // where the fun starts
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  set initial field for temperature (compare ScaTra)       dano 06/10 |
+ *----------------------------------------------------------------------*/
+void THR::TimInt::SetInitialField(
+    const INPAR::THR::InitialField init,
+    const int startfuncno
+    )
+{
+  switch(init)
+  {
+  case INPAR::THR::initfield_zero_field:
+  {
+    // extract temperature vector at time t_n (temp_ contains various vectors of
+    // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)
+    Teuchos::RCP<Epetra_Vector> vec = (*temp_)(0);
+    vec->PutScalar(0.0);
+    tempn_-> PutScalar(0.0);
+    break;
+  }
+  case INPAR::THR::initfield_field_by_function:
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+      // the set of degrees of freedom associated with the node
+      std::vector<int> nodedofset = discret_->Dof(lnode);
+
+      int numdofs = nodedofset.size();
+      for (int k=0;k< numdofs;++k)
+      {
+        const int dofgid = nodedofset[k];
+        int doflid = dofrowmap->LID(dofgid);
+        // evaluate component k of spatial function
+        double initialval
+          = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(k,lnode->X(),0.0,NULL);
+        // extract temperature vector at time t_n (temp_ contains various vectors of
+        // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)
+        Teuchos::RCP<Epetra_Vector> vec = (*temp_)(0);
+        vec->ReplaceMyValues(1,&initialval,&doflid);
+        // initialize also the solution vector. These values are a pretty good
+        // guess for the solution after the first time step (much better than
+        // starting with a zero vector)
+        tempn_->ReplaceMyValues(1,&initialval,&doflid);
+      }
+    }
+
+    break;
+  }
+  case INPAR::THR::initfield_field_by_condition:
+  {
+    // access the initial field condition
+    std::vector<DRT::Condition*> cond;
+    discret_->GetCondition("InitialField", cond);
+
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    for (unsigned i=0; i<cond.size(); ++i)
+    {
+      cout<<"Applied InitialField Condition "<<i<<endl;
+
+      // loop all nodes on the processor
+      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+      {
+        // get the processor local node
+        DRT::Node* lnode = discret_->lRowNode(lnodeid);
+
+        std::vector<DRT::Condition*> mycond;
+        lnode->GetCondition("InitialField",mycond);
+
+        if (mycond.size()>0)
+        {
+          // the set of degrees of freedom associated with the node
+          std::vector<int> nodedofset = discret_->Dof(lnode);
+
+          int numdofs = nodedofset.size();
+          for (int k=0;k< numdofs;++k)
+          {
+            // set 1.0 as initial value if node belongs to condition
+            double temp0 = 1.0;
+            // set initial value
+            const int dofgid = nodedofset[k];
+            int doflid = dofrowmap->LID(dofgid);
+            // extract temperature vector at time t_n (temp_ contains various vectors of
+            // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)
+            Teuchos::RCP<Epetra_Vector> vec = (*temp_)(0);
+            vec->ReplaceMyValues(1,&temp0,&doflid);
+//            temp_->ReplaceMyValues(1,&temp0,&doflid);
+            // initialize also the solution vector. These values are a pretty good guess for the
+            // solution after the first time step (much better than starting with a zero vector)
+            tempn_->ReplaceMyValues(1,&temp0,&doflid);
+          }
+        }
+      }
+    }
+    break;
+  }
+
+  default:
+    dserror("Unknown option for initial field: %d", init);
+  } // switch(init)
+
+  return;
+} // THR::TimIntImpl::SetInitialField
 
 
 /*----------------------------------------------------------------------*
