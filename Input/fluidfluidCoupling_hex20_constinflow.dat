@@ -158,7 +158,7 @@ SOLVER         UMFPACK  // The solver to attack the system of linear equations
 PARTITION                       Cut_Elements
 -------------------------------------------------------XFEM GENERAL
 CONDEST            No  // Do you want to estimate the condition number? 
-DLM_CONDENSATION     No  //Do you want to condense the distributed Lagrange multiplier?
+DLM_CONDENSATION      No  //Do you want to condense the distributed Lagrange multiplier?
 GMSH_DEBUG_OUT                  Yes
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid VISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
@@ -170,14 +170,14 @@ CURVE1 on EXPR FUNC (1-cos(pi*t/4.0))/2.0 t1 0.0 t2 4.0
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION (1/-0.125)*(1/0.125)*(0.125-y)*(-0.125-y)
+FUNCT1 EXPR 0 0 0 FUNCTION (1/-0.25)*(1/0.25)*(0.25-y)*(-0.25-y)
 ------------------------------------------------------------FUNCT2
 ------------------------------------------------------------FUNCT3
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
-NDSURF  8
+NDSURF  9
 NDVOL   2
 -----------------------------------------------------DESIGN POINTS
 ------------------------------------------------------DESIGN LINES
@@ -283,6 +283,10 @@ DLINE  0
 DSURF  1
 // Structure
 E 6 - 1 structure conforming
+----------------------DESIGN FSI COUPLING NO SLIDE LINE CONDITIONS
+DLINE  0
+----------------------DESIGN FSI COUPLING NO SLIDE SURF CONDITIONS
+DSURF  0
 -------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 DLINE  0
 -------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
@@ -309,6 +313,10 @@ E 5 - 1
 DVOL   1
 // Fluid 2 volume
 E 1 - 1
+-------------------------DESIGN ALE FLUID COUPLING SURF CONDITIONS
+DSURF  1
+// Fluid 2 surfaces
+E 5 - 1
 ----------------------------------------SURFACE TENSION CONDITIONS
 DSURF  0
 ---------------------------------------------SURFACTANT CONDITIONS
@@ -351,7 +359,11 @@ DLINE  0
 DSURF  0
 -------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
 DSURF  0
+---------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D PEN
+DSURF  0
 ---------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
+DSURF  0
+-----------------------------DESIGN SURFACE AREA CONSTRAINT 3D PEN
 DSURF  0
 ----------------------------------DESIGN SURFACE VOLUME MONITOR 3D
 DSURF  0
@@ -368,6 +380,8 @@ DSURF  0
 -----------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
 DSURF  0
 -------------------DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D
+DSURF  0
+---------------DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D PEN
 DSURF  0
 --------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
 DLINE  0

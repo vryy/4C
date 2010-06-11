@@ -288,6 +288,10 @@ E 5 - 1
 DSURF  1
 // Fluid 2 surfaces
 E 4 - 1
+-----------------------DESIGN ALE FLUID COUPLING SURF CONDITIONS
+DSURF  1
+// Fluid 2 surfaces
+E 4 - 1
 --------------------------------DESIGN MOVING FLUID VOL CONDITIONS
 DVOL   1
 // Fluid 2 volume
