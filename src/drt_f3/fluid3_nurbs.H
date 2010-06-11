@@ -176,7 +176,7 @@ private:
 
 };
 
-class Fluid3NurbsSurfaceType : public DRT::ParObjectType
+class Fluid3NurbsSurfaceType : public Fluid3BoundaryType
 {
 public:
 
@@ -254,6 +254,9 @@ public:
   \return my parobject id
   */
   virtual int UniqueParObjectId() const { return Fluid3NurbsSurfaceType::Instance().UniqueParObjectId(); }
+
+  virtual DRT::ElementType & ElementType() const
+  { return Fluid3NurbsSurfaceType::Instance(); }
 
   /*!
   \brief Get shape type of element

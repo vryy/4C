@@ -43,7 +43,7 @@ namespace ELEMENTS
 namespace NURBS
 {
 
-class Ale2_NurbsType : public DRT::ParObjectType
+class Ale2_NurbsType : public Ale2Type
 {
 public:
 
@@ -106,6 +106,8 @@ public:
   /// Print this element
   void Print(ostream& os) const;
 
+  virtual DRT::ElementType & ElementType() const
+  { return Ale2_NurbsType::Instance(); }
 
   /*!
   \brief Get shape type of element
