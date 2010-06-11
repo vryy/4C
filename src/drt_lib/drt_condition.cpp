@@ -141,6 +141,7 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==FSICoupling)                   os << "FSI Coupling condition: ";
   else if (Type()==XFEMCoupling)                  os << "XFEM Coupling condition: ";
   else if (Type()==FluidFluidCoupling)            os << "Fluid Fluid Coupling condition: ";
+  else if (Type()==ALEFluidCoupling)              os << "ALE Fluid Coupling condition: ";
   else if (Type()==MovingFluid)                   os << "Moving Fluid Vol condition: ";
   else if (Type()==LineLIFTDRAG)                  os << "Line LIFTDRAG condition: ";
   else if (Type()==SurfLIFTDRAG)                  os << "Surf LIFTDRAG condition: ";

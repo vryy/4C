@@ -141,6 +141,7 @@ public:
     XFEMCoupling,
     FluidFluidCoupling,
     MovingFluid,
+    ALEFluidCoupling,
     FluidStressCalc,
     LineLIFTDRAG,
     SurfLIFTDRAG,

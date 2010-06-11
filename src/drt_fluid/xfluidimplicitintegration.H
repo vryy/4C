@@ -397,6 +397,8 @@ protected:
       );
 
   void preparefluidfluidboundaryDis();
+  
+  void preparefluidfluidboundaryDofset();
 
   void ComputeFluidFluidInterfaceAccelerationsAndVelocities();
 
@@ -430,6 +432,12 @@ protected:
 
   //! Fluid-Fluid-Boundray discretization
   Teuchos::RCP<DRT::Discretization>			   FluidFluidboundarydis_;
+  
+  // ALE-Fluid-Boundary discretization
+  Teuchos::RCP<DRT::Discretization>            ALEFluidboundarydis_;
+  
+  // Moving-Fluid discretization
+  Teuchos::RCP<DRT::Discretization>            MovingFluiddis_;
 
   /// the interface map setup for fsi interface, free surface, interior translation
   FLD::UTILS::MapExtractor               interface_;
@@ -456,6 +464,8 @@ protected:
 
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
   const bool                          alefluid_;
+  
+  bool                          fluidfluidCoupling_;
 
   bool                                diffusion_problem_;
   //@}
@@ -607,6 +617,17 @@ protected:
 	  Teuchos::RCP<Epetra_Vector>    gridv_;
 	  
   }fluidfluidstate_;
+  
+  struct ALEFluidState
+  {
+    Teuchos::RCP<Epetra_Vector>            afidispnp_;   ///< ALE fluid interface displacement  n+1
+    Teuchos::RCP<Epetra_Vector>            afivelnp_;    ///< ALE fluid interface velocity      n+1
+    Teuchos::RCP<Epetra_Vector>            afidispn_;    ///< ALE fluid interface displacement  n
+    Teuchos::RCP<Epetra_Vector>            afiveln_;     ///< ALE fluid interface velocity      n
+    Teuchos::RCP<Epetra_Vector>            afivelnm_;    ///< ALE fluid interface velocity      n-1
+    Teuchos::RCP<Epetra_Vector>            afiaccnp_;    ///< ALE fluid interface acceleration  n+1
+    Teuchos::RCP<Epetra_Vector>            afiaccn_;     ///< ALE fluid interface acceleration  n   
+  }ALEfluidstate_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
   ///                or veln, accn (One-Step-Theta)

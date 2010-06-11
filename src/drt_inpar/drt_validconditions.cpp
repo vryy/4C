@@ -900,6 +900,13 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                            DRT::Condition::FluidFluidCoupling,
                                            true,
                                            DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> ALEfluidcoupling =
+      Teuchos::rcp(new ConditionDefinition("DESIGN ALE FLUID COUPLING SURF CONDITIONS",
+                                           "ALEFluidCoupling",
+                                           "ALE FLUID Coupling",
+                                           DRT::Condition::ALEFluidCoupling,
+                                           true,
+                                           DRT::Condition::Surface));
 
   for (unsigned i=0; i<xfemcomponents.size(); ++i)
   {
@@ -907,12 +914,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     surfxfem->AddComponent(xfemcomponents[i]);
     movingfluid->AddComponent(xfemcomponents[i]);
     fluidfluidcoupling->AddComponent(xfemcomponents[i]);
+    ALEfluidcoupling->AddComponent(xfemcomponents[i]);
   }
 
   condlist.push_back(linexfem);
   condlist.push_back(surfxfem);
   condlist.push_back(fluidfluidcoupling);
   condlist.push_back(movingfluid);
+  condlist.push_back(ALEfluidcoupling);
 
   /*--------------------------------------------------------------------*/
   // surface tension

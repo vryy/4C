@@ -64,13 +64,8 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("uncut_elements_coupled_system", 999999, 5, screen_out, xfemdis_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
-    if (cutterdis->Name() == "FluidFluidboundary"){
-    	IO::GMSH::disToStream("FluidFluidBoundary", 1.0, cutterdis_, cutterposnp_, gmshfilecontent);
-    }
-    else if (cutterdis->Name() == "boundary"){
-    	IO::GMSH::disToStream("Fluid", 0.0, xfemdis_, gmshfilecontent);
-    	IO::GMSH::disToStream("Boundary", 1.0, cutterdis_, cutterposnp_, gmshfilecontent);
-    }
+    IO::GMSH::disToStream("Fluid", 0.0, xfemdis_, gmshfilecontent);
+    IO::GMSH::disToStream("Boundary", 1.0, cutterdis_, cutterposnp_, gmshfilecontent);
     gmshfilecontent.close();
     if (screen_out) cout << " done" << endl;
   }

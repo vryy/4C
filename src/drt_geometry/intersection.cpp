@@ -110,7 +110,7 @@ void GEO::Intersection::computeIntersection(
     DRT::Element* xfemElement = xfemdis->lColElement(k);
 
     // for fluid-fluid-coupling consider just the elements of background fluid
-	if (cutterdis->Name() == "FluidFluidboundary"){
+	if (cutterdis->Name() == "FluidFluidboundary" or cutterdis->Name() == "ALEFluidboundary"){
 	   	set<int>::const_iterator eleid = MovingFluideleGIDs.find(xfemElement->Id());
 	   	const bool is_moving = (eleid != MovingFluideleGIDs.end());
 		if(is_moving){
