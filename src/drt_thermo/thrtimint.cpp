@@ -138,13 +138,10 @@ THR::TimInt::TimInt(
   tang_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
 //  capa_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
 
-  // 08.06.10
   // -------------------------------------------------------------------
   // set initial field
   // -------------------------------------------------------------------
   const int startfuncno = tdynparams.get<int>("INITFUNCNO");
-  cout << "startfuncno" << startfuncno << endl;
-
   SetInitialField(
     Teuchos::getIntegralValue<INPAR::THR::InitialField>(tdynparams,"INITIALFIELD"),
     startfuncno

@@ -158,7 +158,6 @@ namespace THR
     //! quantities
     void ResetStep();
 
-    // 09.06.10
     /// set the initial thermal field
     void SetInitialField(
       const INPAR::THR::InitialField,  ///< type of initial field
