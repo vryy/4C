@@ -203,7 +203,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
 SCATRA::ScaTraTimIntImpl& ADAPTER::ScaTraBaseAlgorithm::ScaTraField()
 {
   return *scatra_;
-};
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -211,7 +211,7 @@ SCATRA::ScaTraTimIntImpl& ADAPTER::ScaTraBaseAlgorithm::ScaTraField()
 Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTest()
 {
   return Teuchos::rcp(new SCATRA::ScaTraResultTest::ScaTraResultTest(*scatra_));
-};
+}
 
 
 /*----------------------------------------------------------------------*/
