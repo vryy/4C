@@ -387,13 +387,21 @@ discret_(discret)
     strategy_ = rcp(new CoPenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf));
   else
     dserror("Unrecognized strategy");
-  if(Comm().MyPID()==0) cout << "done!" << endl << endl;
+  if(Comm().MyPID()==0) cout << "done!" << endl;
   // **** initialization of row/column maps moved to AbstractStrategy **** //
   // since the manager does not operate over nodes, elements, dofs anymore
   // ********************************************************************* //
 
-  // print contact parameter list to screen
-  if (Comm().MyPID()==0) cout << GetStrategy().Params() << endl;
+  // print parallel distribution of interface discretization
+  for (int i=0; i<(int)interfaces.size();++i)
+  	interfaces[i]->PrintParallelDistribution(i+1);
+
+	// print parameter list to screen
+	if (Comm().MyPID()==0)
+	{
+		cout << "given parameters in list '" << GetStrategy().Params().name() << "':\n";
+		cout << GetStrategy().Params() << endl;
+	}
 
   return;
 }

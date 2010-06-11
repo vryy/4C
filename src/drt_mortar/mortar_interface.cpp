@@ -71,7 +71,7 @@ maxdofglobal_(-1)
   RCP<Epetra_Comm> com = rcp(Comm().Clone());
   if (Dim()!=2 && Dim()!=3) dserror("ERROR: Mortar problem must be 2D or 3D");
   procmap_.clear();
-  idiscret_ = rcp(new DRT::Discretization((string)"Mortar Interface",com));
+  idiscret_ = rcp(new DRT::Discretization((string)"mortar interface",com));
 
   // overwrite shape function type
   INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(IParams(),"SHAPEFCN");
@@ -107,6 +107,77 @@ void MORTAR::MortarInterface::Print(ostream& os) const
   }
   os << Discret();
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  print parallel distribution (public)                      popp 06/10|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::PrintParallelDistribution(int index) const
+{
+	// how many processors
+	const int numproc=Discret().Comm().NumProc();
+
+	// only print parallel distribution if numproc > 1
+	if (numproc>1)
+	{
+		const int myrank=Discret().Comm().MyPID();
+
+		vector<int> my_n_nodes     (numproc,0);
+		vector<int>    n_nodes     (numproc,0);
+		vector<int> my_s_nodes     (numproc,0);
+		vector<int>    s_nodes     (numproc,0);
+		vector<int> my_m_nodes     (numproc,0);
+		vector<int>    m_nodes     (numproc,0);
+		vector<int> my_n_ghostnodes(numproc,0);
+		vector<int>    n_ghostnodes(numproc,0);
+		vector<int> my_n_elements  (numproc,0);
+		vector<int>    n_elements  (numproc,0);
+		vector<int> my_s_elements  (numproc,0);
+		vector<int>    s_elements  (numproc,0);
+		vector<int> my_m_elements  (numproc,0);
+		vector<int>    m_elements  (numproc,0);
+		vector<int> my_n_ghostele  (numproc,0);
+		vector<int>    n_ghostele  (numproc,0);
+
+		my_n_nodes     [myrank]=Discret().NumMyRowNodes();
+		my_n_ghostnodes[myrank]=Discret().NumMyColNodes()-my_n_nodes[myrank];
+		my_n_elements  [myrank]=Discret().NumMyRowElements();
+		my_n_ghostele  [myrank]=Discret().NumMyColElements()-my_n_elements[myrank];
+
+		my_s_nodes     [myrank]=snoderowmap_->NumMyElements();
+		my_m_nodes     [myrank]=mnoderowmap_->NumMyElements();
+		my_s_elements  [myrank]=selerowmap_->NumMyElements();
+		my_m_elements  [myrank]=melerowmap_->NumMyElements();
+
+		Discret().Comm().SumAll(&my_n_nodes     [0],&n_nodes     [0],numproc);
+		Discret().Comm().SumAll(&my_n_ghostnodes[0],&n_ghostnodes[0],numproc);
+		Discret().Comm().SumAll(&my_n_elements  [0],&n_elements  [0],numproc);
+		Discret().Comm().SumAll(&my_n_ghostele  [0],&n_ghostele  [0],numproc);
+
+		Discret().Comm().SumAll(&my_s_nodes     [0],&s_nodes     [0],numproc);
+		Discret().Comm().SumAll(&my_m_nodes     [0],&m_nodes     [0],numproc);
+		Discret().Comm().SumAll(&my_s_elements  [0],&s_elements  [0],numproc);
+		Discret().Comm().SumAll(&my_m_elements  [0],&m_elements  [0],numproc);
+
+		if (myrank==0)
+		{
+			cout << endl;
+			cout <<"   Discretization: " << Discret().Name() << " #" << index << endl;
+			printf("   +-----+-----------------+--------------+-----------------+--------------+\n");
+			printf("   | PID |   n_rownodes    | n_ghostnodes |  n_rowelements  |  n_ghostele  |\n");
+			printf("   +-----+-----------------+--------------+-----------------+--------------+\n");
+			for(int npid=0;npid<numproc;++npid)
+			{
+				printf("   | %3d | Total %9d | %12d | Total %9d | %12d |\n",npid,n_nodes[npid],n_ghostnodes[npid],n_elements[npid],n_ghostele[npid]);
+				printf("   |     | Slave %9d |              | Slave %9d |              |\n",s_nodes[npid],s_elements[npid]);
+				printf("   |     | Master %8d |              | Master %8d |              |\n",m_nodes[npid],m_elements[npid]);
+				printf("   +-----+-----------------+--------------+-----------------+--------------+\n");
+			}
+			cout << endl;
+		}
+	}
+
+	return;
 }
 
 /*----------------------------------------------------------------------*

@@ -103,6 +103,12 @@ public:
   virtual void Print(ostream& os) const;
 
   /*!
+  \brief Print parallel distribution of this Interface
+
+  */
+  virtual void PrintParallelDistribution(int index) const;
+
+  /*!
   \brief Get communicator
 
   */
