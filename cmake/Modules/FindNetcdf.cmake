@@ -18,7 +18,8 @@ FIND_PATH(NETCDF_INCLUDE_DIR netcdf.h
   /usr/include
 )
 
-FIND_LIBRARY(NETCDF_LIBRARY libnetcdf.so
+FIND_LIBRARY(NETCDF_LIBRARY NAMES libnetcdf.a libnetcdf.so
+  HINTS
   ${LIB_INSTALL_DIR}
   /usr/local/lib
   /usr/lib
