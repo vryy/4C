@@ -43,13 +43,17 @@ Maintainer: Alexander Popp
 #endif
 
 #include "mortar_interface.H"
+#include "mortar_node.H"
+#include "mortar_element.H"
 #include "mortar_integrator.H"
 #include "mortar_coupling2d.H"
 #include "mortar_coupling3d.H"
+#include "mortar_coupling3d_classes.H"
 #include "mortar_dofset.H"
 #include "mortar_binarytree.H"
 #include "mortar_defines.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_sparsematrix.H"
 
 
 /*----------------------------------------------------------------------*
@@ -103,6 +107,24 @@ void MORTAR::MortarInterface::Print(ostream& os) const
   }
   os << Discret();
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  add mortar node (public)                                 mwgee 10/07|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::AddMortarNode(RCP<MORTAR::MortarNode> mrtrnode)
+{
+	idiscret_->AddNode(mrtrnode);
+	return;
+}
+
+/*----------------------------------------------------------------------*
+ |  add mortar element (public)                              mwgee 10/07|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::AddMortarElement(RCP<MORTAR::MortarElement> mrtrele)
+{
+	idiscret_->AddElement(mrtrele);
+	return;
 }
 
 /*----------------------------------------------------------------------*

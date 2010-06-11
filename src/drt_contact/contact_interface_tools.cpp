@@ -39,16 +39,20 @@ Maintainer: Alexander Popp
 #ifdef CCADISCRET
 
 #include "contact_interface.H"
-#include "selfcontact_binarytree.H"
-#include "../drt_mortar/mortar_dofset.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_io/io_gmsh.H"
 #include "contact_integrator.H"
 #include "contact_defines.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
+#include "friction_node.H"
+#include "selfcontact_binarytree.H"
+#include "../drt_mortar/mortar_element.H"
+#include "../drt_mortar/mortar_dofset.H"
 #include "../drt_mortar/mortar_integrator.H"
 #include "../drt_mortar/mortar_defines.H"
+#include "../linalg/linalg_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_inpar/inpar_contact.H"
+#include "../drt_io/io_gmsh.H"
+#include "../drt_io/io_control.H"
+
 
 
 /*----------------------------------------------------------------------*

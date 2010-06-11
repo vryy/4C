@@ -42,13 +42,18 @@ Maintainer: Alexander Popp
 #include "Epetra_SerialComm.h"
 #endif
 #include "contact_interface.H"
+#include "contact_node.H"
+#include "contact_element.H"
 #include "contact_integrator.H"
 #include "contact_coupling2d.H"
 #include "contact_coupling3d.H"
 #include "contact_defines.H"
+#include "friction_node.H"
+#include "selfcontact_binarytree.H"
 #include "../drt_mortar/mortar_binarytree.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_inpar/inpar_mortar.H"
+#include "../drt_inpar/inpar_contact.H"
 #include "../linalg/linalg_utils.H"
 
 
@@ -90,6 +95,24 @@ void CONTACT::CoInterface::Print(ostream& os) const
   MORTAR::MortarInterface::Print(os);
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  add contact node (public)                                mwgee 10/07|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::AddCoNode(RCP<CONTACT::CoNode> cnode)
+{
+	idiscret_->AddNode(cnode);
+	return;
+}
+
+/*----------------------------------------------------------------------*
+ |  add contact element (public)                             mwgee 10/07|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::AddCoElement(RCP<CONTACT::CoElement> cele)
+{
+	idiscret_->AddElement(cele);
+	return;
 }
 
 /*----------------------------------------------------------------------*

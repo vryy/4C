@@ -40,8 +40,11 @@ Maintainer: Alexander Popp
 #include "Epetra_SerialComm.h"
 #include "meshtying_lagrange_strategy.H"
 #include "meshtying_defines.H"
+#include "../drt_mortar/mortar_interface.H"
+#include "../drt_mortar/mortar_node.H"
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*

@@ -42,6 +42,7 @@ Maintainer: Alexander Popp
 #include "mortar_node.H"
 #include "mortar_element.H"
 #include "mortar_defines.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
@@ -80,6 +81,14 @@ mleafsmap_(mleafsmap)
   else              dserror("ERROR: Problem dimension must be 2D or 3D!");
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | get communicator (public)       								            popp 10/08|
+ *----------------------------------------------------------------------*/
+const Epetra_Comm& MORTAR::BinaryTreeNode::Comm() const
+{
+	return idiscret_.Comm();
 }
 
 /*----------------------------------------------------------------------*
@@ -1070,6 +1079,15 @@ eps_(eps)
   */
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | get communicator (public)       								            popp 10/08|
+ *----------------------------------------------------------------------*/
+const Epetra_Comm& MORTAR::BinaryTree::Comm() const
+{
+	return idiscret_.Comm();
 }
 
 /*----------------------------------------------------------------------*

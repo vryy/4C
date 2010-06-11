@@ -40,10 +40,8 @@ Maintainer: Alexander Popp
 #define MORTAR_INTEGRATOR_H
 
 #include "Epetra_Comm.h"
-#include "mortar_element.H"
-#include "mortar_interface.H"
-#include "mortar_coupling3d.H"
-#include "mortar_interface.H"
+#include "../drt_lib/drt_element.H"
+#include "../drt_inpar/inpar_mortar.H"
 
 using namespace std;
 
@@ -55,6 +53,9 @@ namespace MORTAR
 {
 
 // forward declarations
+class MortarElement;
+class IntElement;
+class IntCell;
 
 /*!
 \brief A class to perform Gaussian integration and assembly of Mortar
@@ -193,7 +194,7 @@ public:
   */
   virtual void IntegrateDerivCell3D(
       MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-      RCP<MORTAR::Intcell> cell,
+      RCP<MORTAR::IntCell> cell,
       RCP<Epetra_SerialDenseMatrix> dseg,
       RCP<Epetra_SerialDenseMatrix> mseg,
       RCP<Epetra_SerialDenseVector> gseg);
@@ -206,7 +207,7 @@ public:
   */
   virtual void IntegrateDerivCell3DAuxPlane(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-     RCP<MORTAR::Intcell> cell, double* auxn,
+     RCP<MORTAR::IntCell> cell, double* auxn,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg);
@@ -220,7 +221,7 @@ public:
   virtual void IntegrateDerivCell3DAuxPlaneQuad(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
-     RCP<MORTAR::Intcell> cell, double* auxn,
+     RCP<MORTAR::IntCell> cell, double* auxn,
      INPAR::MORTAR::LagMultQuad3D& lmtype,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,

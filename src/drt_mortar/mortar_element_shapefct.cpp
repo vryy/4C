@@ -39,8 +39,11 @@ Maintainer: Alexander Popp
 #ifdef CCADISCRET
 
 #include "mortar_element.H"
+#include "mortar_node.H"
 #include "mortar_defines.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensematrix.H"
 
 /*----------------------------------------------------------------------*
  |  1D/2D shape function repository                           popp 04/08|

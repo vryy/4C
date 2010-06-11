@@ -40,8 +40,12 @@ Maintainer: Alexander Popp
 #define STRUGENALPHA_CMT_H
 
 #include "../drt_structure/strugenalpha.H"
-#include "../drt_mortar/mortar_manager_base.H"
-#include "../drt_inpar/inpar_contact.H"
+
+// forward declarations
+namespace MORTAR
+{
+  class ManagerBase;
+}
 
 namespace CONTACT
 {

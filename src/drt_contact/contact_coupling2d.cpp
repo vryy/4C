@@ -42,6 +42,7 @@ Maintainer: Alexander Popp
 #include "contact_coupling2d.H"
 #include "contact_integrator.H"
 #include "../drt_mortar/mortar_defines.H"
+#include "../drt_mortar/mortar_element.H"
 
 
 /*----------------------------------------------------------------------*

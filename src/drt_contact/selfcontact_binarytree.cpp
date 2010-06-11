@@ -42,6 +42,7 @@ Maintainer: Alexander Popp
 #include "selfcontact_binarytree.H"
 #include "contact_node.H"
 #include "contact_element.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
@@ -77,6 +78,14 @@ treenodes_(treenodes)
   else              dserror("ERROR: Problem dimension must be 2D or 3D!");
   
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  get communicator (public)                                 popp 11/09|
+ *----------------------------------------------------------------------*/
+const Epetra_Comm& CONTACT::SelfBinaryTreeNode::Comm() const
+{
+	return idiscret_.Comm();
 }
 
 /*----------------------------------------------------------------------*
@@ -1027,6 +1036,14 @@ eps_(eps)
   InitializeTreeBottomUp(&dualgraph);
    
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  get communicator (public)                                 popp 11/09|
+ *----------------------------------------------------------------------*/
+const Epetra_Comm& CONTACT::SelfBinaryTree::Comm() const
+{
+	return idiscret_.Comm();
 }
 
 /*----------------------------------------------------------------------*

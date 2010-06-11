@@ -42,8 +42,13 @@ Maintainer: Alexander Popp
 #include "contact_coupling3d.H"
 #include "contact_integrator.H"
 #include "contact_node.H"
-#include "../drt_mortar/mortar_defines.H"
 #include "contact_defines.H"
+#include "../drt_mortar/mortar_coupling3d_classes.H"
+#include "../drt_mortar/mortar_defines.H"
+#include "../drt_lib/drt_discret.H"
+#include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensematrix.H"
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
@@ -125,7 +130,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
   /**********************************************************************/
 
   // create a CONTACT integrator instance with correct NumGP and Dim
-  // it is sufficient to do this once as all Intcells are triangles
+  // it is sufficient to do this once as all IntCells are triangles
   CONTACT::CoIntegrator integrator(shapefcn_,Cells()[0]->Shape());
 
   // loop over all integration cells

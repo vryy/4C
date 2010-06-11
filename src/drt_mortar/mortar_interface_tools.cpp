@@ -39,6 +39,8 @@ Maintainer: Alexander Popp
 #ifdef CCADISCRET
 
 #include "mortar_interface.H"
+#include "mortar_node.H"
+#include "mortar_element.H"
 #include "mortar_dofset.H"
 #include "mortar_integrator.H"
 #include "mortar_defines.H"

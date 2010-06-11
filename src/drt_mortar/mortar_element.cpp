@@ -39,8 +39,11 @@ Maintainer: Alexander Popp
 #ifdef CCADISCRET
 
 #include "mortar_element.H"
+#include "mortar_node.H"
 #include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensematrix.H"
 
 MORTAR::MortarElementType MORTAR::MortarElementType::instance_;
 
@@ -184,7 +187,15 @@ void MORTAR::MortarElement::Unpack(const vector<char>& data)
   return;
 }
 
-
+/*----------------------------------------------------------------------*
+ |  number of dofs per node (public)                         mwgee 10/07|
+ *----------------------------------------------------------------------*/
+int MORTAR::MortarElement::NumDofPerNode(const DRT::Node& node) const
+{
+	 const MORTAR::MortarNode* mnode = dynamic_cast<const MORTAR::MortarNode*>(&node);
+	 if (!mnode) dserror("Node is not a MortarNode");
+	 return mnode->NumDof();
+}
 
 /*----------------------------------------------------------------------*
  |  evaluate element (public)                                mwgee 10/07|

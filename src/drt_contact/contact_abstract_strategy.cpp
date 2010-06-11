@@ -39,12 +39,15 @@ Maintainer: Alexander Popp
 
 #include "Epetra_SerialComm.h"
 #include "contact_abstract_strategy.H"
+#include "contact_defines.H"
+#include "contact_interface.H"
+#include "friction_node.H"
+#include "../drt_mortar/mortar_defines.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io.H"
 #include "../linalg/linalg_utils.H"
-#include "friction_node.H"
-#include "contact_defines.H"
-#include "../drt_mortar/mortar_defines.H"
+#include "../linalg/linalg_sparsematrix.H"
 
 using namespace std;
 using namespace Teuchos;

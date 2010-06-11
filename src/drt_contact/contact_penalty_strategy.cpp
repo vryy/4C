@@ -38,9 +38,14 @@ Maintainer: Alexander Popp
 #ifdef CCADISCRET
 
 #include "contact_penalty_strategy.H"
+#include "contact_interface.H"
+#include "contact_node.H"
+#include "contact_element.H"
 #include "contact_defines.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_mortar/mortar_defines.H"
+#include "../drt_io/io.H"
+#include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 
 

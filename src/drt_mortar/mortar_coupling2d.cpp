@@ -40,10 +40,12 @@ Maintainer: Alexander Popp
 #ifdef CCADISCRET
 
 #include "mortar_coupling2d.H"
+#include "mortar_node.H"
+#include "mortar_element.H"
 #include "mortar_projector.H"
 #include "mortar_integrator.H"
 #include "mortar_defines.H"
-
+#include "../drt_lib/drt_discret.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
@@ -78,6 +80,14 @@ mele_(mele)
   // empty constructor
   
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  get communicator  (public)                                popp 06/09|
+ *----------------------------------------------------------------------*/
+const Epetra_Comm& MORTAR::Coupling2d::Comm() const
+{
+	return idiscret_.Comm();
 }
 
 /*----------------------------------------------------------------------*

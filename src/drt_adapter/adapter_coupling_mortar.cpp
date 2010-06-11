@@ -16,6 +16,8 @@
 
 #include "adapter_coupling_mortar.H"
 #include "../drt_mortar/mortar_interface.H"
+#include "../drt_mortar/mortar_node.H"
+#include "../drt_mortar/mortar_element.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_globalproblem.H"

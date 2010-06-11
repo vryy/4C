@@ -39,10 +39,8 @@ Maintainer: Alexander Popp
 #ifndef CONTACT_ELEMENT_H
 #define CONTACT_ELEMENT_H
 
-
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_lib/drt_parobjectfactory.H"
-#include "contact_node.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -165,12 +163,7 @@ public:
   standard Node objects!
 
   */
-  int NumDofPerNode(const DRT::Node& node) const
-  {
-    const CONTACT::CoNode* cnode = dynamic_cast<const CONTACT::CoNode*>(&node);
-    if (!cnode) dserror("Node is not a CoNode");
-    return cnode->NumDof();
-  }
+  int NumDofPerNode(const DRT::Node& node) const;
 
   /*!
   \brief Print this element

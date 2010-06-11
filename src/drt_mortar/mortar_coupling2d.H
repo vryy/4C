@@ -39,12 +39,17 @@ Maintainer: Alexander Popp
 #ifndef MORTAR_COUPLING2D_H
 #define MORTAR_COUPLING2D_H
 
+#include <vector>
 #include "Epetra_Comm.h"
-#include "mortar_element.H"
-#include "mortar_interface.H"
-#include "../drt_lib/drt_discret.H"
+#include "../drt_inpar/inpar_mortar.H"
 
 using namespace std;
+
+// forward declarations
+namespace DRT
+{
+  class Discretization;
+}
 
 /*!
 \brief MORTAR: namespace of the BACI mortar coupling algorithms
@@ -52,6 +57,9 @@ using namespace std;
 */
 namespace MORTAR
 {
+
+// forward declarations
+class MortarElement;
 
 /*!
 \brief A class representing the framework for mortar coupling of ONE
@@ -111,7 +119,7 @@ public:
   \brief Get communicator
 
   */
-  virtual const Epetra_Comm& Comm() const { return idiscret_.Comm();}
+  virtual const Epetra_Comm& Comm() const;
 
   /*!
   \brief Get coupling slave element

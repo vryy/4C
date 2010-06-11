@@ -40,19 +40,20 @@ Maintainer: Alexander Popp
 #ifndef MORTAR_ELEMENT_H
 #define MORTAR_ELEMENT_H
 
-#include "mortar_node.H"
-
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_inpar/inpar_mortar.H"
 
 using namespace std;
 using namespace Teuchos;
 
 // forward declarations
+namespace LINALG
+{
+  class SerialDenseVector;
+  class SerialDenseMatrix;
+}
 
 /*!
 \brief MORTAR: namespace of the BACI mortar coupling algorithms
@@ -252,12 +253,7 @@ public:
   not with standard Node objects!
 
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const
-  {
-    const MORTAR::MortarNode* mnode = dynamic_cast<const MORTAR::MortarNode*>(&node);
-    if (!mnode) dserror("Node is not a MortarNode");
-    return mnode->NumDof();
-  }
+  virtual int NumDofPerNode(const DRT::Node& node) const;
 
   /*!
   \brief Get number of degrees of freedom per element

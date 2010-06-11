@@ -39,14 +39,7 @@ Maintainer: Alexander Popp
 #ifndef CONTACT_INTERFACE_H
 #define CONTACT_INTERFACE_H
 
-#include "contact_node.H"
-#include "friction_node.H"
-#include "contact_element.H"
-#include "selfcontact_binarytree.H"
-
 #include "../drt_mortar/mortar_interface.H"
-#include "../drt_inpar/inpar_mortar.H"
-#include "../drt_inpar/inpar_contact.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -59,6 +52,9 @@ namespace CONTACT
 {
 
 // forward declarations
+class CoNode;
+class CoElement;
+class SelfBinaryTree;
 
 /*!
 \brief One contact interface
@@ -195,8 +191,7 @@ public:
   \return Filled()==false
 
   */
-  virtual void AddCoNode(RCP<CONTACT::CoNode> cnode)
-  { idiscret_->AddNode(cnode); return; }
+  virtual void AddCoNode(RCP<CONTACT::CoNode> cnode);
 
   /*!
   \brief Add a CONTACT::CoElement to the interface (Filled()==true is prerequisite)
@@ -206,8 +201,7 @@ public:
   \return Filled()==false
 
   */
-  virtual void AddCoElement(RCP<CONTACT::CoElement> cele)
-  { idiscret_->AddElement(cele); return; }
+  virtual void AddCoElement(RCP<CONTACT::CoElement> cele);
 
   /*!
   \brief Create binary search tree

@@ -40,10 +40,11 @@ Maintainer: Alexander Popp
 #ifdef CCADISCRET
 
 #include "mortar_coupling3d.H"
-#include "mortar_coupling3d_classes.H"
+#include "mortar_node.H"
 #include "mortar_projector.H"
 #include "mortar_integrator.H"
 #include "mortar_defines.H"
+#include "../drt_lib/drt_discret.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
@@ -78,6 +79,14 @@ mele_(mele)
 {
   // empty constructor body
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  get communicator  (public)                                popp 06/09|
+ *----------------------------------------------------------------------*/
+const Epetra_Comm& MORTAR::Coupling3d::Comm() const
+{
+	return idiscret_.Comm();
 }
 
 /*----------------------------------------------------------------------*
@@ -2747,21 +2756,21 @@ bool MORTAR::Coupling3d::Triangulation(map<int,double>& projpar)
   CenterLinearization(linvertex,lincenter);
 
   //**********************************************************************
-  // (4)Triangulation -> Intcells
+  // (4)Triangulation -> IntCells
   //**********************************************************************
-  vector<Intcell> cells;
+  vector<IntCell> cells;
 
-  // easy if clip polygon = triangle: 1 Intcell
+  // easy if clip polygon = triangle: 1 IntCell
   if (clipsize==3)
   {
-    // Intcell vertices = clip polygon vertices
+    // IntCell vertices = clip polygon vertices
     Epetra_SerialDenseMatrix coords(3,clipsize);
     for (int i=0;i<clipsize;++i)
       for (int k=0;k<3;++k)
         coords(k,i) = Clip()[i].Coord()[k];
 
-    // create Intcell object and push back
-    Cells().push_back(rcp(new Intcell(0,3,coords,Auxn(),DRT::Element::tri3,
+    // create IntCell object and push back
+    Cells().push_back(rcp(new IntCell(0,3,coords,Auxn(),DRT::Element::tri3,
       CouplingInAuxPlane(),linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
 
   }
@@ -2769,7 +2778,7 @@ bool MORTAR::Coupling3d::Triangulation(map<int,double>& projpar)
   // triangulation if clip polygon > triangle
   else
   {
-    // No. of Intcells is equal to no. of clip polygon vertices
+    // No. of IntCells is equal to no. of clip polygon vertices
     for (int num=0;num<clipsize;++num)
     {
       // the first vertex is always the clip center
@@ -2791,8 +2800,8 @@ bool MORTAR::Coupling3d::Triangulation(map<int,double>& projpar)
       else
         for (int k=0;k<3;++k) coords(k,2) = Clip()[num+1].Coord()[k];
 
-      // create Intcell object and push back
-      Cells().push_back(rcp(new Intcell(num,3,coords,Auxn(),DRT::Element::tri3,
+      // create IntCell object and push back
+      Cells().push_back(rcp(new IntCell(num,3,coords,Auxn(),DRT::Element::tri3,
         CouplingInAuxPlane(),lincenter,linvertex[num],linvertex[numplus1],GetDerivAuxn())));
     }
   }
@@ -2812,7 +2821,7 @@ bool MORTAR::Coupling3d::IntegrateCells()
   /**********************************************************************/
 
   // create an integrator instance with correct NumGP and Dim
-  // it is sufficient to do this once as all Intcells are triangles
+  // it is sufficient to do this once as all IntCells are triangles
   MORTAR::MortarIntegrator integrator(shapefcn_,Cells()[0]->Shape());
 
   // loop over all integration cells

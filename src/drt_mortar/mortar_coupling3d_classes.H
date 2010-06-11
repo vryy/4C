@@ -39,10 +39,7 @@ Maintainer: Alexander Popp
 #ifndef MORTAR_COUPLING3D_CLASSES_H
 #define MORTAR_COUPLING3D_CLASSES_H
 
-#include "Epetra_Comm.h"
-#include "mortar_interface.H"
 #include "mortar_element.H"
-#include "../drt_lib/drt_discret.H"
 
 using namespace std;
 
@@ -163,7 +160,7 @@ protected:
        of the clip polygon of slave and master element from the Coupling
        class. This class provides some basic funcitonality a MortarElement would
        also provide (coords, shape functions and derivatives, Jacobian, ...).
-       Note that an Intcell can EITHER live in physical space (this is the
+       Note that an IntCell can EITHER live in physical space (this is the
        case when an auxiliary plane is used for 3D coupling) or in the slave
        element parameter space (this is the case when 3D coupling is performed
        on the slave surface without any auxiliary plane). Of course, in the
@@ -172,7 +169,7 @@ protected:
 \author popp (popp@lnm.mw.tum.de)
 */
 
-class Intcell{
+class IntCell{
 
 public:
 
@@ -184,7 +181,7 @@ public:
   performed in parallel by individual processes.
 
   */
-  Intcell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
+  IntCell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
           double* auxn, const DRT::Element::DiscretizationType& shape,
           bool auxplane,
           vector<map<int,double> >& linv1,
@@ -195,16 +192,16 @@ public:
   /*!
   \brief Copy Constructor
 
-  Makes a deep copy of an Intcell
+  Makes a deep copy of an IntCell
 
   */
-  Intcell(const Intcell& old);
+  IntCell(const IntCell& old);
 
   /*!
   \brief Destructor
 
   */
-  virtual ~Intcell() {}
+  virtual ~IntCell() {}
 
   //! @name Access methods
 
@@ -267,7 +264,7 @@ public:
   */
   virtual vector<map<int,double> >& GetDerivVertex(int i)
   {
-    if (i<0 || i>2) dserror("ERROR: Intcell has 3 vertex linearizations only!");
+    if (i<0 || i>2) dserror("ERROR: IntCell has 3 vertex linearizations only!");
     return linvertex_[i];
   }
 
@@ -333,7 +330,7 @@ protected:
   vector<vector<map<int,double> > >  linvertex_; // derivatives of the 3 vertices
   vector<map<int,double> >           linauxn_;   // derivatives of auxiliary plane normal
 
-}; // class Intcell
+}; // class IntCell
 
 
 /*!

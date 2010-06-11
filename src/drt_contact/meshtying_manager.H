@@ -40,10 +40,15 @@ Maintainer: Alexander Popp
 #define MESHTYING_MANAGER_H
 
 #include "../drt_mortar/mortar_manager_base.H"
-#include "../drt_io/io.H"
 
 using namespace std;
 using namespace Teuchos;
+
+// forward declarations
+namespace DRT
+{
+	class Discretization;
+}
 
 namespace CONTACT
 {

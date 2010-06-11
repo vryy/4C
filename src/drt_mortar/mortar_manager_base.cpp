@@ -38,14 +38,8 @@ Maintainer: Alexander Popp
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "Epetra_SerialComm.h"
 #include "mortar_manager_base.H"
-#include "mortar_node.H"
-#include "mortar_element.H"
-#include "mortar_defines.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_inpar/inpar_mortar.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 01/10|

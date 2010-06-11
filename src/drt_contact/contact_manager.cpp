@@ -40,10 +40,14 @@ Maintainer: Alexander Popp
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "contact_manager.H"
+#include "contact_interface.H"
+#include "contact_node.H"
+#include "contact_element.H"
 #include "contact_lagrange_strategy.H"
 #include "contact_penalty_strategy.H"
 #include "contact_defines.H"
 #include "friction_node.H"
+#include "../drt_io/io.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_contact.H"

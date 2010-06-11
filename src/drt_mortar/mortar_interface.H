@@ -40,15 +40,17 @@ Maintainer: Alexander Popp
 #define MORTAR_INTERFACE_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Epetra_Comm.h"
-#include "mortar_node.H"
-#include "mortar_element.H"
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_sparsematrix.H"
 #include "../drt_inpar/inpar_mortar.H"
 
 using namespace std;
 using namespace Teuchos;
+
+// forward declarations
+namespace LINALG
+{
+  class SparseMatrix;
+}
 
 /*!
 \brief MORTAR: namespace of the BACI mortar coupling algorithms
@@ -58,6 +60,8 @@ namespace MORTAR
 {
 
 // forward declarations
+class MortarNode;
+class MortarElement;
 class IntElement;
 class BinaryTree;
 
@@ -420,8 +424,7 @@ public:
   \return Filled()==false
 
   */
-  virtual void AddMortarNode(RCP<MORTAR::MortarNode> mrtrnode)
-  { idiscret_->AddNode(mrtrnode); return; }
+  virtual void AddMortarNode(RCP<MORTAR::MortarNode> mrtrnode);
 
   /*!
   \brief Add a MORTAR::MortarElement to the interface (Filled()==true is prerequisite)
@@ -431,8 +434,7 @@ public:
   \return Filled()==false
 
   */
-  virtual void AddMortarElement(RCP<MORTAR::MortarElement> mrtrele)
-  { idiscret_->AddElement(mrtrele); return; }
+  virtual void AddMortarElement(RCP<MORTAR::MortarElement> mrtrele);
 
   /*!
   \brief Finalize construction of mortar interface

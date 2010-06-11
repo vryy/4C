@@ -39,10 +39,19 @@ Maintainer: Alexander Popp
 #ifndef MORTAR_BINARYTREE_H
 #define MORTAR_BINARYTREE_H
 
-#include "../drt_lib/drt_discret.H"
-//#include "mortar_element.H"
+#include "Teuchos_RCP.hpp"
+#include "Epetra_Comm.h"
+#include "Epetra_Map.h"
+#include "Epetra_SerialDenseMatrix.h"
 
 using namespace std;
+using namespace Teuchos;
+
+// forward declarations
+namespace DRT
+{
+  class Discretization;
+}
 
 /*!
 \brief MORTAR: namespace of the BACI mortar coupling algorithms
@@ -165,7 +174,7 @@ public:
   \brief Get communicator
 
   */
-  virtual const Epetra_Comm& Comm() const { return idiscret_.Comm();}
+  virtual const Epetra_Comm& Comm() const;
 
   /*!
   \brief Get discretization of the interface
@@ -405,7 +414,7 @@ public:
   \brief Get communicator
 
   */
-  virtual const Epetra_Comm& Comm() const { return idiscret_.Comm();}
+  virtual const Epetra_Comm& Comm() const;
 
   /*!
   \brief Get discretization of the interface

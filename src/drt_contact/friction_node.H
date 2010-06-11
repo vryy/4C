@@ -39,13 +39,11 @@ Maintainer: Markus Gitterle
 #ifndef FRICTION_NODE_H
 #define FRICTION_NODE_H
 
-#include "../drt_mortar/mortar_node.H"
-#include "../drt_lib/drt_parobjectfactory.H"
 #include "contact_node.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 using namespace std;
 using namespace Teuchos;
-
 
 /*!
 \brief CONTACT: namespace of the baci contact and meshtying algorithms

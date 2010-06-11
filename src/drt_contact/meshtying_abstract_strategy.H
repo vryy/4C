@@ -39,13 +39,29 @@ Maintainer: Alexander Popp
 #ifndef MESHTYING_ABSTRACT_STRATEGY_H
 #define MESHTYING_ABSTRACT_STRATEGY_H
 
-#include "../drt_mortar/mortar_strategy_base.H"
-#include "../drt_mortar/mortar_interface.H"
-#include "../drt_inpar/inpar_contact.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
+#include "../drt_mortar/mortar_strategy_base.H"
+#include "../drt_inpar/inpar_contact.H"
 
 using namespace std;
 using namespace Teuchos;
+
+// forward declarations
+namespace DRT
+{
+  class Discretization;
+}
+
+namespace MORTAR
+{
+  class MortarInterface;
+}
+
+namespace LINALG
+{
+  class SparseMatrix;
+}
 
 namespace CONTACT
 {

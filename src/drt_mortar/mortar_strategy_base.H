@@ -39,15 +39,29 @@ Maintainer: Alexander Popp
 #ifndef MORTAR_STRATEGY_BASE_H
 #define MORTAR_STRATEGY_BASE_H
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "mortar_interface.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_solver.H"
-#include "../drt_io/io.H"
+#include "Teuchos_RCP.hpp"
+#include "Teuchos_ParameterList.hpp"
+#include "Epetra_Comm.h"
+#include "Epetra_Map.h"
+#include "Epetra_Vector.h"
+#include "../drt_lib/drt_dserror.H"
 
 using namespace std;
 using namespace Teuchos;
+
+// forward declarations
+namespace LINALG
+{
+  class MapExtractor;
+  class Solver;
+  class SparseOperator;
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+  class DiscretizationReader;
+}
 
 namespace MORTAR
 {

@@ -44,9 +44,12 @@ Maintainer: Alexander Popp
 #include "meshtying_defines.H"
 #include "meshtying_manager.H"
 #include "../drt_mortar/mortar_defines.H"
+#include "../drt_mortar/mortar_manager_base.H"
+#include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_constraint/constraint_manager.H"
 

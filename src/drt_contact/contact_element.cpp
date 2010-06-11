@@ -39,8 +39,11 @@ Maintainer: Alexander Popp
 #ifdef CCADISCRET
 
 #include "contact_element.H"
+#include "contact_node.H"
 #include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensematrix.H"
 
 CONTACT::CoElementType CONTACT::CoElementType::instance_;
 
@@ -163,6 +166,16 @@ void CONTACT::CoElement::Unpack(const vector<char>& data)
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  number of dofs per node (public)                         mwgee 10/07|
+ *----------------------------------------------------------------------*/
+int CONTACT::CoElement::NumDofPerNode(const DRT::Node& node) const
+{
+  const CONTACT::CoNode* cnode = dynamic_cast<const CONTACT::CoNode*>(&node);
+  if (!cnode) dserror("Node is not a CoNode");
+  return cnode->NumDof();
 }
 
 /*----------------------------------------------------------------------*

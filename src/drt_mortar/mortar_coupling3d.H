@@ -39,14 +39,19 @@ Maintainer: Alexander Popp
 #ifndef MORTAR_COUPLING3D_H
 #define MORTAR_COUPLING3D_H
 
+#include <vector>
 #include "Epetra_Comm.h"
-#include "mortar_element.H"
-#include "mortar_interface.H"
 #include "mortar_coupling3d_classes.H"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/inpar_mortar.H"
 
 using namespace std;
+
+// forward declarations
+namespace DRT
+{
+  class Discretization;
+}
+
 
 /*!
 \brief MORTAR: namespace of the BACI mortar coupling algorithms
@@ -56,7 +61,7 @@ namespace MORTAR
 {
 
 // forward declarations
-
+class MortarElement;
 
 /*!
 \brief A class representing the framework for mortar coupling of ONE
@@ -124,7 +129,7 @@ public:
   \brief Get communicator
 
   */
-  virtual const Epetra_Comm& Comm() const { return idiscret_.Comm();}
+  virtual const Epetra_Comm& Comm() const;
 
   /*!
   \brief Get problem dimension (here: 3D)
@@ -223,7 +228,7 @@ public:
   \brief Return vector of integration cells
 
   */
-  virtual vector<RCP<Intcell> >& Cells() {return cells_; }
+  virtual vector<RCP<IntCell> >& Cells() {return cells_; }
 
   /*!
   \brief Return the 'DerivAuxn' map (vector) of this coupling pair
@@ -447,7 +452,7 @@ protected:
     vector<Vertex>             mvertices_;   // master node vertex objects
     vector<Vertex>             clip_;        // clipped polygon vertex objects
 
-    vector<RCP<Intcell> >      cells_;       // vector of integration cells
+    vector<RCP<IntCell> >      cells_;       // vector of integration cells
     vector<map<int,double> >   derivauxn_;   // derivatives of auxiliary plane normal
 
 }; // class Coupling3d

@@ -39,10 +39,19 @@ Maintainer: Alexander Popp
 #ifndef SELFCONTACT_BINARYTREE_SELF_H
 #define SELFCONTACT_BINARYTREE_SELF_H
 
-#include "../drt_lib/drt_discret.H"
-#include "contact_element.H"
+#include "Teuchos_RCP.hpp"
+#include "Epetra_Comm.h"
+#include "Epetra_Map.h"
+#include "Epetra_SerialDenseMatrix.h"
 
 using namespace std;
+using namespace Teuchos;
+
+// forward declarations
+namespace DRT
+{
+  class Discretization;
+}
 
 /*!
 \brief CONTACT: namespace of the baci contact algorithms
@@ -175,7 +184,7 @@ public:
   \brief Get communicator
   
   */
-  virtual const Epetra_Comm& Comm() const { return idiscret_.Comm(); }
+  virtual const Epetra_Comm& Comm() const;
   
   
   /*!
@@ -616,7 +625,7 @@ public:
   \brief Get communicator
 
   */
-  virtual const Epetra_Comm& Comm() const { return idiscret_.Comm(); }
+  virtual const Epetra_Comm& Comm() const;
   
   /*!
   \brief Get discretization of the interface

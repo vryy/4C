@@ -39,11 +39,9 @@ Maintainer: Alexander Popp
 #ifndef MORTAR_PROJECTOR_H
 #define MORTAR_PROJECTOR_H
 
-#include "mortar_node.H"
-#include "mortar_element.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 using namespace std;
-using namespace Teuchos;
 
 /*!
 \brief MORTAR: namespace of the BACI mortar coupling algorithms
@@ -53,6 +51,8 @@ namespace MORTAR
 {
 
 // forward declarations
+class MortarNode;
+class MortarElement;
 
 /*!
 \brief A class to perform projections of nodes onto opposing elements

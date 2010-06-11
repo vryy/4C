@@ -44,6 +44,8 @@ Maintainer: Alexander Popp
 #include "mortar_node.H"
 #include "mortar_defines.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensematrix.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 01/08|

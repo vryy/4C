@@ -44,6 +44,9 @@ Maintainer: Alexander Popp
 #include "mortar_projector.H"
 #include "mortar_integrator.H"
 #include "mortar_defines.H"
+#include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensematrix.H"
+#include "../drt_lib/drt_node.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/09|
@@ -458,7 +461,7 @@ bool MORTAR::IntElement::MapToParent(const vector<map<int,double> >& dxi,
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-MORTAR::Intcell::Intcell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
+MORTAR::IntCell::IntCell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
                           double* auxn, const DRT::Element::DiscretizationType& shape,
                           bool auxplane,
                           vector<map<int,double> >& linv1,
@@ -482,7 +485,7 @@ shape_(shape)
   // store auxiliary plane normal
   for (int k=0;k<3;++k) Auxn()[k] = auxn[k];
 
-  // compute area of Intcell
+  // compute area of IntCell
   double t1[3] = {0.0, 0.0, 0.0};
   double t2[3] = {0.0, 0.0, 0.0};
   for (int k=0;k<3;++k)
@@ -510,7 +513,7 @@ shape_(shape)
 /*----------------------------------------------------------------------*
  |  cctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-MORTAR::Intcell::Intcell(const Intcell& old) :
+MORTAR::IntCell::IntCell(const IntCell& old) :
 id_(old.id_),
 nvertices_(old.nvertices_),
 area_(old.area_),
@@ -522,9 +525,9 @@ shape_(old.shape_)
 }
 
 /*----------------------------------------------------------------------*
- |  Get global coords for given local coords (Intcell)        popp 11/08|
+ |  Get global coords for given local coords (IntCell)        popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Intcell::LocalToGlobal(const double* xi,
+bool MORTAR::IntCell::LocalToGlobal(const double* xi,
                                      double* globcoord,
                                      int inttype)
 {
@@ -572,13 +575,13 @@ bool MORTAR::Intcell::LocalToGlobal(const double* xi,
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate shape functions (Intcell)                        popp 11/08|
+ |  Evaluate shape functions (IntCell)                        popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Intcell::EvaluateShape(const double* xi,
+bool MORTAR::IntCell::EvaluateShape(const double* xi,
     LINALG::SerialDenseVector& val, LINALG::SerialDenseMatrix& deriv)
 {
   if (!xi)
-    dserror("ERROR: EvaluateShape (Intcell) called with xi=NULL");
+    dserror("ERROR: EvaluateShape (IntCell) called with xi=NULL");
 
   // 3noded triangular element
   if(Shape()==DRT::Element::tri3)
@@ -592,15 +595,15 @@ bool MORTAR::Intcell::EvaluateShape(const double* xi,
   }
 
   // unknown case
-  else dserror("ERROR: EvaluateShape (Intcell) called for type != tri3");
+  else dserror("ERROR: EvaluateShape (IntCell) called for type != tri3");
 
   return true;
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate Jacobian determinant (Intcell)                   popp 11/08|
+ |  Evaluate Jacobian determinant (IntCell)                   popp 11/08|
  *----------------------------------------------------------------------*/
-double MORTAR::Intcell::Jacobian(double* xi)
+double MORTAR::IntCell::Jacobian(double* xi)
 {
   double jac = 0.0;
   vector<double> gxi(3);
@@ -611,7 +614,7 @@ double MORTAR::Intcell::Jacobian(double* xi)
     jac = Area()*2;
 
   // unknown case
-  else dserror("ERROR: Jacobian (Intcell) called for unknown ele type!");
+  else dserror("ERROR: Jacobian (IntCell) called for unknown ele type!");
 
   return jac;
 }
@@ -619,7 +622,7 @@ double MORTAR::Intcell::Jacobian(double* xi)
 /*----------------------------------------------------------------------*
  |  Evaluate directional deriv. of Jacobian det.              popp 12/08|
  *----------------------------------------------------------------------*/
-void MORTAR::Intcell::DerivJacobian(double* xi, vector<double>& derivjac)
+void MORTAR::IntCell::DerivJacobian(double* xi, vector<double>& derivjac)
 {
   // initialize parameters
   int nnodes = NumVertices();
@@ -669,12 +672,12 @@ void MORTAR::Intcell::DerivJacobian(double* xi, vector<double>& derivjac)
   }
 
   // unknown case
-  else dserror("ERROR: DerivJacobian (Intcell) called for unknown ele type!");
+  else dserror("ERROR: DerivJacobian (IntCell) called for unknown ele type!");
 
   /*
   // finite difference check
   typedef map<int,double>::const_iterator CI;
-  cout << "Analytical Intcell jac derivative:" << endl;
+  cout << "Analytical IntCell jac derivative:" << endl;
   for (CI p = derivjac.begin(); p != derivjac.end(); ++p)
   {
     cout << "dof: " << p->first << " " << p->second << endl;
@@ -682,7 +685,7 @@ void MORTAR::Intcell::DerivJacobian(double* xi, vector<double>& derivjac)
 
   double delta = 1.0e-8;
   double jacfd = 0.0;
-  cout << "FD Intcell jac derivative:" << endl;
+  cout << "FD IntCell jac derivative:" << endl;
 
   for (int i=0;i<nnodes;++i)
   {
@@ -716,7 +719,7 @@ void MORTAR::Intcell::DerivJacobian(double* xi, vector<double>& derivjac)
 /*----------------------------------------------------------------------*
  |  Evaluate directional deriv. of Jacobian det. AuxPlane     popp 03/09|
  *----------------------------------------------------------------------*/
-void MORTAR::Intcell::DerivJacobian(double* xi, map<int,double>& derivjac)
+void MORTAR::IntCell::DerivJacobian(double* xi, map<int,double>& derivjac)
 {
   // metrics routine gives local basis vectors
   vector<double> gxi(3);
@@ -807,7 +810,7 @@ void MORTAR::Intcell::DerivJacobian(double* xi, map<int,double>& derivjac)
   }
 
   // unknown case
-  else dserror("ERROR: DerivJacobian (Intcell) called for unknown ele type!");
+  else dserror("ERROR: DerivJacobian (IntCell) called for unknown ele type!");
 
   return;
 }

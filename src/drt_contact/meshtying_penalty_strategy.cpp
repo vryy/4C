@@ -39,8 +39,11 @@ Maintainer: Alexander Popp
 
 #include "meshtying_penalty_strategy.H"
 #include "meshtying_defines.H"
-#include "../drt_inpar/inpar_contact.H"
+#include "../drt_mortar/mortar_interface.H"
+#include "../drt_mortar/mortar_node.H"
 #include "../drt_mortar/mortar_defines.H"
+#include "../drt_inpar/inpar_contact.H"
+#include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 
 

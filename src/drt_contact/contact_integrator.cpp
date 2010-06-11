@@ -44,9 +44,11 @@ Maintainer: Alexander Popp
 #include "contact_element.H"
 #include "contact_defines.H"
 #include "friction_node.H"
-
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_projector.H"
+#include "../drt_mortar/mortar_coupling3d_classes.H"
+#include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensematrix.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 08/08|
@@ -1103,7 +1105,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegrator::IntegrateDerivCell3D(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-     RCP<MORTAR::Intcell> cell,
+     RCP<MORTAR::IntCell> cell,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg)
@@ -1909,7 +1911,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D(
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-     RCP<MORTAR::Intcell> cell, double* auxn,
+     RCP<MORTAR::IntCell> cell, double* auxn,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg)
@@ -2582,7 +2584,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
 void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
-     RCP<MORTAR::Intcell> cell, double* auxn,
+     RCP<MORTAR::IntCell> cell, double* auxn,
      INPAR::MORTAR::LagMultQuad3D lmtype,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,

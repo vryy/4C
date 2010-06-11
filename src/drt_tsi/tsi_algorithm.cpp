@@ -28,7 +28,10 @@ Maintainer: Caroline Danowski
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_contact/meshtying_manager.H"
 #include "../drt_contact/contact_manager.H"
+#include "../drt_contact/contact_interface.H"
 #include "../drt_contact/contact_abstract_strategy.H"
+#include "../drt_contact/contact_node.H"
+#include "../drt_contact/friction_node.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

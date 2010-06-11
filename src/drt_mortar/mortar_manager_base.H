@@ -39,19 +39,26 @@ Maintainer: Alexander Popp
 #ifndef MORTAR_MANAGER_BASE_H
 #define MORTAR_MANAGER_BASE_H
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "mortar_strategy_base.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../drt_io/io.H"
+#include "Teuchos_RCP.hpp"
+#include "Epetra_Comm.h"
+#include "Epetra_Map.h"
+#include "Epetra_Vector.h"
 
 using namespace std;
 using namespace Teuchos;
+
+// forward declarations
+namespace IO
+{
+ class DiscretizationWriter;
+ class DiscretizationReader;
+}
 
 namespace MORTAR
 {
 
 // forward declarations
+class StrategyBase;
 
 /*!
 \brief Abstract base class to control all mortar coupling

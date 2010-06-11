@@ -39,27 +39,36 @@ Maintainer: Alexander Popp
 #ifndef CONTACT_STRATEGY_H
 #define CONTACT_STRATEGY_H
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_inpar/inpar_contact.H"
-#include "contact_interface.H"
 
 using namespace std;
 using namespace Teuchos;
+
+// forward declarations
+namespace LINALG
+{
+  class SparseMatrix;
+}
+
 
 namespace CONTACT
 {
 
 // forward declarations
+class CoInterface;
 
 /*!
 \brief Main abstract class for contact solution strategies
 
 This is the templating abstract class for all contact solution algorithms.
-Every solution algorithm has to fit into the set of functions and calls definied herein
+Every solution algorithm has to fit into the set of functions and calls defined herein
 and has to be specified in a corresponding subclass defining the concrete algorithmic steps.
 
 This class it itself derived from the MORTAR::StrategyBase class, which is an even
-more abstract framework for any solution strategies involing mortar coupling.
+more abstract framework for any solution strategies involving mortar coupling.
 
 Refer also to the Semesterarbeit of Bernd Budich, 2009
 
