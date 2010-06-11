@@ -203,11 +203,11 @@ double MAT::FerEchPV::ComputeReactionCoeff(const double provar) const
   // Heaviside function loop
   if (provar > PvCrit())
   {
-    // modified version by Poinsot and Veynante (2005)
-    double reacoeff = ReacRateCon();
-
     // original version by Ferziger and Echekki (1993)
-    if (Mod() < EPS15)
+    reacoeff = ReacRateCon();
+
+    // modified version by Poinsot and Veynante (2005)
+    if ((Mod() > (1.0-EPS15)) and (Mod() < (1.0+EPS15)))
     {
       // BML hypothesis
       reacoeff *= UnbDens()/(UnbDens() + provar * (BurDens() - UnbDens()));
@@ -216,8 +216,10 @@ double MAT::FerEchPV::ComputeReactionCoeff(const double provar) const
       //reacoeff *= (BurDens() + provar * (UnbDens() - BurDens()))/BurDens();
     }
     else if (Mod() > (1.0+EPS15))
+    {
       // modified version by Hartmann et al. (2010)
       reacoeff *= UnbDens()*UnbDens()/(BurDens() + provar * (UnbDens() - BurDens()));
+    }
   }
 
   return reacoeff;
