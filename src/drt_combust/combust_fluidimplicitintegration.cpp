@@ -392,6 +392,11 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
 {
   // information about interface is imported via ADAPTER::FluidCombust::ImportInterface()
 
+  if (false) // flamefront_ == Teuchos::null)
+  {
+    dserror("combustion time integration scheme cannot see flame front");
+  }
+
   /* momentan gebe ich den ElementAnsatz (Lagrange Multiplier Zeug) nicht an den DofManager weiter,
    * vielleicht brauche ich es aber. Hängt das hier eigentlich nicht direkt von InputParametern ab? */
 //  const COMBUST::CombustElementAnsatz elementAnsatz;
@@ -421,8 +426,8 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
   discret_->FillComplete(true,false,true);
   const Epetra_Map& newdofrowmap = *discret_->DofRowMap();
 
-  //discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
-  discret_->ComputeNullSpaceIfNecessary(solver_.Params());
+  // remark: 'true' is needed to prevent iterative solver from crashing
+  discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
 
   {
   const std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);

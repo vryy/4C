@@ -15,17 +15,18 @@ Maintainer: Florian Henke
 #ifdef CCADISCRET
 
 #include "combust_algorithm.H"
+#include "combust_defines.H"
 #include "combust_flamefront.H"
 #include "combust_reinitializer.H"
 #include "combust_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "combust_fluidimplicitintegration.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_function.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_geometry/integrationcell.H"
-#include "../drt_lib/drt_function.H"
-#include "../drt_io/io_gmsh.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_io/io_gmsh.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 /*------------------------------------------------------------------------------------------------*
@@ -56,8 +57,6 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   phireinitn_(Teuchos::null),
 //  fgvelnormL2_(?),
 //  fggfuncnormL2_(?),
-/* hier müssen noch mehr Parameter eingelesen werden, nämlich genau die, die für die FGI-Schleife
-   nötig sind. Die für die Schleifen über die Einzelfelder existieren in den Zeitintegrationsschemata. */
   combusttype_(Teuchos::getIntegralValue<INPAR::COMBUST::CombustionType>(combustdyn.sublist("COMBUSTION FLUID"),"COMBUSTTYPE")),
   reinitaction_(Teuchos::getIntegralValue<INPAR::COMBUST::ReInitialActionGfunc>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINITIALIZATION")),
 //  reinitaction_(combustdyn.sublist("COMBUSTION GFUNCTION").get<INPAR::COMBUST::ReInitialActionGfunc>("REINITIALIZATION")),
@@ -78,8 +77,8 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   }
 
   // get pointers to the discretizations from the time integration scheme of each field
-  /* remark: fluiddis cannot be of type "const Teuchos::RCP<const DRT::Dis...>", because parent
-   * class. InterfaceHandle only accepts "const Teuchos::RCP<DRT::Dis...>"            henke 01/09 */
+  // remark: fluiddis cannot be of type "const Teuchos::RCP<const DRT::Dis...>", because parent
+  // class. InterfaceHandle only accepts "const Teuchos::RCP<DRT::Dis...>"              henke 01/09
   const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
   const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
 
@@ -98,7 +97,8 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
    *----------------------------------------------------------------------------------------------*/
   // construct initial flame front
   flamefront_ = rcp(new COMBUST::FlameFront(fluiddis,gfuncdis));
-  flamefront_->ProcessFlameFront(combustdyn_,ScaTraField().Phinp());
+  flamefront_->StorePhiVectors(ScaTraField().Phin(), ScaTraField().Phinp());
+  flamefront_->ProcessFlameFront(combustdyn_,flamefront_->Phinp());
 
   // construct interfacehandle using initial flame front
   interfacehandle_ = rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefront_));
@@ -357,7 +357,8 @@ void COMBUST::Algorithm::ReinitializeGfunc()
         ScaTraField().Phinp());
 
     // update flame front according to reinitialized G-function field
-    flamefront_->ProcessFlameFront(combustdyn_,ScaTraField().Phinp());
+    flamefront_->StorePhiVectors(ScaTraField().Phin(), ScaTraField().Phinp());
+    flamefront_->ProcessFlameFront(combustdyn_,flamefront_->Phinp());
 
     // update interfacehandle (get integration cells) according to updated flame front
     interfacehandle_->UpdateInterfaceHandle();
@@ -458,6 +459,16 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
   if (not phimap.SameAs(*fluiddis->NodeColMap())) dserror("node column map has changed!");
 #endif
 
+#ifdef COMBUST_GMSH_NORMALFIELD
+  const std::string filestr = "flamefront_normal_field";
+  const std::string name_in_gmsh = "Normal field";
+
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, Step(), 500, true, fluiddis->Comm().MyPID());
+  std::ofstream gmshfilecontent(filename.c_str());
+  {
+  gmshfilecontent << "View \" " << name_in_gmsh << "\" {\n";
+#endif
+
   // loop over nodes on this processor
   for(int lnodeid=0; lnodeid < fluiddis->NumMyRowNodes(); ++lnodeid)
   {
@@ -536,15 +547,30 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
 
       LINALG::NonSymmetricInverse(xjm,3);
 
+//cout << ele->Id() << endl;
+//cout << xyze << endl;
+
       // compute global derivates
       Epetra_SerialDenseMatrix derxy(3,numnode);
       // derxy(i,j) = xji(i,k) * deriv(k,j)
       derxy.Multiply('N','N',1.0,xjm,deriv,0.0);
 //      xji.Multiply(false,deriv,derxy);
 
+//cout << derxy << endl;
+
       Epetra_SerialDenseMatrix gradphi(3,1);
       derxy.Multiply(false,myphi,gradphi);
       double ngradphi = sqrt(gradphi(0,0)*gradphi(0,0)+gradphi(1,0)*gradphi(1,0)+gradphi(2,0)*gradphi(2,0));
+
+//cout << derxy << endl;
+//cout << gradphi << endl;
+
+//cout << ele->Id() << endl;
+//cout << xyze << endl;
+//cout << myphi << endl;
+//cout << derxy << endl;
+//cout << gradphi << endl;
+
 
       // normal vector at this node for this element
       LINALG::Matrix<3,1> nvec(true);
@@ -552,7 +578,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
       for (int icomp=0; icomp<3; ++icomp)
         nvec(icomp) = -gradphi(icomp,0) / ngradphi;
 
-//cout << "normal vector for element: " << ele->Id() << " at node: " << lnode->Id() << " is: " << nvec << endl;
+      //cout << "normal vector for element: " << ele->Id() << " at node: " << lnode->Id() << " is: " << nvec << endl;
 
       // add normal vector to linear combination (could also be weighted in different ways!)
       for (int icomp=0; icomp<3; ++icomp)
@@ -568,6 +594,15 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
     for (int icomp=0; icomp<3; ++icomp) avnvec(icomp) /= avnorm;
 
 //cout << "average normal vector at node: " << lnode->Id() << " is: " << avnvec << endl;
+
+#ifdef COMBUST_GMSH_NORMALFIELD
+    LINALG::SerialDenseMatrix xyz(3,1);
+    xyz(0,0) = lnode->X()[0];
+    xyz(1,0) = lnode->X()[1];
+    xyz(2,0) = lnode->X()[2];
+
+    IO::GMSH::cellWithVectorFieldToStream(DRT::Element::point1, avnvec, xyz, gmshfilecontent);
+#endif
 
     //------------------------
     // get material parameters
@@ -641,6 +676,13 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
 //  cout << "------------------------------------------------------------" << endl;
 //  cout << "convection velocity: " << flvelabs << endl;
   }
+#ifdef COMBUST_GMSH_NORMALFIELD
+  gmshfilecontent << "};\n";
+  }
+  gmshfilecontent.close();
+  if (true) std::cout << " done" << endl;
+#endif
+
   return convel;
 }
 
@@ -813,8 +855,22 @@ void COMBUST::Algorithm::DoFluidField()
     std:: cout<<"\n---------------------------------------  FLUID SOLVER  ---------------------------------------" << std::endl;
   }
 
-  // export interface information to the fluid time integration
-  FluidField().ImportInterface(interfacehandle_);
+  // TODO: remove; preparation for Martin's work on XFEM time integration
+  if (true)
+  {
+    // export interface information to the fluid time integration
+    FluidField().ImportInterface(interfacehandle_);
+  }
+  // semi-Lagrangian XFEM time integration method
+  else
+  {
+    // show flame front to fluid time integration scheme
+    FluidField().ImportFlameFront(flamefront_);
+    // export interface information to the fluid time integration
+    FluidField().ImportInterface(interfacehandle_);
+    // delete fluid's memory of flame front; it should never have seen it in the first place!
+    FluidField().ImportFlameFront(Teuchos::null);
+  }
 
   // solve nonlinear Navier-Stokes equations
   FluidField().NonlinearSolve();
@@ -890,9 +946,9 @@ void COMBUST::Algorithm::DoGfuncField()
 #endif
 
     ScaTraField().SetVelocityField(
-      OverwriteFluidVel(),
+      //OverwriteFluidVel(),
       //FluidField().ExtractInterfaceVeln(),
-      //ComputeFlameVel(convel,FluidField().DofSet()),
+      ComputeFlameVel(convel,FluidField().DofSet()),
       Teuchos::null,
       FluidField().DofSet(),
       FluidField().Discretization()
@@ -917,7 +973,8 @@ void COMBUST::Algorithm::DoGfuncField()
 void COMBUST::Algorithm::UpdateFGIteration()
 {
   // update flame front according to evolved G-function field
-  flamefront_->ProcessFlameFront(combustdyn_,ScaTraField().Phinp());
+  flamefront_->StorePhiVectors(ScaTraField().Phin(), ScaTraField().Phinp());
+  flamefront_->ProcessFlameFront(combustdyn_,flamefront_->Phinp());
 
   // update interfacehandle (get integration cells) according to updated flame front
   interfacehandle_->UpdateInterfaceHandle();
@@ -1030,58 +1087,86 @@ double COMBUST::Algorithm::ComputeVolume()
 
 void COMBUST::Algorithm::Restart(int step)
 {
-  std::cout << "Restart of combustion problem" << std::endl;
+  if (Comm().MyPID()==0)
+    std::cout << "Restart of combustion problem" << std::endl;
 
-//  dserror("Restart of combustion problem doesn't work!");
-
+  // restart of scalar transport (G-function) field
   ScaTraField().ReadRestart(step);
-//  FluidField().ReadRestart(step);
 
-  // create Gmsh postprocessing file
-  const std::string filename2 = IO::GMSH::GetNewFileNameAndDeleteOldFiles("field_scalar_after_restart", Step(), 701, true, ScaTraField().Discretization()->Comm().MyPID());
-  std::ofstream gmshfilecontent2(filename2.c_str());
+  // get pointers to the discretizations from the time integration scheme of each field
+  const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
+  const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
+
+  //--------------------------
+  // write output to Gmsh file
+  //--------------------------
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("field_scalar_after_restart", Step(), 701, true, gfuncdis->Comm().MyPID());
+  std::ofstream gmshfilecontent(filename.c_str());
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent2 << "View \" " << "Phinp \" {" << endl;
+    gmshfilecontent << "View \" " << "Phinp \" {" << endl;
     // draw scalar field 'Phinp' for every element
-    IO::GMSH::ScalarFieldToGmsh(ScaTraField().Discretization(),ScaTraField().Phinp(),gmshfilecontent2);
-    gmshfilecontent2 << "};" << endl;
+    IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinp(),gmshfilecontent);
+    gmshfilecontent << "};" << endl;
   }
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent2 << "View \" " << "Phin \" {" << endl;
+    gmshfilecontent << "View \" " << "Phin \" {" << endl;
     // draw scalar field 'Phinp' for every element
-    IO::GMSH::ScalarFieldToGmsh(ScaTraField().Discretization(),ScaTraField().Phin(),gmshfilecontent2);
-    gmshfilecontent2 << "};" << endl;
+    IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phin(),gmshfilecontent);
+    gmshfilecontent << "};" << endl;
   }
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent2 << "View \" " << "Phinm \" {" << endl;
+    gmshfilecontent << "View \" " << "Phinm \" {" << endl;
     // draw scalar field 'Phinp' for every element
-    IO::GMSH::ScalarFieldToGmsh(ScaTraField().Discretization(),ScaTraField().Phinm(),gmshfilecontent2);
-    gmshfilecontent2 << "};" << endl;
+    IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinm(),gmshfilecontent);
+    gmshfilecontent << "};" << endl;
   }
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent2 << "View \" " << "Convective Velocity \" {" << endl;
+    gmshfilecontent << "View \" " << "Convective Velocity \" {" << endl;
     // draw vector field 'Convective Velocity' for every element
-    IO::GMSH::VectorFieldNodeBasedToGmsh(ScaTraField().Discretization(),ScaTraField().ConVel(),gmshfilecontent2);
-    gmshfilecontent2 << "};" << endl;
+    IO::GMSH::VectorFieldNodeBasedToGmsh(gfuncdis,ScaTraField().ConVel(),gmshfilecontent);
+    gmshfilecontent << "};" << endl;
   }
-  gmshfilecontent2.close();
+  gmshfilecontent.close();
 
-  flamefront_->ProcessFlameFront(combustdyn_,ScaTraField().Phinm());
-  interfacehandle_->UpdateInterfaceHandle();
+  //-------------------------------------------------------------
+  // create (old) flamefront conforming to restart state of fluid
+  //-------------------------------------------------------------
+  Teuchos::RCP<COMBUST::FlameFront> flamefrontOld = rcp(new COMBUST::FlameFront(fluiddis,gfuncdis));
 
-  FluidField().ImportInterface(interfacehandle_);
+  // export phi n-1 vector from scatra dof row map to fluid node column map
+  const Teuchos::RCP<Epetra_Vector> phinmrow = rcp(new Epetra_Vector(*fluiddis->NodeRowMap()));
+  if (phinmrow->MyLength() != ScaTraField().Phinm()->MyLength())
+    dserror("vectors phinmrow and phinm must have the same length");
+  *phinmrow = *ScaTraField().Phinm();
+  const Teuchos::RCP<Epetra_Vector> phinmcol = rcp(new Epetra_Vector(*fluiddis->NodeColMap()));
+  LINALG::Export(*phinmrow,*phinmcol);
+
+  // reconstruct old flame front
+  flamefrontOld->ProcessFlameFront(combustdyn_,phinmcol);
+  // construct interfacehandle using old flame front
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandleOld =
+      rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefrontOld));
+  interfacehandleOld->UpdateInterfaceHandle();
+  FluidField().ImportInterface(interfacehandleOld);
+
+  // restart of fluid field
   FluidField().ReadRestart(step);
 
   //nur zum testen
   //FluidField().ImportInterface(interfacehandle_);
 
-  flamefront_->ProcessFlameFront(combustdyn_,ScaTraField().Phinp());
+  // reset interface for restart
+  flamefront_->StorePhiVectors(ScaTraField().Phin(), ScaTraField().Phinp());
+  flamefront_->ProcessFlameFront(combustdyn_,flamefront_->Phinp());
   interfacehandle_->UpdateInterfaceHandle();
 
+  //-------------------
+  // write fluid output
+  //-------------------
   // show flame front to fluid time integration scheme
   FluidField().ImportFlameFront(flamefront_);
   FluidField().Output();

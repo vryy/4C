@@ -68,7 +68,9 @@ namespace COMBUST
     /// destructor
     ~FlameFront();
 
-    /// remote access method to vector on fluid NodeColMap holding G-function values
+    /// remote access method to vector on fluid NodeColMap holding G-function values at n
+    const Teuchos::RCP<Epetra_Vector> Phin() const { return phin_; }
+    /// remote access method to vector on fluid NodeColMap holding G-function values at n+1
     const Teuchos::RCP<Epetra_Vector> Phinp() const { return phinp_; }
 
     /// remote access method to flame front patches
@@ -78,10 +80,16 @@ namespace COMBUST
     const std::map<int,GEO::DomainIntCells> DomainIntCells() const {return myelementintcells_;}
     const std::map<int,GEO::BoundaryIntCells> BoundaryIntCells() const {return myboundaryintcells_;}
 
+    /// rearrange and store phi vectors
+    void StorePhiVectors(
+      const Teuchos::RCP<Epetra_Vector> phin,
+      const Teuchos::RCP<Epetra_Vector> phinp
+    );
+
     /// flame front control routine
     void ProcessFlameFront(
         const Teuchos::ParameterList&     combustdyn,
-        const Teuchos::RCP<Epetra_Vector> phinp
+        const Teuchos::RCP<Epetra_Vector> phi
     );
 
     /// export boundary integration cells from this proc to parallel distribution
@@ -109,10 +117,12 @@ namespace COMBUST
     explicit FlameFront(const FlameFront&);
 
     /// refine the region around flame front
-    void RefineFlameFront(const Teuchos::RCP<COMBUST::RefinementCell> cell);
+    void RefineFlameFront(const Teuchos::RCP<COMBUST::RefinementCell> cell,
+                          const Teuchos::RCP<const Epetra_Vector> phi);
 
     /// find the flame front within a refinement cell according to G-function field
-    void FindFlameFront(const Teuchos::RCP<COMBUST::RefinementCell> cell);
+    void FindFlameFront(const Teuchos::RCP<COMBUST::RefinementCell> cell,
+                        const Teuchos::RCP<const Epetra_Vector> phi);
 
     /*!
      * \brief find intersection points of G-function (level set zero iso-surface) with refinement cell edges
@@ -233,7 +243,11 @@ namespace COMBUST
     /// pointer to level set (G-function) discretization that intersects the fluiddis_
     const Teuchos::RCP<DRT::Discretization> gfuncdis_;
 
-    /// pointer to vector on fluid NodeColMap holding G-function values originally stored in phinp
+    /// pointer to vector on fluid NodeColMap holding G-function values at n-1 originally stored in phinm
+    Teuchos::RCP<Epetra_Vector> phinm_;
+    /// pointer to vector on fluid NodeColMap holding G-function values at n originally stored in phin
+    Teuchos::RCP<Epetra_Vector> phin_;
+    /// pointer to vector on fluid NodeColMap holding G-function values at n+1 originally stored in phinp
     Teuchos::RCP<Epetra_Vector> phinp_;
 
     /// variable holding the number of refinement steps

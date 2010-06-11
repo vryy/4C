@@ -46,6 +46,8 @@ COMBUST::FlameFront::FlameFront(
     ) :
     fluiddis_(fluiddis),
     gfuncdis_(gfuncdis),
+    phinm_(Teuchos::null),
+    phin_(Teuchos::null),
     phinp_(Teuchos::null),
     maxRefinementLevel_(0),
     intcelltype_(INPAR::COMBUST::xfemintegration_tetrahedra)
@@ -63,22 +65,13 @@ COMBUST::FlameFront::~FlameFront()
   return;
 }
 
-/*------------------------------------------------------------------------------------------------*
- | public: flame front control routine                                                henke 10/08 |
- *------------------------------------------------------------------------------------------------*/
-void COMBUST::FlameFront::ProcessFlameFront(
-       const Teuchos::ParameterList& combustdyn,
-       const Teuchos::RCP<Epetra_Vector> phinp)
-{
-  /* This function is accessible from outside the FlameFront class. It can be called e.g. by the
-   * interface handle constructor. If the FlameFront class will always do the same thing, this
-   * function could be spared. Then the content of this function could be added to the constructor
-   * of this class.
-   *
-   * henke 10/08
-   */
 
-  /* In the following processing of the flame front the fluid discretization is cut by the level set
+void COMBUST::FlameFront::StorePhiVectors(
+      //const Teuchos::RCP<Epetra_Vector> phinm,
+      const Teuchos::RCP<Epetra_Vector> phin,
+      const Teuchos::RCP<Epetra_Vector> phinp)
+{
+  /* In the processing of the flame front the fluid discretization is cut by the level set
    * function (G-function). This is the reason why fluid elements need to be able to access the
    * corresponding scalar G-function values for all their nodes. Therefore, the ScaTra dof-based
    * vector phinp has to be rearranged in a parallel environment to represent a Fluid node-based
@@ -88,22 +81,18 @@ void COMBUST::FlameFront::ProcessFlameFront(
    *
    * henke 02/09
    */
-  // TODO define communicator
-  //if (Comm().MyPID()==0)
-    std::cout << "\n---  processing flame front ... " << std::flush;;
-
-  //diese Maps müssen bei jeden Durchlauf von ProcessFlameFront neu gefüllt werden
-  myelementintcells_.clear();
-  myboundaryintcells_.clear();
-
-  // get type of integrationcells
-  intcelltype_ = Teuchos::getIntegralValue<INPAR::COMBUST::XFEMIntegration>(combustdyn.sublist("COMBUSTION FLUID"),"XFEMINTEGRATION");
 
   //------------------------------------------------------------------------------------------------
-  // Rearranging vector phinp from gfuncdis DofRowMap to fluiddis NodeRowMap
+  // Rearranging phi vectors from gfuncdis DofRowMap to fluiddis NodeRowMap
   //------------------------------------------------------------------------------------------------
+  //const Teuchos::RCP<Epetra_Vector> phinmrow = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
+  const Teuchos::RCP<Epetra_Vector> phinrow  = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
   const Teuchos::RCP<Epetra_Vector> phinprow = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
 
+  //if (phinmrow->MyLength() != phinm->MyLength())
+  //  dserror("vectors phinmrow and phinm must have the same length");
+  if (phinrow->MyLength() != phin->MyLength())
+    dserror("vectors phinrow and phin must have the same length");
   if (phinprow->MyLength() != phinp->MyLength())
     dserror("vectors phinprow and phinp must have the same length");
 
@@ -127,6 +116,8 @@ void COMBUST::FlameFront::ProcessFlameFront(
      */
 
     // get the G-function values corresponding to fluid nodes
+    //*phinmrow = *phinm;
+    *phinrow  = *phin;
     *phinprow = *phinp;
     /* ausgeschrieben, was *phinprow = *phinp in einer Zeile macht:
        for(int lnodeid=0;lnodeid<fluiddis_->NumMyRowNodes();lnodeid++)
@@ -156,13 +147,46 @@ void COMBUST::FlameFront::ProcessFlameFront(
   // accessibility.
   // remark: SetState() can not be used here, because it is designed for dof-based vectors only.
   //------------------------------------------------------------------------------------------------
+  const Teuchos::RCP<Epetra_Vector> phincol = rcp(new Epetra_Vector(*fluiddis_->NodeColMap()));
+  LINALG::Export(*phinrow,*phincol);
   const Teuchos::RCP<Epetra_Vector> phinpcol = rcp(new Epetra_Vector(*fluiddis_->NodeColMap()));
   LINALG::Export(*phinprow,*phinpcol);
 
-  // Jetzt hab ich einen Vektor auf der ColMap. Was mach ich jetzt damit? Muss an Elemente/Dis gehen!
-  // eleparams.set("velocity field",tmp);
   // store vector on fluiddis NodeColMap holding G-function values in member variable
+  phin_  = phincol;
   phinp_ = phinpcol;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | public: flame front control routine                                                henke 10/08 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::FlameFront::ProcessFlameFront(
+       const Teuchos::ParameterList& combustdyn,
+       const Teuchos::RCP<Epetra_Vector> phi)
+{
+  /* This function is accessible from outside the FlameFront class. It can be called e.g. by the
+   * interface handle constructor. If the FlameFront class will always do the same thing, this
+   * function could be spared. Then the content of this function could be added to the constructor
+   * of this class.
+   *
+   * henke 10/08
+   */
+
+  // TODO define communicator
+  //if (Comm().MyPID()==0)
+    std::cout << "\n---  processing flame front ... " << std::flush;;
+
+  const Teuchos::RCP<Epetra_Vector> phicol = rcp(new Epetra_Vector(*fluiddis_->NodeColMap()));
+  if (phicol->MyLength() != phi->MyLength())
+    dserror("vector phi needs to be distributed according to fluid node column map");
+
+  //diese Maps müssen bei jeden Durchlauf von ProcessFlameFront neu gefüllt werden
+  myelementintcells_.clear();
+  myboundaryintcells_.clear();
+
+  // get type of integrationcells
+  intcelltype_ = Teuchos::getIntegralValue<INPAR::COMBUST::XFEMIntegration>(combustdyn.sublist("COMBUSTION FLUID"),"XFEMINTEGRATION");
 
   // loop over fluid (combustion) column elements
   // remark: loop over row elements would be sufficient, but enrichment is done in column loop
@@ -192,11 +216,10 @@ void COMBUST::FlameFront::ProcessFlameFront(
       if (maxRefinementLevel_ < 0)
         dserror("maximal refinement level not defined");
 
-      RefineFlameFront(rootcell);
+      RefineFlameFront(rootcell,phi);
     }
-
     else // refinement strategy is turned off
-      FindFlameFront(rootcell);
+      FindFlameFront(rootcell,phi);
 
     /* jetzt habe ich für jedes Element eine "rootcell", an der entweder (refinement on) ein ganzer
      * Baum von Zellen mit Interfaceinformationen hängt, oder (refinement off) eine einzige Zelle
@@ -228,7 +251,8 @@ void COMBUST::FlameFront::ProcessFlameFront(
 /*------------------------------------------------------------------------------------------------*
  | refine the region around the flame front                                           henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
-void COMBUST::FlameFront::RefineFlameFront(const Teuchos::RCP<COMBUST::RefinementCell> cell)
+void COMBUST::FlameFront::RefineFlameFront(const Teuchos::RCP<COMBUST::RefinementCell> cell,
+                                           const Teuchos::RCP<const Epetra_Vector> phi)
 {
 /*
   hier muss der gesamte rekursive Verfeinerungsprozess gestartet werden, d.h. dass hier der Suchbaum
@@ -244,7 +268,7 @@ void COMBUST::FlameFront::RefineFlameFront(const Teuchos::RCP<COMBUST::Refinemen
 */
 
   // get G-Function values of refinement cell and determine, if it is intersected
-  FindFlameFront(cell);
+  FindFlameFront(cell,phi);
   // is maximal refinement level already reached?
   if (cell->RefinementLevel() < maxRefinementLevel_) //->No
   {
@@ -254,7 +278,7 @@ void COMBUST::FlameFront::RefineFlameFront(const Teuchos::RCP<COMBUST::Refinemen
 //        std::cout << "RefineCell done" << std::endl;
         // loop over all new refinement cells and call of RefineFlameFront
         for (int icell = 0; icell < cell->NumOfChildren(); icell++)
-            RefineFlameFront(cell->GetRefinementCell(icell));
+            RefineFlameFront(cell->GetRefinementCell(icell),phi);
      }
   }
 
@@ -278,7 +302,8 @@ void COMBUST::FlameFront::RefineFlameFront(const Teuchos::RCP<COMBUST::Refinemen
  | find the flame front within a refinement cell according to G-function field        henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::FindFlameFront(
-       const Teuchos::RCP<COMBUST::RefinementCell> cell)
+       const Teuchos::RCP<COMBUST::RefinementCell> cell,
+       const Teuchos::RCP<const Epetra_Vector> phi)
 {
   // get the element which this cell belongs to
   const DRT::Element* ele = cell->Ele();
@@ -325,7 +350,7 @@ void COMBUST::FlameFront::FindFlameFront(
       // create vector "mygfuncvalues" holding G-function values for this element
       vector<double> mygfuncvalues(ele->NumNode(),1000.0);
       // get entries in "gfuncvalues" corresponding to node GIDs "lm" and store them in "mygfuncvalues"
-      DRT::UTILS::ExtractMyValues(*phinp_,mygfuncvalues,lm);
+      DRT::UTILS::ExtractMyValues(*phi,mygfuncvalues,lm);
       //TEST
 //      if (ele->Id()==0)
 //      {
