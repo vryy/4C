@@ -41,7 +41,7 @@ namespace ELEMENTS
 namespace NURBS
 {
 
-class Wall1NurbsType : public DRT::ParObjectType
+class Wall1NurbsType : public Wall1Type
 {
 public:
 
@@ -110,6 +110,8 @@ public:
   /// Print this element
   void Print(ostream& os) const;
 
+  virtual DRT::ElementType & ElementType() const
+  { return Wall1NurbsType::Instance(); }
 
   /*!
   \brief Get shape type of element
