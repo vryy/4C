@@ -19,6 +19,7 @@ Maintainer: Georg Bauer
 #include "adapter_scatra_base_algorithm.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_solver.H"
+#include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_elch.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>

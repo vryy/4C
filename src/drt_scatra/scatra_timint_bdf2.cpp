@@ -15,9 +15,11 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "scatra_timint_bdf2.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_inpar/inpar_elch.H"
 #include "../drt_io/io.H"
+#include "../linalg/linalg_utils.H"
 
 
 /*----------------------------------------------------------------------*

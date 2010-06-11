@@ -32,8 +32,9 @@ Maintainer: Georg Bauer
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
-#include "../linalg/linalg_utils.H"
-#include "../drt_inpar/drt_validparameters.H"
+#include <Epetra_Vector.h>
+#include <Epetra_SerialDenseVector.h>
+#include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_scatra.H"
 
 //forward declarations
@@ -41,6 +42,8 @@ class PeriodicBoundaryConditions;
 namespace DRT
 {
   class Discretization;
+  class DofSet;
+  class Condition;
 }
 namespace IO
 {
@@ -49,6 +52,10 @@ namespace IO
 namespace LINALG
 {
   class Solver;
+  class SparseMatrix;
+  class MapExtractor;
+  class BlockSparseMatrixBase;
+  class SparseOperator;
 }
 
 using namespace std;
@@ -328,12 +335,10 @@ public:
   int NumScal() const { return numscal_; }
 
   /// return system matrix down-casted as sparse matrix
-  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
-    { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
+  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
 
   /// return system matrix downcasted as block sparse matrix
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
-    { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
   /// calculate error compared to analytical solution
   void EvaluateErrorComparedToAnalyticalSol();
@@ -347,7 +352,7 @@ public:
   Teuchos::RCP<Epetra_MultiVector> CalcFluxAtBoundary(std::vector<string>& condnames);
 
   /// returns map extractor used for convergence check either in ELCH or LOMA case
-  LINALG::MapExtractor& Splitter() { return splitter_; }
+  Teuchos::RCP<LINALG::MapExtractor> Splitter() { return splitter_; }
 
   /// computes different conductivity expressions for electrolyte solutions (ELCH)
   Epetra_SerialDenseVector ComputeConductivity();
@@ -662,7 +667,7 @@ protected:
   RCP<LINALG::SparseMatrix> Mnsv_;
 
   /// Extractor used for convergence check either in ELCH or LOMA case
-  LINALG::MapExtractor splitter_;
+  RCP<LINALG::MapExtractor> splitter_;
 
   /// Periodic Boundary Conditions. Guess what.
   RCP<PeriodicBoundaryConditions> pbc_;

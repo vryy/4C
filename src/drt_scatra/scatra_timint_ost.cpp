@@ -15,10 +15,12 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "scatra_timint_ost.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_inpar/inpar_elch.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -113,8 +115,8 @@ void SCATRA::TimIntOneStepTheta::ExplicitPredictor()
   phinp_->Update(dta_, *phidtn_,1.0);
 
   // for the electric potential we just use the 'old' value of last time step
-  Teuchos::RCP<Epetra_Vector> onlypot = splitter_.ExtractCondVector(phin_);
-  splitter_.InsertCondVector(onlypot, phinp_);
+  Teuchos::RCP<Epetra_Vector> onlypot = splitter_->ExtractCondVector(phin_);
+  splitter_->InsertCondVector(onlypot, phinp_);
 
   return;
 }

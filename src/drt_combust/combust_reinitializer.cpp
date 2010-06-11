@@ -16,8 +16,10 @@ Maintainer: Florian Henke
 
 #include "combust_reinitializer.H"
 #include "combust_defines.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 12/09 |
@@ -142,7 +144,7 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
         // number of flamefront patches for this element
         const std::vector<GEO::BoundaryIntCell> patches = elepatches->second;
         const int numpatch = patches.size();
-        
+
 
         //-----------------------------------------
         // loop flame front patches of this element

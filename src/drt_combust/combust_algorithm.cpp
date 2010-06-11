@@ -26,6 +26,7 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_function.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 06/08 |

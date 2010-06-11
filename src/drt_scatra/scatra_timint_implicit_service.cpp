@@ -15,8 +15,10 @@ Maintainer: Georg Bauer
 
 #include "scatra_timint_implicit.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 // for AVM3 solver:
 #include <MLAPI_Error.h>
 #include <MLAPI_CompObject.h>
@@ -205,10 +207,10 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPotentialField()
       solver_->Solve(sysmat_->EpetraOperator(),phi0,rhs,true,true);
 
       // copy solution of initial potential field to the solution vectors
-      Teuchos::RCP<Epetra_Vector> onlypot = splitter_.ExtractCondVector(phi0);
+      Teuchos::RCP<Epetra_Vector> onlypot = splitter_->ExtractCondVector(phi0);
       // insert values into the whole solution vectors
-      splitter_.InsertCondVector(onlypot,phinp_);
-      splitter_.InsertCondVector(onlypot,phin_);
+      splitter_->InsertCondVector(onlypot,phinp_);
+      splitter_->InsertCondVector(onlypot,phin_);
 
       // reset the matrix (and its graph!) since we solved
       // a very special problem here that has a different sparsity pattern
@@ -816,10 +818,10 @@ bool SCATRA::ScaTraTimIntImpl::LomaConvergenceCheck(int          itnum,
   // for reactive systems, extract temperature and use as convergence criterion
   if (numscal_>1)
   {
-    Teuchos::RCP<Epetra_Vector> onlyphi = splitter_.ExtractCondVector(phiincnp_);
+    Teuchos::RCP<Epetra_Vector> onlyphi = splitter_->ExtractCondVector(phiincnp_);
     onlyphi->Norm2(&phiincnorm_L2);
 
-    splitter_.ExtractCondVector(phinp_,onlyphi);
+    splitter_->ExtractCondVector(phinp_,onlyphi);
     onlyphi->Norm2(&phinorm_L2);
   }
   else

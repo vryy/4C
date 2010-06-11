@@ -26,6 +26,7 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "scatra_resulttest.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 
 /*----------------------------------------------------------------------*

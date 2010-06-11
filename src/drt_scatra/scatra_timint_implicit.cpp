@@ -25,12 +25,18 @@ Maintainer: Georg Bauer
 
 #include "scatra_timint_implicit.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_sparseoperator.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_fluid/fluid_utils.H" // for splitter
 #include "scatra_utils.H" // for splitstrategy
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
 #include "../drt_io/io.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Epetra_SerialDenseVector.h>
+
 //REINHARD
 #include "../drt_geometry/element_volume.H"
 //end REINHARD
@@ -169,12 +175,12 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       numscal_ -= 1;
     }
     // set up the concentration-el.potential splitter
-    FLD::UTILS::SetupFluidSplit(*discret_,numscal_,splitter_);
+    FLD::UTILS::SetupFluidSplit(*discret_,numscal_,*splitter_);
   }
   else if (scatratype_ == INPAR::SCATRA::scatratype_loma and numscal_ > 1)
   {
     // set up a species-temperature splitter (if more than one scalar)
-    FLD::UTILS::SetupFluidSplit(*discret_,numscal_-1,splitter_);
+    FLD::UTILS::SetupFluidSplit(*discret_,numscal_-1,*splitter_);
   }
 
 //  if (scatratype_ == INPAR::SCATRA::scatratype_levelset)
@@ -194,7 +200,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     // A_00: 27*1,  A_01: 27*1,  A_10: 27*numscal_ due to electroneutrality, A_11: empty matrix
     // usage of a split strategy that makes use of the ELCH-specific sparsity pattern
     Teuchos::RCP<LINALG::BlockSparseMatrix<SCATRA::SplitStrategy> > blocksysmat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>(splitter_,splitter_,27,false,true));
+      Teuchos::rcp(new LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>(*splitter_,*splitter_,27,false,true));
     blocksysmat->SetNumScal(numscal_);
 
     sysmat_ = blocksysmat;
@@ -861,22 +867,22 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
 
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
-    Teuchos::RCP<Epetra_Vector> onlycon = splitter_.ExtractOtherVector(residual_);
+    Teuchos::RCP<Epetra_Vector> onlycon = splitter_->ExtractOtherVector(residual_);
     onlycon->Norm2(&conresnorm);
 
-    splitter_.ExtractOtherVector(increment_,onlycon);
+    splitter_->ExtractOtherVector(increment_,onlycon);
     onlycon->Norm2(&incconnorm_L2);
 
-    splitter_.ExtractOtherVector(phinp_,onlycon);
+    splitter_->ExtractOtherVector(phinp_,onlycon);
     onlycon->Norm2(&connorm_L2);
 
-    Teuchos::RCP<Epetra_Vector> onlypot = splitter_.ExtractCondVector(residual_);
+    Teuchos::RCP<Epetra_Vector> onlypot = splitter_->ExtractCondVector(residual_);
     onlypot->Norm2(&potresnorm);
 
-    splitter_.ExtractCondVector(increment_,onlypot);
+    splitter_->ExtractCondVector(increment_,onlypot);
     onlypot->Norm2(&incpotnorm_L2);
 
-    splitter_.ExtractCondVector(phinp_,onlypot);
+    splitter_->ExtractCondVector(phinp_,onlypot);
     onlypot->Norm2(&potnorm_L2);
   }
   else
@@ -2958,9 +2964,9 @@ void SCATRA::ScaTraTimIntImpl::ScaleLinearSystem()
     if (A != Teuchos::null)
     {
     // scale ELCH Matrix:
-    Teuchos::RCP<Epetra_Vector> d = splitter_.Vector(0);
-    Teuchos::RCP<Epetra_Vector> scalefactors = splitter_.Vector(0);
-    Teuchos::RCP<Epetra_Vector> scalefactorsENC = splitter_.Vector(1);
+    Teuchos::RCP<Epetra_Vector> d = splitter_->Vector(0);
+    Teuchos::RCP<Epetra_Vector> scalefactors = splitter_->Vector(0);
+    Teuchos::RCP<Epetra_Vector> scalefactorsENC = splitter_->Vector(1);
     scalefactorsENC->PutScalar(1.0);
 
     // access values located at main diagonal
@@ -2993,7 +2999,7 @@ void SCATRA::ScaTraTimIntImpl::ScaleLinearSystem()
 // ENC scaling
        err += BlockSystemMatrix()->Matrix(1,0).LeftScale(*scalefactorsENC);
 
-    Teuchos::RCP<Epetra_Vector> onlyconc = splitter_.ExtractOtherVector(residual_);
+    Teuchos::RCP<Epetra_Vector> onlyconc = splitter_->ExtractOtherVector(residual_);
 #if 0
     cout<<"residual:\n";
     residual_->Print(cout);
@@ -3003,7 +3009,7 @@ void SCATRA::ScaTraTimIntImpl::ScaleLinearSystem()
     //Multiply a Epetra_MultiVector with another, element-by-element.
     onlyconc->Multiply(1.0,*onlyconc,*scalefactors,0.0);
     // insert values into the whole rhs vector
-    splitter_.InsertOtherVector(onlyconc,residual_);
+    splitter_->InsertOtherVector(onlyconc,residual_);
 
 #if 0
     cout<<"modified onlyconc:\n";
@@ -3036,6 +3042,18 @@ void SCATRA::ScaTraTimIntImpl::ScaleLinearSystem()
   return;
 }
 
+
+/// return system matrix down-casted as sparse matrix
+Teuchos::RCP<LINALG::SparseMatrix> SCATRA::ScaTraTimIntImpl::SystemMatrix()
+  { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
+
+/*----------------------------------------------------------------------*
+ | return system matrix downcasted as block sparse matrix     gjb 06/10 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> SCATRA::ScaTraTimIntImpl::BlockSystemMatrix()
+{
+  return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_);
+}
 
 /*----------------------------------------------------------------------*
  | Destructor dtor (public)                                   gjb 04/08 |

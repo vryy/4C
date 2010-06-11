@@ -15,8 +15,10 @@ Maintainer: Volker Gravemeier
 #ifdef CCADISCRET
 
 #include "scatra_timint_genalpha.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_io/io.H"
+#include "../linalg/linalg_utils.H"
 
 
 /*----------------------------------------------------------------------*
