@@ -477,9 +477,9 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
     // get list of adjacent elements of this node
     DRT::Element** elelist = lnode->Elements();
 
-//    cout << "------------------------------------------------------------" << endl;
-//    cout << "run for node: " << lnode->Id() << endl;
-//    cout << "------------------------------------------------------------" << endl;
+    //cout << "------------------------------------------------------------" << endl;
+    //cout << "run for node: " << lnode->Id() << endl;
+    //cout << "------------------------------------------------------------" << endl;
 
     //--------------------------------------------------------
     // compute "average"/"smoothed" normal vector at this node
@@ -493,9 +493,9 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
       const DRT::Element* ele = elelist[iele];
       const int numnode = ele->NumNode();
 
-//    cout << "------------------------------------------------------------" << endl;
-//    cout << "run for element: " << ele->Id() << endl;
-//    cout << "------------------------------------------------------------" << endl;
+      //cout << "------------------------------------------------------------" << endl;
+      //cout << "run for element: " << ele->Id() << endl;
+      //cout << "------------------------------------------------------------" << endl;
 
       // extract G-function values for nodes of this element
       Epetra_SerialDenseMatrix myphi(numnode,1);
@@ -505,7 +505,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
       Epetra_SerialDenseMatrix xyze(3,numnode);
       GEO::fillInitialPositionArray<Epetra_SerialDenseMatrix>(ele, xyze);
 
-      // TODO: function could be templated DISTYPE -> LINALG::Matrix<3,DISTYPE>
+      // TODO: function should be templated DISTYPE -> LINALG::Matrix<3,DISTYPE>
       Epetra_SerialDenseMatrix deriv(3,numnode);
 
 #ifdef DEBUG
@@ -542,42 +542,33 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
       xjm.Multiply('N','T',1.0,deriv,xyze,0.0);
 
       // inverse of jacobian (xjm)
-//      Epetra_SerialDenseMatrix xji(3,3);
-//      xjm.Invert(xji);
-
       LINALG::NonSymmetricInverse(xjm,3);
-
-//cout << ele->Id() << endl;
-//cout << xyze << endl;
+      // alternativ: Epetra_SerialDenseMatrix xji(3,3);
+      // alternativ: xjm.Invert(xji);
 
       // compute global derivates
       Epetra_SerialDenseMatrix derxy(3,numnode);
       // derxy(i,j) = xji(i,k) * deriv(k,j)
       derxy.Multiply('N','N',1.0,xjm,deriv,0.0);
-//      xji.Multiply(false,deriv,derxy);
-
-//cout << derxy << endl;
+      // alternativ: xji.Multiply(false,deriv,derxy);
 
       Epetra_SerialDenseMatrix gradphi(3,1);
       derxy.Multiply(false,myphi,gradphi);
       double ngradphi = sqrt(gradphi(0,0)*gradphi(0,0)+gradphi(1,0)*gradphi(1,0)+gradphi(2,0)*gradphi(2,0));
 
-//cout << derxy << endl;
-//cout << gradphi << endl;
-
-//cout << ele->Id() << endl;
-//cout << xyze << endl;
-//cout << myphi << endl;
-//cout << derxy << endl;
-//cout << gradphi << endl;
-
-
       // normal vector at this node for this element
       LINALG::Matrix<3,1> nvec(true);
-      if (ngradphi == 0.0) dserror("length of normal is zero");
-      for (int icomp=0; icomp<3; ++icomp)
-        nvec(icomp) = -gradphi(icomp,0) / ngradphi;
-
+      if (ngradphi == 0.0)
+      {
+        // length of normal is zero for this element -> level set must be constant within element (gradient is zero)
+        std::cout << "/!\\ warning === no contribution to average normal vector from element " << ele->Id() << std::endl;
+        // this element shall not contribute to the average normal vector
+        continue;
+      }
+      else
+      {
+        for (int icomp=0; icomp<3; ++icomp) nvec(icomp) = -gradphi(icomp,0) / ngradphi;
+      }
       //cout << "normal vector for element: " << ele->Id() << " at node: " << lnode->Id() << " is: " << nvec << endl;
 
       // add normal vector to linear combination (could also be weighted in different ways!)
@@ -590,10 +581,18 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
     // compute norm of average normal vector
     double avnorm = sqrt(avnvec(0)*avnvec(0)+avnvec(1)*avnvec(1)+avnvec(2)*avnvec(2));
     // divide vector by its norm to get unit normal vector
-    if (avnorm == 0.0) dserror("length of normal is zero");
-    for (int icomp=0; icomp<3; ++icomp) avnvec(icomp) /= avnorm;
-
-//cout << "average normal vector at node: " << lnode->Id() << " is: " << avnvec << endl;
+    if (avnorm == 0.0)
+    {
+      // length of average normal is zero at this node -> node must be the tip of a
+      // "regular level set cone" (all normals add up to zero normal vector)
+      // -> The fluid convective velocity 'fluidvel' alone constitutes the flame velocity, since the
+      //    relative flame velocity 'flvelrel' turns out to be zero due to the zero average normal vector.
+      std::cout << "/!\\ warning === flame velocity at this node is only the convective velocity" << std::endl;
+    }
+    else
+    {
+      for (int icomp=0; icomp<3; ++icomp) avnvec(icomp) /= avnorm;
+    }
 
 #ifdef COMBUST_GMSH_NORMALFIELD
     LINALG::SerialDenseMatrix xyz(3,1);
@@ -645,14 +644,12 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
     for (int icomp=0; icomp<3; ++icomp)
       flvelrel(icomp) = speedfac * avnvec(icomp);
 
-//cout << "flame velocity at node: " << lnode->Id() << " is: " << flvelrel << endl;
     //-----------------------------------------------
     // compute (absolute) flame velocity at this node
     //-----------------------------------------------
     LINALG::Matrix<3,1> fluidvel(true);
     // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
     const std::vector<int> dofids = (*dofset).Dof(lnode);
-    //
     std::vector<int> lids(3);
 
     // extract velocity values (no pressure!) from global velocity vector
@@ -662,8 +659,6 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
       fluidvel(icomp) = (*convel)[lids[icomp]];
     }
 
-//cout << "fluid velocity at node: " << lnode->Id() << " is: " << fluidvel << endl;
-
     LINALG::Matrix<3,1> flvelabs(true);
     // add fluid velocity (Navier Stokes solution) and relative flame velocity
     for (int icomp=0; icomp<3; ++icomp)
@@ -671,10 +666,10 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
       flvelabs(icomp) = fluidvel(icomp) + flvelrel(icomp);
       convel->ReplaceMyValues(1,&flvelabs(icomp),&lids[icomp]);
     }
-//  cout << "------------------------------------------------------------" << endl;
-//  cout << "run for node: " << lnode->Id() << endl;
-//  cout << "------------------------------------------------------------" << endl;
-//  cout << "convection velocity: " << flvelabs << endl;
+    //cout << "------------------------------------------------------------" << endl;
+    //cout << "run for node: " << lnode->Id() << endl;
+    //cout << "------------------------------------------------------------" << endl;
+    //cout << "convection velocity: " << flvelabs << endl;
   }
 #ifdef COMBUST_GMSH_NORMALFIELD
   gmshfilecontent << "};\n";
