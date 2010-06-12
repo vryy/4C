@@ -56,6 +56,11 @@ public:
                                              const int id,
                                              const int owner );
 
+  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+  {
+    // do nothing. Definition inserted by normal wall element.
+  }
+
 private:
 
   static Wall1NurbsType instance_;

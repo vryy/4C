@@ -63,6 +63,11 @@ public:
 
   virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
 
+  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+  {
+    // do nothing. Definition inserted by normal wall element.
+  }
+
 private:
 
   static Ale3_NurbsType instance_;
