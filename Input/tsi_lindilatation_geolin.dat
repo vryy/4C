@@ -143,6 +143,8 @@ ADAPTCONV_BETTER                0.1
 DIVERCONT                       No
 DYNAMICTYP                      Statics  // Statics,OneStepTheta
 ITERNORM                        L2
+INITFUNCNO                      1
+INITIALFIELD                    field_by_function  // field_by_function,zero_field 
 MAXITER                         50
 MAXTIME                         1
 MINITER                         0
@@ -158,7 +160,6 @@ RESTARTEVRY                     1
 TIMESTEP                        1  // 0.01
 TOLRES                          1e-08
 TOLTEMP                         1e-10
-MATID                           3
 -------------------------------------------THERMAL DYNAMIC/GENALPHA
 ---------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
@@ -180,13 +181,13 @@ UPRES                           1
 //parameters in [N,m,s,K]
 MAT 1   MAT_Struct_ThrStVenantK   YOUNG 10 NUE 0.0 DENS 0 THEXPANS 1.0e-05 INITTEMP 293 
 MAT 2   THERM_FourierIso   CAPA 420 CONDUCT 52
-MAT 3   MAT_matlist NUMMAT 1 MATIDS 2 
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------FUNCT1
+FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 293.0
 ------------------------------------------------------------FUNCT2
 ------------------------------------------------------------FUNCT3
 ------------------------------------------------------------FUNCT4
