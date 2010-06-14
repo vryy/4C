@@ -22,6 +22,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_fem_general/largerotations.H"
 
 //including random number library of blitz for statistical forces
 #include <random/uniform.h>
@@ -1842,6 +1843,15 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
 	int counter = 0;
   //probability with which a crosslinker is established between neighbouring nodes
   double plink = 1.0 - exp( -dt*kon*statmechparams_.get<double>("C_CROSSLINKER",0.0) );
+  
+  //generate parallel vector with random numbers (0;1) for probability check with respect to crosslinker orientation
+  Epetra_Vector orientationprobability(*(discret_.NodeColMap()));
+  orientationprobability.Random();
+  Epetra_Vector unitvector(*(discret_.NodeColMap()));
+  unitvector.PutScalar(1);
+  orientationprobability.Update(1,unitvector,1);
+  orientationprobability.Scale(0.5);
+    
 
   //creating a random generator object which creates uniformly distributed random numbers in [0;1]
   ranlib::UniformClosed<double> UniformGen;
@@ -1975,6 +1985,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
          * used by any other element*/
  #ifdef D_TRUSS3
  #ifdef D_BEAM3
+ #ifdef D_BEAM3II
 
         if(statmechparams_.get<double>("ILINK",0.0) > 0.0)
         {
@@ -2001,9 +2012,10 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
 
           //set material for new element
           newcrosslinker->SetMaterial(2);
-
-          //add new element to discretization
-          discret_.AddElement(newcrosslinker);
+          
+          //new elementis added to discretization in case that it has also a proper orientation
+          if(CheckOrientation(orientationprobability,newcrosslinker,nodes[0]))
+            discret_.AddElement(newcrosslinker);
         }
         else
         {
@@ -2028,6 +2040,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
           //add new element to discretization
           discret_.AddElement(newcrosslinker);
         }
+ #endif
  #endif
  #endif
 
@@ -2310,4 +2323,92 @@ void StatMechManager::UpdateForceSensors(vector<int>& sensornodes, int oscdir)
 		(*forcesensor_)[lid] = 1.0;
 	}
 } // StatMechManager::UpdateForceSensors
+
+/*----------------------------------------------------------------------*
+ | generates a vector with a random permutation of the numbers between 0|
+ | and N - 1                                        (public) cyron 06/10|
+ *----------------------------------------------------------------------*/
+std::vector<int> StatMechManager::Permutation(const int& N)
+{
+  //auxiliary variable
+  int j = 0;
+  
+  //result vector initialized with ordered numbers from 0 to N-1
+  std::vector<int> result(N,0); 
+  for(int i=0; i<(int)result.size(); i++)
+    result[i] = i;
+  
+  for (int i = 0; i < N; ++i)
+  {
+    //generate random number between 0 and i
+     j = rand() % (i + 1);
+     
+     /*exchange values at positions i and j (note: value at position i is i due to above initialization
+      *and because so far only positions <=i have been changed*/
+     result[i] = result[j];
+     result[j] = i;
+  }
+
+} // StatMechManager::Permutation
+
+/*----------------------------------------------------------------------*
+ | checks orientation of crosslinker relative to linked filaments       |
+ |                                                  (public) cyron 06/10|
+ *----------------------------------------------------------------------*/
+#ifdef D_BEAM3
+#ifdef D_BEAM3II
+bool StatMechManager::CheckOrientation(const Epetra_Vector& orientationprobability,RCP<DRT::ELEMENTS::Beam3> newcrosslinker, DRT::Node *nodes)
+{
+  
+  //if no stiffness constrains crosslinker orientation, this function always return 1 (because than orientation is no obstacle for setting crosslinkers)
+  if(statmechparams_.get<double>("LINKORIENTSTIFF",0.0) == 0.0)
+    return 1;
+  
+  //get filament orientation at the two nodes connected by the crosslinker as quatertions
+  vector<LINALG::Matrix<4,1> > QDeltaphi;
+  QDeltaphi.resize(2);
+  
+  //get filament orientation at the two nodes connected by the crosslinker as rotation vectors
+  vector<LINALG::Matrix<3,1> > Deltaphi;
+  Deltaphi.resize(2);
+  
+  for(int i=0; i<2; i++)
+  {
+    //lowest Id of any connected element (the related element cannot be a crosslinker, but has to belong to the actual filament discretization)
+    int lowestid( ( (nodes[i].Elements())[0] )->Id() );
+    for(int j=0; j<nodes[i].NumElement(); j++)
+      if( ( (nodes[i].Elements())[j] )->Id() < lowestid )
+          lowestid = ( (nodes[i].Elements())[j] )->Id();
+      
+    //check whether filaments are discretized with beam3ii elements (otherwise no orientation triads at nodes available)
+    DRT::ELEMENTS::Beam3ii* filele;
+    DRT::ElementType & eot = ((nodes[i].Elements())[lowestid])->ElementType();
+    if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
+      filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(nodes[i].Elements()[lowestid]);
+    else
+      dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");
+    
+    //check whether crosslinker is connected to first or second node of that element
+    int localnodenumber = ((filele->Nodes())[0])->Id() ;
+    if(nodes[i].Id() == ((filele->Nodes())[1])->Id() )
+      localnodenumber = ((filele->Nodes())[1])->Id();
+    
+    //compute difference rotation between filament orientation at the connected node and crosslinker orientation
+    quaternionproduct(filele->Qnew_[localnodenumber],inversequaternion((newcrosslinker->Qnew_)[0]),QDeltaphi[i]);  
+    quaterniontoangle(QDeltaphi[i],Deltaphi[i]);
+  }
+  
+
+  
+  //assuming a potential E = 0.5*LINKORIENTSTIFF*Deltaphi^2 and a Boltzmann distribution for the different states of the crosslinker we get
+  double p0 = exp(-0.5*statmechparams_.get<double>("LINKORIENTSTIFF",0.0)*(Deltaphi[0]).Norm2() / statmechparams_.get<double>("KT",0.0) ) ;
+  double p1 = exp(-0.5*statmechparams_.get<double>("LINKORIENTSTIFF",0.0)*(Deltaphi[1]).Norm2() / statmechparams_.get<double>("KT",0.0) ) ;
+  
+  //orientation check is passed only if predetermined uniform random number for first node of cross linker element between zero and one is smaller than cross linker probability 
+  return(orientationprobability[nodes[0].LID()] < p0*p1 );
+
+} // StatMechManager::Permutation
+#endif  // #ifdef D_BEAM3
+#endif  // #ifdef D_BEAM3II
+
 #endif  // #ifdef CCADISCRET

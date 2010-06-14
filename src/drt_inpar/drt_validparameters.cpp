@@ -1196,6 +1196,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("Delta_t_search",0.0,"average time between searching new neighbours for setting crosslinkers",&statmech);
   //Reading double parameter for crosslinker protein mean length
   DoubleParameter("R_LINK",0.0,"Mean distance between two nodes connected by a crosslinker",&statmech);
+  //Reading double parameter for stiffness of orientational constraint of crosslinkers
+  DoubleParameter("LINKORIENTSTIFF",0.0,"Stiffness of orientational constraint of crosslinkers",&statmech);
   //Absolute value of difference between maximal/minimal and mean cross linker length
   DoubleParameter("DeltaR_LINK",0.0,"Absolute value of difference between maximal/minimal and mean cross linker length",&statmech);
   //Reading double parameter for concentration of crosslinking protein

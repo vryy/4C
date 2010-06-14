@@ -20,6 +20,15 @@ Maintainer: Christian Cyron
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 
+//forward declaration of class Beam3 used in CheckOrientation(...)
+namespace DRT
+{
+  namespace ELEMENTS
+  {
+    class Beam3;
+  }
+}
+
 
 /*!
 \brief management and auxiliary functions for statistical mechanics
@@ -93,6 +102,13 @@ public:
      \param oscdir   (in) direction (DOF) of oscillation
    */
   void UpdateForceSensors(vector<int>& sensornodes, int oscdir);
+  
+  //! \brief checks orientation of crosslinker relative to linked filaments
+#ifdef D_BEAM3
+#ifdef D_BEAM3II
+  bool CheckOrientation(const Epetra_Vector& orientationprobability,RCP<DRT::ELEMENTS::Beam3> newcrosslinker, DRT::Node *nodes);
+#endif  // #ifdef D_BEAM3
+#endif  // #ifdef D_BEAM3II
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
@@ -114,7 +130,10 @@ protected:
 
   //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
   void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim);
-
+  
+  //! \brief generates a vector with a random permutation of the numbers between 0 and N - 1
+  std::vector<int> Permutation(const int& N);
+  
 
   //! \brief how often SearchNeighbours() has already been called
   int nsearch_;
