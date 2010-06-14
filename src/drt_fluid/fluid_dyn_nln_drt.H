@@ -44,11 +44,6 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_io/io.H"
 
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../fluid_full/fluid_prototypes.h"
-}
-
 using namespace std;
 using namespace Teuchos;
 
