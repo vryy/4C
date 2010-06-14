@@ -66,7 +66,7 @@ void tsi_dyn_drt()
   // access the structure discretization, make sure it is filled
   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null; // introduced 25.01.10
   structdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
-  // set degrees of freedom in the discretization 25.01.10
+  // set degrees of freedom in the discretization
   if (!structdis->Filled() or !structdis->HaveDofs()) structdis->FillComplete();
 
   // access the thermo discretization
@@ -74,27 +74,22 @@ void tsi_dyn_drt()
   thermdis = DRT::Problem::Instance()->Dis(genprob.numtf,0);
   if (!thermdis->Filled()) thermdis->FillComplete();
 
-  // access the problem-specific parameter list
-//  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
-
-  // we use the structure discretization as layout for the temperature discretization
+   // we use the structure discretization as layout for the temperature discretization
   if (structdis->NumGlobalNodes()==0) dserror("Structure discretization is empty!");
 
   // create thermo elements if the temperature discretization is empty
   if (thermdis->NumGlobalNodes()==0)
   {
-    Epetra_Time time(comm);
+    Epetra_Time time(comm); 
+    
+    // fetch the desired material id for the transport elements
+    const int matid = -1;
 
-    // fetch the desired material id for the thermo elements
-//    const int matid = -1;
-    // access the temperature parameter list
-    const Teuchos::ParameterList& tdyn = DRT::Problem::Instance()->ThermalDynamicParams();
-    // get the id of the thermo material
-    const int matid = tdyn.get<int>("MATID");
     // create the thermo discretization
     {
-      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<TSI::UTILS::ThermoStructureCloneStrategy> > clonewizard =
-        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<TSI::UTILS::ThermoStructureCloneStrategy>() );
+      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<TSI::UTILS::ThermoStructureCloneStrategy> > clonewizard
+        = Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<TSI::UTILS::ThermoStructureCloneStrategy>() );
+
       clonewizard->CreateMatchingDiscretization(structdis,thermdis,matid);
     }
 
