@@ -72,7 +72,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   int NumberOfElements = actdis->NumMyRowElements();
   int TotalNumberOfElements = 0;
   actdis->Comm().SumAll(&NumberOfElements,&TotalNumberOfElements,1);
-  
+
   if(TotalNumberOfElements == 0 && CoupledTo3D)
   {
     if (actdis->Comm().MyPID()==0)
@@ -86,11 +86,11 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
     }
     return Teuchos::null;
   }
-  
+
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  RCP<IO::DiscretizationWriter>  output = rcp( new IO::DiscretizationWriter(actdis),false);
+  RCP<IO::DiscretizationWriter>  output = rcp( new IO::DiscretizationWriter(actdis) );
   output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
@@ -109,8 +109,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   RCP<LINALG::Solver> solver = rcp( new LINALG::Solver(DRT::Problem::Instance()->ArteryNetworkSolverParams(),
                                                        actdis->Comm(),
-                                                       DRT::Problem::Instance()->ErrorFile()->Handle()),
-                                    false);
+                                                       DRT::Problem::Instance()->ErrorFile()->Handle()) );
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // -------------------------------------------------------------------
@@ -136,7 +135,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
 
   // flag for writing the hemodynamic physiological results
   //arterytimeparams.set ("write stresses"  ,Teuchos::getIntegralValue<int>(ioflags,"HEMO_PHYS_RESULTS"));
-  //---------------------- A method to initialize the flow inside the 
+  //---------------------- A method to initialize the flow inside the
   //                       arteries.
   //  int init = Teuchos::getIntegralValue<int> (artdyn,"INITIALFIELD");
 
@@ -146,8 +145,8 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   // the only parameter from the list required here is the number of
   // velocity degrees of freedom
   //------------------------------------------------------------------
-  Teuchos::RCP<ART::ArtNetExplicitTimeInt> artnetexplicit 
-    = 
+  Teuchos::RCP<ART::ArtNetExplicitTimeInt> artnetexplicit
+    =
     Teuchos::rcp(new ART::ArtNetExplicitTimeInt(actdis,*solver,arterytimeparams,*output));
   // initial field from restart or calculated by given function
 
