@@ -50,6 +50,13 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3Type::Create( const string eletyp
 }
 
 
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3Type::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam3(id,owner));
+  return ele;
+}
+
+
 void DRT::ELEMENTS::Beam3Type::NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 6;

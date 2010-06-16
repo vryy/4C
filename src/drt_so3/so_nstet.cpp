@@ -44,6 +44,13 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStetType::Create( const string eletyp
 }
 
 
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStetType::Create( const int id, const int owner )
+{
+  RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::NStet(id,owner));
+  return ele;
+}
+
+
 void DRT::ELEMENTS::NStetType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 3;

@@ -48,6 +48,12 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2Type::Create( const string eletype
 }
 
 
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2Type::Create( const int id, const int owner )
+{
+  return Teuchos::rcp(new DRT::ELEMENTS::Ale2(id,owner));
+}
+
+
 void DRT::ELEMENTS::Ale2Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 2;
@@ -88,6 +94,13 @@ void DRT::ELEMENTS::Ale2Type::SetupElementDefinition( std::map<std::string,std::
     .AddIntVector("TRI6",6)
     .AddNamedInt("MAT")
     ;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2LineType::Create( const int id, const int owner )
+{
+  //return Teuchos::rcp( new Ale2Line( id, owner ) );
+  return Teuchos::null;
 }
 
 

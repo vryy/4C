@@ -44,6 +44,13 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::XDiff3Type::Create( const string elety
 }
 
 
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::XDiff3Type::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::XDiff3(id,owner));
+  return ele;
+}
+
+
 void DRT::ELEMENTS::XDiff3Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 1;
@@ -109,6 +116,20 @@ void DRT::ELEMENTS::XDiff3Type::SetupElementDefinition( std::map<std::string,std
     .AddIntVector("NURBS27",27)
     .AddNamedInt("MAT")
     ;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::XDiff3SurfaceType::Create( const int id, const int owner )
+{
+  //return Teuchos::rcp( new XDiff3Surface( id, owner ) );
+  return Teuchos::null;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::XDiff3LineType::Create( const int id, const int owner )
+{
+  //return Teuchos::rcp( new XDiff3Line( id, owner ) );
+  return Teuchos::null;
 }
 
 

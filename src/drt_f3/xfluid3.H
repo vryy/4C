@@ -53,6 +53,8 @@ public:
                                              const int id,
                                              const int owner );
 
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
   virtual void NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np );
 
   virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
@@ -434,6 +436,8 @@ public:
 
   static XFluid3SurfaceType & Instance() { return instance_; };
 
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
   virtual void NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
 
   virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
@@ -630,6 +634,8 @@ public:
   std::string Name() const { return "XFluid3LineType"; }
 
   static XFluid3LineType & Instance() { return instance_; };
+
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
   virtual void NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
 

@@ -58,6 +58,13 @@ DRT::ParObject* CONTACT::CoElementType::Create( const std::vector<char> & data )
 }
 
 
+Teuchos::RCP<DRT::Element> CONTACT::CoElementType::Create( const int id, const int owner )
+{
+  //return Teuchos::rcp( new CoElement( id, owner ) );
+  return Teuchos::null;
+}
+
+
 void CONTACT::CoElementType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
 }

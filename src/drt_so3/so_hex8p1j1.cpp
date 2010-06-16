@@ -32,6 +32,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_Hex8P1J1Type::Create( const string 
   return Teuchos::null;
 }
 
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_Hex8P1J1Type::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_Hex8P1J1(id,owner));
+  return ele;
+}
+
+
 void DRT::ELEMENTS::So_Hex8P1J1Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
 //   numdf = 3;

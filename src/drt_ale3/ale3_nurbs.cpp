@@ -41,6 +41,13 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale3_NurbsType::Create( const s
   return Teuchos::null;
 }
 
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale3_NurbsType::Create( const int id, const int owner )
+{
+  return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Ale3Nurbs(id,owner));
+}
+
+
 void DRT::ELEMENTS::NURBS::Ale3_NurbsType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 3;

@@ -44,6 +44,13 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::XFluid3Type::Create( const string elet
 }
 
 
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::XFluid3Type::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::XFluid3(id,owner));
+  return ele;
+}
+
+
 void DRT::ELEMENTS::XFluid3Type::NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 4;
@@ -111,6 +118,20 @@ void DRT::ELEMENTS::XFluid3Type::SetupElementDefinition( std::map<std::string,st
     .AddIntVector("NURBS27",27)
     .AddNamedInt("MAT")
     ;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::XFluid3SurfaceType::Create( const int id, const int owner )
+{
+  //return Teuchos::rcp( new XFluid3Surface( id, owner ) );
+  return Teuchos::null;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::XFluid3LineType::Create( const int id, const int owner )
+{
+  //return Teuchos::rcp( new XFluid3Line( id, owner ) );
+  return Teuchos::null;
 }
 
 

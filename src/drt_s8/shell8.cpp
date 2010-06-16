@@ -45,6 +45,13 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Shell8Type::Create( const string elety
 }
 
 
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Shell8Type::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Shell8(id,owner));
+  return ele;
+}
+
+
 void DRT::ELEMENTS::Shell8Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 6;
@@ -140,6 +147,13 @@ void DRT::ELEMENTS::Shell8Type::SetupElementDefinition( std::map<std::string,std
     .AddNamedString("ANS")
     .AddNamedDouble("SDC")
     ;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Shell8LineType::Create( const int id, const int owner )
+{
+  //return Teuchos::rcp( new Shell8Line( id, owner ) );
+  return Teuchos::null;
 }
 
 

@@ -48,6 +48,12 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid3Type::Create( const string elety
 }
 
 
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid3Type::Create( const int id, const int owner )
+{
+  return rcp(new DRT::ELEMENTS::Fluid3(id,owner));
+}
+
+
 void DRT::ELEMENTS::Fluid3Type::NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
@@ -168,6 +174,13 @@ void DRT::ELEMENTS::Fluid3Type::SetupElementDefinition( std::map<std::string,std
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid3BoundaryType::Create( const int id, const int owner )
+{
+  //return Teuchos::rcp( new Fluid3Boundary( id, owner ) );
+  return Teuchos::null;
 }
 
 

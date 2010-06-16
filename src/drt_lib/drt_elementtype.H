@@ -51,6 +51,9 @@ public:
                                         const int owner )
   { return Teuchos::null; }
 
+  /// create an empty element
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner ) = 0;
+
   /// initialize the element type
   virtual int Initialize(DRT::Discretization& dis);
 

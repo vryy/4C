@@ -41,7 +41,7 @@ namespace ELEMENTS
 namespace NURBS
 {
 
-class Wall1NurbsType : public Wall1Type
+  class Wall1NurbsType : public DRT::ElementType
 {
 public:
 
@@ -56,10 +56,16 @@ public:
                                              const int id,
                                              const int owner );
 
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
   virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
   {
     // do nothing. Definition inserted by normal wall element.
   }
+
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
 
 private:
 

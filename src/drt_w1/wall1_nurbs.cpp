@@ -40,6 +40,25 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create( const s
   return Teuchos::null;
 }
 
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create( const int id, const int owner )
+{
+  return rcp(new DRT::ELEMENTS::NURBS::Wall1Nurbs(id,owner));
+}
+
+void DRT::ELEMENTS::NURBS::Wall1NurbsType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 2;
+  dimns = 3;
+  nv = 2;
+}
+
+void DRT::ELEMENTS::NURBS::Wall1NurbsType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeStructure2DNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 02/09|
  |  id             (in)  this element's global id                       |

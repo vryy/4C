@@ -88,6 +88,8 @@ public:
                                              const int id,
                                              const int owner );
 
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
   virtual int Initialize(DRT::Discretization& dis);
 
   virtual void PreEvaluate(DRT::Discretization& dis,

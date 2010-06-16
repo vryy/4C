@@ -42,6 +42,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::PtetType::Create( const string eletype
   return Teuchos::null;
 }
 
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::PtetType::Create( const int id, const int owner )
+{
+  RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Ptet(id,owner));
+  return ele;
+}
+
+
 void DRT::ELEMENTS::PtetType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 3;

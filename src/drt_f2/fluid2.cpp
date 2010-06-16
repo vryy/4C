@@ -47,6 +47,12 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid2Type::Create( const string elety
 }
 
 
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid2Type::Create( const int id, const int owner )
+{
+  return rcp(new DRT::ELEMENTS::Fluid2(id,owner));
+}
+
+
 void DRT::ELEMENTS::Fluid2Type::NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   nv = 2;
@@ -112,6 +118,13 @@ void DRT::ELEMENTS::Fluid2Type::SetupElementDefinition( std::map<std::string,std
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid2LineType::Create( const int id, const int owner )
+{
+  //return Teuchos::rcp( new Fluid2Line( id, owner ) );
+  return Teuchos::null;
 }
 
 

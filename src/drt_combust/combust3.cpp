@@ -45,6 +45,13 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Combust3Type::Create( const string ele
 }
 
 
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Combust3Type::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Combust3(id,owner));
+  return ele;
+}
+
+
 void DRT::ELEMENTS::Combust3Type::NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 4;
@@ -102,6 +109,20 @@ void DRT::ELEMENTS::Combust3Type::SetupElementDefinition( std::map<std::string,s
     .AddIntVector("PYRAMID5",5)
     .AddNamedInt("MAT")
     ;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Combust3SurfaceType::Create( const int id, const int owner )
+{
+  //return Teuchos::rcp( new Combust3Surface( id, owner ) );
+  return Teuchos::null;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Combust3LineType::Create( const int id, const int owner )
+{
+  //return Teuchos::rcp( new Combust3Line( id, owner ) );
+  return Teuchos::null;
 }
 
 

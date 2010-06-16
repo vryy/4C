@@ -49,6 +49,12 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3Type::Create( const string eletype
 }
 
 
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3Type::Create( const int id, const int owner )
+{
+  return Teuchos::rcp(new DRT::ELEMENTS::Ale3(id,owner));
+}
+
+
 void DRT::ELEMENTS::Ale3Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 3;
@@ -104,6 +110,13 @@ void DRT::ELEMENTS::Ale3Type::SetupElementDefinition( std::map<std::string,std::
     .AddIntVector("PYRAMID5",5)
     .AddNamedInt("MAT")
     ;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3SurfaceType::Create( const int id, const int owner )
+{
+  //return Teuchos::rcp( new Ale3Surface( id, owner ) );
+  return Teuchos::null;
 }
 
 

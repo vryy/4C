@@ -45,6 +45,13 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Torsion2Type::Create( const string ele
 }
 
 
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Torsion2Type::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Torsion2(id,owner));
+  return ele;
+}
+
+
 void DRT::ELEMENTS::Torsion2Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 2;

@@ -40,6 +40,13 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ConstraintElement3Type::Create( const 
 }
 
 
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ConstraintElement3Type::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::ConstraintElement3(id,owner));
+  return ele;
+}
+
+
 void DRT::ELEMENTS::ConstraintElement3Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
 }

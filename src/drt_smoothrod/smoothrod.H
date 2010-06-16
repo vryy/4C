@@ -58,6 +58,8 @@ public:
 
   virtual DRT::ParObject* Create( const vector<char> & data );
 
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
   virtual int Initialize(DRT::Discretization& dis);
 
   virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );

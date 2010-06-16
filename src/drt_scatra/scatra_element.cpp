@@ -50,6 +50,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TransportType::Create( const string el
   return Teuchos::null;
 }
 
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TransportType::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Transport(id,owner));
+  return ele;
+}
+
+
 void DRT::ELEMENTS::TransportType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
@@ -154,6 +162,12 @@ void DRT::ELEMENTS::TransportType::SetupElementDefinition( std::map<std::string,
 
 
 DRT::ELEMENTS::TransportBoundaryType DRT::ELEMENTS::TransportBoundaryType::instance_;
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TransportBoundaryType::Create( const int id, const int owner )
+{
+  //return Teuchos::rcp( new TransportBoundary( id, owner ) );
+  return Teuchos::null;
+}
 
 
 /*----------------------------------------------------------------------*

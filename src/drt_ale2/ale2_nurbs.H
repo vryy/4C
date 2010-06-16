@@ -58,6 +58,8 @@ public:
                                              const int id,
                                              const int owner );
 
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
   virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
   {
     // do nothing. Definition inserted by normal wall element.

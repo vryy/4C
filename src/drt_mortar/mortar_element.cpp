@@ -58,6 +58,13 @@ DRT::ParObject* MORTAR::MortarElementType::Create( const std::vector<char> & dat
 }
 
 
+Teuchos::RCP<DRT::Element> MORTAR::MortarElementType::Create( const int id, const int owner )
+{
+  //return Teuchos::rcp( new MortarElement( id, owner ) );
+  return Teuchos::null;
+}
+
+
 void MORTAR::MortarElementType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
 }

@@ -49,6 +49,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoDispType::Create( const string elety
   return Teuchos::null;
 }
 
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoDispType::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::SoDisp(id,owner));
+  return ele;
+}
+
+
 void DRT::ELEMENTS::SoDispType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 3;

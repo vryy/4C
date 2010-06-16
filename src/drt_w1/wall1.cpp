@@ -47,6 +47,12 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1Type::Create( const string eletyp
 }
 
 
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1Type::Create( const int id, const int owner )
+{
+  return rcp(new DRT::ELEMENTS::Wall1(id,owner));
+}
+
+
 void DRT::ELEMENTS::Wall1Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 2;
@@ -139,6 +145,13 @@ void DRT::ELEMENTS::Wall1Type::SetupElementDefinition( std::map<std::string,std:
     .AddString("EAS")
     //.AddNamedString("STRESSES")
     ;
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1LineType::Create( const int id, const int owner )
+{
+  //return Teuchos::rcp( new Wall1Line( id, owner ) );
+  return Teuchos::null;
 }
 
 

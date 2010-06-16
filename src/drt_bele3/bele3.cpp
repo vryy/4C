@@ -42,12 +42,27 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3Type::Create( const string eletyp
   return Teuchos::null;
 }
 
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3Type::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Bele3(id,owner));
+  return ele;
+}
+
+
 void DRT::ELEMENTS::Bele3Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
 }
 
 void DRT::ELEMENTS::Bele3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
+}
+
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3LineType::Create( const int id, const int owner )
+{
+  //return Teuchos::rcp( new Bele3Line( id, owner ) );
+  return Teuchos::null;
 }
 
 

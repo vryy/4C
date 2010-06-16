@@ -34,6 +34,12 @@ DRT::ParObject* DRT::ELEMENTS::SmoothrodType::Create( const std::vector<char> & 
 }
 
 
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SmoothrodType::Create( const int id, const int owner )
+{
+  return Teuchos::rcp( new Smoothrod( id, owner ) );
+}
+
+
 void DRT::ELEMENTS::SmoothrodType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 4;

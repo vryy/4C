@@ -20,6 +20,13 @@ Maintainer: Michael Gee
 
 DRT::ELEMENTS::StructuralSurfaceType DRT::ELEMENTS::StructuralSurfaceType::instance_;
 
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::StructuralSurfaceType::Create( const int id, const int owner )
+{
+  //return Teuchos::rcp( new StructuralSurface( id, owner ) );
+  return Teuchos::null;
+}
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              gee 04/08|
  *----------------------------------------------------------------------*/

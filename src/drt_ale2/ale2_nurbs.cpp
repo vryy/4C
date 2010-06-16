@@ -41,6 +41,12 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale2_NurbsType::Create( const s
 }
 
 
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale2_NurbsType::Create( const int id, const int owner )
+{
+  return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Ale2Nurbs(id,owner));
+}
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 04/09|
  |  id             (in)  this element's global id                       |

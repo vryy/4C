@@ -45,6 +45,13 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss3Type::Create( const string elety
 }
 
 
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss3Type::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Truss3(id,owner));
+  return ele;
+}
+
+
 void DRT::ELEMENTS::Truss3Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 3;
