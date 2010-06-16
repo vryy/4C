@@ -26,7 +26,6 @@ Trilinos_DIR="/lnm/lib/fc8/openmpi/trilinos"
     -D COLOROUTPUT=ON \
     -D D_EXODUS:BOOL=ON \
     -D D_ALE:BOOL=ON \
-    -D D_ALE:BOOL=ON \
     -D D_BEAM2:BOOL=ON \
     -D D_BEAM2R:BOOL=ON \
     -D D_BEAM3:BOOL=ON \
