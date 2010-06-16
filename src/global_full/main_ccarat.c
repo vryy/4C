@@ -101,7 +101,7 @@ int main(INT argc, char *argv[])
            "*               B A C I                *\n"
            "*                                      *\n"
            "*                                      *\n"
-           "*            revision %5s            *\n"
+           "*            revision %d            *\n"
 #ifdef PARALLEL
            "*           parallel version           *\n"
 #else

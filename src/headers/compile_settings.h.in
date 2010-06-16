@@ -1,8 +1,14 @@
 /* the configured options and settings for baci */
 #define BACI_VERSION_MAJOR @baci_VERSION_MAJOR@
 #define BACI_VERSION_MINOR @baci_VERSION_MINOR@
-#define CHANGEDREVISION "unknown"
+
+#ifndef CHANGEDREVISION
+#define CHANGEDREVISION -1
+#endif
+
+#ifndef CHANGEDDATE
 #define CHANGEDDATE "unknown"
+#endif
 
 #ifndef CCADISCRET
 #cmakedefine CCADISCRET

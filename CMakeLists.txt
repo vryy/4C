@@ -26,6 +26,14 @@ include_directories("${PROJECT_BINARY_DIR}/src/headers")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
+FIND_PACKAGE(Subversion)
+IF(Subversion_FOUND)
+  Subversion_WC_INFO(${CMAKE_HOME_DIRECTORY} baci)
+  #MESSAGE("Current revision is ${baci_WC_REVISION}")
+  add_definitions("-DCHANGEDREVISION=${baci_WC_REVISION}")
+  add_definitions("-DCHANGEDDATE=${baci_WC_LAST_CHANGED_DATE}")
+ENDIF(Subversion_FOUND)
+
 #
 ### Build in default values
 

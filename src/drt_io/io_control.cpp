@@ -138,7 +138,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
                  << "unknown"
 #endif
                  << " on " << hostname << " at " << ctime(&time_value)
-                 << "# using code revision " CHANGEDREVISION " from " CHANGEDDATE " \n\n"
+                 << "# using code revision " << CHANGEDREVISION << " \n\n"
                  << "input_file = \"" << inputfile << "\"\n"
                  << "problem_type = \"" << problemtype << "\"\n"
                  << "spatial_approximation = \"" << spatial_approx << "\"\n"
@@ -222,7 +222,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
                  << "unknown"
 #endif
                  << " on " << hostname << " at " << ctime(&time_value)
-                 << "# using code revision " CHANGEDREVISION " from " CHANGEDDATE " \n\n"
+                 << "# using code revision " << CHANGEDREVISION << " \n\n"
                  << "input_file = \"" << inputfile << "\"\n"
                  << "problem_type = \"" << problemtype << "\"\n"
                  << "spatial_approximation = \"" << spatial_approx << "\"\n"
@@ -283,7 +283,7 @@ void IO::OutputControl::NewResultFile(int numb_run)
                << "unknown"
 #endif
                << " on " << hostname << " at " << ctime(&time_value)
-               << "# using code revision " CHANGEDREVISION " from " CHANGEDDATE " \n\n"
+               << "# using code revision " << CHANGEDREVISION << " \n\n"
                << "input_file = \"" << inputfile_ << "\"\n"
                << "problem_type = \"" << problemtype_ << "\"\n"
                << "spatial_approximation = \"" << "Polynomial" << "\"\n"
