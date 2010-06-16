@@ -21,13 +21,16 @@
 #include "aggregation_method_uncoupled.H"
 #include "aggregation_method_ml.H"
 
+#include "smoother.H"
+
 LINALG::AMGPreconditioner::AMGPreconditioner(RCP<Epetra_Operator> A, const ParameterList& params, FILE* outfile)
 :
   Epetra_Operator(),
   label_("LINALG::AMGPreconditioner"),
   params_(params),
   nlevel_(0),
-  nmaxlevels_(0)
+  nmaxlevels_(0),
+  nVerbose_(0)
 {
   //SparseMatrix* tmp = dynamic_cast<SparseMatrix*>(A.get());
   SparseMatrix* tmp = new SparseMatrix((rcp_dynamic_cast<Epetra_CrsMatrix>(A)));
@@ -44,10 +47,11 @@ void LINALG::AMGPreconditioner::Setup()
   int nmaxlevels_ = Params().get<int>("max levels",10);
   int maxcoarsesize = Params().get<int>("coarse: max size",1);
   int nsdim = Params().get<int>("null space: dimension",1);
+  nVerbose_ = Params().get("output",0);
 
   params_.set("Unamalgamated BlockSize",nsdim);
   params_.set("PDE equations",nsdim);
-
+  params_.set("ML output", nVerbose_);
 
   // prepare null space approximation
   const int length = Ainput_->RowMap().NumMyElements();
@@ -65,7 +69,6 @@ void LINALG::AMGPreconditioner::Setup()
 
   params_.set("null space: vectors",&((*ns)[0])); // adapt default null space
   params_.remove("nullspace",false);
-  params_.set("ML output", 10);
   RCP<Epetra_MultiVector> curNS = rcp(new Epetra_MultiVector(View,Ainput_->RowMap(),&((*ns)[0]),Ainput_->EpetraMatrix()->RowMatrixRowMap().NumMyElements(),nsdim));
 
 
@@ -86,6 +89,8 @@ void LINALG::AMGPreconditioner::Setup()
     fileoutstream2 << "/home/wiesner/python/matrix" << curlevel << ".dat";
     LINALG::PrintMatrixInMatlabFormat(fileoutstream2.str(),*(A_[curlevel]->EpetraMatrix()));
 #endif
+
+  SmootherFactory smfac;
 
   for (curlevel = 0; curlevel < nmaxlevels_; ++curlevel)
   {
@@ -136,16 +141,8 @@ void LINALG::AMGPreconditioner::Setup()
     IfpackParameters.set("fact: ilut level-of-fill",0.0);
     IfpackParameters.set("amesos: solver type","Amesos_Umfpack");
 
-    Ifpack factory;
-    //Ifpack_Preconditioner* prec = factory.Create("ILU",A_[curlevel]->EpetraMatrix().get(),params_.get("Ifpack overlap",0));
-    Ifpack_Preconditioner* prec = factory.Create("point relaxation",A_[curlevel]->EpetraMatrix().get(),params_.get("Ifpack overlap",0));
-    //Ifpack_Preconditioner* prec = factory.Create("Amesos",A_[curlevel]->EpetraMatrix().get(),params_.get("Ifpack overlap",0));
-    prec->SetParameters(IfpackParameters);
-    prec->Initialize();
-    prec->Compute();
-    if(prec->IsComputed()==false)
-      dserror("prec not computed??");
-    preS_[curlevel] = rcp(prec);
+
+    preS_[curlevel] = smfac.Create("ILU",A_[curlevel],IfpackParameters);
     postS_[curlevel] = preS_[curlevel];
 
 
@@ -154,18 +151,18 @@ void LINALG::AMGPreconditioner::Setup()
     nlevel_ = curlevel + 1;
 
     // abbruchbedingung
+    if ((A_[curlevel+1]->EpetraMatrix()->NumGlobalRows() - aggm->getNumGlobalDirichletBlocks()*(nsdim)) < maxcoarsesize)
+    {
+      if(nVerbose_ > 5) cout << "dim A[" << curlevel+1 << "] < " << maxcoarsesize << ". -> end aggregation process" << endl;
+      break;
+    }
+
   }
 
 
-  Ifpack factory;
-  string coarsestSmootherType = "Amesos";
-  Ifpack_Preconditioner* prec = factory.Create(coarsestSmootherType,A_[nlevel_]->EpetraMatrix().get(),0);
-  prec->Initialize();
-  prec->Compute();
-  if(prec->IsComputed()==false)
-    dserror("prec not computed??");
-
-  coarsestSmoother_ = rcp(prec);
+  ParameterList IfpackParameters;
+  IfpackParameters.set("amesos: solver type","Amesos_Umfpack");
+  coarsestSmoother_ = smfac.Create("Amesos",A_[nlevel_],IfpackParameters);
 
 
 }
@@ -262,8 +259,8 @@ void LINALG::AMGPreconditioner::Vcycle(const Epetra_MultiVector& rhs, Epetra_Mul
     RCP<Epetra_MultiVector> sol_tmp = rcp(new Epetra_MultiVector(sol)); // sol_tmp == sol!
 
     /* ONLY ILU */
-    A_[level]->Apply(sol,*rhs_tmp);
-    rhs_tmp->Update(-1.0,rhs,1.0); // rhs_tmp is difference of new rhs and old rhs
+    //A_[level]->Apply(sol,*rhs_tmp);
+    //rhs_tmp->Update(-1.0,rhs,1.0); // rhs_tmp is difference of new rhs and old rhs
 
 
     // fine level postsmoother
@@ -276,6 +273,15 @@ void LINALG::AMGPreconditioner::Vcycle(const Epetra_MultiVector& rhs, Epetra_Mul
     IfpackParameters.set("fact: ilut level-of-fill",0.0);
     IfpackParameters.set("amesos: solver type","Amesos_Umfpack");
 
+    /*Smoother_Ifpack* prec = new Smoother_Ifpack("ILU", A_[0]->EpetraMatrix(),IfpackParameters);
+    prec->ApplyInverse(*rhs_tmp,*sol_tmp);
+    delete prec;*/
+
+    SmootherFactory smfac;
+    RCP<Smoother> prec = smfac.Create("ILU",A_[0],IfpackParameters);
+    prec->ApplyInverse(*rhs_tmp,*sol_tmp);
+
+    /*// this is working
     Ifpack factory;
     Ifpack_Preconditioner* prec = factory.Create("ILU",A_[0]->EpetraMatrix().get(),0);
     //Ifpack_Preconditioner* prec = factory.Create("point relaxation",A_[0]->EpetraMatrix().get(),0);
@@ -290,7 +296,7 @@ void LINALG::AMGPreconditioner::Vcycle(const Epetra_MultiVector& rhs, Epetra_Mul
 
     sol.Update(-1.0,*sol_tmp,1.0);          // update solution sol ONLY ILU
 
-    delete prec;
+    delete prec;*/
 
     /* my own small jacobi...
     for(int k=0; k<5;k++)

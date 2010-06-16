@@ -26,6 +26,7 @@ namespace LINALG
 {
 
   class TransferOperator;
+  class Smoother;
 
   /*!
    * AMG Preconditioner
@@ -117,11 +118,13 @@ namespace LINALG
     int                     nmaxlevels_;  ///< no. of maximal allowed number of levels
     vector<RCP<SparseMatrix> >  A_;          ///< the matrix hierarchy
 
-    vector<RCP<Epetra_Operator> >          preS_; // presmoother
-    vector<RCP<Epetra_Operator> >          postS_; // postsmoother
+    vector<RCP<Smoother> >          preS_; // presmoother
+    vector<RCP<Smoother> >          postS_; // postsmoother
     RCP<Epetra_Operator>                   coarsestSmoother_; // we also use BraessSarazin on coarsest level
 
     vector<RCP<TransferOperator> >  T_;          ///< transfer operators
+
+    int nVerbose_;                               ///< verbosity level
   };
 }
 

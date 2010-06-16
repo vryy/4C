@@ -107,6 +107,7 @@ OBJS_DRT      = \
                 src/linalg/simpler_operator.o \
                 src/linalg/amgpreconditioner.o \
                 src/linalg/saddlepointpreconditioner.o \
+                src/linalg/smoother.o \
                 src/linalg/transfer_operator.o \
                 src/linalg/transfer_operator_tentative.o \
                 src/linalg/transfer_operator_saamg.o \

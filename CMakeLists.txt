@@ -900,6 +900,7 @@ set(OBJS_LINALG
   src/linalg/linalg_utils.cpp
   src/linalg/saddlepointpreconditioner.cpp
   src/linalg/simpler_operator.cpp
+  src/linalg/smoother.cpp
   src/linalg/transfer_operator.cpp
   src/linalg/transfer_operator_pgamg.cpp
   src/linalg/transfer_operator_pgamg2.cpp
