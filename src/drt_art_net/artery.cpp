@@ -45,6 +45,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ArteryType::Create( const string elety
   return Teuchos::null;
 }
 
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ArteryType::Create( const int id, const int owner )
+{
+  RCP<DRT::Element> ele =  rcp(new DRT::ELEMENTS::Artery(id,owner));
+  return ele;
+}
+
+
 void DRT::ELEMENTS::ArteryType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["ART"];

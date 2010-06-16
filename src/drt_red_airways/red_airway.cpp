@@ -45,6 +45,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAirwayType::Create( const string el
   return Teuchos::null;
 }
 
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAirwayType::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele =  rcp(new DRT::ELEMENTS::RedAirway(id,owner));
+  return ele;
+}
+
+
 void DRT::ELEMENTS::RedAirwayType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
   std::map<std::string,LineDefinition>& defs = definitions_["RED_AIRWAY"];
