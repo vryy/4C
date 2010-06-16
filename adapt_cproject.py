@@ -126,9 +126,9 @@ def adapt(do_configure_file):
                 found_symbol = True
                 
         if not found_path:
-        	print "Please add manually any path to the project's include path section to create an initial entry in '.cproject'"
+        	print "Please add manually (Eclipse) any path to the project's include path section to create an initial entry in '.cproject'"
         if not found_symbol:
-        	print "Please add manually any symbol to the project's symbol section to create an initial entry in '.cproject'"
+        	print "Please add manually (Eclipse) any symbol to the project's symbol section to create an initial entry in '.cproject'"
 
         #print(etree.tostring(root, pretty_print=True))
         fo = open(".cproject","w")
