@@ -1307,6 +1307,7 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) &&  numiter<maxiter)
   {
 #ifdef CONTACTTIME
+  	discret_.Comm().Barrier();
     const double t_start0 = Teuchos::Time::wallTime();
     const double t_start = Teuchos::Time::wallTime();
 #endif // #ifdef CONTACTTIME
@@ -1334,8 +1335,9 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
     //----------------------- transform back to global coordinate system
     if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(disi_);
 #ifdef CONTACTTIME
+    discret_.Comm().Barrier();
     const double t_end = Teuchos::Time::wallTime()-t_start;
-    cout << "\n***Solve:\t\t" << t_end << " seconds\t***";
+    if (!myrank_) cout << "*** Solve:\t\t" << t_end << " seconds\n";
 #endif // #ifdef CONTACTTIME
 
     //--------------------------------------- recover disi and Lag. Mult.
@@ -1397,6 +1399,7 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
       accm_->PutScalar(0.0);
     }
 #ifdef CONTACTTIME
+    discret_.Comm().Barrier();
     const double t_start2 = Teuchos::Time::wallTime();
 #endif // #ifdef CONTACTTIME
 
@@ -1468,8 +1471,9 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
       }
     }
 #ifdef CONTACTTIME
+    discret_.Comm().Barrier();
     const double t_end2 = Teuchos::Time::wallTime()-t_start2;
-    cout << "\n***DiscretEvaluate:\t" << t_end2 << " seconds\t***";
+    if (!myrank_) cout << "*** DiscretEvaluate:\t" << t_end2 << " seconds\n";
 #endif // #ifdef CONTACTTIME
 
     //------------------------------------------ compute dynamic equilibrium
@@ -1529,6 +1533,7 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
     }
 
 #ifdef CONTACTTIME
+    discret_.Comm().Barrier();
     const double t_start3 = Teuchos::Time::wallTime();
 #endif // #ifdef CONTACTTIME
 
@@ -1542,8 +1547,9 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
 #endif // #ifdef MORTARGMSH2
 
 #ifdef CONTACTTIME
+    discret_.Comm().Barrier();
     const double t_end3 = Teuchos::Time::wallTime()-t_start3;
-    cout << "\n***CmtEvaluate:\t\t" << t_end3 << " seconds\t***";
+    if (!myrank_) cout << "*** CmtEvaluate:\t" << t_end3 << " seconds\n";
 #endif // #ifdef CONTACTTIME
     //------------------------------------ ----complete stiffness matrix
     stiff_->Complete();
@@ -1561,8 +1567,9 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
     disi_->Norm2(&disinorm);
     fresm_->Norm2(&fresmnorm);
 #ifdef CONTACTTIME
+    discret_.Comm().Barrier();
     const double t_end0 = Teuchos::Time::wallTime()-t_start0;
-    cout << "\n***Step(overall):\t" << t_end0 << " seconds\t***\n";
+    if (!myrank_) cout << "*** Step(overall):\t" << t_end0 << " seconds\n";
 #endif // #ifdef CONTACTTIME
 
     // a short message
@@ -3101,7 +3108,7 @@ void CONTACT::CmtStruGenAlpha::CmtNonlinearSolve()
   // FIXED-POINT APPROACH
   // The search for the correct active set (=contact nonlinearity) is
   // represented by a fixed-point approach, whereas the large deformation
-  // linearization (=geimetrical nonlinearity) is treated by a standard
+  // linearization (=geometrical nonlinearity) is treated by a standard
   // Newton scheme. This yields TWO nested iteration loops
   //********************************************************************
   // NOTE: The nonlinear solution method FullNewton() now contains both
@@ -3123,6 +3130,7 @@ void CONTACT::CmtStruGenAlpha::CmtNonlinearSolve()
     if (apptype == INPAR::CONTACT::app_mortarcontact && semismooth)
     {
 #ifdef CONTACTTIME
+    	discret_.Comm().Barrier();
       const double t_start = Teuchos::Time::wallTime();
 #endif // #ifdef CONTACTTIME
       
@@ -3132,8 +3140,9 @@ void CONTACT::CmtStruGenAlpha::CmtNonlinearSolve()
       else if (equil=="ptc")                 dserror("ERROR: No semi-smooth PTC available!");
       
 #ifdef CONTACTTIME
+      discret_.Comm().Barrier();
       const double t_end = Teuchos::Time::wallTime()-t_start;
-      cout << "\n***\nTime Step (overall): " << t_end << " seconds\n***\n";
+      if (!myrank_) cout << "*** Time Step (overall): " << t_end << " seconds\n";
 #endif // #ifdef CONTACTTIME
     }
     
