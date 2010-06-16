@@ -73,6 +73,9 @@ namespace LINALG
        *    that such nodes should be handled in phase 2 of aggregation process, where they are attached to existing aggregates. (default 2)
        *  - "phase 2: node attachement scheme": attachement scheme for non-aggregated nodes in phase 2. Can be either "MinRank" or "MaxLink".
        *    With "MinRank" the node is attached to the smallest neighbour aggregate. With "MaxLink" the node is added to the aggregate with the maximum number of links to it.
+       *  - "aggregation method": controls the pruning algorithm. "isotropic aggregation": eliminate all zero entries in matrix (plain pruning), "anisotropic aggregation": uncoupled anisotropic aggregation, "anisotropic aggregation (coupled)": expensive variant of anisotropic aggregation that tries to do anisotropic aggregation over processor boundaries.
+       *  - "anisotropic aggregation: epsilon": threshold parameter for anisotropic aggregation. used for "anisotropic aggregation" and "anisotropic aggregation (coupled)".
+       *  - "Current Level": number of current level, should be provided of multigrid algorithm. only used for anisotropic aggregation process now. 0 = finest level.
        */
       virtual int GetGlobalAggregates(const RCP<Epetra_CrsMatrix>& A, ParameterList& params, RCP<Epetra_IntVector>& aggrinfo, int& naggregates_local, const RCP<Epetra_MultiVector>& ThisNS = null);
 
@@ -99,8 +102,48 @@ namespace LINALG
        * have to choose "PDE equations" = "BlockSize" = 2 (in 2D), since there are no holes for the pressure dofs in the row map
        * of A11 on the coarser levels.
        */
-      int AmalgamateMatrix(const RCP<Epetra_CrsMatrix> A, ParameterList& params, RCP<Epetra_CrsGraph>& amalA, RCP<Epetra_IntVector>& bdry_array);
+      int AmalgamateMatrix(const RCP<Epetra_CrsMatrix>& A, ParameterList& params, RCP<Epetra_CrsGraph>& amalA, RCP<Epetra_IntVector>& bdry_array);
 
+      /*!
+       * \brief Simple Matrix pruning method
+       *
+       * All matrix graph entries with a zero value are eliminated
+       *
+       * \param A (in): Epetra_CrsMatrix for pruning
+       * \param prunedA (out): Epetra_CrsMatrix with pruned matrix
+       * \return 0
+       */
+      int PruneMatrix(const RCP<Epetra_CrsMatrix>& A, RCP<Epetra_CrsMatrix>& prunedA);
+
+      /*!
+       * \brief Matrix pruning method with anisotropic aggregation algorithm
+       *
+       * All matrix graph entries with a zero value are eliminated
+       * Furthermore all entries of matrix A with a(i,j) < epsilon \sqrt{a(i,i)*a(j,j)} are eliminated.
+       * The diagonal entries of A (a(i,i)) are stored global on all processors, that is we can do anisotropic aggregation for processor overlapping aggregates, too. Is somewhat expensive as additional inter processor communication is necessary.
+       *
+       * \param A (in): Epetra_CrsMatrix for pruning
+       * \param prunedA (out): Epetra_CrsMatrix with pruned matrix
+       * \param epsilon (in): threshold parameter for anisotropic aggregation
+       * \param curlevel (in): level number of current multigrid level (0=finest level). used for adaption of epsilon -> epsilon = epsilon * pow(0.5,curlevel)
+       * \return 0
+       */
+      int PruneMatrixAnisotropic(const RCP<Epetra_CrsMatrix>& A, RCP<Epetra_CrsMatrix>& prunedA, double epsilon, int curlevel = 0);
+
+      /*!
+       * \brief Matrix pruning method with anisotropic aggregation algorithm
+       *
+       * All matrix graph entries with a zero value are eliminated
+       * Furthermore all entries of matrix A with a(i,j) < epsilon \sqrt{a(i,i)*a(j,j)} are eliminated.
+       * If a(j,j) doesn't belong to same processor as a(i,i) the anisotropic aggregation is just ignored. Then simple pruning is applied.
+       *
+       * \param A (in): Epetra_CrsMatrix for pruning
+       * \param prunedA (out): Epetra_CrsMatrix with pruned matrix
+       * \param epsilon (in): threshold parameter for anisotropic aggregation
+       * \param curlevel (in): level number of current multigrid level (0=finest level). used for adaption of epsilon -> epsilon = epsilon * pow(0.5,curlevel)
+       * \return 0
+       */
+      int PruneMatrixAnisotropicSimple(const RCP<Epetra_CrsMatrix>& A, RCP<Epetra_CrsMatrix>& prunedA, double epsilon, int curlevel = 0);
 
       /*! \brief unamalgamtes vector
        *  build unamalgamated vector

@@ -36,6 +36,7 @@ Maintainer: Michael Gee
 #include <EpetraExt_Transpose_RowMatrix.h>
 
 #include "saddlepointpreconditioner.H"
+#include "amgpreconditioner.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 02/07|
@@ -568,10 +569,18 @@ void LINALG::Solver::Solve_aztec(
 
       // see whether we use standard ml or our own mlapi operator
       const bool domlapioperator = mllist.get<bool>("LINALG::AMG_Operator",false);
+      const bool doamgpreconditioner = mllist.get<bool>("LINALG::AMGPreconditioner",false);
       if (domlapioperator)
       {
         Teuchos::RCP<LINALG::AMG_Operator> linalgAMG
           = rcp(new LINALG::AMG_Operator(Pmatrix_,mllist,true));
+
+        P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(linalgAMG,project,projector));
+      }
+      else if(doamgpreconditioner)
+      {
+        Teuchos::RCP<LINALG::AMGPreconditioner> linalgAMG
+          = rcp(new LINALG::AMGPreconditioner(A_->UnprojectedOperator(),mllist,outfile_));
 
         P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(linalgAMG,project,projector));
       }
@@ -1009,6 +1018,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     case INPAR::SOLVER::azprec_MLAPI:
     case INPAR::SOLVER::azprec_MLfluid2:
     case INPAR::SOLVER::azprec_AMGBS:
+    case INPAR::SOLVER::azprec_AMG:
       azlist.set("AZ_precond",AZ_user_precond);
     break;
     default:
@@ -1085,7 +1095,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     if (azprectyp == INPAR::SOLVER::azprec_ML       ||
         azprectyp == INPAR::SOLVER::azprec_MLfluid  ||
         azprectyp == INPAR::SOLVER::azprec_MLfluid2 ||
-        azprectyp == INPAR::SOLVER::azprec_MLAPI )
+        azprectyp == INPAR::SOLVER::azprec_MLAPI ||
+        azprectyp == INPAR::SOLVER::azprec_AMG)          // new AMG preconditioner
     {
       ParameterList& mllist = outparams.sublist("ML Parameters");
       ML_Epetra::SetDefaults("SA",mllist);
@@ -1103,6 +1114,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
         mllist.set("energy minimization: enable",true);
         mllist.set("energy minimization: type",3); // 1,2,3 cheap -> expensive
         mllist.set("aggregation: block scaling",false);
+      break;
+      case INPAR::SOLVER::azprec_AMG:   // set flag to use AMGPreconditioner
+        mllist.set<bool>("LINALG::AMGPreconditioner",true);
       break;
       default: dserror("Unknown type of ml preconditioner");
       }

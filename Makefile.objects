@@ -105,6 +105,7 @@ OBJS_DRT      = \
                 src/linalg/linalg_krylov_projector.o \
                 src/linalg/linalg_mlapi_operator.o \
                 src/linalg/simpler_operator.o \
+                src/linalg/amgpreconditioner.o \
                 src/linalg/saddlepointpreconditioner.o \
                 src/linalg/transfer_operator.o \
                 src/linalg/transfer_operator_tentative.o \

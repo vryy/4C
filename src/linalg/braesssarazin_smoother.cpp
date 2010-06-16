@@ -27,7 +27,9 @@
 #include "ml_MultiLevelPreconditioner.h"
 
 LINALG::BraessSarazin_Smoother::BraessSarazin_Smoother(RCP<const SparseMatrix> A11, RCP<const SparseMatrix> A12, RCP<const SparseMatrix> A21, RCP<const SparseMatrix> A22, const ParameterList& params)
-: F_(A11),
+:
+Epetra_Operator(),
+F_(A11),
 G_(A12),
 D_(A21),
 Z_(A22),

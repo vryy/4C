@@ -47,7 +47,10 @@
 #include "float.h" // for DBL_MAX and DBL_MIN
 
 LINALG::SaddlePointPreconditioner::SaddlePointPreconditioner(RCP<Epetra_Operator> A, const ParameterList& params, FILE* outfile)
-: params_(params),
+:
+Epetra_Operator(),
+label_("LINALG::SaddlePointPreconditioner"),
+params_(params),
 outfile_(outfile),
 nVerbose_(0)
 {
@@ -160,7 +163,7 @@ int LINALG::SaddlePointPreconditioner::VCycle(const Epetra_MultiVector& Xvel, co
   return 0;
 }
 
-void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const ParameterList& origlist)
+void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const ParameterList& origlist)
 {
 
 #ifdef WRITEOUTSTATISTICS
@@ -316,10 +319,10 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
   ////////////////// store level 0 matrices (finest level)
   int curlevel = 0;
 
-  A11_[curlevel] = rcp(new SparseMatrix(Ainput_->Matrix(0,0),View/*Copy*/));    // check me: copy or view only??
-  A12_[curlevel] = rcp(new SparseMatrix(Ainput_->Matrix(0,1),View/*Copy*/));
-  A21_[curlevel] = rcp(new SparseMatrix(Ainput_->Matrix(1,0),View/*Copy*/));
-  A22_[curlevel] = rcp(new SparseMatrix(Ainput_->Matrix(1,1),View/*Copy*/));
+  A11_[curlevel] = rcp(new SparseMatrix(Ainput_->Matrix(0,0),View));    // check me: copy or view only??
+  A12_[curlevel] = rcp(new SparseMatrix(Ainput_->Matrix(0,1),View));
+  A21_[curlevel] = rcp(new SparseMatrix(Ainput_->Matrix(1,0),View));
+  A22_[curlevel] = rcp(new SparseMatrix(Ainput_->Matrix(1,1),View));
 
   MLAPI::Init();
 
@@ -335,7 +338,8 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
     int naggregates = 0;
     if(curlevel==0) velparams->sublist("AMGBS Parameters").set("Unamalgamated BlockSize",nv+1);
     else            velparams->sublist("AMGBS Parameters").set("Unamalgamated BlockSize",nv);
-    aggm->GetGlobalAggregates(A11_[curlevel]->EpetraMatrix(),velparams->sublist("AMGBS Parameters"),velaggs,naggregates_local,curvelNS);
+    velparams->sublist("AMGBS Parameters").set("Current Level",curlevel);
+    naggregates = aggm->GetGlobalAggregates(A11_[curlevel]->EpetraMatrix(),velparams->sublist("AMGBS Parameters"),velaggs,naggregates_local,curvelNS);
 
     ////////////// transform vector with velocity aggregates to pressure block
     RCP<Epetra_IntVector> preaggs = rcp(new Epetra_IntVector(A22_[curlevel]->RowMap(),true));
@@ -356,6 +360,8 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator> A,const Param
     /////////////////////// CALCULATE TRANSFER OPERATORS
 
     ///////////// velocity transfer operators
+    velparams->sublist("AMGBS Parameters").set("phase 1: max neighbour nodes", 1);
+    velparams->sublist("AMGBS Parameters").set("phase 2: node attachement scheme","MaxLink");
     string velProlongSmoother = velparams->sublist("AMGBS Parameters").get("amgbs: prolongator smoother (vel)","PA-AMG");
     Tvel_[curlevel] = TransferOperatorFactory::Create(velProlongSmoother,A11_[curlevel],NULL); /* outfile */
     nextvelNS = Tvel_[curlevel]->buildTransferOperators(velaggs,naggregates_local,velparams->sublist("AMGBS Parameters"),curvelNS,0);

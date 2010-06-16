@@ -9,6 +9,7 @@
 
 #include <map>
 #include <queue>
+#include <Epetra_CrsGraph.h>
 
 LINALG::AggregationMethod_Uncoupled::AggregationMethod_Uncoupled(FILE* outfile) :
   nGlobalDirichletBlocks(0),
@@ -20,7 +21,7 @@ LINALG::AggregationMethod_Uncoupled::AggregationMethod_Uncoupled(FILE* outfile) 
 }
 
 
-int LINALG::AggregationMethod_Uncoupled::AmalgamateMatrix(const RCP<Epetra_CrsMatrix> A, ParameterList& params, RCP<Epetra_CrsGraph>& amalA, RCP<Epetra_IntVector>& bdry_array)
+int LINALG::AggregationMethod_Uncoupled::AmalgamateMatrix(const RCP<Epetra_CrsMatrix>& A, ParameterList& params, RCP<Epetra_CrsGraph>& amalA, RCP<Epetra_IntVector>& bdry_array)
 {
 
   int nUnamalgamatedBlockSize = params.get("Unamalgamated BlockSize",3);          // number of real PDE equations (for setting up amalgamated maps)
@@ -852,6 +853,529 @@ RCP<Epetra_IntVector> LINALG::AggregationMethod_Uncoupled::UnamalgamateVector(co
   return ret;
 }
 
+int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra_CrsMatrix>& A, RCP<Epetra_CrsMatrix>& prunedA, double epsilon, int curlevel)
+{
+  if(curlevel >= 0)
+  {
+    epsilon *= pow(0.5,curlevel);
+  }
+
+  epsilon *= epsilon;     // adapt epsilon
+
+
+  //double epsilon = 0.02 * pow(0.5,curlevel); //0.03; // TODO: compiled fix in
+  //epsilon = epsilon*epsilon;
+
+#ifdef DEBUG
+  if(nVerbose_ > 5)
+    cout << "PROC " << A->Comm().MyPID() << " nnz of A before pruning " << A->NumMyNonzeros() << endl;
+#endif
+
+  int maxEntriesPerRow = 0;
+  for (int i=0; i<A->NumMyRows(); i++)
+  {
+    if(A->NumMyEntries(i)>maxEntriesPerRow)
+      maxEntriesPerRow = A->NumMyEntries(i);
+  }
+
+
+#if 0  // THIS WORKS ONLY IN PARALLEL FOR CONTINOUS GIDS STARTING WITH GID 0
+  // >>>>>>>>>>>> this is only necessary for anisotropic aggregation
+  vector<double> globaldiagonalentries(A->NumGlobalRows(),0.0);
+  vector<double> localdiagonalentries(A->NumGlobalRows(),0.0);
+
+  // extract matrix diagonal entries
+  for(int i=0; i<A->NumMyRows(); i++)
+  {
+    int grid = A->GRID(i);
+
+    int colnnz = A->NumGlobalEntries(grid);
+    int numEntries;
+    vector<int> colindices(colnnz,0);
+    vector<double> colvals(colnnz,0.0);
+#ifdef DEBUG
+    int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&colvals[0],&colindices[0]);
+    if(ret !=0 )
+    {
+      cout << "ExtractGlobalRowCopy returned " << ret << endl;
+
+      if(ret < 0) dserror("Error in PruneMatrix: ExtractGlobalRowCopy < 0");
+    }
+#else
+    A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&colvals[0],&colindices[0]);
+#endif
+
+    for(int j=0; j<colnnz; j++)
+    {
+      int globalcolid = colindices[j];
+
+      if(grid == globalcolid)
+      {
+        localdiagonalentries[grid] = colvals[j]; // store diagonal entry
+      }
+    }
+  }
+
+  A->Comm().SumAll(&localdiagonalentries[0],&globaldiagonalentries[0],globaldiagonalentries.size());
+
+#ifdef DEBUG
+  for(unsigned int i=0; i<globaldiagonalentries.size(); i++)
+  {
+    if(globaldiagonalentries[i]==0.0)
+      dserror("zero on diagonal?");
+  }
+#endif
+  // <<<<<<<<<<<<<<<<<<<<
+#else
+
+
+  // THIS WORKS IN PARALLEL WITHOUT RESTRICTIONS
+ vector<int> numrowsofproc(A->Comm().NumProc(),0);
+ vector<int> localnumrows(A->Comm().NumProc(),0);
+ localnumrows[A->Comm().MyPID()] = A->NumMyRows();
+ A->Comm().SumAll(&localnumrows[0],&numrowsofproc[0],A->Comm().NumProc());
+ int rowoffset = 0;
+ for(int i=0; i<A->Comm().MyPID(); i++) rowoffset+=numrowsofproc[i];
+
+ vector<double> globaldiagonalentries(A->NumGlobalRows(),0.0);
+ vector<double> localdiagonalentries(A->NumGlobalRows(),0.0);
+ vector<int> globalrowids_allproc(A->NumGlobalRows(),-1);
+ vector<int> localrowids_allproc(A->NumGlobalRows(),-1);
+
+ // extract matrix diagonal entries
+ for(int i=0; i<A->NumMyRows(); i++)
+ {
+   int grid = A->GRID(i);
+   localrowids_allproc[rowoffset + i] = grid;
+
+   int colnnz = A->NumGlobalEntries(grid);
+   int numEntries;
+   vector<int> colindices(colnnz,0);
+   vector<double> colvals(colnnz,0.0);
+#ifdef DEBUG
+   int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&colvals[0],&colindices[0]);
+   if(ret !=0 )
+   {
+     cout << "ExtractGlobalRowCopy returned " << ret << endl;
+
+     if(ret < 0) dserror("Error in PruneMatrix: ExtractGlobalRowCopy < 0");
+   }
+#else
+   A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&colvals[0],&colindices[0]);
+#endif
+
+   for(int j=0; j<colnnz; j++)
+   {
+     int globalcolid = colindices[j];
+
+     if(grid == globalcolid)
+     {
+       localdiagonalentries[rowoffset + i] = colvals[j]; // store diagonal entry
+     }
+   }
+ }
+
+ A->Comm().SumAll(&localdiagonalentries[0],&globaldiagonalentries[0],globaldiagonalentries.size());
+ A->Comm().SumAll(&localrowids_allproc[0],&globalrowids_allproc[0],globalrowids_allproc.size());
+
+#ifdef DEBUG
+ for(unsigned int i=0; i<globaldiagonalentries.size(); i++)
+ {
+   if(globaldiagonalentries[i]==0.0)
+     dserror("zero on diagonal?");
+ }
+ if(globaldiagonalentries.size() != globalrowids_allproc.size()) dserror("size of globalrowids_allproc and globaldiagonalentries doesn't match");
+#endif
+
+ // now all diagonal entries of all processors are stored in a locally shrinked vector globaldiagonalentries
+ // create map of A->RowMap to diagonal entries
+ map<int, double> grid2diagonalentry;
+ for(unsigned int i=0; i<globalrowids_allproc.size(); i++)
+ {
+   grid2diagonalentry[globalrowids_allproc[i]] = globaldiagonalentries[i];
+ }
+
+#endif
+
+  // define vectors for storing matrix graph information
+  vector<int> globalrowids(A->NumMyRows(),-1);                // local row id -> global row id
+  map<int, vector<int> > globalcolids;  // global col ids
+  map<int, vector<double> > vals;  // vals
+  vector<int> numindicesperrow(A->NumMyRows(),0);                                       // number of colindices per local row
+
+
+
+  // extract graph information of A + pruning
+  for(int i=0; i<A->NumMyRows(); i++)
+  {
+    int grid = A->GRID(i);    // global row id
+    globalrowids[i] = grid;
+
+    int colnnz = A->NumGlobalEntries(grid);
+    int numEntries;
+    vector<int> colindices(colnnz,0);
+    vector<double> colvals(colnnz,0.0);
+    int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&colvals[0],&colindices[0]);
+
+    if(ret !=0 )
+    {
+#ifdef DEBUG
+      cout << "ExtractGlobalRowCopy returned " << ret << endl;
+#endif
+      if(ret < 0) dserror("Error in PruneMatrix: ExtractGlobalRowCopy < 0");
+    }
+
+    double diagonalentry = 0.0;   // local variable for diagonal entry of current row
+    int diagonalcolid = -1;
+
+    for(int j=0; j<colnnz; j++)
+    {
+      int globalcolid = colindices[j];
+
+      // anisotropic aggregation
+      if(grid != globalcolid)
+      {
+        // this is an off-diagonal entry
+        double dcompare1 = colvals[j] * colvals[j];
+        if(dcompare1 > 0.0)  // simple pruning
+        {
+          double dcompare2 = abs(grid2diagonalentry.find(grid)->second * grid2diagonalentry.find(globalcolid)->second);
+
+          if(dcompare1 >= epsilon * dcompare2)
+          {
+            globalcolids[grid].push_back(globalcolid);
+            vals[grid].push_back(colvals[j]);
+          }
+        }
+      }
+      else
+      {
+        // TODO: what about the ignored values??? -> new variant
+        diagonalentry += colvals[j];
+        diagonalcolid = globalcolid;
+      }
+    } // end for (all columns)
+
+    // add diagonal entry
+    globalcolids[grid].push_back(diagonalcolid);
+    vals[grid].push_back(diagonalentry);
+
+
+#ifdef DEBUG
+    if(globalcolids[i].size() != vals[i].size())  dserror("number of cols in row doesn't match to number of values in same row");
+    vector<double> tmpvals = vals[grid];
+    for(unsigned int j=0; j<tmpvals.size();j++)
+    {
+      if(tmpvals[j] == 0.0)
+        cout << "ERROR  " << endl;
+    }
+#endif
+
+    // store number of colindices per row
+    numindicesperrow[i] = colindices.size();
+  }
+
+  // create matrix with new graph
+  if(prunedA!=null) prunedA = null;
+  prunedA = rcp(new Epetra_CrsMatrix(Copy,A->RowMap(),&numindicesperrow[0],true));
+
+  // fill matrix
+  for (int i=0; i<prunedA->NumMyRows(); i++)
+  {
+    int grid = A->GRID(i);    // global row id
+
+    int ret = prunedA->InsertGlobalValues(grid,globalcolids[grid].size(),&(vals[grid])[0],&(globalcolids[grid])[0]);
+    if(ret != 0) cout << "ret != 0" << endl;
+  }
+
+  prunedA->FillComplete(true);
+
+#ifdef DEBUG
+  if(nVerbose_>5)
+    cout << "PROC " << A->Comm().MyPID() << " nnz of A after pruning " << prunedA->NumMyNonzeros() << endl;
+#endif
+  return 0;
+}
+
+
+int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropicSimple(const RCP<Epetra_CrsMatrix>& A, RCP<Epetra_CrsMatrix>& prunedA, double epsilon, int curlevel)
+{
+  if(curlevel >= 0)
+  {
+    epsilon *= pow(0.5,curlevel);
+  }
+
+  epsilon *= epsilon;     // adapt epsilon
+
+//  double epsilon = 0.03 * pow(0.7,curlevel); //0.03; // TODO: compiled fix in
+//  epsilon = epsilon*epsilon;
+
+#ifdef DEBUG
+  if(nVerbose_ > 5)
+    cout << "PROC " << A->Comm().MyPID() << " nnz of A before pruning " << A->NumMyNonzeros() << endl;
+#endif
+
+  int maxEntriesPerRow = 0;
+  for (int i=0; i<A->NumMyRows(); i++)
+  {
+    if(A->NumMyEntries(i)>maxEntriesPerRow)
+      maxEntriesPerRow = A->NumMyEntries(i);
+  }
+
+  // THIS WORKS IN PARALLEL WITHOUT RESTRICTIONS
+ vector<int> numrowsofproc(A->Comm().NumProc(),0);
+ vector<int> localnumrows(A->Comm().NumProc(),0);
+ localnumrows[A->Comm().MyPID()] = A->NumMyRows();
+ A->Comm().SumAll(&localnumrows[0],&numrowsofproc[0],A->Comm().NumProc());
+ int rowoffset = 0;
+ for(int i=0; i<A->Comm().MyPID(); i++) rowoffset+=numrowsofproc[i];
+
+
+ // extract matrix diagonal entries
+ RCP<Epetra_Vector> diagVec = rcp(new Epetra_Vector(A->RowMap(),true));
+ A->ExtractDiagonalCopy(*diagVec);
+
+
+  // define vectors for storing matrix graph information
+  vector<int> globalrowids(A->NumMyRows(),-1);                // local row id -> global row id
+  map<int, vector<int> > globalcolids;  // global col ids
+  map<int, vector<double> > vals;  // vals
+  vector<int> numindicesperrow(A->NumMyRows(),0);                                       // number of colindices per local row
+
+  // extract graph information of A + pruning
+  for(int i=0; i<A->NumMyRows(); i++)
+  {
+    int grid = A->GRID(i);    // global row id
+    globalrowids[i] = grid;
+
+    int colnnz = A->NumGlobalEntries(grid);
+    int numEntries;
+    vector<int> colindices(colnnz,0);
+    vector<double> colvals(colnnz,0.0);
+    int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&colvals[0],&colindices[0]);
+
+    if(ret !=0 )
+    {
+#ifdef DEBUG
+      cout << "ExtractGlobalRowCopy returned " << ret << endl;
+#endif
+      if(ret < 0) dserror("Error in PruneMatrix: ExtractGlobalRowCopy < 0");
+    }
+
+    double diagonalentry = 0.0;   // local variable for diagonal entry of current row
+    int diagonalcolid = -1;
+
+    for(int j=0; j<colnnz; j++)
+    {
+      int globalcolid = colindices[j];
+
+      // check if globalcolid belongs to current proc (so we can access corresponding diagVec entry)
+      if(A->RowMap().MyGID(globalcolid) == false) continue;
+
+      // anisotropic aggregation
+      if(grid != globalcolid)
+      {
+        // this is an off-diagonal entry
+        double dcompare1 = colvals[j] * colvals[j];
+        if(dcompare1 > 0.0)  // simple pruning
+        {
+          double dcompare2 = abs((*diagVec)[A->RowMap().LID(grid)] * (*diagVec)[A->RowMap().LID(globalcolid)]);
+
+          if(dcompare1 >= epsilon * dcompare2)
+          {
+            globalcolids[grid].push_back(globalcolid);
+            vals[grid].push_back(colvals[j]);
+          }
+        }
+      }
+      else
+      {
+        // TODO: what about the ignored values?
+        diagonalentry += colvals[j];
+        diagonalcolid = globalcolid;
+      }
+    } // end for (all columns)
+
+    // add diagonal entry
+    globalcolids[grid].push_back(diagonalcolid);
+    vals[grid].push_back(diagonalentry);
+
+
+#ifdef DEBUG
+    if(globalcolids[i].size() != vals[i].size())  dserror("number of cols in row doesn't match to number of values in same row");
+    vector<double> tmpvals = vals[grid];
+    for(unsigned int j=0; j<tmpvals.size();j++)
+    {
+      if(tmpvals[j] == 0.0)
+        cout << "ERROR  " << endl;
+    }
+#endif
+
+    // store number of colindices per row
+    numindicesperrow[i] = colindices.size();
+  }
+
+  // create matrix with new graph
+  if(prunedA!=null) prunedA = null;
+  prunedA = rcp(new Epetra_CrsMatrix(Copy,A->RowMap(),&numindicesperrow[0],true));
+
+  // fill matrix
+  for (int i=0; i<prunedA->NumMyRows(); i++)
+  {
+    int grid = A->GRID(i);    // global row id
+
+    int ret = prunedA->InsertGlobalValues(grid,globalcolids[grid].size(),&(vals[grid])[0],&(globalcolids[grid])[0]);
+    if(ret != 0) cout << "ret != 0" << endl;
+  }
+
+  prunedA->FillComplete(true);
+
+#ifdef DEBUG
+  if(nVerbose_>5)
+    cout << "PROC " << A->Comm().MyPID() << " nnz of A after pruning " << prunedA->NumMyNonzeros() << endl;
+#endif
+  return 0;
+}
+
+int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>& A, RCP<Epetra_CrsMatrix>& prunedA)
+{
+#ifdef DEBUG
+  if(nVerbose_>5)
+    cout << "PROC " << A->Comm().MyPID() << " nnz of A before pruning " << A->NumMyNonzeros() << endl;
+#endif
+
+  int maxEntriesPerRow = 0;
+  for (int i=0; i<A->NumMyRows(); i++)
+  {
+    if(A->NumMyEntries(i)>maxEntriesPerRow)
+      maxEntriesPerRow = A->NumMyEntries(i);
+  }
+
+  // define vectors for storing matrix graph information
+  vector<int> globalrowids(A->NumMyRows(),-1);                // local row id -> global row id
+  map<int, vector<int> > globalcolids;  // global col ids
+  map<int, vector<double> > vals;  // vals
+  vector<int> numindicesperrow(A->NumMyRows(),0);                                       // number of colindices per local row
+
+  // extract graph information of A + pruning
+  for(int i=0; i<A->NumMyRows(); i++)
+  {
+    int grid = A->GRID(i);    // global row id
+    globalrowids[i] = grid;
+
+    int colnnz = A->NumGlobalEntries(grid);
+    int numEntries;
+    vector<int> colindices(colnnz,0);
+    vector<double> colvals(colnnz,0.0);
+    int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&colvals[0],&colindices[0]);
+
+    if(ret !=0 )
+    {
+#ifdef DEBUG
+      cout << "ExtractGlobalRowCopy returned " << ret << endl;
+#endif
+      if(ret < 0) dserror("Error in PruneMatrix: ExtractGlobalRowCopy < 0");
+    }
+
+    for(int j=0; j<colnnz; j++)
+    {
+      int globalcolid = colindices[j];
+
+      // simple pruning
+      if(colvals[j]!=0.0)   // simple pruning
+      {
+        globalcolids[grid].push_back(globalcolid);
+        vals[grid].push_back(colvals[j]);
+      }
+    }
+
+
+#ifdef DEBUG
+    if(globalcolids[i].size() != vals[i].size())  dserror("number of cols in row doesn't match to number of values in same row");
+    vector<double> tmpvals = vals[grid];
+    for(unsigned int j=0; j<tmpvals.size();j++)
+    {
+      if(tmpvals[j] == 0.0)
+        cout << "ERROR  " << endl;
+    }
+#endif
+
+    // store number of colindices per row
+    numindicesperrow[i] = colindices.size();
+  }
+
+  // create matrix with new graph
+  if(prunedA!=null) prunedA = null;
+  prunedA = rcp(new Epetra_CrsMatrix(Copy,A->RowMap(),&numindicesperrow[0],true));
+
+  // fill matrix
+  for (int i=0; i<prunedA->NumMyRows(); i++)
+  {
+    int grid = A->GRID(i);    // global row id
+
+    int ret = prunedA->InsertGlobalValues(grid,globalcolids[grid].size(),&(vals[grid])[0],&(globalcolids[grid])[0]);
+    if(ret != 0) cout << "ret != 0" << endl;
+  }
+
+  prunedA->FillComplete(true);
+
+#ifdef DEBUG
+  if(nVerbose_>5)
+    cout << "PROC " << A->Comm().MyPID() << " nnz of A after pruning " << prunedA->NumMyNonzeros() << endl;
+#endif
+
+#if 0
+  if(A->Filled()==false) dserror("A is not filled!!");
+  cout << *A << endl;
+  if(prunedA!=null) prunedA = null;
+
+  prunedA = rcp(new Epetra_CrsMatrix(Copy,A->RangeMap(),20,false));
+
+  // loop over all local rows of A
+  for(int i=0; i<A->NumMyRows(); i++)
+  {
+    int grid = A->GRID(i);  // global row id
+
+    int colnnz = A->NumGlobalEntries(grid);
+    int numEntries;
+    vector<int> colindices(colnnz,-1);
+    vector<double> vals(colnnz,-1.0);
+    int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&vals[0],&colindices[0]);
+    if(ret!=0) dserror("error extract global row view");
+
+    std::vector<int> prunedcolids;
+    std::vector<double> prunedvals;
+
+    for(int lj=0; lj<colnnz; ++lj) // loop over all column entries
+    {
+
+        //if(A->MyLCID(colindices[lj]) && vals[lj]!=0.0)
+        {
+          //cout << "colindices " << colindices[lj] << endl;
+          prunedcolids.push_back(colindices[lj]);
+          prunedvals.push_back(vals[lj]);
+        }
+    } // end loop over all column entries
+
+    if(prunedcolids.size()==0)
+      dserror("zero row in pruned matrix! crash");
+
+    ret = prunedA->InsertGlobalValues(grid,prunedcolids.size(),&prunedvals[0],&prunedcolids[0]);
+    if(ret != 0)
+      cout << "WARNING: InsertGlobalValues != 0 = " << ret << endl;
+  }
+
+  cout << A->DomainMap() << endl;
+  if(prunedA->Filled()==true) dserror("prunedA already filled");
+  prunedA->FillComplete(A->DomainMap(),A->RangeMap(),false);
+  if(prunedA->Filled()==false) dserror("prunedA not filled");
+
+  cout << *prunedA << endl;
+#endif
+
+  return 0;
+}
+
 int LINALG::AggregationMethod_Uncoupled::GetGlobalAggregates(const RCP<Epetra_CrsMatrix>& A, ParameterList& params, RCP<Epetra_IntVector>& aggrinfo, int& naggregates_local, const RCP<Epetra_MultiVector>& ThisNS)
 {
   RCP<Epetra_CrsGraph> amal_graph = null; // graph of amalgamated A matrix (lives on amal_map_)
@@ -860,7 +1384,31 @@ int LINALG::AggregationMethod_Uncoupled::GetGlobalAggregates(const RCP<Epetra_Cr
 
   nVerbose_ = params.get("ML output",0);  // store verbosity level
 
-  AmalgamateMatrix(A,params,amal_graph,bdry_array);
+  RCP<Epetra_CrsMatrix> prunedA = null;
+  string pruningAlgorithm = params.get("aggregation method", "isotropic aggregation");
+  if(pruningAlgorithm == "isotropic aggregation")
+  {
+    PruneMatrix(A,prunedA);
+  }
+  else if(pruningAlgorithm == "anisotropic aggregation")
+  {
+    double epsilon = params.get("anisotropic aggregation: epsilon", 0.03);
+    int curlevel = params.get("Current Level",0);
+    PruneMatrixAnisotropicSimple(A,prunedA,epsilon,curlevel);
+  }
+  else if(pruningAlgorithm == "anisotropic aggregation (coupled)")
+  {
+    double epsilon = params.get("anisotropic aggregation: epsilon", 0.03);
+    int curlevel = params.get("Current Level",0);
+    PruneMatrixAnisotropic(A,prunedA, epsilon,curlevel);
+  }
+  else
+  {
+    prunedA = A;  // no pruning at all
+  }
+
+  //AmalgamateMatrix(A,params,amal_graph,bdry_array);
+  AmalgamateMatrix(prunedA,params,amal_graph,bdry_array);
   Coarsen(amal_graph,bdry_array,params,amal_aggs,naggregates_local);
   RCP<Epetra_IntVector> aggs = UnamalgamateVector(amal_aggs); // stores unamalgamted vector with local agg ids
 

@@ -77,7 +77,7 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
     SaddlePointPreconditioner(RCP<Epetra_Operator> A, const ParameterList& params, FILE* outfile = NULL);
     virtual ~SaddlePointPreconditioner();
 
-    virtual const char* Label() const { return "SaddlePoint Preconditioner"; }
+    virtual const char* Label() const { return &label_[0]; }
     const Epetra_Comm& Comm() const { return (Ainput_->Comm()); }
 
     const Epetra_Map& OperatorDomainMap() const { return Ainput_->FullDomainMap(); }
@@ -138,7 +138,7 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
      *
      * \author Tobias Wiesner (wiesner@lnm.mw.tum.de)
      */
-    void Setup(RCP<Epetra_Operator> A, const ParameterList& origlist);
+    void Setup(RCP<Epetra_Operator>& A, const ParameterList& origlist);
 
     /*! \brief implementation of the V-Cycle
      * this function is called recursively
@@ -165,7 +165,7 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
 
 
 
-
+    string                                              label_;      ///< name of this operator
 
     ParameterList                                       params_;    ///< parameter list for SaddlePoint Preconditioner
     FILE*                                               outfile_;   ///< error file to write output to or NULL

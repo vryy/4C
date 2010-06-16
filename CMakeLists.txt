@@ -880,6 +880,7 @@ set(OBJS_LINALG
   src/linalg/aggregation_method.cpp
   src/linalg/aggregation_method_ml.cpp
   src/linalg/aggregation_method_uncoupled.cpp
+  src/linalg/amgpreconditioner.cpp
   src/linalg/braesssarazin_smoother.cpp
   src/linalg/linalg_ana.cpp
   src/linalg/linalg_blocksparsematrix.cpp

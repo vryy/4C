@@ -21,12 +21,7 @@
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_Time.h"
 
-#include "linalg_sparsematrix.H"
-
 #include "../drt_lib/drt_dserror.H"
-#include "linalg_mapextractor.H"
-#include "linalg_sparsematrix.H"
-#include "linalg_blocksparsematrix.H"
 #include "linalg_utils.H"
 #include "linalg_ana.H"
 
@@ -35,6 +30,11 @@ using namespace Teuchos;
 
 namespace LINALG
 {
+
+class MapExtractor;
+class BlockSparseMatrixBase;
+class SparseMatrix;
+
 
 /*!
  *  \brief basis class for multigrid transfer operators
@@ -52,8 +52,8 @@ class TransferOperator : public virtual Epetra_Operator
     virtual const char* Label() const { return "TransferOperator"; }
     virtual const Epetra_Comm& Comm() const { return A_->Comm(); }
 
-    virtual const Epetra_Map& OperatorDomainMap() const { return A_->OperatorDomainMap(); } // TODO fix me
-    virtual const Epetra_Map& OperatorRangeMap()  const { return A_->OperatorRangeMap();  } // TODO fix me
+    virtual const Epetra_Map& OperatorDomainMap() const { return prolongator_->OperatorDomainMap(); } // TODO fix me
+    virtual const Epetra_Map& OperatorRangeMap()  const { return prolongator_->OperatorRangeMap();  } // TODO fix me
 
     virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
     {

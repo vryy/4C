@@ -90,7 +90,8 @@ namespace INPAR
       azprec_MLfluid2,           ///< energy optimal unsymmetric ML for Fluids
       azprec_MLAPI,              ///< experimental mlapi preconditioner
       azprec_ML,                 ///< standard ML for structures
-      azprec_AMGBS               ///< AMG(Braess-Sarazin) preconditioner for Fluids
+      azprec_AMGBS,              ///< AMG(Braess-Sarazin) preconditioner for Fluids
+      azprec_AMG                 ///< AMG preconditioner for Fluids (without ML)
     };
 
     /// Different prolongation smoothing strategies for AMGBS preconditioner

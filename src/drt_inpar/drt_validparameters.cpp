@@ -2947,8 +2947,8 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   {
     // this one is longer than 15 and the tuple<> function does not support this,
     // so build the Tuple class directly (which can be any size)
-    Teuchos::Tuple<std::string,18> name;
-    Teuchos::Tuple<INPAR::SOLVER::AzPrecType,18>  number;
+    Teuchos::Tuple<std::string,19> name;
+    Teuchos::Tuple<INPAR::SOLVER::AzPrecType,19>  number;
 
     name[0] = "none";                         number[0] = INPAR::SOLVER::azprec_none;
     name[1] = "ILU";                          number[1] = INPAR::SOLVER::azprec_ILU;
@@ -2968,6 +2968,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     name[15] = "GaussSeidel";                 number[15] = INPAR::SOLVER::azprec_GaussSeidel;
     name[16] = "DownwindGaussSeidel";         number[16] = INPAR::SOLVER::azprec_DownwindGaussSeidel;
     name[17] = "AMG(Braess-Sarazin)";         number[17] = INPAR::SOLVER::azprec_AMGBS;
+    name[18] = "AMG";                         number[18] = INPAR::SOLVER::azprec_AMG;
 
     setStringToIntegralParameter<INPAR::SOLVER::AzPrecType>(
       "AZPREC", "ILU",
