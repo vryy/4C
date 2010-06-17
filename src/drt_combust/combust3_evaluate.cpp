@@ -129,6 +129,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       output_mode_ = true;
       // reset element dof manager if present
       eleDofManager_ = Teuchos::null;
+      eleDofManager_uncondensed_ = Teuchos::null;
       ih_ = Teuchos::null;
     }
     break;
@@ -142,9 +143,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // store pointer to interface handle
       ih_ = params.get< Teuchos::RCP< COMBUST::InterfaceHandleCombust > >("interfacehandle",Teuchos::null);
 
-      //---------------------------------------------------
+      //--------------------------------------------------
       // find out whether an element is intersected or not
-      //---------------------------------------------------
+      //--------------------------------------------------
       // remark: initialization call of fluid time integration scheme will end up here: The initial
       //         flame front has not been incorporated into the fluid field -> no XFEM dofs, yet!
       if (ih_->FlameFront() == Teuchos::null)
@@ -154,21 +155,21 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       else // regular call
       {
         // get vector of integration cells for this element
-        std::size_t numcells= ih_->GetNumDomainIntCells(this);
+        std::size_t numcells = ih_->GetNumDomainIntCells(this);
         if (numcells > 1)
         {
-          // more than one integration cell -> element intersected
+          // more than one domain boundary integration cell -> element intersected
           this->intersected_ = true;
         }
         else if (numcells == 1)
         {
-          // only one integration cell -> element not intersected
+          // one domain integration cell -> element not intersected
           this->intersected_ = false;
         }
-        else // numcells = 0 or negative number
+        else // e.g. 'numcells' is zero or negative number
         {
-          // no integration cell -> impossible, something went wrong!
-          dserror ("There are no DomainIntCells for element %d ", this->Id());
+          // impossible, something went wrong!
+          dserror ("Unknown number of DomainIntCells for element %d ", this->Id());
         }
       }
 
@@ -221,6 +222,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         // control boolean not used here
         bool skipped_elem_enr = false;
         // apply element enrichments (fill elementFieldEnrSet)
+        // remark: This procedure must give the same result as the element enrichment procedure in
+        //         createDofMapCombust(). The element dof manager has to be consistent with the
+        //         global dof manager!
         skipped_elem_enr = ApplyElementEnrichmentCombust(this, element_ansatz_filled,
                                                          elementFieldEnrSet, *ih_,
                                                          params.get<double>("boundaryRatioLimit"));
@@ -279,11 +283,14 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
 #ifdef COMBUST_STRESS_BASED
       // integrate and assemble all unknowns
-      if (not ih_->ElementIntersected(Id()) or
+      if (not this->intersected_ or
           not params.get<bool>("DLM_condensation"))
       {
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
             *eleDofManager_, NumNode(), NodeIds());
+
+        if (ih_->GetNumBoundaryIntCells(this) > 0)
+          cout << "/!\\ warning === element " << this->Id() << " is not intersected, but has boundary integration cells!" << endl;
 
         // calculate element coefficient matrix and rhs
         COMBUST::callSysmat(assembly_type,
@@ -294,6 +301,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       else
       {
+        if (eleDofManager_uncondensed_ == Teuchos::null)
+          dserror("Intersected element %d has no element dofs", this->Id());
+
         UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
 
         // create uncondensed element matrix and vector
@@ -341,6 +351,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // extract local (element level) vectors from global state vectors
       DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, this, ih_);
 
+      // compute smoothed G-function gradient field
+      //TODO: call combust3 function; ExtractMyNodeBasedValues
+
       const bool newton = params.get<bool>("include reactive terms for linearisation",false);
 
       const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
@@ -367,9 +380,12 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
 #ifdef COMBUST_STRESS_BASED
       // integrate and assemble all unknowns
-      if (not ih_->ElementIntersected(Id()) or
+      if (not this->intersected_ or
           not params.get<bool>("DLM_condensation"))
       {
+        if (ih_->GetNumBoundaryIntCells(this) > 0)
+          cout << "/!\\ warning === element " << this->Id() << " is not intersected, but has boundary integration cells!" << endl;
+
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
             *eleDofManager_, NumNode(), NodeIds());
 
@@ -382,6 +398,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       else
       {
+        if (eleDofManager_uncondensed_ == Teuchos::null)
+          dserror("Intersected element %d has no element dofs", this->Id());
+
         UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
 
         // create uncondensed element matrix and vector
