@@ -271,10 +271,10 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_node.cpp
   src/drt_lib/drt_parobject.cpp
   src/drt_lib/drt_parobjectfactory.cpp
+  src/drt_lib/drt_parobjectregister.cpp
   src/drt_lib/drt_timecurve.cpp
   src/drt_lib/drt_utils.cpp
   src/drt_lib/drt_utils_createdis.cpp
-  src/drt_mat/material.cpp
 )
 set(OBJS_DRT_MAT_LIB
   src/drt_mat/aaagasser.cpp
@@ -301,6 +301,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/logneohooke.cpp
   src/drt_mat/lung_ogden.cpp
   src/drt_mat/lung_penalty.cpp
+  src/drt_mat/material.cpp
   src/drt_mat/matlist.cpp
   src/drt_mat/matpar_bundle.cpp
   src/drt_mat/matpar_material.cpp

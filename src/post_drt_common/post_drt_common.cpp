@@ -26,6 +26,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_exporter.H"
 #include <EpetraExt_Transpose_CrsGraph.h>
+#include "../drt_lib/drt_parobjectregister.H"
 
 #if 1
 #include "../drt_lib/drt_parobject.H"
@@ -73,6 +74,8 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   string file = "xxx";
   string output;
 
+  int printparobjecttypes = 0;
+
   CLP.throwExceptions(false);
   CLP.setOption("start",&start_,"first time step to read");
   CLP.setOption("end",&end_,"last time step to read");
@@ -87,13 +90,18 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   CLP.setOption("heatflux",&heatfluxtype_,"heatflux output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
   CLP.setOption("tempgradtype",&tempgradtype_,"tempgrad output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
   CLP.setOption("tempgrad",&tempgradtype_,"tempgrad output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
-
+  CLP.setOption("printparobjecttypes",&printparobjecttypes,"print names of parobject types (registration hack)");
 
   CommandLineProcessor::EParseCommandLineReturn
     parseReturn = CLP.parse(argc,argv);
 
   if (parseReturn == CommandLineProcessor::PARSE_HELP_PRINTED)
   {
+    if (printparobjecttypes)
+    {
+      // hack so that the parobject types are registered
+      PrintParObjectList();
+    }
     exit(0);
   }
   if (parseReturn != CommandLineProcessor::PARSE_SUCCESSFUL)

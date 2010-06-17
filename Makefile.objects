@@ -51,6 +51,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_utils_createdis.o \
                 src/drt_lib/drt_parobject.o \
                 src/drt_lib/drt_parobjectfactory.o \
+                src/drt_lib/drt_parobjectregister.o \
                 src/drt_lib/drt_exporter.o \
                 src/drt_lib/drt_dserror.o \
                 src/linalg/linalg_utils.o \
