@@ -611,7 +611,18 @@ set(OBJS_DRT_TSI
 )
 set(OBJS_DRT_S8_LIB
   src/drt_s8/shell8.cpp
+  src/drt_s8/shell8_evaluate.cpp
+  src/drt_s8/shell8_input.cpp
   src/drt_s8/shell8_line.cpp
+  src/drt_s8/shell8_line_evaluate.cpp
+  src/fortran/s8_fserv.f
+  src/math/math1.c
+  src/shell8/s8_mat_linel.c
+  src/shell8/s8_mat_ogden.c
+  src/shell8/s8_mat_ogden2.c
+  src/shell8/s8_mat_ogden3.c
+  src/shell8/s8_mattransform.c
+  src/shell8/s8_tmat.c
 )
 set(OBJS_DRT_FSI
   src/drt_fsi/fs_monolithic.cpp
@@ -679,34 +690,6 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra/scatra_element_boundary_evaluate.cpp
   src/drt_scatra/scatra_element_evaluate.cpp
   src/drt_scatra/scatra_element_input.cpp
-)
-set(OBJS_POST_GID_BIN
-  src/post_gid/gid_out.c
-  src/post_gid/zlibint1.c
-  src/post_gid/zlibint2.c
-)
-set(OBJS_POST_GID_COMMON
-  src/post_gid/post_ale2.c
-  src/post_gid/post_ale3.c
-  src/post_gid/post_axishell.c
-  src/post_gid/post_beam3.c
-  src/post_gid/post_brick1.c
-  src/post_gid/post_fluid2.c
-  src/post_gid/post_fluid2_is.c
-  src/post_gid/post_fluid2_pro.c
-  src/post_gid/post_fluid3.c
-  src/post_gid/post_fluid3_fast.c
-  src/post_gid/post_fluid3_is.c
-  src/post_gid/post_fluid3_pro.c
-  src/post_gid/post_gid.c
-  src/post_gid/post_interf.c
-  src/post_gid/post_shell8.c
-  src/post_gid/post_shell9.c
-  src/post_gid/post_solid3.c
-  src/post_gid/post_wall1.c
-  src/post_gid/post_wallge.c
-  src/post_gid/shell9_funcderiv.c
-  src/post_gid/shell9_intg.c
 )
 set(OBJS_DRT_T2_LIB
   src/drt_truss2/truss2.cpp
@@ -812,16 +795,6 @@ set(OBJS_INV_ANALYSIS
   src/drt_inv_analysis/inv_analysis.cpp
   src/drt_structure/str_invanalysis.cpp
 )
-set(OBJS_SHELL8
-  src/fortran/s8_fserv.f
-  src/math/math1.c
-  src/shell8/s8_mat_linel.c
-  src/shell8/s8_mat_ogden.c
-  src/shell8/s8_mat_ogden2.c
-  src/shell8/s8_mat_ogden3.c
-  src/shell8/s8_mattransform.c
-  src/shell8/s8_tmat.c
-)
 set(OBJS_DRT_MAT
   src/drt_mat/micromaterial_evaluate.cpp
   src/drt_mat/micromaterialgp_static.cpp
@@ -893,11 +866,6 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/strudyn_direct.cpp
   src/drt_structure/strugenalpha.cpp
   src/drt_structure/strugenalpha_lsnewton.cpp
-)
-set(OBJS_DRT_S8
-  src/drt_s8/shell8_evaluate.cpp
-  src/drt_s8/shell8_input.cpp
-  src/drt_s8/shell8_line_evaluate.cpp
 )
 set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
@@ -1311,9 +1279,6 @@ add_library(drt_nurbs ${OBJS_DRT_NURBS_DISCRET})
 add_library(drt_constraint ${OBJS_DRT_CONSTRAINT})
 add_library(drt_mortar ${OBJS_DRT_MORTAR})
 
-# specific shell8 element definitions
-add_library(drt_s8 ${OBJS_DRT_S8} ${OBJS_SHELL8})
-
 # material definitions
 add_library(drt_mat ${OBJS_DRT_MAT_LIB})
 add_library(drt_micromat ${OBJS_DRT_MAT} ${OBJS_DRT_STRU_MULTI})
@@ -1424,7 +1389,6 @@ target_link_libraries (${baciname}
   drt_constraint
   drt_lib
   ${ELEMENT_LIBRARIES}
-  drt_s8
   ${SUPPORT_LIBRARIES}
   drt_micromat drt_mat
   drt_lib_utils

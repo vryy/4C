@@ -93,6 +93,7 @@ extern "C" void input_ReadGlobalParameterList()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
+#if 0
 #ifdef D_SHELL8
 int ELEMENTS::Shell8Type::Initialize(Discretization&)
 {
@@ -146,6 +147,7 @@ bool DRT::ELEMENTS::Shell8::VisData(const string& name, vector<double>& data)
   return false;
 }
 
+#endif
 #endif
 
 namespace MAT
