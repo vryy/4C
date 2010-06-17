@@ -262,7 +262,7 @@ void COMBUST::RefinementCell::IdentifyIntersectionStatus()
   }
   }
   
-  // element is not intersected but interface touchs the element
+  // element is not intersected but interface touches the element
   if((zeros == true) and (intersected_ == false))
   {
     touched_ = true;
