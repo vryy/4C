@@ -16,6 +16,8 @@ Maintainer: Moritz Frenzel
 #include <Epetra_SerialDenseVector.h>
 #include "Epetra_SerialDenseSolver.h"
 #include "mooneyrivlin.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_mat/matpar_bundle.H"
 
 
 /*----------------------------------------------------------------------*

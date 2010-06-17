@@ -20,6 +20,8 @@ Maintainer: Christiane Förster
 #ifdef CCADISCRET
 
 #include "aaaneohooke.H"
+#include "matpar_bundle.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

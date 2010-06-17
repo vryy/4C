@@ -27,6 +27,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra

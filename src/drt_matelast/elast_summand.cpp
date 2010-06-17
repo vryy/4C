@@ -35,6 +35,8 @@ Maintainer: Burkhard Bornemann
 #include "elast_coupanisoneohooketwo.H"
 #include "elast_coupvarga.H"
 #include "elast_isovarga.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_mat/matpar_bundle.H"
 
 
 /*----------------------------------------------------------------------*

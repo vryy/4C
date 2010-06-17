@@ -50,6 +50,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_timecurve.H"
 #include "drt_linedefinition.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/matpar_bundle.H"
 
 
 namespace DRT {

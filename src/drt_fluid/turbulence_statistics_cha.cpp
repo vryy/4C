@@ -9,6 +9,8 @@ flows.
 #ifdef CCADISCRET
 
 #include "turbulence_statistics_cha.H"
+#include "../drt_mat/matpar_bundle.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------
 

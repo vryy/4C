@@ -34,6 +34,8 @@ Maintainer: Alexander Popp
 #include <Epetra_SerialDenseVector.h>
 #include "plasticneohooke.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_mat/matpar_bundle.H"
 
 //#include <iostream>
 

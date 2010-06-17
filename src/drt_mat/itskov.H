@@ -36,6 +36,7 @@ Maintainer: Robert Metzke
 #ifdef CCADISCRET
 
 #include "material.H"
+#include "matpar_parameter.H"
 #include "../drt_lib/drt_container.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include <Epetra_SerialDenseVector.h>

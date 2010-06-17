@@ -14,6 +14,7 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #ifdef CCADISCRET
 
 #include "material.H"
+#include "matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include <Teuchos_ParameterList.hpp>
 

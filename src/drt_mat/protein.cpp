@@ -12,6 +12,8 @@ Maintainer: Robert Metzke
 #ifdef CCADISCRET
 
 #include "protein.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_mat/matpar_bundle.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -39,6 +39,7 @@ Maintainer: Michael Gee
 #include "../drt_matelast/elast_volpenalty.H"
 #include "../drt_matelast/elast_vologden.H"
 #include "../drt_matelast/elast_volsussmanbathe.H"
+#include "../drt_mat/matpar_bundle.H"
 
 using namespace std;
 using namespace DRT;
@@ -59,7 +60,7 @@ STR::GenInvAnalysis::GenInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
     sti_(Teuchos::null)
 {
   int myrank = dis->Comm().MyPID();
-  
+
   reset_out_count_=0;
 
   // input parameters structural dynamics
@@ -68,13 +69,13 @@ STR::GenInvAnalysis::GenInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
   //  tolerance for the curve fitting
   tol_ = iap.get<double>("INV_ANA_TOL");
-  
+
   /* this is how a monitor file should look like:
-  
-steps 25 nnodes 5 
+
+steps 25 nnodes 5
 11 2 0 1
 19 2 0 1
-27 2 0 1 
+27 2 0 1
 35 2 0 1
 42 2 0 1
 # any number of comment lines, but only at this position
@@ -109,7 +110,7 @@ steps 25 nnodes 5
 
 
   */
-  
+
   // open monitor file and read it
   vector<double> timesteps;
   ndofs_ = 0;
@@ -155,13 +156,13 @@ steps 25 nnodes 5
 
     // time step from input file (do I need this?)
     tstep_  = sdyn.get<double>("TIMESTEP");
-    
+
     // read comment lines
     foundit = buffer;
     fgets(buffer,150000,file);
-    while(strstr(buffer,"#")) 
+    while(strstr(buffer,"#"))
       fgets(buffer,150000,file);
-    
+
     // read in the values for each node in dirs directions
     int count=0;
     for (int i=0; i<nsteps_; ++i)
@@ -175,7 +176,7 @@ steps 25 nnodes 5
     }
     if (count != nmp_) dserror("Number of measured disps wrong on input");
   }
-  
+
   // error: diference of the measured to the calculated curve
   error_  = 1.0E6;
   error_o_= 1.0E6;
@@ -219,16 +220,16 @@ void STR::GenInvAnalysis::Integrate()
     const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
     double alpha = iap.get<double>("INV_ALPHA");
     double beta  = iap.get<double>("INV_BETA");
-    for (int i=0; i<np_; ++i) 
+    for (int i=0; i<np_; ++i)
     {
       perturb[i] = alpha + beta * p_[i];
       if (!myrank) printf("perturbation[%d] %15.10e\n",i,perturb[i]);
     }
-    
+
     // as the actual inv analysis is on proc 0 only, do only provide storage on proc 0
     Epetra_SerialDenseMatrix cmatrix;
     if (!myrank) cmatrix.Shape(nmp_,np_+1);
-    
+
     // loop over parameters to fit and build cmatrix
     for (int i=0; i<np_+1;i++)
     {
@@ -238,34 +239,34 @@ void STR::GenInvAnalysis::Integrate()
       Epetra_SerialDenseVector p_cur = p_;
       // perturb parameter i
       if (i!= np_) p_cur[i] = p_[i] + perturb[i];
-      
+
       // put perturbed material parameters to material laws
       SetParameters(p_cur);
-      
+
       // compute nonlinear problem and obtain computed displacements
       // output only for last run
       Epetra_SerialDenseVector cvector;
       if ( i != np_) cvector = CalcCvector(false);
       else           cvector = CalcCvector(true);
-      
+
       // copy displacements to sensitivity matrix
       if (!myrank)
         for (int j=0; j<nmp_;j++)
           cmatrix(j,i) = cvector[j];
     }
-    
+
     discret_->Comm().Barrier();
     if (!myrank)
       CalcNewParameters(cmatrix,perturb);
     discret_->Comm().Barrier();
-      
+
     // set new material parameters
     SetParameters(p_);
     numb_run_++;
     discret_->Comm().Broadcast(&error_o_,1,0);
     discret_->Comm().Broadcast(&error_,1,0);
     discret_->Comm().Broadcast(&numb_run_,1,0);
-    if (error_>tol_ && numb_run_<max_itter) 
+    if (error_>tol_ && numb_run_<max_itter)
       output_->NewResultFile(numb_run_);
   } while (error_>tol_ && numb_run_<max_itter);
 
@@ -287,14 +288,14 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, v
 
   // remove the extra column np_+1 with unperturbed values
   cmatrix.Reshape(nmp_,np_);
-  
+
   // reuse the cmatrix array as J to save storage
   Epetra_SerialDenseMatrix& J = cmatrix;
-  
+
   for (int i=0; i<nmp_; i++)
     for (int j=0; j<np_; j++)
     {
-      J(i,j) -= ccurve[i]; 
+      J(i,j) -= ccurve[i];
       J(i,j) /= perturb[j];
     }
 
@@ -315,7 +316,7 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, v
   solver.SetVectors(delta_p,tmp);
   solver.SolveToRefinedSolution(true);
   solver.Solve();
-  
+
   for (int i=0;i<np_;i++)
     p_[i] += delta_p[i];
 
@@ -341,7 +342,7 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, v
 Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
 {
   int myrank = discret_->Comm().MyPID();
-  
+
   // create a StruGenAlpha solver
   ParameterList genalphaparams;
   StruGenAlpha::SetDefaults(genalphaparams);
@@ -425,7 +426,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
       dserror("Cannot cope with choice of predictor");
       break;
   }
-  
+
   RCP<StruGenAlpha> tintegrator = rcp(new StruGenAlpha(genalphaparams,*discret_,*solver_,*output_));
   int    step    = genalphaparams.get<int>("step",0);
   int    nstep   = genalphaparams.get<int>("nstep",-1);
@@ -468,7 +469,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
 Epetra_SerialDenseVector STR::GenInvAnalysis::GetCalculatedCurve(Epetra_Vector& disp)
 {
   int myrank = discret_->Comm().MyPID();
-  
+
   // values observed at current time step
   Epetra_SerialDenseVector lcvector_arg(ndofs_);
   Epetra_SerialDenseVector gcvector_arg(ndofs_);
@@ -476,14 +477,14 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetCalculatedCurve(Epetra_Vector& 
   for (int i=0; i<nnodes_; ++i)
   {
     int gnode = nodes_[i];
-    if (!discret_->NodeRowMap()->MyGID(gnode)) 
+    if (!discret_->NodeRowMap()->MyGID(gnode))
     {
       count += (int)dofs_[i].size();
       continue;
     }
     DRT::Node* node = discret_->gNode(gnode);
     if (!node) dserror("Cannot find node on this proc");
-    if (myrank != node->Owner()) 
+    if (myrank != node->Owner())
     {
       count += (int)dofs_[i].size();
       continue;
@@ -498,7 +499,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetCalculatedCurve(Epetra_Vector& 
     count += (int)dofs_[i].size();
   }
   discret_->Comm().SumAll(&lcvector_arg[0],&gcvector_arg[0],ndofs_);
-  
+
   return gcvector_arg;
 }
 
@@ -557,10 +558,10 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseVector delta_p)
 void STR::GenInvAnalysis::ReadInParameters()
 {
   const int myrank = discret_->Comm().MyPID();
-  
+
   // loop all materials in problem
   const map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
-  
+
   if (myrank == 0) printf("No. material laws considered : %d\n",mats.size());
   map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
   for (curr=mats.begin(); curr != mats.end(); ++curr)
@@ -730,7 +731,7 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
       break;
     }
   }
-  
+
 
   return;
 }

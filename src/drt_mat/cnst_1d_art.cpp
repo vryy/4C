@@ -14,6 +14,8 @@ Maintainer: Mahmoud Ismail
 
 #include <vector>
 #include "cnst_1d_art.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_mat/matpar_bundle.H"
 
 
 

@@ -31,6 +31,7 @@ Maintainer: Markus Gitterle
 #include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "Epetra_SerialDenseSolver.h"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_potential/drt_potential_manager.H"
@@ -367,7 +368,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
         potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params, lm, elemat1, elevec1);
       }
       else
-        dserror("Unknown condition type %d",cond->Type());           
+        dserror("Unknown condition type %d",cond->Type());
     }
     break;
     case Wall1::calc_struct_eleload:

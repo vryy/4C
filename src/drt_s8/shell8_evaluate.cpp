@@ -23,6 +23,7 @@ Maintainer: Michael Gee
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/compogden.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 extern "C"
 {

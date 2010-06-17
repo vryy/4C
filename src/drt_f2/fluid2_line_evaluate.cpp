@@ -28,6 +28,7 @@ Maintainer: Peter Gmanitzer
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 using namespace DRT::UTILS;

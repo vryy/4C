@@ -26,6 +26,7 @@ Maintainer: Burkhard Bornemann
 
 #include "../drt_io/io_control.H"
 #include "../drt_fluid/fluid_utils.H"
+#include "../drt_mat/matpar_bundle.H"
 
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_manager_base.H"

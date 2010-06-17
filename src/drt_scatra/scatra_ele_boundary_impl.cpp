@@ -36,6 +36,7 @@ Maintainer: Georg Bauer
 #include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/ion.H"
 #include "../drt_mat/matlist.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -27,6 +27,7 @@ Maintainer: Michael Gee
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_statmech/bromotion_manager.H"
 #include "Sacado.hpp"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
 using UTILS::SurfStressManager;
 using POTENTIAL::PotentialManager;
@@ -125,7 +126,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   {
     xc.LightShape(numnode,numdf);
 
-    if (pstype==INPAR::STR::prestress_id && time <= pstime) 
+    if (pstype==INPAR::STR::prestress_id && time <= pstime)
     {
       // in inverse design analysis, the current configuration is the reference
       MaterialConfiguration(xc);
@@ -164,7 +165,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   DRT::NURBS::NurbsDiscretization* nurbsdis
     =
     dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-  
+
   if(nurbsdis!=NULL)
   {
     nurbsele=true;
@@ -253,7 +254,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
     //Stuff to get spatial Neumann
     const int numdim = 3;
     LINALG::SerialDenseMatrix gp_coord(1,numdim);
-     
+
     switch(ltype)
     {
     case neum_live:
@@ -264,7 +265,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
       metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
       const double detA = sqrt( metrictensor(0,0)*metrictensor(1,1)
                                 -metrictensor(0,1)*metrictensor(1,0));
-      
+
       double functfac = 1.0;
       int functnum = -1;
       double val_curvefac_functfac;
@@ -273,14 +274,14 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
       {
         if ((*onoff)[dof]) // is this dof activated?
         {
-          
+
           //factor given by spatial function
-          if (spa_func) 
+          if (spa_func)
             functnum = (*spa_func)[dof];
-                   
+
           if (functnum>0)
           {
-            //Calculate reference position of GP 
+            //Calculate reference position of GP
             gp_coord.Multiply('T','N',1.0,funct,x,0.0);;
             // write coordinates in another datatype
             double gp_coord2[numdim];
@@ -289,13 +290,13 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
               gp_coord2[i]=gp_coord(0,i);
             }
             const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
-    
+
             //evaluate function at current gauss point
             functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,0.0,NULL);
           }
           else
             functfac = 1.0;
-                   
+
           val_curvefac_functfac = functfac*curvefac;
           const double fac = intpoints.qwgt[gp] * detA * (*val)[dof] * val_curvefac_functfac;
           for (int node=0; node < numnode; ++node)
@@ -303,7 +304,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
             elevec1[node*numdf+dof]+= funct[node] * fac;
           }
         }
-        
+
       }
     }
     break;
@@ -316,11 +317,11 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
       if (!ortho_value) dserror("no orthopressure value given!");
       vector<double> normal(3);
       SurfaceIntegration(normal, xc,deriv);
-      //Calculate spatial position of GP 
+      //Calculate spatial position of GP
       double functfac = 1.0;
       int functnum = -1;
-      double val_curvefac_functfac; 
-      
+      double val_curvefac_functfac;
+
       // factor given by spatial function
       if (spa_func) functnum = (*spa_func)[0];
       {
@@ -342,9 +343,9 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
           functfac = 1.0;
       }
 
-      val_curvefac_functfac = curvefac*functfac;    
-           
-      
+      val_curvefac_functfac = curvefac*functfac;
+
+
       const double fac = intpoints.qwgt[gp] * val_curvefac_functfac* ortho_value * normalfac;
       for (int node=0; node < numnode; ++node)
         for(int dim=0 ; dim<3; dim++)
@@ -682,7 +683,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   switch(act)
   {
       //gives the center displacement for SlideALE
-	
+
   case calc_struct_centerdisp:
   {
 	  //We are not interested in ghosted elements
@@ -727,27 +728,27 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 			  double detA;
 			  SurfaceIntegration(detA,normal,xc,deriv);
 
-			  elevector2[0] +=  sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );  		
+			  elevector2[0] +=  sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );
 
 			  for (int dim=0; dim<3; dim++)
 			  {
-				  if (gp == 0) 
+				  if (gp == 0)
 					  elevector3[dim] = 0;
 
 				  for (int j=0; j<numnode; ++j)
 				  {
-					  elevector3[dim] +=  funct[j] * intpoints.qwgt[gp] 
+					  elevector3[dim] +=  funct[j] * intpoints.qwgt[gp]
 					                          * edispincr[j*numdf + dim] * detA;
 				  }
 			  }
 
 		  }
 
-	  } 
+	  }
   }
-  break;   
-  
-  
+  break;
+
+
   	case calc_struct_constrvol:
       {
         //We are not interested in volume of ghosted elements

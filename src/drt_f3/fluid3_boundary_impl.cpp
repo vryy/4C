@@ -35,6 +35,7 @@ Maintainer: Andreas Ehrl
 #include "fluid3_ele_impl_utils.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_geometry/position_array.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 #include <blitz/array.h>

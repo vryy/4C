@@ -23,6 +23,8 @@ date: 26/05/2009
 
 #include <vector>
 #include "aaaraghavanvorp_damage.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_mat/matpar_bundle.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

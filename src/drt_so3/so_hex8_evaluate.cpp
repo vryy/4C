@@ -27,6 +27,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_patspec/patspec.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

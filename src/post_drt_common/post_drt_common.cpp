@@ -32,6 +32,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #endif
 
 /*----------------------------------------------------------------------*

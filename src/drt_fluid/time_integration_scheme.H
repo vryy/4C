@@ -24,7 +24,9 @@ Maintainer: Axel Gerstenberger
 #ifndef TIME_INTEGRATION_SCHEME_H
 #define TIME_INTEGRATION_SCHEME_H
 
-#include "../drt_lib/drt_globalproblem.H"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
+#include "../drt_lib/standardtypes_cpp.H"
 
 
 namespace FLD

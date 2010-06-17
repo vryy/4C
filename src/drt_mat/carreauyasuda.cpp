@@ -15,6 +15,8 @@ Maintainer: Ursula Mayer
 #include <vector>
 
 #include "carreauyasuda.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_mat/matpar_bundle.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

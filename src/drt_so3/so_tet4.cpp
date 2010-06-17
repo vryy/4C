@@ -22,6 +22,7 @@ writen by : Alexander Volf
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

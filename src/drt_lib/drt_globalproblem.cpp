@@ -35,6 +35,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/drt_validmaterials.H"
 #include "../drt_mat/micromaterial.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
 #include "../drt_io/io_control.H"
 
@@ -788,7 +789,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   }
   case prb_fluid:
   {
-    
+
     // allocate and input general old stuff....
     std::string distype = ptype.get<std::string>("SHAPEFCT");
 

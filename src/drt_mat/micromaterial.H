@@ -33,6 +33,7 @@ Maintainer: Lena Wiechert
 
 #include "../drt_lib/drt_discret.H"
 #include "material.H"
+#include "matpar_bundle.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
 //#include "../drt_stru_multi/microstrugenalpha.H"

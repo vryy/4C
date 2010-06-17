@@ -696,12 +696,12 @@ eps_(eps)
 
     for (int i=1;i<4;++i)
     {
-      samplevectors_(i,0)= cos(PI*(double)i/8);
-      samplevectors_(i,1)= sin(PI*(double)i/8);
+      samplevectors_(i,0)= cos(M_PI*(double)i/8);
+      samplevectors_(i,1)= sin(M_PI*(double)i/8);
       samplevectors_(i,2)= 0;
 
-      samplevectors_(i+8,0)=   cos(PI*(double)i/8);
-      samplevectors_(i+8,1)=-1*sin(PI*(double)i/8);
+      samplevectors_(i+8,0)=   cos(M_PI*(double)i/8);
+      samplevectors_(i+8,1)=-1*sin(M_PI*(double)i/8);
       samplevectors_(i+8,2)= 0;
     }
 
@@ -710,12 +710,12 @@ eps_(eps)
 
     for (int i=5;i<8;++i)
     {
-       samplevectors_(i,0)= cos(PI*(double)i/8);
-       samplevectors_(i,1)= sin(PI*(double)i/8);
+       samplevectors_(i,0)= cos(M_PI*(double)i/8);
+       samplevectors_(i,1)= sin(M_PI*(double)i/8);
        samplevectors_(i,2)= 0;
 
-       samplevectors_(i+8,0)=   cos(PI*(double)i/8);
-       samplevectors_(i+8,1)=-1*sin(PI*(double)i/8);
+       samplevectors_(i+8,0)=   cos(M_PI*(double)i/8);
+       samplevectors_(i+8,1)=-1*sin(M_PI*(double)i/8);
        samplevectors_(i+8,2)= 0;
     }
   }
@@ -750,15 +750,15 @@ eps_(eps)
     {
       for (int j=1;j<4;++j)
       {
-        samplevectors_(1+6*i+j,0)= sin(PI*(double)j/8)*cos(PI*(double)i/8);
-        samplevectors_(1+6*i+j,1)= sin(PI*(double)j/8)*sin(PI*(double)i/8);
-        samplevectors_(1+6*i+j,2)= cos(PI*(double)j/8);
+        samplevectors_(1+6*i+j,0)= sin(M_PI*(double)j/8)*cos(M_PI*(double)i/8);
+        samplevectors_(1+6*i+j,1)= sin(M_PI*(double)j/8)*sin(M_PI*(double)i/8);
+        samplevectors_(1+6*i+j,2)= cos(M_PI*(double)j/8);
       }
       for (int j=5;j<8;++j)
       {
-        samplevectors_(6*i+j,0)= sin(PI*(double)j/8)*cos(PI*(double)i/8);
-        samplevectors_(6*i+j,1)= sin(PI*(double)j/8)*sin(PI*(double)i/8);
-        samplevectors_(6*i+j,2)= cos(PI*(double)j/8);
+        samplevectors_(6*i+j,0)= sin(M_PI*(double)j/8)*cos(M_PI*(double)i/8);
+        samplevectors_(6*i+j,1)= sin(M_PI*(double)j/8)*sin(M_PI*(double)i/8);
+        samplevectors_(6*i+j,2)= cos(M_PI*(double)j/8);
       }
     }
   }

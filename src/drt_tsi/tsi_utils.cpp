@@ -29,6 +29,7 @@ Maintainer: Caroline Danowski
 #include "tsi_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_material.H"
+#include "../drt_mat/matpar_bundle.H"
 #include "../drt_thermo/thermo_element.H"
 
 #ifdef PARALLEL

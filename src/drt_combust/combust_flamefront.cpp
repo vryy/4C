@@ -14,9 +14,10 @@ Maintainer: Florian Henke
  *------------------------------------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include "../drt_lib/standardtypes_cpp.H"
+
 #include "combust_flamefront.H"
 #include "../drt_combust/combust3.H"
-#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"  // LINALG::Export
 #include <Teuchos_StandardParameterEntryValidators.hpp>

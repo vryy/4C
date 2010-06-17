@@ -16,6 +16,7 @@ Maintainer: Ursula Mayer
 #ifdef CCADISCRET
 
 #include "material.H"
+#include "matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT

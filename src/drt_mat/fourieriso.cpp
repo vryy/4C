@@ -23,6 +23,8 @@ Maintainer: Burkhard Bornemann
  |  headers                                                  dano 09/09 |
  *----------------------------------------------------------------------*/
 #include "fourieriso.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_mat/matpar_bundle.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

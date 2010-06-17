@@ -19,6 +19,8 @@ Maintainer: goe
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "aaagasser.H"
+#include "matpar_bundle.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

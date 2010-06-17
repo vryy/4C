@@ -27,6 +27,8 @@ Maintainer: Robert Metzke
 #include "charmm.H"
 #include <time.h>
 #include "../drt_so3/so_hex8.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_mat/matpar_bundle.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

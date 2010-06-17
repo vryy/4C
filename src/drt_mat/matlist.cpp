@@ -12,6 +12,8 @@ Maintainer: Georg Bauer
 
 #include <vector>
 #include "matlist.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_mat/matpar_bundle.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

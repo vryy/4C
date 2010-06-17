@@ -17,6 +17,8 @@ Maintainer: Robert Metzke
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
 #include "compogden.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_mat/matpar_bundle.H"
 
 
 /*----------------------------------------------------------------------*/

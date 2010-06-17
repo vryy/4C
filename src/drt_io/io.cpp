@@ -27,6 +27,7 @@ Maintainer: Ulrich Kuettler
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
 
 /*----------------------------------------------------------------------*/

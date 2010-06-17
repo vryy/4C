@@ -23,6 +23,8 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include <Epetra_SerialDenseSolver.h>
 #include <Epetra_LAPACK.h>

@@ -26,6 +26,7 @@ Maintainer: Michael Gee
 #include "global_inp_control2.H"
 
 #include "drt_inputreader.H"
+#include "standardtypes_cpp.H"
 
 
 /*----------------------------------------------------------------------*

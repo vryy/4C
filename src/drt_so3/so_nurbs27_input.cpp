@@ -18,6 +18,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/charmm.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -23,15 +23,13 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 
-#include "../drt_mat/matpar_bundle.H"
 #include "drt_discret.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 //#include "drt_inputreader.H"
 #include "drt_function.H"
 #include "drt_timecurve.H"
 #include "drt_resulttest.H"
 
-#include "standardtypes_cpp.H"
+//#include "standardtypes_cpp.H"
 
 using namespace std;
 using namespace Teuchos;

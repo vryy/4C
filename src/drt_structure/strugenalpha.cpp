@@ -21,6 +21,7 @@ Maintainer: Michael Gee
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
+#include "../drt_mat/matpar_bundle.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 03/07|

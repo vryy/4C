@@ -17,6 +17,8 @@ Maintainer: Moritz Frenzel
 #include "Epetra_SerialDenseSolver.h"
 #include "anisotropic_balzani.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_mat/matpar_bundle.H"
 
 
 /*----------------------------------------------------------------------*

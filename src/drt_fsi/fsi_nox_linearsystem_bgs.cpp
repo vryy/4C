@@ -15,6 +15,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../linalg/linalg_solver.H"
+#include "../drt_lib/standardtypes_cpp.H"
 
 #include "fsi_nox_aitken.H"
 #include "fsi_nox_fixpoint.H"

@@ -22,6 +22,7 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "time_integration_scheme.H"
+#include "../drt_lib/drt_dserror.H"
 
 
 /*----------------------------------------------------------------------*

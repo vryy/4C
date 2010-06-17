@@ -24,7 +24,6 @@ Maintainer: Lena Wiechert
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_material.H"
-#include "../drt_lib/drt_globalproblem.H"
 
 
 /// MAT: materials
