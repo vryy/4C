@@ -494,6 +494,10 @@ namespace STR
     //! Return current step number map
     double GetTime() const { return (*time_)[0]; }
 
+
+    //! Sets the current time needed for the inverse analysis
+    void SetTime(double time) const { (*time_)[0]=time; }
+
     //! Get upper limit of time range of interest
     double GetTimeEnd() const { return timemax_; }
 
@@ -518,6 +522,10 @@ namespace STR
     {
       return (locsysman_ != Teuchos::null) ? locsysman_->Trafo() : Teuchos::null;
     }
+
+
+    //! Sets the time for the next time step needed for the inverse analysis
+    void SetTimen(double time){timen_ = time;};  //!< target time \f$t_{n+1}\f$
 
     //! Return contact/meshtying manager
     Teuchos::RCP<MORTAR::ManagerBase> ContactManager() {return cmtman_;}

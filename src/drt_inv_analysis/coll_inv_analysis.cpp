@@ -33,6 +33,7 @@ Maintainer: Sophie Rausch
 #include "../drt_matelast/elast_couplogneohooke.H"
 #include "../drt_matelast/elast_isoexpo.H"
 #include "../drt_matelast/elast_isomooneyrivlin.H"
+#include "../drt_matelast/elast_varisoneohooke.H"
 #include "../drt_matelast/elast_isoneohooke.H"
 #include "../drt_matelast/elast_isoyeoh.H"
 #include "../drt_matelast/elast_isoquad.H"
@@ -63,10 +64,14 @@ STR::CollInvAnalysis::CollInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
     sti_(Teuchos::null)
 {
 
-  cout << "--------------------------------------------------------------------------------------" << endl;
-  cout << "-------------------------- Inverse Analyse based on the ------------------------------" << endl;
-  cout << "---------------------- Collagenase and Elastase Experiments --------------------------" << endl;
-  cout << "--------------------------------------------------------------------------------------" << endl;
+
+  if (discret_->Comm().MyPID()==0)
+  {
+    cout << "--------------------------------------------------------------------------------------" << endl;
+    cout << "-------------------------- Inverse Analyse based on the ------------------------------" << endl;
+    cout << "---------------------- Collagenase and Elastase Experiments --------------------------" << endl;
+    cout << "--------------------------------------------------------------------------------------" << endl;
+  }
 
   // Getting boundary conditions
   discret_->GetCondition("SurfaceNeumann",surfneum_ );
@@ -78,14 +83,12 @@ STR::CollInvAnalysis::CollInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   // input parameters structural dynamics
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
-  // measured points, gives the number how many displacment steps are
-  // measured
+  // measured points, gives the number how many displacment steps are measured
   nmp_   = 2*sdyn.get<int>("NUMSTEP");
   tstep_ = sdyn.get<double>("TIMESTEP");
+
   // get total timespan of simulation 0.5 due to factor 2 in nmp_
   ttime_ = nmp_*tstep_*0.5;
-  // input parameters inverse analysis
-  //iap = DRT::Problem::Instance()->InverseAnalysisParams();
 
   const Teuchos::ParameterList& iap=DRT::Problem::Instance()->InverseAnalysisParams();
 
@@ -95,49 +98,135 @@ STR::CollInvAnalysis::CollInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   // determining which experiments shell be included in the analysis
   // collagenase, elastase or both
 
+  // time shift for NBC
+  sec_start_time_= 0.0;
+  num_mcurves_   = 1;
+  time_shift_ = 1000;
+  pos_col_frac_ = -1;
+  pos_ela_frac_ = -1;
+
   switch(Teuchos::getIntegralValue<INPAR::STR::InvAnalysisExpType>(iap,"INV_ANA_EXP_TYPE"))
   {
   case INPAR::STR::inv_exp_none:
   {
-    ReadUnTreatedCurve();
+    if (discret_->Comm().MyPID()==0)
+    {
+      cout << "--------------------------------------------------------------------------------------" << endl;
+      cout << "------------------------------------ no treatment ------------------------------------" << endl;
+      cout << "--------------------------------------------------------------------------------------" << endl;
+    }
+    num_mcurves_   = 1;
+    mcurve_ = Epetra_SerialDenseVector(nmp_*num_mcurves_);
+    Epetra_SerialDenseVector mcurve = Epetra_SerialDenseVector(nmp_);
+    mcurve = ReadUnTreatedCurve();
+    for (int i=0; i<nmp_; i++)
+      mcurve_[i]=mcurve_[i];
   }
   break;
   case INPAR::STR::inv_exp_col:
   {
-    ReadUnTreatedCurve();
-    ReadColTreatedCurve();
+    if (discret_->Comm().MyPID()==0)
+    {
+      cout << "--------------------------------------------------------------------------------------" << endl;
+      cout << "------------------------------ collagenase trestment ---------------------------------" << endl;
+      cout << "--------------------------------------------------------------------------------------" << endl;
+    }
+    num_mcurves_   = 2;
+    mcurve_ = Epetra_SerialDenseVector(nmp_*num_mcurves_);
+    Epetra_SerialDenseVector mcurve = Epetra_SerialDenseVector(nmp_);
+    mcurve = ReadUnTreatedCurve();
+    for (int i=0; i<nmp_; i++)
+      mcurve_[i]=mcurve_[i];
+    mcurve = ReadColTreatedCurve();
+    for (int i=0; i<nmp_; i++)
+      mcurve_[i+nmp_]=mcurve_[i];
   }
+  break;
   case INPAR::STR::inv_exp_ela:
   {
-    ReadUnTreatedCurve();
-    ReadElaTreatedCurve();
+    if (discret_->Comm().MyPID()==0)
+    {
+      cout << "--------------------------------------------------------------------------------------" << endl;
+      cout << "------------------------------- elastase treatment -----------------------------------" << endl;
+      cout << "--------------------------------------------------------------------------------------" << endl;
+    }
+    num_mcurves_   = 2;
+    mcurve_ = Epetra_SerialDenseVector(nmp_*num_mcurves_);
+    Epetra_SerialDenseVector mcurve = Epetra_SerialDenseVector(nmp_);
+    mcurve = ReadUnTreatedCurve();
+    for (int i=0; i<nmp_; i++)
+      mcurve_[i]=mcurve_[i];
+    mcurve = ReadElaTreatedCurve();
+    for (int i=0; i<nmp_; i++)
+      mcurve_[i+nmp_]=mcurve_[i];
   }
   break;
   case INPAR::STR::inv_exp_colfull:
   {
-    ReadUnTreatedCurve();
-    ReadColTreatedCurve();
-    ReadFullTreatedCurve();
+    if (discret_->Comm().MyPID()==0)
+    {
+      cout << "--------------------------------------------------------------------------------------" << endl;
+      cout << "------------------------- collagenase and full treatment -----------------------------" << endl;
+      cout << "--------------------------------------------------------------------------------------" << endl;
+    }
+    num_mcurves_   = 3;
+    mcurve_ = Epetra_SerialDenseVector(nmp_*num_mcurves_);
+    Epetra_SerialDenseVector mcurve = Epetra_SerialDenseVector(nmp_);
+    mcurve = ReadUnTreatedCurve();
+    for (int i=0; i<nmp_; i++)
+      mcurve_[i]=mcurve_[i];
+    mcurve = ReadColTreatedCurve();
+    for (int i=0; i<nmp_; i++)
+      mcurve_[i+nmp_]=mcurve_[i];
+    mcurve = ReadFullTreatedCurve();
+    for (int i=0; i<nmp_; i++)
+      mcurve_[i+2*nmp_]=mcurve_[i];
   }
   case INPAR::STR::inv_exp_elafull:
   {
-    ReadUnTreatedCurve();
-    ReadElaTreatedCurve();
-    ReadFullTreatedCurve();
+    if (discret_->Comm().MyPID()==0)
+    {
+      cout << "--------------------------------------------------------------------------------------" << endl;
+      cout << "--------------------------elastase and full treatment --------------------------------" << endl;
+      cout << "--------------------------------------------------------------------------------------" << endl;
+    }
+    num_mcurves_   = 3;
+    mcurve_ = Epetra_SerialDenseVector(nmp_*num_mcurves_);
+    Epetra_SerialDenseVector mcurve = Epetra_SerialDenseVector(nmp_);
+    mcurve = ReadUnTreatedCurve();
+    for (int i=0; i<nmp_; i++)
+      mcurve_[i]=mcurve_[i];
+    mcurve = ReadElaTreatedCurve();
+    for (int i=0; i<nmp_; i++)
+      mcurve_[i+nmp_]=mcurve_[i];
+    mcurve = ReadFullTreatedCurve();
+    for (int i=0; i<nmp_; i++)
+      mcurve_[i+2*nmp_]=mcurve_[i];
   }
   break;
   case INPAR::STR::inv_exp_full:
   {
-    ReadUnTreatedCurve();
-    ReadFullTreatedCurve();
+    if (discret_->Comm().MyPID()==0)
+    {
+      cout << "--------------------------------------------------------------------------------------" << endl;
+      cout << "---------------------------------- full treatment ------------------------------------" << endl;
+      cout << "--------------------------------------------------------------------------------------" << endl;
+    }
+    num_mcurves_   = 2;
+    mcurve_ = Epetra_SerialDenseVector(nmp_*num_mcurves_);
+    Epetra_SerialDenseVector mcurve = Epetra_SerialDenseVector(nmp_);
+    mcurve = ReadUnTreatedCurve();
+    for (int i=0; i<nmp_; i++)
+      mcurve_[i]=mcurve_[i];
+    mcurve = ReadFullTreatedCurve();
+    for (int i=0; i<nmp_; i++)
+      mcurve_[i+nmp_]=mcurve_[i];
   }
   break;
   default:
     dserror("Unknown type of inverse analysis");
   break;
   }
-
-  //dserror("Halt");
 
   // error: diference of the measured to the calculated curve
   error_  = 1.0E6;
@@ -154,20 +243,18 @@ STR::CollInvAnalysis::CollInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   np_ = p_.Length();
 
   // controlling parameter
-  numb_run_ =  0;         //
-                          // counter of how many runs were made in the inverse analysis
-
+  numb_run_ =  0;      // counter of how many runs were made in the inverse analysis
 
   return;
 }
 
 
 
-void STR::CollInvAnalysis::ReadUnTreatedCurve()
+Epetra_SerialDenseVector  STR::CollInvAnalysis::ReadUnTreatedCurve()
 {
 
   const Teuchos::ParameterList& iap=DRT::Problem::Instance()->InverseAnalysisParams();
-  mcurve_   = Epetra_SerialDenseVector(nmp_);  //
+  Epetra_SerialDenseVector mcurve   = Epetra_SerialDenseVector(nmp_);  //
   double cpx0 = iap.get<double>("MC_X_0");
   double cpx1 = iap.get<double>("MC_X_1");
   double cpx2 = iap.get<double>("MC_X_2");
@@ -181,13 +268,13 @@ void STR::CollInvAnalysis::ReadUnTreatedCurve()
     mcurve_[i] = cpy0*(1-exp(-pow(((1000./ttime_)*cpy1*(i-1)*ttime_/nmp_), cpy2)));
   }
 
-  return;
+  return mcurve;
 
 }
-void STR::CollInvAnalysis::ReadColTreatedCurve()
+Epetra_SerialDenseVector  STR::CollInvAnalysis::ReadColTreatedCurve()
 {
   const Teuchos::ParameterList& iap=DRT::Problem::Instance()->InverseAnalysisParams();
-  cmcurve_   = Epetra_SerialDenseVector(nmp_);  //
+  Epetra_SerialDenseVector mcurve   = Epetra_SerialDenseVector(nmp_);  //
   double cpx0 = iap.get<double>("CMC_X_0");
   double cpx1 = iap.get<double>("CMC_X_1");
   double cpx2 = iap.get<double>("CMC_X_2");
@@ -196,17 +283,18 @@ void STR::CollInvAnalysis::ReadColTreatedCurve()
   double cpy2 = iap.get<double>("CMC_Y_2");
   for (int i=0; i<nmp_; i++)
   {
-    cmcurve_[i] = cpx0*(1-exp(-pow(((1000./ttime_)*cpx1*(i)*ttime_/nmp_), cpx2)));
+    mcurve[i] = cpx0*(1-exp(-pow(((1000./ttime_)*cpx1*(i)*ttime_/nmp_), cpx2)));
     i=i+1;
-    cmcurve_[i] = cpy0*(1-exp(-pow(((1000./ttime_)*cpy1*(i-1)*ttime_/nmp_), cpy2)));
+    mcurve[i] = cpy0*(1-exp(-pow(((1000./ttime_)*cpy1*(i-1)*ttime_/nmp_), cpy2)));
   }
 
-  return;
+  return mcurve;
 }
-void STR::CollInvAnalysis::ReadElaTreatedCurve()
+
+Epetra_SerialDenseVector STR::CollInvAnalysis::ReadElaTreatedCurve()
 {
   const Teuchos::ParameterList& iap=DRT::Problem::Instance()->InverseAnalysisParams();
-  emcurve_   = Epetra_SerialDenseVector(nmp_);  //
+  Epetra_SerialDenseVector mcurve   = Epetra_SerialDenseVector(nmp_);  //
   double cpx0 = iap.get<double>("EMC_X_0");
   double cpx1 = iap.get<double>("EMC_X_1");
   double cpx2 = iap.get<double>("EMC_X_2");
@@ -215,20 +303,20 @@ void STR::CollInvAnalysis::ReadElaTreatedCurve()
   double cpy2 = iap.get<double>("EMC_Y_2");
   for (int i=0; i<nmp_; i++)
   {
-    emcurve_[i] = cpx0*(1-exp(-pow(((1000./ttime_)*cpx1*(i)*ttime_/nmp_), cpx2)));
+    mcurve[i] = cpx0*(1-exp(-pow(((1000./ttime_)*cpx1*(i)*ttime_/nmp_), cpx2)));
     i=i+1;
-    emcurve_[i] = cpy0*(1-exp(-pow(((1000./ttime_)*cpy1*(i-1)*ttime_/nmp_), cpy2)));
+    mcurve[i] = cpy0*(1-exp(-pow(((1000./ttime_)*cpy1*(i-1)*ttime_/nmp_), cpy2)));
   }
 
-  return;
+  return mcurve_;
 
 }
 
 
-void STR::CollInvAnalysis::ReadFullTreatedCurve()
+Epetra_SerialDenseVector  STR::CollInvAnalysis::ReadFullTreatedCurve()
 {
   const Teuchos::ParameterList& iap=DRT::Problem::Instance()->InverseAnalysisParams();
-  cemcurve_   = Epetra_SerialDenseVector(nmp_);  //
+  Epetra_SerialDenseVector mcurve   = Epetra_SerialDenseVector(nmp_);  //
   double cpx0 = iap.get<double>("CEMC_X_0");
   double cpx1 = iap.get<double>("CEMC_X_1");
   double cpx2 = iap.get<double>("CEMC_X_2");
@@ -237,12 +325,12 @@ void STR::CollInvAnalysis::ReadFullTreatedCurve()
   double cpy2 = iap.get<double>("CEMC_Y_2");
   for (int i=0; i<nmp_; i++)
   {
-    cemcurve_[i] = cpx0*(1-exp(-pow(((1000./ttime_)*cpx1*(i)*ttime_/nmp_), cpx2)));
+    mcurve[i] = cpx0*(1-exp(-pow(((1000./ttime_)*cpx1*(i)*ttime_/nmp_), cpx2)));
     i=i+1;
-    cemcurve_[i] = cpy0*(1-exp(-pow(((1000./ttime_)*cpy1*(i-1)*ttime_/nmp_), cpy2)));
+    mcurve[i] = cpy0*(1-exp(-pow(((1000./ttime_)*cpy1*(i-1)*ttime_/nmp_), cpy2)));
   }
 
-  return;
+  return mcurve;
 }
 
 
@@ -262,66 +350,240 @@ void STR::CollInvAnalysis::Integrate()
     for (int i=0; i<np_;i++)
       inc[i] = alpha + beta * p_[i];
 
-    Epetra_SerialDenseMatrix cmatrix(nmp_, np_+1);
+    Epetra_SerialDenseMatrix cmatrix(nmp_ * num_mcurves_, np_+1);
 
     if (discret_->Comm().MyPID()==0)
       cout << "-----------------------------making Jaccobien matrix-------------------------" <<endl;
-    for (int i=0; i<np_+1;i++)
+
+    for (int i=0; i<np_+1 ;i++)
     {
-      if (discret_->Comm().MyPID()==0)
-        cout << "------------------------------- run "<< i+1 << " of: " << np_+1 <<" ---------------------------------" <<endl;
-      Epetra_SerialDenseVector p_cur = p_;
-      if (i!= np_)
-        p_cur[i]=p_[i] + inc[i];
-      SetParameters(p_cur);
-      Epetra_SerialDenseVector cvector = CalcCvector();
-      for (int j=0; j<nmp_;j++)
-        cmatrix(j, i)=cvector[j];
+    if (discret_->Comm().MyPID()==0)
+      cout << "-------------- run " << i+1 << " of " << np_+1 << " with frac at position "<<  pos_col_frac_+1 <<" ------------" <<endl;
+
+      switch(Teuchos::getIntegralValue<INPAR::STR::InvAnalysisExpType>(iap,"INV_ANA_EXP_TYPE"))
+      {
+      case INPAR::STR::inv_exp_none:
+      {
+        // untreated curve
+        Epetra_SerialDenseVector p_cur = p_;
+        if (i!=np_)
+          p_cur[i]=p_[i] + inc[i];
+        p_cur[pos_col_frac_] = 1.;
+        SetParameters(p_cur);
+        sec_start_time_= 0.0;
+        Epetra_SerialDenseVector cvector = CalcCvector();
+        for (int j=0; j<nmp_; j++)
+          cmatrix(j, i)=cvector[j];
+        output_->NewResultFile((numb_run_));
+      }
+        break;
+      case INPAR::STR::inv_exp_col:
+      {
+        // untreated curve
+        Epetra_SerialDenseVector p_cur = p_;
+        if (i!=np_)
+          p_cur[i]=p_[i] + inc[i];
+        p_cur[pos_col_frac_] = 1.;
+
+        for (int g=0; g<np_; g++)
+          cout << inc[g] << "\t";
+        cout << endl;
+
+        for (int g=0; g<np_; g++)
+          cout << p_cur[g] << "\t";
+        cout << endl;
+
+        SetParameters(p_cur);
+        sec_start_time_= 0.0;
+        Epetra_SerialDenseVector cvector = CalcCvector();
+        for (int j=0; j<nmp_; j++)
+          cmatrix(j, i)=cvector[j];
+        output_->NewResultFile((numb_run_));
+
+        // collagenase treated curve
+        if (i==pos_col_frac_)
+          p_cur[i] = p_[i]+inc[i];
+        else
+          p_cur[pos_col_frac_] = p_[pos_col_frac_];
+
+        for (int g=0; g<np_; g++)
+          cout << p_cur[g] << "\t";
+        cout << endl;
+        cout << endl;
+        SetParameters(p_cur);
+        sec_start_time_=time_shift_;
+        cvector = CalcCvector();
+        for (int j=0; j<nmp_; j++)
+          cmatrix(j+nmp_, i)=cvector[j];
+        output_->NewResultFile((numb_run_));
+      }
+        break;
+      case INPAR::STR::inv_exp_ela:
+      {
+        // untreated curve
+        Epetra_SerialDenseVector p_cur = p_;
+        if (i!=np_)
+          p_cur[i]=p_[i] + inc[i];
+        p_cur[pos_ela_frac_] = 1.;
+        SetParameters(p_cur);
+        sec_start_time_= 0.0;
+        Epetra_SerialDenseVector cvector = CalcCvector();
+        for (int j=0; j<nmp_; j++)
+          cmatrix(j, i)=cvector[j];
+        output_->NewResultFile((numb_run_));
+
+        // elastase treated curve
+        p_cur[pos_ela_frac_] = p_[pos_ela_frac_];
+        SetParameters(p_cur);
+        sec_start_time_=time_shift_;
+        cvector = CalcCvector();
+        for (int j=0; j<nmp_; j++)
+          cmatrix(j+nmp_, i)=cvector[j];
+        output_->NewResultFile((numb_run_));
+      }
+        break;
+      case INPAR::STR::inv_exp_colfull:
+      {
+        // untreated curve
+        Epetra_SerialDenseVector p_cur = p_;
+        if (i!=np_)
+          p_cur[i]=p_[i] + inc[i];
+        p_cur[pos_col_frac_] = 1.;
+        p_cur[pos_ela_frac_] = 1.;
+        SetParameters(p_cur);
+        sec_start_time_= 0.0;
+        Epetra_SerialDenseVector cvector = CalcCvector();
+        for (int j=0; j<nmp_; j++)
+          cmatrix(j, i)=cvector[j];
+        output_->NewResultFile((numb_run_));
+
+        // collagenase treated curve
+        p_cur[pos_col_frac_] = p_[pos_col_frac_];
+        SetParameters(p_cur);
+        sec_start_time_=time_shift_;
+        cvector = CalcCvector();
+        for (int j=0; j<nmp_; j++)
+          cmatrix(j+nmp_, i)=cvector[j];
+        output_->NewResultFile((numb_run_));
+
+         // full treated curve
+        p_cur[pos_ela_frac_] = p_[pos_ela_frac_];
+        SetParameters(p_cur);
+        sec_start_time_=2*time_shift_;
+        cvector = CalcCvector();
+        for (int j=0; j<nmp_; j++)
+          cmatrix(j+nmp_, i)=cvector[j];
+        output_->NewResultFile((numb_run_));
+     }
+        break;
+      case INPAR::STR::inv_exp_elafull:
+      {
+        // untreated curve
+        Epetra_SerialDenseVector p_cur = p_;
+        if (i!=np_)
+          p_cur[i]=p_[i] + inc[i];
+        p_cur[pos_col_frac_] = 1.;
+        p_cur[pos_ela_frac_] = 1.;
+        SetParameters(p_cur);
+        sec_start_time_= 0.0;
+        Epetra_SerialDenseVector cvector = CalcCvector();
+        for (int j=0; j<nmp_; j++)
+          cmatrix(j, i)=cvector[j];
+        output_->NewResultFile((numb_run_));
+
+        // elastase treated curve
+        p_cur[pos_ela_frac_] = p_[pos_ela_frac_];
+        SetParameters(p_cur);
+        sec_start_time_=time_shift_;
+        cvector = CalcCvector();
+        for (int j=0; j<nmp_; j++)
+          cmatrix(j+nmp_, i)=cvector[j];
+        output_->NewResultFile((numb_run_));
+
+         // full treated curve
+        p_cur[pos_col_frac_] = p_[pos_col_frac_];
+        SetParameters(p_cur);
+        sec_start_time_=2*time_shift_;
+        cvector = CalcCvector();
+        for (int j=0; j<nmp_; j++)
+          cmatrix(j+nmp_, i)=cvector[j];
+        output_->NewResultFile((numb_run_));
+     }
+        break;
+      case INPAR::STR::inv_exp_full:
+      {
+        // untreated curve
+        Epetra_SerialDenseVector p_cur = p_;
+        if (i!=np_)
+          p_cur[i]=p_[i] + inc[i];
+        p_cur[pos_col_frac_] = 1.;
+        p_cur[pos_ela_frac_] = 1.;
+        SetParameters(p_cur);
+        sec_start_time_= 0.0;
+        Epetra_SerialDenseVector cvector = CalcCvector();
+        for (int j=0; j<nmp_; j++)
+          cmatrix(j, i)=cvector[j];
+        output_->NewResultFile((numb_run_));
+
+        // collagenase treated curve
+        p_cur[pos_ela_frac_] = p_[pos_ela_frac_];
+        p_cur[pos_col_frac_] = p_[pos_col_frac_];
+        SetParameters(p_cur);
+        sec_start_time_=time_shift_;
+        cvector = CalcCvector();
+        for (int j=0; j<nmp_; j++)
+          cmatrix(j+nmp_, i)=cvector[j];
+        output_->NewResultFile((numb_run_));
+     }
+        break;
+      default:
+        break;
+      }
       output_->NewResultFile((numb_run_));
+
+
     }
 
     discret_->Comm().Barrier();
     for (int proc=0; proc<discret_->Comm().NumProc(); ++proc)
-    {
       if (proc==discret_->Comm().MyPID())
-      {
         if (proc == 0)
-        {
           CalcNewParameters(cmatrix,  inc);
-        }
-      }
-    }
+
     discret_->Comm().Barrier();
+
     // set new material parameters
     SetParameters(p_);
     numb_run_++;
     discret_->Comm().Broadcast(&error_o_,1,0);
     discret_->Comm().Broadcast(&error_,1,0);
     discret_->Comm().Broadcast(&numb_run_,1,0);
+
   }while(numb_run_<max_itter && error_>tol_) ;      // while (abs(error_o_-error_)>0.001 && error_>tol_ && numb_run_<max_itter);
+
 
   discret_->Comm().Barrier();
   for (int proc=0; proc<discret_->Comm().NumProc(); ++proc)
     if (proc==discret_->Comm().MyPID())
       if (proc == 0)
-
         PrintFile();
   discret_->Comm().Barrier();
+
   return;
 }
 
 void STR::CollInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix cmatrix,  vector<double> inc)
 {
   // initalization of the Jacobi and storage matrix
-  Epetra_SerialDenseMatrix J(nmp_, np_);
+  Epetra_SerialDenseMatrix J(nmp_*num_mcurves_, np_);
   Epetra_SerialDenseMatrix sto(np_,  np_);
-  Epetra_SerialDenseMatrix sto2(np_, nmp_);
+  Epetra_SerialDenseMatrix sto2(np_, nmp_*num_mcurves_);
   Epetra_SerialDenseVector delta_p(np_);
-  Epetra_SerialDenseVector rcurve(nmp_);
+  Epetra_SerialDenseVector rcurve(nmp_*num_mcurves_);
 
-  for (int i=0; i<nmp_; i++)
+  for (int i=0; i<nmp_*num_mcurves_; i++)
     for (int j=0; j<np_; j++)
-      J(i, j) = (cmatrix(i, j)-cmatrix(i, np_)) / inc[j];     //calculating J(p)
+      J(i, j) = (cmatrix(i, j)-cmatrix(i, np_)) / inc[j];     //
 
   sto.Multiply('T',  'N',  1,  J, J,  0);     //calculating J.T*J
 
@@ -331,7 +593,7 @@ void STR::CollInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix cmatrix,  
   LINALG::NonSymmetricInverse(sto,  np_);     //calculating (J.T*J+mu*I).I
   sto2.Multiply('N', 'T', 1,  sto, J, 0);     //calculating (J.T*J+mu*I).I*J.T
 
-  for (int i = 0; i<nmp_; i++)
+  for (int i = 0; i<nmp_*num_mcurves_; i++)
     rcurve[i]=mcurve_[i]-cmatrix(i, np_);
   delta_p.Multiply('N', 'N', 1., sto2, rcurve, 0.);
 
@@ -340,7 +602,7 @@ void STR::CollInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix cmatrix,  
 
   // dependent on the # of steps
   error_o_   = error_;
-  error_   = rcurve.Norm2()/sqrt(nmp_);
+  error_   = rcurve.Norm2()/sqrt(nmp_*num_mcurves_);
 
   //Adjust training parameter
   mu_ *= (error_/error_o_);
@@ -353,25 +615,37 @@ void STR::CollInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix cmatrix,  
 
 Epetra_SerialDenseVector STR::CollInvAnalysis::CalcCvector()
 {
+
   // get input parameter lists
   const Teuchos::ParameterList& ioflags
     = DRT::Problem::Instance()->IOParams();
+
   const Teuchos::ParameterList& sdyn
     = DRT::Problem::Instance()->StructuralDynamicParams();
+
   Teuchos::ParameterList xparams;
+
   xparams.set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
 
 
   // create time integrator
+  sti_ = Teuchos::null;
   sti_ = TimIntCreate(ioflags, sdyn, xparams, discret_, solver_, output_);
+
   if (sti_ == Teuchos::null) dserror("Failed in creating integrator.");
 
   // initialize time loop / Attention the Functions give back the
   // time and the step not timen and stepn value that is why we have
   // to use < instead of <= for the while loop
-  double time = sti_->GetTime();
   const double timemax = sti_->GetTimeEnd();
   int step = sti_->GetStep();
+
+  // set the right starting time for the seccond Neumann boundary condition
+  double time = sti_->GetTime() + sec_start_time_;
+  sti_->SetTime(time);
+  sti_->SetTimen(time+sti_->GetTimeStepSize());
+
+
   const int stepmax = sti_->GetTimeNumStep();
 
   Epetra_SerialDenseVector cvector(2*stepmax);
@@ -381,7 +655,6 @@ Epetra_SerialDenseVector STR::CollInvAnalysis::CalcCvector()
     // integrate time step
     // after this step we hold disn_, etc
     sti_->IntegrateStep();
-
     // update displacements, velocities, accelerations
     // after this call we will have disn_==dis_, etc
     sti_->UpdateStepState();
@@ -513,8 +786,8 @@ void STR::CollInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix,  Epetr
   for (int i=0; i<np_; i++)
     delta_p_s_(numb_run_, i)=delta_p(i);
 
-  ccurve_s_.Reshape(nmp_,  numb_run_+1);
-  for (int i=0; i<nmp_; i++)
+  ccurve_s_.Reshape(nmp_*num_mcurves_,  numb_run_+1);
+  for (int i=0; i<nmp_*num_mcurves_; i++)
     ccurve_s_(i, numb_run_)= cmatrix(i, cmatrix.ColDim()-1);
 
   mu_s_.Resize(numb_run_+1);
@@ -543,16 +816,13 @@ void STR::CollInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix,  Epetr
     printf("\tParameter: ");
     for (int j=0; j < delta_p.Length(); j++)
       printf("%10.3f", p_s_(i, j));
-    //printf("\tDelta_p: ");
-    //for (int j=0; j < delta_p.Length(); j++)
-    //  printf("%10.3f", delta_p_s_(i, j));
     printf("\tmu: ");
     printf("%10.3f", mu_s_(i));
     printf("\n");
   }
 
   printf("\n");
-  for (int i=0; i < nmp_/2.; i++)
+  for (int i=0; i < nmp_*num_mcurves_/2.; i++)
   {
     printf(" %10.2f ",  mcurve_(i*2));
     if (numb_run_<15)
@@ -570,7 +840,7 @@ void STR::CollInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix,  Epetr
 
   printf("\n");
 
-  for (int i=0; i < nmp_/2.; i++)
+  for (int i=0; i < nmp_*num_mcurves_/2.; i++)
   {
     printf(" %10.2f ",  mcurve_((i)*2+1));
     if (numb_run_<15)
@@ -616,7 +886,7 @@ void STR::CollInvAnalysis::PrintFile()
   string para   = name+"_Para.txt";
 
   cxFile = fopen((xcurve).c_str(), "w");
-  for (int i=0; i < nmp_/2.; i++)
+  for (int i=0; i < nmp_*num_mcurves_/2.; i++)
   {
     fprintf(cxFile, " %10.5f ,",  mcurve_(i*2));
     for (int j=0; j<numb_run_+1; j++)
@@ -626,7 +896,7 @@ void STR::CollInvAnalysis::PrintFile()
   fclose(cxFile);
 
   cyFile = fopen((ycurve).c_str(), "w");
-  for (int i=0; i < nmp_/2.; i++)
+  for (int i=0; i < nmp_*num_mcurves_/2.; i++)
   {
     fprintf(cyFile, " %10.5f ,",  mcurve_((i)*2+1));
     for (int j=0; j<numb_run_+1; j++)
@@ -704,7 +974,6 @@ void STR::CollInvAnalysis::ReadInParameters()
         //p_[j+2] = actmat2->Parmode();
         p_[j] = actmat2->Youngs();
         p_[j+1] = (1./(1.-2.*actmat2->Nue()))-1.;
-        cout << "Get the parameter: " << p_[j+1] << " for the Simulation " << actmat2->Nue() << " was used!" << endl;
         break;
       }
       case INPAR::MAT::mes_coupblatzko:
@@ -726,6 +995,19 @@ void STR::CollInvAnalysis::ReadInParameters()
         int j = p_.Length();
         p_.Resize(j+1);
         p_[j]   = actmat2->Mue();
+        break;
+      }
+      case INPAR::MAT::mes_varisoneohooke:
+      {
+        filename_=filename_+"_varisoneohooke";
+        const MAT::ELASTIC::VarIsoNeoHooke* actmat2 = static_cast<const MAT::ELASTIC::VarIsoNeoHooke*>(summat.get());
+        int j = p_.Length();
+        p_.Resize(j+2);
+        p_[j]   = (1./(1.-actmat2->Frac()))-1.;
+        // stores the position of the frac in the parameter array
+        pos_ela_frac_ = j;
+        pos_col_frac_ = j;
+        p_[j+1] = actmat2->Mue();
         break;
       }
       case INPAR::MAT::mes_isoyeoh:
@@ -912,6 +1194,15 @@ void STR::CollInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
           static_cast<MAT::ELASTIC::IsoNeoHooke*>(summat.get());
         actmat2->SetMue(abs(p_cur(j)));
         j = j+1;
+        break;
+      }
+      case INPAR::MAT::mes_varisoneohooke:
+      {
+        MAT::ELASTIC::VarIsoNeoHooke* actmat2 =
+          static_cast<MAT::ELASTIC::VarIsoNeoHooke*>(summat.get());
+        actmat2->SetFrac(1. - (1. / (abs(p_cur(j))+1.)));
+        actmat2->SetMue(abs(p_cur(j+1)));
+        j = j+2;
         break;
       }
       case INPAR::MAT::mes_isoyeoh:

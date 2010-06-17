@@ -88,10 +88,15 @@ private:
 
   //four options for the measured curve
   Epetra_SerialDenseVector mcurve_;	// measured displacment
-  Epetra_SerialDenseVector cmcurve_;	// measured displacment collagenase
-  Epetra_SerialDenseVector emcurve_;	// measured displacment elastase
-  Epetra_SerialDenseVector cemcurve_;	// measured displacment
-                                        // collagenase and elastase
+
+  // time shift between the two Neumann input curves
+  double sec_start_time_;
+  double time_shift_;
+  // number of compared curves 1 default
+  int num_mcurves_;
+
+  int pos_col_frac_;
+  int pos_ela_frac_;
 
 
   double mu_;
@@ -133,12 +138,12 @@ public:
 
 
   /// Read in routine for the experimentally determined curves
-  void  ReadUnTreatedCurve();
-  void  ReadColTreatedCurve();
-  void  ReadElaTreatedCurve();
-  void  ReadColFullTreatedCurve();
-  void  ReadElaFullTreatedCurve();
-  void  ReadFullTreatedCurve();
+  Epetra_SerialDenseVector  ReadUnTreatedCurve();
+  Epetra_SerialDenseVector  ReadColTreatedCurve();
+  Epetra_SerialDenseVector  ReadElaTreatedCurve();
+  Epetra_SerialDenseVector  ReadColFullTreatedCurve();
+  Epetra_SerialDenseVector  ReadElaFullTreatedCurve();
+  Epetra_SerialDenseVector  ReadFullTreatedCurve();
 
 
   /// Read in routine for the material parameters

@@ -164,14 +164,14 @@ namespace ELASTIC
     /// @name Access methods
     //@{
     double Frac() const { return params_->frac_; }
-    double Mue() const { return params_->mue_; }
+    double Mue()  const { return params_->mue_; }
 
     //@}
 
     /// @name Write methods
     //@{
     void SetFrac(const double frac) { params_->frac_ = frac; }
-    void SetMue(const double mue) { params_->mue_ = mue; }
+    void SetMue(const double mue)   { params_->mue_ = mue; }
     //@}
   private:
 
