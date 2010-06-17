@@ -48,6 +48,12 @@ Maintainer: Alexander Popp
 #define MESHTYINGTWOCON      /* flag for applying 2 static condensations */
 #define MESHTYINGUCONSTR     /* flag for computing constraints b(u,\mu) */
 
+/************************************************************************/
+/* Debugging options                                                    */
+/************************************************************************/
+
+// GENERAL DEBUGGING OPTIONS
+#define MESHTYINGASOUTPUT    /* flag for detailed active set output */
 
 #endif  // #ifndef MESHTYING_DEFINES_H
 #endif  // #ifdef CCADISCRET

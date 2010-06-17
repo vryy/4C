@@ -433,7 +433,7 @@ void CONTACT::MtPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
     cout << "Constraint Norm: " << cnorm << "\n";
     if (updatepenalty)
       cout << "Updated penalty parameter: " << ppcurr << " -> " << Params().get<double>("PENALTYPARAM") << "\n";
-    cout << "********************************************\n\n";
+    cout << "********************************************\n";
   }
   return;
 }

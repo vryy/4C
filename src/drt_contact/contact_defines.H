@@ -55,6 +55,7 @@ Maintainer: Alexander Popp
 /************************************************************************/
 
 // GENERAL DEBUGGING OPTIONS
+#define CONTACTASOUTPUT             /* flag for detailed active set output */
 //#define CONTACTTIME               /* flag for contact time measurement */
 //#define CONTACTEIG                /* flag for eigenvalue+condition analysis */
 //#define CONTACTFDNORMAL           /* flag for FD check of normal derivative */

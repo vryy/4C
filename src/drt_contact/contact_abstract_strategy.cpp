@@ -44,6 +44,7 @@ Maintainer: Alexander Popp
 #include "friction_node.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_utils.H"
@@ -1161,92 +1162,239 @@ void CONTACT::CoAbstractStrategy::Print(ostream& os) const
 void CONTACT::CoAbstractStrategy::PrintActiveSet()
 {
   // output message
+	Comm().Barrier();
   if (Comm().MyPID()==0)
-    cout << "Active contact set--------------------------------------------------------------\n";
-  Comm().Barrier();
-
-  // loop over all interfaces
-  for (int i=0; i<(int)interface_.size(); ++i)
   {
-    //if (i>0) dserror("ERROR: PrintActiveSet: Double active node check needed for n interfaces!");
-
-    // loop over all slave nodes on the current interface
-    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
-    {
-      int gid = interface_[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
-
-      // compute weighted gap
-      double wgap = (*g_)[g_->Map().LID(gid)];
-
-      // compute normal part of Lagrange multiplier
-      double nz = 0.0;
-      double nzold = 0.0;
-      for (int k=0;k<3;++k)
-      {
-        nz += cnode->MoData().n()[k] * cnode->MoData().lm()[k];
-        nzold += cnode->MoData().n()[k] * cnode->MoData().lmold()[k];
-      }
-      
-      // output for frictionless case
-      if (!friction_)
-      {
-        // print nodes of inactive set *************************************
-        if (cnode->Active()==false)
-        {
-          printf("INACTIVE: %d \t wgap: % e \t lm: % e \n",gid,wgap,nz);
-          fflush(stdout);
-        }
-
-        // print nodes of active set ***************************************
-        else
-        {
-          printf("ACTIVE:   %d \t wgap: % e \t lm: % e \n",gid,wgap,nz);
-          fflush(stdout);
-        }
-
-      }
-      // output for frictional case
-      else
-      {
-        FriNode* frinode = static_cast<FriNode*>(cnode);
-        
-        double zt = 0.0;
-        double ztxi = 0.0;
-        double zteta = 0.0;
-        double jumptxi = 0.0;
-        double jumpteta = 0.0;
-  
-        // compute tangential parts of Lagrange multiplier and jumps
-        for (int k=0;k<Dim();++k)
-        {
-          ztxi += frinode->CoData().txi()[k] * frinode->MoData().lm()[k];
-          zteta += frinode->CoData().teta()[k] * frinode->MoData().lm()[k];
-          jumptxi += frinode->CoData().txi()[k] * frinode->Data().jump()[k];
-          jumpteta += frinode->CoData().teta()[k] * frinode->Data().jump()[k];
-        }
-
-        zt = sqrt(ztxi*ztxi+zteta*zteta);
-
-        // check for dimensions
-        if (Dim()==2 and abs(jumpteta)>0.0001)
-          dserror("Error: Jumpteta should be zero for 2D");
-
-        // print active nodes on screen
-        if(frinode->Active())
-        {
-          if(frinode->Data().Slip())
-            cout << "SLIP " << gid << " Normal " << nz << " Tangential " << zt << " Jump1 " << jumptxi << " Jump2 " << jumpteta <<  endl;
-          else
-           cout << "STICK " << gid << " Normal " << nz << " Tangential " << zt << " Jump1 " << jumptxi << " Jump2 " << jumpteta <<  endl;
-        }
-      }
-    }
+    printf("\nActive contact set--------------------------------------------------------------\n");
+	  fflush(stdout);
   }
 
+	//**********************************************************************
+	// detailed active set output
+	//**********************************************************************
+
+#ifdef CONTACTASOUTPUT
+  // loop over all interfaces
+	for (int i=0; i<(int)interface_.size(); ++i)
+	{
+		//if (i>0) dserror("ERROR: PrintActiveSet: Double active node check needed for n interfaces!");
+
+		// loop over all slave nodes on the current interface
+		for (int j=0;j<interface_[i]->SlaveFullNodes()->NumMyElements();++j)
+		{
+			// gid of current node
+			int gid = interface_[i]->SlaveFullNodes()->GID(j);
+			DRT::Node* node = interface_[i]->Discret().gNode(gid);
+			if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+
+			// introduce local integer variable status
+			// (0=inactive, 1=active, 2=slip, 3=stick)
+			// (this is necessary as all data will be written by proc 0, but
+			// the knowledge of the above status ONLY exists on the owner
+			// processor of the respective node. Thus this information must
+			// also be communicated to proc 0 in addition to the actual data!)
+			int status = 0;
+
+			//--------------------------------------------------------------------
+			// FRICTIONLESS CASE
+			//--------------------------------------------------------------------
+			if (!friction_)
+			{
+				// cast to CoNode
+				CoNode* cnode = static_cast<CoNode*>(node);
+
+				// initialize output variables
+				double wgap = 0.0;
+				double nz = 0.0;
+
+				// do processing only for owner proc
+				if (Comm().MyPID()==cnode->Owner())
+				{
+					// compute weighted gap
+					wgap = (*g_)[g_->Map().LID(gid)];
+
+					// compute normal part of Lagrange multiplier
+					for (int k=0;k<3;++k)
+						nz += cnode->MoData().n()[k] * cnode->MoData().lm()[k];
+
+					// compute status
+					if (cnode->Active()) status = 1;
+				}
+
+				// communicate
+				Comm().Broadcast(&wgap,1,cnode->Owner());
+				Comm().Broadcast(&nz,1,cnode->Owner());
+				Comm().Broadcast(&status,1,cnode->Owner());
+
+				// output is done by proc 0
+				if (Comm().MyPID()==0)
+				{
+					// print nodes of inactive set *************************************
+					if (status==0)
+					{
+						printf("INACTIVE: %d \t wgap: % e \t lm: % e \n",gid,wgap,nz);
+						fflush(stdout);
+					}
+
+					// print nodes of active set ***************************************
+					else
+					{
+						printf("ACTIVE:   %d \t wgap: % e \t lm: % e \n",gid,wgap,nz);
+						fflush(stdout);
+					}
+				}
+			}
+
+			//--------------------------------------------------------------------
+			// FRICTIONAL CASE
+			//--------------------------------------------------------------------
+			else
+			{
+				// cast to CoNode and FriNode
+				CoNode* cnode = static_cast<CoNode*>(node);
+				FriNode* frinode = static_cast<FriNode*>(cnode);
+
+				// initialize output variables
+				double wgap = 0.0;
+				double nz = 0.0;
+				double tz = 0.0;
+				double jumptxi = 0.0;
+				double jumpteta = 0.0;
+
+				// do processing only for owner proc
+				if (Comm().MyPID()==cnode->Owner())
+				{
+					// compute weighted gap
+					wgap = (*g_)[g_->Map().LID(gid)];
+
+					// compute normal part of Lagrange multiplier
+					for (int k=0;k<3;++k)
+						nz += frinode->MoData().n()[k] * frinode->MoData().lm()[k];
+
+					// additional output quantities for friction
+					double txiz = 0.0;
+					double tetaz = 0.0;
+
+					// compute tangential parts of Lagrange multiplier and jumps
+					for (int k=0;k<Dim();++k)
+					{
+						txiz += frinode->CoData().txi()[k] * frinode->MoData().lm()[k];
+						tetaz += frinode->CoData().teta()[k] * frinode->MoData().lm()[k];
+						jumptxi += frinode->CoData().txi()[k] * frinode->Data().jump()[k];
+						jumpteta += frinode->CoData().teta()[k] * frinode->Data().jump()[k];
+					}
+
+					// total tangential component
+					tz = sqrt(txiz*txiz+tetaz*tetaz);
+
+					// check for dimensions
+					if (Dim()==2 and abs(jumpteta)>0.0001)
+						dserror("Error: Jumpteta should be zero for 2D");
+
+					// compute status
+					if (cnode->Active())
+					{
+						if (frinode->Data().Slip()) status = 2;
+						else                        status = 3;
+					}
+				}
+
+				// communicate
+				Comm().Broadcast(&wgap,1,cnode->Owner());
+				Comm().Broadcast(&nz,1,cnode->Owner());
+				Comm().Broadcast(&tz,1,cnode->Owner());
+				Comm().Broadcast(&jumptxi,1,cnode->Owner());
+				Comm().Broadcast(&jumpteta,1,cnode->Owner());
+				Comm().Broadcast(&status,1,cnode->Owner());
+
+				// output is now done by proc 0
+				if (Comm().MyPID()==0)
+				{
+					// print nodes of slip set **************************************
+					if (status == 2)
+					{
+						printf("SLIP:  %d \t lm_n: % e \t lm_t: % e \t jump1: % e \t jump2: % e \n",gid,nz,tz,jumptxi,jumpteta);
+						fflush(stdout);
+					}
+					// print nodes of stick set *************************************
+					else if (status == 3)
+					{
+						printf("STICK: %d \t lm_n: % e \t lm_t: % e \t jump1: % e \t jump2: % e \n",gid,nz,tz,jumptxi,jumpteta);
+						fflush(stdout);
+					}
+				}
+		  }
+		}
+	}
+
+#else
+	//**********************************************************************
+  // reduced active set output
+	//**********************************************************************
+
+	// counters
+	int activenodes = 0;
+	int gactivenodes = 0;
+	int inactivenodes = 0;
+	int ginactivenodes = 0;
+	int slipnodes = 0;
+	int gslipnodes = 0;
+
+	// loop over all interfaces
+	for (int i=0; i<(int)interface_.size(); ++i)
+	{
+		//if (i>0) dserror("ERROR: PrintActiveSet: Double active node check needed for n interfaces!");
+
+		// loop over all slave nodes on the current interface
+		for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+		{
+			int gid = interface_[i]->SlaveRowNodes()->GID(j);
+			DRT::Node* node = interface_[i]->Discret().gNode(gid);
+			if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+
+			// increase active counters
+			CoNode* cnode = static_cast<CoNode*>(node);
+			if (cnode->Active()) activenodes   += 1;
+			else                 inactivenodes += 1;
+
+			// increase friction counters
+			if (friction_)
+			{
+				FriNode* frinode = static_cast<FriNode*>(cnode);
+				if (frinode->Data().Slip()) slipnodes += 1;
+			}
+		}
+	}
+
+	// sum among all processors
+	Comm().SumAll(&activenodes,&gactivenodes,1);
+	Comm().SumAll(&inactivenodes,&ginactivenodes,1);
+	Comm().SumAll(&slipnodes,&gslipnodes,1);
+
+	// print active set information
+	if (Comm().MyPID()==0)
+	{
+		if (friction_)
+		{
+			cout << BLUE2_LIGHT  << "Total     SLIP nodes:\t" << gslipnodes << END_COLOR << endl;
+			cout << BLUE2_LIGHT  << "Total    STICK nodes:\t" << gactivenodes-gslipnodes << END_COLOR << endl;
+			cout << YELLOW_LIGHT << "Total INACTIVE nodes:\t" << ginactivenodes << END_COLOR << endl;
+		}
+		else
+		{
+			cout << BLUE2_LIGHT <<  "Total   ACTIVE nodes:\t" << gactivenodes << END_COLOR << endl;
+			cout << YELLOW_LIGHT << "Total INACTIVE nodes:\t" << ginactivenodes << END_COLOR << endl;
+		}
+	}
+#endif // #ifdef CONTACTASOUTPUT
+
+  // output line
   Comm().Barrier();
+	if (Comm().MyPID()==0)
+	{
+		printf("--------------------------------------------------------------------------------\n\n");
+		fflush(stdout);
+	}
 
   return;
 }

@@ -39,6 +39,7 @@ Maintainer: Alexander Popp
 
 #include "Epetra_SerialComm.h"
 #include "meshtying_abstract_strategy.H"
+#include "meshtying_defines.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_mortar/mortar_node.H"
@@ -769,10 +770,18 @@ void CONTACT::MtAbstractStrategy::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::PrintActiveSet()
 {
-  // print message
+	//**********************************************************************
+	// only do this if corresponding output option is chosen
+	//**********************************************************************
+#ifdef MESHTYINGASOUTPUT
+
+  // output message
+	Comm().Barrier();
   if (Comm().MyPID()==0)
-    cout << "Meshtying interface-------------------------------------------------------------\n";
-  Comm().Barrier();
+  {
+    printf("\nMeshtying Interface--------------------------------------------------------------\n");
+    fflush(stdout);
+  }
 
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -781,24 +790,48 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet()
     //if (i>0) dserror("ERROR: PrintActiveSet: Double active node check needed for n interfaces!");
 
     // loop over all slave nodes on the current interface
-    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+    for (int j=0;j<interface_[i]->SlaveFullNodes()->NumMyElements();++j)
     {
-      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+    	// gid of current node
+      int gid = interface_[i]->SlaveFullNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+
+      // cast to MortarNode
       MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
-      // compute Lagrange multiplier
+      // initialize output variables
       double lm[3] = {0.0, 0.0, 0.0};
-      for (int k=0;k<3;++k) lm[k] = mtnode->MoData().lmold()[k];
-      
-      // print nodes of active set *************************************
-      printf("ACTIVE: %d \t lm[0]: % e \t lm[1]: % e \t lm[2]: % e \n",gid,lm[0],lm[1],lm[2]);
-      fflush(stdout);
+
+			// do processing only for owner proc
+			if (Comm().MyPID()==mtnode->Owner())
+			{
+				// compute Lagrange multiplier
+				for (int k=0;k<3;++k) lm[k] = mtnode->MoData().lmold()[k];
+			}
+
+			// communicate
+			Comm().Broadcast(lm,3,mtnode->Owner());
+
+			// output is done by proc 0
+			if (Comm().MyPID()==0)
+			{
+				// print nodes of active set *************************************
+				printf("ACTIVE: %d \t lm[0]: % e \t lm[1]: % e \t lm[2]: % e \n",gid,lm[0],lm[1],lm[2]);
+				fflush(stdout);
+			}
     }
   }
 
-  Comm().Barrier();
+  // output line
+	Comm().Barrier();
+	if (Comm().MyPID()==0)
+	{
+		printf("--------------------------------------------------------------------------------\n\n");
+		fflush(stdout);
+	}
+
+#endif // #ifdef MESHTYINGASOUTPUT
 
   return;
 }

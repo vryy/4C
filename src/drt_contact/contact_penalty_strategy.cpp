@@ -588,7 +588,7 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
       cout << "Updated normal penalty parameter: " << ppcurr << " -> " << Params().get<double>("PENALTYPARAM") << "\n";
     if (updatepenaltytan == true && friction_)
      cout << "Updated tangential penalty parameter: " << ppcurrtan << " -> " << Params().get<double>("PENALTYPARAMTAN") << "\n";
-    cout << "********************************************\n\n";
+    cout << "********************************************\n";
   }
   
   return;
