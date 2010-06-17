@@ -271,10 +271,10 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_node.cpp
   src/drt_lib/drt_parobject.cpp
   src/drt_lib/drt_parobjectfactory.cpp
-  src/drt_lib/drt_parobjectregister.cpp
   src/drt_lib/drt_timecurve.cpp
   src/drt_lib/drt_utils.cpp
   src/drt_lib/drt_utils_createdis.cpp
+  src/drt_lib/drt_utils_nullspace.cpp
 )
 set(OBJS_DRT_MAT_LIB
   src/drt_mat/aaagasser.cpp
@@ -682,6 +682,9 @@ set(OBJS_DRT_THERMO_LIB
   src/drt_thermo/thermo_element_boundary_evaluate.cpp
   src/drt_thermo/thermo_element_evaluate.cpp
   src/drt_thermo/thermo_element_input.cpp
+)
+set(OBJS_DRT_REGISTER
+  src/drt_lib/drt_parobjectregister.cpp
 )
 set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra/scatra_ele_boundary_impl.cpp
@@ -1284,6 +1287,9 @@ add_library(drt_mortar ${OBJS_DRT_MORTAR})
 add_library(drt_mat ${OBJS_DRT_MAT_LIB})
 add_library(drt_micromat ${OBJS_DRT_MAT} ${OBJS_DRT_STRU_MULTI})
 
+# special library that demands all parobject types
+add_library(drt_lib_register ${OBJS_DRT_REGISTER})
+
 # libraries that are used by baci and by filters
 add_library(drt_lib ${OBJS_DRT_LIB})
 add_library(drt_lib_inpar ${OBJS_DRT_INPAR})
@@ -1302,6 +1308,7 @@ add_library(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
 add_library(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
 
 set(SUPPORT_LIBRARIES
+  drt_lib
   drt_lib_artnet 
   drt_lib_redairways
   drt_lib_mortar
@@ -1388,7 +1395,7 @@ target_link_libraries (${baciname}
   drt_nurbs
   drt_mortar 
   drt_constraint
-  drt_lib
+  drt_lib_register
   ${ELEMENT_LIBRARIES}
   ${SUPPORT_LIBRARIES}
   drt_micromat drt_mat
@@ -1398,7 +1405,7 @@ target_link_libraries (${baciname}
 
 set(FILTER_LIBRARIES 
   post_drt_common
-  drt_lib
+  drt_lib_register
   ${ELEMENT_LIBRARIES}
   ${SUPPORT_LIBRARIES}
   drt_mat
