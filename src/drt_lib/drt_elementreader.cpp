@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file drt_elementreader.cpp
+
+\brief Read element sections of dat files.
+
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
 

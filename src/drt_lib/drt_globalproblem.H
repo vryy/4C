@@ -2,7 +2,7 @@
 /*!
 \file drt_globalproblem.H
 
-\brief global list of problems
+\brief internal representation of an input file
 
 <pre>
 Maintainer: Ulrich Kuettler
@@ -26,8 +26,6 @@ Maintainer: Ulrich Kuettler
 #include "drt_function.H"
 #include "drt_timecurve.H"
 #include "drt_resulttest.H"
-
-//#include "standardtypes_cpp.H"
 
 using namespace std;
 using namespace Teuchos;

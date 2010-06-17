@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file drt_parobjectfactory.cpp
+
+\brief Central type object management.
+
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #include <Epetra_Comm.h>
 

@@ -1,3 +1,18 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file drt_elementdefinition.cpp
+
+\brief Central storage of element input line definitions
+
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
 #ifdef CCADISCRET
 
 #include "drt_elementdefinition.H"

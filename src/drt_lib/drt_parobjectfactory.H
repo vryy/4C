@@ -1,3 +1,18 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file drt_parobjectfactory.H
+
+\brief Central type object management.
+
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef DRT_PAROBJECTFACTORY_H
 #define DRT_PAROBJECTFACTORY_H
 

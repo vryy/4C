@@ -1,3 +1,18 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file drt_elementdefinition.H
+
+\brief Central storage of element input line definitions
+
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
 #ifdef CCADISCRET
 
 #ifndef DRT_ELEMENTDEFINITION_H
@@ -22,6 +37,9 @@ namespace INPUT
   class Lines;
 
   /// Collection of valid element dat file line definitions
+  /*!
+    The actual definition is done by each element's type class.
+   */
   class ElementDefinition
   {
   public:

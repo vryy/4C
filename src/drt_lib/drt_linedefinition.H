@@ -1,3 +1,18 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file drt_linedefinition.H
+
+\brief Definition of one line of an input file.
+
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef DRT_LINEDEFINITION_H
 #define DRT_LINEDEFINITION_H
 
