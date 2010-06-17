@@ -18,6 +18,7 @@ Maintainer: Moritz Frenzel
 #include <string>
 
 #include "stru_resulttest.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 #ifdef PARALLEL
 #include <mpi.h>

@@ -17,6 +17,8 @@ Maintainer: Georg Bauer
 
 #include "scatra_timint_implicit.H"
 #include "scatra_resulttest.H"
+#include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_discret.H"
 
 #ifdef PARALLEL
 #include <mpi.h>

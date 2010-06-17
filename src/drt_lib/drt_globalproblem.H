@@ -23,8 +23,6 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 
-#include "drt_discret.H"
-//#include "drt_inputreader.H"
 #include "drt_function.H"
 #include "drt_timecurve.H"
 #include "drt_resulttest.H"
@@ -52,6 +50,7 @@ class Bundle;
 
 namespace DRT
 {
+class Discretization;
 
 namespace INPUT
 {

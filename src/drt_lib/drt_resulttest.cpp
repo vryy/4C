@@ -19,6 +19,9 @@ Maintainer: Ulrich Kuettler
 #include "standardtypes_cpp.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
+#include "drt_linedefinition.H"
+#include "drt_inputreader.H"
+
 
 using namespace DRT;
 

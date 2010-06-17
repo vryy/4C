@@ -19,6 +19,7 @@ http://www.lnm.mw.tum.de/Members/kuettler
 
 #include "fluidresulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 #ifdef PARALLEL
 #include <mpi.h>

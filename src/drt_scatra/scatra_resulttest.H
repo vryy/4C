@@ -18,8 +18,16 @@ Maintainer: Georg Bauer
 
 #ifdef CCADISCRET
 
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
+#include <Epetra_MultiVector.h>
+
 #include "../drt_lib/drt_resulttest.H"
 
+namespace DRT
+{
+  class Discretization;
+}
 
 namespace SCATRA{
 
@@ -54,11 +62,11 @@ public:
 private:
 
   /// RCP to scalar transport discretization
-  RefCountPtr<DRT::Discretization> dis_;
+  Teuchos::RCP<DRT::Discretization> dis_;
   /// RCP to solution vector
-  RefCountPtr<Epetra_Vector>       mysol_;
+  Teuchos::RCP<Epetra_Vector>       mysol_;
   /// RCP to mass/heat flux vector
-  RefCountPtr<Epetra_MultiVector>  myflux_;
+  Teuchos::RCP<Epetra_MultiVector>  myflux_;
 };
 
 } // namespace SCATRA

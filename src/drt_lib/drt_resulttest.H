@@ -25,12 +25,15 @@ Maintainer: Ulrich Kuettler
 
 #include <vector>
 
-#include "drt_inputreader.H"
-#include "drt_linedefinition.H"
-
 
 namespace DRT
 {
+  namespace INPUT
+  {
+    class DatFileReader;
+    class LineDefinition;
+    class Lines;
+  }
 
   /*!
     \brief Pure virtual base class of all field test classes

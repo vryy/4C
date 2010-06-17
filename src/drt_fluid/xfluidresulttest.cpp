@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 
 #include "xfluidresulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 #ifdef PARALLEL
 #include <mpi.h>
