@@ -3,10 +3,14 @@
 #ifndef DRT_ELEMENTREADER_H
 #define DRT_ELEMENTREADER_H
 
+#include <Epetra_Map.h>
+
 #include "drt_inputreader.H"
 
 namespace DRT
 {
+  class Discretization;
+
 namespace INPUT
 {
 

@@ -54,7 +54,7 @@ Maintainer: Ulrich Kuettler
 
 #include "drt_dserror.H"
 #include "drt_parser.H"
-#include "drt_inputreader.H"
+//#include "drt_inputreader.H"
 
 
 namespace DRT {
@@ -62,6 +62,7 @@ namespace DRT {
 namespace INPUT {
 
   class Lines;
+  class DatFileReader;
 
 }
 

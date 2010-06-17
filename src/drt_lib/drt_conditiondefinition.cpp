@@ -17,6 +17,7 @@ Maintainer: Michael Gee
 #include "drt_conditiondefinition.H"
 #include "drt_colors.H"
 #include "drt_globalproblem.H"
+#include "drt_discret.H"
 
 
 /*----------------------------------------------------------------------*

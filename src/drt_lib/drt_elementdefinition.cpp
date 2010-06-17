@@ -1,6 +1,7 @@
 #ifdef CCADISCRET
 
 #include "drt_elementdefinition.H"
+#include "drt_parobjectfactory.H"
 
 
 /*----------------------------------------------------------------------*/

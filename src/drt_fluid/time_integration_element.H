@@ -24,7 +24,7 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
-
+#include "../linalg/linalg_fixedsizematrix.H"
 
 namespace FLD
 {

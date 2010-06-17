@@ -1,8 +1,10 @@
 
 #ifdef CCADISCRET
 
+#include "drt_discret.H"
 #include "drt_nodereader.H"
 #include "drt_globalproblem.H"
+#include "../drt_nurbs_discret/drt_control_point.H"
 
 #include <Epetra_Time.h>
 

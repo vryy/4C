@@ -27,17 +27,23 @@ Maintainer: Ulrich Kuettler
 #include <algorithm>
 
 #include <Epetra_Comm.h>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 
-#include "drt_discret.H"
-#include "../drt_nurbs_discret/drt_knotvector.H"
-#include "../drt_nurbs_discret/drt_control_point.H"
+// #include "drt_discret.H"
+// #include "../drt_nurbs_discret/drt_knotvector.H"
+// #include "../drt_nurbs_discret/drt_control_point.H"
 
 using namespace std;
 using namespace Teuchos;
 
 namespace DRT
 {
+
+  namespace NURBS
+  {
+    class Knotvector;
+  }
 
 /// Helper classes to read and validate input files
 namespace INPUT
@@ -82,7 +88,7 @@ class DatFileReader
 public:
 
   /// construct a reader for a given file
-  DatFileReader(string filename, RefCountPtr<Epetra_Comm> comm, int outflag=0, bool dumpinput=true);
+  DatFileReader(string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag=0, bool dumpinput=true);
 
   /// return my inputfile name
   string MyInputfileName() const;
@@ -148,7 +154,7 @@ private:
   string filename_;
 
   /// my communicator
-  RefCountPtr<Epetra_Comm> comm_;
+  Teuchos::RCP<Epetra_Comm> comm_;
 
   /// number of lines
   int numrows_;

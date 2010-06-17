@@ -20,6 +20,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_linedefinition.H"
 #include "../linalg/linalg_utils.H"
 #include "standardtypes_cpp.H"
+#include "../drt_nurbs_discret/drt_knotvector.H"
 
 #include <Epetra_Time.h>
 #include <iterator>

@@ -2,6 +2,7 @@
 #ifdef CCADISCRET
 
 #include "drt_linedefinition.H"
+#include "drt_dserror.H"
 #include <iterator>
 
 
