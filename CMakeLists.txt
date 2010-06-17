@@ -403,7 +403,6 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/drt_validconditions.cpp
   src/drt_inpar/drt_validmaterials.cpp
   src/drt_inpar/drt_validparameters.cpp
-  src/drt_lib/drt_elementdefinition.cpp
 )
 set(OBJS_DRT_ARTNET
   src/drt_art_net/art_net_dyn_drt.cpp
@@ -582,6 +581,7 @@ set(OBJS_DRT_UTILS
   src/drt_lib/drt_condition_selector.cpp
   src/drt_lib/drt_condition_utils.cpp
   src/drt_lib/drt_dserror.cpp
+  src/drt_lib/drt_elementdefinition.cpp
   src/drt_lib/drt_elementtype.cpp
   src/drt_lib/drt_exporter.cpp
   src/drt_lib/drt_nodematchingoctree.cpp
@@ -1319,8 +1319,8 @@ set(SUPPORT_LIBRARIES
   drt_lib_surfstress
   drt_lib_potential
   drt_lib_intersection
-  drt_lib_io
   drt_lib_inpar
+  drt_lib_io
   drt_lib_nurbs 
   )
 
