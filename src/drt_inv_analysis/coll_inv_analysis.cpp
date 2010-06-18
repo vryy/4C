@@ -32,12 +32,15 @@ Maintainer: Sophie Rausch
 #include "../drt_matelast/elast_coupblatzko.H"
 #include "../drt_matelast/elast_couplogneohooke.H"
 #include "../drt_matelast/elast_isoexpo.H"
+#include "../drt_matelast/elast_varisoexpo.H"
 #include "../drt_matelast/elast_isomooneyrivlin.H"
 #include "../drt_matelast/elast_varisoneohooke.H"
 #include "../drt_matelast/elast_isoneohooke.H"
 #include "../drt_matelast/elast_isoyeoh.H"
 #include "../drt_matelast/elast_isoquad.H"
+#include "../drt_matelast/elast_varisoquad.H"
 #include "../drt_matelast/elast_isocub.H"
+#include "../drt_matelast/elast_varisocub.H"
 #include "../drt_matelast/elast_volpenalty.H"
 #include "../drt_matelast/elast_vologden.H"
 #include "../drt_matelast/elast_volsussmanbathe.H"
@@ -1030,6 +1033,19 @@ void STR::CollInvAnalysis::ReadInParameters()
         p_[j]   = actmat2->C();
         break;
       }
+      case INPAR::MAT::mes_varisoquad:
+      {
+        filename_=filename_+"_varisoquad";
+        const MAT::ELASTIC::VarIsoQuad* actmat2 = static_cast<const MAT::ELASTIC::VarIsoQuad*>(summat.get());
+        int j = p_.Length();
+        p_.Resize(j+2);
+        p_[j]   = (1./(1.-actmat2->Frac()))-1.;
+        // stores the position of the frac in the parameter array
+        pos_ela_frac_ = j;
+        pos_col_frac_ = j;
+        p_[j+1] = actmat2->C();
+        break;
+      }
       case INPAR::MAT::mes_isocub:
       {
         filename_=filename_+"_isocub";
@@ -1037,6 +1053,19 @@ void STR::CollInvAnalysis::ReadInParameters()
         int j = p_.Length();
         p_.Resize(j+1);
         p_[j]   = actmat2->C();
+        break;
+      }
+      case INPAR::MAT::mes_varisocub:
+      {
+        filename_=filename_+"_varisocub";
+        const MAT::ELASTIC::VarIsoCub* actmat2 = static_cast<const MAT::ELASTIC::VarIsoCub*>(summat.get());
+        int j = p_.Length();
+        p_.Resize(j+2);
+        p_[j]   = (1./(1.-actmat2->Frac()))-1.;
+        // stores the position of the frac in the parameter array
+        pos_ela_frac_ = j;
+        pos_col_frac_ = j;
+        p_[j+1] = actmat2->C();
         break;
       }
       case INPAR::MAT::mes_isoexpo:
@@ -1047,6 +1076,20 @@ void STR::CollInvAnalysis::ReadInParameters()
         p_.Resize(j+2);
         p_[j]   = actmat2->K1();
         p_[j+1] = actmat2->K2();
+        break;
+      }
+      case INPAR::MAT::mes_varisoexpo:
+      {
+        filename_=filename_+"_varisoexpo";
+        const MAT::ELASTIC::VarIsoExpo* actmat2 = static_cast<const MAT::ELASTIC::VarIsoExpo*>(summat.get());
+        int j = p_.Length();
+        p_.Resize(j+3);
+        p_[j]   = (1./(1.-actmat2->Frac()))-1.;
+        // stores the position of the frac in the parameter array
+        pos_ela_frac_ = j;
+        pos_col_frac_ = j;
+        p_[j+1]   = actmat2->K1();
+        p_[j+2] = actmat2->K2();
         break;
       }
       case INPAR::MAT::mes_isomooneyrivlin:
@@ -1223,12 +1266,30 @@ void STR::CollInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
         j = j+1;
         break;
       }
+      case INPAR::MAT::mes_varisoquad:
+      {
+        MAT::ELASTIC::VarIsoQuad* actmat2 =
+          static_cast<MAT::ELASTIC::VarIsoQuad*>(summat.get());
+        actmat2->SetFrac(1. - (1. / (abs(p_cur(j))+1.)));
+        actmat2->SetC(abs(p_cur(j+1)));
+        j = j+2;
+        break;
+      }
       case INPAR::MAT::mes_isocub:
       {
         MAT::ELASTIC::IsoCub* actmat2 =
           static_cast<MAT::ELASTIC::IsoCub*>(summat.get());
         actmat2->SetC(abs(p_cur(j)));
         j = j+1;
+        break;
+      }
+      case INPAR::MAT::mes_varisocub:
+      {
+        MAT::ELASTIC::VarIsoCub* actmat2 =
+          static_cast<MAT::ELASTIC::VarIsoCub*>(summat.get());
+        actmat2->SetFrac(1. - (1. / (abs(p_cur(j))+1.)));
+        actmat2->SetC(abs(p_cur(j+1)));
+        j = j+2;
         break;
       }
       case INPAR::MAT::mes_isoexpo:
@@ -1238,6 +1299,16 @@ void STR::CollInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
         actmat2->SetK1(abs(p_cur(j)));
         actmat2->SetK2(abs(p_cur(j+1)));
         j = j+2;
+        break;
+      }
+      case INPAR::MAT::mes_varisoexpo:
+      {
+        MAT::ELASTIC::VarIsoExpo* actmat2 =
+          static_cast<MAT::ELASTIC::VarIsoExpo*>(summat.get());
+        actmat2->SetFrac(1. - (1. / (abs(p_cur(j))+1.)));
+        actmat2->SetK1(abs(p_cur(j+1)));
+        actmat2->SetK2(abs(p_cur(j+2)));
+        j = j+3;
         break;
       }
       case INPAR::MAT::mes_isomooneyrivlin:

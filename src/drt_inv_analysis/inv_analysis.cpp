@@ -471,7 +471,6 @@ void STR::InvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix,  Epetra_Se
 void STR::InvAnalysis::PrintFile()
 {
 
-  FILE * gplot;
   FILE * cxFile;
   FILE * cyFile;
   FILE * pFile;

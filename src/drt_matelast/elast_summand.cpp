@@ -25,8 +25,11 @@ Maintainer: Burkhard Bornemann
 #include "elast_varisoneohooke.H"
 #include "elast_isoyeoh.H"
 #include "elast_isoquad.H"
+#include "elast_varisoquad.H"
 #include "elast_isocub.H"
+#include "elast_varisocub.H"
 #include "elast_isoexpo.H"
+#include "elast_varisoexpo.H"
 #include "elast_isomooneyrivlin.H"
 #include "elast_volsussmanbathe.H"
 #include "elast_volpenalty.H"
@@ -100,6 +103,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
     MAT::ELASTIC::PAR::IsoQuad* params = static_cast<MAT::ELASTIC::PAR::IsoQuad*>(curmat->Parameter());
     return Teuchos::rcp(new IsoQuad(params));
   }
+  case INPAR::MAT::mes_varisoquad:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::VarIsoQuad(curmat));
+    MAT::ELASTIC::PAR::VarIsoQuad* params = static_cast<MAT::ELASTIC::PAR::VarIsoQuad*>(curmat->Parameter());
+    return Teuchos::rcp(new VarIsoQuad(params));
+  }
   case INPAR::MAT::mes_isocub:
   {
     if (curmat->Parameter() == NULL)
@@ -107,12 +117,26 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
     MAT::ELASTIC::PAR::IsoCub* params = static_cast<MAT::ELASTIC::PAR::IsoCub*>(curmat->Parameter());
     return Teuchos::rcp(new IsoCub(params));
   }
+  case INPAR::MAT::mes_varisocub:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::VarIsoCub(curmat));
+    MAT::ELASTIC::PAR::VarIsoCub* params = static_cast<MAT::ELASTIC::PAR::VarIsoCub*>(curmat->Parameter());
+    return Teuchos::rcp(new VarIsoCub(params));
+  }
   case INPAR::MAT::mes_isoexpo:
   {
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::ELASTIC::PAR::IsoExpo(curmat));
     MAT::ELASTIC::PAR::IsoExpo* params = static_cast<MAT::ELASTIC::PAR::IsoExpo*>(curmat->Parameter());
     return Teuchos::rcp(new IsoExpo(params));
+  }
+  case INPAR::MAT::mes_varisoexpo:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::VarIsoExpo(curmat));
+    MAT::ELASTIC::PAR::VarIsoExpo* params = static_cast<MAT::ELASTIC::PAR::VarIsoExpo*>(curmat->Parameter());
+    return Teuchos::rcp(new VarIsoExpo(params));
   }
   case INPAR::MAT::mes_isomooneyrivlin:
   {

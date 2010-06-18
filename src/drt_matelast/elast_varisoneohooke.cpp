@@ -8,8 +8,8 @@ the input line should read
   MAT 1 ELAST_VarIsoNeoHooke FRAC 0.5 MUE 100
 
 <pre>
-Maintainer: Sophie Rausch & Thomas Kloeppel
-            rausch,kloeppel@lnm.mw.tum.de
+Maintainer: Sophie Rausch
+            rausch@lnm.mw.tum.de
             089/289 15255
 </pre>
 */

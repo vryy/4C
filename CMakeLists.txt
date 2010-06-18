@@ -335,6 +335,9 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_isoyeoh.cpp
   src/drt_matelast/elast_summand.cpp
   src/drt_matelast/elast_varisoneohooke.cpp
+  src/drt_matelast/elast_varisoquad.cpp
+  src/drt_matelast/elast_varisocub.cpp
+  src/drt_matelast/elast_varisoexpo.cpp
   src/drt_matelast/elast_vologden.cpp
   src/drt_matelast/elast_volpenalty.cpp
   src/drt_matelast/elast_volsussmanbathe.cpp
