@@ -648,11 +648,12 @@ Epetra_SerialDenseVector STR::CollInvAnalysis::CalcCvector()
   sti_->SetTime(time);
   sti_->SetTimen(time+sti_->GetTimeStepSize());
 
-
   const int stepmax = sti_->GetTimeNumStep();
 
   Epetra_SerialDenseVector cvector(2*stepmax);
   // time loop
+  cout << time << endl;
+  //cout << timen << endl;
   while ( (time < timemax) && (step < stepmax) )
   {
     // integrate time step
