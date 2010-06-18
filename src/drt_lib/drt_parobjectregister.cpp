@@ -5,6 +5,7 @@
 
 #include "drt_parobjectregister.H"
 
+#include "../drt_nurbs_discret/drt_control_point.H"
 #include "../drt_beam2/beam2.H"
 #include "../drt_beam2r/beam2r.H"
 #include "../drt_beam3/beam3.H"
