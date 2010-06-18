@@ -91,6 +91,9 @@ namespace XFEM
     //! return map of elemental boundary integration cells
     std::map<int, GEO::BoundaryIntCells> GetElementalBoundaryIntCells () const { return elementalBoundaryIntCells_; };
 
+    //! return number of boundary integration cells for a given element
+    std::size_t GetNumBoundaryIntCells( const DRT::Element*  xfemElement) const;
+
     //! return list of boundary integrationcells for a given global element id, returned list can be empty -> always terminates
     GEO::BoundaryIntCells GetBoundaryIntCells(const int   gid) const;
 

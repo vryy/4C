@@ -212,6 +212,20 @@ GEO::BoundaryIntCells XFEM::InterfaceHandle::GetBoundaryIntCells(
 }
 
 
+/*------------------------------------------------------------------------------------------------*
+ | return number of boundary integration cells for a given element                     henke 06/10 |
+ *------------------------------------------------------------------------------------------------*/
+std::size_t XFEM::InterfaceHandle::GetNumBoundaryIntCells(
+    const DRT::Element* xfemElement) const
+{
+  std::map<int,GEO::BoundaryIntCells>::const_iterator tmp = elementalBoundaryIntCells_.find(xfemElement->Id());
+  if (tmp == elementalBoundaryIntCells_.end())
+  {
+    return 0;
+  }
+  return (tmp->second).size();
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::set<int> XFEM::InterfaceHandle::GetAvailableBoundaryLabels() const
