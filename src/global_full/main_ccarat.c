@@ -110,7 +110,7 @@ int main(INT argc, char *argv[])
            "*    (c) 2010 All Rights Reserved.     *\n"
            "*                                      *\n"
            "****************************************\n\n",
-           CHANGEDREVISION);
+           CHANGEDREVISION+0);
 #ifdef PARALLEL
     printf("number of processors: %d\n",par.nprocs);
 #endif
