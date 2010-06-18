@@ -36,6 +36,7 @@ IF(Subversion_SVN_EXECUTABLE)
   # test if project source directory is a subversion directory
   # this test seems to be missing in the subversion package
   EXECUTE_PROCESS(COMMAND ${Subversion_SVN_EXECUTABLE} info ${PROJECT_SOURCE_DIR}
+    OUTPUT_VARIABLE DUMMY_WC_INFO
     ERROR_VARIABLE Subversion_svn_info_error  
     RESULT_VARIABLE Subversion_svn_info_result
     OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -87,9 +88,9 @@ find_package(Trilinos REQUIRED)
 
 #find_package(Blitz)
 
-SET(Boost_USE_STATIC_LIBS ON) 
-SET(Boost_USE_MULTITHREAD OFF) 
-FIND_PACKAGE( Boost COMPONENTS date_time filesystem iostreams program_options )
+#SET(Boost_USE_STATIC_LIBS ON) 
+#SET(Boost_USE_MULTITHREAD OFF) 
+#FIND_PACKAGE( Boost COMPONENTS date_time filesystem iostreams program_options )
 
 if (MPI_FOUND)
   SET(CMAKE_C_COMPILER mpicc)
