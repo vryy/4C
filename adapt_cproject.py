@@ -77,7 +77,8 @@ def getSymbols(fname):
                 flag = flags[0]
                 status = flags[1]
                 valid_flag = flag[0:2] == "D_" \
-                          or flag[0:5] == "DEBUG"
+                          or flag[0:5] == "DEBUG" \
+                          or flag[0:5] == "QHULL"
                 if valid_flag == True and status == "ON":
                     symbollist.add(flag.split(":")[0])
     symbollist.add("CCADISCRET")
