@@ -73,6 +73,9 @@ namespace COMBUST
     /// remote access method to vector on fluid NodeColMap holding G-function values at n+1
     const Teuchos::RCP<Epetra_Vector> Phinp() const { return phinp_; }
 
+    /// remote access method to vector on fluid NodeRowMap holding smoothed gradient of G-function at n+1
+    const Teuchos::RCP<Epetra_MultiVector> GradPhi() const { return gradphi_; }
+
     /// remote access method to flame front patches
     const std::map< int,const Teuchos::RCP<const COMBUST::RefinementCell> > FlameFrontPatches() const
         { return flamefrontpatches_; }
@@ -80,16 +83,17 @@ namespace COMBUST
     const std::map<int,GEO::DomainIntCells> DomainIntCells() const {return myelementintcells_;}
     const std::map<int,GEO::BoundaryIntCells> BoundaryIntCells() const {return myboundaryintcells_;}
 
-    /// rearrange and store phi vectors
-    void StorePhiVectors(
-      const Teuchos::RCP<Epetra_Vector> phin,
-      const Teuchos::RCP<Epetra_Vector> phinp
+    /// update the flame front
+    void UpdateFlameFront(
+        const Teuchos::ParameterList& combustdyn,
+        const Teuchos::RCP<const Epetra_Vector>& phin,
+        const Teuchos::RCP<const Epetra_Vector>& phinp
     );
 
-    /// flame front control routine
+    /// generate the interface geometry based on the G-function (level set field)
     void ProcessFlameFront(
-        const Teuchos::ParameterList&     combustdyn,
-        const Teuchos::RCP<Epetra_Vector> phi
+        const Teuchos::ParameterList& combustdyn,
+        const Teuchos::RCP<const Epetra_Vector> phi
     );
 
     /// export boundary integration cells from this proc to parallel distribution
@@ -115,6 +119,15 @@ namespace COMBUST
 
     /// don't want copy constructor
     explicit FlameFront(const FlameFront&);
+
+    /// rearrange and store phi vectors
+    void StorePhiVectors(
+        const Teuchos::RCP<const Epetra_Vector> phin,
+        const Teuchos::RCP<const Epetra_Vector> phinp
+    );
+
+    /// compute smoothed gradient field of G-function
+    void SmoothGradPhi();
 
     /// refine the region around flame front
     void RefineFlameFront(const Teuchos::RCP<COMBUST::RefinementCell> cell,
@@ -249,6 +262,9 @@ namespace COMBUST
     Teuchos::RCP<Epetra_Vector> phin_;
     /// pointer to vector on fluid NodeColMap holding G-function values at n+1 originally stored in phinp
     Teuchos::RCP<Epetra_Vector> phinp_;
+
+    /// pointer to vector on fluid NodeColMap holding smoothed values of the gradient of the G-function at n+1
+    Teuchos::RCP<Epetra_MultiVector> gradphi_;
 
     /// variable holding the number of refinement steps
     int maxRefinementLevel_;

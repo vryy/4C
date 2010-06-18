@@ -97,8 +97,7 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
    *----------------------------------------------------------------------------------------------*/
   // construct initial flame front
   flamefront_ = rcp(new COMBUST::FlameFront(fluiddis,gfuncdis));
-  flamefront_->StorePhiVectors(ScaTraField().Phin(), ScaTraField().Phinp());
-  flamefront_->ProcessFlameFront(combustdyn_,flamefront_->Phinp());
+  flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
 
   // construct interfacehandle using initial flame front
   interfacehandle_ = rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefront_));
@@ -258,8 +257,8 @@ void COMBUST::Algorithm::SolveStationaryProblem()
     DoFluidField();
 
     // solve (non)linear G-function equation
-    DoGfuncField();
-    //std::cout << "! WARNING: No DoGfuncField() in SolveStationaryProblem()" << std::endl;
+    std::cout << "/!\\ warning === G-function field not solved for stationary problems" << std::endl;
+    //DoGfuncField();
 
     //reinitialize G-function
     //if (fgiter_ % reinitinterval_ == 0)
@@ -357,8 +356,7 @@ void COMBUST::Algorithm::ReinitializeGfunc()
         ScaTraField().Phinp());
 
     // update flame front according to reinitialized G-function field
-    flamefront_->StorePhiVectors(ScaTraField().Phin(), ScaTraField().Phinp());
-    flamefront_->ProcessFlameFront(combustdyn_,flamefront_->Phinp());
+    flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
 
     // update interfacehandle (get integration cells) according to updated flame front
     interfacehandle_->UpdateInterfaceHandle();
@@ -968,8 +966,7 @@ void COMBUST::Algorithm::DoGfuncField()
 void COMBUST::Algorithm::UpdateFGIteration()
 {
   // update flame front according to evolved G-function field
-  flamefront_->StorePhiVectors(ScaTraField().Phin(), ScaTraField().Phinp());
-  flamefront_->ProcessFlameFront(combustdyn_,flamefront_->Phinp());
+  flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
 
   // update interfacehandle (get integration cells) according to updated flame front
   interfacehandle_->UpdateInterfaceHandle();
@@ -1155,8 +1152,8 @@ void COMBUST::Algorithm::Restart(int step)
   //FluidField().ImportInterface(interfacehandle_);
 
   // reset interface for restart
-  flamefront_->StorePhiVectors(ScaTraField().Phin(), ScaTraField().Phinp());
-  flamefront_->ProcessFlameFront(combustdyn_,flamefront_->Phinp());
+  flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
+
   interfacehandle_->UpdateInterfaceHandle();
 
   //-------------------

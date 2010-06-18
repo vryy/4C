@@ -50,6 +50,7 @@ COMBUST::FlameFront::FlameFront(
     phinm_(Teuchos::null),
     phin_(Teuchos::null),
     phinp_(Teuchos::null),
+    gradphi_(Teuchos::null),
     maxRefinementLevel_(0),
     intcelltype_(INPAR::COMBUST::xfemintegration_tetrahedra)
 {
@@ -66,11 +67,123 @@ COMBUST::FlameFront::~FlameFront()
   return;
 }
 
+/*------------------------------------------------------------------------------------------------*
+ | public: update the flame front                                                     henke 06/10 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::FlameFront::UpdateFlameFront(
+        const Teuchos::ParameterList& combustdyn,
+        const Teuchos::RCP<const Epetra_Vector>& phin,
+        const Teuchos::RCP<const Epetra_Vector>& phinp
+    )
+{
+  // rearrange and store phi vectors
+  StorePhiVectors(phin, phinp);
+  // generate the interface geometry based on the G-function (level set field)
+  // remark: must be called after StorePhiVectors, since it relies on phinp_
+  ProcessFlameFront(combustdyn, phinp_);
+  // compute smoothed gradient of G-function field
+  // remark: must be called after ProcessFlameFront, since it relies on the new interface position
+  SmoothGradPhi();
 
+  return;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | public: generate the interface geometry based on the G-function (level set field)  henke 10/08 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::FlameFront::ProcessFlameFront(
+       const Teuchos::ParameterList& combustdyn,
+       const Teuchos::RCP<const Epetra_Vector> phi)
+{
+  /* This function is accessible from outside the FlameFront class. It can be called e.g. by the
+   * interface handle constructor. If the FlameFront class will always do the same thing, this
+   * function could be spared. Then the content of this function could be added to the constructor
+   * of this class.
+   *
+   * henke 10/08
+   */
+
+  // TODO define communicator
+  //if (Comm().MyPID()==0)
+    std::cout << "\n---  processing flame front ... " << std::flush;;
+
+  const Teuchos::RCP<Epetra_Vector> phicol = rcp(new Epetra_Vector(*fluiddis_->NodeColMap()));
+  if (phicol->MyLength() != phi->MyLength())
+    dserror("vector phi needs to be distributed according to fluid node column map");
+
+  // maps are cleared and refilled on every call of this function
+  myelementintcells_.clear();
+  myboundaryintcells_.clear();
+
+  // get type of integrationcells
+  intcelltype_ = Teuchos::getIntegralValue<INPAR::COMBUST::XFEMIntegration>(combustdyn.sublist("COMBUSTION FLUID"),"XFEMINTEGRATION");
+
+  // loop over fluid (combustion) column elements
+  // remark: loop over row elements would be sufficient, but enrichment is done in column loop
+  for (int iele=0; iele<fluiddis_->NumMyColElements(); ++iele)
+  {
+    // get element from discretization
+    const DRT::Element *ele = fluiddis_->lColElement(iele);
+
+#ifdef DEBUG
+#ifdef D_FLUID3
+    if(ele->ElementType() != DRT::ELEMENTS::Combust3Type::Instance())
+      // this is not compulsory, but combust3 elements are expected here!
+      dserror("unexpected element type: this should be of combust3 type!");
+#endif
+#endif
+
+    // create refinement cell from a fluid element -> cell will have same geometry as element!
+    const Teuchos::RCP<COMBUST::RefinementCell> rootcell = rcp(new COMBUST::RefinementCell(ele));
+
+    // refinement strategy is turned on
+    if (Teuchos::getIntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENT") == true)
+    {
+//      std::cout << "starting refinement ..." << std::endl;
+      maxRefinementLevel_ = Teuchos::getIntParameter(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENTLEVEL");
+//      std::cout << "maximal refinement level " << maxRefinementLevel_ << std::endl;
+      //maxRefinementLevel_ = 2;
+      if (maxRefinementLevel_ < 0)
+        dserror("maximal refinement level not defined");
+
+      RefineFlameFront(rootcell,phi);
+    }
+    else // refinement strategy is turned off
+      FindFlameFront(rootcell,phi);
+
+    /* jetzt habe ich für jedes Element eine "rootcell", an der entweder (refinement on) ein ganzer
+     * Baum von Zellen mit Interfaceinformationen hängt, oder (refinement off) eine einzige Zelle
+     * hängt. Aus dieser Information muss jetzt das Oberfläche der Flammenfront berechnet werden. */
+
+    // generate interface (flame front) surface
+    CaptureFlameFront(rootcell);
+
+    //TEST
+    if (Teuchos::getIntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENT") == true)
+    {
+      rootcell->Clear();
+    }
+  }
+
+//  int cells = 0;
+//  for (std::map<int, GEO::DomainIntCells>::iterator it=myelementintcells_.begin(); it!=myelementintcells_.end(); it++)
+//  {
+//     GEO::DomainIntCells IntCells = it->second;
+//     //std::cout << IntCells.size() << std::endl;
+//     cells = cells + IntCells.size();
+//  }
+//  std::cout << "Anzahl Integrationszellen: " << cells << std::endl;
+
+  std::cout << "done" << std::endl;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | rearrange and store phi vectors for use in the fluid time integration routine      henke 06/10 |
+ *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::StorePhiVectors(
       //const Teuchos::RCP<Epetra_Vector> phinm,
-      const Teuchos::RCP<Epetra_Vector> phin,
-      const Teuchos::RCP<Epetra_Vector> phinp)
+      const Teuchos::RCP<const Epetra_Vector> phin,
+      const Teuchos::RCP<const Epetra_Vector> phinp)
 {
   /* In the processing of the flame front the fluid discretization is cut by the level set
    * function (G-function). This is the reason why fluid elements need to be able to access the
@@ -82,6 +195,10 @@ void COMBUST::FlameFront::StorePhiVectors(
    *
    * henke 02/09
    */
+
+  // reset vectors
+  phin_  = Teuchos::null;
+  phinp_ = Teuchos::null;
 
   //------------------------------------------------------------------------------------------------
   // Rearranging phi vectors from gfuncdis DofRowMap to fluiddis NodeRowMap
@@ -160,92 +277,33 @@ void COMBUST::FlameFront::StorePhiVectors(
 
 
 /*------------------------------------------------------------------------------------------------*
- | public: flame front control routine                                                henke 10/08 |
+ | compute smoothed gradient field of G-function (level set field) for use in fluid time          |
+ | integration scheme                                                                 henke 06/10 |
  *------------------------------------------------------------------------------------------------*/
-void COMBUST::FlameFront::ProcessFlameFront(
-       const Teuchos::ParameterList& combustdyn,
-       const Teuchos::RCP<Epetra_Vector> phi)
+void COMBUST::FlameFront::SmoothGradPhi()
 {
-  /* This function is accessible from outside the FlameFront class. It can be called e.g. by the
-   * interface handle constructor. If the FlameFront class will always do the same thing, this
-   * function could be spared. Then the content of this function could be added to the constructor
-   * of this class.
-   *
-   * henke 10/08
-   */
+  dserror("Thou shalt not call this function!");
+  gradphi_ = rcp(new Epetra_MultiVector(*fluiddis_->NodeColMap(),3));
 
-  // TODO define communicator
-  //if (Comm().MyPID()==0)
-    std::cout << "\n---  processing flame front ... " << std::flush;;
-
-  const Teuchos::RCP<Epetra_Vector> phicol = rcp(new Epetra_Vector(*fluiddis_->NodeColMap()));
-  if (phicol->MyLength() != phi->MyLength())
-    dserror("vector phi needs to be distributed according to fluid node column map");
-
-  //diese Maps müssen bei jeden Durchlauf von ProcessFlameFront neu gefüllt werden
-  myelementintcells_.clear();
-  myboundaryintcells_.clear();
-
-  // get type of integrationcells
-  intcelltype_ = Teuchos::getIntegralValue<INPAR::COMBUST::XFEMIntegration>(combustdyn.sublist("COMBUSTION FLUID"),"XFEMINTEGRATION");
-
-  // loop over fluid (combustion) column elements
-  // remark: loop over row elements would be sufficient, but enrichment is done in column loop
-  for (int iele=0; iele<fluiddis_->NumMyColElements(); ++iele)
+  for(int iele=0;iele<fluiddis_->NumMyColElements();iele++)
   {
     // get element from discretization
-    const DRT::Element *ele = fluiddis_->lColElement(iele);
+    //const DRT::Element *ele = fluiddis_->lRowElement(iele);
 
-#ifdef DEBUG
-#ifdef D_FLUID3
-    if(ele->ElementType() != DRT::ELEMENTS::Combust3Type::Instance())
-      // this is not compulsory, but combust3 elements are expected here!
-      dserror("unexpected element type: this should be of combust3 type!");
-#endif
-#endif
-
-    // create refinement cell from a fluid element -> cell will have same geometry as element!
-    const Teuchos::RCP<COMBUST::RefinementCell> rootcell = rcp(new COMBUST::RefinementCell(ele));
-
-    // refinement strategy is turned on
-    if (Teuchos::getIntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENT") == true)
+    //--------------------------------------------------------------------------------------------
+    // find out whether an element is intersected or not by looking at number of integration cells
+    //--------------------------------------------------------------------------------------------
+    if (true) // myelementintcells_ not empty?
     {
-//      std::cout << "starting refinement ..." << std::endl;
-      maxRefinementLevel_ = Teuchos::getIntParameter(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENTLEVEL");
-//      std::cout << "maximal refinement level " << maxRefinementLevel_ << std::endl;
-      //maxRefinementLevel_ = 2;
-      if (maxRefinementLevel_ < 0)
-        dserror("maximal refinement level not defined");
 
-      RefineFlameFront(rootcell,phi);
     }
-    else // refinement strategy is turned off
-      FindFlameFront(rootcell,phi);
-
-    /* jetzt habe ich für jedes Element eine "rootcell", an der entweder (refinement on) ein ganzer
-     * Baum von Zellen mit Interfaceinformationen hängt, oder (refinement off) eine einzige Zelle
-     * hängt. Aus dieser Information muss jetzt das Oberfläche der Flammenfront berechnet werden. */
-
-    // generate interface (flame front) surface
-    CaptureFlameFront(rootcell);
-
-    //TEST
-    if (Teuchos::getIntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENT") == true)
+    else
     {
-      rootcell->Clear();
+      //uncut element
     }
   }
 
-//  int cells = 0;
-//  for (std::map<int, GEO::DomainIntCells>::iterator it=myelementintcells_.begin(); it!=myelementintcells_.end(); it++)
-//  {
-//     GEO::DomainIntCells IntCells = it->second;
-//     //std::cout << IntCells.size() << std::endl;
-//     cells = cells + IntCells.size();
-//  }
-//  std::cout << "Anzahl Integrationszellen: " << cells << std::endl;
-
-  std::cout << "done" << std::endl;
+  return;
 }
 
 
