@@ -361,6 +361,7 @@ void FLD::UTILS::Fluid_couplingWrapper::ApplyBoundaryConditions(double time, dou
   // -------------------------------------------------------------------
 
   int NumOfSteps = int(dt_f3_ / dt_rm_);
+
   for (int N = 0; N< NumOfSteps; N++)
   {
     for (mapiter = coup_map3D_.begin(); mapiter != coup_map3D_.end(); mapiter++ )
@@ -409,8 +410,57 @@ void FLD::UTILS::Fluid_couplingWrapper::ApplyBoundaryConditions(double time, dou
         }
       }
     }
+
+    // -----------------------------------------------------------------
+    // Define a map that will have the interpolated values at the
+    // reduced-D time subscale
+    // -----------------------------------------------------------------
+    RCP<map<string, double > >  map3D_inter_to_Red = rcp(new map<string, double >);
+    double dstep = 1.0/double(NumOfSteps);
+    // -----------------------------------------------------------------
+    // Calculate the variables with in the reduced-D time subscale
+    //                                                                  
+    //                                                                  
+    //    ^                                                             
+    // V  |                                                             
+    //    |                                      +                      
+    //    |                                   .  .                      
+    //    |                               o                             
+    //    |                           .   .      .                      
+    //    |                       //                                    
+    //    |                   .   .       .      .                      
+    //    |               o                                             
+    //    |           .   .       .       .      .                      
+    //    |       +                                                     
+    //    |       .       .       .       .      .                      
+    //    |                                                             
+    //    |       .       .       .       .      .                      
+    //    +-------+-------+-------//------+------+--------->            
+    //    |       0       1       i      N-2     N-1     Step           
+    //                                                                  
+    //                                                                  
+    //  ds = 1/N                                                        
+    //                /  i  \                                              
+    //  V|   =  V|  + |-----|*                                              
+    //    i       1   \ N-1 /                                              
+    //                                                                  
+    //                                                                  
+    //                                                                  
+    // -----------------------------------------------------------------
+    map<string,double>::iterator itr_sub ;
+    for (itr_sub = map3_Dnp_->begin(); itr_sub != map3_Dnp_->end(); itr_sub++)
+    {
+      string var_str = itr_sub->first;
+      double var     = (*map3_Dn_)[var_str];
+      double dvar    = itr_sub->second - (*map3_Dn_)[var_str];
+      var = var + double(N+1)*dstep*(dvar);
+
+      (*map3D_inter_to_Red)[var_str] = var;
+    }
+
     RCP<Teuchos::ParameterList> params = rcp( new Teuchos::ParameterList);
-    params->set("3D map of values", map3_Dnp_);
+    //    params->set("3D map of values", map3_Dnp_);
+    params->set("3D map of values",map3D_inter_to_Red);
     params->set("reducedD map of values", mapRed_Dnp_);
 
     ArtExpTime_integ_->Integrate(true,params);

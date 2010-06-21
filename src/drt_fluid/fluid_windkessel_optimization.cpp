@@ -306,9 +306,14 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(ParameterList params)
     RCP<vector<double> > pressures = params.get<RCP<vector<double> > > (pstream.str());
     RCP<vector<double> > flowrates = params.get<RCP<vector<double> > > (qstream.str());
 
-    pressures->push_back((*pressures)[0]);
-    flowrates->push_back((*flowrates)[0]);
+    double pres_T, flow_T;
+    pres_T = (*pressures)[0];
+    flow_T = (*flowrates)[0];
+    pressures->push_back(pres_T);
+    flowrates->push_back(flow_T);
 
+    cout<<"COND("<<itr->first<<"): pushing pressure [0]: "<<(*pressures)[0]<<endl;
+    cout<<"COND("<<itr->first<<"): pushing flowrate [0]: "<<(*flowrates)[0]<<endl;
     // -----------------------------------------------------------------
     // print pressure for debugging reasons
     // -----------------------------------------------------------------
@@ -317,7 +322,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(ParameterList params)
       cout<<"Printing Pressures and flowrates"<<endl;
       for (unsigned int i = 0; i<pressures->size();i++)
       {
-        cout<<"Cond("<<itr->first<<")\t"<<double(i)*dt<<"\t"<<(*pressures)[i];
+        cout<<"Cond("<<itr->first<<")\t"<<double(i)*dt<<"\t["<<i<<"]\t"<<(*pressures)[i];
         cout<<"\t"<<(*flowrates)[i]<<endl;
       }
     }
@@ -518,8 +523,8 @@ void FLD::UTILS::FluidWkOptimizationWrapper::CalcObjFunction(
     const double Psys = cond->GetDouble("Psystolic");
     const double Pdia = cond->GetDouble("Pdiastolic");
 
-    (*fn_)[index   ] = Pmax - Psys;
-    (*fn_)[index +1] = Pmin - Pdia;
+    (*fn_)[index   ] = fabs(Pmax - Psys);
+    (*fn_)[index +1] = fabs(Pmin - Pdia);
 
   }
   else if (ObjFunType == "Psys_Pdia_Pavg")
@@ -775,6 +780,9 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dL_du(
   {
     ObjDim = 2;
 
+    const double Psys = cond->GetDouble("Psystolic");
+    const double Pdia = cond->GetDouble("Pdiastolic");
+
     // Find Pmax and Pmin
     double Pmax = (*pressures)[0];
     double Pmin = (*pressures)[0];
@@ -825,13 +833,27 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dL_du(
     {
       if(i == (index_max) )
       {
-        (*dL_du_)(index  ,i+k) = 1.0;
+        if (Pmax - Psys >= 0.0)
+        {
+          (*dL_du_)(index  ,i+k) =  1.0;
+        }
+        else
+        {
+          (*dL_du_)(index  ,i+k) = -1.0;
+        }
         (*dL_du_)(index+1,i+k) = 0.0;
       }
       if(i == (index_min) )
       {
         (*dL_du_)(index  ,i+k) = 0.0;
-        (*dL_du_)(index+1,i+k) = 1.0;
+        if (Pmin - Pdia >= 0.0)
+        {
+          (*dL_du_)(index+1,i+k) = 1.0;
+        }
+        else
+        {
+          (*dL_du_)(index+1,i+k) =-1.0;          
+        }
       }
     }
     return;
