@@ -1121,6 +1121,11 @@ if (D_ARTNET)
   add_definitions("-DD_ARTNET")
 endif(D_ARTNET)
 
+option (D_ALE_BFLOW   "ALE deformation included in flow calculation" OFF)
+if (D_ALE_BFLOW)
+  add_definitions("-DD_ALE_BFLOW")
+endif(D_ALE_BFLOW)
+
 option (D_RED_AIRWAYS "reduced dimensional airways for calculating flow in lungs" OFF)
 if (D_RED_AIRWAYS)
   add_definitions("-DD_RED_AIRWAYS")
