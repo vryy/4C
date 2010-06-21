@@ -175,11 +175,13 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       numscal_ -= 1;
     }
     // set up the concentration-el.potential splitter
+    splitter_ = rcp(new LINALG::MapExtractor);
     FLD::UTILS::SetupFluidSplit(*discret_,numscal_,*splitter_);
   }
   else if (scatratype_ == INPAR::SCATRA::scatratype_loma and numscal_ > 1)
   {
     // set up a species-temperature splitter (if more than one scalar)
+    splitter_ = rcp(new LINALG::MapExtractor);
     FLD::UTILS::SetupFluidSplit(*discret_,numscal_-1,*splitter_);
   }
 
