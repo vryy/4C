@@ -613,4 +613,14 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractDispnp()
 }
 
 
+/*----------------------------------------------------------------------*
+ | Extract current velocities needed for TSI              dano 06/10 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractVelnp()
+{
+  dserror("no application here");
+  return Teuchos::null;
+}
+
+
 #endif

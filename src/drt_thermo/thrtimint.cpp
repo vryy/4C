@@ -886,7 +886,7 @@ void THR::TimInt::SetInitialField(
     // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)
     Teuchos::RCP<Epetra_Vector> vec = (*temp_)(0);
     vec->PutScalar(0.0);
-    tempn_-> PutScalar(0.0);
+    tempn_->PutScalar(0.0);
     break;
   }
   case INPAR::THR::initfield_field_by_function:

@@ -256,7 +256,7 @@ namespace STR
     //!
     //! \author popp (originally) \date 03/10
     void CmtNonlinearSolve();
-    
+
     //! Call linear solver for contact / meshtying
     //!
     //! The point is that of course we usually just want to perform a
@@ -266,7 +266,7 @@ namespace STR
     //!
     //! \author popp (originally) \date 03/10
     void CmtLinearSolve();
-    
+
     //@}
 
     //! @name STC business

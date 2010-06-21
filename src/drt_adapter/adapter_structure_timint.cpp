@@ -534,12 +534,18 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntImpl::ExtractDispnp()
 
 
 /*----------------------------------------------------------------------*/
-/* extract displacements D_{n+1} neede for TSI               dano 05/10 */
+/* extract displacements D_{n+1} needed for TSI               dano 05/10 */
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntImpl::ExtractDispn()
 {
   return structure_->Dis();
 }
 
+/*----------------------------------------------------------------------*/
+/* extract velocities V_{n+1} needed for TSI                 dano 06/10 */
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntImpl::ExtractVelnp()
+{
+  return structure_->VelNew();
+}
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

@@ -381,7 +381,8 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::ThermoTimInt::CreateFieldTest()
 Teuchos::RCP<Epetra_Vector> ADAPTER::ThermoTimInt::ExtractTempnp()
 {
   // call the time integrator and get current temperature T_{n+1}
-  return thermo_->TempNew();
+//  return thermo_->TempNew();
+  return thermo_->Temp();
 }
 
 

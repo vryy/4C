@@ -274,6 +274,9 @@ namespace ADAPTER {
     /// extract displacements
     virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp() = 0;
 
+    /// extract velocities
+    virtual Teuchos::RCP<Epetra_Vector> ExtractVelnp() = 0;
+
     //@}
 
     //! @name Apply temperatures

@@ -24,7 +24,6 @@ Maintainer: Caroline Danowski
 #include <cstdlib>
 #include "thermo_ele_boundary_impl.H"
 #include "thermo_ele_impl.H"
-#include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_utils.H"
@@ -33,9 +32,6 @@ Maintainer: Caroline Danowski
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_lib/drt_function.H"
-
-// material headers
-#include "../drt_mat/matlist.H"
 
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |

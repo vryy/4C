@@ -387,4 +387,14 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntAda::ExtractDispnp()
 
 
 /*----------------------------------------------------------------------*/
+/* extract velocities V_{n+1} needed for coupling in TSI*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntAda::ExtractVelnp()
+{
+  dserror("not implemented");
+  return Teuchos::null;
+}
+
+
+
+/*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

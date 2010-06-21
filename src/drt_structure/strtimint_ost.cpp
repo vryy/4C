@@ -130,7 +130,7 @@ void STR::TimIntOneStepTheta::PredictConstDisConsistVelAcc()
                 0.0);
   veln_->Update(-(1.0-theta_)/theta_, *(*vel_)(0),
                 1.0);
-
+                
   // new end-point accelerations
   accn_->Update(1.0/(theta_*theta_*dt*dt), *disn_,
                 -1.0/(theta_*theta_*dt*dt), *(*dis_)(0),

@@ -56,7 +56,7 @@ TSI::Algorithm::Algorithm(
   // what kind of one-way coupling should be applied
   displacementcoupling_
     = tsidyn.get<std::string>("COUPVARIABLE") == "Displacement";
-    
+
   if (displacementcoupling_) // (temperature change due to deformation)
   {
     // build a proxy of the structure discretization for the temperature field
@@ -69,7 +69,7 @@ TSI::Algorithm::Algorithm(
     // build matrices again and now consider displacements in the thermo field
     ThermoField().TSIMatrix();
   }
-  
+
   else // temperature as coupling variable (deformation due to temperature change)
   {
     // build a proxy of the temperature discretization for the structure field
@@ -78,6 +78,7 @@ TSI::Algorithm::Algorithm(
     // check if StructField has 2 discretizations, so that coupling is possible
     if (StructureField().Discretization()->AddDofSet(thermodofset)!=1)
       dserror("unexpected dof sets in structure field");
+
     // now build the matrices again and consider the temperature dependence
     StructureField().TSIMatrix();
   }
@@ -132,7 +133,6 @@ void TSI::Algorithm::TimeLoop()
   itempn_ = ThermoField().ExtractTempnp();
   idispn_ = StructureField().ExtractDispn();
 
-
   // ==================================================================
 
   // time loop
@@ -155,7 +155,7 @@ void TSI::Algorithm::TimeLoop()
 
       if (displacementcoupling_) // (temperature change due to deformation)
       {
-        // predict the thermal field without influence of structure
+        // predict the structure field without influence of temperatures
         StructureField().PrepareTimeStep();
 
         // Begin Nonlinear Solver / Outer Iteration ******************************
@@ -185,13 +185,15 @@ void TSI::Algorithm::TimeLoop()
 
           // get current displacement due to Solve Structure Step
           const Teuchos::RCP<Epetra_Vector> idisp = DoStructureStep();
+          // extract the velocities of the current solution
+          const Teuchos::RCP<Epetra_Vector> ivel = StructureField().ExtractVelnp();
 
           // solve thermo system
           // and therefore use the u-solution calculated in DoStructureStep
           // including: - ApplyDisplacements()
           //            - PrepareTimeStep()
           //            - Solve()
-          DoThermoStep(idisp);
+          DoThermoStep(idisp, ivel);
 
           // check convergence of temperature field for "partitioned scheme"
           stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
@@ -203,7 +205,7 @@ void TSI::Algorithm::TimeLoop()
         // update all single field solvers
         Update();
 
-        // extract final temperatures,
+        // extract final displacements,
         // since we did update, this is very easy to extract
         idispn_ = StructureField().ExtractDispnp();
 
@@ -421,7 +423,9 @@ Teuchos::RCP<Epetra_Vector>  TSI::Algorithm::DoStructureStep()
  | Solve the thermo system (protected)                       dano 05/10 |
  | coupling of displacements to thermo field                            |
  *----------------------------------------------------------------------*/
-void TSI::Algorithm::DoThermoStep(Teuchos::RCP<Epetra_Vector> idisp)
+void TSI::Algorithm::DoThermoStep(
+  Teuchos::RCP<Epetra_Vector> idisp,
+  Teuchos::RCP<Epetra_Vector> ivel)
 {
   if (Comm().MyPID()==0)
   {
@@ -430,20 +434,50 @@ void TSI::Algorithm::DoThermoStep(Teuchos::RCP<Epetra_Vector> idisp)
     cout<<"    THERMO SOLVER    \n";
     cout<<"*********************\n";
   }
-  // the displacement -> velocity conversion
-  const Teuchos::RCP<Epetra_Vector> ivel = CalcVelocity(idisp);
 
   // call the current displacements and velocities
   ThermoField().ApplyStructVariables(idisp,ivel);
 
-  // call the predictor here, because displacement field is considered too
+  // call the predictor here, because displacement field is considered, too
   ThermoField().PrepareTimeStep();
 
   /// solve temperature system
   /// Do the nonlinear solve for the time step. All boundary conditions have
   /// been set.
   ThermoField().Solve();
+
+  return;
 }
+
+
+///*----------------------------------------------------------------------*
+// | Solve the thermo system (protected)                       dano 05/10 |
+// | coupling of displacements to thermo field                            |
+// *----------------------------------------------------------------------*/
+//void TSI::Algorithm::DoThermoStep(Teuchos::RCP<Epetra_Vector> idisp)
+//{
+//  if (Comm().MyPID()==0)
+//  {
+//    cout<<"\n";
+//    cout<<"*********************\n";
+//    cout<<"    THERMO SOLVER    \n";
+//    cout<<"*********************\n";
+//  }
+//  // the displacement -> velocity conversion
+//  const Teuchos::RCP<Epetra_Vector> ivel = CalcVelocity(idisp);
+//
+//  // call the current displacements and velocities
+//  ThermoField().ApplyStructVariables(idisp,ivel);
+//
+//  // call the predictor here, because displacement field is considered, too
+//  ThermoField().PrepareTimeStep();
+//
+//  /// solve temperature system
+//  /// Do the nonlinear solve for the time step. All boundary conditions have
+//  /// been set.
+//  ThermoField().Solve();
+//  return;
+//}
 
 
 /*----------------------------------------------------------------------*
@@ -516,12 +550,9 @@ bool TSI::Algorithm::ConvergenceCheck(
   tempincnp_->Norm2(&tempincnorm_L2);
   ThermoField().Tempnp()->Norm2(&tempnorm_L2);
 
-//  cout << "\ntempincnorm_L2\n" << tempincnorm_L2 << endl;
-//  cout << "\ntempnorm_L2\n" << tempnorm_L2 << endl;
-
   // care for the case that there is (almost) zero temperature
   // (usually not required for temperature)
-  // if (tempnorm_L2 < 1e-6) tempnorm_L2 = 1.0;
+  if (tempnorm_L2 < 1e-6) tempnorm_L2 = 1.0;
 
   // Print the incremental based convergence check to the screen
   if (Comm().MyPID() == 0)
@@ -579,7 +610,7 @@ Teuchos::RCP<Epetra_Vector> TSI::Algorithm::CalcVelocity(
   Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null;
   // copy D_n onto V_n+1
   ivel = rcp(new Epetra_Vector(*idispn_));
-  cout << "CalcVel kopier idispn_" << *ivel << endl;
+
   // calculate velocity with timestep Dt()
   //  V_n+1 = (D_n+1 - D_n) / Dt
   ivel->Update(1./Dt(), *idispnp, -1./Dt());

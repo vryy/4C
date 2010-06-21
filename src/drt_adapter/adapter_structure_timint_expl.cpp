@@ -373,6 +373,15 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::ExtractDispnp()
 
 
 /*----------------------------------------------------------------------*/
+/* extract velocities V_{n+1} needed for TSI              dano 06/10 */
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::ExtractVelnp()
+{
+  dserror("not implemented");
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*/
 /* apply current temperatures (FSI like)                     dano 03/10 */
 void ADAPTER::StructureTimIntExpl::ApplyTemperatures(
   Teuchos::RCP<Epetra_Vector> itemp

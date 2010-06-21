@@ -36,10 +36,15 @@ Maintainer: Caroline Danowski
 // material headers
 #include "../drt_mat/fourieriso.H"
 #include "../drt_mat/thermostvenantkirchhoff.H"
-#include "../drt_mat/matlist.H"
 
 //#define VISUALIZE_ELEMENT_DATA
 #include "thermo_element.H" // only for visualization of element data
+
+/*----------------------------------------------------------------------*
+ | general problem data                                     m.gee 06/01 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
@@ -235,6 +240,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 
   //============================================================================
   // calculate tangent K and internal force F_int = K * Theta
+  // --> for static case
   if (action == "calc_thermo_fintcond")
   {
     CalculateFintCondCapa(
@@ -253,7 +259,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     {
       // and now get the current displacements/velocities
       if ( (discretization.HasState(1,"displacement")) ||
-           (discretization.HasState(1,"velocity")) 
+           (discretization.HasState(1,"velocity"))
          )
       {
         vector<double> mydisp((la[1].lm_).size());
@@ -310,10 +316,9 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     // if it's a TSI problem with displacementcoupling_ --> go on here!
     if (la.Size()>1)
     {
-
       // and now get the current displacements/velocities
       if ( (discretization.HasState(1,"displacement")) ||
-           (discretization.HasState(1,"velocity")) 
+           (discretization.HasState(1,"velocity"))
          )
       {
         vector<double> mydisp((la[1].lm_).size());
@@ -354,6 +359,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 
   //============================================================================
   // calculate the capacity matrix and the internal force F_int
+  // --> for dynamic case
   else if (action == "calc_thermo_fintcapa")
   {
     CalculateFintCondCapa(
@@ -371,7 +377,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     if (la.Size()>1)
     {
       // and now get the current displacements/velocities
-      if ( (discretization.HasState(1,"displacement")) || 
+      if ( (discretization.HasState(1,"displacement")) ||
            (discretization.HasState(1,"velocity"))
          )
       {
@@ -417,6 +423,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   //============================================================================
   // overloaded function specified for ost time integration
   // calculate tangent matrix K and consistent capacity matrix C
+  // --> for dynamic case
   else if (action == "calc_thermo_finttang")
   {
     CalculateFintCondCapa(
@@ -436,7 +443,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     if (la.Size()>1)
     {
       // and now get the current displacements/velocities
-      if ( (discretization.HasState(1,"displacement")) || 
+      if ( (discretization.HasState(1,"displacement")) ||
            (discretization.HasState(1,"velocity"))
          )
       {
@@ -475,36 +482,39 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       } // end coupling
     } // end la.Size()>1
 
+    // copy capacity matrix if available
+    if (ecapa.A() != NULL) ecapa.Update(ecapa_);
+
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
     // check the time integrator
     const INPAR::THR::DynamicType timint
       = params.get<INPAR::THR::DynamicType>("time integrator",INPAR::THR::dyna_undefined);
-    switch (timint) {
-    case INPAR::THR::dyna_statics :
+    switch (timint)
     {
-      // continue
-      break;
-    }
-    case INPAR::THR::dyna_onesteptheta :
-    {
-      const double theta = params.get<double>("theta");
-      const double stepsize = params.get<double>("delta time");
-      // combined tangent and conductivity matrix to one global matrix
-      etang.Update(1.0/stepsize,ecapa_,theta);
-      efcap.Multiply(ecapa_,etemp_);
-      break;
-    }
-    case INPAR::THR::dyna_genalpha :
-    {
-      break;
-    }
-    case INPAR::THR::dyna_undefined :
-    default :
-    {
-      dserror("Don't know what to do...");
-      break;
-    }
-    
+      case INPAR::THR::dyna_statics :
+      {
+        // continue
+        break;
+      }
+      case INPAR::THR::dyna_onesteptheta :
+      {
+        const double theta = params.get<double>("theta");
+        const double stepsize = params.get<double>("delta time");
+        // combined tangent and conductivity matrix to one global matrix
+        etang.Update(1.0/stepsize,ecapa_,theta);
+        efcap.Multiply(ecapa_,etemp_);
+        break;
+      }
+      case INPAR::THR::dyna_genalpha :
+      {
+        break;
+      }
+      case INPAR::THR::dyna_undefined :
+      default :
+      {
+        dserror("Don't know what to do...");
+        break;
+      }
     }  // end of switch(timint)
   }  // action == "calc_thermo_finttang"
 
@@ -537,9 +547,53 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       &eheatflux,
       &etempgrad
       );
-     // store in
-     ParObject::AddtoPack(*heatfluxdata, eheatflux);
-     ParObject::AddtoPack(*tempgraddata, etempgrad);
+
+    // if it's a TSI problem with displacementcoupling_ --> go on here!
+    if (la.Size()>1)
+    {
+      // and now get the current displacements/velocities
+      if ( (discretization.HasState(1,"displacement")) ||
+           (discretization.HasState(1,"velocity"))
+         )
+      {
+        vector<double> mydisp((la[1].lm_).size());
+        // get the displacements
+        Teuchos::RCP<const Epetra_Vector> disp
+          = discretization.GetState(1,"displacement");
+        if (disp==Teuchos::null)
+          dserror("Cannot get state vectors 'displacement'");
+        // extract the displacements
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
+
+        vector<double> myvel((la[1].lm_).size());
+        // get the velocities
+        Teuchos::RCP<const Epetra_Vector> vel
+          = discretization.GetState(1,"velocity");
+        if (vel==Teuchos::null)
+          dserror("Cannot get state vectors 'velocity'");
+        // extract the velocities
+        DRT::UTILS::ExtractMyValues(*vel,myvel,la[1].lm_);
+
+        // if there is a strucutural vector available go on here
+        // --> calculate coupling
+        CouplCalculateFintCondCapa(
+          ele,
+          time,
+          mydisp,
+          myvel,
+          &etang,
+          NULL,
+          &efint,
+          NULL,
+          NULL,
+          NULL
+          );
+      } // end coupling
+    } // end la.Size()>1
+
+    // store in
+    ParObject::AddtoPack(*heatfluxdata, eheatflux);
+    ParObject::AddtoPack(*tempgraddata, etempgrad);
   }  // action == "proc_thermo_heatflux"
 
   //============================================================================
@@ -734,6 +788,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
     // gradient of current temperature value
     // grad T = d T_j / d x_i = L . N . T = B_ij T_j
     gradtemp_.MultiplyNN(derxy_,etemp_);
+
     // store it
     if (etempgrad != NULL)
       for (int idim=0; idim<nsd_; ++idim)
@@ -756,7 +811,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
     // conductivity matrix
     if (etang != NULL)
     {
-      // ke = ke + ( B^T . (-k * I) . B ) * detJ * w(gp)  with C_mat = (-k)*I
+      // ke = ke + ( B^T . C_mat . B ) * detJ * w(gp)  with C_mat = k * I
       LINALG::Matrix<nsd_,nen_> aop(false); // (3x8)
       aop.MultiplyNN(cmat_,derxy_); //(1x1)(3x8)
       etang->MultiplyTN(fac_,derxy_,aop,1.0); //(8x8)=(8x3)(3x8)
@@ -771,7 +826,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
       // theoretic part
       ecapa->MultiplyNT((fac_*capacoeff_),funct_,funct_,1.0);
     }
-
     /* =======================================================================*/
    }/* ================================================== end of Loop over GP */
     /* =======================================================================*/
@@ -799,6 +853,37 @@ void DRT::ELEMENTS::TemperImpl<distype>::CouplCalculateFintCondCapa(
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
+  // START OF COUPLING
+  LINALG::Matrix<6,1> ctemp(true);
+  {
+    // access the structure discretization, needed later for calling the solid
+    // material and getting its tangent
+    Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
+    structdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
+
+    // get GID of the first solid element (by using an homogenous material this
+    // is enough)
+    const int structgid = structdis->ElementRowMap()->GID(0);
+
+    // get the pointer to the adequate structure element based on GIDs
+    DRT::Element* thisele = structdis->gElement(structgid);
+
+    // call ThermoStVenantKirchhoff material and get the temperature dependent
+    // tangent ctemp
+    Teuchos::RCP<MAT::Material> structmat = thisele->Material();
+    if (structmat->MaterialType() == INPAR::MAT::m_thermostvenant)
+    {
+      MAT::ThermoStVenantKirchhoff* thrstvk
+        = static_cast <const MAT::ThermoStVenantKirchhoff*>(structmat.get());
+
+      thrstvk->SetupCthermo(ctemp);
+    }
+  }
+  // END OF COUPLING
+
+  // insert the negative value of the coupling term (c.f. energy balance)
+  ctemp.Scale(-1.0);
+
   // now get current element displacements
   LINALG::Matrix<nen_*nsd_,1> edisp;
   LINALG::Matrix<nen_*nsd_,1> evel;
@@ -820,15 +905,25 @@ void DRT::ELEMENTS::TemperImpl<distype>::CouplCalculateFintCondCapa(
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
+
+  // build the deformation gradient w.r.t material configuration
+  // 21.05.10 first step is LINEAR B-operator, so set F == I
+  // true==setzero: filled with zeros, otherwise it is left uninitialized
+  LINALG::Matrix<nsd_,nsd_> defgrd(true);
+//  // NONLINEAR:
+//  // build deformation gradient wrt to material configuration
+//  LINALG::Matrix<nsd_,nsd_> defgrd(false);
+
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
-    // build the deformation gradient w.r.t material configuration
-    // 21.05.10 first step is LINEAR B-operator, so set F == I
-    LINALG::Matrix<nsd_,nsd_> defgrd(false);
     // set to initial state as test to receive a linear solution
     for (int i=0; i<3; ++i) defgrd(i,i) = 1;
+
+    // NONLINEAR case:
+//    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+//    defgrd.MultiplyTT(xcurr,derxy_);
 
     LINALG::Matrix<6,nen_*nsd_> bop;
     for (int i=0; i<nen_; ++i)
@@ -856,15 +951,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CouplCalculateFintCondCapa(
 
     // now build the strain velocity
     LINALG::Matrix<6,1> strainvel;
-    // e' = B . d' = B . v = (Grad u' + Grad^T u')
+    // e' = B . d' = B . v = 0.5 * (Grad u' + Grad^T u')
     strainvel.Multiply(bop,evel);
-
-    // call material law
-    // here: call ThermoStVenantKirchhoff and get the temperature dependent tangent
-    LINALG::Matrix<6,1> ctemp(true);
-    Materialize(ele);
-    // the coupled force must be scaled with (-1.0)
-    ctemp.Scale(-1.0);
 
     // integrate internal force vector (coupling fraction towards displacements)
     // and coupling conductivity matrix (displacement dependent)
@@ -990,37 +1078,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::Materialize(
     const MAT::FourierIso* actmat = static_cast<const MAT::FourierIso*>(material.get());
     actmat->Evaluate(gradtemp_,cmat_,heatflux_);
     capacoeff_ = actmat->Capacity();
-  }
-  // in case of TSI: 3 materials available (structure, thermo, matlist)
-  else if (material->MaterialType() == INPAR::MAT::m_matlist)
-  {
-    const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
-    int nummat_ = actmat->NumMat();
-
-    for (int k=0; k<nummat_; ++k)
-    {
-      const int matid = actmat->MatID(k);
-      Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
-
-      // get Fourier´s law
-      if (singlemat->MaterialType() == INPAR::MAT::m_th_fourier_iso)
-      {
-        const MAT::FourierIso* actmat
-          = static_cast<const MAT::FourierIso*>(material.get());
-        actmat->Evaluate(gradtemp_,cmat_,heatflux_);
-        capacoeff_ = actmat->Capacity();
-      }
-      // get st.venant-kirchhoff-material with temperature
-      else if (singlemat->MaterialType() == INPAR::MAT::m_thermostvenant)
-      {
-        MAT::ThermoStVenantKirchhoff* thrstvk
-          = static_cast <const MAT::ThermoStVenantKirchhoff*>(material.get());
-        LINALG::Matrix<6,1> ctemp(true);
-        thrstvk->SetupCthermo(ctemp);
-      }
-
-      else dserror("material type not allowed");
-    }
   }
   else
   {

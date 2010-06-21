@@ -84,6 +84,7 @@ namespace TSI
 
     /// solve structure equations for current time step
     void DoStructureStep(Teuchos::RCP<Epetra_Vector> itemp);
+
     /// solve structure equation and return displacements
     /// (coupling towards thermo field)
     Teuchos::RCP<Epetra_Vector> DoStructureStep();
@@ -91,15 +92,26 @@ namespace TSI
     /// solve tempterature equations for current time step
     /// and return temperatures (coupling towards structure field)
     Teuchos::RCP<Epetra_Vector> DoThermoStep();
-    /// solve tempterature equations for current time step
-    void DoThermoStep(Teuchos::RCP<Epetra_Vector> idisp);
+
+    /// solve tempterature equations for current time step with respect to
+    /// current velocities
+    void DoThermoStep(
+      Teuchos::RCP<Epetra_Vector> idisp,
+      Teuchos::RCP<Epetra_Vector> ivel
+      );
+
+//    /// solve tempterature equations for current time step
+//    void DoThermoStep(
+//      Teuchos::RCP<Epetra_Vector> idisp
+//      );
+
 
     //@}
 
     //! @name Access methods
 
-    /// velocity calculation given the displacements
-    Teuchos::RCP<Epetra_Vector> CalcVelocity(
+    /// velocity calculation given the displacements (like in FSI)
+   Teuchos::RCP<Epetra_Vector> CalcVelocity(
     Teuchos::RCP<const Epetra_Vector> idispnp
     ) const;
 

@@ -27,7 +27,6 @@ Maintainer: Caroline Danowski
 // material headers
 #include "../drt_mat/fourieriso.H"
 #include "../drt_mat/thermostvenantkirchhoff.H"
-#include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 using namespace DRT::UTILS;
