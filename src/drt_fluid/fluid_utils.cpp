@@ -549,9 +549,8 @@ std::map<int,double> FLD::UTILS::ComputeSurfaceFlowRates(
 
     double flowrate = 0.0;
     dofrowmap->Comm().SumAll(&locflowrate,&flowrate,1);
-
-    // check !! map is not initialized
-    volumeflowratepersurface[condID] += flowrate;
+    // do not use += for the following since map is not initialized!
+    volumeflowratepersurface[condID] = flowrate;
   }
 
   return volumeflowratepersurface;
@@ -575,16 +574,12 @@ std::map<int,double> FLD::UTILS::ComputeLineFlowRates(
   std::vector< DRT::Condition* > conds;
   dis.GetCondition ("LineFlowRate", conds);
 
-  //if(dis.Comm().MyPID()==0)
-  //   cout << "Volume line flow rate " << endl;
-
-
   // each condition is on every proc , but might not have condition elements there
   for(vector<DRT::Condition*>::const_iterator conditer = conds.begin(); conditer!=conds.end(); ++conditer)
   {
     const DRT::Condition* cond = *conditer;
     const int condID = cond->GetInt("ConditionID");
-    
+
     // get a vector layout from the discretization to construct matching
     // vectors and matrices local <-> global dof numbering
     const Epetra_Map* dofrowmap = dis.DofRowMap();
@@ -595,17 +590,17 @@ std::map<int,double> FLD::UTILS::ComputeLineFlowRates(
     // call loop over elements
     dis.ClearState();
     dis.SetState("velnp",velnp);
-    
+
     dis.EvaluateCondition(eleparams,flowrates,"LineFlowRate",condID);
     dis.ClearState();
 
     double local_flowrate = 0.0;
     for (int i=0; i < dofrowmap->NumMyElements(); i++)
     {
-      local_flowrate +=fabs( (*flowrates)[i]);
+      local_flowrate +=((*flowrates)[i]);
     }
 
-    double flowrate = 0.0; 
+    double flowrate = 0.0;
     dofrowmap->Comm().SumAll(&local_flowrate,&flowrate,1);
     //if(dofrowmap->Comm().MyPID()==0)
     //	cout << "gobal flow rate = " << flowrate << "\t condition ID = " << condID << endl;
@@ -681,7 +676,6 @@ std::map<int,LINALG::Matrix<3,1> > FLD::UTILS::ComputeSurfaceImpulsRates(
 }
 
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::WriteFlowRatesToFile(
@@ -691,8 +685,8 @@ void FLD::UTILS::WriteFlowRatesToFile(
   )
 {
   if (flowrates.empty())
-    dserror("flowratevector is emtpty");
-  
+    dserror("flowratevector is empty");
+
   // print to file
   std::ostringstream header;
   header << right << std::setw(16) << "Time"
@@ -718,7 +712,7 @@ void FLD::UTILS::WriteFlowRatesToFile(
       f.open(fname.c_str(),std::fstream::trunc); //f << header.str() << endl;
     else
       f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-    
+
     f << s.str() << "\n";
     f.close();
   }

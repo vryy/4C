@@ -431,6 +431,12 @@ DSURF  0
 DSURF   0
 --------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
 DLINE  0
+----------------------------------DESIGN FLOW RATE LINE CONDITIONS
+DLINE  0
+----------------------------------DESIGN FLOW RATE SURF CONDITIONS
+DSURF 2
+E 8 - 1
+E 5 - 2
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 29   DNODE 1
 -----------------------------------------------DLINE-NODE TOPOLOGY

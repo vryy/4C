@@ -285,7 +285,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     // -----------------------------------------------------------------
     // Initialize the reduced models
     // -----------------------------------------------------------------
-    
+
     ART_exp_timeInt_ = dyn_art_net_drt(true);
     // Check if one-dimensional artery network problem exist
     if (ART_exp_timeInt_ != Teuchos::null)
@@ -303,7 +303,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
                                                               output_redD,
                                                               dta_,
                                                               ART_exp_timeInt_->Dt()) );
-      
+
     }
 #endif //D_ARTNET
 
@@ -2545,15 +2545,15 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   if(stabparams->get<string>("TDS") == "time_dependent")
   {
     const double tcpu=Teuchos::Time::wallTime();
-  
+
     if(myrank_==0)
     {
       cout << "time update for subscales";
     }
 
     // call elements to calculate system matrix and rhs and assemble
-    // this is required for the time update of the subgrid scales and  
-    // makes sure that the current subgrid scales correspond to the 
+    // this is required for the time update of the subgrid scales and
+    // makes sure that the current subgrid scales correspond to the
     // current residual
     AssembleMatAndRHS();
 
@@ -2685,7 +2685,7 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   //          dumping of turbulence statistics if required
   // -------------------------------------------------------------------
   statisticsmanager_->DoOutput(output_,step_,eosfac);
-  
+
   return;
 } // FluidImplicitTimeInt::StatisticsAndOutput
 
@@ -2756,7 +2756,7 @@ void FLD::FluidImplicitTimeInt::Output()
 
       Wk_optimization_->WriteRestart(output_);
     }
-    
+
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ != 0 && step_%uprestart_ == 0)
@@ -3827,27 +3827,37 @@ void FLD::FluidImplicitTimeInt::LiftDrag() const
 
 
 /*----------------------------------------------------------------------*
- | omputeFlowRates                                           u.may 01/10|
+ | compute flow rates through desired boundary parts        u.may 01/10 |
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::ComputeFlowRates() const
 {
-  // if no flowrate condition there don t compute anything
   vector<DRT::Condition*> flowratecond;
-  discret_->GetCondition("LineFlowRate", flowratecond);
-  if((int) flowratecond.size()== 0)
-    return;
 
-  // only implemented for 2D
   if(numdim_ == 2)
   {
+    discret_->GetCondition("LineFlowRate", flowratecond);
+    // if no flowrate condition is present we do not compute anything
+    if((int) flowratecond.size()== 0)
+      return;
     const std::map<int,double> flowrates = FLD::UTILS::ComputeLineFlowRates(*discret_, velnp_);
+    // write to file
+    if(discret_->Comm().MyPID() == 0)
+      FLD::UTILS::WriteFlowRatesToFile(time_, step_, flowrates );
+  }
+  else if (numdim_ == 3)
+  {
+    discret_->GetCondition("SurfFlowRate", flowratecond);
+    // if no flowrate condition is present we do not compute anything
+    if((int) flowratecond.size()== 0)
+      return;
+    const std::map<int,double> flowrates = FLD::UTILS::ComputeSurfaceFlowRates(*discret_, velnp_);
+    // write to file
     if(discret_->Comm().MyPID() == 0)
       FLD::UTILS::WriteFlowRatesToFile(time_, step_, flowrates );
   }
   else
-    dserror("flow rate computation is not implemented for the 3D case");
+    dserror("flow rate computation is not implemented for the 1D case");
 
-  // write to file
   return;
 }
 
