@@ -10,13 +10,9 @@
 #define AMGPRECONDITIONER_H_
 
 // Trilinos includes
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_Map.h>
-#include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
 
-#include "../drt_lib/drt_dserror.H"
-
+// BACI includes
 #include "linalg_sparsematrix.H"
 
 using namespace std;
@@ -24,7 +20,6 @@ using namespace Teuchos;
 
 namespace LINALG
 {
-
   class TransferOperator;
   class Smoother;
 

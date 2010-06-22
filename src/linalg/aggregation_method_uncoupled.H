@@ -12,15 +12,6 @@
 
 #include "aggregation_method.H"
 
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_CrsGraph.h>
-#include <Epetra_IntVector.h>
-
-#include "linalg_utils.H"
-
-#include "Teuchos_RefCountPtr.hpp"
-#include "Teuchos_ParameterList.hpp"
-
 using namespace std;
 using namespace Teuchos;
 

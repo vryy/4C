@@ -15,23 +15,14 @@
 #ifndef BRAESSSARAZIN_SMOOTHER_H_
 #define BRAESSSARAZIN_SMOOTHER_H_
 
-#include "../drt_lib/drt_dserror.H"
-#include "linalg_mapextractor.H"
-#include "linalg_blocksparsematrix.H"
 #include "linalg_solver.H"
 #include "linalg_utils.H"
-#include "linalg_ana.H"
-
-
-#include "Teuchos_RefCountPtr.hpp"
-#include "Teuchos_ParameterList.hpp"
 
 using namespace std;
 using namespace Teuchos;
 
 namespace LINALG
 {
-
 /*!
  * \brief class BraessSarazin_Smoother: implements Braess-Sarazin smoothing algorithm
  *

@@ -11,17 +11,7 @@
 
 #include "aggregation_method.H"
 
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_CrsGraph.h>
-#include <Epetra_IntVector.h>
-#include "Teuchos_RefCountPtr.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include "Epetra_Time.h"
-
-#include "linalg_sparsematrix.H"
-
 #include "../drt_lib/drt_dserror.H"
-#include "linalg_sparsematrix.H"
 
 #include "MLAPI_Error.h"
 #include "MLAPI_CompObject.h"
@@ -41,6 +31,7 @@ using namespace Teuchos;
 
 namespace LINALG
 {
+
   /*! \brief implementation of uncoupled coarsening (based on ML)
    *
    *  implementation of uncoupled coarsening for a given Epetra_CrsMatrix.
@@ -68,7 +59,7 @@ namespace LINALG
        *  The following parameters are used for the aggregation process
        *  - "PDE equations": number of real underlaying PDE equations of the non-amalgamated matrix, e.g. 3 for 2D Navier-Stokes examples (2 vel dofs and 1 pressure dof per node).
        *    This is used for the Amalgamation_Matrix routine.
-       *  - "BlockSize": number of degrees of freedom per "node" in the amalgamated map (constant block size). In many cases this should be the same as "PDE equations". However for the AMG(Braess-Sarazin)
+       *  - "Unamalgamated BlockSize": number of degrees of freedom per "node" in the amalgamated map (constant block size). In many cases this should be the same as "PDE equations". However for the AMG(Braess-Sarazin)
        *    coarsening this must be set to "PDE equations" - 1.
        *  - "phase 1: min nodes per aggregate": minimal allowed number of nodes that can build an aggregate (default 9)
        *  - "phase 1: max neighbour nodes": maximal allowed number of neighbour nodes, that already has been added to (other) aggregates. The idea of this parameter is

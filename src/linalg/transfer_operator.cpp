@@ -13,9 +13,6 @@
 #include "transfer_operator_pgamg.H"
 #include "transfer_operator_pgamg2.H"
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "Teuchos_ParameterList.hpp"
-
 LINALG::TransferOperator::TransferOperator(const RCP<SparseMatrix>& A, FILE* outfile) :
  A_(A),
  prolongator_(Teuchos::null),

@@ -92,6 +92,8 @@ void LINALG::AMGPreconditioner::Setup()
 
   SmootherFactory smfac;
 
+  cout << params_ << endl;
+
   for (curlevel = 0; curlevel < nmaxlevels_; ++curlevel)
   {
     /////////////////////////////////////////////////////////
@@ -99,10 +101,19 @@ void LINALG::AMGPreconditioner::Setup()
     RCP<Epetra_IntVector> aggs = null;
 
     ////////////// determine aggregates using the velocity block matrix A11_[curlevel]
-    params_.set("phase 1: min nodes per aggregate", 9);
+    // set parameters for aggregation process
+    params_.set("phase 1: min nodes per aggregate", params_.get("aggregation: nodes per aggregate",9));
     params_.set("phase 1: max neighbour nodes", 2);
     params_.set("phase 2: node attachement scheme","MaxLink");
     params_.set("Current Level",curlevel);
+    if(params_.get("aggregation: threshold",0.0) != 0.0)
+    {
+      params_.set("aggregation method","anisotropic aggregation");
+      params_.set("anisotropic aggregation: epsilon",params_.get("aggregation: threshold",0.3));
+    }
+    else
+      params_.set("aggregation method","isotropic aggregation");
+
     RCP<AggregationMethod> aggm = AggregationMethodFactory::Create("Uncoupled",NULL);
     int naggregates_local = 0;
     aggm->GetGlobalAggregates(A_[curlevel]->EpetraMatrix(),params_,aggs,naggregates_local,curNS);
@@ -140,7 +151,6 @@ void LINALG::AMGPreconditioner::Setup()
     IfpackParameters.set("fact: level-of-fill", 1);
     IfpackParameters.set("fact: ilut level-of-fill",0.0);
     IfpackParameters.set("amesos: solver type","Amesos_Umfpack");
-
 
     preS_[curlevel] = smfac.Create("point relaxation",A_[curlevel],IfpackParameters);
     postS_[curlevel] = preS_[curlevel];
