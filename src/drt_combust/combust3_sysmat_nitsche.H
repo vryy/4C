@@ -64,7 +64,7 @@ void BuildDomainIntegrals(
     const double& fac,                                 // factor for integration in space
     const double& timefac,                             // factor for integration in time
     const double& timefacfac,                          // overall integration factor
-    const double& densnp,                              // density at n+1
+    const double& densaf,                              // density at n+1 (OST), alpha_f (GenAlpha)
     const double& dynvisc,                             // dynamic viscosity at n+1
     const LINALG::Matrix<3,1>& velnp,                  // velocity at Gaussian point (GP) at n+1
     const double&              pres,                   // pressure at GP at n+1
@@ -85,7 +85,7 @@ void BuildDomainIntegrals(
     const double& tau_stab_C                           // BV   stabilization parameter
 )
 {
-  const double densfac = densnp * fac;
+  const double densfac = densaf * fac;
   //----------------------------------------------------------------------
   //                            GALERKIN PART
 
@@ -119,7 +119,7 @@ void BuildDomainIntegrals(
               |      \ (i)       /      |
                \                       /
    */
-  const double denstimefacfac = densnp * timefacfac;
+  const double denstimefacfac = densaf * timefacfac;
   assembler.template Matrix<Velx,Velx>(shp.d0, denstimefacfac, enr_conv_c);
   assembler.template Matrix<Vely,Vely>(shp.d0, denstimefacfac, enr_conv_c);
   assembler.template Matrix<Velz,Velz>(shp.d0, denstimefacfac, enr_conv_c);
@@ -251,7 +251,7 @@ void BuildDomainIntegrals(
   if(pstab)
   {
     const double tauMp = tau_stab_Mp * fac;
-    const double denstauMp = densnp * tauMp;
+    const double denstauMp = densaf * tauMp;
 #ifdef COMBUST_PSPG_INERTIA
     if (instationary)
     {
@@ -356,8 +356,8 @@ void BuildDomainIntegrals(
   if(supg)
   {
     const double tauMu = tau_stab_Mu * fac;
-    const double denstauMu = densnp * tauMu;
-    const double densdenstauMu = densnp * denstauMu;
+    const double denstauMu = densaf * tauMu;
+    const double densdenstauMu = densaf * denstauMu;
 #ifdef COMBUST_SUPG_INERTIA
     if (instationary)
     {
@@ -718,13 +718,13 @@ void SysmatDomainNitsche(
     // get the kinematic viscosity \nu
     const double kinvisc = mat->Viscosity();
     // get the density \rho^{n+1}
-    const double densnp = mat->Density();
+    const double densaf = mat->Density();
     // density \rho^{n}
     // remark: until the XFEM time integration is done properly, densities from previous and
     // current time steps are identical
-    const double densn = densnp;
+    const double densn = densaf;
     // compute dynamic viscosity \mu
-    const double dynvisc = kinvisc * densnp;
+    const double dynvisc = kinvisc * densaf;
 
     //------------------------------------------------------------------------------------------
     // evaluate the enrichment function for this integration cell
@@ -952,7 +952,7 @@ void SysmatDomainNitsche(
       double tau_stab_Mp = 0.0;
       double tau_stab_C  = 0.0;
       FLD::UTILS::computeStabilizationParams(gpvelnp, xji,
-          instationary, dynvisc, densnp, vel_norm, strle, hk, mk, timefac, dt,
+          instationary, dynvisc, densaf, vel_norm, strle, hk, mk, timefac, dt,
           INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 
@@ -976,7 +976,7 @@ void SysmatDomainNitsche(
       bodyforce(1) = 0.0;
       bodyforce(2) = 0.0;
       // scale body force: body force * density^{n+1}
-      bodyforce.Scale(densnp);
+      bodyforce.Scale(densaf);
       //            // read body force from input file
       //            LINALG::SerialDenseMatrix edeadng = COMBUST::BodyForce<DISTYPE>(ele, 0.0);
       //            // remark: use BodyForce() instead?
@@ -1048,7 +1048,7 @@ void SysmatDomainNitsche(
       //            {
       //              // timefac * (\rho*du/dt + (\rho u*grad) u + grad p - 2\mu\epsilon(u) - \rho g)
       //              for (size_t isd = 0; isd < nsd; ++isd)
-      //                res_old(isd) = densnp*gpvelnp(isd) - rhsint(isd) + timefac*(densnp*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd));
+      //                res_old(isd) = densaf*gpvelnp(isd) - rhsint(isd) + timefac*(densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd));
       //            }
       //            else // stationary
       //            {
@@ -1056,7 +1056,7 @@ void SysmatDomainNitsche(
       //              // remark: Although calculation is stationary, scaling with timefac is kept to be
       //              //         consistent with formulation of matrix entries, which are also scaled.
       //              for(size_t isd = 0; isd < nsd; ++isd)
-      //                res_old(isd) = timefac*(densnp*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-bodyforce(isd));
+      //                res_old(isd) = timefac*(densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-bodyforce(isd));
       //            }
 
       // evaluate residual once for all stabilisation right hand sides
@@ -1076,7 +1076,7 @@ void SysmatDomainNitsche(
       // build single stiffness matrix entries
       //--------------------------------------------------------------------------------------
       COMBUST::BuildDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize,shpVecSizeStress>(
-          assembler, shp, fac, timefac, timefacfac, densnp, dynvisc,
+          assembler, shp, fac, timefac, timefacfac, densaf, dynvisc,
           gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_viscs2,
           instationary, newton, pstab, supg, cstab,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
@@ -1537,10 +1537,10 @@ cout << jp << endl;
       //--------------------------------------------------------------------------------------------
       // build single boundary integral stiffness terms
       //
-      // remarks: || x || stands for the jump operator ( || x || = x^+ - x^- )
+      // remarks: || x || stands for the jump operator ( || x || = x^- - x^+ )
       //           < x >  stands for the mean across the interface ( < x > = 1/2*(x^+ + x^-) )
-      //             n    stands for the normal vector on the interface pointing into the
-      //                  burnt domain (n = n^- = -n^+)
+      //             n    stands for the normal vector on the interface pointing from the positive (+)
+      //                  domain into the negative (-) domain (n = n^+ = -n^-)
       //--------------------------------------------------------------------------------------------
 
 #ifdef COMBUST_NITSCHE_VISCCONSISTMEAN
