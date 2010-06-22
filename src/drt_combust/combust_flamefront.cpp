@@ -282,26 +282,25 @@ void COMBUST::FlameFront::StorePhiVectors(
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::SmoothGradPhi()
 {
-  dserror("Thou shalt not call this function!");
-  gradphi_ = rcp(new Epetra_MultiVector(*fluiddis_->NodeColMap(),3));
-
-  for(int iele=0;iele<fluiddis_->NumMyColElements();iele++)
-  {
-    // get element from discretization
-    //const DRT::Element *ele = fluiddis_->lRowElement(iele);
-
-    //--------------------------------------------------------------------------------------------
-    // find out whether an element is intersected or not by looking at number of integration cells
-    //--------------------------------------------------------------------------------------------
-    if (true) // myelementintcells_ not empty?
-    {
-
-    }
-    else
-    {
-      //uncut element
-    }
-  }
+//  gradphi_ = rcp(new Epetra_MultiVector(*fluiddis_->NodeColMap(),3));
+//
+//  for(int iele=0;iele<fluiddis_->NumMyColElements();iele++)
+//  {
+//    // get element from discretization
+//    //const DRT::Element *ele = fluiddis_->lRowElement(iele);
+//
+//    //--------------------------------------------------------------------------------------------
+//    // find out whether an element is intersected or not by looking at number of integration cells
+//    //--------------------------------------------------------------------------------------------
+//    if (true) // myelementintcells_ not empty?
+//    {
+//
+//    }
+//    else
+//    {
+//      //uncut element
+//    }
+//  }
 
   return;
 }
