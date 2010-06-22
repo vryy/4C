@@ -173,6 +173,8 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
     // general action to calculate the flow rate (replaces flowratecalc soon)
     else if (action == "calc_line_flowrate")
       act = Fluid3Boundary::calc_flowrate;
+    else if (action == "calc_flow_rate")  // allows use of FLD::UTILS::ComupteSurfaceFlowRate()
+      act = Fluid3Boundary::calc_flowrate;
     else if (action == "flowrate_deriv")
         act = Fluid3Boundary::flowratederiv;
     else if (action == "Outlet impedance")

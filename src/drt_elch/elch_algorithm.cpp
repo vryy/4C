@@ -342,8 +342,7 @@ void ELCH::Algorithm::Output()
   // written. And these entries define the order in which the filters handle
   // the discretizations, which in turn defines the dof number ordering of the
   // discretizations.
-  FluidField().Output();
-  FluidField().LiftDrag();
+  FluidField().StatisticsAndOutput();
   ScaTraField().Output();
 
   return;
