@@ -226,20 +226,20 @@ void BuildDomainIntegralsStress(
                     |                 |
                      \               /
    */
-  assembler.template Matrix<DiscPres,Tauxx>(shp_discpres.d0, -reciprocal_viscfac*timefacfac, shp_tau.d0);
-  assembler.template Matrix<DiscPres,Tauyy>(shp_discpres.d0, -reciprocal_viscfac*timefacfac, shp_tau.d0);
-  assembler.template Matrix<DiscPres,Tauzz>(shp_discpres.d0, -reciprocal_viscfac*timefacfac, shp_tau.d0);
+  assembler.template Matrix<DiscPres,Tauxx>(shp_discpres.d0, reciprocal_viscfac*timefacfac, shp_tau.d0);
+  assembler.template Matrix<DiscPres,Tauyy>(shp_discpres.d0, reciprocal_viscfac*timefacfac, shp_tau.d0);
+  assembler.template Matrix<DiscPres,Tauzz>(shp_discpres.d0, reciprocal_viscfac*timefacfac, shp_tau.d0);
 
   const double trace_tau = (tau(0,0) + tau(1,1) + tau(2,2));
-  assembler.template Vector<DiscPres>(shp_discpres.d0, reciprocal_viscfac*timefacfac*trace_tau);
+  assembler.template Vector<DiscPres>(shp_discpres.d0, -reciprocal_viscfac*timefacfac*trace_tau);
 
-//  // TODO new term, does not seem to be important
-//  assembler.template Matrix<DiscPres,Velx>(shp_discpres.d0, -timefacfac, shp.dx);
-//  assembler.template Matrix<DiscPres,Vely>(shp_discpres.d0, -timefacfac, shp.dy);
-//  assembler.template Matrix<DiscPres,Velz>(shp_discpres.d0, -timefacfac, shp.dz);
+  // new term; seems to have effect on third diagonal matrix entry
+  assembler.template Matrix<DiscPres,Velx>(shp_discpres.d0, -timefacfac, shp.dx);
+  assembler.template Matrix<DiscPres,Vely>(shp_discpres.d0, -timefacfac, shp.dy);
+  assembler.template Matrix<DiscPres,Velz>(shp_discpres.d0, -timefacfac, shp.dz);
 //
-//  const double trace = vderxy(0,0) + vderxy(1,1) + vderxy(2,2);
-//  assembler.template Vector<DiscPres>(shp_discpres.d0, timefacfac*trace);
+  const double trace = vderxy(0,0) + vderxy(1,1) + vderxy(2,2);
+  assembler.template Vector<DiscPres>(shp_discpres.d0, timefacfac*trace);
 #endif
 }
 
@@ -339,14 +339,14 @@ void SysmatDomainStress(
   // get domain integration cells for this element
   const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
 
-  //----------------------------------------------------------------------------------------------
+  //-----------------------------------
   // loop over domain integration cells
-  //----------------------------------------------------------------------------------------------
+  //-----------------------------------
   for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
   {
-    //------------------------------------------------------------------------------------------
+    //--------------------------------------------------
     // get material parameters for this integration cell
-    //------------------------------------------------------------------------------------------
+    //--------------------------------------------------
     int matid = 777;
     // check on which side of the interface the cell is located
     if(cell->getDomainPlus()) // cell belongs to burnt domain
@@ -365,32 +365,32 @@ void SysmatDomainStress(
     // get the kinematic viscosity \nu
     const double kinvisc = mat->Viscosity();
     // get the density \rho^{n+1}
-    const double densnp = mat->Density();
+    const double densaf = mat->Density();
     // density \rho^{n}
     // remark: until the XFEM time integration is done properly, densities from previous and
     // current time steps are identical
-    const double densn = densnp;
+    const double densn = densaf;
     // compute dynamic viscosity \mu
-    const double dynvisc = kinvisc * densnp;
+    const double dynvisc = kinvisc * densaf;
 
-    //------------------------------------------------------------------------------------------
+    //-----------------------------------------------------------
     // evaluate the enrichment function for this integration cell
-    //------------------------------------------------------------------------------------------
+    //-----------------------------------------------------------
     const XFEM::ElementEnrichmentValues enrvals(*ele,dofman,*cell,ephi);
 
-    //------------------------------------------------------------------------------------------
+    //----------------------------------------------
     // get Gaussian points for this integration cell
-    //------------------------------------------------------------------------------------------
+    //----------------------------------------------
     const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Intersected(), cell->Shape());
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-    //------------------------------------------------------------------------------------------
+    //--------------------------------------
     // integration loop over Gaussian points
-    //------------------------------------------------------------------------------------------
+    //--------------------------------------
     for (int iquad=0; iquad<intpoints.nquad; ++iquad)
     {
-      //--------------------------------------------------------------------------------------
+      //---------------------------------------------
       // transform coordinates of this Gaussian point
-      //--------------------------------------------------------------------------------------
+      //---------------------------------------------
       // coordinates of the current integration point in cell coordinates \eta^domain
       const LINALG::Matrix<nsd,1> pos_eta_domain(intpoints.qxg[iquad]);
 
@@ -405,9 +405,9 @@ void SysmatDomainStress(
         dserror("negative detcell!");
       }
 #endif
-      //--------------------------------------------------------------------------------------
+      //----------------------------------------------------------------------------
       // evaluate shape functions and their first derivatives at this Gaussian point
-      //--------------------------------------------------------------------------------------
+      //----------------------------------------------------------------------------
       static LINALG::Matrix<numnode,1> funct;
       static LINALG::Matrix<nsd,numnode> deriv;
       DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
@@ -443,9 +443,9 @@ void SysmatDomainStress(
         }
       }
 
-      //--------------------------------------------------------------------------------------
+      //-------------------------------------
       // procedures involving Jacobian matrix
-      //--------------------------------------------------------------------------------------
+      //-------------------------------------
       // get transposed of the jacobian matrix d x / d \xi
       // xjm(i,j) = deriv(i,k)*xyze(j,k)
       static LINALG::Matrix<nsd,nsd> xjm;
@@ -464,9 +464,9 @@ void SysmatDomainStress(
       static LINALG::Matrix<nsd,nsd> xji;
       xji.Invert(xjm);
 
-      //--------------------------------------------------------------------------------------
+      //-------------------------------------------------------------------
       // compute global derivates of shape functions at this Gaussian point
-      //--------------------------------------------------------------------------------------
+      //-------------------------------------------------------------------
       static LINALG::Matrix<3,numnode> derxy;
       // derxy(i,j) = xji(i,k) * deriv(k,j)
       derxy.Multiply(xji,deriv);
@@ -484,9 +484,9 @@ void SysmatDomainStress(
         derxy2.Clear();
       }
 
-      //--------------------------------------------------------------------------------------
+      //--------------------------------------------------------------------------------
       // rearrange (enriched) shape functions and derivatives as approximation functions
-      //--------------------------------------------------------------------------------------
+      //--------------------------------------------------------------------------------
       const size_t shpVecSize       = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
       const size_t shpVecSizeStress = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
       const size_t shpVecSizeDiscPres = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement;
@@ -595,17 +595,17 @@ void SysmatDomainStress(
         }
       }
 
-      //--------------------------------------------------------------------------------------
+      //------------------------------------------------------
       // get velocities and accelerations at integration point
-      //--------------------------------------------------------------------------------------
+      //------------------------------------------------------
       const LINALG::Matrix<nsd,1> gpvelnp = XFEM::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
       const LINALG::Matrix<nsd,1> gpveln  = XFEM::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
       const LINALG::Matrix<nsd,1> gpvelnm = XFEM::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
       const LINALG::Matrix<nsd,1> gpaccn  = XFEM::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
 
-      //--------------------------------------------------------------------------------------
+      //----------------------------------------------
       // get velocity derivatives at integration point
-      //--------------------------------------------------------------------------------------
+      //----------------------------------------------
       static LINALG::Matrix<3,nsd> vderxy;
       vderxy.Clear();
       // vderxy = enr_derxy(j,k)*evelnp(i,k);
@@ -619,9 +619,9 @@ void SysmatDomainStress(
         }
       }
 
-      //--------------------------------------------------------------------------------------
+      //-----------------------------------------------------
       // get second velocity derivatives at integration point
-      //--------------------------------------------------------------------------------------
+      //-----------------------------------------------------
       static LINALG::Matrix<3,6> vderxy2;
       vderxy2.Clear();
       //vderxy2 = evelnp(i,k)*enr_derxy2(j,k);
@@ -641,16 +641,16 @@ void SysmatDomainStress(
         }
       }
 
-      //--------------------------------------------------------------------------------------
+      //----------------------------------
       // get pressure at integration point
-      //--------------------------------------------------------------------------------------
+      //----------------------------------
       double pres = 0.0;
       for (size_t iparam = 0; iparam != numparampres; ++iparam)
         pres += eprenp(iparam) * shp.d0(iparam);
 
-      //--------------------------------------------------------------------------------------
+      //--------------------------------------------
       // get pressure gradients at integration point
-      //--------------------------------------------------------------------------------------
+      //--------------------------------------------
       static LINALG::Matrix<nsd,1> gradp;
       gradp.Clear();
       // gradp = enr_derxy(i,j)*eprenp(j);
@@ -682,22 +682,22 @@ void SysmatDomainStress(
         tau.Clear();
       }
 
-     //--------------------------------------------------------------------------------------
+     //-------------------------------------------
       // compute stabilization parameters (3 taus)
-      //--------------------------------------------------------------------------------------
+      //------------------------------------------
       const double vel_norm = gpvelnp.Norm2();
       const double strle = FLD::UTILS::Streamlength(shp.dx, shp.dy, shp.dz, gpvelnp, vel_norm, numparamvelx);
       double tau_stab_Mu = 0.0;
       double tau_stab_Mp = 0.0;
       double tau_stab_C  = 0.0;
       FLD::UTILS::computeStabilizationParams(gpvelnp, xji,
-          instationary, dynvisc, densnp, vel_norm, strle, hk, mk, timefac, dt,
+          instationary, dynvisc, densaf, vel_norm, strle, hk, mk, timefac, dt,
           INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 
-      //--------------------------------------------------------------------------------------
+      //------------------------------------------------------------------------
       // build RHS vector at integration point (scaled with timefac and density)
-      //--------------------------------------------------------------------------------------
+      //------------------------------------------------------------------------
       static LINALG::Matrix<nsd,1> rhsint;
       rhsint.Clear();
 
@@ -717,14 +717,14 @@ void SysmatDomainStress(
           bodyforce(isd) += edead(isd,inode) * funct(inode);
       }
       // scale body force: body force * density^{n+1}
-      bodyforce.Scale(densnp);
+      bodyforce.Scale(densaf);
 
       for (size_t isd = 0; isd < nsd; ++isd)
         rhsint(isd) = histvec(isd) + timefac*bodyforce(isd);
 
-      //--------------------------------------------------------------------------------------
+      //-----------------------------------------------------------------------
       // compute numerical representation of some single operators (not scaled)
-      //--------------------------------------------------------------------------------------
+      //-----------------------------------------------------------------------
 
       // convective term:  u_old * grad u_old:
       // remark: conv_old = vderxy(i,j)*gpvelnp(j);
@@ -772,16 +772,16 @@ void SysmatDomainStress(
         enr_viscs2.zz(iparam) = 0.5 * (shp.dxdx(iparam) + shp.dydy(iparam) + 2.0 * shp.dzdz(iparam));
       }
 
-      //--------------------------------------------------------------------------------------
+      //----------------------------------------------------
       // evaluate residual (scaled with timefac and density)
       // remark: used for stabilization right hand sides
-      //--------------------------------------------------------------------------------------
+      //----------------------------------------------------
       //            LINALG::Matrix<nsd,1> res_old(true);
       //            if (instationary)
       //            {
       //              // timefac * (\rho*du/dt + (\rho u*grad) u + grad p - 2\mu\epsilon(u) - \rho g)
       //              for (size_t isd = 0; isd < nsd; ++isd)
-      //                res_old(isd) = densnp*gpvelnp(isd) - rhsint(isd) + timefac*(densnp*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd));
+      //                res_old(isd) = densaf*gpvelnp(isd) - rhsint(isd) + timefac*(densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd));
       //            }
       //            else // stationary
       //            {
@@ -789,7 +789,7 @@ void SysmatDomainStress(
       //              // remark: Although calculation is stationary, scaling with timefac is kept to be
       //              //         consistent with formulation of matrix entries, which are also scaled.
       //              for(size_t isd = 0; isd < nsd; ++isd)
-      //                res_old(isd) = timefac*(densnp*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-bodyforce(isd));
+      //                res_old(isd) = timefac*(densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-bodyforce(isd));
       //            }
 
       // evaluate residual once for all stabilisation right hand sides
@@ -799,17 +799,18 @@ void SysmatDomainStress(
 
       if (instationary)
       {
+        // TODO vector!
         res_old += gpvelnp;
       }
 
       // integration factors and coefficients of single terms
       const double timefacfac = timefac * fac;
 
-      //--------------------------------------------------------------------------------------
+      //--------------------------------------
       // build single stiffness matrix entries
-      //--------------------------------------------------------------------------------------
+      //--------------------------------------
       COMBUST::BuildDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize,shpVecSizeStress>(
-          assembler, shp, fac, timefac, timefacfac, densnp, dynvisc,
+          assembler, shp, fac, timefac, timefacfac, densaf, dynvisc,
           gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_viscs2,
           instationary, newton, pstab, supg, cstab,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
@@ -873,9 +874,9 @@ void SysmatBoundaryStress(
   static LINALG::Matrix<nsd,numnode> xyze;
   GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
-  //------------------------------------------------------------------------------------------------
-  // get material parameters for all boundary integration cell of this element
-  //------------------------------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+  // get material parameters for all boundary integration cells of this element
+  //---------------------------------------------------------------------------
 #ifdef DEBUG
   // check if we really got a list of materials
   dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
@@ -913,18 +914,21 @@ void SysmatBoundaryStress(
   // compute dynamic viscosity \mu
   const double visc_minus = kinvisc_minus * dens_minus;
 
-  //------------------------------------------------------------------------------------------------
-  // compute jump values
-  //------------------------------------------------------------------------------------------------
-#if 1
+  //-----------------------------
+  // prepare interface conditions
+  //-----------------------------
+  // mass flux through flame front
+  const double mflux = flamespeed*dens_minus;
+#if 0
   // jump velocity vector ju_{n,t1,t2}
   LINALG::Matrix<nsd,1> ju_nt(true);
-  ju_nt(0,0) = 0.0; // -flamespeed*dens_minus*(1.0/dens_plus - 1.0/dens_minus);
+  ju_nt(0,0) = -flamespeed*dens_minus*(1.0/dens_minus - 1.0/dens_plus);
   ju_nt(1,0) = 0.0;
   ju_nt(2,0) = 0.0;
+#else
+  // velocity jump in normal direction
+  const double ju_n = -mflux*(1.0/dens_minus - 1.0/dens_plus);
 #endif
-
-//  const double ju = 0.0; // -flamespeed*dens_minus*(1.0/dens_plus - 1.0/dens_minus);
 
 #ifdef COMBUST_STRESS_BASED_CONSISTPRESJUMP
   // pressure jump value
@@ -948,20 +952,20 @@ void SysmatBoundaryStress(
   // get domain integration cells for this element
   const GEO::BoundaryIntCells& boundaryIntCells = ih->GetBoundaryIntCells(ele->Id());
 
-  //------------------------------------------------------------------------------------------
+  //-------------------------------------------------------------------------------
   // evaluate the enrichment function at the interface (boundary integration cells)
-  //------------------------------------------------------------------------------------------
+  //-------------------------------------------------------------------------------
   const XFEM::ElementEnrichmentValues enrvals_plus(*ele,dofman,XFEM::Enrichment::approachFromPlus,ephi);
   const XFEM::ElementEnrichmentValues enrvals_minus(*ele,dofman,XFEM::Enrichment::approachFromMinus,ephi);
 
-  //------------------------------------------------------------------------------------------------
+  //-------------------------------------
   // loop over boundary integration cells
-  //------------------------------------------------------------------------------------------------
+  //-------------------------------------
   for (GEO::BoundaryIntCells::const_iterator cell = boundaryIntCells.begin(); cell != boundaryIntCells.end(); ++cell)
   {
-    //----------------------------------------------------------------------------------------------
+    //----------------------------------------------
     // get Gaussian points for this integration cell
-    //----------------------------------------------------------------------------------------------
+    //----------------------------------------------
     // TODO: finish -> template? Only tri3 boundary integration cells allowed?
     if (cell->Shape() == DRT::Element::tri3)
     {
@@ -991,14 +995,14 @@ void SysmatBoundaryStress(
     const LINALG::Matrix<nsd,numvertices> cellXiDomain(cellXiDomaintmp);
     const LINALG::Matrix<nsd,numvertices> cellXYZDomain(cellXYZDomaintmp);
 
-    //----------------------------------------------------------------------------------------------
+    //--------------------------------------
     // integration loop over Gaussian points
-    //----------------------------------------------------------------------------------------------
+    //--------------------------------------
     for (int iquad=0; iquad<intpoints.nquad; ++iquad)
     {
-      //--------------------------------------------------------------------------------------------
+      //---------------------------------------------
       // transform coordinates of this Gaussian point
-      //--------------------------------------------------------------------------------------------
+      //---------------------------------------------
       // coordinates of this integration point in boundary cell coordinates \eta^boundary
       const LINALG::Matrix<2,1> posEtaBoundary(intpoints.qxg[iquad]);
 
@@ -1015,7 +1019,11 @@ void SysmatBoundaryStress(
       normal.Clear();
       GEO::computeNormalToSurfaceElement(cell->Shape(), cellXYZDomain, posEtaBoundary, normal);
 
-#if 1
+      LINALG::Matrix<nsd,1> ju(true);
+#if 0
+      //--------------------------------------------------------------------------------
+      // does not make much sense; multiplication of 'ju' by 'normal' yields same result
+      //--------------------------------------------------------------------------------
       static LINALG::Matrix<nsd,1> tang1(true);
       tang1.Clear();
       tang1(0) = cellXYZDomain(0,1) - cellXYZDomain(0,0);
@@ -1048,18 +1056,35 @@ void SysmatBoundaryStress(
         trafo(idim,1) = tang1(idim,0);
         trafo(idim,2) = tang2(idim,0);
       }
-      LINALG::Matrix<nsd,1> ju(true);
       //ju = trafo*ju_nt;
       ju.Multiply(trafo,ju_nt);
+#else
+      ju(0) = ju_n*normal(0);
+      ju(1) = ju_n*normal(1);
+      ju(2) = ju_n*normal(2);
 
-      ju(0) = -2.0;
-      ju(1) = 0.0;
-      ju(2) = 0.0;
+      // overwrite velocity jump condition (e.g. for specific test case)
+      //ju(0) = 0.0;
+      //ju(1) = 0.0;
+      //ju(2) = 0.0;
 #endif
 
-      //--------------------------------------------------------------------------------------------
+      // normal stress jump
+      const double jflux_n = -mflux*mflux*(1.0/dens_minus - 1.0/dens_plus);
+      // jump of traction vector (stress tensor * normal)
+      LINALG::Matrix<nsd,1> jflux(true);
+      jflux(0) = jflux_n*normal(0);
+      jflux(1) = jflux_n*normal(1);
+      jflux(2) = jflux_n*normal(2);
+
+      // overwrite velocity jump condition (e.g. for specific test case)
+      //jflux(0) = 0.0;
+      //jflux(1) = 0.0;
+      //jflux(2) = 0.0;
+
+      //------------------------------------------------
       // evaluate shape functions at this Gaussian point
-      //--------------------------------------------------------------------------------------------
+      //------------------------------------------------
       // shape functions for fields with dofs at nodes
       static LINALG::Matrix<numnode,1> funct;
       funct.Clear();
@@ -1077,9 +1102,9 @@ void SysmatBoundaryStress(
       funct_discpres.Clear();
       DRT::UTILS::shape_function_3D(funct_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
 
-      //--------------------------------------------------------------------------------------------
+      //--------------------------------------------------------
       // procedures involving Jacobian matrix for domain mapping
-      //--------------------------------------------------------------------------------------------
+      //--------------------------------------------------------
       // get transposed of the jacobian matrix d x / d \xi
       // xjm(i,j) = deriv(i,k)*xyze(j,k)
       static LINALG::Matrix<nsd,nsd> xjm;
@@ -1098,9 +1123,9 @@ void SysmatBoundaryStress(
       xji.Clear();
       xji.Invert(xjm);
 
-      //--------------------------------------------------------------------------------------------
+      //-------------------------------------------------------------------
       // compute global derivates of shape functions at this Gaussian point
-      //--------------------------------------------------------------------------------------------
+      //-------------------------------------------------------------------
       // compute first global derivative
       static LINALG::Matrix<3,numnode> derxy;
       derxy.Clear();
@@ -1120,9 +1145,9 @@ void SysmatBoundaryStress(
         derxy2.Clear();
       }
 
-      //--------------------------------------------------------------------------------------------
+      //------------------------------------------------
       // compute Jacobian matrix for mapping to boundary
-      //--------------------------------------------------------------------------------------------
+      //------------------------------------------------
       static LINALG::Matrix<nsd,numvertices> deriv_boundary;
       deriv_boundary.Clear();
       DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, posEtaBoundary(0),posEtaBoundary(1),cell->Shape());
@@ -1152,9 +1177,9 @@ void SysmatBoundaryStress(
       }
 //#endif
 
-      //--------------------------------------------------------------------------------------------
+      //----------------------------
       // compute integration factors
-      //--------------------------------------------------------------------------------------------
+      //----------------------------
       // compute spatial integration factor
       const double fac = intpoints.qwgt[iquad]*detXitoEta;
 // TODO clarify
@@ -1162,9 +1187,9 @@ void SysmatBoundaryStress(
       // compute total (time and spatial) integration factor (and coefficients of single terms)?
       const double timefacfac = timefac * fac;
 
-      //--------------------------------------------------------------------------------------------
+      //--------------------------------------------------------------------------------
       // rearrange (enriched) shape functions and derivatives as approximation functions
-      //--------------------------------------------------------------------------------------------
+      //--------------------------------------------------------------------------------
       const std::size_t shpVecSize         = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
       const std::size_t shpVecSizeStress   = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
       const std::size_t shpVecSizeDiscPres = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement;
@@ -1263,9 +1288,9 @@ void SysmatBoundaryStress(
         shp_discpres_mean.d0(iparam) = 0.5*(enrfunct_discpres_minus(iparam) + enrfunct_discpres_plus(iparam));
       }
 
-      //--------------------------------------------------------------------------------------------
+      //---------------------------------------
       // compute data at Gaussian point for rhs
-      //--------------------------------------------------------------------------------------------
+      //---------------------------------------
 
       // velocity jump
       static LINALG::Matrix<nsd,1> veljump(true);
@@ -1341,13 +1366,13 @@ void SysmatBoundaryStress(
       velinflow.Clear();
       velinflow = XFEM::interpolateVectorFieldToIntPoint(evelnp, shp_inflow.d0, numparamvelx);
 #endif
-//--------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
       // build single boundary integral stiffness terms
       //
-      // remarks: || x || stands for the jump operator ( || x || = x^*- - x^+ )
+      // remarks: || x || stands for the jump operator ( || x || = x^- - x^+ )
       //           < x >  stands for the mean across the interface ( < x > = 1/2*(x^+ + x^-) )
-      //             n    stands for the normal vector on the interface pointing into the
-      //                  burnt domain (n = n^- = -n^+)
+      //             n    stands for the normal vector on the interface pointing from the positive (+)
+      //                  domain into the negative (-) domain (n = n^+ = -n^-)
       //--------------------------------------------------------------------------------------------
 
 #ifdef COMBUST_STRESS_BASED_CONSISTVISCJUMP
@@ -1385,43 +1410,51 @@ void SysmatBoundaryStress(
 #endif
 
 #ifdef COMBUST_STRESS_BASED_CONSISTPRESJUMP
-#if 0
       //--------------------------    |                       |
-      // pressure consistency term  + |  < v >, || Dp^e || n  |
+      // pressure consistency term  - |  < v >, || Dp^e || n  |
       //--------------------------    |                       |
 
-      assembler.template Matrix<Velx,DiscPres>(shp_mean.d0, timefacfac*normal(0), shp_discpres_jump.d0);
-      assembler.template Matrix<Vely,DiscPres>(shp_mean.d0, timefacfac*normal(1), shp_discpres_jump.d0);
-      assembler.template Matrix<Velz,DiscPres>(shp_mean.d0, timefacfac*normal(2), shp_discpres_jump.d0);
+      assembler.template Matrix<Velx,DiscPres>(shp_mean.d0, -timefacfac*normal(0), shp_discpres_jump.d0);
+      assembler.template Matrix<Vely,DiscPres>(shp_mean.d0, -timefacfac*normal(1), shp_discpres_jump.d0);
+      assembler.template Matrix<Velz,DiscPres>(shp_mean.d0, -timefacfac*normal(2), shp_discpres_jump.d0);
 
       //   |                        |
-      // - |  < v >, || p^e_i || n  |
+      // + |  < v >, || p^e_i || n  |
       //   |                        |
 
-      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac*normal(0)*pdiscjump);
-      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac*normal(1)*pdiscjump);
-      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac*normal(2)*pdiscjump);
-#endif
-      //------------------------------------------    |                |
-      // pressure/flux jump (consistency) term RHS  + |  < v >, j_p*n  |
-      //------------------------------------------    |                |
+      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(0)*pdiscjump);
+      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*normal(1)*pdiscjump);
+      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(2)*pdiscjump);
 
+      //---------  ---------------------------------    |                |
+      // pressure (flux) jump (consistency) term RHS  + |  < v >, j_p*n  |
+      //-----------  -------------------------------    |                |
       assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(0)*jp);
       assembler.template Vector<Vely>(shp_mean.d0, timefacfac*normal(1)*jp);
       assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(2)*jp);
+#endif
+
+#ifdef COMBUST_STRESS_BASED_FLUXJUMP
+      //---------------------------------------------------    |                 |
+      // flux (traction/stress) jump (consistency) term RHS  + |  < v >, j_flux  |
+      //---------------------------------------------------    |                 |
+      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*jflux(0));
+      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*jflux(1));
+      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*jflux(2));
+
 #if 0
-      // RHS of COMBUST_STRESS_BASED_CONSISTVISCJUMP
-      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac*normal(0)*taujump(0,0));
-      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac*normal(1)*taujump(0,1));
-      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac*normal(2)*taujump(0,2));
+      // j_sigma is a 3x3 Matrix -> j_sigma*normal
+      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(0)*jflux(0,0));
+      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(1)*jflux(0,1));
+      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*normal(2)*jflux(0,2));
 
-      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac*normal(0)*taujump(1,0));
-      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac*normal(1)*taujump(1,1));
-      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac*normal(2)*taujump(1,2));
+      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*normal(0)*jflux(1,0));
+      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*normal(1)*jflux(1,1));
+      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*normal(2)*jflux(1,2));
 
-      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac*normal(0)*taujump(2,0));
-      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac*normal(1)*taujump(2,1));
-      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac*normal(2)*taujump(2,2));
+      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(0)*jflux(2,0));
+      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(1)*jflux(2,1));
+      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*normal(2)*jflux(2,2));
 #endif
 #endif
 
@@ -1510,30 +1543,39 @@ void SysmatBoundaryStress(
       assembler.template Vector<Tauzy>(shp_tau_mean.d0, -timefacfac*normal(1)*veljump(2));
       assembler.template Vector<Tauzz>(shp_tau_mean.d0, -timefacfac*normal(2)*veljump(2));
 
-      //-------------------------------------    |                      |
-      // viscous adjoint consistency term RHS  + |  < tau^e > n, j_u n  |
-      //-------------------------------------    |                      |
+      //-------------------------------------    |                    |
+      // viscous adjoint consistency term RHS  + |  < tau^e > n, j_u  |
+      //-------------------------------------    |                    |
 
-//       assembler.template Vector<Tauxx>(shp_tau_mean.d0, timefacfac*normal(0)*normal(0)*ju);
-//       assembler.template Vector<Tauxy>(shp_tau_mean.d0, timefacfac*normal(1)*normal(0)*ju);
-//       assembler.template Vector<Tauxz>(shp_tau_mean.d0, timefacfac*normal(2)*normal(0)*ju);
-        assembler.template Vector<Tauxx>(shp_tau_mean.d0, timefacfac*normal(0)*ju(0));
-        assembler.template Vector<Tauxy>(shp_tau_mean.d0, timefacfac*normal(1)*ju(0));
-        assembler.template Vector<Tauxz>(shp_tau_mean.d0, timefacfac*normal(2)*ju(0));
+#if 1
+      assembler.template Vector<Tauxx>(shp_tau_mean.d0, timefacfac*normal(0)*ju(0));
+      assembler.template Vector<Tauxy>(shp_tau_mean.d0, timefacfac*normal(1)*ju(0));
+      assembler.template Vector<Tauxz>(shp_tau_mean.d0, timefacfac*normal(2)*ju(0));
+#else
+      assembler.template Vector<Tauxx>(shp_tau_mean.d0, timefacfac*normal(0)*normal(0)*ju_n);
+      assembler.template Vector<Tauxy>(shp_tau_mean.d0, timefacfac*normal(1)*normal(0)*ju_n);
+      assembler.template Vector<Tauxz>(shp_tau_mean.d0, timefacfac*normal(2)*normal(0)*ju_n);
+#endif
 
-//       assembler.template Vector<Tauyx>(shp_tau_mean.d0, timefacfac*normal(0)*normal(1)*ju);
-//       assembler.template Vector<Tauyy>(shp_tau_mean.d0, timefacfac*normal(1)*normal(1)*ju);
-//       assembler.template Vector<Tauyz>(shp_tau_mean.d0, timefacfac*normal(2)*normal(1)*ju);
-        assembler.template Vector<Tauyx>(shp_tau_mean.d0, timefacfac*normal(0)*ju(1));
-        assembler.template Vector<Tauyy>(shp_tau_mean.d0, timefacfac*normal(1)*ju(1));
-        assembler.template Vector<Tauyz>(shp_tau_mean.d0, timefacfac*normal(2)*ju(1));
+#if 1
+      assembler.template Vector<Tauyx>(shp_tau_mean.d0, timefacfac*normal(0)*ju(1));
+      assembler.template Vector<Tauyy>(shp_tau_mean.d0, timefacfac*normal(1)*ju(1));
+      assembler.template Vector<Tauyz>(shp_tau_mean.d0, timefacfac*normal(2)*ju(1));
+#else
+      assembler.template Vector<Tauyx>(shp_tau_mean.d0, timefacfac*normal(0)*normal(1)*ju_n);
+      assembler.template Vector<Tauyy>(shp_tau_mean.d0, timefacfac*normal(1)*normal(1)*ju_n);
+      assembler.template Vector<Tauyz>(shp_tau_mean.d0, timefacfac*normal(2)*normal(1)*ju_n);
+#endif
 
-//       assembler.template Vector<Tauzx>(shp_tau_mean.d0, timefacfac*normal(0)*normal(2)*ju);
-//       assembler.template Vector<Tauzy>(shp_tau_mean.d0, timefacfac*normal(1)*normal(2)*ju);
-//       assembler.template Vector<Tauzz>(shp_tau_mean.d0, timefacfac*normal(2)*normal(2)*ju);
-        assembler.template Vector<Tauzx>(shp_tau_mean.d0, timefacfac*normal(0)*ju(2));
-        assembler.template Vector<Tauzy>(shp_tau_mean.d0, timefacfac*normal(1)*ju(2));
-        assembler.template Vector<Tauzz>(shp_tau_mean.d0, timefacfac*normal(2)*ju(2));
+#if 1
+      assembler.template Vector<Tauzx>(shp_tau_mean.d0, timefacfac*normal(0)*ju(2));
+      assembler.template Vector<Tauzy>(shp_tau_mean.d0, timefacfac*normal(1)*ju(2));
+      assembler.template Vector<Tauzz>(shp_tau_mean.d0, timefacfac*normal(2)*ju(2));
+#else
+      assembler.template Vector<Tauzx>(shp_tau_mean.d0, timefacfac*normal(0)*normal(2)*ju_n);
+      assembler.template Vector<Tauzy>(shp_tau_mean.d0, timefacfac*normal(1)*normal(2)*ju_n);
+      assembler.template Vector<Tauzz>(shp_tau_mean.d0, timefacfac*normal(2)*normal(2)*ju_n);
+#endif
 #endif
 
 #ifdef COMBUST_STRESS_BASED_ADJCONSISTPRESJUMP
@@ -1674,9 +1716,9 @@ void SysmatBoundaryStressDoubleOneSided(
   static LINALG::Matrix<nsd,numnode> xyze;
   GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
-  //------------------------------------------------------------------------------------------------
+  //--------------------------------------------------------------------------
   // get material parameters for all boundary integration cell of this element
-  //------------------------------------------------------------------------------------------------
+  //--------------------------------------------------------------------------
 #ifdef DEBUG
   // check if we really got a list of materials
   dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
@@ -1710,9 +1752,9 @@ void SysmatBoundaryStressDoubleOneSided(
   const double dens_minus = mat->Density();
   //cout << "minus density: " << dens_minus << endl;
 
-  //------------------------------------------------------------------------------------------------
+  //--------------------
   // compute jump values
-  //------------------------------------------------------------------------------------------------
+  //--------------------
   // velocity jump value
   const double juplus = 2.0; // -flamespeed*dens_minus*(1/dens_plus - 1/dens_minus);
   const double juminus = -4.0;
@@ -1739,20 +1781,20 @@ void SysmatBoundaryStressDoubleOneSided(
   // get domain integration cells for this element
   const GEO::BoundaryIntCells& boundaryIntCells = ih->GetBoundaryIntCells(ele->Id());
 
-  //------------------------------------------------------------------------------------------
+  //-------------------------------------------------------------------------------
   // evaluate the enrichment function at the interface (boundary integration cells)
-  //------------------------------------------------------------------------------------------
+  //-------------------------------------------------------------------------------
   const XFEM::ElementEnrichmentValues enrvals_plus(*ele,dofman,XFEM::Enrichment::approachFromPlus,ephi);
   const XFEM::ElementEnrichmentValues enrvals_minus(*ele,dofman,XFEM::Enrichment::approachFromMinus,ephi);
 
-  //------------------------------------------------------------------------------------------------
+  //-------------------------------------
   // loop over boundary integration cells
-  //------------------------------------------------------------------------------------------------
+  //-------------------------------------
   for (GEO::BoundaryIntCells::const_iterator cell = boundaryIntCells.begin(); cell != boundaryIntCells.end(); ++cell)
   {
-    //----------------------------------------------------------------------------------------------
+    //----------------------------------------------
     // get Gaussian points for this integration cell
-    //----------------------------------------------------------------------------------------------
+    //----------------------------------------------
     // TODO: finish -> template? Only tri3 boundary integration cells allowed?
     if (cell->Shape() == DRT::Element::tri3)
     {
@@ -1782,14 +1824,14 @@ void SysmatBoundaryStressDoubleOneSided(
     const LINALG::Matrix<nsd,numvertices> cellXiDomain(cellXiDomaintmp);
     const LINALG::Matrix<nsd,numvertices> cellXYZDomain(cellXYZDomaintmp);
 
-    //----------------------------------------------------------------------------------------------
+    //--------------------------------------
     // integration loop over Gaussian points
-    //----------------------------------------------------------------------------------------------
+    //--------------------------------------
     for (int iquad=0; iquad<intpoints.nquad; ++iquad)
     {
-      //--------------------------------------------------------------------------------------------
+      //---------------------------------------------
       // transform coordinates of this Gaussian point
-      //--------------------------------------------------------------------------------------------
+      //---------------------------------------------
       // coordinates of this integration point in boundary cell coordinates \eta^boundary
       const LINALG::Matrix<2,1> posEtaBoundary(intpoints.qxg[iquad]);
 
@@ -1801,15 +1843,14 @@ void SysmatBoundaryStressDoubleOneSided(
       // compute normal vector (in physical coordinates)
       // remark: for linear boundary integrastion cells this could be done before the loop over all
       //         Gaussian points
-      // TODO: is this normal normed?
       //--------------------------------------------------------------------------------------------
       static LINALG::Matrix<nsd,1> normal(true);
       normal.Clear();
       GEO::computeNormalToSurfaceElement(cell->Shape(), cellXYZDomain, posEtaBoundary, normal);
 
-      //--------------------------------------------------------------------------------------------
+      //------------------------------------------------
       // evaluate shape functions at this Gaussian point
-      //--------------------------------------------------------------------------------------------
+      //------------------------------------------------
       // shape functions for fields with dofs at nodes
       static LINALG::Matrix<numnode,1> funct;
       funct.Clear();
@@ -1827,9 +1868,9 @@ void SysmatBoundaryStressDoubleOneSided(
       funct_discpres.Clear();
       DRT::UTILS::shape_function_3D(funct_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
 
-      //--------------------------------------------------------------------------------------------
+      //--------------------------------------------------------
       // procedures involving Jacobian matrix for domain mapping
-      //--------------------------------------------------------------------------------------------
+      //--------------------------------------------------------
       // get transposed of the jacobian matrix d x / d \xi
       // xjm(i,j) = deriv(i,k)*xyze(j,k)
       static LINALG::Matrix<nsd,nsd> xjm;
@@ -1848,9 +1889,9 @@ void SysmatBoundaryStressDoubleOneSided(
       xji.Clear();
       xji.Invert(xjm);
 
-      //--------------------------------------------------------------------------------------------
+      //-------------------------------------------------------------------
       // compute global derivates of shape functions at this Gaussian point
-      //--------------------------------------------------------------------------------------------
+      //-------------------------------------------------------------------
       // compute first global derivative
       static LINALG::Matrix<3,numnode> derxy;
       derxy.Clear();
@@ -1870,9 +1911,9 @@ void SysmatBoundaryStressDoubleOneSided(
         derxy2.Clear();
       }
 
-      //--------------------------------------------------------------------------------------------
+      //------------------------------------------------
       // compute Jacobian matrix for mapping to boundary
-      //--------------------------------------------------------------------------------------------
+      //------------------------------------------------
       static LINALG::Matrix<nsd,numvertices> deriv_boundary;
       deriv_boundary.Clear();
       DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, posEtaBoundary(0),posEtaBoundary(1),cell->Shape());
@@ -1900,9 +1941,9 @@ void SysmatBoundaryStressDoubleOneSided(
       }
 //#endif
 
-      //--------------------------------------------------------------------------------------------
+      //----------------------------
       // compute integration factors
-      //--------------------------------------------------------------------------------------------
+      //----------------------------
       // compute spatial integration factor
       const double fac = intpoints.qwgt[iquad]*detXtoXi*detXitoEta;
       //cout << "boundary spatial factor " << fac << endl;
@@ -1910,9 +1951,9 @@ void SysmatBoundaryStressDoubleOneSided(
       const double timefacfac = timefac * fac;
       //cout << "boundary time and spatial factor " << timefacfac << endl;
 
-      //--------------------------------------------------------------------------------------------
+      //--------------------------------------------------------------------------------
       // rearrange (enriched) shape functions and derivatives as approximation functions
-      //--------------------------------------------------------------------------------------------
+      //--------------------------------------------------------------------------------
       const std::size_t shpVecSize         = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
       const std::size_t shpVecSizeStress   = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
       const std::size_t shpVecSizeDiscPres = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement;
@@ -1980,9 +2021,9 @@ void SysmatBoundaryStressDoubleOneSided(
         shp_discpres_minus.d0(iparam) = enrfunct_discpres_minus(iparam);
       }
 
-      //--------------------------------------------------------------------------------------------
+      //---------------------------------------
       // compute data at Gaussian point for rhs
-      //--------------------------------------------------------------------------------------------
+      //---------------------------------------
 
       // velocity jump
       static LINALG::Matrix<nsd,1> velplus(true);
@@ -2019,8 +2060,8 @@ void SysmatBoundaryStressDoubleOneSided(
       //
       // remarks: || x || stands for the jump operator ( || x || = x^+ - x^- )
       //           < x >  stands for the mean across the interface ( < x > = 1/2*(x^+ + x^-) )
-      //             n    stands for the normal vector on the interface pointing into the
-      //                  burnt domain (n = n^- = -n^+)
+      //             n    stands for the normal vector on the interface pointing into the burnt
+      //                  domain (n = n^- = -n^+)
       //--------------------------------------------------------------------------------------------
 
 #ifdef COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_TAU_PLUS
