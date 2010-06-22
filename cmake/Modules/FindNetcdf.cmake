@@ -21,6 +21,7 @@ FIND_PATH(NETCDF_INCLUDE_DIR netcdf.h
 FIND_LIBRARY(NETCDF_LIBRARY NAMES libnetcdf.a libnetcdf.so
   HINTS
   ${LIB_INSTALL_DIR}
+  /usr/lib/netcdf-3
   /usr/local/lib
   /usr/lib
 )
