@@ -618,6 +618,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
       if (physicaltype_ == INPAR::FLUID::loma or physicaltype_ == INPAR::FLUID::varying_density)
       {
+        // get velocity at n
+        velintn_.Multiply(eveln,funct_);
+
         // get velocity derivatives at n
         vderxyn_.MultiplyNT(eveln,derxy_);
 
@@ -630,8 +633,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
           vdivn += vderxyn_(idim,idim);
         }
 
-        // time derivative of scalar
-        const double tder_sca = funct_.Dot(escadtam);
+        // scalar value at n+1
+        const double scaaf = funct_.Dot(escaaf);
 
         // gradient of scalar value at n+1
         grad_scaaf_.Multiply(derxy_,escaaf);
@@ -639,11 +642,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
         // convective scalar term at n+1
         conv_scaaf_ = velint_.Dot(grad_scaaf_);
 
+        // scalar value at n
+        const double scan = funct_.Dot(escaam);
+
         // gradient of scalar value at n
         grad_scan_.Multiply(derxy_,escaam);
 
         // convective scalar term at n
-        conv_scan_ = velint_.Dot(grad_scan_);
+        conv_scan_ = velintn_.Dot(grad_scan_);
 
         // add subgrid-scale velocity part also to convective scalar term
         // (subgrid-scale velocity at n+1 also approximately used at n)
@@ -656,7 +662,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
         }*/
 
         // rhs of continuity equation (only relevant for low-Mach-number flow)
-        rhscon_ = scadtfac_*tder_sca + timefac*scaconvfacaf_*conv_scaaf_ + omtheta_*dt_*(scaconvfacn_*conv_scan_-vdivn) + thermpressadd_;
+        rhscon_ = scadtfac_*(scaaf-scan) + timefac*scaconvfacaf_*conv_scaaf_ + omtheta_*dt_*(scaconvfacn_*conv_scan_-vdivn) + thermpressadd_;
 
         // residual of continuity equation
         conres_old_ -= rhscon_;
