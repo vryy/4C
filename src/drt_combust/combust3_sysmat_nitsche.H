@@ -1062,11 +1062,12 @@ void SysmatDomainNitsche(
       // evaluate residual once for all stabilisation right hand sides
       LINALG::Matrix<nsd,1> res_old(true);
       for (size_t isd = 0; isd < nsd; ++isd)
-        res_old(isd) = -rhsint(isd)+timefac*(conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd));
+        res_old(isd) = -rhsint(isd)+timefac*(densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd));
 
       if (instationary)
       {
-        res_old += gpvelnp;
+        for(size_t isd=0; isd < nsd; ++isd)
+          res_old(isd) += densaf * gpvelnp(isd);
       }
 
       // integration factors and coefficients of single terms
