@@ -144,34 +144,24 @@ void COMBUST::Algorithm::TimeLoop()
     // prepare next time step; update field vectors
     PrepareTimeStep();
 
-    // solve G-function first
-    // TODO generalize or remove
-//    if (combusttype_ == INPAR::COMBUST::combusttype_twophaseflow)
-//    {
-//      std::cout << "G-function is solved first" << std::endl;
-//      // solve linear G-function equation
-//      DoGfuncField();
-//
-//      phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
-//
-//      // update interface geometry
-//      UpdateFGIteration();
-//    }
-
     // Fluid-G-function-Interaction loop
     while (NotConvergedFGI())
     {
       // prepare Fluid-G-function iteration
       PrepareFGIteration();
 
-      // solve nonlinear Navier-Stokes system
-      DoFluidField();
-
       // solve linear G-function equation
       DoGfuncField();
 
+// TODO: was soll damit passieren?
+      // G-function is solved first
+      //phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
+
       // update interface geometry
-      UpdateFGIteration();
+      UpdateInterface();
+
+      // solve nonlinear Navier-Stokes system
+      DoFluidField();
 
     } // Fluid-G-function-Interaction loop
 
@@ -267,7 +257,7 @@ void COMBUST::Algorithm::SolveStationaryProblem()
     //}
 
     // update field vectors
-    UpdateFGIteration();
+    UpdateInterface();
 
   } // fluid-G-function loop
 
@@ -963,7 +953,7 @@ void COMBUST::Algorithm::DoGfuncField()
 /*------------------------------------------------------------------------------------------------*
  | protected: update                                                                  henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
-void COMBUST::Algorithm::UpdateFGIteration()
+void COMBUST::Algorithm::UpdateInterface()
 {
   // update flame front according to evolved G-function field
   flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());

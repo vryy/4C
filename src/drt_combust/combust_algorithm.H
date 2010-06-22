@@ -95,7 +95,7 @@ namespace COMBUST
     void DoGfuncField();
 
     /// update fields in FGI iteration;
-    void UpdateFGIteration();
+    void UpdateInterface();
 
     /// take current results for converged and save for next time step
     void UpdateTimeStep();
