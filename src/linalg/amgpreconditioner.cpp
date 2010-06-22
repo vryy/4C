@@ -142,7 +142,7 @@ void LINALG::AMGPreconditioner::Setup()
     IfpackParameters.set("amesos: solver type","Amesos_Umfpack");
 
 
-    preS_[curlevel] = smfac.Create("ILU",A_[curlevel],IfpackParameters);
+    preS_[curlevel] = smfac.Create("point relaxation",A_[curlevel],IfpackParameters);
     postS_[curlevel] = preS_[curlevel];
 
 
@@ -175,32 +175,8 @@ int LINALG::AMGPreconditioner::ApplyInverse(const Epetra_MultiVector& X, Epetra_
   Vcycle(*b,*x,0);
   Y.Update(1.0,*x,0.0);
   return 0;
-
-  // this is just an ILU with the same behaviour as the Vcycle -> very suspicious
-  /*RCP<Epetra_MultiVector> b = rcp(new Epetra_MultiVector(X));
-  RCP<Epetra_MultiVector> x = rcp(new Epetra_MultiVector(Y));
-  x->PutScalar(0.0);
-  preS_[0]->ApplyInverse(*b,*x);
-  Y.Update(1.0,*x,0.0);
-  return 0;*/
-
-  // Use only the fine grid presmoother
-  /*RCP<Epetra_MultiVector> bfine = rcp(new Epetra_MultiVector(X));
-  RCP<Epetra_MultiVector> xfine = rcp(new Epetra_MultiVector(Y));
-
-  preS_[0]->ApplyInverse(*bfine,*xfine);
-
-  RCP<Epetra_MultiVector> rfine = rcp(new Epetra_MultiVector(X.Map(),1,true));
-  A_[0]->Apply(*xfine,*rfine);
-  rfine->Update(1.0,*bfine,-1.0);
-
-  RCP<Epetra_MultiVector> bcoarse = rcp(new Epetra_MultiVector(T_[0]->Prolongator()->DomainMap(),1,true));
-  T_[0]->Restrictor()->Apply(*rfine,*bcoarse);*/
-
-
 }
 
-#if 1
 void LINALG::AMGPreconditioner::Vcycle(const Epetra_MultiVector& rhs, Epetra_MultiVector& sol, const int level) const
 {
   // coarsest grid
@@ -226,10 +202,6 @@ void LINALG::AMGPreconditioner::Vcycle(const Epetra_MultiVector& rhs, Epetra_Mul
     res->Update(1.0,rhs,0.0); // on carser grids, the rhs vector is the residual
   }
 
-  /*double norm = 0.0;
-  res->Norm2(&norm);
-  cout << "PROC " << A_[level]->Comm().MyPID() << " Level " << level << " residual AFTER PRESMOOTHING norm " << norm << endl;*/
-
   ////////////// define vectors for coarse levels
   RCP<Epetra_MultiVector> rhs_c = rcp(new Epetra_MultiVector(T_[level]->OperatorDomainMap(),1,false));
   RCP<Epetra_MultiVector> sol_c = rcp(new Epetra_MultiVector(T_[level]->OperatorDomainMap(),1,true));
@@ -250,130 +222,10 @@ void LINALG::AMGPreconditioner::Vcycle(const Epetra_MultiVector& rhs, Epetra_Mul
   sol.Update(1.0,*res,1.0);
 
   ////////////// postsmoothing
-  if(level!=0)    // very suspicious, the postsmoother on level 0 somehow ignores the underlaying solution of the coarser grids.
-    postS_[level]->ApplyInverse(rhs,sol);
-  else
-  {
-
-    RCP<Epetra_MultiVector> rhs_tmp = rcp(new Epetra_MultiVector(rhs));
-    RCP<Epetra_MultiVector> sol_tmp = rcp(new Epetra_MultiVector(sol)); // sol_tmp == sol!
-
-    /* ONLY ILU */
-    //A_[level]->Apply(sol,*rhs_tmp);
-    //rhs_tmp->Update(-1.0,rhs,1.0); // rhs_tmp is difference of new rhs and old rhs
-
-
-    // fine level postsmoother
-    ParameterList IfpackParameters;
-    IfpackParameters.set("relaxation: type","Gauss-Seidel");
-    IfpackParameters.set("relaxation: sweeps",10);
-    IfpackParameters.set("relaxation: damping factor", 0.66);
-    IfpackParameters.set("relaxation: zero starting solution", false);
-    IfpackParameters.set("fact: level-of-fill", 1);
-    IfpackParameters.set("fact: ilut level-of-fill",0.0);
-    IfpackParameters.set("amesos: solver type","Amesos_Umfpack");
-
-    /*Smoother_Ifpack* prec = new Smoother_Ifpack("ILU", A_[0]->EpetraMatrix(),IfpackParameters);
-    prec->ApplyInverse(*rhs_tmp,*sol_tmp);
-    delete prec;*/
-
-    SmootherFactory smfac;
-    RCP<Smoother> prec = smfac.Create("ILU",A_[0],IfpackParameters);
-    prec->ApplyInverse(*rhs_tmp,*sol_tmp);
-
-    /*// this is working
-    Ifpack factory;
-    Ifpack_Preconditioner* prec = factory.Create("ILU",A_[0]->EpetraMatrix().get(),0);
-    //Ifpack_Preconditioner* prec = factory.Create("point relaxation",A_[0]->EpetraMatrix().get(),0);
-
-    prec->SetParameters(IfpackParameters);
-    prec->Initialize();
-    prec->Compute();
-    if(prec->IsComputed()==false)
-      dserror("prec not computed??");
-    //prec->ApplyInverse(rhs,sol);
-    prec->ApplyInverse(*rhs_tmp,*sol_tmp);  // sol tmp contains current solution (has no effect for ILU)
-
-    sol.Update(-1.0,*sol_tmp,1.0);          // update solution sol ONLY ILU
-
-    delete prec;*/
-
-    /* my own small jacobi...
-    for(int k=0; k<5;k++)
-    {
-      RCP<Epetra_MultiVector> tmpx = rcp(new Epetra_MultiVector(sol));
-      A_[0]->Apply(sol,*tmpx);
-      tmpx->Update(1.0,rhs,-1.0);
-      sol.Update(0.66,*tmpx,1.0);
-    }*/
-  }
-
-  /*res->PutScalar(0.0);
-  A_[level]->Apply(sol,*res);
-  res->Update(1.0,rhs,-1.0);
-  res->Norm2(&norm);
-  cout << "PROC " << A_[level]->Comm().MyPID() << " Level " << level << " residual AFTER POSTSMOOTHING norm " << norm << endl;
-  */
+  postS_[level]->ApplyInverse(rhs,sol);
 
   return;
 }
-#endif
-
-#if 0
-void LINALG::AMGPreconditioner::Vcycle(const Epetra_MultiVector& b_f, Epetra_MultiVector& x_f, const int level) const
-{
-
-  if(level == nlevel_/*-1*/)
-  {
-    // coarsest level
-    coarsestSmoother_->ApplyInverse(b_f,x_f);
-
-    return;
-  }
-
-  RCP<Epetra_MultiVector> r_c = rcp(new Epetra_MultiVector(T_[level]->OperatorDomainMap(),1,false));
-  RCP<Epetra_MultiVector> x_c = rcp(new Epetra_MultiVector(T_[level]->OperatorDomainMap(),1,true));
-
-  // presmoothing
-  x_f.PutScalar(0.0);
-
-
-  preS_[level]->ApplyInverse(b_f,x_f);
-
-
-  // compute fine-level residual
-  RCP<Epetra_MultiVector> r_f = rcp(new Epetra_MultiVector(b_f.Map(),1,true));
-  A_[level]->Apply(x_f,*r_f);
-  r_f->Update(1.0,b_f,-1.0);
-
-  double norm = 0.0;
-  r_f->Norm2(&norm);
-  cout << "PROC " << A_[level]->Comm().MyPID() << " Level " << level << " residual AFTER PRESMOOTHING norm " << norm << endl;
-
-
-  // restrict residual to next coarser grid
-  T_[level]->R().Apply(*r_f,*r_c);
-
-  // solve coarser problem
-  Vcycle(*r_c,*x_c,level+1);
-
-  // prolongate correction
-  //r_f->PutScalar(0.0);
-  RCP<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(r_f->Map(),1,true));
-  T_[level]->P().Apply(*x_c,*tmp);
-  x_f.Update(1.0,*tmp,1.0);
-
-  // postsmoothing
-  postS_[level]->ApplyInverse(b_f,x_f);
-
-  r_f->PutScalar(0.0);
-  A_[level]->Apply(x_f,*r_f);
-  r_f->Update(1.0,b_f,-1.0);
-  r_f->Norm2(&norm);
-  cout << "PROC " << A_[level]->Comm().MyPID() << " Level " << level << " residual AFTER POSTSMOOTHING norm " << norm << endl;
-
-}
-#endif
 
 ///////////////////////////////////////////////////////////////////
 RCP<LINALG::SparseMatrix> LINALG::AMGPreconditioner::Multiply(const SparseMatrix& A, const SparseMatrix& B, const SparseMatrix& C, bool bComplete)
