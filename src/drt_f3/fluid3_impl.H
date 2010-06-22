@@ -502,7 +502,7 @@ namespace ELEMENTS
     LINALG::Matrix<nsd_,1> histmom_;
     //! direction of flow (normed velocity vector)
     LINALG::Matrix<nsd_,1> velino_;
-    //! density-weighted velocity vector in gausspoint
+    //! velocity vector in gausspoint
     LINALG::Matrix<nsd_,1> velint_;
     //! fine-scale velocity vector in gausspoint
     LINALG::Matrix<nsd_,1> fsvelint_;
@@ -605,6 +605,8 @@ namespace ELEMENTS
     double scaconvfacn_;
     //! addition to continuity equation due to thermodynamic pressure
     double thermpressadd_;
+    //! velocity vector in gausspoint at t_(n)
+    LINALG::Matrix<nsd_,1> velintn_;
     //! global velocity derivatives in gausspoint w.r.t x,y,z at t_(n)
     LINALG::Matrix<nsd_,nsd_> vderxyn_;
     //! scalar gradient at t_(n+alpha_F) or t_(n+1)

@@ -280,6 +280,7 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl(int numdofpernode)
     scaconvfacaf_(0.0),   // initialized to 0.0 (filled in Fluid3::GetMaterialParams)
     scaconvfacn_(0.0),    // initialized to 0.0 (filled in Fluid3::GetMaterialParams)
     thermpressadd_(0.0),  // initialized to 0.0 (filled in Fluid3::GetMaterialParams)
+    velintn_(true),
     vderxyn_(true),
     grad_scaaf_(true),
     grad_scan_(true),
@@ -1143,14 +1144,17 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 
       if (physicaltype_ == INPAR::FLUID::loma or physicaltype_ == INPAR::FLUID::varying_density)
       {
+        // get velocity at n
+        velintn_.Multiply(eveln,funct_);
+
         // get velocity derivatives at n
         vderxyn_.MultiplyNT(eveln,derxy_);
 
         // velocity divergence at n
         const double vdivn = vderxyn_(0, 0) + vderxyn_(1, 1) + vderxyn_(2, 2);
 
-        // time derivative of scalar
-        const double tder_sca = funct_.Dot(escadtam);
+        // scalar value at n+1
+        const double scaaf = funct_.Dot(escaaf);
 
         // gradient of scalar value at n+1
         grad_scaaf_.Multiply(derxy_,escaaf);
@@ -1158,11 +1162,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
         // convective scalar term at n+1
         conv_scaaf_ = velint_.Dot(grad_scaaf_);
 
+        // scalar value at n
+        const double scan = funct_.Dot(escaam);
+
         // gradient of scalar value at n
         grad_scan_.Multiply(derxy_,escaam);
 
         // convective scalar term at n
-        conv_scan_ = velint_.Dot(grad_scan_);
+        conv_scan_ = velintn_.Dot(grad_scan_);
 
         // add subgrid-scale velocity part also to convective scalar term
         // (subgrid-scale velocity at n+1 also approximately used at n)
@@ -1175,7 +1182,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
         }*/
 
         // rhs of continuity equation (only relevant for low-Mach-number flow)
-        rhscon_ = scadtfac_*tder_sca + timefac*scaconvfacaf_*conv_scaaf_ + omtheta_*dt_*(scaconvfacn_*conv_scan_-vdivn) + thermpressadd_;
+        rhscon_ = scadtfac_*(scaaf-scan) + timefac*scaconvfacaf_*conv_scaaf_ + omtheta_*dt_*(scaconvfacn_*conv_scan_-vdivn) + thermpressadd_;
 
         // residual of continuity equation
         conres_old_ -= rhscon_;
@@ -3464,7 +3471,7 @@ else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
     densam_ = densaf_;
 
     // factor for scalar time derivative
-    scadtfac_ = dt_*actmat->EosFacA()*densam_;
+    scadtfac_ = scaconvfacaf_;
   }
 }
 else if (material->MaterialType() == INPAR::MAT::m_sutherland)
@@ -3511,13 +3518,13 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
     scaconvfacn_ = 1.0/tempn;
 
     // factor for scalar time derivative
-    scadtfac_ = dt_/tempaf;
+    scadtfac_ = scaconvfacaf_;
 
     // set density at n+1 at location n+alpha_M as well
     densam_ = densaf_;
 
     // addition due to thermodynamic pressure
-    thermpressadd_ = -dt_*thermpressdtam/thermpressaf;
+    thermpressadd_ = -(thermpressaf-thermpressam)/thermpressaf;
   }
 }
 else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
@@ -3561,7 +3568,7 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
     densam_ = densaf_;
 
     // factor for scalar time derivative
-    scadtfac_ = dt_*scaconvfacaf_;
+    scadtfac_ = scaconvfacaf_;
   }
 }
 else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
@@ -3605,7 +3612,7 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
     densam_ = densaf_;
 
     // factor for scalar time derivative
-    scadtfac_ = dt_*scaconvfacaf_;
+    scadtfac_ = scaconvfacaf_;
   }
 }
 else dserror("Material type is not supported");
