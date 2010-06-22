@@ -61,7 +61,7 @@ int LINALG::Smoother_Ifpack::ApplyInverse(const Epetra_MultiVector& X, Epetra_Mu
     // check if Y == 0.0 -> incremental ILU
     double normY = 0.0;
     Y.NormInf(&normY);
-    if(normY == 0.0)
+    if(normY != 0.0)
     {
       RCP<Epetra_MultiVector> rhs_tmp = rcp(new Epetra_MultiVector(X));
       RCP<Epetra_MultiVector> sol_tmp = rcp(new Epetra_MultiVector(Y));
