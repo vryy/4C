@@ -803,18 +803,18 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet()
       // initialize output variables
       double lm[3] = {0.0, 0.0, 0.0};
 
-			// do processing only for owner proc
-			if (Comm().MyPID()==mtnode->Owner())
+			// do processing only for local owner proc
+			if (interface_[i]->lComm()->MyPID()==interface_[i]->Procmap()[mtnode->Owner()])
 			{
 				// compute Lagrange multiplier
-				for (int k=0;k<3;++k) lm[k] = mtnode->MoData().lmold()[k];
+				for (int k=0;k<3;++k) lm[k] = mtnode->MoData().lm()[k];
 			}
 
-			// communicate
-			Comm().Broadcast(lm,3,mtnode->Owner());
+			// communicate (locally on interface)
+			interface_[i]->lComm()->Broadcast(lm,3,interface_[i]->Procmap()[mtnode->Owner()]);
 
-			// output is done by proc 0
-			if (Comm().MyPID()==0)
+			// output is done by local proc 0
+			if (interface_[i]->lComm()->MyPID()==0)
 			{
 				// print nodes of active set *************************************
 				printf("ACTIVE: %d \t lm[0]: % e \t lm[1]: % e \t lm[2]: % e \n",gid,lm[0],lm[1],lm[2]);

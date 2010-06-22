@@ -1207,8 +1207,8 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 				double wgap = 0.0;
 				double nz = 0.0;
 
-				// do processing only for owner proc
-				if (Comm().MyPID()==cnode->Owner())
+				// do processing only for local owner proc
+				if (interface_[i]->lComm()->MyPID()==interface_[i]->Procmap()[cnode->Owner()])
 				{
 					// compute weighted gap
 					wgap = (*g_)[g_->Map().LID(gid)];
@@ -1221,13 +1221,13 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 					if (cnode->Active()) status = 1;
 				}
 
-				// communicate
-				Comm().Broadcast(&wgap,1,cnode->Owner());
-				Comm().Broadcast(&nz,1,cnode->Owner());
-				Comm().Broadcast(&status,1,cnode->Owner());
+				// communicate (locally on interface)
+				interface_[i]->lComm()->Broadcast(&wgap,1,interface_[i]->Procmap()[cnode->Owner()]);
+				interface_[i]->lComm()->Broadcast(&nz,1,interface_[i]->Procmap()[cnode->Owner()]);
+				interface_[i]->lComm()->Broadcast(&status,1,interface_[i]->Procmap()[cnode->Owner()]);
 
-				// output is done by proc 0
-				if (Comm().MyPID()==0)
+				// output is done by local proc 0
+				if (interface_[i]->lComm()->MyPID()==0)
 				{
 					// print nodes of inactive set *************************************
 					if (status==0)
@@ -1261,8 +1261,8 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 				double jumptxi = 0.0;
 				double jumpteta = 0.0;
 
-				// do processing only for owner proc
-				if (Comm().MyPID()==cnode->Owner())
+				// do processing only for local owner proc
+				if (interface_[i]->lComm()->MyPID()==interface_[i]->Procmap()[cnode->Owner()])
 				{
 					// compute weighted gap
 					wgap = (*g_)[g_->Map().LID(gid)];
@@ -1299,16 +1299,16 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 					}
 				}
 
-				// communicate
-				Comm().Broadcast(&wgap,1,cnode->Owner());
-				Comm().Broadcast(&nz,1,cnode->Owner());
-				Comm().Broadcast(&tz,1,cnode->Owner());
-				Comm().Broadcast(&jumptxi,1,cnode->Owner());
-				Comm().Broadcast(&jumpteta,1,cnode->Owner());
-				Comm().Broadcast(&status,1,cnode->Owner());
+				// communicate (locally on interface)
+				interface_[i]->lComm()->Broadcast(&wgap,1,interface_[i]->Procmap()[cnode->Owner()]);
+				interface_[i]->lComm()->Broadcast(&nz,1,interface_[i]->Procmap()[cnode->Owner()]);
+				interface_[i]->lComm()->Broadcast(&tz,1,interface_[i]->Procmap()[cnode->Owner()]);
+				interface_[i]->lComm()->Broadcast(&jumptxi,1,interface_[i]->Procmap()[cnode->Owner()]);
+				interface_[i]->lComm()->Broadcast(&jumpteta,1,interface_[i]->Procmap()[cnode->Owner()]);
+				interface_[i]->lComm()->Broadcast(&status,1,interface_[i]->Procmap()[cnode->Owner()]);
 
-				// output is now done by proc 0
-				if (Comm().MyPID()==0)
+				// output is now done by local proc 0
+				if (interface_[i]->lComm()->MyPID()==0)
 				{
 					// print nodes of slip set **************************************
 					if (status == 2)

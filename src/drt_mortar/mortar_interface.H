@@ -121,6 +121,11 @@ public:
   */
   virtual const Epetra_Comm* lComm() const { return lcomm_.get();}
 
+  /*!
+	\brief Get global -> local processor map
+
+	*/
+	virtual map<int,int>& Procmap(){ return procmap_;}
 
   //! @name Access methods
 
