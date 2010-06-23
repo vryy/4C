@@ -265,6 +265,35 @@ namespace UTILS {
 
 
   /*--------------------------------------------------------------------*/
+  /// special time slice for periodic repetition of other time slices
+  class PeriodicTimeSlice : public TimeSlice
+  {
+  public:
+    PeriodicTimeSlice(
+        const double begin,
+        const double end,
+        const double period,
+        DRT::UTILS::TimeCurve& curve);
+
+    /// evaluate time curve at given time
+    double f(double t);
+
+    /// evaluate reference time in the first periodic cycle
+    double GetReferenceTime(double t);
+
+    /// evaluate time curve and its derivatives
+    std::vector<double> FctDer(const double t, const unsigned deg);
+
+    /// debug output of this slice
+    virtual void Print(std::ostream& out) const;
+
+  private:
+    // member variables begin_ and end_ are inherited from TimeSlice !!
+    const double  period_; // length of period
+    TimeCurve&    curve_;  // reference to time curve that owns this time slice
+  };
+
+  /*--------------------------------------------------------------------*/
   /// time slice based on parsed expression with variable t
   /*!
     A time slice that evaluates an expression at every point in
@@ -288,7 +317,7 @@ namespace UTILS {
     CURVE1 on EXPR FUNC exp(2*t^(1/4)) t1 2.0 t2 3.0
     CURVE1 on EXPR FUNC acos(t/2) t1 3.0 t2 4.0
     </pre>
-    But of course nobody needs such a mess.
+    There might be applications that require this flexibility.
    */
   class ExprTimeSlice : public TimeSlice
   {
@@ -411,6 +440,16 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::TimeCurveManager::ValidTimeCurveLine
     .AddNamedDoubleVector("Arrayread","Samplingpoints")
     ;
 
+  DRT::INPUT::LineDefinition periodicrepetition;
+  periodicrepetition
+    .AddNamedInt("CURVE")
+    .AddTag("on")
+    .AddTag("PeriodicRepetition")
+    .AddNamedDouble("Period")
+    .AddNamedDouble("t1")
+    .AddNamedDouble("t2")
+    ;
+
   Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("CURVE"));
   lines->Add(polygonal);
   lines->Add(smallpolygonal);
@@ -418,6 +457,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::TimeCurveManager::ValidTimeCurveLine
   lines->Add(func);
   lines->Add(lungsinus);
   lines->Add(physiologicalwaveform);
+  lines->Add(periodicrepetition);
   return lines;
 }
 
@@ -532,6 +572,18 @@ void DRT::UTILS::TimeCurveManager::ReadInput(const DRT::INPUT::DatFileReader& re
         curves[j]->ExtractDoubleVector("Arrayread",Arrayread);
 
         curve.AddSlice(rcp(new BloodTimeSlice(period, flowrate, points, Arrayread)));
+      }
+      else if (curves[j]->HaveNamed("PeriodicRepetition"))
+      {
+        double period;
+        double begin;
+        double end;
+
+        curves[j]->ExtractDouble("Period",period);
+        curves[j]->ExtractDouble("t1",begin);
+        curves[j]->ExtractDouble("t2",end);
+
+        curve.AddSlice(rcp(new PeriodicTimeSlice(begin,end,period,curve)));
       }
       else
         dserror("unknown type of time curve in CURVE%d", i);
@@ -979,6 +1031,50 @@ std::vector<double> DRT::UTILS::BloodTimeSlice::FctDer(const double t,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+DRT::UTILS::PeriodicTimeSlice::PeriodicTimeSlice(
+    const double begin,
+    const double end,
+    const double period,
+    DRT::UTILS::TimeCurve& curve)
+: TimeSlice(begin,end),
+    period_(period),
+    curve_(curve)
+{
+  // safety check
+  if (period_<EPS13) dserror("Periodic length of size zero or negative");
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::PeriodicTimeSlice::GetReferenceTime(double t)
+{
+  double reftime(t);
+  // we go back to the time slices that we want to repeat
+  while (reftime > begin())
+  {
+    reftime -= period_;
+  }
+  return reftime; // return shifted time value
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::PeriodicTimeSlice::f(double t)
+{
+  return curve_.f(GetReferenceTime(t));
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> DRT::UTILS::PeriodicTimeSlice::FctDer(const double t,
+                                                       const unsigned deg)
+{
+  return curve_.FctDer(GetReferenceTime(t),deg);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::UTILS::ExprTimeSlice::ExprTimeSlice(double begin, double end, std::string buf)
   : TimeSlice(begin,end),
     parsexpr_(DRT::PARSER::Parser<double>(buf)),
@@ -1082,7 +1178,7 @@ double DRT::UTILS::TimeCurve::f(double t)
     if (slice->contains(t))
       return slice->f(t);
     if (slice->begin() > t)
-      dserror("a gap between time slices occured");
+      dserror("a gap between time slices occurred");
   }
 
   // if we exceed our slices use the last available time
@@ -1195,6 +1291,17 @@ void DRT::UTILS::ExprTimeSlice::Print(std::ostream& out) const
 {
   out << "    ExprTimeSlice(begin=" << begin()
       << ", end=" << end()
+      << ")\n";
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::PeriodicTimeSlice::Print(std::ostream& out) const
+{
+  out << "    PeriodicTimeSlice(begin=" << begin()
+      << ", end=" << end()
+      << ", period=" << period_
       << ")\n";
 }
 
