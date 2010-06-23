@@ -1131,7 +1131,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
 	 *
 	 * - a CURVE of the type PhysiologicalWaveform
 	 * - a FUNCT definition like this one:
-	 *   FUNCT1 WOMERSLEY Local 2 MAT 1 NonCircular Yes FSI Yes
+	 *   FUNCT1 WOMERSLEY Local 2 MAT 1 FSI Yes
 	 * - in addition: for serial use (NumProc()==1), the origin is calculated anew.
 	 * 								This might come in handy, when one is to determine the center
 	 * 								of gravity, i.e. the center line, of the inflow surface.
