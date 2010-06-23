@@ -666,7 +666,7 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   RCP<Epetra_Vector>         thermcontRHS = LINALG::CreateVector(*adofs,true);
 
   // assemble thermal contact contition
-  AssembleThermContCondition(*thermcontLM,*thermcontTEMP,*thermcontRHS,adofs,cmtman);
+  AssembleThermContCondition(*thermcontLM,*thermcontTEMP,*thermcontRHS,*dmatrix,*mmatrix,adofs,cmtman);
 
   // complete the matrices
   thermcontLM->Complete(*adofs,*adofs);
@@ -1083,57 +1083,96 @@ void TSI::Algorithm::AssembleDM(LINALG::SparseMatrix& dmatrix,
   if (interface.size()>1)
     dserror("Error in TSI::Algorithm::ConvertMaps: Only for one interface yet.");
 
+  // This is a little bit complicated and a lot of parallel stuff has to 
+  // be done here. The point is that, when assembling the mortar matrix
+  // M, we need the temperature dof from the master node which can lie on
+  // a complete different proc. For this reason, we have tho keep all procs 
+  // around
+  
   // loop over all interfaces
   for (int m=0; m<(int)interface.size(); ++m)
   {
-    // active
-    const RCP<Epetra_Map> activenodes = interface[m]->ActiveNodes();
+    // slave nodes (full map)
+    const RCP<Epetra_Map> slavenodes = interface[m]->SlaveFullNodes();
 
-    // loop over all active nodes of the interface
-    for (int i=0;i<activenodes->NumMyElements();++i)
+    // loop over all slave nodes of the interface
+    for (int i=0;i<slavenodes->NumMyElements();++i)
     {
-      int gid = activenodes->GID(i);
+      int gid = slavenodes->GID(i);
       DRT::Node* node    = (interface[m]->Discret()).gNode(gid);
       DRT::Node* nodeges = (StructureField().Discretization())->gNode(gid);
 
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(node);
 
+      // row dof of temperature
+      int rowtemp = 0;
+      if(Comm().MyPID()==cnode->Owner())
+        rowtemp = (StructureField().Discretization())->Dof(1,nodeges)[0];
+           
       /************************************************** D-matrix ******/
-      if ((cnode->MoData().GetD()).size()>0)
-      {
-        vector<map<int,double> > dmap = cnode->MoData().GetD();
-        int rowtemp = (StructureField().Discretization())->Dof(1,nodeges)[0];
-        int rowdisp = cnode->Dofs()[0];
-        double val = (dmap[0])[rowdisp];
-        dmatrix.Assemble(val, rowtemp, rowtemp);
+      if (Comm().MyPID()==cnode->Owner())
+      {  
+        if ((cnode->MoData().GetD()).size()>0 && cnode->Active()==true)
+        {
+          vector<map<int,double> > dmap = cnode->MoData().GetD();
+          int rowdisp = cnode->Dofs()[0];
+          double val = (dmap[0])[rowdisp];
+          dmatrix.Assemble(val, rowtemp, rowtemp);
+        }
       }
 
       /************************************************** M-matrix ******/
-      if ((cnode->MoData().GetM()).size()>0)
+      set<int> mnodes;
+      int mastergid=0;
+      set<int>::iterator mcurr;
+      int mastersize = 0;
+      vector<map<int,double> > mmap;
+      
+      if (Comm().MyPID()==cnode->Owner())
       {
-        vector<map<int,double> > mmap = cnode->MoData().GetM();
+        mmap = cnode->MoData().GetM();
+        mnodes = cnode->Data().GetMNodes();
+        mastersize = mnodes.size();
+        mcurr = mnodes.begin();
+      }
+      
+      // commiunicate number of master nodes
+      Comm().Broadcast(&mastersize,1,cnode->Owner());
+      
+      // loop over all according master nodes
+      for (int l=0;l<mastersize;++l)
+      {
+        if (Comm().MyPID()==cnode->Owner())
+          mastergid=*mcurr;        
 
-        int rowtemp = (StructureField().Discretization())->Dof(1,nodeges)[0];
+        // communicate GID of masternode
+        Comm().Broadcast(&mastergid,1,cnode->Owner());
 
-        set<int> mnodes = cnode->Data().GetMNodes();
-        set<int>::iterator mcurr;
+        DRT::Node* mnode = (interface[m]->Discret()).gNode(mastergid);
+        DRT::Node* mnodeges = (StructureField().Discretization())->gNode(mastergid);
 
-        // loop over all according master nodes
-        for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
+        // temperature and displacement dofs
+        int coltemp = 0;
+        int coldis = 0;
+        if(Comm().MyPID()==mnode->Owner())
         {
-          int gid = *mcurr;
-          DRT::Node* mnode = (interface[m]->Discret()).gNode(gid);
-          DRT::Node* mnodeges = (StructureField().Discretization())->gNode(gid);
-          if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
           CONTACT::CoNode* cmnode = static_cast<CONTACT::CoNode*>(mnode);
-          const int* mdofs = cmnode->Dofs();
-          int coltemp = (StructureField().Discretization())->Dof(1,mnodeges)[0];
-          double val = (mmap[0])[mdofs[0]];
-
-          if(abs(val)>1e-12)
-            mmatrix.Assemble(val, rowtemp, coltemp);
+          coltemp = (StructureField().Discretization())->Dof(1,mnodeges)[0];
+          coldis = (cmnode->Dofs())[0];
         }
+  
+        // communicate temperature and displacement dof
+        Comm().Broadcast(&coltemp,1,mnode->Owner());
+        Comm().Broadcast(&coldis,1,mnode->Owner());
+
+        // do the assembly
+        if (Comm().MyPID()==cnode->Owner()&& cnode->Active())
+        {
+          double val = mmap[0][coldis];
+          if (abs(val)>1e-12) mmatrix.Assemble(val, rowtemp, coltemp);
+          ++mcurr;  
+        } 
       }
     }
   }
@@ -1147,6 +1186,8 @@ void TSI::Algorithm::AssembleDM(LINALG::SparseMatrix& dmatrix,
 void TSI::Algorithm::AssembleThermContCondition(LINALG::SparseMatrix& thermcontLM,
                                                 LINALG::SparseMatrix& thermcontTEMP,
                                                 Epetra_Vector& thermcontRHS,
+                                                LINALG::SparseMatrix& dmatrix,
+                                                LINALG::SparseMatrix& mmatrix,
                                                 RCP<Epetra_Map> activedofs,
                                                 RCP<MORTAR::ManagerBase> cmtman)
 {
@@ -1157,76 +1198,24 @@ void TSI::Algorithm::AssembleThermContCondition(LINALG::SparseMatrix& thermcontL
   // get vector of contact interfaces
   vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
 
-  // this currently works only for one interface yet
+  // this currently works only for one interface yet and for one heat 
+  // transfer coefficient
+  // FIXGIT: The heat transfer coefficient should be a condition on 
+  // the single interfaces!!
   if (interface.size()>1)
-    dserror("Error in TSI::Algorithm::ConvertMaps: Only for one interface yet.");
+    dserror("Error in TSI::Algorithm::AssembleThermContCondition: Only for one interface yet.");
 
-  // loop over all interfaces
-  for (int m=0; m<(int)interface.size(); ++m)
-  {
+  double heattrancoeff = interface[0]->IParams().get<double>("HEATTRANSFERCOEFF");
+  if (heattrancoeff <= 0)
+    dserror("Error: Choose realistic heat transfer coefficient");
 
-    // heat transfer coefficient, should be greater than zero
-    double heattrancoeff = interface[m]->IParams().get<double>("HEATTRANSFERCOEFF");
-    if (heattrancoeff <= 0)
-      dserror("Error: Choose realistic heat transfer coefficient");
-
-    // active
-    const RCP<Epetra_Map> activenodes = interface[m]->ActiveNodes();
-
-    // loop over all active nodes of the interface
-    for (int i=0;i<activenodes->NumMyElements();++i)
-    {
-      int gid = activenodes->GID(i);
-      DRT::Node* node    = (interface[m]->Discret()).gNode(gid);
-      DRT::Node* nodeges = (StructureField().Discretization())->gNode(gid);
-
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(node);
-
-      // with respect to Lagrange multipliers
-      int row = (StructureField().Discretization())->Dof(1,nodeges)[0];
-      int val = 1;
-      thermcontLM.Assemble(val,row,row);
-
-      // with resprect to temperatur dof
-      /************************************************** D-matrix ******/
-      if ((cnode->MoData().GetD()).size()>0)
-      {
-        vector<map<int,double> > dmap = cnode->MoData().GetD();
-        int rowtemp = (StructureField().Discretization())->Dof(1,nodeges)[0];
-        int rowdisp = cnode->Dofs()[0];
-        double val = -heattrancoeff*(dmap[0])[rowdisp];
-        if (abs(val)>1.0e-12) thermcontTEMP.Assemble(val,rowtemp,rowtemp);
-      }
-
-      /************************************************** M-matrix ******/
-      if ((cnode->MoData().GetM()).size()>0)
-      {
-        vector<map<int,double> > mmap = cnode->MoData().GetM();
-
-        int rowtemp = (StructureField().Discretization())->Dof(1,nodeges)[0];
-
-        set<int> mnodes = cnode->Data().GetMNodes();
-        set<int>::iterator mcurr;
-
-        // loop over all according master nodes
-        for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
-        {
-          int gid = *mcurr;
-          DRT::Node* mnode = (interface[m]->Discret()).gNode(gid);
-          DRT::Node* mnodeges = (StructureField().Discretization())->gNode(gid);
-          if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-          CONTACT::CoNode* cmnode = static_cast<CONTACT::CoNode*>(mnode);
-          const int* mdofs = cmnode->Dofs();
-          int coltemp = (StructureField().Discretization())->Dof(1,mnodeges)[0];
-          double val = +heattrancoeff*(mmap[0])[mdofs[0]];
-
-          if(abs(val)>1e-12)
-            thermcontTEMP.Assemble(val, rowtemp, coltemp);
-        }
-      }
-    }
-  }
+  // with respect to Lagrange multipliers
+  thermcontLM.Add(dmatrix,false,1.0,1.0);
+  
+  // with respect to temperature
+  thermcontTEMP.Add(dmatrix,false,-heattrancoeff,1.0);
+  thermcontTEMP.Add(mmatrix,false,+heattrancoeff,1.0);
+  
   return;
 }
 /*----------------------------------------------------------------------*/

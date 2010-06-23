@@ -146,6 +146,8 @@ namespace TSI
     void AssembleThermContCondition(LINALG::SparseMatrix& thermcontLM,
                                     LINALG::SparseMatrix& thermcontTEMP,
                                     Epetra_Vector& thermcontRHS,
+                                    LINALG::SparseMatrix& dmatrix,
+                                    LINALG::SparseMatrix& mmatrix,
                                     RCP<Epetra_Map> activedofs,
                                     RCP<MORTAR::ManagerBase> cmtman);
     //@}
@@ -172,6 +174,9 @@ namespace TSI
 //
 //    const TSI::Algorithm& StructureThermoCoupling() const { return coupst_; }
 //
+    
+    //const Epetra_Comm&          comm_;          // communicator
+
   private:
 
     /// displacements from time step begin (t_n)
