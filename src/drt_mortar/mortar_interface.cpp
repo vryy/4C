@@ -66,6 +66,7 @@ comm_(comm),
 dim_(dim),
 icontact_(icontact),
 shapefcn_(INPAR::MORTAR::shape_undefined),
+quadslave_(false),
 maxdofglobal_(-1)
 {
   RCP<Epetra_Comm> com = rcp(Comm().Clone());
@@ -194,6 +195,9 @@ void MORTAR::MortarInterface::AddMortarNode(RCP<MORTAR::MortarNode> mrtrnode)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::AddMortarElement(RCP<MORTAR::MortarElement> mrtrele)
 {
+	// check for quadratic slave elements
+	if (mrtrele->IsSlave() && mrtrele->IsQuad()) quadslave_=true;
+
 	idiscret_->AddElement(mrtrele);
 	return;
 }
@@ -412,10 +416,10 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
       lin[i] = 0;
 
     // check ownership or ghosting of any elements / nodes
-    const Epetra_Map* noderowmap = Discret().NodeColMap();
-    const Epetra_Map* elerowmap  = Discret().ElementColMap();
+    const Epetra_Map* nodemap = Discret().NodeColMap();
+    const Epetra_Map* elemap  = Discret().ElementColMap();
 
-    if (noderowmap->NumMyElements() || elerowmap->NumMyElements())
+    if (nodemap->NumMyElements() || elemap->NumMyElements())
       lin[Comm().MyPID()] = 1;
 
     Comm().MaxAll(&lin[0],&gin[0],Comm().NumProc());
@@ -548,6 +552,13 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
 
     mnode->InitializeDataContainer();
   }
+
+  // communicate quadslave status among ALL processors
+  // (not only those participating in interface)
+  int localstatus = (int)(quadslave_);
+  int globalstatus = 0;
+  Comm().SumAll(&localstatus,&globalstatus,1);
+  quadslave_ = (bool)(globalstatus);
 
   return;
 }
@@ -1623,7 +1634,7 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
   {
     //dserror("ERROR: Quadratic 3D coupling for tri6 under construction...");
 
-    // split into for tri3 elements
+    // split into four tri3 elements
     int numnode = 3;
     DRT::Element::DiscretizationType dt = DRT::Element::tri3;
 
@@ -1804,6 +1815,10 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
             // check for diagonality
             if (row!=col && abs(val)>1.0e-12)
               dserror("ERROR: AssembleDM: D-Matrix is not diagonal!");
+
+            // check for positivity
+            if (row==col && val<0.0)
+            	dserror("ERROR: AssembleDM: D-Matrix is not positive!");
 
             // create an explicitly diagonal d matrix
             if (row==col)
@@ -2008,6 +2023,183 @@ void MORTAR::MortarInterface::AssembleG(Epetra_Vector& gglobal)
     // do assembly
     LINALG::Assemble(gglobal,gnode,lm,lmowner);
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble slave displacement trafo matrices                popp 06/10|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
+                                            LINALG::SparseMatrix& invtrafo,
+                                            set<int>& donebefore)
+{
+	// get out of here if not participating in interface
+	if (!lComm())
+		return;
+
+	// check for dual shape functions and quadratic slave elements
+	if (shapefcn_ != INPAR::MORTAR::shape_dual || quadslave_ == false)
+		dserror("ERROR: AssembleTrafo -> you should not be here...");
+
+	// loop over proc's slave nodes of the interface for assembly
+	// use standard row map to assemble each node only once
+	for (int i=0;i<snoderowmap_->NumMyElements();++i)
+	{
+		int gid = snoderowmap_->GID(i);
+		DRT::Node* node = idiscret_->gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		MortarNode* mrtrnode = static_cast<MortarNode*>(node);
+
+		if (mrtrnode->Owner() != Comm().MyPID())
+			dserror("ERROR: AssembleTrafo: Node ownership inconsistency!");
+
+		// find out whether this is a corner node (no trafo) or
+		// a middle node (trafo of displacement DOFs) and also
+		// store transformation factor theta
+		bool middlenode = false;
+		double theta = 0.0;
+
+		// search within the first adjacent element
+		MortarElement* mrtrele = static_cast<MortarElement*>(mrtrnode->Elements()[0]);
+		MORTAR::MortarElement::DiscretizationType shape = mrtrele->Shape();
+
+		// which discretization type
+		switch(shape)
+		{
+			// tri6 contact elements (= tet10 discretizations)
+			case MORTAR::MortarElement::tri6:
+			{
+				if (mrtrnode->Id() == mrtrele->NodeIds()[3]
+				 || mrtrnode->Id() == mrtrele->NodeIds()[4]
+				 || mrtrnode->Id() == mrtrele->NodeIds()[5])
+				{
+					// this is a middle node
+					middlenode = true;
+					theta = 1.0/12.0;
+				}
+				break;
+			}
+
+			// quad8 contact elements (= hex20 discretizations)
+			case MORTAR::MortarElement::quad8:
+			{
+				if (mrtrnode->Id() == mrtrele->NodeIds()[4]
+				 || mrtrnode->Id() == mrtrele->NodeIds()[5]
+				 || mrtrnode->Id() == mrtrele->NodeIds()[6]
+				 || mrtrnode->Id() == mrtrele->NodeIds()[7])
+				{
+					// this is a middle node
+					middlenode = true;
+					theta = 1.0/5.0;
+				}
+				break;
+			}
+
+			// quad9 contact elements (= hex27 discretizations)
+			case MORTAR::MortarElement::quad9:
+			{
+				// currently we only use this modification for
+				// tri6 and quad8 surfaces, but NOT for quad9
+				// as in this case, there is no real need!
+				// (positivity of shape function integrals)
+				// thus, we simply want to assemble the
+				// identity matrix here, which we achieve by
+				// pretending that all nodes are corner nodes!
+
+				// do nothing
+				break;
+			}
+
+			// other cases
+			default:
+			{
+				dserror("ERROR: Trafo matrix only for tri6/quad8/quad9 contact elements");
+				break;
+			}
+		} // switch(Shape)
+
+		//********************************************************************
+		// CASE 1: CORNER NODE
+		//********************************************************************
+		if (!middlenode)
+	  {
+			// check if processed before
+			set<int>::iterator iter = donebefore.find(gid);
+
+			if (iter != donebefore.end())
+			{
+				//cout << "************ processed this corner node before ************" << endl;
+			}
+
+			// if not then assemble trafo matrix block
+			else
+			{
+				// add to set of processed nodes
+				donebefore.insert(gid);
+
+				// add transformation matrix block (unity block!)
+				for (int k=0;k<mrtrnode->NumDof();++k)
+				{
+					// assemble diagonal values
+					trafo.Assemble(1.0, mrtrnode->Dofs()[k], mrtrnode->Dofs()[k]);
+					invtrafo.Assemble(1.0, mrtrnode->Dofs()[k], mrtrnode->Dofs()[k]);
+				}
+			}
+		}
+
+		//********************************************************************
+	  // CASE 2: MIDDLE NODE
+		//********************************************************************
+		else
+		{
+			// check if processed before
+			set<int>::iterator iter = donebefore.find(gid);
+
+			if (iter != donebefore.end())
+			{
+				//cout << "************ processed this middle node before ************" << endl;
+			}
+
+			// if not then assemble trafo matrix block
+			else
+			{
+				// add to set of processed nodes
+				donebefore.insert(gid);
+
+				// find adjacent corner nodes locally
+				int index1 = 0;
+				int index2 = 0;
+				int hoindex = mrtrele->GetLocalNodeId(gid);
+				DRT::UTILS::getCornerNodeIndices(index1,index2,hoindex,shape);
+
+				// find adjacent corner nodes globally
+				int gindex1 = mrtrele->NodeIds()[index1];
+				int gindex2 = mrtrele->NodeIds()[index2];
+				//cout << "-> adjacent corner nodes: " << gindex1 << " " << gindex2 << endl;
+				DRT::Node* adjnode1 = idiscret_->gNode(gindex1);
+				if (!adjnode1) dserror("ERROR: Cannot find node with gid %",gindex1);
+				MortarNode* adjmrtrnode1 = static_cast<MortarNode*>(adjnode1);
+				DRT::Node* adjnode2 = idiscret_->gNode(gindex2);
+				if (!adjnode2) dserror("ERROR: Cannot find node with gid %",gindex2);
+				MortarNode* adjmrtrnode2 = static_cast<MortarNode*>(adjnode2);
+
+				// add transformation matrix block
+				for (int k=0;k<mrtrnode->NumDof();++k)
+				{
+					// assemble diagonal values
+					trafo.Assemble(1.0-2*theta, mrtrnode->Dofs()[k], mrtrnode->Dofs()[k]);
+					invtrafo.Assemble(1.0/(1.0-2*theta), mrtrnode->Dofs()[k], mrtrnode->Dofs()[k]);
+
+					// assemble off-diagonal values
+					trafo.Assemble(theta, mrtrnode->Dofs()[k], adjmrtrnode1->Dofs()[k]);
+		      trafo.Assemble(theta, mrtrnode->Dofs()[k], adjmrtrnode2->Dofs()[k]);
+		      invtrafo.Assemble(-theta/(1.0-2*theta), mrtrnode->Dofs()[k], adjmrtrnode1->Dofs()[k]);
+		      invtrafo.Assemble(-theta/(1.0-2*theta), mrtrnode->Dofs()[k], adjmrtrnode2->Dofs()[k]);
+				}
+			}
+		}
+	}
 
   return;
 }

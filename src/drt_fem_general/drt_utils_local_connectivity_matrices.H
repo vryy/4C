@@ -658,6 +658,19 @@ namespace UTILS
     );
 
   /*!
+	\brief    Returns the indices of the element corner nodes lying
+            adjacent to a specified higher order (edge) node index
+            for each discretization type
+
+	*/
+  void getCornerNodeIndices(
+    int&                                        index1,     ///< index of corner node
+    int&                                        index2,     ///< index of corner node
+    const int&                                  hoindex,    ///< index of edge node
+    const DRT::Element::DiscretizationType      distype     ///< discretization type
+    );
+
+  /*!
   \brief    Returns the dimension of an element based on its discretization-type
 
   */

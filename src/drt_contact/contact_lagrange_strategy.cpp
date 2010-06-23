@@ -2259,7 +2259,7 @@ void CONTACT::CoLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
     RCP<Epetra_Vector> adddisisexp = rcp(new Epetra_Vector(*problemrowmap_));
     LINALG::Export(*adddisis,*adddisisexp);
     disi->Update(1.0,*adddisisexp,1.0);
-#endif // #ifdef BASISTRAFO
+#endif // #ifdef CONTACTBASISTRAFO
     
     /**********************************************************************/
     /* Update Lagrange multipliers z_n+1                                  */

@@ -104,6 +104,60 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   // do the multiplication M^ = inv(D) * M
   mhatmatrix_ = LINALG::MLMultiply(*invd_,false,*mmatrix_,false,false,false,true);
   
+  //----------------------------------------------------------------------
+  // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+  //----------------------------------------------------------------------
+  // These matrices need to be applied to the slave displacements
+  // in the cases of dual LM interpolation for tet10/hex20 meshes
+  // in 3D. Here, the displacement basis functions have been modified
+  // in order to assure positivity of the D matrix entries and at
+  // the same time biorthogonality. Thus, to scale back the modified
+  // discrete displacements \hat{d} to the nodal discrete displacements
+  // {d}, we have to apply the transformation matrix T and vice versa
+  // with the transformation matrix T^(-1). Concretely, this yields:
+  //
+  // D         ---->   D * T^(-1)
+  // D^(-1)    ---->   T * D^(-1)
+  // \hat{M}   ---->   T * \hat{M}
+  //
+  // These modifications are applied once right here, thus the
+  // following code (EvaluateMeshtying, Recover) remains unchanged.
+  //----------------------------------------------------------------------
+  bool trafo = false;
+  INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  if (shapefcn == INPAR::MORTAR::shape_dual)
+    for (int i=0; i<(int)interface_.size(); ++i)
+  	  trafo += interface_[i]->Quadslave();
+
+  if (trafo)
+  {
+		/**********************************************************************/
+		/* Build transformation matrix T and its inverse                      */
+		/**********************************************************************/
+		trafo_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+		invtrafo_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+
+		// set of already processed nodes
+		// (in order to avoid double-assembly for N interfaces)
+		set<int> donebefore;
+
+		// for all interfaces
+		for (int i=0; i<(int)interface_.size(); ++i)
+			interface_[i]->AssembleTrafo(*trafo_,*invtrafo_,donebefore);
+
+		// FillComplete() transformation matrices
+		trafo_->Complete();
+		invtrafo_->Complete();
+
+		// modify dmatrix_, invd_ and mhatmatrix_
+		RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+		RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*trafo_,false,*invd_,false,false,false,true);
+		RCP<LINALG::SparseMatrix> temp3 = LINALG::MLMultiply(*trafo_,false,*mhatmatrix_,false,false,false,true);
+		dmatrix_    = temp1;
+		invd_       = temp2;
+		mhatmatrix_ = temp3;
+  }
+
   // print message
   if(Comm().MyPID()==0) cout << "done!" << endl;
     
@@ -422,7 +476,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
 
     // fs: subtract alphaf * old interface forces (t_n)
     RCP<Epetra_Vector> tempvecs = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dmatrix_->Multiply(false,*zold_,*tempvecs);
+    dmatrix_->Multiply(true,*zold_,*tempvecs);
     tempvecs->Update(1.0,*fs,-alphaf_);
 
     // fm: add alphaf * old interface forces (t_n)
@@ -583,7 +637,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
 
     // fs: subtract alphaf * old interface forces (t_n)
     RCP<Epetra_Vector> tempvecs = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dmatrix_->Multiply(false,*zold_,*tempvecs);
+    dmatrix_->Multiply(true,*zold_,*tempvecs);
     tempvecs->Update(1.0,*fs,-alphaf_);
 
     // fm: add alphaf * old interface forces (t_n)
@@ -1051,10 +1105,10 @@ void CONTACT::MtLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
     z_->Update(-1.0,*mod,1.0);
     ksn_->Multiply(false,*disin,*mod);
     z_->Update(-1.0,*mod,1.0);
-    dmatrix_->Multiply(false,*zold_,*mod);
+    dmatrix_->Multiply(true,*zold_,*mod);
     z_->Update(-alphaf_,*mod,1.0);
     RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
-    invd_->Multiply(false,*zcopy,*z_);
+    invd_->Multiply(true,*zcopy,*z_);
     z_->Scale(1/(1-alphaf_));
     
     
@@ -1090,10 +1144,10 @@ void CONTACT::MtLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
     z_->Update(-1.0,*mod,1.0);
     ksn_->Multiply(false,*disin,*mod);
     z_->Update(-1.0,*mod,1.0);
-    dmatrix_->Multiply(false,*zold_,*mod);
+    dmatrix_->Multiply(true,*zold_,*mod);
     z_->Update(-alphaf_,*mod,1.0);
     RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
-    invd_->Multiply(false,*zcopy,*z_);
+    invd_->Multiply(true,*zcopy,*z_);
     z_->Scale(1/(1-alphaf_));
 #endif // #ifdef MESHTYINGTWOCON
   }

@@ -129,12 +129,17 @@ public:
     quaddual1D_edge0,           // crosspoint LM modification 1D
     quaddual1D_edge1,           // crosspoint LM modification 1D
 
-    quad2D_only_lin,            // quadratic LM modification 2D
-    quaddual2D_only_lin,        // quadratic LM modification 2D
-    serendipity2D_only_lin,     // quadratic LM modification 2D
-    serendipitydual2D_only_lin, // quadratic LM modification 2D
-    biquad2D_only_lin,          // quadratic LM modification 2D
-    biquaddual2D_only_lin       // quadratic LM modification 2D
+    quad2D_only_lin,            // quad->lin standard LM modification 2D
+    serendipity2D_only_lin,     // quad->lin standard LM modification 2D
+    biquad2D_only_lin,          // quad->lin standard LM modification 2D
+
+    quad2D_modified,            // displacement modification for dual LM quadratic 2D
+    serendipity2D_modified,     // displacement modification for dual LM serendipity 2D
+    biquad2D_modified,          // displacement modification for dual LM biquadratic 2D
+
+    quaddual2D_only_lin,        // quad->lin dual LM modification 2D (not yet impl.)
+    serendipitydual2D_only_lin, // quad->lin dual LM modification 2D (not yet impl.)
+    biquaddual2D_only_lin       // quad->lin dual LM modification 2D (not yet impl.)
   };
 
   //@}
@@ -467,7 +472,8 @@ public:
   \brief Evaluate displacement shape functions and derivatives
   */
   virtual bool EvaluateShape(const double* xi, LINALG::SerialDenseVector& val,
-                             LINALG::SerialDenseMatrix& deriv, const int& valdim);
+                             LINALG::SerialDenseMatrix& deriv, const int& valdim,
+                             bool dualquad3d = false);
 
   /*!
   \brief Evaluate Lagrange multiplier shape functions and derivatives

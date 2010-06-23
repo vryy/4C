@@ -158,6 +158,14 @@ public:
   virtual Teuchos::ParameterList& IParams() {return icontact_;};
 
   /*!
+  \brief Get quadratic slave element flag
+
+  Returns TRUE if at least one higher-order slave element in interface.
+
+  */
+  virtual const bool& Quadslave() { return quadslave_; };
+
+  /*!
   \brief Get type of search algorithm
 
   */
@@ -477,7 +485,7 @@ public:
   \brief Update interface master and slave sets
   
   This update is usually only done ONCE during FillComplete() in
-  the intialization phase and sets up the slave and master sets
+  the initialization phase and sets up the slave and master sets
   (elements, nodes, dofs) for the whole simulation. Yet, in the
   case of self contact the sets need to be updated again and again
   during simulation time, as the slave/master status is assigned dynamically.
@@ -580,6 +588,22 @@ public:
   */
   virtual void AssembleG(Epetra_Vector& gglobal);
 
+  /*!
+  \brief Assemble transformation matrices T and T^(-1)
+
+  These matrices need to be applied to the slave displacements
+  in the cases of dual LM interpolation for tet10/hex20 meshes
+  in 3D. Here, the displacement basis functions have been modified
+  in order to assure positivity of the D matrix entries and at
+  the same time biorthogonality. Thus, to scale back the modified
+  discrete displacements \hat{d} to the nodal discrete displacements
+  {d}, we have to apply the transformation matrix T and vice
+  versa with the transformation matrix T^(-1).
+  */
+  virtual void AssembleTrafo(LINALG::SparseMatrix& trafo,
+                             LINALG::SparseMatrix& invtrafo,
+                             set<int>& donebefore);
+
   //@}
 
   //! @name Visualization and Debugging methods
@@ -614,6 +638,7 @@ protected:
   int                         dim_;           // dimension of problem (2D or 3D)
   Teuchos::ParameterList      icontact_;      // containing contact input parameters of interface
   INPAR::MORTAR::ShapeFcn     shapefcn_;      // employed type of shape function set
+  bool                        quadslave_;     // flag indicating quadratic slave elements
   
   RCP<Epetra_Map>             oldnodecolmap_; // column map of all interface nodes (overlap=1)
   RCP<Epetra_Map>             oldelecolmap_;  // column map of all interface elements (overlap=1)

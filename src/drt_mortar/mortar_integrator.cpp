@@ -1099,6 +1099,15 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     bound += mymrtrnode->IsOnBound();
   }
 
+  // decide whether displacement shape fct. modification has to be considered or not
+  // this is the case for dual quadratic Lagrange multipliers on quad8 and tri6 elements
+  bool dualquad3d = false;
+  if ( (shapefcn_ == INPAR::MORTAR::shape_dual) && (lmtype == INPAR::MORTAR::lagmult_quad_quad)
+    && (sele.Shape() == DRT::Element::quad8 || sele.Shape() == DRT::Element::tri6) )
+  {
+  	dualquad3d = true;
+  }
+
   //**********************************************************************
   // loop over all Gauss points for integration
   //**********************************************************************
@@ -1190,7 +1199,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     }
     
     // evaluate trace space shape functions (on both elements)
-    sele.EvaluateShape(psxi,sval,sderiv,nrow);
+    sele.EvaluateShape(psxi,sval,sderiv,nrow,dualquad3d);
     mele.EvaluateShape(pmxi,mval,mderiv,ncol);
 
     // evaluate the integration cell Jacobian
@@ -1301,7 +1310,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     
     // CASE 4: Dual LM shape functions and quadratic interpolation
     else if (shapefcn_ == INPAR::MORTAR::shape_dual &&
-             lmtype == INPAR::MORTAR::lagmult_quad_quad)
+    		     (lmtype == INPAR::MORTAR::lagmult_quad_quad || lmtype == INPAR::MORTAR::lagmult_lin_lin))
     {
       // compute all mseg (and dseg) matrix entries
       // loop over Lagrange multiplier dofs j
@@ -1391,7 +1400,7 @@ bool MORTAR::MortarIntegrator::AssembleD(const Epetra_Comm& comm,
           // BOUNDARY NODE MODIFICATION **********************************
           // The boundary nodes have already been re-defined  as being
           // master nodes, so all we have to do here is to shift the terms
-          // associated with a boundary node from D to the resepective
+          // associated with a boundary node from D to the respective
           // place in M! Mind the minus sign, which is needed because M
           // will later enter the contact forces with another minus sign.
           // *************************************************************

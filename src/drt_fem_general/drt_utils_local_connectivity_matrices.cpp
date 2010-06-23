@@ -1276,6 +1276,45 @@ int DRT::UTILS::getHigherOrderIndex(
 
 
 
+/*----------------------------------------------------------------------*
+ |  returns the indices of the element corner nodes           popp 06/10|
+ |  lying adjacent to a specified higher order node index               |
+ |  for each discretizationtype                                         |
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::getCornerNodeIndices(
+    int&                                        index1,
+    int&                                        index2,
+    const int&                                  hoindex,
+    const DRT::Element::DiscretizationType      distype )
+{
+	switch(distype)
+	{
+		case DRT::Element::tri6:
+		{
+			if      (hoindex==3) { index1 = 0; index2 = 1; }
+			else if (hoindex==4) { index1 = 1; index2 = 2; }
+			else if (hoindex==5) { index1 = 2; index2 = 0; }
+			else dserror("no valid tri6 edge found");
+			break;
+		}
+		case DRT::Element::quad8:
+		case DRT::Element::quad9:
+		{
+			if      (hoindex==4) { index1 = 0; index2 = 1; }
+	    else if (hoindex==5) { index1 = 1; index2 = 2; }
+			else if (hoindex==6) { index1 = 2; index2 = 3; }
+			else if (hoindex==7) { index1 = 3; index2 = 0; }
+			else dserror("no valid quad8/9 edge found");
+			break;
+		}
+		default:
+				dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
+	}
+
+	return;
+}
+
+
 ///*----------------------------------------------------------------------*
 // |  returns the dimension of the element parameter space     u.may 10/07|
 // *----------------------------------------------------------------------*/

@@ -165,6 +165,9 @@ class MtLagrangeStrategy : public MtAbstractStrategy
     RCP<LINALG::SparseMatrix> ksm_;        // stiffness block K_sm (needed for LM)
     RCP<LINALG::SparseMatrix> kss_;        // stiffness block K_ss (needed for LM)
 
+    RCP<LINALG::SparseMatrix> trafo_;      // transformation matrix T for dual quad 3D case
+    RCP<LINALG::SparseMatrix> invtrafo_;   // inverse trafo matrix T^(-1) for dual quad 3D case
+
 }; // class MtLagrangeStrategy
 } // namespace CONTACT
 

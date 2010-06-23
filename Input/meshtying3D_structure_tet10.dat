@@ -10,7 +10,7 @@
         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-3D meshtying (penalty) tet10 elements and linear LM interpolation
+3D meshtying (dual Lagrange) tet10 elements and quad LM interpolation
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS    2418
 NODES       4002
@@ -66,10 +66,10 @@ TOLDISP      1.0E-8
 MAXITER      50
 ---------------------------------------------MESHTYING AND CONTACT
 APPLICATION          MortarMeshtying
-STRATEGY             Penalty
-SHAPEFCN             Standard
+STRATEGY             Lagrange
+SHAPEFCN             Dual
 PENALTYPARAM         1.0e6
-LAGMULT_QUAD3D       lin_lin
+LAGMULT_QUAD3D       quad_quad
 -----------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC
