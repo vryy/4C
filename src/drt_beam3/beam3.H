@@ -113,7 +113,7 @@ public:
   friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
 #ifdef D_BEAM3
 #ifdef D_BEAM3II
-  friend bool StatMechManager::CheckOrientation(const Epetra_Vector& orientationprobability,RCP<Beam3> newcrosslinker, DRT::Node *nodes);
+  friend bool StatMechManager::CheckOrientation(const Epetra_Vector& orientationprobability,RCP<DRT::ELEMENTS::Beam3> newcrosslinker, DRT::Node** nodes);
 #endif
 #endif
 

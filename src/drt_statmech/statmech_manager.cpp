@@ -1996,7 +1996,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
           int globalnodeids[2] = {nodecolmap.GID(i),(int)crosslinkerstobeaddedglobalcol[j][i]};
 
           newcrosslinker->SetNodeIds(2,globalnodeids);
-          DRT::Node *nodes[] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
+          DRT::Node* nodes[2] = {discret_.gNode( globalnodeids[0] ) , discret_.gNode( globalnodeids[1] )};
           newcrosslinker->BuildNodalPointers(&nodes[0]);
 
           //setting up crosslinker element parameters
@@ -2014,7 +2014,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
           newcrosslinker->SetMaterial(2);
           
           //new elementis added to discretization in case that it has also a proper orientation
-          if(CheckOrientation(orientationprobability,newcrosslinker,nodes[0]))
+          if(CheckOrientation(orientationprobability,newcrosslinker,&nodes[0]))
             discret_.AddElement(newcrosslinker);
         }
         else
@@ -2357,45 +2357,56 @@ std::vector<int> StatMechManager::Permutation(const int& N)
  *----------------------------------------------------------------------*/
 #ifdef D_BEAM3
 #ifdef D_BEAM3II
-bool StatMechManager::CheckOrientation(const Epetra_Vector& orientationprobability,RCP<DRT::ELEMENTS::Beam3> newcrosslinker, DRT::Node *nodes)
+bool StatMechManager::CheckOrientation(const Epetra_Vector& orientationprobability,RCP<DRT::ELEMENTS::Beam3> newcrosslinker, DRT::Node** nodes)
 {
   
   //if no stiffness constrains crosslinker orientation, this function always return 1 (because than orientation is no obstacle for setting crosslinkers)
   if(statmechparams_.get<double>("LINKORIENTSTIFF",0.0) == 0.0)
     return 1;
+
+  //triad of node on filament which is affected by the new crosslinker
+  LINALG::Matrix<3,3> Tfil;
   
-  //get filament orientation at the two nodes connected by the crosslinker as quatertions
-  vector<LINALG::Matrix<4,1> > QDeltaphi;
-  QDeltaphi.resize(2);
+  //triad of crosslinker
+  LINALG::Matrix<3,3> Tcross;
   
   //get filament orientation at the two nodes connected by the crosslinker as rotation vectors
   vector<LINALG::Matrix<3,1> > Deltaphi;
   Deltaphi.resize(2);
   
   for(int i=0; i<2; i++)
-  {
+  {    
     //lowest Id of any connected element (the related element cannot be a crosslinker, but has to belong to the actual filament discretization)
-    int lowestid( ( (nodes[i].Elements())[0] )->Id() );
-    for(int j=0; j<nodes[i].NumElement(); j++)
-      if( ( (nodes[i].Elements())[j] )->Id() < lowestid )
-          lowestid = ( (nodes[i].Elements())[j] )->Id();
+    int lowestid( ( (nodes[i]->Elements())[0] )->Id() );
+    int lowestidele(0);
+    for(int j=0; j<nodes[i]->NumElement(); j++)
+      if( ( (nodes[i]->Elements())[j] )->Id() < lowestid )
+      {
+        lowestid = ( (nodes[i]->Elements())[j] )->Id();
+        lowestidele = j;
+      }
       
     //check whether filaments are discretized with beam3ii elements (otherwise no orientation triads at nodes available)
     DRT::ELEMENTS::Beam3ii* filele;
-    DRT::ElementType & eot = ((nodes[i].Elements())[lowestid])->ElementType();
+    DRT::ElementType & eot = ((nodes[i]->Elements())[lowestidele])->ElementType();
     if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
-      filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(nodes[i].Elements()[lowestid]);
+      filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(nodes[i]->Elements()[lowestidele]);
     else
       dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");
     
     //check whether crosslinker is connected to first or second node of that element
-    int localnodenumber = ((filele->Nodes())[0])->Id() ;
-    if(nodes[i].Id() == ((filele->Nodes())[1])->Id() )
-      localnodenumber = ((filele->Nodes())[1])->Id();
+    int nodenumber = 0;
+    if(nodes[i]->Id() == ((filele->Nodes())[1])->Id() )
+      nodenumber = 1;
+        
+    //compute triads from quaterions
+    quaterniontotriad(filele->Qnew_[nodenumber],Tfil);
+    quaterniontotriad((newcrosslinker->Qnew_)[0],Tcross);
     
-    //compute difference rotation between filament orientation at the connected node and crosslinker orientation
-    quaternionproduct(filele->Qnew_[localnodenumber],inversequaternion((newcrosslinker->Qnew_)[0]),QDeltaphi[i]);  
-    quaterniontoangle(QDeltaphi[i],Deltaphi[i]);
+    /*we assume that at the binding site the heads of the crosslinker have the same orientation as the polymers, but that
+     *unbinded their equilibrium orientation is parallel to the crosslinker backbone; then the angle about which the heads
+     *have to be rotated for binding can be computed as follows:*/
+    Deltaphi[i] = acos(Tfil(0,0)*Tcross(0,0) + Tfil(1,0)*Tcross(1,0) + Tfil(2,0)*Tcross(2,0));
   }
   
 
@@ -2405,7 +2416,7 @@ bool StatMechManager::CheckOrientation(const Epetra_Vector& orientationprobabili
   double p1 = exp(-0.5*statmechparams_.get<double>("LINKORIENTSTIFF",0.0)*(Deltaphi[1]).Norm2() / statmechparams_.get<double>("KT",0.0) ) ;
   
   //orientation check is passed only if predetermined uniform random number for first node of cross linker element between zero and one is smaller than cross linker probability 
-  return(orientationprobability[nodes[0].LID()] < p0*p1 );
+  return(orientationprobability[nodes[0]->LID()] < p0*p1 );
 
 } // StatMechManager::Permutation
 #endif  // #ifdef D_BEAM3

@@ -106,7 +106,7 @@ public:
   //! \brief checks orientation of crosslinker relative to linked filaments
 #ifdef D_BEAM3
 #ifdef D_BEAM3II
-  bool CheckOrientation(const Epetra_Vector& orientationprobability,RCP<DRT::ELEMENTS::Beam3> newcrosslinker, DRT::Node *nodes);
+  bool CheckOrientation(const Epetra_Vector& orientationprobability,RCP<DRT::ELEMENTS::Beam3> newcrosslinker, DRT::Node** nodes);
 #endif  // #ifdef D_BEAM3
 #endif  // #ifdef D_BEAM3II
 
