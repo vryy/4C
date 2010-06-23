@@ -10,9 +10,6 @@
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_mapextractor.H"
-
 #include "../drt_io/io_ostream0.H"
 
 #include "fsi_overlapprec.H"
@@ -25,6 +22,13 @@
 #include <NOX_Direction_UserDefinedFactory.H>
 
 #include "fsi_monolithicinterface.H"
+
+namespace LINALG
+{
+  class SparseMatrix;
+  class MapExtractor;
+}
+
 namespace FSI
 {
 

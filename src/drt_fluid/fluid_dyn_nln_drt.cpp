@@ -33,6 +33,7 @@ Maintainer: Peter Gamnitzer
 #endif
 
 #include "fluid_dyn_nln_drt.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
 
 

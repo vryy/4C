@@ -20,6 +20,9 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_discret.H"
+#include "../linalg/linalg_sparsematrix.H"
+#include "../drt_fsi/fsi_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -335,11 +338,11 @@ void ADAPTER::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
-                                     RCP<const Epetra_Map> nodemap,
-                                     RCP<const Epetra_Map> permnodemap,
-                                     RCP<const Epetra_Map>& dofmap,
-                                     RCP<const Epetra_Map>& permdofmap,
-                                     RCP<Epetra_Export>& exporter)
+                                     Teuchos::RCP<const Epetra_Map> nodemap,
+                                     Teuchos::RCP<const Epetra_Map> permnodemap,
+                                     Teuchos::RCP<const Epetra_Map>& dofmap,
+                                     Teuchos::RCP<const Epetra_Map>& permdofmap,
+                                     Teuchos::RCP<Epetra_Export>& exporter)
 {
   // communicate dofs
 

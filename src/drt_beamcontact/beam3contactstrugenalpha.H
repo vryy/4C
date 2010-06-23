@@ -12,11 +12,9 @@ Maintainer: Alexander Popp, Christian Cyron
 #ifndef BEAM3CONTACTSTRUGENALPHA_H
 #define BEAM3CONTACTSTRUGENALPHA_H
 
-#include "Teuchos_RefCountPtr.hpp"
+#include <Teuchos_RCP.hpp>
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_ana.H"
 #include "../drt_io/io.H"
 #include "../drt_structure/strugenalpha.H"
@@ -24,6 +22,16 @@ Maintainer: Alexander Popp, Christian Cyron
 #ifdef D_BEAM3
 #include "beam3contact_manager.H"
 #endif // #ifdef D_BEAM3
+
+namespace LINALG
+{
+  class SparseMatrix;
+}
+
+namespace DRT
+{
+  class Discretization;
+}
 
 namespace CONTACT
 {
@@ -53,19 +61,19 @@ public:
 
   */
   virtual ~Beam3ContactStruGenAlpha() {};
-  
+
   /*!
   \brief do constant predictor step
-	
+
   */
   void ConstantPredictor();
-  
+
   /*!
   \brief do consistent constant predictor step
 
   */
   void ConsistentPredictor();
-  
+
   /*!
   \brief do full Newton iteration
 
@@ -74,19 +82,19 @@ public:
 
   /*!
   \brief initialize full Newton iteration for Uzawa
-  
+
   This method is called at the beginning of the Newton scheme in the second, third
   and so on Uzawa iterarion in order to create an of an out-of-balance force again.
 
   */
-  void InitializeNewtonUzawa(); 
-  
+  void InitializeNewtonUzawa();
+
   /*!
   \brief integration control routine
-	
+
   */
   void Integrate();
-  
+
   /*!
   \brief do update at the end of time step
 
@@ -101,12 +109,12 @@ protected:
 
   // uzawa iteration counter
   int uzawaiter_;
-  
+
   // beam contact manager
 #ifdef D_BEAM3
   RCP<CONTACT::Beam3cmanager> beamcmanager_;
 #endif // #ifdef D_BEAM3
-  
+
 }; // class Beam3ContactStruGenAlpha
 } // namespace CONTACT
 

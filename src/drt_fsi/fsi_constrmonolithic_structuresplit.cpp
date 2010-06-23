@@ -9,6 +9,7 @@
 #include "../drt_adapter/adapter_fluid.H"
 
 #include "../drt_constraint/constraint_manager.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 #define FLUIDSPLITAMG
 
@@ -36,9 +37,9 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystem()
   vecSpaces.push_back(StructureField().Interface().OtherMap());
   vecSpaces.push_back(FluidField()    .DofRowMap());
   vecSpaces.push_back(AleField()      .Interface().OtherMap());
-  
+
   vecSpaces.push_back(conman_->GetConstraintMap());
-  
+
   if (vecSpaces[0]->NumGlobalElements()==0)
     dserror("No inner structural equations. Splitting not possible. Panic.");
 
@@ -48,7 +49,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystem()
 
   // Use splitted structure matrix
   StructureField().UseBlockMatrix();
-  
+
   Teuchos::RCP<Epetra_Map> emptymap = Teuchos::rcp(new Epetra_Map(-1,0,NULL,0,StructureField().Discretization()->Comm()));
   LINALG::MapExtractor extractor;
   extractor.Setup(*conman_->GetConstraintMap(),emptymap,conman_->GetConstraintMap());
@@ -150,7 +151,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
     AleField().RHS(),
     conman_->GetError(),
     scale);
-  
+
   // add additional ale residual
   Extractor().AddVector(*aleresidual_,2,f);
 
@@ -233,14 +234,14 @@ void FSI::ConstrMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
       }
     }
     sconT_->Complete();
-    
+
     LINALG::SparseMatrix& csig = sconT_->Matrix(0,1);
 
     rhs = Teuchos::rcp(new Epetra_Vector(csig.RowMap()));
     csig.Apply(*sveln,*rhs);
     rhs->Scale(-1.*Dt());
     Extractor().AddVector(*rhs,3,f);
-    
+
   }
 
   // NOX expects a different sign here.
@@ -285,7 +286,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   // Uncomplete fluid matrix to be able to deal with slightly defective
   // interface meshes.
   f->UnComplete();
-    
+
   mat.Assign(0,0,View,s->Matrix(0,0));
 
   sigtransform_(s->FullRowMap(),
@@ -366,19 +367,19 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   }
   sconT_->Complete();
 
-  
+
   scon.Complete();
   scon.ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
-  
+
   mat.Assign(0,3,View,scon.Matrix(0,0));
-  
+
   scgitransform_(scon.Matrix(1,0),
                   1./scale,
                   ADAPTER::Coupling::MasterConverter(coupsf),
                   mat.Matrix(1,3));
 
   mat.Assign(3,0,View,sconT_->Matrix(0,0));
-  
+
   csigtransform_(*coupsf.MasterDofMap(),
       sconT_->Matrix(0,1).ColMap(),
       sconT_->Matrix(0,1),
@@ -389,7 +390,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
   mat.Complete();
-  
+
 }
 
 
@@ -440,7 +441,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupVector(Epetra_Vector &f,
 
   Extractor().InsertVector(*sov,0,f);
   Extractor().InsertVector(*aov,2,f);
-  
+
   Epetra_Vector modcv = *cv;
   modcv.Scale(-1.0);
   Extractor().InsertVector(modcv,3,f);

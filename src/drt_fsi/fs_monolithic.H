@@ -15,9 +15,6 @@
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_precond.H"
 #include "../linalg/linalg_solver.H"
 
@@ -32,6 +29,12 @@
 // debug flag to merge the MFSI block matrix to one sparse matrix
 // and use the fluid solver to solve for it
 //#define BLOCKMATRIXMERGE
+
+namespace LINALG
+{
+  class SparseMatrix;
+  class MapExtractor;
+}
 
 namespace NOX
 {

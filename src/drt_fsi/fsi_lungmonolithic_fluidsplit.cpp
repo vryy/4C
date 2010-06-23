@@ -4,6 +4,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_fsi.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 #include "../drt_adapter/adapter_structure_lung.H"
 #include "../drt_adapter/adapter_fluid_lung.H"

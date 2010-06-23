@@ -27,10 +27,15 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>
 
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../drt_fsi/fsi_utils.H"
+namespace LINALG
+{
+  class SparseMatrix;
+}
 
+namespace DRT
+{
+  class Discretization;
+}
 
 namespace ADAPTER
 {
@@ -365,11 +370,11 @@ namespace ADAPTER
       node are of interest.
      */
     void BuildDofMaps(const DRT::Discretization& dis,
-                      RCP<const Epetra_Map> nodemap,
-                      RCP<const Epetra_Map> permnodemap,
-                      RCP<const Epetra_Map>& dofmap,
-                      RCP<const Epetra_Map>& permdofmap,
-                      RCP<Epetra_Export>& exporter);
+                      Teuchos::RCP<const Epetra_Map> nodemap,
+                      Teuchos::RCP<const Epetra_Map> permnodemap,
+                      Teuchos::RCP<const Epetra_Map>& dofmap,
+                      Teuchos::RCP<const Epetra_Map>& permdofmap,
+                      Teuchos::RCP<Epetra_Export>& exporter);
 
     /** \name Fundamental dof maps */
     //@{

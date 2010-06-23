@@ -24,20 +24,42 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_solver.H"
-#include "../drt_lib/drt_resulttest.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_io/io.H"
-
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/drt_dserror.H"
 
-// This should be generalized     henke
-//#include "../drt_xfem/interface.H"
-#include "../drt_combust/combust_interface.H"
-#include "../drt_combust/combust_flamefront.H"
+namespace LINALG
+{
+  class SparseMatrix;
+  class BlockSparseMatrixBase;
+  class MapExtractor;
+  class Solver;
+}
+
+namespace DRT
+{
+  class Discretization;
+  class DofSet;
+  class ResultTest;
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+}
+
+namespace FLD
+{
+  namespace UTILS
+  {
+    class MapExtractor;
+  }
+}
+
+namespace COMBUST
+{
+  class InterfaceHandleCombust;
+  class FlameFront;
+}
 
 /// Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER {
@@ -143,18 +165,18 @@ namespace ADAPTER {
     virtual void SetInitialFlowField(int whichinitialfield,int startfuncno) = 0;
 
     ///  set fields for low-Mach-number flow within outer iteration loop
-    virtual void SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,
-                                   RCP<const Epetra_Vector> scalaram,
-                                   RCP<const Epetra_Vector> scalardtam,
+    virtual void SetIterLomaFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
+                                   Teuchos::RCP<const Epetra_Vector> scalaram,
+                                   Teuchos::RCP<const Epetra_Vector> scalardtam,
                                    const double             thermpressaf,
                                    const double             thermpressam,
                                    const double             thermpressdtam,
                                    Teuchos::RCP<DRT::Discretization> scatradis) = 0;
 
     /// set fields for low-Mach-number flow at end of time step
-    virtual void SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,
+    virtual void SetTimeLomaFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
                                    const double             thermpressnp,
-                                   RCP<const Epetra_Vector> scatraresidual,
+                                   Teuchos::RCP<const Epetra_Vector> scatraresidual,
                                    Teuchos::RCP<DRT::Discretization> scatradis) = 0;
 
     //@}

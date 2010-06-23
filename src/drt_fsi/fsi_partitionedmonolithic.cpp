@@ -4,6 +4,7 @@
 #include "fsi_statustest.H"
 
 #include "fsi_nox_linearsystem_partitioned.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 
 /*----------------------------------------------------------------------*/

@@ -9,9 +9,6 @@
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_mapextractor.H"
-
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
 #include <NOX_Direction_UserDefinedFactory.H>
@@ -20,6 +17,12 @@
 #include <Teuchos_Time.hpp>
 
 #include "fsi_monolithicinterface.H"
+
+namespace LINALG
+{
+  class SparseMatrix;
+  class MapExtractor;
+}
 
 namespace NOX
 {

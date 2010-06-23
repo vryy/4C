@@ -9,6 +9,7 @@
 #include "fsi_nox_mpe.H"
 
 #include "fsi_nox_linearsystem_gcr.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

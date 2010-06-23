@@ -49,18 +49,18 @@ namespace ADAPTER
     { return fluid_->GetDBCMapExtractor(); }
     virtual void SetInitialFlowField(int whichinitialfield,int startfuncno)
     { return fluid_->SetInitialFlowField(whichinitialfield, startfuncno); }
-    virtual void SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,
-                                   RCP<const Epetra_Vector> scalaram,
-                                   RCP<const Epetra_Vector> scalardtam,
+    virtual void SetIterLomaFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
+                                   Teuchos::RCP<const Epetra_Vector> scalaram,
+                                   Teuchos::RCP<const Epetra_Vector> scalardtam,
                                    const double             thermpressaf,
                                    const double             thermpressam,
                                    const double             thermpressdtam,
                                    Teuchos::RCP<DRT::Discretization> scatradis)
     { return fluid_->SetIterLomaFields(scalaraf, scalaram, scalardtam, thermpressaf,
                                        thermpressam, thermpressdtam, scatradis); }
-    virtual void SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,
+    virtual void SetTimeLomaFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
                                    const double             thermpressnp,
-                                   RCP<const Epetra_Vector> scatraresidual,
+                                   Teuchos::RCP<const Epetra_Vector> scatraresidual,
                                    Teuchos::RCP<DRT::Discretization> scatradis)
     { return fluid_->SetTimeLomaFields(scalarnp, thermpressnp, scatraresidual, scatradis); }
     virtual void TimeLoop()

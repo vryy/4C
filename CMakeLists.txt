@@ -1393,7 +1393,9 @@ add_executable (post_drt_gid     ${OBJS_POST_DRT_GID} ${OBJS_POST_GID_TXT})
 add_executable (post_drt_ensight ${OBJS_POST_DRT_ENSIGHT})
 add_executable (post_drt_monitor ${OBJS_POST_DRT_MONITOR})
 add_executable (post_drt_s8convert ${OBJS_POST_DRT_S8CONVERT})
-add_executable (post_drt_q9neconvert ${OBJS_POST_DRT_Q9NECONVERT})
+if (D_FLUID2)
+  add_executable (post_drt_q9neconvert ${OBJS_POST_DRT_Q9NECONVERT})
+endif (D_FLUID2)
 
 add_executable (pre_curve ${OBJS_PRE_CURVE})
 
@@ -1427,7 +1429,9 @@ target_link_libraries (post_drt_gid ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_ensight ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_monitor ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_s8convert ${FILTER_LIBRARIES})
-target_link_libraries (post_drt_q9neconvert ${FILTER_LIBRARIES})
+if (D_FLUID2)
+  target_link_libraries (post_drt_q9neconvert ${FILTER_LIBRARIES})
+endif (D_FLUID2)
 
 target_link_libraries (pre_curve ${FILTER_LIBRARIES})
 

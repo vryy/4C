@@ -6,6 +6,8 @@
 #include "fsi_nox_linearsystem_bgs.H"
 #include "fsi_monolithic_linearsystem.H"
 
+#include "../drt_fluid/fluid_utils_mapextractor.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_inpar/inpar_fsi.H"
@@ -22,7 +24,7 @@ FSI::ConstrMonolithic::ConstrMonolithic(Epetra_Comm& comm)
     conman_(StructureField().GetConstraintManager())
 {
 
-  
+
   return;
 }
 
@@ -453,7 +455,7 @@ FSI::ConstrMonolithic::CreateStatusTest(Teuchos::ParameterList& nlParams,
   AddStatusTest(fluidPress);
   fluidpresscombo->addStatusTest(fluidPress);
   //fluidpresscombo->addStatusTest(fluidPressUpdate);
-  
+
   // setup tests for volume constraint
 
   std::vector<Teuchos::RCP<const Epetra_Map> > volconstr;

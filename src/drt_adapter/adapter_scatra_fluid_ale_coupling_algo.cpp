@@ -17,6 +17,7 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "adapter_scatra_fluid_ale_coupling_algo.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

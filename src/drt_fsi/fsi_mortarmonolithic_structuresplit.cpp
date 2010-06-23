@@ -10,6 +10,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../linalg/linalg_solver.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 #include "../drt_io/io_control.H"
 
@@ -19,7 +20,7 @@ FSI::MortarMonolithicStructureSplit::MortarMonolithicStructureSplit(Epetra_Comm&
   : BlockMonolithic(comm),
     comm_(comm)
 {
-  
+
   return;
 }
 
@@ -69,7 +70,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
   const Epetra_Map* alenodemap   = AleField().Discretization()->NodeRowMap();
 
   ADAPTER::Coupling& coupfa = FluidAleCoupling();
-  
+
   coupfa.SetupCoupling(*FluidField().Discretization(),
                        *AleField().Discretization(),
                        *fluidnodemap,
@@ -197,7 +198,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     dserror("Unsupported type of monolithic solver");
   break;
   }
-  
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -210,7 +211,7 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
               FluidField().RHS(),
               AleField().RHS(),
               FluidField().ResidualScaling());
-  
+
   // add additional ale residual
   Extractor().AddVector(*aleresidual_,2,f);
 
@@ -231,7 +232,7 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
 
     Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
     Teuchos::RCP<Epetra_Vector> aveln = icoupfa_.MasterToSlave(fveln);
-    Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));    
+    Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
     aig.Apply(*aveln,*rhs);
 
     rhs->Scale(-1.*Dt());
@@ -241,28 +242,28 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
     // structure
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField().BlockSystemMatrix();
     Teuchos::RCP<LINALG::SparseMatrix> mortar = coupsfm_.GetMortarTrafo();
-    
-    
+
+
     Teuchos::RCP<Epetra_Vector> tmprhs = Teuchos::rcp(new Epetra_Vector(mortar->RowMap()));
     rhs = Teuchos::rcp(new Epetra_Vector(s->Matrix(0,1).RowMap()));
-    
+
     mortar->Apply(*fveln,*tmprhs);
     s->Matrix(0,1).Apply(*tmprhs,*rhs);
     rhs->Scale(-1.*Dt());
-    
+
     Extractor().AddVector(*rhs,0,f);
     rhs = Teuchos::rcp(new Epetra_Vector(s->Matrix(1,1).RowMap()));
     s->Matrix(1,1).Apply(*tmprhs,*rhs);
     tmprhs = Teuchos::rcp(new Epetra_Vector(mortar->DomainMap()));
-    
+
     mortar->SetUseTranspose(true);
     mortar->Apply(*rhs,*tmprhs);
     mortar->SetUseTranspose(false);
-    
+
     rhs = FluidField().Interface().InsertFSICondVector(tmprhs);
     double scale     = FluidField().ResidualScaling();
     rhs->Scale(-1.*Dt()/scale);
-    
+
     Extractor().AddVector(*rhs,1,f);
     // shape derivatives
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
@@ -333,13 +334,13 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
 void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MortarMonolithicStructureSplit::SetupSystemMatrix");
-  
+
   // extract Jacobian matrices and put them into composite system
   // matrix W
 
   //const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   //const ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  
+
   Teuchos::RCP<LINALG::SparseMatrix> mortar = coupsfm_.GetMortarTrafo();
 
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField().BlockSystemMatrix();
@@ -368,27 +369,27 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   f->UnComplete();
 
   mat.Assign(0,0,View,s->Matrix(0,0));
-  
+
   RCP<LINALG::SparseMatrix> sig = MLMultiply(s->Matrix(0,1),false,*mortar,false,false,false,true);
   RCP<LINALG::SparseMatrix> lsig = rcp(new LINALG::SparseMatrix(sig->RowMap(),81));
-  
+
   lsig->Add(*sig,false,1./timescale,0.0);
   lsig->Complete(f->DomainMap(),sig->RangeMap());
-  
+
   mat.Assign(0,1,View,*lsig);
-  
+
   RCP<LINALG::SparseMatrix> sgi = MLMultiply(*mortar,true,s->Matrix(1,0),false,false,false,true);
   RCP<LINALG::SparseMatrix> lsgi = rcp(new LINALG::SparseMatrix(f->RowMap(),81));
 
   lsgi->Add(*sgi,false,1./scale,0.0);
   lsgi->Complete(sgi->DomainMap(),f->RangeMap());
   mat.Assign(1,0,View,*lsgi);
-  
+
   RCP<LINALG::SparseMatrix> sgg = MLMultiply(s->Matrix(1,1),false,*mortar,false,false,false,true);
   sgg = MLMultiply(*mortar,true,*sgg,false,false,false,true);
   f->Add(*sgg,false,1./(scale*timescale),1.0);
   mat.Assign(1,1,View,*f);
-  
+
   aigtransform_(a->FullRowMap(),
                 a->FullColMap(),
                 aig,
@@ -659,16 +660,16 @@ void FSI::MortarMonolithicStructureSplit::SetupVector(Epetra_Vector &f,
   if (fluidscale!=0)
   {
     // add structure interface values to fluid vector
-    
+
     Teuchos::RCP<LINALG::SparseMatrix> mortar = coupsfm_.GetMortarTrafo();
-    
+
     Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface().ExtractFSICondVector(fv);
     Teuchos::RCP<Epetra_Vector> scv = StructureField().Interface().ExtractFSICondVector(sv);
-    
+
     mortar->SetUseTranspose(true);
     mortar->Apply(*scv,*fcv);
     mortar->SetUseTranspose(false);
-    
+
     Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface().InsertFSICondVector(fcv);
     modfv->Update(1.0, *fv, 1./fluidscale);
 
@@ -894,7 +895,7 @@ void FSI::MortarMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MortarMonolithicStructureSplit::ExtractFieldVectors");
   fx = Extractor().ExtractVector(x,1);
   Teuchos::RCP<LINALG::SparseMatrix> mortar = coupsfm_.GetMortarTrafo();
-  
+
   // process structure unknowns
 
   Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractFSICondVector(fx);

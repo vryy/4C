@@ -22,7 +22,12 @@ Maintainer: Lena Wiechert
 #include <Teuchos_ParameterList.hpp>
 
 #include "adapter_fluid_wrapper.H"
+#include "../linalg/linalg_mapextractor.H"
 
+namespace DRT
+{
+  class Condition;
+}
 
 namespace ADAPTER {
 

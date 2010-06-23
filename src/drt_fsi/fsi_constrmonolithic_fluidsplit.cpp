@@ -2,6 +2,8 @@
 
 #include "fsi_constrmonolithic_fluidsplit.H"
 
+#include "../drt_fluid/fluid_utils_mapextractor.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_fsi.H"
 
@@ -148,7 +150,7 @@ void FSI::ConstrMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
   // add additional ale residual
   Extractor().AddVector(*aleresidual_,2,f);
-  
+
   if (firstcall)
   {
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf = FluidField().BlockSystemMatrix();
@@ -204,10 +206,10 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 
   double scale     = FluidField().ResidualScaling();
   double timescale = FluidField().TimeScaling();
-  
+
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf = FluidField().BlockSystemMatrix();
-  
-  
+
+
   LINALG::SparseMatrix& fii = blockf->Matrix(0,0);
   LINALG::SparseMatrix& fig = blockf->Matrix(0,1);
   LINALG::SparseMatrix& fgi = blockf->Matrix(1,0);
@@ -227,16 +229,16 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
   const std::string fname = "cfsstructmatrix.mtl";
   LINALG::PrintMatrixInMatlabFormat(fname,*(s->EpetraMatrix()));
-   
+
 
   /*----------------------------------------------------------------------*/
   // structure constraint part
   RCP<LINALG::SparseOperator> tmp = conman_->GetConstrMatrix();
   LINALG::SparseMatrix scon = *(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tmp));
-  
+
   scon.Complete(*conman_->GetConstraintMap(),s->RangeMap());
   scon.ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
-  
+
   mat.Assign(0,3,View,scon);
 
   /*----------------------------------------------------------------------*/
@@ -246,7 +248,7 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   // structural one. (Tet elements in fluid can cause this.) We should do
 //   this just once...
   s->UnComplete();
-  
+
 
   fggtransform_(fgg,
                 scale*timescale,
@@ -255,9 +257,9 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
                 *s,
                 true,
                 true);
-  
+
   mat.Assign(0,0,View,*s);
-  
+
   fgitransform_(fgi,
                 scale,
                 ADAPTER::Coupling::SlaveConverter(coupsf),
@@ -341,7 +343,7 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   // constraint part -> structure
 
   scon = *(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tmp));
-  
+
   sconT_->Add(scon,true,1.0,0.0);
   sconT_->Complete(scon.RangeMap(),scon.DomainMap());
   mat.Assign(3,0,View,*sconT_);
@@ -349,8 +351,8 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
   mat.Complete();
-  
-  
+
+
 }
 
 
