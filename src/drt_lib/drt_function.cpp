@@ -52,7 +52,6 @@ Maintainer: Ulrich Kuettler
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"
 
-
 namespace DRT {
 namespace UTILS {
 
@@ -1133,6 +1132,13 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
 	 * - a CURVE of the type PhysiologicalWaveform
 	 * - a FUNCT definition like this one:
 	 *   FUNCT1 WOMERSLEY Local 2 MAT 1 NonCircular Yes FSI Yes
+	 * - in addition: for serial use (NumProc()==1), the origin is calculated anew.
+	 * 								This might come in handy, when one is to determine the center
+	 * 								of gravity, i.e. the center line, of the inflow surface.
+	 * 								(current "usage": you might run it in serial mode first, get the COG-
+	 * 								coordinates, change your input file accordingly (->LOCSYS) and then rerun
+	 * 								it in parallel mode. Getting this section to run in parallel mode still causes
+	 * 								me some headaches. For the time being, just stick to this method!)
 	 *
 	 * further preparations in the FSI DYNAMIC section of your input file
 	 * - set SHAPEDERIVATIVES to 'no'
@@ -1214,10 +1220,10 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
 			dis->GetCondition("Dirichlet",dirichlet);
 			if (!dirichlet.size())
 				dserror("No Dirichlet boundary conditions in discretization");
-			// calculation of the centroid, not used right now
-			//double centerx = 0.0;
-			//double centery = 0.0;
-			//double centerz = 0.0;
+			// calculation of the centroid, only for serial use
+			double centerx = 0.0;
+			double centery = 0.0;
+			double centerz = 0.0;
 
 			// create node id vector of inflow surface
 			for(int i=0;i<(int)dirichlet.size();i++)
@@ -1273,10 +1279,14 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
 								xnode.push_back(tempcoords[0]);
 								ynode.push_back(tempcoords[1]);
 								znode.push_back(tempcoords[2]);
-								// calculation of the centroid (1/2)
-								//centerx += tempcoords[0];
-								//centery += tempcoords[1];
-								//centerz += tempcoords[2];
+
+								// calculation of the centroid (1/2), currently only for serial use
+								if(dis->Comm().NumProc()==1)
+								{
+									centerx += tempcoords[0];
+									centery += tempcoords[1];
+									centerz += tempcoords[2];
+								}
 							}
 						}
 						// counting lines
@@ -1289,10 +1299,15 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
 
 			if (linecount<1)
 				dserror("Define Line Dirichlet BC(s) in input file for non-circular/FSI Womersley case!");
-			// calculation of the centroid (2/2)
-			//origin_.at(0) = (centerx /= (double)xnode.size());
-			//origin_.at(1) = (centery /= (double)ynode.size());
-			//origin_.at(2) = (centerz /= (double)znode.size());
+			// calculation of the centroid (2/2), currently only for serial use
+			if(dis->Comm().NumProc()==1)
+			{
+				origin_.at(0) = (centerx /= (double)xnode.size());
+				origin_.at(1) = (centery /= (double)ynode.size());
+				origin_.at(2) = (centerz /= (double)znode.size());
+				cout.precision(15);
+				cout<<"=== newly calculated inflow surface origin: "<<origin_.at(0)<<"   "<<origin_.at(1)<<"   "<<origin_.at(2)<<" ==="<<endl;
+			}
 
 			 //nodal polar coordinates
 			vector<double> xpedge;
