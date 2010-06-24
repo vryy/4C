@@ -79,7 +79,7 @@ class BraessSarazin_Smoother : public virtual Epetra_Operator
      *  \param presol: solution vector (pressure part)
      *  \return 0
      */
-    int ApplyInverse(const Epetra_MultiVector& velrhs, const Epetra_MultiVector& prerhs, Epetra_MultiVector& velsol, Epetra_MultiVector& presol) const;
+    int ApplyInverse(const Epetra_MultiVector& velrhs, const Epetra_MultiVector& prerhs, Epetra_MultiVector& velsol, Epetra_MultiVector& presol, int level = 0) const;
 
     const Epetra_Comm& Comm() const { return F_->Comm(); }
 

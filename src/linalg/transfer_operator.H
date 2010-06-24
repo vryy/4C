@@ -17,8 +17,8 @@
 
 // Trilinos includes
 #include <Epetra_CrsMatrix.h>
-#include "Teuchos_RefCountPtr.hpp"
-#include "Teuchos_ParameterList.hpp"
+//#include "Teuchos_RefCountPtr.hpp"
+//#include "Teuchos_ParameterList.hpp"
 #include "Epetra_Time.h"
 
 #include "linalg_utils.H"

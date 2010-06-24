@@ -36,7 +36,7 @@ LINALG::Smoother_Ifpack::Smoother_Ifpack(string type, const RCP<Epetra_CrsMatrix
 : Smoother(type,A,params,outfile)
 {
   Ifpack factory;
-  Ifpack_Preconditioner* prec = factory.Create(type,A.get(),params_.get("Ifpack overlap",0));
+  Ifpack_Preconditioner* prec = factory.Create(type,A.get(),params_.get("smoother: ifpack overlap",0));
   prec->SetParameters(params_);
   prec->Initialize();
   prec->Compute();

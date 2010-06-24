@@ -12,6 +12,8 @@
 #undef WRITEOUTSYMMETRY // write out || A - A^T ||_F
 #define WRITEOUTAGGREGATES
 
+//#define ANALYSIS
+
 #include <Epetra_LocalMap.h>
 
 #include "linalg_sparsematrix.H"
@@ -75,9 +77,8 @@ int LINALG::SaddlePointPreconditioner::ApplyInverse(const Epetra_MultiVector& X,
   RCP<LINALG::ANA::Vector> Xv = rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
   RCP<LINALG::ANA::Vector> Xp = rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
 
-  RCP<LINALG::ANA::Vector> Yv = rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
-  RCP<LINALG::ANA::Vector> Yp = rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
-
+  RCP<LINALG::ANA::Vector> Yv = rcp(new LINALG::ANA::Vector(*mmex_.Map(0),/*false*/true));
+  RCP<LINALG::ANA::Vector> Yp = rcp(new LINALG::ANA::Vector(*mmex_.Map(1),/*false*/true));
 
   // split vector using mmex_
   mmex_.ExtractVector(X,0,*Xv);
@@ -103,13 +104,118 @@ int LINALG::SaddlePointPreconditioner::VCycle(const Epetra_MultiVector& Xvel, co
     return 0;
   }
 
+#ifdef ANALYSIS
+#ifdef DEBUG
+
+  RCP<Epetra_Vector> velresXX = rcp(new Epetra_Vector(Yvel.Map(),true));
+  RCP<Epetra_Vector> preresXX = rcp(new Epetra_Vector(Ypre.Map(),true));
+
+  RCP<Epetra_Vector> vtempXX = rcp(new Epetra_Vector(Yvel.Map(),true));
+  RCP<Epetra_Vector> ptempXX = rcp(new Epetra_Vector(Ypre.Map(),true));
+
+  A11_[level]->Apply(Yvel,*vtempXX);
+  A12_[level]->Apply(Ypre,*velresXX);
+  velresXX->Update(1.0,*vtempXX,1.0);  // velres = + F Zvel + G Zpre
+  velresXX->Update(1.0,Xvel,-1.0); // velres = Xvel - F Zvel - G Zpre
+
+  A21_[level]->Apply(Yvel,*ptempXX);
+  A22_[level]->Apply(Ypre,*preresXX);
+  preresXX->Update(1.0,*ptempXX,1.0); // preres = + D Zvel + Z Zpre
+  preresXX->Update(1.0,Xpre,-1.0); // preres = Xpre - D Zvel - Z Zpre
+
+  if(A11_[level]->Comm().NumProc() == 1)
+  {
+    // runs only in serial
+    FILE* fp = fopen("analysis.m","w");
+    int length = A11_[level]->RowMap().NumGlobalPoints();
+    length += A22_[level]->RowMap().NumGlobalPoints();
+    fprintf(fp,"A=sparse(%d,%d);\n",length,length);
+
+
+    // loop over local rows of DinvAP0
+    for(int row=0; row<A11_[level]->EpetraMatrix()->NumMyRows(); row++)
+    {
+      //////////////// extract global information for local row in DinvAP0
+      // we need global column ids
+      int grid = A11_[level]->EpetraMatrix()->GRID(row);
+      int nnz = A11_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      std::vector<int> indices(nnz);
+      std::vector<double> vals(nnz);
+      int numEntries;
+      int err = A11_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+      numEntries = 0;
+      nnz = A12_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      indices.clear(); indices.reserve(nnz);
+      vals.clear(); vals.reserve(nnz);
+      err = A12_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+    }
+
+    for(int row=0; row<A22_[level]->EpetraMatrix()->NumMyRows(); row++)
+    {
+      //////////////// extract global information for local row in DinvAP0
+      // we need global column ids
+      int grid = A22_[level]->EpetraMatrix()->GRID(row);
+      int nnz = A22_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      std::vector<int> indices(nnz);
+      std::vector<double> vals(nnz);
+      int numEntries;
+      int err = A22_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+      numEntries = 0;
+      nnz = A21_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      indices.clear(); indices.reserve(nnz);
+      vals.clear(); vals.reserve(nnz);
+      err = A21_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+    }
+
+    fprintf(fp,"rhs = zeros(%d,1);\n",length);
+
+    double * MyGlobalElements1 = velresXX->Values();
+    for(int i=0; i<velresXX->Map().NumMyElements(); i++)
+    {
+      int grid = velresXX->Map().GID(i);
+      double vv = MyGlobalElements1[i];
+      fprintf(fp,"rhs(%d) = %25.16e;\n",grid+1,vv);
+    }
+    double * MyGlobalElements2 = preresXX->Values();
+    for(int i=0; i<preresXX->Map().NumMyElements(); i++)
+    {
+      int grid = preresXX->Map().GID(i);
+      double pp = MyGlobalElements2[i];
+      fprintf(fp,"rhs(%d) = %25.16e;\n",grid+1,pp);
+    }
+
+    fclose(fp);
+
+    cout << "** BEFORE presmoothing (level " << level << ") **" << endl << "Press y when you're done" << endl;
+    char instring[100];
+    scanf("%s",instring);
+  }
+#endif
+#endif
+
   // vectors for presmoothed solution
   RCP<Epetra_MultiVector> Zvel = rcp(new Epetra_MultiVector(Yvel.Map(),1,true));
   RCP<Epetra_MultiVector> Zpre = rcp(new Epetra_MultiVector(Ypre.Map(),1,true));
 
+  Zvel->Update(1.0,Yvel,0.0);
+  Zpre->Update(1.0,Ypre,0.0);
+
   // presmoothing
-  if(bPresmoothing_) preS_[level]->ApplyInverse(Xvel,Xpre,*Zvel,*Zpre);  // rhs X is fix, initial solution Z = 0 (per definition, see above)
+  if(bPresmoothing_) preS_[level]->ApplyInverse(Xvel,Xpre,*Zvel,*Zpre,level);  // rhs X is fix, initial solution Z = 0 (per definition, see above)
                                                       // note: ApplyInverse expects the "solution" and no solution increment "Delta Z"
+
 
   // calculate residual (fine grid)
   RCP<Epetra_Vector> velres = rcp(new Epetra_Vector(Yvel.Map(),true));
@@ -127,6 +233,90 @@ int LINALG::SaddlePointPreconditioner::VCycle(const Epetra_MultiVector& Xvel, co
   A22_[level]->Apply(*Zpre,*preres);
   preres->Update(1.0,*ptemp,1.0); // preres = + D Zvel + Z Zpre
   preres->Update(1.0,Xpre,-1.0); // preres = Xpre - D Zvel - Z Zpre
+
+#ifdef ANALYSIS
+#ifdef DEBUG
+  if(A11_[level]->Comm().NumProc() == 1)
+  {
+    // runs only in serial
+    FILE* fp = fopen("analysis.m","w");
+    int length = A11_[level]->RowMap().NumGlobalPoints();
+    length += A22_[level]->RowMap().NumGlobalPoints();
+    fprintf(fp,"A=sparse(%d,%d);\n",length,length);
+
+
+    // loop over local rows of DinvAP0
+    for(int row=0; row<A11_[level]->EpetraMatrix()->NumMyRows(); row++)
+    {
+      //////////////// extract global information for local row in DinvAP0
+      // we need global column ids
+      int grid = A11_[level]->EpetraMatrix()->GRID(row);
+      int nnz = A11_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      std::vector<int> indices(nnz);
+      std::vector<double> vals(nnz);
+      int numEntries;
+      int err = A11_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+      numEntries = 0;
+      nnz = A12_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      indices.clear(); indices.reserve(nnz);
+      vals.clear(); vals.reserve(nnz);
+      err = A12_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+    }
+
+    for(int row=0; row<A22_[level]->EpetraMatrix()->NumMyRows(); row++)
+    {
+      //////////////// extract global information for local row in DinvAP0
+      // we need global column ids
+      int grid = A22_[level]->EpetraMatrix()->GRID(row);
+      int nnz = A22_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      std::vector<int> indices(nnz);
+      std::vector<double> vals(nnz);
+      int numEntries;
+      int err = A22_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+      numEntries = 0;
+      nnz = A21_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      indices.clear(); indices.reserve(nnz);
+      vals.clear(); vals.reserve(nnz);
+      err = A21_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+    }
+
+    fprintf(fp,"rhs = zeros(%d,1);\n",length);
+
+    double * MyGlobalElements1 = velres->Values();
+    for(int i=0; i<velres->Map().NumMyElements(); i++)
+    {
+      int grid = velres->Map().GID(i);
+      double vv = MyGlobalElements1[i];
+      fprintf(fp,"rhs(%d) = %25.16e;\n",grid+1,vv);
+    }
+    double * MyGlobalElements2 = preres->Values();
+    for(int i=0; i<preres->Map().NumMyElements(); i++)
+    {
+      int grid = preres->Map().GID(i);
+      double pp = MyGlobalElements2[i];
+      fprintf(fp,"rhs(%d) = %25.16e;\n",grid+1,pp);
+    }
+
+    fclose(fp);
+
+    cout << "** AFTER presmoothing (level " << level << ") **" << endl << "Press y when you're done" << endl;
+    char instring[100];
+    scanf("%s",instring);
+  }
+#endif
+#endif
 
   // calculate coarse residual
   RCP<Epetra_Vector> velres_coarse = rcp(new Epetra_Vector(Tvel_[level]->R().RowMap(),true));
@@ -153,8 +343,214 @@ int LINALG::SaddlePointPreconditioner::VCycle(const Epetra_MultiVector& Xvel, co
   Zvel->Update(1.0,*velsol_prolongated,1.0);
   Zpre->Update(1.0,*presol_prolongated,1.0);
 
+#ifdef ANALYSIS
+#ifdef DEBUG
+
+  // calculate residual
+  velres->PutScalar(0.0);
+  preres->PutScalar(0.0);
+
+  vtemp->PutScalar(0.0);
+  ptemp->PutScalar(0.0);
+
+  A11_[level]->Apply(*Zvel,*vtemp);
+  A12_[level]->Apply(*Zpre,*velres);
+  velres->Update(1.0,*vtemp,1.0);  // velres = + F Zvel + G Zpre
+  velres->Update(1.0,Xvel,-1.0); // velres = Xvel - F Zvel - G Zpre
+
+  A21_[level]->Apply(*Zvel,*ptemp);
+  A22_[level]->Apply(*Zpre,*preres);
+  preres->Update(1.0,*ptemp,1.0); // preres = + D Zvel + Z Zpre
+  preres->Update(1.0,Xpre,-1.0); // preres = Xpre - D Zvel - Z Zpre
+
+  if(A11_[level]->Comm().NumProc() == 1)
+  {
+    // runs only in serial
+    FILE* fp = fopen("analysis.m","w");
+    int length = A11_[level]->RowMap().NumGlobalPoints();
+    length += A22_[level]->RowMap().NumGlobalPoints();
+    fprintf(fp,"A=sparse(%d,%d);\n",length,length);
+
+
+    // loop over local rows of DinvAP0
+    for(int row=0; row<A11_[level]->EpetraMatrix()->NumMyRows(); row++)
+    {
+      //////////////// extract global information for local row in DinvAP0
+      // we need global column ids
+      int grid = A11_[level]->EpetraMatrix()->GRID(row);
+      int nnz = A11_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      std::vector<int> indices(nnz);
+      std::vector<double> vals(nnz);
+      int numEntries;
+      int err = A11_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+      numEntries = 0;
+      nnz = A12_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      indices.clear(); indices.reserve(nnz);
+      vals.clear(); vals.reserve(nnz);
+      err = A12_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+    }
+
+    for(int row=0; row<A22_[level]->EpetraMatrix()->NumMyRows(); row++)
+    {
+      //////////////// extract global information for local row in DinvAP0
+      // we need global column ids
+      int grid = A22_[level]->EpetraMatrix()->GRID(row);
+      int nnz = A22_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      std::vector<int> indices(nnz);
+      std::vector<double> vals(nnz);
+      int numEntries;
+      int err = A22_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+      numEntries = 0;
+      nnz = A21_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      indices.clear(); indices.reserve(nnz);
+      vals.clear(); vals.reserve(nnz);
+      err = A21_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+    }
+
+    fprintf(fp,"rhs = zeros(%d,1);\n",length);
+
+    double * MyGlobalElements1 = velres->Values();
+    for(int i=0; i<velres->Map().NumMyElements(); i++)
+    {
+      int grid = velres->Map().GID(i);
+      double vv = MyGlobalElements1[i];
+      fprintf(fp,"rhs(%d) = %25.16e;\n",grid+1,vv);
+    }
+    double * MyGlobalElements2 = preres->Values();
+    for(int i=0; i<preres->Map().NumMyElements(); i++)
+    {
+      int grid = preres->Map().GID(i);
+      double pp = MyGlobalElements2[i];
+      fprintf(fp,"rhs(%d) = %25.16e;\n",grid+1,pp);
+    }
+
+    fclose(fp);
+
+    cout << "** AFTER coarse grid correction (level " << level << ") **" << endl << "Press y when you're done" << endl;
+    char instring[100];
+    scanf("%s",instring);
+  }
+#endif
+#endif
+
+
   // postsmoothing
-  if (bPostsmoothing_) postS_[level]->ApplyInverse(Xvel,Xpre,*Zvel,*Zpre); // rhs the same as for presmoothing, but better initial solution (Z)
+  if (bPostsmoothing_) postS_[level]->ApplyInverse(Xvel,Xpre,*Zvel,*Zpre,level); // rhs the same as for presmoothing, but better initial solution (Z)
+
+
+#ifdef ANALYSIS
+#ifdef DEBUG
+
+  // calculate residual
+  velres->PutScalar(0.0);
+  preres->PutScalar(0.0);
+
+  vtemp->PutScalar(0.0);
+  ptemp->PutScalar(0.0);
+
+  A11_[level]->Apply(*Zvel,*vtemp);
+  A12_[level]->Apply(*Zpre,*velres);
+  velres->Update(1.0,*vtemp,1.0);  // velres = + F Zvel + G Zpre
+  velres->Update(1.0,Xvel,-1.0); // velres = Xvel - F Zvel - G Zpre
+
+  A21_[level]->Apply(*Zvel,*ptemp);
+  A22_[level]->Apply(*Zpre,*preres);
+  preres->Update(1.0,*ptemp,1.0); // preres = + D Zvel + Z Zpre
+  preres->Update(1.0,Xpre,-1.0); // preres = Xpre - D Zvel - Z Zpre
+
+  if(A11_[level]->Comm().NumProc() == 1)
+  {
+    // runs only in serial
+    FILE* fp = fopen("analysis.m","w");
+    int length = A11_[level]->RowMap().NumGlobalPoints();
+    length += A22_[level]->RowMap().NumGlobalPoints();
+    fprintf(fp,"A=sparse(%d,%d);\n",length,length);
+
+
+    // loop over local rows of DinvAP0
+    for(int row=0; row<A11_[level]->EpetraMatrix()->NumMyRows(); row++)
+    {
+      //////////////// extract global information for local row in DinvAP0
+      // we need global column ids
+      int grid = A11_[level]->EpetraMatrix()->GRID(row);
+      int nnz = A11_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      std::vector<int> indices(nnz);
+      std::vector<double> vals(nnz);
+      int numEntries;
+      int err = A11_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+      numEntries = 0;
+      nnz = A12_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      indices.clear(); indices.reserve(nnz);
+      vals.clear(); vals.reserve(nnz);
+      err = A12_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+    }
+
+    for(int row=0; row<A22_[level]->EpetraMatrix()->NumMyRows(); row++)
+    {
+      //////////////// extract global information for local row in DinvAP0
+      // we need global column ids
+      int grid = A22_[level]->EpetraMatrix()->GRID(row);
+      int nnz = A22_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      std::vector<int> indices(nnz);
+      std::vector<double> vals(nnz);
+      int numEntries;
+      int err = A22_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+      numEntries = 0;
+      nnz = A21_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      indices.clear(); indices.reserve(nnz);
+      vals.clear(); vals.reserve(nnz);
+      err = A21_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+    }
+
+    fprintf(fp,"rhs = zeros(%d,1);\n",length);
+
+    double * MyGlobalElements1 = velres->Values();
+    for(int i=0; i<velres->Map().NumMyElements(); i++)
+    {
+      int grid = velres->Map().GID(i);
+      double vv = MyGlobalElements1[i];
+      fprintf(fp,"rhs(%d) = %25.16e;\n",grid+1,vv);
+    }
+    double * MyGlobalElements2 = preres->Values();
+    for(int i=0; i<preres->Map().NumMyElements(); i++)
+    {
+      int grid = preres->Map().GID(i);
+      double pp = MyGlobalElements2[i];
+      fprintf(fp,"rhs(%d) = %25.16e;\n",grid+1,pp);
+    }
+
+    fclose(fp);
+
+    cout << "** AFTER post smoothing (level " << level << ") **" << endl << "Press y when you're done" << endl;
+    char instring[100];
+    scanf("%s",instring);
+  }
+#endif
+#endif
 
   // write out solution
   Yvel.Update(1.0,*Zvel,0.0);

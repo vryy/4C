@@ -52,7 +52,7 @@ int LINALG::BraessSarazin_Smoother::ApplyInverse(const Epetra_MultiVector& X, Ep
   return 0;
 }
 
-int LINALG::BraessSarazin_Smoother::ApplyInverse(const Epetra_MultiVector& velrhs, const Epetra_MultiVector& prerhs, Epetra_MultiVector& velsol, Epetra_MultiVector& presol) const
+int LINALG::BraessSarazin_Smoother::ApplyInverse(const Epetra_MultiVector& velrhs, const Epetra_MultiVector& prerhs, Epetra_MultiVector& velsol, Epetra_MultiVector& presol, int level) const
 {
   TEUCHOS_FUNC_TIME_MONITOR("BraessSarazin_Smoother::ApplyInverse");
 
@@ -66,6 +66,8 @@ int LINALG::BraessSarazin_Smoother::ApplyInverse(const Epetra_MultiVector& velrh
   for(int k = 0; k<nSweeps_; k++)
   {
     ////////////////// 1) calculate residual
+    //if(level==0)
+    {
     F_->Apply(velsol,*vtemp);
     G_->Apply(presol,*velres);
     velres->Update(1.0,*vtemp,1.0);  // velres = + F vsol + G presol
@@ -75,6 +77,12 @@ int LINALG::BraessSarazin_Smoother::ApplyInverse(const Epetra_MultiVector& velrh
     Z_->Apply(presol,*preres);
     preres->Update(1.0,*ptemp,1.0); // preres = + D vsol + Z presol
     preres->Update(1.0,prerhs,-1.0); // preres = prerhs - D vsol - Z presol
+    }
+    //else
+    /*{
+      velres->Update(1.0,velrhs,0.0);
+      preres->Update(1.0,prerhs,0.0);
+    }*/
 
     ////////////////// 2) solve for pressure update q = (D Fhatinv G)^{-1} (D Fhatinv velres - omega preres)
     ////////////////// 2.1) calculate rhs

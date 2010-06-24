@@ -8,6 +8,7 @@
 #ifdef CCADISCRET
 
 #define WRITEOUTAGGREGATES
+//#define ANALYSIS
 
 #include "Teuchos_TimeMonitor.hpp"
 
@@ -143,17 +144,50 @@ void LINALG::AMGPreconditioner::Setup()
     LINALG::PrintMatrixInMatlabFormat(fileoutstream2.str(),*(A_[curlevel+1]->EpetraMatrix()));
 #endif
 
-    ParameterList IfpackParameters;
-    IfpackParameters.set("relaxation: type","Gauss-Seidel");
-    IfpackParameters.set("relaxation: sweeps",10);
-    IfpackParameters.set("relaxation: damping factor", 0.66);
-    IfpackParameters.set("relaxation: zero starting solution", false);
-    IfpackParameters.set("fact: level-of-fill", 1);
-    IfpackParameters.set("fact: ilut level-of-fill",0.0);
-    IfpackParameters.set("amesos: solver type","Amesos_Umfpack");
+    // extract smoother information
+    std::stringstream strstream;
+    strstream << "smoother: list (level " << curlevel << ")";
+    ParameterList SmootherParams = params_.sublist(strstream.str());
+    if(SmootherParams.get("smoother: type","Jacobi")=="Jacobi" ||
+       SmootherParams.get("smoother: type","Jacobi")=="Gauss-Seidel")
+    {
+      ParameterList IfpackParameters;
+      IfpackParameters.set("relaxation: type",SmootherParams.get("smoother: type","Jacobi"));
+      IfpackParameters.set("relaxation: sweeps",SmootherParams.get("smoother: sweeps",1));
+      IfpackParameters.set("relaxation: damping factor", SmootherParams.get("smoother: damping factor",0.66));
+      IfpackParameters.set("relaxation: zero starting solution", false);
 
-    preS_[curlevel] = smfac.Create("point relaxation",A_[curlevel],IfpackParameters);
-    postS_[curlevel] = preS_[curlevel];
+      preS_[curlevel] = smfac.Create("point relaxation",A_[curlevel],IfpackParameters);
+      postS_[curlevel] = preS_[curlevel];
+
+    }
+    else if(SmootherParams.get("smoother: type","Jacobi") == "IFPACK")
+    {
+      if(SmootherParams.get("smoother: ifpack type","ILU") != "ILU") dserror("we expect an ILU smoother. others are not supported");
+
+      ParameterList IfpackParameters;
+      IfpackParameters.set("fact: level-of-fill", SmootherParams.get("smoother: ifpack level-of-fill",1));
+      IfpackParameters.set("fact: ilut level-of-fill",0.0);
+      IfpackParameters.set("smoother: ifpack overlap", SmootherParams.get("smoother: ifpack overlap",0));
+      IfpackParameters.set("schwarz: combine mode", params_.sublist("smoother: ifpack list").get("schwarz: combine mode","Add"));
+      IfpackParameters.set("schwarz: reordering type", params_.sublist("smoother: ifpack list").get("schwarz: reordering type","rcm"));
+      IfpackParameters.set("partitioner: overlap", params_.sublist("smoother: ifpack list").get("partitioner: overlap",0));
+
+      preS_[curlevel] = smfac.Create("ILU",A_[curlevel],IfpackParameters);
+      postS_[curlevel] = preS_[curlevel];
+    }
+    else if(SmootherParams.get("smoother: type","Jacobi") == "Amesos-UMFPACK")
+    {
+      ParameterList IfpackParameters;
+      IfpackParameters.set("amesos: solver type","Amesos_Umfpack");
+
+      preS_[curlevel] = smfac.Create("Amesos",A_[curlevel],IfpackParameters);
+      postS_[curlevel] = preS_[curlevel];
+    }
+    else
+    {
+      dserror("smoother type unknown");
+    }
 
 
     //////////////////// prepare variables for next aggregation level
@@ -170,9 +204,46 @@ void LINALG::AMGPreconditioner::Setup()
   }
 
 
-  ParameterList IfpackParameters;
-  IfpackParameters.set("amesos: solver type","Amesos_Umfpack");
-  coarsestSmoother_ = smfac.Create("Amesos",A_[nlevel_],IfpackParameters);
+  //ParameterList IfpackParameters;
+  //IfpackParameters.set("amesos: solver type","Amesos_Umfpack");
+  //coarsestSmoother_ = smfac.Create("Amesos",A_[nlevel_],IfpackParameters);
+
+  if(params_.get("coarse: type","Jacobi")=="Jacobi" ||
+     params_.get("coarse: type","Jacobi")=="Gauss-Seidel")
+  {
+    ParameterList IfpackParameters;
+    IfpackParameters.set("relaxation: type",params_.get("coarse: type","Jacobi"));
+    IfpackParameters.set("relaxation: sweeps",params_.get("coarse: sweeps",1));
+    IfpackParameters.set("relaxation: damping factor", params_.get("coarse: damping factor",0.66));
+    IfpackParameters.set("relaxation: zero starting solution", false);
+
+    coarsestSmoother_ = smfac.Create("point relaxation",A_[nlevel_],IfpackParameters);
+  }
+  else if(params_.get("coarse: type","Jacobi") == "IFPACK")
+  {
+    if(params_.get("coarse: ifpack type","ILU") != "ILU") dserror("we expect an ILU smoother. others are not supported");
+
+    ParameterList IfpackParameters;
+    IfpackParameters.set("fact: level-of-fill", params_.get("coarse: ifpack level-of-fill",1));
+    IfpackParameters.set("fact: ilut level-of-fill",0.0);
+    IfpackParameters.set("smoother: ifpack overlap", params_.get("coarse: ifpack overlap",0));
+    IfpackParameters.set("schwarz: combine mode", params_.sublist("smoother: ifpack list").get("schwarz: combine mode","Add"));
+    IfpackParameters.set("schwarz: reordering type", params_.sublist("smoother: ifpack list").get("schwarz: reordering type","rcm"));
+    IfpackParameters.set("partitioner: overlap", params_.sublist("smoother: ifpack list").get("partitioner: overlap",0));
+
+    coarsestSmoother_ = smfac.Create("ILU",A_[nlevel_],IfpackParameters);
+  }
+  else if(params_.get("coarse: type","Jacobi") == "Amesos-UMFPACK")
+  {
+    ParameterList IfpackParameters;
+    IfpackParameters.set("amesos: solver type","Amesos_Umfpack");
+
+    coarsestSmoother_ = smfac.Create("Amesos",A_[nlevel_],IfpackParameters);
+  }
+  else
+  {
+    dserror("smoother type unknown");
+  }
 
 
 }
@@ -196,6 +267,55 @@ void LINALG::AMGPreconditioner::Vcycle(const Epetra_MultiVector& rhs, Epetra_Mul
     return;
   }
 
+#ifdef ANALYSIS
+#ifdef DEBUG
+  RCP<Epetra_Vector> resXX = rcp(new Epetra_Vector(sol.Map(),true));
+  A_[level]->Apply(sol,*resXX);
+  resXX->Update(1.0,rhs,-1.0);
+
+  if(A_[level]->Comm().NumProc() == 1)
+  {
+    // runs only in serial
+    FILE* fp = fopen("analysis.m","w");
+    int length = A_[level]->RowMap().NumGlobalPoints();
+    fprintf(fp,"A=sparse(%d,%d);\n",length,length);
+
+
+    // loop over local rows of DinvAP0
+    for(int row=0; row<A_[level]->EpetraMatrix()->NumMyRows(); row++)
+    {
+      //////////////// extract global information for local row in DinvAP0
+      // we need global column ids
+      int grid = A_[level]->EpetraMatrix()->GRID(row);
+      int nnz = A_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      std::vector<int> indices(nnz);
+      std::vector<double> vals(nnz);
+      int numEntries;
+      int err = A_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+    }
+
+    fprintf(fp,"rhs = zeros(%d,1);\n",length);
+
+    double * MyGlobalElements1 = resXX->Values();
+    for(int i=0; i<resXX->Map().NumMyElements(); i++)
+    {
+      int grid = resXX->Map().GID(i);
+      double vv = MyGlobalElements1[i];
+      fprintf(fp,"rhs(%d) = %25.16e;\n",grid+1,vv);
+    }
+
+    fclose(fp);
+
+    cout << "** BEFORE presmoothing (level " << level << ") **" << endl << "Press y when you're done" << endl;
+    char instring[100];
+    scanf("%s",instring);
+  }
+#endif
+#endif
+
   ////////////// presmoothing
   preS_[level]->ApplyInverse(rhs,sol);
 
@@ -211,6 +331,52 @@ void LINALG::AMGPreconditioner::Vcycle(const Epetra_MultiVector& rhs, Epetra_Mul
   {
     res->Update(1.0,rhs,0.0); // on carser grids, the rhs vector is the residual
   }
+
+#ifdef ANALYSIS
+#ifdef DEBUG
+
+  if(A_[level]->Comm().NumProc() == 1)
+  {
+    // runs only in serial
+    FILE* fp = fopen("analysis.m","w");
+    int length = A_[level]->RowMap().NumGlobalPoints();
+    fprintf(fp,"A=sparse(%d,%d);\n",length,length);
+
+
+    // loop over local rows of DinvAP0
+    for(int row=0; row<A_[level]->EpetraMatrix()->NumMyRows(); row++)
+    {
+      //////////////// extract global information for local row in DinvAP0
+      // we need global column ids
+      int grid = A_[level]->EpetraMatrix()->GRID(row);
+      int nnz = A_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      std::vector<int> indices(nnz);
+      std::vector<double> vals(nnz);
+      int numEntries;
+      int err = A_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+    }
+
+    fprintf(fp,"rhs = zeros(%d,1);\n",length);
+
+    double * MyGlobalElements1 = res->Values();
+    for(int i=0; i<res->Map().NumMyElements(); i++)
+    {
+      int grid = res->Map().GID(i);
+      double vv = MyGlobalElements1[i];
+      fprintf(fp,"rhs(%d) = %25.16e;\n",grid+1,vv);
+    }
+
+    fclose(fp);
+
+    cout << "** AFTER presmoothing (level " << level << ") **" << endl << "Press y when you're done" << endl;
+    char instring[100];
+    scanf("%s",instring);
+  }
+#endif
+#endif
 
   ////////////// define vectors for coarse levels
   RCP<Epetra_MultiVector> rhs_c = rcp(new Epetra_MultiVector(T_[level]->OperatorDomainMap(),1,false));
@@ -231,9 +397,107 @@ void LINALG::AMGPreconditioner::Vcycle(const Epetra_MultiVector& rhs, Epetra_Mul
   ////////////// update fine level solution
   sol.Update(1.0,*res,1.0);
 
+#ifdef ANALYSIS
+#ifdef DEBUG
+  resXX->PutScalar(0.0);
+  A_[level]->Apply(sol,*resXX);
+  resXX->Update(1.0,rhs,-1.0);
+
+  if(A_[level]->Comm().NumProc() == 1)
+  {
+    // runs only in serial
+    FILE* fp = fopen("analysis.m","w");
+    int length = A_[level]->RowMap().NumGlobalPoints();
+    fprintf(fp,"A=sparse(%d,%d);\n",length,length);
+
+
+    // loop over local rows of DinvAP0
+    for(int row=0; row<A_[level]->EpetraMatrix()->NumMyRows(); row++)
+    {
+      //////////////// extract global information for local row in DinvAP0
+      // we need global column ids
+      int grid = A_[level]->EpetraMatrix()->GRID(row);
+      int nnz = A_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      std::vector<int> indices(nnz);
+      std::vector<double> vals(nnz);
+      int numEntries;
+      int err = A_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+    }
+
+    fprintf(fp,"rhs = zeros(%d,1);\n",length);
+
+    double * MyGlobalElements1 = resXX->Values();
+    for(int i=0; i<resXX->Map().NumMyElements(); i++)
+    {
+      int grid = resXX->Map().GID(i);
+      double vv = MyGlobalElements1[i];
+      fprintf(fp,"rhs(%d) = %25.16e;\n",grid+1,vv);
+    }
+
+    fclose(fp);
+
+    cout << "** AFTER coarse grid correction (level " << level << ") **" << endl << "Press y when you're done" << endl;
+    char instring[100];
+    scanf("%s",instring);
+  }
+#endif
+#endif
+
   ////////////// postsmoothing
   postS_[level]->ApplyInverse(rhs,sol);
 
+
+#ifdef ANALYSIS
+#ifdef DEBUG
+  resXX->PutScalar(0.0);
+  A_[level]->Apply(sol,*resXX);
+  resXX->Update(1.0,rhs,-1.0);
+
+  if(A_[level]->Comm().NumProc() == 1)
+  {
+    // runs only in serial
+    FILE* fp = fopen("analysis.m","w");
+    int length = A_[level]->RowMap().NumGlobalPoints();
+    fprintf(fp,"A=sparse(%d,%d);\n",length,length);
+
+
+    // loop over local rows of DinvAP0
+    for(int row=0; row<A_[level]->EpetraMatrix()->NumMyRows(); row++)
+    {
+      //////////////// extract global information for local row in DinvAP0
+      // we need global column ids
+      int grid = A_[level]->EpetraMatrix()->GRID(row);
+      int nnz = A_[level]->EpetraMatrix()->NumGlobalEntries(grid);
+      std::vector<int> indices(nnz);
+      std::vector<double> vals(nnz);
+      int numEntries;
+      int err = A_[level]->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
+      for(int col=0; col<numEntries; col++)
+        fprintf(fp,"A(%d,%d)=%25.16e;\n",grid+1,indices[col]+1,vals[col]);
+
+    }
+
+    fprintf(fp,"rhs = zeros(%d,1);\n",length);
+
+    double * MyGlobalElements1 = resXX->Values();
+    for(int i=0; i<resXX->Map().NumMyElements(); i++)
+    {
+      int grid = resXX->Map().GID(i);
+      double vv = MyGlobalElements1[i];
+      fprintf(fp,"rhs(%d) = %25.16e;\n",grid+1,vv);
+    }
+
+    fclose(fp);
+
+    cout << "** AFTER postsmoothing (level " << level << ") **" << endl << "Press y when you're done" << endl;
+    char instring[100];
+    scanf("%s",instring);
+  }
+#endif
+#endif
   return;
 }
 
