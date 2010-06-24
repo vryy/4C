@@ -158,12 +158,12 @@ public:
   virtual Teuchos::ParameterList& IParams() {return icontact_;};
 
   /*!
-  \brief Get quadratic slave element flag
+  \brief Get quadratic 3d slave element flag
 
-  Returns TRUE if at least one higher-order slave element in interface.
+  Returns TRUE if at least one higher-order 3d slave element in interface.
 
   */
-  virtual const bool& Quadslave() { return quadslave_; };
+  virtual const bool& Quadslave3d() { return quadslave3d_; };
 
   /*!
   \brief Get type of search algorithm
@@ -638,7 +638,7 @@ protected:
   int                         dim_;           // dimension of problem (2D or 3D)
   Teuchos::ParameterList      icontact_;      // containing contact input parameters of interface
   INPAR::MORTAR::ShapeFcn     shapefcn_;      // employed type of shape function set
-  bool                        quadslave_;     // flag indicating quadratic slave elements
+  bool                        quadslave3d_;   // flag indicating quadratic 3d slave elements
   
   RCP<Epetra_Map>             oldnodecolmap_; // column map of all interface nodes (overlap=1)
   RCP<Epetra_Map>             oldelecolmap_;  // column map of all interface elements (overlap=1)

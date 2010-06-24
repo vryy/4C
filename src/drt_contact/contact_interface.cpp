@@ -410,7 +410,7 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
     bool auxplane = Teuchos::getIntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
 
     // ************************************************** quadratic 3D ***
-    if (sele.IsQuad() || mele.IsQuad())
+    if (sele.IsQuad3d() || mele.IsQuad3d())
     {
       // only for auxiliary plane 3D version
       if (!auxplane) dserror("ERROR: Quadratic 3D coupling only for AuxPlane case!");
@@ -480,7 +480,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
   bool auxplane = Teuchos::getIntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
 
   // ************************************************** quadratic 3D ***
-  if (Dim()==3 && sele.IsQuad())
+  if (Dim()==3 && sele.IsQuad3d())
   {
     // only for auxiliary plane 3D version
     if (!auxplane) dserror("ERROR: Quadratic 3D contact only for AuxPlane case!");

@@ -75,6 +75,14 @@ class MtLagrangeStrategy : public MtAbstractStrategy
     virtual ~MtLagrangeStrategy() {};
 
     /*!
+    \brief Get quadratic 3d slave element flag
+
+    Returns TRUE if at least one higher-order 3d slave element in any interface.
+
+    */
+    virtual const bool& Quadslave3d() { return quadslave3d_; };
+
+    /*!
     \brief Do mortar coupling in reference configuration
      
     Only do this ONCE for meshtying upon initialization!
@@ -156,17 +164,18 @@ class MtLagrangeStrategy : public MtAbstractStrategy
     
   protected:
 
-    RCP<LINALG::SparseMatrix> mhatmatrix_; // product of global Mortar matrices inv(D)*M    
-    RCP<Epetra_Map>           gsmdofs_;    // map of global slave AND master dofs 
+    RCP<LINALG::SparseMatrix> mhatmatrix_;  // product of global Mortar matrices inv(D)*M    
+    RCP<Epetra_Map>           gsmdofs_;     // map of global slave AND master dofs 
     
-    RCP<Epetra_Vector>        fs_;         // slave side effective forces (needed for LM)
-    RCP<LINALG::SparseMatrix> invd_;       // inverse of Mortar matrix D (needed for LM)
-    RCP<LINALG::SparseMatrix> ksn_;        // stiffness block K_sn (needed for LM)
-    RCP<LINALG::SparseMatrix> ksm_;        // stiffness block K_sm (needed for LM)
-    RCP<LINALG::SparseMatrix> kss_;        // stiffness block K_ss (needed for LM)
+    RCP<Epetra_Vector>        fs_;          // slave side effective forces (needed for LM)
+    RCP<LINALG::SparseMatrix> invd_;        // inverse of Mortar matrix D (needed for LM)
+    RCP<LINALG::SparseMatrix> ksn_;         // stiffness block K_sn (needed for LM)
+    RCP<LINALG::SparseMatrix> ksm_;         // stiffness block K_sm (needed for LM)
+    RCP<LINALG::SparseMatrix> kss_;         // stiffness block K_ss (needed for LM)
 
-    RCP<LINALG::SparseMatrix> trafo_;      // transformation matrix T for dual quad 3D case
-    RCP<LINALG::SparseMatrix> invtrafo_;   // inverse trafo matrix T^(-1) for dual quad 3D case
+    bool                      quadslave3d_; // flag indicating whether trafo should be applied
+    RCP<LINALG::SparseMatrix> trafo_;       // transformation matrix T for dual quad 3D case
+    RCP<LINALG::SparseMatrix> invtrafo_;    // inverse trafo matrix T^(-1) for dual quad 3D case
 
 }; // class MtLagrangeStrategy
 } // namespace CONTACT

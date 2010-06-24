@@ -66,7 +66,7 @@ comm_(comm),
 dim_(dim),
 icontact_(icontact),
 shapefcn_(INPAR::MORTAR::shape_undefined),
-quadslave_(false),
+quadslave3d_(false),
 maxdofglobal_(-1)
 {
   RCP<Epetra_Comm> com = rcp(Comm().Clone());
@@ -195,8 +195,8 @@ void MORTAR::MortarInterface::AddMortarNode(RCP<MORTAR::MortarNode> mrtrnode)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::AddMortarElement(RCP<MORTAR::MortarElement> mrtrele)
 {
-	// check for quadratic slave elements
-	if (mrtrele->IsSlave() && mrtrele->IsQuad()) quadslave_=true;
+	// check for quadratic 3d slave elements
+	if (mrtrele->IsSlave() && mrtrele->IsQuad3d()) quadslave3d_=true;
 
 	idiscret_->AddElement(mrtrele);
 	return;
@@ -553,12 +553,12 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
     mnode->InitializeDataContainer();
   }
 
-  // communicate quadslave status among ALL processors
+  // communicate quadslave3d status among ALL processors
   // (not only those participating in interface)
-  int localstatus = (int)(quadslave_);
+  int localstatus = (int)(quadslave3d_);
   int globalstatus = 0;
   Comm().SumAll(&localstatus,&globalstatus,1);
-  quadslave_ = (bool)(globalstatus);
+  quadslave3d_ = (bool)(globalstatus);
 
   return;
 }
@@ -1420,7 +1420,7 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
     bool auxplane = Teuchos::getIntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
 
     // ************************************************** quadratic 3D ***
-    if (sele.IsQuad() || mele.IsQuad())
+    if (sele.IsQuad3d() || mele.IsQuad3d())
     {
       // only for auxiliary plane 3D version
       if (!auxplane) dserror("ERROR: Quadratic 3D coupling only for AuxPlane case!");
@@ -2038,8 +2038,8 @@ void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
 	if (!lComm())
 		return;
 
-	// check for dual shape functions and quadratic slave elements
-	if (shapefcn_ != INPAR::MORTAR::shape_dual || quadslave_ == false)
+	// check for dual shape functions and quadratic 3d slave elements
+	if (shapefcn_ != INPAR::MORTAR::shape_dual || quadslave3d_ == false)
 		dserror("ERROR: AssembleTrafo -> you should not be here...");
 
 	// loop over proc's slave nodes of the interface for assembly

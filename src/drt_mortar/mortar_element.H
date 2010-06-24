@@ -299,10 +299,10 @@ public:
   virtual bool& SetSlave() { return isslave_; }
 
   /*!
-  \brief Return ansatz type (true = quad) of element
+  \brief Return ansatz type (true = quad3d) of element
 
   */
-  virtual bool IsQuad()
+  virtual bool IsQuad3d()
   {
     if (Shape()==quad8 || Shape()==quad9 || Shape()==tri6) return true;
     else return false;
