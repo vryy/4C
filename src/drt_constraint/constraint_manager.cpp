@@ -100,8 +100,8 @@ actdisc_(discr)
     volconstr3d_->Initialize(p,refbaseredundant);
     areaconstr3d_->Initialize(p,refbaseredundant);
     areaconstr2d_->Initialize(p,refbaseredundant);
-    volconstr3dpen_->Initialize(p,refbaseredundant);
-    areaconstr3dpen_->Initialize(p,refbaseredundant);
+    volconstr3dpen_->Initialize(p);
+    areaconstr3dpen_->Initialize(p);
 
     mpconline2d_->SetConstrState("displacement",disp);
     mpconline2d_->Initialize(p,refbaseredundant);
@@ -109,6 +109,8 @@ actdisc_(discr)
     mpconplane3d_->Initialize(p,refbaseredundant);
     mpcnormcomp3d_->SetConstrState("displacement",disp);
     mpcnormcomp3d_->Initialize(p,refbaseredundant);
+    mpcnormcomp3dpen_->SetConstrState("displacement",disp);
+    mpcnormcomp3dpen_->Initialize(p);
 
     // Export redundant vector into distributed one
     refbasevalues_ -> Export(*refbaseredundant,*conimpo_,Add);

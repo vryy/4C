@@ -25,7 +25,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
 UTILS::MPConstraint3Penalty::MPConstraint3Penalty
 (
@@ -53,13 +52,13 @@ MPConstraint
       else
       {
         absconstraint_[condID]=false;
-        dserror("only absolute values allowed right now for penalties");
       }
       
     }
 
     int startID=0;
-    constraintdis_=CreateDiscretizationFromCondition(actdisc_,constrcond_,"ConstrDisc","CONSTRELE3",startID);
+    constraintdis_=CreateDiscretizationFromCondition
+        (actdisc_,constrcond_,"ConstrDisc","CONSTRELE3",startID);
 
     map<int, RCP<DRT::Discretization> > ::iterator discriter;
     for (discriter=constraintdis_.begin(); discriter!=constraintdis_.end(); discriter++)
@@ -71,13 +70,25 @@ MPConstraint
       newdofset=null;
       (discriter->second)->FillComplete();
     }
+    
+    int nummyele=0;
+    int numele=eletocondID_.size();
+    if (!actdisc_->Comm().MyPID())
+    {
+      nummyele=numele;
+    }
+    // initialize maps and importer
+    errormap_=rcp(new Epetra_Map(numele,nummyele,0,actdisc_->Comm()));
+    rederrormap_ = LINALG::AllreduceEMap(*errormap_);
+    errorexport_ = rcp (new Epetra_Export(*rederrormap_,*errormap_));
+    errorimport_ = rcp (new Epetra_Import(*rederrormap_,*errormap_));
+    acterror_=rcp(new Epetra_Vector(*rederrormap_));
+    initerror_=rcp(new Epetra_Vector(*rederrormap_));
   }
 
 }
 
 /*------------------------------------------------------------------------*
- |(public)                                                       tk 08/08  |
- |Initialization routine activates conditions (restart)                    |
  *------------------------------------------------------------------------*/
 void UTILS::MPConstraint3Penalty::Initialize(const double& time)
 {
@@ -95,27 +106,66 @@ void UTILS::MPConstraint3Penalty::Initialize(const double& time)
       activecons_.find(condID)->second = true;
       if (actdisc_->Comm().MyPID() == 0)
       {
-        cout << "Encountered another active condition (Id = " << condID
-            << ")  for time t = " << time << endl;
+        cout << "Encountered another active condition (Id = " << condID 
+            << ")  for restart time t = "<< time << endl;
       }
     }
   }
 }
 
 /*-----------------------------------------------------------------------*
- |(public)                                                        tk 07/08|
- |Evaluate Constraints, choose the right action based on type             |
  *-----------------------------------------------------------------------*/
-void UTILS::MPConstraint3Penalty::Initialize(ParameterList& params,
-    RCP<Epetra_Vector> systemvector)
+void UTILS::MPConstraint3Penalty::Initialize
+(
+  ParameterList& params,
+  RCP<Epetra_Vector> systemvector
+)
 {
-  dserror("method not implemented");
+  dserror("method not used for penalty formulation!");
 }
 
 /*-----------------------------------------------------------------------*
-|(public)                                                        tk 07/08|
-|Evaluate Constraints, choose the right action based on type             |
-*-----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------*/
+void UTILS::MPConstraint3Penalty::Initialize
+(
+  ParameterList& params
+)
+{
+  const double time = params.get("total time",-1.0);
+  
+  for (unsigned int i=0;i<constrcond_.size();i++)
+  {
+    DRT::Condition& cond = *(constrcond_[i]);
+
+    int condID=cond.GetInt("ConditionID");
+    // control absolute values
+    switch (Type())
+    {
+    case mpcnodeonplane3d:
+    case mpcnormalcomp3d:
+      params.set("action", "calc_MPC_state");
+      break;
+    case none:
+      return;
+    default:
+      dserror("Constraint/monitor is not an multi point constraint!");
+    }
+      
+    EvaluateError(constraintdis_.find(condID)->second, params, initerror_, true);
+    
+    activecons_.find(condID)->second=true;
+    if (actdisc_->Comm().MyPID()==0)
+    {
+      cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
+      
+    }
+//    cout << "initial error "<< *initerror_<<endl;
+  }
+}
+    
+
+/*-----------------------------------------------------------------------*
+ *-----------------------------------------------------------------------*/
 void UTILS::MPConstraint3Penalty::Evaluate
 ( 
     ParameterList& params, 
@@ -128,6 +178,26 @@ void UTILS::MPConstraint3Penalty::Evaluate
 
   switch (Type())
   {
+    case mpcnodeonplane3d:
+    case mpcnormalcomp3d:
+      params.set("action", "calc_MPC_state");
+      break;
+    case none:
+      return;
+    default:
+      dserror("Constraint/monitor is not an multi point constraint!");
+  }
+  
+  acterror_->Scale(0.0);
+  map<int, RCP<DRT::Discretization> > ::iterator discriter;
+  for (discriter=constraintdis_.begin(); discriter!=constraintdis_.end(); discriter++)
+    
+    EvaluateError(discriter->second, params, acterror_);
+  
+//    cout << "current error "<< *acterror_<<endl;
+  
+  switch (Type())
+  {
   case mpcnodeonplane3d:
   case mpcnormalcomp3d:
     params.set("action", "calc_MPC_stiff");
@@ -137,17 +207,14 @@ void UTILS::MPConstraint3Penalty::Evaluate
   default:
     dserror("Constraint/monitor is not an multi point constraint!");
   }
-  map<int, RCP<DRT::Discretization> > ::iterator discriter;
   for (discriter=constraintdis_.begin(); discriter!=constraintdis_.end(); discriter++)
   EvaluateConstraint(discriter->second,params,systemmatrix1,systemmatrix2,systemvector1,systemvector2,systemvector3);
 
   return;
 }
 
-    /*------------------------------------------------------------------------*
-     |(private)                                                   tk 04/08    |
-     |subroutine creating a new discretization containing constraint elements |
-     *------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------*
+ *-----------------------------------------------------------------------*/
 map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretizationFromCondition
 (
     RCP<DRT::Discretization> actdisc, 
@@ -223,7 +290,6 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
         vector<int> ngid_ele = defnodeIDs;
         ngid_ele.push_back(ngid[nodeiter]);
         const int numnodes=ngid_ele.size();
-
         remove_copy_if(&ngid_ele[0], &ngid_ele[0]+numnodes,
             inserter(rownodeset, rownodeset.begin()),
             not1(DRT::UTILS::MyGID(actnoderowmap)));
@@ -292,11 +358,8 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
     return newdiscmap;
   }
 
-    /*-----------------------------------------------------------------------*
-     |(private)                                                     tk 07/08 |
-     |Evaluate method, calling element evaluates of a condition and          |
-     |assembing results based on this conditions                             |
-     *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void UTILS::MPConstraint3Penalty::EvaluateConstraint
 (
     RCP<DRT::Discretization> disc,
@@ -342,7 +405,14 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint
         // initialize if it is the first time condition is evaluated
         if(activecons_.find(condID)->second==false)
         {
-          Initialize(time);
+          const string action = params.get<string>("action");
+          RCP<Epetra_Vector> displast=params.get<RCP<Epetra_Vector> >("old disp");
+          SetConstrState("displacement",displast);
+          // last converged step is used reference
+          Initialize(params);
+          RCP<Epetra_Vector> disp=params.get<RCP<Epetra_Vector> >("new disp");
+          SetConstrState("displacement",disp);
+          params.set("action",action);
         }
 
         // get element location vector, dirichlet flags and ownerships
@@ -360,40 +430,45 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint
         // call the element evaluate method
         int err = actele->Evaluate(params,*disc,lm,elematrix1,elematrix2,
             elevector1,elevector2,elevector3);
-        elevector3.Scale(-1.0);
         if (err) dserror("Proc %d: Element %d returned err=%d",disc->Comm().MyPID(),eid,err);
 
-        {
-          Epetra_SerialDenseMatrix tmpmat(eledim,eledim);
-          elematrix1.Scale(elevector3(0));
-          for(int i=0; i<eledim; i++)
-            for(int j=0; j<eledim; j++)
-              tmpmat(i,j) = elevector1(i)*elevector1(j);
-          elematrix1 += tmpmat;
-          elematrix1.Scale(2*scStiff*penalties_[condID]);
+        // loadcurve business
+        const vector<int>*    curve  = cond->Get<vector<int> >("curve");
+        int curvenum = -1;
+        if (curve) curvenum = (*curve)[0];
+        double curvefac = 1.0;
+        bool usetime = true;
+        if (time<0.0) usetime = false;
+        if (curvenum>=0 && usetime)
+          curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+        
+        
+        double diff = (curvefac*(*initerror_)[eid]-(*acterror_)[eid]);
+//        cout<<"diff "<<eid<<": "<<diff<<endl;
+        Epetra_SerialDenseMatrix tmpmat(eledim,eledim);
+        elematrix1.Scale(diff);
+        for(int i=0; i<eledim; i++)
+          for(int j=0; j<eledim; j++)
+            tmpmat(i,j) = elevector1(i)*elevector1(j);
+        elematrix1 += tmpmat;
+        elematrix1.Scale(2*scStiff*penalties_[condID]);
 
-          systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
-        }
-        {
-          elevector1.Scale(2.*penalties_[condID]*elevector3(0));
-          LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-        }
-
+        systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
+        elevector1.Scale(2.*penalties_[condID]*diff);
+        LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
       }
     }
     return;
   } // end of EvaluateCondition
 
-    /*-----------------------------------------------------------------------*
-     |(private)                                                     tk 07/08 |
-     |Evaluate method, calling element evaluates of a condition and          |
-     |assembing results based on this conditions                             |
-     *----------------------------------------------------------------------*/
-void UTILS::MPConstraint3Penalty::InitializeConstraint
+/*-----------------------------------------------------------------------*
+ *-----------------------------------------------------------------------*/
+void UTILS::MPConstraint3Penalty::EvaluateError
 (
     RCP<DRT::Discretization> disc,
     ParameterList& params, 
-    RCP<Epetra_Vector> systemvector
+    RCP<Epetra_Vector> systemvector,
+    bool init
 )
 {
   if (!(disc->Filled()))
@@ -423,44 +498,40 @@ void UTILS::MPConstraint3Penalty::InitializeConstraint
       vector<int> lm;
       vector<int> lmowner;
       actele->LocationVector(*disc,lm,lmowner);
-      // get dimension of element matrices and vectors
-      // Reshape element matrices and vectors and init to zero
-      const int eledim = (int)lm.size();
-      elematrix1.Shape(eledim,eledim);
-      elematrix2.Shape(eledim,eledim);
-      elevector1.Size(eledim);
-      elevector2.Size(eledim);
       elevector3.Size(1);
-      // call the element evaluate method
-      int err = actele->Evaluate(params,*disc,lm,elematrix1,elematrix2,
-          elevector1,elevector2,elevector3);
-      if (err) dserror("Proc %d: Element %d returned err=%d",disc->Comm().MyPID(),actele->Id(),err);
+      params.set("ConditionID",eid);
+
+      if (absconstraint_.find(condID)->second && init)
+      {
+        elevector3[0]  = constrcond_[i]->GetDouble("amplitude");
+      }
+      else
+      {
+        // call the element evaluate method
+        int err = actele->Evaluate(params,*disc,lm,elematrix1,elematrix2,
+            elevector1,elevector2,elevector3);
+        if (err) dserror("Proc %d: Element %d returned err=%d",disc->Comm().MyPID(),eid,err);
+      }
 
       //assembly
       vector<int> constrlm;
       vector<int> constrowner;
-      int offsetID = params.get<int>("OffsetID");
-      constrlm.push_back(eid-offsetID);
+      constrlm.push_back(eid);
       constrowner.push_back(actele->Owner());
       LINALG::Assemble(*systemvector,elevector3,constrlm,constrowner);
 
-      // loadcurve business
-      const vector<int>* curve = cond->Get<vector<int> >("curve");
-      int curvenum = -1;
-      if (curve) curvenum = (*curve)[0];
-      double curvefac = 1.0;
-      bool usetime = true;
-      if (time<0.0) usetime = false;
-      if (curvenum>=0 && usetime)
-      curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+      activecons_.find(condID)->second=true;
 
-      // Get ConditionID of current condition if defined and write value in parameterlist
-      char factorname[30];
-      sprintf(factorname,"LoadCurveFactor %d",condID);
-      params.set(factorname,curvefac);
-
+      if (actdisc_->Comm().MyPID()==0 && (!(activecons_.find(condID)->second)))
+      {
+        cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
+      }
     }
+    
+    RCP<Epetra_Vector> acterrdist = rcp(new Epetra_Vector(*errormap_));
+    acterrdist->Export(*systemvector,*errorexport_,Add);
+    systemvector->Import(*acterrdist,*errorimport_,Insert);
     return;
-  } // end of InitializeConstraint
+  } // end of EvaluateError
 
 #endif

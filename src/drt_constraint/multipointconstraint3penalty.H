@@ -43,11 +43,17 @@ namespace UTILS
         const string& CondName ///< Name of condition to create constraint from
     );
     
-    /// initialization routine called by the manager ctor to get correct reference base values and activating the right conditions at the beginning
+    /// unused
     void Initialize
     (
       ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       RCP<Epetra_Vector>    systemvector3  ///< distributed vector that may be filled by assembly of element contributions
+    );
+    
+    /// initialization routine called by the manager ctor
+    void Initialize
+    (
+      ParameterList&        params  ///< parameter list to communicate between elements and discretization
     );
 
     /// initialization routine called at restart to activate the right conditions
@@ -87,11 +93,12 @@ namespace UTILS
         RCP<Epetra_Vector>    systemvector3); ///< distributed vector that may be filled by assembly of element contributions
 
     //! Initialize constraint discretization and assemble the results to the refbasevector
-    void InitializeConstraint
+    void EvaluateError
     (
       RCP<DRT::Discretization> disc,  ///< discretization to evaluate
       ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-      RCP<Epetra_Vector>    systemvector3 ///< distributed vector that may be filled by aasembly of element contributions
+      RCP<Epetra_Vector>    systemvector3, ///< distributed vector that may be filled by aasembly of element contributions
+      bool init =  false
     );
 
     //! creating a new discretization based on conditions containing constraint elements
@@ -109,6 +116,13 @@ namespace UTILS
     map<int,int> eletocondID_;///<maps element ID to condition ID, to allow use of other maps
     map<int,int> eletocondvecindex_;///<maps element ID to condition index in vector #constrcond_
     map<int,double> penalties_; ///< maps condition ID to penalty factor
+    RCP<Epetra_Export> errorexport_;
+    RCP<Epetra_Import> errorimport_;
+    RCP<Epetra_Map> rederrormap_;
+    RCP<Epetra_Map> errormap_;
+    RCP<Epetra_Vector> initerror_;
+    RCP<Epetra_Vector> acterror_;
+
 
   }; //class
 }

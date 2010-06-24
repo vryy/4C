@@ -61,13 +61,17 @@ Constraint(discr,conditionname)
   return;
 }
 
-/*------------------------------------------------------------------------*
-|(public)                                                       tk 08/08  |
-|Initialization routine computes ref base values and activates conditions |
-*------------------------------------------------------------------------*/
 void UTILS::ConstraintPenalty::Initialize(
     ParameterList&        params,
     RCP<Epetra_Vector>    systemvector3)
+{
+  dserror("method not used for penalty formulation!");
+}
+
+/*------------------------------------------------------------------------*
+*------------------------------------------------------------------------*/
+void UTILS::ConstraintPenalty::Initialize(
+    ParameterList&        params)
 {
   // choose action
   switch (constrtype_)
@@ -92,8 +96,6 @@ void UTILS::ConstraintPenalty::Initialize(
 }
 
 /*------------------------------------------------------------------------*
-|(public)                                                       tk 08/08  |
-|Initialization routine activates conditions (restart)                    |
 *------------------------------------------------------------------------*/
 void UTILS::ConstraintPenalty::Initialize
 (
@@ -120,8 +122,6 @@ void UTILS::ConstraintPenalty::Initialize
 }
 
 /*-----------------------------------------------------------------------*
-|(public)                                                        tk 07/08|
-|Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
 void UTILS::ConstraintPenalty::Evaluate(
     ParameterList&        params,
@@ -173,9 +173,6 @@ void UTILS::ConstraintPenalty::Evaluate(
 }
 
 /*-----------------------------------------------------------------------*
- |(private)                                                     tk 07/08 |
- |Evaluate method, calling element evaluates of a condition and          |
- |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
 void UTILS::ConstraintPenalty::EvaluateConstraint(
     ParameterList&        params,
@@ -210,7 +207,10 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
       // is conditions already labeled as active?
       if(activecons_.find(condID)->second==false)
       {
-        Initialize(time);
+        const string action = params.get<string>("action");
+        // last converged step is used reference
+        Initialize(params);
+        params.set("action",action);
       }
 
       // Evaluate loadcurve if defined. Put current load factor in parameterlist
@@ -257,25 +257,35 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
             elevector1,elevector2,elevector3);
         if (err) dserror("error while evaluating elements");
         
+        
+        
+       // loadcurve business
+        const vector<int>*    curve  = cond.Get<vector<int> >("curve");
+        int curvenum = -1;
+        if (curve) curvenum = (*curve)[0];
+        double curvefac = 1.0;
+        bool usetime = true;
+        if (time<0.0) usetime = false;
+        if (curvenum>=0 && usetime)
+          curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+        
+        double diff = (curvefac*(*initerror_)[condID-1]-(*acterror_)[condID-1]);
+        
         // assembly
-        int eid = curr->second->Id();
-        double diff = ((*initerror_)[condID-1]-(*acterror_)[condID-1]);
-        {
-          // scale with time integrator dependent value
-          Epetra_SerialDenseMatrix tmpmat(eledim,eledim);
-          elematrix1.Scale(diff);
-          for(int i=0; i<eledim; i++)
-            for(int j=0; j<eledim; j++)
-              tmpmat(i,j) = elevector1(i)*elevector1(j);
-          elematrix1 = tmpmat;
-          elematrix1.Scale(2.*scStiff*penalties_[condID]);
+        int eid = curr->second->Id();        
+        
+        // scale with time integrator dependent value
+        Epetra_SerialDenseMatrix tmpmat(eledim,eledim);
+        elematrix1.Scale(diff);
+        for(int i=0; i<eledim; i++)
+          for(int j=0; j<eledim; j++)
+            tmpmat(i,j) = elevector1(i)*elevector1(j);
+        elematrix1 = tmpmat;
+        elematrix1.Scale(2.*scStiff*penalties_[condID]);
           
-          systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
-        }
-        {
-          elevector1.Scale(2.*penalties_[condID]*diff);
-          LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-        }
+        systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
+        elevector1.Scale(2.*penalties_[condID]*diff);
+        LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
         
       }
     }
@@ -361,6 +371,6 @@ void UTILS::ConstraintPenalty::EvaluateError(
   acterrdist->Export(*systemvector,*errorexport_,Add);
   systemvector->Import(*acterrdist,*errorimport_,Insert);
   return;
-} // end of Initialize Constraint
+} // end of EvaluateError
 
 #endif

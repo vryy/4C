@@ -62,11 +62,17 @@ namespace UTILS
         return;
     };
 
-    /// initialization routine called by the manager ctor to get correct reference base values and activating the right conditions at the beginning
+    /// unused
     void Initialize
     (
       ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       RCP<Epetra_Vector>    systemvector3  ///< distributed vector that may be filled by assembly of element contributions
+    );
+    
+    /// initialization routine called by the manager ctor
+    void Initialize
+    (
+      ParameterList&        params  ///< parameter list to communicate between elements and discretization
     );
 
     /// initialization routine called at restart to activate the right conditions
@@ -93,8 +99,8 @@ namespace UTILS
     RCP<Epetra_Import> errorimport_;
     RCP<Epetra_Map> rederrormap_;
     RCP<Epetra_Map> errormap_;
-    RCP<Epetra_Vector> initerror_;
-    RCP<Epetra_Vector> acterror_;
+    RCP<Epetra_Vector> initerror_;  /// initial value of bc  
+    RCP<Epetra_Vector> acterror_;  /// current value of bc
 
   private:
 

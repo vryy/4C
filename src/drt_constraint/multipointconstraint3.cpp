@@ -103,7 +103,8 @@ void UTILS::MPConstraint3::Initialize
       activecons_.find(condID)->second=true;
       if (actdisc_->Comm().MyPID()==0)
       {
-        cout << "Encountered another active condition (Id = " << condID << ")  for restart time t = "<< time << endl;
+        cout << "Encountered another active condition (Id = " << condID 
+            << ")  for restart time t = "<< time << endl;
       }
     }
   }
@@ -136,7 +137,6 @@ void UTILS::MPConstraint3::Initialize(
       // control absolute values
       if (absconstraint_.find(condID)->second)
       {
-        int  MPCcondID  = constrcond_[i]->GetInt("ConditionID");
         //in case of a mpcnormalcomp3d-condition amplitude is always 0
 //        if (Type()==mpcnormalcomp3d)
 //          amplit[i]=0.0;
@@ -146,7 +146,7 @@ void UTILS::MPConstraint3::Initialize(
           amplit[i]=MPCampl;
 //        }
         const int mid=params.get("OffsetID",0);
-        IDs[i]=MPCcondID-mid;
+        IDs[i]=condID-mid;
       }
       // control relative values
       else
