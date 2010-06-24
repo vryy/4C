@@ -1817,8 +1817,8 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
               dserror("ERROR: AssembleDM: D-Matrix is not diagonal!");
 
             // check for positivity
-            if (row==col && val<0.0)
-            	dserror("ERROR: AssembleDM: D-Matrix is not positive!");
+            //if (row==col && val<0.0)
+            //	dserror("ERROR: AssembleDM: D-Matrix is not positive!");
 
             // create an explicitly diagonal d matrix
             if (row==col)
