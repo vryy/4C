@@ -309,6 +309,35 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   if (scatratype == INPAR::SCATRA::scatratype_undefined)
     dserror("Set parameter SCATRATYPE in your input file!");
 
+  // Now do the nurbs specific stuff (for isogeometric elements)
+  if(SCATRA::IsNurbs(distype))
+  {
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+    = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+    bool zero_size(false);
+    // get local knot vector entries and check for zero sized elements
+    zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots_,ele->Id());
+
+    // if we have a zero sized element due to a interpolated
+    // point --- exit here
+    if(zero_size)
+    {
+      return(0);
+    }
+    // you are still here? So get the node weights for nurbs elements as well
+    if(SCATRA::IsNurbs(distype))
+    {
+      for (int inode=0; inode<nen_; inode++)
+      {
+        DRT::Node** nodes = ele->Nodes();
+        DRT::NURBS::ControlPoint* cp
+        = dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+        weights_(inode) = cp->W();
+      }
+    }
+  } // Nurbs specific stuff
+
   // check for the action parameter
   const string action = params.get<string>("action","none");
   if (action=="calc_condif_systemmat_and_residual")
@@ -589,24 +618,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
             fsphinp_[k](i,0) = myfsphinp[k+(i*numdofpernode_)];
           }
         }
-      }
-    }
-
-    // --------------------------------------------------
-    // Now do the nurbs specific stuff (for isogeometric elements)
-    if(SCATRA::IsNurbs(distype))
-    {
-      DRT::NURBS::NurbsDiscretization* nurbsdis
-        = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-
-      bool zero_size(false);
-      zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots_,ele->Id());
-
-      // if we have a zero sized element due to a interpolated
-      // point --- exit here
-      if(zero_size)
-      {
-        return(0);
       }
     }
 

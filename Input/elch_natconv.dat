@@ -134,7 +134,7 @@ DEFINITION_TAU                  Zero
 ITEMAX                          10
 MAXTIME                         1000
 NUMSTEP                         3
-RESTARTEVRY                     3
+RESTARTEVRY                     1
 TIMESTEP                        1
 UPRES                           1
 TEMPERATURE                     11604.506 // abused as a scaling factor in order to have: F/RT = 1.0

@@ -80,7 +80,7 @@ DEFINITION_TAU                  Zero
 ITEMAX                          10
 MAXTIME                         0.02
 NUMSTEP                         17
-RESTARTEVRY                     1000
+RESTARTEVRY                     2
 TIMESTEP                        0.0002
 UPRES                           1
 TEMPERATURE                     300.0 
