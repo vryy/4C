@@ -18,12 +18,6 @@ Here is everything related with writing a dat-file
 #ifndef PRE_EXODUS_WRITEDAT_H_
 #define PRE_EXODUS_WRITEDAT_H_
 
-#include <string>
-#include <iostream>
-#include <vector>
-#include <Teuchos_RefCountPtr.hpp>
-#include "../drt_lib/drt_dserror.H"
-#include "pre_exodus_reader.H"
 #include "pre_exodus_readbc.H"
 
 using namespace std;

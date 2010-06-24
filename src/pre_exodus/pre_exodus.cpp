@@ -28,6 +28,7 @@ its parameters and conditions.
 #include <Teuchos_CommandLineProcessor.hpp>
 #include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/drt_validmaterials.H"
 #include "../drt_inpar/drt_validconditions.H"

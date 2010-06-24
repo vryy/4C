@@ -26,20 +26,20 @@ or the well-known .dat file is created.
 
 #ifdef CCADISCRET
 
-#include <string>
-#include <iostream>
-#include <vector>
-#include "pre_exodus_reader.H"
 
 extern "C" /* stuff which is c and is accessed from c++ */
 {
 #include <exodusII.h>
 }
+
 using namespace std;
 
 //! \namespace EXODUS namespace of the ExodusII-to-BACI preprocessing tool
 namespace EXODUS
 {
+// forward declaration
+class Mesh;
+
 //! create default bc file
 int CreateDefaultBCFile(EXODUS::Mesh& mesh);
 

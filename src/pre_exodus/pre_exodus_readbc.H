@@ -24,7 +24,7 @@ Here is everything related with reading a bc file
 #include <Teuchos_RefCountPtr.hpp>
 #include "../drt_lib/drt_dserror.H"
 #include "pre_exodus_reader.H"
-#include "../drt_lib/drt_condition.H"
+
 
 using namespace std;
 using namespace Teuchos;

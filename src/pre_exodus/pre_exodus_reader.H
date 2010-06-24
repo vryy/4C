@@ -22,7 +22,6 @@ is handed to a c++ object mesh.
 #include <string>
 #include <iostream>
 #include <vector>
-#include <Teuchos_RefCountPtr.hpp>
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_element.H"
 

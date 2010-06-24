@@ -22,13 +22,9 @@ Validate a given BACI input file (after all preprocessing steps)
 #define PRE_EXODUS_VALIDATE_H_
 
 #include <string>
-#include "pre_exodus_reader.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_inputreader.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
+#include <Epetra_SerialDenseMatrix.h>
+#include "../drt_lib/drt_element.H"
 
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>
@@ -39,6 +35,10 @@ Validate a given BACI input file (after all preprocessing steps)
 using namespace std;
 
 namespace EXODUS{
+
+// forward declaration
+class Mesh;
+class ElementBlock;
 
 //! validate a given datfile
 void ValidateInputFile(const RCP<Epetra_Comm> comm, const string datfile);
