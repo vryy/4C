@@ -451,17 +451,17 @@ void WriteLiftDragToFile(
   \author Axel Gerstenberger
   \date 10/08
  */
-std::map<int,double> ComputeSurfaceFlowRates(
-    DRT::Discretization&       dis  ,      ///< the discretisation (node distribution, conditions)
-    const RCP<Epetra_Vector>   velnp       ///< solution vector with velocities and pressure
+//std::map<int,double> ComputeSurfaceFlowRates(
+//    DRT::Discretization&       dis  ,      ///< the discretisation (node distribution, conditions)
+//    const RCP<Epetra_Vector>   velnp       ///< solution vector with velocities and pressure
                                            ///< (only velocities are used)
-    );
+//    );
 
 
 /*!
   \brief integrate mass flow over surfaces
 
-  for each condition Id, compute the flow through a line surface
+  for each condition Id, compute the flow through a boundary condition
 
   \return a map, where for each condition Id, we get the flowrate.
           positive and negative signs indicate net inflow and outflow
@@ -469,9 +469,10 @@ std::map<int,double> ComputeSurfaceFlowRates(
   \author Ursula Mayer
   \date 10/08
  */
-std::map<int,double> ComputeLineFlowRates(
-    DRT::Discretization&           dis  ,
-    const RCP<Epetra_Vector>       velnp
+std::map<int,double> ComputeFlowRates(
+    DRT::Discretization&           dis  ,         ///< the discretisation (node distribution, conditions)
+    const RCP<Epetra_Vector>       velnp,         ///< solution vector with velocities (and pressure)
+    string                         condstring     ///< name of the condition (LineFlowRate or SurfaceFlowRate)
     );
 
 

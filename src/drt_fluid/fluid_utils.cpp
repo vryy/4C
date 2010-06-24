@@ -503,6 +503,7 @@ void FLD::UTILS::WriteLiftDragToFile(
   }
 }
 
+#if 0
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<int,double> FLD::UTILS::ComputeSurfaceFlowRates(
@@ -512,7 +513,8 @@ std::map<int,double> FLD::UTILS::ComputeSurfaceFlowRates(
 {
   ParameterList eleparams;
   // set action for elements
-  eleparams.set("action","calc_flow_rate");
+  //eleparams.set("action","calc_flow_rate");
+  eleparams.set("action","flowrate calculation");
 
   std::map<int,double> volumeflowratepersurface;
 
@@ -526,6 +528,8 @@ std::map<int,double> FLD::UTILS::ComputeSurfaceFlowRates(
     const DRT::Condition* cond = *conditer;
 
     const int condID = cond->GetInt("ConditionID");
+
+    eleparams.set<double>("Outlet flowrate", 0.0);
 
     // get a vector layout from the discretization to construct matching
     // vectors and matrices
@@ -541,38 +545,46 @@ std::map<int,double> FLD::UTILS::ComputeSurfaceFlowRates(
     dis.EvaluateCondition(eleparams,flowrates,"SurfFlowRate",condID);
     dis.ClearState();
 
-    double locflowrate = 0.0;
+    // ... as well as actual total flowrate on this proc
+     double actflowrate = eleparams.get<double>("Outlet flowrate");
+
+     // get total flowrate in parallel case
+     double parflowrate = 0.0;
+     dofrowmap->Comm().SumAll(&actflowrate,&parflowrate,1);
+
+  /*  double locflowrate = 0.0;
     for (int i=0; i < dofrowmap->NumMyElements(); i++)
     {
       locflowrate += (*flowrates)[i];
     }
 
     double flowrate = 0.0;
-    dofrowmap->Comm().SumAll(&locflowrate,&flowrate,1);
+    dofrowmap->Comm().SumAll(&locflowrate,&flowrate,1);*/
     // do not use += for the following since map is not initialized!
-    volumeflowratepersurface[condID] = flowrate;
+    volumeflowratepersurface[condID] = parflowrate;
   }
 
   return volumeflowratepersurface;
 }
-
+#endif
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<int,double> FLD::UTILS::ComputeLineFlowRates(
+std::map<int,double> FLD::UTILS::ComputeFlowRates(
     DRT::Discretization&           dis  ,
-    const RCP<Epetra_Vector>       velnp)
+    const RCP<Epetra_Vector>       velnp,
+    string                         condstring)
 {
   ParameterList eleparams;
   // set action for elements
-  eleparams.set("action","calc_line_flowrate");
+  eleparams.set("action","calc_flowrate");
 
   // note that the flowrate is not yet divided by the area
   std::map<int,double> volumeflowrateperline;
 
   // get condition
   std::vector< DRT::Condition* > conds;
-  dis.GetCondition ("LineFlowRate", conds);
+  dis.GetCondition (condstring, conds);
 
   // each condition is on every proc , but might not have condition elements there
   for(vector<DRT::Condition*>::const_iterator conditer = conds.begin(); conditer!=conds.end(); ++conditer)
@@ -591,7 +603,7 @@ std::map<int,double> FLD::UTILS::ComputeLineFlowRates(
     dis.ClearState();
     dis.SetState("velnp",velnp);
 
-    dis.EvaluateCondition(eleparams,flowrates,"LineFlowRate",condID);
+    dis.EvaluateCondition(eleparams,flowrates,condstring,condID);
     dis.ClearState();
 
     double local_flowrate = 0.0;

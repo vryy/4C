@@ -3832,31 +3832,32 @@ void FLD::FluidImplicitTimeInt::LiftDrag() const
 void FLD::FluidImplicitTimeInt::ComputeFlowRates() const
 {
   vector<DRT::Condition*> flowratecond;
+  string condstring;
 
   if(numdim_ == 2)
   {
+    condstring = "LineFlowRate";
     discret_->GetCondition("LineFlowRate", flowratecond);
     // if no flowrate condition is present we do not compute anything
     if((int) flowratecond.size()== 0)
       return;
-    const std::map<int,double> flowrates = FLD::UTILS::ComputeLineFlowRates(*discret_, velnp_);
-    // write to file
-    if(discret_->Comm().MyPID() == 0)
-      FLD::UTILS::WriteFlowRatesToFile(time_, step_, flowrates );
   }
   else if (numdim_ == 3)
   {
+    condstring = "SurfFlowRate";
     discret_->GetCondition("SurfFlowRate", flowratecond);
     // if no flowrate condition is present we do not compute anything
     if((int) flowratecond.size()== 0)
       return;
-    const std::map<int,double> flowrates = FLD::UTILS::ComputeSurfaceFlowRates(*discret_, velnp_);
-    // write to file
-    if(discret_->Comm().MyPID() == 0)
-      FLD::UTILS::WriteFlowRatesToFile(time_, step_, flowrates );
   }
   else
     dserror("flow rate computation is not implemented for the 1D case");
+
+  const std::map<int,double> flowrates = FLD::UTILS::ComputeFlowRates(*discret_, velnp_, condstring);
+
+  // write to file
+  if(discret_->Comm().MyPID() == 0)
+    FLD::UTILS::WriteFlowRatesToFile(time_, step_, flowrates );
 
   return;
 }
