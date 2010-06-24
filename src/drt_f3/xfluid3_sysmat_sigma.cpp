@@ -1475,12 +1475,12 @@ void SysmatBoundarySigma(
             const double x = physpos(0);
             const double y = physpos(1);
 
-            const double alpha = atan(y/x);
-            const double u_alpha = DRT::UTILS::JefferyHamelFlowFunction::RadialVelocity(alpha);
+            const double theta = atan(y/x);
+            const double u_theta = DRT::UTILS::JefferyHamelFlowFunction::RadialVelocity(theta);
 
             const double nu = 1;
-            interface_gpvelnp(0) = nu * (u_alpha/(x*x+y*y))*x;
-            interface_gpvelnp(1) = nu * (u_alpha/(x*x+y*y))*y;
+            interface_gpvelnp(0) = nu * (u_theta/(x*x+y*y))*x;
+            interface_gpvelnp(1) = nu * (u_theta/(x*x+y*y))*y;
             interface_gpvelnp(2) = 0.0;
 #endif
 
