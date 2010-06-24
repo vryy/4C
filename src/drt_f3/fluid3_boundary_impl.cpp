@@ -168,12 +168,13 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
         act = Fluid3Boundary::integrate_Shapefunction;
     else if (action == "area calculation")
         act = Fluid3Boundary::areacalc;
+    // TODO: remove this action -> talk with Mahmoud
     else if (action == "flowrate calculation")
         act = Fluid3Boundary::flowratecalc;
     // general action to calculate the flow rate (replaces flowratecalc soon)
-    else if (action == "calc_line_flowrate")
-      act = Fluid3Boundary::calc_flowrate;
-    else if (action == "calc_flow_rate")  // allows use of FLD::UTILS::ComupteSurfaceFlowRate()
+    //else if (action == "calc_line_flowrate")
+    //  act = Fluid3Boundary::calc_flowrate;
+    else if (action == "calc_flowrate")  // allows use of FLD::UTILS::ComupteSurfaceFlowRate()
       act = Fluid3Boundary::calc_flowrate;
     else if (action == "flowrate_deriv")
         act = Fluid3Boundary::flowratederiv;
@@ -233,7 +234,8 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
     }
     case integ_pressure_calc:
     {
-      IntegratedPressureParameterCalculation(ele, params,discretization,lm);
+      if(ele->Owner() == discretization.Comm().MyPID())
+        IntegratedPressureParameterCalculation(ele, params,discretization,lm);
       break;
     }
     // general action to calculate the flow rate (replaces flowratecalc soon)
@@ -462,9 +464,12 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
     // belonging to the time integration algorithm (theta*dt for
     // one step theta, 2/3 for bdf with dt const.) and density
 
-    // integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // normalized normal vector
-    const double fac = EvalShapeFuncAndIntFac(intpoints, gpid, xyze, &myknots, &weights, xsi, funct, deriv);
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points is not activated here
+    // Computation of nurbs specific stuff
+    double drs = 0.0;
+    EvalShapeFuncAndIntFac(intpoints, gpid, xyze, &myknots, &weights, xsi, funct, deriv, drs, NULL);
+    const double fac_drs = intpoints.IP().qwgt[gpid]*drs;
 
     // compute temperature and density at the gauss point for low-Mach-number flow
     double dens = 1.0;
@@ -486,7 +491,7 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
       dens = funct.Dot(escanp);
     }
 
-    const double fac_curvefac_thsl_dens =  fac *(curvefac * thsl * dens);
+    const double fac_drs_curvefac_thsl_dens =  fac_drs *(curvefac * thsl * dens);
 
     // factor given by spatial function
     double functfac = 1.0;
@@ -514,11 +519,11 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
           else
             functfac = 1.0;
         }
-        const double val_fac_curvefac_thsl_dens_functfac = (*val)[idim]*fac_curvefac_thsl_dens*functfac;
+        const double val_fac_drs_curvefac_thsl_dens_functfac = (*val)[idim]*fac_drs_curvefac_thsl_dens*functfac;
 
         for(int inode=0; inode < iel; ++inode )
         {
-        elevec1_epetra[inode*numdofpernode_+idim] += funct(inode)*val_fac_curvefac_thsl_dens_functfac;
+        elevec1_epetra[inode*numdofpernode_+idim] += funct(inode)*val_fac_drs_curvefac_thsl_dens_functfac;
         }
       }  // if (*onoff)
     }
@@ -567,7 +572,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ConservativeOutflowConsistency(
   LINALG::Matrix<bdrynsd_,1> xsi(true);
 
   // the element's normal vector
-  LINALG::Matrix<nsd_,1>    norm(true);
+  LINALG::Matrix<nsd_,1>    unitnormal(true);
 
   // get integration rule
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
@@ -646,16 +651,19 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ConservativeOutflowConsistency(
    *----------------------------------------------------------------------*/
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    // integration factor * Gauss weights & shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // normalized normal vector
-    const double fac = EvalShapeFuncAndIntFac(intpoints, gpid, xyze, &myknots, &weights, xsi, funct, deriv, &norm);
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points
+    // Computation of nurbs specific stuff
+    double drs = 0.0;
+    EvalShapeFuncAndIntFac(intpoints, gpid, xyze, &myknots, &weights, xsi, funct, deriv, drs, &unitnormal);
+    const double fac_drs = intpoints.IP().qwgt[gpid]*drs;
 
     // Multiply the normal vector with the integration factor
-    norm.Scale(fac);
+    unitnormal.Scale(fac_drs);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
     if (IsNurbs<distype>::isnurbs)
-      norm.Scale(normalfac);
+      unitnormal.Scale(normalfac);
 
     // get velocity at the gauss point
     // velocity at gausspoint
@@ -663,7 +671,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ConservativeOutflowConsistency(
     velint.Multiply(evel,funct);
 
     // compute normal flux
-    const double u_o_n = velint.Dot(norm);
+    const double u_o_n = velint.Dot(unitnormal);
 
     // rescaled flux (according to time integration)
     const double timefac_mat_u_o_n = timefac_mat*u_o_n;
@@ -672,7 +680,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ConservativeOutflowConsistency(
    LINALG::Matrix<nsd_,nsd_>  n_x_u(true);
 
    // dyadic product of u and n
-   n_x_u.MultiplyNT(timefac_mat,velint,norm);
+   n_x_u.MultiplyNT(timefac_mat,velint,unitnormal);
 
     /*
               /                \
@@ -813,32 +821,13 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
   LINALG::Matrix<bdrynsd_,1> xsi(true);
 
   // the element's normal vector
-  LINALG::Matrix<nsd_,1> normal(true);
-
+  LINALG::Matrix<nsd_,1> unitnormal(true);
 
   LINALG::Matrix<nsd_,1> momint(true);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
-
-  // determine outward-pointing normal to this element
-  //normal(0) = (xyze(1,1)-xyze(1,0))*(xyze(2,2)-xyze(2,0))-(xyze(2,1)-xyze(2,0))*(xyze(1,2)-xyze(1,0));
-  //normal(1) = (xyze(2,1)-xyze(2,0))*(xyze(0,2)-xyze(0,0))-(xyze(0,1)-xyze(0,0))*(xyze(2,2)-xyze(2,0));
-  //normal(2) = (xyze(0,1)-xyze(0,0))*(xyze(1,2)-xyze(1,0))-(xyze(1,1)-xyze(1,0))*(xyze(0,2)-xyze(0,0));
-
-  // Calculation of the normalized normal vector and the metrictensor
-  //DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze,deriv,metrictensor,drs, &normal);
-
-  // length of normal
-/*  double length = 0.0;
-  length = sqrt(normal(0)*normal(0)+normal(1)*normal(1)+normal(2)*normal(2));
-
-  // outward-pointing normal of unit length
-  for(int inode=0;inode<3;inode++)
-  {
-    normal(inode) = normal(inode)/length;
-  }*/
 
   // get velocity and scalar vector at time n+alpha_F/n+1
   RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
@@ -871,14 +860,12 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
    *----------------------------------------------------------------------*/
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    // TODO: check with Volker, if normal at the Gauss point is similar to normal at node
-    // Alternative: Implement a methode to calulate the normal at the node
-    // Check the requirements for all normals
-
-    // integration factor * Gauss weights & local Gauss point coordinates
-    // shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // normalized normal vector
-    const double fac = EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, &normal);
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points
+    // Computation of nurb specific stuff is not activated here
+    double drs = 0.0;
+    EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, drs, &unitnormal);
+    const double fac_drs = intpoints.IP().qwgt[gpid]*drs;
 
     // compute velocity and normal velocity
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -887,7 +874,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
 
     double normvel = 0.0;
     velint.Multiply(evelaf,funct);
-    normvel = velint.Dot(normal);
+    normvel = velint.Dot(unitnormal);
 
     // computation only required for negative normal velocity
     if (normvel<-0.0001)
@@ -906,11 +893,12 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
         temp = funct.Dot(escaaf);
         dens = thermpress/(gasconstant*temp);
       }
-      // TODO: varyingDensity??? Imnplement a method to get the density
+      else if(physicaltype == INPAR::FLUID::varying_density)
+        dserror("The actual density is not calculated for the BC NeumannInflow in the case of VaryingDensity");
 
       // integration factor for left- and right-hand side
-      const double lhsfac = dens*normvel*timefac*fac;
-      double rhsfac = dens*normvel*fac;
+      const double lhsfac = dens*normvel*timefac*fac_drs;
+      double rhsfac = dens*normvel*fac_drs;
 
       // genalpha does not use a time factor for the rhs
       if (not is_genalpha) rhsfac *= timefac;
@@ -1004,16 +992,17 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegrateShapeFunction(
   *----------------------------------------------------------------------*/
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    // integration factor * Gauss weights & local Gauss point coordinates
-    // shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // normalized normal vector
-    const double fac = EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv);
-
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points is not activated here
+    // Computation of nurb specific stuff is not activated here
+    double drs = 0.0;
+    EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, drs, NULL);
+    const double fac_drs = intpoints.IP().qwgt[gpid]*drs;
     for (int inode=0;inode<iel;++inode)
     {
       for(int idim=0;idim<(nsd_);idim++)
       {
-        elevec1(inode*numdofpernode_+idim)+= funct(inode) * fac;
+        elevec1(inode*numdofpernode_+idim)+= funct(inode) * fac_drs;
       }
     }
 
@@ -1052,7 +1041,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementNodeNormal(
   LINALG::Matrix<bdrynsd_,1> xsi(0.0);
 
   // normal vector in gausspoint
-  LINALG::Matrix<nsd_,1> norm(0.0);
+  LINALG::Matrix<nsd_,1> unitnormal(0.0);
 
 
   // get node coordinates
@@ -1075,20 +1064,21 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementNodeNormal(
   /*----------------------------------------------------------------------*
    |               start loop over integration points                     |
    *----------------------------------------------------------------------*/
-  //const IntegrationPoints2D  intpoints(gaussrule);
 
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    // integration factor * Gauss weights & local Gauss point coordinates
-    // shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // normalized normal vector
-    const double fac = EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, &norm);
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points
+    // Computation of nurb specific stuff is not activated here
+    double drs = 0.0;
+    EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, drs, &unitnormal);
+    const double fac_drs = intpoints.IP().qwgt[gpid]*drs;
 
     for (int inode=0; inode<iel; ++inode)
     {
       for(int idim=0; idim<nsd_; ++idim)
       {
-        elevec1(inode*numdofpernode_+idim) += norm(idim) * funct(inode) * fac;
+        elevec1(inode*numdofpernode_+idim) += unitnormal(idim) * funct(inode) * fac_drs;
       }
       // pressure dof is set to zero
       elevec1(inode*numdofpernode_+(nsd_)) = 0.0;
@@ -1351,15 +1341,15 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementSurfaceTension(
 
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    // integration factor * Gauss weights & local Gauss point coordinates
-    // shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // normalized normal vector
-
-    double drs;
-    const double fac = EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, NULL, &drs);
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points is not activated here
+    // Computation of nurb specific stuff is not activated here
+    double drs = 0.0;
+    EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, drs, NULL);
+    const double fac_drs = intpoints.IP().qwgt[gpid]*drs;
 
     // fac multiplied by the timefac
-    const double fac_timefac = fac * timefac;
+    const double fac_drs_timefac = fac_drs * timefac;
 
     // Compute dxyzdrs
     LINALG::Matrix<bdrynsd_,nsd_> dxyzdrs(true);
@@ -1406,7 +1396,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementSurfaceTension(
                                        - pointproduct_rs * deriv(1,node) * dxyzdrs(0,dim)
                                        + abs_dxyzdr * abs_dxyzdr * deriv(1,node) * dxyzdrs(1,dim)
                                        )
-                                     * fac_timefac;
+                                     * fac_drs_timefac;
 
         }
         elevec1[node*numdofpernode_+3] = 0.0;
@@ -1426,7 +1416,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementSurfaceTension(
             // 2D: See Slikkerveer ep. (17)
             elevec1[inode*numdofpernode_+idim]+= SFgamma / drs / drs *
                                       (-1.0) * deriv(0, inode) * dxyzdrs(0,idim)
-                                      * fac_timefac;
+                                      * fac_drs_timefac;
          }
       }
     } // end if else (nsd_=1)
@@ -1528,12 +1518,14 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::AreaCaculation(
 
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    // integration factor * Gauss weights & local Gauss point coordinates
-    // shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // normalized normal vector
-    const double fac = EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv);
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points is not activated here
+    // Computation of nurb specific stuff is not activated here
+    double drs = 0.0;
+    EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, drs, NULL);
+    const double fac_drs = intpoints.IP().qwgt[gpid]*drs;
 
-    area += fac;
+    area += fac_drs;
   }
 
   params.set<double>("Area calculation", area);
@@ -1561,7 +1553,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateParameterCalculation(
   LINALG::Matrix<bdrynsd_,1> xsi(true);
 
   // normal vector
-  LINALG::Matrix<nsd_,1> normal(true);
+  LINALG::Matrix<nsd_,1> unitnormal(true);
 
   //get gauss rule
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
@@ -1595,7 +1587,6 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateParameterCalculation(
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
 
 #ifdef D_ALE_BFLOW
-  cout<<"aleflow!"<<endl;
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
   RCP<const Epetra_Vector>      dispnp;
@@ -1619,23 +1610,22 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateParameterCalculation(
     }
   }
 #endif // D_ALE_BFLOW
-
-  // TODO: Normal at Gauss point or at node
-
   //const IntegrationPoints2D  intpoints(gaussrule);
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    // integration factor * Gauss weights & local Gauss point coordinates
-    // shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // normalized normal vector at gausspoint
-    const double fac = EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, &normal);
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points
+    // Computation of nurb specific stuff is not activated here
+    double drs = 0.0;
+     EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, drs, &unitnormal);
+     const double fac_drs = intpoints.IP().qwgt[gpid]*drs;
 
     //Compute elment flowrate (add to actual frow rate obtained before
     for (int inode=0;inode<iel;++inode)
     {
       for(int idim=0; idim<nsd_; ++idim)
       {
-        flowrate += funct(inode) * evelnp(idim,inode)*normal(idim) *fac;
+        flowrate += funct(inode) * evelnp(idim,inode)*unitnormal(idim) *fac_drs;
       }
     }
   }  // end Gauss loop
@@ -1671,7 +1661,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalc
   LINALG::Matrix<bdrynsd_,1> xsi(true);
 
   // normal vector
-  LINALG::Matrix<nsd_,1> normal(true);
+  LINALG::Matrix<nsd_,1> unitnormal(true);
 
   // get material of volume element this surface belongs to
   RCP<MAT::Material> mat = ele->ParentElement()->Material();
@@ -1734,7 +1724,6 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalc
 #ifdef D_ALE_BFLOW
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
-  cout<<"aleflow2!"<<endl;
   RCP<const Epetra_Vector>      dispnp;
   vector<double>                mydispnp;
 
@@ -1757,20 +1746,20 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalc
   }
 #endif // D_ALE_BFLOW
 
-  // TODO: Normal at Gauss point or at node
-
   //const IntegrationPoints2D  intpoints(gaussrule);
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    // integration factor * Gauss weights & local Gauss point coordinates
-    // shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // normalized normal vector at gausspoint
-    const double fac = EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, &normal);
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points
+    // Computation of nurb specific stuff is not activated here
+    double drs = 0.0;
+    EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, drs, &unitnormal);
+    const double fac_drs = intpoints.IP().qwgt[gpid]*drs;
 
     //Compute elment flowrate (add to actual frow rate obtained before
     for (int inode=0;inode<iel;++inode)
     {
-      pressure += funct(inode) * eprenp(inode) *fac;
+      pressure += funct(inode) * eprenp(inode) *fac_drs;
     }
   }  // end Gauss loop
   // set new flow rate
@@ -1801,7 +1790,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeFlowRate(
   LINALG::Matrix<bdrynsd_,1> xsi(true);
 
   // normal vector
-  LINALG::Matrix<nsd_,1> normal(true);
+  LINALG::Matrix<nsd_,1> unitnormal(true);
 
   // get integration rule
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
@@ -1835,7 +1824,6 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeFlowRate(
 #ifdef D_ALE_BFLOW
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
-  cout<<"aleflow3!"<<endl;
   RCP<const Epetra_Vector>      dispnp;
   vector<double>                mydispnp;
 
@@ -1862,23 +1850,25 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeFlowRate(
   //const IntegrationPoints2D  intpoints(gaussrule);
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    // integration factor * Gauss weights & local Gauss point coordinates
-    // shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // normalized normal vector at gausspoint
-    const double fac = EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, &normal);
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points
+    // Computation of nurb specific stuff is not activated here
+    double drs = 0.0;
+    EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, drs, &unitnormal);
+    const double fac_drs = intpoints.IP().qwgt[gpid]*drs;
 
     //compute flowrate at gauss point
     LINALG::Matrix<nsd_,1> velint(true);
     velint.Multiply(evelnp,funct);
 
     // flowrate = uint o normal
-    const double flowrate = velint.Dot(normal);
+    const double flowrate = velint.Dot(unitnormal);
 
     // store flowrate at first dof of each node
     // use negative value so that inflow is positiv
     for (int inode=0;inode<iel;++inode)
     {
-      elevec1[inode*numdofpernode_] -= funct(inode)* fac * flowrate; //
+      elevec1[inode*numdofpernode_] -= funct(inode)* fac_drs * flowrate; //
     }
   }
 }//DRT::ELEMENTS::Fluid3Surface::ComputeFlowRate
@@ -1898,6 +1888,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
                                                  Epetra_SerialDenseVector&        elevec2,
                                                  Epetra_SerialDenseVector&        elevec3)
 {
+  // This function is only implemented for 3D
   if(bdrynsd_!=2)
     dserror("FlowRateDeriv is only implemented for 3D!");
 
@@ -1933,7 +1924,6 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
   LINALG::Matrix<bdrynsd_,1> xsi(true);
 
   // normal vector
-  LINALG::Matrix<nsd_,1> unitnormal(true);
   LINALG::Matrix<nsd_,1> normal(true);
 
   // get node coordinates
@@ -1980,13 +1970,17 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
     *----------------------------------------------------------------------*/
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    // integration factor * Gauss weights & local Gauss point coordinates
-    // shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // normalized normal vector at gausspoint
-    EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, &unitnormal);
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points is not activated here
+    // Computation of nurb specific stuff is not activated here
+    double drs = 0.0;
+    EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, drs, NULL);
+    // The integration factor is not multiplied with drs
+    // since it is the same as the scaling factor for the unit normal
+    // Therefore it cancels out!!
     const double fac = intpoints.IP().qwgt[gpid];
 
-    // dxyzdrs vector
+    // dxyzdrs vector -> normal which is not normalized
     LINALG::Matrix<bdrynsd_,nsd_> dxyzdrs(0.0);
     dxyzdrs.MultiplyNT(deriv,xyze);
     normal(0,0) = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
@@ -2189,7 +2183,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
   LINALG::Matrix<bdrynsd_,1> xsi(true);
 
   // normal vector
-  LINALG::Matrix<nsd_,1> normal(true);
+  LINALG::Matrix<nsd_,1> unitnormal(true);
 
   // get material of volume element this surface belongs to
   RCP<MAT::Material> mat = ele->ParentElement()->Material();
@@ -2229,7 +2223,6 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
 #ifdef D_ALE_BFLOW
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
-  cout<<"aleflow4!"<<endl;
   RCP<const Epetra_Vector>      dispnp;
   vector<double>                mydispnp;
 
@@ -2254,17 +2247,19 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
 
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    // integration factor * Gauss weights & local Gauss point coordinates
-    // shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // normal vector of unit length at gausspoint (outward pointing)
-    const double fac = EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, &normal);
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points
+    // Computation of nurb specific stuff is not activated here
+    double drs = 0.0;
+    EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, drs, &unitnormal);
+    const double fac_drs = intpoints.IP().qwgt[gpid]*drs;
 
-    const double fac_thsl_pres_inve = fac * thsl * pressure * invdensity;
+    const double fac_drs_thsl_pres_inve = fac_drs * thsl * pressure * invdensity;
 
     for (int inode=0;inode<iel;++inode)
       for(int idim=0;idim<nsd_;++idim)
         // inward pointing normal of unit length
-        elevec1[inode*numdofpernode_+idim] += funct(inode) * fac_thsl_pres_inve * (-normal(idim));
+        elevec1[inode*numdofpernode_+idim] += funct(inode) * fac_drs_thsl_pres_inve * (-unitnormal(idim));
   }
   return;
 } //DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration
@@ -2273,17 +2268,18 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvalShapeFuncAndIntFac(
+void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvalShapeFuncAndIntFac(
     const DRT::UTILS::IntPointsAndWeights<bdrynsd_>&  intpoints,
-    const int                                         gpid,
+    const int                                        gpid,
     const LINALG::Matrix<nsd_,iel>&                   xyze,
     const std::vector<Epetra_SerialDenseVector>*      myknots,
     const Epetra_SerialDenseVector*                   weights,
     LINALG::Matrix<bdrynsd_,1>&                       xsi,
     LINALG::Matrix<iel,1>&                            funct,
     LINALG::Matrix<bdrynsd_,iel>&                     deriv,
-    LINALG::Matrix<nsd_,1>*                           normal,
-    double*                                           drs)
+    double&                                           drs,
+    LINALG::Matrix<nsd_,1>*                           unitnormal
+)
 {
   // local coordinates of the current integration point
   const double* gpcoord = (intpoints.IP().qxg)[gpid];
@@ -2299,6 +2295,7 @@ double DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvalShapeFuncAndIntFac(
     DRT::UTILS::shape_function<distype>(xsi,funct);
     DRT::UTILS::shape_function_deriv1<distype>(xsi,deriv);
   }
+  // only for NURBS!!!
   else
   {
     if (bdrynsd_==2)  // TODO: Nurbs for 2D and 3D
@@ -2327,16 +2324,11 @@ double DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvalShapeFuncAndIntFac(
 
   // compute measure tensor for surface element and the infinitesimal
   // area element drs for the integration
-  double sqrtdetg(0.0);
   LINALG::Matrix<bdrynsd_,bdrynsd_> metrictensor(true);
 
-  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze,deriv,metrictensor, sqrtdetg, normal);
+  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze,deriv,metrictensor, drs, unitnormal);
 
-  // return drs
-  if (drs != NULL)
-    (*drs)=sqrtdetg;
-
-  return intpoints.IP().qwgt[gpid]*sqrtdetg;  // return integration factor
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -2350,7 +2342,7 @@ bool DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::GetKnotVectorAndWeightsForNurbs
     Epetra_SerialDenseVector&                   weights,
     double&                                     normalfac)
 {
-  // TODO: Check function 1D / 2D
+  // TODO: Check function 1D / 2D for Nurbs
   // ehrl
   if (bdrynsd_ == 1)
     dserror("1D line element -> It is not check if it is working.");

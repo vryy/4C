@@ -392,7 +392,7 @@ private:
 
   //! evaluate shape functions/derivatives, metric tensor and
   //! optionally, the infinitesimal area element and the normalized normal vector the at integration point
-  double EvalShapeFuncAndIntFac(
+  void EvalShapeFuncAndIntFac(
       const DRT::UTILS::IntPointsAndWeights<bdrynsd_>&  intpoints,  ///< integration points (in)
       const int                                         iquad,      ///< actual Gauss point (in)
       const LINALG::Matrix<nsd_,iel>&                   xyze,       ///< global coordinates of the element nodes (in)
@@ -401,8 +401,8 @@ private:
       LINALG::Matrix<bdrynsd_,1>&                       xsi,        ///< local coordinates of the gauss points (in)
       LINALG::Matrix<iel,1>&                            funct,      ///< shape functions (in)
       LINALG::Matrix<bdrynsd_,iel>&                     deriv,      ///< derivative of the shape functions (in)
-      LINALG::Matrix<nsd_,1>*                           normal = NULL,  ///< normalized normal vector (out)
-      double*                                           drs = NULL      ///< infinitesimal area element
+      double&                                           drs,      ///< infinitesimal area element
+      LINALG::Matrix<nsd_,1>*                           unitnormal  ///< normalized normal vector (out)
   );
 
   //! evaluate Nurbs specific knots and weights
