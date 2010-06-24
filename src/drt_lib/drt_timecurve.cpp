@@ -478,8 +478,8 @@ void DRT::UTILS::TimeCurveManager::ReadInput(const DRT::INPUT::DatFileReader& re
       break;
 
     // so we have a new time curve
-    curves_.push_back(TimeCurve());
-    TimeCurve& curve = curves_.back();
+    curves_.push_back(rcp(new TimeCurve()));
+    TimeCurve& curve = *(curves_.back());
 
     for (unsigned j=0; j<curves.size(); ++j)
     {
@@ -600,7 +600,7 @@ DRT::UTILS::TimeCurve& DRT::UTILS::TimeCurveManager::Curve(int num)
   if ((curves_.size()< (unsigned int)(num+1)) || num<0)
     dserror("time curve %d not available",num+1);
 
-  return curves_[num];
+  return *(curves_[num]);
 }
 
 
