@@ -74,6 +74,27 @@ quadslave3d_(false)
 		for (int i=0; i<(int)interface_.size(); ++i)
 			quadslave3d_ += interface_[i]->Quadslave3d();
 
+	//----------------------------------------------------------------------
+  // COMPUTE TRAFO MATRIX AND ITS INVERSE
+  //----------------------------------------------------------------------
+	if (Quadslave3d())
+	{
+		trafo_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+		invtrafo_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+
+		// set of already processed nodes
+		// (in order to avoid double-assembly for N interfaces)
+		set<int> donebefore;
+
+		// for all interfaces
+		for (int i=0; i<(int)interface_.size(); ++i)
+			interface_[i]->AssembleTrafo(*trafo_,*invtrafo_,donebefore);
+
+		// FillComplete() transformation matrices
+		trafo_->Complete();
+		invtrafo_->Complete();
+	}
+
 	return;
 }
 
@@ -136,24 +157,6 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   //----------------------------------------------------------------------
   if (Quadslave3d())
   {
-		/**********************************************************************/
-		/* Build transformation matrix T and its inverse                      */
-		/**********************************************************************/
-		trafo_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-		invtrafo_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-
-		// set of already processed nodes
-		// (in order to avoid double-assembly for N interfaces)
-		set<int> donebefore;
-
-		// for all interfaces
-		for (int i=0; i<(int)interface_.size(); ++i)
-			interface_[i]->AssembleTrafo(*trafo_,*invtrafo_,donebefore);
-
-		// FillComplete() transformation matrices
-		trafo_->Complete();
-		invtrafo_->Complete();
-
 		// modify dmatrix_, invd_ and mhatmatrix_
 		RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
 		RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*trafo_,false,*invd_,false,false,false,true);
