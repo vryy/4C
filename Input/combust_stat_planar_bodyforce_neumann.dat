@@ -10,7 +10,12 @@
         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-stationary flow for the COMBUST3 element coupled via planar flame front with (linear) bodyforce and a Neumann condition at the outflow
+- COMBUST3 element
+- stationary flow (1D)
+- coupled at planar flame front (90° angle)
+- combustion interface conditions (varying density)
+- bodyforce (-> linear pressure drop)
+- Neumann outflow condition
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS  120
 NODES     294
@@ -1493,6 +1498,6 @@ NODE 294  	COORD	5.00000000e-01	1.50000006e-01	2.50000004e-02
 // node 257: close to the outflow (right) one element below the top; analytical solution: 5.0
 FLUID DIS 1 NODE  34 POSITION velx     NAME velx     VALUE 2.0e+00   TOLERANCE 1e-10
 FLUID DIS 1 NODE 158 POSITION velx     NAME velx     VALUE 1.5e+00   TOLERANCE 1e-10
-FLUID DIS 1 NODE 137 POSITION pressure NAME pressure VALUE 8.875e+00 TOLERANCE 1e-8
+FLUID DIS 1 NODE 137 POSITION pressure NAME pressure VALUE 9.875e+00 TOLERANCE 1e-8
 FLUID DIS 1 NODE 257 POSITION pressure NAME pressure VALUE 5.0e+00   TOLERANCE 1e-7
 ---------------------------------------------------------------END
