@@ -261,7 +261,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   }
 
   fluidfluidCoupling_ = false;
-  
+
   //create Fluid Fluid Boundary discretization
   vector<string> conditions_to_copy;
   conditions_to_copy.push_back("FluidFluidCoupling");
@@ -277,19 +277,19 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // create node and element distribution with elements and nodes ghosted on all processors
   const Epetra_Map afnoderowmap = *ALEFluidboundarydis_->NodeRowMap();
   const Epetra_Map afelemrowmap = *ALEFluidboundarydis_->ElementRowMap();
-   
+
   // put all boundary nodes and elements onto all processors
   // Create an allreduced Epetra_Map from the given Epetra_Map and give it to all processors
   const Epetra_Map afnodecolmap = *LINALG::AllreduceEMap(afnoderowmap);
   const Epetra_Map afelemcolmap = *LINALG::AllreduceEMap(afelemrowmap);
-  
+
   // redistribute nodes and elements to column (ghost) map
   ALEFluidboundarydis_->ExportColumnNodes(afnodecolmap);
   ALEFluidboundarydis_->ExportColumnElements(afelemcolmap);
-    
+
   const int error = ALEFluidboundarydis_->FillComplete();
   if (error) dserror("ALEFluidboundarydis_->FillComplete() returned error=%d",error);
-      
+
   ALEfluidstate_.afidispnp_  = LINALG::CreateVector(*ALEFluidboundarydis_->DofRowMap(),true);
   ALEfluidstate_.afivelnp_   = LINALG::CreateVector(*ALEFluidboundarydis_->DofRowMap(),true);
   ALEfluidstate_.afidispn_   = LINALG::CreateVector(*ALEFluidboundarydis_->DofRowMap(),true);
@@ -304,7 +304,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   ALEFluidboundarydis_->SetState("ivelcoln"  ,ALEfluidstate_.afiveln_);
   ALEFluidboundarydis_->SetState("ivelcolnm" ,ALEfluidstate_.afivelnm_);
   ALEFluidboundarydis_->SetState("iacccoln"  ,ALEfluidstate_.afiaccn_);
- 
+
 //  if (alefluid_ == true)
 //  {
 //    fluidfluidstate_.gridv_  = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
@@ -960,12 +960,12 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
 //  DRT::PAR::LoadBalancer balancer(discret_);
 //  balancer.Partition();
-//   
+//
   vector<string> conditions_to_copy_mf;
   conditions_to_copy_mf.push_back("MovingFluid");
   conditions_to_copy_mf.push_back("XFEMCoupling");
   Teuchos::RCP<DRT::Discretization> MovingFluiddis_ = DRT::UTILS::CreateDiscretizationFromCondition(discret_, "MovingFluid", "MovingFluid", "VELE3", conditions_to_copy_mf);
-   
+
   for (int iele=0; iele< MovingFluiddis_->NumMyColElements(); iele++)
   {
     DRT::Element* MovingFluidele = MovingFluiddis_->lColElement(iele);
@@ -976,13 +976,13 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       fluidfluidstate_.MovingFluidNodeGIDs_.insert(MovingFluidnode->Id());
     }
   }
-  
-  if (ALEFluidboundarydis_->NumGlobalElements() > 0) 
+
+  if (ALEFluidboundarydis_->NumGlobalElements() > 0)
     ComputeInterfaceAndSetDOFs(ALEFluidboundarydis_);
-    
-  if (!fluidfluidstate_.MovingFluideleGIDs_.empty()) 
+
+  if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
     fluidfluidCoupling_ = true;
- 
+
   if (fluidfluidCoupling_)
   {
     preparefluidfluidboundaryDofset();
@@ -992,7 +992,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   }
   else
     ComputeInterfaceAndSetDOFs(cutterdiscret);
- 
+
   // sysmat might be singular (if we have a purely Dirichlet constrained
   // problem, the pressure mode is defined only up to a constant)
   // in this case, we need a basis vector for the nullspace/kernel
@@ -2934,7 +2934,7 @@ void FLD::XFluidImplicitTimeInt::LiftDrag() const
 void FLD::XFluidImplicitTimeInt::ComputeSurfaceFlowRates() const
 {
 
-  const map<int,double> volumeflowratepersurface = FLD::UTILS::ComputeSurfaceFlowRates(*discret_, state_.velnp_);
+  const map<int,double> volumeflowratepersurface = FLD::UTILS::ComputeFlowRates(*discret_, state_.velnp_, "SurfFlowRate");
 
   if (not volumeflowratepersurface.empty())
   {
@@ -3447,18 +3447,18 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDofset(
    // create node and element distribution with elements and nodes ghosted on all processors
    const Epetra_Map ffnoderowmap = *FluidFluidboundarydis_->NodeRowMap();
    const Epetra_Map ffelemrowmap = *FluidFluidboundarydis_->ElementRowMap();
-  
+
    // put all boundary nodes and elements onto all processors
    // Create an allreduced Epetra_Map from the given Epetra_Map and give it to all processors
    const Epetra_Map ffnodecolmap = *LINALG::AllreduceEMap(ffnoderowmap);
    const Epetra_Map ffelemcolmap = *LINALG::AllreduceEMap(ffelemrowmap);
-  
+
    // redistribute nodes and elements to column (ghost) map
    FluidFluidboundarydis_->ExportColumnNodes(ffnodecolmap);
    FluidFluidboundarydis_->ExportColumnElements(ffelemcolmap);
-  
-   //replace the Dofset of FluidFluidboundarydis with the part of Dofsets of discret. 
-   //Now the GID of FluidFluidboundarydis Dofset is a subset of the GID of discret's Dofset   
+
+   //replace the Dofset of FluidFluidboundarydis with the part of Dofsets of discret.
+   //Now the GID of FluidFluidboundarydis Dofset is a subset of the GID of discret's Dofset
    FluidFluidboundarydis_->FillComplete();
    RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(discret_, FluidFluidboundarydis_);
    discret_->Redistribute(*(discret_->NodeRowMap()), *newcolnodemap);
@@ -3466,12 +3466,12 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDofset(
    FluidFluidboundarydis_->ReplaceDofSet(newdofset);
    const int error = FluidFluidboundarydis_->FillComplete();
    if (error) dserror("FluidFluidboundarydis_->FillComplete() returned error=%d",error);
-  
-   DRT::UTILS::PrintParallelDistribution(*FluidFluidboundarydis_);    
-     
+
+   DRT::UTILS::PrintParallelDistribution(*FluidFluidboundarydis_);
+
    // mesh output needed for post processing in paraview
    FluidFluidboundaryoutput_ = rcp(new IO::DiscretizationWriter(FluidFluidboundarydis_));
-  
+
    // create fluid-fluid interface DOF vectors
    fluidfluidstate_.fidispnp_    = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
    fluidfluidstate_.fivelnp_     = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
