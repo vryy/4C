@@ -195,8 +195,9 @@ void MORTAR::MortarInterface::AddMortarNode(RCP<MORTAR::MortarNode> mrtrnode)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::AddMortarElement(RCP<MORTAR::MortarElement> mrtrele)
 {
-	// check for quadratic 3d slave elements
-	if (mrtrele->IsSlave() && mrtrele->IsQuad3d()) quadslave3d_=true;
+	// check for quadratic 3d slave elements to be modified
+	if (mrtrele->IsSlave() && (mrtrele->Shape()==DRT::Element::quad8 || mrtrele->Shape()==DRT::Element::tri6))
+		quadslave3d_=true;
 
 	idiscret_->AddElement(mrtrele);
 	return;

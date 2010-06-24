@@ -240,18 +240,18 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
 		val[4] = valtmp[4]*5.0/6.0;
 		val[5] = valtmp[5]*5.0/6.0;
 
-		deriv(0,0)= derivtmp[0][0]+(derivtmp[3][0]+derivtmp[5][0])/12.0;
-		deriv(0,1)= derivtmp[0][1]+(derivtmp[3][1]+derivtmp[5][1])/12.0;
-		deriv(1,0)= derivtmp[1][0]+(derivtmp[3][0]+derivtmp[4][0])/12.0;
-		deriv(1,1)= derivtmp[1][1]+(derivtmp[3][1]+derivtmp[4][1])/12.0;
-		deriv(2,0)= derivtmp[2][0]+(derivtmp[4][0]+derivtmp[5][0])/12.0;
-		deriv(2,1)= derivtmp[2][1]+(derivtmp[4][1]+derivtmp[5][1])/12.0;
-		deriv(3,0)= derivtmp[3][0]*5.0/6.0;
-		deriv(3,1)= derivtmp[3][1]*5.0/6.0;
-		deriv(4,0)= derivtmp[4][0]*5.0/6.0;
-		deriv(4,1)= derivtmp[4][1]*5.0/6.0;
-		deriv(5,0)= derivtmp[5][0]*5.0/6.0;
-		deriv(5,1)= derivtmp[5][1]*5.0/6.0;
+		deriv(0,0)= derivtmp(0,0)+(derivtmp(3,0)+derivtmp(5,0))/12.0;
+		deriv(0,1)= derivtmp(0,1)+(derivtmp(3,1)+derivtmp(5,1))/12.0;
+		deriv(1,0)= derivtmp(1,0)+(derivtmp(3,0)+derivtmp(4,0))/12.0;
+		deriv(1,1)= derivtmp(1,1)+(derivtmp(3,1)+derivtmp(4,1))/12.0;
+		deriv(2,0)= derivtmp(2,0)+(derivtmp(4,0)+derivtmp(5,0))/12.0;
+		deriv(2,1)= derivtmp(2,1)+(derivtmp(4,1)+derivtmp(5,1))/12.0;
+		deriv(3,0)= derivtmp(3,0)*5.0/6.0;
+		deriv(3,1)= derivtmp(3,1)*5.0/6.0;
+		deriv(4,0)= derivtmp(4,0)*5.0/6.0;
+		deriv(4,1)= derivtmp(4,1)*5.0/6.0;
+		deriv(5,0)= derivtmp(5,0)*5.0/6.0;
+		deriv(5,1)= derivtmp(5,1)*5.0/6.0;
 
 		break;
 	}
@@ -1177,16 +1177,12 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
   // *********************************************************************
   // 1D dual quadratic shape functions (line3)
   // 2D dual bilinear shape functions (quad4)
-  // 2D dual quadratic shape functions (tri6)
-  // 2D dual serendipity shape functions (quad8)
   // 2D dual biquadratic shape functions (quad9)
-  // (used for interpolation of displacement field)
+  // (used for interpolation of Lagrange multiplier field)
   // (linearization necessary due to adaption for distorted elements !!!)
   // *********************************************************************
   case MORTAR::MortarElement::quaddual1D:
   case MORTAR::MortarElement::bilindual2D:
-  case MORTAR::MortarElement::quaddual2D:
-  case MORTAR::MortarElement::serendipitydual2D:
   case MORTAR::MortarElement::biquaddual2D:
   {
     // establish fundamental data
@@ -1351,6 +1347,175 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 
     break;
   }
+  // *********************************************************************
+	// 2D dual quadratic shape functions (tri6)
+	// 2D dual serendipity shape functions (quad8)
+	// (used for interpolation of Lagrange multiplier field)
+	// (linearization necessary due to adaption for distorted elements !!!)
+  // (including modification of displacement shape functions)
+	// *********************************************************************
+	case MORTAR::MortarElement::quaddual2D:
+	case MORTAR::MortarElement::serendipitydual2D:
+	{
+		// establish fundamental data
+		double detg = 0.0;
+		int nnodes = NumNode();
+		LINALG::SerialDenseMatrix coord(3,nnodes);
+		GetNodalCoords(coord);
+
+		// prepare computation with Gauss quadrature
+		MORTAR::ElementIntegrator integrator(Shape());
+		LINALG::SerialDenseVector val(nnodes);
+		LINALG::SerialDenseMatrix deriv(nnodes,2,true);
+		LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
+		LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+
+		// two-dim arrays of maps for linearization of me/de
+		vector<vector<map<int,double> > > derivme(nnodes,vector<map<int,double> >(nnodes));
+		vector<vector<map<int,double> > > derivde(nnodes,vector<map<int,double> >(nnodes));
+
+		// build me, de, derivme, derivde
+		for (int i=0;i<integrator.nGP();++i)
+		{
+			double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
+			EvaluateShape(gpc, val, deriv, nnodes, true);
+			detg = Jacobian(gpc);
+
+			// directional derivative of Jacobian
+			map<int,double> testmap;
+			typedef map<int,double>::const_iterator CI;
+			DerivJacobian(gpc,testmap);
+
+			// loop over all entries of me/de
+			for (int j=0;j<nnodes;++j)
+				for (int k=0;k<nnodes;++k)
+				{
+					double facme = integrator.Weight(i)*val[j]*val[k];
+					double facde = (j==k)*integrator.Weight(i)*val[j];
+
+					me(j,k)+=facme*detg;
+					de(j,k)+=facde*detg;
+
+					// loop over all directional derivatives
+					for (CI p=testmap.begin();p!=testmap.end();++p)
+					{
+						derivme[j][k][p->first] += facme*(p->second);
+						derivde[j][k][p->first] += facde*(p->second);
+					}
+				}
+		}
+
+		// invert bi-ortho matrix me
+		LINALG::SymmetricInverse(me,nnodes);
+
+		// get solution matrix ae with dual parameters
+		LINALG::SerialDenseMatrix ae(nnodes,nnodes);
+		ae.Multiply('N','N',1.0,de,me,0.0);
+
+		// build linearization of ae and store in derivdual
+		// (this is done according to a quite complex formula, which
+		// we get from the linearization of the biorthogonality condition:
+		// Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
+		typedef map<int,double>::const_iterator CI;
+
+		// loop over all entries of ae (index i,j)
+		for (int i=0;i<nnodes;++i)
+		{
+			for (int j=0;j<nnodes;++j)
+			{
+				// compute Lin(Ae) according to formula above
+				for (int l=0;l<nnodes;++l) // loop over sum l
+				{
+					// part1: Lin(De)*Inv(Me)
+					for (CI p=derivde[i][l].begin();p!=derivde[i][l].end();++p)
+						derivdual[i][j][p->first] += me(l,j)*(p->second);
+
+					// part2: Ae*Lin(Me)*Inv(Me)
+					for (int k=0;k<nnodes;++k) // loop over sum k
+					{
+						for (CI p=derivme[k][l].begin();p!=derivme[k][l].end();++p)
+							derivdual[i][j][p->first] -= ae(i,k)*me(l,j)*(p->second);
+					}
+				}
+			}
+		}
+
+		// cout linearization of Ae
+		//cout << "Analytical A-derivative of Element: " << Id() << endl;
+		//for (int i=0;i<nnodes;++i)
+		//  for (int j=0;j<nnodes;++j)
+		//    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
+		//      cout << "A" << i << j << " " << p->first << " " << p->second << endl;
+    /*
+#ifdef DEBUG
+		// *******************************************************************
+		// FINITE DIFFERENCE check of Lin(Ae)
+		// *******************************************************************
+
+		cout << "FD Check for A-derivative of Element: " << Id() << endl;
+		Epetra_SerialDenseMatrix aeref(ae);
+		double delta = 1e-8;
+		int thedim=3;
+
+		for (int dim=0;dim<thedim;++dim)
+		{
+			for (int node=0;node<nnodes;++node)
+			{
+				// apply FD
+				DRT::Node** mynodes = Nodes();
+				MortarNode* mycnode = static_cast<MortarNode*> (mynodes[node]);
+				mycnode->xspatial()[dim] += delta;
+
+				LINALG::SerialDenseVector val1(nnodes);
+				LINALG::SerialDenseMatrix deriv1(nnodes,2,true);
+				LINALG::SerialDenseMatrix me1(nnodes,nnodes,true);
+				LINALG::SerialDenseMatrix de1(nnodes,nnodes,true);
+
+				// build me, de
+				for (int i=0;i<integrator.nGP();++i)
+				{
+					double gpc1[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
+					EvaluateShape(gpc1, val1, deriv1, nnodes, true);
+					detg = Jacobian(gpc1);
+
+					for (int j=0;j<nnodes;++j)
+						for (int k=0;k<nnodes;++k)
+						{
+							double facme1 = integrator.Weight(i)*val1[j]*val1[k];
+							double facde1 = (j==k)*integrator.Weight(i)*val1[j];
+
+							me1(j,k)+=facme1*detg;
+							de1(j,k)+=facde1*detg;
+						}
+				}
+
+				// invert bi-ortho matrix me
+				LINALG::SymmetricInverse(me1,nnodes);
+
+				// get solution matrix ae with dual parameters
+				LINALG::SerialDenseMatrix ae1(nnodes,nnodes);
+				ae1.Multiply('N','N',1.0,de1,me1,0.0);
+				int col= mycnode->Dofs()[dim];
+
+				cout << "A-Derivative: " << col << endl;
+
+				// FD solution
+				for (int i=0;i<nnodes;++i)
+					for (int j=0;j<nnodes;++j)
+					{
+						double val = (ae1(i,j)-aeref(i,j))/delta;
+						cout << "A" << i << j << " " << val << endl;
+					}
+
+				// undo FD
+				mycnode->xspatial()[dim] -= delta;
+			}
+		}
+		// *******************************************************************
+#endif // #ifdef DEBUG
+    */
+		break;
+	}
   // *********************************************************************
   // 1D modified dual shape functions (linear)
   // (used for interpolation of Lagrange mult. field near boundaries)

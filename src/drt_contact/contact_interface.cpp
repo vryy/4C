@@ -111,6 +111,10 @@ void CONTACT::CoInterface::AddCoNode(RCP<CONTACT::CoNode> cnode)
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AddCoElement(RCP<CONTACT::CoElement> cele)
 {
+	// check for quadratic 3d slave elements to be modified
+  if (cele->IsSlave() && (cele->Shape()==DRT::Element::quad8 || cele->Shape()==DRT::Element::tri6))
+  	quadslave3d_=true;
+
 	idiscret_->AddElement(cele);
 	return;
 }
