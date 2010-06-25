@@ -71,6 +71,12 @@ namespace TSI
     /// outer level time loop (to be implemented by deriving classes)
     void TimeLoop();
 
+    /// time loop for TSI algorithm with one-way coupling
+    void TimeLoopOneWay();
+
+    /// time loop for TSI algorithm with iteration between fields (full coupling)
+    void TimeLoopFull();
+
     /// read restart data
     virtual void ReadRestart(
       int step  ///< step number where the calculation is continued
@@ -82,6 +88,10 @@ namespace TSI
 
     // one-way coupling
 
+    /// solve tempterature equations for current time step
+    /// and return temperatures (coupling towards structure field)
+    Teuchos::RCP<Epetra_Vector> DoThermoStep();
+
     /// solve structure equations for current time step
     void DoStructureStep(Teuchos::RCP<Epetra_Vector> itemp);
 
@@ -89,13 +99,24 @@ namespace TSI
     /// (coupling towards thermo field)
     Teuchos::RCP<Epetra_Vector> DoStructureStep();
 
-    /// solve tempterature equations for current time step
-    /// and return temperatures (coupling towards structure field)
-    Teuchos::RCP<Epetra_Vector> DoThermoStep();
-
     /// solve tempterature equations for current time step with respect to
     /// current velocities
     void DoThermoStep(
+      Teuchos::RCP<Epetra_Vector> idisp,
+      Teuchos::RCP<Epetra_Vector> ivel
+      );
+
+    // iterative (two-way) coupling
+
+    /// Outer Iteration loop
+    void OuterIterationLoop();
+
+    /// solve structure equations for current time step
+    Teuchos::RCP<Epetra_Vector> DoFullStructureStep(Teuchos::RCP<Epetra_Vector> itemp);
+
+    /// solve tempterature equations for current time step with respect to
+    /// current velocities
+    Teuchos::RCP<Epetra_Vector> DoFullThermoStep(
       Teuchos::RCP<Epetra_Vector> idisp,
       Teuchos::RCP<Epetra_Vector> ivel
       );
@@ -108,14 +129,14 @@ namespace TSI
 
     //@}
 
-    //! @name Access methods
-
-    /// velocity calculation given the displacements (like in FSI)
-   Teuchos::RCP<Epetra_Vector> CalcVelocity(
-    Teuchos::RCP<const Epetra_Vector> idispnp
-    ) const;
-
-    //@}
+//    //! @name Access methods
+//
+//    /// velocity calculation given the displacements (like in FSI)
+//   Teuchos::RCP<Epetra_Vector> CalcVelocity(
+//    Teuchos::RCP<const Epetra_Vector> idispnp
+//    ) const;
+//
+//    //@}
 
     /// take current results for converged and save for next time step
     virtual void Update();
@@ -174,7 +195,7 @@ namespace TSI
 //
 //    const TSI::Algorithm& StructureThermoCoupling() const { return coupst_; }
 //
-    
+
     //const Epetra_Comm&          comm_;          // communicator
 
   private:

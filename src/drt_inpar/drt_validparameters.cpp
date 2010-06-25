@@ -1391,11 +1391,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
      "Partitioned TSI solver with various coupling methods"
      );
 
-   // 18.05.10
+   setStringToIntegralParameter<INPAR::TSI::PartitionedCouplingMethod>(
+                                "PARTITIONED","tsi_iterstagg",
+                                "Coupling strategies for partitioned TSI solvers",
+                                tuple<std::string>(
+                                  "tsi_oneway",
+                                  "tsi_iterstagg"
+                                  ),
+                                tuple<INPAR::TSI::PartitionedCouplingMethod>(
+                                  INPAR::TSI::OneWay,
+                                  INPAR::TSI::Iterstagg
+                                  ),
+                                &tsidyn);
+
    // decide in partitioned TSI which one-way coupling should be used
    setStringToIntegralParameter<int>("COUPVARIABLE","Displacement",
                                 "Coupling variable",
-                                tuple<std::string>("Displacement","Temperature"),
+                                tuple<std::string>(
+                                  "Displacement",
+                                  "Temperature"
+                                  ),
                                 tuple<int>(0,1),
                                 &tsidyn);
 

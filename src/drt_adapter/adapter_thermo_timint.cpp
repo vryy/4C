@@ -375,6 +375,17 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::ThermoTimInt::CreateFieldTest()
 
 
 /*----------------------------------------------------------------------*
+ | extract temperature T_{n} for TSI                         dano 06/10 |
+ | (named like in FSI)                                                  |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::ThermoTimInt::ExtractTempn()
+{
+  // call the time integrator and get current temperature T_{n}
+  return thermo_->Temp();
+}
+
+
+/*----------------------------------------------------------------------*
  | extract current temperature T_{n+1} for TSI               dano 03/10 |
  | (named like in FSI)                                                  |
  *----------------------------------------------------------------------*/

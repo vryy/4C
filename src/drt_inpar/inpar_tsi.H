@@ -39,6 +39,14 @@ namespace TSI
 //    RobinRobin
 //  };
 
+  /// Type of partitioned coupling for TSI problems
+  enum PartitionedCouplingMethod
+  {
+    OneWay,
+    Iterstagg
+  };
+
+
 }  // namespace TSI
 
 }  // namespace INPAR

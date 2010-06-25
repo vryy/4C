@@ -207,6 +207,7 @@ COUPVARIABLE                    Temperature  // Displacement,Temperature
 ITEMAX                          1
 MAXTIME                         1
 NUMSTEP                         200
+PARTITIONED                     tsi_oneway  // tsi_iterstagg, tsi_oneway
 RESTARTEVRY                     1
 TIMESTEP                        0.01
 UPRES                           1

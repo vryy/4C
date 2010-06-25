@@ -3,7 +3,8 @@
 ==================================================================
 -------------------------------------------------------------TITLE
 created by pre_exodus on the 21th of June 2010
-geometric linear case: compression of a bar movable only in x-direction
+geometric linear case: dynamic compression of a body movable only 
+in x-direction
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS 	2
 NODES    	12
@@ -57,7 +58,7 @@ THERM_TEMPGRAD                  Current  //  None,No,NO,no,Current,Initial
 --------------------------------------------------------PROBLEM TYP
 ALGEBRA                         Trilinos
 MULTISC_STRUCT                  0
-NUMFIELD                        2 // thr+str
+NUMFIELD                        2  // thr+str
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
@@ -125,7 +126,7 @@ ALPHA_M                         0.5
 BETA                            0.25
 CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
-CONV_CHECK                      None // AbsRes_Or_AbsDis
+CONV_CHECK                      None
 DAMPING                         No
 DELTA                           0.25
 DIVERCONT                       No  // Yes,No,yes,no,YES,NO: Go on with time integration even if Newton-Raphson iteration failed
@@ -251,10 +252,10 @@ COUPVARIABLE                    Displacement  // Displacement,Temperature
 ITEMAX                          1
 MAXTIME                         3
 NUMSTEP                         200
+PARTITIONED                     tsi_oneway  // tsi_iterstagg, tsi_oneway
 RESTARTEVRY                     1
 TIMESTEP                        0.1
 UPRES                           1
-PARTITIONED                     tsi_oneway  // tsi_fullcoupling, tsi_oneway
 -------------------------------------------------------XFEM GENERAL
 -------------------------------------------XFLUID PROJECTION SOLVER
 ----------------------------------------------------------MATERIALS
