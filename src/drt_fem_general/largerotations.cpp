@@ -358,7 +358,9 @@ LINALG::Matrix<4,1> LARGEROTATIONS::inversequaternion(const LINALG::Matrix<4,1>&
 } //LARGEROTATIONS::inversequaternion
 
 /*---------------------------------------------------------------------------------------------------*
- |quaternion product q12 = q2*q1, Crisfield, Vol. 2, equation (16.71)          (public)cyron02/09|
+ |quaternion product q12 = q2*q1, Crisfield, Vol. 2, equation (16.71);                               |
+ |explanation: if q1 and q2 correspond to the rotation matrices R1 and R2, respectively, the compound|
+ |rotation R12 = R2*R1 corresponds to the compound quaternion q12 = q2*q1          (public)cyron02/09|
  *---------------------------------------------------------------------------------------------------*/
 void LARGEROTATIONS::quaternionproduct(const LINALG::Matrix<4,1>& q1,const LINALG::Matrix<4,1>& q2,LINALG::Matrix<4,1>& q12)
 {
