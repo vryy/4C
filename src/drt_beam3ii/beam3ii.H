@@ -387,7 +387,9 @@ private:
   //! nodal triads in quaternion form during the current iteration step
   vector<LINALG::Matrix<4,1> > Qnew_;
   //! triads at Gauss points for exact integration in quaternion at the end of the preceeding time step (required for computation of angular velocity)
-  vector<LINALG::Matrix<4,1> > Qconvgauss_;
+  vector<LINALG::Matrix<4,1> > Qconvmass_;
+  //! current triads at Gauss points for exact integration in quaternion (required for computation of angular velocity)
+  vector<LINALG::Matrix<4,1> > Qnewmass_;
 
   //!rotation angle displacement at nodes; relates to the end of the preceeding time step
   vector<LINALG::Matrix<3,1> > dispthetaconv_;
@@ -532,7 +534,7 @@ private:
 
 
       //Get the applied integrationpoints for exact integration of mass matrix
-      DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
+      DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,lobattointegration));
 
       //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
       vector<LINALG::Matrix<1,nnode> > I(nnode-1);
@@ -554,17 +556,15 @@ private:
 
       //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at the nnode Gauss points for mass matrix according to according to (3.18), Jelenic 1999
       vector<vector<LINALG::Matrix<3,3> > > Itildemass(nnode);
-
-      //vector with rotation matrices at the nnode Gauss points for mass matrix
-      vector<LINALG::Matrix<3,3> > Lambdamass(nnode);
+      
+      //exact Gauss integration requires as many integration points as nodes
+      Qconvmass_.resize(nnode);
+      Qnewmass_.resize(nnode);
 
       //evaluate basis functions
-      evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass,Lambdamass);
+      evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass);
 
-      //exact Gauss integration requires as many integration points as nodes
-      Qconvgauss_.resize(nnode);
-
-
+      
       //Loop through all GPs for exact integration and compute initial jacobi determinant
       for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
       {
@@ -583,9 +583,11 @@ private:
 
         //Store Jacobi determinant with respect to reference configuration
         jacobimass_[numgp]= drdxi.Norm2();
+        
+        //in evaluatebasisfunctionsandtriads Qnewmass_ was initialized; copy that to Qconvmass_
+        Qconvmass_[numgp].PutScalar(0);
+        Qconvmass_[numgp] += Qnewmass_[numgp];
 
-        //save triads at Gauss points for exact integration as quaternions
-        triadtoquaternion(Lambdamass[numgp],Qconvgauss_[numgp]);
 
       }//for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
 
@@ -655,14 +657,13 @@ private:
                                        vector<LINALG::Matrix<3,3> >& Lambda,
                                        const DRT::UTILS::IntegrationPoints1D& gausspointsmass,
                                        vector<LINALG::Matrix<1,nnode> >& Imass,
-                                       vector<vector<LINALG::Matrix<3,3> > >& Itildemass,
-                                       vector<LINALG::Matrix<3,3> >& Lambdamass);
+                                       vector<vector<LINALG::Matrix<3,3> > >& Itildemass);
 
 
 
   //!compute \tilde{I}^i in (3.18), page 152, Jelenic 1999, for all nodes i at a certaom Gauss point
   template<int nnode>
-  void computeItilde(const LINALG::Matrix<3,1>& Psil, const LINALG::Matrix<3,1>& Psilprime, vector<LINALG::Matrix<3,3> >& Itilde,
+  void computeItilde(const LINALG::Matrix<3,1>& Psil, vector<LINALG::Matrix<3,3> >& Itilde,
                      const LINALG::Matrix<3,1>& phiIJ, const LINALG::Matrix<3,3>& Lambdar,
                      const vector<LINALG::Matrix<3,1> >& Psili, const LINALG::Matrix<1,nnode>& funct);
 
@@ -705,10 +706,8 @@ private:
                      const vector<double>&           disp, //!<element disp vector
                      Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                      Epetra_SerialDenseVector* force,
-                     const DRT::UTILS::IntegrationPoints1D& gausspointsmass,
                      vector<LINALG::Matrix<1,nnode> >& Imass,
-                     vector<vector<LINALG::Matrix<3,3> > >& Itildemass,
-                     vector<LINALG::Matrix<3,3> >& Lambdamass);//!< element internal force vector
+                     vector<vector<LINALG::Matrix<3,3> > >& Itildemass);//!< element internal force vector
 
    //!computes damping coefficients for employed friction model
    void MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel);
@@ -721,12 +720,13 @@ private:
    void MyRotationalDamping(ParameterList& params,  //!<parameter list
                            const vector<double>&           vel,  //!< element velocity vector
                            const vector<double>&           disp, //!<element disp vector
-                           Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                           Epetra_SerialDenseVector* force,
-                           const DRT::UTILS::IntegrationPoints1D& gausspointsmass,
-                           vector<LINALG::Matrix<1,nnode> >& Imass,
-                           vector<vector<LINALG::Matrix<3,3> > >& Itildemass,
-                           vector<LINALG::Matrix<3,3> >& Lambdamass);//!< element internal force vector
+                           Epetra_SerialDenseMatrix* stiffmatrix,//!< element stiffness matrix
+                           Epetra_SerialDenseVector* force,      //!< element internal force vector
+                           const DRT::UTILS::IntegrationPoints1D& gausspointsdamping,
+                           const vector<LINALG::Matrix<1,nnode> >& Idamping,
+                           const vector<vector<LINALG::Matrix<3,3> > >& Itildedamping,
+                           const vector<LINALG::Matrix<4,1> >& Qconvdamping,
+                           const vector<LINALG::Matrix<4,1> >& Qnewdamping);
 
    //!computes translational damping forces and stiffness
    template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
@@ -734,9 +734,7 @@ private:
                              const vector<double>&           vel,  //!< element velocity vector
                              const vector<double>&           disp, //!<element disp vector
                              Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                             Epetra_SerialDenseVector* force,
-                             const DRT::UTILS::IntegrationPoints1D& gausspointsmass,
-                             vector<LINALG::Matrix<1,nnode> >& Imass);//!< element internal force vector
+                             Epetra_SerialDenseVector* force);//!< element internal force vector
 
    //!computes stochastic translational forces and resulting stiffness
    template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
@@ -744,21 +742,20 @@ private:
                          const vector<double>&           vel,  //!< element velocity vector
                          const vector<double>&           disp, //!<element disp vector
                          Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                         Epetra_SerialDenseVector* force,
-                         const DRT::UTILS::IntegrationPoints1D& gausspointsmass,
-                         vector<LINALG::Matrix<1,nnode> >& Imass);//!< element internal force vector
+                         Epetra_SerialDenseVector* force);//!< element internal force vector
 
    //!computes stochastic rotational moments and resulting stiffness
    template<int nnode, int randompergauss> //number of nodes, number of random numbers required per Gauss point
    void MyStochasticMoments(ParameterList& params,  //!<parameter list
                          const vector<double>&           vel,  //!< element velocity vector
                          const vector<double>&           disp, //!<element disp vector
-                         Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                         Epetra_SerialDenseVector* force,
-                         const DRT::UTILS::IntegrationPoints1D& gausspointsmass,
-                         vector<LINALG::Matrix<1,nnode> >& Imass,
-                         vector<vector<LINALG::Matrix<3,3> > >& Itildemass,
-                         vector<LINALG::Matrix<3,3> >& Lambdamass);//!< element internal force vector
+                         Epetra_SerialDenseMatrix* stiffmatrix,//!< element stiffness matrix
+                         Epetra_SerialDenseVector* force,      //!< element internal force vector
+                         const DRT::UTILS::IntegrationPoints1D& gausspointsdamping,
+                         const vector<LINALG::Matrix<1,nnode> >& Idamping,
+                         const vector<vector<LINALG::Matrix<3,3> > >& Itildedamping,
+                         const vector<LINALG::Matrix<4,1> >& Qconvdamping,
+                         const vector<LINALG::Matrix<4,1> >& Qnewdamping);
 
    //!computes velocity of background fluid and gradient of that velocity at a certain evaluation point in the physical space and adds respective terms to internal forces and damping matrix
    template<int ndim> //number of dimensions of embedding space

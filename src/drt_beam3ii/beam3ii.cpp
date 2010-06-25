@@ -191,7 +191,8 @@ DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  Qconv_(old.Qconv_),
  Qold_(old.Qold_),
  Qnew_(old.Qnew_),
- Qconvgauss_(old.Qconvgauss_),
+ Qconvmass_(old.Qconvmass_),
+ Qnewmass_(old.Qnewmass_),
  dispthetaconv_(old.dispthetaconv_),
  dispthetaold_(old.dispthetaold_),
  dispthetanew_(old.dispthetanew_),
@@ -298,7 +299,8 @@ void DRT::ELEMENTS::Beam3ii::Pack(vector<char>& data) const
   AddtoPack<4,1>(data,Qconv_);
   AddtoPack<4,1>(data,Qnew_);
   AddtoPack<4,1>(data,Qold_);
-  AddtoPack<4,1>(data,Qconvgauss_);
+  AddtoPack<4,1>(data,Qconvmass_);
+  AddtoPack<4,1>(data,Qnewmass_);
   AddtoPack<3,1>(data,dispthetaconv_);
   AddtoPack<3,1>(data,dispthetaold_);
   AddtoPack<3,1>(data,dispthetanew_);
@@ -340,7 +342,8 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const vector<char>& data)
   ExtractfromPack<4,1>(position,data,Qconv_);
   ExtractfromPack<4,1>(position,data,Qnew_);
   ExtractfromPack<4,1>(position,data,Qold_);
-  ExtractfromPack<4,1>(position,data,Qconvgauss_);
+  ExtractfromPack<4,1>(position,data,Qconvmass_);
+  ExtractfromPack<4,1>(position,data,Qnewmass_);
   ExtractfromPack<3,1>(position,data,dispthetaconv_);
   ExtractfromPack<3,1>(position,data,dispthetaold_);
   ExtractfromPack<3,1>(position,data,dispthetanew_);

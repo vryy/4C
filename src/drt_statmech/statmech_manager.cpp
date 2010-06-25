@@ -2368,6 +2368,8 @@ std::vector<int> StatMechManager::Permutation(const int& N)
      result[i] = result[j];
      result[j] = i;
   }
+  
+  return result;
 
 } // StatMechManager::Permutation
 
