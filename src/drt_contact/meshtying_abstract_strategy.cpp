@@ -61,7 +61,8 @@ CONTACT::MtAbstractStrategy::MtAbstractStrategy(DRT::Discretization& discret, RC
                                                 int dim, RCP<Epetra_Comm> comm, double alphaf) :
 MORTAR::StrategyBase(problemrowmap,params,dim,comm,alphaf),
 probdiscret_(discret),
-interface_(interface)
+interface_(interface),
+dualquadslave3d_(false)
 {
   // ------------------------------------------------------------------------
   // setup global accessible Epetra_Maps
@@ -93,6 +94,46 @@ interface_(interface)
   z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   zold_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   zuzawa_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+
+  //----------------------------------------------------------------------
+	// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+	//----------------------------------------------------------------------
+	// These matrices need to be applied to the slave displacements
+	// in the cases of dual LM interpolation for tet10/hex20 meshes
+	// in 3D. Here, the displacement basis functions have been modified
+	// in order to assure positivity of the D matrix entries and at
+	// the same time biorthogonality. Thus, to scale back the modified
+	// discrete displacements \hat{d} to the nodal discrete displacements
+	// {d}, we have to apply the transformation matrix T and vice versa
+	// with the transformation matrix T^(-1).
+	//----------------------------------------------------------------------
+	INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+	if (shapefcn == INPAR::MORTAR::shape_dual)
+		for (int i=0; i<(int)interface_.size(); ++i)
+			dualquadslave3d_ += interface_[i]->Quadslave3d();
+
+	//----------------------------------------------------------------------
+	// COMPUTE TRAFO MATRIX AND ITS INVERSE
+	//----------------------------------------------------------------------
+	if (Dualquadslave3d())
+	{
+		trafo_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+		invtrafo_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+
+		// set of already processed nodes
+		// (in order to avoid double-assembly for N interfaces)
+		set<int> donebefore;
+
+		// for all interfaces
+		for (int i=0; i<(int)interface_.size(); ++i)
+			interface_[i]->AssembleTrafo(*trafo_,*invtrafo_,donebefore);
+
+		// FillComplete() transformation matrices
+		trafo_->Complete();
+		invtrafo_->Complete();
+	}
+
+	return;
 }
 
 /*----------------------------------------------------------------------*

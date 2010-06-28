@@ -76,6 +76,25 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   // refer call to parent class
   MtAbstractStrategy::MortarCoupling(dis);
  
+  //----------------------------------------------------------------------
+  // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+  //----------------------------------------------------------------------
+  // Concretely, we apply the following transformations:
+  //
+  // D         ---->   D * T^(-1)
+  // D^(-1)    ---->   T * D^(-1)
+  // \hat{M}   ---->   T * \hat{M}
+  //
+  // These modifications are applied once right here, thus the
+  // following code (EvaluateMeshtying) remains unchanged.
+  //----------------------------------------------------------------------
+  if (Dualquadslave3d())
+  {
+		// modify dmatrix_
+		RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+		dmatrix_    = temp1;
+  }
+
   // initialize mortar matrix products
   mtm_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
   mtd_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));

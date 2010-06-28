@@ -144,6 +144,15 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
       return zuzawa_;
     }  
     
+    /*!
+    \brief Get dual quadratic 3d slave element flag
+
+    Returns TRUE if at least one higher-order 3d slave element with
+    dual Lagrange mutliplier shape functions in any interface.
+
+    */
+    virtual const bool& Dualquadslave3d() { return dualquadslave3d_; };
+
     //@}
 
     //! @name Evaluation methods
@@ -403,6 +412,10 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     RCP<Epetra_Vector> z_;                 // current vector of Lagrange multipliers at t_n+1
     RCP<Epetra_Vector> zold_;              // old vector of Lagrange multipliers at t_n
     RCP<Epetra_Vector> zuzawa_;            // vector of Lagrange multipliers from last Uzawa step
+
+    bool                      dualquadslave3d_; // flag indicating whether trafo should be applied
+    RCP<LINALG::SparseMatrix> trafo_;           // transformation matrix T for dual quad 3D case
+    RCP<LINALG::SparseMatrix> invtrafo_;        // inverse trafo matrix T^(-1) for dual quad 3D case
 
 }; // class MtAbstractStrategy
 } // namespace CONTACT

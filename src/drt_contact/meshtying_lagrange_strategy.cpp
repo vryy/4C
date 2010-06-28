@@ -54,47 +54,9 @@ CONTACT::MtLagrangeStrategy::MtLagrangeStrategy(DRT::Discretization& discret, RC
                                                 Teuchos::ParameterList params,
                                                 vector<RCP<MORTAR::MortarInterface> > interface,
                                                 int dim, RCP<Epetra_Comm> comm, double alphaf) :
-MtAbstractStrategy(discret, problemrowmap, params, interface, dim, comm, alphaf),
-quadslave3d_(false)
+MtAbstractStrategy(discret, problemrowmap, params, interface, dim, comm, alphaf)
 {
-	//----------------------------------------------------------------------
-	// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
-	//----------------------------------------------------------------------
-	// These matrices need to be applied to the slave displacements
-	// in the cases of dual LM interpolation for tet10/hex20 meshes
-	// in 3D. Here, the displacement basis functions have been modified
-	// in order to assure positivity of the D matrix entries and at
-	// the same time biorthogonality. Thus, to scale back the modified
-	// discrete displacements \hat{d} to the nodal discrete displacements
-	// {d}, we have to apply the transformation matrix T and vice versa
-	// with the transformation matrix T^(-1).
-	//----------------------------------------------------------------------
-	INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
-	if (shapefcn == INPAR::MORTAR::shape_dual)
-		for (int i=0; i<(int)interface_.size(); ++i)
-			quadslave3d_ += interface_[i]->Quadslave3d();
-
-	//----------------------------------------------------------------------
-  // COMPUTE TRAFO MATRIX AND ITS INVERSE
-  //----------------------------------------------------------------------
-	if (Quadslave3d())
-	{
-		trafo_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-		invtrafo_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-
-		// set of already processed nodes
-		// (in order to avoid double-assembly for N interfaces)
-		set<int> donebefore;
-
-		// for all interfaces
-		for (int i=0; i<(int)interface_.size(); ++i)
-			interface_[i]->AssembleTrafo(*trafo_,*invtrafo_,donebefore);
-
-		// FillComplete() transformation matrices
-		trafo_->Complete();
-		invtrafo_->Complete();
-	}
-
+	// empty constructor body
 	return;
 }
 
@@ -155,7 +117,7 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   // These modifications are applied once right here, thus the
   // following code (EvaluateMeshtying, Recover) remains unchanged.
   //----------------------------------------------------------------------
-  if (Quadslave3d())
+  if (Dualquadslave3d())
   {
 		// modify dmatrix_, invd_ and mhatmatrix_
 		RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
