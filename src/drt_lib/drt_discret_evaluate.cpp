@@ -966,8 +966,11 @@ void DoDirichletConditionXFEM(DRT::Condition&             cond,
             cout << *actnode << endl;
             for (unsigned i=0; i<deg+1; ++i)
             {
-              //value[i] = -6.5;
+#ifdef COMBUST_TESTCOUETTEFLOWDECOUPLED
+              value[i] = -6.5;
+#else
               value[i] = 1.0;
+#endif
             }
           }
 //          // domain with 10 elements in x-direction
@@ -985,8 +988,11 @@ void DoDirichletConditionXFEM(DRT::Condition&             cond,
             cout << *actnode << endl;
             for (unsigned i=0; i<deg+1; ++i)
             {
-              //value[i] = -2.5;
+#ifdef COMBUST_TESTCOUETTEFLOWDECOUPLED
+              value[i] = -2.5;
+#else
               value[i] = 1.0;
+#endif
             }
           }
           else // free x-velocity dof for all other Dirichlet nodes
