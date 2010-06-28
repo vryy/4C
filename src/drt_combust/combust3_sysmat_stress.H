@@ -660,7 +660,7 @@ void SysmatDomainStress(
         tau.Clear();
       }
 
-     //-------------------------------------------
+      //------------------------------------------
       // compute stabilization parameters (3 taus)
       //------------------------------------------
       const double vel_norm = gpvelnp.Norm2();
@@ -989,7 +989,7 @@ void SysmatBoundaryStress(
       GEO::mapEtaBToXiD(*cell, posEtaBoundary, posXiDomain);
 
       //--------------------------------------------------------------------------------------------
-      // compute normal vector (in physical coordinates)
+      // compute normal vector (normed, in physical coordinates)
       // remark: for linear boundary integrastion cells this could be done before the loop over all
       //         Gaussian points
       //--------------------------------------------------------------------------------------------
@@ -1064,9 +1064,9 @@ void SysmatBoundaryStress(
       //jflux(1) = 0.0;
       //jflux(2) = 0.0;
 
-      //------------------------------------------------
-      // evaluate shape functions at this Gaussian point
-      //------------------------------------------------
+      //----------------------------------------------------------------------------
+      // evaluate shape functions and their first derivatives at this Gaussian point
+      //----------------------------------------------------------------------------
       // shape functions for fields with dofs at nodes
       static LINALG::Matrix<numnode,1> funct;
       funct.Clear();
@@ -1164,7 +1164,7 @@ void SysmatBoundaryStress(
       //----------------------------
       // compute spatial integration factor
       const double fac = intpoints.qwgt[iquad]*detXitoEta;
-// TODO clarify
+//TODO clarify
       //const double fac = intpoints.qwgt[iquad]*detXtoXi*detXitoEta;
       // compute total (time and spatial) integration factor (and coefficients of single terms)?
       const double timefacfac = timefac * fac;
@@ -1252,7 +1252,6 @@ void SysmatBoundaryStress(
         shp_jump_visc.dzdy(iparam) = shp_jump_visc.dydz(iparam);
         shp_jump_visc.dzdz(iparam) = visc_minus*enrderxy2_minus(2,iparam) - visc_plus*enrderxy2_plus(2,iparam);
       }
-      //cout << "mean enrichment function: " << shp_mean_visc.d0 << endl;
 
       static XFEM::ApproxFunc<0,shpVecSizeStress> shp_tau_jump;
       static XFEM::ApproxFunc<0,shpVecSizeStress> shp_tau_mean;

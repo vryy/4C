@@ -49,15 +49,15 @@ Maintainer: Florian Henke
 //-------------------------------------------
 // combustion Nitsche boundary integral terms
 //-------------------------------------------
-#define COMBUST_NITSCHE_VISCCONSISTMEAN // turn on/off
-#define COMBUST_NITSCHE_PRESCONSISTMEAN // turn on/off
-//#define COMBUST_NITSCHE_VISCCONSISTJUMP // turn on/off
-#define COMBUST_NITSCHE_VISCADJCONSIST  // turn on/off
-//#define COMBUST_NITSCHE_PRESCONSISTJUMP // turn on/off
-#define COMBUST_NITSCHE_PRESADJCONSIST  // turn on/off pressure adjoint consistency term
-#define COMBUST_NITSCHE_PRESJUMPRHS     // turn on/off pressure/flux jump RHS term
-#define COMBUST_NITSCHE_NITSCHEVEL      // turn on/off Nitsche velocity terms
-//#define COMBUST_NITSCHE_NITSCHEPRES     // turn on/off Nitsche pressure terms
+#define COMBUST_NITSCHE_VISCCONSISTMEAN   // turn on/off
+#define COMBUST_NITSCHE_PRESCONSISTMEAN   // turn on/off
+//#define COMBUST_NITSCHE_VISCCONSISTJUMP   // turn on/off
+#define COMBUST_NITSCHE_VISCADJCONSIST    // turn on/off
+//#define COMBUST_NITSCHE_PRESCONSISTJUMP   // turn on/off
+#define COMBUST_NITSCHE_PRESADJCONSIST    // turn on/off pressure adjoint consistency term
+#define COMBUST_NITSCHE_FLUXJUMP          // turn on/off pressure/flux jump RHS term
+#define COMBUST_NITSCHE_NITSCHEVEL        // turn on/off Nitsche velocity terms
+//#define COMBUST_NITSCHE_NITSCHEPRES       // turn on/off Nitsche pressure terms
 
 //----------------------------------------------------------
 // combustion domain integral terms stress-based formulation
@@ -74,10 +74,13 @@ Maintainer: Florian Henke
 //------------------------------------------------
 //#define COMBUST_STRESS_BASED_CONSISTVISCJUMP    // turn on/off
 //#define COMBUST_STRESS_BASED_CONSISTPRESJUMP    // turn on/off
+#define COMBUST_STRESS_BASED_FLUXJUMP           // turn on/off
 #define COMBUST_STRESS_BASED_CONSISTVISCMEAN    // turn on/off
 #define COMBUST_STRESS_BASED_CONSISTPRESMEAN    // turn on/off
 #define COMBUST_STRESS_BASED_ADJCONSISTVISCJUMP // turn on/off
 #define COMBUST_STRESS_BASED_ADJCONSISTPRESJUMP // turn on/off
+//#define COMBUST_STRESS_BASED_NEUMANN_INFLOW     // turn on/off
+//#define COMBUST_STRESS_BASED_ADVECTIVEFLUX      // turn on/off
 
 #define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_TAU_PLUS
 #define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_TAU_MINUS
@@ -91,9 +94,11 @@ Maintainer: Florian Henke
 //-----------------------------
 // combustion test case options
 //-----------------------------
-//#define COMBUST_TESTCOUETTEFLOW // modify Dirichlet boundary conditions manually for Couette flow test case
+//#define COMBUST_TESTCOUETTEFLOW          // modify Dirichlet boundary conditions manually for Couette flow test case
+//#define COMBUST_TESTCOUETTEFLOWDECOUPLED // velocity jump for combust_stat_inclined_couette_decoupled.dat
 //#define COMBUST_XVELFREE // free Dirichlet boundary conditions x-component manually
 //#define COMBUST_YVELFREE // free Dirichlet boundary conditions y-component manually
+//#define COMBUST_PRESFREE
 
 //----------------------
 // combustion tolerances
