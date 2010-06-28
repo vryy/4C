@@ -24,23 +24,28 @@ Maintainer: Peter Gamnitzer
 
 #undef WRITEOUTSTATISTICS
 
-#include <stdio.h>
-
 #include "fluidimplicitintegration.H"
 #include "time_integration_scheme.H"
-
-#include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_ana.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_mapextractor.H"
+#include "../drt_io/io.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_nodematchingoctree.H"
-#include "drt_periodicbc.H"
-#include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "drt_periodicbc.H"
 #include "fluid_utils.H"
 #include "fluidimpedancecondition.H"
+#include "dyn_smag.H"
+#include "turbulence_statistic_manager.H"
+#include "fluid_utils_mapextractor.H"
+#include "fluid_windkessel_optimization.H"
+
+#ifdef D_ARTNET
+#include "../drt_art_net/art_net_dyn_drt.H"
+#include "../drt_art_net/artnetexplicitintegration.H"
 #include "fluid_coupling_red_models.H"
+#endif // D_ARTNET
 
 #ifdef WRITEOUTSTATISTICS
 #include "../drt_io/io_control.H"
@@ -4146,6 +4151,16 @@ const Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::InvDirichlet(
   dbcmaps_->InsertCondVector(dirichzeros, invtoggle);
   return invtoggle;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> FLD::FluidImplicitTimeInt::VelocityRowMap()
+{ return velpressplitter_.OtherMap(); }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> FLD::FluidImplicitTimeInt::PressureRowMap()
+{ return velpressplitter_.CondMap(); }
 
 
 #endif /* CCADISCRET       */

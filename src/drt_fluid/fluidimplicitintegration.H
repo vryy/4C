@@ -24,80 +24,72 @@ Maintainer: Peter Gamnitzer
 #ifndef FLUIDIMPLICITINTEGRATION_H
 #define FLUIDIMPLICITINTEGRATION_H
 
-#include "turbulence_statistic_manager.H"
-
-#include "../drt_fluid/dyn_smag.H"
-
-#include "fluidimpedancecondition.H"
-#include "fluid_coupling_red_models.H"
-#include "fluid_windkessel_optimization.H"
-#include "fluid_utils_mapextractor.H"
-
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
 #else
 #include "Epetra_SerialComm.h"
 #endif /* PARALLEL */
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../drt_io/io.H"
-#include "drt_periodicbc.H"
-#include "../drt_lib/drt_nodematchingoctree.H"
-#include "../drt_lib/drt_function.H"
-#include "../drt_inpar/inpar_fluid.H"
-
-#include "Epetra_Vector.h"
-#include "Epetra_Operator.h"
-#include "Epetra_RowMatrix.h"
-
-#include <ml_common.h>
-#include <ml_include.h>
-#include <ml_epetra_utils.h>
-#include <ml_epetra.h>
-#include <ml_epetra_operator.h>
-#include <ml_MultiLevelPreconditioner.h>
-#include <ml_agg_genP.h>
-#include <ml_operator.h>
-#include <MLAPI_Error.h>
-#include <MLAPI_CompObject.h>
-#include <MLAPI_TimeObject.h>
-#include <MLAPI_Operator.h>
-#include <MLAPI_Operator_Utils.h>
-#include <MLAPI_MultiVector.h>
-#include <MLAPI_InverseOperator.h>
-#include <MLAPI_Expressions.h>
-#include <MLAPI_BaseOperator.h>
-#include <MLAPI_Workspace.h>
-#include <MLAPI_Aggregation.h>
-#include <MLAPI_Eig.h>
-
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
 #include <Teuchos_TimeMonitor.hpp>
-
-#ifdef D_ARTNET
-#include "../drt_art_net/art_net_dyn_drt.H"
-#include "../drt_art_net/artnetexplicitintegration.H"
-#include "fluid_coupling_red_models.H"
-#endif // D_ARTNET
+#include <Teuchos_ParameterList.hpp>
+#include <Epetra_Vector.h>
+#include <Epetra_Map.h>
+#include "../drt_inpar/inpar_fluid.H"
+#include "../drt_lib/standardtypes_cpp.H" // only due to old FLUID_TIMEINTTYPE
+#include "fluid_utils_mapextractor.H" // should go away
 
 using namespace std;
 using namespace Teuchos;
-using namespace MLAPI;
+
+//forward declarations
+class PeriodicBoundaryConditions;
+
+namespace DRT
+{
+  class Discretization;
+ // class DofSet;
+ // class Condition;
+}
+namespace IO
+{
+  class DiscretizationWriter;
+}
+namespace LINALG
+{
+  class Solver;
+  class SparseMatrix;
+  class MultiMapExtractor;
+  class MapExtractor;
+  class BlockSparseMatrixBase;
+  class SparseOperator;
+}
+#ifdef D_ARTNET
+namespace ART
+{
+  class ArtNetExplicitTimeInt;
+}
+#endif
 
 /// fluid algorithms
 namespace FLD
 {
 
-// forwarded declarations
+// forward declarations
 class TurbulenceStatisticManager;
+class DynSmagFilter;
+namespace UTILS
+{
+  class MapExtractor;
+  class KSPMapExtractor;
+  class FluidImpedanceWrapper;
+  class FluidWkOptimizationWrapper;
+#ifdef D_ARTNET
+  class Fluid_couplingWrapper;
+#endif
+}
 
 /*!
 \brief time integration for fluid problems
@@ -292,9 +284,9 @@ public:
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
   Teuchos::RCP<Epetra_Vector> RobinRHS() { return robinrhs_; }
 
-  LINALG::MapExtractor& VelPresSplitter() { return velpressplitter_; }
-  Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.OtherMap(); }
-  Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.CondMap(); }
+  LINALG::MapExtractor& VelPresSplitter(){ return velpressplitter_; };
+  Teuchos::RCP<const Epetra_Map> VelocityRowMap();
+  Teuchos::RCP<const Epetra_Map> PressureRowMap();
 
   double ResidualScaling() const
   { if (TimIntScheme()==timeint_stationary) return density_;
@@ -415,11 +407,11 @@ protected:
   RCP<DRT::Discretization>      discret_;
   LINALG::Solver&               solver_;
   //! project nullspace (useful for completely Dirichlet bounded problems)
-  bool                        project_;
+  bool                          project_;
   //! integrated basis vector (pressure component)
-  Teuchos::RCP<Epetra_Vector> w_;
+  Teuchos::RCP<Epetra_Vector>   w_;
   //! basis vector for nullspace (vector of ones in the pressure component)
-  Teuchos::RCP<Epetra_Vector> c_;
+  Teuchos::RCP<Epetra_Vector>   c_;
   ParameterList&                params_;
   IO::DiscretizationWriter&     output_;
   //! the processor ID from the communicator
@@ -533,7 +525,7 @@ protected:
   RCP<Epetra_Vector>    residual_;
 
   /// rhs: right hand side vector for linearised flow solution
-  RefCountPtr<Epetra_Vector>    rhs_;
+  RCP<Epetra_Vector>    rhs_;
 
   /// robinrhs_: additional rhs when using robin-BC
   RCP<Epetra_Vector>    robinrhs_;
