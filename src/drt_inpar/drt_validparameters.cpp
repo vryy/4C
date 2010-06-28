@@ -2511,10 +2511,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<INPAR::FLUID::TimeIntegrationScheme>("TIMEINT","One_Step_Theta","Time Integration Scheme",
                                tuple<std::string>(
                                  "Stationary",
-                                 "One_Step_Theta"),
+                                 "One_Step_Theta",
+                                 "Generalized_Alpha"),
                                tuple<INPAR::FLUID::TimeIntegrationScheme>(
                                  INPAR::FLUID::timeint_stationary,
-                                 INPAR::FLUID::timeint_one_step_theta),
+                                 INPAR::FLUID::timeint_one_step_theta,
+                                 INPAR::FLUID::timeint_gen_alpha),
                                &combustcontrol);
 
   /*----------------------------------------------------------------------*/

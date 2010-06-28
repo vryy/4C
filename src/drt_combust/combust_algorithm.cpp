@@ -76,6 +76,9 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
       std::cout << "COMBUST::Algorithm: this is a two-phase flow problem" << std::endl;
   }
 
+  if (Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn,"TIMEINT") != INPAR::FLUID::timeint_gen_alpha)
+    dserror("Generalized Alpha time integration scheme not available for combustion");
+
   // get pointers to the discretizations from the time integration scheme of each field
   // remark: fluiddis cannot be of type "const Teuchos::RCP<const DRT::Dis...>", because parent
   // class. InterfaceHandle only accepts "const Teuchos::RCP<DRT::Dis...>"              henke 01/09

@@ -116,7 +116,8 @@ void combust_dyn()
   //------------------------------------------------------------------------------------------------
   INPAR::FLUID::TimeIntegrationScheme timeintscheme = Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn,"TIMEINT");
 
-  if (timeintscheme == INPAR::FLUID::timeint_one_step_theta)
+  if (timeintscheme == INPAR::FLUID::timeint_one_step_theta or
+      timeintscheme == INPAR::FLUID::timeint_gen_alpha)
   {
     // solve a dynamic combustion problem
     combust_->TimeLoop();

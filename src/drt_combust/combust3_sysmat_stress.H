@@ -294,13 +294,6 @@ void SysmatDomainStress(
   LINALG::Matrix<nsd,numnode> edead(true);
   COMBUST::BodyForce<DISTYPE>(ele, 0.0, edead);
 
-#ifdef DEBUG
-  // check if we really got a list of materials
-  dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
-#endif
-  // get material list for this element
-  const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
-
   // flag for higher order elements
   const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
 
@@ -347,31 +340,16 @@ void SysmatDomainStress(
     //--------------------------------------------------
     // get material parameters for this integration cell
     //--------------------------------------------------
-    int matid = 777;
-    // check on which side of the interface the cell is located
-    if(cell->getDomainPlus()) // cell belongs to burnt domain
-    {
-      matid = 3; // burnt material
-    }
-    else // cell belongs to unburnt domain
-    {
-      matid = 4; // unburnt material
-    }
-    // get material from list of materials
-    Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(matid);
-    // check if we really have a fluid material
-    dsassert(matptr->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
-    const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
-    // get the kinematic viscosity \nu
-    const double kinvisc = mat->Viscosity();
-    // get the density \rho^{n+1}
-    const double densaf = mat->Density();
+    // density \rho^{n+1}
+    double densaf  = -1.0;
+    // dynamic viscosity \mu^{n+1}
+    double dynvisc = -1.0;
+    // set density and dynamic viscosity
+    COMBUST::GetMaterialParams(material, cell->getDomainPlus(), densaf, dynvisc);
     // density \rho^{n}
-    // remark: until the XFEM time integration is done properly, densities from previous and
+    // TODO until the XFEM time integration is done properly, densities from previous and
     // current time steps are identical
     const double densn = densaf;
-    // compute dynamic viscosity \mu
-    const double dynvisc = kinvisc * densaf;
 
     //-----------------------------------------------------------
     // evaluate the enrichment function for this integration cell
@@ -1019,11 +997,12 @@ void SysmatBoundaryStress(
       normal.Clear();
       GEO::computeNormalToSurfaceElement(cell->Shape(), cellXYZDomain, posEtaBoundary, normal);
 
+      // jump in velocity
       LINALG::Matrix<nsd,1> ju(true);
 #if 0
-      //--------------------------------------------------------------------------------
-      // does not make much sense; multiplication of 'ju' by 'normal' yields same result
-      //--------------------------------------------------------------------------------
+      //----------------------------------------------------------------------------------------
+      // remark: does not make much sense; multiplication of 'ju' by 'normal' yields same result
+      //----------------------------------------------------------------------------------------
       static LINALG::Matrix<nsd,1> tang1(true);
       tang1.Clear();
       tang1(0) = cellXYZDomain(0,1) - cellXYZDomain(0,0);
@@ -1062,21 +1041,24 @@ void SysmatBoundaryStress(
       ju(0) = ju_n*normal(0);
       ju(1) = ju_n*normal(1);
       ju(2) = ju_n*normal(2);
-
-      // overwrite velocity jump condition (e.g. for specific test case)
-      //ju(0) = 0.0;
-      //ju(1) = 0.0;
-      //ju(2) = 0.0;
+      //cout << "ju " << ju << endl;
+#ifdef COMBUST_TESTCOUETTEFLOW
+      // overwrite velocity jump condition for shear flow test case
+      ju(0) = -2.0;
+      ju(1) = 0.0;
+      ju(2) = 0.0;
 #endif
 
-      // normal stress jump
+#endif
+
+      // jump in normal stress
       const double jflux_n = -mflux*mflux*(1.0/dens_minus - 1.0/dens_plus);
       // jump of traction vector (stress tensor * normal)
       LINALG::Matrix<nsd,1> jflux(true);
       jflux(0) = jflux_n*normal(0);
       jflux(1) = jflux_n*normal(1);
       jflux(2) = jflux_n*normal(2);
-
+      //cout << "jflux " << jflux_n << endl;
       // overwrite velocity jump condition (e.g. for specific test case)
       //jflux(0) = 0.0;
       //jflux(1) = 0.0;
@@ -1436,11 +1418,11 @@ void SysmatBoundaryStress(
 
 #ifdef COMBUST_STRESS_BASED_FLUXJUMP
       //---------------------------------------------------    |                 |
-      // flux (traction/stress) jump (consistency) term RHS  + |  < v >, j_flux  |
+      // flux (traction/stress) jump (consistency) term RHS  - |  < v >, j_flux  |
       //---------------------------------------------------    |                 |
-      assembler.template Vector<Velx>(shp_mean.d0, timefacfac*jflux(0));
-      assembler.template Vector<Vely>(shp_mean.d0, timefacfac*jflux(1));
-      assembler.template Vector<Velz>(shp_mean.d0, timefacfac*jflux(2));
+      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac*jflux(0));
+      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac*jflux(1));
+      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac*jflux(2));
 
 #if 0
       // j_sigma is a 3x3 Matrix -> j_sigma*normal

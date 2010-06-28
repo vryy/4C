@@ -667,13 +667,6 @@ void SysmatDomainNitsche(
   // dead load in element nodes
   //LINALG::SerialDenseMatrix edeadng_(BodyForce(ele->Nodes(),time));
 
-#ifdef DEBUG
-  // check if we really got a list of materials
-  dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
-#endif
-  // get material list for this element
-  const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
-
   // flag for higher order elements
   const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
 
@@ -697,34 +690,19 @@ void SysmatDomainNitsche(
   //----------------------------------------------------------------------------------------------
   for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
   {
-    //------------------------------------------------------------------------------------------
+    //--------------------------------------------------
     // get material parameters for this integration cell
-    //------------------------------------------------------------------------------------------
-    int matid = 777;
-    // check on which side of the interface the cell is located
-    if(cell->getDomainPlus()) // cell belongs to burnt domain
-    {
-      matid = 3; // burnt material
-    }
-    else // cell belongs to unburnt domain
-    {
-      matid = 4; // unburnt material
-    }
-    // get material from list of materials
-    Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(matid);
-    // check if we really have a fluid material
-    dsassert(matptr->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
-    const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
-    // get the kinematic viscosity \nu
-    const double kinvisc = mat->Viscosity();
-    // get the density \rho^{n+1}
-    const double densaf = mat->Density();
+    //--------------------------------------------------
+    // density \rho^{n+1}
+    double densaf  = -1.0;
+    // dynamic viscosity \mu^{n+1}
+    double dynvisc = -1.0;
+    // set density and dynamic viscosity
+    COMBUST::GetMaterialParams(material, cell->getDomainPlus(), densaf, dynvisc);
     // density \rho^{n}
-    // remark: until the XFEM time integration is done properly, densities from previous and
+    // TODO until the XFEM time integration is done properly, densities from previous and
     // current time steps are identical
     const double densn = densaf;
-    // compute dynamic viscosity \mu
-    const double dynvisc = kinvisc * densaf;
 
     //------------------------------------------------------------------------------------------
     // evaluate the enrichment function for this integration cell

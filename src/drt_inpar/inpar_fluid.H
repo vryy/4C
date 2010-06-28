@@ -100,7 +100,8 @@ namespace INPAR
     enum TimeIntegrationScheme
     {
       timeint_stationary,
-      timeint_one_step_theta
+      timeint_one_step_theta,
+      timeint_gen_alpha
     };
 
     //---------------------------------------------

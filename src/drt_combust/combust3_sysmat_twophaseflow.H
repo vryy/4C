@@ -93,10 +93,6 @@ void SysmatTwoPhaseFlow(
   LINALG::Matrix<nsd,numnode> edead(true);
   COMBUST::BodyForce<DISTYPE>(ele, 0.0, edead);
 
-  // check if we really got a list of materials
-  dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
-  const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
-
   // flag for higher order elements
   const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
 
@@ -120,33 +116,23 @@ void SysmatTwoPhaseFlow(
   // loop over integration cells
   for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
   {
-    //std::cout << "jetzt kommt die Schleife ueber alle Integrationszellen" << std::endl;
-    bool influidplus = cell->getDomainPlus();
-    //        if (influidplus)
-    //         std::cout << "domain + sys " << std::endl;
-    //        else
-    //         std::cout << "domain - sys " << std::endl;
-    int matid = 3;
-    //    XFEM::Enrichment::ApproachFrom   approachdirection = XFEM::Enrichment::approachFromPlus;
-    if (not influidplus)
-    {
-      matid = 4;
-      //          std::cout << "domain - sys " << std::endl;
-      //approachdirection = XFEM::Enrichment::approachFromMinus;
-    }
-
-    Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(matid);
-    dsassert(matptr->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
-    const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
-
-    // get the dynamic viscosity \mu
+    //--------------------------------------------------
+    // get material parameters for this integration cell
+    //--------------------------------------------------
+    // density \rho^{n+1}
+    double densaf  = -1.0;
+    // dynamic viscosity \mu^{n+1}
     // remark: der Wert im input file wird hier als dynamische Viskosität interpretiert
     //         Alternative:
     //         const double kinvisc = mat->Viscosity();
     //         const double dynvisc = kinvisc * dens;
-    const double visc = mat->Viscosity();
-    // get the density \rho
-    const double densaf = mat->Density();
+    double visc = -1.0;
+    // set density and dynamic viscosity
+    COMBUST::GetMaterialParams(material, cell->getDomainPlus(), densaf, visc);
+    // density \rho^{n}
+    // TODO until the XFEM time integration is done properly, densities from previous and
+    // current time steps are identical
+    //const double densn = densaf;
 
     // special getXFEMGaussruleKinkEnr for kink enrichment is called as parabolic shape functions are obtained
     // after multipying N and Psi

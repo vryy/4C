@@ -166,6 +166,72 @@ void fillElementUnknownsArrays(
 }
 
 
+/*------------------------------------------------------------------------------------------------*
+ | get material parameters (constant within the integration cell)                     henke 06/10 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::GetMaterialParams(
+    Teuchos::RCP<const MAT::Material> material, // pointer to material (list)
+    const bool indomplus, // boolean indicating side of the interface
+    double&    dens,      // density
+    double&    dynvisc    // dynamic viscosity
+)
+{
+  //----------------------
+  // get the material type
+  //----------------------
+#ifdef DEBUG
+  // check if we really got a list of materials
+  dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
+#endif
+  // get material list for this element
+  const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
+  // set default id in list of materials
+  int matid = -1;
+  // check on which side of the interface the cell is located
+  if(indomplus) // cell belongs to burnt domain
+  {
+    matid = matlist->MatID(0); // burnt material (first material in material list)
+  }
+  else // cell belongs to unburnt domain
+  {
+    matid = matlist->MatID(1); // unburnt material (second material in material list)
+  }
+  // get material from list of materials
+  Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(matid);
+  INPAR::MAT::MaterialType mattype = matptr->MaterialType();
+
+  // choose from different materials
+  switch(mattype)
+  {
+  //--------------------------------------------------------
+  // Newtonian fluid for incompressible flow (standard case)
+  //--------------------------------------------------------
+  case INPAR::MAT::m_fluid:
+  {
+    const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
+    // get the kinematic viscosity \nu
+    const double kinvisc = mat->Viscosity();
+    // get the density \rho^{n+1}
+    dens = mat->Density();
+    // compute dynamic viscosity \mu
+    dynvisc = kinvisc * dens;
+
+    break;
+  }
+  //------------------------------------------------
+  // different types of materials (to be added here)
+  //------------------------------------------------
+  default:
+    dserror("material type not supported");
+  }
+
+  // security check
+  if (dens < 0 or dynvisc < 0)
+    dserror("material parameters could not be determined");
+  return;
+}
+
+
 /*!
   Calculate matrix and rhs for stationary problem formulation
   */
