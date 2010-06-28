@@ -20,9 +20,8 @@ Maintainer: Georg Bauer
 
 using namespace std;
 
-//#include "../drt_lib/drt_condition_utils.H"
+
 #include "fluid_rotsym_periodicbc_utils.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 using namespace Teuchos;
 

@@ -16,7 +16,9 @@ Maintainer: Georg Bauer
 
 #include "fluid_rotsym_periodicbc_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
-
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_condition.H"
 
 
 using namespace Teuchos;

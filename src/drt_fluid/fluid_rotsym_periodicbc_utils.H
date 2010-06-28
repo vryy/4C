@@ -17,12 +17,19 @@ Maintainer: Georg Bauer
 #define FLUID_ROTSYM_PERIODICBC_UTILS_H
 
 
-#include "Epetra_Vector.h"
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_discret.H"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
 
 using namespace std;
 using namespace Teuchos;
+
+// forward declarations
+namespace DRT
+{
+  class Discretization;
+  class Node;
+  class Condition;
+}
 
 namespace FLD
 {
