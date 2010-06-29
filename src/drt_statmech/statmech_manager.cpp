@@ -1883,6 +1883,14 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
   //creating a random generator object which creates uniformly distributed random numbers in [0;1]
   ranlib::UniformClosed<double> UniformGen;
 
+  /*if FIXEDSEED is set to Yes, reproducible simulations are required. Note: Blitz uses a different
+   *seed for each type of random generator (e.g. normal, uniform, ...); thus former seed e.g. for
+   *normally distributed random generators are not sufficient to guarantee a seed for the generator
+   *UniformGen*/
+  if(Teuchos::getIntegralValue<int>(statmechparams_,"FIXEDSEED"))
+  	UniformGen.seed((unsigned int)(time_/dt));
+
+
   /*creating variable to save crosslinkers to be added in this time step on this processor; these crosslinkers are saved the following way:
    *for each row node an STL vector is saved with the column map LIDs of the nodes to which additional crosslinkers are to be set in this time step;
    *the variable is initialized with empty STL vectors*/
@@ -2375,7 +2383,7 @@ std::vector<int> StatMechManager::Permutation(const int& N)
      result[i] = result[j];
      result[j] = i;
   }
-  
+
   return result;
 
 } // StatMechManager::Permutation
