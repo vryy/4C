@@ -26,6 +26,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 namespace LINALG
 {
@@ -162,7 +163,7 @@ namespace ADAPTER {
     //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const = 0;
 
     /// set initial flow field
-    virtual void SetInitialFlowField(int whichinitialfield,int startfuncno) = 0;
+    virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno) = 0;
 
     ///  set fields for low-Mach-number flow within outer iteration loop
     virtual void SetIterLomaFields(Teuchos::RCP<const Epetra_Vector> scalaraf,

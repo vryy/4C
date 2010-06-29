@@ -55,9 +55,9 @@ namespace INPAR
       initfield_field_by_function,
       initfield_field_by_condition,
       initfield_disturbed_field_by_function,
-      initfield_DISCONTPV_1D,
-      initfield_FLAME_VORTEX_INTERACTION,
-      initfield_RAYTAYMIXFRAC,
+      initfield_discontprogvar_1D,
+      initfield_flame_vortex_interaction,
+      initfield_raytaymixfrac,
       initfield_Lshapeddomain
     };
 

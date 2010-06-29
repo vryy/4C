@@ -1563,20 +1563,23 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  FLUID_DYNAMIC::fncc_L2
                                  ),
                                &fdyn);
-  setStringToIntegralParameter<int>("INITIALFIELD","zero_field",
-                               "Initial Starting Field",
+
+  setStringToIntegralParameter<INPAR::FLUID::InitialField>("INITIALFIELD","zero_field",
+                               "Initial field for fluid problem",
                                tuple<std::string>(
                                  "zero_field",
-                                 "field_from_file",
                                  "field_by_function",
                                  "disturbed_field_from_function",
                                  "FLAME_VORTEX_INTERACTION",
-                                 "SOLWAVE",
-                                 "WAVEBREAKING",
                                  "BELTRAMI-FLOW",
-                                 "KIM-MOIN-FLOW",
-                                 "BREAKING-DAM"),
-                               tuple<int>(0,1,2,3,4,6,7,8,9,10),
+                                 "KIM-MOIN-FLOW"),
+                               tuple<INPAR::FLUID::InitialField>(
+                                     INPAR::FLUID::initfield_zero_field,
+                                     INPAR::FLUID::initfield_field_by_function,
+                                     INPAR::FLUID::initfield_disturbed_field_from_function,
+                                     INPAR::FLUID::initfield_flame_vortex_interaction,
+                                     INPAR::FLUID::initfield_beltrami_flow,
+                                     INPAR::FLUID::initfield_kim_moin_flow),
                                &fdyn);
 
   setStringToIntegralParameter<int>("LIFTDRAG","No",
@@ -2149,9 +2152,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::SCATRA::initfield_field_by_function,
                                    INPAR::SCATRA::initfield_field_by_condition,
                                    INPAR::SCATRA::initfield_disturbed_field_by_function,
-                                   INPAR::SCATRA::initfield_DISCONTPV_1D,
-                                   INPAR::SCATRA::initfield_FLAME_VORTEX_INTERACTION,
-                                   INPAR::SCATRA::initfield_RAYTAYMIXFRAC,
+                                   INPAR::SCATRA::initfield_discontprogvar_1D,
+                                   INPAR::SCATRA::initfield_flame_vortex_interaction,
+                                   INPAR::SCATRA::initfield_raytaymixfrac,
                                    INPAR::SCATRA::initfield_Lshapeddomain),
                                &scatradyn);
 

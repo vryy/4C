@@ -182,7 +182,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres);
 
     /// set initial flow field
-    virtual void SetInitialFlowField(int whichinitialfield,int startfuncno);
+    virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno);
 
     ///  set fields for low-Mach-number flow within outer iteration loop
     virtual void SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,

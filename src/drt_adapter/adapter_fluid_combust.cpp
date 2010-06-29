@@ -43,9 +43,9 @@ ADAPTER::FluidCombust::FluidCombust(Teuchos::RCP<DRT::Discretization> dis,
   // std::cout << "Proc " << fluiddis_->Comm().MyPID() << "ADAPTER::FluidCombust constructor done \n" << endl;
 }
 
-void ADAPTER::FluidCombust::SetInitialFlowField(int whichinitialfield, int startfuncno)
+void ADAPTER::FluidCombust::SetInitialFlowField(const INPAR::FLUID::InitialField initfield, const int startfuncno)
 {
-  return fluid_.SetInitialFlowField(whichinitialfield, startfuncno);
+  return fluid_.SetInitialFlowField(initfield, startfuncno);
 }
 
 Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::TrueResidual()

@@ -239,7 +239,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidProjection::ConvectiveVel()
                 return 1./fluid_.Dt();
         }
 
-        void ADAPTER::FluidProjection::SetInitialFlowField(int whichinitialfield,int startfuncno)
+        void ADAPTER::FluidProjection::SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno)
         {
             dserror("not implemented! todo"); return;
         }

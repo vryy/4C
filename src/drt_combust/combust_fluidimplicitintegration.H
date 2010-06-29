@@ -21,6 +21,7 @@ Maintainer: Florian Henke
 #include "../drt_io/io_ostream0.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_inpar/inpar_combust.H"
+#include "../drt_inpar/inpar_fluid.H"
 #include "combust_flamefront.H"
 #include "combust_interface.H"
 
@@ -154,7 +155,7 @@ public:
   /*!
   \brief set initial flow field, also for analytical test problems
   */
-  void SetInitialFlowField(int whichinitialfield, int startfuncno);
+  void SetInitialFlowField(const INPAR::FLUID::InitialField initfield, const int startfuncno);
 
   /*!
   \brief calculate error between a analytical solution and the

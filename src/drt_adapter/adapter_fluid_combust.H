@@ -163,7 +163,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel(){ dserror("not implemented"); return null; };
 
     /// set initial flow field
-    virtual void SetInitialFlowField(int whichinitialfield, int startfuncno);
+    virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield, const int startfuncno);
 
     virtual Teuchos::RCP<DRT::Discretization> Discretization() { return fluiddis_; }
     virtual Teuchos::RCP<const DRT::DofSet> DofSet() { return fluid_.StandardDofSet(); }

@@ -506,9 +506,9 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::ExtractVelocityPart(Te
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidGenAlpha::SetInitialFlowField(int whichinitialfield,int startfuncno)
+void ADAPTER::FluidGenAlpha::SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno)
 {
-   fluid_.SetInitialFlowField(whichinitialfield,startfuncno);
+   fluid_.SetInitialFlowField(initfield,startfuncno);
    return;
 }
 

@@ -377,8 +377,8 @@ public:
   */
 
   void SetInitialFlowField(
-    int whichinitialfield,
-    int whichfunc
+    const INPAR::FLUID::InitialField initfield,
+    const int whichfunc
     );
 
   /*!

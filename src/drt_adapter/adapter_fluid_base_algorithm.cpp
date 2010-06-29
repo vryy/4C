@@ -208,8 +208,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   fluidtimeparams->set<int>("liftdrag",Teuchos::getIntegralValue<int>(fdyn,"LIFTDRAG"));
 
   // -----------evaluate error for test flows with analytical solutions
-  int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
-  fluidtimeparams->set ("eval err for analyt sol"   ,init);
+  //int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
+  INPAR::FLUID::InitialField initfield = Teuchos::getIntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
+  fluidtimeparams->set ("eval err for analyt sol", initfield);
 
   // ------------------------------------------ form of convective term
   fluidtimeparams->set<string> ("form of convective term", fdyn.get<string>("CONVFORM"));
@@ -481,14 +482,15 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   // set initial field by given function
   // we do this here, since we have direct access to all necessary parameters
-  if(init>0)
+  if(initfield != INPAR::FLUID::initfield_zero_field)
   {
     int startfuncno = fdyn.get<int>("STARTFUNCNO");
-    if (init!=2 and init!=3)
+    if (initfield != INPAR::FLUID::initfield_field_by_function and
+        initfield != INPAR::FLUID::initfield_disturbed_field_from_function)
     {
       startfuncno=-1;
     }
-    fluid_->SetInitialFlowField(init,startfuncno);
+    fluid_->SetInitialFlowField(initfield,startfuncno);
   }
 
   return;

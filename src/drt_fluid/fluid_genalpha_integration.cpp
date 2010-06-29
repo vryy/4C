@@ -20,6 +20,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_fluid/fluid_genalpha_integration.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "fluid_utils.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -2140,15 +2141,16 @@ void FLD::FluidGenAlphaIntegration::AVM3Separation()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
-  int whichinitialfield,
-  int startfuncno
+  const INPAR::FLUID::InitialField initfield,
+  const int startfuncno
  )
 {
 
   //----------------------------------------------------------------------
   // Initialfield from function
   //----------------------------------------------------------------------
-  if(whichinitialfield==2 ||whichinitialfield==3)
+  if(initfield == INPAR::FLUID::initfield_field_by_function or
+     initfield == INPAR::FLUID::initfield_disturbed_field_from_function)
   {
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
@@ -2181,7 +2183,7 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
     //----------------------------------------------------------------------
     // random perturbations for field
     //----------------------------------------------------------------------
-    if (whichinitialfield==3)
+    if (initfield == INPAR::FLUID::initfield_disturbed_field_from_function)
     {
       //
       {
@@ -2292,7 +2294,7 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
   //----------------------------------------------------------------------
   // Initialfield for Beltrami flow
   //----------------------------------------------------------------------
-  else if(whichinitialfield==8)
+  else if(initfield == INPAR::FLUID::initfield_beltrami_flow)
   {
     int gid;
     int lid;
@@ -2417,21 +2419,19 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
 void FLD::FluidGenAlphaIntegration::EvaluateErrorComparedToAnalyticalSol()
 {
 
-  int calcerr = params_.get<int>("eval err for analyt sol");
+  //int calcerr = params_.get<int>("eval err for analyt sol");
+  INPAR::FLUID::InitialField calcerr = Teuchos::getIntegralValue<INPAR::FLUID::InitialField>(params_,"eval err for analyt sol");
 
   //------------------------------------------------------- beltrami flow
   switch (calcerr)
   {
-  case 0:
+  case INPAR::FLUID::initfield_zero_field:
+  case INPAR::FLUID::initfield_field_by_function:
+  case INPAR::FLUID::initfield_disturbed_field_from_function:
+  case INPAR::FLUID::initfield_flame_vortex_interaction:
     // do nothing --- no analytical solution available
     break;
-  case 2:
-    // do nothing --- no analytical solution available
-    break;
-  case 3:
-    // do nothing --- no analytical solution available
-    break;
-  case 8:
+  case INPAR::FLUID::initfield_beltrami_flow:
   {
     // create the parameters for the discretization
     ParameterList eleparams;

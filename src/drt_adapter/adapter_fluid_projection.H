@@ -90,7 +90,7 @@ public:
     virtual double Dt() const;
     virtual void LiftDrag();
 
-    virtual void SetInitialFlowField(int whichinitialfield,int startfuncno);
+    virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno);
 
     virtual void SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,
                                    RCP<const Epetra_Vector> scalaram,

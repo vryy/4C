@@ -104,6 +104,17 @@ namespace INPAR
       timeint_gen_alpha
     };
 
+    /// initial field
+    enum InitialField
+    {
+      initfield_zero_field,
+      initfield_field_by_function,
+      initfield_disturbed_field_from_function,
+      initfield_flame_vortex_interaction,
+      initfield_beltrami_flow,
+      initfield_kim_moin_flow
+    };
+
     //---------------------------------------------
     // some enums which could also be defined here
     //---------------------------------------------

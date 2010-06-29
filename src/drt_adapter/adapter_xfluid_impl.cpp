@@ -1160,9 +1160,9 @@ void ADAPTER::XFluidImpl::MultiCorrector()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::SetInitialFlowField(int whichinitialfield,int startfuncno)
+void ADAPTER::XFluidImpl::SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno)
 {
-  fluid_.SetInitialFlowField(boundarydis_,whichinitialfield,startfuncno);
+  fluid_.SetInitialFlowField(boundarydis_,initfield,startfuncno);
   return;
 }
 

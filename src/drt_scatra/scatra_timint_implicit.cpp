@@ -1662,7 +1662,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
     break;
   }
   // discontinuous 0-1 field for progress variable in 1-D
-  case INPAR::SCATRA::initfield_DISCONTPV_1D:
+  case INPAR::SCATRA::initfield_discontprogvar_1D:
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -1697,7 +1697,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
   // reconstructed initial profile for progress variable in x2-direction from
   // Lessani and Papalexandris (2006), also used in Moureau et al. (2007, 2009),
   // for two-dimensional flame-vortex interaction problem (x2=0-200)
-  case INPAR::SCATRA::initfield_FLAME_VORTEX_INTERACTION:
+  case INPAR::SCATRA::initfield_flame_vortex_interaction:
   {
     // locations separating region 1 from region 2 and region 2 from region 3
     const double loc12 = 98.5;
@@ -1756,7 +1756,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
     break;
   }
   // initial mixture-fraction profile for Rayleigh-Taylor instability
-  case INPAR::SCATRA::initfield_RAYTAYMIXFRAC:
+  case INPAR::SCATRA::initfield_raytaymixfrac:
   {
     // define interface thickness, sinusoidal disturbance wave amplitude and pi
     const double delta = 0.002;

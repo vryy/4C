@@ -50,6 +50,7 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_io/io_control.H"
 #include "../drt_inpar/inpar_xfem.H"
+#include "../drt_inpar/inpar_fluid.H"
 #include "../drt_lib/drt_dofset_transparent.H"
 
 #include "../drt_lib/drt_elementtype.H"
@@ -2476,8 +2477,8 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
     const Teuchos::RCP<DRT::Discretization> cutterdiscret,
-    int whichinitialfield,
-    int startfuncno
+    const INPAR::FLUID::InitialField initfield,
+    const int startfuncno
     )
 {
   cout << "SetInitialFlowField" << endl;
@@ -2497,7 +2498,7 @@ void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
   }
 
   //------------------------------------------------------- beltrami flow
-  if(whichinitialfield == 8)
+  if(initfield == INPAR::FLUID::initfield_beltrami_flow)
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -2576,7 +2577,8 @@ void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
       dserror("dof not on proc");
     }
   }
-  else if(whichinitialfield==2 || whichinitialfield==3)
+  else if(initfield == INPAR::FLUID::initfield_field_by_function or
+         initfield == INPAR::FLUID::initfield_disturbed_field_from_function)
   {
     const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
@@ -2601,7 +2603,7 @@ void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
     }
 
     // add random perturbation
-    if(whichinitialfield==3)
+    if(initfield == INPAR::FLUID::initfield_disturbed_field_from_function)
     {
       const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -2710,21 +2712,18 @@ void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
 void FLD::XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
 
-  int calcerr = params_.get<int>("eval err for analyt sol");
+  //int calcerr = params_.get<int>("eval err for analyt sol");
+  INPAR::FLUID::InitialField calcerr = Teuchos::getIntegralValue<INPAR::FLUID::InitialField>(params_,"eval err for analyt sol");
 
   //------------------------------------------------------- beltrami flow
   switch (calcerr)
   {
-  case 0:
+  case INPAR::FLUID::initfield_zero_field:
+  case INPAR::FLUID::initfield_field_by_function:
+  case INPAR::FLUID::initfield_disturbed_field_from_function:
     // do nothing --- no analytical solution available
     break;
-  case 2:
-    // do nothing --- no analytical solution available
-    break;
-  case 3:
-    // do nothing --- no analytical solution available
-    break;
-  case 8:
+  case INPAR::FLUID::initfield_beltrami_flow:
   {
     // create the parameters for the discretization
     ParameterList eleparams;

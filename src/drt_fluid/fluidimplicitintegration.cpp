@@ -40,6 +40,7 @@ Maintainer: Peter Gamnitzer
 #include "turbulence_statistic_manager.H"
 #include "fluid_utils_mapextractor.H"
 #include "fluid_windkessel_optimization.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #ifdef D_ARTNET
 #include "../drt_art_net/art_net_dyn_drt.H"
@@ -3091,13 +3092,14 @@ void FLD::FluidImplicitTimeInt::AVM3Separation()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::SetInitialFlowField(
-  int whichinitialfield,
-  int startfuncno
+  const INPAR::FLUID::InitialField initfield,
+  const int startfuncno
   )
 {
-  // initial field by (undisturbed) function (whichinitialfield==2)
-  // or disturbed function (whichinitialfield==3)
-  if (whichinitialfield==2 || whichinitialfield==3)
+  // initial field by (undisturbed) function (init==2)
+  // or disturbed function (init==3)
+  if (initfield == INPAR::FLUID::initfield_field_by_function or
+      initfield == INPAR::FLUID::initfield_disturbed_field_from_function)
   {
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
@@ -3119,7 +3121,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
     }
 
     // add random perturbation of certain percentage to function
-    if (whichinitialfield==3)
+    if (initfield == INPAR::FLUID::initfield_disturbed_field_from_function)
     {
       const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -3208,7 +3210,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
   }
   // special initial function: two counter-rotating vortices (2-D) and flame front
   // for flame-vortex interaction problem
-  else if (whichinitialfield == 4)
+  else if (initfield == INPAR::FLUID::initfield_flame_vortex_interaction)
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -3327,7 +3329,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
     if (err!=0) dserror("dof not on proc");
   }
   // special initial function: Beltrami flow (3-D)
-  else if (whichinitialfield == 8)
+  else if (initfield == INPAR::FLUID::initfield_beltrami_flow)
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -3572,24 +3574,19 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
 void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
 
-  int calcerr = params_.get<int>("eval err for analyt sol");
+  //int calcerr = params_.get<int>("eval err for analyt sol");
+  INPAR::FLUID::InitialField calcerr = Teuchos::getIntegralValue<INPAR::FLUID::InitialField>(params_,"eval err for analyt sol");
 
   //------------------------------------------------------- beltrami flow
   switch (calcerr)
   {
-  case 0:
+  case INPAR::FLUID::initfield_zero_field:
+  case INPAR::FLUID::initfield_field_by_function:
+  case INPAR::FLUID::initfield_disturbed_field_from_function:
+  case INPAR::FLUID::initfield_flame_vortex_interaction:
     // do nothing --- no analytical solution available
     break;
-  case 2:
-    // do nothing --- no analytical solution available
-    break;
-  case 3:
-    // do nothing --- no analytical solution available
-    break;
-  case 4:
-    // do nothing --- no analytical solution available
-    break;
-  case 8:
+  case INPAR::FLUID::initfield_beltrami_flow:
   {
     // create the parameters for the discretization
     ParameterList eleparams;

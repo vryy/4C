@@ -30,6 +30,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_io/io_ostream0.H"
 #include "../drt_io/io_control.H"
 #include "../drt_xfem/dof_management.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 #include "fluid_utils_mapextractor.H"
 
@@ -200,8 +201,8 @@ public:
   */
   void SetInitialFlowField(
       Teuchos::RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
-      int whichinitialfield,
-      int startfuncno
+      const INPAR::FLUID::InitialField initfield,
+      const int startfuncno
       );
 
   /*!

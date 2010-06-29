@@ -29,22 +29,21 @@ Maintainer: Florian Henke
 
 #include "combust_fluidimplicitintegration.H"
 
+#include "combust3_interpolation.H"
 #include "../drt_fluid/time_integration_scheme.H"
-#include "../drt_io/io_control.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_ana.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_function.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_fluid/fluid_utils.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
 #include "../drt_xfem/enrichment_utils.H"
-
-#include "../drt_fluid/fluid_utils.H"
-#include "combust3_interpolation.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_function.H"
+#include "../drt_lib/standardtypes_cpp.H"
+#include "../linalg/linalg_ana.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 
@@ -1770,8 +1769,8 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
  | various options to initialize the fluid field                                      henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
-    int whichinitialfield,
-    int startfuncno)
+    const INPAR::FLUID::InitialField initfield,
+    const int startfuncno)
 {
   std::cout << "SetInitialFlowField() wird ausgeführt!" << endl;
 
@@ -1781,7 +1780,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
   }
 
   //------------------------------------------------------- beltrami flow
-  if(whichinitialfield == 8)
+  if(initfield == INPAR::FLUID::initfield_beltrami_flow)
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -1860,7 +1859,8 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
       dserror("dof not on proc");
     }
   }
-  else if(whichinitialfield==2 || whichinitialfield==3)
+  else if(initfield == INPAR::FLUID::initfield_field_by_function or
+          initfield == INPAR::FLUID::initfield_disturbed_field_from_function)
   {
     const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
@@ -1884,7 +1884,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
     }
 
     // add random perturbation
-    if(whichinitialfield==3)
+    if(initfield == INPAR::FLUID::initfield_disturbed_field_from_function)
     {
       const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
@@ -1988,21 +1988,19 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
 void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
 
-  int calcerr = params_.get<int>("eval err for analyt sol");
+  //int calcerr = params_.get<int>("eval err for analyt sol");
+  INPAR::FLUID::InitialField calcerr = Teuchos::getIntegralValue<INPAR::FLUID::InitialField>(params_,"eval err for analyt sol");
 
   //------------------------------------------------------- beltrami flow
   switch (calcerr)
   {
-  case 0:
+  case INPAR::FLUID::initfield_zero_field:
+  case INPAR::FLUID::initfield_field_by_function:
+  case INPAR::FLUID::initfield_disturbed_field_from_function:
+  case INPAR::FLUID::initfield_flame_vortex_interaction:
     // do nothing --- no analytical solution available
     break;
-  case 2:
-    // do nothing --- no analytical solution available
-    break;
-  case 3:
-    // do nothing --- no analytical solution available
-    break;
-  case 8:
+  case INPAR::FLUID::initfield_beltrami_flow:
   {
     // create the parameters for the discretization
     ParameterList eleparams;
