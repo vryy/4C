@@ -180,6 +180,15 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     */
     const vector<RCP<CONTACT::CoInterface> > ContactInterfaces() { return interface_; }
 
+    /*!
+    \brief Get dual quadratic 3d slave element flag
+
+    Returns TRUE if at least one higher-order 3d slave element with
+    dual Lagrange mutliplier shape functions in any interface.
+
+    */
+    virtual const bool& Dualquadslave3d() { return dualquadslave3d_; };
+
     //@}
 
     //! @name Evaluation methods
@@ -527,6 +536,10 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     bool isincontact_;        // flag indicating global contact status
     bool isselfcontact_;      // flag indicating potential self contact
     bool friction_;           // flag for frictional contact
+
+    bool                       dualquadslave3d_; // flag indicating whether trafo should be applied
+    RCP<LINALG::SparseMatrix>  trafo_;           // transformation matrix T for dual quad 3D case
+    RCP<LINALG::SparseMatrix>  invtrafo_;        // inverse trafo matrix T^(-1) for dual quad 3D case
 
 }; // class CoAbstractStrategy
 } // namespace CONTACT

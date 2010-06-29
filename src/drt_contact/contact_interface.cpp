@@ -498,12 +498,8 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
     SplitIntElements(sele,sauxelements);
 
     // different options for mortar integration
-    if (lmtype == INPAR::MORTAR::lagmult_quad_quad)
+    if (lmtype == INPAR::MORTAR::lagmult_quad_quad || lmtype == INPAR::MORTAR::lagmult_lin_lin)
     {
-      // check whether this is feasible (ONLY for quad9 surfaces)
-      if (sele.Shape()==DRT::Element::quad8 || sele.Shape()==DRT::Element::tri6)
-        dserror("ERROR: Quadratic/Quadratic LM interpolation for 3D quadratic contact only feasible for quad9-surfaces");
-            
       // do the element integration of kappa and store into gap
       int nrow = sele.NumNode();
       RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
@@ -533,21 +529,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
         integrator.AssembleG(Comm(),*(sauxelements[i]),*gseg);
       }
     }
-    
-    else if (lmtype == INPAR::MORTAR::lagmult_lin_lin)
-    {
-      // do the element integration of kappa and store into gap
-      int nrow = sele.NumNode();
-      RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
 
-      // create a CONTACT integrator instance with correct NumGP and Dim
-      CONTACT::CoIntegrator integrator(shapefcn_,sele.Shape());
-      integrator.IntegrateKappaPenalty(sele,sxia,sxib,gseg);
-
-      // do the assembly into the slave nodes
-      integrator.AssembleG(Comm(),sele,*gseg);
-    }
-    
     else
     {
       dserror("ERROR: IntegrateKappaPenalty: Invalid case for 3D mortar contact LM interpolation");

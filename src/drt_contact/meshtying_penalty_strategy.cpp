@@ -80,11 +80,8 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
   //----------------------------------------------------------------------
   // Concretely, we apply the following transformations:
-  //
   // D         ---->   D * T^(-1)
   // D^(-1)    ---->   T * D^(-1)
-  // \hat{M}   ---->   T * \hat{M}
-  //
   // These modifications are applied once right here, thus the
   // following code (EvaluateMeshtying) remains unchanged.
   //----------------------------------------------------------------------

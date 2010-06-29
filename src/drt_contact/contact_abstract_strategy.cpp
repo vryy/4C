@@ -47,6 +47,7 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
+#include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
 
@@ -63,7 +64,8 @@ MORTAR::StrategyBase(problemrowmap,params,dim,comm,alphaf),
 interface_(interface),
 isincontact_(false),
 isselfcontact_(false),
-friction_(false)
+friction_(false),
+dualquadslave3d_(false)
 {
   // set potential global self contact status
   // (this is TRUE if at least one contact interface is a self contact interface)
@@ -139,6 +141,46 @@ friction_(false)
   // output contact stress vectors
   stressnormal_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   stresstangential_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+
+  //----------------------------------------------------------------------
+	// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+	//----------------------------------------------------------------------
+	// These matrices need to be applied to the slave displacements
+	// in the cases of dual LM interpolation for tet10/hex20 meshes
+	// in 3D. Here, the displacement basis functions have been modified
+	// in order to assure positivity of the D matrix entries and at
+	// the same time biorthogonality. Thus, to scale back the modified
+	// discrete displacements \hat{d} to the nodal discrete displacements
+	// {d}, we have to apply the transformation matrix T and vice versa
+	// with the transformation matrix T^(-1).
+	//----------------------------------------------------------------------
+	INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+	if (shapefcn == INPAR::MORTAR::shape_dual)
+		for (int i=0; i<(int)interface_.size(); ++i)
+			dualquadslave3d_ += interface_[i]->Quadslave3d();
+
+	//----------------------------------------------------------------------
+	// IF SO, COMPUTE TRAFO MATRIX AND ITS INVERSE
+	//----------------------------------------------------------------------
+	if (Dualquadslave3d())
+	{
+		trafo_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+		invtrafo_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+
+		// set of already processed nodes
+		// (in order to avoid double-assembly for N interfaces)
+		set<int> donebefore;
+
+		// for all interfaces
+		for (int i=0; i<(int)interface_.size(); ++i)
+			interface_[i]->AssembleTrafo(*trafo_,*invtrafo_,donebefore);
+
+		// FillComplete() transformation matrices
+		trafo_->Complete();
+		invtrafo_->Complete();
+	}
+
+	return;
 }
 
 /*----------------------------------------------------------------------*
@@ -211,10 +253,10 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
 void CONTACT::CoAbstractStrategy::InitEvalMortar()
 {
   // for self contact, slave and master sets may have changed,
-  // thus we have to update them befor initialiting D,M etc.
+  // thus we have to update them before initializing D,M etc.
   if (IsSelfContact()) UpdateMasterSlaveSetsGlobal();
 
-  // intitialize Dold and Mold if not done already
+  // initialize Dold and Mold if not done already
   if (dold_==null)
   {
     dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
@@ -294,6 +336,19 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(const RCP<Epetra_Vector
   InitEvalInterface();
   InitEvalMortar();
   
+  //----------------------------------------------------------------------
+	// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+	//----------------------------------------------------------------------
+	// Concretely, we apply the following transformations:
+	// D         ---->   D * T^(-1)
+	//----------------------------------------------------------------------
+	if (Dualquadslave3d())
+	{
+		// modify dmatrix_
+		RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+		dmatrix_ = temp;
+	}
+
   // store contact state to contact nodes (active or inactive)
   StoreNodalQuantities(MORTAR::StrategyBase::activeold);
 
@@ -756,6 +811,19 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   // in the case of SELF CONTACT, also re-setup master/slave maps
   InitEvalInterface();
   InitEvalMortar();
+
+  //----------------------------------------------------------------------
+	// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+	//----------------------------------------------------------------------
+	// Concretely, we apply the following transformations:
+	// D         ---->   D * T^(-1)
+	//----------------------------------------------------------------------
+	if (Dualquadslave3d())
+	{
+		// modify dmatrix_
+		RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+		dmatrix_ = temp;
+	}
 
   // read restart information on actice set and slip set
   RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*gsnoderowmap_));

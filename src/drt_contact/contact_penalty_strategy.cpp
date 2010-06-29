@@ -243,6 +243,24 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   linmmatrix_->Complete(*gsmdofs, *gmdofrowmap_);
   linzmatrix_->Complete(*gsmdofs, *gsdofrowmap_);
 
+  //----------------------------------------------------------------------
+  // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+  //----------------------------------------------------------------------
+  // Concretely, we apply the following transformations:
+  // LinD      ---->   T^(-T) * LinD
+  // D         ---->   D * T^(-1)
+  //----------------------------------------------------------------------
+  if (Dualquadslave3d())
+  {
+  	dserror("ERROR: Dual LM penalty version not yet fully impl. for 3D quadratic contact");
+
+  	// modify lindmatrix_ and dmatrix_
+  	RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*invtrafo_,true,*lindmatrix_,false,false,false,true);
+  	RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+  	lindmatrix_ = temp1;
+ 	  dmatrix_    = temp2;
+  }
+
 #ifdef CONTACTFDPENALTYTRAC
   INPAR::CONTACT::FrictionType ftype =
     Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");

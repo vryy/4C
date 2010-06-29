@@ -2632,6 +2632,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrow);
   LINALG::SerialDenseMatrix sderiv(nrow,2,true);
+  LINALG::SerialDenseVector svalmod(nrow);
+  LINALG::SerialDenseMatrix sderivmod(nrow,2,true);
   LINALG::SerialDenseVector mval(ncol);
   LINALG::SerialDenseMatrix mderiv(ncol,2,true);
   LINALG::SerialDenseVector lmval(nrow);
@@ -2687,6 +2689,15 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     bound += mymrtrnode->IsOnBound();
   }
   
+  // decide whether displacement shape fct. modification has to be considered or not
+  // this is the case for dual quadratic Lagrange multipliers on quad8 and tri6 elements
+  bool dualquad3d = false;
+  if ( (shapefcn_ == INPAR::MORTAR::shape_dual) && (lmtype == INPAR::MORTAR::lagmult_quad_quad)
+    && (sele.Shape() == DRT::Element::quad8 || sele.Shape() == DRT::Element::tri6) )
+  {
+  	dualquad3d = true;
+  }
+
   //**********************************************************************
   // loop over all Gauss points for integration
   //**********************************************************************
@@ -2779,6 +2790,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     
     // evaluate trace space shape functions (on both elements)
     sele.EvaluateShape(psxi,sval,sderiv,nrow);
+    if (dualquad3d) sele.EvaluateShape(psxi,svalmod,sderivmod,nrow,true);
     mele.EvaluateShape(pmxi,mval,mderiv,ncol);
 
     // evaluate the integration cell Jacobian
@@ -3539,7 +3551,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
           if (duallin)
             for (int m=0; m<nrow; ++m)
             {
-              fac = wgt*sval[m]*mval[k]*jac;
+              if (dualquad3d) fac = wgt*svalmod[m]*mval[k]*jac;
+              else            fac = wgt*sval[m]*mval[k]*jac;
               for (CI p=dualmap[j][m].begin(); p!=dualmap[j][m].end(); ++p)
               {
                 dmmap_jk[p->first] += fac*(p->second);

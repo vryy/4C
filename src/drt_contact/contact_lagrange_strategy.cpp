@@ -60,7 +60,8 @@ activesetssconv_(false),
 activesetconv_(false),
 activesetsteps_(1)
 {
-  // empty constructor
+	// empty constructor body
+	return;
 }
 
 /*----------------------------------------------------------------------*
@@ -164,6 +165,19 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
   linslipLM_->Complete(*gslipdofs_,*gslipt_);
   linslipDIS_->Complete(*gsmdofs,*gslipt_);
   
+  //----------------------------------------------------------------------
+	// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+	//----------------------------------------------------------------------
+	// Concretely, we apply the following transformations:
+  // LinD      ---->   T^(-T) * LinD
+	//----------------------------------------------------------------------
+	if (Dualquadslave3d())
+	{
+		// modify lindmatrix_
+		RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*invtrafo_,true,*lindmatrix_,false,false,false,true);
+		lindmatrix_   = temp1;
+	}
+
   // shape function and system types
   INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
   INPAR::CONTACT::SystemType systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
@@ -203,6 +217,17 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
 
     // do the multiplication M^ = inv(D) * M
     mhatmatrix_ = LINALG::MLMultiply(*invd,false,*mmatrix_,false,false,false);
+
+    /**********************************************************************/
+    /* Add contact stiffness terms to kteff                               */
+    /**********************************************************************/
+    if (fulllin)
+    {
+      kteff->UnComplete();
+      kteff->Add(*lindmatrix_,false,1.0-alphaf_,1.0);
+      kteff->Add(*linmmatrix_,false,1.0-alphaf_,1.0);
+      kteff->Complete();
+    }
 
     /**********************************************************************/
     /* Split kteff into 3x3 block matrix                                  */
@@ -252,6 +277,27 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     ksm_  = ksm;
     kss_  = kss;
 
+    //----------------------------------------------------------------------
+		// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+		//----------------------------------------------------------------------
+		// Concretely, we apply the following transformations:
+		// D         ---->   D * T^(-1)
+		// D^(-1)    ---->   T * D^(-1)
+		// \hat{M}   ---->   T * \hat{M}
+		//----------------------------------------------------------------------
+		if (Dualquadslave3d())
+		{
+			dserror("ERROR: Dual LM condensation not yet fully impl. for 3D quadratic contact");
+
+			// modify dmatrix_, invd_ and mhatmatrix_
+			RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+			RCP<LINALG::SparseMatrix> temp3 = LINALG::MLMultiply(*trafo_,false,*invd_,false,false,false,true);
+			RCP<LINALG::SparseMatrix> temp4 = LINALG::MLMultiply(*trafo_,false,*mhatmatrix_,false,false,false,true);
+			dmatrix_    = temp2;
+			invd_       = temp3;
+			mhatmatrix_ = temp4;
+		}
+
     /**********************************************************************/
     /* Split slave quantities into active / inactive                      */
     /**********************************************************************/
@@ -269,37 +315,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     LINALG::SplitMatrix2x2(ksn,gactivedofs_,gidofs,gndofrowmap_,tempmap,kan,tempmtx1,kin,tempmtx2);
     LINALG::SplitMatrix2x2(ksm,gactivedofs_,gidofs,gmdofrowmap_,tempmap,kam,tempmtx1,kim,tempmtx2);
     LINALG::SplitMatrix2x2(kms,gmdofrowmap_,tempmap,gactivedofs_,gidofs,kma,kmi,tempmtx1,tempmtx2);
-
-    /**********************************************************************/
-    /* Split LinD and LinM into blocks                                    */
-    /**********************************************************************/
-    // we want to split lindmatrix_ into 3 groups a,i,m = 3 blocks
-    RCP<LINALG::SparseMatrix> lindai, lindaa, lindam, lindas;
-
-    // we want to split linmmatrix_ into 3 groups a,i,m = 3 blocks
-    RCP<LINALG::SparseMatrix> linmmi, linmma, linmmm, linmms;
-
-    if (fulllin)
-    {
-      // do the splitting
-      LINALG::SplitMatrix2x2(lindmatrix_,gactivedofs_,gidofs,gmdofrowmap_,gsdofrowmap_,lindam,lindas,tempmtx1,tempmtx2);
-      LINALG::SplitMatrix2x2(lindas,gactivedofs_,tempmap,gactivedofs_,gidofs,lindaa,lindai,tempmtx1,tempmtx2);
-      LINALG::SplitMatrix2x2(linmmatrix_,gmdofrowmap_,tempmap,gmdofrowmap_,gsdofrowmap_,linmmm,linmms,tempmtx1,tempmtx2);
-      LINALG::SplitMatrix2x2(linmms,gmdofrowmap_,tempmap,gactivedofs_,gidofs,linmma,linmmi,tempmtx1,tempmtx2);
-
-      // modification of kai, kaa, kam
-      // (this has to be done first as they are needed below)
-      // (note, that kai, kaa, kam have to be UNcompleted again first!!!)
-      kai->UnComplete();
-      kaa->UnComplete();
-      kam->UnComplete();
-      kai->Add(*lindai,false,1.0-alphaf_,1.0);
-      kaa->Add(*lindaa,false,1.0-alphaf_,1.0);
-      kam->Add(*lindam,false,1.0-alphaf_,1.0);
-      kai->Complete(*gidofs,*gactivedofs_);
-      kaa->Complete();
-      kam->Complete(*gmdofrowmap_,*gactivedofs_);
-    }
     
     /**********************************************************************/
     /* Split active quantities into slip / stick                          */
@@ -346,9 +361,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     /* Isolate slip part from T                                           */
     /**********************************************************************/
 
-    RCP<LINALG::SparseMatrix> mhata, mhatst;
+    RCP<LINALG::SparseMatrix> mhata;
     LINALG::SplitMatrix2x2(mhatmatrix_,gactivedofs_,gidofs,gmdofrowmap_,tempmap,mhata,tempmtx1,tempmtx2,tempmtx3);
-    //mhata_=mhata;
 
     RCP<LINALG::SparseMatrix> invda, invdsl, invdst;
     LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
@@ -398,15 +412,14 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     kmnmod->Add(*kmnadd,false,1.0,1.0);
     kmnmod->Complete(kmn->DomainMap(),kmn->RowMap());
     
-    // kmm: add T(mbaractive)*kam and linmn
+    // kmm: add T(mbaractive)*kam
     RCP<LINALG::SparseMatrix> kmmmod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
     kmmmod->Add(*kmm,false,1.0,1.0);
     RCP<LINALG::SparseMatrix> kmmadd = LINALG::MLMultiply(*mhata,true,*kam,false,false,false,true);
     kmmmod->Add(*kmmadd,false,1.0,1.0);
-    if (fulllin) kmmmod->Add(*linmmm,false,1.0-alphaf_,1.0);
     kmmmod->Complete(kmm->DomainMap(),kmm->RowMap());
 
-    // kmi: add T(mbaractive)*kai and linmi
+    // kmi: add T(mbaractive)*kai
     RCP<LINALG::SparseMatrix> kmimod;
     if (iset)
     {
@@ -414,11 +427,10 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
       kmimod->Add(*kmi,false,1.0,1.0);
       RCP<LINALG::SparseMatrix> kmiadd = LINALG::MLMultiply(*mhata,true,*kai,false,false,false,true);
       kmimod->Add(*kmiadd,false,1.0,1.0);
-      if (fulllin) kmimod->Add(*linmmi,false,1.0-alphaf_,1.0);
       kmimod->Complete(kmi->DomainMap(),kmi->RowMap());
     }
    
-    // kma: add T(mbaractive)*kaa and linma
+    // kma: add T(mbaractive)*kaa
     RCP<LINALG::SparseMatrix> kmamod;
     if (aset)
     {
@@ -426,7 +438,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
       kmamod->Add(*kma,false,1.0,1.0);
       RCP<LINALG::SparseMatrix> kmaadd = LINALG::MLMultiply(*mhata,true,*kaa,false,false,false,true);
       kmamod->Add(*kmaadd,false,1.0,1.0);
-      if (fulllin) kmamod->Add(*linmma,false,1.0-alphaf_,1.0);
       kmamod->Complete(kma->DomainMap(),kma->RowMap());
     }
 
@@ -631,7 +642,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     }
 
     // add full linearization terms to kteffnew
-   if (fulllin)
+    if (fulllin)
     {
      if (aset) kteffnew->Add(*smatrix_,false,-1.0,1.0);
     }
@@ -736,7 +747,20 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
   //**********************************************************************
   else
   {
-    // add contact stiffness
+    //----------------------------------------------------------------------
+  	// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+  	//----------------------------------------------------------------------
+  	// Concretely, we apply the following transformations:
+  	// D         ---->   D * T^(-1)
+  	//----------------------------------------------------------------------
+  	if (Dualquadslave3d())
+  	{
+  		// modify dmatrix_
+  		RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+  		dmatrix_    = temp2;
+  	}
+
+  	// add contact stiffness
     kteff->UnComplete();
     kteff->Add(*lindmatrix_,false,1.0-alphaf_,1.0);
     kteff->Add(*linmmatrix_,false,1.0-alphaf_,1.0);
@@ -879,6 +903,19 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
   lindmatrix_->Complete(*gsmdofs,*gsdofrowmap_);
   linmmatrix_->Complete(*gsmdofs,*gmdofrowmap_);
 
+  //----------------------------------------------------------------------
+	// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+	//----------------------------------------------------------------------
+	// Concretely, we apply the following transformations:
+  // LinD      ---->   T^(-T) * LinD
+	//----------------------------------------------------------------------
+	if (Dualquadslave3d())
+	{
+		// modify lindmatrix_
+		RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*invtrafo_,true,*lindmatrix_,false,false,false,true);
+		lindmatrix_   = temp1;
+	}
+
   // shape function and system types
   INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
   INPAR::CONTACT::SystemType systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
@@ -985,6 +1022,27 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     ksn_  = ksn;
     ksm_  = ksm;
     kss_  = kss;
+
+    //----------------------------------------------------------------------
+		// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+		//----------------------------------------------------------------------
+		// Concretely, we apply the following transformations:
+		// D         ---->   D * T^(-1)
+		// D^(-1)    ---->   T * D^(-1)
+		// \hat{M}   ---->   T * \hat{M}
+		//----------------------------------------------------------------------
+		if (Dualquadslave3d())
+		{
+			dserror("ERROR: Dual LM condensation not yet fully impl. for 3D quadratic contact");
+
+			// modify dmatrix_, invd_ and mhatmatrix_
+			RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+			RCP<LINALG::SparseMatrix> temp3 = LINALG::MLMultiply(*trafo_,false,*invd_,false,false,false,true);
+			RCP<LINALG::SparseMatrix> temp4 = LINALG::MLMultiply(*trafo_,false,*mhatmatrix_,false,false,false,true);
+			dmatrix_    = temp2;
+			invd_       = temp3;
+			mhatmatrix_ = temp4;
+		}
 
     /**********************************************************************/
     /* Split slave quantities into active / inactive                      */
@@ -1103,7 +1161,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     RCP<LINALG::SparseMatrix> kanmod;
     if (aset)
     {
-      kanmod = LINALG::MLMultiply(*tmatrix_,false,*invda,false,false,false,true);
+      kanmod = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
       kanmod = LINALG::MLMultiply(*kanmod,false,*kan,false,false,false,true);
     }
 
@@ -1116,7 +1174,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
       RCP<LINALG::SparseMatrix> kamadd = LINALG::MLMultiply(*kas,false,*mhatmatrix_,false,false,false,true);
       kammod->Add(*kamadd,false,1.0,1.0);
       kammod->Complete(kam->DomainMap(),kam->RowMap());
-      kammod = LINALG::MLMultiply(*invda,false,*kammod,false,false,false,true);
+      kammod = LINALG::MLMultiply(*invda,true,*kammod,false,false,false,true);
       kammod = LINALG::MLMultiply(*tmatrix_,false,*kammod,false,false,false,true);
     }
 
@@ -1124,7 +1182,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     RCP<LINALG::SparseMatrix> kaimod;
     if (aset && iset)
     {
-      kaimod = LINALG::MLMultiply(*tmatrix_,false,*invda,false,false,false,true);
+      kaimod = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
       kaimod = LINALG::MLMultiply(*kaimod,false,*kai,false,false,false,true);
     }
 
@@ -1132,7 +1190,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     RCP<LINALG::SparseMatrix> kaamod;
     if (aset)
     {
-      kaamod = LINALG::MLMultiply(*tmatrix_,false,*invda,false,false,false,true);
+      kaamod = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
       kaamod = LINALG::MLMultiply(*kaamod,false,*kaa,false,false,false,true);
     }
 
@@ -1144,7 +1202,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 
     // fs: subtract alphaf * old contact forces (t_n)
     RCP<Epetra_Vector> fsmod = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dold_->Multiply(false,*zold_,*fsmod);
+    dold_->Multiply(true,*zold_,*fsmod);
     fsmod->Update(1.0,*fs,-alphaf_);
     
     // fi: subtract alphaf * old contact forces (t_n)
@@ -1153,7 +1211,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
       RCP<Epetra_Vector> modi = rcp(new Epetra_Vector(*gidofs));
       LINALG::Export(*zold_,*modi);
       RCP<Epetra_Vector> tempveci = rcp(new Epetra_Vector(*gidofs));
-      doldi->Multiply(false,*modi,*tempveci);
+      doldi->Multiply(true,*modi,*tempveci);
       fi->Update(-alphaf_,*tempveci,1.0);
     }
 
@@ -1163,7 +1221,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
       RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*gactivedofs_));
       LINALG::Export(*zold_,*mod);
       RCP<Epetra_Vector> tempvec = rcp(new Epetra_Vector(*gactivedofs_));
-      dolda->Multiply(false,*mod,*tempvec);
+      dolda->Multiply(true,*mod,*tempvec);
       fa->Update(-alphaf_,*tempvec,1.0);
     }
 
@@ -1201,7 +1259,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     if (aset)
     {
       famod = rcp(new Epetra_Vector(*gactivet_));
-      tinvda = LINALG::MLMultiply(*tmatrix_,false,*invda,false,false,false,true);
+      tinvda = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
       tinvda->Multiply(false,*fa,*famod);
     }
 
@@ -1390,6 +1448,27 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     ksm_  = ksm;
     kss_  = kss;
 
+    //----------------------------------------------------------------------
+  	// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+  	//----------------------------------------------------------------------
+  	// Concretely, we apply the following transformations:
+  	// D         ---->   D * T^(-1)
+  	// D^(-1)    ---->   T * D^(-1)
+  	// \hat{M}   ---->   T * \hat{M}
+  	//----------------------------------------------------------------------
+  	if (Dualquadslave3d())
+  	{
+  		dserror("ERROR: Dual LM condensation not yet fully impl. for 3D quadratic contact");
+
+  		// modify dmatrix_, invd_ and mhatmatrix_
+  		RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+  		RCP<LINALG::SparseMatrix> temp3 = LINALG::MLMultiply(*trafo_,false,*invd_,false,false,false,true);
+  		RCP<LINALG::SparseMatrix> temp4 = LINALG::MLMultiply(*trafo_,false,*mhatmatrix_,false,false,false,true);
+  		dmatrix_    = temp2;
+  		invd_       = temp3;
+  		mhatmatrix_ = temp4;
+  	}
+
     /**********************************************************************/
     /* Split slave quantities into active / inactive                      */
     /**********************************************************************/
@@ -1448,14 +1527,14 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     kmnmod->Add(*kmnadd,false,1.0,1.0);
     kmnmod->Complete(kmn->DomainMap(),kmn->RowMap());
 
-    // kmm: add T(mbaractive)*kam and linmm
+    // kmm: add T(mbaractive)*kam
     RCP<LINALG::SparseMatrix> kmmmod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
     kmmmod->Add(*kmm,false,1.0,1.0);
     RCP<LINALG::SparseMatrix> kmmadd = LINALG::MLMultiply(*mhata,true,*kam,false,false,false,true);
     kmmmod->Add(*kmmadd,false,1.0,1.0);
     kmmmod->Complete(kmm->DomainMap(),kmm->RowMap());
 
-    // kmi: add T(mbaractive)*kai and linmi
+    // kmi: add T(mbaractive)*kai
     RCP<LINALG::SparseMatrix> kmimod;
     if (iset)
     {
@@ -1466,7 +1545,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
       kmimod->Complete(kmi->DomainMap(),kmi->RowMap());
     }
 
-    // kma: add T(mbaractive)*kaa and linma
+    // kma: add T(mbaractive)*kaa
     RCP<LINALG::SparseMatrix> kmamod;
     if (aset)
     {
@@ -1495,7 +1574,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     RCP<LINALG::SparseMatrix> kanmod;
     if (aset)
     {
-      kanmod = LINALG::MLMultiply(*tmatrix_,false,*invda,false,false,false,true);
+      kanmod = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
       kanmod = LINALG::MLMultiply(*kanmod,false,*kan,false,false,false,true);
     }
 
@@ -1503,7 +1582,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     RCP<LINALG::SparseMatrix> kammod;
     if (aset)
     {
-      kammod = LINALG::MLMultiply(*tmatrix_,false,*invda,false,false,false,true);
+      kammod = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
       kammod = LINALG::MLMultiply(*kammod,false,*kam,false,false,false,true);
     }
 
@@ -1511,7 +1590,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     RCP<LINALG::SparseMatrix> kaimod;
     if (aset && iset)
     {
-      kaimod = LINALG::MLMultiply(*tmatrix_,false,*invda,false,false,false,true);
+      kaimod = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
       kaimod = LINALG::MLMultiply(*kaimod,false,*kai,false,false,false,true);
     }
 
@@ -1519,7 +1598,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     RCP<LINALG::SparseMatrix> kaamod;
     if (aset)
     {
-      kaamod = LINALG::MLMultiply(*tmatrix_,false,*invda,false,false,false,true);
+      kaamod = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
       kaamod = LINALG::MLMultiply(*kaamod,false,*kaa,false,false,false,true);
     }
 
@@ -1535,7 +1614,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
       RCP<Epetra_Vector> modi = rcp(new Epetra_Vector(*gidofs));
       LINALG::Export(*zold_,*modi);
       RCP<Epetra_Vector> tempveci = rcp(new Epetra_Vector(*gidofs));
-      doldi->Multiply(false,*modi,*tempveci);
+      doldi->Multiply(true,*modi,*tempveci);
       fi->Update(-alphaf_,*tempveci,1.0);
     }
 
@@ -1545,7 +1624,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
       RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*gactivedofs_));
       LINALG::Export(*zold_,*mod);
       RCP<Epetra_Vector> tempvec = rcp(new Epetra_Vector(*gactivedofs_));
-      dolda->Multiply(false,*mod,*tempvec);
+      dolda->Multiply(true,*mod,*tempvec);
       fa->Update(-alphaf_,*tempvec,1.0);
     }
 
@@ -1583,7 +1662,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     if (aset)
     {
       famod = rcp(new Epetra_Vector(*gactivet_));
-      tinvda = LINALG::MLMultiply(*tmatrix_,false,*invda,false,false,false,true);
+      tinvda = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
       tinvda->Multiply(false,*fa,*famod);
     }
 
@@ -1688,6 +1767,19 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
   //**********************************************************************
   else
   {
+    //----------------------------------------------------------------------
+  	// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+  	//----------------------------------------------------------------------
+  	// Concretely, we apply the following transformations:
+  	// D         ---->   D * T^(-1)
+  	//----------------------------------------------------------------------
+  	if (Dualquadslave3d())
+  	{
+  		// modify dmatrix_
+  		RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+  		dmatrix_    = temp2;
+  	}
+
     // add contact stiffness
     kteff->UnComplete();
     kteff->Add(*lindmatrix_,false,1.0-alphaf_,1.0);
@@ -2286,12 +2378,12 @@ void CONTACT::CoLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
       RCP<Epetra_Vector> mod2 = rcp(new Epetra_Vector((dold_->RowMap())));
       if (dold_->RowMap().NumGlobalElements()) LINALG::Export(*zold_,*mod2);
       RCP<Epetra_Vector> mod3 = rcp(new Epetra_Vector((dold_->RowMap())));
-      dold_->Multiply(false,*mod2,*mod3);
+      dold_->Multiply(true,*mod2,*mod3);
       RCP<Epetra_Vector> mod4 = rcp(new Epetra_Vector(*gsdofrowmap_));
       if (gsdofrowmap_->NumGlobalElements()) LINALG::Export(*mod3,*mod4);
       z_->Update(-alphaf_,*mod4,1.0);
       RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
-      invd_->Multiply(false,*zcopy,*z_);
+      invd_->Multiply(true,*zcopy,*z_);
       z_->Scale(1/(1-alphaf_));
     }
     else
@@ -2308,10 +2400,10 @@ void CONTACT::CoLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
       z_->Update(-1.0,*mod,1.0);
       ksn_->Multiply(false,*disin,*mod);
       z_->Update(-1.0,*mod,1.0);
-      dold_->Multiply(false,*zold_,*mod);
+      dold_->Multiply(true,*zold_,*mod);
       z_->Update(-alphaf_,*mod,1.0);
       RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
-      invd_->Multiply(false,*zcopy,*z_);
+      invd_->Multiply(true,*zcopy,*z_);
       z_->Scale(1/(1-alphaf_));
     }
   }
