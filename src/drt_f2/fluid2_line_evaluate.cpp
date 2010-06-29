@@ -62,9 +62,9 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
         act = Fluid2Line::calc_Neumann_inflow;
     else if (action == "conservative_outflow_bc")
         act = Fluid2Line::conservative_outflow_bc;
-    else if (action == "calc_line_flowrate")
+    else if (action == "calc_flowrate")
         act = Fluid2Line::calc_line_flowrate;
-    else dserror("Unknown type of action for Fluid2_Line");
+    else dserror("Unknown type of action for Fluid2_Line: %s",action.c_str());
 
     switch(act)
     {

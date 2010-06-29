@@ -171,10 +171,7 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
     // TODO: remove this action -> talk with Mahmoud
     else if (action == "flowrate calculation")
         act = Fluid3Boundary::flowratecalc;
-    // general action to calculate the flow rate (replaces flowratecalc soon)
-    //else if (action == "calc_line_flowrate")
-    //  act = Fluid3Boundary::calc_flowrate;
-    else if (action == "calc_flowrate")  // allows use of FLD::UTILS::ComupteSurfaceFlowRate()
+    else if (action == "calc_flowrate")
       act = Fluid3Boundary::calc_flowrate;
     else if (action == "flowrate_deriv")
         act = Fluid3Boundary::flowratederiv;
@@ -186,7 +183,7 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
         act = Fluid3Boundary::calc_node_curvature;
     else if (action == "calc_surface_tension")
         act = Fluid3Boundary::calc_surface_tension;
-    //TODO: weak dirichlet boundary condition
+    //TODO: weak Dirichlet boundary condition
     else if (action == "enforce_weak_dbc")
         act = Fluid3Boundary::enforce_weak_dbc;
     else if (action == "conservative_outflow_bc")
@@ -195,7 +192,7 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
         act = Fluid3Boundary::calc_Neumann_inflow;
     else if (action == "calculate integrated pressure")
         act = Fluid3Boundary::integ_pressure_calc;
-    else dserror("Unknown type of action for Fluid3_Boundary");
+    else dserror("Unknown type of action for Fluid3_Boundary: %s",action.c_str());
 
     // get status of Ale
     const bool isale = ele->ParentElement()->IsAle();
