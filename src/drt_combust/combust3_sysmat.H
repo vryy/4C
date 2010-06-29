@@ -121,7 +121,6 @@ namespace COMBUST
     scaconvfacaf = 0.0; // time integration factor with respect to cintinuity rhs
     scaconvfacn  = 0.0; // time integration factor with respect to cintinuity rhs; only set for OST
 
-    if (timealgo == timeint_gen_alpha)
     //----------------------
     // get the material type
     //----------------------
