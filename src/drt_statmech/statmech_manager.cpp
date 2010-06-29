@@ -1866,11 +1866,18 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
 
   //generate parallel vector with random numbers (0;1) for probability check with respect to crosslinker orientation
   Epetra_Vector orientationprobability(*(discret_.NodeColMap()));
+
+  //if FIXEDSEED is set to Yes, reproducible simulations are required. To this end we set a fixed seed for orientationprobability
+  if(Teuchos::getIntegralValue<int>(statmechparams_,"FIXEDSEED"))
+    orientationprobability.SetSeed((int)(time_/dt));
+
   orientationprobability.Random();
   Epetra_Vector unitvector(*(discret_.NodeColMap()));
   unitvector.PutScalar(1);
   orientationprobability.Update(1,unitvector,1);
   orientationprobability.Scale(0.5);
+
+
 
 
   //creating a random generator object which creates uniformly distributed random numbers in [0;1]
