@@ -410,7 +410,7 @@ void FLD::UTILS::Fluid_couplingWrapper::ApplyBoundaryConditions(double time, dou
         }
       }
     }
-
+//#if 0
     // -----------------------------------------------------------------
     // Define a map that will have the interpolated values at the
     // reduced-D time subscale
@@ -462,7 +462,14 @@ void FLD::UTILS::Fluid_couplingWrapper::ApplyBoundaryConditions(double time, dou
     //    params->set("3D map of values", map3_Dnp_);
     params->set("3D map of values",map3D_inter_to_Red);
     params->set("reducedD map of values", mapRed_Dnp_);
-
+//#endif
+    
+//    RCP<Teuchos::ParameterList> params = rcp( new Teuchos::ParameterList);
+//    params->set("3D map of values", map3_Dnp_);
+//    params->set("reducedD map of values", mapRed_Dnp_);
+                
+                
+    cout<<"STEP ["<<N<<"] integrate reduce-D"<<endl;
     ArtExpTime_integ_->Integrate(true,params);
 
   }
@@ -1083,6 +1090,8 @@ void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(RCP<Epetra_Vector>    velnp
                                                      const Epetra_Map & condmap,
                                                      double                time)
 {
+  cout<<"Evaluating Dirich!"<<endl;
+  //dserror("Dirichlet coupling is not fixed yet, if you see the message then something is wrong!");
   //  cout<<"3D discretization:"<<endl<<*discret_3D_<<endl;
   vector<DRT::Condition*> conds_red;
   discret_redD_->GetCondition("Art_redD_3D_CouplingCond",conds_red);

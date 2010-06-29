@@ -241,14 +241,15 @@ DPOINT 0
 -------------------------DESIGN NODE 1D ARTERY PRESCRIBED CONDITIONS
 DPOINT 1
 //  DOBJECT - BC BCTYPE BCVAL RFVAL BCCURVE RFCURVE
- E 1 - flow forced 1.0 1.0 1 2
+ E 1 - flow forced 10.0 0.0 1 2
 -------------------------DESIGN NODE 1D ARTERY REFLECTIVE CONDITIONS
-DPOINT 1
+DPOINT 2
 // DOBJECT - RFVAL RFCURVE
- E 4 -   1.0 2
+ E 4 - 0.0 none
+ E 6 - 0.0 none
 -------------------------DESIGN NODE 1D ARTERY WINDKESSEL CONDITIONS
-DPOINT 1
-E 6 - ExplicitWindkessel RCR 0.0 100.17794 38700.0 200.62206 0.0 none none none none none
+DPOINT 0
+//E 6 - ExplicitWindkessel RCR 0.0 100.17794 38700.0 200.62206 0.0 none none none none none
 ---------------------------DESIGN NODE 1D ARTERY JUNCTION CONDITIONS
 // DOBJECT CONNECTION_Num  NODE_NUM PRES_HEAD_LOSS_VAR
  DPOINT 3
@@ -377,8 +378,8 @@ NODE           11     COORD 40.0 1.0 -10.0
 //MAT_CNST_ART : Arterial material with constant properties
 //MAT_CNST_ART : BloodViscosity BloodDensity ArtYoungsMod ArtPoissonsRatio ArtDiameter ArtThickness
 MAT       1 MAT_CNST_ART  VISCOSITY 0.04 DENS 0.001 YOUNG 400000.0 NUE 0.5 DIAM 24.0 TH 1.630 PEXT1 0.0 PEXT2 0.0
-MAT       2 MAT_CNST_ART  VISCOSITY 0.04 DENS 0.001 YOUNG 400000.0 NUE 0.5 DIAM 16.4 TH 0.80 PEXT1 0.0 PEXT2 0.0
-MAT       3 MAT_CNST_ART  VISCOSITY 0.04 DENS 0.001 YOUNG 400000.0 NUE 0.5 DIAM 16.4 TH 0.80 PEXT1 0.0 PEXT2 0.0
+MAT       2 MAT_CNST_ART  VISCOSITY 0.04 DENS 0.001 YOUNG 300000.0 NUE 0.5 DIAM 16.4 TH 0.80  PEXT1 0.0 PEXT2 0.0
+MAT       3 MAT_CNST_ART  VISCOSITY 0.04 DENS 0.001 YOUNG 200000.0 NUE 0.5 DIAM 12.4 TH 0.70  PEXT1 0.0 PEXT2 0.0
 ------------------------------------------------------CONTROL NODE
 
 -------------------------------------------------------LOAD CURVES

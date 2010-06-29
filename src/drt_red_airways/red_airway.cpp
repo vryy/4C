@@ -18,6 +18,7 @@ Maintainer: Mahmoud Ismail
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 using namespace DRT::UTILS;
 
@@ -55,7 +56,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAirwayType::Create( const int id, c
 
 void DRT::ELEMENTS::RedAirwayType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
-  std::map<std::string,LineDefinition>& defs = definitions_["RED_AIRWAY"];
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["RED_AIRWAY"];
 
   defs["LINE2"]
     .AddIntVector("LINE2",2)
@@ -74,7 +75,7 @@ void DRT::ELEMENTS::RedAirwayType::SetupElementDefinition( std::map<std::string,
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RedAirway::RedAirway(int id, int owner) :
-DRT::Element(id,element_red_airway,owner),
+DRT::Element(id,owner),
 data_()
 {
   return;

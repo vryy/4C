@@ -62,6 +62,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
   coupledTo3D_(false)
 {
 
+  //  exit(1);
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
