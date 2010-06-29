@@ -2885,6 +2885,10 @@ bool MORTAR::Coupling3d::IntegrateCells()
     // *******************************************************************
     else if (Quad() && (lmtype==INPAR::MORTAR::lagmult_quad_quad || lmtype==INPAR::MORTAR::lagmult_lin_lin))
     {
+      // check for dual shape functions and linear LM interpolation
+			if (shapefcn_ == INPAR::MORTAR::shape_dual && lmtype==INPAR::MORTAR::lagmult_lin_lin)
+				dserror("ERROR: Linear LM interpolation not yet implemented for DUAL 3D quadratic mortar");
+
       // prepare integration of M (and possibly D) on intcells
       int nrow = SlaveElement().NumNode();
       int ncol = MasterElement().NumNode();
@@ -2915,6 +2919,10 @@ bool MORTAR::Coupling3d::IntegrateCells()
     // *******************************************************************
     else if (Quad() && lmtype==INPAR::MORTAR::lagmult_pwlin_pwlin)
     {
+    	// check for dual shape functions
+			if (shapefcn_ == INPAR::MORTAR::shape_dual)
+				dserror("ERROR: Piecewise linear LM interpolation not yet implemented for DUAL 3D quadratic mortar");
+
       // prepare integration of M (and possibly D) on intcells
       int nrow = SlaveElement().NumNode();
       int ncol = MasterElement().NumNode();
@@ -2934,10 +2942,6 @@ bool MORTAR::Coupling3d::IntegrateCells()
       else /*(!CouplingInAuxPlane()*/
         dserror("ERROR: Only aux. plane version implemented for 3D quadratic mortar");
       
-      // check for dual shape functions
-      if (shapefcn_ == INPAR::MORTAR::shape_dual)
-        dserror("ERROR: Piecewise linear LM interpolation not yet implemented for DUAL 3D quadratic mortar");
-            
       // assembly of intcell contributions to M (and possibly D)
       // (NOTE THAT THESE ARE SPECIAL VERSIONS HERE FOR PIECEWISE LINEAR INTERPOLATION)
 #ifdef MORTARONELOOP
