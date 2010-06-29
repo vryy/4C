@@ -710,7 +710,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     {
       fslmodexp = rcp(new Epetra_Vector(*problemrowmap_));
       LINALG::Export(*fslmod,*fslmodexp);
-      if (gslipnodes_->NumGlobalElements())feffnew->Update(1.0,*fslmodexp,1.0);
+      feffnew->Update(1.0,*fslmodexp,1.0);
     }
     
     // add weighted gap vector to feffnew, if existing
@@ -2115,7 +2115,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     LINALG::Export(*linslipRHS_,*slipexp);
     
     // build constraint rhs
-    constrrhs->Update(1.0,*gactexp,1.0);
+    constrrhs->Update(-1.0,*gactexp,1.0);
     constrrhs->Update(1.0,*stickexp,1.0);
     constrrhs->Update(1.0,*slipexp,1.0);
     constrrhs->ReplaceMap(*lmmap);
