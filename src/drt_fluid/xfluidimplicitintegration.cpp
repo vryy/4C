@@ -43,9 +43,9 @@ Maintainer: Axel Gerstenberger
 #include "../drt_geometry/position_array.H"
 #include "../drt_f3/xfluid3_interpolation.H"
 #include "../drt_xdiff3/xdiff3_interpolation.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_io/io_gmsh.H"
 #include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_fem_general/debug_nan.H"
 
 #include "../drt_io/io_control.H"
@@ -2711,9 +2711,7 @@ void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
-
-  //int calcerr = params_.get<int>("eval err for analyt sol");
-  INPAR::FLUID::InitialField calcerr = Teuchos::getIntegralValue<INPAR::FLUID::InitialField>(params_,"eval err for analyt sol");
+  INPAR::FLUID::InitialField calcerr = params_.get<INPAR::FLUID::InitialField>("eval err for analyt sol");
 
   //------------------------------------------------------- beltrami flow
   switch (calcerr)

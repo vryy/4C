@@ -20,7 +20,6 @@ Maintainer: Peter Gamnitzer
 #include "../drt_fluid/fluid_genalpha_integration.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "fluid_utils.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -2418,9 +2417,7 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidGenAlphaIntegration::EvaluateErrorComparedToAnalyticalSol()
 {
-
-  //int calcerr = params_.get<int>("eval err for analyt sol");
-  INPAR::FLUID::InitialField calcerr = Teuchos::getIntegralValue<INPAR::FLUID::InitialField>(params_,"eval err for analyt sol");
+  INPAR::FLUID::InitialField calcerr = params_.get<INPAR::FLUID::InitialField>("eval err for analyt sol");
 
   //------------------------------------------------------- beltrami flow
   switch (calcerr)

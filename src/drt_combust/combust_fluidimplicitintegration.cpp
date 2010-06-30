@@ -36,6 +36,8 @@ Maintainer: Florian Henke
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
 #include "../drt_xfem/enrichment_utils.H"
+#include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/matlist.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -43,8 +45,8 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../linalg/linalg_ana.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -1779,8 +1781,12 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
     //IncorporateInterface();
   }
 
-  //------------------------------------------------------- beltrami flow
-  if(initfield == INPAR::FLUID::initfield_beltrami_flow)
+  //--------------
+  // beltrami flow
+  //--------------
+  switch(initfield)
+  {
+  case INPAR::FLUID::initfield_beltrami_flow:
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -1858,9 +1864,10 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
     {
       dserror("dof not on proc");
     }
+    break;
   }
-  else if(initfield == INPAR::FLUID::initfield_field_by_function or
-          initfield == INPAR::FLUID::initfield_disturbed_field_from_function)
+  case INPAR::FLUID::initfield_field_by_function:
+  case INPAR::FLUID::initfield_disturbed_field_from_function:
   {
     const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
@@ -1973,10 +1980,167 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
         }
       }
     }
+    break;
   }
-  else
+  // special initial function: two counter-rotating vortices (2-D) and flame front
+  // for flame-vortex interaction problem
+  case INPAR::FLUID::initfield_flame_vortex_interaction:
   {
-    dserror("no other initial fields than zero, function and beltrami are available up to now");
+//    // number space dimensions
+//    const int nsd = 3;
+//
+//    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+//
+//    // get G-function value vector on fluid NodeColMap
+//    const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
+//
+//    // define vectors for velocity field, node coordinates and coordinates of left and right vortices
+//    vector<double> u(nsd);
+//    vector<double> xy(nsd);
+//    vector<double> xy0_left(nsd);
+//    vector<double> xy0_right(nsd);
+//
+//    // check whether present flow is indeed two-dimensional
+//    if (nsd != 2) dserror("Counter-rotating vortices are a two-dimensional flow!");
+//
+//    // get laminar burning velocity (flame speed)
+//    if (flamespeed_ != 1.0) dserror("flame speed should be 1.0 for the 'flame-vortex-interaction' case");
+//    // vortex strength C (scaled by laminar burning velocity)
+//    const double C = 70.0*flamespeed_;
+//    // (squared) vortex radius R
+//    const double R_squared = 16.0;
+//
+//    // set (scaled) vortex strength C, (squared) vortex radius R and define variables
+//    double r_squared_left;
+//    double r_squared_right;
+//
+//    // set initial locations of vortices
+//    xy0_left[0] = 37.5;  // x-coordinate left vortex
+//    xy0_left[1] = 75.0;  // y-coordinate left vortex
+//    xy0_right[0] = 62.5; // x-coordinate right vortex
+//    xy0_right[1] = 75.0; // y-coordinate right vortex
+//
+//    //------------------------
+//    // get material parameters
+//    //------------------------
+//    // arbitrarily take first node on this proc
+//    DRT::Node* lnode = discret_->lRowNode(0);
+//    // get list of adjacent elements of the first node
+//    DRT::Element** elelist = lnode->Elements();
+//    // get material from first (arbitrary!) element adjacent to this node
+//    const Teuchos::RCP<MAT::Material> material = elelist[0]->Material();
+//#ifdef DEBUG
+//  // check if we really got a list of materials
+//  dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
+//#endif
+//    // get material list for this element
+//    const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
+//
+//    // set default id in list of materials
+//    int matid = -1;
+//    // check on which side of the interface the cell is located
+//    if(indomplus) // cell belongs to burnt domain
+//    {
+//      matid = matlist->MatID(0); // burnt material (first material in material list)
+//    }
+//    else // cell belongs to unburnt domain
+//    {
+//      matid = matlist->MatID(1); // unburnt material (second material in material list)
+//    }
+//    // get material from list of materials
+//    Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(matid);
+//    dsassert(matptr->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
+//    const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
+//
+//    // get the density
+//    const double densu = mat->Density();
+//    const double densb = mat->Density();
+//    double dens = 0.0;
+//
+//    // set density in unburnt and burnt phase and initialize actual density
+//    // -> for "pure fluid" computation: rhob = rhou = 1.161
+//    //const double densb = 1.161;
+//    //const double densu = 1.161;
+//    if (densu != 1.161) dserror("");
+//    //const double densb = 0.157;
+//    if (densb != 0.157) dserror("");
+//    //double dens = 1.161;
+//
+//    // loop all nodes on the processor
+//    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+//    {
+//      // get the processor local node
+//      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+//
+//      // get phi value for this node
+//      const int lid = phinp->Map().LID(lnode->Id());
+//      const double gfuncval = (*phinp)[lid];
+//
+//      if (gfuncval > 0.0) // burnt domain -> burnt material
+//        dens = 0.0;
+//      else // unburnt domain -> unburnt material
+//        dens = 0.0;
+//
+//      // the set of degrees of freedom associated with the node
+//      vector<int> nodedofset = discret_->Dof(lnode);
+//
+//      // set node coordinates
+//      for(int dim=0;dim<nsd;dim++)
+//      {
+//        xy[dim]=lnode->X()[dim];
+//      }
+//
+//      // compute preliminary values for both vortices
+//      r_squared_left  = ((xy[0]-xy0_left[0])*(xy[0]-xy0_left[0])
+//                        +(xy[1]-xy0_left[1])*(xy[1]-xy0_left[1]))/R_squared;
+//      r_squared_right = ((xy[0]-xy0_right[0])*(xy[0]-xy0_right[0])
+//                        +(xy[1]-xy0_right[1])*(xy[1]-xy0_right[1]))/R_squared;
+//
+//      // compute initial velocity components
+//      // including initial velocity distribution velocity in x2-direction
+//      u[0] = (C/R_squared)*(-(xy[1]-xy0_left[1])*exp(-r_squared_left/2.0)
+//                            +(xy[1]-xy0_right[1])*exp(-r_squared_right/2.0));
+//      u[1] = (C/R_squared)*( (xy[0]-xy0_left[0])*exp(-r_squared_left/2.0)
+//                            -(xy[0]-xy0_right[0])*exp(-r_squared_right/2.0))
+//                            + flamespeed_*densu/dens;
+//
+//      // velocity profile due to flame without vortices:
+//      //u[1] = sl*densu/dens;
+//
+//      // set initial velocity components
+//      for(int icomp=0;icomp<nsd;icomp++)
+//      {
+//        const int gid = nodedofset[icomp];
+//        //local node id
+//        int lid = dofrowmap->LID(gid);
+//        state_.velnp_->ReplaceMyValues(1,&u[icomp],&lid);
+//        state_.veln_ ->ReplaceMyValues(1,&u[icomp],&lid);
+//        state_.velnm_->ReplaceMyValues(1,&u[icomp],&lid);
+//      }
+//
+//      // extract velocity values (no pressure!) from global velocity vector
+//      for (int icomp=0; icomp<3; ++icomp)
+//      {
+//        lids[icomp] = convel->Map().LID(dofids[icomp]);
+//        fluidvel(icomp) = (*convel)[lids[icomp]];
+//      }
+//
+//      LINALG::Matrix<3,1> flvelabs(true);
+//      // add fluid velocity (Navier Stokes solution) and relative flame velocity
+//      for (int icomp=0; icomp<3; ++icomp)
+//      {
+//        flvelabs(icomp) = fluidvel(icomp) + flvelrel(icomp);
+//        convel->ReplaceMyValues(1,&flvelabs(icomp),&lids[icomp]);
+//      }
+//
+//
+//
+//    } // end loop nodes lnodeid
+//
+//    break;
+  }
+  default:
+    dserror("type of initial field not available");
   }
 
   return;
@@ -1987,9 +2151,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
-
-  //int calcerr = params_.get<int>("eval err for analyt sol");
-  INPAR::FLUID::InitialField calcerr = Teuchos::getIntegralValue<INPAR::FLUID::InitialField>(params_,"eval err for analyt sol");
+  INPAR::FLUID::InitialField calcerr = params_.get<INPAR::FLUID::InitialField>("eval err for analyt sol");
 
   //------------------------------------------------------- beltrami flow
   switch (calcerr)

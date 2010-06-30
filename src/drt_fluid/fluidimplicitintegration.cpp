@@ -40,7 +40,6 @@ Maintainer: Peter Gamnitzer
 #include "turbulence_statistic_manager.H"
 #include "fluid_utils_mapextractor.H"
 #include "fluid_windkessel_optimization.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #ifdef D_ARTNET
 #include "../drt_art_net/art_net_dyn_drt.H"
@@ -3573,9 +3572,7 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
-
-  //int calcerr = params_.get<int>("eval err for analyt sol");
-  INPAR::FLUID::InitialField calcerr = Teuchos::getIntegralValue<INPAR::FLUID::InitialField>(params_,"eval err for analyt sol");
+  INPAR::FLUID::InitialField calcerr = params_.get<INPAR::FLUID::InitialField>("eval err for analyt sol");
 
   //------------------------------------------------------- beltrami flow
   switch (calcerr)
