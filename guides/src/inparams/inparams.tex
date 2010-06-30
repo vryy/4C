@@ -3254,6 +3254,59 @@ controlled NODE $int_1$ with $int_2$ the DOF to control
 \begin{verbatim}
 ------------------------------------------------------------CURVE1
 \end{verbatim}
+Beside several special scenarios there are basically three different ways to define a time-dependent curve:
+
+\begin{itemize}
+ \item Define a polygonal curve (linear interpolation between to values):
+\begin{verbatim}
+CURVE %ID on Polygonal T 1.0 BYABSTIME Yes %t_start %t_end FACTOR %value1 %value2
+\end{verbatim}
+whereat \%ID specifies the curve id. The value is then determined by linear interpolation with regard to t\_start and t\_end according to
+\begin{equation}
+ val(t) = \%value1 + \frac{\%value2 - \%value1}{\%t\_end - \%t\_start} \cdot \left(t - \%t\_begin \right) .
+\end{equation}
+
+If somebody does know what the ``T'' (and probably the mandatory following double parameter) is good for, well I don't...
+
+\item Specify a time curve by a user-defined expression:
+\begin{verbatim}
+CURVE %ID on EXPR FUNC %expr t1 %t_start t2 %t_end
+\end{verbatim}
+In this case \%expr is an expression composed out of basic operations and functions where the character ``t'' is to be used
+as the free variable. For a list of possible functions see FUNC1. \%t\_start and \%t\_end are the bounds of the time interval in which
+the curve is defined.\\
+
+For a piecewise defined curve add multiple entries with identical id for each time interval.
+
+\item Use a hard-coded time curve:\\
+Within baci several curves are hard-coded (to save parsing time?). The syntax is
+\begin{verbatim}
+CURVE %ID on Explicit FUNC %func c1 %c1_val c2 %c2_val
+\end{verbatim}
+whereat \%c1\_val and \%c2\_val are used as parameters for the specified curve. The curve itself is defined by
+the string \%func which should be one of those: \\
+\begin{tabular}{ccc}
+\verb|f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 | &
+\verb|f(t)=exp(1-1:t)_for_t<C1_else_const | \\
+\verb|f(t)=1-cos(2*PI*C1*t) | &
+\verb|f(t)=C2*sin(2PI*C1*t) |\\
+\verb|f(t)=(sin(PI(t:C1-0.5))+1)*0.5 |&
+\verb|BELTRAMI |\\
+\verb|KIM-MOIN |&
+\verb|f(t)=(C2:2PI*C1)*cos(2PI*C1*t) |\\
+\verb|f(t)=t:2-C1:(2PI)*cos(PI*t:C1-PI:2) |&
+\verb|f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5 |\\
+\verb|f(t)=(1-C2/C1)*T+C2 | 
+\end{tabular} \\
+(At least as long as you don't like error messages)
+
+
+
+
+
+
+\end{itemize}
+
 
 % *loop intervals
 % *if(strcmp(IntvData(Load_Curve_1),"on")==0)
