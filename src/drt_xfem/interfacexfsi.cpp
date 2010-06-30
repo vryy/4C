@@ -40,7 +40,7 @@ Maintainer: Axel Gerstenberger
 XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
     const Teuchos::RCP<DRT::Discretization>  xfemdis,
     const Teuchos::RCP<DRT::Discretization>  cutterdis,
-    const set<int> 						MovingFluideleGIDs
+    const vector<int> 						 MovingFluideleGIDs
     ) : InterfaceHandle(xfemdis),
         cutterdis_(cutterdis),
         MovingFluideleGIDs_(MovingFluideleGIDs)

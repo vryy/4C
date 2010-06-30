@@ -31,7 +31,7 @@ namespace XFEM
     explicit InterfaceHandleXFSI(
              const Teuchos::RCP<DRT::Discretization>  xfemdis,   ///< discretization that will be intersected
              const Teuchos::RCP<DRT::Discretization>  cutterdis,  ///< discretization with boundary elements
-             set<int>                                 MovingFluideleGIDs_
+             vector<int>                              MovingFluideleGIDs_
              );
 
     //! destructor
@@ -184,7 +184,7 @@ namespace XFEM
     const Teuchos::RCP<DRT::Discretization>       FluidFluidboundarydis_;
 
     //! moving fluid element ids
-    const set<int> 								MovingFluideleGIDs_;
+    const vector<int> 						      MovingFluideleGIDs_;
 
     //! bounding boxes of cutter elements
     std::map<int,LINALG::Matrix<3,2> >            currentXAABBs_;

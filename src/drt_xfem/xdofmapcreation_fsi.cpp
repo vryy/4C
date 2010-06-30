@@ -616,7 +616,7 @@ static void processStandardEnrichmentNodalBasedApproach(
     const XFEM::InterfaceHandle&                  ih,
     const std::set<XFEM::PHYSICS::Field>&         fieldset,
     std::map<int, std::set<XFEM::FieldEnr> >&     nodalDofSet,
-    const set<int>                                MovingFluidnodeGIDs)
+    const vector<int>                             MovingFluidnodeGIDs)
 {
   const XFEM::Enrichment enr_std(XFEM::Enrichment::typeStandard, 0);
   for (int i=0; i<ih.xfemdis()->NumMyColNodes(); ++i)
@@ -631,8 +631,7 @@ static void processStandardEnrichmentNodalBasedApproach(
     {
       const bool in_fluid = (0 == ih.PositionWithinConditionNP(nodalpos));
       
-      set<int>::const_iterator nodegid = MovingFluidnodeGIDs.find(node->Id());
-      const bool in_moving_fluid = (nodegid != MovingFluidnodeGIDs.end());
+      const bool in_moving_fluid = (std::find(MovingFluidnodeGIDs.begin(), MovingFluidnodeGIDs.end(), node->Id()) != MovingFluidnodeGIDs.end());      
               
       if (in_fluid or in_moving_fluid)
       {
@@ -721,7 +720,7 @@ void XFEM::createDofMapFSI(
     const std::set<XFEM::PHYSICS::Field>&               fieldset,
     const XFEM::ElementAnsatz&                          elementAnsatz,
     const Teuchos::ParameterList&                       params,
-    const set<int>                                      MovingFluidnodeGIDs
+    const vector<int>                                   MovingFluidnodeGIDs
     )
 {
   // temporary assembly

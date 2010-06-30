@@ -144,6 +144,30 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   discret_->FillComplete();
 
+  // create Fluid-Fluid Boundary discretization
+  vector<string> conditions_to_copy;
+  conditions_to_copy.push_back("FluidFluidCoupling");
+  conditions_to_copy.push_back("XFEMCoupling");
+  FluidFluidboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(discret_, "FluidFluidCoupling", "FluidFluidboundary", "BELE3", conditions_to_copy);
+   
+  // Note: The nodal structure doesn't change, so we'll create the nodal maps in the constructor.
+  // create node and element distribution with elements and nodes ghosted on all processors
+  const Epetra_Map ffnoderowmap = *FluidFluidboundarydis_->NodeRowMap();
+  const Epetra_Map ffelemrowmap = *FluidFluidboundarydis_->ElementRowMap();
+    
+  // put all boundary nodes and elements onto all processors
+  // Create an allreduced Epetra_Map from the given Epetra_Map and give it to all processors
+  const Epetra_Map ffnodecolmap = *LINALG::AllreduceEMap(ffnoderowmap);
+  const Epetra_Map ffelemcolmap = *LINALG::AllreduceEMap(ffelemrowmap);
+    
+  // redistribute nodes and elements to column (ghost) map
+  FluidFluidboundarydis_->ExportColumnNodes(ffnodecolmap);
+  FluidFluidboundarydis_->ExportColumnElements(ffelemcolmap);
+  
+  FluidFluidboundarydis_->FillComplete();
+  RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(discret_, FluidFluidboundarydis_);
+  discret_->Redistribute(*(discret_->NodeRowMap()), *newcolnodemap);
+  
   output_->WriteMesh(0,0.0);
 
   if (actdis->Comm().MyPID()==0)
@@ -263,12 +287,11 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   fluidfluidCoupling_ = false;
 
-  //create Fluid Fluid Boundary discretization
-  vector<string> conditions_to_copy;
-  conditions_to_copy.push_back("FluidFluidCoupling");
-  conditions_to_copy.push_back("XFEMCoupling");
-  FluidFluidboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(discret_, "FluidFluidCoupling", "FluidFluidboundary", "BELE3", conditions_to_copy);
-
+  vector<string> conditions_to_copy_mf;
+  conditions_to_copy_mf.push_back("MovingFluid");
+  conditions_to_copy_mf.push_back("XFEMCoupling");
+  MovingFluiddis_ = DRT::UTILS::CreateDiscretizationFromCondition(discret_, "MovingFluid", "MovingFluid", "VELE3", conditions_to_copy_mf);
+  
   //create ALE Fluid Boundary discretization
   vector<string> conditions;
   conditions.push_back("ALEFluidCoupling");
@@ -292,19 +315,16 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   if (error) dserror("ALEFluidboundarydis_->FillComplete() returned error=%d",error);
 
   ALEfluidstate_.afidispnp_  = LINALG::CreateVector(*ALEFluidboundarydis_->DofRowMap(),true);
-  ALEfluidstate_.afivelnp_   = LINALG::CreateVector(*ALEFluidboundarydis_->DofRowMap(),true);
   ALEfluidstate_.afidispn_   = LINALG::CreateVector(*ALEFluidboundarydis_->DofRowMap(),true);
-  ALEfluidstate_.afiveln_    = LINALG::CreateVector(*ALEFluidboundarydis_->DofRowMap(),true);
-  ALEfluidstate_.afivelnm_   = LINALG::CreateVector(*ALEFluidboundarydis_->DofRowMap(),true);
-  ALEfluidstate_.afiaccnp_   = LINALG::CreateVector(*ALEFluidboundarydis_->DofRowMap(),true);
-  ALEfluidstate_.afiaccn_    = LINALG::CreateVector(*ALEFluidboundarydis_->DofRowMap(),true);
+//  ALEfluidstate_.afivelnp_   = LINALG::CreateVector(*ALEFluidboundarydis_->DofRowMap(),true);
+//  ALEfluidstate_.afiveln_    = LINALG::CreateVector(*ALEFluidboundarydis_->DofRowMap(),true);
+//  ALEfluidstate_.afivelnm_   = LINALG::CreateVector(*ALEFluidboundarydis_->DofRowMap(),true);
 
   ALEFluidboundarydis_->SetState("idispcolnp",ALEfluidstate_.afidispnp_);
   ALEFluidboundarydis_->SetState("idispcoln" ,ALEfluidstate_.afidispn_);
-  ALEFluidboundarydis_->SetState("ivelcolnp" ,ALEfluidstate_.afivelnp_);
-  ALEFluidboundarydis_->SetState("ivelcoln"  ,ALEfluidstate_.afiveln_);
-  ALEFluidboundarydis_->SetState("ivelcolnm" ,ALEfluidstate_.afivelnm_);
-  ALEFluidboundarydis_->SetState("iacccoln"  ,ALEfluidstate_.afiaccn_);
+//  ALEFluidboundarydis_->SetState("ivelcolnp" ,ALEfluidstate_.afivelnp_);
+//  ALEFluidboundarydis_->SetState("ivelcoln"  ,ALEfluidstate_.afiveln_);
+//  ALEFluidboundarydis_->SetState("ivelcolnm" ,ALEfluidstate_.afivelnm_);
 
 //  if (alefluid_ == true)
 //  {
@@ -962,23 +982,33 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 //  DRT::PAR::LoadBalancer balancer(discret_);
 //  balancer.Partition();
 //
-  vector<string> conditions_to_copy_mf;
-  conditions_to_copy_mf.push_back("MovingFluid");
-  conditions_to_copy_mf.push_back("XFEMCoupling");
-  Teuchos::RCP<DRT::Discretization> MovingFluiddis_ = DRT::UTILS::CreateDiscretizationFromCondition(discret_, "MovingFluid", "MovingFluid", "VELE3", conditions_to_copy_mf);
-
+  vector<int> MovingFluideleGIDs;
   for (int iele=0; iele< MovingFluiddis_->NumMyColElements(); iele++)
   {
     DRT::Element* MovingFluidele = MovingFluiddis_->lColElement(iele);
-    fluidfluidstate_.MovingFluideleGIDs_.insert(MovingFluidele->Id());
-    for (int inode=0; inode < MovingFluidele->NumNode(); inode++)
-    {
-      DRT::Node*  MovingFluidnode = MovingFluidele->Nodes()[inode];
-      fluidfluidstate_.MovingFluidNodeGIDs_.insert(MovingFluidnode->Id());
-    }
+    MovingFluideleGIDs.push_back(MovingFluidele->Id());
   }
+  
+  vector<int> MovingFluidNodeGIDs;
+  for (int node=0; node<MovingFluiddis_->NumMyColNodes(); node++)
+  {
+    DRT::Node*  MovingFluidnode = MovingFluiddis_->lColNode(node);
+    MovingFluidNodeGIDs.push_back(MovingFluidnode->Id());
+  }  
+  
+  //information how many processors work at all
+  vector<int> allproc(MovingFluiddis_->Comm().NumProc());
 
-  if (ALEFluidboundarydis_->NumGlobalElements() > 0)
+  //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
+  for (int i=0; i<MovingFluiddis_->Comm().NumProc(); ++i) allproc[i] = i;
+  
+  //gathers information of MovingFluideleGIDs and writes it into fluidfluidstate_.MovingFluideleGIDs_ 
+  LINALG::Gather<int>(MovingFluideleGIDs,fluidfluidstate_.MovingFluideleGIDs_,MovingFluiddis_->Comm().NumProc(),&allproc[0],MovingFluiddis_->Comm());
+  
+  //gathers information of MovingFluidNodeGIDs and writes it into fluidfluidstate_.MovingFluidNodeGIDs_
+  LINALG::Gather<int>(MovingFluidNodeGIDs,fluidfluidstate_.MovingFluidNodeGIDs_,MovingFluiddis_->Comm().NumProc(),&allproc[0],MovingFluiddis_->Comm());
+
+  if (ALEFluidboundarydis_->NumGlobalElements() > 0) 
     ComputeInterfaceAndSetDOFs(ALEFluidboundarydis_);
 
   if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
@@ -3441,24 +3471,6 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDis(
 void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDofset(
         )
 {
-   // create node and element distribution with elements and nodes ghosted on all processors
-   const Epetra_Map ffnoderowmap = *FluidFluidboundarydis_->NodeRowMap();
-   const Epetra_Map ffelemrowmap = *FluidFluidboundarydis_->ElementRowMap();
-
-   // put all boundary nodes and elements onto all processors
-   // Create an allreduced Epetra_Map from the given Epetra_Map and give it to all processors
-   const Epetra_Map ffnodecolmap = *LINALG::AllreduceEMap(ffnoderowmap);
-   const Epetra_Map ffelemcolmap = *LINALG::AllreduceEMap(ffelemrowmap);
-
-   // redistribute nodes and elements to column (ghost) map
-   FluidFluidboundarydis_->ExportColumnNodes(ffnodecolmap);
-   FluidFluidboundarydis_->ExportColumnElements(ffelemcolmap);
-
-   //replace the Dofset of FluidFluidboundarydis with the part of Dofsets of discret.
-   //Now the GID of FluidFluidboundarydis Dofset is a subset of the GID of discret's Dofset
-   FluidFluidboundarydis_->FillComplete();
-   RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(discret_, FluidFluidboundarydis_);
-   discret_->Redistribute(*(discret_->NodeRowMap()), *newcolnodemap);
    RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentDofSet(discret_));
    FluidFluidboundarydis_->ReplaceDofSet(newdofset);
    const int error = FluidFluidboundarydis_->FillComplete();
@@ -3818,38 +3830,37 @@ void FLD::XFluidImplicitTimeInt::PrintFluidFluidBoundaryVectorField(
 /*---------------------------------------------------------------------------*/
 void FLD::XFluidImplicitTimeInt::MovingFluidOutput()
 {
-  for (std::set<int>::const_iterator iter = fluidfluidstate_.MovingFluidNodeGIDs_.begin(); iter != fluidfluidstate_.MovingFluidNodeGIDs_.end(); ++iter)
+  for (size_t iter; iter< fluidfluidstate_.MovingFluidNodeGIDs_.size(); ++iter)
+  {
+    vector <int> mfDof = discret_->Dof(discret_->gNode(fluidfluidstate_.MovingFluidNodeGIDs_.at(iter)));
+    (*fluidfluidstate_.mfvelnp_)[fluidfluidstate_.mfvelnp_->Map().LID(mfDof[0])] = (*state_.velnp_)[state_.velnp_->Map().LID(mfDof[0])];
+    (*fluidfluidstate_.mfvelnp_)[fluidfluidstate_.mfvelnp_->Map().LID(mfDof[1])] = (*state_.velnp_)[state_.velnp_->Map().LID(mfDof[1])];
+    (*fluidfluidstate_.mfvelnp_)[fluidfluidstate_.mfvelnp_->Map().LID(mfDof[2])] = (*state_.velnp_)[state_.velnp_->Map().LID(mfDof[2])];
+    (*fluidfluidstate_.mfvelnp_)[fluidfluidstate_.mfvelnp_->Map().LID(mfDof[3])] = (*state_.velnp_)[state_.velnp_->Map().LID(mfDof[3])];
+   }
+
+  const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
+  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
+  
+  PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, fluidfluidstate_.mfvelnp_),"sol_field_patch_vel_np","Patch Velocity Solution (Physical) n+1",true, step_, time_);
+  
+  if (gmshdebugout)
+  {
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("sol_field_patch_pres", step_, 5, screen_out, discret_->Comm().MyPID());
+    std::ofstream gmshfilecontent(filename.c_str());
+
+    const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
+
     {
-      vector <int> mfDof = discret_->Dof(discret_->gNode(*iter));
-      (*fluidfluidstate_.mfvelnp_)[fluidfluidstate_.mfvelnp_->Map().LID(mfDof[0])] = (*state_.velnp_)[state_.velnp_->Map().LID(mfDof[0])];
-      (*fluidfluidstate_.mfvelnp_)[fluidfluidstate_.mfvelnp_->Map().LID(mfDof[1])] = (*state_.velnp_)[state_.velnp_->Map().LID(mfDof[1])];
-      (*fluidfluidstate_.mfvelnp_)[fluidfluidstate_.mfvelnp_->Map().LID(mfDof[2])] = (*state_.velnp_)[state_.velnp_->Map().LID(mfDof[2])];
-      (*fluidfluidstate_.mfvelnp_)[fluidfluidstate_.mfvelnp_->Map().LID(mfDof[3])] = (*state_.velnp_)[state_.velnp_->Map().LID(mfDof[3])];
-    }
-
-    const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-    const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
-    const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
-
-    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, fluidfluidstate_.mfvelnp_),"sol_field_patch_vel_np","Patch Velocity Solution (Physical) n+1",true, step_, time_);
-
-    if (gmshdebugout)
+      gmshfilecontent << "View \" " << "Pressure Solution Patch (Physical) \" {\n";
+      for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
-        const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("sol_field_patch_pres", step_, 5, screen_out, discret_->Comm().MyPID());
-        std::ofstream gmshfilecontent(filename.c_str());
+          const DRT::Element* actele = discret_->lColElement(i);
 
-        const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
-
-        {
-          gmshfilecontent << "View \" " << "Pressure Solution Patch (Physical) \" {\n";
-          for (int i=0; i<discret_->NumMyColElements(); ++i)
-          {
-            const DRT::Element* actele = discret_->lColElement(i);
-
-            std::set<int>::const_iterator eiter = fluidfluidstate_.MovingFluideleGIDs_.find(actele->Id());
-            const bool is_moving = (eiter != fluidfluidstate_.MovingFluideleGIDs_.end());
-
-            if (is_moving)
+          const bool is_moving = (std::find(fluidfluidstate_.MovingFluideleGIDs_.begin(), fluidfluidstate_.MovingFluideleGIDs_.end(), actele->Id()) != fluidfluidstate_.MovingFluideleGIDs_.end());
+            
+          if (is_moving)
             {
               // create local copy of information about dofs
               const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanager_np_);
@@ -3883,10 +3894,10 @@ void FLD::XFluidImplicitTimeInt::MovingFluidOutput()
                 IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
               }
             }
-          }
-          gmshfilecontent << "};\n";
         }
-        gmshfilecontent.close();
-      }
+        gmshfilecontent << "};\n";
+    }
+    gmshfilecontent.close();
+  }
 }
 #endif /* CCADISCRET       */

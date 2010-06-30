@@ -592,8 +592,8 @@ protected:
   /// this struct holds information about the fluid fluid coupling
   struct FluidFluidState
   {
-	  set<int> MovingFluideleGIDs_;  ///< this set contains the element ids of the moving Fluid
-	  set<int> MovingFluidNodeGIDs_;  ///< this set contains the node GIDs of the moving fluid
+	  vector<int> MovingFluideleGIDs_;  ///< this set contains the element ids of the moving Fluid
+	  vector<int> MovingFluidNodeGIDs_;  ///< this set contains the node GIDs of the moving fluid
 	  /// this a map between the dofs of fluid-fluid-boundary (first entry) and the dofs of fluid (second entry)
 	  std::map<int,int>  fluidboundarymap_;
 	  /// this a map between the owners of fluid-fluid-boundary and the owners of fluid
@@ -622,12 +622,10 @@ protected:
   struct ALEFluidState
   {
     Teuchos::RCP<Epetra_Vector>            afidispnp_;   ///< ALE fluid interface displacement  n+1
-    Teuchos::RCP<Epetra_Vector>            afivelnp_;    ///< ALE fluid interface velocity      n+1
     Teuchos::RCP<Epetra_Vector>            afidispn_;    ///< ALE fluid interface displacement  n
+    Teuchos::RCP<Epetra_Vector>            afivelnp_;    ///< ALE fluid interface velocity      n+1
     Teuchos::RCP<Epetra_Vector>            afiveln_;     ///< ALE fluid interface velocity      n
     Teuchos::RCP<Epetra_Vector>            afivelnm_;    ///< ALE fluid interface velocity      n-1
-    Teuchos::RCP<Epetra_Vector>            afiaccnp_;    ///< ALE fluid interface acceleration  n+1
-    Teuchos::RCP<Epetra_Vector>            afiaccn_;     ///< ALE fluid interface acceleration  n   
   }ALEfluidstate_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)

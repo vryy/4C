@@ -82,7 +82,7 @@ class Intersection
       map< int, DomainIntCells >&                 domainintcells,          ///< domainintegrationcells for each intersected element
       map< int, BoundaryIntCells >&               boundaryintcells,        ///< boundaryintegrationcells for each intersected element
       const std::map<int,int>&                    labelPerElementId,
-      set<int> 									  MovingFluideleids		   ///< set of element ids of the moving fluid
+      vector<int> 								  MovingFluideleids		   ///< set of element ids of the moving fluid
       );
 
 

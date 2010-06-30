@@ -37,7 +37,7 @@ XFEM::DofManager::DofManager(
     const std::set<XFEM::PHYSICS::Field>&  fieldset,
     const XFEM::ElementAnsatz&             element_ansatz,
     const Teuchos::ParameterList&          params,
-    const set<int>                         MovingFluidnodeGIDs
+    const vector<int>                      MovingFluidnodeGIDs
     ) :
   ih_(ih)
 {

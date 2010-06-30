@@ -80,7 +80,7 @@ void GEO::Intersection::computeIntersection(
     std::map< int, DomainIntCells >&               domainintcells,
     std::map< int, BoundaryIntCells >&             boundaryintcells,
     const std::map<int,int>&                       labelPerElementId,
-    set<int> 									   MovingFluideleGIDs)
+    vector<int> 								   MovingFluideleGIDs)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR(" GEO::Intersection");
@@ -110,12 +110,13 @@ void GEO::Intersection::computeIntersection(
     DRT::Element* xfemElement = xfemdis->lColElement(k);
 
     // for fluid-fluid-coupling consider just the elements of background fluid
-	if (cutterdis->Name() == "FluidFluidboundary" or cutterdis->Name() == "ALEFluidboundary"){
-	   	set<int>::const_iterator eleid = MovingFluideleGIDs.find(xfemElement->Id());
-	   	const bool is_moving = (eleid != MovingFluideleGIDs.end());
-		if(is_moving){
-			continue;
-		}
+	if (cutterdis->Name() == "FluidFluidboundary" or cutterdis->Name() == "ALEFluidboundary")
+	{
+	  const bool is_moving = (std::find(MovingFluideleGIDs.begin(), MovingFluideleGIDs.end(), xfemElement->Id()) != MovingFluideleGIDs.end());
+	   	        	   	   	  
+	  if(is_moving){
+	    continue;
+	  }
 	}
 
     initializeXFEM(k, xfemElement);

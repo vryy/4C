@@ -46,7 +46,7 @@ namespace XFEM
       const std::set<XFEM::PHYSICS::Field>&             fieldset,
       const XFEM::ElementAnsatz&                        elementAnsatz,
       const Teuchos::ParameterList&                     params,
-      const set<int>                                    MovingFluidnodeGIDs
+      const vector<int>                                 MovingFluidnodeGIDs
       );
 
 } // namespace XFEM
