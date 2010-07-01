@@ -200,6 +200,7 @@ EXODUS::Mesh::Mesh(const string exofilename)
   // ***************************************************************************
 
   // get all SideSets
+  if (num_side_sets > 0)
   {
     vector<int> spropID(num_side_sets);
     error = ex_get_prop_array(exoid_, EX_SIDE_SET, "ID", &(spropID[0]));
