@@ -173,6 +173,9 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_elasthyper; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ElastHyper( *this ) ); }
+
     /// number of materials
     int NumMat() const { return params_->nummat_; }
 

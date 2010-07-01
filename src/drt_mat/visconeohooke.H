@@ -125,6 +125,9 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_visconeohooke; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ViscoNeoHooke( *this ) ); }
+
     /// Initialize internal stress variables
     void Setup
     (

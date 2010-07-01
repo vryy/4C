@@ -121,6 +121,9 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_ion; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Ion( *this ) ); }
+
     /// valence (= charge number)
     double Valence() const { return params_->valence_; }
     /// diffusivity coefficient

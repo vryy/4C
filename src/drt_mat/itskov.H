@@ -192,6 +192,9 @@ private:
     /// material type
 	virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_itskov; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Itskov( *this ) ); }
+
 	/// Computation of stresses and constitutive tensor
     void Evaluate(const LINALG::Matrix<6,1>& glstrain,
     			const int gp, const int ele_ID,

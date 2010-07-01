@@ -135,6 +135,9 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_cnst_art; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Cnst_1d_art( *this ) ); }
+
     /// return viscosity
     double Viscosity() const { return params_->viscosity_; }
 

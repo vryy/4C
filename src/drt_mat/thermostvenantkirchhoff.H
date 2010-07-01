@@ -143,6 +143,9 @@ private:
       return INPAR::MAT::m_thermostvenant;
     }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ThermoStVenantKirchhoff( *this ) ); }
+
     // evaluates stresses for 3d
     void Evaluate(
       const Epetra_SerialDenseVector* glstrain_e,

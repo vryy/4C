@@ -126,6 +126,9 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_mixfrac; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new MixFrac( *this ) ); }
+
     /// compute dynamic viscosity
     double ComputeViscosity(const double temp) const;
 

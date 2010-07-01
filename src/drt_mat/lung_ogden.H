@@ -147,6 +147,9 @@ private:
     // material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_lung_ogden; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new LungOgden( *this ) ); }
+
     // THE material routine
     void Evaluate(LINALG::Matrix<6,1>* glstrain,
 		  LINALG::Matrix<6,6>* cmat,

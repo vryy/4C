@@ -127,6 +127,9 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_compogden; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new CompOgden( *this ) ); }
+
     /// get parameters
     int Init() const { return params_->init_; }
     double Nue() const { return params_->nue_; }

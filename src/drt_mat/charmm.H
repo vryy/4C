@@ -200,6 +200,9 @@ private:
 	    return INPAR::MAT::m_charmm;
 	}
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new CHARMM( *this ) ); }
+
 	/// Initialize history variables
 	void Setup(
 		DRT::Container& data_ ///< Container for History

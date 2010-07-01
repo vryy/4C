@@ -121,6 +121,9 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_mooneyrivlin; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new MooneyRivlin( *this ) ); }
+
     /*!
     \brief Mooney-Rivlin type nearly incompressible, hyperelastic 3D material law.
 

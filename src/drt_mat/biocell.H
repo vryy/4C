@@ -121,6 +121,9 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_biocell; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new BioCell( *this ) ); }
+
     void Evaluate(const LINALG::Matrix<6,1>* glstrain,
             LINALG::Matrix<6,6>* cmat,
             LINALG::Matrix<6,1>* stress);

@@ -132,6 +132,9 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_artwallremod; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ArtWallRemod( *this ) ); }
+
     /// evaluate stress and elasticity matrix
     void Evaluate(
             const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,

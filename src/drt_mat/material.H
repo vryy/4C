@@ -63,6 +63,9 @@ namespace MAT
     /// return type of this material
     virtual INPAR::MAT::MaterialType MaterialType() const = 0;
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const = 0;
+
     /// create element material object given the number of a material definition
     static Teuchos::RefCountPtr<Material> Factory(
       int matnum  ///< material ID

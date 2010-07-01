@@ -129,6 +129,9 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_viscoanisotropic; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ViscoAnisotropic( *this ) ); }
+
     /// Setup and Initialize internal stress variables
     void Setup
     (

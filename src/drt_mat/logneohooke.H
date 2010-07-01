@@ -157,6 +157,9 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_logneohooke; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new LogNeoHooke( *this ) ); }
+
     //@}
 
     /// Main <i>0-type</i> material call to determine  2nd PK stress and material constitutive tensor

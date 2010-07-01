@@ -159,6 +159,9 @@ private:
     // material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_aaaraghavanvorp_damage; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AAAraghavanvorp_damage( *this ) ); }
+
     /// Initialize internal stress variables
     void Setup
     (

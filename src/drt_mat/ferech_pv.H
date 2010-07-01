@@ -149,6 +149,9 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_ferech_pv; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new FerEchPV( *this ) ); }
+
     /// compute temperature
     double ComputeTemperature(const double provar) const;
 

@@ -215,6 +215,9 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_aaagasser; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AAAgasser( *this ) ); }
+
     /// <h2>Calculation of location dependent stiffness parameter c in GASSER material formulation:</h2>
     ///
     /// follows...

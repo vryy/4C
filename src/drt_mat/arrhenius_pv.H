@@ -144,6 +144,9 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_arrhenius_pv; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ArrheniusPV( *this ) ); }
+
     /// compute temperature
     double ComputeTemperature(const double provar) const;
 

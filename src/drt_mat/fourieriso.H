@@ -150,6 +150,9 @@ private:
       return INPAR::MAT::m_th_fourier_iso;
     }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new FourierIso( *this ) ); }
+
     //@}
 
     /// Main 1D material call to determine heat flux and constitutive tensor

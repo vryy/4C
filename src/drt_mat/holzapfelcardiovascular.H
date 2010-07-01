@@ -136,6 +136,9 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_holzapfelcardiovascular; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new HolzapfelCardio( *this ) ); }
+
     /// Setup
     void Setup
     (

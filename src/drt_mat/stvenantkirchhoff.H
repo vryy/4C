@@ -125,6 +125,9 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_stvenant; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new StVenantKirchhoff( *this ) ); }
+
     //evaluates stresses for 3d
     void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
                   Epetra_SerialDenseMatrix* cmat_e,

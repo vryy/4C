@@ -127,6 +127,9 @@ private:
 	    return INPAR::MAT::m_protein;
 	}
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new PROTEIN( *this ) ); }
+
 	/// Initialize history variables
 	void Setup(
 		DRT::Container& data_ ///< Container for History

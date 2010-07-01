@@ -151,6 +151,9 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_struct_multiscale; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new MicroMaterial( *this ) ); }
+
     void Evaluate(LINALG::Matrix<3,3>* defgrd,
                   LINALG::Matrix<6,6>* cmat,
                   LINALG::Matrix<6,1>* stress,

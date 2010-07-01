@@ -130,6 +130,8 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_anisotropic_balzani; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AnisotropicBalzani( *this ) ); }
 
     /// evaluate stress and elasticity matrix
     void Evaluate(

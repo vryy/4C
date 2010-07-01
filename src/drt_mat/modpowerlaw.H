@@ -120,6 +120,9 @@ private:
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_modpowerlaw; }
 
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ModPowerLaw( *this ) ); }
+
     /// return material parameters for element calculation
 
     /// consistency constant
