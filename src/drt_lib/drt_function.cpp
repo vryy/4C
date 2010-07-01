@@ -1119,12 +1119,12 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
 	 * - DSURF DIRICHLET CONDITION definition(s) for the application of Womersley Dirichlet values;
 	 *   expample:
 	 *   //DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE FUNCT FUNCT FUNCT FUNCT FUNCT FUNCT
-	 *       E 2  -  1    1    1    0    0    0  1.0 0.0 0.0 0.0 0.0 0.0   1     1     1    none  none  none   1     1     1     0     0     0
+	 *       E 2  -  1    1    1    0    0    0  1.0 1.0 1.0 0.0 0.0 0.0   1     1     1    none  none  none   1     1     1     0     0     0
 	 *
 	 *   ( hold also t1-dof and t2-dof because we do not want radial velocities on the inflow surface)
 	 * - DLINE DIRICHLET CONDITION definition(s) of the line(s) delimiting the Womersley inflow surface;
 	 *   example:
-	 *   E 3 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 1 0 0 0 0 0
+	 *   E 3 - 1 1 1 0 0 0 1.0 1.0 1.0 0.0 0.0 0.0 1 1 1 none none none 1 1 1 0 0 0
 	 *
 	 * - a SURF LOCSYS definition like this one:
 	 *   E 2 - normal nx ny nz tangent tx ty tz origin ox oy oz Type FunctionEvaluation
@@ -1138,7 +1138,8 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
 	 * 								(current "usage": you might run it in serial mode first, get the COG-
 	 * 								coordinates, change your input file accordingly (->LOCSYS) and then rerun
 	 * 								it in parallel mode. Getting this section to run in parallel mode still causes
-	 * 								me some headaches. For the time being, just stick to this method!)
+	 * 								me some headaches. For the time being, just stick to this method!
+	 * 								Also, for now, please define your inflow surface as ONE Design surface.)
 	 *
 	 * further preparations in the FSI DYNAMIC section of your input file
 	 * - set SHAPEDERIVATIVES to 'no'
