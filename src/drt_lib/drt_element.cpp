@@ -121,7 +121,8 @@ node_(old.node_)
   for (fool=old.condition_.begin(); fool!=old.condition_.end(); ++fool)
     SetCondition(fool->first,fool->second);
 
-  mat_ = old.mat_->Clone();
+  if ( old.mat_!=Teuchos::null )
+    mat_ = old.mat_->Clone();
 
   return;
 }
