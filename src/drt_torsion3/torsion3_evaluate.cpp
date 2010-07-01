@@ -33,7 +33,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseVector& elevec2,
     Epetra_SerialDenseVector& elevec3)
-{ 
+{
   DRT::ELEMENTS::Torsion3::ActionType act = Torsion3::calc_none;
   // get the action required
   string action = params.get<string>("action","calc_none");
@@ -52,7 +52,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
   else if (action=="calc_struct_reset_istep") act = Torsion3::calc_struct_reset_istep;
   else if (action=="postprocess_stress") act = Torsion3::postprocess_stress;
   else if (action=="calc_struct_ptcstiff") act = Torsion3::calc_struct_ptcstiff;
-  else 
+  else
   {
     cout<<action<<endl;
     dserror("Unknown type of action for Torsion3");
@@ -66,7 +66,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
       //nothing to do
     }
     break;
-    /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and 
+    /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and
      residual values*/
     case Torsion3::calc_struct_linstiff:
     {
@@ -95,11 +95,11 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
       if (res==null) dserror("Cannot get state vectors 'residual displacement'");
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      
+
       /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
        *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
       NodeShift<3,3>(params,mydisp);
-           
+
 
       // for engineering strains instead of total lagrange use t3_nlnstiffmass2
       if (act == Torsion3::calc_struct_nlnstiffmass)
@@ -109,9 +109,9 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
       else if (act == Torsion3::calc_struct_nlnstiff)
         t3_nlnstiffmass(mydisp,&elemat1,NULL,&elevec1);
       else if (act == Torsion3::calc_struct_internalforce)
-        t3_nlnstiffmass(mydisp,NULL,NULL,&elevec1);   
-      
-      
+        t3_nlnstiffmass(mydisp,NULL,NULL,&elevec1);
+
+
       /*
       //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
       //correctly or not by means of a numerically approximated stiffness matrix
@@ -121,7 +121,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
         //assuming the same number of DOF for all nodes
         int numdof = NumDofPerNode(*(Nodes()[0]));
         int nnode  = NumNode();
-        
+
         //variable to store numerically approximated stiffness matrix
         Epetra_SerialDenseMatrix stiff_approx;
         stiff_approx.Shape(numdof*nnode,numdof*nnode);
@@ -154,7 +154,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
             disp_aux[numdof*k + i] += h_rel;
             //vel_aux[numdof*k + i]  += h_rel / params.get<double>("delta time",0.01);
 
-            t3_nlnstiffmass(disp_aux,NULL,NULL,&force_aux);  
+            t3_nlnstiffmass(disp_aux,NULL,NULL,&force_aux);
 
             //computing derivative d(fint)/du numerically by finite difference
             for(int u = 0 ; u < numdof*nnode ; u++ )
@@ -176,7 +176,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
 
             if ( stiff_relerr(line,col) > 0)
               outputflag = 1;
-              
+
           } //for(int col=0; col<numdof*nnode; col++)
         } //for(int line=0; line<numdof*nnode; line++)
 
@@ -189,11 +189,11 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
 
       } //end of section in which numerical approximation for stiffness matrix is computed
       */
-    
-      
-      
+
+
+
     }
-    break;  
+    break;
     case calc_struct_update_istep:
     case calc_struct_update_imrlike:
     case calc_struct_reset_istep:
@@ -202,9 +202,9 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
     case postprocess_stress:
     {
       //no stress calculation for postprocess. Does not really make sense!
-      dserror("No stress output for Torsion3!");      
+      dserror("No stress output for Torsion3!");
     }
-    break;  
+    break;
     default:
     dserror("Unknown type of action for Torsion3 %d", act);
   }
@@ -222,7 +222,7 @@ int DRT::ELEMENTS::Torsion3::EvaluateNeumann(ParameterList& params,
                                             vector<int>&              lm,
                                             Epetra_SerialDenseVector& elevec1,
                                             Epetra_SerialDenseMatrix* elemat1)
-{ 
+{
   /*torsion spring assumed to be infinitesimally small and thus no Neumann boundary conditions
    * can be assigned to this element*/
   return 0;
@@ -235,10 +235,10 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(vector<double>&           disp,
                                               Epetra_SerialDenseMatrix* stiffmatrix,
                                               Epetra_SerialDenseMatrix* massmatrix,
                                               Epetra_SerialDenseVector* force)
-{  
+{
   //current node position (first entries 0,1,2 for first node, 3,4,5 for second node , 6,7,8 for third node)
   LINALG::Matrix<9,1> xcurr;
-    
+
   //current nodal position
   for (int j=0; j<3; ++j)
   {
@@ -246,45 +246,45 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(vector<double>&           disp,
     xcurr(j+3)   = Nodes()[1]->X()[j] + disp[3 + j];  //second node
     xcurr(j+6)   = Nodes()[2]->X()[j] + disp[6 + j];  //third node
   }
-    
+
   //auxiliary vector for both internal force and stiffness matrix
   LINALG::Matrix<6,1> aux;
   for (int j=0; j<6; ++j)
     aux(j) = xcurr(j+3)-xcurr(j);
-  
+
   //current length of vectors 1-->2  and 2-->3
   LINALG::Matrix<2,1> lcurr;
   for (int j=0; j<2; ++j)
     lcurr(j) = sqrt( pow(aux(3*j),2) + pow(aux(3*j+1),2) + pow(aux(3*j+2),2) );
-  
+
   //computing the change of angle theta (equation 3.3)
   double deltatheta=0.0;
   double dotprod=0.0;
   double s=0.0;
-  
+
   for (int j=0; j<3; ++j)
     dotprod +=  aux(j) * aux(3+j);
 
   s = dotprod/lcurr(0)/lcurr(1);
   deltatheta=acos(s);
-  
+
 
   //variation of theta (equation 3.4)
   LINALG::Matrix<9,1> grtheta;
-  
+
   for (int j=0; j<3; ++j)
   {    //virual displacement of node 1 and 3
-    grtheta(  j)  = -aux(3+j)/lcurr(0)/lcurr(1)+dotprod*aux(  j)/pow(lcurr(0),3)/lcurr(1);   
+    grtheta(  j)  = -aux(3+j)/lcurr(0)/lcurr(1)+dotprod*aux(  j)/pow(lcurr(0),3)/lcurr(1);
     grtheta(6+j)  =  aux(  j)/lcurr(0)/lcurr(1)-dotprod*aux(3+j)/lcurr(0)/pow(lcurr(1),3);
   }
-  
+
   for (int j=0; j<3; ++j)     //virtual displacement of node 2
     grtheta(3+j) = -grtheta(j)-grtheta(j+6);
-  
+
   //auxiliary matrix for stiffness matrix (equation 3.9 and equation 3.10)
   LINALG::Matrix<6,3> A;
   LINALG::Matrix<6,3> B;
-  
+
   for(int j=0; j<3;++j)
   {
     for(int i=0; i<3; ++i)
@@ -295,7 +295,7 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(vector<double>&           disp,
     A(j,j)  += dotprod/pow(lcurr(0),3)/lcurr(1);
     A(3+j,j)+= dotprod/lcurr(0)/pow(lcurr(1),3);
   }
-      
+
   for(int j=0; j<3; ++j)
   {
     for(int i=0; i<3;++i){
@@ -305,29 +305,29 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(vector<double>&           disp,
     B(j,j)  += 1/lcurr(0)/lcurr(1);
     B(3+j,j)+= 1/lcurr(0)/lcurr(1);
   }
-  
+
   //bending potential quadratic
   if (bendingpotential_==quadratic)
   {
-	  
- 
+
+
 	  if((1-s)<=0.00000000001)
 	  {
 	    //calculation of the linear stiffness matrix (if the angle between the trusses is almost zero)
-	    
+
 	    //internal forces (equation 3.17)
 	    if (force != NULL)
 	    {
 	      for (int j=0; j<9; ++j)
-	        (*force)(j) = -springconstant_*grtheta(j);      
+	        (*force)(j) = -springconstant_*grtheta(j);
 	    }
-	    
-	    
+
+
 	    //stiffness matrix (equation 3.19)
-	    if (stiffmatrix != NULL) 
+	    if (stiffmatrix != NULL)
 	    {
-	      for (int j=0; j<3; ++j) 
-	      { 
+	      for (int j=0; j<3; ++j)
+	      {
 	        for (int i=0; i<3; ++i)
 	        {
 	          (*stiffmatrix)(  j,  i) =-springconstant_*( -A(j  ,i) );
@@ -341,21 +341,21 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(vector<double>&           disp,
 	          (*stiffmatrix)(6+j,6+i) =-springconstant_*( -A(j+3,i) );
 	        }
 	      }
-	    } 
+	    }
 	  } // if (linear stiffness matrix)
-	  
+
 	  else
 	  {
 	    //internal forces (equation 3.6) (if the angle between the trusses is NOT almost zero)
 	    if (force != NULL)
 	    {
 	      for (int j=0; j<9; ++j)
-	        (*force)(j) = -1/sqrt(1-s*s)*deltatheta*springconstant_*grtheta(j);     
+	        (*force)(j) = -1/sqrt(1-s*s)*deltatheta*springconstant_*grtheta(j);
 	    }
-	    
-	    
+
+
 	    //stiffness matrix (equation 3.8)
-	    if (stiffmatrix != NULL) 
+	    if (stiffmatrix != NULL)
 	    {
 	      for (int i=0; i<9; ++i)
 	      {
@@ -363,9 +363,9 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(vector<double>&           disp,
 	          (*stiffmatrix)(i,j)=1/(1-s*s)*springconstant_*grtheta(i)*grtheta(j)
 	                              -s/pow(sqrt(1-s*s),3)*deltatheta*springconstant_*grtheta(i)*grtheta(j);
 	      }
-	    
+
 	      for (int j=0; j<3; ++j) //equation 3.13
-	      { 
+	      {
 	        for (int i=0; i<3; ++i)
 	        {
 	          (*stiffmatrix)(  j,  i)+=springconstant_*deltatheta*(-1/sqrt(1-s*s))*( -A(j  ,i) );
@@ -380,11 +380,11 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(vector<double>&           disp,
 	        }
 	      }
 	    } //stiffness matrix
-	  
+
 	  } //else (theta NOT almost zero)
-	
+
   } //bending potetial quadratic
-	  
+
   else
 	  //bending potential cosine
 	  if (bendingpotential_==cosine)
@@ -393,15 +393,15 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(vector<double>&           disp,
 		    if (force != NULL)
 		    {
 		      for (int j=0; j<9; ++j)
-		        (*force)(j) = -springconstant_*grtheta(j);      
+		        (*force)(j) = -springconstant_*grtheta(j);
 		    }
-		    
-		    
+
+
 		    //stiffness matrix (equation 3.17, same as for theta almost zero)
-		    if (stiffmatrix != NULL) 
+		    if (stiffmatrix != NULL)
 		    {
-		      for (int j=0; j<3; ++j) 
-		      { 
+		      for (int j=0; j<3; ++j)
+		      {
 		        for (int i=0; i<3; ++i)
 		        {
 		          (*stiffmatrix)(  j,  i) =-springconstant_*( -A(j  ,i) );
@@ -417,11 +417,11 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(vector<double>&           disp,
 		      }
 		    }  //stiffness matrix
 	  } //bending potential cosine
-  
+
   else
-		std::cout<<"\n No such bending potential. Possible bending potentials: \n quadratic \n cosine"<<endl;  
-  
-	  
+		std::cout<<"\n No such bending potential. Possible bending potentials: \n quadratic \n cosine"<<endl;
+
+
 }//nlnstiffmass
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -460,7 +460,7 @@ inline void DRT::ELEMENTS::Torsion3::NodeShift(ParameterList& params,  //!<param
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
            *z-surface, the shear has to be substracted from nodal coordinates in that case */
-          if(dof == 2 && params.get<int>("CURVENUMBER",-1) >=  1)
+          if(dof == 2 && params.get<int>("CURVENUMBER",-1) >=  1 && params.get<double>("total time",0.0) > params.get<double>("STARTTIME",0.0) )
             disp[numdof*i+params.get<int>("OSCILLDIR",-1)] += params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
         }
 
@@ -471,7 +471,7 @@ inline void DRT::ELEMENTS::Torsion3::NodeShift(ParameterList& params,  //!<param
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
            *z-surface, the shear has to be added to nodal coordinates in that case */
-          if(dof == 2 && params.get<int>("CURVENUMBER",-1) >=  1)
+          if(dof == 2 && params.get<int>("CURVENUMBER",-1) >=  1 && params.get<double>("total time",0.0) > params.get<double>("STARTTIME",0.0) )
             disp[numdof*i+params.get<int>("OSCILLDIR",-1)] -= params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
         }
       }

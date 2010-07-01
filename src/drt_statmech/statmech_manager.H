@@ -102,7 +102,10 @@ public:
      \param oscdir   (in) direction (DOF) of oscillation
    */
   void UpdateForceSensors(vector<int>& sensornodes, int oscdir);
-  
+
+  std::vector< std::vector<int> >& GetCrosslinkerPartner()
+  {return crosslinkerpartner_;}
+
   //! \brief checks orientation of crosslinker relative to linked filaments
 #ifdef D_BEAM3
 #ifdef D_BEAM3II
@@ -130,10 +133,10 @@ protected:
 
   //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
   void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim);
-  
+
   //! \brief generates a vector with a random permutation of the numbers between 0 and N - 1
   std::vector<int> Permutation(const int& N);
-  
+
 
   //! \brief how often SearchNeighbours() has already been called
   int nsearch_;

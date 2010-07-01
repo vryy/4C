@@ -751,7 +751,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
         else
 #endif
 #ifdef D_BEAM3II
-      	if(eot==DRT::ELEMENTS::Beam3Type::Instance())
+      	if(eot==DRT::ELEMENTS::Beam3iiType::Instance())
       	{
           for(int j=0; j<element->NumNode()-1; j++)
           {
@@ -909,13 +909,16 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
   bool dotline = false;
 
 #ifdef D_BEAM3
-  dotline = eot==DRT::ELEMENTS::Beam3Type::Instance();
+  if(element->ElementType().Name()=="Beam3Type")
+  	dotline = eot==DRT::ELEMENTS::Beam3Type::Instance();
 #endif
 #ifdef D_BEAM3II
-  dotline = eot==DRT::ELEMENTS::Beam3iiType::Instance();
+  if(element->ElementType().Name()=="Beam3iiType")
+  	dotline = eot==DRT::ELEMENTS::Beam3iiType::Instance();
 #endif
 #ifdef D_TRUSS3
-  dotline = dotline or eot==DRT::ELEMENTS::Truss3Type::Instance();
+  if(element->ElementType().Name()=="Truss3Type")
+  	dotline = dotline or eot==DRT::ELEMENTS::Truss3Type::Instance();
 #endif
 
   if (dotline)
@@ -1014,6 +1017,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
       }
       else	// output for continuous elements
       {
+
         //writing element by nodal coordinates as a scalar line
         gmshfilecontent << "SL(" << scientific;
         gmshfilecontent<< coord(0,i) << "," << coord(1,i) << "," << coord(2,i) << ","
@@ -1548,7 +1552,7 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
            *z-surface, the shear has to be substracted from nodal coordinates in that case */
-          if(j == 2 && statmechparams_.get<int>("CURVENUMBER",-1) >=  1)
+          if(j == 2 && statmechparams_.get<int>("CURVENUMBER",-1) >=  1 && time_ > statmechparams_.get<double>("STARTTIME",0.0))
             disrow[discret_.DofRowMap()->LID(dofnode[statmechparams_.get<int>("OSCILLDIR",-1)])] -= statmechparams_.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(statmechparams_.get<int>("CURVENUMBER",-1)-1).f(time_);
         }
         /*if node currently has coordinate value smaller than zero, it is shifted by statmechparams_.get<double>("PeriodLength",0.0)
@@ -1560,7 +1564,7 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
            *z-surface, the shear has to be added to nodal coordinates in that case */
-          if(j == 2 && statmechparams_.get<int>("CURVENUMBER",-1) >=  1)
+          if(j == 2 && statmechparams_.get<int>("CURVENUMBER",-1) >=  1 && time_ > statmechparams_.get<double>("STARTTIME",0.0))
             disrow[discret_.DofRowMap()->LID(dofnode[statmechparams_.get<int>("OSCILLDIR",-1)])] += statmechparams_.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(statmechparams_.get<int>("CURVENUMBER",-1)-1).f(time_);
         }
       }
