@@ -109,18 +109,18 @@ void FLD::UTILS::computeStabilizationParams(
                               +--------------> Re2
                                   1
      */
-    const double xi_tau_c = DMIN(re02,1.0);
-
     if (instationary)
     {
       tau_stab_Mu = timefac*DSQR(strle) / (DSQR(strle)*dens*xi01 + (4.0*timefac*dynvisc/mk)*xi02);
       tau_stab_Mp = timefac*DSQR(hk) / (DSQR(hk)*dens*xi11+(4.0 * timefac * dynvisc/mk) * xi12);
+      const double xi_tau_c = DMIN(re02,1.0);
       tau_stab_C  = dens * vel_norm * hk * 0.5 * xi_tau_c;
     }
     else // stationary
     {
       tau_stab_Mu = (DSQR(strle)*mk)/(4.0*dynvisc*xi02);
       tau_stab_Mp = (DSQR(hk)*mk)/(4.0*dynvisc*xi12);
+      const double xi_tau_c = DMIN(re12,1.0);
       tau_stab_C  = dens * vel_norm * hk * 0.5 * xi_tau_c;
     }
   }
