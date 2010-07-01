@@ -1659,7 +1659,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
   complex<double> bessel(0.0,0.0);
 
 // calculation of the velocity by components (index)
-	 // linear transition to physiological profile
+	 // linear transition to physiological profile (may be of advantage to introduce a flexible t_start, here fixed at 1.0)
 	if(t<1.0)
 	{
 		 // calculation of the steady part of the solution
@@ -1674,11 +1674,16 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
 							(z*BesselJ01(z,false)-(complex<double>)(2.0)*BesselJ01(z, true));
 			w += vtemp_.at(k)*real(bessel);
 		}
-		 // division through time curve value because of result = VAlUE*CURVE*FUNCT
-		w = (w + wsteady)/tc_.f(t)*t;
-		 // calculate normal component (in opposite direction due to the normal being an outward normal)
-		w *= -normal_[index];
-		return w;
+		 // division through time curve value because of result = VALUE*CURVE*FUNCT
+		if(tc_.f(t)==0.0)
+			return 0.0;
+		else
+		{
+			w = (w + wsteady)/tc_.f(t)*t;
+			// calculate normal component (in opposite direction due to the normal being an outward normal)
+			w *= -normal_[index];
+			return w;
+		}
 	}
 	 // physiological solution
 	if(t>=1.0)
