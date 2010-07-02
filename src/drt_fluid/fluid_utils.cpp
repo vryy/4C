@@ -573,7 +573,7 @@ std::map<int,double> FLD::UTILS::ComputeSurfaceFlowRates(
 std::map<int,double> FLD::UTILS::ComputeFlowRates(
     DRT::Discretization&           dis  ,
     const RCP<Epetra_Vector>       velnp,
-    string                         condstring)
+    const string                   condstring)
 {
   ParameterList eleparams;
   // set action for elements
