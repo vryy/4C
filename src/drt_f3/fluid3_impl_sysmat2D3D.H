@@ -72,6 +72,20 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
   // get node coordinates and number of elements per node
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
+  LINALG::Matrix<nen_*nsd_,nen_*nsd_>     estif_u(true);
+  LINALG::Matrix<nen_*nsd_,nen_>          estif_p_v(true);
+  LINALG::Matrix<nen_, nen_*nsd_>         estif_q_u(true);
+  LINALG::Matrix<nen_,nen_>               ppmat(true);
+
+  LINALG::Matrix<nen_,1>                  preforce(true);
+  LINALG::Matrix<nsd_,nen_>               velforce(true);
+
+  //! linearisation of residual of momentum equation wrt velocities (precomputed)
+  LINALG::Matrix<nsd_*nsd_,nen_>          lin_resM_Du(true);
+  //! linearisation of residual of momentum equation wrt velocities (precomputed)
+  LINALG::Matrix<nsd_,1>                  resM_Du(true);
+
+  /*
   estif_.Clear();
   estif_p_v_.Clear();
   estif_q_u_.Clear();
@@ -79,6 +93,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
   preforce.Clear();
   velforce.Clear();
+  */
 
   // add displacement when fluid nodes move in the ALE case
   if (ele->IsAle()) xyze_ += edispnp;
@@ -665,124 +680,192 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
   // perform integration for element matrix and right hand side
   //------------------------------------------------------------------------
 
-    lin_resM_Du_.Clear();
-    resM_Du_.Clear();
+    lin_resM_Du.Clear();
+    resM_Du.Clear();
 
   //----------------------------------------------------------------------
-  //  PROVIDE LINEARISATION OF GALERKIN MOMENTUM RESIDUAL WRT VELOCITIES
+  //   PROVIDE LINEARISATION OF GALERKIN MOMENTUM RESIDUAL WRT VELOCITIES
   //-------------------------------------------------------------------------
 
-    LinGalMomResU(timefacfac);
+    LinGalMomResU(lin_resM_Du,
+                  timefacfac);
 
   //----------------------------------------------------------------------
-  //  RESCALE GALERKIN RESIDUAL
+  //   RESCALE GALERKIN RESIDUAL
   //-------------------------------------------------------------------------
 
     if(tds_      ==INPAR::FLUID::subscales_time_dependent
        &&
        transient_==INPAR::FLUID::inertia_stab_keep)
     {
-      LinGalMomResU_subscales(timefacfac, facMtau);
+      LinGalMomResU_subscales(estif_p_v,
+                              lin_resM_Du,
+                              resM_Du,
+                              timefacfac,
+                              facMtau);
     }
 
   //----------------------------------------------------------------------
-  //  INERTIA & CONVECTION (CONVECTIVE AND REACTIVE PART) including rhs contribution
+  //   INERTIA & CONVECTION (CONVECTIVE AND REACTIVE PART)
+  //   including rhs contribution
   //----------------------------------------------------------------------
 
-    InertiaAndConvectionGalPart(rhsfac);
+    InertiaAndConvectionGalPart(estif_u,
+                                velforce,
+                                lin_resM_Du,
+                                resM_Du,
+                                rhsfac);
 
   //----------------------------------------------------------------------
-  //                       VISCOUS GALERKIN PART
+  //   VISCOUS GALERKIN PART
+  //   including viscous stress computation
+  //
+  //   excluding viscous Galerkin Part of the LOMA formulation
   //-----------------------------------------------------------------------
 
-    // viscous stress
+    // viscous stresses
     LINALG::Matrix<nsd_,nsd_> viscstress(true);
 
-    ViscousGalPart(viscstress, timefacfac, rhsfac);
+    ViscousGalPart(estif_u,
+                   viscstress,
+                   timefacfac,
+                   rhsfac);
 
   //----------------------------------------------------------------------
-  //   STABILISATION, CONTINUITY PART AND GALERKIN, VISCOUS PART (LOMA)
+  //   STABILISATION OF CONTINUITY PART AND RHS OF VISCOUS TERM
+  //   adding LOMA contribution to the viscous stress tensor
   //----------------------------------------------------------------------
 
-    ContStab(viscstress, timefac, tau_Mp, tau_C, timefacfac, rhsfac, vstabfac);
+    ContStab_and_ViscousTermRhs(estif_u,
+                                velforce,
+                                viscstress,
+                                timefac,
+                                timefacfac,
+                                tau_C,
+                                rhsfac);
 
   //----------------------------------------------------------------------
-  //   CONSERVATIVE FORMULATION (LOMA & VARYING DENSITY)
+  //   CONSERVATIVE FORMULATION (GENERAL & LOMA & VARYING DENSITY)
+  //   including rhs contribution
   //----------------------------------------------------------------------
 
     if (is_conservative_)
     {
-      ConservativeFormulation(timefacfac, rhsfac);
+      ConservativeFormulation(estif_u,
+                              velforce,
+                              timefacfac,
+                              rhsfac);
     }
 
   //----------------------------------------------------------------------
-  // COMPUTATION OF PRESSURE TERM including right-hand-side contribution
+  //   COMPUTATION OF PRESSURE TERM
+  //   including rhs contribution
   //----------------------------------------------------------------------
 
-    PressureGalPart(timefacfac, press, rhsfac);
+    PressureGalPart(estif_p_v,
+                    velforce,
+                    timefacfac,
+                    rhsfac,
+                    press);
 
   //----------------------------------------------------------------------
-  // COMPUTATION OF CONTINUITY TERM including right-hand-side contribution
+  //   COMPUTATION OF CONTINUITY TERM
+  //   including rhs contribution
   //----------------------------------------------------------------------
 
-    ContinuityGalPart(timefacfac, rhsfac);
+    ContinuityGalPart(estif_q_u,
+                      preforce,
+                      timefacfac,
+                      rhsfac);
 
   //----------------------------------------------------------------------
-  // COMPUTATION FOR ADITIONAL TERMS for low-Mach-number flow
+  //   COMPUTATION OF ADITIONAL TERMS (continuity equation) for LOMA flow
+  //   including rhs contribution
   //----------------------------------------------------------------------
 
     if (physicaltype_ == INPAR::FLUID::loma)
     {
-      LomaGalPart(timefacfac, rhsfac);
+      LomaGalPart(estif_q_u,
+                  preforce,
+                  timefacfac,
+                  rhsfac);
     }
 
   //----------------------------------------------------------------------
   // COMPUTATION OF BODY FORCE TERM on right-hand side
   //----------------------------------------------------------------------
 
-    BodyForceRhsTerm();
+    BodyForceRhsTerm(velforce);
 
   //----------------------------------------------------------------------
   //  PROVIDE LINEARISATION OF MOMENTUM RESIDUAL WRT VELOCITIES FOR ALL
   //       STABILISATION PARTS (EXTEND GALERKIN RES IF NECESSARY)
   //----------------------------------------------------------------------
 
-    StabLinGalMomResU(timefacfac);
+    StabLinGalMomResU(lin_resM_Du, timefacfac);
 
   //----------------------------------------------------------------------
-  //                 PRESSURE STABILISATION PART
+  //   PRESSURE STABILISATION PART
+  //   including rhs contribution
   //----------------------------------------------------------------------
 
     if (pspg_ == INPAR::FLUID::pstab_use_pspg)
     {
-      PSPG(fac3, timefacfac, tau_Mp, rhsfac);
+      PSPG(estif_q_u,
+           ppmat,
+           preforce,
+           lin_resM_Du,
+           fac3,
+           timefacfac,
+           tau_Mp,
+           rhsfac);
     }
 
   //----------------------------------------------------------------------
-  //                     SUPG STABILISATION PART
+  //    SUPG STABILISATION PART
+  //    including rhs socntribution
   //-----------------------------------------------------------------------
 
     if(supg_ == INPAR::FLUID::convective_stab_supg)
     {
-      SUPG(fac3, timefacfac, timetauM);
+      SUPG(estif_u,
+           estif_p_v,
+           velforce,
+           lin_resM_Du,
+           fac3,
+           timefacfac,
+           timetauM);
     }
 
   //----------------------------------------------------------------------
-  //                     CROSS-STRESS STABILISATION PART
+  //    CROSS-STRESS STABILISATION PART
+  //    including rhs contribution
   //----------------------------------------------------------------------
 
     if(cross_ != INPAR::FLUID::cross_stress_stab_none)
     {
-      CrossStressStab(timefac, timefacfac, tau_Mp, fac3);
+      CrossStressStab(estif_u,
+                      estif_p_v,
+                      velforce,
+                      lin_resM_Du,
+                      timefac,
+                      timefacfac,
+                      tau_Mp,
+                      fac3);
     }
 
   //----------------------------------------------------------------------
-  //                   REYNOLDS-STRESS STABILISATION PART
+  //    REYNOLDS-STRESS STABILISATION PART
+  //    including rhs contribution
   //----------------------------------------------------------------------
 
     if(reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
     {
-      ReynoldsStressStab(timefac, timefacfac, tau_Mp, fac3);
+      ReynoldsStressStab(estif_u,
+                         estif_p_v,
+                         lin_resM_Du,
+                         timefacfac,
+                         fac3);
     }
 
   //----------------------------------------------------------------------
@@ -792,7 +875,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
     if (is_higher_order_ele_ && (vstab_ != INPAR::FLUID::viscous_stab_none))
     {
-      ViscStab(timefac, tau_Mp, vstabfac, fac3);
+      ViscStab(estif_u,
+               estif_p_v,
+               velforce,
+               lin_resM_Du,
+               timefac,
+               tau_Mp,
+               vstabfac,
+               fac3);
     }
 
   //----------------------------------------------------------------------
@@ -803,15 +893,12 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
     if(fssgv_ != Fluid3::no_fssgv)
     {
-      if (nsd_ == 3)
-        FineScaleSubGridViscosityTerm(eforce, fssgviscfac);
-      else
-        dserror("Only 3D implementation available");
+      FineScaleSubGridViscosityTerm(velforce, fssgviscfac);
     }
 
-    //--------------------------------------------------------------------
-    // LINEARIZATION WITH RESPECT TO MESH MOTION
-    //---------------------------------------------------------------------
+  //--------------------------------------------------------------------
+  // LINEARIZATION WITH RESPECT TO MESH MOTION
+  //---------------------------------------------------------------------
     if (emesh.IsInitialized())
     {
       if (nsd_ == 3)
@@ -825,7 +912,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
 
   //--------------------------------------------------------------------
-  //            FILL MATRIX
+  //   FILL ELEMENT MATRIX
   //---------------------------------------------------------------------
 
   // add pressure part of residual to force vector
@@ -874,7 +961,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
         for (int idim=0; idim <nsd_; ++idim)
         {
-          estif(numdof_vi+idim, numdof_ui_jdim) += estif_(nsd_vi+idim, nsd_ui_jdim);
+          estif(numdof_vi+idim, numdof_ui_jdim) += estif_u(nsd_vi+idim, nsd_ui_jdim);
         }
       }
     }
@@ -892,7 +979,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
       for (int idim=0; idim <nsd_; ++idim)
       {
-        estif(numdof_vi+idim, numdof_ui_nsd) += estif_p_v_(nsd_vi+idim, ui);
+        estif(numdof_vi+idim, numdof_ui_nsd) += estif_p_v(nsd_vi+idim, ui);
       }
     }
   }
@@ -909,7 +996,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       const int nsd_ui_jdim = nsd_ui+jdim;
 
       for (int vi=0; vi<nen_; ++vi)
-        estif(numdofpernode_*vi+nsd_, numdof_ui_jdim) += estif_q_u_(vi, nsd_ui_jdim);
+        estif(numdofpernode_*vi+nsd_, numdof_ui_jdim) += estif_q_u(vi, nsd_ui_jdim);
     }
   }
 
@@ -1201,7 +1288,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::FDcheck(
 
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU(const double&   timefacfac)
+void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU(
+                     LINALG::Matrix<nsd_*nsd_,nen_> &    lin_resM_Du,
+                     const double &                      timefacfac)
 {
   /*
       stationary                            cross-stress, part 1
@@ -1237,7 +1326,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU(const double&   timefacfa
 
       for (int idim = 0; idim <nsd_; ++idim)
       {
-        lin_resM_Du_(idim_nsd_p_idim[idim],ui)+=v;
+        lin_resM_Du(idim_nsd_p_idim[idim],ui)+=v;
       }
     }
   }
@@ -1250,7 +1339,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU(const double&   timefacfa
 
     for (int idim = 0; idim <nsd_; ++idim)
     {
-      lin_resM_Du_(idim_nsd_p_idim[idim],ui)+=v;
+      lin_resM_Du(idim_nsd_p_idim[idim],ui)+=v;
     }
   }
 
@@ -1266,7 +1355,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU(const double&   timefacfa
 
         for(int jdim=0;jdim<nsd_;++jdim)
         {
-          lin_resM_Du_(idim_nsd+jdim,ui)+=temp*vderxy_(idim,jdim);
+          lin_resM_Du(idim_nsd+jdim,ui)+=temp*vderxy_(idim,jdim);
         }
       }
     }
@@ -1280,7 +1369,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU(const double&   timefacfa
 
       for (int idim = 0; idim <nsd_; ++idim)
       {
-        lin_resM_Du_(idim_nsd_p_idim[idim],ui)+=v;
+        lin_resM_Du(idim_nsd_p_idim[idim],ui)+=v;
       }
     }
   }
@@ -1292,8 +1381,12 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU(const double&   timefacfa
 
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU_subscales(const double&   timefacfac,
-                             double          facMtau)
+void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU_subscales(
+            LINALG::Matrix<nen_*nsd_,nen_>      estif_p_v,
+            LINALG::Matrix<nsd_*nsd_,nen_> &    lin_resM_Du,
+            LINALG::Matrix<nsd_,1> &            resM_Du,
+            const double &                      timefacfac,
+            const double &                      facMtau)
 {
   // rescale Galerkin residual of all terms which have not been
   // integrated by parts
@@ -1308,7 +1401,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU_subscales(const double&  
 
       for(int jdim=0;jdim<nsd_;++jdim)
       {
-        lin_resM_Du_(idim_nsd+jdim,ui)*=C_saccGAL;
+        lin_resM_Du(idim_nsd+jdim,ui)*=C_saccGAL;
       }
     }
   }
@@ -1344,7 +1437,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU_subscales(const double&  
 
         for (int ui=0; ui<nen_; ++ui)
         {
-          lin_resM_Du_(nsd_idim_p_jdim,ui)+=v*viscs2_(nsd_idim_p_jdim, ui);
+          lin_resM_Du(nsd_idim_p_jdim,ui)+=v*viscs2_(nsd_idim_p_jdim, ui);
         }
       }
     }
@@ -1370,7 +1463,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU_subscales(const double&  
 
       for (int idim = 0; idim <nsd_; ++idim)
       {
-        estif_p_v_(fvi + idim,ui)-= v*derxy_(idim,ui)*funct_(vi);
+        estif_p_v(fvi + idim,ui)-= v*derxy_(idim,ui)*funct_(vi);
       }
     }
   }
@@ -1406,7 +1499,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU_subscales(const double&  
   */
   for(int idim = 0; idim <nsd_; ++idim)
   {
-    resM_Du_(idim)=fac_*(-densaf_*sgvelint_(idim)/tau_(1)-momres_old_(idim));
+    resM_Du(idim)=fac_*(-densaf_*sgvelint_(idim)/tau_(1)-momres_old_(idim));
   }
 
   return;
@@ -1419,9 +1512,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU_subscales(const double&  
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::ViscousGalPart(
-                    LINALG::Matrix<nsd_,nsd_> &   viscstress,
-                    const double &               timefacfac,
-                    const double &               rhsfac)
+    LINALG::Matrix<nen_*nsd_,nen_*nsd_> &   estif_u,
+    LINALG::Matrix<nsd_,nsd_> &             viscstress,
+    const double &                          timefacfac,
+    const double &                          rhsfac)
 {
   const double visceff_timefacfac = visceff_*timefacfac;
 
@@ -1450,7 +1544,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ViscousGalPart(
         {
           const int fvi_p_idim = fvi+idim;
 
-          estif_(fvi_p_idim,fui+jdim) += temp*derxy_(idim, ui);
+          estif_u(fvi_p_idim,fui+jdim) += temp*derxy_(idim, ui);
         } // end for (jdim)
       } // end for (idim)
     } // ui
@@ -1472,7 +1566,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ViscousGalPart(
         {
           const int fvi_p_idim = fvi+idim;
 
-          estif_(fvi_p_idim,fui+idim) += temp*derxy_(jdim, ui);
+          estif_u(fvi_p_idim,fui+idim) += temp*derxy_(jdim, ui);
         } // end for (jdim)
       } // end for (idim)
     } // ui
@@ -1495,9 +1589,12 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ViscousGalPart(
 
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3Impl<distype>::PressureGalPart(const double&   timefacfac,
-                     const double&   press,
-                     const double&         rhsfac)
+void DRT::ELEMENTS::Fluid3Impl<distype>::PressureGalPart(
+    LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
+    LINALG::Matrix<nsd_,nen_> &               velforce,
+    const double &                            timefacfac,
+    const double &                            rhsfac,
+    const double &                            press)
 {
   for (int ui=0; ui<nen_; ++ui)
   {
@@ -1515,7 +1612,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PressureGalPart(const double&   timefac
       */
       for (int idim = 0; idim <nsd_; ++idim)
       {
-        estif_p_v_(fvi + idim,ui) += v*derxy_(idim, vi);
+        estif_p_v(fvi + idim,ui) += v*derxy_(idim, vi);
       }
     }
   }
@@ -1539,8 +1636,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PressureGalPart(const double&   timefac
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::ContinuityGalPart(
-                      const double &   timefacfac,
-                      const double &   rhsfac)
+    LINALG::Matrix<nen_, nen_*nsd_> &         estif_q_u,
+    LINALG::Matrix<nen_,1> &                  preforce,
+    const double &                            timefacfac,
+    const double &                            rhsfac)
 {
   for (int vi=0; vi<nen_; ++vi)
   {
@@ -1559,7 +1658,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ContinuityGalPart(
             |                  |
              \                /
         */
-        estif_q_u_(vi,fui+idim) += v*derxy_(idim,ui);
+        estif_q_u(vi,fui+idim) += v*derxy_(idim,ui);
       }
     }
   }  // end for(idim)
@@ -1578,10 +1677,12 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ContinuityGalPart(
 
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3Impl<distype>::LomaGalPart(const double&   timefacfac,
-                        double&         rhsfac)
+void DRT::ELEMENTS::Fluid3Impl<distype>::LomaGalPart(
+    LINALG::Matrix<nen_, nen_*nsd_> &       estif_q_u,
+    LINALG::Matrix<nen_,1> &                preforce,
+    const double &                          timefacfac,
+    const double &                          rhsfac)
 {
-
   //----------------------------------------------------------------------
   // computation of additional terms for low-Mach-number flow:
   // 2) additional rhs term of continuity equation
@@ -1615,7 +1716,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LomaGalPart(const double&   timefacfac,
                 T    |       \         /    |
                       \                    /
           */
-          estif_q_u_(vi,fui+jdim) -= temp*funct_(vi);
+          estif_q_u(vi,fui+jdim) -= temp*funct_(vi);
         }
       }
     }
@@ -1643,14 +1744,18 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LomaGalPart(const double&   timefacfac,
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::ConservativeFormulation(
-                             const double&   timefacfac,
-                             const double&   rhsfac)
+    LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+    LINALG::Matrix<nsd_,nen_> &               velforce,
+    const double &                            timefacfac,
+    const double &                            rhsfac)
 {
   //----------------------------------------------------------------------
-   // computation of additions to convection term (convective and
-   // reactive part) for conservative form of convection term including
-   // right-hand-side contribution
-   //----------------------------------------------------------------------
+  // computation of additions to convection term (convective and
+  // reactive part) for conservative form of convection term including
+  // right-hand-side contribution
+  //----------------------------------------------------------------------
+
+  // TODO: cleaning
 
   for (int idim = 0; idim <nsd_; ++idim)
    {
@@ -1679,7 +1784,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ConservativeFormulation(
            \                                                 /
          */
          double v2 = v*funct_(vi) ;
-         estif_(fvi  , fui  ) += v2;
+         estif_u(fvi  , fui  ) += v2;
          //estif(fvi  , fui  ) += v2;
          //estif(fvip , fuip ) += v2;
          //estif(fvipp, fuipp) += v2;
@@ -1713,7 +1818,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ConservativeFormulation(
              \                             /
            */
            for(int jdim=0; jdim<nsd_;++jdim)
-           estif_(fvi,  fui+jdim  ) += v_idim*derxy_(jdim, ui) ;
+           estif_u(fvi,  fui+jdim  ) += v_idim*derxy_(jdim, ui) ;
 
            //estif(fvi,  fui  ) += v0*derxy_(0, ui) ;
            //estif(fvi,  fuip ) += v0*derxy_(1, ui) ;
@@ -1754,7 +1859,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ConservativeFormulation(
                \                           /
              */
              for(int jdim=0;jdim<nsd_;++jdim)
-               estif_(fvi,  fui +jdim  ) += v_idim*funct_(ui) ;
+               estif_u(fvi,  fui +jdim  ) += v_idim*funct_(ui) ;
 
              //estif(fvi,  fui  ) += v0*funct_(ui) ;
              //estif(fvi,  fuip ) += v0*funct_(ui) ;
@@ -1795,7 +1900,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ConservativeFormulation(
                \                           /
              */
              for(int jdim=0;jdim<nsd_;++jdim)
-               estif_(fvi,  fui+jdim  ) += v_idim*funct_(ui) ;
+               estif_u(fvi,  fui+jdim  ) += v_idim*funct_(ui) ;
 
            }
          }
@@ -1842,10 +1947,15 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ConservativeFormulation(
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3Impl<distype>::PSPG(double &   fac3,
-          const double &   timefacfac,
-          const double &   tau_Mp,
-          double &   rhsfac)
+void DRT::ELEMENTS::Fluid3Impl<distype>::PSPG(
+    LINALG::Matrix<nen_, nen_*nsd_> &         estif_q_u,
+    LINALG::Matrix<nen_,nen_> &               ppmat,
+    LINALG::Matrix<nen_,1> &                  preforce,
+    LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
+    const double &                            fac3,
+    const double &                            timefacfac,
+    const double &                            tau_Mp,
+    const double &                            rhsfac)
 {
   // conservative, stabilization terms are neglected (Hughes)
 
@@ -1918,7 +2028,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PSPG(double &   fac3,
             {
               const double temp_vi_idim=derxy_(idim,vi)*scal_grad_q;
 
-              estif_q_u_(vi,fui_p_jdim) += lin_resM_Du_(nsd_idim+jdim,ui)*temp_vi_idim;
+              estif_q_u(vi,fui_p_jdim) += lin_resM_Du(nsd_idim+jdim,ui)*temp_vi_idim;
             } // jdim
           } // vi
         } // ui
@@ -1938,7 +2048,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PSPG(double &   fac3,
           {
             const int fui_p_idim   = nsd_*ui + idim;
 
-            estif_q_u_(vi,fui_p_idim) += lin_resM_Du_(nsd_idim+idim,ui)*temp_vi_idim;
+            estif_q_u(vi,fui_p_idim) += lin_resM_Du(nsd_idim+idim,ui)*temp_vi_idim;
           } // vi
         } // ui
       } //idim
@@ -1997,9 +2107,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PSPG(double &   fac3,
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(double &  fac3,
-          const double &  timefacfac,
-          const double &  timetauM)
+void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(
+    LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+    LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
+    LINALG::Matrix<nsd_,nen_> &               velforce,
+    LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
+    const double &                            fac3,
+    const double &                            timefacfac,
+    const double &                            timetauM)
 {
   /*
                     /                                \
@@ -2096,7 +2211,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(double &  fac3,
              {
                const int fui_p_jdim   = nsd_*ui + jdim;
 
-               estif_(fvi_p_idim,fui_p_jdim) += lin_resM_Du_(nsd_idim_p_jdim,ui)*supg_test(vi);
+               estif_u(fvi_p_idim,fui_p_jdim) += lin_resM_Du(nsd_idim_p_jdim,ui)*supg_test(vi);
              } // jdim
            } // vi
          } // ui
@@ -2116,7 +2231,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(double &  fac3,
            {
              const int fui_p_idim   = nsd_*ui + idim;
 
-             estif_(fvi_p_idim,fui_p_idim) += lin_resM_Du_(nsd_idim+idim,ui)*supg_test(vi);
+             estif_u(fvi_p_idim,fui_p_idim) += lin_resM_Du(nsd_idim+idim,ui)*supg_test(vi);
            } // ui
          } //idim
        } // vi
@@ -2140,7 +2255,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(double &  fac3,
 
          for (int ui=0; ui<nen_; ++ui)
          {
-           estif_p_v_(fvi,ui) += v*derxy_(idim, ui);
+           estif_p_v(fvi,ui) += v*derxy_(idim, ui);
          }
        }
      }  // end for(idim)
@@ -2228,7 +2343,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(double &  fac3,
              {
                const int fui_p_idim   = nsd_*ui + idim;
 
-               estif_(fvi_p_jdim,fui_p_idim) += v*funct_(ui);
+               estif_u(fvi_p_jdim,fui_p_idim) += v*funct_(ui);
              } // jdim
            } // vi
          } // ui
@@ -2268,10 +2383,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(double &  fac3,
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::ViscStab(
-              const double &              timefac,
-              const double &              tau_Mp,
-              const double&               vstabfac,
-              const double &              fac3)
+    LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+    LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
+    LINALG::Matrix<nsd_,nen_> &               velforce,
+    LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
+    const double &                            timefac,
+    const double &                            tau_Mp,
+    const double &                            vstabfac,
+    const double &                            fac3)
 {
   // viscous stabilization either on left hand side or on right hand side
    if (vstab_ == INPAR::FLUID::viscous_stab_gls || vstab_ == INPAR::FLUID::viscous_stab_usfem)
@@ -2335,7 +2454,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ViscStab(
              {
                const int fvi_p_idim = nsd_*vi+idim;
 
-               estif_(fvi_p_idim,fui_p_jdim) += two_visc_tau*lin_resM_Du_(nsd_*kdim+jdim,ui)*viscs2_(nsd_*idim+kdim,vi);
+               estif_u(fvi_p_idim,fui_p_jdim) += two_visc_tau*lin_resM_Du(nsd_*kdim+jdim,ui)*viscs2_(nsd_*idim+kdim,vi);
              } // vi
            } // kdim
          } // idim
@@ -2362,7 +2481,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ViscStab(
 
            for(int jdim=0;jdim<nsd_;++jdim)
            {
-             estif_p_v_(vi*nsd_ + idim,ui)
+             estif_p_v(vi*nsd_ + idim,ui)
                //ppmat(vi, ui)
                += two_visc_tau*timefac*fac_*(derxy_(jdim, ui))*viscs2_(jdim+(idim*nsd_), vi);
            }
@@ -2408,84 +2527,90 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ViscStab(
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3Impl<distype>::ContStab(
-              LINALG::Matrix<nsd_,nsd_> &   viscstress,
-              const double &                timefac,
-              const double &                tau_Mp,
-              const double &                tau_C,
-              const double &                timefacfac,
-              const double &                rhsfac,
-              const double &                vstabfac)
+void DRT::ELEMENTS::Fluid3Impl<distype>::ContStab_and_ViscousTermRhs(
+    LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+    LINALG::Matrix<nsd_,nen_> &               velforce,
+    LINALG::Matrix<nsd_,nsd_> &               viscstress,
+    const double &                            timefac,
+    const double &                            timefacfac,
+    const double &                            tau_C,
+    const double &                            rhsfac)
 {
-  // TODO: No continuity stabilization?
+  // In the case no continuity stabilization and no LOMA:
+  // the factors 'conti_stab_and_vol_visc_fac' and 'conti_stab_and_vol_visc_rhs' are zero
+  // therefore there is no contribution to the element stiffness matrix and
+  // the viscous stress tensor is NOT altered!!
+  //
+  // ONLY
+  // the rhs contribution of the viscous term is added!!
+
   double conti_stab_and_vol_visc_fac=0.0;
   double conti_stab_and_vol_visc_rhs=0.0;
 
-   if(cstab_ == INPAR::FLUID::continuity_stab_yes)
-   {
-     conti_stab_and_vol_visc_fac+=timefac*tau_C;
-     conti_stab_and_vol_visc_rhs-=tau_C*conres_old_;
-   }
-   if (physicaltype_ == INPAR::FLUID::loma)
-   {
-     conti_stab_and_vol_visc_fac-=(2.0/3.0)*visceff_*timefacfac;
-     conti_stab_and_vol_visc_rhs+=(2.0/3.0)*visceff_*rhsfac*vdiv_;
-   }
+  if(cstab_ == INPAR::FLUID::continuity_stab_yes)
+  {
+    conti_stab_and_vol_visc_fac+=timefac*tau_C;
+    conti_stab_and_vol_visc_rhs-=tau_C*conres_old_;
+  }
+  if (physicaltype_ == INPAR::FLUID::loma)
+  {
+    conti_stab_and_vol_visc_fac-=(2.0/3.0)*visceff_*timefacfac;
+    conti_stab_and_vol_visc_rhs+=(2.0/3.0)*visceff_*rhsfac*vdiv_;
+  }
 
+  /* continuity stabilisation on left hand side */
+  /*
+              /                        \
+             |                          |
+        tauC | nabla o Du  , nabla o v  |
+             |                          |
+              \                        /
+  */
+  /* viscosity term - subtraction for low-Mach-number flow */
+  /*
+             /                             \             /                        \
+            |  1                      / \   |     2 mu  |                          |
+     - 2 mu |  - (nabla o u) I , eps | v |  | = - ----- | nabla o Du  , nabla o v  |
+            |  3                      \ /   |       3   |                          |
+             \                             /             \                        /
+  */
+  for (int ui=0; ui<nen_; ++ui)
+  {
+    const int fui   = nsd_*ui;
 
-   /* continuity stabilisation on left hand side */
-   /*
-                /                        \
-               |                          |
-          tauC | nabla o Du  , nabla o v  |
-               |                          |
-                \                        /
-   */
-   /* viscosity term - subtraction for low-Mach-number flow */
-   /*
-               /                             \             /                        \
-              |  1                      / \   |     2 mu  |                          |
-       - 2 mu |  - (nabla o u) I , eps | v |  | = - ----- | nabla o Du  , nabla o v  |
-              |  3                      \ /   |       3   |                          |
-               \                             /             \                        /
-   */
-   for (int ui=0; ui<nen_; ++ui)
-   {
-     const int fui   = nsd_*ui;
+    for (int idim = 0; idim <nsd_; ++idim)
+    {
+      const int fui_p_idim = fui+idim;
+      const double v0 = conti_stab_and_vol_visc_fac*derxy_(idim,ui);
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi   = nsd_*vi;
 
-     for (int idim = 0; idim <nsd_; ++idim)
-     {
-       const int fui_p_idim = fui+idim;
-       const double v0 = conti_stab_and_vol_visc_fac*derxy_(idim,ui);
-       for (int vi=0; vi<nen_; ++vi)
-       {
-         const int fvi   = nsd_*vi;
+        for(int jdim=0;jdim<nsd_;++jdim)
+        {
+          estif_u(fvi+jdim,fui_p_idim) += v0*derxy_(jdim, vi) ;
+        }
+      }
+    } // end for(idim)
+  }
 
-         for(int jdim=0;jdim<nsd_;++jdim)
-         {
-           estif_(fvi+jdim,fui_p_idim) += v0*derxy_(jdim, vi) ;
-         }
-       }
-     } // end for(idim)
-   }
+  for(int idim=0;idim<nsd_;++idim)
+  {
+    viscstress(idim,idim)-=conti_stab_and_vol_visc_rhs;
+  }
 
-   for(int idim=0;idim<nsd_;++idim)
-   {
-     viscstress(idim,idim)-=conti_stab_and_vol_visc_rhs;
-   }
-
-   //computation of right-hand-side viscosity term
-   for (int vi=0; vi<nen_; ++vi)
-   {
-     for (int idim = 0; idim < nsd_; ++idim)
-     {
-       for (int jdim = 0; jdim < nsd_; ++jdim)
-       {
-         /* viscosity term on right-hand side */
-         velforce(idim,vi)-= viscstress(idim,jdim)*derxy_(jdim,vi);
-       }
-     }
-   }
+  //computation of right-hand-side viscosity term
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    for (int idim = 0; idim < nsd_; ++idim)
+    {
+      for (int jdim = 0; jdim < nsd_; ++jdim)
+      {
+        /* viscosity term on right-hand side */
+        velforce(idim,vi)-= viscstress(idim,jdim)*derxy_(jdim,vi);
+      }
+    }
+  }
 
   return;
 }
@@ -2494,7 +2619,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ContStab(
 
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3Impl<distype>::BodyForceRhsTerm()
+void DRT::ELEMENTS::Fluid3Impl<distype>::BodyForceRhsTerm(
+    LINALG::Matrix<nsd_,nen_> &               velforce)
 {
   for (int idim = 0; idim <nsd_; ++idim)
   {
@@ -2516,7 +2642,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::BodyForceRhsTerm()
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::InertiaAndConvectionGalPart(
-                                 const double &         rhsfac)
+    LINALG::Matrix<nen_*nsd_,nen_*nsd_> &   estif_u,
+    LINALG::Matrix<nsd_,nen_> &             velforce,
+    LINALG::Matrix<nsd_*nsd_,nen_> &        lin_resM_Du,
+    LINALG::Matrix<nsd_,1> &                resM_Du,
+    const double &                          rhsfac)
 {
   /* inertia (contribution to mass matrix) if not is_stationary */
   /*
@@ -2559,7 +2689,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::InertiaAndConvectionGalPart(
 
           for (int jdim= 0; jdim<nsd_;++jdim)
           {
-            estif_(fvi_p_idim,fui+jdim) += funct_(vi)*lin_resM_Du_(idim_nsd+jdim,ui);
+            estif_u(fvi_p_idim,fui+jdim) += funct_(vi)*lin_resM_Du(idim_nsd+jdim,ui);
           } // end for (jdim)
         } // end for (idim)
       } //vi
@@ -2577,7 +2707,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::InertiaAndConvectionGalPart(
 
         for (int idim = 0; idim <nsd_; ++idim)
         {
-          estif_(fvi+idim,fui+idim) += funct_(vi)*lin_resM_Du_(idim*nsd_+idim,ui);
+          estif_u(fvi+idim,fui+idim) += funct_(vi)*lin_resM_Du(idim*nsd_+idim,ui);
         } // end for (idim)
       } //vi
     } // ui
@@ -2590,32 +2720,34 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::InertiaAndConvectionGalPart(
     {
       if (is_genalpha_)
       {
-        resM_Du_(idim)+=fac_*densam_*accint_(idim);
+        resM_Du(idim)+=fac_*densam_*accint_(idim);
       }
       else
       {
-        resM_Du_(idim)+=fac_*densaf_*velint_(idim);
+        resM_Du(idim)+=fac_*densaf_*velint_(idim);
       }
     }
   }  // end if(stationary)
 
   for (int idim = 0; idim <nsd_; ++idim)
   {
-    resM_Du_(idim)+=rhsfac*densaf_*conv_old_(idim);
+    resM_Du(idim)+=rhsfac*densaf_*conv_old_(idim);
   }  // end for(idim)
 
   for (int vi=0; vi<nen_; ++vi)
   {
     for(int idim = 0; idim <nsd_; ++idim)
     {
-      velforce(idim,vi)-=resM_Du_(idim)*funct_(vi);
+      velforce(idim,vi)-=resM_Du(idim)*funct_(vi);
     }
   }
   return;
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3Impl<distype>::StabLinGalMomResU(const double&   timefacfac)
+void DRT::ELEMENTS::Fluid3Impl<distype>::StabLinGalMomResU(
+    LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
+    const double &                            timefacfac)
 {
 
   /*
@@ -2634,7 +2766,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::StabLinGalMomResU(const double&   timef
     //----------------------------------------------------------------------
     /* GALERKIN residual was rescaled and cannot be reused; so rebuild it */
 
-    lin_resM_Du_.Clear();
+    lin_resM_Du.Clear();
 
     int idim_nsd_p_idim[nsd_];
 
@@ -2653,7 +2785,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::StabLinGalMomResU(const double&   timef
 
         for (int idim = 0; idim <nsd_; ++idim)
         {
-          lin_resM_Du_(idim_nsd_p_idim[idim],ui)+=v;
+          lin_resM_Du(idim_nsd_p_idim[idim],ui)+=v;
         }
       }
     }
@@ -2667,7 +2799,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::StabLinGalMomResU(const double&   timef
 
       for (int idim = 0; idim <nsd_; ++idim)
       {
-        lin_resM_Du_(idim_nsd_p_idim[idim],ui)+=v;
+        lin_resM_Du(idim_nsd_p_idim[idim],ui)+=v;
       }
     }
 
@@ -2689,7 +2821,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::StabLinGalMomResU(const double&   timef
 
           for(int jdim=0;jdim<nsd_;++jdim)
           {
-            lin_resM_Du_(idim_nsd+jdim,ui)+=temp*vderxy_(idim,jdim);
+            lin_resM_Du(idim_nsd+jdim,ui)+=temp*vderxy_(idim,jdim);
           }
         }
       }
@@ -2709,7 +2841,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::StabLinGalMomResU(const double&   timef
 
         for (int ui=0; ui<nen_; ++ui)
         {
-          lin_resM_Du_(nsd_idim_p_jdim,ui)+=v*viscs2_(nsd_idim_p_jdim, ui);
+          lin_resM_Du(nsd_idim_p_jdim,ui)+=v*viscs2_(nsd_idim_p_jdim, ui);
         }
       }
     }
@@ -2720,16 +2852,22 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::StabLinGalMomResU(const double&   timef
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::CrossStressStab(
-              const double &  timefac,
-              const double &  timefacfac,
-              const double &  tau_Mp,
-              const double &  fac3)
+    LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+    LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
+    LINALG::Matrix<nsd_,nen_> &               velforce,
+    LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
+    const double &                            timefac,
+    const double &                            timefacfac,
+    const double &                            tau_Mp,
+    const double &                            fac3)
 {
   /*
                                this part is linearised in
                               combination with the standard
                                   Galerkin term above
-                                          +----+
+                                          +----+    LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+    LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
+    LINALG::Matrix<nsd_,nen_> &               velforce,
                                           |    |
                     /                                \
                    |   /    ~n+af       \   n+af      |
@@ -2755,6 +2893,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CrossStressStab(
        crossfac=densaf_*alphaF_*fac3;
      }
 
+     // Stabilization of lhs and the rhs
      if(cross_ == INPAR::FLUID::cross_stress_stab)
      {
        /*
@@ -2799,7 +2938,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CrossStressStab(
 
                for(int kdim=0;kdim<nsd_;++kdim)
                {
-                 estif_(fvi_p_idim,fui_p_jdim) -= crossfac*lin_resM_Du_(nsd_*kdim+jdim,ui)*vderxy_(idim,kdim)*funct_(vi);
+                 estif_u(fvi_p_idim,fui_p_jdim) -= crossfac*lin_resM_Du(nsd_*kdim+jdim,ui)*vderxy_(idim,kdim)*funct_(vi);
                }
              } // jdim
            } // vi
@@ -2823,13 +2962,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CrossStressStab(
            {
              for(int kdim=0;kdim<nsd_;++kdim)
              {
-               estif_p_v_(fvi,ui) -= crossfac*timefacfac*vderxy_(idim,kdim)*derxy_(kdim,ui)*funct_(vi);
+               estif_p_v(fvi,ui) -= crossfac*timefacfac*vderxy_(idim,kdim)*derxy_(kdim,ui)*funct_(vi);
              }
            }
          }  // end for(idim)
        } // vi
      } // end if(cross_ == INPAR::FLUID::cross_stress_stab)
 
+     // Stabilization only of the rhs
      LINALG::Matrix<nsd_,1> temp;
 
      temp.Clear();
@@ -2856,10 +2996,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CrossStressStab(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::ReynoldsStressStab(
-              const double &  timefac,
-              const double &  timefacfac,
-              const double &  tau_Mp,
-              const double &  fac3)
+    LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+    LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
+    LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
+    const double &                            timefacfac,
+    const double &                            fac3)
 {
   /*
                             linearisation of
@@ -2935,7 +3076,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ReynoldsStressStab(
 
               for(int kdim=0;kdim<nsd_;++kdim)
               {
-                estif_(fvi_p_idim,fui_p_jdim) += reyfac*lin_resM_Du_(nsd_*kdim+jdim,ui)*sgvelint_(idim)*derxy_(idim,vi);
+                estif_u(fvi_p_idim,fui_p_jdim) += reyfac*lin_resM_Du(nsd_*kdim+jdim,ui)*sgvelint_(idim)*derxy_(idim,vi);
               }
             } // jdim
           } // vi
@@ -2959,7 +3100,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ReynoldsStressStab(
           {
             for(int kdim=0;kdim<nsd_;++kdim)
             {
-              estif_p_v_(fvi,ui) += reyfac*timefacfac*sgvelint_(idim)*derxy_(kdim,ui)*derxy_(kdim,vi);
+              estif_p_v(fvi,ui) += reyfac*timefacfac*sgvelint_(idim)*derxy_(kdim,ui)*derxy_(kdim,vi);
             }
           }
         }  // end for(idim)
@@ -3004,36 +3145,60 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ReynoldsStressStab(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::FineScaleSubGridViscosityTerm(
-                LINALG::Matrix<(nsd_+1)*nen_,    1> &   eforce,
-                const double &                          fssgviscfac)
+    LINALG::Matrix<nsd_,nen_> &             velforce,
+    const double &                          fssgviscfac)
 {
-  for (int vi=0; vi<nen_; ++vi)
+  if (nsd_ == 2)
   {
-    const int fvi = 4*vi;
-    /* fine-scale subgrid-viscosity term on right hand side */
-    /*
-                        /                          \
-                       |       /    \         / \   |
-       - mu_art(fsu) * |  eps | Dfsu | , eps | v |  |
-                       |       \    /         \ /   |
-                        \                          /
-    */
-    eforce(fvi    ) -= fssgviscfac*(2.0*derxy_(0, vi)*fsvderxy_(0, 0)
-                                   +    derxy_(1, vi)*fsvderxy_(0, 1)
-                                   +    derxy_(1, vi)*fsvderxy_(1, 0)
-                                   +    derxy_(2, vi)*fsvderxy_(0, 2)
-                                   +    derxy_(2, vi)*fsvderxy_(2, 0)) ;
-    eforce(fvi + 1) -= fssgviscfac*(    derxy_(0, vi)*fsvderxy_(0, 1)
-                                   +    derxy_(0, vi)*fsvderxy_(1, 0)
-                                   +2.0*derxy_(1, vi)*fsvderxy_(1, 1)
-                                   +    derxy_(2, vi)*fsvderxy_(1, 2)
-                                   +    derxy_(2, vi)*fsvderxy_(2, 1)) ;
-    eforce(fvi + 2) -= fssgviscfac*(    derxy_(0, vi)*fsvderxy_(0, 2)
-                                   +    derxy_(0, vi)*fsvderxy_(2, 0)
-                                   +    derxy_(1, vi)*fsvderxy_(1, 2)
-                                   +    derxy_(1, vi)*fsvderxy_(2, 1)
-                                   +2.0*derxy_(2, vi)*fsvderxy_(2, 2)) ;
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      /* fine-scale subgrid-viscosity term on right hand side */
+      /*
+                          /                          \
+                         |       /    \         / \   |
+         - mu_art(fsu) * |  eps | Dfsu | , eps | v |  |
+                         |       \    /         \ /   |
+                          \                          /
+      */
+      velforce(0, vi) -= fssgviscfac*(2.0*derxy_(0, vi)*fsvderxy_(0, 0)
+                                     +    derxy_(1, vi)*fsvderxy_(0, 1)
+                                     +    derxy_(1, vi)*fsvderxy_(1, 0)) ;
+      velforce(1, vi) -= fssgviscfac*(    derxy_(0, vi)*fsvderxy_(0, 1)
+                                     +    derxy_(0, vi)*fsvderxy_(1, 0)
+                                     +2.0*derxy_(1, vi)*fsvderxy_(1, 1)) ;
+    }
   }
+  else if(nsd_ == 3)
+  {
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      /* fine-scale subgrid-viscosity term on right hand side */
+      /*
+                            /                          \
+                           |       /    \         / \   |
+           - mu_art(fsu) * |  eps | Dfsu | , eps | v |  |
+                           |       \    /         \ /   |
+                            \                          /
+      */
+      velforce(0, vi) -= fssgviscfac*(2.0*derxy_(0, vi)*fsvderxy_(0, 0)
+                                     +    derxy_(1, vi)*fsvderxy_(0, 1)
+                                     +    derxy_(1, vi)*fsvderxy_(1, 0)
+                                     +    derxy_(2, vi)*fsvderxy_(0, 2)
+                                     +    derxy_(2, vi)*fsvderxy_(2, 0)) ;
+      velforce(1, vi) -= fssgviscfac*(    derxy_(0, vi)*fsvderxy_(0, 1)
+                                     +    derxy_(0, vi)*fsvderxy_(1, 0)
+                                     +2.0*derxy_(1, vi)*fsvderxy_(1, 1)
+                                     +    derxy_(2, vi)*fsvderxy_(1, 2)
+                                     +    derxy_(2, vi)*fsvderxy_(2, 1)) ;
+      velforce(2, vi) -= fssgviscfac*(    derxy_(0, vi)*fsvderxy_(0, 2)
+                                     +    derxy_(0, vi)*fsvderxy_(2, 0)
+                                     +    derxy_(1, vi)*fsvderxy_(1, 2)
+                                     +    derxy_(1, vi)*fsvderxy_(2, 1)
+                                     +2.0*derxy_(2, vi)*fsvderxy_(2, 2)) ;
+    }
+  }
+  else
+    dserror("FineScaleSubGridViscosity is not implemented for 1D");
 
   return;
 }

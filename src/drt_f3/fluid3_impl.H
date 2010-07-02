@@ -408,89 +408,148 @@ namespace ELEMENTS
            tauMu: Franca, Valentin
            tauC : Codina
     */
-    void CalcStabParameter(const double               timefac,
-                           const double               vol);
 
-    void LinGalMomResU(const double&   timefacfac);
+    void CalcStabParameter(
+        const double                            timefac,
+        const double                            vol);
 
-    void LinGalMomResU_subscales(const double&   timefacfac,
-                                 double          facMtau);
+    void LinGalMomResU(
+        LINALG::Matrix<nsd_*nsd_,nen_> &        lin_resM_Du,
+        const double &                          timefacfac);
 
-    void StabLinGalMomResU(const double&   timefacfac);
+    void LinGalMomResU_subscales(
+        LINALG::Matrix<nen_*nsd_,nen_>          estif_p_v,
+        LINALG::Matrix<nsd_*nsd_,nen_> &        lin_resM_Du,
+        LINALG::Matrix<nsd_,1> &                resM_Du,
+        const double &                          timefacfac,
+        const double &                          facMtau);
 
-    void InertiaAndConvectionGalPart(const double &  rhsfac);
+    void InertiaAndConvectionGalPart(
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &   estif_u,
+        LINALG::Matrix<nsd_,nen_> &             velforce,
+        LINALG::Matrix<nsd_*nsd_,nen_> &        lin_resM_Du,
+        LINALG::Matrix<nsd_,1> &                resM_Du,
+        const double &                          rhsfac);
 
 
-    void ViscousGalPart(LINALG::Matrix<nsd_,nsd_> &   viscstress,
-                        const double &              timefacfac,
-                        const double &              rhsfac);
+    void ViscousGalPart(
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &   estif_u,
+        LINALG::Matrix<nsd_,nsd_> &             viscstress,
+        const double &                          timefacfac,
+        const double &                          rhsfac);
 
-    void PressureGalPart(const double&   timefacfac,
-                         const double&   press,
-                         const double&   rhsfac);
 
-    void ContinuityGalPart(const double &  timefacfac,
-                           const double &  rhsfac);
+    void ContStab_and_ViscousTermRhs(
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+        LINALG::Matrix<nsd_,nen_> &               velforce,
+        LINALG::Matrix<nsd_,nsd_> &               viscstress,
+        const double &                            timefac,
+        const double &                            timefacfac,
+        const double &                            tau_C,
+        const double &                            rhsfac);
 
-    void BodyForceRhsTerm();
 
-    void LomaGalPart(const double&   timefacfac,
-                            double&         rhsfac);
+    void ConservativeFormulation(
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+        LINALG::Matrix<nsd_,nen_> &               velforce,
+        const double&                             timefacfac,
+        const double &                            rhsfac);
 
-    void ConservativeFormulation(const double&   timefacfac,
-                                 const double&   rhsfac);
 
-    void PSPG(double &   fac3,
-              const double &   timefacfac,
-              const double &   tau_Mp,
-              double &   rhsfac);
+    void PressureGalPart(
+        LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
+        LINALG::Matrix<nsd_,nen_> &               velforce,
+        const double &                            timefacfac,
+        const double &                            rhsfac,
+        const double &                            press);
 
-    void SUPG(double &  fac3,
-              const double &  timefacfac,
-              const double &  timetauM);
 
-    void ViscStab(const double &  timefac,
-                  const double &  tau_Mp,
-                  const double &  vstabfac,
-                  const double &  fac3);
+    void ContinuityGalPart(
+        LINALG::Matrix<nen_, nen_*nsd_> &         estif_q_u,
+        LINALG::Matrix<nen_,1> &                  preforce,
+        const double &                            timefacfac,
+        const double &                            rhsfac);
 
-    void ContStab(LINALG::Matrix<nsd_,nsd_> &  viscstress,
-                  const double &              timefac,
-                  const double &              tau_Mp,
-                  const double &              tau_C,
-                  const double &              timefacfac,
-                  const double &              rhsfac,
-                  const double &              vstabfac);
+
+    void LomaGalPart(
+        LINALG::Matrix<nen_, nen_*nsd_> &       estif_q_u,
+        LINALG::Matrix<nen_,1> &                preforce,
+        const double &                          timefacfac,
+        const double &                          rhsfac);
+
+
+    void BodyForceRhsTerm(
+        LINALG::Matrix<nsd_,nen_> &               velforce);
+
+
+    void StabLinGalMomResU(
+        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
+        const double&                             timefacfac);
+
+
+    void PSPG(
+        LINALG::Matrix<nen_, nen_*nsd_> &         estif_q_u,
+        LINALG::Matrix<nen_,nen_> &               ppmat,
+        LINALG::Matrix<nen_,1> &                  preforce,
+        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
+        const double &                            fac3,
+        const double &                            timefacfac,
+        const double &                            tau_Mp,
+        const double &                            rhsfac);
+
+    void SUPG(
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+        LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
+        LINALG::Matrix<nsd_,nen_> &               velforce,
+        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
+        const double &                            fac3,
+        const double &                            timefacfac,
+        const double &                            timetauM);
 
     void CrossStressStab(
-                  const double &  timefac,
-                  const double &  timefacfac,
-                  const double &  tau_Mp,
-                  const double & fac3);
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+        LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
+        LINALG::Matrix<nsd_,nen_> &               velforce,
+        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
+        const double &                            timefac,
+        const double &                            timefacfac,
+        const double &                            tau_Mp,
+        const double &                            fac3);
 
     void ReynoldsStressStab(
-                  const double &  timefac,
-                  const double &  timefacfac,
-                  const double &  tau_Mp,
-                  const double &  fac3);
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+        LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
+        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
+        const double &                            timefacfac,
+        const double &                            fac3);
+
+    void ViscStab(
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+        LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
+        LINALG::Matrix<nsd_,nen_> &               velforce,
+        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
+        const double &                            timefac,
+        const double &                            tau_Mp,
+        const double &                            vstabfac,
+        const double &                            fac3);
 
     void FineScaleSubGridViscosityTerm(
-                  LINALG::Matrix<(nsd_+1)*nen_,    1>&  eforce,
-                  const double &                        fssgviscfac);
-
-    void LinMeshMotion_3D(
-                  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
-                  const LINALG::Matrix<nsd_,nen_>&              evelaf,
-                  const double &                                press,
-                  const double &                                timefac,
-                  const double &                                timefacfac);
+        LINALG::Matrix<nsd_,nen_> &               velforce,
+        const double &                            fssgviscfac);
 
     void LinMeshMotion_2D(
-                  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
-                  const LINALG::Matrix<nsd_,nen_>&              evelaf,
-                  const double &                                press,
-                  const double &                                timefac,
-                  const double &                                timefacfac);
+        LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
+        const LINALG::Matrix<nsd_,nen_>&              evelaf,
+        const double &                                press,
+        const double &                                timefac,
+        const double &                                timefacfac);
+
+    void LinMeshMotion_3D(
+        LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
+        const LINALG::Matrix<nsd_,nen_>&              evelaf,
+        const double &                                press,
+        const double &                                timefac,
+        const double &                                timefacfac);
 
     /*!
       \brief calculate rate of strain of (fine-scale) velocity
@@ -600,10 +659,6 @@ namespace ELEMENTS
     //! viscous term including 2nd derivatives
     //! (This array once had three dimensions, now the first two are combined to one.)
     LINALG::Matrix<nsd_*nsd_,nen_> viscs2_;
-    //! residual of momentum equation, velocity part which is not integrated by parts (precomputed)
-    LINALG::Matrix<nsd_,1> resM_Du_;
-    //! linearisation of residual of momentum equation wrt velocities (precomputed)
-    LINALG::Matrix<nsd_*nsd_,nen_> lin_resM_Du_;
     //! linearisation of convection, convective part
     LINALG::Matrix<nen_,1> conv_c_;
     //! linearisation of subgrid-scale convection, convective part
@@ -625,7 +680,11 @@ namespace ELEMENTS
 
     LINALG::Matrix<nsd_,nsd_> vderiv_;
 
-   // LINALG::Matrix<nen_*nsd_,nen_>    estif_lin_;
+    /*
+    //! residual of momentum equation, velocity part which is not integrated by parts (precomputed)
+    LINALG::Matrix<nsd_,1> resM_Du_;
+    //! linearisation of residual of momentum equation wrt velocities (precomputed)
+    LINALG::Matrix<nsd_*nsd_,nen_> lin_resM_Du_;
 
     LINALG::Matrix<nen_*nsd_,nen_*nsd_>     estif_;
     LINALG::Matrix<nen_*nsd_,nen_>          estif_p_v_;
@@ -634,7 +693,7 @@ namespace ELEMENTS
 
     LINALG::Matrix<nen_,1>      preforce;
     LINALG::Matrix<nsd_,nen_>   velforce;
-
+*/
 
     //! coordinates of current integration point in reference coordinates
     LINALG::Matrix<nsd_,1> xsi_;
