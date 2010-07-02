@@ -413,6 +413,7 @@ namespace ELEMENTS
         const double                            timefac,
         const double                            vol);
 
+
     void LinGalMomResU(
         LINALG::Matrix<nsd_*nsd_,nen_> &        lin_resM_Du,
         const double &                          timefacfac);
@@ -449,13 +450,6 @@ namespace ELEMENTS
         const double &                            rhsfac);
 
 
-    void ConservativeFormulation(
-        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
-        LINALG::Matrix<nsd_,nen_> &               velforce,
-        const double&                             timefacfac,
-        const double &                            rhsfac);
-
-
     void PressureGalPart(
         LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
         LINALG::Matrix<nsd_,nen_> &               velforce,
@@ -471,15 +465,22 @@ namespace ELEMENTS
         const double &                            rhsfac);
 
 
+    void BodyForceRhsTerm(
+        LINALG::Matrix<nsd_,nen_> &               velforce);
+
+
+    void ConservativeFormulation(
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+        LINALG::Matrix<nsd_,nen_> &               velforce,
+        const double&                             timefacfac,
+        const double &                            rhsfac);
+
+
     void LomaGalPart(
         LINALG::Matrix<nen_, nen_*nsd_> &       estif_q_u,
         LINALG::Matrix<nen_,1> &                preforce,
         const double &                          timefacfac,
         const double &                          rhsfac);
-
-
-    void BodyForceRhsTerm(
-        LINALG::Matrix<nsd_,nen_> &               velforce);
 
 
     void StabLinGalMomResU(
@@ -506,6 +507,18 @@ namespace ELEMENTS
         const double &                            timefacfac,
         const double &                            timetauM);
 
+
+    void ViscStab(
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+        LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
+        LINALG::Matrix<nsd_,nen_> &               velforce,
+        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
+        const double &                            timefac,
+        const double &                            tau_Mp,
+        const double &                            vstabfac,
+        const double &                            fac3);
+
+
     void CrossStressStab(
         LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
         LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
@@ -521,16 +534,6 @@ namespace ELEMENTS
         LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
         LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
         const double &                            timefacfac,
-        const double &                            fac3);
-
-    void ViscStab(
-        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
-        LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
-        LINALG::Matrix<nsd_,nen_> &               velforce,
-        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
-        const double &                            timefac,
-        const double &                            tau_Mp,
-        const double &                            vstabfac,
         const double &                            fac3);
 
     void FineScaleSubGridViscosityTerm(
