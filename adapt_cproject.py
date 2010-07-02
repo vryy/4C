@@ -78,12 +78,12 @@ def getSymbols(fname):
                 status = flags[1]
                 valid_flag = flag[0:2] == "D_" \
                           or flag[0:5] == "DEBUG" \
-                          or flag[0:5] == "QHULL"
+                          or flag[0:5] == "QHULL" \
+                          or flag[0:5] == "BINIO"
                 if valid_flag == True and status == "ON":
                     symbollist.add(flag.split(":")[0])
     symbollist.add("CCADISCRET")
     symbollist.add("PARALLEL")
-    symbollist.add("BINIO")
     return symbollist
 
 def adapt(do_configure_file):
