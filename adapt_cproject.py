@@ -83,6 +83,7 @@ def getSymbols(fname):
                     symbollist.add(flag.split(":")[0])
     symbollist.add("CCADISCRET")
     symbollist.add("PARALLEL")
+    symbollist.add("BINIO")
     return symbollist
 
 def adapt(do_configure_file):
