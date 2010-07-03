@@ -1786,6 +1786,11 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
   //------------------------------------------
   switch(initfield)
   {
+  case INPAR::FLUID::initfield_zero_field:
+  {
+    // nothing to do
+    break;
+  }
   case INPAR::FLUID::initfield_beltrami_flow:
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();

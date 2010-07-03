@@ -133,7 +133,7 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
     FluidField().ImportFlameFront(flamefront_);
   }
   FluidField().SetInitialFlowField(initfield, initfuncno);
-  FluidField().Output();
+  //FluidField().Output();
   if (initfield == INPAR::COMBUST::initfield_flame_vortex_interaction)
   {
     // delete fluid's memory of flame front; it should never have seen it in the first place!
