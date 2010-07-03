@@ -76,7 +76,7 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
       std::cout << "COMBUST::Algorithm: this is a two-phase flow problem" << std::endl;
   }
 
-  if (Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn,"TIMEINT") != INPAR::FLUID::timeint_gen_alpha)
+  if (Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") == INPAR::FLUID::timeint_gen_alpha)
     dserror("Generalized Alpha time integration scheme not available for combustion");
 
   // get pointers to the discretizations from the time integration scheme of each field
@@ -112,7 +112,7 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   {
     stepreinit_ = true;
     ReinitializeGfunc();
-    if (Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn,"TIMEINT") != INPAR::FLUID::timeint_stationary)
+    if (Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary)
     {
       // reset phin vector in ScaTra time integration scheme to phinp vector
       *ScaTraField().Phin() = *ScaTraField().Phinp();
@@ -121,6 +121,24 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
     stepreinit_ = false;
   }
 
+  //------------------------
+  // set initial fluid field
+  //------------------------
+  const INPAR::COMBUST::InitialField initfield = Teuchos::getIntegralValue<INPAR::COMBUST::InitialField>(
+      combustdyn_.sublist("COMBUSTION FLUID"),"INITIALFIELD");
+  const int initfuncno = combustdyn_.sublist("COMBUSTION FLUID").get<int>("INITFUNCNO");
+  if (initfield == INPAR::COMBUST::initfield_flame_vortex_interaction)
+  {
+    // show flame front to fluid time integration scheme
+    FluidField().ImportFlameFront(flamefront_);
+  }
+  FluidField().SetInitialFlowField(initfield, initfuncno);
+  FluidField().Output();
+  if (initfield == INPAR::COMBUST::initfield_flame_vortex_interaction)
+  {
+    // delete fluid's memory of flame front; it should never have seen it in the first place!
+    FluidField().ImportFlameFront(Teuchos::null);
+  }
   // export interface information to the fluid time integration
   // remark: this is essential here, if DoFluidField() is not called in Timeloop() (e.g. for pure Scatra problems)
   FluidField().ImportInterface(interfacehandle_);
@@ -190,10 +208,10 @@ void COMBUST::Algorithm::TimeLoop()
     // write output to screen and files
     Output();
 
-  // compute current volume of minus domain
-  const double volume_current = ComputeVolume();
-  // print mass conservation check on screen
-  printMassConservationCheck(volume_start, volume_current);
+    // compute current volume of minus domain
+    const double volume_current = ComputeVolume();
+    // print mass conservation check on screen
+    printMassConservationCheck(volume_start, volume_current);
   } // time loop
 
   // compute final volume of minus domain

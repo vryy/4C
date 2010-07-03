@@ -43,6 +43,16 @@ namespace INPAR
       xfemintegration_tetrahedra,
       xfemintegration_hexahedra
     };
+
+    /// type of initial fluid field
+    enum InitialField
+    {
+      initfield_zero_field,
+      initfield_field_by_function,
+      initfield_disturbed_field_by_function,
+      initfield_flame_vortex_interaction,
+      initfield_beltrami_flow
+    };
   }  // namespace COMBUST
 
 }  // namespace INPAR

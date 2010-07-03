@@ -164,7 +164,7 @@ namespace ADAPTER
 
     /// set initial flow field
     virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield, const int startfuncno);
-
+    virtual void SetInitialFlowField(const INPAR::COMBUST::InitialField initfield, const int initfuncno);
     virtual Teuchos::RCP<DRT::Discretization> Discretization() { return fluiddis_; }
     virtual Teuchos::RCP<const DRT::DofSet> DofSet() { return fluid_.StandardDofSet(); }
     virtual void TimeLoop();

@@ -2505,45 +2505,60 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "control parameters for a combustion problem");
 
   DoubleParameter("MAXTIME",10.0,"Total simulation time",&combustcontrol);
-  IntParameter("NUMSTEP",100,"Total number of Timesteps",&combustcontrol);
+  IntParameter("NUMSTEP",100,"Total number of timesteps",&combustcontrol);
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&combustcontrol);
   IntParameter("ITEMAX",10,"Total number of FG iterations",&combustcontrol);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&combustcontrol);
   IntParameter("RESTARTEVRY",20,"Increment for writing restart",&combustcontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&combustcontrol);
   setStringToIntegralParameter<INPAR::FLUID::TimeIntegrationScheme>("TIMEINT","One_Step_Theta","Time Integration Scheme",
-                               tuple<std::string>(
-                                 "Stationary",
-                                 "One_Step_Theta",
-                                 "Generalized_Alpha"),
-                               tuple<INPAR::FLUID::TimeIntegrationScheme>(
-                                 INPAR::FLUID::timeint_stationary,
-                                 INPAR::FLUID::timeint_one_step_theta,
-                                 INPAR::FLUID::timeint_gen_alpha),
-                               &combustcontrol);
+      tuple<std::string>(
+          "Stationary",
+          "One_Step_Theta",
+          "Generalized_Alpha"),
+          tuple<INPAR::FLUID::TimeIntegrationScheme>(
+              INPAR::FLUID::timeint_stationary,
+              INPAR::FLUID::timeint_one_step_theta,
+              INPAR::FLUID::timeint_gen_alpha),
+              &combustcontrol);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolfluid = combustcontrol.sublist("COMBUSTION FLUID",false,
       "control parameters for the fluid field of a combustion problem");
 
   setStringToIntegralParameter<INPAR::COMBUST::CombustionType>("COMBUSTTYPE","Premixed_Combustion",
-                               "Type of combustion problem",
-                               tuple<std::string>(
-                                 "Premixed_Combustion",
-                                 "Two_Phase_Flow"),
-                               tuple<INPAR::COMBUST::CombustionType>(
-                                 INPAR::COMBUST::combusttype_premixedcombustion,
-                                 INPAR::COMBUST::combusttype_twophaseflow),
-                               &combustcontrolfluid);
+      "Type of combustion problem",
+      tuple<std::string>(
+          "Premixed_Combustion",
+          "Two_Phase_Flow"),
+          tuple<INPAR::COMBUST::CombustionType>(
+              INPAR::COMBUST::combusttype_premixedcombustion,
+              INPAR::COMBUST::combusttype_twophaseflow),
+              &combustcontrolfluid);
   setStringToIntegralParameter<INPAR::COMBUST::XFEMIntegration>("XFEMINTEGRATION","Tetrahedra",
-                               "Type of integration strategy for intersected elements",
-                               tuple<std::string>(
-                                 "Tetrahedra",
-                                 "Hexahedra"),
-                               tuple<INPAR::COMBUST::XFEMIntegration>(
-                                 INPAR::COMBUST::xfemintegration_tetrahedra,
-                                 INPAR::COMBUST::xfemintegration_hexahedra),
-                               &combustcontrolfluid);
+      "Type of integration strategy for intersected elements",
+      tuple<std::string>(
+          "Tetrahedra",
+          "Hexahedra"),
+          tuple<INPAR::COMBUST::XFEMIntegration>(
+              INPAR::COMBUST::xfemintegration_tetrahedra,
+              INPAR::COMBUST::xfemintegration_hexahedra),
+              &combustcontrolfluid);
+  setStringToIntegralParameter<INPAR::COMBUST::InitialField>("INITIALFIELD","zero_field","Initial field for fluid problem",
+      tuple<std::string>(
+          "zero_field",
+          "field_by_function",
+          "disturbed_function_by_function",
+          "flame_vortex_interaction",
+          "beltrami_flow"),
+          tuple<INPAR::COMBUST::InitialField>(
+              INPAR::COMBUST::initfield_zero_field,
+              INPAR::COMBUST::initfield_field_by_function,
+              INPAR::COMBUST::initfield_disturbed_field_by_function,
+              INPAR::COMBUST::initfield_flame_vortex_interaction,
+              INPAR::COMBUST::initfield_beltrami_flow),
+              &combustcontrolfluid);
+  IntParameter("INITFUNCNO",-1,"Function for initial field",&combustcontrolfluid);
   DoubleParameter("LAMINAR_FLAMESPEED",1.0,"The laminar flamespeed incorporates all chemical kinetics into the problem for now",&combustcontrolfluid);
   DoubleParameter("MARKSTEIN_LENGTH",0.0,"The Markstein length takes flame curvature into account",&combustcontrolfluid);
   DoubleParameter("NITSCHE_VELOCITY",0.0,"Nitsche parameter to stabilize/penalize the velocity jump",&combustcontrolfluid);

@@ -27,6 +27,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_combust.H"
 
 namespace LINALG
 {
@@ -307,6 +308,12 @@ namespace ADAPTER {
     /// A fluid in multi field problems which involve an implicitly defined interface, e.g. via level set
     /// methods, might need to know the interface geometry
     virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& importflamefront)
+    {
+      dserror("This function is not implemented for this type of fluid! Only available for combustion!");
+    };
+
+    /// set initial flow field for combustion problem
+    virtual void SetInitialFlowField(const INPAR::COMBUST::InitialField initfield, const int initfuncno)
     {
       dserror("This function is not implemented for this type of fluid! Only available for combustion!");
     };

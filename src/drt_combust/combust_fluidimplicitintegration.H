@@ -155,7 +155,7 @@ public:
   /*!
   \brief set initial flow field, also for analytical test problems
   */
-  void SetInitialFlowField(const INPAR::FLUID::InitialField initfield, const int startfuncno);
+  void SetInitialFlowField(const INPAR::COMBUST::InitialField initfield, const int initfuncno);
 
   /*!
   \brief calculate error between a analytical solution and the

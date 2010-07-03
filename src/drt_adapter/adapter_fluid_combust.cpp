@@ -45,7 +45,14 @@ ADAPTER::FluidCombust::FluidCombust(Teuchos::RCP<DRT::Discretization> dis,
 
 void ADAPTER::FluidCombust::SetInitialFlowField(const INPAR::FLUID::InitialField initfield, const int startfuncno)
 {
-  return fluid_.SetInitialFlowField(initfield, startfuncno);
+  // This function is called from the Fluid Base Algorithm, but has no effect.
+  // The fluid flow field is initialized from the COMBUST::Algorithm.
+  return;
+}
+
+void ADAPTER::FluidCombust::SetInitialFlowField(const INPAR::COMBUST::InitialField initfield, const int initfuncno)
+{
+  return fluid_.SetInitialFlowField(initfield, initfuncno);
 }
 
 Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::TrueResidual()

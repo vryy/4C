@@ -208,7 +208,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   fluidtimeparams->set<int>("liftdrag",Teuchos::getIntegralValue<int>(fdyn,"LIFTDRAG"));
 
   // -----------evaluate error for test flows with analytical solutions
-  //int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
   INPAR::FLUID::InitialField initfield = Teuchos::getIntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
   fluidtimeparams->set ("eval err for analyt sol", initfield);
 
@@ -268,7 +267,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->sublist("COMBUSTION FLUID")=prbdyn.sublist("COMBUSTION FLUID");
     // parameter COMBUSTTYPE from sublist COMBUSTION FLUID is also added to sublist XFEM
     fluidtimeparams->sublist("XFEM").set<INPAR::COMBUST::CombustionType>("combusttype",
-                                                                         getIntegralValue<INPAR::COMBUST::CombustionType>(prbdyn.sublist("COMBUSTION FLUID"),"COMBUSTTYPE"));
+        getIntegralValue<INPAR::COMBUST::CombustionType>(prbdyn.sublist("COMBUSTION FLUID"),"COMBUSTTYPE"));
   }
 
   // -------------------------------------------------------------------

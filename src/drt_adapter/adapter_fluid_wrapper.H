@@ -127,6 +127,10 @@ namespace ADAPTER
     {
       dserror("This function is not implemented for this type of fluid! Only available for combustion!");
     };
+    virtual void SetInitialFlowField(const INPAR::COMBUST::InitialField initfield, const int initfuncno)
+    {
+      dserror("This function is not implemented for this type of fluid! Only available for combustion!");
+    };
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
     { return fluid_->ApplyInterfaceVelocities(ivel); }
     virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> ivel,Teuchos::RCP<Epetra_Vector> iforce)
