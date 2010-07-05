@@ -482,9 +482,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       } // end coupling
     } // end la.Size()>1
 
-    // copy capacity matrix if available
-    if (ecapa.A() != NULL) ecapa.Update(ecapa_);
-
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
     // check the time integrator
     const INPAR::THR::DynamicType timint
@@ -672,7 +669,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   {
     dserror("Unknown type of action for Temperature Implementation: %s",action.c_str());
   }
-
+  
   return 0;
 } // Evaluate for multiple dofsets
 
@@ -874,7 +871,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CouplCalculateFintCondCapa(
     if (structmat->MaterialType() == INPAR::MAT::m_thermostvenant)
     {
       MAT::ThermoStVenantKirchhoff* thrstvk
-        = static_cast <const MAT::ThermoStVenantKirchhoff*>(structmat.get());
+        = static_cast <MAT::ThermoStVenantKirchhoff*>(structmat.get());
 
       thrstvk->SetupCthermo(ctemp);
     }
@@ -1072,7 +1069,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Materialize(
   // get the material
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
-  // get Fourier´s law (for "normal" thermal problem)
+  // get Fourier´s law (for "ordinary" thermal problem)
   if (material->MaterialType() == INPAR::MAT::m_th_fourier_iso)
   {
     const MAT::FourierIso* actmat = static_cast<const MAT::FourierIso*>(material.get());
