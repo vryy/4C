@@ -652,6 +652,8 @@ class SparseMatrix : public SparseOperator
     /// binary dump of matrix for debugging
     void Dump(std::string filename);
 
+    /// load a dump
+    void Load(Epetra_Comm & comm, std::string filename);
 
     //@}
 

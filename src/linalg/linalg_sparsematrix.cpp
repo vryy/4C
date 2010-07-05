@@ -48,7 +48,7 @@ Maintainer: Michael Gee
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_RefCountPtr.hpp>
 #include <iterator>
-
+#include <sstream>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1420,15 +1420,15 @@ void LINALG::SparseMatrix::Dump(std::string filename)
 {
   int MyRow;
   int NumEntries;
-  std::string rowsetname = filename + ".row";
-  std::string offsetname = filename + ".off";
-  std::string indicesname = filename + ".idx";
-  std::string valuesname = filename + ".val";
+  std::stringstream rowsetname;  rowsetname  << filename << "." << Comm().MyPID() << ".row";
+  std::stringstream offsetname;  offsetname  << filename << "." << Comm().MyPID() << ".off";
+  std::stringstream indicesname; indicesname << filename << "." << Comm().MyPID() << ".idx";
+  std::stringstream valuesname;  valuesname  << filename << "." << Comm().MyPID() << ".val";
 
-  std::ofstream row(rowsetname.c_str());
-  std::ofstream off(offsetname.c_str());
-  std::ofstream idx(indicesname.c_str());
-  std::ofstream val(valuesname.c_str());
+  std::ofstream row(rowsetname .str().c_str());
+  std::ofstream off(offsetname .str().c_str());
+  std::ofstream idx(indicesname.str().c_str());
+  std::ofstream val(valuesname .str().c_str());
 
   const Epetra_Map& rowmap = RowMap();
 
@@ -1468,6 +1468,76 @@ void LINALG::SparseMatrix::Dump(std::string filename)
       val.write(reinterpret_cast<char*>(&Values[0]),NumEntries*sizeof(double));
     }
   }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::SparseMatrix::Load(Epetra_Comm & comm, std::string filename)
+{
+  std::stringstream rowsetname;  rowsetname  << filename << "." << comm.MyPID() << ".row";
+  std::stringstream offsetname;  offsetname  << filename << "." << comm.MyPID() << ".off";
+  std::stringstream indicesname; indicesname << filename << "." << comm.MyPID() << ".idx";
+  std::stringstream valuesname;  valuesname  << filename << "." << comm.MyPID() << ".val";
+
+  std::ifstream row(rowsetname .str().c_str());
+  std::ifstream off(offsetname .str().c_str());
+  std::ifstream idx(indicesname.str().c_str());
+  std::ifstream val(valuesname .str().c_str());
+
+  std::vector<int> rowids;
+  for ( ;; )
+  {
+    int r;
+    row >> r;
+    if ( not row )
+      break;
+    rowids.push_back(r);
+  }
+
+  Epetra_Map rowmap(-1,rowids.size(),&rowids[0],0,comm);
+
+  if (!rowmap.UniqueGIDs())
+    dserror("Row map is not unique");
+
+  std::vector<int> offnum;
+  for ( ;; )
+  {
+    int o;
+    off >> o;
+    if ( not row )
+      break;
+    offnum.push_back(o);
+  }
+
+  if ( rowids.size()!=offnum.size() )
+    dserror( "failed to read rows and column counts" );
+
+  if (matrixtype_ == CRS_MATRIX)
+    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,&offnum[0],false));
+  else if (matrixtype_ == FE_MATRIX)
+    sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(Copy,rowmap,&offnum[0],false));
+  else
+    dserror("matrix type is not correct");
+
+  for ( unsigned i=0; i<rowids.size(); ++i )
+  {
+    std::vector<int> indices(offnum[i]);
+    std::vector<double> values(offnum[i]);
+
+    for ( int j=0; j<offnum[i]; ++j )
+    {
+      idx >> indices[j];
+      if ( not idx )
+        dserror( "failed to read indices" );
+    }
+    val.read(reinterpret_cast<char*>(&values[0]),offnum[i]*sizeof(double));
+    int err = sysmat_->InsertGlobalValues(rowids[i], offnum[i], &values[0], &indices[0]);
+    if ( err )
+      dserror( "InsertGlobalValues failed: err=%d", err );
+  }
+
+  graph_ = Teuchos::null;
 }
 
 
@@ -1685,7 +1755,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Merge(const LINALG::SparseMatrix& Aii
     dserror("row maps mismatch");
 
   Teuchos::RCP<Epetra_Map> rowmap = MergeMap(Aii.RowMap(),Agi.RowMap(),false);
-  Teuchos::RCP<LINALG::SparseMatrix> mat = 
+  Teuchos::RCP<LINALG::SparseMatrix> mat =
     Teuchos::rcp(new SparseMatrix(*rowmap,max(Aii.MaxNumEntries()+Aig.MaxNumEntries(),
                                               Agi.MaxNumEntries()+Agg.MaxNumEntries())));
 
