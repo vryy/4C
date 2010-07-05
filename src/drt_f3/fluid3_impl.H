@@ -414,6 +414,33 @@ namespace ELEMENTS
         const double                            vol);
 
 
+    void CalcDivEps(
+        const LINALG::Matrix<nsd_,nen_>&        evelaf,
+        const double &                          timefac);
+
+
+    void GetResidualMomentumEq(
+        const LINALG::Matrix<nsd_,nen_>&              eaccam,
+        const double &                                timefac,
+        double &                                      rhsfac);
+
+    void UpdateSubscaleVelocity(
+        Fluid3*       ele,
+        double &      fac1,
+        double &      fac2,
+        double &      fac3,
+        double &      facMtau,
+        int &         iquad);
+
+
+    void GetResidualContinuityEq(
+        const LINALG::Matrix<nsd_,nen_>&          eveln,
+        const LINALG::Matrix<nen_,1>&             escaaf,
+        const LINALG::Matrix<nen_,1>&             escaam,
+        const LINALG::Matrix<nen_,1>&             escadtam,
+        const double & timefac);
+
+
     void LinGalMomResU(
         LINALG::Matrix<nsd_*nsd_,nen_> &        lin_resM_Du,
         const double &                          timefacfac);

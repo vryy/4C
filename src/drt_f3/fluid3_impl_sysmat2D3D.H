@@ -149,26 +149,35 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
     ele->ActivateTDS(intpoints.IP().nquad,nsd_);
   }
 
-  // integration loop
+  //------------------------------------------------
+  //------------------------------- ----------------
+  //    INTEGRATION LOOP
+  //------------------------------------------------
+  //------------------------------------------------
+
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    // evaluate shape functions and derivatives at integration point
+
+  //----------------------------------------------------------------------
+  // evaluate shape functions and derivatives at integration point
+  //----------------------------------------------------------------------
+
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
-    //----------------------------------------------------------------------
-    // get material parameters (evaluation at integration point)
-    //----------------------------------------------------------------------
-    if (mat_gp_) GetMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam);
+  //----------------------------------------------------------------------
+  // get material parameters (evaluation at integration point)
+  //----------------------------------------------------------------------
 
-    // get velocity at integration point
-    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    velint_.Multiply(evelaf,funct_);
+    if (mat_gp_)
+      GetMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam);
+
+  // ---------------------------------------------------------------------
+  // CALCULATE all-scale / fine-scale subgrid viscosity and
+  // stabilization parameter at integration point
+  // ---------------------------------------------------------------------
 
     if (tau_gp_)
     {
-      // ---------------------------------------------------------------------
-      // calculate all-scale or fine-scale subgrid viscosity at element center
-      // ---------------------------------------------------------------------
       visceff_ = visc_;
       if (turb_mod_action_ != Fluid3::no_model)
       {
@@ -180,11 +189,17 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
       else if (fssgv_ != Fluid3::no_fssgv)
         CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,Cs);
 
-      // ---------------------------------------------------------------------
-      // calculate stabilization parameter at element center
-      // ---------------------------------------------------------------------
+      // Stabilization parameter
       CalcStabParameter(timefac,vol);
     }
+
+  //--------------------------------------------------------------------
+  // COMPUTE numerical representation of some single operators
+  //--------------------------------------------------------------------
+
+    // get velocity at integration point
+    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    velint_.Multiply(evelaf,funct_);
 
     // get momentum history data at integration point
     histmom_.Multiply(emhist,funct_);
@@ -217,92 +232,12 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     bodyforce_.Multiply(edeadaf_,funct_);
 
-    //--------------------------------------------------------------------
-    // get numerical representation of some single operators
-    //--------------------------------------------------------------------
+    // get second derivative of the viscous term:
+    // div(epsilon(u))
     if (is_higher_order_ele_)
     {
-      /*--- viscous term: div(epsilon(u)) --------------------------------*/
-      /*   /                                                \
-           |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
-         1 |                                                |
-         - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
-         2 |                                                |
-           |  N_z,xx + N_x,zx + N_y,zy + N_z,yy + 2 N_z,zz  |
-           \                                                /
-
-           with N_x .. x-line of N
-           N_y .. y-line of N                                             */
-
-      /*--- subtraction for low-Mach-number flow: div((1/3)*(div u)*I) */
-      /*   /                            \
-           |  N_x,xx + N_y,yx + N_z,zx  |
-         1 |                            |
-      -  - |  N_x,xy + N_y,yy + N_z,zy  |
-         3 |                            |
-           |  N_x,xz + N_y,yz + N_z,zz  |
-           \                            /
-
-             with N_x .. x-line of N
-             N_y .. y-line of N                                             */
-
-     // set visc_old to zero
-     visc_old_.Clear();
-
-     double prefac;
-     if(physicaltype_ == INPAR::FLUID::loma)
-     {
-       prefac = 1.0/3.0;
-       derxy2_.Scale(prefac);
-     }
-     else prefac = 1.0;
-
-     if (nsd_==3)
-     {
-       for (int inode=0; inode<nen_; ++inode)
-       {
-         double sum = (derxy2_(0,inode)+derxy2_(1,inode)+derxy2_(2,inode))/prefac;
-         viscs2_(0,inode) = 0.5 * (sum + derxy2_(0,inode));
-         viscs2_(1,inode) = 0.5 *  derxy2_(3,inode);
-         viscs2_(2,inode) = 0.5 *  derxy2_(4,inode);
-         viscs2_(3,inode) = 0.5 *  derxy2_(3,inode);
-         viscs2_(4,inode) = 0.5 * (sum + derxy2_(1,inode));
-         viscs2_(5,inode) = 0.5 *  derxy2_(5,inode);
-         viscs2_(6,inode) = 0.5 *  derxy2_(4,inode);
-         viscs2_(7,inode) = 0.5 *  derxy2_(5,inode);
-         viscs2_(8,inode) = 0.5 * (sum + derxy2_(2,inode));
-
-         for (int idim=0; idim<nsd_; ++idim)
-         {
-           const int nsd_idim = idim*nsd_;
-           for (int jdim=0; jdim<nsd_; ++jdim)
-           {
-             visc_old_(idim) += viscs2_(nsd_idim+jdim,inode)*evelaf(jdim,inode);
-           }
-         }
-       }
-     }
-     else if (nsd_==2)
-     {
-       for (int inode=0; inode<nen_; ++inode)
-       {
-       double sum = (derxy2_(0,inode)+derxy2_(1,inode))/prefac;
-       viscs2_(0,inode) = 0.5 * (sum + derxy2_(0,inode));
-       viscs2_(1,inode) = 0.5 * derxy2_(2,inode);
-       viscs2_(2,inode) = 0.5 * derxy2_(2,inode);
-       viscs2_(3,inode) = 0.5 * (sum + derxy2_(1,inode));
-
-       for (int idim=0; idim<nsd_; ++idim)
-       {
-         const int nsd_idim = idim*nsd_;
-         for (int jdim=0; jdim<nsd_; ++jdim)
-         {
-           visc_old_(idim) += viscs2_(nsd_idim+jdim,inode)*evelaf(jdim,inode);
-         }
-       }
-       }
-     }
-     else dserror("Epsilon(N) is not implemented for the 1D case");
+      CalcDivEps(evelaf,
+                 timefac);
     }
     else
     {
@@ -316,18 +251,19 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
     // compute convective operator
     conv_c_.MultiplyTN(derxy_,convvelint_);
 
-    // velocity divergence from previous iteration
 
+    // velocity divergence from previous iteration
     vdiv_ = 0.0;
     for (int idim = 0; idim <nsd_; ++idim)
     {
       vdiv_ += vderxy_(idim, idim);
     }
 
-    //--------------------------------------------------------------------
-    // factors for stabilization, time integration
-    // and fine-scale subgrid-viscosity
-    //--------------------------------------------------------------------
+  //--------------------------------------------------------------------
+  // factors for stabilization, time integration
+  // and fine-scale subgrid-viscosity
+  //--------------------------------------------------------------------
+
     const double tau_M       = tau_(0)*fac_;
     const double tau_Mp      = tau_(1)*fac_;
     const double tau_C       = tau_(2)*fac_;
@@ -339,332 +275,72 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat2D3D(
 
     const double fssgviscfac = fssgvisc_*timefacfac;
 
-    //--------------------------------------------------------------------
-    // The following computations are performed depending on
-    // time-integration, that is, whether it is generalized-alpha or not,
-    // since several terms differ with respect to the scheme:
-    //
-    // 1) calculation of rhs for momentum equation and momentum residual
-    // -> different for generalized-alpha and other schemes
-    //
-    // 2) calculation of additional subgrid-scale velocity when cross-
-    //    and Reynolds-stress are included:
-    // - Cross- and Reynolds-stress are always included simultaneously.
-    // - They are included in a complete form on left- and right-hand side.
-    // - For this purpose, a subgrid-scale convective term is computed.
-    // - Within a Newton linearization, the present formulation is not
-    //   consistent for the reactive terms.
-    // - To turn them off, both flags must be "no".
-    //
-    // 3) calculation of convective scalar term, rhs for continuity
-    //    equation and residual of continuity equations
-    // -> only required for low-Mach-number flow
-    // -> for incompressible flow, residual is velocity divergence only
-    //--------------------------------------------------------------------
 
-    /*-------------------------------------------------------------------*
-     *                                                                   *
-     *                  get residual of momentum equation                *
-     *                                                                   *
-     *-------------------------------------------------------------------*/
+  //--------------------------------------------------------------------
+  // The following computations are performed depending on
+  // time-integration, that is, whether it is generalized-alpha or not,
+  // since several terms differ with respect to the scheme:
+  //
+  // 1) calculation of rhs for momentum equation and momentum residual
+  // -> different for generalized-alpha and other schemes
+  //
+  // 2) calculation of additional subgrid-scale velocity when cross-
+  //    and Reynolds-stress are included:
+  // - Cross- and Reynolds-stress are always included simultaneously.
+  // - They are included in a complete form on left- and right-hand side.
+  // - For this purpose, a subgrid-scale convective term is computed.
+  // - Within a Newton linearization, the present formulation is not
+  //   consistent for the reactive terms.
+  // - To turn them off, both flags must be "no".
+  //
+  // 3) calculation of convective scalar term, rhs for continuity
+  //    equation and residual of continuity equations
+  // -> only required for low-Mach-number flow
+  // -> for incompressible flow, residual is velocity divergence only
+  //--------------------------------------------------------------------
 
-    if (is_genalpha_)
-    {
-      // rhs of momentum equation: density*bodyforce at n+alpha_F
-      rhsmom_.Update(densaf_,bodyforce_,0.0);
+  /*-------------------------------------------------------------------*
+  *                                                                   *
+  *                  get residual of momentum equation                *
+  *                                                                   *
+  *-------------------------------------------------------------------*/
 
-      // get acceleration at time n+alpha_M at integration point
-      accint_.Multiply(eaccam,funct_);
+    GetResidualMomentumEq(eaccam,
+                          timefac,
+                          rhsfac);
 
-      // evaluate momentum residual once for all stabilization right hand sides
-      for (int rr=0;rr<nsd_;++rr)
-      {
-        momres_old_(rr) =
-          densam_*accint_(rr)
-          +
-          densaf_*conv_old_(rr)
-          +
-          gradp_(rr)
-          -
-          2*visceff_*visc_old_(rr)
-          -
-          densaf_*bodyforce_(rr);
-      }
-    }
-    else
-    {
-      // rhs of momentum equation:
-      // density*timefac*bodyforce at n+1 + density*histmom at n
-
-      // in the case of a Boussinesq approximation:
-      //
-      //                    f = (rho - rho_0)/rho_0 *g
-      //
-      // else:
-      //
-      //                           f = rho * g
-
-      if (physicaltype_ == INPAR::FLUID::boussinesq)
-      {
-        rhsmom_.Update(densn_,histmom_,deltadens_*timefac,bodyforce_);
-      }
-      else
-      {
-        rhsmom_.Update(densn_,histmom_,densaf_*timefac,bodyforce_);
-      }
-
-      // modify integration factor for Galerkin rhs
-      rhsfac *= timefac;
-
-      // evaluate momentum residual once for all stabilization right hand sides
-
-      // stationary  : momres_old = theta ( ... ) -  bodyforce_
-      // instationary: momres_old = u_(n+1) + theta ( ... ) - histmom_ - bodyforce_
-      for (int rr=0;rr<nsd_;++rr)
-      {
-        momres_old_(rr) =
-          timefac*(densaf_*conv_old_(rr)+gradp_(rr)-2*visceff_*visc_old_(rr))
-          -
-          rhsmom_(rr);
-      }
-
-      if (is_stationary_ == false)
-      {
-        for (int rr=0;rr<nsd_;++rr)
-        {
-          momres_old_(rr) += densaf_*velint_(rr);
-        }
-      }
-    }
-
-    /*-------------------------------------------------------------------*
-     *                                                                   *
-     *                  update of SUBSCALE VELOCITY                      *
-     *                                                                   *
-     *-------------------------------------------------------------------*/
+  /*-------------------------------------------------------------------*
+  *                                                                   *
+  *                  update of SUBSCALE VELOCITY                      *
+  *                                                                   *
+  *-------------------------------------------------------------------*/
     double fac1   =0.0;
     double fac2   =0.0;
     double fac3   =0.0;
     double facMtau=0.0;
 
-    if(tds_==INPAR::FLUID::subscales_quasistatic)
-    {
-      /*-----------------------------------------------------------------*
-       *                                                                 *
-       *                    classical subgrid closure                    *
-       *                                                                 *
-       *-----------------------------------------------------------------*/
-      if (cross_    != INPAR::FLUID::cross_stress_stab_none or
-          reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
-      {
-        if (is_genalpha_)
-        {
-          // compute subgrid-scale velocity
-          sgvelint_.Update(-tau_(1),momres_old_,0.0);
-        }
-        else
-        {
-          // compute subgrid-scale velocity
-          sgvelint_.Update(-(tau_(1)/dt_),momres_old_,0.0);
-        }
-      }
-    } // end classical subgrid closure
-    else
-    {
-      /*-----------------------------------------------------------------*
-       *                                                                 *
-       *              time dependent subgrid scale closure               *
-       *                                                                 *
-       *-----------------------------------------------------------------*/
-      if(is_stationary_)
-      {
-        dserror("there is no time dependent subgrid scale closure for stationary problems\n");
-      }
+    UpdateSubscaleVelocity(ele,
+                           fac1,
+                           fac2,
+                           fac3,
+                           facMtau,
+                           iquad);
 
-      /*
-                                              1.0
-         facMtau =  -------------------------------------------------------
-                       n+aM                      n+aF
-                    rho     * alphaM * tauM + rho     * alphaF * gamma * dt
-      */
-      facMtau = 1.0/(densam_*alphaM_*tau_(1)+densaf_*afgdt_);
 
-      /*
-         factor for old subgrid velocities:
+  /*-------------------------------------------------------------------*
+  *                                                                   *
+  *                 get residual of continuity equation               *
+  *                                                                   *
+  *-------------------------------------------------------------------*/
 
-                   n+aM                      n+aF
-         fac1 = rho     * alphaM * tauM + rho     * gamma * dt * (alphaF-1)
-      */
-      fac1=(densam_*alphaM_*tau_(1)+densaf_*gamma_*dt_*(alphaF_-1.0))*facMtau;
-      /*
-        factor for old subgrid accelerations
 
-                   n+aM
-         fac2 = rho     * tauM * dt * (alphaM-gamma)
-      */
-      fac2=(densam_*dt_*tau_(1)*(alphaM_-gamma_))*facMtau;
-      /*
-        factor for residual in current subgrid velocities:
+    GetResidualContinuityEq(eveln,
+                            escaaf,
+                            escaam,
+                            escadtam,
+                            timefac);
 
-         fac3 = gamma * dt * tauM
-      */
-      fac3=(gamma_*dt_*tau_(1))*facMtau;
 
-      // if no generalised alpha time integration is used, the momres_old_
-      // contains a scaled residual
-      if (!is_genalpha_)
-      {
-        dserror("the time-dependent subgrid closure requires a genalpha time integration\n");
-      }
-
-      /*         +-                                       -+
-          ~n+1   |        ~n           ~ n            n+1  |
-          u    = | fac1 * u  + fac2 * acc  -fac3 * res     |
-           (i)   |                                    (i)  |
-                 +-                                       -+
-      */
-
-      /* compute the intermediate value of subscale velocity
-
-              ~n+af            ~n+1                   ~n
-              u     = alphaF * u     + (1.0-alphaF) * u
-               (i)              (i)
-
-      */
-
-      for (int rr=0;rr<nsd_;++rr)
-      {
-        ele->UpdateSvelnpInOneDirection(
-          fac1           ,
-          fac2           ,
-          fac3           ,
-          momres_old_(rr),
-          alphaF_        ,
-          rr             ,
-          iquad          ,
-          sgvelint_(rr)  );
-      }
-    } // end time dependent subgrid scale closure
-
-    /*-------------------------------------------------------------------*
-     *                                                                   *
-     *       include computed subgrid velocity in convective term        *
-     *                                                                   *
-     *-------------------------------------------------------------------*/
-
-    if (cross_    != INPAR::FLUID::cross_stress_stab_none or
-        reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
-    {
-      // compute subgrid-scale convective operator
-      sgconv_c_.MultiplyTN(derxy_,sgvelint_);
-    }
-    else
-    {
-      sgconv_c_.Clear();
-    }
-
-    /*-------------------------------------------------------------------*
-     *                                                                   *
-     *                 get residual of continuity equation               *
-     *                                                                   *
-     *-------------------------------------------------------------------*/
-    if (is_genalpha_)
-    {
-      // "incompressible" part of continuity residual: velocity divergence
-      conres_old_ = vdiv_;
-
-      if(physicaltype_ == INPAR::FLUID::loma)
-      {
-        // time derivative of scalar at n+alpha_M
-        const double tder_sca = funct_.Dot(escadtam);
-
-        // gradient of scalar value at n+alpha_F
-        grad_scaaf_.Multiply(derxy_,escaaf);
-
-        // convective scalar term at n+alpha_F
-        conv_scaaf_ = velint_.Dot(grad_scaaf_);
-
-        // add subgrid-scale velocity part also to convective scalar term
-        // -> currently not taken into account
-        /*if (cross    != Fluid3::cross_stress_stab_none or
-            reynolds != Fluid3::reynolds_stress_stab_none)
-          conv_scaaf_ += sgvelint_.Dot(grad_scaaf_);*/
-
-        /*
-
-                 /                                                dp   \
-                |         1     / dT     /         \   \     1      th  |
-                |    q , --- * | ---- + | u o nabla | T | - --- * ----  |
-                |         T     \ dt     \         /   /    p      dt   |
-                 \                                           th        /
-                        +---------------------------------------------+
-                                          rhscon_
-        */
-
-        // rhs of continuity equation (only relevant for low-Mach-number flow)
-        rhscon_ = scadtfac_*tder_sca + scaconvfacaf_*conv_scaaf_ + thermpressadd_;
-
-        // residual of continuity equation
-        conres_old_ -= rhscon_;
-      }
-    }
-    else
-    {
-      // "incompressible" part of continuity residual: velocity divergence
-      conres_old_ = timefac*vdiv_;
-
-      if (physicaltype_ == INPAR::FLUID::loma or physicaltype_ == INPAR::FLUID::varying_density)
-      {
-        // get velocity at n
-        velintn_.Multiply(eveln,funct_);
-
-        // get velocity derivatives at n
-        vderxyn_.MultiplyNT(eveln,derxy_);
-
-        // velocity divergence at n
-        //const double vdivn = vderxyn_(0, 0) + vderxyn_(1, 1) + vderxyn_(2, 2);
-
-        double vdivn = 0.0;
-        for (int idim = 0; idim<nsd_; ++idim)
-        {
-          vdivn += vderxyn_(idim,idim);
-        }
-
-        // scalar value at n+1
-        const double scaaf = funct_.Dot(escaaf);
-
-        // gradient of scalar value at n+1
-        grad_scaaf_.Multiply(derxy_,escaaf);
-
-        // convective scalar term at n+1
-        conv_scaaf_ = velint_.Dot(grad_scaaf_);
-
-        // scalar value at n
-        const double scan = funct_.Dot(escaam);
-
-        // gradient of scalar value at n
-        grad_scan_.Multiply(derxy_,escaam);
-
-        // convective scalar term at n
-        conv_scan_ = velintn_.Dot(grad_scan_);
-
-        // add subgrid-scale velocity part also to convective scalar term
-        // (subgrid-scale velocity at n+1 also approximately used at n)
-        // -> currently not taken into account
-        /*if (cross    != Fluid3::cross_stress_stab_none or
-            reynolds != Fluid3::reynolds_stress_stab_none)
-        {
-          conv_scaaf_ += sgvelint_.Dot(grad_scaaf_);
-          conv_scan_  += sgvelint_.Dot(grad_scan_);
-        }*/
-
-        // rhs of continuity equation (only relevant for low-Mach-number flow)
-        rhscon_ = scadtfac_*(scaaf-scan) + timefac*scaconvfacaf_*conv_scaaf_ + omtheta_*dt_*(scaconvfacn_*conv_scan_-vdivn) + thermpressadd_;
-
-        // residual of continuity equation
-        conres_old_ -= rhscon_;
-      }
-    }
 
   //------------------------------------------------------------------------
   // perform integration for element matrix and right hand side
@@ -1272,6 +948,417 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::FDcheck(
         printf("matrix entry   %+12.5e ",estif(mm,dof));
         printf("\n");
       }
+    }
+  }
+
+  return;
+}
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3Impl<distype>::CalcDivEps(
+    const LINALG::Matrix<nsd_,nen_>&      evelaf,
+
+    const double &                        timefac)
+{
+  /*--- viscous term: div(epsilon(u)) --------------------------------*/
+  /*   /                                                \
+       |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
+     1 |                                                |
+     - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
+     2 |                                                |
+       |  N_z,xx + N_x,zx + N_y,zy + N_z,yy + 2 N_z,zz  |
+       \                                                /
+
+       with N_x .. x-line of N
+       N_y .. y-line of N                                             */
+
+  /*--- subtraction for low-Mach-number flow: div((1/3)*(div u)*I) */
+  /*   /                            \
+       |  N_x,xx + N_y,yx + N_z,zx  |
+     1 |                            |
+  -  - |  N_x,xy + N_y,yy + N_z,zy  |
+     3 |                            |
+       |  N_x,xz + N_y,yz + N_z,zz  |
+       \                            /
+
+         with N_x .. x-line of N
+         N_y .. y-line of N                                             */
+
+  // set visc_old to zero
+  visc_old_.Clear();
+
+  double prefac;
+  if(physicaltype_ == INPAR::FLUID::loma)
+  {
+    prefac = 1.0/3.0;
+    derxy2_.Scale(prefac);
+ }
+  else prefac = 1.0;
+
+  if (nsd_==3)
+  {
+    for (int inode=0; inode<nen_; ++inode)
+    {
+      double sum = (derxy2_(0,inode)+derxy2_(1,inode)+derxy2_(2,inode))/prefac;
+      viscs2_(0,inode) = 0.5 * (sum + derxy2_(0,inode));
+      viscs2_(1,inode) = 0.5 *  derxy2_(3,inode);
+      viscs2_(2,inode) = 0.5 *  derxy2_(4,inode);
+      viscs2_(3,inode) = 0.5 *  derxy2_(3,inode);
+      viscs2_(4,inode) = 0.5 * (sum + derxy2_(1,inode));
+      viscs2_(5,inode) = 0.5 *  derxy2_(5,inode);
+      viscs2_(6,inode) = 0.5 *  derxy2_(4,inode);
+      viscs2_(7,inode) = 0.5 *  derxy2_(5,inode);
+      viscs2_(8,inode) = 0.5 * (sum + derxy2_(2,inode));
+
+      for (int idim=0; idim<nsd_; ++idim)
+      {
+        const int nsd_idim = idim*nsd_;
+        for (int jdim=0; jdim<nsd_; ++jdim)
+        {
+          visc_old_(idim) += viscs2_(nsd_idim+jdim,inode)*evelaf(jdim,inode);
+        }
+      }
+    }
+  }
+  else if (nsd_==2)
+  {
+    for (int inode=0; inode<nen_; ++inode)
+    {
+    double sum = (derxy2_(0,inode)+derxy2_(1,inode))/prefac;
+    viscs2_(0,inode) = 0.5 * (sum + derxy2_(0,inode));
+    viscs2_(1,inode) = 0.5 * derxy2_(2,inode);
+    viscs2_(2,inode) = 0.5 * derxy2_(2,inode);
+    viscs2_(3,inode) = 0.5 * (sum + derxy2_(1,inode));
+
+    for (int idim=0; idim<nsd_; ++idim)
+    {
+      const int nsd_idim = idim*nsd_;
+      for (int jdim=0; jdim<nsd_; ++jdim)
+      {
+        visc_old_(idim) += viscs2_(nsd_idim+jdim,inode)*evelaf(jdim,inode);
+      }
+    }
+    }
+  }
+  else dserror("Epsilon(N) is not implemented for the 1D case");
+
+  return;
+}
+
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualMomentumEq(
+    const LINALG::Matrix<nsd_,nen_>&              eaccam,
+    const double &                                timefac,
+    double &                                      rhsfac)
+{
+  if (is_genalpha_)
+  {
+    // rhs of momentum equation: density*bodyforce at n+alpha_F
+    rhsmom_.Update(densaf_,bodyforce_,0.0);
+
+    // get acceleration at time n+alpha_M at integration point
+    accint_.Multiply(eaccam,funct_);
+
+    // evaluate momentum residual once for all stabilization right hand sides
+    for (int rr=0;rr<nsd_;++rr)
+    {
+      momres_old_(rr) =
+        densam_*accint_(rr)
+        +
+        densaf_*conv_old_(rr)
+        +
+        gradp_(rr)
+        -
+        2*visceff_*visc_old_(rr)
+        -
+        densaf_*bodyforce_(rr);
+    }
+  }
+  else
+  {
+    // rhs of momentum equation:
+    // density*timefac*bodyforce at n+1 + density*histmom at n
+
+    // in the case of a Boussinesq approximation:
+    //
+    //                    f = (rho - rho_0)/rho_0 *g
+    //
+    // else:
+    //
+    //                           f = rho * g
+
+    if (physicaltype_ == INPAR::FLUID::boussinesq)
+    {
+      rhsmom_.Update(densn_,histmom_,deltadens_*timefac,bodyforce_);
+    }
+    else
+    {
+      rhsmom_.Update(densn_,histmom_,densaf_*timefac,bodyforce_);
+    }
+
+    // modify integration factor for Galerkin rhs
+    rhsfac *= timefac;
+
+    // evaluate momentum residual once for all stabilization right hand sides
+
+    // stationary  : momres_old = theta ( ... ) -  bodyforce_
+    // instationary: momres_old = u_(n+1) + theta ( ... ) - histmom_ - bodyforce_
+    for (int rr=0;rr<nsd_;++rr)
+    {
+      momres_old_(rr) =
+        timefac*(densaf_*conv_old_(rr)+gradp_(rr)-2*visceff_*visc_old_(rr))
+        -
+        rhsmom_(rr);
+    }
+
+    if (is_stationary_ == false)
+    {
+      for (int rr=0;rr<nsd_;++rr)
+      {
+        momres_old_(rr) += densaf_*velint_(rr);
+      }
+    }
+  }
+
+  return;
+}
+
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3Impl<distype>::UpdateSubscaleVelocity(
+    Fluid3*         ele,
+    double &        fac1,
+    double &        fac2,
+    double &        fac3,
+    double &        facMtau,
+    int    &        iquad)
+{
+  if(tds_==INPAR::FLUID::subscales_quasistatic)
+  {
+    /*-----------------------------------------------------------------*
+     *                                                                 *
+     *                    classical subgrid closure                    *
+     *                                                                 *
+     *-----------------------------------------------------------------*/
+    if (cross_    != INPAR::FLUID::cross_stress_stab_none or
+        reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
+    {
+      if (is_genalpha_)
+      {
+        // compute subgrid-scale velocity
+        sgvelint_.Update(-tau_(1),momres_old_,0.0);
+      }
+      else
+      {
+        // compute subgrid-scale velocity
+        sgvelint_.Update(-(tau_(1)/dt_),momres_old_,0.0);
+      }
+    }
+  } // end classical subgrid closure
+  else
+  {
+    /*-----------------------------------------------------------------*
+     *                                                                 *
+     *              time dependent subgrid scale closure               *
+     *                                                                 *
+     *-----------------------------------------------------------------*/
+    if(is_stationary_)
+    {
+      dserror("there is no time dependent subgrid scale closure for stationary problems\n");
+    }
+
+    /*
+                                            1.0
+       facMtau =  -------------------------------------------------------
+                     n+aM                      n+aF
+                  rho     * alphaM * tauM + rho     * alphaF * gamma * dt
+    */
+    facMtau = 1.0/(densam_*alphaM_*tau_(1)+densaf_*afgdt_);
+
+    /*
+       factor for old subgrid velocities:
+
+                 n+aM                      n+aF
+       fac1 = rho     * alphaM * tauM + rho     * gamma * dt * (alphaF-1)
+    */
+    fac1=(densam_*alphaM_*tau_(1)+densaf_*gamma_*dt_*(alphaF_-1.0))*facMtau;
+    /*
+      factor for old subgrid accelerations
+
+                 n+aM
+       fac2 = rho     * tauM * dt * (alphaM-gamma)
+    */
+    fac2=(densam_*dt_*tau_(1)*(alphaM_-gamma_))*facMtau;
+    /*
+      factor for residual in current subgrid velocities:
+
+       fac3 = gamma * dt * tauM
+    */
+    fac3=(gamma_*dt_*tau_(1))*facMtau;
+
+    // if no generalised alpha time integration is used, the momres_old_
+    // contains a scaled residual
+    if (!is_genalpha_)
+    {
+      dserror("the time-dependent subgrid closure requires a genalpha time integration\n");
+    }
+
+    /*         +-                                       -+
+        ~n+1   |        ~n           ~ n            n+1  |
+        u    = | fac1 * u  + fac2 * acc  -fac3 * res     |
+         (i)   |                                    (i)  |
+               +-                                       -+
+    */
+
+    /* compute the intermediate value of subscale velocity
+
+            ~n+af            ~n+1                   ~n
+            u     = alphaF * u     + (1.0-alphaF) * u
+             (i)              (i)
+
+    */
+
+    for (int rr=0;rr<nsd_;++rr)
+    {
+      ele->UpdateSvelnpInOneDirection(
+        fac1           ,
+        fac2           ,
+        fac3           ,
+        momres_old_(rr),
+        alphaF_        ,
+        rr             ,
+        iquad          ,
+        sgvelint_(rr)  );
+    }
+  } // end time dependent subgrid scale closure
+
+  /*-------------------------------------------------------------------*
+   *                                                                   *
+   *       include computed subgrid velocity in convective term        *
+   *                                                                   *
+   *-------------------------------------------------------------------*/
+
+  if (cross_    != INPAR::FLUID::cross_stress_stab_none or
+      reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
+  {
+    // compute subgrid-scale convective operator
+    sgconv_c_.MultiplyTN(derxy_,sgvelint_);
+  }
+  else
+  {
+    sgconv_c_.Clear();
+  }
+
+  return;
+}
+
+
+
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualContinuityEq(
+    const LINALG::Matrix<nsd_,nen_>&          eveln,
+    const LINALG::Matrix<nen_,1>&             escaaf,
+    const LINALG::Matrix<nen_,1>&             escaam,
+    const LINALG::Matrix<nen_,1>&             escadtam,
+    const double &                            timefac)
+{
+  if (is_genalpha_)
+  {
+    // "incompressible" part of continuity residual: velocity divergence
+    conres_old_ = vdiv_;
+
+    if(physicaltype_ == INPAR::FLUID::loma)
+    {
+      // time derivative of scalar at n+alpha_M
+      const double tder_sca = funct_.Dot(escadtam);
+
+      // gradient of scalar value at n+alpha_F
+      grad_scaaf_.Multiply(derxy_,escaaf);
+
+      // convective scalar term at n+alpha_F
+      conv_scaaf_ = velint_.Dot(grad_scaaf_);
+
+      // add subgrid-scale velocity part also to convective scalar term
+      // -> currently not taken into account
+      /*if (cross    != Fluid3::cross_stress_stab_none or
+          reynolds != Fluid3::reynolds_stress_stab_none)
+        conv_scaaf_ += sgvelint_.Dot(grad_scaaf_);*/
+
+      /*
+
+               /                                                dp   \
+              |         1     / dT     /         \   \     1      th  |
+              |    q , --- * | ---- + | u o nabla | T | - --- * ----  |
+              |         T     \ dt     \         /   /    p      dt   |
+               \                                           th        /
+                      +---------------------------------------------+
+                                        rhscon_
+      */
+
+      // rhs of continuity equation (only relevant for low-Mach-number flow)
+      rhscon_ = scadtfac_*tder_sca + scaconvfacaf_*conv_scaaf_ + thermpressadd_;
+
+      // residual of continuity equation
+      conres_old_ -= rhscon_;
+    }
+  }
+  else
+  {
+    // "incompressible" part of continuity residual: velocity divergence
+    conres_old_ = timefac*vdiv_;
+
+    if (physicaltype_ == INPAR::FLUID::loma or physicaltype_ == INPAR::FLUID::varying_density)
+    {
+      // get velocity at n
+      velintn_.Multiply(eveln,funct_);
+
+      // get velocity derivatives at n
+      vderxyn_.MultiplyNT(eveln,derxy_);
+
+      // velocity divergence at n
+      //const double vdivn = vderxyn_(0, 0) + vderxyn_(1, 1) + vderxyn_(2, 2);
+
+      double vdivn = 0.0;
+      for (int idim = 0; idim<nsd_; ++idim)
+      {
+        vdivn += vderxyn_(idim,idim);
+      }
+
+      // scalar value at n+1
+      const double scaaf = funct_.Dot(escaaf);
+
+      // gradient of scalar value at n+1
+      grad_scaaf_.Multiply(derxy_,escaaf);
+
+      // convective scalar term at n+1
+      conv_scaaf_ = velint_.Dot(grad_scaaf_);
+
+      // scalar value at n
+      const double scan = funct_.Dot(escaam);
+
+      // gradient of scalar value at n
+      grad_scan_.Multiply(derxy_,escaam);
+
+      // convective scalar term at n
+      conv_scan_ = velintn_.Dot(grad_scan_);
+
+      // add subgrid-scale velocity part also to convective scalar term
+      // (subgrid-scale velocity at n+1 also approximately used at n)
+      // -> currently not taken into account
+      /*if (cross    != Fluid3::cross_stress_stab_none or
+          reynolds != Fluid3::reynolds_stress_stab_none)
+      {
+        conv_scaaf_ += sgvelint_.Dot(grad_scaaf_);
+        conv_scan_  += sgvelint_.Dot(grad_scan_);
+      }*/
+
+      // rhs of continuity equation (only relevant for low-Mach-number flow)
+      rhscon_ = scadtfac_*(scaaf-scan) + timefac*scaconvfacaf_*conv_scaaf_ + omtheta_*dt_*(scaconvfacn_*conv_scan_-vdivn) + thermpressadd_;
+
+      // residual of continuity equation
+      conres_old_ -= rhscon_;
     }
   }
 
