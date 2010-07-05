@@ -2584,7 +2584,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       LINALG::Matrix<nen_,1> tmp;
       tmp.MultiplyTN(derxy_,velino);
       const double val = tmp.Norm1();
-      const double h = 2.0/val; // h=streamlength
+      // const double h = 2.0/val; // h=streamlength
 
       // 2) get element length for tau_Mp/tau_C: volume-equival. diameter -> not default
       // const double h = pow((6.*vol/PI),(1.0/3.0)); //warning: 3D formula
@@ -2593,8 +2593,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       //    2D case: characterisitc length is the square root of the element area
       //    1D case: characteristic length is the element length
       // get number of dimensions (convert from int to double)
-      // const double dim = (double) nsd_;
-      // const double h = pow(vol,(1.0/dim));
+      const double dim = (double) nsd_;
+      const double h = pow(vol,(1.0/dim));
 
       // parameter relating convective and diffusive forces + respective switch
       double epe = mk * densnp_[k] * vel_norm * h / diffus;
@@ -2766,8 +2766,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       if (k_bar < 700.0) fac_alpha = (kp-km)/(kp+km);
       const double fac_mu    = (2.0*(2.0/(kp+km))+1.0)/3.0;
 
-      // compute tau
+      // compute non-dimensional form of tau
       tau_[k] = (fac_mu*(fac_gamma-1.0)-(fac_gamma+1.0)*cfl*((fac_alpha/2.0)+(fac_kappa/epe)))/(fac_alpha*(fac_gamma-1.0)+cfl*fac_kappa*(fac_gamma+1.0));
+
+      // compute dimensional (final) form of tau
+      tau_[k] *= h/vel_norm;
     }
     break;
     case INPAR::SCATRA::tau_zero:
@@ -2789,6 +2792,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
   string name = "tau_"+ temp.str();
   actele->AddToData(name,v);
 #endif
+
+      //cout << "h: " << h << " velocity: " << vel_norm << " diffus: " << diffus << " tau: " << tau_[0];
+      //printf("\n");
+
+      //cout << "tau: " << tau_[0];
+      //printf("\n");
 
   return;
 } //ScaTraImpl::CalTau
