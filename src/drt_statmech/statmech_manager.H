@@ -103,8 +103,8 @@ public:
    */
   void UpdateForceSensors(vector<int>& sensornodes, int oscdir);
 
-  std::vector< std::vector<int> >& GetCrosslinkerPartner()
-  {return crosslinkerpartner_;}
+  //! \brief writes element node coordinates for fiber orientation analysis
+  void FiberOrientOutput(const Epetra_Vector& disrow, const std::ostringstream& filename);
 
   //! \brief checks orientation of crosslinker relative to linked filaments
 #ifdef D_BEAM3
@@ -137,6 +137,9 @@ protected:
   //! \brief generates a vector with a random permutation of the numbers between 0 and N - 1
   std::vector<int> Permutation(const int& N);
 
+
+  //! \brief switch between different on and off-rates
+  bool konswitch_;
 
   //! \brief how often SearchNeighbours() has already been called
   int nsearch_;

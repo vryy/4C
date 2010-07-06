@@ -54,6 +54,7 @@ Maintainer: Christian Cyron
  *----------------------------------------------------------------------*/
 StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& discret):
   statmechparams_( DRT::Problem::Instance()->StatisticalMechanicsParams() ),
+  konswitch_(false),
   nsearch_(0),
   starttimeoutput_(-1.0),
   endtoendref_(0.0),
@@ -654,7 +655,21 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
         //calling method for writing Gmsh output
         GmshOutput(dis,filename,istep);
       }
+    }
+    break;
+    //writing
+    case INPAR::STATMECH::statout_fiberorientation:
+    {
+      //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
+      if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1)  == 0 )
+      {
+        // first index = time step index
+        std::ostringstream filename;
 
+        filename << "./GmshOutput/FiberEleOrient_"<<discret_.Comm().MyPID()<<"_"<<std::setw(6) << setfill('0') << istep <<".dat";
+
+        FiberOrientOutput(dis,filename);
+      }
     }
     break;
     case INPAR::STATMECH::statout_none:
@@ -1859,11 +1874,14 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
 {
   //get current on-rate for crosslinkers
   double kon = 0;
-  if( (currentelements_ - basiselements_) < statmechparams_.get<double>("N_crosslink",0.0) )
+  if( (currentelements_ - basiselements_) < statmechparams_.get<double>("N_crosslink",0.0) && !konswitch_)
     kon = statmechparams_.get<double>("K_ON_start",0.0);
   else
+  {
     kon = statmechparams_.get<double>("K_ON_end",0.0);
-
+    konswitch_=true;
+  }
+  cout<<"K_on = "<<kon<<endl;
 	int counter = 0;
   //probability with which a crosslinker is established between neighbouring nodes
   double plink = 1.0 - exp( -dt*kon*statmechparams_.get<double>("C_CROSSLINKER",0.0) );
@@ -2401,7 +2419,7 @@ std::vector<int> StatMechManager::Permutation(const int& N)
 bool StatMechManager::CheckOrientation(const Epetra_Vector& orientationprobability,RCP<DRT::ELEMENTS::Beam3> newcrosslinker, DRT::Node** nodes)
 {
 
-  //if no stiffness constrains crosslinker orientation, this function always return 1 (because than orientation is no obstacle for setting crosslinkers)
+  //if no stiffness constrains crosslinker orientation, this function always returns 1 (because thessn orientation is no obstacle for setting crosslinkers)
   if(statmechparams_.get<double>("LINKORIENTSTIFF",0.0) == 0.0)
     return 1;
 
@@ -2462,5 +2480,69 @@ bool StatMechManager::CheckOrientation(const Epetra_Vector& orientationprobabili
 } // StatMechManager::Permutation
 #endif  // #ifdef D_BEAM3
 #endif  // #ifdef D_BEAM3II
+void StatMechManager::FiberOrientOutput(const Epetra_Vector& disrow, const std::ostringstream& filename)
+{
+	/* The following code is basically copied from GmshOutput() and therefore remains largely uncommented.
+	 * The output consists of a vector v E R³ for each element.
+	 * Since the output is redundant in the case of ghosted elements (parallel use), the GID of the
+	 * element is written, too. This ensures an easy adaption of the output for post-processing.
+	 *
+	 * columns of the output file: Element-ID, v_x, v_y, v_z
+	 * */
+
+	Epetra_Vector  discol(*(discret_.DofColMap()),true);
+	LINALG::Export(disrow,discol);
+
+	FILE* fp = NULL;
+
+	fp = fopen(filename.str().c_str(), "w");
+
+	std::stringstream fiberorientfilecontent;
+
+	for (int i=0; i<discret_.NumMyColElements(); ++i)
+	{
+		DRT::Element* element = discret_.lColElement(i);
+
+		// we only need filament elements, crosslinker elements are neglected with the help of their high element IDs
+		if(element->Id()>basisnodes_)
+			continue;
+
+		LINALG::SerialDenseMatrix coord(3,element->NumNode());
+		for(int id = 0; id<3; id++)
+			for(int jd = 0; jd<element->NumNode(); jd++)
+			{
+				double referenceposition = ((element->Nodes())[jd])->X()[id];
+				vector<int> dofnode = discret_.Dof((element->Nodes())[jd]);
+				double displacement = discol[discret_.DofColMap()->LID( dofnode[id] )];
+				coord(id,jd) =  referenceposition + displacement;
+			}
+
+		const DRT::ElementType & eot = element->ElementType();
+
+#ifdef D_BEAM3
+		if(eot==DRT::ELEMENTS::Beam3Type::Instance())
+			for(int j=0; j<element->NumNode()-1; j++)
+				fiberorientfilecontent<<element->Id()<<"   "<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<endl ;
+		else
+#endif
+#ifdef D_BEAM3II
+		if(eot==DRT::ELEMENTS::Beam3iiType::Instance())
+			for(int j=0; j<element->NumNode()-1; j++)
+				fiberorientfilecontent<<element->Id()<<"   "<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<endl ;
+		else
+#endif
+#ifdef D_TRUSS3
+		if(eot==DRT::ELEMENTS::Truss3Type::Instance())
+			for(int j=0; j<element->NumNode()-1; j++)
+				fiberorientfilecontent<<element->Id()<<"   "<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<endl ;
+		else
+#endif
+		{
+		}
+	}
+  //write content into file and close it
+  fprintf(fp,fiberorientfilecontent.str().c_str());
+  fclose(fp);
+}// StatMechManager::FiberOrientOutput
 
 #endif  // #ifdef CCADISCRET
