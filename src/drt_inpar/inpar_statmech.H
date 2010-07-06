@@ -41,7 +41,7 @@ namespace INPAR
       statout_anisotropic,  ///< measuring anisotropic diffusion of filament
       statout_viscoelasticity, ///< measuring viscoelastic properties of filament networks
       statout_gmsh, ///< writing special output in order to generate a Gmsh movie
-      statout_fiberorientation
+      statout_structpolymorph
     };
 
     /// (this enum represents the input file parameter STAT_OUTPUT)

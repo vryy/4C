@@ -1145,7 +1145,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                     "endtoend_const",
                                                     "viscoelasticity",
                                                     "gmsh",
-                                                    "fiberorientation"),
+                                                    "structpolymorph"),
                                  //translating input strings into BACI input parameters
                                  tuple<INPAR::STATMECH::StatOutput>(INPAR::STATMECH::statout_none,INPAR::STATMECH::statout_none,
                                             INPAR::STATMECH::statout_endtoendlog,
@@ -1154,7 +1154,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             INPAR::STATMECH::statout_endtoendconst,
                                             INPAR::STATMECH::statout_viscoelasticity,
                                             INPAR::STATMECH::statout_gmsh,
-                                            INPAR::STATMECH::statout_fiberorientation),
+                                            INPAR::STATMECH::statout_structpolymorph),
                                  &statmech);
   //Reading which kind of friction model should be applied
   setStringToIntegralParameter<INPAR::STATMECH::FrictionModel>("FRICTION_MODEL","none","friction model for polymer dynamics",
