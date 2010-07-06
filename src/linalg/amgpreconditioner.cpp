@@ -7,7 +7,7 @@
 
 #ifdef CCADISCRET
 
-#define WRITEOUTAGGREGATES
+//#define WRITEOUTAGGREGATES
 //#define ANALYSIS
 
 #include "Teuchos_TimeMonitor.hpp"
@@ -33,17 +33,19 @@ LINALG::AMGPreconditioner::AMGPreconditioner(RCP<Epetra_Operator> A, const Param
   nmaxlevels_(0),
   nVerbose_(0)
 {
-  //SparseMatrix* tmp = dynamic_cast<SparseMatrix*>(A.get());
   SparseMatrix* tmp = new SparseMatrix((rcp_dynamic_cast<Epetra_CrsMatrix>(A)));
   if(!tmp) dserror("Expected Epetra_CrsMatrix");
-  Ainput_ = rcp(tmp,false);
- // Ainput_ = rcp(new SparseMatrix(rcp_dynamic_cast<Epetra_CrsMatrix(A)));
+  Ainput_ = rcp(tmp,true);
 
   Setup();  // setup of multigrid hirarchy
 }
 
 void LINALG::AMGPreconditioner::Setup()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("AMGPreconditioner::Setup");
+
+//  Epetra_Time time(A()->Comm());
+
   // read parameters from parameter list
   int nmaxlevels_ = Params().get<int>("max levels",10);
   int maxcoarsesize = Params().get<int>("coarse: max size",1);
@@ -93,7 +95,7 @@ void LINALG::AMGPreconditioner::Setup()
 
   SmootherFactory smfac;
 
-  cout << params_ << endl;
+  //cout << params_ << endl;
 
   for (curlevel = 0; curlevel < nmaxlevels_; ++curlevel)
   {
@@ -115,9 +117,11 @@ void LINALG::AMGPreconditioner::Setup()
     else
       params_.set("aggregation method","isotropic aggregation");
 
+//    time.ResetStartTime();
     RCP<AggregationMethod> aggm = AggregationMethodFactory::Create("Uncoupled",NULL);
     int naggregates_local = 0;
     aggm->GetGlobalAggregates(A_[curlevel]->EpetraMatrix(),params_,aggs,naggregates_local,curNS);
+//    cout << "Level " << curlevel << " AggregationTime: " << time.ElapsedTime() << endl; time.ResetStartTime();
 
 #ifdef WRITEOUTAGGREGATES
     // plot out aggregates
@@ -134,8 +138,11 @@ void LINALG::AMGPreconditioner::Setup()
     T_[curlevel] = TransferOperatorFactory::Create(ProlongSmoother,A_[curlevel],NULL);
     nextNS = T_[curlevel]->buildTransferOperators(aggs,naggregates_local,params_,curNS,0);
 
+//    cout << "Level " << curlevel << " PG-AMG Time " << time.ElapsedTime() << endl; time.ResetStartTime();
 
     A_[curlevel+1] = Multiply(T_[curlevel]->R(),*A_[curlevel],T_[curlevel]->P());
+
+//    cout << "Level " << curlevel << " RAP time: " << time.ElapsedTime() << endl; time.ResetStartTime();
 
 #ifdef WRITEOUTAGGREGATES
     // plot out aggregates
@@ -156,8 +163,10 @@ void LINALG::AMGPreconditioner::Setup()
       IfpackParameters.set("relaxation: sweeps",SmootherParams.get("smoother: sweeps",1));
       IfpackParameters.set("relaxation: damping factor", SmootherParams.get("smoother: damping factor",0.66));
       IfpackParameters.set("relaxation: zero starting solution", false);
+      IfpackParameters.set("schwarz: reordering type", "none");
+      //IfpackParameters.set("partitioner: local parts",A_[curlevel]->EpetraMatrix()->NumMyRows()/3);
 
-      preS_[curlevel] = smfac.Create("point relaxation",A_[curlevel],IfpackParameters);
+      preS_[curlevel] = smfac.Create("point relaxation"/*"block relaxation"*/,A_[curlevel],IfpackParameters);
       postS_[curlevel] = preS_[curlevel];
 
     }
@@ -166,10 +175,11 @@ void LINALG::AMGPreconditioner::Setup()
       if(SmootherParams.get("smoother: ifpack type","ILU") != "ILU") dserror("we expect an ILU smoother. others are not supported");
 
       ParameterList IfpackParameters;
-      IfpackParameters.set("fact: level-of-fill", SmootherParams.get("smoother: ifpack level-of-fill",1));
+
+      IfpackParameters.set("fact: level-of-fill",(int)SmootherParams.get("smoother: ifpack level-of-fill",1.0));
       IfpackParameters.set("fact: ilut level-of-fill",0.0);
       IfpackParameters.set("smoother: ifpack overlap", SmootherParams.get("smoother: ifpack overlap",0));
-      IfpackParameters.set("schwarz: combine mode", params_.sublist("smoother: ifpack list").get("schwarz: combine mode","Add"));
+      IfpackParameters.set("schwarz: combine mode", params_.sublist("smoother: ifpack list").get("schwarz: combine mode","Zero"));
       IfpackParameters.set("schwarz: reordering type", params_.sublist("smoother: ifpack list").get("schwarz: reordering type","rcm"));
       IfpackParameters.set("partitioner: overlap", params_.sublist("smoother: ifpack list").get("partitioner: overlap",0));
 
@@ -189,6 +199,7 @@ void LINALG::AMGPreconditioner::Setup()
       dserror("smoother type unknown");
     }
 
+//    cout << "Level " << curlevel << " gen smoothers time: " << time.ElapsedTime() << endl;
 
     //////////////////// prepare variables for next aggregation level
     curNS = nextNS;
@@ -204,10 +215,6 @@ void LINALG::AMGPreconditioner::Setup()
   }
 
 
-  //ParameterList IfpackParameters;
-  //IfpackParameters.set("amesos: solver type","Amesos_Umfpack");
-  //coarsestSmoother_ = smfac.Create("Amesos",A_[nlevel_],IfpackParameters);
-
   if(params_.get("coarse: type","Jacobi")=="Jacobi" ||
      params_.get("coarse: type","Jacobi")=="Gauss-Seidel")
   {
@@ -215,9 +222,12 @@ void LINALG::AMGPreconditioner::Setup()
     IfpackParameters.set("relaxation: type",params_.get("coarse: type","Jacobi"));
     IfpackParameters.set("relaxation: sweeps",params_.get("coarse: sweeps",1));
     IfpackParameters.set("relaxation: damping factor", params_.get("coarse: damping factor",0.66));
+    IfpackParameters.set("schwarz: reordering type", "none");
     IfpackParameters.set("relaxation: zero starting solution", false);
+    //IfpackParameters.set("partitioner: local parts",A_[nlevel_]->EpetraMatrix()->NumMyRows()/3);  // TODO fix me!
 
-    coarsestSmoother_ = smfac.Create("point relaxation",A_[nlevel_],IfpackParameters);
+
+    coarsestSmoother_ = smfac.Create("point relaxation"/*"block relaxation"*/,A_[nlevel_],IfpackParameters);
   }
   else if(params_.get("coarse: type","Jacobi") == "IFPACK")
   {
@@ -250,6 +260,8 @@ void LINALG::AMGPreconditioner::Setup()
 
 int LINALG::AMGPreconditioner::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
+  TEUCHOS_FUNC_TIME_MONITOR("AMGPreconditioner::ApplyInverse");
+
   RCP<Epetra_MultiVector> b = rcp(new Epetra_MultiVector(X));
   RCP<Epetra_MultiVector> x = rcp(new Epetra_MultiVector(Y));
   x->PutScalar(0.0);
@@ -260,6 +272,7 @@ int LINALG::AMGPreconditioner::ApplyInverse(const Epetra_MultiVector& X, Epetra_
 
 void LINALG::AMGPreconditioner::Vcycle(const Epetra_MultiVector& rhs, Epetra_MultiVector& sol, const int level) const
 {
+
   // coarsest grid
   if(level == nlevel_)
   {
@@ -322,14 +335,14 @@ void LINALG::AMGPreconditioner::Vcycle(const Epetra_MultiVector& rhs, Epetra_Mul
   ////////////// on finest level
   // calculate residual
   RCP<Epetra_MultiVector> res = rcp(new Epetra_MultiVector(rhs.Map(),1,true));
-  if(level == 0)
+  //if(level == 0)  // don't distinguish between levels! this is the best version...
   {
     A_[level]->Apply(sol,*res);
     res->Update(1.0,rhs,-1.0);
   }
-  else
+  //else
   {
-    res->Update(1.0,rhs,0.0); // on carser grids, the rhs vector is the residual
+  //  res->Update(1.0,rhs,0.0); // on carser grids, the rhs vector is the residual
   }
 
 #ifdef ANALYSIS
@@ -448,7 +461,6 @@ void LINALG::AMGPreconditioner::Vcycle(const Epetra_MultiVector& rhs, Epetra_Mul
 
   ////////////// postsmoothing
   postS_[level]->ApplyInverse(rhs,sol);
-
 
 #ifdef ANALYSIS
 #ifdef DEBUG
