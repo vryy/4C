@@ -3400,9 +3400,56 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
 
     if (err!=0) dserror("dof not on proc");
   }
+  // special initial function: test case due to Bochev et al. (2007) (2-D)
+  else if (initfield == INPAR::FLUID::initfield_bochev_test)
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    int err = 0;
+
+    // check whether present flow is indeed two-dimensional
+    if (numdim_!=2) dserror("Bochev test case is a two-dimensional flow!");
+
+    // define vectors for velocity and pressure field as well as node coordinates
+    vector<double> up(numdim_+1);
+    vector<double> xy(numdim_);
+
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+
+      // the set of degrees of freedom associated with the node
+      vector<int> nodedofset = discret_->Dof(lnode);
+
+      // set node coordinates
+      for(int dim=0;dim<numdim_;dim++)
+      {
+        xy[dim]=lnode->X()[dim];
+      }
+
+      // compute initial velocity and pressure components
+      up[0] = sin(M_PI*xy[0]-0.7)*sin(M_PI*xy[1]+0.2);
+      up[1] = cos(M_PI*xy[0]-0.7)*cos(M_PI*xy[1]+0.2);
+      up[2] = sin(xy[0])*cos(xy[1])+(cos(1.0)-1.0)*sin(1.0);
+
+      // set initial velocity and pressure components
+      for(int ndof=0;ndof<numdim_+1;ndof++)
+      {
+        const int gid = nodedofset[ndof];
+        int lid = dofrowmap->LID(gid);
+        err += velnp_->ReplaceMyValues(1,&(up[ndof]),&lid);
+        err += veln_ ->ReplaceMyValues(1,&(up[ndof]),&lid);
+        err += velnm_->ReplaceMyValues(1,&(up[ndof]),&lid);
+      }
+    } // end loop nodes lnodeid
+
+    if (err!=0) dserror("dof not on proc");
+  }
   else
   {
-    dserror("Only initial fields auch as a zero field, initial fields by (un-)disturbed functions and two special initial fields (counter-rotating vortices and Beltrami flow) are available up to now!");
+    dserror("Only initial fields auch as a zero field, initial fields by (un-)disturbed functions and three special initial fields (counter-rotating vortices, Beltrami flow and Bochev test) are available up to now!");
   }
 
   return;
@@ -3581,6 +3628,7 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
   case INPAR::FLUID::initfield_field_by_function:
   case INPAR::FLUID::initfield_disturbed_field_from_function:
   case INPAR::FLUID::initfield_flame_vortex_interaction:
+  case INPAR::FLUID::initfield_bochev_test:
     // do nothing --- no analytical solution available
     break;
   case INPAR::FLUID::initfield_beltrami_flow:

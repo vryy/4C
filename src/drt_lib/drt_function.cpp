@@ -240,6 +240,70 @@ namespace UTILS {
   };
 
 
+  /// special implementation for 2d Bochev test case (velocity and pressure)
+  class BochevUPFunction : public Function
+  {
+  public:
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components (u,v,p)
+
+    */
+    virtual int NumberComponents()
+      {
+        return(3);
+      };
+
+  };
+
+
+  /// special implementation for 2d Bochev test case (rhs function)
+  class BochevRHSFunction : public Function
+  {
+  public:
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components (f1,f2)
+
+    */
+    virtual int NumberComponents()
+      {
+        return(2);
+      };
+
+  };
+
+
   /// special implementation for (randomly) disturbed 3d turbulent
   /// boundary-layer profile
   /// (currently fixed for low-Mach-number flow through a backward-facing step,
@@ -470,6 +534,18 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddTag("KIM-MOIN")
     ;
 
+  DRT::INPUT::LineDefinition bochevup;
+  bochevup
+    .AddNamedInt("FUNCT")
+    .AddTag("BOCHEV-UP")
+    ;
+
+  DRT::INPUT::LineDefinition bochevrhs;
+  bochevrhs
+    .AddNamedInt("FUNCT")
+    .AddTag("BOCHEV-RHS")
+    ;
+
   DRT::INPUT::LineDefinition turbboulayer;
   turbboulayer
     .AddNamedInt("FUNCT")
@@ -536,6 +612,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(radiusquad);
   lines->Add(beltrami);
   lines->Add(kimmoin);
+  lines->Add(bochevup);
+  lines->Add(bochevrhs);
   lines->Add(turbboulayer);
   lines->Add(jefferyhamel);
   lines->Add(womersley);
@@ -685,6 +763,14 @@ void DRT::UTILS::FunctionManager::ReadInput(const DRT::INPUT::DatFileReader& rea
       else if (function->HaveNamed("KIM-MOIN"))
       {
         functions_.push_back(rcp(new KimMoinFunction()));
+      }
+      else if (function->HaveNamed("BOCHEV-UP"))
+      {
+        functions_.push_back(rcp(new BochevUPFunction()));
+      }
+      else if (function->HaveNamed("BOCHEV-RHS"))
+      {
+        functions_.push_back(rcp(new BochevRHSFunction()));
       }
       else if (function->HaveNamed("TURBBOULAYER"))
       {
@@ -923,6 +1009,40 @@ double DRT::UTILS::KimMoinFunction::Evaluate(int index, const double* xp, double
     return + sin(a*PI*xp[0]) * cos(a*PI*xp[1]);
   case 2:
     return -1.0/4.0 * ( cos(2.0*a*PI*xp[0]) + cos(2.0*a*PI*xp[1]) );
+  default:
+    return 1.0;
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::BochevUPFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  switch (index)
+  {
+  case 0:
+    return sin(PI*xp[0]-0.7)*sin(PI*xp[1]+0.2);
+  case 1:
+    return cos(PI*xp[0]-0.7)*cos(PI*xp[1]+0.2);
+  case 2:
+    return sin(xp[0])*cos(xp[1])+(cos(1.0)-1.0)*sin(1.0);
+  default:
+    return 1.0;
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::BochevRHSFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  switch (index)
+  {
+  case 0:
+    return cos(xp[0])*cos(xp[1])+PI*sin(PI*xp[0]-0.7)*cos(PI*xp[0]-0.7)+2*PI*PI*sin(PI*xp[0]-0.7)*sin(PI*xp[1]+0.2);
+  case 1:
+    return -sin(xp[0])*sin(xp[1])-PI*sin(PI*xp[1]+0.2)*cos(PI*xp[1]+0.2)+2*PI*PI*cos(PI*xp[0]-0.7)*cos(PI*xp[1]+0.2);
   default:
     return 1.0;
   }

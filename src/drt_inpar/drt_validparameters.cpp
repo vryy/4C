@@ -1574,14 +1574,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "disturbed_field_from_function",
                                  "FLAME_VORTEX_INTERACTION",
                                  "BELTRAMI-FLOW",
-                                 "KIM-MOIN-FLOW"),
+                                 "KIM-MOIN-FLOW",
+                                 "BOCHEV-TEST"),
                                tuple<INPAR::FLUID::InitialField>(
                                      INPAR::FLUID::initfield_zero_field,
                                      INPAR::FLUID::initfield_field_by_function,
                                      INPAR::FLUID::initfield_disturbed_field_from_function,
                                      INPAR::FLUID::initfield_flame_vortex_interaction,
                                      INPAR::FLUID::initfield_beltrami_flow,
-                                     INPAR::FLUID::initfield_kim_moin_flow),
+                                     INPAR::FLUID::initfield_kim_moin_flow,
+                                     INPAR::FLUID::initfield_bochev_test),
                                &fdyn);
 
   setStringToIntegralParameter<int>("LIFTDRAG","No",
@@ -1880,7 +1882,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Franca_Barrenechea_Valentin_Codina",
                                  "Bazilevs",
                                  "Bazilevs_wo_dt",
-                                 "Codina"),
+                                 "Codina",
+                                 "Oberai"),
 #if 0
                                tuple<std::string>(
                                  "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea; tau_C: Wall",
@@ -1889,7 +1892,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "tau_M : Barrenechea, Valentin, Franca, Barrenechea; tau_C: Wall; no dt contribution",
                                  "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea; tau_C: Codina"  ,
                                  "tau_M and tau_C (Bazilevs, based on G_ij and g_i)",
-                                 "tau_M and tau_C: Codina")  ,
+                                 "tau_M and tau_C: Codina",
+                                 "tau_M: Oberai, tau_C: Wall")  ,
 #endif
                                tuple<INPAR::FLUID::TauType>(
                                    INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
@@ -1899,8 +1903,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::FLUID::tautype_franca_barrenechea_valentin_codina,
                                    INPAR::FLUID::tautype_bazilevs,
                                    INPAR::FLUID::tautype_bazilevs_wo_dt,
-                                   INPAR::FLUID::tau_not_defined
-                                    ),
+                                   INPAR::FLUID::tau_not_defined,
+                                   INPAR::FLUID::tautype_oberai),
                                &fdyn_stab);
 
   setStringToIntegralParameter<INPAR::FLUID::TauType>("TAUTYPE","Franca_Barrenechea_Valentin_Wall",

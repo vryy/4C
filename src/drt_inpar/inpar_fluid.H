@@ -92,6 +92,7 @@ namespace INPAR
       tautype_bazilevs,                           // combustion & Fluid3
       tautype_bazilevs_wo_dt,                     // for time-dependent subgrid scales
       tautype_franca_barrenechea_valentin_codina, // Fluid3
+      tautype_oberai,
       tautype_stationary,
       tau_not_defined
     };
@@ -112,7 +113,8 @@ namespace INPAR
       initfield_disturbed_field_from_function,
       initfield_flame_vortex_interaction,
       initfield_beltrami_flow,
-      initfield_kim_moin_flow
+      initfield_kim_moin_flow,
+      initfield_bochev_test
     };
 
     //---------------------------------------------

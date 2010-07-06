@@ -232,6 +232,8 @@ int DRT::ELEMENTS::Fluid2Impl<distype>::Evaluate(
       whichtau = Fluid2::bazilevs;
     else if (taudef == "Codina")
       whichtau = Fluid2::codina;
+    else if (taudef == "Oberai")
+      whichtau = Fluid2::oberai;
   }
 
   // set flags for potential evaluation of tau and material law at int. point
@@ -2940,6 +2942,57 @@ void DRT::ELEMENTS::Fluid2Impl<distype>::CalcStabParameter(
      *
      * */
     tau_(2) = sqrt(DSQR(visceff_)+DSQR(0.5*densaf_*vel_norm*hk));
+  }
+  else if (whichtau == Fluid2::oberai)
+  {
+    /*----------------------------------------------------- compute tau_Mu ---*/
+    /* stability parameter definition according to Oberai */
+
+    // compute element Reynolds number
+    // (caution: element Reynolds number defined here without division by 2)
+    const double ere = densaf_ * vel_norm * hk / visceff_;
+
+    // compute CFL number
+    const double cfl = vel_norm * dt_ / hk;
+
+    // compute k_bar
+    const double pp = exp(ere/200.0);
+    const double pm = exp(-ere/200.0);
+    const double k_bar = ere*(1.0 + 8.0*((pp-pm)/(pp+pm))/(1.0+((pp-pm)/(pp+pm))));
+
+    // compute factors gamma, kappa, alpha and mu
+    const double kp = exp(k_bar);
+    const double km = exp(-k_bar);
+    const double fac_gamma = exp(k_bar*cfl*(1.0-(k_bar/ere)));
+    const double fac_kappa = (2.0/(kp+km))-1.0;
+    double fac_alpha = 1.0;
+    if (k_bar < 700.0) fac_alpha = (kp-km)/(kp+km);
+    const double fac_mu = (2.0*(2.0/(kp+km))+1.0)/3.0;
+
+    // compute non-dimensional form of tau
+    tau_(0) = (fac_mu*(fac_gamma-1.0)-(fac_gamma+1.0)*cfl*((fac_alpha/2.0)+(fac_kappa/ere)))/(fac_alpha*(fac_gamma-1.0)+cfl*fac_kappa*(fac_gamma+1.0));
+
+    // compute dimensional (final) form of tau
+    tau_(0) *= hk/vel_norm;
+    tau_(1) = tau_(0);
+
+    /*------------------------------------------------------ compute tau_C ---*/
+    // PhD thesis Wall (1999)
+    /*
+                      xi2 ^
+                          |
+                        1 |   +-----------
+                          |  /
+                          | /
+                          |/
+                          +--------------> Re2
+                              1
+    */
+    /* convective : viscous forces */
+    const double re2 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
+
+    const double xi_tau_c = DMIN(re2,1.0);
+    tau_(2) = densaf_ * vel_norm * hk * 0.5 * xi_tau_c;
   }
   else dserror("unknown definition of tau\n");
 

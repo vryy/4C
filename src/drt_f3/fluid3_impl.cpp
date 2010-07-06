@@ -3726,7 +3726,8 @@ const double DRT::ELEMENTS::Fluid3Impl<distype>::SetSolutionParameter(
   // check if tau can be handled
   if (not(whichtau_ == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall or
       INPAR::FLUID::tautype_bazilevs or
-      INPAR::FLUID::tautype_franca_barrenechea_valentin_codina))
+      INPAR::FLUID::tautype_franca_barrenechea_valentin_codina or
+      INPAR::FLUID::tautype_oberai))
     dserror("Definition of Tau cannot handled by the element");
 
   // TODO: Adapt test cases, that it is necessary to use stationary tau definition in input file
@@ -4129,6 +4130,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
   //b)  Franca, Barrenechea, Valentin, Wall stationary
   //c)  Bazilevs
   //d)  Codina
+  //e)  Oberai
 
   // TODO: different element length calculations for 2D and 3D flow is
   // just a temporary work around (not to change the results of the test cases)
@@ -4606,6 +4608,59 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
     tau_(2) = 1.0/(tau_(0)*normgsq);
   }
   break;  // end Bazilevs for tds
+
+  case INPAR::FLUID::tautype_oberai:
+  {
+    /*----------------------------------------------------- compute tau_Mu ---*/
+    /* stability parameter definition according to Oberai */
+
+    // compute element Reynolds number
+    // (caution: element Reynolds number defined here without division by 2)
+    const double ere = densaf_ * vel_norm * hk / visceff_;
+
+    // compute CFL number
+    const double cfl = vel_norm * dt_ / hk;
+
+    // compute k_bar
+    const double pp = exp(ere/200.0);
+    const double pm = exp(-ere/200.0);
+    const double k_bar = ere*(1.0 + 8.0*((pp-pm)/(pp+pm))/(1.0+((pp-pm)/(pp+pm))));
+
+    // compute factors gamma, kappa, alpha and mu
+    const double kp = exp(k_bar);
+    const double km = exp(-k_bar);
+    const double fac_gamma = exp(k_bar*cfl*(1.0-(k_bar/ere)));
+    const double fac_kappa = (2.0/(kp+km))-1.0;
+    double fac_alpha = 1.0;
+    if (k_bar < 700.0) fac_alpha = (kp-km)/(kp+km);
+    const double fac_mu = (2.0*(2.0/(kp+km))+1.0)/3.0;
+
+    // compute non-dimensional form of tau
+    tau_(0) = (fac_mu*(fac_gamma-1.0)-(fac_gamma+1.0)*cfl*((fac_alpha/2.0)+(fac_kappa/ere)))/(fac_alpha*(fac_gamma-1.0)+cfl*fac_kappa*(fac_gamma+1.0));
+
+    // compute dimensional (final) form of tau
+    tau_(0) *= hk/vel_norm;
+    tau_(1) = tau_(0);
+
+    /*------------------------------------------------------ compute tau_C ---*/
+    // PhD thesis Wall (1999)
+    /*
+                      xi2 ^
+                          |
+                        1 |   +-----------
+                          |  /
+                          | /
+                          |/
+                          +--------------> Re2
+                              1
+    */
+    // convective : viscous forces
+    const double re02 = mk * densaf_ * vel_norm * strle / (2.0 * visceff_);
+
+    const double xi_tau_c = DMIN(re02,1.0);
+    tau_(2) = densaf_ * vel_norm * hk * 0.5 * xi_tau_c;
+  }
+  break; // end franca_barrenechea_valentin_wall
 
   default: dserror("unknown definition of tau\n");
   }  // end switch
