@@ -658,7 +658,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
     }
     break;
     //writing
-    case INPAR::STATMECH::statout_fiberorientation:
+    case INPAR::STATMECH::statout_structpolymorph:
     {
       //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
       if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1)  == 0 )
@@ -666,9 +666,9 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
         // first index = time step index
         std::ostringstream filename;
 
-        filename << "./GmshOutput/FiberEleOrient_"<<discret_.Comm().MyPID()<<"_"<<std::setw(6) << setfill('0') << istep <<".dat";
+        filename << "./GmshOutput/StructPolymorph_"<<discret_.Comm().MyPID()<<"_"<<std::setw(6) << setfill('0') << istep <<".dat";
 
-        FiberOrientOutput(dis,filename);
+        StructPolymorphOutput(dis,filename);
       }
     }
     break;
@@ -2480,14 +2480,14 @@ bool StatMechManager::CheckOrientation(const Epetra_Vector& orientationprobabili
 } // StatMechManager::Permutation
 #endif  // #ifdef D_BEAM3
 #endif  // #ifdef D_BEAM3II
-void StatMechManager::FiberOrientOutput(const Epetra_Vector& disrow, const std::ostringstream& filename)
+void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename)
 {
 	/* The following code is basically copied from GmshOutput() and therefore remains largely uncommented.
-	 * The output consists of a vector v E R³ for each element.
+	 * The output consists of a vector v E R³ for each element and the respective node coordinates C.
 	 * Since the output is redundant in the case of ghosted elements (parallel use), the GID of the
 	 * element is written, too. This ensures an easy adaption of the output for post-processing.
 	 *
-	 * columns of the output file: Element-ID, v_x, v_y, v_z
+	 * columns of the output file: Element-ID, v_x, v_y, v_z, C_0_x,  C_0_y, C_0_z, C_1_x, C_1_y, C_1_z
 	 * */
 
 	Epetra_Vector  discol(*(discret_.DofColMap()),true);
@@ -2522,19 +2522,25 @@ void StatMechManager::FiberOrientOutput(const Epetra_Vector& disrow, const std::
 #ifdef D_BEAM3
 		if(eot==DRT::ELEMENTS::Beam3Type::Instance())
 			for(int j=0; j<element->NumNode()-1; j++)
-				fiberorientfilecontent<<element->Id()<<"   "<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<endl ;
+				fiberorientfilecontent<<element->Id()<<"   "<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
+																										<< coord(0,j) << " " << coord(1,j) << " " << coord(2,j) << " "
+																										<< coord(0,j+1) << " " << coord(1,j+1) << " " << coord(2,j+1)<<endl ;
 		else
 #endif
 #ifdef D_BEAM3II
 		if(eot==DRT::ELEMENTS::Beam3iiType::Instance())
 			for(int j=0; j<element->NumNode()-1; j++)
-				fiberorientfilecontent<<element->Id()<<"   "<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<endl ;
+				fiberorientfilecontent<<element->Id()<<"   "<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
+																										<< coord(0,j) << " " << coord(1,j) << " " << coord(2,j) << " "
+																										<< coord(0,j+1) << " " << coord(1,j+1) << " " << coord(2,j+1)<<endl ;
 		else
 #endif
 #ifdef D_TRUSS3
 		if(eot==DRT::ELEMENTS::Truss3Type::Instance())
 			for(int j=0; j<element->NumNode()-1; j++)
-				fiberorientfilecontent<<element->Id()<<"   "<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<endl ;
+				fiberorientfilecontent<<element->Id()<<"   "<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
+																										<< coord(0,j) << " " << coord(1,j) << " " << coord(2,j) << " "
+																										<< coord(0,j+1) << " " << coord(1,j+1) << " " << coord(2,j+1)<<endl ;
 		else
 #endif
 		{

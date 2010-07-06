@@ -103,8 +103,8 @@ public:
    */
   void UpdateForceSensors(vector<int>& sensornodes, int oscdir);
 
-  //! \brief writes element node coordinates for fiber orientation analysis
-  void FiberOrientOutput(const Epetra_Vector& disrow, const std::ostringstream& filename);
+  //! \brief writes element orientation and coordinates of fiber elements to an output file
+  void StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename);
 
   //! \brief checks orientation of crosslinker relative to linked filaments
 #ifdef D_BEAM3
