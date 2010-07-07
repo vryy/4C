@@ -150,6 +150,9 @@ public:
   //! Set one nodal coords
   void SetNode(const int NodeID, const vector<double> coord);
 
+  //! Set number of space dimensions
+  void SetNsd (const int nsd);
+
   //! Close Exodus File
   void CloseExo() const;
 

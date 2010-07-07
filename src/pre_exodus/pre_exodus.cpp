@@ -87,6 +87,8 @@ int main(
   double clinedy = 0.0;
   double clinedz = 0.0;
 
+  bool twodim = false;
+
   // related to quad->tri conversion
   bool quadtri = false;
 
@@ -104,6 +106,9 @@ int main(
   My_CLP.setOption("seedid",&soshseedid,"id where to start extrusion, default is first");
   My_CLP.setOption("gmsh",&soshgmsh,"gmsh output of xxx elements, default off, 0 all eles");
   My_CLP.setOption("concf",&concat2loose,"concatenate extruded volume with base, however loose every xxx'th node, default 0=off=fsi");
+
+  // switch for genarating a 2d .dat - file
+  My_CLP.setOption("d2", "", &twodim, "generate a 2D .dat file");
 
   // centerline related
   My_CLP.setOption("cline",&cline,"generate local element coordinate systems based on centerline file, or mesh line (set to 'mesh'");
@@ -316,6 +321,9 @@ int main(
 
     // write the BACI input file
     {
+      if (twodim)
+    	  mymesh.SetNsd(2);
+
       timer->start();
       EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs,elecenterlineinfo);
       timer->stop();
