@@ -382,6 +382,8 @@ namespace UTILS {
     int										 noharm_;
     // time curve frequency
     double								 fbase_;
+		 // time curve value of the previous time step (needed in current version to circumvent division by 0)
+		double								 tcprevious_;
     // imaginary number i
     std::complex<double>   i_;
     // storage vector for velocity@1s for profile transition 0<t<1
@@ -1817,7 +1819,13 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
 						 (z*BesselJ01(z,false)-(complex<double>)(2.0)*BesselJ01(z, true));
 			w += vphyscurve.at(k)*real(bessel);
 		}
-		w = (w + wsteady)/tc_.f(t);
+		if(tc_.f(t)==0.0)
+			w = (w + wsteady)/tcprevious_;
+		else
+		{
+			w = (w + wsteady)/tc_.f(t);
+			tcprevious_ = tc_.f(t);
+		}
 		w *= -normal_[index];
 		return w;
 	}

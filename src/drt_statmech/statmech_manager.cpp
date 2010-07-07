@@ -1881,7 +1881,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
     kon = statmechparams_.get<double>("K_ON_end",0.0);
     konswitch_=true;
   }
-  cout<<"K_on = "<<kon<<endl;
+
 	int counter = 0;
   //probability with which a crosslinker is established between neighbouring nodes
   double plink = 1.0 - exp( -dt*kon*statmechparams_.get<double>("C_CROSSLINKER",0.0) );
@@ -2487,11 +2487,8 @@ void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const s
 	 * Since the output is redundant in the case of ghosted elements (parallel use), the GID of the
 	 * element is written, too. This ensures an easy adaption of the output for post-processing.
 	 *
-	 * columns of the output file: Element-ID, v_x, v_y, v_z, C_0_x,  C_0_y, C_0_z, C_1_x, C_1_y, C_1_z
+	 * columns of the output file: element-ID, filament-ID, v_x, v_y, v_z, C_0_x,  C_0_y, C_0_z, C_1_x, C_1_y, C_1_z
 	 * */
-
-	Epetra_Vector  discol(*(discret_.DofColMap()),true);
-	LINALG::Export(disrow,discol);
 
 	FILE* fp = NULL;
 
@@ -2499,30 +2496,52 @@ void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const s
 
 	std::stringstream fiberorientfilecontent;
 
-	for (int i=0; i<discret_.NumMyColElements(); ++i)
+	for (int i=0; i<discret_.NumMyRowElements(); ++i)
 	{
-		DRT::Element* element = discret_.lColElement(i);
+		DRT::Element* element = discret_.lRowElement(i);
 
 		// we only need filament elements, crosslinker elements are neglected with the help of their high element IDs
 		if(element->Id()>basisnodes_)
 			continue;
 
+		// get filament number conditions
+		vector<DRT::Condition*> filamentnumberconditions(0);
+		discret_.GetCondition("FilamentNumber",filamentnumberconditions);
+
 		LINALG::SerialDenseMatrix coord(3,element->NumNode());
-		for(int id = 0; id<3; id++)
-			for(int jd = 0; jd<element->NumNode(); jd++)
+		// filament number
+		int filnumber = 0;
+		// a switch to avoid redundant search for filament number
+		bool done = false;
+
+		for(int j = 0; j<3; j++)
+		{
+			for(int k = 0; k<element->NumNode(); k++)
 			{
-				double referenceposition = ((element->Nodes())[jd])->X()[id];
-				vector<int> dofnode = discret_.Dof((element->Nodes())[jd]);
-				double displacement = discol[discret_.DofColMap()->LID( dofnode[id] )];
-				coord(id,jd) =  referenceposition + displacement;
+				double referenceposition = ((element->Nodes())[k])->X()[j];
+				vector<int> dofnode = discret_.Dof((element->Nodes())[k]);
+				double displacement = disrow[discret_.DofRowMap()->LID( dofnode[j] )];
+				coord(j,k) =  referenceposition + displacement;
+
+				// get corresponding filament number
+				// loop over all filaments
+				if(!done)
+					for(int l=0; l<(int)filamentnumberconditions.size(); l++)
+						for(int m=0; m<(int)filamentnumberconditions[l]->Nodes()->size(); m++)
+						 if(element->Nodes()[k]->Id() == filamentnumberconditions[l]->Nodes()->at(m))
+						 {
+							 filnumber = filamentnumberconditions[l]->Id();
+							 done = true;
+						 }
 			}
+		}
 
 		const DRT::ElementType & eot = element->ElementType();
 
 #ifdef D_BEAM3
 		if(eot==DRT::ELEMENTS::Beam3Type::Instance())
 			for(int j=0; j<element->NumNode()-1; j++)
-				fiberorientfilecontent<<element->Id()<<"   "<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
+				fiberorientfilecontent<<element->Id()<<" "<<filnumber<<"   "<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
 																										<< coord(0,j) << " " << coord(1,j) << " " << coord(2,j) << " "
 																										<< coord(0,j+1) << " " << coord(1,j+1) << " " << coord(2,j+1)<<endl ;
 		else
@@ -2530,7 +2549,7 @@ void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const s
 #ifdef D_BEAM3II
 		if(eot==DRT::ELEMENTS::Beam3iiType::Instance())
 			for(int j=0; j<element->NumNode()-1; j++)
-				fiberorientfilecontent<<element->Id()<<"   "<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
+				fiberorientfilecontent<<element->Id()<<" "<<filnumber<<"   "<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
 																										<< coord(0,j) << " " << coord(1,j) << " " << coord(2,j) << " "
 																										<< coord(0,j+1) << " " << coord(1,j+1) << " " << coord(2,j+1)<<endl ;
 		else
@@ -2538,7 +2557,7 @@ void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const s
 #ifdef D_TRUSS3
 		if(eot==DRT::ELEMENTS::Truss3Type::Instance())
 			for(int j=0; j<element->NumNode()-1; j++)
-				fiberorientfilecontent<<element->Id()<<"   "<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
+				fiberorientfilecontent<<element->Id()<<" "<<filnumber<<"   "<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
 																										<< coord(0,j) << " " << coord(1,j) << " " << coord(2,j) << " "
 																										<< coord(0,j+1) << " " << coord(1,j+1) << " " << coord(2,j+1)<<endl ;
 		else
