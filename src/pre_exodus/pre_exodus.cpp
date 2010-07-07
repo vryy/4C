@@ -108,7 +108,7 @@ int main(
   My_CLP.setOption("concf",&concat2loose,"concatenate extruded volume with base, however loose every xxx'th node, default 0=off=fsi");
 
   // switch for genarating a 2d .dat - file
-  My_CLP.setOption("d2", "", &twodim, "generate a 2D .dat file");
+  My_CLP.setOption("d2", "d3", &twodim, "space dimensions in .dat-file: d2: 2D, d3: 3D");
 
   // centerline related
   My_CLP.setOption("cline",&cline,"generate local element coordinate systems based on centerline file, or mesh line (set to 'mesh'");

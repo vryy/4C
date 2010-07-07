@@ -469,7 +469,7 @@ void EXODUS::Mesh::SetNode(const int              NodeID,
 /*----------------------------------------------------------------------*/
 void EXODUS::Mesh::SetNsd (const int nsd)
 {
-	if (nsd != 2 || nsd != 3)
+	if (nsd != 2 && nsd != 3)
 		return;
 
 	baci_dim_ = nsd;
