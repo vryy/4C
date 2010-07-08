@@ -393,42 +393,51 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
     {
       for (int i=0; i<numnode; ++i)
       {
-        const vector<int>* flag = NULL;
+        const DRT::Node* inode = nodes[i];
+
+        const int owner = inode->Owner();
+        vector<int> dof = dis.Dof(dofset,inode);
+        for (unsigned j=0; j< dof.size(); ++j)
+        {
+          lmowner.push_back(owner);
+          lm.push_back(dof[j]);
+        }
+
         if (doDirichlet)
         {
-          DRT::Condition* dirich = nodes[i]->GetCondition("Dirichlet");
+          const vector<int>* flag = NULL;
+          DRT::Condition* dirich = inode->GetCondition("Dirichlet");
           if (dirich)
           {
             if (dirich->Type()!=DRT::Condition::PointDirichlet &&
                 dirich->Type()!=DRT::Condition::LineDirichlet &&
                 dirich->Type()!=DRT::Condition::SurfaceDirichlet &&
                 dirich->Type()!=DRT::Condition::VolumeDirichlet)
-              dserror("condition with name dirichlet is not of type Dirichlet");
+              dserror("condition with name Dirichlet is not of type Dirichlet");
             flag = dirich->Get<vector<int> >("onoff");
           }
-        }
-        const int owner = nodes[i]->Owner();
-        vector<int> dof = dis.Dof(dofset,nodes[i]);
-        const int size = NumDofPerNode(dofset,*(nodes[i]));
-        for (int j=0; j<size; ++j)
-        {
-          if (doDirichlet)
+          for (unsigned j=0; j<dof.size(); ++j)
           {
             if (flag && (*flag)[j])
               lmdirich.push_back(1);
             else
               lmdirich.push_back(0);
           }
-          lmowner.push_back(owner);
-          lm.push_back(dof[j]);
         }
       }
     }
 
     // fill the vector with element dofs
-    const vector<int>* flag = NULL;
+    const int owner = Owner();
+    vector<int> dof = dis.Dof(dofset,this);
+    for (unsigned j=0; j<dof.size(); ++j)
+    {
+      lmowner.push_back(owner);
+      lm.push_back(dof[j]);
+    }
     if (doDirichlet)
     {
+      const vector<int>* flag = NULL;
       DRT::Condition* dirich = GetCondition("Dirichlet");
       if (dirich)
       {
@@ -436,22 +445,19 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
             dirich->Type()!=DRT::Condition::LineDirichlet &&
             dirich->Type()!=DRT::Condition::SurfaceDirichlet &&
             dirich->Type()!=DRT::Condition::VolumeDirichlet)
-          dserror("condition with name dirichlet is not of type Dirichlet");
+          dserror("condition with name Dirichlet is not of type Dirichlet");
         flag = dirich->Get<vector<int> >("onoff");
       }
+      for (unsigned j=0; j<dof.size(); ++j)
+      {
+        if (flag && (*flag)[j])
+          lmdirich.push_back(1);
+        else
+          lmdirich.push_back(0);
+      }
     }
-    const int owner = Owner();
-    vector<int> dof = dis.Dof(dofset,this);
-    for (unsigned j=0; j<dof.size(); ++j)
-    {
-      if (flag && (*flag)[j])
-        lmdirich.push_back(1);
-      else
-        lmdirich.push_back(0);
-      lmowner.push_back(owner);
-      lm.push_back(dof[j]);
-    }
-  }
+
+  } // for (int dofset=0; dofset<la.Size(); ++dofset)
 
   return;
 }
