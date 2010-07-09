@@ -38,9 +38,10 @@ LINALG::Matrix<3,1> FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
   switch (timealgo)
   {
   case timeint_stationary:
+  {
     hist = 0.0;
     break;
-
+  }
   case timeint_one_step_theta:
   {
     const int nsd = 3;
