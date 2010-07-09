@@ -83,7 +83,10 @@ void COMBUST::FlameFront::UpdateFlameFront(
   ProcessFlameFront(combustdyn, phinp_);
   // compute smoothed gradient of G-function field
   // remark: must be called after ProcessFlameFront, since it relies on the new interface position
-  SmoothGradPhi();
+  const INPAR::COMBUST::SurfaceTensionApprox smoothgradient = Teuchos::getIntegralValue<INPAR::COMBUST::SurfaceTensionApprox>
+      (combustdyn.sublist("COMBUSTION FLUID"),"SURFTENSAPPROX");
+  if (smoothgradient == INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed)
+    SmoothGradPhi();
 
   return;
 }

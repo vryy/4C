@@ -2564,11 +2564,22 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::COMBUST::initfield_flame_vortex_interaction,
               INPAR::COMBUST::initfield_beltrami_flow),
               &combustcontrolfluid);
+  setStringToIntegralParameter<INPAR::COMBUST::SurfaceTensionApprox>("SURFTENSAPPROX","surface_tension_approx_laplacebeltrami_smoothed","Type of surface tension approximation",
+      tuple<std::string>(
+          "surface_tension_approx_divgrad",
+          "surface_tension_approx_laplacebeltrami",
+          "surface_tension_approx_laplacebeltrami_smoothed"),
+          tuple<INPAR::COMBUST::SurfaceTensionApprox>(
+              INPAR::COMBUST::surface_tension_approx_divgrad,
+              INPAR::COMBUST::surface_tension_approx_laplacebeltrami,
+              INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed),
+              &combustcontrolfluid);
   IntParameter("INITFUNCNO",-1,"Function for initial field",&combustcontrolfluid);
   DoubleParameter("LAMINAR_FLAMESPEED",1.0,"The laminar flamespeed incorporates all chemical kinetics into the problem for now",&combustcontrolfluid);
   DoubleParameter("MARKSTEIN_LENGTH",0.0,"The Markstein length takes flame curvature into account",&combustcontrolfluid);
   DoubleParameter("NITSCHE_VELOCITY",0.0,"Nitsche parameter to stabilize/penalize the velocity jump",&combustcontrolfluid);
   DoubleParameter("NITSCHE_PRESSURE",0.0,"Nitsche parameter to stabilize/penalize the pressure jump",&combustcontrolfluid);
+  DoubleParameter("SURFTENSCOEFF",0.0,"Surface tension coefficient",&combustcontrolfluid);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolgfunc = combustcontrol.sublist("COMBUSTION GFUNCTION",false,

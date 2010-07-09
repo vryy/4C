@@ -53,6 +53,14 @@ namespace INPAR
       initfield_flame_vortex_interaction,
       initfield_beltrami_flow
     };
+
+    /// type of surface tension approximation
+    enum SurfaceTensionApprox
+    {
+      surface_tension_approx_divgrad,
+      surface_tension_approx_laplacebeltrami,
+      surface_tension_approx_laplacebeltrami_smoothed
+    };
   }  // namespace COMBUST
 
 }  // namespace INPAR

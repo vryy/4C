@@ -70,6 +70,8 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   flamespeed_(params_.sublist("COMBUSTION FLUID").get<double>("LAMINAR_FLAMESPEED")),
   nitschevel_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_VELOCITY")),
   nitschepres_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_PRESSURE")),
+  surftensapprox_(Teuchos::getIntegralValue<INPAR::COMBUST::SurfaceTensionApprox>(params_.sublist("COMBUSTION FLUID"),"SURFTENSAPPROX")),
+  surftenscoeff_(params_.sublist("COMBUSTION FLUID").get<double>("SURFTENSCOEFF")),
   condensation_(xparams_.get<bool>("DLM_condensation")),
   step_(0),
   time_(0.0),
@@ -79,7 +81,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   dtp_     (params_.get<double> ("time step size")),
   timealgo_(params_.get<FLUID_TIMEINTTYPE>("time int algo")),
   theta_   (params_.get<double>("theta")),
-  extrapolationpredictor_(params.get("do explicit predictor",true)),
+  extrapolationpredictor_(params.get("do explicit predictor",false)),
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1)),
   writestresses_(params.get<int>("write stresses", 0)),
@@ -432,17 +434,10 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
   // remark: 'true' is needed to prevent iterative solver from crashing
   discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
 
-//  dofmanager->fillDofDistributionMaps(
-//      state_.nodalDofDistributionMap_,
-//      state_.elementalDofDistributionMap_);
-
-  {
-  //const std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
-  std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
+  const std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
   const std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID> oldElementalDofDistributionMap(state_.elementalDofDistributionMap_);
-  dofmanager->fillDofDistributionMaps(
-      state_.nodalDofDistributionMap_,
-      state_.elementalDofDistributionMap_);
+
+  dofmanager->fillDofDistributionMaps(state_.nodalDofDistributionMap_, state_.elementalDofDistributionMap_);
 
   // create switcher
   const XFEM::DofDistributionSwitcher dofswitch(
@@ -460,12 +455,11 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
   // accelerations at time n and n-1
   dofswitch.mapVectorToNewDofDistributionCombust(state_.accnp_);
   dofswitch.mapVectorToNewDofDistributionCombust(state_.accn_);
-
   // velocities and pressures at time n+1, n and n-1
   dofswitch.mapVectorToNewDofDistributionCombust(state_.velnp_); // use old velocity as start value
   dofswitch.mapVectorToNewDofDistributionCombust(state_.veln_);
   dofswitch.mapVectorToNewDofDistributionCombust(state_.velnm_);
-  }
+
   // --------------------------------------------------
   // create remaining vectors with new dof distribution
   // --------------------------------------------------
@@ -660,7 +654,6 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   // increment of the old iteration step - used for update of condensed element stresses
   oldinc_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
 
-
   while (stopnonliniter==false)
   {
     itnum++;
@@ -695,6 +688,10 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("nitschevel",nitschevel_);
       eleparams.set("nitschepres",nitschepres_);
       eleparams.set("DLM_condensation",condensation_);
+
+      // parameters for two-phase flow problems with surface tension
+      eleparams.set("surftensapprox",surftensapprox_);
+      eleparams.set("surftenscoeff",surftenscoeff_);
 
       // other parameters that might be needed by the elements
       //eleparams.set("total time",time_);

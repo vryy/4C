@@ -73,7 +73,9 @@ namespace COMBUST
       const INPAR::COMBUST::CombustionType    combusttype,
       const double                            flamespeed,
       const double                            nitschevel,
-      const double                            nitschepres
+      const double                            nitschepres,
+      const INPAR::COMBUST::SurfaceTensionApprox surftensapprox,
+      const double                            surftenscoeff
   );
 
   /// get material parameters (constant within the integration cell)

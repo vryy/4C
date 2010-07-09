@@ -306,6 +306,7 @@ void BuildDomainIntegrals(
     }
 #endif
 
+    const double timetauMp = timefac * tauMp;
 #ifdef COMBUST_PSPG_DIFFUSION
     /* pressure stabilisation: viscosity (-L_visc_u) */
     /*
@@ -315,7 +316,6 @@ void BuildDomainIntegrals(
                 |                         \  /  |
                  \                             /
      */
-    const double timetauMp = timefac * tauMp;
     assembler.template Matrix<Pres,Velx>(shp.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xx);
     assembler.template Matrix<Pres,Vely>(shp.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xy);
     assembler.template Matrix<Pres,Velz>(shp.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xz);
@@ -1070,21 +1070,23 @@ template <DRT::Element::DiscretizationType DISTYPE,
           int NUMDOF,
           class M1, class M2, class V1, class V2>
 void SysmatBoundaryNitsche(
-    const DRT::ELEMENTS::Combust3*    ele,           ///< the element those matrix is calculated
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>&  ih,   ///< connection to the interface handler
-    const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
-    const M1&                         evelnp,
-    const V1&                         eprenp,
-    const V2&                         ephi,
-    const M2&                         etau,
-    Teuchos::RCP<const MAT::Material> material,      ///< fluid material
-    const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
-    const double&                     dt,            ///< delta t (time step size)
-    const double&                     theta,         ///< factor for one step theta scheme
-    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
-    const double                      flamespeed,
-    const double                      nitschevel,
-    const double                      nitschepres
+    const DRT::ELEMENTS::Combust3*             ele,            ///< the element those matrix is calculated
+    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>&  ih,  ///< connection to the interface handler
+    const XFEM::ElementDofManager&             dofman,         ///< dofmanager of the current element
+    const M1&                                  evelnp,         ///<
+    const V1&                                  eprenp,         ///<
+    const V2&                                  ephi,           ///<
+    const M2&                                  etau,           ///<
+    Teuchos::RCP<const MAT::Material>          material,       ///< fluid material
+    const FLUID_TIMEINTTYPE                    timealgo,       ///< time discretization type
+    const double&                              dt,             ///< delta t (time step size)
+    const double&                              theta,          ///< factor for one step theta scheme
+    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler,      ///<
+    const double                               flamespeed,     ///<
+    const double                               nitschevel,     ///<
+    const double                               nitschepres,    ///<
+    const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
+    const double                               surftenscoeff   ///<
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion sysmat - boundary");

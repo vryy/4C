@@ -281,6 +281,12 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const double            dt       = params.get<double>("dt");
       const double            theta    = params.get<double>("theta");
 
+      // parameters for two-phase flow problems with surface tension
+      // type of surface tension approximation
+      const INPAR::COMBUST::SurfaceTensionApprox surftensapprox = params.get<INPAR::COMBUST::SurfaceTensionApprox>("surftensapprox");
+      // surface tension coefficient
+      const double surftenscoeff = params.get<double>("surftenscoeff");
+
 #ifdef COMBUST_STRESS_BASED
       // integrate and assemble all unknowns
       if (not this->intersected_ or
@@ -296,7 +302,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         COMBUST::callSysmat(assembly_type,
             this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
             material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-            combusttype, flamespeed, nitschevel, nitschepres);
+            combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff);
       }
       // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       else
@@ -318,7 +324,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         COMBUST::callSysmat(assembly_type,
             this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
             material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-            combusttype, flamespeed, nitschevel, nitschepres);
+            combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff);
 
         // condensation
         CondenseElementStressAndStoreOldIterationStep(
@@ -334,7 +340,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, nitschevel, nitschepres);
+          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff);
 #endif
     }
     break;
@@ -360,6 +366,12 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const double flamespeed = params.get<double>("flamespeed");
       const double nitschevel = params.get<double>("nitschevel");
       const double nitschepres = params.get<double>("nitschepres");
+
+      // parameters for two-phase flow problems with surface tension
+      // type of surface tension approximation
+      const INPAR::COMBUST::SurfaceTensionApprox surftensapprox = params.get<INPAR::COMBUST::SurfaceTensionApprox>("surftensapprox");
+      // surface tension coefficient
+      const double surftenscoeff = params.get<double>("surftenscoeff");
 
       // stabilization terms
       const bool pstab = true;
@@ -393,7 +405,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         COMBUST::callSysmat(assembly_type,
             this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
             material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-            combusttype, flamespeed, nitschevel, nitschepres);
+            combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff);
       }
       // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       else
@@ -418,7 +430,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         COMBUST::callSysmat(assembly_type,
             this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
             material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-            combusttype, flamespeed, nitschevel, nitschepres);
+            combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff);
 
         // condensation
         CondenseElementStressAndStoreOldIterationStep(
@@ -434,7 +446,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, nitschevel, nitschepres);
+          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff);
 #endif
 
 #if 0

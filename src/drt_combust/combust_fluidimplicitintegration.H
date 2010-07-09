@@ -356,6 +356,13 @@ protected:
   const double nitschevel_;
   // Nitsche parameter pressure
   const double nitschepres_;
+
+  // parameters for two-phase flow problems
+  // type of surface tension approximation
+  INPAR::COMBUST::SurfaceTensionApprox surftensapprox_;
+  // surface tension coefficient
+  const double surftenscoeff_;
+
   // boolean indicating condensation of element dofs on/off
   const bool condensation_;
 

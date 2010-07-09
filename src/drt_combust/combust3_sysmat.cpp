@@ -239,7 +239,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
 void Sysmat(
     const DRT::ELEMENTS::Combust3*    ele,            ///< the element those matrix is calculated
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih,   ///< connection to the interface handler
+    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih, ///< connection to the interface handler
     const XFEM::ElementDofManager&    dofman,         ///< dofmanager of the current element
     const DRT::ELEMENTS::Combust3::MyState&  mystate, ///< element state variables
     Epetra_SerialDenseMatrix&         estif,          ///< element matrix to calculate
@@ -257,7 +257,9 @@ void Sysmat(
     const INPAR::COMBUST::CombustionType combusttype, ///< switch for type of combusiton problem
     const double                      flamespeed,     ///<
     const double                      nitschevel,     ///<
-    const double                      nitschepres     ///<
+    const double                      nitschepres,    ///<
+    const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
+    const double                      surftenscoeff   ///<
 )
 {
   // initialize element stiffness matrix and force vector
@@ -309,7 +311,7 @@ void Sysmat(
     {
       COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelnp, eprenp, ephi, etau, material, timealgo, dt, theta, assembler,
-          flamespeed,nitschevel,nitschepres);
+          flamespeed,nitschevel,nitschepres,surftensapprox,surftenscoeff);
     }
 #endif
 #ifdef COMBUST_STRESS_BASED
@@ -385,7 +387,9 @@ void COMBUST::callSysmat(
     const INPAR::COMBUST::CombustionType combusttype,
     const double                         flamespeed,
     const double                         nitschevel,
-    const double                         nitschepres
+    const double                         nitschepres,
+    const INPAR::COMBUST::SurfaceTensionApprox surftensapprox,
+    const double                            surftenscoeff
 )
 {
   if (assembly_type == XFEM::standard_assembly)
@@ -396,31 +400,31 @@ void COMBUST::callSysmat(
       Sysmat<DRT::Element::hex8,XFEM::standard_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype,flamespeed,nitschevel,nitschepres);
+          combusttype,flamespeed,nitschevel,nitschepres,surftensapprox,surftenscoeff);
     break;
 //    case DRT::Element::hex20:
 //      Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-//          combusttype, flamespeed, nitschevel, nitschepres);
+//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff);
 //    break;
 //    case DRT::Element::hex27:
 //      Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-//          combusttype, flamespeed, nitschevel, nitschepres);
+//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff);
 //    break;
 //    case DRT::Element::tet4:
 //      Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-//          combusttype, flamespeed, nitschevel, nitschepres);
+//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff);
 //    break;
 //    case DRT::Element::tet10:
 //      Sysmat<DRT::Element::tet10,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-//          combusttype, flamespeed, nitschevel, nitschepres);
+//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff);
 //    break;
     default:
       dserror("standard_assembly Sysmat not templated yet");
@@ -434,31 +438,31 @@ void COMBUST::callSysmat(
       Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, nitschevel, nitschepres);
+          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff);
     break;
 //    case DRT::Element::hex20:
 //      Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-//          combusttype, flamespeed, nitschevel, nitschepres);
+//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff);
 //    break;
 //    case DRT::Element::hex27:
 //      Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-//          combusttype, flamespeed, nitschevel, nitschepres);
+//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff);
 //    break;
 //    case DRT::Element::tet4:
 //      Sysmat<DRT::Element::tet4,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-//          combusttype, flamespeed, nitschevel, nitschepres);
+//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff);
 //    break;
 //    case DRT::Element::tet10:
 //      Sysmat<DRT::Element::tet10,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-//          combusttype, flamespeed, nitschevel, nitschepres);
+//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff);
 //    break;
     default:
       dserror("xfem_assembly Sysmat not templated yet");

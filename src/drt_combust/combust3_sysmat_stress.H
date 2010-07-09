@@ -1058,7 +1058,7 @@ void SysmatBoundaryStress(
       jflux(0) = jflux_n*normal(0);
       jflux(1) = jflux_n*normal(1);
       jflux(2) = jflux_n*normal(2);
-      //cout << "jflux " << jflux_n << endl;
+      //cout << "jflux " << jflux << endl;
       // overwrite velocity jump condition (e.g. for specific test case)
       //jflux(0) = 0.0;
       //jflux(1) = 0.0;
