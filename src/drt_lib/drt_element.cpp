@@ -393,11 +393,12 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
     {
       for (int i=0; i<numnode; ++i)
       {
-        const DRT::Node* inode = nodes[i];
+        const DRT::Node* node = nodes[i];
 
-        const int owner = inode->Owner();
-        vector<int> dof = dis.Dof(dofset,inode);
-        for (unsigned j=0; j< dof.size(); ++j)
+        const int owner = node->Owner();
+        vector<int> dof = dis.Dof(dofset,node);
+        const int size = NumDofPerNode(dofset,*(node));
+        for (int j=0; j< size; ++j)
         {
           lmowner.push_back(owner);
           lm.push_back(dof[j]);
@@ -406,7 +407,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
         if (doDirichlet)
         {
           const vector<int>* flag = NULL;
-          DRT::Condition* dirich = inode->GetCondition("Dirichlet");
+          DRT::Condition* dirich = node->GetCondition("Dirichlet");
           if (dirich)
           {
             if (dirich->Type()!=DRT::Condition::PointDirichlet &&
