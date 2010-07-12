@@ -2478,6 +2478,7 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3,1> direction, DRT:
 
 #ifdef D_BEAM3
 #ifdef D_BEAM3II
+
   //creating a random generator object which creates uniformly distributed random numbers in [0;1]
   ranlib::UniformClosed<double> UniformGen;
 

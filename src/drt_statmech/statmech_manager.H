@@ -109,11 +109,7 @@ public:
   void StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename);
 
   //! \brief checks orientation of crosslinker relative to linked filaments
-#ifdef D_BEAM3
-#ifdef D_BEAM3II
   bool CheckOrientation(const LINALG::Matrix<3,1> direction, DRT::Node** nodes);
-#endif  // #ifdef D_BEAM3
-#endif  // #ifdef D_BEAM3II
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
