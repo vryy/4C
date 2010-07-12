@@ -1198,18 +1198,27 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("Delta_t_search",0.0,"average time between searching new neighbours for setting crosslinkers",&statmech);
   //Reading double parameter for crosslinker protein mean length
   DoubleParameter("R_LINK",0.0,"Mean distance between two nodes connected by a crosslinker",&statmech);
-  //Reading double parameter for stiffness of orientational constraint of crosslinkers
-  DoubleParameter("LINKORIENTSTIFF",0.0,"Stiffness of orientational constraint of crosslinkers",&statmech);
   //Absolute value of difference between maximal/minimal and mean cross linker length
   DoubleParameter("DeltaR_LINK",0.0,"Absolute value of difference between maximal/minimal and mean cross linker length",&statmech);
   //Reading double parameter for concentration of crosslinking protein
   DoubleParameter("C_CROSSLINKER",0.0,"Molar concentration of crosslinking protein",&statmech);
   //Edge length of cube for periodic boundary conditions problem
   DoubleParameter("PeriodLength",0.0,"Edge length of cube for periodic boundary conditions problem",&statmech);
-  //Number of time steps between two special outputs written
+  //equilibrium angle between crosslinker axis and filament at each binding site
+  DoubleParameter("PHI0",0.0,"equilibrium angle between crosslinker axis and filament at each binding site",&statmech);
+  //equilibrium angle between filaments projected into plane which crosslinker axis is perpendicular to
+  DoubleParameter("TAU0",0.0,"/equilibrium angle between filaments projected into plane which crosslinker axis is perpendicular to",&statmech);
+  //Young's modulus of crosslinkers
+  DoubleParameter("ELINK",0.0,"Moment of inertia of area of crosslinkers",&statmech);
+  //Moment of inertia of area of crosslinkers
   DoubleParameter("ILINK",0.0,"Moment of inertia of area of crosslinkers",&statmech);
-  //Number of time steps between two special outputs written
+  //Polar moment of inertia of area of crosslinkers
+  DoubleParameter("IPLINK",0.0,"Polar moment of inertia of area of crosslinkers",&statmech);
+  //Cross section of crosslinkers
   DoubleParameter("ALINK",0.0,"Cross section of crosslinkers",&statmech);
+  //Reading whether fixed seed for random numbers should be applied
+  setStringToIntegralParameter<int>("CHECKORIENT","No","If chosen crosslinkers are set only after check of orientation of linked filaments",
+                               yesnotuple,yesnovalue,&statmech);
   //Number of time steps between two special outputs written
   IntParameter("OUTPUTINTERVALS",1,"Number of time steps between two special outputs written",&statmech);
   //Reading direction of oscillatory motion that DBC nodes are subjected to (we need this when using periodic BCs)

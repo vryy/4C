@@ -51,6 +51,12 @@ namespace LARGEROTATIONS
   //!computing quaternion q from a rotation matrix R, Crisfield, Vol. 2, equation (16.74) - (16.78)
   void triadtoquaternion(const LINALG::Matrix<3,3>& R, LINALG::Matrix<4,1>& q);
   
+  //!computing the rotation angle theta rotating the unit direction vector d1 into the unit direction vector d2
+  void directionstoangle(const LINALG::Matrix<3,1>& d1,const LINALG::Matrix<3,1>& d2, LINALG::Matrix<3,1>& theta);
+
+  //!computing the triad R rotating the unit direction vector d1 into the unit direction vector d2
+  void directionstotriad(const LINALG::Matrix<3,1>& d1,const LINALG::Matrix<3,1>& d2, LINALG::Matrix<3,3>& R);
+
   //!quaternion product q12 = q2*q1, Crisfield, Vol. 2, equation (16.71)
   void quaternionproduct(const LINALG::Matrix<4,1>& q1,const LINALG::Matrix<4,1>& q2,LINALG::Matrix<4,1>& q12);
   

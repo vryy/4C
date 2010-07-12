@@ -370,5 +370,52 @@ void LARGEROTATIONS::quaternionproduct(const LINALG::Matrix<4,1>& q1,const LINAL
   q12(3) = q2(3)*q1(3) - q2(2)*q1(2) - q2(1)*q1(1) - q2(0)*q1(0);
 } //LARGEROTATIONS::quaternionproduct
 
+/*---------------------------------------------------------------------------------------------------*
+ |computing the rotation angle theta which rotates the given unit direction vector d1 into the given |
+ |unit direction vector d2; the unit direction vector of theta is the axis about which the rotation  |
+ |from d1 to d2 is carried out and the absolute value of theta is the absolute value of the rotation |
+ |angle                                                                           (public) cyron07/10|
+ *---------------------------------------------------------------------------------------------------*/
+void LARGEROTATIONS::directionstoangle(const LINALG::Matrix<3,1>& d1,const LINALG::Matrix<3,1>& d2, LINALG::Matrix<3,1>& theta)
+{
+  //check whether d1 and d2 are really unit direction vectors
+  if(fabs(d1.Norm2() - 1) > 1e-8 || fabs(d2.Norm2() - 1) > 1e-8)
+    dserror("d1 or d2 is not a unit direction vector!");
+
+  /*theta is orthgonal to the plane defined by d1 and d2. Thus its direction follows from a crossproduct
+   *between these two vectors*/
+  theta(0) = d1(1)*d2(2) - d1(2)*d2(1);
+  theta(1) = d1(2)*d2(0) - d1(0)*d2(2);
+  theta(2) = d1(0)*d2(1) - d1(1)*d2(0);
+
+  //compute scalar product between d1 and d2
+  double scalarprod = 0.0;
+  for(int j=0; j<3; j++)
+    scalarprod += d1(j)*d2(j);
+
+  //length of rotation angle vector theta given by the angle between d1 and d2
+  theta.Scale(acos(scalarprod) / theta.Norm2());
+
+} //LARGEROTATIONS::directionstoangle
+
+/*---------------------------------------------------------------------------------------------------*
+ |computing the triad R which rotates the given unit direction vector d1 into the given unit direction|
+ |vector d2                                                                        (public) cyron07/10|
+ *---------------------------------------------------------------------------------------------------*/
+void LARGEROTATIONS::directionstotriad(const LINALG::Matrix<3,1>& d1,const LINALG::Matrix<3,1>& d2, LINALG::Matrix<3,3>& R)
+{
+  //computing rotation angle corresponding to triad R
+  LINALG::Matrix<3,1> theta;
+  directionstoangle(d1,d2,theta);
+
+  //computing rotation quaternion R corresponding to theta
+  LINALG::Matrix<4,1> q;
+  angletoquaternion(theta,q);
+
+  //computing rotation matrix R corresponding to theta
+  quaterniontotriad(q,R);
+
+} //LARGEROTATIONS::directionstotriad
+
 
 #endif  // #ifdef CCADISCRET
