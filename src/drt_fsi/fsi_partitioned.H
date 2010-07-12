@@ -39,7 +39,6 @@ Maintainer: Ulrich Kuettler
 
 #include "fsi_algorithm.H"
 
-#include "../drt_inpar/inpar_fsi.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
 

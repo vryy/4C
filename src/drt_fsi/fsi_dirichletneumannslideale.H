@@ -27,8 +27,13 @@ Maintainer: Thomas Kloeppel
 #include "../drt_adapter/adapter_fluid_ale.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
+
 namespace FSI {
 
+namespace UTILS
+{
+  class SlideAleUtils;
+}
 /// Dirichlet Neumann coupled sliding interface system
 /*!
   This is the algorithm class of partitioned FSI problems. Here we
@@ -114,43 +119,39 @@ protected:
   ///predictor
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
   
-  /// compute Displacement of structural center of gravity
-  vector<double> Centerdisp
-  (
-      Teuchos::RCP<Epetra_Vector> idisptotal,
-      Teuchos::RCP<Epetra_Vector>idispstep
-  );
-  
-  std::map<int,LINALG::Matrix<3,1> > CurrentMasterPos
-  (
-      Teuchos::RCP<Epetra_Vector> idisptotal,
-      Teuchos::RCP<Epetra_Vector> reddisp,
-      DRT::Discretization& interfacedis,
-      RCP<Epetra_Map> msfullelemap
-  );
-  
-  void SlideProjection
-  (
-      Teuchos::RCP<Epetra_Vector> islavestep,
-      DRT::Discretization& interfacedis,
-      vector<double> centerdisp,
-      std::map<int, RCP<DRT::Element> > masterreduelements,
-      std::map<int,LINALG::Matrix<3,1> > currentpositions
-  );
+//  /// compute Displacement of structural center of gravity
+//  vector<double> Centerdisp
+//  (
+//      Teuchos::RCP<Epetra_Vector> idisptotal,
+//      Teuchos::RCP<Epetra_Vector>idispstep
+//  );
+//  
+//  std::map<int,LINALG::Matrix<3,1> > CurrentMasterPos
+//  (
+//      Teuchos::RCP<Epetra_Vector> idisptotal,
+//      Teuchos::RCP<Epetra_Vector> reddisp,
+//      DRT::Discretization& interfacedis,
+//      RCP<Epetra_Map> msfullelemap
+//  );
+//  
+//  void SlideProjection
+//  (
+//      Teuchos::RCP<Epetra_Vector> islavestep,
+//      DRT::Discretization& interfacedis,
+//      vector<double> centerdisp,
+//      std::map<int, RCP<DRT::Element> > masterreduelements,
+//      std::map<int,LINALG::Matrix<3,1> > currentpositions
+//  );
   
 private:
 
   //! we couple based on displacements
   bool displacementcoupling_;
-  Teuchos::RCP<Epetra_Vector> idispms_;		    ///<displacement of master and slave interface for mortar
-  vector<double> centerdisptotal_;	          ///<sum over all center displacements			
+  
+  Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_;
+  
   Teuchos::RCP<Epetra_Vector> islave_;	      ///<displacement of slave side of the interface
   RCP<Epetra_Vector> FTStemp_;	              ///<slave displacement on master side at every time step begin
-  
-  map<int, DRT::Node*> imastergnodes_;	      ///< masternodes in the interface including ghosts
-  map<int, RCP<DRT::Element> > imastereles_;	///< masterlelements in the interface
-  map<int, DRT::Node*> islaveslidnodes_;          ///< sliding slavenodes (= fluid) in the interface
-  map<int, DRT::Node*> islaveconfnodes_;          ///< non-sliding slavenodes (= fluid) in the interface
   
 };
 

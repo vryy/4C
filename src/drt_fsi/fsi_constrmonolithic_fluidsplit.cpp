@@ -227,8 +227,8 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   // structure part
 
   Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
-  const std::string fname = "cfsstructmatrix.mtl";
-  LINALG::PrintMatrixInMatlabFormat(fname,*(s->EpetraMatrix()));
+  //const std::string fname = "cfsstructmatrix.mtl";
+  //LINALG::PrintMatrixInMatlabFormat(fname,*(s->EpetraMatrix()));
 
 
   /*----------------------------------------------------------------------*/
