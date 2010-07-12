@@ -1126,8 +1126,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
      }//if (force != NULL)
 
 
-
-
     /*computation of stiffness matrix according to Jelenic 1999, eq. (4.7); computation split up with respect
     *to single blocks of matrix in eq. (4.3)*/
     if (stiffmatrix != NULL)
@@ -1215,10 +1213,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
 
 
 
-
-   //if(Id() == 0)
-     //cout << "\n***\ntotal time: " << Teuchos::Time::wallTime() - t_tot<< " seconds\n***\n";
-
   return;
 
 } // DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass
@@ -1254,77 +1248,8 @@ template<int nnode>
 void DRT::ELEMENTS::Beam3ii::EvaluatePTC(ParameterList& params,
                                       Epetra_SerialDenseMatrix& elemat1)
 {
-  /*comment on the calculation of a proper PTC parameter: it is not a priori clear which phyiscal parameters
-   * should be incalculated when computing a proper PTC parameter; the reason for instability without PTC is
-   * seemingly the vast difference in stiffness of different eigenmodes (namely those related to bending and
-   * stretching, respectively). To understand the influence of different parameters to the numerical stability
-   * we study a simple model problem: we consider a clamped beam of length L with horizontal and vertical tip
-   * loads F_h and F_v, respectively. These tip loads go along horizontal and vertical displacements u and w of
-   * the tip point, respectively. Let the beam be undeformed at the beginning of a time step and let the
-   * displacements u and w arise at the end of a time step of lenght dt. Then simple calculus shows that with a
-   * damping constat gamma ~ eta*L there holds true F_h = EIw/L^3 + gamma*w/dt and F_v = EAu/L + gamma*u/dt.
-   * Stability is assumed to be preserved if the ratio between beding u and w is close to one for F_h = F_v.
-   * Thus we expect stability if either EI/L^3 ~ EA/L or EI/L^3, EA/L << gamma/dt. In the first case the
-   * elastic resistence against bending and streching is comparable, in the second case the problem is dominated
-   * by viscous instead of elastic forces. In practice time step size is oriented to either to the bending or
-   * stretching time constants tau of the system with dt ~ const1*tau and typically const1 ~ 1e-3. The bending time
-   * constants are given by tau_EI = const2*eta*L^4 / EI and the stretching time constants by tau_EA = const3*eta*L^4 / EA,
-   * with constant expressions const2, const3 < 1. If dt is chosen according to tau_EI we get gamma /dt ~ const1*const2*EI / L^3,
-   * which is always much smaller than the stiffness expression EI/L^3 related to bending and if dt is chosen
-   * according to tau_EA the same rationale applies. Therefore EI/L^3, EA/L << gamma/dt never arises in practice
-   * and stability depends on the requirement EI/L^3 ~ EA/L. If this requirement is naturally violated an
-   * artificial PTC damping has to be employed, which increases the damping stiffness that far that the ratio
-   * EI/L^3 ~ EA/L can no longer destabilize the system.
-   *
-   * The crucial question is obviously how the PTC damping parameter scales with different simulation parameters.
-   * In the following we discuss the effect of variations of different parameters:
-   *
-   * Young's modulus E: As both bending and axial stiffness scale linearly with the Young's modulus E  one may assume
-   * that the PTC parameter may be calculated independently on this parameter; this was indeed found in practice:
-   * varying E over 3 orders of magnitude upwards and downwards (and scaling time step size by the same factor
-   * as all eigenfrequencies depend linearly on Young's modulus) did not affect the PTC parameter required for
-   * stabilization.For too small values of E instability was found due to too large curvature in the beam elements,
-   * however, this is expected as the beam formulation is valid for moderate curvature only and small values
-   * of E naturally admit increasing curvature.
-   *
-   * Viscosity eta: a similar rationale as for Young's modulus E applies. All the system time constants depend
-   * linearly on eta. On the other hand the critical ratio between bending and axial stiffness does not depend
-   * on eta. Thus scaling eta and time step size dt by the same factor does not change the PTC factor required
-   * for stabilization.
-   *
-   * Numerical tests revealed that refining the discretization by factor const and at the same time the time
-   * step size by a factor const^2 (because the critical axial eigenfrequencies scale with L^2 for element
-   * length L) did not change the required PTC parameter. One and the same parameter could be used for a wide
-   * range of element lengths up to a scale where the element length became comparable with the persistnece
-   * length l_p. For L >= l_p / 2 the simulation became unstable, however, this is supposed to happen not due
-   * to an improper PTC parameter, but rather due to the large deformations arsing then, which violated the
-   * small strain assumption of this Reissner element. Thus the PTC parameter depends rather on physical parameters
-   * than on the choice of the discretization.
-   *
-   * The above parameter discussion reveals how to adapt the PTC factor in case of changes of the environment of
-   * a structure with fixed cross section A, moment of inertia I and length L. However, how to choose the PTC
-   * factor and time step size dt for a first discretization and parameter set up has not been discussed so far.
-   * Indeed the latter step can be done heuristically once for
-   *
-   * Cross section A, moment of inertia I: from the above discussed physics one might assume a dependence of the
-   * PTC parameter on the ratio of bending and strechting stiffness, i.e. on EI / EA. Such a dependence might
-   * considerably exacerbate the application of the PTC algorithm. However, by means of numerical experiments a
-   * different rule to deterime the PTC parameter was found: Beyond some ratio EI / EA simulations were found to
-   * be unstable without PTC damping. However, a constant PTC damping factor was capable of stabilizing the system
-   * over a large range of ratios EI / EA, if the time step size was adopted accordingly. The time step size
-   * has to be determined both with respect to bending and stretching time constants. When scaling I by a factor
-   * const_I and A by a factor const_A, one first has to decide which of both types of time constants may become
-   * critical by the parameter change. Subsequently one has to scale the time step size either by 1/const_A if
-   * the stretching time constants are the critical ones or by 1/const_I otherwise.
-   *
-   *
-   * Length L: reduing
-   */
-
-
-
-
-  double basisdamp   = 1.885; // in Actin3D_XXX input files with(!) stochastic torsional moments:: (20e-2)*PI for A = 1.9e-8, (20e-2)*PI*3 for A = 1.9e-6; for input of Thomas Knyrim without(!) stochastic torsional moments: (20e-2)*PI*20
+  //heuristically determined PTC damping parameter
+  double basisdamp   = 1.885; //1.885 for Actin input files
 
   //apply PTC rotation damping term using a Lobatto integration rule; implemented for 2 nodes only
   if(nnode > 2)
@@ -1353,9 +1278,6 @@ void DRT::ELEMENTS::Beam3ii::EvaluatePTC(ParameterList& params,
       for (int l=0; l<3; l++)
         elemat1(node*6+3+k,node*6+3+l) += artstiff(k,l)*0.5*jacobinode_[node];
   }
-
-
-
 
 
   return;
@@ -1478,6 +1400,12 @@ inline void DRT::ELEMENTS::Beam3ii::MyRotationalDamping(ParameterList& params,  
   //get friction model according to which forces and damping are applied
   INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
 
+  //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
+  vector<double> jacobi(jacobimass_);
+  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
+    jacobi = jacobinode_;
+
+
   //damping coefficients for translational and rotatinal degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
   MyDampingConstants(params,gamma,frictionmodel);
@@ -1534,7 +1462,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyRotationalDamping(ParameterList& params,  
       for(int k=0; k<3; k++)
       {
         if(force != NULL)
-          (*force)(i*6+3+k) += gamma(2)*TWTtomega(k)*(Idamping[gp])(i)*gausspointsdamping.qwgt[gp]*jacobi_[gp];
+          (*force)(i*6+3+k) += gamma(2)*TWTtomega(k)*(Idamping[gp])(i)*gausspointsdamping.qwgt[gp]*jacobi[gp];
 
         if(stiffmatrix != NULL)
           //loop over all column nodes
@@ -1550,10 +1478,12 @@ inline void DRT::ELEMENTS::Beam3ii::MyRotationalDamping(ParameterList& params,  
 
               auxmatrix.Multiply(sum,(Itildedamping[gp])[j]);
 
-              (*stiffmatrix)(i*6+3+k,j*6+3+l) += gamma(2)*auxmatrix(k,l)*(Idamping[gp])(i)*gausspointsdamping.qwgt[gp]*jacobi_[gp];
+              (*stiffmatrix)(i*6+3+k,j*6+3+l) += gamma(2)*auxmatrix(k,l)*(Idamping[gp])(i)*gausspointsdamping.qwgt[gp]*jacobi[gp];
             }
       }
   }
+
+
 
   return;
 }//DRT::ELEMENTS::Beam3ii::MyRotationalDamping(.)
@@ -1769,6 +1699,11 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticMoments(ParameterList& params,  
   //get friction model according to which forces and damping are applied
   INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
 
+  //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
+  vector<double> jacobi(jacobimass_);
+  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
+    jacobi = jacobinode_;
+
   //damping coefficients for three translational and one rotatinal degree of freedom
   LINALG::Matrix<3,1> gamma(true);
   MyDampingConstants(params,gamma,frictionmodel);
@@ -1798,7 +1733,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticMoments(ParameterList& params,  
       for(int k=0; k<3; k++)
       {
         if(force != NULL)
-          (*force)(i*6+3+k) -= (Idamping[gp])(i)*t1(k)*(*randomnumbers)[gp*randompergauss+3][LID()]*sqrt(jacobi_[gp]*gausspointsdamping.qwgt[gp]*gamma(2));
+          (*force)(i*6+3+k) -= (Idamping[gp])(i)*t1(k)*(*randomnumbers)[gp*randompergauss+3][LID()]*sqrt(jacobi[gp]*gausspointsdamping.qwgt[gp]*gamma(2));
 
         if(stiffmatrix != NULL)
           //loop over all column nodes
@@ -1807,7 +1742,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticMoments(ParameterList& params,  
             for(int l=0; l<3; l++)
             {
               auxmatrix.Multiply(S,(Itildedamping[gp])[j]);
-              (*stiffmatrix)(i*6+3+k,j*6+3+l) += (Idamping[gp])(i)*auxmatrix(k,l)*sqrt(jacobi_[gp]*gausspointsdamping.qwgt[gp]*gamma(2));
+              (*stiffmatrix)(i*6+3+k,j*6+3+l) += (Idamping[gp])(i)*auxmatrix(k,l)*sqrt(jacobi[gp]*gausspointsdamping.qwgt[gp]*gamma(2));
             }
 
     }
@@ -1880,6 +1815,8 @@ inline void DRT::ELEMENTS::Beam3ii::CalcBrownian(ParameterList& params,
 
   //now start with evaluatoin of force vectors and stiffness matrices
 
+
+
   //add stiffness and forces due to translational damping effects
   MyTranslationalDamping<nnode,ndim,dof>(params,vel,disp,stiffmatrix,force);
 
@@ -1891,7 +1828,6 @@ inline void DRT::ELEMENTS::Beam3ii::CalcBrownian(ParameterList& params,
 
   //add stochastic moments and resulting stiffness
   MyStochasticMoments<nnode,randompergauss>(params,vel,disp,stiffmatrix,force,gausspointsdamping,Idamping,Itildedamping,Qconvdamping,Qnewdamping);
-
 
 return;
 
