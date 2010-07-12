@@ -235,7 +235,7 @@ namespace UTILS
   const int numnode = ele->NumNode();
   const int numcol = global.NumVectors();
   if (((int) local.N())!=1) dserror("local matrix must have one column");
-  if (((int) local.M())!=numnode) dserror("local matrix has wrong number of rows");
+  if (((int) local.M())!=numnode*numcol) dserror("local matrix has wrong number of rows");
 
   // loop over element nodes
   for (int i=0; i<numnode; ++i)
