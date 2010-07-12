@@ -1431,6 +1431,7 @@ void LINALG::SparseMatrix::Dump(std::string filename)
   std::ofstream val(valuesname .str().c_str());
 
   const Epetra_Map& rowmap = RowMap();
+  const Epetra_Map& colmap = ColMap();
 
   if (sysmat_->Filled())
   {
@@ -1444,7 +1445,11 @@ void LINALG::SparseMatrix::Dump(std::string filename)
         dserror("ExtractMyRowView failed: err=%d", err);
       row << rowmap.GID(MyRow) << "\n";
       off << NumEntries << "\n";
-      std::copy(Indices,Indices+NumEntries, std::ostream_iterator<int>(idx," "));
+      //std::copy(Indices,Indices+NumEntries, std::ostream_iterator<int>(idx," "));
+      for ( int i=0; i<NumEntries; ++i)
+      {
+        idx << colmap.GID(Indices[i]) << " ";
+      }
       idx << "\n";
       val.write(reinterpret_cast<char*>(Values),NumEntries*sizeof(double));
     }
@@ -1505,7 +1510,7 @@ void LINALG::SparseMatrix::Load(Epetra_Comm & comm, std::string filename)
   {
     int o;
     off >> o;
-    if ( not row )
+    if ( not off )
       break;
     offnum.push_back(o);
   }
