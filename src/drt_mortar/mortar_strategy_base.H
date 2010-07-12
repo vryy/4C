@@ -55,6 +55,7 @@ namespace LINALG
   class MapExtractor;
   class Solver;
   class SparseOperator;
+  class SparseMatrix;
 }
 
 namespace IO
@@ -168,6 +169,7 @@ class StrategyBase
     virtual void OutputStresses() = 0;
     virtual void Print(ostream& os) const = 0;
     virtual void PrintActiveSet() = 0;
+    virtual void ForceRefConfig() = 0;
     virtual void Recover(RCP<Epetra_Vector> disi) = 0;
     virtual void ResetActiveSet() = 0;
     virtual void ResetPenalty() = 0;

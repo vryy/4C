@@ -328,6 +328,8 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::EvaluateReferenceState(const RCP<Epetra_Vector> vec)
 {
+#ifndef CONTACTFORCEREFCONFIG 
+  
   if (friction_ == false)  
     return;
   
@@ -357,6 +359,38 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(const RCP<Epetra_Vector
 
   // store nodal entries from D and M to old ones
   StoreToOld(MORTAR::StrategyBase::dm);
+
+#else  
+  
+  if (Dualquadslave3d())
+    dserror("Evaluation of contact forces in reference configuration "
+            "not yet testet for dual quadratic shape functions");
+  
+  // set state and do mortar calculation
+  SetState("displacement",vec);
+  InitEvalInterface();
+  InitEvalMortar();
+  
+  // dump mortar Matrix D
+  // this is always the matrix from the reference configuration,
+  // also in the restart case
+  dmatrix_->Dump("DREF");
+  
+  if(friction_ == false)
+    return;
+  
+  // store contact state to contact nodes (active or inactive)
+  StoreNodalQuantities(MORTAR::StrategyBase::activeold);
+
+  // store D and M to old ones
+  StoreDM("old");
+
+  // store nodal entries from D and M to old ones
+  StoreToOld(MORTAR::StrategyBase::dm);
+ 
+#endif
+  
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1199,6 +1233,56 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
       fflush(stdout);
     }
   }
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate contact forces with respect to reference config.   mgit 07/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::ForceRefConfig()
+{
+
+  // multiply D matrix with z
+  RCP<Epetra_Vector> refz = rcp(new Epetra_Vector(*gsdofrowmap_));
+  dmatrix_->Multiply(false,*z_,*refz);
+  
+  // read mortar matrix D of reference configuration 
+  RCP<LINALG::SparseMatrix> dref = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+  
+  // get matrix of reference configuration
+  std::string inputname = "DREF";
+  dref->Load(Comm(),inputname);
+  dref->Complete();
+  
+  RCP<LINALG::SparseMatrix> invdref = rcp(new LINALG::SparseMatrix(*dref));
+  RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_,true);
+  int err = 0;
+
+  // extract diagonal of invd into diag
+  invdref->ExtractDiagonalCopy(*diag);
+
+  // set zero diagonal values to dummy 1.0
+  for (int i=0;i<diag->MyLength();++i)
+    if ((*diag)[i]==0.0) (*diag)[i]=1.0;
+
+  // scalar inversion of diagonal values
+  err = diag->Reciprocal(*diag);
+  if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+
+  // re-insert inverted diagonal into invd
+  err = invdref->ReplaceDiagonalValues(*diag);
+  // we cannot use this check, as we deliberately replaced zero entries
+  //if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+  
+  // multiply Dref^(-1) Dcurr.z
+  invdref->Multiply(false,*refz,*refz);
+  
+  // write refz to z
+  z_=refz;
+
+  // store updated LM into nodes
+  StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
   
   return;
 }

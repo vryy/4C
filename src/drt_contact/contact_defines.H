@@ -49,7 +49,7 @@ Maintainer: Alexander Popp
 #define CONTACTCOMPHUEBER           /* flag for enhanced complementarity function mu(zn-cn.g) */
 //#define CONTACTPSEUDO2D           /* flag for pseudo-3D in 2D situations (u_z=0)*/
 //#define CONTACTBASISTRAFO         /* flag for basis trafo of dual LM system */
-
+//#define CONTACTFORCEREFCONFIG     /* flag for evaluation of contact forces in reference config. */  
 /************************************************************************/
 /* Debugging options                                                    */
 /************************************************************************/

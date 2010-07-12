@@ -442,6 +442,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     */
     virtual void PrintActiveSet();
+
+    /*!
+    \brief Evaluate contact forces with respect to reference configuration
+
+    */
+    virtual void ForceRefConfig();
     
     /*!
     \brief Visualize contact stuff with gmsh

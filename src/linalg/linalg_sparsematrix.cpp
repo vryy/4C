@@ -1478,7 +1478,7 @@ void LINALG::SparseMatrix::Dump(std::string filename)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Load(Epetra_Comm & comm, std::string filename)
+void LINALG::SparseMatrix::Load(const Epetra_Comm& comm, std::string& filename)
 {
   std::stringstream rowsetname;  rowsetname  << filename << "." << comm.MyPID() << ".row";
   std::stringstream offsetname;  offsetname  << filename << "." << comm.MyPID() << ".off";

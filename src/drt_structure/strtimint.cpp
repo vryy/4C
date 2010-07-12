@@ -355,7 +355,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       cmtman_->GetStrategy().MortarCoupling(zeros_);
       cmtman_->GetStrategy().MeshInitialization();
 
-      // FOR FRICTIONAL CONTACT
+      // FOR FRICTIONAL CONTACT AND STORAGE OF MORTAR MATRICES
       // (1) Mortar coupling in reference configuration
       // for frictional contact we need history values (relative velocity) and
       // therefore we store the nodal entries of mortar matrices (reference

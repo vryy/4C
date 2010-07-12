@@ -143,7 +143,8 @@ StruGenAlpha(params,dis,solver,output)
     cmtmanager_->GetStrategy().MortarCoupling(zeros_);
     cmtmanager_->GetStrategy().MeshInitialization();
     
-    // FOR FRICTIONAL CONTACT (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
+    // FOR FRICTIONAL CONTACT (ONLY ONCE) AND STORAGE OF MORTAR MATRICES
+    // IN REFERENCE CONFIGURATION (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
     // (1) Mortar coupling in reference configuration 
     // for frictional contact we need history values (relative velocity) and
     // therefore we store the nodal entries of mortar matrices (reference
@@ -2886,6 +2887,21 @@ void CONTACT::CmtStruGenAlpha::Output()
     }
   }
 
+#ifdef CONTACTFORCEREFCONFIG 
+ // evaluate contact forces with respect to reference configuration
+  if (istep==10)
+  { 
+    cmtmanager_->GetStrategy().ForceRefConfig();
+  
+    if(discret_.Comm().MyPID()==0)
+    cout << "\nThe Lagrange multiplier in following output are \n"
+            "evaluated with respect to reference configuration!" << endl;
+    
+    // print active set
+    cmtmanager_->GetStrategy().PrintActiveSet();
+    exit(0);
+  }
+#endif
   // print active set
   cmtmanager_->GetStrategy().PrintActiveSet();
 

@@ -486,6 +486,11 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     dserror("3D frictional contact without flag CONTACTCOMPHUEBER not yet implemented");
 #endif
 
+#ifdef CONTACTFORCEREFCONFIG
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
+    dserror("Evaluation of contact forces in reference configuration only works for dual shape functions");
+#endif  
+
   if (Teuchos::getIntegralValue<int>(input,"CROSSPOINTS") == true && dim == 3)
     dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
 

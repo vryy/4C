@@ -385,6 +385,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     void Initialize() {}
     void OutputStresses() {}
     void ResetActiveSet() {}
+    void ForceRefConfig() {}
     void SaveReferenceState(RCP<Epetra_Vector> dis) {}
     void UpdateActiveSet() {}
     void UpdateActiveSetSemiSmooth() {}

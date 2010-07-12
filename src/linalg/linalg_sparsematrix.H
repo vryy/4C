@@ -653,7 +653,7 @@ class SparseMatrix : public SparseOperator
     void Dump(std::string filename);
 
     /// load a dump
-    void Load(Epetra_Comm & comm, std::string filename);
+    void Load(const Epetra_Comm& comm, std::string& filename);
 
     //@}
 
