@@ -2472,10 +2472,12 @@ std::vector<int> StatMechManager::Permutation(const int& N)
  | checks orientation of crosslinker relative to linked filaments       |
  |                                                  (public) cyron 06/10|
  *----------------------------------------------------------------------*/
-#ifdef D_BEAM3
-#ifdef D_BEAM3II
+
 bool StatMechManager::CheckOrientation(const LINALG::Matrix<3,1> direction, DRT::Node** nodes)
 {
+
+#ifdef D_BEAM3
+#ifdef D_BEAM3II
   //creating a random generator object which creates uniformly distributed random numbers in [0;1]
   ranlib::UniformClosed<double> UniformGen;
 
@@ -2556,10 +2558,11 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3,1> direction, DRT:
   //crosslinker has to pass three probability checks with respect to orientation
   return(UniformGen.random() < p0 && UniformGen.random() < p1 && UniformGen.random() < p2);
 
-
-} // StatMechManager::Permutation
 #endif  // #ifdef D_BEAM3
 #endif  // #ifdef D_BEAM3II
+
+} // StatMechManager::Permutation
+
 
 /*----------------------------------------------------------------------*
  | output for structural polymorphism             (public) mueller 07/10|
