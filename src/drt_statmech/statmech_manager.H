@@ -67,7 +67,9 @@ public:
   void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid);
 
   //! \brief set crosslinker if two nodes are close enough and probability check is passed
-  void SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
+  void SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
+                       const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,
+                       LINALG::Matrix<3,1> >& currentrotations, Epetra_MultiVector& crosslinkerneighbours);
 
   //! \brief generate gaussian randomnumbers with mean "meanvalue" and standarddeviation "standarddeviation" for parallel use
   void GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> randomnumbers,const double meanvalue, const double standarddeviation);
@@ -103,11 +105,13 @@ public:
    */
   void UpdateForceSensors(vector<int>& sensornodes, int oscdir);
 
+  //! \brief writes element orientation and coordinates of fiber elements to an output file
+  void StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename);
 
   //! \brief checks orientation of crosslinker relative to linked filaments
 #ifdef D_BEAM3
 #ifdef D_BEAM3II
-  bool CheckOrientation(const Epetra_Vector& orientationprobability,const LINALG::Matrix<3,1> direction, DRT::Node** nodes);
+  bool CheckOrientation(const LINALG::Matrix<3,1> direction, DRT::Node** nodes);
 #endif  // #ifdef D_BEAM3
 #endif  // #ifdef D_BEAM3II
 
@@ -126,8 +130,8 @@ protected:
   //! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
   void DelCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap);
 
-  //! \brief Searches and saves in variable  crosslinkerneighbours_ neighbours for each col node
-  void SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > currentpositions);
+  //! \brief Searches and saves in variable  crosslinkerneighbours neighbours for each col node
+  void SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > currentpositions, RCP<Epetra_MultiVector>& crosslinkerneighbours);
 
   //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
   void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim);
@@ -135,6 +139,9 @@ protected:
   //! \brief generates a vector with a random permutation of the numbers between 0 and N - 1
   std::vector<int> Permutation(const int& N);
 
+
+  //! \brief switch between different on and off-rates
+  bool konswitch_;
 
   //! \brief how often SearchNeighbours() has already been called
   int nsearch_;
@@ -172,14 +179,7 @@ protected:
   //! \brief reference to current discretization
   DRT::Discretization& discret_;
 
-  //! \brief storing for each col map node the GIDs of all neighbour nodes
-  RCP<Epetra_MultiVector>  crosslinkerneighbours_;
-
-  //! \brief storing for each row map node the GIDs of nodes to which a crosslinker has been established
-  /*note: only the node, which actively passes the probability check gets an entry in crosslinkerpartner_,
-   *whereas the crosslinkerpartner_ will not change with respect to the node to which the crosslinker is
-   *established. In opposition to that numcrosslinkerpartner_ is modified for both nodes when a new
-   *crosslinker is set up*/
+  //! \brief storing for each col map node the GIDs of nodes to which a crosslinker has been established
   RCP<Epetra_MultiVector>  crosslinkerpartner_;
 
   //! \brief storing for each col map node how many crosslinkers it has currently
