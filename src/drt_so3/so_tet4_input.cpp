@@ -31,7 +31,7 @@ bool DRT::ELEMENTS::So_tet4::ReadElement(const std::string& eletype,
   int material = 0;
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
-  
+
   if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
     MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(Material().get());
     holzcard->Setup(NUMGPT_SOTET4, linedef);
@@ -54,6 +54,8 @@ bool DRT::ELEMENTS::So_tet4::ReadElement(const std::string& eletype,
     dserror("Updated Lagrange for SO_TET4 is not implemented!");
   }
   else dserror("Reading of SO_TET4 element failed");
+
+  //std::cout << (sizeof(*this)+NumNode()*(sizeof(DRT::Node*)+sizeof(int))) << "\n";
 
   return true;
 }

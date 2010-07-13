@@ -493,7 +493,7 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
   // volume of the element
   V_ = jac.Determinant()/6.0;
 
-  nxyz_.resize(NUMGPT_SOTET4);
+  //nxyz_.resize(NUMGPT_SOTET4);
   const static vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = so_tet4_1gp_derivs();
   LINALG::Matrix<NUMCOORD_SOTET4-1,NUMCOORD_SOTET4> tmp;
   for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
@@ -522,7 +522,7 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
     	dserror("Inversion of Jacobian failed");
 
     //nxyz_[gp] = N_xsi_k*partials
-    nxyz_[gp].Multiply(derivs[gp],partials);
+    nxyz_.Multiply(derivs[gp],partials);
     /* structure of N_XYZ:
     **             [   dN_1     dN_1     dN_1   ]
     **             [  ------   ------   ------  ]
@@ -536,12 +536,12 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
 
     if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
       if (!(prestress_->IsInit()))
-        prestress_->MatrixtoStorage(gp,nxyz_[gp],prestress_->JHistory());
+        prestress_->MatrixtoStorage(gp,nxyz_,prestress_->JHistory());
 
     if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
       if (!(invdesign_->IsInit()))
       {
-        invdesign_->MatrixtoStorage(gp,nxyz_[gp],invdesign_->JHistory());
+        invdesign_->MatrixtoStorage(gp,nxyz_,invdesign_->JHistory());
         invdesign_->DetJHistory()[gp] = V_;
       }
 
@@ -611,7 +611,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
   /* =========================================================================*/
   for (int gp=0; gp<NUMGPT_SOTET4; gp++)
   {
-    LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> nxyz(nxyz_[gp]); // copy!
+    LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> nxyz(nxyz_); // copy!
 
     //                                      d xcurr
     // (material) deformation gradient F = --------- = xcurr^T * nxyz^T

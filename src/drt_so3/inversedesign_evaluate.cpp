@@ -1392,7 +1392,7 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
   {
     //----------------------------------- get inverse of Jacobian mapping
     //------------------------------ compute derivs wrt to spatial coords
-    LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4>& n_xyz = ele->nxyz_[gp];
+    LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4>& n_xyz = ele->nxyz_; // [gp];
 
     //--------------------------- build defgrd of inverse mapping dX / dx
     LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> f;

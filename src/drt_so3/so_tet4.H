@@ -403,7 +403,8 @@ protected:
   //! volume of the element
   double                                                                   V_;
   //! vector of partial derivatives in material frame
-  vector<LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> > nxyz_;
+  //vector<LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> > nxyz_;
+  LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4>                              nxyz_;
 
   /// prestressing switch & time
   INPAR::STR::PreStress                                                    pstype_;
