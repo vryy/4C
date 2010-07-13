@@ -1902,13 +1902,13 @@ void StatMechManager::SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > 
 
     /* after having searched all nodes within distance rlink around row node i we delete those
      * neighbours, which do not comply with certain requirements; here we establish the following
-     * requirements: first if filament numbering is activated (i.e. not all filament numbers are set to -1) the
+     * requirement: if filament numbering is activated (i.e. not all filament numbers are set to -1) the
      * neighbour node should belong to a filament different from the one the searching node belongs to;
-     * second the GID of the searched node should be greater than the GID of the searching node, as we wish
-     * that crosslinkers are established from nodes with smaller GIDs to nodes with greater GIDs only; note that
+     * note:
      * using erase you have to be careful to keep your iterator valid despite conditional deleting of elements
      * during iteration. The following algorithms represents a very efficient and simple way to deal with this
      * problem in a correct manner*/
+    /*
     vector<int>::iterator iter = neighboursLID.begin();
     while( iter != neighboursLID.end() )
     {
@@ -1917,7 +1917,9 @@ void StatMechManager::SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > 
         iter = neighboursLID.erase(iter);
       else
         ++iter;
+
     }
+    */
 
     //finally the list of column map LIDs in neighboursLID is assigned to the entry of the i-th row node in crosslinkerneighbours_
     crosslinkerneighboursloc[i] = neighboursLID;
