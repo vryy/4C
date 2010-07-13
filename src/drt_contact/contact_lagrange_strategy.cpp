@@ -1194,10 +1194,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
       kaamod = LINALG::MLMultiply(*kaamod,false,*kaa,false,false,false,true);
     }
 
-    // t*mbaractive: do the multiplication
-    RCP<LINALG::SparseMatrix> tmhata;
-    if (aset) tmhata = LINALG::MLMultiply(*tmatrix_,false,*mhata,false,false,false,true);
-
     // fn: nothing to do
 
     // fs: subtract alphaf * old contact forces (t_n)
@@ -1601,10 +1597,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
       kaamod = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
       kaamod = LINALG::MLMultiply(*kaamod,false,*kaa,false,false,false,true);
     }
-
-    // t*mbaractive: do the multiplication
-    RCP<LINALG::SparseMatrix> tmhata;
-    if (aset) tmhata = LINALG::MLMultiply(*tmatrix_,false,*mhata,false,false,false,true);
 
     // fn: nothing to do
 
