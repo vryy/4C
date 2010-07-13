@@ -235,7 +235,7 @@ void StatMechTime::Integrate()
 
     UpdateandOutput();
 
-    /*special update for statistical mechanics; this output has to be handled seperately from the time integration scheme output
+    /*special update for statistical mechanics; this output has to be handled separately from the time integration scheme output
      * as it may take place independently on writing geometric output data in a specific time step or not*/
     statmechmanager_->StatMechUpdate(dt,*dis_,stiff_,ndim);
 

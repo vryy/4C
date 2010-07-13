@@ -741,58 +741,95 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
       //if no periodic boundary conditions are to be applied, we just plot the current element
       if(statmechparams_.get<double>("PeriodLength",0.0) == 0)
       {
+      	// check whether the kinked visualization is to be applied
+      	bool kinked = CheckForKinkedVisual(color, element->Id());
+
         const DRT::ElementType & eot = element->ElementType();
 #ifdef D_BEAM3
       	if(eot==DRT::ELEMENTS::Beam3Type::Instance())
       	{
-          for(int j=0; j<element->NumNode()-1; j++)
-          {
-            //writing element by nodal coordinates as a scalar line
-            gmshfilecontent << "SL(" << scientific;
-            gmshfilecontent<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
-                           << coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1) ;
-            /*note: colors are chosen by values between 0.0 and 1.0. These values refer to a color vector which
-             * is given in a .geo-setup-file. If, for example, 5 colors are given(either in X11 color expressions or RGB),
-             * possible values are 0.0, 0.25, 0.5, 0.75, 1.0.
-             */
-            gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
-          }
+      		if(!kinked | color==1.0)
+      		{
+						for(int j=0; j<element->NumNode()-1; j++)
+						{
+							//writing element by nodal coordinates as a scalar line
+							gmshfilecontent << "SL(" << scientific;
+							gmshfilecontent<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
+														 << coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1) ;
+							/*note: colors are chosen by values between 0.0 and 1.0. These values refer to a color vector which
+							 * is given in a .geo-setup-file. If, for example, 5 colors are given(either in X11 color expressions or RGB),
+							 * possible values are 0.0, 0.25, 0.5, 0.75, 1.0.
+							 */
+							gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+						}
+      		}
+      		else
+      		{
+      			for(int j=0; j<element->NumNode()-1; j++)
+      			{
+							// calculate third point of the
+							std::vector<double> p3(3,0.0);
+							GmshKinkedVisual(coord, p3, element->Id());
+
+							//visualization
+							// (1/2)
+							gmshfilecontent << "SL(" << scientific
+															<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
+															<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)
+															<< ")" << "{" << scientific << 0.5 << "," << 0.5 << "};" << endl;
+							//(2/2)
+							gmshfilecontent << "SL(" << scientific
+															<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)<<","
+															<< coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1)
+															<< ")" << "{" << scientific << 0.5 << "," << 0.5 << "};" << endl;
+      			}
+      		}
       	}
         else
 #endif
 #ifdef D_BEAM3II
       	if(eot==DRT::ELEMENTS::Beam3iiType::Instance())
       	{
-          for(int j=0; j<element->NumNode()-1; j++)
-          {
-            //writing element by nodal coordinates as a scalar line
-            gmshfilecontent << "SL(" << scientific;
-            gmshfilecontent<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
-                           << coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1) ;
-            /*note: colors are chosen by values between 0.0 and 1.0. These values refer to a color vector which
-             * is given in a .geo-setup-file. If, for example, 5 colors are given(either in X11 color expressions or RGB),
-             * possible values are 0.0, 0.25, 0.5, 0.75, 1.0.
-             */
-            gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
-          }
+      		if(!kinked | color==1.0)
+      		{
+						for(int j=0; j<element->NumNode()-1; j++)
+						{
+							gmshfilecontent << "SL(" << scientific;
+							gmshfilecontent<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
+														 << coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1) ;
+							gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+						}
+      		}
+      		else
+      		{
+						for(int j=0; j<element->NumNode()-1; j++)
+						{
+							std::vector<double> p3(3,0.0);
+							GmshKinkedVisual(coord, p3, element->Id());
+
+							gmshfilecontent << "SL(" << scientific
+															<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
+															<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)
+															<< ")" << "{" << scientific << 0.5 << "," << 0.5 << "};" << endl;
+							gmshfilecontent << "SL(" << scientific
+															<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)<<","
+															<< coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1)
+															<< ")" << "{" << scientific << 0.5 << "," << 0.5 << "};" << endl;
+						}
+      		}
       	}
         else
 #endif
 #ifdef D_TRUSS3
         if(eot==DRT::ELEMENTS::Truss3Type::Instance())
       	{
-          for(int j=0; j<element->NumNode()-1; j++)
-          {
-            //writing element by nodal coordinates as a scalar line
-            gmshfilecontent << "SL(" << scientific;
-            gmshfilecontent<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
-                           << coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1) ;
-            /*note: colors are chosen by values between 0.0 and 1.0. These values refer to a color vector which
-             * is given in a .geo-setup-file. If, for example, 5 colors are given(either in X11 color expressions or RGB),
-             * possible values are 0.0, 0.25, 0.5, 0.75, 1.0.
-             */
-            gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
-          }
+					for(int j=0; j<element->NumNode()-1; j++)
+					{
+						gmshfilecontent << "SL(" << scientific;
+						gmshfilecontent<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
+													 << coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1) ;
+						gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+					}
       	}
         else
 #endif
@@ -802,7 +839,6 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
           double beadcolor = 0.75;
           for(int j=0; j<element->NumNode(); j++)
           {
-            //writing element by nodal coordinates as a scalar line
             gmshfilecontent << "SP(" << scientific;
             gmshfilecontent<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j);
             gmshfilecontent << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << endl;
@@ -931,6 +967,10 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
   	dotline = dotline or eot==DRT::ELEMENTS::Truss3Type::Instance();
 #endif
 
+  // determine whether crosslink connects two filaments or occupies two binding spots on the same filament;
+  // variable triggers different visualizations
+  //bool kinked = CheckForKinkedVisual(color, element->Id());
+
   if (dotline)
   {
     /*detect and save in vector "cut", at which boundaries the element is broken due to periodic boundary conditions;
@@ -1027,14 +1067,33 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
       }
       else	// output for continuous elements
       {
+      	bool kinked = CheckForKinkedVisual(color, element->Id());
+      	if(!kinked | color==1.0)
+      	{
+					// filament or crosslink between two filaments
+					//writing element by nodal coordinates as a scalar line
+					gmshfilecontent << "SL(" << scientific;
+					gmshfilecontent<< coord(0,i) << "," << coord(1,i) << "," << coord(2,i) << ","
+												 << coord(0,i+1) << "," << coord(1,i+1) << "," << coord(2,i+1) ;
+					/*note: for each node there is one color variable for gmsh and gmsh finally plots the line
+					 * interpolating these two colors between the nodes*/
+					gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+      	}
+    		else
+    		{
 
-        //writing element by nodal coordinates as a scalar line
-        gmshfilecontent << "SL(" << scientific;
-        gmshfilecontent<< coord(0,i) << "," << coord(1,i) << "," << coord(2,i) << ","
-                       << coord(0,i+1) << "," << coord(1,i+1) << "," << coord(2,i+1) ;
-        /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
-         * interpolating these two colors between the nodes*/
-        gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+					std::vector<double> p3(3,0.0);
+					GmshKinkedVisual(coord, p3, element->Id());
+
+					gmshfilecontent << "SL(" << scientific
+													<< coord(0,i) << "," << coord(1,i) << "," << coord(2,i) << ","
+													<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)
+													<< ")" << "{" << scientific << 0.5 << "," << 0.5 << "};" << endl;
+					gmshfilecontent << "SL(" << scientific
+													<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)<<","
+													<< coord(0,i+1) << "," << coord(1,i+1) << "," << coord(2,i+1)
+													<< ")" << "{" << scientific << 0.5 << "," << 0.5 << "};" << endl;
+    		}
       }
     }
   }
@@ -2478,7 +2537,6 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3,1> direction, DRT:
 
 #ifdef D_BEAM3
 #ifdef D_BEAM3II
-
   //creating a random generator object which creates uniformly distributed random numbers in [0;1]
   ranlib::UniformClosed<double> UniformGen;
 
@@ -2656,6 +2714,123 @@ void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const s
   //write content into file and close it
   fprintf(fp,fiberorientfilecontent.str().c_str());
   fclose(fp);
-}// StatMechManager::FiberOrientOutput
+}// StatMechManager:StructPolymorphOutput()
 
+/*----------------------------------------------------------------------*
+ | check the binding mode of a crosslinker        (public) mueller 07/10|
+ *----------------------------------------------------------------------*/
+bool StatMechManager::CheckForKinkedVisual(const double& color, int eleid)
+{
+	// if element is of a filament
+	if(color != 0.5)
+		return false;
+	// else, if element is a crosslinker
+	else
+	{
+		DRT::Element *element = discret_.gElement(eleid);
+
+		std::vector<int> filamentids;
+		std::vector<DRT::Condition*> filaments(0);
+		discret_.GetCondition("FilamentNumber", filaments);
+		// determine filament IDs of the nodes belonging to the crosslinker
+		for(int i=0; i<(int)filaments.size(); i++)
+		{
+			// exit loop if a match was found for all crosslinker element nodes
+			if((int)filamentids.size()==element->NumNode())
+				break;
+			else
+				for(int j=0; j<(int)filaments[i]->Nodes()->size(); j++)
+					for(int k=0; k<element->NumNode(); k++)
+						if(element->Nodes()[k]->Id() == filaments[i]->Nodes()->at(j))
+							filamentids.push_back(filaments[i]->Id());
+		}
+		/*cout<<"filament IDs: ";
+		for(int i=0; i<(int)filamentids.size(); i++)
+			cout<<filamentids.at(i)<<" ";
+		cout<<" "<<endl;*/
+		// check affiliation of (first and last) crosslinker nodes to filament(s)
+		if(filamentids.at(0)==filamentids.at(element->NumNode()-1))
+			return true;
+		else
+			return false;
+	}
+}
+
+/*----------------------------------------------------------------------*
+ | Special Gmsh output for crosslinkers occupying two binding spots on  |
+ | the same filament											        (public) mueller 07/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, std::vector<double>& thirdpoint, int eleid)
+{
+	/* We need a third point in order to visualize the crosslinker.
+	 * It marks the location of the kink.
+	 */
+	// get the element
+	DRT::Element* element = discret_.gElement(eleid);
+
+	// calculate tangent
+	double ltan = 0.0;
+	for(int j=0; j<coord.M(); j++)
+		ltan += (coord(j,coord.N()-1)-coord(j,0))*(coord(j,coord.N()-1)-coord(j,0));
+	ltan = sqrt(ltan);
+
+	std::vector<double> t(3,0.0);
+	for(int j=0; j<coord.M(); j++)
+		t.at(j) = ((coord(j,coord.N()-1)-coord(j,0))/ltan);
+
+	// calculate normal via cross product: [0 0 1]x[tx ty tz]
+	std::vector<double> n(3,0.0);
+	n.at(0) = -t.at(2);
+	n.at(1) = -t.at(1);
+	// norm it since the cross product does not keep the length
+	double lnorm = 0.0;
+	for(int j=0; j<(int)n.size(); j++)
+		lnorm += n.at(j)*n.at(j);
+	lnorm = sqrt(lnorm);
+	for(int j=0; j<(int)n.size(); j++)
+		n.at(j) /= lnorm;
+
+
+	// obtain angle
+	// random angle
+	//ranlib::UniformClosed<double> UniformGen;
+	//double alpha = 2*M_PI*UniformGen.random();
+	// by modulo operation involving the node IDs
+	double alpha = fmod( (double)(element->Nodes()[element->NumNode()-1]->Id() + element->Nodes()[0]->Id()), 2*M_PI);
+
+	// rotate the normal by alpha
+	LINALG::SerialDenseMatrix RotMat(3,3);
+	// build the matrix of rotation
+	for(int j=0; j<3; j++)
+		RotMat(j,j) = cos(alpha)+t.at(j)*t.at(j)*(1-cos(alpha));
+	RotMat(0,1) = t.at(0)*t.at(1)*(1-cos(alpha))-t.at(2)*sin(alpha);
+	RotMat(0,2) = t.at(0)*t.at(2)*(1-cos(alpha))+t.at(1)*sin(alpha);
+	RotMat(1,0) = t.at(1)*t.at(0)*(1-cos(alpha))+t.at(2)*sin(alpha);
+	RotMat(1,2) = t.at(1)*t.at(2)*(1-cos(alpha))-t.at(0)*sin(alpha);
+	RotMat(2,0) = t.at(2)*t.at(0)*(1-cos(alpha))-t.at(1)*sin(alpha);
+	RotMat(2,1) = t.at(2)*t.at(1)*(1-cos(alpha))+t.at(0)*sin(alpha);
+
+	// rotation
+	std::vector<double> nrot(3,0.0);
+	for(int j=0; j<3; j++)
+		for(int k=0; k<3; k++)
+			nrot.at(j) += RotMat(j,k)*n.at(k);
+
+	// calculation of the third point lying in the direction of the rotated normal
+	// height of the third point above the filament
+	double h = 0.5*(statmechparams_.get<double>("R_LINK",0.0)+statmechparams_.get<double>("DeltaR_LINK",0.0));
+	for(int j=0; j<3; j++)
+		thirdpoint.at(j) = (coord(j,0) + coord(j,element->NumNode()-1))/2.0 + h*nrot.at(j);
+
+	/*/ cout block
+	cout<<"coord  = \n"<<coord<<endl;
+	cout<<"ltan   = "<<ltan<<endl;
+	cout<<"t      = [ "<<t.at(0)<<" "<<t.at(1)<<" "<<t.at(2)<<" ]"<<endl;
+	cout<<"lnorm  = "<<lnorm<<endl;
+	cout<<"n      = [ "<<n.at(0)<<" "<<n.at(1)<<" "<<n.at(2)<<" ]"<<endl;
+	cout<<"alpha  = "<<alpha<<endl;
+	cout<<"RotMat =\n"<<RotMat<<endl;
+	cout<<"nrot   = [ "<<nrot.at(0)<<" "<<nrot.at(1)<<" "<<nrot.at(2)<<" ]"<<endl;
+	cout<<"thirdp = [ "<<thirdpoint.at(0)<<" "<<thirdpoint.at(1)<<" "<<thirdpoint.at(2)<<" ]"<<endl;*/
+}
 #endif  // #ifdef CCADISCRET

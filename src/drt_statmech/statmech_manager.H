@@ -108,8 +108,18 @@ public:
   //! \brief writes element orientation and coordinates of fiber elements to an output file
   void StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename);
 
+  //! \brief check whether a crosslink connects two filaments or occupies two binding spots of the same element and therefore is to be visualized differently
+  bool CheckForKinkedVisual(const double& color, int eleid);
+
+  //! \brief GmshOutput for crosslinkers occupying two binding spots on the same filament
+  void GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, std::vector<double>& thirdpoint, int eleid);
+
   //! \brief checks orientation of crosslinker relative to linked filaments
+#ifdef D_BEAM3
+#ifdef D_BEAM3II
   bool CheckOrientation(const LINALG::Matrix<3,1> direction, DRT::Node** nodes);
+#endif  // #ifdef D_BEAM3
+#endif  // #ifdef D_BEAM3II
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
