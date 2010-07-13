@@ -95,7 +95,7 @@ void DRT::ELEMENTS::So_tet4Type::SetupElementDefinition( std::map<std::string,st
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_tet4::So_tet4(int id, int owner) :
 DRT::Element(id,owner),
-material_(0),
+//material_(0),
 //data_(),
 V_(-1.0),
 pstype_(INPAR::STR::prestress_none),
@@ -125,7 +125,7 @@ time_(0.0)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_tet4::So_tet4(const DRT::ELEMENTS::So_tet4& old) :
 DRT::Element(old),
-material_(old.material_),
+//material_(old.material_),
 //data_(old.data_),
 V_(old.V_),
 pstype_(old.pstype_),
@@ -179,7 +179,7 @@ void DRT::ELEMENTS::So_tet4::Pack(vector<char>& data) const
   // ngp_
   //AddtoPack(data,ngp_,3*sizeof(int));
   // material_
-  AddtoPack(data,material_);
+  //AddtoPack(data,material_);
   // kintype_
   AddtoPack(data,kintype_);
 
@@ -231,7 +231,7 @@ void DRT::ELEMENTS::So_tet4::Unpack(const vector<char>& data)
   // ngp_
   //ExtractfromPack(position,data,ngp_,3*sizeof(int));
   // material_
-  ExtractfromPack(position,data,material_);
+  //ExtractfromPack(position,data,material_);
   // kintype_
   ExtractfromPack(position,data,kintype_);
   // data_

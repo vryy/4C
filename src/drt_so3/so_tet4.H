@@ -394,7 +394,7 @@ protected:
   //! kinematic type
   KinematicType                                                            kintype_;
   //! number of the material law
-  int                                                                      material_;
+  //int                                                                      material_;
 
   //! container containing all kind of solid3 thisandthat
   //DRT::Container                                                           data_;
