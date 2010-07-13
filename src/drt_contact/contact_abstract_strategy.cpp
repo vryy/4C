@@ -330,8 +330,8 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(const RCP<Epetra_Vector
 {
 #ifndef CONTACTFORCEREFCONFIG 
   
-  if (friction_ == false)  
-    return;
+	// only do something for frictional case
+  if (!friction_) return;
   
   // set state and do mortar calculation
   SetState("displacement",vec);
@@ -362,22 +362,31 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(const RCP<Epetra_Vector
 
 #else  
   
-  if (Dualquadslave3d())
-    dserror("Evaluation of contact forces in reference configuration "
-            "not yet testet for dual quadratic shape functions");
-  
   // set state and do mortar calculation
   SetState("displacement",vec);
   InitEvalInterface();
   InitEvalMortar();
   
+  //----------------------------------------------------------------------
+	// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+	//----------------------------------------------------------------------
+	// Concretely, we apply the following transformations:
+	// D         ---->   D * T^(-1)
+	//----------------------------------------------------------------------
+	if (Dualquadslave3d())
+	{
+		// modify dmatrix_
+		RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+		dmatrix_ = temp;
+	}
+
   // dump mortar Matrix D
   // this is always the matrix from the reference configuration,
   // also in the restart case
   dmatrix_->Dump("DREF");
   
-  if(friction_ == false)
-    return;
+  // only continue for frictional case
+  if (!friction_) return;
   
   // store contact state to contact nodes (active or inactive)
   StoreNodalQuantities(MORTAR::StrategyBase::activeold);
@@ -1238,52 +1247,43 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
 }
 
 /*----------------------------------------------------------------------*
- | evaluate contact forces with respect to reference config.   mgit 07/10|
+ | evaluate contact forces w.r.t. reference configuration     mgit 07/10|
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::ForceRefConfig()
 {
-
-  // multiply D matrix with z
-  RCP<Epetra_Vector> refz = rcp(new Epetra_Vector(*gsdofrowmap_));
-  dmatrix_->Multiply(false,*z_,*refz);
+  // multiply current D matrix with current LM
+  RCP<Epetra_Vector> forcecurr = rcp(new Epetra_Vector(*gsdofrowmap_));
+  dmatrix_->Multiply(false,*z_,*forcecurr);
   
   // read mortar matrix D of reference configuration 
   RCP<LINALG::SparseMatrix> dref = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-  
-  // get matrix of reference configuration
   std::string inputname = "DREF";
   dref->Load(Comm(),inputname);
   dref->Complete();
   
-  RCP<LINALG::SparseMatrix> invdref = rcp(new LINALG::SparseMatrix(*dref));
-  RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_,true);
-  int err = 0;
+  // LM in reference / current configuration
+  RCP<Epetra_Vector> zref  = rcp(new Epetra_Vector(*gsdofrowmap_));
+  RCP<Epetra_Vector> zcurr  = rcp(new Epetra_Vector(*z_));
 
-  // extract diagonal of invd into diag
-  invdref->ExtractDiagonalCopy(*diag);
+  // solve with default solver
+	LINALG::Solver solver(Comm());
+	solver.Solve(dref->EpetraOperator(),zref,forcecurr,true);
 
-  // set zero diagonal values to dummy 1.0
-  for (int i=0;i<diag->MyLength();++i)
-    if ((*diag)[i]==0.0) (*diag)[i]=1.0;
-
-  // scalar inversion of diagonal values
-  err = diag->Reciprocal(*diag);
-  if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
-
-  // re-insert inverted diagonal into invd
-  err = invdref->ReplaceDiagonalValues(*diag);
-  // we cannot use this check, as we deliberately replaced zero entries
-  //if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
-  
-  // multiply Dref^(-1) Dcurr.z
-  invdref->Multiply(false,*refz,*refz);
-  
-  // write refz to z
-  z_=refz;
-
-  // store updated LM into nodes
+  // store reference LM into global vector and nodes
+	z_ = zref;
   StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
   
+  // print message
+  if (Comm().MyPID()==0)
+    cout << "\n**** First output is w.r.t. the reference configuration! ****" << endl;
+
+  // print active set
+  PrintActiveSet();
+
+  // restore current LM into global vector and nodes
+  z_ = zcurr;
+  StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
+
   return;
 }
 

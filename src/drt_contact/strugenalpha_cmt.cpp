@@ -2887,21 +2887,12 @@ void CONTACT::CmtStruGenAlpha::Output()
     }
   }
 
-#ifdef CONTACTFORCEREFCONFIG 
- // evaluate contact forces with respect to reference configuration
-  if (istep==10)
-  { 
-    cmtmanager_->GetStrategy().ForceRefConfig();
-  
-    if(discret_.Comm().MyPID()==0)
-    cout << "\nThe Lagrange multiplier in following output are \n"
-            "evaluated with respect to reference configuration!" << endl;
-    
-    // print active set
-    cmtmanager_->GetStrategy().PrintActiveSet();
-    exit(0);
-  }
+  // THIS IS FOR DEBUGGING ONLY!!!
+  // print contact forces with respect to reference configuration
+#ifdef CONTACTFORCEREFCONFIG
+  cmtmanager_->GetStrategy().ForceRefConfig();
 #endif
+
   // print active set
   cmtmanager_->GetStrategy().PrintActiveSet();
 

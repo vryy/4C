@@ -49,6 +49,7 @@ Maintainer: Alexander Popp
 #define CONTACTCOMPHUEBER           /* flag for enhanced complementarity function mu(zn-cn.g) */
 //#define CONTACTPSEUDO2D           /* flag for pseudo-3D in 2D situations (u_z=0)*/
 //#define CONTACTBASISTRAFO         /* flag for basis trafo of dual LM system */
+
 /************************************************************************/
 /* Debugging options                                                    */
 /************************************************************************/
@@ -57,11 +58,12 @@ Maintainer: Alexander Popp
 #define CONTACTASOUTPUT             /* flag for detailed active set output */
 //#define CONTACTTIME               /* flag for contact time measurement */
 //#define CONTACTEIG                /* flag for eigenvalue+condition analysis */
+//#define CONTACTFORCEREFCONFIG     /* flag for evaluation of forces in ref. config. */
 //#define CONTACTFDNORMAL           /* flag for FD check of normal derivative */
 //#define CONTACTFDMORTARD          /* flag for FD check of mortar matrix D */
 //#define CONTACTFDMORTARM          /* flag for FD check of mortar matrix M */
 //#define CONTACTFDGAP              /* flag for FD check of weighted gap g */
-//#define CONTACTFORCEREFCONFIG     /* flag for evaluation of contact forces in reference config. */  
+
 
 // LAGRANGE DEBUGGING OPTIONS
 //#define CONTACTFDTANGLM           /* flag for FD check of (frictionless) tangential LM */
