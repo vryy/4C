@@ -748,7 +748,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 #ifdef D_BEAM3
       	if(eot==DRT::ELEMENTS::Beam3Type::Instance())
       	{
-      		if(!kinked | color==1.0)
+      		if(!kinked)
       		{
 						for(int j=0; j<element->NumNode()-1; j++)
 						{
@@ -765,6 +765,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
       		}
       		else
       		{
+      			color = 0.25;
       			for(int j=0; j<element->NumNode()-1; j++)
       			{
 							// calculate third point of the
@@ -776,12 +777,12 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 							gmshfilecontent << "SL(" << scientific
 															<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
 															<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)
-															<< ")" << "{" << scientific << 0.5 << "," << 0.5 << "};" << endl;
+															<< ")" << "{" << scientific << color << "," << color << "};" << endl;
 							//(2/2)
 							gmshfilecontent << "SL(" << scientific
 															<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)<<","
 															<< coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1)
-															<< ")" << "{" << scientific << 0.5 << "," << 0.5 << "};" << endl;
+															<< ")" << "{" << scientific << color << "," << color << "};" << endl;
       			}
       		}
       	}
@@ -790,7 +791,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 #ifdef D_BEAM3II
       	if(eot==DRT::ELEMENTS::Beam3iiType::Instance())
       	{
-      		if(!kinked | color==1.0)
+      		if(!kinked)
       		{
 						for(int j=0; j<element->NumNode()-1; j++)
 						{
@@ -802,6 +803,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
       		}
       		else
       		{
+      			color = 0.25;
 						for(int j=0; j<element->NumNode()-1; j++)
 						{
 							std::vector<double> p3(3,0.0);
@@ -810,11 +812,11 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 							gmshfilecontent << "SL(" << scientific
 															<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
 															<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)
-															<< ")" << "{" << scientific << 0.5 << "," << 0.5 << "};" << endl;
+															<< ")" << "{" << scientific << color << "," << color << "};" << endl;
 							gmshfilecontent << "SL(" << scientific
 															<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)<<","
 															<< coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1)
-															<< ")" << "{" << scientific << 0.5 << "," << 0.5 << "};" << endl;
+															<< ")" << "{" << scientific << color << "," << color << "};" << endl;
 						}
       		}
       	}
@@ -823,13 +825,34 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 #ifdef D_TRUSS3
         if(eot==DRT::ELEMENTS::Truss3Type::Instance())
       	{
-					for(int j=0; j<element->NumNode()-1; j++)
-					{
-						gmshfilecontent << "SL(" << scientific;
-						gmshfilecontent<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
-													 << coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1) ;
-						gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
-					}
+      		if(!kinked)
+      		{
+						for(int j=0; j<element->NumNode()-1; j++)
+						{
+							gmshfilecontent << "SL(" << scientific;
+							gmshfilecontent<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
+														 << coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1) ;
+							gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+						}
+      		}
+      		else
+      		{
+      			color = 0.25;
+						for(int j=0; j<element->NumNode()-1; j++)
+						{
+							std::vector<double> p3(3,0.0);
+							GmshKinkedVisual(coord, p3, element->Id());
+
+							gmshfilecontent << "SL(" << scientific
+															<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
+															<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)
+															<< ")" << "{" << scientific << color << "," << color << "};" << endl;
+							gmshfilecontent << "SL(" << scientific
+															<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)<<","
+															<< coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1)
+															<< ")" << "{" << scientific << color << "," << color << "};" << endl;
+						}
+      		}
       	}
         else
 #endif
@@ -969,7 +992,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 
   // determine whether crosslink connects two filaments or occupies two binding spots on the same filament;
   // variable triggers different visualizations
-  //bool kinked = CheckForKinkedVisual(color, element->Id());
+  bool kinked = CheckForKinkedVisual(color, element->Id());
 
   if (dotline)
   {
@@ -1009,14 +1032,14 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
       {
         //compute direction vector between first(i-th) and second(i+1-th) node of element (normed):
         LINALG::Matrix<3,1> dir;
-        double mod=0.0;
+        double ldir=0.0;
         for(int dof=0; dof<ndim; dof++)
         {
           dir(dof) = unshift(dof,i+1) - unshift(dof,i);
-          mod += dir(dof)*dir(dof);
+          ldir += dir(dof)*dir(dof);
         }
         for(int dof=0; dof<ndim; dof++)
-          dir(dof) /= mod;
+          dir(dof) /= ldir;
 
         //from node 0 to nearest boundary where element is broken you get by vector X + lambda0*dir
         double lambda0 = dir.Norm2();
@@ -1067,8 +1090,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
       }
       else	// output for continuous elements
       {
-      	bool kinked = CheckForKinkedVisual(color, element->Id());
-      	if(!kinked | color==1.0)
+      	if(!kinked)
       	{
 					// filament or crosslink between two filaments
 					//writing element by nodal coordinates as a scalar line
@@ -1081,18 +1103,18 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
       	}
     		else
     		{
-
+    			double changedcolor = 0.25;
 					std::vector<double> p3(3,0.0);
 					GmshKinkedVisual(coord, p3, element->Id());
 
 					gmshfilecontent << "SL(" << scientific
 													<< coord(0,i) << "," << coord(1,i) << "," << coord(2,i) << ","
 													<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)
-													<< ")" << "{" << scientific << 0.5 << "," << 0.5 << "};" << endl;
+													<< ")" << "{" << scientific << changedcolor << "," << changedcolor << "};" << endl;
 					gmshfilecontent << "SL(" << scientific
 													<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)<<","
 													<< coord(0,i+1) << "," << coord(1,i+1) << "," << coord(2,i+1)
-													<< ")" << "{" << scientific << 0.5 << "," << 0.5 << "};" << endl;
+													<< ")" << "{" << scientific << changedcolor << "," << changedcolor << "};" << endl;
     		}
       }
     }
