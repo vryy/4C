@@ -2782,8 +2782,8 @@ void StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, s
 
 	// calculate normal via cross product: [0 0 1]x[tx ty tz]
 	std::vector<double> n(3,0.0);
-	n.at(0) = -t.at(2);
-	n.at(1) = -t.at(1);
+	n.at(0) = -t.at(1);
+	n.at(1) = t.at(0);
 	// norm it since the cross product does not keep the length
 	double lnorm = 0.0;
 	for(int j=0; j<(int)n.size(); j++)
@@ -2820,7 +2820,7 @@ void StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, s
 
 	// calculation of the third point lying in the direction of the rotated normal
 	// height of the third point above the filament
-	double h = 0.5*(statmechparams_.get<double>("R_LINK",0.0)+statmechparams_.get<double>("DeltaR_LINK",0.0));
+	double h = 0.33*(statmechparams_.get<double>("R_LINK",0.0)+statmechparams_.get<double>("DeltaR_LINK",0.0));
 	for(int j=0; j<3; j++)
 		thirdpoint.at(j) = (coord(j,0) + coord(j,element->NumNode()-1))/2.0 + h*nrot.at(j);
 
@@ -2833,6 +2833,6 @@ void StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, s
 	cout<<"alpha  = "<<alpha<<endl;
 	cout<<"RotMat =\n"<<RotMat<<endl;
 	cout<<"nrot   = [ "<<nrot.at(0)<<" "<<nrot.at(1)<<" "<<nrot.at(2)<<" ]"<<endl;
-	cout<<"thirdp = [ "<<thirdpoint.at(0)<<" "<<thirdpoint.at(1)<<" "<<thirdpoint.at(2)<<" ]"<<endl;*/
+	cout<<"thirdp = [ "<<thirdpoint.at(0)<<" "<<thirdpoint.at(1)<<" "<<thirdpoint.at(2)<<" ]\n\n\n"<<endl;*/
 }
 #endif  // #ifdef CCADISCRET
