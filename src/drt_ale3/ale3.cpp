@@ -121,15 +121,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3SurfaceType::Create( const int id,
 
 
 DRT::ELEMENTS::Ale3::Ale3(int id, int owner)
-  : DRT::Element(id,owner),
-    data_()
+  : DRT::Element(id,owner)
+    //data_()
 {
 }
 
 
 DRT::ELEMENTS::Ale3::Ale3(const DRT::ELEMENTS::Ale3& old)
-  : DRT::Element(old),
-    data_(old.data_)
+  : DRT::Element(old)
+    //data_(old.data_)
 {
   return;
 }
@@ -173,9 +173,9 @@ void DRT::ELEMENTS::Ale3::Pack(vector<char>& data) const
   // Gaussrule
   //AddtoPack(data,gaussrule_);
   // data_
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
+  //vector<char> tmp(0);
+  //data_.Pack(tmp);
+  //AddtoPack(data,tmp);
 }
 
 
@@ -193,9 +193,9 @@ void DRT::ELEMENTS::Ale3::Unpack(const vector<char>& data)
   // Gaussrule
   //ExtractfromPack(position,data,gaussrule_);
   // data_
-  vector<char> tmp(0);
-  ExtractfromPack(position,data,tmp);
-  data_.Unpack(tmp);
+  //vector<char> tmp(0);
+  //ExtractfromPack(position,data,tmp);
+  //data_.Unpack(tmp);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -212,7 +212,7 @@ void DRT::ELEMENTS::Ale3::Print(ostream& os) const
   os << "Ale3 ";
   Element::Print(os);
   cout << endl;
-  cout << data_;
+  //cout << data_;
   return;
 }
 

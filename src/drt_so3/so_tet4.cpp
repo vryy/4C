@@ -183,9 +183,9 @@ void DRT::ELEMENTS::So_tet4::Pack(vector<char>& data) const
   // kintype_
   AddtoPack(data,kintype_);
 
-  vector<char> tmp(0);
+  //vector<char> tmp(0);
   //data_.Pack(tmp);
-  AddtoPack(data,tmp);
+  //AddtoPack(data,tmp);
 
   // V_
   AddtoPack(data,V_);
@@ -235,8 +235,8 @@ void DRT::ELEMENTS::So_tet4::Unpack(const vector<char>& data)
   // kintype_
   ExtractfromPack(position,data,kintype_);
   // data_
-  vector<char> tmp(0);
-  ExtractfromPack(position,data,tmp);
+  //vector<char> tmp(0);
+  //ExtractfromPack(position,data,tmp);
   //data_.Unpack(tmp);
   // V_
   ExtractfromPack(position,data,V_);

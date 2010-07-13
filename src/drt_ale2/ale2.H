@@ -334,7 +334,7 @@ private:
   };
 
   //! container containing all kind of ale2 thisandthat
-  DRT::Container                                  data_;
+  //DRT::Container                                  data_;
 
 
   // internal calculation methods

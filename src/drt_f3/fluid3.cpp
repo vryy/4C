@@ -195,8 +195,7 @@ map<string,DRT::ELEMENTS::Fluid3::StabilisationAction> DRT::ELEMENTS::Fluid3::st
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3::Fluid3(int id, int owner) :
 DRT::Element(id,owner),
-is_ale_(false),
-data_()
+is_ale_(false)
 {
     distype_= dis_none;
 
@@ -216,7 +215,6 @@ DRT::ELEMENTS::Fluid3::Fluid3(const DRT::ELEMENTS::Fluid3& old) :
 DRT::Element(old             ),
 distype_    (old.distype_    ),
 is_ale_     (old.is_ale_     ),
-data_       (old.data_       ),
 Cs_delta_sq_(old.Cs_delta_sq_),
 saccn_      (old.saccn_      ),
 svelnp_     (old.svelnp_     ),
@@ -267,11 +265,6 @@ void DRT::ELEMENTS::Fluid3::Pack(vector<char>& data) const
   AddtoPack(data,svelnp_.A(),size);
   AddtoPack(data,sveln_ .A(),size);
 
-  // data_
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
-
   return;
 }
 
@@ -318,10 +311,6 @@ void DRT::ELEMENTS::Fluid3::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,&(sveln_ .A()[0]),size);
   }
 
-  vector<char> tmp(0);
-  ExtractfromPack(position,data,tmp);
-  data_.Unpack(tmp);
-
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
@@ -345,7 +334,6 @@ void DRT::ELEMENTS::Fluid3::Print(ostream& os) const
   os << "Fluid3 ";
   Element::Print(os);
   //cout << endl;
-  cout << data_;
   return;
 }
 

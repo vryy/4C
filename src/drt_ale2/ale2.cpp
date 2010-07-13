@@ -105,17 +105,14 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2LineType::Create( const int id, co
 
 
 DRT::ELEMENTS::Ale2::Ale2(int id, int owner)
-  : DRT::Element(id,owner),
-    data_()
+  : DRT::Element(id,owner)
 {
 }
 
 
 DRT::ELEMENTS::Ale2::Ale2(const DRT::ELEMENTS::Ale2& old)
-  : DRT::Element(old),
-    data_(old.data_)
+  : DRT::Element(old)
 {
-  return;
 }
 
 
@@ -153,10 +150,6 @@ void DRT::ELEMENTS::Ale2::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // data_
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
 }
 
 
@@ -171,10 +164,6 @@ void DRT::ELEMENTS::Ale2::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // data_
-  vector<char> tmp(0);
-  ExtractfromPack(position,data,tmp);
-  data_.Unpack(tmp);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -191,7 +180,6 @@ void DRT::ELEMENTS::Ale2::Print(ostream& os) const
   os << "Ale2 ";
   Element::Print(os);
   cout << endl;
-  cout << data_;
   return;
 }
 

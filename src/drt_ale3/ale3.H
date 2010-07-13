@@ -342,7 +342,7 @@ private:
   //DRT::UTILS::GaussRule3D                         gaussrule_;
 
   //! container containing all kind of ale3 thisandthat
-  DRT::Container                                  data_;
+  //DRT::Container                                  data_;
 
 
   // internal calculation methods

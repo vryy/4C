@@ -633,7 +633,7 @@ private:
   //! flag for euler/ale net algorithm
   bool                                            is_ale_;
   //! container containing all kind of fluid3 thisandthat
-  DRT::Container                                  data_;
+  //DRT::Container                                  data_;
 
   //! factor including Smagorinsky's constant
   double                                          Cs_delta_sq_;
