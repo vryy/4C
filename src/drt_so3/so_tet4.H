@@ -397,7 +397,7 @@ protected:
   int                                                                      material_;
 
   //! container containing all kind of solid3 thisandthat
-  DRT::Container                                                           data_;
+  //DRT::Container                                                           data_;
   //! vector of history variables for each Gauss point
   vector<RCP<MAT::Material> >                                              mat_;
   //! volume of the element
