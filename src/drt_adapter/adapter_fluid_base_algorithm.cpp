@@ -448,6 +448,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         tmpfluid = rcp(new ADAPTER::FluidProjection(actdis, solver, psolver, fluidtimeparams, output, isale, dirichletcond));
       }
       break;
+      case fluid_solver_ale_xfluid:
+        dserror("TODO");
+        break;
       default:
         dserror("fluid solving strategy unknown.");
       }

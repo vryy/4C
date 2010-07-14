@@ -18,6 +18,7 @@ Maintainer: Ulrich Kuettler
 #ifndef DRT_ELEMENTREADER_H
 #define DRT_ELEMENTREADER_H
 
+#include <set>
 #include <Epetra_Map.h>
 
 #include "drt_inputreader.H"
@@ -80,6 +81,28 @@ public:
    */
   ElementReader(RCP<Discretization> dis, const DatFileReader& reader, string sectionname);
 
+  /// construct element reader for a given field that reads a given section
+  /*!
+    Create empty discretization and append it to given field.
+
+    \param dis (i) the new discretization
+    \param comm (i) our communicator
+    \param sectionname (i) the section that contains the element lines
+    \param elementtype (i) element type name to read in this discretization
+   */
+  ElementReader(RCP<Discretization> dis, const DatFileReader& reader, string sectionname, string elementtype);
+
+  /// construct element reader for a given field that reads a given section
+  /*!
+    Create empty discretization and append it to given field.
+
+    \param dis (i) the new discretization
+    \param comm (i) our communicator
+    \param sectionname (i) the section that contains the element lines
+    \param elementtypes (i) element type names to read in this discretization
+   */
+  ElementReader(RCP<Discretization> dis, const DatFileReader& reader, string sectionname, const std::set<std::string> & elementtypes);
+
   /// give the discretization this reader fills
   RCP<Discretization> MyDis() const { return dis_; }
 
@@ -133,6 +156,9 @@ private:
 
   /// element col map
   RCP<Epetra_Map> coleles_;
+
+  /// element type names to read
+  std::set<std::string> elementtypes_;
 };
 
 

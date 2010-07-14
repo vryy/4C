@@ -432,7 +432,7 @@ void xfsi_drt()
   RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
   if (aledis->NumGlobalNodes()==0)
   {
-    RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+    RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,1);
 
     Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
       Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );

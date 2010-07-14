@@ -678,6 +678,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
   RCP<DRT::Discretization> structdis       = null;
   RCP<DRT::Discretization> fluiddis        = null;
+  RCP<DRT::Discretization> xfluiddis       = null;
   RCP<DRT::Discretization> aledis          = null;
   RCP<DRT::Discretization> boundarydis     = null;
   RCP<DRT::Discretization> thermdis        = null;
@@ -708,9 +709,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     {
       structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
       fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
+      xfluiddis = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
       aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
     }
-
 
 #ifdef D_ARTNET
     // create empty discretizations
@@ -718,16 +719,22 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 #endif
     AddDis(genprob.numsf, structdis);
     AddDis(genprob.numff, fluiddis);
+    AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
     AddDis(genprob.numaf, aledis);
 #ifdef D_ARTNET
     AddDis(genprob.numartf, arterydis);
 #endif
 
-
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
 
+    std::set<std::string> fluidelementtypes;
+    fluidelementtypes.insert("FLUID");
+    fluidelementtypes.insert("FLUID2");
+    fluidelementtypes.insert("FLUID3");
+
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 #ifdef D_ARTNET
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
@@ -750,15 +757,18 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   case prb_fluid_xfem:
   {
     structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
-    fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
+    fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
+    aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
 
     AddDis(genprob.numsf, structdis);
     AddDis(genprob.numff, fluiddis);
+    AddDis(genprob.numaf, aledis);
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     nodereader.Read();
 #ifdef EXTENDEDPARALLELOVERLAP
@@ -799,10 +809,13 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     }
     else
     {
-      fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
+      fluiddis  = rcp(new DRT::Discretization("fluid",reader.Comm()));
+      xfluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
     }
 
     AddDis(genprob.numff, fluiddis);
+    AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
+
 #ifdef D_ARTNET
     // create empty discretizations
     arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
@@ -811,8 +824,15 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     AddDis(genprob.numartf, arterydis);
 #endif
 
+    std::set<std::string> fluidelementtypes;
+    fluidelementtypes.insert("FLUID");
+    fluidelementtypes.insert("FLUID2");
+    fluidelementtypes.insert("FLUID3");
+
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
+
 #ifdef D_ARTNET
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
 #endif

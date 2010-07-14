@@ -54,6 +54,39 @@ ElementReader::ElementReader(Teuchos::RCP<Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+ElementReader::ElementReader(Teuchos::RCP<Discretization> dis,
+                             const DRT::INPUT::DatFileReader& reader,
+                             string sectionname,
+                             string elementtype)
+  : name_(dis->Name()),
+    reader_(reader),
+    comm_(reader.Comm()),
+    sectionname_(sectionname),
+    dis_(dis)
+{
+  elementtypes_.insert(elementtype);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+ElementReader::ElementReader(Teuchos::RCP<Discretization> dis,
+                             const DRT::INPUT::DatFileReader& reader,
+                             string sectionname,
+                             const std::set<std::string> & elementtypes)
+  : name_(dis->Name()),
+    reader_(reader),
+    comm_(reader.Comm()),
+    sectionname_(sectionname),
+    dis_(dis)
+{
+  std::copy(elementtypes.begin(),elementtypes.end(),
+            std::inserter(elementtypes_,elementtypes_.begin()));
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ElementReader::Partition()
 {
   const int myrank  = comm_->MyPID();
@@ -127,9 +160,16 @@ void ElementReader::Partition()
           istringstream t;
           t.str(line);
           int elenumber;
-          t >> elenumber;
+          string eletype;
+          t >> elenumber >> eletype;
           elenumber -= 1;
-          eids.push_back(elenumber);
+
+          // only read registered element types or all elements if nothing is
+          // registered
+          if ( elementtypes_.size()==0 or elementtypes_.count(eletype)>0 )
+          {
+            eids.push_back(elenumber);
+          }
         }
       }
       numele = static_cast<int>(eids.size());
@@ -252,57 +292,62 @@ void ElementReader::Partition()
           t >> elenumber >> eletype >> distype;
           elenumber -= 1;
 
-          // let the factory create a matching empty element
-          Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory(eletype,distype,elenumber,0);
-
-          // For the time being we support old and new input facilities. To
-          // smooth transition.
-
-          DRT::INPUT::LineDefinition* linedef = ed.ElementLines(eletype,distype);
-          if (linedef!=NULL)
+          // only read registered element types or all elements if nothing is
+          // registered
+          if ( elementtypes_.size()==0 or elementtypes_.count(eletype)>0 )
           {
-            if (not linedef->Read(t))
+            // let the factory create a matching empty element
+            Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory(eletype,distype,elenumber,0);
+
+            // For the time being we support old and new input facilities. To
+            // smooth transition.
+
+            DRT::INPUT::LineDefinition* linedef = ed.ElementLines(eletype,distype);
+            if (linedef!=NULL)
             {
-              std::cout << "\n"
-                        << elenumber << " "
-                        << eletype << " "
-                        << distype << " ";
-              linedef->Print(std::cout);
-              std::cout << "\n";
-              std::cout << line << "\n";
-              dserror("failed to read element %d %s %s",elenumber,eletype.c_str(),distype.c_str());
+              if (not linedef->Read(t))
+              {
+                std::cout << "\n"
+                          << elenumber << " "
+                          << eletype << " "
+                          << distype << " ";
+                linedef->Print(std::cout);
+                std::cout << "\n";
+                std::cout << line << "\n";
+                dserror("failed to read element %d %s %s",elenumber,eletype.c_str(),distype.c_str());
+              }
+
+              ele->SetNodeIds(distype,linedef);
+              ele->ReadElement(eletype,distype,linedef);
+            }
+            else
+            {
+              dserror("a matching line definition is needed");
             }
 
-            ele->SetNodeIds(distype,linedef);
-            ele->ReadElement(eletype,distype,linedef);
-          }
-          else
-          {
-            dserror("a matching line definition is needed");
-          }
+            // add element to discretization
+            dis_->AddElement(ele);
 
-          // add element to discretization
-          dis_->AddElement(ele);
+            // get the node ids of this element
+            const int  numnode = ele->NumNode();
+            const int* nodeids = ele->NodeIds();
 
-          // get the node ids of this element
-          const int  numnode = ele->NumNode();
-          const int* nodeids = ele->NodeIds();
-
-          // all node gids of this element are inserted into a set of
-          // node ids --- it will be used later during reading of nodes
-          // to add the node to one or more discretisations
-          copy(nodeids, nodeids+numnode, inserter(nodes_, nodes_.begin()));
+            // all node gids of this element are inserted into a set of
+            // node ids --- it will be used later during reading of nodes
+            // to add the node to one or more discretisations
+            copy(nodeids, nodeids+numnode, inserter(nodes_, nodes_.begin()));
 #if !defined(PARALLEL) || !defined(PARMETIS)
-          elementnodes.push_back(vector<int>(nodeids, nodeids+numnode));
+            elementnodes.push_back(vector<int>(nodeids, nodeids+numnode));
 #endif
 
-          ++bcount;
-          if (block != nblock-1) // last block is different....
-          {
-            if (bcount==bsize)
+            ++bcount;
+            if (block != nblock-1) // last block is different....
             {
-	      filecount++;
-              break;
+              if (bcount==bsize)
+              {
+                filecount++;
+                break;
+              }
             }
           }
         }
