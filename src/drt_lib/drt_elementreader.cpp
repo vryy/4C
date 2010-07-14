@@ -147,6 +147,11 @@ void ElementReader::Partition()
   {
     // This is it. Build an empty reader and leave.
     coleles_ = roweles_ = colnodes_ = rownodes_ = rcp(new Epetra_Map(-1,0,NULL,0,*comm_));
+    if (comm_->MyPID()==0 && reader_.MyOutputFlag() == 0)
+    {
+      cout << time.ElapsedTime() << " secs\n";
+      fflush(stdout);
+    }
     return;
   }
 

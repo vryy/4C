@@ -166,9 +166,6 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
     if (myrank==0)
     {
-
-      if (outflag)
-      cout << time.ElapsedTime() << " secs\n";
       time.ResetStartTime();
 
       if (outflag)

@@ -78,10 +78,8 @@ void NodeReader::Read()
   int nblock = numproc;
   int bsize = max(numnodes/nblock, 1);
 
-  // for block sizes larger than about 50000 elements (empirical value !)
-  // the code sometimes hangs during ExportRowElements
-  // Therefore an upper limit for bsize is ensured below.
-  int maxblocksize = 50000;
+  // an upper limit for bsize
+  int maxblocksize = 500000;
 
   if (bsize > maxblocksize)
   {

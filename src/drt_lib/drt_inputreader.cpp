@@ -940,8 +940,9 @@ void DatFileReader::ReadDat()
           excludepositions_[exclude[i]] = std::pair<ifstream::pos_type,unsigned>(-1,0);
         }
       }
-      //comm_->Broadcast(&excludepositions_[exclude[i]],1,0);
-      MPI_Bcast(&excludepositions_[exclude[i]],1,MPI_INT,0,mpicomm.GetMpiComm());
+      std::pair<ifstream::pos_type,unsigned> & p = excludepositions_[exclude[i]];
+      //comm_->Broadcast(&p.second,1,0);
+      MPI_Bcast(&p.second,1,MPI_INT,0,mpicomm.GetMpiComm());
     }
 #endif
   }
