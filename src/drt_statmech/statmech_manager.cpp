@@ -2645,7 +2645,7 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3,1> direction, cons
       qnode(j) = nodaltriadscol[j][(int)LID(i)];
 
     //compute triads from quaterions and unit direction vector of crosslinker
-    quaterniontotriad(qnode,Tfil);
+    LARGEROTATIONS::quaterniontotriad(qnode,Tfil);
 
     //auxiliary variable
     double scalarproduct = (direction(0)*Tfil(0,0) + direction(1)*Tfil(1,0) + direction(2)*Tfil(2,0));
