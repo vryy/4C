@@ -1033,7 +1033,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 		//----------------------------------------------------------------------
 		if (Dualquadslave3d())
 		{
-			dserror("ERROR: Dual LM condensation not yet fully impl. for 3D quadratic contact");
+			dserror("ERROR: Dual LM condensation with basis transformation not yet impl. for 3D quadratic contact");
 
 			// modify dmatrix_, invd_ and mhatmatrix_
 			RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
@@ -1075,7 +1075,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     LINALG::SplitVector(*gsdofrowmap_,*fs,gactivedofs_,fa,gidofs,fi);
 
     /**********************************************************************/
-    /* Isolate active part from mhat, invd and dold                       */
+    /* Isolate active part from mhat and invd                             */
     /**********************************************************************/
     RCP<LINALG::SparseMatrix> mhata;
     LINALG::SplitMatrix2x2(mhatmatrix_,gactivedofs_,gidofs,gmdofrowmap_,tempmap,mhata,tempmtx1,tempmtx2,tempmtx3);
@@ -1083,9 +1083,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     RCP<LINALG::SparseMatrix> invda;
     LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
     invda->Scale(1/(1-alphaf_));
-
-    RCP<LINALG::SparseMatrix> dolda, doldi;
-    LINALG::SplitMatrix2x2(dold_,gactivedofs_,gidofs,gactivedofs_,gidofs,dolda,tempmtx1,tempmtx2,doldi);
 
     /**********************************************************************/
     /* Split constraint terms into master and slave part                  */
@@ -1198,27 +1195,25 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 
     // fs: subtract alphaf * old contact forces (t_n)
     RCP<Epetra_Vector> fsmod = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dold_->Multiply(true,*zold_,*fsmod);
-    fsmod->Update(1.0,*fs,-alphaf_);
+    fsmod->Update(1.0,*fs,0.0);
+    RCP<Epetra_Vector> fsadd = rcp(new Epetra_Vector(*gsdofrowmap_));
+    dold_->Multiply(true,*zold_,*fsadd);
+    fsmod->Update(-alphaf_,*fsadd,1.0);
     
     // fi: subtract alphaf * old contact forces (t_n)
     if (iset)
     {
-      RCP<Epetra_Vector> modi = rcp(new Epetra_Vector(*gidofs));
-      LINALG::Export(*zold_,*modi);
-      RCP<Epetra_Vector> tempveci = rcp(new Epetra_Vector(*gidofs));
-      doldi->Multiply(true,*modi,*tempveci);
-      fi->Update(-alphaf_,*tempveci,1.0);
+      RCP<Epetra_Vector> fiadd = rcp(new Epetra_Vector(*gidofs));
+      LINALG::Export(*fsadd,*fiadd);
+      fi->Update(-alphaf_,*fiadd,1.0);
     }
 
     // fa: subtract alphaf * old contact forces (t_n)
     if (aset)
     {
-      RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*gactivedofs_));
-      LINALG::Export(*zold_,*mod);
-      RCP<Epetra_Vector> tempvec = rcp(new Epetra_Vector(*gactivedofs_));
-      dolda->Multiply(true,*mod,*tempvec);
-      fa->Update(-alphaf_,*tempvec,1.0);
+      RCP<Epetra_Vector> faadd = rcp(new Epetra_Vector(*gactivedofs_));
+      LINALG::Export(*fsadd,*faadd);
+      fa->Update(-alphaf_,*faadd,1.0);
     }
 
     // fm: add alphaf * old contact forces (t_n)
@@ -1495,7 +1490,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     LINALG::SplitVector(*gsdofrowmap_,*fs,gactivedofs_,fa,gidofs,fi);
 
     /**********************************************************************/
-    /* Isolate active part from mhat, invd and dold                       */
+    /* Isolate active part from mhat and invd                             */
     /**********************************************************************/
     RCP<LINALG::SparseMatrix> mhata;
     LINALG::SplitMatrix2x2(mhatmatrix_,gactivedofs_,gidofs,gmdofrowmap_,tempmap,mhata,tempmtx1,tempmtx2,tempmtx3);
@@ -1503,9 +1498,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     RCP<LINALG::SparseMatrix> invda;
     LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
     invda->Scale(1/(1-alphaf_));
-
-    RCP<LINALG::SparseMatrix> dolda, doldi;
-    LINALG::SplitMatrix2x2(dold_,gactivedofs_,gidofs,gactivedofs_,gidofs,dolda,tempmtx1,tempmtx2,doldi);
 
     /**********************************************************************/
     /* Build the final K and f blocks                                     */
@@ -1600,25 +1592,25 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 
     // fn: nothing to do
 
-    // fi: subtract alphaf * old contact forces (t_n)
-    if (iset)
-    {
-      RCP<Epetra_Vector> modi = rcp(new Epetra_Vector(*gidofs));
-      LINALG::Export(*zold_,*modi);
-      RCP<Epetra_Vector> tempveci = rcp(new Epetra_Vector(*gidofs));
-      doldi->Multiply(true,*modi,*tempveci);
-      fi->Update(-alphaf_,*tempveci,1.0);
-    }
+    // fs: prepare alphaf * old contact forces (t_n)
+		RCP<Epetra_Vector> fsadd = rcp(new Epetra_Vector(*gsdofrowmap_));
+		dold_->Multiply(true,*zold_,*fsadd);
 
-    // fa: subtract alphaf * old contact forces (t_n)
-    if (aset)
-    {
-      RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*gactivedofs_));
-      LINALG::Export(*zold_,*mod);
-      RCP<Epetra_Vector> tempvec = rcp(new Epetra_Vector(*gactivedofs_));
-      dolda->Multiply(true,*mod,*tempvec);
-      fa->Update(-alphaf_,*tempvec,1.0);
-    }
+		// fi: subtract alphaf * old contact forces (t_n)
+		if (iset)
+		{
+			RCP<Epetra_Vector> fiadd = rcp(new Epetra_Vector(*gidofs));
+			LINALG::Export(*fsadd,*fiadd);
+			fi->Update(-alphaf_,*fiadd,1.0);
+		}
+
+		// fa: subtract alphaf * old contact forces (t_n)
+		if (aset)
+		{
+			RCP<Epetra_Vector> faadd = rcp(new Epetra_Vector(*gactivedofs_));
+			LINALG::Export(*fsadd,*faadd);
+			fa->Update(-alphaf_,*faadd,1.0);
+		}
 
     // fm: add alphaf * old contact forces (t_n)
 
