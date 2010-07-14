@@ -1985,7 +1985,9 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
                                       const std::map<int,LINALG::Matrix<3,1> >& currentrotations,
                                       Epetra_MultiVector& crosslinkerneighbours)
 {
-
+#ifdef D_TRUSS3
+#ifdef D_BEAM3
+#ifdef D_BEAM3II
 
   //first get triads at all row nodes
   Epetra_MultiVector nodaltriadsrow(*(discret_.NodeRowMap()),4);
@@ -2250,9 +2252,6 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
           }
         }
 
- #ifdef D_TRUSS3
- #ifdef D_BEAM3
- #ifdef D_BEAM3II
 
         if(statmechparams_.get<double>("ILINK",0.0) > 0.0)
         {
@@ -2292,13 +2291,14 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
           //add new element to discretization
           discret_.AddElement(newcrosslinker);
         }
- #endif
- #endif
- #endif
 
       }
     }
   }
+
+#endif  // #ifdef D_TRUSS3
+#endif  // #ifdef D_BEAM3
+#endif  // #ifdef D_BEAM3II
 }//void SetCrosslinkers(const Epetra_Vector& setcrosslinkercol)
 
 /*----------------------------------------------------------------------*
@@ -2609,10 +2609,6 @@ std::vector<int> StatMechManager::Permutation(const int& N)
 
 bool StatMechManager::CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2,1>& LID)
 {
-
-#ifdef D_BEAM3
-#ifdef D_BEAM3II
-
   //creating a random generator object which creates uniformly distributed random numbers in [0;1]
   ranlib::UniformClosed<double> UniformGen;
 
@@ -2675,8 +2671,6 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3,1> direction, cons
   //crosslinker has to pass three probability checks with respect to orientation
   return(UniformGen.random() < p0 && UniformGen.random() < p1 && UniformGen.random() < p2);
 
-#endif  // #ifdef D_BEAM3
-#endif  // #ifdef D_BEAM3II
 
 } // StatMechManager::Permutation
 
