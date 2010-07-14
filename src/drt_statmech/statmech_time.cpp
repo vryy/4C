@@ -231,20 +231,20 @@ void StatMechTime::Integrate()
       }
       while(isconverged_ == 0);
 
-        const double t_admin = Teuchos::Time::wallTime();
+      const double t_admin = Teuchos::Time::wallTime();
 
-    UpdateandOutput();
+      UpdateandOutput();
 
-    /*special update for statistical mechanics; this output has to be handled separately from the time integration scheme output
-     * as it may take place independently on writing geometric output data in a specific time step or not*/
-    statmechmanager_->StatMechUpdate(dt,*dis_,stiff_,ndim);
+      /*special update for statistical mechanics; this output has to be handled separately from the time integration scheme output
+       * as it may take place independently on writing geometric output data in a specific time step or not*/
+      statmechmanager_->StatMechUpdate(dt,*dis_,stiff_,ndim);
 
-    statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
+      statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
 
-    if(!discret_.Comm().MyPID())
-    cout << "\n***\ntotal administration time: " << Teuchos::Time::wallTime() - t_admin<< " seconds\n***\n";
+      if(!discret_.Comm().MyPID())
+      cout << "\n***\ntotal administration time: " << Teuchos::Time::wallTime() - t_admin<< " seconds\n***\n";
 
-    if (time>=maxtime) break;
+      if (time>=maxtime) break;
   }
 
 

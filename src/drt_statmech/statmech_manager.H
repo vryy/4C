@@ -115,7 +115,8 @@ public:
   void GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, std::vector<double>& thirdpoint, int eleid);
 
   //! \brief checks orientation of crosslinker relative to linked filaments
-  bool CheckOrientation(const LINALG::Matrix<3,1> direction, DRT::Node** nodes);
+  bool CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2,1>& LID);
+
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
@@ -183,6 +184,7 @@ protected:
 
   //! \brief storing for each col map node the GIDs of nodes to which a crosslinker has been established
   RCP<Epetra_MultiVector>  crosslinkerpartner_;
+
 
   //! \brief storing for each col map node how many crosslinkers it has currently
   RCP<Epetra_Vector>  numcrosslinkerpartner_;

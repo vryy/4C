@@ -153,6 +153,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
     //initialize crosslinkerpartner_ as a col map multivector consisting of as many vectors as a node can have crosslinkers at the maximum
     crosslinkerpartner_ = rcp(new Epetra_MultiVector(*(discret_.NodeColMap()),statmechparams_.get<int>("N_CROSSMAX",0)));
     crosslinkerpartner_->PutScalar(-1);
+
     numcrosslinkerpartner_ = rcp(new Epetra_Vector(*(discret_.NodeColMap())));
     numcrosslinkerpartner_->PutScalar(0);
 
@@ -1984,6 +1985,54 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
                                       const std::map<int,LINALG::Matrix<3,1> >& currentrotations,
                                       Epetra_MultiVector& crosslinkerneighbours)
 {
+
+
+  //first get triads at all row nodes
+  Epetra_MultiVector nodaltriadsrow(*(discret_.NodeRowMap()),4);
+  nodaltriadsrow.PutScalar(0);
+
+
+  //update nodaltriads_
+  for(int i = 0; i< (discret_.NodeRowMap())->NumMyElements(); i++)
+  {
+
+    //lowest GID of any connected element (the related element cannot be a crosslinker, but has to belong to the actual filament discretization)
+    int lowestid( ( (discret_.lRowNode(i)->Elements())[0] )->Id() );
+    int lowestidele(0);
+    for(int j=0; j<discret_.lRowNode(i)->NumElement(); j++)
+      if( ( (discret_.lRowNode(i)->Elements())[j] )->Id() < lowestid )
+      {
+        lowestid = ( (discret_.lRowNode(i)->Elements())[j] )->Id();
+        lowestidele = j;
+      }
+
+    //check whether filaments are discretized with beam3ii elements (otherwise no orientation triads at nodes available)
+    DRT::ELEMENTS::Beam3ii* filele;
+    DRT::ElementType & eot = ((discret_.lRowNode(i)->Elements())[lowestidele])->ElementType();
+    if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
+      filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(discret_.lRowNode(i)->Elements()[lowestidele]);
+    else
+      dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");
+
+    //check whether crosslinker is connected to first or second node of that element
+    int nodenumber = 0;
+    if(discret_.lRowNode(i)->Id() == ((filele->Nodes())[1])->Id() )
+      nodenumber = 1;
+
+    //save nodal triad of this node in nodaltriadrow
+    for(int j = 0; j<4; j++)
+      nodaltriadsrow[j][i] = (filele->Qnew_[nodenumber])(j);
+
+  }
+
+  //export nodaltriadsrow to col map variable
+  Epetra_MultiVector nodaltriadscol(*(discret_.NodeColMap()),4,true);
+  Epetra_Import importer(nodecolmap,noderowmap);
+  nodaltriadscol.Import(nodaltriadsrow,importer,Insert);
+
+
+
+
   //get current on-rate for crosslinkers
   double kon = 0;
   if( (currentelements_ - basiselements_) < statmechparams_.get<double>("N_crosslink",0.0) && !konswitch_)
@@ -2047,16 +2096,19 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
           //get LID of current neighbor node
           int neighbourLID = nodecolmap.LID((int)crosslinkerneighbours[neighboursorder[j]][nodenumber]);
 
-          //array with nodal pointers to currently considered two nodes
-          DRT::Node* nodes[2] = {discret_.gNode( nodecolmap.GID(nodenumber) ) , discret_.gNode( nodecolmap.GID(neighbourLID) )};
 
           //unit direction vector between currently considered two nodes
           LINALG::Matrix<3,1> direction((currentpositions.find(neighbourLID))->second);
           direction -= (currentpositions.find(nodenumber))->second;
           direction.Scale(1.0 / direction.Norm2());
 
+          //Col map LIDs of nodes to be crosslinked
+          LINALG::Matrix<2,1> LID;
+          LID(0) = i;
+          LID(1) = neighbourLID;
+
           //a crosslinker can be set only if constraints wsith respect to its orientation are satisfied and also second node does not exceed it maximal number of crosslinkers
-          if(CheckOrientation(direction,&nodes[0]) && (*numcrosslinkerpartner_)[neighbourLID] < statmechparams_.get<int>("N_CROSSMAX",0))
+          if(CheckOrientation(direction,nodaltriadscol,LID) && (*numcrosslinkerpartner_)[neighbourLID] < statmechparams_.get<int>("N_CROSSMAX",0))
           {
 
             //only the node nodenumber stores the node to which a crosslink has to be set up, not vice versa, but for both the crosslinker counter is increased
@@ -2112,7 +2164,6 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
 
   //synchronize information about crosslinks to be added by exporting it to row map formant and then reimporting it to column map format
   Epetra_Export exporter(nodecolmap,noderowmap);
-  Epetra_Import importer(nodecolmap,noderowmap);
   Epetra_MultiVector crosslinkstobeaddedrow(noderowmap,crosslinkstobeadded.NumVectors(),true);
   Epetra_Vector numcrosslinkstobeaddedrow(noderowmap,true);
   Epetra_MultiVector crosslinkerpartnerrow(noderowmap,crosslinkerpartner_->NumVectors(),true);
@@ -2556,11 +2607,12 @@ std::vector<int> StatMechManager::Permutation(const int& N)
  |                                                  (public) cyron 06/10|
  *----------------------------------------------------------------------*/
 
-bool StatMechManager::CheckOrientation(const LINALG::Matrix<3,1> direction, DRT::Node** nodes)
+bool StatMechManager::CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2,1>& LID)
 {
 
 #ifdef D_BEAM3
 #ifdef D_BEAM3II
+
   //creating a random generator object which creates uniformly distributed random numbers in [0;1]
   ranlib::UniformClosed<double> UniformGen;
 
@@ -2591,31 +2643,13 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3,1> direction, DRT:
 
   for(int i=0; i<2; i++)
   {
-    //lowest Id of any connected element (the related element cannot be a crosslinker, but has to belong to the actual filament discretization)
-    int lowestid( ( (nodes[i]->Elements())[0] )->Id() );
-    int lowestidele(0);
-    for(int j=0; j<nodes[i]->NumElement(); j++)
-      if( ( (nodes[i]->Elements())[j] )->Id() < lowestid )
-      {
-        lowestid = ( (nodes[i]->Elements())[j] )->Id();
-        lowestidele = j;
-      }
-
-    //check whether filaments are discretized with beam3ii elements (otherwise no orientation triads at nodes available)
-    DRT::ELEMENTS::Beam3ii* filele;
-    DRT::ElementType & eot = ((nodes[i]->Elements())[lowestidele])->ElementType();
-    if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
-      filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(nodes[i]->Elements()[lowestidele]);
-    else
-      dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");
-
-    //check whether crosslinker is connected to first or second node of that element
-    int nodenumber = 0;
-    if(nodes[i]->Id() == ((filele->Nodes())[1])->Id() )
-      nodenumber = 1;
+    //get nodal triad
+    LINALG::Matrix<4,1> qnode;
+    for(int j = 0; j<4; j++)
+      qnode(j) = nodaltriadscol[j][(int)LID(i)];
 
     //compute triads from quaterions and unit direction vector of crosslinker
-    quaterniontotriad(filele->Qnew_[nodenumber],Tfil);
+    quaterniontotriad(qnode,Tfil);
 
     //auxiliary variable
     double scalarproduct = (direction(0)*Tfil(0,0) + direction(1)*Tfil(1,0) + direction(2)*Tfil(2,0));
