@@ -1131,8 +1131,12 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     RCP<LINALG::SparseMatrix> kmsmod;
     kmsmod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
     kmsmod->Add(*kms,false,1.0,1.0);
-    RCP<LINALG::SparseMatrix> kmsadd = LINALG::MLMultiply(*mhatmatrix_,true,*kss,false,false,false,true);
-    kmsmod->Add(*kmsadd,false,1.0,1.0);
+    if (sset)
+    {
+      // the reason for this if-case here is MLMultiply
+    	RCP<LINALG::SparseMatrix> kmsadd = LINALG::MLMultiply(*mhatmatrix_,true,*kss,false,false,false,true);
+      kmsmod->Add(*kmsadd,false,1.0,1.0);
+    }
     kmsmod->Complete(kms->DomainMap(),kms->RowMap());
 
     // kin: nothing to do
@@ -1197,9 +1201,25 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     RCP<Epetra_Vector> fsmod = rcp(new Epetra_Vector(*gsdofrowmap_));
     fsmod->Update(1.0,*fs,0.0);
     RCP<Epetra_Vector> fsadd = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dold_->Multiply(true,*zold_,*fsadd);
-    fsmod->Update(-alphaf_,*fsadd,1.0);
     
+    // for self contact, slave and master sets may have changed,
+		// thus we have to export the product Dold^T * zold to fit
+		if (IsSelfContact())
+		{
+			RCP<Epetra_Vector> tempvec  = rcp(new Epetra_Vector(dold_->DomainMap()));
+			RCP<Epetra_Vector> zoldexp  = rcp(new Epetra_Vector(dold_->RowMap()));
+			if (dold_->RowMap().NumGlobalElements()) LINALG::Export(*zold_,*zoldexp);
+			dold_->Multiply(true,*zoldexp,*tempvec);
+			if (sset) LINALG::Export(*tempvec,*fsadd);
+	    fsmod->Update(-alphaf_,*fsadd,1.0);
+		}
+		// if there is no self contact everything is ok
+		else
+		{
+			dold_->Multiply(true,*zold_,*fsadd);
+	    fsmod->Update(-alphaf_,*fsadd,1.0);
+		}
+
     // fi: subtract alphaf * old contact forces (t_n)
     if (iset)
     {
@@ -1243,7 +1263,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     mhatmatrix_->Multiply(true,*fsmod,*fmmod);
     fmmod->Update(1.0,*fm,1.0);
 
-    // fa: mutliply with tmatrix*inv(D)
+    // fa: multiply with tmatrix*inv(D)
     // (this had to wait as we had to modify fm first)
     RCP<Epetra_Vector> famod;
     RCP<LINALG::SparseMatrix> tinvda;
@@ -1594,7 +1614,22 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 
     // fs: prepare alphaf * old contact forces (t_n)
 		RCP<Epetra_Vector> fsadd = rcp(new Epetra_Vector(*gsdofrowmap_));
-		dold_->Multiply(true,*zold_,*fsadd);
+
+		// for self contact, slave and master sets may have changed,
+		// thus we have to export the product Dold^T * zold to fit
+		if (IsSelfContact())
+		{
+			RCP<Epetra_Vector> tempvec  = rcp(new Epetra_Vector(dold_->DomainMap()));
+			RCP<Epetra_Vector> zoldexp  = rcp(new Epetra_Vector(dold_->RowMap()));
+			if (dold_->RowMap().NumGlobalElements()) LINALG::Export(*zold_,*zoldexp);
+			dold_->Multiply(true,*zoldexp,*tempvec);
+			if (sset) LINALG::Export(*tempvec,*fsadd);
+		}
+		// if there is no self contact everything is ok
+		else
+		{
+			dold_->Multiply(true,*zold_,*fsadd);
+		}
 
 		// fi: subtract alphaf * old contact forces (t_n)
 		if (iset)
@@ -1639,7 +1674,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     if (aset) mhata->Multiply(true,*fa,*fmmod);
     fmmod->Update(1.0,*fm,1.0);
 
-    // fa: mutliply with tmatrix
+    // fa: multiply with tmatrix
     // (this had to wait as we had to modify fm first)
     RCP<Epetra_Vector> famod;
     RCP<LINALG::SparseMatrix> tinvda;
