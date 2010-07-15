@@ -2739,7 +2739,7 @@ void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const s
 #ifdef D_BEAM3
 		if(eot==DRT::ELEMENTS::Beam3Type::Instance())
 			for(int j=0; j<element->NumNode()-1; j++)
-				fiberorientfilecontent<<element->Id()<<" "<<filnumber<<"   "<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
+				fiberorientfilecontent<<element->Id()<<" "<<filnumber<<"   "<<std::scientific<<std::setprecision(15)//<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
 																										<< coord(0,j) << " " << coord(1,j) << " " << coord(2,j) << " "
 																										<< coord(0,j+1) << " " << coord(1,j+1) << " " << coord(2,j+1)<<endl ;
 		else
@@ -2747,7 +2747,7 @@ void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const s
 #ifdef D_BEAM3II
 		if(eot==DRT::ELEMENTS::Beam3iiType::Instance())
 			for(int j=0; j<element->NumNode()-1; j++)
-				fiberorientfilecontent<<element->Id()<<" "<<filnumber<<"   "<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
+				fiberorientfilecontent<<element->Id()<<" "<<filnumber<<"   "<<std::scientific<<std::setprecision(15)//<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
 																										<< coord(0,j) << " " << coord(1,j) << " " << coord(2,j) << " "
 																										<< coord(0,j+1) << " " << coord(1,j+1) << " " << coord(2,j+1)<<endl ;
 		else
@@ -2755,7 +2755,7 @@ void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const s
 #ifdef D_TRUSS3
 		if(eot==DRT::ELEMENTS::Truss3Type::Instance())
 			for(int j=0; j<element->NumNode()-1; j++)
-				fiberorientfilecontent<<element->Id()<<" "<<filnumber<<"   "<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
+				fiberorientfilecontent<<element->Id()<<" "<<filnumber<<"   "<<std::scientific<<std::setprecision(15)//<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
 																										<< coord(0,j) << " " << coord(1,j) << " " << coord(2,j) << " "
 																										<< coord(0,j+1) << " " << coord(1,j+1) << " " << coord(2,j+1)<<endl ;
 		else

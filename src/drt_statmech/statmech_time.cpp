@@ -211,6 +211,14 @@ void StatMechTime::Integrate()
         //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)0.5
         statmechmanager_->GenerateGaussianRandomNumbers(randomnumbers,0,pow(2.0 * (statmechmanager_->statmechparams_).get<double>("KT",0.0) / dt,0.5));
 
+        /*/test: StructPolyMorphOutput in initial configuration
+        if(time==0.0)
+        {
+					std::ostringstream tmpfilename;
+					tmpfilename <<"./GmshOutput/InitStructPolymorph_"<<discret_.Comm().MyPID()<<".dat";
+					statmechmanager_->StructPolymorphOutput(*dis_, tmpfilename);
+        }*/
+
         ConsistentPredictor(randomnumbers);
 
 
