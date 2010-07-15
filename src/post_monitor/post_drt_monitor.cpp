@@ -5,7 +5,7 @@
 \brief monitoring filter for one data
 
 <pre>
-Maintainer: Christiane Förster
+Maintainer: Christiane FÃ¶rster
             foerster@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/Members/foerster
             089 - 289-15262
@@ -375,8 +375,8 @@ void FluidMonWriter::WriteResult(
   Teuchos::RCP< Epetra_Vector > resvec = result.read_result("velnp");
   const Epetra_BlockMap& velmap = resvec->Map();
   // do output of general time step data
-  outfile << right << std::setw(10) << result.step();
-  outfile << right << std::setw(16) << scientific << result.time();
+  outfile << right << std::setw(20) << result.step();
+  outfile << right << std::setw(20) << scientific << result.time();
 
   //compute second part of offset
   int offset2 = velmap.MinAllGID();
@@ -385,7 +385,7 @@ void FluidMonWriter::WriteResult(
   for(unsigned i=0; i < gdof.size(); ++i)
   {
     const int lid = velmap.LID(gdof[i]+offset2);
-    outfile << right << std::setw(16) << scientific << (*resvec)[lid];
+    outfile << right << std::setw(20) << std::setprecision(10) << scientific << (*resvec)[lid];
   }
   outfile << "\n";
 }
@@ -911,6 +911,82 @@ void FsiAleMonWriter::WriteHeader(ofstream& outfile)
 }
 
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ScatraMonWriter::CheckInfieldType(string& infieldtype)
+{
+  cout << "\nscatra something\n\n";
+}
+
+/*----------------------------------------------------------------------*/
+void ScatraMonWriter::FieldError(int node)
+{
+  dserror("Node %i does not belong to scatra field!", node);
+}
+
+/*----------------------------------------------------------------------*/
+void ScatraMonWriter::WriteHeader(ofstream& outfile)
+{
+  outfile << "# SCATRA problem, writing nodal data of node ";
+}
+
+/*----------------------------------------------------------------------*/
+PostField* ScatraMonWriter::GetFieldPtr(PostProblem& problem)
+{
+  // get pointer to discretisation of actual field
+  PostField* myfield = problem.get_discretization(1);
+  if (myfield->name() != "scatra")
+    dserror("Fieldtype of field 1 is not scatra.");
+  return myfield;
+}
+
+/*----------------------------------------------------------------------*/
+void ScatraMonWriter::WriteTableHead(ofstream& outfile, int dim)
+{
+  switch (dim)
+  {
+  case 2:
+    outfile << "# step   time     phi\n";
+    break;
+  case 3:
+   outfile << "# step   time     phi\n";
+   break;
+  default:
+    dserror("Number of dimensions in space differs from 2 and 3!");
+  }
+}
+
+/*----------------------------------------------------------------------*/
+void ScatraMonWriter::WriteResult(
+  ofstream& outfile,
+  PostResult& result,
+  std::vector<int>& gdof,
+  int dim
+  )
+{
+  // get actual result vector for displacement
+  Teuchos::RCP< Epetra_Vector > resvec = result.read_result("phinp");
+
+  const Epetra_BlockMap& dispmap = resvec->Map();
+  // do output of general time step data
+  outfile << right << std::setw(10) << result.step();
+  outfile << right << std::setw(20) << scientific << result.time();
+
+  //compute second part of offset
+  int offset2 = dispmap.MinAllGID();
+
+  // do output for velocity
+  for(unsigned i=0; i < gdof.size(); ++i)
+  {
+    const int lid = dispmap.LID(gdof[i]+offset2);
+    outfile << right << std::setw(20) << std::setprecision(10) << scientific << (*resvec)[lid];
+  }
+  outfile << "\n";
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -937,7 +1013,7 @@ int main(int argc, char** argv)
   my_comlinproc.setOption("node", &node, "Global node number",required);
   /* Set a std::string command line option */
   std::string infieldtype = "fluid";
-  my_comlinproc.setOption("field", &infieldtype, "Field to which output node belongs (fluid, structure, ale)");
+  my_comlinproc.setOption("field", &infieldtype, "Field to which output node belongs (fluid, structure, ale, scatra)");
 
   // my post processing problem itself
   PostProblem problem(my_comlinproc,argc,argv);
@@ -978,10 +1054,19 @@ int main(int argc, char** argv)
       mymonwriter.WriteMonStrainFile(problem,infieldtype,problem.straintype(),node);
       break;
     }
+    case prb_loma:
     case prb_fluid:
     {
-      FluidMonWriter mymonwriter(problem,infieldtype,node);
-      mymonwriter.WriteMonFile(problem,infieldtype,node);
+      if(infieldtype == "scatra")
+      {
+        ScatraMonWriter mymonwriter(problem,infieldtype,node);
+        mymonwriter.WriteMonFile(problem,infieldtype,node);
+      }
+      else if(infieldtype == "fluid")
+      {
+        FluidMonWriter mymonwriter(problem,infieldtype,node);
+        mymonwriter.WriteMonFile(problem,infieldtype,node);
+      }
       break;
     }
     case prb_ale:

@@ -5,7 +5,7 @@
 \brief monitoring filter for one data
 
 <pre>
-Maintainer: Christiane Förster
+Maintainer: Christiane FÃ¶rster
             foerster@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/Members/foerster
             089 - 289-15262
@@ -313,6 +313,48 @@ protected:
 
 private:
 }; // end of class AleMonWriter
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+class ScatraMonWriter : public FieldMonWriter
+{
+public:
+  //! constructor
+  ScatraMonWriter(
+    PostProblem& problem,
+    string& infieldtype,
+    int node
+    )
+    : FieldMonWriter(problem,infieldtype,node)
+  {}
+
+  //! destructor
+  virtual ~ScatraMonWriter()
+  {}
+
+protected:
+
+  virtual void CheckInfieldType(string& infieldtype);
+
+  void FieldError(int node);
+
+  void WriteHeader(ofstream& outfile);
+
+  void WriteTableHead(ofstream& outfile, int dim);
+
+  PostField* GetFieldPtr(PostProblem& problem);
+
+  void WriteResult(
+    ofstream& outfile,
+    PostResult& result,
+    std::vector<int>& gdof,
+    int dim
+    );
+
+private:
+}; // end of class ScatraMonWriter
 
 
 
