@@ -719,7 +719,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 #endif
     AddDis(genprob.numsf, structdis);
     AddDis(genprob.numff, fluiddis);
-    AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
+    if ( xfluiddis!=Teuchos::null )
+      AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
     AddDis(genprob.numaf, aledis);
 #ifdef D_ARTNET
     AddDis(genprob.numartf, arterydis);
@@ -734,7 +735,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
+    if ( xfluiddis!=Teuchos::null )
+      nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 #ifdef D_ARTNET
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
@@ -814,7 +816,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     }
 
     AddDis(genprob.numff, fluiddis);
-    AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
+    if ( xfluiddis!=Teuchos::null )
+      AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
 
 #ifdef D_ARTNET
     // create empty discretizations
@@ -831,7 +834,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
+
+    if ( xfluiddis!=Teuchos::null )
+      nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
 
 #ifdef D_ARTNET
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
