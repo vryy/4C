@@ -2008,7 +2008,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
     xyz0_right(2) = 0.0;  // z-coordinate is 0 (2D problem)
 
     // get laminar burning velocity (flame speed)
-    if (flamespeed_ != 0.41) dserror("flame speed should be 1.0 for the 'flame-vortex-interaction' case");
+    if (flamespeed_ != 1.0) dserror("flame speed should be 1.0 for the 'flame-vortex-interaction' case");
     // vortex strength C (scaled by laminar burning velocity)
     const double C = 70.0*flamespeed_; // 70.0*flamespeed_;
     // (squared) vortex radius R
@@ -2030,9 +2030,9 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
     // get material list for this element
     const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
 
-    // get unburnt material (first material in material list)
+    // get burnt material (first material in material list)
     Teuchos::RCP<const MAT::Material> matptr0 = matlist->MaterialById(matlist->MatID(0));
-    // get burnt material (second material in material list)
+    // get unburnt material (second material in material list)
     Teuchos::RCP<const MAT::Material> matptr1 = matlist->MaterialById(matlist->MatID(1));
 #ifdef DEBUG
     dsassert(matptr0->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
@@ -2042,10 +2042,10 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
     const MAT::NewtonianFluid* mat1 = static_cast<const MAT::NewtonianFluid*>(matptr1.get());
 
     // get the densities
-    const double dens_u = mat0->Density();
-    //if (dens_u != 1.161) dserror("unburnt density should be 1.161 for the 'flame-vortex-interaction' case");
-    const double dens_b = mat1->Density();
-    //if (dens_b != 0.157) dserror("burnt density should be 0.157 for the 'flame-vortex-interaction' case");
+    const double dens_b = mat0->Density();
+    if (dens_b != 0.157) dserror("burnt density should be 0.157 for the 'flame-vortex-interaction' case");
+    const double dens_u = mat1->Density();
+    if (dens_u != 1.161) dserror("unburnt density should be 1.161 for the 'flame-vortex-interaction' case");
     double dens = dens_u;
     // for "pure fluid" computation: rhob = rhou = 1.161
     //const double dens_b = dens_u;
