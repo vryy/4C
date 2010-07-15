@@ -47,6 +47,33 @@ int PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsi
   if (!dis.NodeRowMap()->UniqueGIDs()) dserror("Nodal row map is not unique");
   if (!dis.ElementRowMap()->UniqueGIDs()) dserror("Element row map is not unique");
 
+  // A definite offset is currently not supported.
+  if (start!=0)
+    dserror("right now user specified dof offsets are not supported");
+
+  // Add DofSets in order of assignment to list. Once it is there it has its
+  // place and will get its starting id from the previous DofSet.
+  AddDofSettoList();
+
+  // We assume that all dof sets before this one have been set up. Otherwise
+  // we'd have to reorder the list.
+  //
+  // There is no test anymore to make sure that all prior dof sets have been
+  // assigned. It seems people like to manipulate dof sets. People do create
+  // dof sets that do not contain any dofs (on its first assignment), people
+  // even shift dof set numbers to create overlapping dof sets. This is
+  // perfectly fine.
+  //
+  // However if you rely on non-overlapping dof sets, you have to
+  // FillComplete() your discretizations in the order of their creation. This
+  // is guaranteed for all discretizations read from the input file since the
+  // input reader calls FillComplete(). If you create your own discretizations
+  // try to understand what you do.
+
+  // Get highest GID used so far and add one
+  int count = MaxGIDinList() + 1;
+
+
   // Now this is tricky. We have to care for nodes and elements, both
   // row and column maps. In general both nodes and elements can have
   // dofs. In both cases these dofs might be shared with other nodes
@@ -139,7 +166,6 @@ int PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsi
   vector<int> rredundantnodes(dis.NumGlobalNodes());
   dis.Comm().SumAll(&sredundantnodes[0],&rredundantnodes[0],dis.NumGlobalNodes());
 
-  int count=start;
   int localcolpos=0;
 
   // Vectors to keep the dof gid of both nodes and elements. We need
