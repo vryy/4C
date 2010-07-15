@@ -11,7 +11,7 @@
 ==================================================================
 -------------------------------------------------------------TITLE
 - COMBUST3 element
-- stationary Couette flow (shear flow)
+- instationary Couette flow (shear flow)
 - coupled at inclined flame front (45° angle)
 - combustion interface conditions (varying density and viscosity)
 - Neumann outflow condition
@@ -46,10 +46,10 @@ FILESTEPS              1000
 -------------------------------------------------COMBUSTION CONTROL
 CONVTOL                         1e-05
 ITEMAX                          1
-MAXTIME                         12.5
-NUMSTEP                         50
+MAXTIME                         5.0
+NUMSTEP                         20
 RESTARTEVRY                     20
-TIMEINT                         Stationary
+TIMEINT                         One_Step_Theta
 TIMESTEP                        0.25
 UPRES                           1
 -----------------------------COMBUSTION CONTROL/COMBUSTION FLUID
@@ -66,7 +66,7 @@ REINITINTERVAL                  10
 DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field
 STARTFUNCNO      -1
-TIMEINTEGR       Stationary
+TIMEINTEGR       One_Step_Theta
 STARTINGALGO     One_Step_Theta
 NONLINITER       Newton
 ITEMAX           10 // 20
@@ -120,7 +120,7 @@ MAXTIME                         20.0
 NUMSTEP                         20
 RESTARTEVRY                     20
 THETA                           0.5
-TIMEINTEGR                      Stationary
+TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.2
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
@@ -1204,6 +1204,6 @@ NODE 294  	COORD	1.00000000e+00	3.00000012e-01	5.00000007e-02
 FLUID DIS 1 NODE 134 POSITION velx     NAME velx     VALUE  4.5e+00       TOLERANCE 1e-9
 FLUID DIS 1 NODE 147 POSITION velx     NAME velx     VALUE  6.5e+00       TOLERANCE 1e-9
 FLUID DIS 1 NODE 110 POSITION pressure NAME pressure VALUE -4.1666666e+00 TOLERANCE 1e-6
-FLUID DIS 1 NODE 171 POSITION pressure NAME pressure VALUE -9.0e00        TOLERANCE 1e-9
+FLUID DIS 1 NODE 171 POSITION pressure NAME pressure VALUE -9.0e00        TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END
