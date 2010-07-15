@@ -1421,7 +1421,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
 			}
 
 			if (linecount<1)
-				dserror("Define Line Dirichlet BC(s) in input file for non-circular/FSI Womersley case!");
+				dserror("Define Line Dirichlet BC(s) delimiting the inflow surface in your input file!");
 			// calculation of the centroid (2/2), currently only for serial use
 			if(dis->Comm().NumProc()==1)
 			{
