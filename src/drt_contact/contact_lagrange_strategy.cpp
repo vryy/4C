@@ -872,8 +872,9 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
   /* build global matrix n with normal vectors of active nodes          */
   /* and global matrix t with tangent vectors of active nodes           */
   /* and global matrix s with normal derivatives of active nodes        */
+  /* and global matrix p with tangent derivatives of active nodes       */
   /**********************************************************************/
-  // here and for the splitting later, we need the combined sm rowmap
+  // here and for the splitting later, we need the combined sm-rowmap
   // (this map is NOT allowed to have an overlap !!!)
   RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_,gmdofrowmap_,false);
 
@@ -931,99 +932,104 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     if (shapefcn!=INPAR::MORTAR::shape_dual) dserror("Condensation only for dual LM");
     
 #ifdef CONTACTBASISTRAFO
+
     /**********************************************************************/
-    /* Multiply Mortar matrices: m^ = inv(d) * m                          */
-    /**********************************************************************/
+		/* (1) Multiply Mortar matrices: m^ = inv(d) * m                      */
+		/**********************************************************************/
+
     RCP<LINALG::SparseMatrix> invd = rcp(new LINALG::SparseMatrix(*dmatrix_));
-    RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_,true);
-    int err = 0;
+		RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_,true);
+		int err = 0;
 
-    // extract diagonal of invd into diag
-    invd->ExtractDiagonalCopy(*diag);
+		// extract diagonal of invd into diag
+		invd->ExtractDiagonalCopy(*diag);
 
-    // set zero diagonal values to dummy 1.0
-    for (int i=0;i<diag->MyLength();++i)
-      if ((*diag)[i]==0.0) (*diag)[i]=1.0;
+		// set zero diagonal values to dummy 1.0
+		for (int i=0;i<diag->MyLength();++i)
+			if ((*diag)[i]==0.0) (*diag)[i]=1.0;
 
-    // scalar inversion of diagonal values
-    err = diag->Reciprocal(*diag);
-    if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+		// scalar inversion of diagonal values
+		err = diag->Reciprocal(*diag);
+		if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
 
-    // re-insert inverted diagonal into invd
-    err = invd->ReplaceDiagonalValues(*diag);
-    // we cannot use this check, as we deliberately replaced zero entries
-    //if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+		// re-insert inverted diagonal into invd
+		err = invd->ReplaceDiagonalValues(*diag);
+		// we cannot use this check, as we deliberately replaced zero entries
+		//if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
 
-    // do the multiplication M^ = inv(D) * M
-    mhatmatrix_ = LINALG::MLMultiply(*invd,false,*mmatrix_,false,false,false,true);
+		// do the multiplication mhat = inv(D) * M
+		mhatmatrix_ = LINALG::MLMultiply(*invd,false,*mmatrix_,false,false,false,true);
 
-    /**********************************************************************/
-    /* Add contact stiffness terms to kteff                               */
-    /**********************************************************************/
-    if (fulllin)
-    {
-      kteff->UnComplete();
-      kteff->Add(*lindmatrix_,false,1.0-alphaf_,1.0);
-      kteff->Add(*linmmatrix_,false,1.0-alphaf_,1.0);
-      kteff->Complete();
-    }
+		/**********************************************************************/
+		/* (2) Add contact stiffness terms to kteff                           */
+		/**********************************************************************/
 
-    /**********************************************************************/
-    /* Split kteff into 3x3 block matrix                                  */
-    /**********************************************************************/
-    // we want to split k into 3 groups s,m,n = 9 blocks
-    RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
+		if (fulllin)
+		{
+			kteff->UnComplete();
+			kteff->Add(*lindmatrix_,false,1.0-alphaf_,1.0);
+			kteff->Add(*linmmatrix_,false,1.0-alphaf_,1.0);
+			kteff->Complete();
+		}
 
-    // temporarily we need the blocks ksmsm, ksmn, knsm
-    // (FIXME: because a direct SplitMatrix3x3 is still missing!)
-    RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
+		/**********************************************************************/
+		/* (3) Split kteff into 3x3 block matrix                              */
+		/**********************************************************************/
 
-    // some temporary RCPs
-    RCP<Epetra_Map> tempmap;
-    RCP<LINALG::SparseMatrix> tempmtx1;
-    RCP<LINALG::SparseMatrix> tempmtx2;
-    RCP<LINALG::SparseMatrix> tempmtx3;
+		// we want to split k into 3 groups s,m,n = 9 blocks
+		RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
 
-    // split into slave/master part + structure part
-    RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
-    LINALG::SplitMatrix2x2(kteffmatrix,gsmdofs,gndofrowmap_,gsmdofs,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+		// temporarily we need the blocks ksmsm, ksmn, knsm
+		// (FIXME: because a direct SplitMatrix3x3 is still missing!)
+		RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
 
-    // further splits into slave part + master part
-    LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,kss,ksm,kms,kmm);
-    LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
-    LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
+		// some temporary RCPs
+		RCP<Epetra_Map> tempmap;
+		RCP<LINALG::SparseMatrix> tempmtx1;
+		RCP<LINALG::SparseMatrix> tempmtx2;
+		RCP<LINALG::SparseMatrix> tempmtx3;
 
-    /**********************************************************************/
-    /* Split feff into 3 subvectors                                       */
-    /**********************************************************************/
-    // we want to split f into 3 groups s.m,n
-    RCP<Epetra_Vector> fs, fm, fn;
+		// split into slave/master part + structure part
+		RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
+		LINALG::SplitMatrix2x2(kteffmatrix,gsmdofs,gndofrowmap_,gsmdofs,gndofrowmap_,ksmsm,ksmn,knsm,knn);
 
-    // temporarily we need the group sm
-    RCP<Epetra_Vector> fsm;
+		// further splits into slave part + master part
+		LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,kss,ksm,kms,kmm);
+		LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
+		LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
 
-    // do the vector splitting smn -> sm+n
-    LINALG::SplitVector(*problemrowmap_,*feff,gsmdofs,fsm,gndofrowmap_,fn);
+		/**********************************************************************/
+		/* (4) Split feff into 3 subvectors                                   */
+		/**********************************************************************/
 
-    // abbreviations for slave  and master set
-    int sset = gsdofrowmap_->NumGlobalElements();
-    int mset = gmdofrowmap_->NumGlobalElements();
-    
-    // we want to split fsm into 2 groups s,m
-    fs = rcp(new Epetra_Vector(*gsdofrowmap_));
-    fm = rcp(new Epetra_Vector(*gmdofrowmap_));
+		// we want to split f into 3 groups s.m,n
+		RCP<Epetra_Vector> fs, fm, fn;
 
-    // do the vector splitting sm -> s+m
-    LINALG::SplitVector(*gsmdofs,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
+		// temporarily we need the group sm
+		RCP<Epetra_Vector> fsm;
 
-    // store some stuff for static condensation of LM
-    fs_   = fs;
-    invd_ = invd;
-    ksn_  = ksn;
-    ksm_  = ksm;
-    kss_  = kss;
+		// do the vector splitting smn -> sm+n
+		LINALG::SplitVector(*problemrowmap_,*feff,gsmdofs,fsm,gndofrowmap_,fn);
 
-    //----------------------------------------------------------------------
+		// abbreviations for slave  and master set
+		int sset = gsdofrowmap_->NumGlobalElements();
+		int mset = gmdofrowmap_->NumGlobalElements();
+
+		// we want to split fsm into 2 groups s,m
+		fs = rcp(new Epetra_Vector(*gsdofrowmap_));
+		fm = rcp(new Epetra_Vector(*gmdofrowmap_));
+
+		// do the vector splitting sm -> s+m
+		LINALG::SplitVector(*gsmdofs,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
+
+		// store some stuff for static condensation of LM
+		fs_   = fs;
+		invd_ = invd;
+		ksn_  = ksn;
+		ksm_  = ksm;
+		kss_  = kss;
+
+		//----------------------------------------------------------------------
 		// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
 		//----------------------------------------------------------------------
 		// Concretely, we apply the following transformations:
@@ -1033,8 +1039,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 		//----------------------------------------------------------------------
 		if (Dualquadslave3d())
 		{
-			dserror("ERROR: Dual LM condensation with basis transformation not yet impl. for 3D quadratic contact");
-
 			// modify dmatrix_, invd_ and mhatmatrix_
 			RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
 			RCP<LINALG::SparseMatrix> temp3 = LINALG::MLMultiply(*trafo_,false,*invd_,false,false,false,true);
@@ -1044,165 +1048,254 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 			mhatmatrix_ = temp4;
 		}
 
-    /**********************************************************************/
-    /* Split slave quantities into active / inactive                      */
-    /**********************************************************************/
-    // we want to split kssmod into 2 groups a,i = 4 blocks
-    RCP<LINALG::SparseMatrix> kaa, kai, kia, kii, kas, kis;
+		/**********************************************************************/
+		/* (5) Split slave quantities into active / inactive                  */
+		/**********************************************************************/
 
-    // we want to split ksn / ksm / kms into 2 groups a,i = 2 blocks
-    RCP<LINALG::SparseMatrix> kan, kin, kam, kim, kma, kmi;
+		// we want to split kssmod into 2 groups a,i = 4 blocks
+		RCP<LINALG::SparseMatrix> kaa, kai, kia, kii;
+		RCP<LINALG::SparseMatrix> kas, kis;
 
-    // we will get the i rowmap as a by-product
-    RCP<Epetra_Map> gidofs;
+		// we want to split ksn / ksm / kms into 2 groups a,i = 2 blocks
+		RCP<LINALG::SparseMatrix> kan, kin, kam, kim, kma, kmi;
 
-    // do the splitting
-    LINALG::SplitMatrix2x2(kss,gactivedofs_,gidofs,gsdofrowmap_,tempmap,kas,tempmtx1,kis,tempmtx2);
-    LINALG::SplitMatrix2x2(kss,gactivedofs_,gidofs,gactivedofs_,gidofs,kaa,kai,kia,kii);
-    LINALG::SplitMatrix2x2(ksn,gactivedofs_,gidofs,gndofrowmap_,tempmap,kan,tempmtx1,kin,tempmtx2);
-    LINALG::SplitMatrix2x2(ksm,gactivedofs_,gidofs,gmdofrowmap_,tempmap,kam,tempmtx1,kim,tempmtx2);
-    LINALG::SplitMatrix2x2(kms,gmdofrowmap_,tempmap,gactivedofs_,gidofs,kma,kmi,tempmtx1,tempmtx2);
+		// we will get the i rowmap as a by-product
+		RCP<Epetra_Map> gidofs;
 
-    // abbreviations for active and inactive set
-    int aset = gactivedofs_->NumGlobalElements();
-    int iset = gidofs->NumGlobalElements();
-    
-    // we want to split fsmod into 2 groups a,i
-    RCP<Epetra_Vector> fa = rcp(new Epetra_Vector(*gactivedofs_));
-    RCP<Epetra_Vector> fi = rcp(new Epetra_Vector(*gidofs));
+		// do the splitting
+		LINALG::SplitMatrix2x2(kss,gactivedofs_,gidofs,gsdofrowmap_,tempmap,kas,tempmtx1,kis,tempmtx2);
+		LINALG::SplitMatrix2x2(kss,gactivedofs_,gidofs,gactivedofs_,gidofs,kaa,kai,kia,kii);
+		LINALG::SplitMatrix2x2(ksn,gactivedofs_,gidofs,gndofrowmap_,tempmap,kan,tempmtx1,kin,tempmtx2);
+		LINALG::SplitMatrix2x2(ksm,gactivedofs_,gidofs,gmdofrowmap_,tempmap,kam,tempmtx1,kim,tempmtx2);
+		LINALG::SplitMatrix2x2(kms,gmdofrowmap_,tempmap,gactivedofs_,gidofs,kma,kmi,tempmtx1,tempmtx2);
 
-    // do the vector splitting s -> a+i
-    LINALG::SplitVector(*gsdofrowmap_,*fs,gactivedofs_,fa,gidofs,fi);
+		// abbreviations for active and inactive set
+		int aset = gactivedofs_->NumGlobalElements();
+		int iset = gidofs->NumGlobalElements();
 
-    /**********************************************************************/
-    /* Isolate active part from mhat and invd                             */
-    /**********************************************************************/
-    RCP<LINALG::SparseMatrix> mhata;
-    LINALG::SplitMatrix2x2(mhatmatrix_,gactivedofs_,gidofs,gmdofrowmap_,tempmap,mhata,tempmtx1,tempmtx2,tempmtx3);
+		// we want to split fsmod into 2 groups a,i
+		RCP<Epetra_Vector> fa = rcp(new Epetra_Vector(*gactivedofs_));
+		RCP<Epetra_Vector> fi = rcp(new Epetra_Vector(*gidofs));
 
-    RCP<LINALG::SparseMatrix> invda;
-    LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
-    invda->Scale(1/(1-alphaf_));
+		// do the vector splitting s -> a+i
+		LINALG::SplitVector(*gsdofrowmap_,*fs,gactivedofs_,fa,gidofs,fi);
 
-    /**********************************************************************/
-    /* Split constraint terms into master and slave part                  */
-    /**********************************************************************/
-    // we want to split smatrix and pmatrix
-    RCP<LINALG::SparseMatrix> smatrixm, smatrixs, pmatrixm, pmatrixs;
-    
-    // do the splitting
-    LINALG::SplitMatrix2x2(smatrix_,gactiven_,tempmap,gmdofrowmap_,gsdofrowmap_,smatrixm,smatrixs,tempmtx1,tempmtx2);
-    LINALG::SplitMatrix2x2(pmatrix_,gactivet_,tempmap,gmdofrowmap_,gsdofrowmap_,pmatrixm,pmatrixs,tempmtx1,tempmtx2);
-    
-    /**********************************************************************/
-    /* Build the final K and f blocks                                     */
-    /**********************************************************************/
-    // knn: nothing to do
+		/**********************************************************************/
+		/* (6) Isolate necessary parts from invd and mhatmatrix               */
+		/**********************************************************************/
 
-    // knm: add kns*mhat
-    RCP<LINALG::SparseMatrix> knmmod = rcp(new LINALG::SparseMatrix(*gndofrowmap_,100));
-    knmmod->Add(*knm,false,1.0,1.0);
-    RCP<LINALG::SparseMatrix> knmadd = LINALG::MLMultiply(*kns,false,*mhatmatrix_,false,false,false,true);
-    knmmod->Add(*knmadd,false,1.0,1.0);
-    knmmod->Complete(knm->DomainMap(),knm->RowMap());
+		// active part of invd
+		RCP<LINALG::SparseMatrix> invda;
+		LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
 
-    // kns: nothing to do
+		// coupling part of dmatrix (only nonzero for 3D quadratic case!)
+		RCP<LINALG::SparseMatrix> dai;
+		LINALG::SplitMatrix2x2(dmatrix_,gactivedofs_,gidofs,gactivedofs_,gidofs,tempmtx1,dai,tempmtx2,tempmtx3);
 
-    // kmn: add T(mhat)*ksn
-    RCP<LINALG::SparseMatrix> kmnmod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-    kmnmod->Add(*kmn,false,1.0,1.0);
-    RCP<LINALG::SparseMatrix> kmnadd = LINALG::MLMultiply(*mhatmatrix_,true,*ksn,false,false,false,true);
-    kmnmod->Add(*kmnadd,false,1.0,1.0);
-    kmnmod->Complete(kmn->DomainMap(),kmn->RowMap());
+		 // do the multiplication dhat = invda * dai
+		RCP<LINALG::SparseMatrix> dhat = rcp(new LINALG::SparseMatrix(*gactivedofs_,10));
+		if (aset && iset) dhat = LINALG::MLMultiply(*invda,false,*dai,false,false,false,true);
+		dhat->Complete(*gidofs,*gactivedofs_);
 
-    // kmm: add kms*mhat and T(mhat)*ksm and T(mhat)*kss*mhat
-    RCP<LINALG::SparseMatrix> kmmmod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-    kmmmod->Add(*kmm,false,1.0,1.0);
-    RCP<LINALG::SparseMatrix> kmmadd1 = LINALG::MLMultiply(*kms,false,*mhatmatrix_,false,false,false,true);
-    kmmmod->Add(*kmmadd1,false,1.0,1.0);
-    RCP<LINALG::SparseMatrix> kmmadd2 = LINALG::MLMultiply(*mhatmatrix_,true,*ksm,false,false,false,true);
-    kmmmod->Add(*kmmadd2,false,1.0,1.0);
-    RCP<LINALG::SparseMatrix> kmmadd3 = LINALG::MLMultiply(*kss,false,*mhatmatrix_,false,false,false,true);
-    kmmadd3 = LINALG::MLMultiply(*mhatmatrix_,true,*kmmadd3,false,false,false,true);
-    kmmmod->Add(*kmmadd3,false,1.0,1.0);
-    kmmmod->Complete(kmm->DomainMap(),kmm->RowMap());
-    
-    // kms: add T(mhat)*kss
-    RCP<LINALG::SparseMatrix> kmsmod;
-    kmsmod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-    kmsmod->Add(*kms,false,1.0,1.0);
-    if (sset)
-    {
-      // the reason for this if-case here is MLMultiply
-    	RCP<LINALG::SparseMatrix> kmsadd = LINALG::MLMultiply(*mhatmatrix_,true,*kss,false,false,false,true);
-      kmsmod->Add(*kmsadd,false,1.0,1.0);
-    }
-    kmsmod->Complete(kms->DomainMap(),kms->RowMap());
+		// active part of mmatrix
+		RCP<LINALG::SparseMatrix> mmatrixa;
+		LINALG::SplitMatrix2x2(mmatrix_,gactivedofs_,gidofs,gmdofrowmap_,tempmap,mmatrixa,tempmtx1,tempmtx2,tempmtx3);
 
-    // kin: nothing to do
+		// do the multiplication mhataam = invda * mmatrixa
+		// (this is only different from mhata for 3D quadratic case!)
+		RCP<LINALG::SparseMatrix> mhataam = rcp(new LINALG::SparseMatrix(*gactivedofs_,10));
+		if (aset) mhataam = LINALG::MLMultiply(*invda,false,*mmatrixa,false,false,false,true);
+		mhataam->Complete(*gmdofrowmap_,*gactivedofs_);
 
-    // kim: add kis*mhat
-    RCP<LINALG::SparseMatrix> kimmod = rcp(new LINALG::SparseMatrix(*gidofs,100));
-    kimmod->Add(*kim,false,1.0,1.0);
-    RCP<LINALG::SparseMatrix> kimadd = LINALG::MLMultiply(*kis,false,*mhatmatrix_,false,false,false,true);
-    kimmod->Add(*kimadd,false,1.0,1.0);
-    kimmod->Complete(kim->DomainMap(),kim->RowMap());
-    
-    // kii: nothing to do
+		// for the case without full linearization, we still need the
+		// "classical" active part of mhat, which is isolated here
+		RCP<LINALG::SparseMatrix> mhata;
+		LINALG::SplitMatrix2x2(mhatmatrix_,gactivedofs_,gidofs,gmdofrowmap_,tempmap,mhata,tempmtx1,tempmtx2,tempmtx3);
 
-    // kia: nothing to do
+		// scaling of invd and dai
+		invda->Scale(1/(1-alphaf_));
+		dai->Scale(1-alphaf_);
 
-    // n*mbaractive: do the multiplication
-    RCP<LINALG::SparseMatrix> nmhata;
-    if (aset) nmhata = LINALG::MLMultiply(*nmatrix_,false,*mhata,false,false,false,true);
+		// we want to split smatrix and pmatrix
+		RCP<LINALG::SparseMatrix> smatrixm, smatrixs, pmatrixm, pmatrixs;
 
-    // nmatrix: nothing to do
+		// do the splitting
+		LINALG::SplitMatrix2x2(smatrix_,gactiven_,tempmap,gmdofrowmap_,gsdofrowmap_,smatrixm,smatrixs,tempmtx1,tempmtx2);
+		LINALG::SplitMatrix2x2(pmatrix_,gactivet_,tempmap,gmdofrowmap_,gsdofrowmap_,pmatrixm,pmatrixs,tempmtx1,tempmtx2);
 
-    // kan: multiply with tmatrix*inv(D)
-    RCP<LINALG::SparseMatrix> kanmod;
-    if (aset)
-    {
-      kanmod = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
-      kanmod = LINALG::MLMultiply(*kanmod,false,*kan,false,false,false,true);
-    }
+		/**********************************************************************/
+		/* (7) Build the final K blocks                                       */
+		/**********************************************************************/
 
-    // kam: add kas*mhat and multiply with tmatrix*inv(D)
-    RCP<LINALG::SparseMatrix> kammod;
-    if (aset)
-    {
-      kammod = rcp(new LINALG::SparseMatrix(*gactivedofs_,100));
-      kammod->Add(*kam,false,1.0,1.0);
-      RCP<LINALG::SparseMatrix> kamadd = LINALG::MLMultiply(*kas,false,*mhatmatrix_,false,false,false,true);
-      kammod->Add(*kamadd,false,1.0,1.0);
-      kammod->Complete(kam->DomainMap(),kam->RowMap());
-      kammod = LINALG::MLMultiply(*invda,true,*kammod,false,false,false,true);
-      kammod = LINALG::MLMultiply(*tmatrix_,false,*kammod,false,false,false,true);
-    }
+		//----------------------------------------------------------- FIRST LINE
+		// knn: nothing to do
 
-    // kai: multiply with tmatrix*inv(D)
-    RCP<LINALG::SparseMatrix> kaimod;
-    if (aset && iset)
-    {
-      kaimod = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
-      kaimod = LINALG::MLMultiply(*kaimod,false,*kai,false,false,false,true);
-    }
+		// knm: add kns*mhat
+		RCP<LINALG::SparseMatrix> knmmod = rcp(new LINALG::SparseMatrix(*gndofrowmap_,100));
+		knmmod->Add(*knm,false,1.0,1.0);
+		RCP<LINALG::SparseMatrix> knmadd = LINALG::MLMultiply(*kns,false,*mhatmatrix_,false,false,false,true);
+		knmmod->Add(*knmadd,false,1.0,1.0);
+		knmmod->Complete(knm->DomainMap(),knm->RowMap());
 
-    // kaa: multiply with tmatrix*inv(D)
-    RCP<LINALG::SparseMatrix> kaamod;
-    if (aset)
-    {
-      kaamod = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
-      kaamod = LINALG::MLMultiply(*kaamod,false,*kaa,false,false,false,true);
-    }
+		// kns: nothing to do
 
-    // fn: nothing to do
+		//---------------------------------------------------------- SECOND LINE
+		// kmn: add T(mhat)*ksn
+		RCP<LINALG::SparseMatrix> kmnmod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
+		kmnmod->Add(*kmn,false,1.0,1.0);
+		RCP<LINALG::SparseMatrix> kmnadd = LINALG::MLMultiply(*mhatmatrix_,true,*ksn,false,false,false,true);
+		kmnmod->Add(*kmnadd,false,1.0,1.0);
+		kmnmod->Complete(kmn->DomainMap(),kmn->RowMap());
 
-    // fs: subtract alphaf * old contact forces (t_n)
-    RCP<Epetra_Vector> fsmod = rcp(new Epetra_Vector(*gsdofrowmap_));
-    fsmod->Update(1.0,*fs,0.0);
-    RCP<Epetra_Vector> fsadd = rcp(new Epetra_Vector(*gsdofrowmap_));
-    
-    // for self contact, slave and master sets may have changed,
+		// kmm: add kms*mhat and T(mhat)*ksm and T(mhat)*kss*mhat
+		RCP<LINALG::SparseMatrix> kmmmod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
+		kmmmod->Add(*kmm,false,1.0,1.0);
+		RCP<LINALG::SparseMatrix> kmmadd1 = LINALG::MLMultiply(*kms,false,*mhatmatrix_,false,false,false,true);
+		kmmmod->Add(*kmmadd1,false,1.0,1.0);
+		RCP<LINALG::SparseMatrix> kmmadd2 = LINALG::MLMultiply(*mhatmatrix_,true,*ksm,false,false,false,true);
+		kmmmod->Add(*kmmadd2,false,1.0,1.0);
+		RCP<LINALG::SparseMatrix> kmmadd3 = LINALG::MLMultiply(*kss,false,*mhatmatrix_,false,false,false,true);
+		kmmadd3 = LINALG::MLMultiply(*mhatmatrix_,true,*kmmadd3,false,false,false,true);
+		kmmmod->Add(*kmmadd3,false,1.0,1.0);
+		kmmmod->Complete(kmm->DomainMap(),kmm->RowMap());
+
+		// kms: add T(mhat)*kss
+		RCP<LINALG::SparseMatrix> kmsmod;
+		kmsmod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
+		kmsmod->Add(*kms,false,1.0,1.0);
+		if (sset)
+		{
+			// the reason for this if-case here is MLMultiply
+			RCP<LINALG::SparseMatrix> kmsadd = LINALG::MLMultiply(*mhatmatrix_,true,*kss,false,false,false,true);
+			kmsmod->Add(*kmsadd,false,1.0,1.0);
+		}
+		kmsmod->Complete(kms->DomainMap(),kms->RowMap());
+
+		//----------------------------------------------------------- THIRD LINE
+		// kin:subtract T(dhat)*kan
+		RCP<LINALG::SparseMatrix> kinmod = rcp(new LINALG::SparseMatrix(*gidofs,100));
+		kinmod->Add(*kin,false,1.0,1.0);
+		RCP<LINALG::SparseMatrix> kinadd = LINALG::MLMultiply(*dhat,true,*kan,false,false,false,true);
+		kinmod->Add(*kinadd,false,-1.0,1.0);
+		kinmod->Complete(kin->DomainMap(),kin->RowMap());
+
+		// kim: add kis*mhat
+		RCP<LINALG::SparseMatrix> kimmod = rcp(new LINALG::SparseMatrix(*gidofs,100));
+		kimmod->Add(*kim,false,1.0,1.0);
+		RCP<LINALG::SparseMatrix> kimadd = LINALG::MLMultiply(*kis,false,*mhatmatrix_,false,false,false,true);
+		kimmod->Add(*kimadd,false,1.0,1.0);
+
+		// kam: add kas*mhat
+		RCP<LINALG::SparseMatrix> kammod = rcp(new LINALG::SparseMatrix(*gactivedofs_,100));
+		kammod->Add(*kam,false,1.0,1.0);
+		RCP<LINALG::SparseMatrix> kamadd = LINALG::MLMultiply(*kas,false,*mhatmatrix_,false,false,false,true);
+		kammod->Add(*kamadd,false,1.0,1.0);
+		kammod->Complete(kam->DomainMap(),kam->RowMap());
+
+		// kim: subtract T(dhat)*kam
+		RCP<LINALG::SparseMatrix> kimadd2 = LINALG::MLMultiply(*dhat,true,*kammod,false,false,false,true);
+		kimmod->Add(*kimadd2,false,-1.0,1.0);
+		kimmod->Complete(kim->DomainMap(),kim->RowMap());
+
+		// kii: subtract T(dhat)*kai
+		RCP<LINALG::SparseMatrix> kiimod;
+		if (iset)
+		{
+			kiimod = rcp(new LINALG::SparseMatrix(*gidofs,100));
+			kiimod->Add(*kii,false,1.0,1.0);
+			RCP<LINALG::SparseMatrix> kiiadd = LINALG::MLMultiply(*dhat,true,*kai,false,false,false,true);
+			kiimod->Add(*kiiadd,false,-1.0,1.0);
+			kiimod->Complete(kii->DomainMap(),kii->RowMap());
+		}
+
+		// kia: subtract T(dhat)*kaa
+		RCP<LINALG::SparseMatrix> kiamod;
+		if (iset && aset)
+		{
+			kiamod = rcp(new LINALG::SparseMatrix(*gidofs,100));
+			kiamod->Add(*kia,false,1.0,1.0);
+			RCP<LINALG::SparseMatrix> kiaadd = LINALG::MLMultiply(*dhat,true,*kaa,false,false,false,true);
+			kiamod->Add(*kiaadd,false,-1.0,1.0);
+			kiamod->Complete(kia->DomainMap(),kia->RowMap());
+		}
+
+		//---------------------------------------------------------- FOURTH LINE
+		// n*mhata: do the multiplication
+		RCP<LINALG::SparseMatrix> nmhata;
+		if (aset) nmhata = LINALG::MLMultiply(*nmatrix_,false,*mhata,false,false,false,true);
+
+		// nmatrix: nothing to do
+
+		// smatrix: nothing to do
+
+		//----------------------------------------------------------- FIFTH LINE
+		// kan: multiply tmatrix with invda and kan
+		RCP<LINALG::SparseMatrix> kanmod;
+		if (aset)
+		{
+			kanmod = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
+			kanmod = LINALG::MLMultiply(*kanmod,false,*kan,false,false,false,true);
+		}
+
+		// kam: multiply tmatrix with invda and (kam + kas*mhat)
+		// (note: kammod was already set up above!!!)
+		if (aset)
+		{
+			kammod = LINALG::MLMultiply(*invda,true,*kammod,false,false,false,true);
+			kammod = LINALG::MLMultiply(*tmatrix_,false,*kammod,false,false,false,true);
+		}
+
+		// kai: multiply tmatrix with invda and kai
+		RCP<LINALG::SparseMatrix> kaimod;
+		if (aset && iset)
+		{
+			kaimod = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
+			kaimod = LINALG::MLMultiply(*kaimod,false,*kai,false,false,false,true);
+		}
+
+		// kaa: multiply tmatrix with invda and kaa
+		RCP<LINALG::SparseMatrix> kaamod;
+		if (aset)
+		{
+			kaamod = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
+			kaamod = LINALG::MLMultiply(*kaamod,false,*kaa,false,false,false,true);
+		}
+
+		/**********************************************************************/
+		/* (8) Build the final f blocks                                       */
+		/**********************************************************************/
+
+		//----------------------------------------------------------- FIRST LINE
+		// fn: nothing to do
+
+		//---------------------------------------------------------- SECOND LINE
+		// fm: add alphaf * old contact forces (t_n)
+		// for self contact, slave and master sets may have changed,
+		// thus we have to export the product Mold^T * zold to fit
+		if (IsSelfContact())
+		{
+			RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
+			RCP<Epetra_Vector> tempvecm2  = rcp(new Epetra_Vector(mold_->DomainMap()));
+			RCP<Epetra_Vector> zoldexp  = rcp(new Epetra_Vector(mold_->RowMap()));
+			if (mold_->RowMap().NumGlobalElements()) LINALG::Export(*zold_,*zoldexp);
+			mold_->Multiply(true,*zoldexp,*tempvecm2);
+			if (mset) LINALG::Export(*tempvecm2,*tempvecm);
+			fm->Update(alphaf_,*tempvecm,1.0);
+		}
+		// if there is no self contact everything is ok
+		else
+		{
+			RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
+			mold_->Multiply(true,*zold_,*tempvecm);
+			fm->Update(alphaf_,*tempvecm,1.0);
+		}
+
+		// fs: subtract alphaf * old contact forces (t_n)
+		RCP<Epetra_Vector> fsmod = rcp(new Epetra_Vector(*gsdofrowmap_));
+		fsmod->Update(1.0,*fs,0.0);
+		RCP<Epetra_Vector> fsadd = rcp(new Epetra_Vector(*gsdofrowmap_));
+
+		// for self contact, slave and master sets may have changed,
 		// thus we have to export the product Dold^T * zold to fit
 		if (IsSelfContact())
 		{
@@ -1211,165 +1304,166 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 			if (dold_->RowMap().NumGlobalElements()) LINALG::Export(*zold_,*zoldexp);
 			dold_->Multiply(true,*zoldexp,*tempvec);
 			if (sset) LINALG::Export(*tempvec,*fsadd);
-	    fsmod->Update(-alphaf_,*fsadd,1.0);
+			fsmod->Update(-alphaf_,*fsadd,1.0);
 		}
 		// if there is no self contact everything is ok
 		else
 		{
 			dold_->Multiply(true,*zold_,*fsadd);
-	    fsmod->Update(-alphaf_,*fsadd,1.0);
+			fsmod->Update(-alphaf_,*fsadd,1.0);
 		}
 
-    // fi: subtract alphaf * old contact forces (t_n)
-    if (iset)
-    {
-      RCP<Epetra_Vector> fiadd = rcp(new Epetra_Vector(*gidofs));
-      LINALG::Export(*fsadd,*fiadd);
-      fi->Update(-alphaf_,*fiadd,1.0);
-    }
+		// fm: add T(mhat)*fsmod
+		RCP<Epetra_Vector> fmmod = rcp(new Epetra_Vector(*gmdofrowmap_));
+		mhatmatrix_->Multiply(true,*fsmod,*fmmod);
+		fmmod->Update(1.0,*fm,1.0);
 
-    // fa: subtract alphaf * old contact forces (t_n)
-    if (aset)
-    {
-      RCP<Epetra_Vector> faadd = rcp(new Epetra_Vector(*gactivedofs_));
-      LINALG::Export(*fsadd,*faadd);
-      fa->Update(-alphaf_,*faadd,1.0);
-    }
+		//----------------------------------------------------------- THIRD LINE
+		// fi: subtract alphaf * old contact forces (t_n)
+		if (iset)
+		{
+			RCP<Epetra_Vector> fiadd = rcp(new Epetra_Vector(*gidofs));
+			LINALG::Export(*fsadd,*fiadd);
+			fi->Update(-alphaf_,*fiadd,1.0);
+		}
 
-    // fm: add alphaf * old contact forces (t_n)
+		// fa: subtract alphaf * old contact forces (t_n)
+		if (aset)
+		{
+			RCP<Epetra_Vector> faadd = rcp(new Epetra_Vector(*gactivedofs_));
+			LINALG::Export(*fsadd,*faadd);
+			fa->Update(-alphaf_,*faadd,1.0);
+		}
 
-    // for self contact, slave and master sets may have changed,
-    // thus we have to export the product Mold^T * zold to fit
-    if (IsSelfContact())
-    {
-      RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
-      RCP<Epetra_Vector> tempvecm2  = rcp(new Epetra_Vector(mold_->DomainMap()));
-      RCP<Epetra_Vector> zoldexp  = rcp(new Epetra_Vector(mold_->RowMap()));
-      if (mold_->RowMap().NumGlobalElements()) LINALG::Export(*zold_,*zoldexp);
-      mold_->Multiply(true,*zoldexp,*tempvecm2);
-      if (mset) LINALG::Export(*tempvecm2,*tempvecm);
-      fm->Update(alphaf_,*tempvecm,1.0);
-    }
-    // if there is no self contact everything is ok
-    else
-    {
-      RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
-      mold_->Multiply(true,*zold_,*tempvecm);
-      fm->Update(alphaf_,*tempvecm,1.0);
-    }
+		// fi: add T(dhat)*fa
+		RCP<Epetra_Vector> fimod = rcp(new Epetra_Vector(*gidofs));
+		if (aset) dhat->Multiply(true,*fa,*fimod);
+		fimod->Update(1.0,*fi,-1.0);
 
-    // fm: add T(mhat)*fsmod
-    RCP<Epetra_Vector> fmmod = rcp(new Epetra_Vector(*gmdofrowmap_));
-    mhatmatrix_->Multiply(true,*fsmod,*fmmod);
-    fmmod->Update(1.0,*fm,1.0);
+		//---------------------------------------------------------- FOURTH LINE
+		// gactive: nothing to do
 
-    // fa: multiply with tmatrix*inv(D)
-    // (this had to wait as we had to modify fm first)
-    RCP<Epetra_Vector> famod;
-    RCP<LINALG::SparseMatrix> tinvda;
-    if (aset)
-    {
-      famod = rcp(new Epetra_Vector(*gactivet_));
-      tinvda = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
-      tinvda->Multiply(false,*fa,*famod);
-    }
+		//----------------------------------------------------------- FIFTH LINE
+		// fa: multiply tmatrix with invda and fa
+		RCP<Epetra_Vector> famod;
+		RCP<LINALG::SparseMatrix> tinvda;
+		if (aset)
+		{
+			famod = rcp(new Epetra_Vector(*gactivet_));
+			tinvda = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
+			tinvda->Multiply(false,*fa,*famod);
+		}
 
-    // gactive: nothing to do
+		/**********************************************************************/
+		/* (9) Global setup of kteffnew (including contact)                   */
+		/**********************************************************************/
 
-    /**********************************************************************/
-    /* Global setup of kteffnew, feffnew (including contact)              */
-    /**********************************************************************/
-    RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap_,81,true,false,kteffmatrix->GetMatrixtype()));
-    RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*problemrowmap_);
+		RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap_,81,true,false,kteffmatrix->GetMatrixtype()));
+		RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*problemrowmap_);
 
-    // add n submatrices to kteffnew
-    kteffnew->Add(*knn,false,1.0,1.0);
-    kteffnew->Add(*knmmod,false,1.0,1.0);
-    if (sset) kteffnew->Add(*kns,false,1.0,1.0);
+		//----------------------------------------------------------- FIRST LINE
+		// add n submatrices to kteffnew
+		kteffnew->Add(*knn,false,1.0,1.0);
+		kteffnew->Add(*knmmod,false,1.0,1.0);
+		if (sset) kteffnew->Add(*kns,false,1.0,1.0);
 
-    // add m submatrices to kteffnew
-    kteffnew->Add(*kmnmod,false,1.0,1.0);
-    kteffnew->Add(*kmmmod,false,1.0,1.0);
-    kteffnew->Add(*kmsmod,false,1.0,1.0);
+    //---------------------------------------------------------- SECOND LINE
+		// add m submatrices to kteffnew
+		kteffnew->Add(*kmnmod,false,1.0,1.0);
+		kteffnew->Add(*kmmmod,false,1.0,1.0);
+		kteffnew->Add(*kmsmod,false,1.0,1.0);
 
-    // add i submatrices to kteffnew
-    if (iset) kteffnew->Add(*kin,false,1.0,1.0);
-    if (iset) kteffnew->Add(*kimmod,false,1.0,1.0);
-    if (iset) kteffnew->Add(*kii,false,1.0,1.0);
-    if (iset) kteffnew->Add(*kia,false,1.0,1.0);
+		//----------------------------------------------------------- THIRD LINE
+		// add i submatrices to kteffnew
+		if (iset) kteffnew->Add(*kinmod,false,1.0,1.0);
+		if (iset) kteffnew->Add(*kimmod,false,1.0,1.0);
+		if (iset) kteffnew->Add(*kiimod,false,1.0,1.0);
+		if (iset && aset) kteffnew->Add(*kiamod,false,1.0,1.0);
 
-    // add matrices n and nmhata to kteffnew
-    // this is only done for the "NO full linearization" case
-    if (!fulllin)
-    {
-      if (aset) kteffnew->Add(*nmatrix_,false,1.0,1.0);
-      if (aset) kteffnew->Add(*nmhata,false,-1.0,1.0);
-    }
+    //---------------------------------------------------------- FOURTH LINE
+		// add matrices n and nmhata to kteffnew
+		// this is only done for the "NO full linearization" case
+		if (!fulllin)
+		{
+			if (aset) kteffnew->Add(*nmatrix_,false,-1.0,1.0);
+			if (aset) kteffnew->Add(*nmhata,false,1.0,1.0);
+		}
 
-    // add full linearization terms to kteffnew
-    if (fulllin && aset)
-    {
-      kteffnew->Add(*smatrixm,false,-1.0,1.0);
-      RCP<LINALG::SparseMatrix> smatrixmadd = LINALG::MLMultiply(*smatrixs,false,*mhatmatrix_,false,false,false,true);
-      kteffnew->Add(*smatrixmadd,false,-1.0,1.0);
-      kteffnew->Add(*smatrixs,false,-1.0,1.0);
-      
-      kteffnew->Add(*pmatrixm,false,-1.0,1.0);
-      RCP<LINALG::SparseMatrix> pmatrixmadd = LINALG::MLMultiply(*pmatrixs,false,*mhatmatrix_,false,false,false,true);
-      kteffnew->Add(*pmatrixmadd,false,-1.0,1.0);
-      kteffnew->Add(*pmatrixs,false,-1.0,1.0);
-    }
+		// add full linearization terms to kteffnew
+		if (fulllin && aset)
+		{
+			kteffnew->Add(*smatrixm,false,1.0,1.0);
+			RCP<LINALG::SparseMatrix> smatrixmadd = LINALG::MLMultiply(*smatrixs,false,*mhatmatrix_,false,false,false,true);
+			kteffnew->Add(*smatrixmadd,false,1.0,1.0);
+			kteffnew->Add(*smatrixs,false,1.0,1.0);
 
-    // add a submatrices to kteffnew
-    if (aset) kteffnew->Add(*kanmod,false,1.0,1.0);
-    if (aset) kteffnew->Add(*kammod,false,1.0,1.0);
-    if (aset && iset) kteffnew->Add(*kaimod,false,1.0,1.0);
-    if (aset) kteffnew->Add(*kaamod,false,1.0,1.0);
+			kteffnew->Add(*pmatrixm,false,-1.0,1.0);
+			RCP<LINALG::SparseMatrix> pmatrixmadd = LINALG::MLMultiply(*pmatrixs,false,*mhatmatrix_,false,false,false,true);
+			kteffnew->Add(*pmatrixmadd,false,-1.0,1.0);
+			kteffnew->Add(*pmatrixs,false,-1.0,1.0);
+		}
 
-    // FillComplete kteffnew (square)
-    kteffnew->Complete();
+		//----------------------------------------------------------- FIFTH LINE
+		// add a submatrices to kteffnew
+		if (aset) kteffnew->Add(*kanmod,false,1.0,1.0);
+		if (aset) kteffnew->Add(*kammod,false,1.0,1.0);
+		if (aset && iset) kteffnew->Add(*kaimod,false,1.0,1.0);
+		if (aset) kteffnew->Add(*kaamod,false,1.0,1.0);
 
-    // add n subvector to feffnew
-    RCP<Epetra_Vector> fnexp = rcp(new Epetra_Vector(*problemrowmap_));
-    LINALG::Export(*fn,*fnexp);
-    feffnew->Update(1.0,*fnexp,1.0);
+		// FillComplete kteffnew (square)
+		kteffnew->Complete();
 
-    // add m subvector to feffnew
-    RCP<Epetra_Vector> fmmodexp = rcp(new Epetra_Vector(*problemrowmap_));
-    LINALG::Export(*fmmod,*fmmodexp);
-    feffnew->Update(1.0,*fmmodexp,1.0);
+		/**********************************************************************/
+		/* (10) Global setup of kteffnew (including contact)                  */
+		/**********************************************************************/
 
-    // add i subvector to feffnew
-    RCP<Epetra_Vector> fiexp;
-    if (iset)
-    {
-      fiexp = rcp(new Epetra_Vector(*problemrowmap_));
-      LINALG::Export(*fi,*fiexp);
-      feffnew->Update(1.0,*fiexp,1.0);
-    }
+		//----------------------------------------------------------- FIRST LINE
+		// add n subvector to feffnew
+		RCP<Epetra_Vector> fnexp = rcp(new Epetra_Vector(*problemrowmap_));
+		LINALG::Export(*fn,*fnexp);
+		feffnew->Update(1.0,*fnexp,1.0);
 
-    // add weighted gap vector to feffnew, if existing
-    RCP<Epetra_Vector> gexp;
-    if (aset)
-    {
-      gexp = rcp(new Epetra_Vector(*problemrowmap_));
-      LINALG::Export(*gact,*gexp);
-      feffnew->Update(1.0,*gexp,1.0);
-    }
+		//---------------------------------------------------------- SECOND LINE
+		// add m subvector to feffnew
+		RCP<Epetra_Vector> fmmodexp = rcp(new Epetra_Vector(*problemrowmap_));
+		LINALG::Export(*fmmod,*fmmodexp);
+		feffnew->Update(1.0,*fmmodexp,1.0);
 
-    // add a subvector to feffnew
-    RCP<Epetra_Vector> famodexp;
-    if (aset)
-    {
-      famodexp = rcp(new Epetra_Vector(*problemrowmap_));
-      LINALG::Export(*famod,*famodexp);
-      feffnew->Update(1.0,*famodexp,1.0);
-    }
+		//----------------------------------------------------------- THIRD LINE
+		// add i subvector to feffnew
+		RCP<Epetra_Vector> fimodexp;
+		if (iset)
+		{
+			fimodexp = rcp(new Epetra_Vector(*problemrowmap_));
+			LINALG::Export(*fimod,*fimodexp);
+			feffnew->Update(1.0,*fimodexp,1.0);
+		}
+
+		//---------------------------------------------------------- FOURTH LINE
+		// add weighted gap vector to feffnew, if existing
+		RCP<Epetra_Vector> gexp;
+		if (aset)
+		{
+			gexp = rcp(new Epetra_Vector(*problemrowmap_));
+			LINALG::Export(*gact,*gexp);
+			feffnew->Update(-1.0,*gexp,1.0);
+		}
+
+		//----------------------------------------------------------- FIFTH LINE
+		// add a subvector to feffnew
+		RCP<Epetra_Vector> famodexp;
+		if (aset)
+		{
+			famodexp = rcp(new Epetra_Vector(*problemrowmap_));
+			LINALG::Export(*famod,*famodexp);
+			feffnew->Update(1.0,*famodexp,1.0);
+		}
     
 #else   
     /**********************************************************************/
-    /* Multiply Mortar matrices: m^ = inv(d) * m                          */
+    /* (1) Multiply Mortar matrices: m^ = inv(d) * m                      */
     /**********************************************************************/
+
     RCP<LINALG::SparseMatrix> invd = rcp(new LINALG::SparseMatrix(*dmatrix_));
     RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_,true);
     int err = 0;
@@ -1390,12 +1484,13 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     // we cannot use this check, as we deliberately replaced zero entries
     //if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
 
-    // do the multiplication M^ = inv(D) * M
+    // do the multiplication mhat = inv(D) * M
     mhatmatrix_ = LINALG::MLMultiply(*invd,false,*mmatrix_,false,false,false,true);
 
     /**********************************************************************/
-    /* Add contact stiffness terms to kteff                               */
+    /* (2) Add contact stiffness terms to kteff                           */
     /**********************************************************************/
+
     if (fulllin)
     {
       kteff->UnComplete();
@@ -1405,8 +1500,9 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     }
     
     /**********************************************************************/
-    /* Split kteff into 3x3 block matrix                                  */
+    /* (3) Split kteff into 3x3 matrix blocks                             */
     /**********************************************************************/
+
     // we want to split k into 3 groups s,m,n = 9 blocks
     RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
 
@@ -1430,8 +1526,9 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
 
     /**********************************************************************/
-    /* Split feff into 3 subvectors                                       */
+    /* (4) Split feff into 3 subvectors                                   */
     /**********************************************************************/
+
     // we want to split f into 3 groups s.m,n
     RCP<Epetra_Vector> fs, fm, fn;
 
@@ -1469,8 +1566,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
   	//----------------------------------------------------------------------
   	if (Dualquadslave3d())
   	{
-  		dserror("ERROR: Dual LM condensation not yet fully impl. for 3D quadratic contact");
-
   		// modify dmatrix_, invd_ and mhatmatrix_
   		RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
   		RCP<LINALG::SparseMatrix> temp3 = LINALG::MLMultiply(*trafo_,false,*invd_,false,false,false,true);
@@ -1481,8 +1576,9 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
   	}
 
     /**********************************************************************/
-    /* Split slave quantities into active / inactive                      */
+    /* (5) Split slave quantities into active / inactive                  */
     /**********************************************************************/
+
     // we want to split kssmod into 2 groups a,i = 4 blocks
     RCP<LINALG::SparseMatrix> kaa, kai, kia, kii;
 
@@ -1510,75 +1606,137 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     LINALG::SplitVector(*gsdofrowmap_,*fs,gactivedofs_,fa,gidofs,fi);
 
     /**********************************************************************/
-    /* Isolate active part from mhat and invd                             */
+    /* (6) Isolate necessary parts from invd and mhatmatrix               */
     /**********************************************************************/
+
+    // active part of invd
+		RCP<LINALG::SparseMatrix> invda;
+		LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
+
+		// coupling part of dmatrix (only nonzero for 3D quadratic case!)
+		RCP<LINALG::SparseMatrix> dai;
+		LINALG::SplitMatrix2x2(dmatrix_,gactivedofs_,gidofs,gactivedofs_,gidofs,tempmtx1,dai,tempmtx2,tempmtx3);
+
+		 // do the multiplication dhat = invda * dai
+		RCP<LINALG::SparseMatrix> dhat = rcp(new LINALG::SparseMatrix(*gactivedofs_,10));
+		if (aset && iset) dhat = LINALG::MLMultiply(*invda,false,*dai,false,false,false,true);
+		dhat->Complete(*gidofs,*gactivedofs_);
+
+		// active part of mmatrix
+		RCP<LINALG::SparseMatrix> mmatrixa;
+		LINALG::SplitMatrix2x2(mmatrix_,gactivedofs_,gidofs,gmdofrowmap_,tempmap,mmatrixa,tempmtx1,tempmtx2,tempmtx3);
+
+		// do the multiplication mhataam = invda * mmatrixa
+		// (this is only different from mhata for 3D quadratic case!)
+		RCP<LINALG::SparseMatrix> mhataam = rcp(new LINALG::SparseMatrix(*gactivedofs_,10));
+		if (aset) mhataam = LINALG::MLMultiply(*invda,false,*mmatrixa,false,false,false,true);
+    mhataam->Complete(*gmdofrowmap_,*gactivedofs_);
+
+    // for the case without full linearization, we still need the
+    // "classical" active part of mhat, which is isolated here
     RCP<LINALG::SparseMatrix> mhata;
     LINALG::SplitMatrix2x2(mhatmatrix_,gactivedofs_,gidofs,gmdofrowmap_,tempmap,mhata,tempmtx1,tempmtx2,tempmtx3);
 
-    RCP<LINALG::SparseMatrix> invda;
-    LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
+    // scaling of invd and dai
     invda->Scale(1/(1-alphaf_));
+    dai->Scale(1-alphaf_);
 
     /**********************************************************************/
-    /* Build the final K and f blocks                                     */
+    /* (7) Build the final K blocks                                       */
     /**********************************************************************/
+
+    //----------------------------------------------------------- FIRST LINE
     // knn: nothing to do
 
     // knm: nothing to do
 
     // kns: nothing to do
 
-    // kmn: add T(mbaractive)*kan
+    //---------------------------------------------------------- SECOND LINE
+    // kmn: add T(mhataam)*kan
     RCP<LINALG::SparseMatrix> kmnmod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
     kmnmod->Add(*kmn,false,1.0,1.0);
-    RCP<LINALG::SparseMatrix> kmnadd = LINALG::MLMultiply(*mhata,true,*kan,false,false,false,true);
+    RCP<LINALG::SparseMatrix> kmnadd = LINALG::MLMultiply(*mhataam,true,*kan,false,false,false,true);
     kmnmod->Add(*kmnadd,false,1.0,1.0);
     kmnmod->Complete(kmn->DomainMap(),kmn->RowMap());
 
-    // kmm: add T(mbaractive)*kam
+    // kmm: add T(mhataam)*kam
     RCP<LINALG::SparseMatrix> kmmmod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
     kmmmod->Add(*kmm,false,1.0,1.0);
-    RCP<LINALG::SparseMatrix> kmmadd = LINALG::MLMultiply(*mhata,true,*kam,false,false,false,true);
+    RCP<LINALG::SparseMatrix> kmmadd = LINALG::MLMultiply(*mhataam,true,*kam,false,false,false,true);
     kmmmod->Add(*kmmadd,false,1.0,1.0);
     kmmmod->Complete(kmm->DomainMap(),kmm->RowMap());
 
-    // kmi: add T(mbaractive)*kai
+    // kmi: add T(mhataam)*kai
     RCP<LINALG::SparseMatrix> kmimod;
     if (iset)
     {
       kmimod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
       kmimod->Add(*kmi,false,1.0,1.0);
-      RCP<LINALG::SparseMatrix> kmiadd = LINALG::MLMultiply(*mhata,true,*kai,false,false,false,true);
+      RCP<LINALG::SparseMatrix> kmiadd = LINALG::MLMultiply(*mhataam,true,*kai,false,false,false,true);
       kmimod->Add(*kmiadd,false,1.0,1.0);
       kmimod->Complete(kmi->DomainMap(),kmi->RowMap());
     }
 
-    // kma: add T(mbaractive)*kaa
+    // kma: add T(mhataam)*kaa
     RCP<LINALG::SparseMatrix> kmamod;
     if (aset)
     {
       kmamod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
       kmamod->Add(*kma,false,1.0,1.0);
-      RCP<LINALG::SparseMatrix> kmaadd = LINALG::MLMultiply(*mhata,true,*kaa,false,false,false,true);
+      RCP<LINALG::SparseMatrix> kmaadd = LINALG::MLMultiply(*mhataam,true,*kaa,false,false,false,true);
       kmamod->Add(*kmaadd,false,1.0,1.0);
       kmamod->Complete(kma->DomainMap(),kma->RowMap());
     }
 
-    // kin: nothing to do
+    //----------------------------------------------------------- THIRD LINE
+    // kin: subtract T(dhat)*kan
+    RCP<LINALG::SparseMatrix> kinmod = rcp(new LINALG::SparseMatrix(*gidofs,100));
+		kinmod->Add(*kin,false,1.0,1.0);
+		RCP<LINALG::SparseMatrix> kinadd = LINALG::MLMultiply(*dhat,true,*kan,false,false,false,true);
+		kinmod->Add(*kinadd,false,-1.0,1.0);
+		kinmod->Complete(kin->DomainMap(),kin->RowMap());
 
-    // kim: nothing to do
+    // kim: subtract T(dhat)*kam
+		RCP<LINALG::SparseMatrix> kimmod = rcp(new LINALG::SparseMatrix(*gidofs,100));
+		kimmod->Add(*kim,false,1.0,1.0);
+		RCP<LINALG::SparseMatrix> kimadd = LINALG::MLMultiply(*dhat,true,*kam,false,false,false,true);
+		kimmod->Add(*kimadd,false,-1.0,1.0);
+		kimmod->Complete(kim->DomainMap(),kim->RowMap());
 
-    // kii: nothing to do
+    // kii: subtract T(dhat)*kai
+		RCP<LINALG::SparseMatrix> kiimod;
+		if (iset)
+		{
+			kiimod = rcp(new LINALG::SparseMatrix(*gidofs,100));
+			kiimod->Add(*kii,false,1.0,1.0);
+			RCP<LINALG::SparseMatrix> kiiadd = LINALG::MLMultiply(*dhat,true,*kai,false,false,false,true);
+			kiimod->Add(*kiiadd,false,-1.0,1.0);
+			kiimod->Complete(kii->DomainMap(),kii->RowMap());
+		}
 
-    // kia: nothing to do
+    // kia: subtract T(dhat)*kaa
+		RCP<LINALG::SparseMatrix> kiamod;
+		if (iset && aset)
+		{
+			kiamod = rcp(new LINALG::SparseMatrix(*gidofs,100));
+			kiamod->Add(*kia,false,1.0,1.0);
+			RCP<LINALG::SparseMatrix> kiaadd = LINALG::MLMultiply(*dhat,true,*kaa,false,false,false,true);
+			kiamod->Add(*kiaadd,false,-1.0,1.0);
+			kiamod->Complete(kia->DomainMap(),kia->RowMap());
+		}
 
-    // n*mbaractive: do the multiplication
+    //---------------------------------------------------------- FOURTH LINE
+    // n*mhata: do the multiplication
     RCP<LINALG::SparseMatrix> nmhata;
     if (aset) nmhata = LINALG::MLMultiply(*nmatrix_,false,*mhata,false,false,false,true);
 
     // nmatrix: nothing to do
 
-    // kan: multiply with tmatrix
+    // smatrix: nothing to do
+
+    //----------------------------------------------------------- FIFTH LINE
+    // kan: multiply tmatrix with invda and kan
     RCP<LINALG::SparseMatrix> kanmod;
     if (aset)
     {
@@ -1586,7 +1744,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
       kanmod = LINALG::MLMultiply(*kanmod,false,*kan,false,false,false,true);
     }
 
-    // kam: multiply with tmatrix
+    // kam: multiply tmatrix with invda and kam
     RCP<LINALG::SparseMatrix> kammod;
     if (aset)
     {
@@ -1594,7 +1752,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
       kammod = LINALG::MLMultiply(*kammod,false,*kam,false,false,false,true);
     }
 
-    // kai: multiply with tmatrix
+    // kai: multiply tmatrix with invda and kai
     RCP<LINALG::SparseMatrix> kaimod;
     if (aset && iset)
     {
@@ -1602,7 +1760,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
       kaimod = LINALG::MLMultiply(*kaimod,false,*kai,false,false,false,true);
     }
 
-    // kaa: multiply with tmatrix
+    // kaa: multiply tmatrix with invda and kaa
     RCP<LINALG::SparseMatrix> kaamod;
     if (aset)
     {
@@ -1610,9 +1768,36 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
       kaamod = LINALG::MLMultiply(*kaamod,false,*kaa,false,false,false,true);
     }
 
+    /**********************************************************************/
+    /* (8) Build the final f blocks                                       */
+    /**********************************************************************/
+
+    //----------------------------------------------------------- FIRST LINE
     // fn: nothing to do
 
-    // fs: prepare alphaf * old contact forces (t_n)
+    //---------------------------------------------------------- SECOND LINE
+		// fm: add alphaf * old contact forces (t_n)
+		// for self contact, slave and master sets may have changed,
+		// thus we have to export the product Mold^T * zold to fit
+		if (IsSelfContact())
+		{
+			RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
+			RCP<Epetra_Vector> tempvecm2  = rcp(new Epetra_Vector(mold_->DomainMap()));
+			RCP<Epetra_Vector> zoldexp  = rcp(new Epetra_Vector(mold_->RowMap()));
+			if (mold_->RowMap().NumGlobalElements()) LINALG::Export(*zold_,*zoldexp);
+			mold_->Multiply(true,*zoldexp,*tempvecm2);
+			if (mset) LINALG::Export(*tempvecm2,*tempvecm);
+			fm->Update(alphaf_,*tempvecm,1.0);
+		}
+		// if there is no self contact everything is ok
+		else
+		{
+			RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
+			mold_->Multiply(true,*zold_,*tempvecm);
+			fm->Update(alphaf_,*tempvecm,1.0);
+		}
+
+		// fs: prepare alphaf * old contact forces (t_n)
 		RCP<Epetra_Vector> fsadd = rcp(new Epetra_Vector(*gsdofrowmap_));
 
 		// for self contact, slave and master sets may have changed,
@@ -1631,14 +1816,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 			dold_->Multiply(true,*zold_,*fsadd);
 		}
 
-		// fi: subtract alphaf * old contact forces (t_n)
-		if (iset)
-		{
-			RCP<Epetra_Vector> fiadd = rcp(new Epetra_Vector(*gidofs));
-			LINALG::Export(*fsadd,*fiadd);
-			fi->Update(-alphaf_,*fiadd,1.0);
-		}
-
 		// fa: subtract alphaf * old contact forces (t_n)
 		if (aset)
 		{
@@ -1647,84 +1824,83 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 			fa->Update(-alphaf_,*faadd,1.0);
 		}
 
-    // fm: add alphaf * old contact forces (t_n)
+		// fm: add T(mhat)*fa
+		RCP<Epetra_Vector> fmmod = rcp(new Epetra_Vector(*gmdofrowmap_));
+		if (aset) mhataam->Multiply(true,*fa,*fmmod);
+		fmmod->Update(1.0,*fm,1.0);
 
-    // for self contact, slave and master sets may have changed,
-    // thus we have to export the product Mold^T * zold to fit
-    if (IsSelfContact())
-    {
-      RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
-      RCP<Epetra_Vector> tempvecm2  = rcp(new Epetra_Vector(mold_->DomainMap()));
-      RCP<Epetra_Vector> zoldexp  = rcp(new Epetra_Vector(mold_->RowMap()));
-      if (mold_->RowMap().NumGlobalElements()) LINALG::Export(*zold_,*zoldexp);
-      mold_->Multiply(true,*zoldexp,*tempvecm2);
-      if (mset) LINALG::Export(*tempvecm2,*tempvecm);
-      fm->Update(alphaf_,*tempvecm,1.0);
-    }
-    // if there is no self contact everything is ok
-    else
-    {
-      RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
-      mold_->Multiply(true,*zold_,*tempvecm);
-      fm->Update(alphaf_,*tempvecm,1.0);
-    }
+		//----------------------------------------------------------- THIRD LINE
+		// fi: subtract alphaf * old contact forces (t_n)
+		if (iset)
+		{
+			RCP<Epetra_Vector> fiadd = rcp(new Epetra_Vector(*gidofs));
+			LINALG::Export(*fsadd,*fiadd);
+			fi->Update(-alphaf_,*fiadd,1.0);
+		}
 
-    // fm: add T(mbaractive)*fa
-    RCP<Epetra_Vector> fmmod = rcp(new Epetra_Vector(*gmdofrowmap_));
-    if (aset) mhata->Multiply(true,*fa,*fmmod);
-    fmmod->Update(1.0,*fm,1.0);
+		// fi: add T(dhat)*fa
+		RCP<Epetra_Vector> fimod = rcp(new Epetra_Vector(*gidofs));
+		if (aset) dhat->Multiply(true,*fa,*fimod);
+		fimod->Update(1.0,*fi,-1.0);
 
-    // fa: multiply with tmatrix
-    // (this had to wait as we had to modify fm first)
-    RCP<Epetra_Vector> famod;
-    RCP<LINALG::SparseMatrix> tinvda;
-    if (aset)
-    {
-      famod = rcp(new Epetra_Vector(*gactivet_));
-      tinvda = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
-      tinvda->Multiply(false,*fa,*famod);
-    }
-
+		//---------------------------------------------------------- FOURTH LINE
     // gactive: nothing to do
 
+		//----------------------------------------------------------- FIFTH LINE
+		// fa: multiply tmatrix with invda and fa
+		RCP<Epetra_Vector> famod;
+		RCP<LINALG::SparseMatrix> tinvda;
+		if (aset)
+		{
+			famod = rcp(new Epetra_Vector(*gactivet_));
+			tinvda = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
+			tinvda->Multiply(false,*fa,*famod);
+		}
+
     /**********************************************************************/
-    /* Global setup of kteffnew, feffnew (including contact)              */
+    /* (9) Global setup of kteffnew (including contact)                   */
     /**********************************************************************/
+
     RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap_,81,true,false,kteffmatrix->GetMatrixtype()));
     RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*problemrowmap_);
 
+    //----------------------------------------------------------- FIRST LINE
     // add n submatrices to kteffnew
     kteffnew->Add(*knn,false,1.0,1.0);
     kteffnew->Add(*knm,false,1.0,1.0);
     if (sset) kteffnew->Add(*kns,false,1.0,1.0);
 
+    //---------------------------------------------------------- SECOND LINE
     // add m submatrices to kteffnew
     kteffnew->Add(*kmnmod,false,1.0,1.0);
     kteffnew->Add(*kmmmod,false,1.0,1.0);
     if (iset) kteffnew->Add(*kmimod,false,1.0,1.0);
     if (aset) kteffnew->Add(*kmamod,false,1.0,1.0);
 
+    //----------------------------------------------------------- THIRD LINE
     // add i submatrices to kteffnew
-    if (iset) kteffnew->Add(*kin,false,1.0,1.0);
-    if (iset) kteffnew->Add(*kim,false,1.0,1.0);
-    if (iset) kteffnew->Add(*kii,false,1.0,1.0);
-    if (iset) kteffnew->Add(*kia,false,1.0,1.0);
+    if (iset) kteffnew->Add(*kinmod,false,1.0,1.0);
+    if (iset) kteffnew->Add(*kimmod,false,1.0,1.0);
+    if (iset) kteffnew->Add(*kiimod,false,1.0,1.0);
+    if (iset && aset) kteffnew->Add(*kiamod,false,1.0,1.0);
 
+    //---------------------------------------------------------- FOURTH LINE
     // add matrices n and nmhata to kteffnew
     // this is only done for the "NO full linearization" case
     if (!fulllin)
     {
-      if (aset) kteffnew->Add(*nmatrix_,false,1.0,1.0);
-      if (aset) kteffnew->Add(*nmhata,false,-1.0,1.0);
+      if (aset) kteffnew->Add(*nmatrix_,false,-1.0,1.0);
+      if (aset) kteffnew->Add(*nmhata,false,1.0,1.0);
     }
 
     // add full linearization terms to kteffnew
     if (fulllin)
     {
-     if (aset) kteffnew->Add(*smatrix_,false,-1.0,1.0);
+     if (aset) kteffnew->Add(*smatrix_,false,1.0,1.0);
      if (aset) kteffnew->Add(*pmatrix_,false,-1.0,1.0);
     }
 
+    //----------------------------------------------------------- FIFTH LINE
     // add a submatrices to kteffnew
     if (aset) kteffnew->Add(*kanmod,false,1.0,1.0);
     if (aset) kteffnew->Add(*kammod,false,1.0,1.0);
@@ -1734,34 +1910,43 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     // FillComplete kteffnew (square)
     kteffnew->Complete();
 
+    /**********************************************************************/
+    /* (10) Global setup of feffnew (including contact)                   */
+    /**********************************************************************/
+
+    //----------------------------------------------------------- FIRST LINE
     // add n subvector to feffnew
     RCP<Epetra_Vector> fnexp = rcp(new Epetra_Vector(*problemrowmap_));
     LINALG::Export(*fn,*fnexp);
     feffnew->Update(1.0,*fnexp,1.0);
 
+    //---------------------------------------------------------- SECOND LINE
     // add m subvector to feffnew
     RCP<Epetra_Vector> fmmodexp = rcp(new Epetra_Vector(*problemrowmap_));
     LINALG::Export(*fmmod,*fmmodexp);
     feffnew->Update(1.0,*fmmodexp,1.0);
 
+    //----------------------------------------------------------- THIRD LINE
     // add i subvector to feffnew
-    RCP<Epetra_Vector> fiexp;
+    RCP<Epetra_Vector> fimodexp;
     if (iset)
     {
-      fiexp = rcp(new Epetra_Vector(*problemrowmap_));
-      LINALG::Export(*fi,*fiexp);
-      feffnew->Update(1.0,*fiexp,1.0);
+      fimodexp = rcp(new Epetra_Vector(*problemrowmap_));
+      LINALG::Export(*fimod,*fimodexp);
+      feffnew->Update(1.0,*fimodexp,1.0);
     }
 
+    //---------------------------------------------------------- FOURTH LINE
     // add weighted gap vector to feffnew, if existing
     RCP<Epetra_Vector> gexp;
     if (aset)
     {
       gexp = rcp(new Epetra_Vector(*problemrowmap_));
       LINALG::Export(*gact,*gexp);
-      feffnew->Update(1.0,*gexp,1.0);
+      feffnew->Update(-1.0,*gexp,1.0);
     }
 
+    //----------------------------------------------------------- FIFTH LINE
     // add a subvector to feffnew
     RCP<Epetra_Vector> famodexp;
     if (aset)
@@ -1770,20 +1955,19 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
       LINALG::Export(*famod,*famodexp);
       feffnew->Update(1.0,*famodexp,1.0);
     }
+
 #endif // #ifdef CONTACTBASISTRAFO
 
-    /**********************************************************************/
-    /* Replace kteff and feff by kteffnew and feffnew                     */
-    /**********************************************************************/
+    // finally do the replacement
     kteff = kteffnew;
     feff = feffnew;
   }
   
-  //**********************************************************************
-  //**********************************************************************
+  //************************************************************************
+  //************************************************************************
   // CASE B: SADDLE POINT SYSTEM
-  //**********************************************************************
-  //**********************************************************************
+  //************************************************************************
+  //************************************************************************
   else
   {
     //----------------------------------------------------------------------
@@ -2372,6 +2556,18 @@ void CONTACT::CoLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
     disi->Update(1.0,*adddisisexp,1.0);
 #endif // #ifdef CONTACTBASISTRAFO
     
+    // condensation has been performed for active LM only,
+    // thus we construct a modified invd matrix here which
+    // only contains the active diagonal block
+    // (this automatically renders the incative LM to be zero)
+    RCP<LINALG::SparseMatrix> invda;
+    RCP<Epetra_Map> tempmap;
+		RCP<LINALG::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
+    LINALG::SplitMatrix2x2(invd_,gactivedofs_,tempmap,gactivedofs_,tempmap,invda,tempmtx1,tempmtx2,tempmtx3);
+    RCP<LINALG::SparseMatrix> invdmod = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+    invdmod->Add(*invda,false,1.0,1.0);
+    invdmod->Complete();
+
     /**********************************************************************/
     /* Update Lagrange multipliers z_n+1                                  */
     /**********************************************************************/
@@ -2382,7 +2578,7 @@ void CONTACT::CoLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
     {
       // approximate update
       //z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-      //invd_->Multiply(false,*fs_,*z_);
+      //invdmod->Multiply(false,*fs_,*z_);
   
       // full update
       z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -2402,13 +2598,13 @@ void CONTACT::CoLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
       if (gsdofrowmap_->NumGlobalElements()) LINALG::Export(*mod3,*mod4);
       z_->Update(-alphaf_,*mod4,1.0);
       RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
-      invd_->Multiply(true,*zcopy,*z_);
+      invdmod->Multiply(true,*zcopy,*z_);
       z_->Scale(1/(1-alphaf_));
     }
     else
     {
       // approximate update
-      //invd_->Multiply(false,*fs_,*z_);
+      //invdmod->Multiply(false,*fs_,*z_);
   
       // full update
       z_->Update(1.0,*fs_,0.0);
@@ -2422,7 +2618,7 @@ void CONTACT::CoLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
       dold_->Multiply(true,*zold_,*mod);
       z_->Update(-alphaf_,*mod,1.0);
       RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
-      invd_->Multiply(true,*zcopy,*z_);
+      invdmod->Multiply(true,*zcopy,*z_);
       z_->Scale(1/(1-alphaf_));
     }
   }
@@ -2434,7 +2630,7 @@ void CONTACT::CoLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
   //**********************************************************************
   else
   {
-    // do nothing (z_ was part of soultion already)
+    // do nothing (z_ was part of solution already)
   }
 
   // store updated LM into nodes
