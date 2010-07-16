@@ -8,6 +8,7 @@
 #include "fsi_monolithic.H"
 #include "fsi_overlapprec.H"
 #include "fsi_matrixtransform.H"
+#include "fsi_utils.H"
 
 namespace FSI
 {
@@ -72,6 +73,8 @@ namespace FSI
 
   protected:
 
+    virtual void Update();
+    
     /// setup solver for global block system
     Teuchos::RCP<NOX::Epetra::LinearSystem>
     CreateLinearSystem(ParameterList& nlParams,
@@ -150,6 +153,16 @@ namespace FSI
 
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
     INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
+    
+    /// ale movement relative to structure (none, slide_curr, slide_ref)
+    INPAR::FSI::SlideALEProj aleproj_;
+    
+    Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_;  ///< Sliding Ale helper class
+    
+    Teuchos::RCP<Epetra_Vector> iprojdisp_;        ///<displacement of slave side of the interface
+    Teuchos::RCP<Epetra_Vector> iprojdispinc_;        ///<displacement of slave side of the interface
+    Teuchos::RCP<Epetra_Vector> FTStemp_;       ///<slave displacement on master side at every time step begin
+    
   };
 }
 

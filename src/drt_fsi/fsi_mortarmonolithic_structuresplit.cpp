@@ -30,6 +30,8 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   linearsolverstrategy_ = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+  
+  aleproj_ = Teuchos::getIntegralValue<INPAR::FSI::SlideALEProj>(fsidyn,"SLIDEALEPROJ");
 
 #ifdef PARALLEL
   Epetra_MpiComm comm(MPI_COMM_WORLD);
@@ -198,7 +200,29 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     dserror("Unsupported type of monolithic solver");
   break;
   }
-
+  
+  // set up sliding ale if necessary
+  switch(aleproj_)
+  {
+  case INPAR::FSI::ALEprojection_none:
+    break;
+  case INPAR::FSI::ALEprojection_curr:
+  case INPAR::FSI::ALEprojection_ref:
+    
+    // set up sliding ale utils
+    slideale_ = rcp(new FSI::UTILS::SlideAleUtils(StructureField().Discretization(),
+                                                  FluidField().Discretization(),
+                                                  coupsfm_,
+                                                  false));
+    
+    iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_.MasterDofRowMap(),true));
+    iprojdispinc_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_.MasterDofRowMap(),true));
+    
+    break;
+  default:
+    dserror("Strange things happen with ALE projection");
+    break;
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -217,26 +241,37 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
 
   if (firstcall)
   {
+ 
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
+    if (a==Teuchos::null)
+      dserror("expect ale block matrix");
+
+    LINALG::SparseMatrix& aig = a->Matrix(0,1);
+  
+    Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
+    Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
+    
+    if (aleproj_!= INPAR::FSI::ALEprojection_none)
+    {
+      
+      aig.Apply(*icoupfa_.MasterToSlave(iprojdispinc_),*rhs);
+      rhs->Scale(-1.);
+    
+      Extractor().AddVector(*rhs,2,f);    
+    }
     // additional rhs term for ALE equations
     // -dt Aig u(n)
     //
     //    1/dt Delta d(n+1) = theta Delta u(n+1) + u(n)
     //
     // And we are concerned with the u(n) part here.
-
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
-    if (a==Teuchos::null)
-      dserror("expect ale block matrix");
-
-    LINALG::SparseMatrix& aig = a->Matrix(0,1);
-
-    Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
+      
     Teuchos::RCP<Epetra_Vector> aveln = icoupfa_.MasterToSlave(fveln);
-    Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
+    
     aig.Apply(*aveln,*rhs);
 
     rhs->Scale(-1.*Dt());
-
+      
     Extractor().AddVector(*rhs,2,f);
 
     // structure
@@ -477,6 +512,40 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   mat.Complete();
 }
 
+void FSI::MortarMonolithicStructureSplit::Update()
+{
+  
+  // update history variabels for sliding ale
+  if (aleproj_!= INPAR::FSI::ALEprojection_none)
+  {
+  
+    Teuchos::RCP<Epetra_Vector> idispn = StructureField().ExtractInterfaceDispn();
+    Teuchos::RCP<Epetra_Vector> idisptotal = StructureField().ExtractInterfaceDispnp();
+    Teuchos::RCP<Epetra_Vector> idispstep = StructureField().ExtractInterfaceDispnp();
+    idispstep->Update(-1.0, *idispn, 1.0);
+  
+    slideale_->Remeshing(idisptotal,
+                        idispstep,
+                        StructureField().Discretization(),
+                        FluidField().Discretization(),
+                        iprojdisp_,
+                        coupsfm_,
+                        Comm(),
+                        aleproj_);
+  
+    Teuchos::RCP<Epetra_Vector> idisp =AleField().Interface().ExtractFSICondVector(AleField().ExtractDisplacement());
+    
+    iprojdispinc_->Update(1.0,*iprojdisp_,-1.0,*idisp,0.0);
+
+    slideale_->EvaluateMortar(idisptotal, iprojdisp_, coupsfm_);
+  
+  }
+  
+  StructureField().Update();
+  FluidField().Update();
+  AleField().Update();
+
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -910,7 +979,9 @@ void FSI::MortarMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const
 
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
   Teuchos::RCP<Epetra_Vector> acx = icoupfa_.MasterToSlave(fcx);
-
+  
+  acx->Update(1.0,*icoupfa_.MasterToSlave(iprojdispinc_),1.0);
+  
   Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
   AleField().Interface().InsertFSICondVector(acx, a);
 
