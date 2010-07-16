@@ -2871,10 +2871,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("SYMMETRICPRECOND","No","Symmetric block GS preconditioner in monolithic FSI or ordinary GS",
                                      yesnotuple,yesnovalue,&fsidyn);
 
-  setStringToIntegralParameter<INPAR::FSI::SlideALEProj>("SLIDEALEPROJ","Curr",
+  setStringToIntegralParameter<INPAR::FSI::SlideALEProj>("SLIDEALEPROJ","None",
                                  "Projection method to use for sliding FSI.",
-                                 tuple<std::string>("Curr","Ref"),
+                                 tuple<std::string>("None","Curr","Ref"),
                                  tuple<INPAR::FSI::SlideALEProj>(
+                                     INPAR::FSI::ALEprojection_none,
                                      INPAR::FSI::ALEprojection_curr,
                                      INPAR::FSI::ALEprojection_ref),
                                  &fsidyn);

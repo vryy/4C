@@ -48,6 +48,7 @@ namespace INPAR
     /// Projection methods for sliding fluid-structure interface
     enum SlideALEProj
     {
+      ALEprojection_none,
       ALEprojection_curr,
       ALEprojection_ref
     };
