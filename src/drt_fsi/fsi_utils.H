@@ -98,9 +98,10 @@ namespace FSI
       /// constructor initializing internal variables
       SlideAleUtils
       (
-          RCP<DRT::Discretization> masterdis,
-          RCP<DRT::Discretization> slavedis,
-          ADAPTER::CouplingMortar& coupsf
+          RCP<DRT::Discretization> structdis,
+          RCP<DRT::Discretization> fluiddis,
+          ADAPTER::CouplingMortar& coupsf,
+          bool structcoupmaster                 ///< is structure master of adapter coupling?
       );
 
       /// empty destructor
@@ -111,14 +112,20 @@ namespace FSI
       (
           Teuchos::RCP<Epetra_Vector> idisptotal,
           Teuchos::RCP<Epetra_Vector> idispstep,
-          RCP<DRT::Discretization> masterdis,
-          RCP<DRT::Discretization> slavedis,
-          Teuchos::RCP<Epetra_Vector> islave,
+          RCP<DRT::Discretization> structdis,
+          RCP<DRT::Discretization> fluiddis,
+          Teuchos::RCP<Epetra_Vector> ifluid,
           ADAPTER::CouplingMortar& coupsf,
           const Epetra_Comm& comm,
           INPAR::FSI::SlideALEProj aletype
       );
       
+      void EvaluateMortar
+      (
+          Teuchos::RCP<Epetra_Vector> idisptotal,
+          Teuchos::RCP<Epetra_Vector> ifluid,
+          ADAPTER::CouplingMortar& coupsf
+      );
 
     protected:
 
@@ -127,12 +134,12 @@ namespace FSI
       (
           Teuchos::RCP<Epetra_Vector> idisptotal,
           Teuchos::RCP<Epetra_Vector>idispstep,
-          RCP<DRT::Discretization> masterdis,
+          RCP<DRT::Discretization> structdis,
           const Epetra_Comm& comm
       );
 
-      /// Position of master nodes
-      std::map<int,LINALG::Matrix<3,1> >  CurrentMasterPos
+      /// Position of struct nodes
+      std::map<int,LINALG::Matrix<3,1> >  CurrentStructPos
       (
           Teuchos::RCP<Epetra_Vector> idisptotal,
           Teuchos::RCP<Epetra_Vector> reddisp,
@@ -143,27 +150,29 @@ namespace FSI
       /// project ALE  nodes to he structure surface
       void SlideProjection
       (
-          Teuchos::RCP<Epetra_Vector> islavestep,
+          Teuchos::RCP<Epetra_Vector> ifluidstep,
           DRT::Discretization& interfacedis,
           vector<double> centerdisp,
-          std::map<int, RCP<DRT::Element> > masterreduelements,
+          std::map<int, RCP<DRT::Element> > structreduelements,
           std::map<int,LINALG::Matrix<3,1> > currentpositions,
-          Teuchos::RCP<Epetra_Vector> islave,
+          Teuchos::RCP<Epetra_Vector> ifluid,
           ADAPTER::CouplingMortar& coupsf,
-          RCP<DRT::Discretization> slavedis,
+          RCP<DRT::Discretization> fluiddis,
           INPAR::FSI::SlideALEProj aletype
       );
       
     private:  
     
-      Teuchos::RCP<Epetra_Vector> idispms_;       ///<displacement of master and slave interface for mortar
+      Teuchos::RCP<Epetra_Vector> idispms_;       ///<displacement of struct and fluid interface for mortar
       vector<double> centerdisptotal_;            ///<sum over all center displacements     
-//      Teuchos::RCP<Epetra_Vector> islave_;        ///<displacement of slave side of the interface
+//      Teuchos::RCP<Epetra_Vector> ifluid_;        ///<displacement of fluid side of the interface
       
-      map<int, DRT::Node*> imastergnodes_;        ///< masternodes in the interface including ghosts
-      map<int, RCP<DRT::Element> > imastereles_;  ///< masterlelements in the interface
-      map<int, DRT::Node*> islaveslidnodes_;          ///< sliding slavenodes (= fluid) in the interface
-      map<int, DRT::Node*> islaveconfnodes_;          ///< non-sliding slavenodes (= fluid) in the interface
+      map<int, DRT::Node*> istructgnodes_;        ///< structnodes in the interface including ghosts
+      map<int, RCP<DRT::Element> > istructeles_;  ///< structlelements in the interface
+      map<int, DRT::Node*> ifluidslidnodes_;          ///< sliding fluidnodes (= fluid) in the interface
+      map<int, DRT::Node*> ifluidconfnodes_;          ///< non-sliding fluidnodes (= fluid) in the interface
+      
+      bool structcoupmaster_;
       
     }; // class SlideAleUtils
     

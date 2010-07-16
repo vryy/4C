@@ -148,10 +148,10 @@ private:
   //! we couple based on displacements
   bool displacementcoupling_;
   
-  Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_;
+  Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_;  ///< Sliding Ale helper class
   
   Teuchos::RCP<Epetra_Vector> islave_;	      ///<displacement of slave side of the interface
-  RCP<Epetra_Vector> FTStemp_;	              ///<slave displacement on master side at every time step begin
+  Teuchos::RCP<Epetra_Vector> FTStemp_;	      ///<slave displacement on master side at every time step begin
   
 };
 

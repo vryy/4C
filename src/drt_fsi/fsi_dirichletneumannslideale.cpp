@@ -27,7 +27,7 @@ FSI::DirichletNeumannSlideale::DirichletNeumannSlideale(Epetra_Comm& comm)
 	RCP<DRT::Discretization> masterdis = (StructureField().Discretization());
 	RCP<DRT::Discretization> slavedis = MBFluidField().Discretization();
   
-	slideale_ = rcp(new FSI::UTILS::SlideAleUtils(masterdis,slavedis,StructureFluidCouplingMortar()));
+	slideale_ = rcp(new FSI::UTILS::SlideAleUtils(masterdis,slavedis,StructureFluidCouplingMortar(),true));
 
 	islave_ = Teuchos::rcp(new Epetra_Vector(*StructureFluidCouplingMortar().SlaveDofRowMap(),true));
 	
@@ -95,6 +95,8 @@ void FSI::DirichletNeumannSlideale::Remeshing()
                         StructureFluidCouplingMortar(),
                         Comm(),
                         aletype);
+	
+	slideale_->EvaluateMortar(idisptotal,islave_,StructureFluidCouplingMortar());
 	
 	RCP<Epetra_Map> masterdofrowmap = StructureFluidCouplingMortar().MasterDofRowMap();
 	
