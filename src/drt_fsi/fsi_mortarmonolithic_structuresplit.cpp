@@ -980,7 +980,8 @@ void FSI::MortarMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
   Teuchos::RCP<Epetra_Vector> acx = icoupfa_.MasterToSlave(fcx);
   
-  acx->Update(1.0,*icoupfa_.MasterToSlave(iprojdispinc_),1.0);
+  if (aleproj_!= INPAR::FSI::ALEprojection_none)
+    acx->Update(1.0,*icoupfa_.MasterToSlave(iprojdispinc_),1.0);
   
   Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
   AleField().Interface().InsertFSICondVector(acx, a);
