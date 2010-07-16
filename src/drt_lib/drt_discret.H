@@ -1797,12 +1797,11 @@ private:
   virtual void BuildVolumesinCondition(const string name,RCP<DRT::Condition> cond);
 
   /*!
-  \brief Request for associated volume elements necessary for certain
-  surface conditions (returns 1 if associated volume was found, 0 if
-  no associated volume condition exists and -1 if associated volume
-  condition exists but volume element is not a part of it)
+  \brief Build the geometry of surfaces belonging to the structure-fluid
+  volume coupling condition -> this is special since an associated volume
+  conditions also needs to be considered
   */
-  int FoundAssociatedVolEle(const string CondName, const int CondId, const int EleId);
+  void BuildSurfacesinStructFluidSurfCoupling(RefCountPtr<DRT::Condition> cond);
 
 
 protected:

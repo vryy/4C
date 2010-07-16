@@ -256,42 +256,45 @@ void FSI::LungMonolithic::GeneralSetup()
   // enable output of changes in volumes in text file
   //-----------------------------------------------------------------------------
 
-  std::string outputprefix = DRT::Problem::Instance()->OutputControlFile()->NewOutputFileName();
-  std::string dfluidfilename;
-  std::string dstructfilename;
-  std::string absstructfilename;
-  std::string absfluidfilename;
-  size_t posn = outputprefix.rfind('-');
-  if (posn!=std::string::npos)
+  if (Comm().MyPID()==0)
   {
-    std::string number = outputprefix.substr(posn+1);
-    std::string prefix = outputprefix.substr(0,posn);
-    ostringstream sf;
-    sf << prefix << "_dVfluid" << "-" << number << ".txt";
-    dfluidfilename = sf.str();
-    ostringstream ss;
-    ss << prefix << "_dVstruct" << "-" << number << ".txt";
-    dstructfilename = ss.str();
-    ostringstream sas;
-    sas << prefix << "_absVstruct" << "-" << number << ".txt";
-    absstructfilename = sas.str();
-  }
-  else
-  {
-    ostringstream sf;
-    sf << outputprefix << "_dVfluid.txt";
-    dfluidfilename = sf.str();
-    ostringstream ss;
-    ss << outputprefix << "_dVstruct.txt";
-    dstructfilename = ss.str();
-    ostringstream sas;
-    sas << outputprefix << "_absVstruct.txt";
-    absstructfilename = sas.str();
-  }
+    std::string outputprefix = DRT::Problem::Instance()->OutputControlFile()->NewOutputFileName();
+    std::string dfluidfilename;
+    std::string dstructfilename;
+    std::string absstructfilename;
+    std::string absfluidfilename;
+    size_t posn = outputprefix.rfind('-');
+    if (posn!=std::string::npos)
+    {
+      std::string number = outputprefix.substr(posn+1);
+      std::string prefix = outputprefix.substr(0,posn);
+      ostringstream sf;
+      sf << prefix << "_dVfluid" << "-" << number << ".txt";
+      dfluidfilename = sf.str();
+      ostringstream ss;
+      ss << prefix << "_dVstruct" << "-" << number << ".txt";
+      dstructfilename = ss.str();
+      ostringstream sas;
+      sas << prefix << "_absVstruct" << "-" << number << ".txt";
+      absstructfilename = sas.str();
+    }
+    else
+    {
+      ostringstream sf;
+      sf << outputprefix << "_dVfluid.txt";
+      dfluidfilename = sf.str();
+      ostringstream ss;
+      ss << outputprefix << "_dVstruct.txt";
+      dstructfilename = ss.str();
+      ostringstream sas;
+      sas << outputprefix << "_absVstruct.txt";
+      absstructfilename = sas.str();
+    }
 
-  outfluiddvol_.open(dfluidfilename.c_str());
-  outstructdvol_.open(dstructfilename.c_str());
-  outstructabsvol_.open(absstructfilename.c_str());
+    outfluiddvol_.open(dfluidfilename.c_str());
+    outstructdvol_.open(dstructfilename.c_str());
+    outstructabsvol_.open(absstructfilename.c_str());
+  }
 
   writerestartevery_ =  fsidyn.get<int>("RESTARTEVRY");
 
@@ -387,9 +390,9 @@ void FSI::LungMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   dVfluid_->Update(dt*theta_, *CurrFlowRates_, dt*(1.0-theta_),*OldFlowRates_, 0.0);
   ConstrRHS_->Update(1.0, *dVfluid_, 1.0);
 
-  cout << "CurrFlowRates_:\n" << *CurrFlowRates_ << endl;
-  cout << "CurrVols_:\n" << *CurrVols_ << endl;
-  cout << "LagrMultVec_:\n" << *LagrMultVec_ << endl;
+//   cout << "CurrFlowRates_:\n" << *CurrFlowRates_ << endl;
+//   cout << "CurrVols_:\n" << *CurrVols_ << endl;
+//   cout << "LagrMultVec_:\n" << *LagrMultVec_ << endl;
 }
 
 
