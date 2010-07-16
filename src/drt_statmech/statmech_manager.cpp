@@ -659,12 +659,12 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
       //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
       if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1)  == 0 )
       {
-        // first index = time step index
-        std::ostringstream filename;
+        std::ostringstream filename1;
+        std::ostringstream filename2;
 
-        filename << "./GmshOutput/StructPolymorph_"<<discret_.Comm().MyPID()<<"_"<<std::setw(6) << setfill('0') << istep <<".dat";
-
-        StructPolymorphOutput(dis,filename);
+        filename1 << "./GmshOutput/StruPolyCoords_Proc"<<discret_.Comm().MyPID()<<"_"<<std::setw(6) << setfill('0') << istep <<".dat";
+        filename2 <<"./GmshOutput/StruPolyCrslnks_Proc"<<discret_.Comm().MyPID()<<"_"<<std::setw(6) << setfill('0') << istep <<".dat";
+        StructPolymorphOutput(dis,filename1,filename2);
       }
     }
     break;
@@ -2702,7 +2702,7 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3,1> direction, cons
 /*----------------------------------------------------------------------*
  | output for structural polymorphism             (public) mueller 07/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename)
+void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename1, const std::ostringstream& filename2)
 {
 	/* The following code is basically copied from GmshOutput() and therefore remains largely uncommented.
 	 * The output consists of a vector v E R³ for each element and the respective node coordinates C.
@@ -2714,9 +2714,13 @@ void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const s
 
 	FILE* fp = NULL;
 
-	fp = fopen(filename.str().c_str(), "w");
+	fp = fopen(filename1.str().c_str(), "w");
 
-	std::stringstream fiberorientfilecontent;
+	std::stringstream filamentcoords;
+
+	// get filament number conditions
+	vector<DRT::Condition*> filamentnumbers(0);
+	discret_.GetCondition("FilamentNumber",filamentnumbers);
 
 	for (int i=0; i<discret_.NumMyRowElements(); ++i)
 	{
@@ -2725,10 +2729,6 @@ void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const s
 		// we only need filament elements, crosslinker elements are neglected with the help of their high element IDs
 		if(element->Id()>basisnodes_)
 			continue;
-
-		// get filament number conditions
-		vector<DRT::Condition*> filamentnumberconditions(0);
-		discret_.GetCondition("FilamentNumber",filamentnumberconditions);
 
 		LINALG::SerialDenseMatrix coord(3,element->NumNode());
 		// filament number
@@ -2748,11 +2748,11 @@ void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const s
 				// get corresponding filament number
 				// loop over all filaments
 				if(!done)
-					for(int l=0; l<(int)filamentnumberconditions.size(); l++)
-						for(int m=0; m<(int)filamentnumberconditions[l]->Nodes()->size(); m++)
-						 if(element->Nodes()[k]->Id() == filamentnumberconditions[l]->Nodes()->at(m))
+					for(int l=0; l<(int)filamentnumbers.size(); l++)
+						for(int m=0; m<(int)filamentnumbers[l]->Nodes()->size(); m++)
+						 if(element->Nodes()[k]->Id() == filamentnumbers[l]->Nodes()->at(m))
 						 {
-							 filnumber = filamentnumberconditions[l]->Id();
+							 filnumber = filamentnumbers[l]->Id();
 							 done = true;
 						 }
 			}
@@ -2763,33 +2763,104 @@ void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const s
 #ifdef D_BEAM3
 		if(eot==DRT::ELEMENTS::Beam3Type::Instance())
 			for(int j=0; j<element->NumNode()-1; j++)
-				fiberorientfilecontent<<element->Id()<<" "<<filnumber<<"   "<<std::scientific<<std::setprecision(15)//<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
-																										<< coord(0,j) << " " << coord(1,j) << " " << coord(2,j) << " "
-																										<< coord(0,j+1) << " " << coord(1,j+1) << " " << coord(2,j+1)<<endl ;
+				filamentcoords<<element->Id()<<" "<<filnumber<<"   "<<std::scientific<<std::setprecision(15)//<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
+											<< coord(0,j) << " " << coord(1,j) << " " << coord(2,j) << " "
+											<< coord(0,j+1) << " " << coord(1,j+1) << " " << coord(2,j+1)<<endl ;
 		else
 #endif
 #ifdef D_BEAM3II
 		if(eot==DRT::ELEMENTS::Beam3iiType::Instance())
 			for(int j=0; j<element->NumNode()-1; j++)
-				fiberorientfilecontent<<element->Id()<<" "<<filnumber<<"   "<<std::scientific<<std::setprecision(15)//<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
-																										<< coord(0,j) << " " << coord(1,j) << " " << coord(2,j) << " "
-																										<< coord(0,j+1) << " " << coord(1,j+1) << " " << coord(2,j+1)<<endl ;
+				filamentcoords<<element->Id()<<" "<<filnumber<<"   "<<std::scientific<<std::setprecision(15)//<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
+											<< coord(0,j) << " " << coord(1,j) << " " << coord(2,j) << " "
+											<< coord(0,j+1) << " " << coord(1,j+1) << " " << coord(2,j+1)<<endl ;
 		else
 #endif
 #ifdef D_TRUSS3
 		if(eot==DRT::ELEMENTS::Truss3Type::Instance())
 			for(int j=0; j<element->NumNode()-1; j++)
-				fiberorientfilecontent<<element->Id()<<" "<<filnumber<<"   "<<std::scientific<<std::setprecision(15)//<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
-																										<< coord(0,j) << " " << coord(1,j) << " " << coord(2,j) << " "
-																										<< coord(0,j+1) << " " << coord(1,j+1) << " " << coord(2,j+1)<<endl ;
+				filamentcoords<<element->Id()<<" "<<filnumber<<"   "<<std::scientific<<std::setprecision(15)//<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
+											<< coord(0,j) << " " << coord(1,j) << " " << coord(2,j) << " "
+											<< coord(0,j+1) << " " << coord(1,j+1) << " " << coord(2,j+1)<<endl ;
 		else
 #endif
 		{
 		}
 	}
   //write content into file and close it
-  fprintf(fp,fiberorientfilecontent.str().c_str());
+  fprintf(fp,filamentcoords.str().c_str());
   fclose(fp);
+
+  /* A measure to quantify bundling, is hereafter established and written to a separate output file.
+   * It works as follows:
+   * 1) Specify all possible filament pairs P(i,j)
+   * 2) n(i,j) counts the number of crosslinkers of P(i,j)
+   * 3) n_av determines the average number of non-zero n(i,j) [e.g. n_av==1 indicates a perfectly
+   *    homogenous isotropic network]
+   */
+
+  LINALG::SerialDenseMatrix ncross((int)filamentnumbers.size(),(int)filamentnumbers.size(), true);
+  // loop over all possible filament pairs and their nodes (wow!)
+  // filament i
+  for(int i=0; i<(int)filamentnumbers.size()-1; i++)
+  {
+  	// filament j
+  	for(int j=i+1; j<(int)filamentnumbers.size(); j++ )
+  	{
+    	// number of crosslinkers of filament pair P(i,j)
+    	int n_ij = 0;
+  		// node k of filament i
+  		for(int k=0; k<(int)filamentnumbers[i]->Nodes()->size(); k++)
+  		{
+  			// get node k of filament i if available on proc, else: next node in condition
+  			int gidk = filamentnumbers[i]->Nodes()->at(k);
+  			if( discret_.HaveGlobalNode(gidk))
+  			{
+  				DRT::Node* nodei = discret_.gNode(filamentnumbers[i]->Nodes()->at(k));
+    			// node l of filament j
+    			for(int l=0; l<(int)filamentnumbers[j]->Nodes()->size(); l++)
+    			{
+    				// get node l of filament j if available on proc, else: next node in condition
+    				int gidl = filamentnumbers[j]->Nodes()->at(l);
+    				if( discret_.HaveGlobalNode(gidl))
+    				{
+    					DRT::Node* nodej = discret_.gNode(filamentnumbers[j]->Nodes()->at(l));
+      				// identify any crosslinkers with nodes k and l
+      				DRT::Element** adjelementk = nodei->Elements();
+      				DRT::Element** adjelementl = nodej->Elements();
+
+      				// loop over Elements adjacent to nodes k and l and increment n_ij if the element
+      				// GIDs of element m and n match, i.e. the two filament share a crosslinker
+      				for(int m=0; m<nodei->NumElement(); m++)
+      				{
+      					if(adjelementk[m]->Id() > basisnodes_)
+    							for(int n=0; n<nodej->NumElement(); n++)
+    								if(adjelementk[m]->Id() == adjelementl[n]->Id())
+    										n_ij++;
+      				}
+    				}
+    			}
+  			}
+  		}
+  		// store the number of crosslinker of P(i,j) at the respective position in the matrix
+  		ncross(i,j) = n_ij;
+  	}
+  }
+
+  // write the matrix ncross into a file via stream
+  fp = fopen(filename2.str().c_str(), "w");
+  std::stringstream crosslinkercount;
+
+  for(int i=0; i<ncross.M(); i++)
+  {
+  	for(int j=0; j<ncross.N(); j++)
+  		crosslinkercount<<ncross(i,j)<<"  ";
+  	crosslinkercount<<endl;
+  }
+
+  //write content into file and close it
+	fprintf(fp,crosslinkercount.str().c_str());
+	fclose(fp);
 }// StatMechManager:StructPolymorphOutput()
 
 /*----------------------------------------------------------------------*
@@ -2808,6 +2879,7 @@ bool StatMechManager::CheckForKinkedVisual(const double& color, int eleid)
 		std::vector<int> filamentids;
 		std::vector<DRT::Condition*> filaments(0);
 		discret_.GetCondition("FilamentNumber", filaments);
+
 		// determine filament IDs of the nodes belonging to the crosslinker
 		for(int i=0; i<(int)filaments.size(); i++)
 		{
@@ -2820,10 +2892,7 @@ bool StatMechManager::CheckForKinkedVisual(const double& color, int eleid)
 						if(element->Nodes()[k]->Id() == filaments[i]->Nodes()->at(j))
 							filamentids.push_back(filaments[i]->Id());
 		}
-		/*cout<<"filament IDs: ";
-		for(int i=0; i<(int)filamentids.size(); i++)
-			cout<<filamentids.at(i)<<" ";
-		cout<<" "<<endl;*/
+
 		// check affiliation of (first and last) crosslinker nodes to filament(s)
 		if(filamentids.at(0)==filamentids.at(element->NumNode()-1))
 			return true;

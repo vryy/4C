@@ -101,12 +101,16 @@ public:
 
   /*!\brief update locations of force sensors
      \param sensornodes   (in) vector holding the GIDs of the sensor nodes
-     \param oscdir   (in) direction (DOF) of oscillation
+     \param oscdir        (in) direction (DOF) of oscillation
    */
   void UpdateForceSensors(vector<int>& sensornodes, int oscdir);
 
-  //! \brief writes element orientation and coordinates of fiber elements to an output file
-  void StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename);
+  /*! \brief writes element orientation and coordinates of fiber elements to an output file
+      \param disrow     (in) displacement in row format
+      \param filename1  (in) filename for the first output file (coordinates, element GIDs and filament numbers)
+      \param filename2  (in) filename for the second output file (matrix containing crosslinker numbers between filaments)
+   */
+  void StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename1, const std::ostringstream& filename2);
 
   //! \brief check whether a crosslink connects two filaments or occupies two binding spots of the same element and therefore is to be visualized differently
   bool CheckForKinkedVisual(const double& color, int eleid);
