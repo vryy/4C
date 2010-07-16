@@ -124,7 +124,12 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
     int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
     if (coupling == fsi_iter_monolithicfluidsplit or
         coupling == fsi_iter_monolithiclagrange or
-        coupling == fsi_iter_monolithicstructuresplit)
+        coupling == fsi_iter_monolithicstructuresplit or
+        coupling == fsi_iter_constr_monolithicfluidsplit or
+        coupling == fsi_iter_constr_monolithicstructuresplit or
+        coupling == fsi_iter_lung_monolithicfluidsplit or
+        coupling == fsi_iter_lung_monolithicstructuresplit or
+        coupling == fsi_iter_mortar_monolithicstructuresplit)
     {
       // partitioned MFSI solvers require Dirichlet conditions
       INPAR::FSI::LinearBlockSolver linearsolverstrategy =
@@ -144,8 +149,13 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
     if (coupling == fsi_iter_monolithicfluidsplit or
-        coupling == fsi_iter_monolithiclagrange or
-        coupling == fsi_iter_monolithicstructuresplit)
+         coupling == fsi_iter_monolithiclagrange or
+         coupling == fsi_iter_monolithicstructuresplit or
+         coupling == fsi_iter_constr_monolithicfluidsplit or
+         coupling == fsi_iter_constr_monolithicstructuresplit or
+         coupling == fsi_iter_lung_monolithicfluidsplit or
+         coupling == fsi_iter_lung_monolithicstructuresplit or
+         coupling == fsi_iter_mortar_monolithicstructuresplit)    
     {
       // partitioned MFSI solvers require Dirichlet conditions
       INPAR::FSI::LinearBlockSolver linearsolverstrategy =
