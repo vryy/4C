@@ -636,8 +636,8 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
          * e.g. number one is written as 000001, number fourteen as 000014 and so on;*/
 
         //note: this kind of output is possilbe for serial computing only (otherwise the following method would have to be adapted to parallel use*/
-        if(discret_.Comm().NumProc() > 1)
-          dserror("No Gmsh output for parallel computation possible so far");
+        //if(discret_.Comm().NumProc() > 1)
+          //dserror("No Gmsh output for parallel computation possible so far");
 
         // first index = time step index
         std::ostringstream filename;
@@ -685,201 +685,230 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
   /*the following method writes output data for Gmsh into file with name "filename"; all line elements are written;
    * the nodal displacements are handed over in the variable "dis"; note: in case of parallel computing only
    * processor 0 writes; it is assumed to have a fully overlapping column map and hence all the information about
-   * all the nodal position; note that no parallel operations have to be carried out in the following block as it
-   * is processed by only one processor; note that one could get also a parallel gmsh output if all processors write
-   * their output after each other into the gmsh output file as it is realized for example for solid contact problems*/
-  if(discret_.Comm().MyPID() == 0)
+   * all the nodal position; parallel output is now possible with the restriction that the nodes(processors) in question
+   * are of the same machine*/
+
+	//we need displacements also of ghost nodes and hence export displacment vector to column map format
+  Epetra_Vector  discol(*(discret_.DofColMap()),true);
+  LINALG::Export(disrow,discol);
+
+  // do output to file in c-style
+  FILE* fp = NULL;
+
+	// first processor starts by opening the file and writing the header, other processors have to wait
+	if(discret_.Comm().MyPID()==0)
+	{
+		//open file to write output data into
+		fp = fopen(filename.str().c_str(), "w");
+		// write output to temporary stringstream;
+		std::stringstream gmshfileheader;
+		/*the beginning of the stream is "View \"" to indicate Gmsh that the following data is in order to create an image and
+		 * this command is followed by the name of that view displayed during it's shown in the video; in the following example
+		 * this name is for the 100th time step: Step00100; then the data to be presented within this view is written within { ... };
+		 * in the following example this data consists of scalar lines defined by the coordinates of their end points*/
+		gmshfileheader << "View \" Step " << step << " \" {" << endl;
+
+		//write content into file and close it
+		fprintf(fp,gmshfileheader.str().c_str());
+		fclose(fp);
+	}
+
+	// wait for all processors to arrive at this point
+	discret_.Comm().Barrier();
+
+	// loop over the participating processors each of which appends its part of the output to one output file
+  for(int proc=0; proc<discret_.Comm().NumProc(); proc++)
   {
+  	if(discret_.Comm().MyPID()==proc)
+  	{
+  		//open file again to append output data into
+  		fp = fopen(filename.str().c_str(), "a");
+  		// write output to temporary stringstream;
+  		std::stringstream gmshfilecontent;
 
-    //we need displacements also of ghost nodes and hence export displacment vector to column map format
-    Epetra_Vector  discol(*(discret_.DofColMap()),true);
-    LINALG::Export(disrow,discol);
+  		//looping through all elements on the processor
+			for (int i=0; i<discret_.NumMyColElements(); ++i)
+			{
+				//getting pointer to current element
+				DRT::Element* element = discret_.lColElement(i);
 
-    // do output to file in c-style
-    FILE* fp = NULL;
+				//getting number of nodes of current element
+				//if( element->NumNode() > 2)
+					//dserror("Gmsh output for two noded elements only");
 
-    //open file to write output data into
-    fp = fopen(filename.str().c_str(), "w");
+				//preparing variable storing coordinates of all these nodes
+				LINALG::SerialDenseMatrix coord(3,element->NumNode());
+				for(int id = 0; id<3; id++)
+					for(int jd = 0; jd<element->NumNode(); jd++)
+					{
+						double referenceposition = ((element->Nodes())[jd])->X()[id];
+						vector<int> dofnode = discret_.Dof((element->Nodes())[jd]);
+						double displacement = discol[discret_.DofColMap()->LID( dofnode[id] )];
+						coord(id,jd) =  referenceposition + displacement;
+					}
 
-    // write output to temporary stringstream;
-    std::stringstream gmshfilecontent;
-    /*the beginning of the stream is "View \"" to indicate Gmsh that the following data is in order to create an image and
-     * this command is followed by the name of that view displayed during it's shown in the video; in the following example
-     * this name is for the 100th time step: Step00100; then the data to be presented within this view is written within { ... };
-     * in the following example this data consists of scalar lines defined by the coordinates of their end points*/
-    gmshfilecontent << "View \" Step " << step << " \" {" << endl;
+				//declaring variable for color of elements
+				double color;
 
-    //looping through all elements on the processor
-    for (int i=0; i<discret_.NumMyColElements(); ++i)
-    {
-      //getting pointer to current element
-      DRT::Element* element = discret_.lColElement(i);
+				//apply different colors for elements representing filaments and those representing dynamics crosslinkers
+				if (element->Id() < basisnodes_)
+					color = 1.0;
+				else
+					color = 0.5;
 
-      //getting number of nodes of current element
-      //if( element->NumNode() > 2)
-        //dserror("Gmsh output for two noded elements only");
+				//if no periodic boundary conditions are to be applied, we just plot the current element
+				if(statmechparams_.get<double>("PeriodLength",0.0) == 0)
+				{
+					// check whether the kinked visualization is to be applied
+					bool kinked = CheckForKinkedVisual(color, element->Id());
 
-			//preparing variable storing coordinates of all these nodes
-			LINALG::SerialDenseMatrix coord(3,element->NumNode());
-			for(int id = 0; id<3; id++)
-				for(int jd = 0; jd<element->NumNode(); jd++)
-			  {
-					double referenceposition = ((element->Nodes())[jd])->X()[id];
-					vector<int> dofnode = discret_.Dof((element->Nodes())[jd]);
-					double displacement = discol[discret_.DofColMap()->LID( dofnode[id] )];
-					coord(id,jd) =  referenceposition + displacement;
-			  }
-
-			//declaring variable for color of elements
-			double color;
-
-			//apply different colors for elements representing filaments and those representing dynamics crosslinkers
-			if (element->Id() < basisnodes_)
-				color = 1.0;
-			else
-				color = 0.5;
-
-      //if no periodic boundary conditions are to be applied, we just plot the current element
-      if(statmechparams_.get<double>("PeriodLength",0.0) == 0)
-      {
-      	// check whether the kinked visualization is to be applied
-      	bool kinked = CheckForKinkedVisual(color, element->Id());
-
-        const DRT::ElementType & eot = element->ElementType();
+					const DRT::ElementType & eot = element->ElementType();
 #ifdef D_BEAM3
-      	if(eot==DRT::ELEMENTS::Beam3Type::Instance())
-      	{
-      		if(!kinked)
-      		{
-						for(int j=0; j<element->NumNode()-1; j++)
+					if(eot==DRT::ELEMENTS::Beam3Type::Instance())
+					{
+						if(!kinked)
 						{
-							//writing element by nodal coordinates as a scalar line
-							gmshfilecontent << "SL(" << scientific;
-							gmshfilecontent<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
-														 << coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1) ;
-							/*note: colors are chosen by values between 0.0 and 1.0. These values refer to a color vector which
-							 * is given in a .geo-setup-file. If, for example, 5 colors are given(either in X11 color expressions or RGB),
-							 * possible values are 0.0, 0.25, 0.5, 0.75, 1.0.
-							 */
-							gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+							for(int j=0; j<element->NumNode()-1; j++)
+							{
+								//writing element by nodal coordinates as a scalar line
+								gmshfilecontent << "SL(" << scientific;
+								gmshfilecontent<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
+															 << coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1) ;
+								/*note: colors are chosen by values between 0.0 and 1.0. These values refer to a color vector which
+								 * is given in a .geo-setup-file. If, for example, 5 colors are given(either in X11 color expressions or RGB),
+								 * possible values are 0.0, 0.25, 0.5, 0.75, 1.0.
+								 */
+								gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+							}
 						}
-      		}
-      		else
-      		{
-      			color = 0.25;
-      			for(int j=0; j<element->NumNode()-1; j++)
-      			{
-							// calculate third point of the
-							std::vector<double> p3(3,0.0);
-							GmshKinkedVisual(coord, p3, element->Id());
+						else
+						{
+							color = 0.25;
+							for(int j=0; j<element->NumNode()-1; j++)
+							{
+								// calculate third point of the
+								std::vector<double> p3(3,0.0);
+								GmshKinkedVisual(coord, p3, element->Id());
 
-							//visualization
-							// (1/2)
-							gmshfilecontent << "SL(" << scientific
-															<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
-															<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)
-															<< ")" << "{" << scientific << color << "," << color << "};" << endl;
-							//(2/2)
-							gmshfilecontent << "SL(" << scientific
-															<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)<<","
-															<< coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1)
-															<< ")" << "{" << scientific << color << "," << color << "};" << endl;
-      			}
-      		}
-      	}
-        else
+								//visualization
+								// (1/2)
+								gmshfilecontent << "SL(" << scientific
+																<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
+																<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)
+																<< ")" << "{" << scientific << color << "," << color << "};" << endl;
+								//(2/2)
+								gmshfilecontent << "SL(" << scientific
+																<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)<<","
+																<< coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1)
+																<< ")" << "{" << scientific << color << "," << color << "};" << endl;
+							}
+						}
+					}
+					else
 #endif
 #ifdef D_BEAM3II
-      	if(eot==DRT::ELEMENTS::Beam3iiType::Instance())
-      	{
-      		if(!kinked)
-      		{
-						for(int j=0; j<element->NumNode()-1; j++)
+					if(eot==DRT::ELEMENTS::Beam3iiType::Instance())
+					{
+						if(!kinked)
 						{
-							gmshfilecontent << "SL(" << scientific;
-							gmshfilecontent<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
-														 << coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1) ;
-							gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+							for(int j=0; j<element->NumNode()-1; j++)
+							{
+								gmshfilecontent << "SL(" << scientific;
+								gmshfilecontent<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
+															 << coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1) ;
+								gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+							}
 						}
-      		}
-      		else
-      		{
-      			color = 0.25;
-						for(int j=0; j<element->NumNode()-1; j++)
+						else
 						{
-							std::vector<double> p3(3,0.0);
-							GmshKinkedVisual(coord, p3, element->Id());
+							color = 0.25;
+							for(int j=0; j<element->NumNode()-1; j++)
+							{
+								std::vector<double> p3(3,0.0);
+								GmshKinkedVisual(coord, p3, element->Id());
 
-							gmshfilecontent << "SL(" << scientific
-															<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
-															<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)
-															<< ")" << "{" << scientific << color << "," << color << "};" << endl;
-							gmshfilecontent << "SL(" << scientific
-															<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)<<","
-															<< coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1)
-															<< ")" << "{" << scientific << color << "," << color << "};" << endl;
+								gmshfilecontent << "SL(" << scientific
+																<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
+																<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)
+																<< ")" << "{" << scientific << color << "," << color << "};" << endl;
+								gmshfilecontent << "SL(" << scientific
+																<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)<<","
+																<< coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1)
+																<< ")" << "{" << scientific << color << "," << color << "};" << endl;
+							}
 						}
-      		}
-      	}
-        else
+					}
+					else
 #endif
 #ifdef D_TRUSS3
-        if(eot==DRT::ELEMENTS::Truss3Type::Instance())
-      	{
-      		if(!kinked)
-      		{
-						for(int j=0; j<element->NumNode()-1; j++)
+					if(eot==DRT::ELEMENTS::Truss3Type::Instance())
+					{
+						if(!kinked)
 						{
-							gmshfilecontent << "SL(" << scientific;
-							gmshfilecontent<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
-														 << coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1) ;
-							gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+							for(int j=0; j<element->NumNode()-1; j++)
+							{
+								gmshfilecontent << "SL(" << scientific;
+								gmshfilecontent<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
+															 << coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1) ;
+								gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+							}
 						}
-      		}
-      		else
-      		{
-      			color = 0.25;
-						for(int j=0; j<element->NumNode()-1; j++)
+						else
 						{
-							std::vector<double> p3(3,0.0);
-							GmshKinkedVisual(coord, p3, element->Id());
+							color = 0.25;
+							for(int j=0; j<element->NumNode()-1; j++)
+							{
+								std::vector<double> p3(3,0.0);
+								GmshKinkedVisual(coord, p3, element->Id());
 
-							gmshfilecontent << "SL(" << scientific
-															<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
-															<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)
-															<< ")" << "{" << scientific << color << "," << color << "};" << endl;
-							gmshfilecontent << "SL(" << scientific
-															<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)<<","
-															<< coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1)
-															<< ")" << "{" << scientific << color << "," << color << "};" << endl;
+								gmshfilecontent << "SL(" << scientific
+																<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
+																<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)
+																<< ")" << "{" << scientific << color << "," << color << "};" << endl;
+								gmshfilecontent << "SL(" << scientific
+																<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)<<","
+																<< coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1)
+																<< ")" << "{" << scientific << color << "," << color << "};" << endl;
+							}
 						}
-      		}
-      	}
-        else
+					}
+					else
 #endif
 #ifdef D_TORSION3
-        if(eot==DRT::ELEMENTS::Torsion3Type::Instance())
-        {
-          double beadcolor = 0.75;
-          for(int j=0; j<element->NumNode(); j++)
-          {
-            gmshfilecontent << "SP(" << scientific;
-            gmshfilecontent<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j);
-            gmshfilecontent << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << endl;
-          }
-        }
-        else
+					if(eot==DRT::ELEMENTS::Torsion3Type::Instance())
+					{
+						double beadcolor = 0.75;
+						for(int j=0; j<element->NumNode(); j++)
+						{
+							gmshfilecontent << "SP(" << scientific;
+							gmshfilecontent<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j);
+							gmshfilecontent << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << endl;
+						}
+					}
+					else
 #endif
-        {
-        }
-      }
-      //in case of periodic boundary conditions we have to take care to plot correctly an element broken at some boundary plane
-      else
-        GmshOutputPeriodicBoundary(coord, color, gmshfilecontent, element->Id());
+					{
+					}
+				}
+				//in case of periodic boundary conditions we have to take care to plot correctly an element broken at some boundary plane
+				else
+					GmshOutputPeriodicBoundary(coord, color, gmshfilecontent, element->Id());
+			}
+			//write content into file and close it (this way we make sure that the output is written serially)
+			fprintf(fp,gmshfilecontent.str().c_str());
+			fclose(fp);
+  	}
+  }
 
-    }
+  // wait again until all processors have arrived here
+  discret_.Comm().Barrier();
 
-    // plot (cubic) periodic box in case of periodic boundary conditions
+  // finish the output by plotting the periodic box in case of periodic boundary conditions (first processor)
+  if(discret_.Comm().MyPID()==0)
+  {
+		fp = fopen(filename.str().c_str(), "a");
+		std::stringstream gmshfilefooter;
+
     if(statmechparams_.get<double>("PeriodLength",0.0) > 0)
     {
     	// get current period length
@@ -888,76 +917,72 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 			double boundarycolor=0.0;
 
     	// define boundary lines
-    	gmshfilecontent << "SL(" << scientific;
-    	gmshfilecontent << 0.0 << "," << 0.0 << "," << 0.0 << ","
+    	gmshfilefooter << "SL(" << scientific;
+    	gmshfilefooter << 0.0 << "," << 0.0 << "," << 0.0 << ","
 											<< pl << "," << 0.0 << "," << 0.0 ;
-    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 2
-    	gmshfilecontent << "SL(" << scientific;
-    	gmshfilecontent << pl << "," << 0.0 << "," << 0.0 << ","
+    	gmshfilefooter << "SL(" << scientific;
+    	gmshfilefooter << pl << "," << 0.0 << "," << 0.0 << ","
     									<< pl << "," << pl << "," << 0.0 ;
-    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 3
-    	gmshfilecontent << "SL(" << scientific;
-    	gmshfilecontent << pl << "," << pl << "," << 0.0 << ","
+    	gmshfilefooter << "SL(" << scientific;
+    	gmshfilefooter << pl << "," << pl << "," << 0.0 << ","
     									<< pl << "," << pl << "," << pl ;
-    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 4
-    	gmshfilecontent << "SL(" << scientific;
-    	gmshfilecontent << pl << "," << pl << "," << pl << ","
+    	gmshfilefooter << "SL(" << scientific;
+    	gmshfilefooter << pl << "," << pl << "," << pl << ","
     									<< 0.0 << "," << pl << "," << pl ;
-    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 5
-    	gmshfilecontent << "SL(" << scientific;
-    	gmshfilecontent << 0.0 << "," << pl << "," << pl << ","
+    	gmshfilefooter << "SL(" << scientific;
+    	gmshfilefooter << 0.0 << "," << pl << "," << pl << ","
     									<< 0.0 << "," << 0.0 << "," << pl ;
-    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 6
-    	gmshfilecontent << "SL(" << scientific;
-    	gmshfilecontent << 0.0 << "," << 0.0 << "," << pl << ","
+    	gmshfilefooter << "SL(" << scientific;
+    	gmshfilefooter << 0.0 << "," << 0.0 << "," << pl << ","
 											<< 0.0 << "," << 0.0 << "," << 0.0 ;
-    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 7
-    	gmshfilecontent << "SL(" << scientific;
-    	gmshfilecontent << 0.0 << "," << 0.0 << "," << 0.0 << ","
+    	gmshfilefooter << "SL(" << scientific;
+    	gmshfilefooter << 0.0 << "," << 0.0 << "," << 0.0 << ","
     									<< 0.0 << "," << pl << "," << 0.0 ;
-    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 8
-    	gmshfilecontent << "SL(" << scientific;
-    	gmshfilecontent << 0.0 << "," << pl << "," << 0.0 << ","
+    	gmshfilefooter << "SL(" << scientific;
+    	gmshfilefooter << 0.0 << "," << pl << "," << 0.0 << ","
     									<< pl << "," << pl << "," << 0.0 ;
-    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 9
-    	gmshfilecontent << "SL(" << scientific;
-    	gmshfilecontent << 0.0 << "," << pl << "," << 0.0 << ","
+    	gmshfilefooter << "SL(" << scientific;
+    	gmshfilefooter << 0.0 << "," << pl << "," << 0.0 << ","
     									<< 0.0 << "," << pl << "," << pl ;
-    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 10
-    	gmshfilecontent << "SL(" << scientific;
-    	gmshfilecontent << pl << "," << 0.0 << "," << 0.0 << ","
+    	gmshfilefooter << "SL(" << scientific;
+    	gmshfilefooter << pl << "," << 0.0 << "," << 0.0 << ","
     									<< pl << "," << 0.0 << "," << pl ;
-    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 11
-    	gmshfilecontent << "SL(" << scientific;
-    	gmshfilecontent << pl << "," << 0.0 << "," << pl << ","
+    	gmshfilefooter << "SL(" << scientific;
+    	gmshfilefooter << pl << "," << 0.0 << "," << pl << ","
     									<< pl << "," << pl << "," << pl ;
-    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
     	// line 12
-    	gmshfilecontent << "SL(" << scientific;
-    	gmshfilecontent << pl << "," << 0.0 << "," << pl << ","
+    	gmshfilefooter << "SL(" << scientific;
+    	gmshfilefooter << pl << "," << 0.0 << "," << pl << ","
     									<< 0.0 << "," << 0.0 << "," << pl ;
-    	gmshfilecontent << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};"<< endl;
     }
-
     //finish data section of this view by closing curley brackets
-    gmshfilecontent << "};" << endl;
+    gmshfilefooter << "};" << endl;
 
-    //write content into file and close it
-    fprintf(fp,gmshfilecontent.str().c_str());
-    fclose(fp);
-
-  }//if(discret_.Comm().MyPID() == 0)
-
+		fprintf(fp,gmshfilefooter.str().c_str());
+		fclose(fp);
+  }
   return;
 } // StatMechManager::GmshOutput()
 
@@ -970,7 +995,6 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 {
   //number of spatial dimensions
   const int ndim = 3;
-
   // get Element Type of the first Element to determine the graphics output
   DRT::Element* element = discret_.gElement(eleid);
 
