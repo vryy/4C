@@ -73,10 +73,17 @@ public:
   /// Get MapExtractor for fsi <-> full map
   LINALG::MapExtractor& FSIInterface() { return fsiinterface_;  }
 
+  /// Get map of volume coupling dofs
+  const Teuchos::RCP<const Epetra_Map> LungConstrMap() { return lungconstraintmap_; }
+
 private:
 
   /// conditions that define the lung volume constraints
   std::vector<DRT::Condition*> constrcond_;
+
+  /// map containing all dofs related to volume coupling (i.e. dofs of the
+  /// enclosing boundary)
+  Teuchos::RCP<const Epetra_Map> lungconstraintmap_;
 
   /// map extractor for fsi <-> full map
   /// this is needed since otherwise "OtherMap" contains only dofs

@@ -36,6 +36,16 @@ FSI::LungMonolithic::LungMonolithic(Epetra_Comm& comm)
   ADAPTER::FluidLung& fluidfield = dynamic_cast<ADAPTER::FluidLung&>(FluidField());
   ADAPTER::StructureLung& structfield = dynamic_cast<ADAPTER::StructureLung&>(StructureField());
 
+  // consistency check: all dofs contained in ale(fluid)-structure coupling need to
+  // be part of the structure, too. this needs to be checked because during
+  // SetupSystemMatrix, we rely on this information!
+  const Teuchos::RCP<const Epetra_Map> asimap = StructureField().Interface().LungASICondMap();
+  for (int i=0; i<asimap->NumMyElements(); ++i)
+  {
+    if (structfield.LungConstrMap()->LID(asimap->GID(i)) == -1)
+      dserror("dof of asi coupling is not contained in enclosing boundary");
+  }
+
   std::set<int> FluidLungVolConIDs;
   std::set<int> StructLungVolConIDs;
   int FluidMinLungVolConID;

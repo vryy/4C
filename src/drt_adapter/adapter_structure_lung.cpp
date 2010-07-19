@@ -4,6 +4,15 @@
 /*----------------------------------------------------------------------*/
 #include "adapter_structure_lung.H"
 #include "../drt_io/io.H"
+#include "../drt_lib/drt_condition_utils.H"
+
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 
 /*======================================================================*/
 /* constructor */
@@ -27,6 +36,23 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru)
 
   // build mapextractor for fsi <-> full map
   fsiinterface_ = LINALG::MapExtractor(*Interface().FullMap(), Interface().FSICondMap());
+
+  // find all dofs belonging to enclosing boundary -> volume coupling dofs
+  vector<int> dofmapvec;
+  std::vector<int> nodes;
+  DRT::UTILS::FindConditionedNodes(*Discretization(),"StructFluidSurfCoupling",nodes);
+  const int numnode = nodes.size();
+
+  for (int i=0; i<numnode; ++i)
+  {
+    const DRT::Node* actnode = Discretization()->gNode(nodes[i]);
+    const vector<int> dof = Discretization()->Dof(actnode);
+    if (genprob.ndim > static_cast<int>(dof.size()))
+      dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes[i],i,genprob.ndim);
+    copy(&dof[0], &dof[0]+genprob.ndim, back_inserter(dofmapvec));
+  }
+
+  lungconstraintmap_ = rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, Discretization()->Comm()));
 }
 
 
