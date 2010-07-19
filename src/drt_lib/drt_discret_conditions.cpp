@@ -732,8 +732,6 @@ void DRT::Discretization::BuildSurfacesinStructFluidSurfCoupling(RefCountPtr<DRT
   // in the beginning, we assume that no associated volume condition exists
   int found = 0;
 
-  cout << volconstrcond.size() << endl;
-
   for (unsigned int i = 0; i < volconstrcond.size(); ++i)
   {
     DRT::Condition& volcond = *(volconstrcond[i]);
@@ -775,6 +773,10 @@ void DRT::Discretization::BuildSurfacesinStructFluidSurfCoupling(RefCountPtr<DRT
           }
           else
           {
+            // this is a preselection of volume elements -> later on, only
+            // volume elements with at least one node located at the surface
+            // need to be considered. this saves expensive looping over all
+            // element surfaces for interior elements
             map<int,DRT::Node*>::iterator test = surfcolnodes.find(*myid);
             if (test!=surfcolnodes.end())
             {
@@ -843,8 +845,6 @@ void DRT::Discretization::BuildSurfacesinStructFluidSurfCoupling(RefCountPtr<DRT
 
   AssignGlobalIDs( Comm(), surfmap, finalsurfs );
   cond->AddGeometry( finalsurfs );
-
-  cout << "counter = " << counter << endl;
 }
 
 
