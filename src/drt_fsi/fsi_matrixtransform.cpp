@@ -82,7 +82,13 @@ AddValues(Teuchos::RCP<Epetra_CrsMatrix> edst,
     const Epetra_Map& dstcolmap = edst->ColMap();
     for (int j=0; j<NumEntries; ++j)
     {
-      Indices[j] = dstcolmap.LID(Indices[j]);
+      int gid = Indices[j];
+      int lid = dstcolmap.LID(gid);
+      if ( lid < 0 )
+      {
+        dserror("illegal local id: lid=%d, gid=%d",lid,gid);
+      }
+      Indices[j] = lid;
     }
 
     // We have to care for Dirichlet conditions in the filled destination
