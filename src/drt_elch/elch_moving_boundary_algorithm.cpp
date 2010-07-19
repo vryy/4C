@@ -116,7 +116,7 @@ void ELCH::MovingBoundaryAlgorithm::DoFluidStep()
   vector<std::string> condnames;
   condnames.push_back("FSICoupling");
   condnames.push_back("ElectrodeKinetics");
-  Teuchos::RCP<Epetra_MultiVector> flux = ScaTraField().CalcFluxAtBoundary(condnames);
+  Teuchos::RCP<Epetra_MultiVector> flux = ScaTraField().CalcFluxAtBoundary(condnames,false);
 
   RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
 

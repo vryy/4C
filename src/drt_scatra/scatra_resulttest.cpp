@@ -31,7 +31,7 @@ SCATRA::ScaTraResultTest::ScaTraResultTest(ScaTraTimIntImpl& scatra)
 {
   dis_    = scatra.Discretization();
   mysol_  = scatra.Phinp();
-  myflux_ = scatra.CalcFlux();
+  myflux_ = scatra.CalcFlux(false); // do not write boundary fluxes to the text files
 }
 
 

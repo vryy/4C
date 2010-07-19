@@ -72,7 +72,8 @@ namespace INPAR
     enum CalcError
     {
       calcerror_no,
-      calcerror_Kwok_Wu
+      calcerror_Kwok_Wu,
+      calcerror_cylinder
     };
 
     /// possible types of stabilization

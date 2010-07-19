@@ -1212,7 +1212,7 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::OutputFlux()
 {
-  RCP<Epetra_MultiVector> flux = CalcFlux();
+  RCP<Epetra_MultiVector> flux = CalcFlux(true);
 
   // post_drt_ensight does not support multivectors based on the dofmap
   // for now, I create single vectors that can be handled by the filter
@@ -1246,7 +1246,7 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux()
 /*----------------------------------------------------------------------*
  |  calculate mass / heat flux vector                        gjb   04/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
+Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux(const bool writetofile)
 {
   switch(writeflux_)
   {
@@ -1266,7 +1266,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux()
     condnames.push_back("LineNeumann");
     condnames.push_back("SurfaceNeumann");
 
-    return CalcFluxAtBoundary(condnames);
+    return CalcFluxAtBoundary(condnames, writetofile);
     break;
   }
   default:
@@ -1376,7 +1376,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
  |  calculate mass / heat normal flux at specified boundaries  gjb 06/09|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
-    std::vector<string>& condnames)
+    std::vector<string>& condnames,
+    const bool writetofile)
 {
   // The normal flux calculation is based on the idea proposed in
   // GRESHO ET AL.,
@@ -1570,7 +1571,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       }
 
       // statistics section for normfluxintegral
-      if (step_>=samstart_ && step_<=samstop_)
+      if ((step_>=samstart_) && (step_<=samstop_))
       {
         (*sumnormfluxintegral_)[condid] += parnormfluxintegral[0]; // only first scalar!
         int samstep = step_-samstart_+1;
@@ -1587,8 +1588,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
         }
       }
 
-      // print out results to file as well
-      if (myrank_ == 0)
+      // print out results to file as well (only if really desired)
+      if ((myrank_ == 0) and (writetofile==true))
       {
         ostringstream temp;
         temp << condid;
@@ -1617,7 +1618,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
         f << "\n";
         f.flush();
         f.close();
-      }
+      } // write to file
 
     } // loop over condid
 
@@ -1713,7 +1714,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     break;
   case INPAR::SCATRA::calcerror_Kwok_Wu:
   {
-    //------------------------------------------------- Kwok et Wu,1995
+    //------------------------------------------------ Kwok and Wu,1995
     //   Reference:
     //   Kwok, Yue-Kuen and Wu, Charles C. K.
     //   "Fractional step algorithm for solving a multi-dimensional
@@ -1725,11 +1726,11 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     ParameterList p;
 
     // parameters for the elements
-    p.set("action","calc_elch_kwok_error");
+    p.set("action","calc_error");
     p.set("scatratype",scatratype_);
     p.set("total time",time_);
     p.set("frt",frt_);
-
+    p.set("calcerrorflag",calcerr);
     //provide displacement field in case of ALE
     p.set("isale",isale_);
     if (isale_)
@@ -1753,6 +1754,53 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     if (myrank_ == 0)
     {
       printf("\nL2_err for Kwok and Wu:\n");
+      printf(" concentration1 %15.8e\n concentration2 %15.8e\n potential      %15.8e\n\n",
+             conerr1,conerr2,poterr);
+    }
+  }
+  break;
+  case INPAR::SCATRA::calcerror_cylinder:
+  {
+    //------------------------------------------------- Choi,1993
+    //   Reference:
+    //   Kwok, Yue-Kuen and Wu, Charles C. K.
+    //   "Fractional step algorithm for solving a multi-dimensional
+    //   diffusion-migration equation"
+    //   Numerical Methods for Partial Differential Equations
+    //   1995, Vol 11, 389-397
+
+    // create the parameters for the discretization
+    ParameterList p;
+
+    // parameters for the elements
+    p.set("action","calc_error");
+    p.set("scatratype",scatratype_);
+    p.set("total time",time_);
+    p.set("frt",frt_);
+    p.set("calcerrorflag",calcerr);
+    //provide displacement field in case of ALE
+    p.set("isale",isale_);
+    if (isale_)
+      AddMultiVectorToParameterList(p,"dispnp",dispnp_);
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("phinp",phinp_);
+
+    // get (squared) error values
+    Teuchos::RCP<Epetra_SerialDenseVector> errors
+      = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+    discret_->EvaluateScalars(p, errors);
+    discret_->ClearState();
+
+    // for the L2 norm, we need the square root
+    double conerr1 = sqrt((*errors)[0]);
+    double conerr2 = sqrt((*errors)[1]);
+    double poterr  = sqrt((*errors)[2]);
+
+    if (myrank_ == 0)
+    {
+      printf("\nL2_err for concentric cylinders:\n");
       printf(" concentration1 %15.8e\n concentration2 %15.8e\n potential      %15.8e\n\n",
              conerr1,conerr2,poterr);
     }

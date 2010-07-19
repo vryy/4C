@@ -349,7 +349,9 @@ public:
   );
 
   /// routine to calculate mass/heat normal flux at specified boundaries
-  Teuchos::RCP<Epetra_MultiVector> CalcFluxAtBoundary(std::vector<string>& condnames);
+  Teuchos::RCP<Epetra_MultiVector> CalcFluxAtBoundary(
+      std::vector<string>& condnames,
+      const bool writetofile);
 
   /// returns map extractor used for convergence check either in ELCH or LOMA case
   Teuchos::RCP<LINALG::MapExtractor> Splitter() { return splitter_; }
@@ -367,7 +369,7 @@ public:
   INPAR::SCATRA::ScaTraType ScaTraType() const {return scatratype_;};
 
   /// routine to calculate mass/heat flux vectors (in domain / at boundary)
-  Teuchos::RCP<Epetra_MultiVector> CalcFlux();
+  Teuchos::RCP<Epetra_MultiVector> CalcFlux(const bool writetofile);
 
 protected:
 

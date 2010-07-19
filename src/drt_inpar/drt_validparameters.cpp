@@ -2186,11 +2186,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "compute error compared to analytical solution",
                                tuple<std::string>(
                                  "No",
-                                 "Kwok_Wu"
+                                 "Kwok_Wu",
+                                 "ConcentricCylinders"
                                  ),
                                tuple<INPAR::SCATRA::CalcError>(
                                    INPAR::SCATRA::calcerror_no,
-                                   INPAR::SCATRA::calcerror_Kwok_Wu),
+                                   INPAR::SCATRA::calcerror_Kwok_Wu,
+                                   INPAR::SCATRA::calcerror_cylinder),
                                &scatradyn);
 
   setStringToIntegralParameter<INPAR::SCATRA::FluxType>("WRITEFLUX","No","output of diffusive/total flux vectors",

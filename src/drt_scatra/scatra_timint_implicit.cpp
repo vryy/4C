@@ -1283,8 +1283,9 @@ void SCATRA::ScaTraTimIntImpl::Output()
   }
   else
   {
-    // calculation of statistics for normal fluxes (no output to file)
-    if (step_>=samstart_ and step_<=samstop_ and writeflux_!=INPAR::SCATRA::flux_no) CalcFlux();
+    // calculation of statistics for normal fluxes (no output to file!)
+    if ((step_>=samstart_) and (step_<=samstop_) and (writeflux_!=INPAR::SCATRA::flux_no))
+      CalcFlux(false);
   }
 
   return;

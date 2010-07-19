@@ -858,7 +858,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       CalculateDomainAndBodyforce(elevec1_epetra,ele,time,reinitswitch);
     }
   }
-  else if (action=="calc_elch_kwok_error")
+  else if (action=="calc_error")
   {
     // check if length suffices
     if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
@@ -872,7 +872,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
     if (numscal_ != 2)
-      dserror("Numscal_ != 2 for error calculation of Kwok & Wu example");
+      dserror("Numscal_ != 2 for error calculation of existing examples");
 
     // fill element arrays
     for (int i=0;i<nen_;++i)
@@ -4725,12 +4725,12 @@ else
     {
       for (int vi=0; vi<nen_; ++vi)
       {
-        const int fvi = vi*numdofpernode_+k;
+        //const int fvi = vi*numdofpernode_+k;
 
-        double adjust (1.0);
+        //double adjust (1.0);
 #ifdef LINE3EXACTSTAB
-        if (distype==DRT::Element::line3 && vi!=2 && tau_[k] > 0)
-          adjust *= tau_corner_[k] / tau_[k];
+        //if (distype==DRT::Element::line3 && vi!=2 && tau_[k] > 0)
+        //  adjust *= tau_corner_[k] / tau_[k];
 #endif
 
         // 2) diffusive stabilization
@@ -4797,16 +4797,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
 )
 {
   //at the moment, there is only one analytical test problem available!
-  if (params.get<string>("action") != "calc_elch_kwok_error")
-    dserror("Unknown analytical solution");
+  if (params.get<string>("action") != "calc_error")
+    dserror("How did you get here?");
 
-  //------------------------------------------------- Kwok et Wu,1995
-  //   Reference:
-  //   Kwok, Yue-Kuen and Wu, Charles C. K.
-  //   "Fractional step algorithm for solving a multi-dimensional diffusion-migration equation"
-  //   Numerical Methods for Partial Differential Equations
-  //   1995, Vol 11, 389-397
-
+  // -------------- prepare common things first ! -----------------------
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
@@ -4820,85 +4814,165 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   // get material constants
   GetMaterialParams(ele);
 
-  // working arrays
-  double                  potint;
-  LINALG::Matrix<2,1>     conint;
-  LINALG::Matrix<nsd_,1>  xint;
-  LINALG::Matrix<2,1>     c;
-  double                  deltapot;
-  LINALG::Matrix<2,1>     deltacon(true);
-
   // integrations points and weights
-  // more GP than usual due to cos/exp fcts in analytical solution
+  // more GP than usual due to (possible) cos/exp fcts in analytical solutions
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
-  // start loop over integration points
-  for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
+  const INPAR::SCATRA::CalcError errortype = params.get<INPAR::SCATRA::CalcError>("calcerrorflag");
+  switch(errortype)
   {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+  case INPAR::SCATRA::calcerror_Kwok_Wu:
+  {
+    //------------------------------------------------- Kwok et Wu,1995
+    //   Reference:
+    //   Kwok, Yue-Kuen and Wu, Charles C. K.
+    //   "Fractional step algorithm for solving a multi-dimensional diffusion-migration equation"
+    //   Numerical Methods for Partial Differential Equations
+    //   1995, Vol 11, 389-397
 
-    // get values of all transported scalars at integration point
-    for (int k=0; k<2; ++k)
+    // working arrays
+    double                  potint(0.0);
+    LINALG::Matrix<2,1>     conint(true);
+    LINALG::Matrix<nsd_,1>  xint(true);
+    LINALG::Matrix<2,1>     c(true);
+    double                  deltapot(0.0);
+    LINALG::Matrix<2,1>     deltacon(true);
+
+    // start loop over integration points
+    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
     {
-      conint(k) = funct_.Dot(ephinp_[k]);
-    }
+      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
-    // get el. potential solution at integration point
-    potint = funct_.Dot(epotnp_);
+      // get values of all transported scalars at integration point
+      for (int k=0; k<2; ++k)
+      {
+        conint(k) = funct_.Dot(ephinp_[k]);
+      }
 
-    // get global coordinate of integration point
-    xint.Multiply(xyze_,funct_);
+      // get el. potential solution at integration point
+      potint = funct_.Dot(epotnp_);
 
-    // compute various constants
-    const double d = frt*((diffus_[0]*valence_[0]) - (diffus_[1]*valence_[1]));
-    if (abs(d) == 0.0) dserror("division by zero");
-    const double D = frt*((valence_[0]*diffus_[0]*diffus_[1]) - (valence_[1]*diffus_[1]*diffus_[0]))/d;
+      // get global coordinate of integration point
+      xint.Multiply(xyze_,funct_);
 
-    // compute analytical solution for cation and anion concentrations
-    const double A0 = 2.0;
-    const double m = 1.0;
-    const double n = 2.0;
-    const double k = 3.0;
-    const double A_mnk = 1.0;
-    double expterm;
-    double c_0_0_0_t;
+      // compute various constants
+      const double d = frt*((diffus_[0]*valence_[0]) - (diffus_[1]*valence_[1]));
+      if (abs(d) == 0.0) dserror("division by zero");
+      const double D = frt*((valence_[0]*diffus_[0]*diffus_[1]) - (valence_[1]*diffus_[1]*diffus_[0]))/d;
 
-    if (nsd_==3)
+      // compute analytical solution for cation and anion concentrations
+      const double A0 = 2.0;
+      const double m = 1.0;
+      const double n = 2.0;
+      const double k = 3.0;
+      const double A_mnk = 1.0;
+      double expterm;
+      double c_0_0_0_t;
+
+      if (nsd_==3)
+      {
+        expterm = exp((-D)*(m*m + n*n + k*k)*t*PI*PI);
+        c(0) = A0 + (A_mnk*(cos(m*PI*xint(0))*cos(n*PI*xint(1))*cos(k*PI*xint(2)))*expterm);
+        c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m + n*n + k*k)*t*PI*PI));
+      }
+      else if (nsd_==2)
+      {
+        expterm = exp((-D)*(m*m + n*n)*t*PI*PI);
+        c(0) = A0 + (A_mnk*(cos(m*PI*xint(0))*cos(n*PI*xint(1)))*expterm);
+        c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m + n*n)*t*PI*PI));
+      }
+      else if (nsd_==1)
+      {
+        expterm = exp((-D)*(m*m)*t*PI*PI);
+        c(0) = A0 + (A_mnk*(cos(m*PI*xint(0)))*expterm);
+        c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m)*t*PI*PI));
+      }
+      else
+        dserror("Illegal number of space dimensions for analyt. solution: %d",nsd_);
+
+      // compute analytical solution for anion concentration
+      c(1) = (-valence_[0]/valence_[1])* c(0);
+      // compute analytical solution for el. potential
+      const double pot = ((diffus_[1]-diffus_[0])/d) * log(c(0)/c_0_0_0_t);
+
+      // compute differences between analytical solution and numerical solution
+      deltapot = potint - pot;
+      deltacon.Update(1.0,conint,-1.0,c);
+
+      // add square to L2 error
+      errors[0] += deltacon(0)*deltacon(0)*fac; // cation concentration
+      errors[1] += deltacon(1)*deltacon(1)*fac; // anion concentration
+      errors[2] += deltapot*deltapot*fac; // electric potential in electrolyte solution
+
+    } // end of loop over integration points
+  } // Kwok and Wu
+  break;
+  case INPAR::SCATRA::calcerror_cylinder:
+  {
+    // two-ion system with Butler-Volmer kinetics between two concentric cylinders
+
+    // working arrays
+    LINALG::Matrix<2,1>     conint(true);
+    LINALG::Matrix<nsd_,1>  xint(true);
+    LINALG::Matrix<2,1>     c(true);
+    LINALG::Matrix<2,1>     deltacon(true);
+
+    // some constants that are needed
+    const double c0_inner = 0.6147737641011396;
+    const double c0_outer = 1.244249192148809;
+    const double r_inner = 1.0;
+    const double r_outer = 2.0;
+    const double pot_inner = 2.758240847314454;
+    const double b = log(r_outer/r_inner);
+
+    // start loop over integration points
+    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
     {
-      expterm = exp((-D)*(m*m + n*n + k*k)*t*PI*PI);
-      c(0) = A0 + (A_mnk*(cos(m*PI*xint(0))*cos(n*PI*xint(1))*cos(k*PI*xint(2)))*expterm);
-      c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m + n*n + k*k)*t*PI*PI));
-    }
-    else if (nsd_==2)
-    {
-      expterm = exp((-D)*(m*m + n*n)*t*PI*PI);
-      c(0) = A0 + (A_mnk*(cos(m*PI*xint(0))*cos(n*PI*xint(1)))*expterm);
-      c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m + n*n)*t*PI*PI));
-    }
-    else if (nsd_==1)
-    {
-      expterm = exp((-D)*(m*m)*t*PI*PI);
-      c(0) = A0 + (A_mnk*(cos(m*PI*xint(0)))*expterm);
-      c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m)*t*PI*PI));
-    }
-    else
-      dserror("Illegal number of space dimensions for analyt. solution: %d",nsd_);
+      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
-    // compute analytical solution for anion concentration
-    c(1) = (-valence_[0]/valence_[1])* c(0);
-    // compute analytical solution for el. potential
-    const double pot = ((diffus_[1]-diffus_[0])/d) * log(c(0)/c_0_0_0_t);
+      // get values of all transported scalars at integration point
+      for (int k=0; k<2; ++k)
+      {
+        conint(k) = funct_.Dot(ephinp_[k]);
+      }
 
-    // compute differences between analytical solution and numerical solution
-    deltapot = potint - pot;
-    deltacon.Update(1.0,conint,-1.0,c);
+      // get el. potential solution at integration point
+      const double potint = funct_.Dot(epotnp_);
 
-    // add square to L2 error
-    errors[0] += deltacon(0)*deltacon(0)*fac; // cation concentration
-    errors[1] += deltacon(1)*deltacon(1)*fac; // anion concentration
-    errors[2] += deltapot*deltapot*fac; // electric potential in electrolyte solution
+      // get global coordinate of integration point
+      xint.Multiply(xyze_,funct_);
 
-  } // end of loop over integration points
+      // evaluate analytical solution for cation concentration at radial position r
+      if (nsd_==3)
+      {
+        const double r = sqrt(xint(0)*xint(0) + xint(1)*xint(1));
+        c(0) = c0_inner + ((c0_outer- c0_inner)*(log(r) - log(r_inner))/b);
+      }
+      else
+        dserror("Illegal number of space dimensions for analyt. solution: %d",nsd_);
+
+      // compute analytical solution for anion concentration
+      c(1) = (-valence_[0]/valence_[1])* c(0);
+      // compute analytical solution for el. potential
+      const double d = frt*((diffus_[0]*valence_[0]) - (diffus_[1]*valence_[1]));
+      if (abs(d) == 0.0) dserror("division by zero");
+      // reference value + ohmic resistance + concentration potential
+      const double pot = pot_inner + log(c(0)/c0_inner); // + (((diffus_[1]-diffus_[0])/d) * log(c(0)/c0_inner));
+
+      // compute differences between analytical solution and numerical solution
+      double deltapot = potint - pot;
+      deltacon.Update(1.0,conint,-1.0,c);
+
+      // add square to L2 error
+      errors[0] += deltacon(0)*deltacon(0)*fac; // cation concentration
+      errors[1] += deltacon(1)*deltacon(1)*fac; // anion concentration
+      errors[2] += deltapot*deltapot*fac; // electric potential in electrolyte solution
+
+    } // end of loop over integration points
+  } // concentric cylinders
+  break;
+  default: dserror("Unknown analytical solution!");
+  } //switch(errortype)
 
   return;
 } // ScaTraImpl::CalErrorComparedToAnalytSolution
