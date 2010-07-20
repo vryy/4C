@@ -572,7 +572,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
     {
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       const int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
-      cout << "Using StructureNOXCorrectionWrapper()..." << endl;
+
+      Teuchos::RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
+      if ((actdis->Comm()).MyPID()==0) cout << "Using StructureNOXCorrectionWrapper()..." << endl;
+
       if (tmpstr->HaveConstraint())
       {
         if (coupling == fsi_iter_constr_monolithicstructuresplit or
