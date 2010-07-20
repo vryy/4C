@@ -252,8 +252,6 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   //----------------------------------------------------------------------
   if (Dualquadslave3d())
   {
-  	dserror("ERROR: Dual LM penalty version not yet fully impl. for 3D quadratic contact");
-
   	// modify lindmatrix_ and dmatrix_
   	RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*invtrafo_,true,*lindmatrix_,false,false,false,true);
   	RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
