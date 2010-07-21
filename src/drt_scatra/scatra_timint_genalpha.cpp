@@ -138,6 +138,10 @@ void SCATRA::TimIntGenAlpha::ComputeIntermediateValues()
   phiaf_->Update(alphaF_,*phinp_,(1.0-alphaF_),*phin_,0.0);
   phiam_->Update(alphaM_,*phinp_,(1.0-alphaM_),*phin_,0.0);
 
+  // accelerations are not independent but rather have to be computed
+  // from phinp_, phin_ and phidtn_
+  ComputeTimeDerivative();
+
   // compute time derivative of phi at n+alpha_M
   phidtam_->Update(alphaM_,*phidtnp_,(1.0-alphaM_),*phidtn_,0.0);
 
