@@ -54,6 +54,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"SONURBS27");
   PrintElementLines(stream,"SOLIDH8");
   PrintElementLines(stream,"SOLIDH8P1J1");
+  PrintElementLines(stream,"SOLIDH8FBAR");
   PrintElementLines(stream,"SOLIDSH8");
   PrintElementLines(stream,"SOLIDSH8P8");
   PrintElementLines(stream,"SOLIDSHW6");

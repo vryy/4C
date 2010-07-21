@@ -496,6 +496,9 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_hex8p1j1.cpp
   src/drt_so3/so_hex8p1j1_evaluate.cpp
   src/drt_so3/so_hex8p1j1_input.cpp
+  src/drt_so3/so_hex8fbar.cpp
+  src/drt_so3/so_hex8fbar_evaluate.cpp
+  src/drt_so3/so_hex8fbar_input.cpp
   src/drt_so3/so_line.cpp
   src/drt_so3/so_line_evaluate.cpp
   src/drt_so3/so_material.cpp
@@ -1827,10 +1830,14 @@ baci_test(sohex8_multiscale_macro_2micro 1 1)
 baci_test(sohex8_multiscale_macro_2micro 2 1)
 baci_test(sohex8_surfactant 1 30)
 baci_test(sohex8_surfactant 2 30)
+baci_test(sohex8fbar_cooks_nl 1 "")
+baci_test(sohex8fbar_cooks_nl 2 "")
+baci_test(sohex8fbar_necking_plastic 1 "")
+baci_test(sohex8fbar_necking_plastic 2 "")
 baci_test(sohex8p1j1_cooks_nln_drt 1 "")
 baci_test(sohex8p1j1_cooks_nln_drt 2 "")
-baci_test(sohex8p1j1_necking_plastic_drt 1 "")
-baci_test(sohex8p1j1_necking_plastic_drt 2 "")
+baci_test(sohex8p1j1_necking_plastic 1 "")
+baci_test(sohex8p1j1_necking_plastic 2 "")
 baci_test(solidh8_mat_neohooke_drt 1 "")
 baci_test(solidh8_mat_neohooke_drt 2 "")
 baci_test(sosh8_freeflying_ruler 1 "")
