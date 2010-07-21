@@ -958,7 +958,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
 
     //Modifikation: sobald Residuum klein, PTC ausgeschaltet
-    if(np < 0.01*resinit)
+    if(np < 0.01*resinit || numiter > 5)
       dti = 0.0;
 
 
@@ -985,7 +985,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
       nc = np;
 
       //Modifikation: sobald Residuum klein, PTC ausgeschaltet
-      if(np < 0.01*resinit)
+      if(np < 0.01*resinit || numiter > 5)
         dti = 0.0;
 
     }
