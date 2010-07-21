@@ -2629,8 +2629,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     "Partitioned FSI solver with various coupling methods"
     );
 
-  Teuchos::Tuple<std::string,19> name;
-  Teuchos::Tuple<int,19> label;
+  Teuchos::Tuple<std::string,20> name;
+  Teuchos::Tuple<int,20> label;
 
   name[ 0] = "basic_sequ_stagg";                   label[ 0] = fsi_basic_sequ_stagg;
   name[ 1] = "iter_stagg_fixed_rel_param";         label[ 1] = fsi_iter_stagg_fixed_rel_param;
@@ -2651,6 +2651,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   name[16] = "iter_constr_monolithicfluidsplit";     label[16] = fsi_iter_constr_monolithicfluidsplit;
   name[17] = "iter_constr_monolithicstructuresplit";     label[17] = fsi_iter_constr_monolithicstructuresplit;
   name[18] = "iter_mortar_monolithicstructuresplit";     label[18] = fsi_iter_mortar_monolithicstructuresplit;
+  name[19] = "iter_mortar_monolithicfluidsplit";     label[19] = fsi_iter_mortar_monolithicfluidsplit;
 
   setStringToIntegralParameter<int>("COUPALGO","iter_stagg_AITKEN_rel_param",
                                     "Iteration Scheme over the fields",

@@ -129,7 +129,8 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
         coupling == fsi_iter_constr_monolithicstructuresplit or
         coupling == fsi_iter_lung_monolithicfluidsplit or
         coupling == fsi_iter_lung_monolithicstructuresplit or
-        coupling == fsi_iter_mortar_monolithicstructuresplit)
+        coupling == fsi_iter_mortar_monolithicstructuresplit or
+        coupling == fsi_iter_mortar_monolithicfluidsplit)
     {
       // partitioned MFSI solvers require Dirichlet conditions
       INPAR::FSI::LinearBlockSolver linearsolverstrategy =
@@ -155,7 +156,8 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
          coupling == fsi_iter_constr_monolithicstructuresplit or
          coupling == fsi_iter_lung_monolithicfluidsplit or
          coupling == fsi_iter_lung_monolithicstructuresplit or
-         coupling == fsi_iter_mortar_monolithicstructuresplit)    
+         coupling == fsi_iter_mortar_monolithicstructuresplit or
+         coupling == fsi_iter_mortar_monolithicfluidsplit)    
     {
       // partitioned MFSI solvers require Dirichlet conditions
       INPAR::FSI::LinearBlockSolver linearsolverstrategy =
