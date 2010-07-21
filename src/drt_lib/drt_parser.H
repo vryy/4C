@@ -371,6 +371,7 @@ SyntaxTreeNode<T>* Parser<T>::ParsePrimary()
             name=="log10" or
             name=="sqrt" or
             name=="ceil" or
+            name=="heaviside" or
             name=="fabs" or
             name=="floor")
         {
@@ -604,6 +605,17 @@ T Parser<T>::Interpret(SyntaxTreeNode<T>* node)
     //else if (node->function_=="ceil") res = ceil(arg);
     else if (node->function_=="fabs") res = fabs(arg);
     //else if (node->function_=="floor") res = floor(arg);
+    else if (node->function_=="heaviside") 
+    {
+      if(arg>0)
+      {
+        res=1.0;
+      }
+      else
+      {
+        res=0.0;
+      }
+    }
     else
       dserror("unknown function_ '%s'", node->function_.c_str());
     break;
