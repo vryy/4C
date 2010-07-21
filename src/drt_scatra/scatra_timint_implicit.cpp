@@ -1268,7 +1268,14 @@ void SCATRA::ScaTraTimIntImpl::Output()
     if (step_%uprestart_==0) OutputRestart();
 
     // write flux vector field
-    if (writeflux_!=INPAR::SCATRA::flux_no) OutputFlux();
+    if (writeflux_!=INPAR::SCATRA::flux_no)
+    {
+      // compute scalar values at intermediate time steps (for flux computation)
+      // required only for genalpha
+      ComputeIntermediateValues();
+
+      OutputFlux();
+    }
 
     // write mean values of scalar(s)
     if (outmean_)
