@@ -519,7 +519,7 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
 
 	    // inverse of fbar deformation gradient
 			LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invdefgrd_bar;
-			invdefgrd_bar.Invert(defgrd_bar);																					// CHANGED THIS LINE !!!!!!!!!!!!!!
+			invdefgrd_bar.Invert(defgrd_bar);
 
 			LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> temp;
 			LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi_bar;
