@@ -37,8 +37,8 @@ namespace ADAPTER
 {
   /// Couple nonmatching FSI interfaces using mortar method
   /*!
-    This is a special class used by the Dirichlet-Neumann coupling algorithm
-    to interpolate between fluid and structure fields at the interface. The
+    This is a special class used FSI coupling algorithms to interpolate 
+    between fluid and structure fields at the interface. The
     hard work is done by the MORTAR::MortarInterface.
     (Thus we use the mortar method here.)
 

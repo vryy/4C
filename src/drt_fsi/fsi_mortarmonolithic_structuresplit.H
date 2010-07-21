@@ -159,9 +159,9 @@ namespace FSI
     
     Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_;  ///< Sliding Ale helper class
     
-    Teuchos::RCP<Epetra_Vector> iprojdisp_;        ///<displacement of slave side of the interface
-    Teuchos::RCP<Epetra_Vector> iprojdispinc_;        ///<displacement of slave side of the interface
-    Teuchos::RCP<Epetra_Vector> FTStemp_;       ///<slave displacement on master side at every time step begin
+    Teuchos::RCP<Epetra_Vector> iprojdisp_;        ///<displacement of fluid side of the interface
+    Teuchos::RCP<Epetra_Vector> iprojdispinc_;        ///<displacement of fluid side of the interface
+    Teuchos::RCP<Epetra_Vector> FTStemp_;       ///<fluid displacement on struct side at every time step begin
     
   };
 }
