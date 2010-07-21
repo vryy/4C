@@ -32,7 +32,7 @@ namespace FSI
 
     <pre>
 
-    1.) setup coupling; right now, we use matching meshes at the interface
+    1.) setup coupling
     2.) create combined map
     3.) create block system matrix
 
