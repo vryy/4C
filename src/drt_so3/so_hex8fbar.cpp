@@ -75,7 +75,6 @@ void DRT::ELEMENTS::So_hex8fbarType::SetupElementDefinition( std::map<std::strin
 }
 
 
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 07/10|
  |  id             (in)  this element's global id                       |
@@ -154,7 +153,6 @@ DRT::ELEMENTS::So_hex8fbar::~So_hex8fbar()
   return;
 }
 
-
 /*----------------------------------------------------------------------*
  |  print this element (public)                               popp 07/10|
  *----------------------------------------------------------------------*/
@@ -166,7 +164,6 @@ void DRT::ELEMENTS::So_hex8fbar::Print(ostream& os) const
   cout << data_;
   return;
 }
-
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

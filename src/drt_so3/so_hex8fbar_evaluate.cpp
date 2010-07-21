@@ -29,7 +29,6 @@ Maintainer: Alexander Popp
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
-
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
@@ -308,8 +307,6 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
   return 0;
 }
 
-
-
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)               |
  *----------------------------------------------------------------------*/
@@ -384,7 +381,6 @@ int DRT::ELEMENTS::So_hex8fbar::EvaluateNeumann(ParameterList& params,
   return 0;
 } // DRT::ELEMENTS::So_hex8fbar::EvaluateNeumann
 
-
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
@@ -423,7 +419,6 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
     xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOH8+0];
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH8+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH8+2];
-
   }
 
   //****************************************************************************
@@ -455,7 +450,6 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
   LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(false);
   for (int gp=0; gp<NUMGPT_SOH8; ++gp)
   {
-
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
     **     J^-1 = [ x_,s  y_,s  z_,s ]
@@ -737,13 +731,8 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
 
   }/* ==================================================== end of Loop over GP */
 
-  if (force != NULL && stiffmatrix != NULL)
-  {
-
-  }
   return;
 } // DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass
-
 
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
@@ -760,7 +749,5 @@ int DRT::ELEMENTS::So_hex8fbarType::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
-
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3
-

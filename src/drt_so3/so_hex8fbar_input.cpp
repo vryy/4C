@@ -13,17 +13,15 @@ Maintainer: Alexander Popp
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
-
 #include "so_hex8fbar.H"
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::So_hex8fbar::ReadElement(const std::string& eletype,
-                                            const std::string& distype,
-                                            DRT::INPUT::LineDefinition* linedef)
+                                             const std::string& distype,
+                                             DRT::INPUT::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;

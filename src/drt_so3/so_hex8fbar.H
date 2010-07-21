@@ -60,10 +60,10 @@ private:
 \brief A C++ version of a 8-node hex solid element with F-Bar modification
 
 A structural 8-node hexahedral solid displacement element for large deformations
-and (near)-incompressibility. F-bar techniques are used to avoid volumetric locking.
-As its discretization is fixed many data structures are evaluated just once and kept
-for performance. It heavily uses Epetra objects and methods and therefore relies
-on their performance.
+and (near)-incompressibility. The F-bar technique is used to avoid volumetric locking.
+The volumetric part of the deformation gradient is only evaluated at the element
+center, which can be interpreted as a kind of selective reduced integration approach.
+The deviatoric part of the deformation gradient remains untouched.
 
 Refer also to the HiWi report of Stefanos Tsoukalas, 2010
 
@@ -236,17 +236,14 @@ protected:
 
 }; // class So_hex8fbar
 
-
 //=======================================================================
 //=======================================================================
 //=======================================================================
 //=======================================================================
-
-
 
 } // namespace ELEMENTS
 } // namespace DRT
 
-#endif  // #ifndef SOH8_H
+#endif  // #ifndef SOH8FBAR_H
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3
